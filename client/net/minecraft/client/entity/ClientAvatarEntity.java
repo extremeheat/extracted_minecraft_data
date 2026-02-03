@@ -12,7 +12,7 @@ public interface ClientAvatarEntity {
 
    @Nullable Component belowNameDisplay();
 
-   Parrot.@Nullable Variant getParrotVariantOnShoulder(boolean var1);
+   Parrot.@Nullable Variant getParrotVariantOnShoulder(boolean left);
 
    boolean showExtraEars();
 }

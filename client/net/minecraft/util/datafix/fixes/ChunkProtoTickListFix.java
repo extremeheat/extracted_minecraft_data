@@ -11,12 +11,12 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.types.templates.List;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -28,141 +28,141 @@ public class ChunkProtoTickListFix extends DataFix {
    private static final int SECTION_WIDTH = 16;
    private static final ImmutableSet<String> ALWAYS_WATERLOGGED = ImmutableSet.of("minecraft:bubble_column", "minecraft:kelp", "minecraft:kelp_plant", "minecraft:seagrass", "minecraft:tall_seagrass");
 
-   public ChunkProtoTickListFix(Schema var1) {
-      super(var1, false);
+   public ChunkProtoTickListFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.CHUNK);
-      OpticFinder var2 = var1.findField("Level");
-      OpticFinder var3 = var2.type().findField("Sections");
-      OpticFinder var4 = ((List.ListType)var3.type()).getElement().finder();
-      OpticFinder var5 = var4.type().findField("block_states");
-      OpticFinder var6 = var4.type().findField("biomes");
-      OpticFinder var7 = var5.type().findField("palette");
-      OpticFinder var8 = var2.type().findField("TileTicks");
-      return this.fixTypeEverywhereTyped("ChunkProtoTickListFix", var1, (var8x) -> var8x.updateTyped(var2, (var7x) -> {
-            var7x = var7x.update(DSL.remainderFinder(), (var0) -> (Dynamic)DataFixUtils.orElse(var0.get("LiquidTicks").result().map((var1) -> var0.set("fluid_ticks", var1).remove("LiquidTicks")), var0));
-            Dynamic var8x = (Dynamic)var7x.get(DSL.remainderFinder());
-            MutableInt var9 = new MutableInt();
-            Int2ObjectArrayMap var10 = new Int2ObjectArrayMap();
-            var7x.getOptionalTyped(var3).ifPresent((var6x) -> var6x.getAllTyped(var4).forEach((var5x) -> {
-                  Dynamic var6x = (Dynamic)var5x.get(DSL.remainderFinder());
-                  int var7x = var6x.get("Y").asInt(2147483647);
-                  if (var7x != 2147483647) {
-                     if (var5x.getOptionalTyped(var6).isPresent()) {
-                        var9.setValue(Math.min(var7x, var9.intValue()));
+      Type<?> chunkType = this.getInputSchema().getType(References.CHUNK);
+      OpticFinder<?> levelFinder = chunkType.findField("Level");
+      OpticFinder<?> sectionsFinder = levelFinder.type().findField("Sections");
+      OpticFinder<?> sectionFinder = ((com.mojang.datafixers.types.templates.List.ListType)sectionsFinder.type()).getElement().finder();
+      OpticFinder<?> blockStateContainerFinder = sectionFinder.type().findField("block_states");
+      OpticFinder<?> biomeContainerFinder = sectionFinder.type().findField("biomes");
+      OpticFinder<?> blockStatePaletteFinder = blockStateContainerFinder.type().findField("palette");
+      OpticFinder<?> tileTickFinder = levelFinder.type().findField("TileTicks");
+      return this.fixTypeEverywhereTyped("ChunkProtoTickListFix", chunkType, (chunk) -> chunk.updateTyped(levelFinder, (level) -> {
+            level = level.update(DSL.remainderFinder(), (tag) -> (Dynamic)DataFixUtils.orElse(tag.get("LiquidTicks").result().map((v) -> tag.set("fluid_ticks", v).remove("LiquidTicks")), tag));
+            Dynamic<?> chunkTag = (Dynamic)level.get(DSL.remainderFinder());
+            MutableInt lowestY = new MutableInt();
+            Int2ObjectMap<Supplier<PoorMansPalettedContainer>> palettedContainers = new Int2ObjectArrayMap();
+            level.getOptionalTyped(sectionsFinder).ifPresent((sections) -> sections.getAllTyped(sectionFinder).forEach((section) -> {
+                  Dynamic<?> sectionRemainder = (Dynamic)section.get(DSL.remainderFinder());
+                  int sectionY = sectionRemainder.get("Y").asInt(2147483647);
+                  if (sectionY != 2147483647) {
+                     if (section.getOptionalTyped(biomeContainerFinder).isPresent()) {
+                        lowestY.setValue(Math.min(sectionY, lowestY.intValue()));
                      }
 
-                     var5x.getOptionalTyped(var5).ifPresent((var3) -> var10.put(var7x, Suppliers.memoize(() -> {
-                           java.util.List var2 = (java.util.List)var3.getOptionalTyped(var7).map((var0) -> (java.util.List)var0.write().result().map((var0x) -> var0x.asList(Function.identity())).orElse(Collections.emptyList())).orElse(Collections.emptyList());
-                           long[] var3x = ((Dynamic)var3.get(DSL.remainderFinder())).get("data").asLongStream().toArray();
-                           return new PoorMansPalettedContainer(var2, var3x);
+                     section.getOptionalTyped(blockStateContainerFinder).ifPresent((blockContainer) -> palettedContainers.put(sectionY, Suppliers.memoize(() -> {
+                           List<? extends Dynamic<?>> palette = (List)blockContainer.getOptionalTyped(blockStatePaletteFinder).map((x) -> (List)x.write().result().map((r) -> r.asList(Function.identity())).orElse(Collections.emptyList())).orElse(Collections.emptyList());
+                           long[] data = ((Dynamic)blockContainer.get(DSL.remainderFinder())).get("data").asLongStream().toArray();
+                           return new PoorMansPalettedContainer(palette, data);
                         })));
                   }
                }));
-            byte var11 = var9.byteValue();
-            var7x = var7x.update(DSL.remainderFinder(), (var1) -> var1.update("yPos", (var1x) -> var1x.createByte(var11)));
-            if (!var7x.getOptionalTyped(var8).isPresent() && !var8x.get("fluid_ticks").result().isPresent()) {
-               int var12 = var8x.get("xPos").asInt(0);
-               int var13 = var8x.get("zPos").asInt(0);
-               Dynamic var14 = this.makeTickList(var8x, var10, var11, var12, var13, "LiquidsToBeTicked", ChunkProtoTickListFix::getLiquid);
-               Dynamic var15 = this.makeTickList(var8x, var10, var11, var12, var13, "ToBeTicked", ChunkProtoTickListFix::getBlock);
-               Optional var16 = var8.type().readTyped(var15).result();
-               if (var16.isPresent()) {
-                  var7x = var7x.set(var8, (Typed)((Pair)var16.get()).getFirst());
+            byte sectionMinY = lowestY.byteValue();
+            level = level.update(DSL.remainderFinder(), (remainder) -> remainder.update("yPos", (y) -> y.createByte(sectionMinY)));
+            if (!level.getOptionalTyped(tileTickFinder).isPresent() && !chunkTag.get("fluid_ticks").result().isPresent()) {
+               int sectionX = chunkTag.get("xPos").asInt(0);
+               int sectionZ = chunkTag.get("zPos").asInt(0);
+               Dynamic<?> fluidTicks = this.makeTickList(chunkTag, palettedContainers, sectionMinY, sectionX, sectionZ, "LiquidsToBeTicked", ChunkProtoTickListFix::getLiquid);
+               Dynamic<?> blockTicks = this.makeTickList(chunkTag, palettedContainers, sectionMinY, sectionX, sectionZ, "ToBeTicked", ChunkProtoTickListFix::getBlock);
+               Optional<? extends Pair<? extends Typed<?>, ?>> parsedBlockTicks = tileTickFinder.type().readTyped(blockTicks).result();
+               if (parsedBlockTicks.isPresent()) {
+                  level = level.set(tileTickFinder, (Typed)((Pair)parsedBlockTicks.get()).getFirst());
                }
 
-               return var7x.update(DSL.remainderFinder(), (var1) -> var1.remove("ToBeTicked").remove("LiquidsToBeTicked").set("fluid_ticks", var14));
+               return level.update(DSL.remainderFinder(), (remainder) -> remainder.remove("ToBeTicked").remove("LiquidsToBeTicked").set("fluid_ticks", fluidTicks));
             } else {
-               return var7x;
+               return level;
             }
          }));
    }
 
-   private Dynamic<?> makeTickList(Dynamic<?> var1, Int2ObjectMap<Supplier<PoorMansPalettedContainer>> var2, byte var3, int var4, int var5, String var6, Function<Dynamic<?>, String> var7) {
-      Stream var8 = Stream.empty();
-      java.util.List var9 = var1.get(var6).asList(Function.identity());
+   private Dynamic<?> makeTickList(final Dynamic<?> tag, final Int2ObjectMap<Supplier<PoorMansPalettedContainer>> palettedContainers, final byte sectionMinY, final int sectionX, final int sectionZ, final String protoTickListTag, final Function<Dynamic<?>, String> typeGetter) {
+      Stream<Dynamic<?>> newTickList = Stream.empty();
+      List<? extends Dynamic<?>> ticksPerSection = tag.get(protoTickListTag).asList(Function.identity());
 
-      for(int var10 = 0; var10 < var9.size(); ++var10) {
-         int var11 = var10 + var3;
-         Supplier var12 = (Supplier)var2.get(var11);
-         Stream var13 = ((Dynamic)var9.get(var10)).asStream().mapToInt((var0) -> var0.asShort((short)-1)).filter((var0) -> var0 > 0).mapToObj((var7x) -> this.createTick(var1, var12, var4, var11, var5, var7x, var7));
-         var8 = Stream.concat(var8, var13);
+      for(int sectionYIndex = 0; sectionYIndex < ticksPerSection.size(); ++sectionYIndex) {
+         int sectionY = sectionYIndex + sectionMinY;
+         Supplier<PoorMansPalettedContainer> container = (Supplier)palettedContainers.get(sectionY);
+         Stream<? extends Dynamic<?>> newTickListForSection = ((Dynamic)ticksPerSection.get(sectionYIndex)).asStream().mapToInt((pos) -> pos.asShort((short)-1)).filter((pos) -> pos > 0).mapToObj((pos) -> this.createTick(tag, container, sectionX, sectionY, sectionZ, pos, typeGetter));
+         newTickList = Stream.concat(newTickList, newTickListForSection);
       }
 
-      return var1.createList(var8);
+      return tag.createList(newTickList);
    }
 
-   private static String getBlock(@Nullable Dynamic<?> var0) {
-      return var0 != null ? var0.get("Name").asString("minecraft:air") : "minecraft:air";
+   private static String getBlock(final @Nullable Dynamic<?> blockState) {
+      return blockState != null ? blockState.get("Name").asString("minecraft:air") : "minecraft:air";
    }
 
-   private static String getLiquid(@Nullable Dynamic<?> var0) {
-      if (var0 == null) {
+   private static String getLiquid(final @Nullable Dynamic<?> blockState) {
+      if (blockState == null) {
          return "minecraft:empty";
       } else {
-         String var1 = var0.get("Name").asString("");
-         if ("minecraft:water".equals(var1)) {
-            return var0.get("Properties").get("level").asInt(0) == 0 ? "minecraft:water" : "minecraft:flowing_water";
-         } else if ("minecraft:lava".equals(var1)) {
-            return var0.get("Properties").get("level").asInt(0) == 0 ? "minecraft:lava" : "minecraft:flowing_lava";
+         String block = blockState.get("Name").asString("");
+         if ("minecraft:water".equals(block)) {
+            return blockState.get("Properties").get("level").asInt(0) == 0 ? "minecraft:water" : "minecraft:flowing_water";
+         } else if ("minecraft:lava".equals(block)) {
+            return blockState.get("Properties").get("level").asInt(0) == 0 ? "minecraft:lava" : "minecraft:flowing_lava";
          } else {
-            return !ALWAYS_WATERLOGGED.contains(var1) && !var0.get("Properties").get("waterlogged").asBoolean(false) ? "minecraft:empty" : "minecraft:water";
+            return !ALWAYS_WATERLOGGED.contains(block) && !blockState.get("Properties").get("waterlogged").asBoolean(false) ? "minecraft:empty" : "minecraft:water";
          }
       }
    }
 
-   private Dynamic<?> createTick(Dynamic<?> var1, @Nullable Supplier<PoorMansPalettedContainer> var2, int var3, int var4, int var5, int var6, Function<Dynamic<?>, String> var7) {
-      int var8 = var6 & 15;
-      int var9 = var6 >>> 4 & 15;
-      int var10 = var6 >>> 8 & 15;
-      String var11 = (String)var7.apply(var2 != null ? ((PoorMansPalettedContainer)var2.get()).get(var8, var9, var10) : null);
-      return var1.createMap(ImmutableMap.builder().put(var1.createString("i"), var1.createString(var11)).put(var1.createString("x"), var1.createInt(var3 * 16 + var8)).put(var1.createString("y"), var1.createInt(var4 * 16 + var9)).put(var1.createString("z"), var1.createInt(var5 * 16 + var10)).put(var1.createString("t"), var1.createInt(0)).put(var1.createString("p"), var1.createInt(0)).build());
+   private Dynamic<?> createTick(final Dynamic<?> tag, final @Nullable Supplier<PoorMansPalettedContainer> container, final int sectionX, final int sectionY, final int sectionZ, final int pos, final Function<Dynamic<?>, String> typeGetter) {
+      int relativeX = pos & 15;
+      int relativeY = pos >>> 4 & 15;
+      int relativeZ = pos >>> 8 & 15;
+      String type = (String)typeGetter.apply(container != null ? ((PoorMansPalettedContainer)container.get()).get(relativeX, relativeY, relativeZ) : null);
+      return tag.createMap(ImmutableMap.builder().put(tag.createString("i"), tag.createString(type)).put(tag.createString("x"), tag.createInt(sectionX * 16 + relativeX)).put(tag.createString("y"), tag.createInt(sectionY * 16 + relativeY)).put(tag.createString("z"), tag.createInt(sectionZ * 16 + relativeZ)).put(tag.createString("t"), tag.createInt(0)).put(tag.createString("p"), tag.createInt(0)).build());
    }
 
    public static final class PoorMansPalettedContainer {
       private static final long SIZE_BITS = 4L;
-      private final java.util.List<? extends Dynamic<?>> palette;
+      private final List<? extends Dynamic<?>> palette;
       private final long[] data;
       private final int bits;
       private final long mask;
       private final int valuesPerLong;
 
-      public PoorMansPalettedContainer(java.util.List<? extends Dynamic<?>> var1, long[] var2) {
+      public PoorMansPalettedContainer(final List<? extends Dynamic<?>> palette, final long[] data) {
          super();
-         this.palette = var1;
-         this.data = var2;
-         this.bits = Math.max(4, ChunkHeightAndBiomeFix.ceillog2(var1.size()));
+         this.palette = palette;
+         this.data = data;
+         this.bits = Math.max(4, ChunkHeightAndBiomeFix.ceillog2(palette.size()));
          this.mask = (1L << this.bits) - 1L;
          this.valuesPerLong = (char)(64 / this.bits);
       }
 
-      public @Nullable Dynamic<?> get(int var1, int var2, int var3) {
-         int var4 = this.palette.size();
-         if (var4 < 1) {
+      public @Nullable Dynamic<?> get(final int x, final int y, final int z) {
+         int entryCount = this.palette.size();
+         if (entryCount < 1) {
             return null;
-         } else if (var4 == 1) {
+         } else if (entryCount == 1) {
             return (Dynamic)this.palette.getFirst();
          } else {
-            int var5 = this.getIndex(var1, var2, var3);
-            int var6 = var5 / this.valuesPerLong;
-            if (var6 >= 0 && var6 < this.data.length) {
-               long var7 = this.data[var6];
-               int var9 = (var5 - var6 * this.valuesPerLong) * this.bits;
-               int var10 = (int)(var7 >> var9 & this.mask);
-               return var10 >= 0 && var10 < var4 ? (Dynamic)this.palette.get(var10) : null;
+            int index = this.getIndex(x, y, z);
+            int cellIndex = index / this.valuesPerLong;
+            if (cellIndex >= 0 && cellIndex < this.data.length) {
+               long cellValue = this.data[cellIndex];
+               int bitIndex = (index - cellIndex * this.valuesPerLong) * this.bits;
+               int paletteIndex = (int)(cellValue >> bitIndex & this.mask);
+               return paletteIndex >= 0 && paletteIndex < entryCount ? (Dynamic)this.palette.get(paletteIndex) : null;
             } else {
                return null;
             }
          }
       }
 
-      private int getIndex(int var1, int var2, int var3) {
-         return (var2 << 4 | var3) << 4 | var1;
+      private int getIndex(final int x, final int y, final int z) {
+         return (y << 4 | z) << 4 | x;
       }
 
-      public java.util.List<? extends Dynamic<?>> palette() {
+      public List<? extends Dynamic<?>> palette() {
          return this.palette;
       }
 

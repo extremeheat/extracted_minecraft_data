@@ -23,58 +23,58 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class FireChargeItem extends Item implements ProjectileItem {
-   public FireChargeItem(Item.Properties var1) {
-      super(var1);
+   public FireChargeItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      BlockState var4 = var2.getBlockState(var3);
-      boolean var5 = false;
-      if (!CampfireBlock.canLight(var4) && !CandleBlock.canLight(var4) && !CandleCakeBlock.canLight(var4)) {
-         var3 = var3.relative(var1.getClickedFace());
-         if (BaseFireBlock.canBePlacedAt(var2, var3, var1.getHorizontalDirection())) {
-            this.playSound(var2, var3);
-            var2.setBlockAndUpdate(var3, BaseFireBlock.getState(var2, var3));
-            var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_PLACE, var3);
-            var5 = true;
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      BlockState blockState = level.getBlockState(pos);
+      boolean used = false;
+      if (!CampfireBlock.canLight(blockState) && !CandleBlock.canLight(blockState) && !CandleCakeBlock.canLight(blockState)) {
+         pos = pos.relative(context.getClickedFace());
+         if (BaseFireBlock.canBePlacedAt(level, pos, context.getHorizontalDirection())) {
+            this.playSound(level, pos);
+            level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
+            level.gameEvent(context.getPlayer(), GameEvent.BLOCK_PLACE, pos);
+            used = true;
          }
       } else {
-         this.playSound(var2, var3);
-         var2.setBlockAndUpdate(var3, (BlockState)var4.setValue(BlockStateProperties.LIT, true));
-         var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_CHANGE, var3);
-         var5 = true;
+         this.playSound(level, pos);
+         level.setBlockAndUpdate(pos, (BlockState)blockState.setValue(BlockStateProperties.LIT, true));
+         level.gameEvent(context.getPlayer(), GameEvent.BLOCK_CHANGE, pos);
+         used = true;
       }
 
-      if (var5) {
-         var1.getItemInHand().shrink(1);
+      if (used) {
+         context.getItemInHand().shrink(1);
          return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.FAIL;
       }
    }
 
-   private void playSound(Level var1, BlockPos var2) {
-      RandomSource var3 = var1.getRandom();
-      var1.playSound((Entity)null, (BlockPos)var2, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 1.0F, (var3.nextFloat() - var3.nextFloat()) * 0.2F + 1.0F);
+   private void playSound(final Level level, final BlockPos pos) {
+      RandomSource random = level.getRandom();
+      level.playSound((Entity)null, (BlockPos)pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F);
    }
 
-   public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
-      RandomSource var5 = var1.getRandom();
-      double var6 = var5.triangle((double)var4.getStepX(), 0.11485000000000001);
-      double var8 = var5.triangle((double)var4.getStepY(), 0.11485000000000001);
-      double var10 = var5.triangle((double)var4.getStepZ(), 0.11485000000000001);
-      Vec3 var12 = new Vec3(var6, var8, var10);
-      SmallFireball var13 = new SmallFireball(var1, var2.x(), var2.y(), var2.z(), var12.normalize());
-      var13.setItem(var3);
-      return var13;
+   public Projectile asProjectile(final Level level, final Position position, final ItemStack itemStack, final Direction direction) {
+      RandomSource random = level.getRandom();
+      double dirX = random.triangle((double)direction.getStepX(), 0.11485000000000001);
+      double dirY = random.triangle((double)direction.getStepY(), 0.11485000000000001);
+      double dirZ = random.triangle((double)direction.getStepZ(), 0.11485000000000001);
+      Vec3 dir = new Vec3(dirX, dirY, dirZ);
+      SmallFireball fireball = new SmallFireball(level, position.x(), position.y(), position.z(), dir.normalize());
+      fireball.setItem(itemStack);
+      return fireball;
    }
 
-   public void shoot(Projectile var1, double var2, double var4, double var6, float var8, float var9) {
+   public void shoot(final Projectile projectile, final double xd, final double yd, final double zd, final float pow, final float uncertainty) {
    }
 
    public ProjectileItem.DispenseConfig createDispenseConfig() {
-      return ProjectileItem.DispenseConfig.builder().positionFunction((var0, var1) -> DispenserBlock.getDispensePosition(var0, 1.0, Vec3.ZERO)).uncertainty(6.6666665F).power(1.0F).overrideDispenseEvent(1018).build();
+      return ProjectileItem.DispenseConfig.builder().positionFunction((source, direction) -> DispenserBlock.getDispensePosition(source, 1.0, Vec3.ZERO)).uncertainty(6.6666665F).power(1.0F).overrideDispenseEvent(1018).build();
    }
 }

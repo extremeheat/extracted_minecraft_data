@@ -23,78 +23,78 @@ public final class Identifier implements Comparable<Identifier> {
    private final String namespace;
    private final String path;
 
-   private Identifier(String var1, String var2) {
+   private Identifier(final String namespace, final String path) {
       super();
 
-      assert isValidNamespace(var1);
+      assert isValidNamespace(namespace);
 
-      assert isValidPath(var2);
+      assert isValidPath(path);
 
-      this.namespace = var1;
-      this.path = var2;
+      this.namespace = namespace;
+      this.path = path;
    }
 
-   private static Identifier createUntrusted(String var0, String var1) {
-      return new Identifier(assertValidNamespace(var0, var1), assertValidPath(var0, var1));
+   private static Identifier createUntrusted(final String namespace, final String path) {
+      return new Identifier(assertValidNamespace(namespace, path), assertValidPath(namespace, path));
    }
 
-   public static Identifier fromNamespaceAndPath(String var0, String var1) {
-      return createUntrusted(var0, var1);
+   public static Identifier fromNamespaceAndPath(final String namespace, final String path) {
+      return createUntrusted(namespace, path);
    }
 
-   public static Identifier parse(String var0) {
-      return bySeparator(var0, ':');
+   public static Identifier parse(final String identifier) {
+      return bySeparator(identifier, ':');
    }
 
-   public static Identifier withDefaultNamespace(String var0) {
-      return new Identifier("minecraft", assertValidPath("minecraft", var0));
+   public static Identifier withDefaultNamespace(final String path) {
+      return new Identifier("minecraft", assertValidPath("minecraft", path));
    }
 
-   public static @Nullable Identifier tryParse(String var0) {
-      return tryBySeparator(var0, ':');
+   public static @Nullable Identifier tryParse(final String identifier) {
+      return tryBySeparator(identifier, ':');
    }
 
-   public static @Nullable Identifier tryBuild(String var0, String var1) {
-      return isValidNamespace(var0) && isValidPath(var1) ? new Identifier(var0, var1) : null;
+   public static @Nullable Identifier tryBuild(final String namespace, final String path) {
+      return isValidNamespace(namespace) && isValidPath(path) ? new Identifier(namespace, path) : null;
    }
 
-   public static Identifier bySeparator(String var0, char var1) {
-      int var2 = var0.indexOf(var1);
-      if (var2 >= 0) {
-         String var3 = var0.substring(var2 + 1);
-         if (var2 != 0) {
-            String var4 = var0.substring(0, var2);
-            return createUntrusted(var4, var3);
+   public static Identifier bySeparator(final String identifier, final char separator) {
+      int separatorIndex = identifier.indexOf(separator);
+      if (separatorIndex >= 0) {
+         String path = identifier.substring(separatorIndex + 1);
+         if (separatorIndex != 0) {
+            String namespace = identifier.substring(0, separatorIndex);
+            return createUntrusted(namespace, path);
          } else {
-            return withDefaultNamespace(var3);
+            return withDefaultNamespace(path);
          }
       } else {
-         return withDefaultNamespace(var0);
+         return withDefaultNamespace(identifier);
       }
    }
 
-   public static @Nullable Identifier tryBySeparator(String var0, char var1) {
-      int var2 = var0.indexOf(var1);
-      if (var2 >= 0) {
-         String var3 = var0.substring(var2 + 1);
-         if (!isValidPath(var3)) {
+   public static @Nullable Identifier tryBySeparator(final String identifier, final char separator) {
+      int separatorIndex = identifier.indexOf(separator);
+      if (separatorIndex >= 0) {
+         String path = identifier.substring(separatorIndex + 1);
+         if (!isValidPath(path)) {
             return null;
-         } else if (var2 != 0) {
-            String var4 = var0.substring(0, var2);
-            return isValidNamespace(var4) ? new Identifier(var4, var3) : null;
+         } else if (separatorIndex != 0) {
+            String namespace = identifier.substring(0, separatorIndex);
+            return isValidNamespace(namespace) ? new Identifier(namespace, path) : null;
          } else {
-            return new Identifier("minecraft", var3);
+            return new Identifier("minecraft", path);
          }
       } else {
-         return isValidPath(var0) ? new Identifier("minecraft", var0) : null;
+         return isValidPath(identifier) ? new Identifier("minecraft", identifier) : null;
       }
    }
 
-   public static DataResult<Identifier> read(String var0) {
+   public static DataResult<Identifier> read(final String input) {
       try {
-         return DataResult.success(parse(var0));
-      } catch (IdentifierException var2) {
-         return DataResult.error(() -> "Not a valid resource location: " + var0 + " " + var2.getMessage());
+         return DataResult.success(parse(input));
+      } catch (IdentifierException e) {
+         return DataResult.error(() -> "Not a valid resource location: " + input + " " + e.getMessage());
       }
    }
 
@@ -106,34 +106,34 @@ public final class Identifier implements Comparable<Identifier> {
       return this.namespace;
    }
 
-   public Identifier withPath(String var1) {
-      return new Identifier(this.namespace, assertValidPath(this.namespace, var1));
+   public Identifier withPath(final String newPath) {
+      return new Identifier(this.namespace, assertValidPath(this.namespace, newPath));
    }
 
-   public Identifier withPath(UnaryOperator<String> var1) {
-      return this.withPath((String)var1.apply(this.path));
+   public Identifier withPath(final UnaryOperator<String> modifier) {
+      return this.withPath((String)modifier.apply(this.path));
    }
 
-   public Identifier withPrefix(String var1) {
-      return this.withPath(var1 + this.path);
+   public Identifier withPrefix(final String prefix) {
+      return this.withPath(prefix + this.path);
    }
 
-   public Identifier withSuffix(String var1) {
-      return this.withPath(this.path + var1);
+   public Identifier withSuffix(final String suffix) {
+      return this.withPath(this.path + suffix);
    }
 
    public String toString() {
       return this.namespace + ":" + this.path;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (!(var1 instanceof Identifier)) {
+      } else if (!(o instanceof Identifier)) {
          return false;
       } else {
-         Identifier var2 = (Identifier)var1;
-         return this.namespace.equals(var2.namespace) && this.path.equals(var2.path);
+         Identifier that = (Identifier)o;
+         return this.namespace.equals(that.namespace) && this.path.equals(that.path);
       }
    }
 
@@ -141,13 +141,13 @@ public final class Identifier implements Comparable<Identifier> {
       return 31 * this.namespace.hashCode() + this.path.hashCode();
    }
 
-   public int compareTo(Identifier var1) {
-      int var2 = this.path.compareTo(var1.path);
-      if (var2 == 0) {
-         var2 = this.namespace.compareTo(var1.namespace);
+   public int compareTo(final Identifier o) {
+      int result = this.path.compareTo(o.path);
+      if (result == 0) {
+         result = this.namespace.compareTo(o.namespace);
       }
 
-      return var2;
+      return result;
    }
 
    public String toDebugFileName() {
@@ -166,58 +166,58 @@ public final class Identifier implements Comparable<Identifier> {
       return this.namespace.equals("minecraft") ? this.path : this.toString();
    }
 
-   public String toLanguageKey(String var1) {
-      return var1 + "." + this.toLanguageKey();
+   public String toLanguageKey(final String prefix) {
+      return prefix + "." + this.toLanguageKey();
    }
 
-   public String toLanguageKey(String var1, String var2) {
-      return var1 + "." + this.toLanguageKey() + "." + var2;
+   public String toLanguageKey(final String prefix, final String suffix) {
+      return prefix + "." + this.toLanguageKey() + "." + suffix;
    }
 
-   private static String readGreedy(StringReader var0) {
-      int var1 = var0.getCursor();
+   private static String readGreedy(final StringReader reader) {
+      int start = reader.getCursor();
 
-      while(var0.canRead() && isAllowedInIdentifier(var0.peek())) {
-         var0.skip();
+      while(reader.canRead() && isAllowedInIdentifier(reader.peek())) {
+         reader.skip();
       }
 
-      return var0.getString().substring(var1, var0.getCursor());
+      return reader.getString().substring(start, reader.getCursor());
    }
 
-   public static Identifier read(StringReader var0) throws CommandSyntaxException {
-      int var1 = var0.getCursor();
-      String var2 = readGreedy(var0);
+   public static Identifier read(final StringReader reader) throws CommandSyntaxException {
+      int start = reader.getCursor();
+      String raw = readGreedy(reader);
 
       try {
-         return parse(var2);
+         return parse(raw);
       } catch (IdentifierException var4) {
-         var0.setCursor(var1);
-         throw ERROR_INVALID.createWithContext(var0);
+         reader.setCursor(start);
+         throw ERROR_INVALID.createWithContext(reader);
       }
    }
 
-   public static Identifier readNonEmpty(StringReader var0) throws CommandSyntaxException {
-      int var1 = var0.getCursor();
-      String var2 = readGreedy(var0);
-      if (var2.isEmpty()) {
-         throw ERROR_INVALID.createWithContext(var0);
+   public static Identifier readNonEmpty(final StringReader reader) throws CommandSyntaxException {
+      int start = reader.getCursor();
+      String raw = readGreedy(reader);
+      if (raw.isEmpty()) {
+         throw ERROR_INVALID.createWithContext(reader);
       } else {
          try {
-            return parse(var2);
+            return parse(raw);
          } catch (IdentifierException var4) {
-            var0.setCursor(var1);
-            throw ERROR_INVALID.createWithContext(var0);
+            reader.setCursor(start);
+            throw ERROR_INVALID.createWithContext(reader);
          }
       }
    }
 
-   public static boolean isAllowedInIdentifier(char var0) {
-      return var0 >= '0' && var0 <= '9' || var0 >= 'a' && var0 <= 'z' || var0 == '_' || var0 == ':' || var0 == '/' || var0 == '.' || var0 == '-';
+   public static boolean isAllowedInIdentifier(final char c) {
+      return c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c == '_' || c == ':' || c == '/' || c == '.' || c == '-';
    }
 
-   public static boolean isValidPath(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
-         if (!validPathChar(var0.charAt(var1))) {
+   public static boolean isValidPath(final String path) {
+      for(int i = 0; i < path.length(); ++i) {
+         if (!validPathChar(path.charAt(i))) {
             return false;
          }
       }
@@ -225,9 +225,9 @@ public final class Identifier implements Comparable<Identifier> {
       return true;
    }
 
-   public static boolean isValidNamespace(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
-         if (!validNamespaceChar(var0.charAt(var1))) {
+   public static boolean isValidNamespace(final String namespace) {
+      for(int i = 0; i < namespace.length(); ++i) {
+         if (!validNamespaceChar(namespace.charAt(i))) {
             return false;
          }
       }
@@ -235,33 +235,28 @@ public final class Identifier implements Comparable<Identifier> {
       return true;
    }
 
-   private static String assertValidNamespace(String var0, String var1) {
-      if (!isValidNamespace(var0)) {
-         throw new IdentifierException("Non [a-z0-9_.-] character in namespace of location: " + var0 + ":" + var1);
+   private static String assertValidNamespace(final String namespace, final String path) {
+      if (!isValidNamespace(namespace)) {
+         throw new IdentifierException("Non [a-z0-9_.-] character in namespace of location: " + namespace + ":" + path);
       } else {
-         return var0;
+         return namespace;
       }
    }
 
-   public static boolean validPathChar(char var0) {
-      return var0 == '_' || var0 == '-' || var0 >= 'a' && var0 <= 'z' || var0 >= '0' && var0 <= '9' || var0 == '/' || var0 == '.';
+   public static boolean validPathChar(final char c) {
+      return c == '_' || c == '-' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '/' || c == '.';
    }
 
-   private static boolean validNamespaceChar(char var0) {
-      return var0 == '_' || var0 == '-' || var0 >= 'a' && var0 <= 'z' || var0 >= '0' && var0 <= '9' || var0 == '.';
+   private static boolean validNamespaceChar(final char c) {
+      return c == '_' || c == '-' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '.';
    }
 
-   private static String assertValidPath(String var0, String var1) {
-      if (!isValidPath(var1)) {
-         throw new IdentifierException("Non [a-z0-9/._-] character in path of location: " + var0 + ":" + var1);
+   private static String assertValidPath(final String namespace, final String path) {
+      if (!isValidPath(path)) {
+         throw new IdentifierException("Non [a-z0-9/._-] character in path of location: " + namespace + ":" + path);
       } else {
-         return var1;
+         return path;
       }
-   }
-
-   // $FF: synthetic method
-   public int compareTo(final Object var1) {
-      return this.compareTo((Identifier)var1);
    }
 
    static {

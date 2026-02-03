@@ -13,7 +13,7 @@ public class Clear implements RuleBlockEntityModifier {
       super();
    }
 
-   public CompoundTag apply(RandomSource var1, @Nullable CompoundTag var2) {
+   public CompoundTag apply(final RandomSource random, final @Nullable CompoundTag existingTag) {
       return new CompoundTag();
    }
 

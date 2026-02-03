@@ -22,26 +22,26 @@ public class Stopwatches extends SavedData {
       super();
    }
 
-   private static Stopwatches unpack(Map<Identifier, Long> var0) {
-      Stopwatches var1 = new Stopwatches();
-      long var2 = currentTime();
-      var0.forEach((var3, var4) -> var1.stopwatches.put(var3, new Stopwatch(var2, var4)));
-      return var1;
+   private static Stopwatches unpack(final Map<Identifier, Long> stopwatches) {
+      Stopwatches result = new Stopwatches();
+      long currentTime = currentTime();
+      stopwatches.forEach((id, accumulatedElapsedTime) -> result.stopwatches.put(id, new Stopwatch(currentTime, accumulatedElapsedTime)));
+      return result;
    }
 
    private Map<Identifier, Long> pack() {
-      long var1 = currentTime();
-      TreeMap var3 = new TreeMap();
-      this.stopwatches.forEach((var3x, var4) -> var3.put(var3x, var4.elapsedMilliseconds(var1)));
-      return var3;
+      long currentTime = currentTime();
+      Map<Identifier, Long> result = new TreeMap();
+      this.stopwatches.forEach((id, stopwatch) -> result.put(id, stopwatch.elapsedMilliseconds(currentTime)));
+      return result;
    }
 
-   public @Nullable Stopwatch get(Identifier var1) {
-      return (Stopwatch)this.stopwatches.get(var1);
+   public @Nullable Stopwatch get(final Identifier id) {
+      return (Stopwatch)this.stopwatches.get(id);
    }
 
-   public boolean add(Identifier var1, Stopwatch var2) {
-      if (this.stopwatches.putIfAbsent(var1, var2) == null) {
+   public boolean add(final Identifier id, final Stopwatch stopwatch) {
+      if (this.stopwatches.putIfAbsent(id, stopwatch) == null) {
          this.setDirty();
          return true;
       } else {
@@ -49,8 +49,8 @@ public class Stopwatches extends SavedData {
       }
    }
 
-   public boolean update(Identifier var1, UnaryOperator<Stopwatch> var2) {
-      if (this.stopwatches.computeIfPresent(var1, (var1x, var2x) -> (Stopwatch)var2.apply(var2x)) != null) {
+   public boolean update(final Identifier id, final UnaryOperator<Stopwatch> update) {
+      if (this.stopwatches.computeIfPresent(id, (key, value) -> (Stopwatch)update.apply(value)) != null) {
          this.setDirty();
          return true;
       } else {
@@ -58,13 +58,13 @@ public class Stopwatches extends SavedData {
       }
    }
 
-   public boolean remove(Identifier var1) {
-      boolean var2 = this.stopwatches.remove(var1) != null;
-      if (var2) {
+   public boolean remove(final Identifier id) {
+      boolean removed = this.stopwatches.remove(id) != null;
+      if (removed) {
          this.setDirty();
       }
 
-      return var2;
+      return removed;
    }
 
    public boolean isDirty() {

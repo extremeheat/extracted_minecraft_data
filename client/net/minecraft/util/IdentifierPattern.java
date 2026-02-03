@@ -8,20 +8,20 @@ import java.util.regex.Pattern;
 import net.minecraft.resources.Identifier;
 
 public class IdentifierPattern {
-   public static final Codec<IdentifierPattern> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.PATTERN.optionalFieldOf("namespace").forGetter((var0x) -> var0x.namespacePattern), ExtraCodecs.PATTERN.optionalFieldOf("path").forGetter((var0x) -> var0x.pathPattern)).apply(var0, IdentifierPattern::new));
+   public static final Codec<IdentifierPattern> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.PATTERN.optionalFieldOf("namespace").forGetter((o) -> o.namespacePattern), ExtraCodecs.PATTERN.optionalFieldOf("path").forGetter((o) -> o.pathPattern)).apply(i, IdentifierPattern::new));
    private final Optional<Pattern> namespacePattern;
    private final Predicate<String> namespacePredicate;
    private final Optional<Pattern> pathPattern;
    private final Predicate<String> pathPredicate;
    private final Predicate<Identifier> locationPredicate;
 
-   private IdentifierPattern(Optional<Pattern> var1, Optional<Pattern> var2) {
+   private IdentifierPattern(final Optional<Pattern> namespacePattern, final Optional<Pattern> pathPattern) {
       super();
-      this.namespacePattern = var1;
-      this.namespacePredicate = (Predicate)var1.map(Pattern::asPredicate).orElse((Predicate)(var0) -> true);
-      this.pathPattern = var2;
-      this.pathPredicate = (Predicate)var2.map(Pattern::asPredicate).orElse((Predicate)(var0) -> true);
-      this.locationPredicate = (var1x) -> this.namespacePredicate.test(var1x.getNamespace()) && this.pathPredicate.test(var1x.getPath());
+      this.namespacePattern = namespacePattern;
+      this.namespacePredicate = (Predicate)namespacePattern.map(Pattern::asPredicate).orElse((Predicate)(r) -> true);
+      this.pathPattern = pathPattern;
+      this.pathPredicate = (Predicate)pathPattern.map(Pattern::asPredicate).orElse((Predicate)(r) -> true);
+      this.locationPredicate = (location) -> this.namespacePredicate.test(location.getNamespace()) && this.pathPredicate.test(location.getPath());
    }
 
    public Predicate<String> namespacePredicate() {

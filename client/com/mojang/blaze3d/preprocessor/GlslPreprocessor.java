@@ -2,7 +2,6 @@ package com.mojang.blaze3d.preprocessor;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -23,124 +22,124 @@ public abstract class GlslPreprocessor {
       super();
    }
 
-   public List<String> process(String var1) {
-      Context var2 = new Context();
-      List var3 = this.processImports(var1, var2, "");
-      var3.set(0, this.setVersion((String)var3.get(0), var2.glslVersion));
-      return var3;
+   public List<String> process(final String source) {
+      Context context = new Context();
+      List<String> sourceList = this.processImports(source, context, "");
+      sourceList.set(0, this.setVersion((String)sourceList.get(0), context.glslVersion));
+      return sourceList;
    }
 
-   private List<String> processImports(String var1, Context var2, String var3) {
-      int var4 = var2.sourceId;
-      int var5 = 0;
-      String var6 = "";
-      ArrayList var7 = Lists.newArrayList();
-      Matcher var8 = REGEX_MOJ_IMPORT.matcher(var1);
+   private List<String> processImports(final String source, final Context context, final String parentPath) {
+      int thisSourceId = context.sourceId;
+      int previousMatchEnd = 0;
+      String lineMacro = "";
+      List<String> sourceList = Lists.newArrayList();
+      Matcher matcher = REGEX_MOJ_IMPORT.matcher(source);
 
-      while(var8.find()) {
-         if (!isDirectiveDisabled(var1, var8, var5)) {
-            String var9 = var8.group(2);
-            boolean var10 = var9 != null;
-            if (!var10) {
-               var9 = var8.group(3);
+      while(matcher.find()) {
+         if (!isDirectiveDisabled(source, matcher, previousMatchEnd)) {
+            String path = matcher.group(2);
+            boolean isRelative = path != null;
+            if (!isRelative) {
+               path = matcher.group(3);
             }
 
-            if (var9 != null) {
-               String var11 = var1.substring(var5, var8.start(1));
-               String var12 = var3 + var9;
-               String var13 = this.applyImport(var10, var12);
-               if (!Strings.isNullOrEmpty(var13)) {
-                  if (!StringUtil.endsWithNewLine(var13)) {
-                     var13 = var13 + System.lineSeparator();
+            if (path != null) {
+               String sourceBeforeImport = source.substring(previousMatchEnd, matcher.start(1));
+               String importPath = parentPath + path;
+               String contents = this.applyImport(isRelative, importPath);
+               if (!Strings.isNullOrEmpty(contents)) {
+                  if (!StringUtil.endsWithNewLine(contents)) {
+                     contents = contents + System.lineSeparator();
                   }
 
-                  ++var2.sourceId;
-                  int var14 = var2.sourceId;
-                  List var15 = this.processImports(var13, var2, var10 ? FileUtil.getFullResourcePath(var12) : "");
-                  var15.set(0, String.format(Locale.ROOT, "#line %d %d\n%s", 0, var14, this.processVersions((String)var15.get(0), var2)));
-                  if (!StringUtil.isBlank(var11)) {
-                     var7.add(var11);
+                  ++context.sourceId;
+                  int importSourceId = context.sourceId;
+                  List<String> importedSources = this.processImports(contents, context, isRelative ? FileUtil.getFullResourcePath(importPath) : "");
+                  importedSources.set(0, String.format(Locale.ROOT, "#line %d %d\n%s", 0, importSourceId, this.processVersions((String)importedSources.get(0), context)));
+                  if (!StringUtil.isBlank(sourceBeforeImport)) {
+                     sourceList.add(sourceBeforeImport);
                   }
 
-                  var7.addAll(var15);
+                  sourceList.addAll(importedSources);
                } else {
-                  String var17 = var10 ? String.format(Locale.ROOT, "/*#moj_import \"%s\"*/", var9) : String.format(Locale.ROOT, "/*#moj_import <%s>*/", var9);
-                  var7.add(var6 + var11 + var17);
+                  String disabledImport = isRelative ? String.format(Locale.ROOT, "/*#moj_import \"%s\"*/", path) : String.format(Locale.ROOT, "/*#moj_import <%s>*/", path);
+                  sourceList.add(lineMacro + sourceBeforeImport + disabledImport);
                }
 
-               int var18 = StringUtil.lineCount(var1.substring(0, var8.end(1)));
-               var6 = String.format(Locale.ROOT, "#line %d %d", var18, var4);
-               var5 = var8.end(1);
+               int lineCount = StringUtil.lineCount(source.substring(0, matcher.end(1)));
+               lineMacro = String.format(Locale.ROOT, "#line %d %d", lineCount, thisSourceId);
+               previousMatchEnd = matcher.end(1);
             }
          }
       }
 
-      String var16 = var1.substring(var5);
-      if (!StringUtil.isBlank(var16)) {
-         var7.add(var6 + var16);
+      String remaining = source.substring(previousMatchEnd);
+      if (!StringUtil.isBlank(remaining)) {
+         sourceList.add(lineMacro + remaining);
       }
 
-      return var7;
+      return sourceList;
    }
 
-   private String processVersions(String var1, Context var2) {
-      Matcher var3 = REGEX_VERSION.matcher(var1);
-      if (var3.find() && isDirectiveEnabled(var1, var3)) {
-         var2.glslVersion = Math.max(var2.glslVersion, Integer.parseInt(var3.group(2)));
-         String var10000 = var1.substring(0, var3.start(1));
-         return var10000 + "/*" + var1.substring(var3.start(1), var3.end(1)) + "*/" + var1.substring(var3.end(1));
+   private String processVersions(final String source, final Context context) {
+      Matcher matcher = REGEX_VERSION.matcher(source);
+      if (matcher.find() && isDirectiveEnabled(source, matcher)) {
+         context.glslVersion = Math.max(context.glslVersion, Integer.parseInt(matcher.group(2)));
+         String var10000 = source.substring(0, matcher.start(1));
+         return var10000 + "/*" + source.substring(matcher.start(1), matcher.end(1)) + "*/" + source.substring(matcher.end(1));
       } else {
-         return var1;
+         return source;
       }
    }
 
-   private String setVersion(String var1, int var2) {
-      Matcher var3 = REGEX_VERSION.matcher(var1);
-      if (var3.find() && isDirectiveEnabled(var1, var3)) {
-         String var10000 = var1.substring(0, var3.start(2));
-         return var10000 + Math.max(var2, Integer.parseInt(var3.group(2))) + var1.substring(var3.end(2));
+   private String setVersion(final String source, final int version) {
+      Matcher matcher = REGEX_VERSION.matcher(source);
+      if (matcher.find() && isDirectiveEnabled(source, matcher)) {
+         String var10000 = source.substring(0, matcher.start(2));
+         return var10000 + Math.max(version, Integer.parseInt(matcher.group(2))) + source.substring(matcher.end(2));
       } else {
-         return var1;
+         return source;
       }
    }
 
-   private static boolean isDirectiveEnabled(String var0, Matcher var1) {
-      return !isDirectiveDisabled(var0, var1, 0);
+   private static boolean isDirectiveEnabled(final String source, final Matcher matcher) {
+      return !isDirectiveDisabled(source, matcher, 0);
    }
 
-   private static boolean isDirectiveDisabled(String var0, Matcher var1, int var2) {
-      int var3 = var1.start() - var2;
-      if (var3 == 0) {
+   private static boolean isDirectiveDisabled(final String source, final Matcher matcher, final int start) {
+      int checkLength = matcher.start() - start;
+      if (checkLength == 0) {
          return false;
       } else {
-         Matcher var4 = REGEX_ENDS_WITH_WHITESPACE.matcher(var0.substring(var2, var1.start()));
-         if (!var4.find()) {
+         Matcher preceedingWhiteSpace = REGEX_ENDS_WITH_WHITESPACE.matcher(source.substring(start, matcher.start()));
+         if (!preceedingWhiteSpace.find()) {
             return true;
          } else {
-            int var5 = var4.end(1);
-            return var5 == var1.start();
+            int lineCommentEnd = preceedingWhiteSpace.end(1);
+            return lineCommentEnd == matcher.start();
          }
       }
    }
 
-   public abstract @Nullable String applyImport(boolean var1, String var2);
+   public abstract @Nullable String applyImport(boolean isRelative, String path);
 
-   public static String injectDefines(String var0, ShaderDefines var1) {
-      if (var1.isEmpty()) {
-         return var0;
+   public static String injectDefines(final String source, final ShaderDefines defines) {
+      if (defines.isEmpty()) {
+         return source;
       } else {
-         int var2 = var0.indexOf(10);
-         int var3 = var2 + 1;
-         String var10000 = var0.substring(0, var3);
-         return var10000 + var1.asSourceDirectives() + "#line 1 0\n" + var0.substring(var3);
+         int versionLineEnd = source.indexOf(10);
+         int injectIndex = versionLineEnd + 1;
+         String var10000 = source.substring(0, injectIndex);
+         return var10000 + defines.asSourceDirectives() + "#line 1 0\n" + source.substring(injectIndex);
       }
    }
 
-   static final class Context {
-      int glslVersion;
-      int sourceId;
+   private static final class Context {
+      private int glslVersion;
+      private int sourceId;
 
-      Context() {
+      private Context() {
          super();
       }
    }

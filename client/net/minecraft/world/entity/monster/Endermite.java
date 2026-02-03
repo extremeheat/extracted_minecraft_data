@@ -31,8 +31,8 @@ public class Endermite extends Monster {
    private static final int DEFAULT_LIFE = 0;
    private int life = 0;
 
-   public Endermite(EntityType<? extends Endermite> var1, Level var2) {
-      super(var1, var2);
+   public Endermite(final EntityType<? extends Endermite> type, final Level level) {
+      super(type, level);
       this.xpReward = 3;
    }
 
@@ -59,7 +59,7 @@ public class Endermite extends Monster {
       return SoundEvents.ENDERMITE_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.ENDERMITE_HURT;
    }
 
@@ -67,18 +67,18 @@ public class Endermite extends Monster {
       return SoundEvents.ENDERMITE_DEATH;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(SoundEvents.ENDERMITE_STEP, 0.15F, 1.0F);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.life = var1.getIntOr("Lifetime", 0);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.life = input.getIntOr("Lifetime", 0);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("Lifetime", this.life);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("Lifetime", this.life);
    }
 
    public void tick() {
@@ -86,15 +86,15 @@ public class Endermite extends Monster {
       super.tick();
    }
 
-   public void setYBodyRot(float var1) {
-      this.setYRot(var1);
-      super.setYBodyRot(var1);
+   public void setYBodyRot(final float yBodyRot) {
+      this.setYRot(yBodyRot);
+      super.setYBodyRot(yBodyRot);
    }
 
    public void aiStep() {
       super.aiStep();
       if (this.level().isClientSide()) {
-         for(int var1 = 0; var1 < 2; ++var1) {
+         for(int i = 0; i < 2; ++i) {
             this.level().addParticle(ParticleTypes.PORTAL, this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), (this.random.nextDouble() - 0.5) * 2.0, -this.random.nextDouble(), (this.random.nextDouble() - 0.5) * 2.0);
          }
       } else {
@@ -109,14 +109,14 @@ public class Endermite extends Monster {
 
    }
 
-   public static boolean checkEndermiteSpawnRules(EntityType<Endermite> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      if (!checkAnyLightMonsterSpawnRules(var0, var1, var2, var3, var4)) {
+   public static boolean checkEndermiteSpawnRules(final EntityType<Endermite> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      if (!checkAnyLightMonsterSpawnRules(type, level, spawnReason, pos, random)) {
          return false;
-      } else if (EntitySpawnReason.isSpawner(var2)) {
+      } else if (EntitySpawnReason.isSpawner(spawnReason)) {
          return true;
       } else {
-         Player var5 = var1.getNearestPlayer((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, 5.0, true);
-         return var5 == null;
+         Player nearestPlayer = level.getNearestPlayer((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, 5.0, true);
+         return nearestPlayer == null;
       }
    }
 }

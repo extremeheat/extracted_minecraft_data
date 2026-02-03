@@ -12,23 +12,23 @@ import net.minecraft.world.level.block.Blocks;
 import org.joml.Quaternionfc;
 
 public class IronGolemFlowerLayer extends RenderLayer<IronGolemRenderState, IronGolemModel> {
-   public IronGolemFlowerLayer(RenderLayerParent<IronGolemRenderState, IronGolemModel> var1) {
-      super(var1);
+   public IronGolemFlowerLayer(final RenderLayerParent<IronGolemRenderState, IronGolemModel> renderer) {
+      super(renderer);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, IronGolemRenderState var4, float var5, float var6) {
-      if (var4.offerFlowerTick != 0) {
-         var1.pushPose();
-         ModelPart var7 = ((IronGolemModel)this.getParentModel()).getFlowerHoldingArm();
-         var7.translateAndRotate(var1);
-         var1.translate(-1.1875F, 1.0625F, -0.9375F);
-         var1.translate(0.5F, 0.5F, 0.5F);
-         float var8 = 0.5F;
-         var1.scale(0.5F, 0.5F, 0.5F);
-         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F));
-         var1.translate(-0.5F, -0.5F, -0.5F);
-         var2.submitBlock(var1, Blocks.POPPY.defaultBlockState(), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
-         var1.popPose();
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final IronGolemRenderState state, final float yRot, final float xRot) {
+      if (state.offerFlowerTick != 0) {
+         poseStack.pushPose();
+         ModelPart arm = ((IronGolemModel)this.getParentModel()).getFlowerHoldingArm();
+         arm.translateAndRotate(poseStack);
+         poseStack.translate(-1.1875F, 1.0625F, -0.9375F);
+         poseStack.translate(0.5F, 0.5F, 0.5F);
+         float s = 0.5F;
+         poseStack.scale(0.5F, 0.5F, 0.5F);
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F));
+         poseStack.translate(-0.5F, -0.5F, -0.5F);
+         submitNodeCollector.submitBlock(poseStack, Blocks.POPPY.defaultBlockState(), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+         poseStack.popPose();
       }
    }
 }

@@ -1,9 +1,7 @@
 package com.mojang.blaze3d.buffers;
 
-import com.mojang.blaze3d.DontObfuscate;
 import net.minecraft.util.Mth;
 
-@DontObfuscate
 public class Std140SizeCalculator {
    private int size;
 
@@ -15,8 +13,8 @@ public class Std140SizeCalculator {
       return this.size;
    }
 
-   public Std140SizeCalculator align(int var1) {
-      this.size = Mth.roundToward(this.size, var1);
+   public Std140SizeCalculator align(final int alignment) {
+      this.size = Mth.roundToward(this.size, alignment);
       return this;
    }
 

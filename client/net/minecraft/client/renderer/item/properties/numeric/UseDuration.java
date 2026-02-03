@@ -10,17 +10,16 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public record UseDuration(boolean remaining) implements RangeSelectItemModelProperty {
-   public static final MapCodec<UseDuration> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("remaining", false).forGetter(UseDuration::remaining)).apply(var0, UseDuration::new));
+   public static final MapCodec<UseDuration> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.optionalFieldOf("remaining", false).forGetter(UseDuration::remaining)).apply(i, UseDuration::new));
 
-   public UseDuration(boolean var1) {
+   public UseDuration {
       super();
-      this.remaining = var1;
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
-      LivingEntity var5 = var3 == null ? null : var3.asLivingEntity();
-      if (var5 != null && var5.getUseItem() == var1) {
-         return this.remaining ? (float)var5.getUseItemRemainingTicks() : (float)useDuration(var1, var5);
+   public float get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      LivingEntity entity = owner == null ? null : owner.asLivingEntity();
+      if (entity != null && entity.getUseItem() == itemStack) {
+         return this.remaining ? (float)entity.getUseItemRemainingTicks() : (float)useDuration(itemStack, entity);
       } else {
          return 0.0F;
       }
@@ -30,7 +29,7 @@ public record UseDuration(boolean remaining) implements RangeSelectItemModelProp
       return MAP_CODEC;
    }
 
-   public static int useDuration(ItemStack var0, LivingEntity var1) {
-      return var0.getUseDuration(var1) - var1.getUseItemRemainingTicks();
+   public static int useDuration(final ItemStack itemStack, final LivingEntity owner) {
+      return itemStack.getUseDuration(owner) - owner.getUseItemRemainingTicks();
    }
 }

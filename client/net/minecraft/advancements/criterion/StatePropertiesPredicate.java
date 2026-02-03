@@ -23,14 +23,13 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
    public static final Codec<StatePropertiesPredicate> CODEC;
    public static final StreamCodec<ByteBuf, StatePropertiesPredicate> STREAM_CODEC;
 
-   public StatePropertiesPredicate(List<PropertyMatcher> var1) {
+   public StatePropertiesPredicate {
       super();
-      this.properties = var1;
    }
 
-   public <S extends StateHolder<?, S>> boolean matches(StateDefinition<?, S> var1, S var2) {
-      for(PropertyMatcher var4 : this.properties) {
-         if (!var4.match(var1, var2)) {
+   public <S extends StateHolder<?, S>> boolean matches(final StateDefinition<?, S> definition, final S state) {
+      for(PropertyMatcher matcher : this.properties) {
+         if (!matcher.match(definition, state)) {
             return false;
          }
       }
@@ -38,19 +37,19 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
       return true;
    }
 
-   public boolean matches(BlockState var1) {
-      return this.matches(var1.getBlock().getStateDefinition(), var1);
+   public boolean matches(final BlockState state) {
+      return this.matches(state.getBlock().getStateDefinition(), state);
    }
 
-   public boolean matches(FluidState var1) {
-      return this.matches(var1.getType().getStateDefinition(), var1);
+   public boolean matches(final FluidState state) {
+      return this.matches(state.getType().getStateDefinition(), state);
    }
 
-   public Optional<String> checkState(StateDefinition<?, ?> var1) {
-      for(PropertyMatcher var3 : this.properties) {
-         Optional var4 = var3.checkState(var1);
-         if (var4.isPresent()) {
-            return var4;
+   public Optional<String> checkState(final StateDefinition<?, ?> states) {
+      for(PropertyMatcher property : this.properties) {
+         Optional<String> unknownProperty = property.checkState(states);
+         if (unknownProperty.isPresent()) {
+            return unknownProperty;
          }
       }
 
@@ -58,28 +57,26 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
    }
 
    static {
-      PROPERTIES_CODEC = Codec.unboundedMap(Codec.STRING, StatePropertiesPredicate.ValueMatcher.CODEC).xmap((var0) -> var0.entrySet().stream().map((var0x) -> new PropertyMatcher((String)var0x.getKey(), (ValueMatcher)var0x.getValue())).toList(), (var0) -> (Map)var0.stream().collect(Collectors.toMap(PropertyMatcher::name, PropertyMatcher::valueMatcher)));
+      PROPERTIES_CODEC = Codec.unboundedMap(Codec.STRING, StatePropertiesPredicate.ValueMatcher.CODEC).xmap((map) -> map.entrySet().stream().map((entry) -> new PropertyMatcher((String)entry.getKey(), (ValueMatcher)entry.getValue())).toList(), (properties) -> (Map)properties.stream().collect(Collectors.toMap(PropertyMatcher::name, PropertyMatcher::valueMatcher)));
       CODEC = PROPERTIES_CODEC.xmap(StatePropertiesPredicate::new, StatePropertiesPredicate::properties);
       STREAM_CODEC = StatePropertiesPredicate.PropertyMatcher.STREAM_CODEC.apply(ByteBufCodecs.list()).map(StatePropertiesPredicate::new, StatePropertiesPredicate::properties);
    }
 
-   static record PropertyMatcher(String name, ValueMatcher valueMatcher) {
+   private static record PropertyMatcher(String name, ValueMatcher valueMatcher) {
       public static final StreamCodec<ByteBuf, PropertyMatcher> STREAM_CODEC;
 
-      PropertyMatcher(String var1, ValueMatcher var2) {
+      private PropertyMatcher {
          super();
-         this.name = var1;
-         this.valueMatcher = var2;
       }
 
-      public <S extends StateHolder<?, S>> boolean match(StateDefinition<?, S> var1, S var2) {
-         Property var3 = var1.getProperty(this.name);
-         return var3 != null && this.valueMatcher.match(var2, var3);
+      public <S extends StateHolder<?, S>> boolean match(final StateDefinition<?, S> definition, final S state) {
+         Property<?> property = definition.getProperty(this.name);
+         return property != null && this.valueMatcher.match(state, property);
       }
 
-      public Optional<String> checkState(StateDefinition<?, ?> var1) {
-         Property var2 = var1.getProperty(this.name);
-         return var2 != null ? Optional.empty() : Optional.of(this.name);
+      public Optional<String> checkState(final StateDefinition<?, ?> states) {
+         Property<?> property = states.getProperty(this.name);
+         return property != null ? Optional.empty() : Optional.of(this.name);
       }
 
       static {
@@ -87,42 +84,41 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
       }
    }
 
-   interface ValueMatcher {
-      Codec<ValueMatcher> CODEC = Codec.either(StatePropertiesPredicate.ExactMatcher.CODEC, StatePropertiesPredicate.RangedMatcher.CODEC).xmap(Either::unwrap, (var0) -> {
-         if (var0 instanceof ExactMatcher var1) {
-            return Either.left(var1);
-         } else if (var0 instanceof RangedMatcher var2) {
-            return Either.right(var2);
+   private interface ValueMatcher {
+      Codec<ValueMatcher> CODEC = Codec.either(StatePropertiesPredicate.ExactMatcher.CODEC, StatePropertiesPredicate.RangedMatcher.CODEC).xmap(Either::unwrap, (matcher) -> {
+         if (matcher instanceof ExactMatcher exact) {
+            return Either.left(exact);
+         } else if (matcher instanceof RangedMatcher ranged) {
+            return Either.right(ranged);
          } else {
             throw new UnsupportedOperationException();
          }
       });
-      StreamCodec<ByteBuf, ValueMatcher> STREAM_CODEC = ByteBufCodecs.either(StatePropertiesPredicate.ExactMatcher.STREAM_CODEC, StatePropertiesPredicate.RangedMatcher.STREAM_CODEC).map(Either::unwrap, (var0) -> {
-         if (var0 instanceof ExactMatcher var1) {
-            return Either.left(var1);
-         } else if (var0 instanceof RangedMatcher var2) {
-            return Either.right(var2);
+      StreamCodec<ByteBuf, ValueMatcher> STREAM_CODEC = ByteBufCodecs.either(StatePropertiesPredicate.ExactMatcher.STREAM_CODEC, StatePropertiesPredicate.RangedMatcher.STREAM_CODEC).map(Either::unwrap, (matcher) -> {
+         if (matcher instanceof ExactMatcher exact) {
+            return Either.left(exact);
+         } else if (matcher instanceof RangedMatcher ranged) {
+            return Either.right(ranged);
          } else {
             throw new UnsupportedOperationException();
          }
       });
 
-      <T extends Comparable<T>> boolean match(StateHolder<?, ?> var1, Property<T> var2);
+      <T extends Comparable<T>> boolean match(StateHolder<?, ?> state, Property<T> property);
    }
 
-   static record ExactMatcher(String value) implements ValueMatcher {
+   private static record ExactMatcher(String value) implements ValueMatcher {
       public static final Codec<ExactMatcher> CODEC;
       public static final StreamCodec<ByteBuf, ExactMatcher> STREAM_CODEC;
 
-      ExactMatcher(String var1) {
+      private ExactMatcher {
          super();
-         this.value = var1;
       }
 
-      public <T extends Comparable<T>> boolean match(StateHolder<?, ?> var1, Property<T> var2) {
-         Comparable var3 = var1.getValue(var2);
-         Optional var4 = var2.getValue(this.value);
-         return var4.isPresent() && var3.compareTo((Comparable)var4.get()) == 0;
+      public <T extends Comparable<T>> boolean match(final StateHolder<?, ?> state, final Property<T> property) {
+         T actualValue = state.getValue(property);
+         Optional<T> typedExpected = property.getValue(this.value);
+         return typedExpected.isPresent() && actualValue.compareTo((Comparable)typedExpected.get()) == 0;
       }
 
       static {
@@ -131,28 +127,26 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
       }
    }
 
-   static record RangedMatcher(Optional<String> minValue, Optional<String> maxValue) implements ValueMatcher {
-      public static final Codec<RangedMatcher> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.optionalFieldOf("min").forGetter(RangedMatcher::minValue), Codec.STRING.optionalFieldOf("max").forGetter(RangedMatcher::maxValue)).apply(var0, RangedMatcher::new));
+   private static record RangedMatcher(Optional<String> minValue, Optional<String> maxValue) implements ValueMatcher {
+      public static final Codec<RangedMatcher> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.STRING.optionalFieldOf("min").forGetter(RangedMatcher::minValue), Codec.STRING.optionalFieldOf("max").forGetter(RangedMatcher::maxValue)).apply(i, RangedMatcher::new));
       public static final StreamCodec<ByteBuf, RangedMatcher> STREAM_CODEC;
 
-      private RangedMatcher(Optional<String> var1, Optional<String> var2) {
+      private RangedMatcher {
          super();
-         this.minValue = var1;
-         this.maxValue = var2;
       }
 
-      public <T extends Comparable<T>> boolean match(StateHolder<?, ?> var1, Property<T> var2) {
-         Comparable var3 = var1.getValue(var2);
+      public <T extends Comparable<T>> boolean match(final StateHolder<?, ?> state, final Property<T> property) {
+         T value = state.getValue(property);
          if (this.minValue.isPresent()) {
-            Optional var4 = var2.getValue((String)this.minValue.get());
-            if (var4.isEmpty() || var3.compareTo((Comparable)var4.get()) < 0) {
+            Optional<T> typedMinValue = property.getValue((String)this.minValue.get());
+            if (typedMinValue.isEmpty() || value.compareTo((Comparable)typedMinValue.get()) < 0) {
                return false;
             }
          }
 
          if (this.maxValue.isPresent()) {
-            Optional var5 = var2.getValue((String)this.maxValue.get());
-            if (var5.isEmpty() || var3.compareTo((Comparable)var5.get()) > 0) {
+            Optional<T> typedMaxValue = property.getValue((String)this.maxValue.get());
+            if (typedMaxValue.isEmpty() || value.compareTo((Comparable)typedMaxValue.get()) > 0) {
                return false;
             }
          }
@@ -176,21 +170,21 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
          return new Builder();
       }
 
-      public Builder hasProperty(Property<?> var1, String var2) {
-         this.matchers.add(new PropertyMatcher(var1.getName(), new ExactMatcher(var2)));
+      public Builder hasProperty(final Property<?> property, final String value) {
+         this.matchers.add(new PropertyMatcher(property.getName(), new ExactMatcher(value)));
          return this;
       }
 
-      public Builder hasProperty(Property<Integer> var1, int var2) {
-         return this.hasProperty(var1, Integer.toString(var2));
+      public Builder hasProperty(final Property<Integer> property, final int value) {
+         return this.hasProperty(property, Integer.toString(value));
       }
 
-      public Builder hasProperty(Property<Boolean> var1, boolean var2) {
-         return this.hasProperty(var1, Boolean.toString(var2));
+      public Builder hasProperty(final Property<Boolean> property, final boolean value) {
+         return this.hasProperty(property, Boolean.toString(value));
       }
 
-      public <T extends Comparable<T> & StringRepresentable> Builder hasProperty(Property<T> var1, T var2) {
-         return this.hasProperty(var1, ((StringRepresentable)var2).getSerializedName());
+      public <T extends Comparable<T> & StringRepresentable> Builder hasProperty(final Property<T> property, final T value) {
+         return this.hasProperty(property, ((StringRepresentable)value).getSerializedName());
       }
 
       public Optional<StatePropertiesPredicate> build() {

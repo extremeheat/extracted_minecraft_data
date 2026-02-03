@@ -7,22 +7,22 @@ import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
 
 public interface DebugValueAccess {
-   <T> void forEachChunk(DebugSubscription<T> var1, BiConsumer<ChunkPos, T> var2);
+   <T> void forEachChunk(DebugSubscription<T> subscription, BiConsumer<ChunkPos, T> consumer);
 
-   <T> @Nullable T getChunkValue(DebugSubscription<T> var1, ChunkPos var2);
+   <T> @Nullable T getChunkValue(DebugSubscription<T> subscription, ChunkPos chunkPos);
 
-   <T> void forEachBlock(DebugSubscription<T> var1, BiConsumer<BlockPos, T> var2);
+   <T> void forEachBlock(DebugSubscription<T> subscription, BiConsumer<BlockPos, T> consumer);
 
-   <T> @Nullable T getBlockValue(DebugSubscription<T> var1, BlockPos var2);
+   <T> @Nullable T getBlockValue(DebugSubscription<T> subscription, BlockPos blockPos);
 
-   <T> void forEachEntity(DebugSubscription<T> var1, BiConsumer<Entity, T> var2);
+   <T> void forEachEntity(DebugSubscription<T> subscription, BiConsumer<Entity, T> consumer);
 
-   <T> @Nullable T getEntityValue(DebugSubscription<T> var1, Entity var2);
+   <T> @Nullable T getEntityValue(DebugSubscription<T> subscription, Entity entity);
 
-   <T> void forEachEvent(DebugSubscription<T> var1, EventVisitor<T> var2);
+   <T> void forEachEvent(DebugSubscription<T> subscription, EventVisitor<T> visitor);
 
    @FunctionalInterface
    public interface EventVisitor<T> {
-      void accept(T var1, int var2, int var3);
+      void accept(T value, int remainingTicks, int totalLifetime);
    }
 }

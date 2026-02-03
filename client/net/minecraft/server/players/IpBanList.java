@@ -7,45 +7,45 @@ import net.minecraft.server.notifications.NotificationService;
 import org.jspecify.annotations.Nullable;
 
 public class IpBanList extends StoredUserList<String, IpBanListEntry> {
-   public IpBanList(File var1, NotificationService var2) {
-      super(var1, var2);
+   public IpBanList(final File file, final NotificationService notificationService) {
+      super(file, notificationService);
    }
 
-   protected StoredUserEntry<String> createEntry(JsonObject var1) {
-      return new IpBanListEntry(var1);
+   protected StoredUserEntry<String> createEntry(final JsonObject object) {
+      return new IpBanListEntry(object);
    }
 
-   public boolean isBanned(SocketAddress var1) {
-      String var2 = this.getIpFromAddress(var1);
-      return this.contains(var2);
+   public boolean isBanned(final SocketAddress address) {
+      String ip = this.getIpFromAddress(address);
+      return this.contains(ip);
    }
 
-   public boolean isBanned(String var1) {
-      return this.contains(var1);
+   public boolean isBanned(final String ip) {
+      return this.contains(ip);
    }
 
-   public @Nullable IpBanListEntry get(SocketAddress var1) {
-      String var2 = this.getIpFromAddress(var1);
-      return (IpBanListEntry)this.get(var2);
+   public @Nullable IpBanListEntry get(final SocketAddress address) {
+      String ip = this.getIpFromAddress(address);
+      return (IpBanListEntry)this.get(ip);
    }
 
-   private String getIpFromAddress(SocketAddress var1) {
-      String var2 = var1.toString();
-      if (var2.contains("/")) {
-         var2 = var2.substring(var2.indexOf(47) + 1);
+   private String getIpFromAddress(final SocketAddress address) {
+      String ip = address.toString();
+      if (ip.contains("/")) {
+         ip = ip.substring(ip.indexOf(47) + 1);
       }
 
-      if (var2.contains(":")) {
-         var2 = var2.substring(0, var2.indexOf(58));
+      if (ip.contains(":")) {
+         ip = ip.substring(0, ip.indexOf(58));
       }
 
-      return var2;
+      return ip;
    }
 
-   public boolean add(IpBanListEntry var1) {
-      if (super.add(var1)) {
-         if (var1.getUser() != null) {
-            this.notificationService.ipBanned(var1);
+   public boolean add(final IpBanListEntry infos) {
+      if (super.add(infos)) {
+         if (infos.getUser() != null) {
+            this.notificationService.ipBanned(infos);
          }
 
          return true;
@@ -54,9 +54,9 @@ public class IpBanList extends StoredUserList<String, IpBanListEntry> {
       }
    }
 
-   public boolean remove(String var1) {
-      if (super.remove(var1)) {
-         this.notificationService.ipUnbanned(var1);
+   public boolean remove(final String ip) {
+      if (super.remove(ip)) {
+         this.notificationService.ipUnbanned(ip);
          return true;
       } else {
          return false;
@@ -64,17 +64,12 @@ public class IpBanList extends StoredUserList<String, IpBanListEntry> {
    }
 
    public void clear() {
-      for(IpBanListEntry var2 : this.getEntries()) {
-         if (var2.getUser() != null) {
-            this.notificationService.ipUnbanned((String)var2.getUser());
+      for(IpBanListEntry user : this.getEntries()) {
+         if (user.getUser() != null) {
+            this.notificationService.ipUnbanned((String)user.getUser());
          }
       }
 
       super.clear();
-   }
-
-   // $FF: synthetic method
-   public boolean remove(final Object var1) {
-      return this.remove((String)var1);
    }
 }

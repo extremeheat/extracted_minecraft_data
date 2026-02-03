@@ -12,16 +12,14 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public record RandomPoolAlias(ResourceKey<StructureTemplatePool> alias, WeightedList<ResourceKey<StructureTemplatePool>> targets) implements PoolAliasBinding {
-   static MapCodec<RandomPoolAlias> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(RandomPoolAlias::alias), WeightedList.nonEmptyCodec(ResourceKey.codec(Registries.TEMPLATE_POOL)).fieldOf("targets").forGetter(RandomPoolAlias::targets)).apply(var0, RandomPoolAlias::new));
+   static final MapCodec<RandomPoolAlias> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(RandomPoolAlias::alias), WeightedList.nonEmptyCodec(ResourceKey.codec(Registries.TEMPLATE_POOL)).fieldOf("targets").forGetter(RandomPoolAlias::targets)).apply(i, RandomPoolAlias::new));
 
-   public RandomPoolAlias(ResourceKey<StructureTemplatePool> var1, WeightedList<ResourceKey<StructureTemplatePool>> var2) {
+   public RandomPoolAlias {
       super();
-      this.alias = var1;
-      this.targets = var2;
    }
 
-   public void forEachResolved(RandomSource var1, BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> var2) {
-      this.targets.getRandom(var1).ifPresent((var2x) -> var2.accept(this.alias, var2x));
+   public void forEachResolved(final RandomSource random, final BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> aliasAndTargetConsumer) {
+      this.targets.getRandom(random).ifPresent((target) -> aliasAndTargetConsumer.accept(this.alias, target));
    }
 
    public Stream<ResourceKey<StructureTemplatePool>> allTargets() {

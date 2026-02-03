@@ -13,20 +13,20 @@ public class StartCelebratingIfTargetDead {
       super();
    }
 
-   public static BehaviorControl<LivingEntity> create(int var0, BiPredicate<LivingEntity, LivingEntity> var1) {
-      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.present(MemoryModuleType.ATTACK_TARGET), var2.registered(MemoryModuleType.ANGRY_AT), var2.absent(MemoryModuleType.CELEBRATE_LOCATION), var2.registered(MemoryModuleType.DANCING)).apply(var2, (var3, var4, var5, var6) -> (var7, var8, var9) -> {
-               LivingEntity var11 = (LivingEntity)var2.get(var3);
-               if (!var11.isDeadOrDying()) {
+   public static BehaviorControl<LivingEntity> create(final int celebrateDuration, final BiPredicate<LivingEntity, LivingEntity> dancePredicate) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.ATTACK_TARGET), i.registered(MemoryModuleType.ANGRY_AT), i.absent(MemoryModuleType.CELEBRATE_LOCATION), i.registered(MemoryModuleType.DANCING)).apply(i, (attackTarget, angryAt, celebrateAt, dancing) -> (level, body, timestamp) -> {
+               LivingEntity target = (LivingEntity)i.get(attackTarget);
+               if (!target.isDeadOrDying()) {
                   return false;
                } else {
-                  if (var1.test(var8, var11)) {
-                     var6.setWithExpiry(true, (long)var0);
+                  if (dancePredicate.test(body, target)) {
+                     dancing.setWithExpiry(true, (long)celebrateDuration);
                   }
 
-                  var5.setWithExpiry(var11.blockPosition(), (long)var0);
-                  if (var11.getType() != EntityType.PLAYER || (Boolean)var7.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
-                     var3.erase();
-                     var4.erase();
+                  celebrateAt.setWithExpiry(target.blockPosition(), (long)celebrateDuration);
+                  if (!target.is(EntityType.PLAYER) || (Boolean)level.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
+                     attackTarget.erase();
+                     angryAt.erase();
                   }
 
                   return true;

@@ -12,45 +12,43 @@ public record ClientboundSetEntityDataPacket(int id, List<SynchedEntityData.Data
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetEntityDataPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundSetEntityDataPacket>codec(ClientboundSetEntityDataPacket::write, ClientboundSetEntityDataPacket::new);
    public static final int EOF_MARKER = 255;
 
-   private ClientboundSetEntityDataPacket(RegistryFriendlyByteBuf var1) {
-      this(var1.readVarInt(), unpack(var1));
+   private ClientboundSetEntityDataPacket(final RegistryFriendlyByteBuf input) {
+      this(input.readVarInt(), unpack(input));
    }
 
-   public ClientboundSetEntityDataPacket(int var1, List<SynchedEntityData.DataValue<?>> var2) {
+   public ClientboundSetEntityDataPacket {
       super();
-      this.id = var1;
-      this.packedItems = var2;
    }
 
-   private static void pack(List<SynchedEntityData.DataValue<?>> var0, RegistryFriendlyByteBuf var1) {
-      for(SynchedEntityData.DataValue var3 : var0) {
-         var3.write(var1);
+   private static void pack(final List<SynchedEntityData.DataValue<?>> items, final RegistryFriendlyByteBuf output) {
+      for(SynchedEntityData.DataValue<?> item : items) {
+         item.write(output);
       }
 
-      var1.writeByte(255);
+      output.writeByte(255);
    }
 
-   private static List<SynchedEntityData.DataValue<?>> unpack(RegistryFriendlyByteBuf var0) {
-      ArrayList var1 = new ArrayList();
+   private static List<SynchedEntityData.DataValue<?>> unpack(final RegistryFriendlyByteBuf input) {
+      List<SynchedEntityData.DataValue<?>> result = new ArrayList();
 
-      short var2;
-      while((var2 = var0.readUnsignedByte()) != 255) {
-         var1.add(SynchedEntityData.DataValue.read(var0, var2));
+      int id;
+      while((id = input.readUnsignedByte()) != 255) {
+         result.add(SynchedEntityData.DataValue.read(input, id));
       }
 
-      return var1;
+      return result;
    }
 
-   private void write(RegistryFriendlyByteBuf var1) {
-      var1.writeVarInt(this.id);
-      pack(this.packedItems, var1);
+   private void write(final RegistryFriendlyByteBuf output) {
+      output.writeVarInt(this.id);
+      pack(this.packedItems, output);
    }
 
    public PacketType<ClientboundSetEntityDataPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_ENTITY_DATA;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetEntityData(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetEntityData(this);
    }
 }

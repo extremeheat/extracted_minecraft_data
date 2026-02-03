@@ -1,7 +1,7 @@
 package net.minecraft.advancements;
 
-import net.minecraft.advancements.criterion.CriterionValidator;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 
 public interface CriterionTriggerInstance {
-   void validate(CriterionValidator var1);
+   void validate(ValidationContextSource validator);
 }

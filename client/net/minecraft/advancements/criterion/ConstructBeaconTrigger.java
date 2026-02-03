@@ -16,29 +16,27 @@ public class ConstructBeaconTrigger extends SimpleCriterionTrigger<TriggerInstan
       return ConstructBeaconTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, int var2) {
-      this.trigger(var1, (var1x) -> var1x.matches(var2));
+   public void trigger(final ServerPlayer player, final int levels) {
+      this.trigger(player, (t) -> t.matches(levels));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Ints level) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Ints.CODEC.optionalFieldOf("level", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::level)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Ints.CODEC.optionalFieldOf("level", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::level)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, MinMaxBounds.Ints var2) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.level = var2;
       }
 
       public static Criterion<TriggerInstance> constructedBeacon() {
          return CriteriaTriggers.CONSTRUCT_BEACON.createCriterion(new TriggerInstance(Optional.empty(), MinMaxBounds.Ints.ANY));
       }
 
-      public static Criterion<TriggerInstance> constructedBeacon(MinMaxBounds.Ints var0) {
-         return CriteriaTriggers.CONSTRUCT_BEACON.createCriterion(new TriggerInstance(Optional.empty(), var0));
+      public static Criterion<TriggerInstance> constructedBeacon(final MinMaxBounds.Ints level) {
+         return CriteriaTriggers.CONSTRUCT_BEACON.createCriterion(new TriggerInstance(Optional.empty(), level));
       }
 
-      public boolean matches(int var1) {
-         return this.level.matches(var1);
+      public boolean matches(final int levels) {
+         return this.level.matches(levels);
       }
    }
 }

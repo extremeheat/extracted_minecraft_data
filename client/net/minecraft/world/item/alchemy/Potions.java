@@ -8,62 +8,62 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 
 public class Potions {
-   public static final Holder<Potion> WATER = register("water", new Potion("water", new MobEffectInstance[0]));
-   public static final Holder<Potion> MUNDANE = register("mundane", new Potion("mundane", new MobEffectInstance[0]));
-   public static final Holder<Potion> THICK = register("thick", new Potion("thick", new MobEffectInstance[0]));
-   public static final Holder<Potion> AWKWARD = register("awkward", new Potion("awkward", new MobEffectInstance[0]));
-   public static final Holder<Potion> NIGHT_VISION;
-   public static final Holder<Potion> LONG_NIGHT_VISION;
-   public static final Holder<Potion> INVISIBILITY;
-   public static final Holder<Potion> LONG_INVISIBILITY;
-   public static final Holder<Potion> LEAPING;
-   public static final Holder<Potion> LONG_LEAPING;
-   public static final Holder<Potion> STRONG_LEAPING;
-   public static final Holder<Potion> FIRE_RESISTANCE;
-   public static final Holder<Potion> LONG_FIRE_RESISTANCE;
-   public static final Holder<Potion> SWIFTNESS;
-   public static final Holder<Potion> LONG_SWIFTNESS;
-   public static final Holder<Potion> STRONG_SWIFTNESS;
-   public static final Holder<Potion> SLOWNESS;
-   public static final Holder<Potion> LONG_SLOWNESS;
-   public static final Holder<Potion> STRONG_SLOWNESS;
-   public static final Holder<Potion> TURTLE_MASTER;
-   public static final Holder<Potion> LONG_TURTLE_MASTER;
-   public static final Holder<Potion> STRONG_TURTLE_MASTER;
-   public static final Holder<Potion> WATER_BREATHING;
-   public static final Holder<Potion> LONG_WATER_BREATHING;
-   public static final Holder<Potion> HEALING;
-   public static final Holder<Potion> STRONG_HEALING;
-   public static final Holder<Potion> HARMING;
-   public static final Holder<Potion> STRONG_HARMING;
-   public static final Holder<Potion> POISON;
-   public static final Holder<Potion> LONG_POISON;
-   public static final Holder<Potion> STRONG_POISON;
-   public static final Holder<Potion> REGENERATION;
-   public static final Holder<Potion> LONG_REGENERATION;
-   public static final Holder<Potion> STRONG_REGENERATION;
-   public static final Holder<Potion> STRENGTH;
-   public static final Holder<Potion> LONG_STRENGTH;
-   public static final Holder<Potion> STRONG_STRENGTH;
-   public static final Holder<Potion> WEAKNESS;
-   public static final Holder<Potion> LONG_WEAKNESS;
-   public static final Holder<Potion> LUCK;
-   public static final Holder<Potion> SLOW_FALLING;
-   public static final Holder<Potion> LONG_SLOW_FALLING;
-   public static final Holder<Potion> WIND_CHARGED;
-   public static final Holder<Potion> WEAVING;
-   public static final Holder<Potion> OOZING;
-   public static final Holder<Potion> INFESTED;
+   public static final Holder.Reference<Potion> WATER = register("water", new Potion("water", new MobEffectInstance[0]));
+   public static final Holder.Reference<Potion> MUNDANE = register("mundane", new Potion("mundane", new MobEffectInstance[0]));
+   public static final Holder.Reference<Potion> THICK = register("thick", new Potion("thick", new MobEffectInstance[0]));
+   public static final Holder.Reference<Potion> AWKWARD = register("awkward", new Potion("awkward", new MobEffectInstance[0]));
+   public static final Holder.Reference<Potion> NIGHT_VISION;
+   public static final Holder.Reference<Potion> LONG_NIGHT_VISION;
+   public static final Holder.Reference<Potion> INVISIBILITY;
+   public static final Holder.Reference<Potion> LONG_INVISIBILITY;
+   public static final Holder.Reference<Potion> LEAPING;
+   public static final Holder.Reference<Potion> LONG_LEAPING;
+   public static final Holder.Reference<Potion> STRONG_LEAPING;
+   public static final Holder.Reference<Potion> FIRE_RESISTANCE;
+   public static final Holder.Reference<Potion> LONG_FIRE_RESISTANCE;
+   public static final Holder.Reference<Potion> SWIFTNESS;
+   public static final Holder.Reference<Potion> LONG_SWIFTNESS;
+   public static final Holder.Reference<Potion> STRONG_SWIFTNESS;
+   public static final Holder.Reference<Potion> SLOWNESS;
+   public static final Holder.Reference<Potion> LONG_SLOWNESS;
+   public static final Holder.Reference<Potion> STRONG_SLOWNESS;
+   public static final Holder.Reference<Potion> TURTLE_MASTER;
+   public static final Holder.Reference<Potion> LONG_TURTLE_MASTER;
+   public static final Holder.Reference<Potion> STRONG_TURTLE_MASTER;
+   public static final Holder.Reference<Potion> WATER_BREATHING;
+   public static final Holder.Reference<Potion> LONG_WATER_BREATHING;
+   public static final Holder.Reference<Potion> HEALING;
+   public static final Holder.Reference<Potion> STRONG_HEALING;
+   public static final Holder.Reference<Potion> HARMING;
+   public static final Holder.Reference<Potion> STRONG_HARMING;
+   public static final Holder.Reference<Potion> POISON;
+   public static final Holder.Reference<Potion> LONG_POISON;
+   public static final Holder.Reference<Potion> STRONG_POISON;
+   public static final Holder.Reference<Potion> REGENERATION;
+   public static final Holder.Reference<Potion> LONG_REGENERATION;
+   public static final Holder.Reference<Potion> STRONG_REGENERATION;
+   public static final Holder.Reference<Potion> STRENGTH;
+   public static final Holder.Reference<Potion> LONG_STRENGTH;
+   public static final Holder.Reference<Potion> STRONG_STRENGTH;
+   public static final Holder.Reference<Potion> WEAKNESS;
+   public static final Holder.Reference<Potion> LONG_WEAKNESS;
+   public static final Holder.Reference<Potion> LUCK;
+   public static final Holder.Reference<Potion> SLOW_FALLING;
+   public static final Holder.Reference<Potion> LONG_SLOW_FALLING;
+   public static final Holder.Reference<Potion> WIND_CHARGED;
+   public static final Holder.Reference<Potion> WEAVING;
+   public static final Holder.Reference<Potion> OOZING;
+   public static final Holder.Reference<Potion> INFESTED;
 
    public Potions() {
       super();
    }
 
-   private static Holder<Potion> register(String var0, Potion var1) {
-      return Registry.registerForHolder(BuiltInRegistries.POTION, Identifier.withDefaultNamespace(var0), var1);
+   private static Holder.Reference<Potion> register(final String name, final Potion potion) {
+      return Registry.registerForHolder(BuiltInRegistries.POTION, Identifier.withDefaultNamespace(name), potion);
    }
 
-   public static Holder<Potion> bootstrap(Registry<Potion> var0) {
+   public static Holder.Reference<Potion> bootstrap(final Registry<Potion> registry) {
       return WATER;
    }
 

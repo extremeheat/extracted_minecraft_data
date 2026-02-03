@@ -17,19 +17,17 @@ import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 
 public record ZombieNautilusVariant(ModelAndTexture<ModelType> modelAndTexture, SpawnPrioritySelectors spawnConditions) implements PriorityProvider<SpawnContext, SpawnCondition> {
-   public static final Codec<ZombieNautilusVariant> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ModelAndTexture.codec(ZombieNautilusVariant.ModelType.CODEC, ZombieNautilusVariant.ModelType.NORMAL).forGetter(ZombieNautilusVariant::modelAndTexture), SpawnPrioritySelectors.CODEC.fieldOf("spawn_conditions").forGetter(ZombieNautilusVariant::spawnConditions)).apply(var0, ZombieNautilusVariant::new));
-   public static final Codec<ZombieNautilusVariant> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ModelAndTexture.codec(ZombieNautilusVariant.ModelType.CODEC, ZombieNautilusVariant.ModelType.NORMAL).forGetter(ZombieNautilusVariant::modelAndTexture)).apply(var0, ZombieNautilusVariant::new));
+   public static final Codec<ZombieNautilusVariant> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(ModelAndTexture.codec(ZombieNautilusVariant.ModelType.CODEC, ZombieNautilusVariant.ModelType.NORMAL).forGetter(ZombieNautilusVariant::modelAndTexture), SpawnPrioritySelectors.CODEC.fieldOf("spawn_conditions").forGetter(ZombieNautilusVariant::spawnConditions)).apply(i, ZombieNautilusVariant::new));
+   public static final Codec<ZombieNautilusVariant> NETWORK_CODEC = RecordCodecBuilder.create((i) -> i.group(ModelAndTexture.codec(ZombieNautilusVariant.ModelType.CODEC, ZombieNautilusVariant.ModelType.NORMAL).forGetter(ZombieNautilusVariant::modelAndTexture)).apply(i, ZombieNautilusVariant::new));
    public static final Codec<Holder<ZombieNautilusVariant>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<ZombieNautilusVariant>> STREAM_CODEC;
 
-   private ZombieNautilusVariant(ModelAndTexture<ModelType> var1) {
-      this(var1, SpawnPrioritySelectors.EMPTY);
+   private ZombieNautilusVariant(final ModelAndTexture<ModelType> assetInfo) {
+      this(assetInfo, SpawnPrioritySelectors.EMPTY);
    }
 
-   public ZombieNautilusVariant(ModelAndTexture<ModelType> var1, SpawnPrioritySelectors var2) {
+   public ZombieNautilusVariant {
       super();
-      this.modelAndTexture = var1;
-      this.spawnConditions = var2;
    }
 
    public List<PriorityProvider.Selector<SpawnContext, SpawnCondition>> selectors() {
@@ -48,8 +46,8 @@ public record ZombieNautilusVariant(ModelAndTexture<ModelType> modelAndTexture, 
       public static final Codec<ModelType> CODEC = StringRepresentable.<ModelType>fromEnum(ModelType::values);
       private final String name;
 
-      private ModelType(final String var3) {
-         this.name = var3;
+      private ModelType(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {

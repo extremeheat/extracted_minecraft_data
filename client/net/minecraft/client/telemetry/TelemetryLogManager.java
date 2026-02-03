@@ -20,19 +20,19 @@ public class TelemetryLogManager implements AutoCloseable {
    private final EventLogDirectory directory;
    private @Nullable CompletableFuture<Optional<TelemetryEventLog>> sessionLog;
 
-   private TelemetryLogManager(EventLogDirectory var1) {
+   private TelemetryLogManager(final EventLogDirectory directory) {
       super();
-      this.directory = var1;
+      this.directory = directory;
    }
 
-   public static CompletableFuture<Optional<TelemetryLogManager>> open(Path var0) {
+   public static CompletableFuture<Optional<TelemetryLogManager>> open(final Path root) {
       return CompletableFuture.supplyAsync(() -> {
          try {
-            EventLogDirectory var1 = EventLogDirectory.open(var0, ".json");
-            var1.listFiles().prune(LocalDate.now(Clock.systemDefaultZone()), 7).compressAll();
-            return Optional.of(new TelemetryLogManager(var1));
-         } catch (Exception var2) {
-            LOGGER.error("Failed to create telemetry log manager", var2);
+            EventLogDirectory directory = EventLogDirectory.open(root, ".json");
+            directory.listFiles().prune(LocalDate.now(Clock.systemDefaultZone()), 7).compressAll();
+            return Optional.of(new TelemetryLogManager(directory));
+         } catch (Exception e) {
+            LOGGER.error("Failed to create telemetry log manager", e);
             return Optional.empty();
          }
       }, Util.backgroundExecutor());
@@ -42,22 +42,22 @@ public class TelemetryLogManager implements AutoCloseable {
       if (this.sessionLog == null) {
          this.sessionLog = CompletableFuture.supplyAsync(() -> {
             try {
-               EventLogDirectory.RawFile var1 = this.directory.createNewFile(LocalDate.now(Clock.systemDefaultZone()));
-               FileChannel var2 = var1.openChannel();
-               return Optional.of(new TelemetryEventLog(var2, Util.backgroundExecutor()));
-            } catch (IOException var3) {
-               LOGGER.error("Failed to open channel for telemetry event log", var3);
+               EventLogDirectory.RawFile file = this.directory.createNewFile(LocalDate.now(Clock.systemDefaultZone()));
+               FileChannel channel = file.openChannel();
+               return Optional.of(new TelemetryEventLog(channel, Util.backgroundExecutor()));
+            } catch (IOException e) {
+               LOGGER.error("Failed to open channel for telemetry event log", e);
                return Optional.empty();
             }
          }, Util.backgroundExecutor());
       }
 
-      return this.sessionLog.thenApply((var0) -> var0.map(TelemetryEventLog::logger));
+      return this.sessionLog.thenApply((log) -> log.map(TelemetryEventLog::logger));
    }
 
    public void close() {
       if (this.sessionLog != null) {
-         this.sessionLog.thenAccept((var0) -> var0.ifPresent(TelemetryEventLog::close));
+         this.sessionLog.thenAccept((log) -> log.ifPresent(TelemetryEventLog::close));
       }
 
    }

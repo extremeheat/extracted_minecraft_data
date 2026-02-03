@@ -21,9 +21,9 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
    private @Nullable TutorialToast toast;
    private int timeWaiting;
 
-   public CraftPlanksTutorialStep(Tutorial var1) {
+   public CraftPlanksTutorialStep(final Tutorial tutorial) {
       super();
-      this.tutorial = var1;
+      this.tutorial = tutorial;
    }
 
    public void tick() {
@@ -31,16 +31,16 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
       if (!this.tutorial.isSurvival()) {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
-         Minecraft var1 = this.tutorial.getMinecraft();
+         Minecraft minecraft = this.tutorial.getMinecraft();
          if (this.timeWaiting == 1) {
-            LocalPlayer var2 = var1.player;
-            if (var2 != null) {
-               if (var2.getInventory().contains(ItemTags.PLANKS)) {
+            LocalPlayer player = minecraft.player;
+            if (player != null) {
+               if (player.getInventory().contains(ItemTags.PLANKS)) {
                   this.tutorial.setStep(TutorialSteps.NONE);
                   return;
                }
 
-               if (hasCraftedPlanksPreviously(var2, ItemTags.PLANKS)) {
+               if (hasCraftedPlanksPreviously(player, ItemTags.PLANKS)) {
                   this.tutorial.setStep(TutorialSteps.NONE);
                   return;
                }
@@ -48,8 +48,8 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
          }
 
          if (this.timeWaiting >= 1200 && this.toast == null) {
-            this.toast = new TutorialToast(var1.font, TutorialToast.Icons.WOODEN_PLANKS, CRAFT_TITLE, CRAFT_DESCRIPTION, false);
-            var1.getToastManager().addToast(this.toast);
+            this.toast = new TutorialToast(minecraft.font, TutorialToast.Icons.WOODEN_PLANKS, CRAFT_TITLE, CRAFT_DESCRIPTION, false);
+            minecraft.getToastManager().addToast(this.toast);
          }
 
       }
@@ -63,16 +63,16 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
 
    }
 
-   public void onGetItem(ItemStack var1) {
-      if (var1.is(ItemTags.PLANKS)) {
+   public void onGetItem(final ItemStack itemStack) {
+      if (itemStack.is(ItemTags.PLANKS)) {
          this.tutorial.setStep(TutorialSteps.NONE);
       }
 
    }
 
-   public static boolean hasCraftedPlanksPreviously(LocalPlayer var0, TagKey<Item> var1) {
-      for(Holder var3 : BuiltInRegistries.ITEM.getTagOrEmpty(var1)) {
-         if (var0.getStats().getValue(Stats.ITEM_CRAFTED.get((Item)var3.value())) > 0) {
+   public static boolean hasCraftedPlanksPreviously(final LocalPlayer player, final TagKey<Item> tag) {
+      for(Holder<Item> item : BuiltInRegistries.ITEM.getTagOrEmpty(tag)) {
+         if (player.getStats().getValue(Stats.ITEM_CRAFTED.get(item.value())) > 0) {
             return true;
          }
       }

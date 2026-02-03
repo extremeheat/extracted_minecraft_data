@@ -29,19 +29,19 @@ public final class RenderSetup {
    final int bufferSize;
    final LayeringTransform layeringTransform;
 
-   RenderSetup(RenderPipeline var1, Map<String, TextureBinding> var2, boolean var3, boolean var4, LayeringTransform var5, OutputTarget var6, TextureTransform var7, OutlineProperty var8, boolean var9, boolean var10, int var11) {
+   private RenderSetup(final RenderPipeline pipeline, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final OutputTarget outputTarget, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final boolean affectsCrumbling, final boolean sortOnUpload, final int bufferSize) {
       super();
-      this.pipeline = var1;
-      this.textures = var2;
-      this.outputTarget = var6;
-      this.textureTransform = var7;
-      this.useLightmap = var3;
-      this.useOverlay = var4;
-      this.outlineProperty = var8;
-      this.layeringTransform = var5;
-      this.affectsCrumbling = var9;
-      this.sortOnUpload = var10;
-      this.bufferSize = var11;
+      this.pipeline = pipeline;
+      this.textures = textures;
+      this.outputTarget = outputTarget;
+      this.textureTransform = textureTransform;
+      this.useLightmap = useLightmap;
+      this.useOverlay = useOverlay;
+      this.outlineProperty = outlineProperty;
+      this.layeringTransform = layeringTransform;
+      this.affectsCrumbling = affectsCrumbling;
+      this.sortOnUpload = sortOnUpload;
+      this.bufferSize = bufferSize;
    }
 
    public String toString() {
@@ -49,32 +49,32 @@ public final class RenderSetup {
       return "RenderSetup[layeringTransform=" + var10000 + ", textureTransform=" + String.valueOf(this.textureTransform) + ", textures=" + String.valueOf(this.textures) + ", outlineProperty=" + String.valueOf(this.outlineProperty) + ", useLightmap=" + this.useLightmap + ", useOverlay=" + this.useOverlay + "]";
    }
 
-   public static RenderSetupBuilder builder(RenderPipeline var0) {
-      return new RenderSetupBuilder(var0);
+   public static RenderSetupBuilder builder(final RenderPipeline pipeline) {
+      return new RenderSetupBuilder(pipeline);
    }
 
    public Map<String, TextureAndSampler> getTextures() {
       if (this.textures.isEmpty() && !this.useOverlay && !this.useLightmap) {
          return Collections.emptyMap();
       } else {
-         HashMap var1 = new HashMap();
+         Map<String, TextureAndSampler> result = new HashMap();
          if (this.useOverlay) {
-            var1.put("Sampler1", new TextureAndSampler(Minecraft.getInstance().gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)));
+            result.put("Sampler1", new TextureAndSampler(Minecraft.getInstance().gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)));
          }
 
          if (this.useLightmap) {
-            var1.put("Sampler2", new TextureAndSampler(Minecraft.getInstance().gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)));
+            result.put("Sampler2", new TextureAndSampler(Minecraft.getInstance().gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)));
          }
 
-         TextureManager var2 = Minecraft.getInstance().getTextureManager();
+         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
 
-         for(Map.Entry var4 : this.textures.entrySet()) {
-            AbstractTexture var5 = var2.getTexture(((TextureBinding)var4.getValue()).location);
-            GpuSampler var6 = (GpuSampler)((TextureBinding)var4.getValue()).sampler().get();
-            var1.put((String)var4.getKey(), new TextureAndSampler(var5.getTextureView(), var6 != null ? var6 : var5.getSampler()));
+         for(Map.Entry<String, TextureBinding> entry : this.textures.entrySet()) {
+            AbstractTexture texture = textureManager.getTexture(((TextureBinding)entry.getValue()).location);
+            GpuSampler samplerOverride = (GpuSampler)((TextureBinding)entry.getValue()).sampler().get();
+            result.put((String)entry.getKey(), new TextureAndSampler(texture.getTextureView(), samplerOverride != null ? samplerOverride : texture.getSampler()));
          }
 
-         return var1;
+         return result;
       }
    }
 
@@ -85,8 +85,8 @@ public final class RenderSetup {
 
       private final String name;
 
-      private OutlineProperty(final String var3) {
-         this.name = var3;
+      private OutlineProperty(final String name) {
+         this.name = name;
       }
 
       public String toString() {
@@ -112,7 +112,7 @@ public final class RenderSetup {
       private OutlineProperty outlineProperty;
       private final Map<String, TextureBinding> textures;
 
-      RenderSetupBuilder(RenderPipeline var1) {
+      private RenderSetupBuilder(final RenderPipeline pipeline) {
          super();
          this.layeringTransform = LayeringTransform.NO_LAYERING;
          this.outputTarget = OutputTarget.MAIN_TARGET;
@@ -122,16 +122,16 @@ public final class RenderSetup {
          this.bufferSize = 1536;
          this.outlineProperty = RenderSetup.OutlineProperty.NONE;
          this.textures = new HashMap();
-         this.pipeline = var1;
+         this.pipeline = pipeline;
       }
 
-      public RenderSetupBuilder withTexture(String var1, Identifier var2) {
-         this.textures.put(var1, new TextureBinding(var2, () -> null));
+      public RenderSetupBuilder withTexture(final String name, final Identifier texture) {
+         this.textures.put(name, new TextureBinding(texture, () -> null));
          return this;
       }
 
-      public RenderSetupBuilder withTexture(String var1, Identifier var2, @Nullable Supplier<GpuSampler> var3) {
-         this.textures.put(var1, new TextureBinding(var2, Suppliers.memoize(() -> var3 == null ? null : (GpuSampler)var3.get())));
+      public RenderSetupBuilder withTexture(final String name, final Identifier texture, final @Nullable Supplier<GpuSampler> sampler) {
+         this.textures.put(name, new TextureBinding(texture, Suppliers.memoize(() -> sampler == null ? null : (GpuSampler)sampler.get())));
          return this;
       }
 
@@ -155,28 +155,28 @@ public final class RenderSetup {
          return this;
       }
 
-      public RenderSetupBuilder bufferSize(int var1) {
-         this.bufferSize = var1;
+      public RenderSetupBuilder bufferSize(final int bufferSize) {
+         this.bufferSize = bufferSize;
          return this;
       }
 
-      public RenderSetupBuilder setLayeringTransform(LayeringTransform var1) {
-         this.layeringTransform = var1;
+      public RenderSetupBuilder setLayeringTransform(final LayeringTransform layeringTransform) {
+         this.layeringTransform = layeringTransform;
          return this;
       }
 
-      public RenderSetupBuilder setOutputTarget(OutputTarget var1) {
-         this.outputTarget = var1;
+      public RenderSetupBuilder setOutputTarget(final OutputTarget outputTarget) {
+         this.outputTarget = outputTarget;
          return this;
       }
 
-      public RenderSetupBuilder setTextureTransform(TextureTransform var1) {
-         this.textureTransform = var1;
+      public RenderSetupBuilder setTextureTransform(final TextureTransform textureTransform) {
+         this.textureTransform = textureTransform;
          return this;
       }
 
-      public RenderSetupBuilder setOutline(OutlineProperty var1) {
-         this.outlineProperty = var1;
+      public RenderSetupBuilder setOutline(final OutlineProperty outlineProperty) {
+         this.outlineProperty = outlineProperty;
          return this;
       }
 
@@ -186,20 +186,14 @@ public final class RenderSetup {
    }
 
    public static record TextureAndSampler(GpuTextureView textureView, GpuSampler sampler) {
-      public TextureAndSampler(GpuTextureView var1, GpuSampler var2) {
+      public TextureAndSampler {
          super();
-         this.textureView = var1;
-         this.sampler = var2;
       }
    }
 
    static record TextureBinding(Identifier location, Supplier<@Nullable GpuSampler> sampler) {
-      final Identifier location;
-
-      TextureBinding(Identifier var1, Supplier<@Nullable GpuSampler> var2) {
+      TextureBinding {
          super();
-         this.location = var1;
-         this.sampler = var2;
       }
    }
 }

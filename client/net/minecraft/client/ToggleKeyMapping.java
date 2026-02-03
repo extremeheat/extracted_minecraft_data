@@ -8,27 +8,27 @@ public class ToggleKeyMapping extends KeyMapping {
    private boolean releasedByScreenWhenDown;
    private final boolean shouldRestore;
 
-   public ToggleKeyMapping(String var1, int var2, KeyMapping.Category var3, BooleanSupplier var4, boolean var5) {
-      this(var1, InputConstants.Type.KEYSYM, var2, var3, var4, var5);
+   public ToggleKeyMapping(final String name, final int value, final KeyMapping.Category category, final BooleanSupplier needsToggle, final boolean shouldRestore) {
+      this(name, InputConstants.Type.KEYSYM, value, category, needsToggle, shouldRestore);
    }
 
-   public ToggleKeyMapping(String var1, InputConstants.Type var2, int var3, KeyMapping.Category var4, BooleanSupplier var5, boolean var6) {
-      super(var1, var2, var3, var4);
-      this.needsToggle = var5;
-      this.shouldRestore = var6;
+   public ToggleKeyMapping(final String name, final InputConstants.Type type, final int value, final KeyMapping.Category category, final BooleanSupplier needsToggle, final boolean shouldRestore) {
+      super(name, type, value, category);
+      this.needsToggle = needsToggle;
+      this.shouldRestore = shouldRestore;
    }
 
    protected boolean shouldSetOnIngameFocus() {
       return super.shouldSetOnIngameFocus() && !this.needsToggle.getAsBoolean();
    }
 
-   public void setDown(boolean var1) {
+   public void setDown(final boolean down) {
       if (this.needsToggle.getAsBoolean()) {
-         if (var1) {
+         if (down) {
             super.setDown(!this.isDown());
          }
       } else {
-         super.setDown(var1);
+         super.setDown(down);
       }
 
    }
@@ -42,9 +42,9 @@ public class ToggleKeyMapping extends KeyMapping {
    }
 
    public boolean shouldRestoreStateOnScreenClosed() {
-      boolean var1 = this.shouldRestore && this.needsToggle.getAsBoolean() && this.key.getType() == InputConstants.Type.KEYSYM && this.releasedByScreenWhenDown;
+      boolean shouldRestore = this.shouldRestore && this.needsToggle.getAsBoolean() && this.key.getType() == InputConstants.Type.KEYSYM && this.releasedByScreenWhenDown;
       this.releasedByScreenWhenDown = false;
-      return var1;
+      return shouldRestore;
    }
 
    protected void reset() {

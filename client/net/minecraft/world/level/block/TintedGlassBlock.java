@@ -11,15 +11,15 @@ public class TintedGlassBlock extends TransparentBlock {
       return CODEC;
    }
 
-   public TintedGlassBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public TintedGlassBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
+   protected boolean propagatesSkylightDown(final BlockState state) {
       return false;
    }
 
-   protected int getLightBlock(BlockState var1) {
+   protected int getLightBlock(final BlockState state) {
       return 15;
    }
 }

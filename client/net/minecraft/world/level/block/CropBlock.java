@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -33,17 +34,17 @@ public class CropBlock extends VegetationBlock implements BonemealableBlock {
       return CODEC;
    }
 
-   protected CropBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected CropBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(this.getAgeProperty(), 0));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPES[this.getAge(var1)];
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPES[this.getAge(state)];
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.FARMLAND);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.is(BlockTags.SUPPORTS_CROPS);
    }
 
    protected IntegerProperty getAgeProperty() {
@@ -54,129 +55,129 @@ public class CropBlock extends VegetationBlock implements BonemealableBlock {
       return 7;
    }
 
-   public int getAge(BlockState var1) {
-      return (Integer)var1.getValue(this.getAgeProperty());
+   public int getAge(final BlockState state) {
+      return (Integer)state.getValue(this.getAgeProperty());
    }
 
-   public BlockState getStateForAge(int var1) {
-      return (BlockState)this.defaultBlockState().setValue(this.getAgeProperty(), var1);
+   public BlockState getStateForAge(final int age) {
+      return (BlockState)this.defaultBlockState().setValue(this.getAgeProperty(), age);
    }
 
-   public final boolean isMaxAge(BlockState var1) {
-      return this.getAge(var1) >= this.getMaxAge();
+   public final boolean isMaxAge(final BlockState state) {
+      return this.getAge(state) >= this.getMaxAge();
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return !this.isMaxAge(var1);
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return !this.isMaxAge(state);
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var2.getRawBrightness(var3, 0) >= 9) {
-         int var5 = this.getAge(var1);
-         if (var5 < this.getMaxAge()) {
-            float var6 = getGrowthSpeed(this, var2, var3);
-            if (var4.nextInt((int)(25.0F / var6) + 1) == 0) {
-               var2.setBlock(var3, this.getStateForAge(var5 + 1), 2);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (level.getRawBrightness(pos, 0) >= 9) {
+         int age = this.getAge(state);
+         if (age < this.getMaxAge()) {
+            float growthSpeed = getGrowthSpeed(this, level, pos);
+            if (random.nextInt((int)(25.0F / growthSpeed) + 1) == 0) {
+               level.setBlock(pos, this.getStateForAge(age + 1), 2);
             }
          }
       }
 
    }
 
-   public void growCrops(Level var1, BlockPos var2, BlockState var3) {
-      int var4 = Math.min(this.getMaxAge(), this.getAge(var3) + this.getBonemealAgeIncrease(var1));
-      var1.setBlock(var2, this.getStateForAge(var4), 2);
+   public void growCrops(final Level level, final BlockPos pos, final BlockState state) {
+      int age = Math.min(this.getMaxAge(), this.getAge(state) + this.getBonemealAgeIncrease(level));
+      level.setBlock(pos, this.getStateForAge(age), 2);
    }
 
-   protected int getBonemealAgeIncrease(Level var1) {
-      return Mth.nextInt(var1.random, 2, 5);
+   protected int getBonemealAgeIncrease(final Level level) {
+      return Mth.nextInt(level.getRandom(), 2, 5);
    }
 
-   protected static float getGrowthSpeed(Block var0, BlockGetter var1, BlockPos var2) {
-      float var3 = 1.0F;
-      BlockPos var4 = var2.below();
+   protected static float getGrowthSpeed(final Block type, final BlockGetter level, final BlockPos pos) {
+      float speed = 1.0F;
+      BlockPos below = pos.below();
 
-      for(int var5 = -1; var5 <= 1; ++var5) {
-         for(int var6 = -1; var6 <= 1; ++var6) {
-            float var7 = 0.0F;
-            BlockState var8 = var1.getBlockState(var4.offset(var5, 0, var6));
-            if (var8.is(Blocks.FARMLAND)) {
-               var7 = 1.0F;
-               if ((Integer)var8.getValue(FarmBlock.MOISTURE) > 0) {
-                  var7 = 3.0F;
+      for(int xx = -1; xx <= 1; ++xx) {
+         for(int zz = -1; zz <= 1; ++zz) {
+            float blockSpeed = 0.0F;
+            BlockState blockState = level.getBlockState(below.offset(xx, 0, zz));
+            if (blockState.is(BlockTags.GROWS_CROPS)) {
+               blockSpeed = 1.0F;
+               if ((Integer)blockState.getValueOrElse(FarmlandBlock.MOISTURE, 0) > 0) {
+                  blockSpeed = 3.0F;
                }
             }
 
-            if (var5 != 0 || var6 != 0) {
-               var7 /= 4.0F;
+            if (xx != 0 || zz != 0) {
+               blockSpeed /= 4.0F;
             }
 
-            var3 += var7;
+            speed += blockSpeed;
          }
       }
 
-      BlockPos var12 = var2.north();
-      BlockPos var13 = var2.south();
-      BlockPos var14 = var2.west();
-      BlockPos var15 = var2.east();
-      boolean var9 = var1.getBlockState(var14).is(var0) || var1.getBlockState(var15).is(var0);
-      boolean var10 = var1.getBlockState(var12).is(var0) || var1.getBlockState(var13).is(var0);
-      if (var9 && var10) {
-         var3 /= 2.0F;
+      BlockPos north = pos.north();
+      BlockPos south = pos.south();
+      BlockPos west = pos.west();
+      BlockPos east = pos.east();
+      boolean horizontal = level.getBlockState(west).is(type) || level.getBlockState(east).is(type);
+      boolean vertical = level.getBlockState(north).is(type) || level.getBlockState(south).is(type);
+      if (horizontal && vertical) {
+         speed /= 2.0F;
       } else {
-         boolean var11 = var1.getBlockState(var14.north()).is(var0) || var1.getBlockState(var15.north()).is(var0) || var1.getBlockState(var15.south()).is(var0) || var1.getBlockState(var14.south()).is(var0);
-         if (var11) {
-            var3 /= 2.0F;
+         boolean diagonal = level.getBlockState(west.north()).is(type) || level.getBlockState(east.north()).is(type) || level.getBlockState(east.south()).is(type) || level.getBlockState(west.south()).is(type);
+         if (diagonal) {
+            speed /= 2.0F;
          }
       }
 
-      return var3;
+      return speed;
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return hasSufficientLight(var2, var3) && super.canSurvive(var1, var2, var3);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return hasSufficientLight(level, pos) && super.canSurvive(state, level, pos);
    }
 
-   protected static boolean hasSufficientLight(LevelReader var0, BlockPos var1) {
-      return var0.getRawBrightness(var1, 0) >= 8;
+   protected static boolean hasSufficientLight(final LevelReader level, final BlockPos pos) {
+      return level.getRawBrightness(pos, 0) >= 8;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      if (var2 instanceof ServerLevel var7) {
-         if (var4 instanceof Ravager && (Boolean)var7.getGameRules().get(GameRules.MOB_GRIEFING)) {
-            var7.destroyBlock(var3, true, var4);
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      if (level instanceof ServerLevel serverLevel) {
+         if (entity instanceof Ravager && (Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
+            serverLevel.destroyBlock(pos, true, entity);
          }
       }
 
-      super.entityInside(var1, var2, var3, var4, var5, var6);
+      super.entityInside(state, level, pos, entity, effectApplier, isPrecise);
    }
 
    protected ItemLike getBaseSeedId() {
       return Items.WHEAT_SEEDS;
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
       return new ItemStack(this.getBaseSeedId());
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return !this.isMaxAge(var3);
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return !this.isMaxAge(state);
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      this.growCrops(var1, var3, var4);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      this.growCrops(level, pos, state);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE);
    }
 
    static {
       AGE = BlockStateProperties.AGE_7;
-      SHAPES = Block.boxes(7, (var0) -> Block.column(16.0, 0.0, (double)(2 + var0 * 2)));
+      SHAPES = Block.boxes(7, (age) -> Block.column(16.0, 0.0, (double)(2 + age * 2)));
    }
 }

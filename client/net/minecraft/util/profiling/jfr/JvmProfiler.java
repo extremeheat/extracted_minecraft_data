@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 public interface JvmProfiler {
    JvmProfiler INSTANCE = (JvmProfiler)(Runtime.class.getModule().getLayer().findModule("jdk.jfr").isPresent() && FlightRecorder.isAvailable() ? JfrProfiler.getInstance() : new NoOpProfiler());
 
-   boolean start(Environment var1);
+   boolean start(Environment environment);
 
    Path stop();
 
@@ -28,34 +28,34 @@ public interface JvmProfiler {
 
    boolean isAvailable();
 
-   void onServerTick(float var1);
+   void onServerTick(float averageTickTime);
 
-   void onClientTick(int var1);
+   void onClientTick(int fps);
 
-   void onPacketReceived(ConnectionProtocol var1, PacketType<?> var2, SocketAddress var3, int var4);
+   void onPacketReceived(final ConnectionProtocol protocol, final PacketType<?> packetId, final SocketAddress remoteAddress, final int readableBytes);
 
-   void onPacketSent(ConnectionProtocol var1, PacketType<?> var2, SocketAddress var3, int var4);
+   void onPacketSent(final ConnectionProtocol protocol, final PacketType<?> packetId, final SocketAddress remoteAddress, final int writtenBytes);
 
-   void onRegionFileRead(RegionStorageInfo var1, ChunkPos var2, RegionFileVersion var3, int var4);
+   void onRegionFileRead(RegionStorageInfo info, ChunkPos pos, RegionFileVersion version, int readBytes);
 
-   void onRegionFileWrite(RegionStorageInfo var1, ChunkPos var2, RegionFileVersion var3, int var4);
+   void onRegionFileWrite(RegionStorageInfo info, ChunkPos pos, RegionFileVersion version, int writtenBytes);
 
    @Nullable ProfiledDuration onWorldLoadedStarted();
 
-   @Nullable ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3);
+   @Nullable ProfiledDuration onChunkGenerate(ChunkPos pos, ResourceKey<Level> dimension, String name);
 
-   @Nullable ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3);
+   @Nullable ProfiledDuration onStructureGenerate(ChunkPos sourceChunkPos, ResourceKey<Level> dimension, Holder<Structure> structure);
 
    public static class NoOpProfiler implements JvmProfiler {
       private static final Logger LOGGER = LogUtils.getLogger();
-      static final ProfiledDuration noOpCommit = (var0) -> {
+      static final ProfiledDuration noOpCommit = (ignored) -> {
       };
 
       public NoOpProfiler() {
          super();
       }
 
-      public boolean start(Environment var1) {
+      public boolean start(final Environment environment) {
          LOGGER.warn("Attempted to start Flight Recorder, but it's not supported on this JVM");
          return false;
       }
@@ -72,33 +72,33 @@ public interface JvmProfiler {
          return false;
       }
 
-      public void onPacketReceived(ConnectionProtocol var1, PacketType<?> var2, SocketAddress var3, int var4) {
+      public void onPacketReceived(final ConnectionProtocol protocol, final PacketType<?> packetId, final SocketAddress remoteAddress, final int readableBytes) {
       }
 
-      public void onPacketSent(ConnectionProtocol var1, PacketType<?> var2, SocketAddress var3, int var4) {
+      public void onPacketSent(final ConnectionProtocol protocol, final PacketType<?> packetId, final SocketAddress remoteAddress, final int writtenBytes) {
       }
 
-      public void onRegionFileRead(RegionStorageInfo var1, ChunkPos var2, RegionFileVersion var3, int var4) {
+      public void onRegionFileRead(final RegionStorageInfo info, final ChunkPos pos, final RegionFileVersion version, final int readBytes) {
       }
 
-      public void onRegionFileWrite(RegionStorageInfo var1, ChunkPos var2, RegionFileVersion var3, int var4) {
+      public void onRegionFileWrite(final RegionStorageInfo info, final ChunkPos pos, final RegionFileVersion version, final int writtenBytes) {
       }
 
-      public void onServerTick(float var1) {
+      public void onServerTick(final float averageTickTime) {
       }
 
-      public void onClientTick(int var1) {
+      public void onClientTick(final int fps) {
       }
 
       public ProfiledDuration onWorldLoadedStarted() {
          return noOpCommit;
       }
 
-      public @Nullable ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3) {
+      public @Nullable ProfiledDuration onChunkGenerate(final ChunkPos pos, final ResourceKey<Level> dimension, final String name) {
          return null;
       }
 
-      public ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3) {
+      public ProfiledDuration onStructureGenerate(final ChunkPos sourceChunkPos, final ResourceKey<Level> dimension, final Holder<Structure> structure) {
          return noOpCommit;
       }
    }

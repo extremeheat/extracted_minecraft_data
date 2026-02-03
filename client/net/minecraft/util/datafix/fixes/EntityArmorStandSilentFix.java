@@ -6,15 +6,15 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class EntityArmorStandSilentFix extends NamedEntityFix {
-   public EntityArmorStandSilentFix(Schema var1, boolean var2) {
-      super(var1, var2, "EntityArmorStandSilentFix", References.ENTITY, "ArmorStand");
+   public EntityArmorStandSilentFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType, "EntityArmorStandSilentFix", References.ENTITY, "ArmorStand");
    }
 
-   public Dynamic<?> fixTag(Dynamic<?> var1) {
-      return var1.get("Silent").asBoolean(false) && !var1.get("Marker").asBoolean(false) ? var1.remove("Silent") : var1;
+   public Dynamic<?> fixTag(final Dynamic<?> input) {
+      return input.get("Silent").asBoolean(false) && !input.get("Marker").asBoolean(false) ? input.remove("Silent") : input;
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fixTag);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), this::fixTag);
    }
 }

@@ -3,46 +3,44 @@ package net.minecraft.util.parsing.packrat;
 import org.jspecify.annotations.Nullable;
 
 public interface Rule<S, T> {
-   @Nullable T parse(ParseState<S> var1);
+   @Nullable T parse(ParseState<S> state);
 
-   static <S, T> Rule<S, T> fromTerm(Term<S> var0, RuleAction<S, T> var1) {
-      return new WrappedTerm<S, T>(var1, var0);
+   static <S, T> Rule<S, T> fromTerm(final Term<S> child, final RuleAction<S, T> action) {
+      return new WrappedTerm<S, T>(action, child);
    }
 
-   static <S, T> Rule<S, T> fromTerm(Term<S> var0, SimpleRuleAction<S, T> var1) {
-      return new WrappedTerm<S, T>(var1, var0);
+   static <S, T> Rule<S, T> fromTerm(final Term<S> child, final SimpleRuleAction<S, T> action) {
+      return new WrappedTerm<S, T>(action, child);
    }
 
    @FunctionalInterface
    public interface SimpleRuleAction<S, T> extends RuleAction<S, T> {
-      T run(Scope var1);
+      T run(Scope ruleScope);
 
-      default T run(ParseState<S> var1) {
-         return (T)this.run(var1.scope());
+      default T run(final ParseState<S> state) {
+         return (T)this.run(state.scope());
       }
    }
 
    public static record WrappedTerm<S, T>(RuleAction<S, T> action, Term<S> child) implements Rule<S, T> {
-      public WrappedTerm(RuleAction<S, T> var1, Term<S> var2) {
+      public WrappedTerm {
          super();
-         this.action = var1;
-         this.child = var2;
       }
 
-      public @Nullable T parse(ParseState<S> var1) {
-         Scope var2 = var1.scope();
-         var2.pushFrame();
+      public @Nullable T parse(final ParseState<S> state) {
+         Scope scope = state.scope();
+         scope.pushFrame();
 
          Object var3;
          try {
-            if (!this.child.parse(var1, var2, Control.UNBOUND)) {
+            if (!this.child.parse(state, scope, Control.UNBOUND)) {
                var3 = null;
                return (T)var3;
             }
 
-            var3 = this.action.run(var1);
+            var3 = this.action.run(state);
          } finally {
-            var2.popFrame();
+            scope.popFrame();
          }
 
          return (T)var3;
@@ -51,6 +49,6 @@ public interface Rule<S, T> {
 
    @FunctionalInterface
    public interface RuleAction<S, T> {
-      @Nullable T run(ParseState<S> var1);
+      @Nullable T run(ParseState<S> state);
    }
 }

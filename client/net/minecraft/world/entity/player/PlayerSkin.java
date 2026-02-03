@@ -11,42 +11,29 @@ import net.minecraft.network.codec.StreamCodec;
 import org.jspecify.annotations.Nullable;
 
 public record PlayerSkin(ClientAsset.Texture body, ClientAsset.@Nullable Texture cape, ClientAsset.@Nullable Texture elytra, PlayerModelType model, boolean secure) {
-   public PlayerSkin(ClientAsset.Texture var1, ClientAsset.@Nullable Texture var2, ClientAsset.@Nullable Texture var3, PlayerModelType var4, boolean var5) {
+   public PlayerSkin {
       super();
-      this.body = var1;
-      this.cape = var2;
-      this.elytra = var3;
-      this.model = var4;
-      this.secure = var5;
    }
 
-   public static PlayerSkin insecure(ClientAsset.Texture var0, ClientAsset.@Nullable Texture var1, ClientAsset.@Nullable Texture var2, PlayerModelType var3) {
-      return new PlayerSkin(var0, var1, var2, var3, false);
+   public static PlayerSkin insecure(final ClientAsset.Texture body, final ClientAsset.@Nullable Texture cape, final ClientAsset.@Nullable Texture elytra, final PlayerModelType model) {
+      return new PlayerSkin(body, cape, elytra, model, false);
    }
 
-   public PlayerSkin with(Patch var1) {
-      return var1.equals(PlayerSkin.Patch.EMPTY) ? this : insecure((ClientAsset.Texture)DataFixUtils.orElse(var1.body, this.body), (ClientAsset.Texture)DataFixUtils.orElse(var1.cape, this.cape), (ClientAsset.Texture)DataFixUtils.orElse(var1.elytra, this.elytra), (PlayerModelType)var1.model.orElse(this.model));
+   public PlayerSkin with(final Patch patch) {
+      return patch.equals(PlayerSkin.Patch.EMPTY) ? this : insecure((ClientAsset.Texture)DataFixUtils.orElse(patch.body, this.body), (ClientAsset.Texture)DataFixUtils.orElse(patch.cape, this.cape), (ClientAsset.Texture)DataFixUtils.orElse(patch.elytra, this.elytra), (PlayerModelType)patch.model.orElse(this.model));
    }
 
    public static record Patch(Optional<ClientAsset.ResourceTexture> body, Optional<ClientAsset.ResourceTexture> cape, Optional<ClientAsset.ResourceTexture> elytra, Optional<PlayerModelType> model) {
-      final Optional<ClientAsset.ResourceTexture> body;
-      final Optional<ClientAsset.ResourceTexture> cape;
-      final Optional<ClientAsset.ResourceTexture> elytra;
-      final Optional<PlayerModelType> model;
       public static final Patch EMPTY = new Patch(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-      public static final MapCodec<Patch> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ClientAsset.ResourceTexture.CODEC.optionalFieldOf("texture").forGetter(Patch::body), ClientAsset.ResourceTexture.CODEC.optionalFieldOf("cape").forGetter(Patch::cape), ClientAsset.ResourceTexture.CODEC.optionalFieldOf("elytra").forGetter(Patch::elytra), PlayerModelType.CODEC.optionalFieldOf("model").forGetter(Patch::model)).apply(var0, Patch::create));
+      public static final MapCodec<Patch> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ClientAsset.ResourceTexture.CODEC.optionalFieldOf("texture").forGetter(Patch::body), ClientAsset.ResourceTexture.CODEC.optionalFieldOf("cape").forGetter(Patch::cape), ClientAsset.ResourceTexture.CODEC.optionalFieldOf("elytra").forGetter(Patch::elytra), PlayerModelType.CODEC.optionalFieldOf("model").forGetter(Patch::model)).apply(i, Patch::create));
       public static final StreamCodec<ByteBuf, Patch> STREAM_CODEC;
 
-      public Patch(Optional<ClientAsset.ResourceTexture> var1, Optional<ClientAsset.ResourceTexture> var2, Optional<ClientAsset.ResourceTexture> var3, Optional<PlayerModelType> var4) {
+      public Patch {
          super();
-         this.body = var1;
-         this.cape = var2;
-         this.elytra = var3;
-         this.model = var4;
       }
 
-      public static Patch create(Optional<ClientAsset.ResourceTexture> var0, Optional<ClientAsset.ResourceTexture> var1, Optional<ClientAsset.ResourceTexture> var2, Optional<PlayerModelType> var3) {
-         return var0.isEmpty() && var1.isEmpty() && var2.isEmpty() && var3.isEmpty() ? EMPTY : new Patch(var0, var1, var2, var3);
+      public static Patch create(final Optional<ClientAsset.ResourceTexture> texture, final Optional<ClientAsset.ResourceTexture> capeTexture, final Optional<ClientAsset.ResourceTexture> elytraTexture, final Optional<PlayerModelType> model) {
+         return texture.isEmpty() && capeTexture.isEmpty() && elytraTexture.isEmpty() && model.isEmpty() ? EMPTY : new Patch(texture, capeTexture, elytraTexture, model);
       }
 
       static {

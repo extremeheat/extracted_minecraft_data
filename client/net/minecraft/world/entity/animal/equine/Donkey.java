@@ -12,8 +12,8 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 public class Donkey extends AbstractChestedHorse {
-   public Donkey(EntityType<? extends Donkey> var1, Level var2) {
-      super(var1, var2);
+   public Donkey(final EntityType<? extends Donkey> type, final Level level) {
+      super(type, level);
    }
 
    protected SoundEvent getAmbientSound() {
@@ -32,17 +32,17 @@ public class Donkey extends AbstractChestedHorse {
       return SoundEvents.DONKEY_EAT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.DONKEY_HURT;
    }
 
-   public boolean canMate(Animal var1) {
-      if (var1 == this) {
+   public boolean canMate(final Animal partner) {
+      if (partner == this) {
          return false;
-      } else if (!(var1 instanceof Donkey) && !(var1 instanceof Horse)) {
+      } else if (!(partner instanceof Donkey) && !(partner instanceof Horse)) {
          return false;
       } else {
-         return this.canParent() && ((AbstractHorse)var1).canParent();
+         return this.canParent() && ((AbstractHorse)partner).canParent();
       }
    }
 
@@ -50,13 +50,13 @@ public class Donkey extends AbstractChestedHorse {
       this.playSound(SoundEvents.DONKEY_JUMP, 0.4F, 1.0F);
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      EntityType var3 = var2 instanceof Horse ? EntityType.MULE : EntityType.DONKEY;
-      AbstractHorse var4 = (AbstractHorse)var3.create(var1, EntitySpawnReason.BREEDING);
-      if (var4 != null) {
-         this.setOffspringAttributes(var2, var4);
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      EntityType<? extends AbstractHorse> babyType = partner instanceof Horse ? EntityType.MULE : EntityType.DONKEY;
+      AbstractHorse baby = babyType.create(level, EntitySpawnReason.BREEDING);
+      if (baby != null) {
+         this.setOffspringAttributes(partner, baby);
       }
 
-      return var4;
+      return baby;
    }
 }

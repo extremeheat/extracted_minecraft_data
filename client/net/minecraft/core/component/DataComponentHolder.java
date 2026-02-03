@@ -6,19 +6,19 @@ import org.jspecify.annotations.Nullable;
 public interface DataComponentHolder extends DataComponentGetter {
    DataComponentMap getComponents();
 
-   default <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)this.getComponents().get(var1);
+   default <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)this.getComponents().get(type);
    }
 
-   default <T> Stream<T> getAllOfType(Class<? extends T> var1) {
-      return this.getComponents().stream().map(TypedDataComponent::value).filter((var1x) -> var1.isAssignableFrom(var1x.getClass())).map((var0) -> var0);
+   default <T> Stream<T> getAllOfType(final Class<? extends T> valueClass) {
+      return this.getComponents().stream().map(TypedDataComponent::value).filter((value) -> valueClass.isAssignableFrom(value.getClass())).map((value) -> value);
    }
 
-   default <T> T getOrDefault(DataComponentType<? extends T> var1, T var2) {
-      return (T)this.getComponents().getOrDefault(var1, var2);
+   default <T> T getOrDefault(final DataComponentType<? extends T> type, final T defaultValue) {
+      return (T)this.getComponents().getOrDefault(type, defaultValue);
    }
 
-   default boolean has(DataComponentType<?> var1) {
-      return this.getComponents().has(var1);
+   default boolean has(final DataComponentType<?> type) {
+      return this.getComponents().has(type);
    }
 }

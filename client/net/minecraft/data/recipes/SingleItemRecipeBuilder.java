@@ -1,16 +1,8 @@
 package net.minecraft.data.recipes;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRequirements;
-import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
@@ -20,67 +12,43 @@ import org.jspecify.annotations.Nullable;
 
 public class SingleItemRecipeBuilder implements RecipeBuilder {
    private final RecipeCategory category;
-   private final Item result;
+   private final ItemStackTemplate result;
    private final Ingredient ingredient;
-   private final int count;
-   private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
-   private @Nullable String group;
+   private final RecipeUnlockAdvancementBuilder advancementBuilder;
    private final SingleItemRecipe.Factory<?> factory;
 
-   public SingleItemRecipeBuilder(RecipeCategory var1, SingleItemRecipe.Factory<?> var2, Ingredient var3, ItemLike var4, int var5) {
+   private SingleItemRecipeBuilder(final RecipeCategory category, final SingleItemRecipe.Factory<?> factory, final Ingredient ingredient, final ItemStackTemplate result) {
       super();
-      this.category = var1;
-      this.factory = var2;
-      this.result = var4.asItem();
-      this.ingredient = var3;
-      this.count = var5;
+      this.advancementBuilder = new RecipeUnlockAdvancementBuilder();
+      this.category = category;
+      this.result = result;
+      this.ingredient = ingredient;
+      this.factory = factory;
    }
 
-   public static SingleItemRecipeBuilder stonecutting(Ingredient var0, RecipeCategory var1, ItemLike var2) {
-      return new SingleItemRecipeBuilder(var1, StonecutterRecipe::new, var0, var2, 1);
+   public SingleItemRecipeBuilder(final RecipeCategory category, final SingleItemRecipe.Factory<?> factory, final Ingredient ingredient, final ItemLike result, final int count) {
+      this(category, factory, ingredient, new ItemStackTemplate(result.asItem(), count));
    }
 
-   public static SingleItemRecipeBuilder stonecutting(Ingredient var0, RecipeCategory var1, ItemLike var2, int var3) {
-      return new SingleItemRecipeBuilder(var1, StonecutterRecipe::new, var0, var2, var3);
+   public static SingleItemRecipeBuilder stonecutting(final Ingredient ingredient, final RecipeCategory category, final ItemLike result, final int count) {
+      return new SingleItemRecipeBuilder(category, StonecutterRecipe::new, ingredient, result, count);
    }
 
-   public SingleItemRecipeBuilder unlockedBy(String var1, Criterion<?> var2) {
-      this.criteria.put(var1, var2);
+   public SingleItemRecipeBuilder unlockedBy(final String name, final Criterion<?> criterion) {
+      this.advancementBuilder.unlockedBy(name, criterion);
       return this;
    }
 
-   public SingleItemRecipeBuilder group(@Nullable String var1) {
-      this.group = var1;
+   public SingleItemRecipeBuilder group(final @Nullable String group) {
       return this;
    }
 
-   public Item getResult() {
-      return this.result;
+   public ResourceKey<Recipe<?>> defaultId() {
+      return RecipeBuilder.getDefaultRecipeId(this.result);
    }
 
-   public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
-      this.ensureValid(var2);
-      Advancement.Builder var3 = var1.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(AdvancementRequirements.Strategy.OR);
-      Map var10000 = this.criteria;
-      Objects.requireNonNull(var3);
-      var10000.forEach(var3::addCriterion);
-      SingleItemRecipe var4 = this.factory.create((String)Objects.requireNonNullElse(this.group, ""), this.ingredient, new ItemStack(this.result, this.count));
-      var1.accept(var2, var4, var3.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
-   }
-
-   private void ensureValid(ResourceKey<Recipe<?>> var1) {
-      if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
-      }
-   }
-
-   // $FF: synthetic method
-   public RecipeBuilder group(final @Nullable String var1) {
-      return this.group(var1);
-   }
-
-   // $FF: synthetic method
-   public RecipeBuilder unlockedBy(final String var1, final Criterion var2) {
-      return this.unlockedBy(var1, var2);
+   public void save(final RecipeOutput output, final ResourceKey<Recipe<?>> id) {
+      SingleItemRecipe recipe = this.factory.create(new Recipe.CommonInfo(true), this.ingredient, this.result);
+      output.accept(id, recipe, this.advancementBuilder.build(output, id, this.category));
    }
 }

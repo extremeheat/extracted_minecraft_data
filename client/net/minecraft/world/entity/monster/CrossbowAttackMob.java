@@ -10,18 +10,18 @@ import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
 public interface CrossbowAttackMob extends RangedAttackMob {
-   void setChargingCrossbow(boolean var1);
+   void setChargingCrossbow(final boolean isCharging);
 
    @Nullable LivingEntity getTarget();
 
    void onCrossbowAttackPerformed();
 
-   default void performCrossbowAttack(LivingEntity var1, float var2) {
-      InteractionHand var3 = ProjectileUtil.getWeaponHoldingHand(var1, Items.CROSSBOW);
-      ItemStack var4 = var1.getItemInHand(var3);
-      Item var6 = var4.getItem();
-      if (var6 instanceof CrossbowItem var5) {
-         var5.performShooting(var1.level(), var1, var3, var4, var2, (float)(14 - var1.level().getDifficulty().getId() * 4), this.getTarget());
+   default void performCrossbowAttack(final LivingEntity body, final float crossbowPower) {
+      InteractionHand hand = ProjectileUtil.getWeaponHoldingHand(body, Items.CROSSBOW);
+      ItemStack usedItem = body.getItemInHand(hand);
+      Item var6 = usedItem.getItem();
+      if (var6 instanceof CrossbowItem crossbow) {
+         crossbow.performShooting(body.level(), body, hand, usedItem, crossbowPower, (float)(14 - body.level().getDifficulty().getId() * 4), this.getTarget());
       }
 
       this.onCrossbowAttackPerformed();

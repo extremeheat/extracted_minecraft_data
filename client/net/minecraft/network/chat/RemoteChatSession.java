@@ -8,18 +8,16 @@ import net.minecraft.util.SignatureValidator;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 
 public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKey) {
-   public RemoteChatSession(UUID var1, ProfilePublicKey var2) {
+   public RemoteChatSession {
       super();
-      this.sessionId = var1;
-      this.profilePublicKey = var2;
    }
 
-   public SignedMessageValidator createMessageValidator(Duration var1) {
-      return new SignedMessageValidator.KeyBased(this.profilePublicKey.createSignatureValidator(), () -> this.profilePublicKey.data().hasExpired(var1));
+   public SignedMessageValidator createMessageValidator(final Duration gracePeriod) {
+      return new SignedMessageValidator.KeyBased(this.profilePublicKey.createSignatureValidator(), () -> this.profilePublicKey.data().hasExpired(gracePeriod));
    }
 
-   public SignedMessageChain.Decoder createMessageDecoder(UUID var1) {
-      return (new SignedMessageChain(var1, this.sessionId)).decoder(this.profilePublicKey);
+   public SignedMessageChain.Decoder createMessageDecoder(final UUID profileId) {
+      return (new SignedMessageChain(profileId, this.sessionId)).decoder(this.profilePublicKey);
    }
 
    public Data asData() {
@@ -31,23 +29,21 @@ public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKe
    }
 
    public static record Data(UUID sessionId, ProfilePublicKey.Data profilePublicKey) {
-      public Data(UUID var1, ProfilePublicKey.Data var2) {
+      public Data {
          super();
-         this.sessionId = var1;
-         this.profilePublicKey = var2;
       }
 
-      public static Data read(FriendlyByteBuf var0) {
-         return new Data(var0.readUUID(), new ProfilePublicKey.Data(var0));
+      public static Data read(final FriendlyByteBuf input) {
+         return new Data(input.readUUID(), new ProfilePublicKey.Data(input));
       }
 
-      public static void write(FriendlyByteBuf var0, Data var1) {
-         var0.writeUUID(var1.sessionId);
-         var1.profilePublicKey.write(var0);
+      public static void write(final FriendlyByteBuf output, final Data data) {
+         output.writeUUID(data.sessionId);
+         data.profilePublicKey.write(output);
       }
 
-      public RemoteChatSession validate(GameProfile var1, SignatureValidator var2) throws ProfilePublicKey.ValidationException {
-         return new RemoteChatSession(this.sessionId, ProfilePublicKey.createValidated(var2, var1.id(), this.profilePublicKey));
+      public RemoteChatSession validate(final GameProfile profile, final SignatureValidator serviceSignatureValidator) throws ProfilePublicKey.ValidationException {
+         return new RemoteChatSession(this.sessionId, ProfilePublicKey.createValidated(serviceSignatureValidator, profile.id(), this.profilePublicKey));
       }
    }
 }

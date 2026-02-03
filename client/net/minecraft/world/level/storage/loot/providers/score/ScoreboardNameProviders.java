@@ -5,35 +5,31 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 
 public class ScoreboardNameProviders {
    private static final Codec<ScoreboardNameProvider> TYPED_CODEC;
    public static final Codec<ScoreboardNameProvider> CODEC;
-   public static final LootScoreProviderType FIXED;
-   public static final LootScoreProviderType CONTEXT;
 
    public ScoreboardNameProviders() {
       super();
    }
 
-   private static LootScoreProviderType register(String var0, MapCodec<? extends ScoreboardNameProvider> var1) {
-      return (LootScoreProviderType)Registry.register(BuiltInRegistries.LOOT_SCORE_PROVIDER_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootScoreProviderType(var1));
+   public static MapCodec<? extends ScoreboardNameProvider> bootstrap(final Registry<MapCodec<? extends ScoreboardNameProvider>> registry) {
+      Registry.register(registry, (String)"fixed", FixedScoreboardNameProvider.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (String)"context", ContextScoreboardNameProvider.MAP_CODEC);
    }
 
    static {
-      TYPED_CODEC = BuiltInRegistries.LOOT_SCORE_PROVIDER_TYPE.byNameCodec().dispatch(ScoreboardNameProvider::getType, LootScoreProviderType::codec);
-      CODEC = Codec.lazyInitialized(() -> Codec.either(ContextScoreboardNameProvider.INLINE_CODEC, TYPED_CODEC).xmap(Either::unwrap, (var0) -> {
+      TYPED_CODEC = BuiltInRegistries.LOOT_SCORE_PROVIDER_TYPE.byNameCodec().dispatch(ScoreboardNameProvider::codec, (c) -> c);
+      CODEC = Codec.lazyInitialized(() -> Codec.either(ContextScoreboardNameProvider.INLINE_CODEC, TYPED_CODEC).xmap(Either::unwrap, (provider) -> {
             Either var10000;
-            if (var0 instanceof ContextScoreboardNameProvider var1) {
-               var10000 = Either.left(var1);
+            if (provider instanceof ContextScoreboardNameProvider context) {
+               var10000 = Either.left(context);
             } else {
-               var10000 = Either.right(var0);
+               var10000 = Either.right(provider);
             }
 
             return var10000;
          }));
-      FIXED = register("fixed", FixedScoreboardNameProvider.CODEC);
-      CONTEXT = register("context", ContextScoreboardNameProvider.CODEC);
    }
 }

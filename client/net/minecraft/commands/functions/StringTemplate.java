@@ -4,55 +4,53 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 public record StringTemplate(List<String> segments, List<String> variables) {
-   public StringTemplate(List<String> var1, List<String> var2) {
+   public StringTemplate {
       super();
-      this.segments = var1;
-      this.variables = var2;
    }
 
-   public static StringTemplate fromString(String var0) {
-      ImmutableList.Builder var1 = ImmutableList.builder();
-      ImmutableList.Builder var2 = ImmutableList.builder();
-      int var3 = var0.length();
-      int var4 = 0;
-      int var5 = var0.indexOf(36);
+   public static StringTemplate fromString(final String input) {
+      ImmutableList.Builder<String> segments = ImmutableList.builder();
+      ImmutableList.Builder<String> variables = ImmutableList.builder();
+      int length = input.length();
+      int start = 0;
+      int index = input.indexOf(36);
 
-      while(var5 != -1) {
-         if (var5 != var3 - 1 && var0.charAt(var5 + 1) == '(') {
-            var1.add(var0.substring(var4, var5));
-            int var6 = var0.indexOf(41, var5 + 1);
-            if (var6 == -1) {
+      while(index != -1) {
+         if (index != length - 1 && input.charAt(index + 1) == '(') {
+            segments.add(input.substring(start, index));
+            int variableEnd = input.indexOf(41, index + 1);
+            if (variableEnd == -1) {
                throw new IllegalArgumentException("Unterminated macro variable");
             }
 
-            String var7 = var0.substring(var5 + 2, var6);
-            if (!isValidVariableName(var7)) {
-               throw new IllegalArgumentException("Invalid macro variable name '" + var7 + "'");
+            String variable = input.substring(index + 2, variableEnd);
+            if (!isValidVariableName(variable)) {
+               throw new IllegalArgumentException("Invalid macro variable name '" + variable + "'");
             }
 
-            var2.add(var7);
-            var4 = var6 + 1;
-            var5 = var0.indexOf(36, var4);
+            variables.add(variable);
+            start = variableEnd + 1;
+            index = input.indexOf(36, start);
          } else {
-            var5 = var0.indexOf(36, var5 + 1);
+            index = input.indexOf(36, index + 1);
          }
       }
 
-      if (var4 == 0) {
+      if (start == 0) {
          throw new IllegalArgumentException("No variables in macro");
       } else {
-         if (var4 != var3) {
-            var1.add(var0.substring(var4));
+         if (start != length) {
+            segments.add(input.substring(start));
          }
 
-         return new StringTemplate(var1.build(), var2.build());
+         return new StringTemplate(segments.build(), variables.build());
       }
    }
 
-   public static boolean isValidVariableName(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
-         char var2 = var0.charAt(var1);
-         if (!Character.isLetterOrDigit(var2) && var2 != '_') {
+   public static boolean isValidVariableName(final String variable) {
+      for(int i = 0; i < variable.length(); ++i) {
+         char character = variable.charAt(i);
+         if (!Character.isLetterOrDigit(character) && character != '_') {
             return false;
          }
       }
@@ -60,19 +58,19 @@ public record StringTemplate(List<String> segments, List<String> variables) {
       return true;
    }
 
-   public String substitute(List<String> var1) {
-      StringBuilder var2 = new StringBuilder();
+   public String substitute(final List<String> arguments) {
+      StringBuilder builder = new StringBuilder();
 
-      for(int var3 = 0; var3 < this.variables.size(); ++var3) {
-         var2.append((String)this.segments.get(var3)).append((String)var1.get(var3));
-         CommandFunction.checkCommandLineLength(var2);
+      for(int i = 0; i < this.variables.size(); ++i) {
+         builder.append((String)this.segments.get(i)).append((String)arguments.get(i));
+         CommandFunction.checkCommandLineLength(builder);
       }
 
       if (this.segments.size() > this.variables.size()) {
-         var2.append((String)this.segments.getLast());
+         builder.append((String)this.segments.getLast());
       }
 
-      CommandFunction.checkCommandLineLength(var2);
-      return var2.toString();
+      CommandFunction.checkCommandLineLength(builder);
+      return builder.toString();
    }
 }

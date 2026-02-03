@@ -29,6 +29,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.BeehiveBlock;
@@ -51,7 +52,6 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.AlternativesEntry;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
@@ -78,9 +78,9 @@ import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected final HolderLookup.Provider registries;
-   protected final Set<Item> explosionResistant;
-   protected final FeatureFlagSet enabledFeatures;
-   protected final Map<ResourceKey<LootTable>, LootTable.Builder> map;
+   private final Set<Item> explosionResistant;
+   private final FeatureFlagSet enabledFeatures;
+   private final Map<ResourceKey<LootTable>, LootTable.Builder> map = new HashMap();
    protected static final float[] NORMAL_LEAVES_SAPLING_CHANCES = new float[]{0.05F, 0.0625F, 0.083333336F, 0.1F};
    private static final float[] NORMAL_LEAVES_STICK_CHANCES = new float[]{0.02F, 0.022222223F, 0.025F, 0.033333335F, 0.1F};
 
@@ -104,203 +104,198 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
       return this.hasShearsOrSilkTouch().invert();
    }
 
-   protected BlockLootSubProvider(Set<Item> var1, FeatureFlagSet var2, HolderLookup.Provider var3) {
-      this(var1, var2, new HashMap(), var3);
-   }
-
-   protected BlockLootSubProvider(Set<Item> var1, FeatureFlagSet var2, Map<ResourceKey<LootTable>, LootTable.Builder> var3, HolderLookup.Provider var4) {
+   protected BlockLootSubProvider(final Set<Item> explosionResistant, final FeatureFlagSet enabledFeatures, final HolderLookup.Provider registries) {
       super();
-      this.explosionResistant = var1;
-      this.enabledFeatures = var2;
-      this.map = var3;
-      this.registries = var4;
+      this.explosionResistant = explosionResistant;
+      this.enabledFeatures = enabledFeatures;
+      this.registries = registries;
    }
 
-   protected <T extends FunctionUserBuilder<T>> T applyExplosionDecay(ItemLike var1, FunctionUserBuilder<T> var2) {
-      return (T)(!this.explosionResistant.contains(var1.asItem()) ? var2.apply(ApplyExplosionDecay.explosionDecay()) : var2.unwrap());
+   protected <T extends FunctionUserBuilder<T>> T applyExplosionDecay(final ItemLike type, final FunctionUserBuilder<T> builder) {
+      return (T)(!this.explosionResistant.contains(type.asItem()) ? builder.apply(ApplyExplosionDecay.explosionDecay()) : builder.unwrap());
    }
 
-   protected <T extends ConditionUserBuilder<T>> T applyExplosionCondition(ItemLike var1, ConditionUserBuilder<T> var2) {
-      return (T)(!this.explosionResistant.contains(var1.asItem()) ? var2.when(ExplosionCondition.survivesExplosion()) : var2.unwrap());
+   protected <T extends ConditionUserBuilder<T>> T applyExplosionCondition(final ItemLike type, final ConditionUserBuilder<T> builder) {
+      return (T)(!this.explosionResistant.contains(type.asItem()) ? builder.when(ExplosionCondition.survivesExplosion()) : builder.unwrap());
    }
 
-   public LootTable.Builder createSingleItemTable(ItemLike var1) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1))));
+   public LootTable.Builder createSingleItemTable(final ItemLike drop) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(drop, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(drop))));
    }
 
-   private static LootTable.Builder createSelfDropDispatchTable(Block var0, LootItemCondition.Builder var1, LootPoolEntryContainer.Builder<?> var2) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var0).when(var1)).otherwise(var2)));
+   private static LootTable.Builder createSelfDropDispatchTable(final Block original, final LootItemCondition.Builder condition, final LootPoolEntryContainer.Builder<?> entry) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(original).when(condition)).otherwise(entry)));
    }
 
-   protected LootTable.Builder createSilkTouchDispatchTable(Block var1, LootPoolEntryContainer.Builder<?> var2) {
-      return createSelfDropDispatchTable(var1, this.hasSilkTouch(), var2);
+   protected LootTable.Builder createSilkTouchDispatchTable(final Block original, final LootPoolEntryContainer.Builder<?> entry) {
+      return createSelfDropDispatchTable(original, this.hasSilkTouch(), entry);
    }
 
-   protected LootTable.Builder createShearsDispatchTable(Block var1, LootPoolEntryContainer.Builder<?> var2) {
-      return createSelfDropDispatchTable(var1, this.hasShears(), var2);
+   protected LootTable.Builder createShearsDispatchTable(final Block original, final LootPoolEntryContainer.Builder<?> entry) {
+      return createSelfDropDispatchTable(original, this.hasShears(), entry);
    }
 
-   protected LootTable.Builder createSilkTouchOrShearsDispatchTable(Block var1, LootPoolEntryContainer.Builder<?> var2) {
-      return createSelfDropDispatchTable(var1, this.hasShearsOrSilkTouch(), var2);
+   protected LootTable.Builder createSilkTouchOrShearsDispatchTable(final Block original, final LootPoolEntryContainer.Builder<?> entry) {
+      return createSelfDropDispatchTable(original, this.hasShearsOrSilkTouch(), entry);
    }
 
-   protected LootTable.Builder createSingleItemTableWithSilkTouch(Block var1, ItemLike var2) {
-      return this.createSilkTouchDispatchTable(var1, (LootPoolEntryContainer.Builder)this.applyExplosionCondition(var1, LootItem.lootTableItem(var2)));
+   protected LootTable.Builder createSingleItemTableWithSilkTouch(final Block original, final ItemLike drop) {
+      return this.createSilkTouchDispatchTable(original, (LootPoolEntryContainer.Builder)this.applyExplosionCondition(original, LootItem.lootTableItem(drop)));
    }
 
-   protected LootTable.Builder createSingleItemTable(ItemLike var1, NumberProvider var2) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(SetItemCountFunction.setCount(var2)))));
+   protected LootTable.Builder createSingleItemTable(final ItemLike drop, final NumberProvider count) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(drop, LootItem.lootTableItem(drop).apply(SetItemCountFunction.setCount(count)))));
    }
 
-   protected LootTable.Builder createSingleItemTableWithSilkTouch(Block var1, ItemLike var2, NumberProvider var3) {
-      return this.createSilkTouchDispatchTable(var1, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var2).apply(SetItemCountFunction.setCount(var3))));
+   protected LootTable.Builder createSingleItemTableWithSilkTouch(final Block original, final ItemLike drop, final NumberProvider count) {
+      return this.createSilkTouchDispatchTable(original, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(original, LootItem.lootTableItem(drop).apply(SetItemCountFunction.setCount(count))));
    }
 
-   private LootTable.Builder createSilkTouchOnlyTable(ItemLike var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().when(this.hasSilkTouch()).setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1)));
+   private LootTable.Builder createSilkTouchOnlyTable(final ItemLike drop) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().when(this.hasSilkTouch()).setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(drop)));
    }
 
-   private LootTable.Builder createPotFlowerItemTable(ItemLike var1) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(Blocks.FLOWER_POT, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Blocks.FLOWER_POT)))).withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1))));
+   private LootTable.Builder createPotFlowerItemTable(final ItemLike flower) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(Blocks.FLOWER_POT, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Blocks.FLOWER_POT)))).withPool((LootPool.Builder)this.applyExplosionCondition(flower, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(flower))));
    }
 
-   protected LootTable.Builder createSlabItemTable(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SlabBlock.TYPE, (Comparable)SlabType.DOUBLE)))))));
+   protected LootTable.Builder createSlabItemTable(final Block slab) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(slab, LootItem.lootTableItem(slab).apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(slab).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SlabBlock.TYPE, (Comparable)SlabType.DOUBLE)))))));
    }
 
-   protected <T extends Comparable<T> & StringRepresentable> LootTable.Builder createSinglePropConditionTable(Block var1, Property<T> var2, T var3) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(var2, var3))))));
+   protected <T extends Comparable<T> & StringRepresentable> LootTable.Builder createSinglePropConditionTable(final Block drop, final Property<T> property, final T value) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(drop, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(drop).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(drop).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(property, value))))));
    }
 
-   protected LootTable.Builder createNameableBlockEntityTable(Block var1) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME)))));
+   protected LootTable.Builder createNameableBlockEntityTable(final Block drop) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(drop, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(drop).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME)))));
    }
 
-   protected LootTable.Builder createShulkerBoxDrop(Block var1) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME).include(DataComponents.CONTAINER).include(DataComponents.LOCK).include(DataComponents.CONTAINER_LOOT)))));
+   protected LootTable.Builder createShulkerBoxDrop(final Block shulkerBox) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(shulkerBox, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(shulkerBox).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME).include(DataComponents.CONTAINER).include(DataComponents.LOCK).include(DataComponents.CONTAINER_LOOT)))));
    }
 
-   protected LootTable.Builder createCopperOreDrops(Block var1) {
-      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return this.createSilkTouchDispatchTable(var1, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(Items.RAW_COPPER).apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 5.0F))).apply(ApplyBonusCount.addOreBonusCount(var2.getOrThrow(Enchantments.FORTUNE)))));
+   protected LootTable.Builder createCopperOreDrops(final Block block) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      return this.createSilkTouchDispatchTable(block, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(block, LootItem.lootTableItem(Items.RAW_COPPER).apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 5.0F))).apply(ApplyBonusCount.addOreBonusCount(enchantments.getOrThrow(Enchantments.FORTUNE)))));
    }
 
-   protected LootTable.Builder createLapisOreDrops(Block var1) {
-      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return this.createSilkTouchDispatchTable(var1, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(Items.LAPIS_LAZULI).apply(SetItemCountFunction.setCount(UniformGenerator.between(4.0F, 9.0F))).apply(ApplyBonusCount.addOreBonusCount(var2.getOrThrow(Enchantments.FORTUNE)))));
+   protected LootTable.Builder createLapisOreDrops(final Block block) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      return this.createSilkTouchDispatchTable(block, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(block, LootItem.lootTableItem(Items.LAPIS_LAZULI).apply(SetItemCountFunction.setCount(UniformGenerator.between(4.0F, 9.0F))).apply(ApplyBonusCount.addOreBonusCount(enchantments.getOrThrow(Enchantments.FORTUNE)))));
    }
 
-   protected LootTable.Builder createRedstoneOreDrops(Block var1) {
-      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return this.createSilkTouchDispatchTable(var1, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(Items.REDSTONE).apply(SetItemCountFunction.setCount(UniformGenerator.between(4.0F, 5.0F))).apply(ApplyBonusCount.addUniformBonusCount(var2.getOrThrow(Enchantments.FORTUNE)))));
+   protected LootTable.Builder createRedstoneOreDrops(final Block block) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      return this.createSilkTouchDispatchTable(block, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(block, LootItem.lootTableItem(Items.REDSTONE).apply(SetItemCountFunction.setCount(UniformGenerator.between(4.0F, 5.0F))).apply(ApplyBonusCount.addUniformBonusCount(enchantments.getOrThrow(Enchantments.FORTUNE)))));
    }
 
-   protected LootTable.Builder createBannerDrop(Block var1) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME).include(DataComponents.ITEM_NAME).include(DataComponents.TOOLTIP_DISPLAY).include(DataComponents.BANNER_PATTERNS).include(DataComponents.RARITY)))));
+   protected LootTable.Builder createBannerDrop(final Block original) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(original, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(original).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME).include(DataComponents.ITEM_NAME).include(DataComponents.TOOLTIP_DISPLAY).include(DataComponents.BANNER_PATTERNS).include(DataComponents.RARITY)))));
    }
 
-   protected LootTable.Builder createBeeNestDrop(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().when(this.hasSilkTouch()).setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.BEES)).apply(CopyBlockState.copyState(var1).copy(BeehiveBlock.HONEY_LEVEL))));
+   protected LootTable.Builder createBeeNestDrop(final Block original) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().when(this.hasSilkTouch()).setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(original).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.BEES)).apply(CopyBlockState.copyState(original).copy(BeehiveBlock.HONEY_LEVEL))));
    }
 
-   protected LootTable.Builder createBeeHiveDrop(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var1).when(this.hasSilkTouch())).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.BEES)).apply(CopyBlockState.copyState(var1).copy(BeehiveBlock.HONEY_LEVEL)).otherwise(LootItem.lootTableItem(var1))));
+   protected LootTable.Builder createBeeHiveDrop(final Block original) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(original).when(this.hasSilkTouch())).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.BEES)).apply(CopyBlockState.copyState(original).copy(BeehiveBlock.HONEY_LEVEL)).otherwise(LootItem.lootTableItem(original))));
    }
 
-   protected LootTable.Builder createCaveVinesDrop(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().add(LootItem.lootTableItem(Items.GLOW_BERRIES)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CaveVines.BERRIES, true))));
+   protected LootTable.Builder createCaveVinesDrop(final Block original) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().add(LootItem.lootTableItem(Items.GLOW_BERRIES)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(original).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CaveVines.BERRIES, true))));
    }
 
-   protected LootTable.Builder createCopperGolemStatueBlock(Block var1) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME)).apply(CopyBlockState.copyState(var1).copy(CopperGolemStatueBlock.POSE)))));
+   protected LootTable.Builder createCopperGolemStatueBlock(final Block block) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(block).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME)).apply(CopyBlockState.copyState(block).copy(CopperGolemStatueBlock.POSE)))));
    }
 
-   protected LootTable.Builder createOreDrop(Block var1, Item var2) {
-      HolderLookup.RegistryLookup var3 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return this.createSilkTouchDispatchTable(var1, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var2).apply(ApplyBonusCount.addOreBonusCount(var3.getOrThrow(Enchantments.FORTUNE)))));
+   protected LootTable.Builder createOreDrop(final Block original, final Item drop) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      return this.createSilkTouchDispatchTable(original, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(original, LootItem.lootTableItem(drop).apply(ApplyBonusCount.addOreBonusCount(enchantments.getOrThrow(Enchantments.FORTUNE)))));
    }
 
-   protected LootTable.Builder createMushroomBlockDrop(Block var1, ItemLike var2) {
-      return this.createSilkTouchDispatchTable(var1, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var2).apply(SetItemCountFunction.setCount(UniformGenerator.between(-6.0F, 2.0F))).apply(LimitCount.limitCount(IntRange.lowerBound(0)))));
+   protected LootTable.Builder createMushroomBlockDrop(final Block original, final ItemLike drop) {
+      return this.createSilkTouchDispatchTable(original, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(original, LootItem.lootTableItem(drop).apply(SetItemCountFunction.setCount(UniformGenerator.between(-6.0F, 2.0F))).apply(LimitCount.limitCount(IntRange.lowerBound(0)))));
    }
 
-   protected LootTable.Builder createGrassDrops(Block var1) {
-      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return this.createShearsDispatchTable(var1, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Items.WHEAT_SEEDS).when(LootItemRandomChanceCondition.randomChance(0.125F))).apply(ApplyBonusCount.addUniformBonusCount(var2.getOrThrow(Enchantments.FORTUNE), 2))));
+   protected LootTable.Builder createGrassDrops(final Block original) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      return this.createShearsDispatchTable(original, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(original, ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Items.WHEAT_SEEDS).when(LootItemRandomChanceCondition.randomChance(0.125F))).apply(ApplyBonusCount.addUniformBonusCount(enchantments.getOrThrow(Enchantments.FORTUNE), 2))));
    }
 
-   public LootTable.Builder createStemDrops(Block var1, Item var2) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionDecay(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(var2).apply(StemBlock.AGE.getPossibleValues(), (var1x) -> SetItemCountFunction.setCount(BinomialDistributionGenerator.binomial(3, (float)(var1x + 1) / 15.0F)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(StemBlock.AGE, var1x)))))));
+   public LootTable.Builder createStemDrops(final Block block, final Item drop) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionDecay(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(drop).apply(StemBlock.AGE.getPossibleValues(), (age) -> SetItemCountFunction.setCount(BinomialDistributionGenerator.binomial(3, (float)(age + 1) / 15.0F)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(StemBlock.AGE, age)))))));
    }
 
-   public LootTable.Builder createAttachedStemDrops(Block var1, Item var2) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionDecay(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var2).apply(SetItemCountFunction.setCount(BinomialDistributionGenerator.binomial(3, 0.53333336F))))));
+   public LootTable.Builder createAttachedStemDrops(final Block block, final Item drop) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionDecay(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(drop).apply(SetItemCountFunction.setCount(BinomialDistributionGenerator.binomial(3, 0.53333336F))))));
    }
 
-   protected LootTable.Builder createShearsOnlyDrop(ItemLike var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(this.hasShears()).add(LootItem.lootTableItem(var1)));
+   protected LootTable.Builder createShearsOnlyDrop(final ItemLike drop) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(this.hasShears()).add(LootItem.lootTableItem(drop)));
    }
 
-   protected LootTable.Builder createShearsOrSilkTouchOnlyDrop(ItemLike var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(this.hasShearsOrSilkTouch()).add(LootItem.lootTableItem(var1)));
+   protected LootTable.Builder createShearsOrSilkTouchOnlyDrop(final ItemLike drop) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(this.hasShearsOrSilkTouch()).add(LootItem.lootTableItem(drop)));
    }
 
-   protected LootTable.Builder createMultifaceBlockDrops(Block var1, LootItemCondition.Builder var2) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, ((LootPoolSingletonContainer.Builder)((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var1).when(var2)).apply(Direction.values(), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(var1x), true))))).apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true)))));
+   protected LootTable.Builder createMultifaceBlockDrops(final Block block, final LootItemCondition.Builder condition) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(block, ((LootPoolSingletonContainer.Builder)((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(block).when(condition)).apply(Direction.values(), (dir) -> SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(dir), true))))).apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true)))));
    }
 
-   protected LootTable.Builder createMultifaceBlockDrops(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var1).apply(Direction.values(), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(var1x), true))))).apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true)))));
+   protected LootTable.Builder createMultifaceBlockDrops(final Block block) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(block, ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(block).apply(Direction.values(), (dir) -> SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(dir), true))))).apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true)))));
    }
 
-   protected LootTable.Builder createMossyCarpetBlockDrops(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, (FunctionUserBuilder)LootItem.lootTableItem(var1).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MossyCarpetBlock.BASE, true))))));
+   protected LootTable.Builder createMossyCarpetBlockDrops(final Block block) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(block, (FunctionUserBuilder)LootItem.lootTableItem(block).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MossyCarpetBlock.BASE, true))))));
    }
 
-   protected LootTable.Builder createLeavesDrops(Block var1, Block var2, float... var3) {
-      HolderLookup.RegistryLookup var4 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return this.createSilkTouchOrShearsDispatchTable(var1, ((LootPoolSingletonContainer.Builder)this.applyExplosionCondition(var1, LootItem.lootTableItem(var2))).when(BonusLevelTableCondition.bonusLevelFlatChance(var4.getOrThrow(Enchantments.FORTUNE), var3))).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(this.doesNotHaveShearsOrSilkTouch()).add(((LootPoolSingletonContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(Items.STICK).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F))))).when(BonusLevelTableCondition.bonusLevelFlatChance(var4.getOrThrow(Enchantments.FORTUNE), NORMAL_LEAVES_STICK_CHANCES))));
+   protected LootTable.Builder createLeavesDrops(final Block original, final Block sapling, final float... saplingChances) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      return this.createSilkTouchOrShearsDispatchTable(original, ((LootPoolSingletonContainer.Builder)this.applyExplosionCondition(original, LootItem.lootTableItem(sapling))).when(BonusLevelTableCondition.bonusLevelFlatChance(enchantments.getOrThrow(Enchantments.FORTUNE), saplingChances))).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(this.doesNotHaveShearsOrSilkTouch()).add(((LootPoolSingletonContainer.Builder)this.applyExplosionDecay(original, LootItem.lootTableItem(Items.STICK).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F))))).when(BonusLevelTableCondition.bonusLevelFlatChance(enchantments.getOrThrow(Enchantments.FORTUNE), NORMAL_LEAVES_STICK_CHANCES))));
    }
 
-   protected LootTable.Builder createOakLeavesDrops(Block var1, Block var2, float... var3) {
-      HolderLookup.RegistryLookup var4 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return this.createLeavesDrops(var1, var2, var3).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(this.doesNotHaveShearsOrSilkTouch()).add(((LootPoolSingletonContainer.Builder)this.applyExplosionCondition(var1, LootItem.lootTableItem(Items.APPLE))).when(BonusLevelTableCondition.bonusLevelFlatChance(var4.getOrThrow(Enchantments.FORTUNE), 0.005F, 0.0055555557F, 0.00625F, 0.008333334F, 0.025F))));
+   protected LootTable.Builder createOakLeavesDrops(final Block original, final Block sapling, final float... saplingChances) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      return this.createLeavesDrops(original, sapling, saplingChances).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(this.doesNotHaveShearsOrSilkTouch()).add(((LootPoolSingletonContainer.Builder)this.applyExplosionCondition(original, LootItem.lootTableItem(Items.APPLE))).when(BonusLevelTableCondition.bonusLevelFlatChance(enchantments.getOrThrow(Enchantments.FORTUNE), 0.005F, 0.0055555557F, 0.00625F, 0.008333334F, 0.025F))));
    }
 
-   protected LootTable.Builder createMangroveLeavesDrops(Block var1) {
-      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return this.createSilkTouchOrShearsDispatchTable(var1, ((LootPoolSingletonContainer.Builder)this.applyExplosionDecay(Blocks.MANGROVE_LEAVES, LootItem.lootTableItem(Items.STICK).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F))))).when(BonusLevelTableCondition.bonusLevelFlatChance(var2.getOrThrow(Enchantments.FORTUNE), NORMAL_LEAVES_STICK_CHANCES)));
+   protected LootTable.Builder createMangroveLeavesDrops(final Block block) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      return this.createSilkTouchOrShearsDispatchTable(block, ((LootPoolSingletonContainer.Builder)this.applyExplosionDecay(Blocks.MANGROVE_LEAVES, LootItem.lootTableItem(Items.STICK).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F))))).when(BonusLevelTableCondition.bonusLevelFlatChance(enchantments.getOrThrow(Enchantments.FORTUNE), NORMAL_LEAVES_STICK_CHANCES)));
    }
 
-   protected LootTable.Builder createCropDrops(Block var1, Item var2, Item var3, LootItemCondition.Builder var4) {
-      HolderLookup.RegistryLookup var5 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return (LootTable.Builder)this.applyExplosionDecay(var1, LootTable.lootTable().withPool(LootPool.lootPool().add(((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var2).when(var4)).otherwise(LootItem.lootTableItem(var3)))).withPool(LootPool.lootPool().when(var4).add(LootItem.lootTableItem(var3).apply(ApplyBonusCount.addBonusBinomialDistributionCount(var5.getOrThrow(Enchantments.FORTUNE), 0.5714286F, 3)))));
+   protected LootTable.Builder createCropDrops(final Block original, final Item cropDrop, final Item seedDrop, final LootItemCondition.Builder isMaxAge) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      return (LootTable.Builder)this.applyExplosionDecay(original, LootTable.lootTable().withPool(LootPool.lootPool().add(((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(cropDrop).when(isMaxAge)).otherwise(LootItem.lootTableItem(seedDrop)))).withPool(LootPool.lootPool().when(isMaxAge).add(LootItem.lootTableItem(seedDrop).apply(ApplyBonusCount.addBonusBinomialDistributionCount(enchantments.getOrThrow(Enchantments.FORTUNE), 0.5714286F, 3)))));
    }
 
-   protected LootTable.Builder createDoublePlantShearsDrop(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().when(this.hasShears()).add(LootItem.lootTableItem(var1).apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))));
+   protected LootTable.Builder createDoublePlantShearsDrop(final Block block) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().when(this.hasShears()).add(LootItem.lootTableItem(block).apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))));
    }
 
-   protected LootTable.Builder createDoublePlantWithSeedDrops(Block var1, Block var2) {
-      HolderLookup.RegistryLookup var3 = this.registries.lookupOrThrow(Registries.BLOCK);
-      AlternativesEntry.Builder var4 = ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var2).apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F))).when(this.hasShears())).otherwise(((LootPoolSingletonContainer.Builder)this.applyExplosionCondition(var1, LootItem.lootTableItem(Items.WHEAT_SEEDS))).when(LootItemRandomChanceCondition.randomChance(0.125F)));
-      return LootTable.lootTable().withPool(LootPool.lootPool().add(var4).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.LOWER))).when(LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var3, var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.UPPER))), new BlockPos(0, 1, 0)))).withPool(LootPool.lootPool().add(var4).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.UPPER))).when(LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var3, var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.LOWER))), new BlockPos(0, -1, 0))));
+   protected LootTable.Builder createDoublePlantWithSeedDrops(final Block block, final Block drop) {
+      HolderLookup.RegistryLookup<Block> blocks = this.registries.lookupOrThrow(Registries.BLOCK);
+      LootPoolEntryContainer.Builder<?> dropEntry = ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(drop).apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F))).when(this.hasShears())).otherwise(((LootPoolSingletonContainer.Builder)this.applyExplosionCondition(block, LootItem.lootTableItem(Items.WHEAT_SEEDS))).when(LootItemRandomChanceCondition.randomChance(0.125F)));
+      return LootTable.lootTable().withPool(LootPool.lootPool().add(dropEntry).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.LOWER))).when(LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(blocks, block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.UPPER))), new BlockPos(0, 1, 0)))).withPool(LootPool.lootPool().add(dropEntry).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.UPPER))).when(LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(blocks, block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.LOWER))), new BlockPos(0, -1, 0))));
    }
 
-   protected LootTable.Builder createCandleDrops(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(List.of(2, 3, 4), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)var1x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CandleBlock.CANDLES, var1x)))))));
+   protected LootTable.Builder createCandleDrops(final Block block) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(block, LootItem.lootTableItem(block).apply(List.of(2, 3, 4), (count) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)count)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CandleBlock.CANDLES, count)))))));
    }
 
-   public LootTable.Builder createSegmentedBlockDrops(Block var1) {
-      if (var1 instanceof SegmentableBlock var2) {
-         return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(IntStream.rangeClosed(1, 4).boxed().toList(), (var2x) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)var2x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(var2.getSegmentAmountProperty(), var2x)))))));
+   public LootTable.Builder createSegmentedBlockDrops(final Block block) {
+      if (block instanceof SegmentableBlock segmentableBlock) {
+         return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(block, LootItem.lootTableItem(block).apply(IntStream.rangeClosed(1, 4).boxed().toList(), (count) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)count)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(segmentableBlock.getSegmentAmountProperty(), count)))))));
       } else {
          return noDrop();
       }
    }
 
-   protected static LootTable.Builder createCandleCakeDrops(Block var0) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var0)));
+   protected static LootTable.Builder createCandleCakeDrops(final Block candle) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(candle)));
    }
 
    public static LootTable.Builder noDrop() {
@@ -309,20 +304,20 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
 
    protected abstract void generate();
 
-   public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
+   public void generate(final BiConsumer<ResourceKey<LootTable>, LootTable.Builder> output) {
       this.generate();
-      HashSet var2 = new HashSet();
+      Set<ResourceKey<LootTable>> seen = new HashSet();
 
-      for(Block var4 : BuiltInRegistries.BLOCK) {
-         if (var4.isEnabled(this.enabledFeatures)) {
-            var4.getLootTable().ifPresent((var4x) -> {
-               if (var2.add(var4x)) {
-                  LootTable.Builder var5 = (LootTable.Builder)this.map.remove(var4x);
-                  if (var5 == null) {
-                     throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var4x.identifier(), BuiltInRegistries.BLOCK.getKey(var4)));
+      for(Block block : BuiltInRegistries.BLOCK) {
+         if (block.isEnabled(this.enabledFeatures)) {
+            block.getLootTable().ifPresent((lootTable) -> {
+               if (seen.add(lootTable)) {
+                  LootTable.Builder builder = (LootTable.Builder)this.map.remove(lootTable);
+                  if (builder == null) {
+                     throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", lootTable.identifier(), BuiltInRegistries.BLOCK.getKey(block)));
                   }
 
-                  var1.accept(var4x, var5);
+                  output.accept(lootTable, builder);
                }
 
             });
@@ -334,42 +329,42 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
       }
    }
 
-   protected void addNetherVinesDropTable(Block var1, Block var2) {
-      HolderLookup.RegistryLookup var3 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      LootTable.Builder var4 = this.createSilkTouchOrShearsDispatchTable(var1, LootItem.lootTableItem(var1).when(BonusLevelTableCondition.bonusLevelFlatChance(var3.getOrThrow(Enchantments.FORTUNE), 0.33F, 0.55F, 0.77F, 1.0F)));
-      this.add(var1, var4);
-      this.add(var2, var4);
+   protected void addNetherVinesDropTable(final Block vineBlock, final Block plantBlock) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      LootTable.Builder builder = this.createSilkTouchOrShearsDispatchTable(vineBlock, LootItem.lootTableItem(vineBlock).when(BonusLevelTableCondition.bonusLevelFlatChance(enchantments.getOrThrow(Enchantments.FORTUNE), 0.33F, 0.55F, 0.77F, 1.0F)));
+      this.add(vineBlock, builder);
+      this.add(plantBlock, builder);
    }
 
-   protected LootTable.Builder createDoorTable(Block var1) {
-      return this.createSinglePropConditionTable(var1, DoorBlock.HALF, DoubleBlockHalf.LOWER);
+   protected LootTable.Builder createDoorTable(final Block block) {
+      return this.createSinglePropConditionTable(block, DoorBlock.HALF, DoubleBlockHalf.LOWER);
    }
 
-   protected void dropPottedContents(Block var1) {
-      this.add(var1, (Function)((var1x) -> this.createPotFlowerItemTable(((FlowerPotBlock)var1x).getPotted())));
+   protected void dropPottedContents(final Block potted) {
+      this.add(potted, (Function)((block) -> this.createPotFlowerItemTable(((FlowerPotBlock)block).getPotted())));
    }
 
-   protected void otherWhenSilkTouch(Block var1, Block var2) {
-      this.add(var1, this.createSilkTouchOnlyTable(var2));
+   protected void otherWhenSilkTouch(final Block block, final Block other) {
+      this.add(block, this.createSilkTouchOnlyTable(other));
    }
 
-   protected void dropOther(Block var1, ItemLike var2) {
-      this.add(var1, this.createSingleItemTable(var2));
+   protected void dropOther(final Block block, final ItemLike drop) {
+      this.add(block, this.createSingleItemTable(drop));
    }
 
-   protected void dropWhenSilkTouch(Block var1) {
-      this.otherWhenSilkTouch(var1, var1);
+   protected void dropWhenSilkTouch(final Block block) {
+      this.otherWhenSilkTouch(block, block);
    }
 
-   protected void dropSelf(Block var1) {
-      this.dropOther(var1, var1);
+   protected void dropSelf(final Block block) {
+      this.dropOther(block, block);
    }
 
-   protected void add(Block var1, Function<Block, LootTable.Builder> var2) {
-      this.add(var1, (LootTable.Builder)var2.apply(var1));
+   protected void add(final Block block, final Function<Block, LootTable.Builder> builder) {
+      this.add(block, (LootTable.Builder)builder.apply(block));
    }
 
-   protected void add(Block var1, LootTable.Builder var2) {
-      this.map.put((ResourceKey)var1.getLootTable().orElseThrow(() -> new IllegalStateException("Block " + String.valueOf(var1) + " does not have loot table")), var2);
+   protected void add(final Block block, final LootTable.Builder builder) {
+      this.map.put((ResourceKey)block.getLootTable().orElseThrow(() -> new IllegalStateException("Block " + String.valueOf(block) + " does not have loot table")), builder);
    }
 }

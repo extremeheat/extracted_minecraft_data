@@ -22,44 +22,44 @@ import org.jspecify.annotations.Nullable;
 public interface CollisionGetter extends BlockGetter {
    WorldBorder getWorldBorder();
 
-   @Nullable BlockGetter getChunkForCollisions(int var1, int var2);
+   @Nullable BlockGetter getChunkForCollisions(int chunkX, int chunkZ);
 
-   default boolean isUnobstructed(@Nullable Entity var1, VoxelShape var2) {
+   default boolean isUnobstructed(final @Nullable Entity source, final VoxelShape shape) {
       return true;
    }
 
-   default boolean isUnobstructed(BlockState var1, BlockPos var2, CollisionContext var3) {
-      VoxelShape var4 = var1.getCollisionShape(this, var2, var3);
-      return var4.isEmpty() || this.isUnobstructed((Entity)null, var4.move((Vec3i)var2));
+   default boolean isUnobstructed(final BlockState state, final BlockPos pos, final CollisionContext context) {
+      VoxelShape shape = state.getCollisionShape(this, pos, context);
+      return shape.isEmpty() || this.isUnobstructed((Entity)null, shape.move((Vec3i)pos));
    }
 
-   default boolean isUnobstructed(Entity var1) {
-      return this.isUnobstructed(var1, Shapes.create(var1.getBoundingBox()));
+   default boolean isUnobstructed(final Entity ignore) {
+      return this.isUnobstructed(ignore, Shapes.create(ignore.getBoundingBox()));
    }
 
-   default boolean noCollision(AABB var1) {
-      return this.noCollision((Entity)null, var1);
+   default boolean noCollision(final AABB aabb) {
+      return this.noCollision((Entity)null, aabb);
    }
 
-   default boolean noCollision(Entity var1) {
-      return this.noCollision(var1, var1.getBoundingBox());
+   default boolean noCollision(final Entity source) {
+      return this.noCollision(source, source.getBoundingBox());
    }
 
-   default boolean noCollision(@Nullable Entity var1, AABB var2) {
-      return this.noCollision(var1, var2, false);
+   default boolean noCollision(final @Nullable Entity entity, final AABB aabb) {
+      return this.noCollision(entity, aabb, false);
    }
 
-   default boolean noCollision(@Nullable Entity var1, AABB var2, boolean var3) {
-      return this.noBlockCollision(var1, var2, var3) && this.noEntityCollision(var1, var2) && this.noBorderCollision(var1, var2);
+   default boolean noCollision(final @Nullable Entity entity, final AABB aabb, final boolean alwaysCollideWithFluids) {
+      return this.noBlockCollision(entity, aabb, alwaysCollideWithFluids) && this.noEntityCollision(entity, aabb) && this.noBorderCollision(entity, aabb);
    }
 
-   default boolean noBlockCollision(@Nullable Entity var1, AABB var2) {
-      return this.noBlockCollision(var1, var2, false);
+   default boolean noBlockCollision(final @Nullable Entity entity, final AABB aabb) {
+      return this.noBlockCollision(entity, aabb, false);
    }
 
-   default boolean noBlockCollision(@Nullable Entity var1, AABB var2, boolean var3) {
-      for(VoxelShape var6 : var3 ? this.getBlockAndLiquidCollisions(var1, var2) : this.getBlockCollisions(var1, var2)) {
-         if (!var6.isEmpty()) {
+   default boolean noBlockCollision(final @Nullable Entity entity, final AABB aabb, final boolean alwaysCollideWithFluids) {
+      for(VoxelShape blockCollision : alwaysCollideWithFluids ? this.getBlockAndLiquidCollisions(entity, aabb) : this.getBlockCollisions(entity, aabb)) {
+         if (!blockCollision.isEmpty()) {
             return false;
          }
       }
@@ -67,68 +67,68 @@ public interface CollisionGetter extends BlockGetter {
       return true;
    }
 
-   default boolean noEntityCollision(@Nullable Entity var1, AABB var2) {
-      return this.getEntityCollisions(var1, var2).isEmpty();
+   default boolean noEntityCollision(final @Nullable Entity entity, final AABB aabb) {
+      return this.getEntityCollisions(entity, aabb).isEmpty();
    }
 
-   default boolean noBorderCollision(@Nullable Entity var1, AABB var2) {
-      if (var1 == null) {
+   default boolean noBorderCollision(final @Nullable Entity entity, final AABB aabb) {
+      if (entity == null) {
          return true;
       } else {
-         VoxelShape var3 = this.borderCollision(var1, var2);
-         return var3 == null || !Shapes.joinIsNotEmpty(var3, Shapes.create(var2), BooleanOp.AND);
+         VoxelShape borderShape = this.borderCollision(entity, aabb);
+         return borderShape == null || !Shapes.joinIsNotEmpty(borderShape, Shapes.create(aabb), BooleanOp.AND);
       }
    }
 
-   List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2);
+   List<VoxelShape> getEntityCollisions(final @Nullable Entity source, final AABB testArea);
 
-   default Iterable<VoxelShape> getCollisions(@Nullable Entity var1, AABB var2) {
-      List var3 = this.getEntityCollisions(var1, var2);
-      Iterable var4 = this.getBlockCollisions(var1, var2);
-      return var3.isEmpty() ? var4 : Iterables.concat(var3, var4);
+   default Iterable<VoxelShape> getCollisions(final @Nullable Entity source, final AABB box) {
+      List<VoxelShape> entityCollisions = this.getEntityCollisions(source, box);
+      Iterable<VoxelShape> blockCollisions = this.getBlockCollisions(source, box);
+      return entityCollisions.isEmpty() ? blockCollisions : Iterables.concat(entityCollisions, blockCollisions);
    }
 
-   default Iterable<VoxelShape> getPreMoveCollisions(@Nullable Entity var1, AABB var2, Vec3 var3) {
-      List var4 = this.getEntityCollisions(var1, var2);
-      Iterable var5 = this.getBlockCollisionsFromContext(CollisionContext.withPosition(var1, var3.y), var2);
-      return var4.isEmpty() ? var5 : Iterables.concat(var4, var5);
+   default Iterable<VoxelShape> getPreMoveCollisions(final @Nullable Entity source, final AABB box, final Vec3 oldPos) {
+      List<VoxelShape> entityCollisions = this.getEntityCollisions(source, box);
+      Iterable<VoxelShape> blockCollisions = this.getBlockCollisionsFromContext(CollisionContext.withPosition(source, oldPos.y), box);
+      return entityCollisions.isEmpty() ? blockCollisions : Iterables.concat(entityCollisions, blockCollisions);
    }
 
-   default Iterable<VoxelShape> getBlockCollisions(@Nullable Entity var1, AABB var2) {
-      return this.getBlockCollisionsFromContext(var1 == null ? CollisionContext.empty() : CollisionContext.of(var1), var2);
+   default Iterable<VoxelShape> getBlockCollisions(final @Nullable Entity source, final AABB box) {
+      return this.getBlockCollisionsFromContext(source == null ? CollisionContext.empty() : CollisionContext.of(source), box);
    }
 
-   default Iterable<VoxelShape> getBlockAndLiquidCollisions(@Nullable Entity var1, AABB var2) {
-      return this.getBlockCollisionsFromContext(var1 == null ? CollisionContext.emptyWithFluidCollisions() : CollisionContext.of(var1, true), var2);
+   default Iterable<VoxelShape> getBlockAndLiquidCollisions(final @Nullable Entity source, final AABB box) {
+      return this.getBlockCollisionsFromContext(source == null ? CollisionContext.emptyWithFluidCollisions() : CollisionContext.of(source, true), box);
    }
 
-   private Iterable<VoxelShape> getBlockCollisionsFromContext(CollisionContext var1, AABB var2) {
-      return () -> new BlockCollisions(this, var1, var2, false, (var0, var1x) -> var1x);
+   private Iterable<VoxelShape> getBlockCollisionsFromContext(final CollisionContext source, final AABB box) {
+      return () -> new BlockCollisions(this, source, box, false, (p, shape) -> shape);
    }
 
-   private @Nullable VoxelShape borderCollision(Entity var1, AABB var2) {
-      WorldBorder var3 = this.getWorldBorder();
-      return var3.isInsideCloseToBorder(var1, var2) ? var3.getCollisionShape() : null;
+   private @Nullable VoxelShape borderCollision(final Entity source, final AABB box) {
+      WorldBorder worldBorder = this.getWorldBorder();
+      return worldBorder.isInsideCloseToBorder(source, box) ? worldBorder.getCollisionShape() : null;
    }
 
-   default BlockHitResult clipIncludingBorder(ClipContext var1) {
-      BlockHitResult var2 = this.clip(var1);
-      WorldBorder var3 = this.getWorldBorder();
-      if (var3.isWithinBounds(var1.getFrom()) && !var3.isWithinBounds(var2.getLocation())) {
-         Vec3 var4 = var2.getLocation().subtract(var1.getFrom());
-         Direction var5 = Direction.getApproximateNearest(var4.x, var4.y, var4.z);
-         Vec3 var6 = var3.clampVec3ToBound(var2.getLocation());
-         return new BlockHitResult(var6, var5, BlockPos.containing(var6), false, true);
+   default BlockHitResult clipIncludingBorder(final ClipContext c) {
+      BlockHitResult hitResult = this.clip(c);
+      WorldBorder worldBorder = this.getWorldBorder();
+      if (worldBorder.isWithinBounds(c.getFrom()) && !worldBorder.isWithinBounds(hitResult.getLocation())) {
+         Vec3 delta = hitResult.getLocation().subtract(c.getFrom());
+         Direction deltaDirection = Direction.getApproximateNearest(delta.x, delta.y, delta.z);
+         Vec3 hit = worldBorder.clampVec3ToBound(hitResult.getLocation());
+         return new BlockHitResult(hit, deltaDirection, BlockPos.containing(hit), false, true);
       } else {
-         return var2;
+         return hitResult;
       }
    }
 
-   default boolean collidesWithSuffocatingBlock(@Nullable Entity var1, AABB var2) {
-      BlockCollisions var3 = new BlockCollisions(this, var1, var2, true, (var0, var1x) -> var1x);
+   default boolean collidesWithSuffocatingBlock(final @Nullable Entity source, final AABB box) {
+      BlockCollisions<VoxelShape> blockCollisions = new BlockCollisions<VoxelShape>(this, source, box, true, (p, shape) -> shape);
 
-      while(var3.hasNext()) {
-         if (!((VoxelShape)var3.next()).isEmpty()) {
+      while(blockCollisions.hasNext()) {
+         if (!((VoxelShape)blockCollisions.next()).isEmpty()) {
             return true;
          }
       }
@@ -136,31 +136,31 @@ public interface CollisionGetter extends BlockGetter {
       return false;
    }
 
-   default Optional<BlockPos> findSupportingBlock(Entity var1, AABB var2) {
-      BlockPos var3 = null;
-      double var4 = 1.7976931348623157E308;
-      BlockCollisions var6 = new BlockCollisions(this, var1, var2, false, (var0, var1x) -> var0);
+   default Optional<BlockPos> findSupportingBlock(final Entity source, final AABB box) {
+      BlockPos mainSupport = null;
+      double mainSupportDistance = 1.7976931348623157E308;
+      BlockCollisions<BlockPos> blockCollisions = new BlockCollisions<BlockPos>(this, source, box, false, (posx, shape) -> posx);
 
-      while(var6.hasNext()) {
-         BlockPos var7 = (BlockPos)var6.next();
-         double var8 = var7.distToCenterSqr(var1.position());
-         if (var8 < var4 || var8 == var4 && (var3 == null || var3.compareTo(var7) < 0)) {
-            var3 = var7.immutable();
-            var4 = var8;
+      while(blockCollisions.hasNext()) {
+         BlockPos pos = (BlockPos)blockCollisions.next();
+         double distance = pos.distToCenterSqr(source.position());
+         if (distance < mainSupportDistance || distance == mainSupportDistance && (mainSupport == null || mainSupport.compareTo(pos) < 0)) {
+            mainSupport = pos.immutable();
+            mainSupportDistance = distance;
          }
       }
 
-      return Optional.ofNullable(var3);
+      return Optional.ofNullable(mainSupport);
    }
 
-   default Optional<Vec3> findFreePosition(@Nullable Entity var1, VoxelShape var2, Vec3 var3, double var4, double var6, double var8) {
-      if (var2.isEmpty()) {
+   default Optional<Vec3> findFreePosition(final @Nullable Entity source, final VoxelShape allowedCenters, final Vec3 preferredCenter, final double sizeX, final double sizeY, final double sizeZ) {
+      if (allowedCenters.isEmpty()) {
          return Optional.empty();
       } else {
-         AABB var10 = var2.bounds().inflate(var4, var6, var8);
-         VoxelShape var11 = (VoxelShape)StreamSupport.stream(this.getBlockCollisions(var1, var10).spliterator(), false).filter((var1x) -> this.getWorldBorder() == null || this.getWorldBorder().isWithinBounds(var1x.bounds())).flatMap((var0) -> var0.toAabbs().stream()).map((var6x) -> var6x.inflate(var4 / 2.0, var6 / 2.0, var8 / 2.0)).map(Shapes::create).reduce(Shapes.empty(), Shapes::or);
-         VoxelShape var12 = Shapes.join(var2, var11, BooleanOp.ONLY_FIRST);
-         return var12.closestPointTo(var3);
+         AABB searchArea = allowedCenters.bounds().inflate(sizeX, sizeY, sizeZ);
+         VoxelShape expandedCollisions = (VoxelShape)StreamSupport.stream(this.getBlockCollisions(source, searchArea).spliterator(), false).filter((shape) -> this.getWorldBorder() == null || this.getWorldBorder().isWithinBounds(shape.bounds())).flatMap((shape) -> shape.toAabbs().stream()).map((aabb) -> aabb.inflate(sizeX / 2.0, sizeY / 2.0, sizeZ / 2.0)).map(Shapes::create).reduce(Shapes.empty(), Shapes::or);
+         VoxelShape freeSpots = Shapes.join(allowedCenters, expandedCollisions, BooleanOp.ONLY_FIRST);
+         return freeSpots.closestPointTo(preferredCenter);
       }
    }
 }

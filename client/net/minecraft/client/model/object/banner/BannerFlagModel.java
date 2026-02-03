@@ -13,20 +13,20 @@ import net.minecraft.util.Mth;
 public class BannerFlagModel extends Model<Float> {
    private final ModelPart flag;
 
-   public BannerFlagModel(ModelPart var1) {
-      super(var1, RenderTypes::entitySolid);
-      this.flag = var1.getChild("flag");
+   public BannerFlagModel(final ModelPart root) {
+      super(root, RenderTypes::entitySolid);
+      this.flag = root.getChild("flag");
    }
 
-   public static LayerDefinition createFlagLayer(boolean var0) {
-      MeshDefinition var1 = new MeshDefinition();
-      PartDefinition var2 = var1.getRoot();
-      var2.addOrReplaceChild("flag", CubeListBuilder.create().texOffs(0, 0).addBox(-10.0F, 0.0F, -2.0F, 20.0F, 40.0F, 1.0F), PartPose.offset(0.0F, var0 ? -44.0F : -20.5F, var0 ? 0.0F : 10.5F));
-      return LayerDefinition.create(var1, 64, 64);
+   public static LayerDefinition createFlagLayer(final boolean standing) {
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      root.addOrReplaceChild("flag", CubeListBuilder.create().texOffs(0, 0).addBox(-10.0F, 0.0F, -2.0F, 20.0F, 40.0F, 1.0F), PartPose.offset(0.0F, standing ? -44.0F : -20.5F, standing ? 0.0F : 10.5F));
+      return LayerDefinition.create(mesh, 64, 64);
    }
 
-   public void setupAnim(Float var1) {
-      super.setupAnim(var1);
-      this.flag.xRot = (-0.0125F + 0.01F * Mth.cos((double)(6.2831855F * var1))) * 3.1415927F;
+   public void setupAnim(final Float phase) {
+      super.setupAnim(phase);
+      this.flag.xRot = (-0.0125F + 0.01F * Mth.cos((double)(6.2831855F * phase))) * 3.1415927F;
    }
 }

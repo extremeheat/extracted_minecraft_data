@@ -5,7 +5,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
@@ -22,12 +21,8 @@ public record GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable C
    private static final GuiMessageTag CHAT_NOT_SECURE;
    private static final GuiMessageTag CHAT_ERROR;
 
-   public GuiMessageTag(int var1, @Nullable Icon var2, @Nullable Component var3, @Nullable String var4) {
+   public GuiMessageTag {
       super();
-      this.indicatorColor = var1;
-      this.icon = var2;
-      this.text = var3;
-      this.logTag = var4;
    }
 
    public static GuiMessageTag system() {
@@ -42,10 +37,10 @@ public record GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable C
       return CHAT_NOT_SECURE;
    }
 
-   public static GuiMessageTag chatModified(String var0) {
-      MutableComponent var1 = Component.literal(var0).withStyle(ChatFormatting.GRAY);
-      MutableComponent var2 = Component.empty().append(CHAT_MODIFIED_TEXT).append(CommonComponents.NEW_LINE).append((Component)var1);
-      return new GuiMessageTag(6316128, GuiMessageTag.Icon.CHAT_MODIFIED, var2, "Modified");
+   public static GuiMessageTag chatModified(final String originalContent) {
+      Component decoratedOriginal = Component.literal(originalContent).withStyle(ChatFormatting.GRAY);
+      Component text = Component.empty().append(CHAT_MODIFIED_TEXT).append(CommonComponents.NEW_LINE).append(decoratedOriginal);
+      return new GuiMessageTag(6316128, GuiMessageTag.Icon.CHAT_MODIFIED, text, "Modified");
    }
 
    public static GuiMessageTag chatError() {
@@ -66,14 +61,14 @@ public record GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable C
       public final int width;
       public final int height;
 
-      private Icon(final Identifier var3, final int var4, final int var5) {
-         this.sprite = var3;
-         this.width = var4;
-         this.height = var5;
+      private Icon(final Identifier sprite, final int width, final int height) {
+         this.sprite = sprite;
+         this.width = width;
+         this.height = height;
       }
 
-      public void draw(GuiGraphics var1, int var2, int var3) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, var2, var3, this.width, this.height);
+      public void draw(final GuiGraphics graphics, final int x, final int y) {
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, x, y, this.width, this.height);
       }
 
       // $FF: synthetic method

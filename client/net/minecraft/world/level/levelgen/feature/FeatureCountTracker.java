@@ -27,20 +27,20 @@ public class FeatureCountTracker {
       super();
    }
 
-   public static void chunkDecorated(ServerLevel var0) {
+   public static void chunkDecorated(final ServerLevel level) {
       try {
-         ((LevelData)data.get(var0)).chunksWithFeatures().increment();
-      } catch (Exception var2) {
-         LOGGER.error("Failed to increment chunk count", var2);
+         ((LevelData)data.get(level)).chunksWithFeatures().increment();
+      } catch (Exception e) {
+         LOGGER.error("Failed to increment chunk count", e);
       }
 
    }
 
-   public static void featurePlaced(ServerLevel var0, ConfiguredFeature<?, ?> var1, Optional<PlacedFeature> var2) {
+   public static void featurePlaced(final ServerLevel level, final ConfiguredFeature<?, ?> feature, final Optional<PlacedFeature> topFeature) {
       try {
-         ((LevelData)data.get(var0)).featureData().computeInt(new FeatureData(var1, var2), (var0x, var1x) -> var1x == null ? 1 : var1x + 1);
-      } catch (Exception var4) {
-         LOGGER.error("Failed to increment feature count", var4);
+         ((LevelData)data.get(level)).featureData().computeInt(new FeatureData(feature, topFeature), (f, old) -> old == null ? 1 : old + 1);
+      } catch (Exception e) {
+         LOGGER.error("Failed to increment feature count", e);
       }
 
    }
@@ -52,21 +52,21 @@ public class FeatureCountTracker {
 
    public static void logCounts() {
       LOGGER.debug("Logging feature counts:");
-      data.asMap().forEach((var0, var1) -> {
-         String var2 = var0.dimension().identifier().toString();
-         boolean var3 = var0.getServer().isRunning();
-         Registry var4 = var0.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
-         String var5 = (var3 ? "running" : "dead") + " " + var2;
-         int var6 = var1.chunksWithFeatures().intValue();
-         LOGGER.debug("{} total_chunks: {}", var5, var6);
-         var1.featureData().forEach((var3x, var4x) -> {
+      data.asMap().forEach((level, featureCounts) -> {
+         String name = level.dimension().identifier().toString();
+         boolean running = level.getServer().isRunning();
+         Registry<PlacedFeature> featureRegistry = level.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
+         String prefix = (running ? "running" : "dead") + " " + name;
+         int chunks = featureCounts.chunksWithFeatures().intValue();
+         LOGGER.debug("{} total_chunks: {}", prefix, chunks);
+         featureCounts.featureData().forEach((data, count) -> {
             Logger var10000 = LOGGER;
-            Object[] var10002 = new Object[]{var5, String.format(Locale.ROOT, "%10d", var4x), String.format(Locale.ROOT, "%10f", (double)var4x / (double)var6), null, null, null};
-            Optional var10005 = var3x.topFeature();
-            Objects.requireNonNull(var4);
-            var10002[3] = var10005.flatMap(var4::getResourceKey).map(ResourceKey::identifier);
-            var10002[4] = var3x.feature().feature();
-            var10002[5] = var3x.feature();
+            Object[] var10002 = new Object[]{prefix, String.format(Locale.ROOT, "%10d", count), String.format(Locale.ROOT, "%10f", (double)count / (double)chunks), null, null, null};
+            Optional var10005 = data.topFeature();
+            Objects.requireNonNull(featureRegistry);
+            var10002[3] = var10005.flatMap(featureRegistry::getResourceKey).map(ResourceKey::identifier);
+            var10002[4] = data.feature().feature();
+            var10002[5] = data.feature();
             var10000.debug("{} {} {} {} {} {}", var10002);
          });
       });
@@ -74,30 +74,21 @@ public class FeatureCountTracker {
 
    static {
       data = CacheBuilder.newBuilder().weakKeys().expireAfterAccess(5L, TimeUnit.MINUTES).build(new CacheLoader<ServerLevel, LevelData>() {
-         public LevelData load(ServerLevel var1) {
+         public LevelData load(final ServerLevel level) {
             return new LevelData(Object2IntMaps.synchronize(new Object2IntOpenHashMap()), new MutableInt(0));
-         }
-
-         // $FF: synthetic method
-         public Object load(final Object var1) throws Exception {
-            return this.load((ServerLevel)var1);
          }
       });
    }
 
-   static record FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
-      FeatureData(ConfiguredFeature<?, ?> var1, Optional<PlacedFeature> var2) {
+   private static record FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
+      private FeatureData {
          super();
-         this.feature = var1;
-         this.topFeature = var2;
       }
    }
 
-   static record LevelData(Object2IntMap<FeatureData> featureData, MutableInt chunksWithFeatures) {
-      LevelData(Object2IntMap<FeatureData> var1, MutableInt var2) {
+   private static record LevelData(Object2IntMap<FeatureData> featureData, MutableInt chunksWithFeatures) {
+      private LevelData {
          super();
-         this.featureData = var1;
-         this.chunksWithFeatures = var2;
       }
    }
 }

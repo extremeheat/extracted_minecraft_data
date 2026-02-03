@@ -8,13 +8,13 @@ import com.mojang.datafixers.types.Type;
 public class DecoratedPotFieldRenameFix extends DataFix {
    private static final String DECORATED_POT_ID = "minecraft:decorated_pot";
 
-   public DecoratedPotFieldRenameFix(Schema var1) {
-      super(var1, true);
+   public DecoratedPotFieldRenameFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getChoiceType(References.BLOCK_ENTITY, "minecraft:decorated_pot");
-      Type var2 = this.getOutputSchema().getChoiceType(References.BLOCK_ENTITY, "minecraft:decorated_pot");
-      return this.convertUnchecked("DecoratedPotFieldRenameFix", var1, var2);
+      Type<?> oldDecoratedPot = this.getInputSchema().getChoiceType(References.BLOCK_ENTITY, "minecraft:decorated_pot");
+      Type<?> newDecoratedPot = this.getOutputSchema().getChoiceType(References.BLOCK_ENTITY, "minecraft:decorated_pot");
+      return this.convertUnchecked("DecoratedPotFieldRenameFix", oldDecoratedPot, newDecoratedPot);
    }
 }

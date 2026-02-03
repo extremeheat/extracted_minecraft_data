@@ -13,11 +13,11 @@ public class CookiePacketTypes {
       super();
    }
 
-   private static <T extends Packet<ClientCookiePacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(var0));
+   private static <T extends Packet<ClientCookiePacketListener>> PacketType<T> createClientbound(final String id) {
+      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(id));
    }
 
-   private static <T extends Packet<ServerCookiePacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(var0));
+   private static <T extends Packet<ServerCookiePacketListener>> PacketType<T> createServerbound(final String id) {
+      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(id));
    }
 }

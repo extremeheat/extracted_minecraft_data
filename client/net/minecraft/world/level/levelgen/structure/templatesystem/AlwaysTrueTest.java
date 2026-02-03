@@ -12,7 +12,7 @@ public class AlwaysTrueTest extends RuleTest {
       super();
    }
 
-   public boolean test(BlockState var1, RandomSource var2) {
+   public boolean test(final BlockState blockState, final RandomSource random) {
       return true;
    }
 

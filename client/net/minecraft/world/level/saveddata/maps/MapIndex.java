@@ -8,7 +8,7 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 
 public class MapIndex extends SavedData {
    private static final int NO_MAP_ID = -1;
-   public static final Codec<MapIndex> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.optionalFieldOf("map", -1).forGetter((var0x) -> var0x.lastMapId)).apply(var0, MapIndex::new));
+   public static final Codec<MapIndex> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.INT.optionalFieldOf("map", -1).forGetter((m) -> m.lastMapId)).apply(i, MapIndex::new));
    public static final SavedDataType<MapIndex> TYPE;
    private int lastMapId;
 
@@ -16,15 +16,15 @@ public class MapIndex extends SavedData {
       this(-1);
    }
 
-   public MapIndex(int var1) {
+   public MapIndex(final int lastMapId) {
       super();
-      this.lastMapId = var1;
+      this.lastMapId = lastMapId;
    }
 
    public MapId getNextMapId() {
-      MapId var1 = new MapId(++this.lastMapId);
+      MapId id = new MapId(++this.lastMapId);
       this.setDirty();
-      return var1;
+      return id;
    }
 
    static {

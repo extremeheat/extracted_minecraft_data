@@ -21,39 +21,39 @@ public class Backup extends ValueObject {
    public final Map<String, String> metadata;
    public final Map<String, String> changeList = new HashMap();
 
-   private Backup(String var1, Instant var2, long var3, Map<String, String> var5) {
+   private Backup(final String backupId, final Instant lastModified, final long size, final Map<String, String> metadata) {
       super();
-      this.backupId = var1;
-      this.lastModified = var2;
-      this.size = var3;
-      this.metadata = var5;
+      this.backupId = backupId;
+      this.lastModified = lastModified;
+      this.size = size;
+      this.metadata = metadata;
    }
 
    public ZonedDateTime lastModifiedDate() {
       return ZonedDateTime.ofInstant(this.lastModified, ZoneId.systemDefault());
    }
 
-   public static @Nullable Backup parse(JsonElement var0) {
-      JsonObject var1 = var0.getAsJsonObject();
+   public static @Nullable Backup parse(final JsonElement node) {
+      JsonObject object = node.getAsJsonObject();
 
       try {
-         String var2 = JsonUtils.getStringOr("backupId", var1, "");
-         Instant var3 = JsonUtils.getDateOr("lastModifiedDate", var1);
-         long var4 = JsonUtils.getLongOr("size", var1, 0L);
-         HashMap var6 = new HashMap();
-         if (var1.has("metadata")) {
-            JsonObject var7 = var1.getAsJsonObject("metadata");
+         String backupId = JsonUtils.getStringOr("backupId", object, "");
+         Instant lastModifiedDate = JsonUtils.getDateOr("lastModifiedDate", object);
+         long size = JsonUtils.getLongOr("size", object, 0L);
+         Map<String, String> metadata = new HashMap();
+         if (object.has("metadata")) {
+            JsonObject metadataObject = object.getAsJsonObject("metadata");
 
-            for(Map.Entry var10 : var7.entrySet()) {
-               if (!((JsonElement)var10.getValue()).isJsonNull()) {
-                  var6.put((String)var10.getKey(), ((JsonElement)var10.getValue()).getAsString());
+            for(Map.Entry<String, JsonElement> elem : metadataObject.entrySet()) {
+               if (!((JsonElement)elem.getValue()).isJsonNull()) {
+                  metadata.put((String)elem.getKey(), ((JsonElement)elem.getValue()).getAsString());
                }
             }
          }
 
-         return new Backup(var2, var3, var4, var6);
-      } catch (Exception var11) {
-         LOGGER.error("Could not parse Backup", var11);
+         return new Backup(backupId, lastModifiedDate, size, metadata);
+      } catch (Exception e) {
+         LOGGER.error("Could not parse Backup", e);
          return null;
       }
    }

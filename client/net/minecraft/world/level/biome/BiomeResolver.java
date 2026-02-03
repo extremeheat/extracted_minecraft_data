@@ -3,5 +3,5 @@ package net.minecraft.world.level.biome;
 import net.minecraft.core.Holder;
 
 public interface BiomeResolver {
-   Holder<Biome> getNoiseBiome(int var1, int var2, int var3, Climate.Sampler var4);
+   Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ, final Climate.Sampler sampler);
 }

@@ -17,12 +17,12 @@ public class AdultSensor extends Sensor<LivingEntity> {
       return ImmutableSet.of(MemoryModuleType.NEAREST_VISIBLE_ADULT, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
    }
 
-   protected void doTick(ServerLevel var1, LivingEntity var2) {
-      var2.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).ifPresent((var2x) -> this.setNearestVisibleAdult(var2, var2x));
+   protected void doTick(final ServerLevel level, final LivingEntity body) {
+      body.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).ifPresent((livingEntities) -> this.setNearestVisibleAdult(body, livingEntities));
    }
 
-   protected void setNearestVisibleAdult(LivingEntity var1, NearestVisibleLivingEntities var2) {
-      Optional var3 = var2.findClosest((var1x) -> var1x.getType() == var1.getType() && !var1x.isBaby());
-      var1.getBrain().setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT, var3);
+   protected void setNearestVisibleAdult(final LivingEntity body, final NearestVisibleLivingEntities visibleLivingEntities) {
+      Optional<LivingEntity> adult = visibleLivingEntities.findClosest((entity) -> entity.getType() == body.getType() && !entity.isBaby());
+      body.getBrain().setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT, adult);
    }
 }

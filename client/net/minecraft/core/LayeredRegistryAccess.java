@@ -14,72 +14,72 @@ public class LayeredRegistryAccess<T> {
    private final List<RegistryAccess.Frozen> values;
    private final RegistryAccess.Frozen composite;
 
-   public LayeredRegistryAccess(List<T> var1) {
-      this(var1, (List)Util.make(() -> {
-         RegistryAccess.Frozen[] var1x = new RegistryAccess.Frozen[var1.size()];
-         Arrays.fill(var1x, RegistryAccess.EMPTY);
-         return Arrays.asList(var1x);
+   public LayeredRegistryAccess(final List<T> keys) {
+      this(keys, (List)Util.make(() -> {
+         RegistryAccess.Frozen[] layers = new RegistryAccess.Frozen[keys.size()];
+         Arrays.fill(layers, RegistryAccess.EMPTY);
+         return Arrays.asList(layers);
       }));
    }
 
-   private LayeredRegistryAccess(List<T> var1, List<RegistryAccess.Frozen> var2) {
+   private LayeredRegistryAccess(final List<T> keys, final List<RegistryAccess.Frozen> values) {
       super();
-      this.keys = List.copyOf(var1);
-      this.values = List.copyOf(var2);
-      this.composite = (new RegistryAccess.ImmutableRegistryAccess(collectRegistries(var2.stream()))).freeze();
+      this.keys = List.copyOf(keys);
+      this.values = List.copyOf(values);
+      this.composite = (new RegistryAccess.ImmutableRegistryAccess(collectRegistries(values.stream()))).freeze();
    }
 
-   private int getLayerIndexOrThrow(T var1) {
-      int var2 = this.keys.indexOf(var1);
-      if (var2 == -1) {
-         String var10002 = String.valueOf(var1);
+   private int getLayerIndexOrThrow(final T layer) {
+      int index = this.keys.indexOf(layer);
+      if (index == -1) {
+         String var10002 = String.valueOf(layer);
          throw new IllegalStateException("Can't find " + var10002 + " inside " + String.valueOf(this.keys));
       } else {
-         return var2;
+         return index;
       }
    }
 
-   public RegistryAccess.Frozen getLayer(T var1) {
-      int var2 = this.getLayerIndexOrThrow(var1);
-      return (RegistryAccess.Frozen)this.values.get(var2);
+   public RegistryAccess.Frozen getLayer(final T layer) {
+      int index = this.getLayerIndexOrThrow(layer);
+      return (RegistryAccess.Frozen)this.values.get(index);
    }
 
-   public RegistryAccess.Frozen getAccessForLoading(T var1) {
-      int var2 = this.getLayerIndexOrThrow(var1);
-      return this.getCompositeAccessForLayers(0, var2);
+   public RegistryAccess.Frozen getAccessForLoading(final T forLayer) {
+      int index = this.getLayerIndexOrThrow(forLayer);
+      return this.getCompositeAccessForLayers(0, index);
    }
 
-   public RegistryAccess.Frozen getAccessFrom(T var1) {
-      int var2 = this.getLayerIndexOrThrow(var1);
-      return this.getCompositeAccessForLayers(var2, this.values.size());
+   public RegistryAccess.Frozen getAccessFrom(final T forLayer) {
+      int index = this.getLayerIndexOrThrow(forLayer);
+      return this.getCompositeAccessForLayers(index, this.values.size());
    }
 
-   private RegistryAccess.Frozen getCompositeAccessForLayers(int var1, int var2) {
-      return (new RegistryAccess.ImmutableRegistryAccess(collectRegistries(this.values.subList(var1, var2).stream()))).freeze();
+   private RegistryAccess.Frozen getCompositeAccessForLayers(final int from, final int to) {
+      return (new RegistryAccess.ImmutableRegistryAccess(collectRegistries(this.values.subList(from, to).stream()))).freeze();
    }
 
-   public LayeredRegistryAccess<T> replaceFrom(T var1, RegistryAccess.Frozen... var2) {
-      return this.replaceFrom(var1, (List)Arrays.asList(var2));
+   public LayeredRegistryAccess<T> replaceFrom(final T fromLayer, final RegistryAccess.Frozen... layers) {
+      return this.replaceFrom(fromLayer, Arrays.asList(layers));
    }
 
-   public LayeredRegistryAccess<T> replaceFrom(T var1, List<RegistryAccess.Frozen> var2) {
-      int var3 = this.getLayerIndexOrThrow(var1);
-      if (var2.size() > this.values.size() - var3) {
+   public LayeredRegistryAccess<T> replaceFrom(final T fromLayer, final List<RegistryAccess.Frozen> layers) {
+      int index = this.getLayerIndexOrThrow(fromLayer);
+      if (layers.size() > this.values.size() - index) {
          throw new IllegalStateException("Too many values to replace");
       } else {
-         ArrayList var4 = new ArrayList();
+         List<RegistryAccess.Frozen> newValues = new ArrayList();
 
-         for(int var5 = 0; var5 < var3; ++var5) {
-            var4.add((RegistryAccess.Frozen)this.values.get(var5));
+         for(int i = 0; i < index; ++i) {
+            newValues.add((RegistryAccess.Frozen)this.values.get(i));
          }
 
-         var4.addAll(var2);
+         newValues.addAll(layers);
 
-         while(var4.size() < this.values.size()) {
-            var4.add(RegistryAccess.EMPTY);
+         while(newValues.size() < this.values.size()) {
+            newValues.add(RegistryAccess.EMPTY);
          }
 
-         return new LayeredRegistryAccess<T>(this.keys, var4);
+         return new LayeredRegistryAccess<T>(this.keys, newValues);
       }
    }
 
@@ -87,13 +87,13 @@ public class LayeredRegistryAccess<T> {
       return this.composite;
    }
 
-   private static Map<ResourceKey<? extends Registry<?>>, Registry<?>> collectRegistries(Stream<? extends RegistryAccess> var0) {
-      HashMap var1 = new HashMap();
-      var0.forEach((var1x) -> var1x.registries().forEach((var1xx) -> {
-            if (var1.put(var1xx.key(), var1xx.value()) != null) {
-               throw new IllegalStateException("Duplicated registry " + String.valueOf(var1xx.key()));
+   private static Map<ResourceKey<? extends Registry<?>>, Registry<?>> collectRegistries(final Stream<? extends RegistryAccess> registries) {
+      Map<ResourceKey<? extends Registry<?>>, Registry<?>> result = new HashMap();
+      registries.forEach((access) -> access.registries().forEach((e) -> {
+            if (result.put(e.key(), e.value()) != null) {
+               throw new IllegalStateException("Duplicated registry " + String.valueOf(e.key()));
             }
          }));
-      return var1;
+      return result;
    }
 }

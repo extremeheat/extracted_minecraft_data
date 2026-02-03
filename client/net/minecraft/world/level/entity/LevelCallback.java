@@ -1,17 +1,17 @@
 package net.minecraft.world.level.entity;
 
 public interface LevelCallback<T> {
-   void onCreated(T var1);
+   void onCreated(T entity);
 
-   void onDestroyed(T var1);
+   void onDestroyed(T entity);
 
-   void onTickingStart(T var1);
+   void onTickingStart(T entity);
 
-   void onTickingEnd(T var1);
+   void onTickingEnd(T entity);
 
-   void onTrackingStart(T var1);
+   void onTrackingStart(T entity);
 
-   void onTrackingEnd(T var1);
+   void onTrackingEnd(T entity);
 
-   void onSectionChange(T var1);
+   void onSectionChange(T entity);
 }

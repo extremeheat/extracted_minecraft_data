@@ -7,23 +7,23 @@ import net.minecraft.world.phys.Vec2;
 public class KeyboardInput extends ClientInput {
    private final Options options;
 
-   public KeyboardInput(Options var1) {
+   public KeyboardInput(final Options options) {
       super();
-      this.options = var1;
+      this.options = options;
    }
 
-   private static float calculateImpulse(boolean var0, boolean var1) {
-      if (var0 == var1) {
+   private static float calculateImpulse(final boolean positive, final boolean negative) {
+      if (positive == negative) {
          return 0.0F;
       } else {
-         return var0 ? 1.0F : -1.0F;
+         return positive ? 1.0F : -1.0F;
       }
    }
 
    public void tick() {
       this.keyPresses = new Input(this.options.keyUp.isDown(), this.options.keyDown.isDown(), this.options.keyLeft.isDown(), this.options.keyRight.isDown(), this.options.keyJump.isDown(), this.options.keyShift.isDown(), this.options.keySprint.isDown());
-      float var1 = calculateImpulse(this.keyPresses.forward(), this.keyPresses.backward());
-      float var2 = calculateImpulse(this.keyPresses.left(), this.keyPresses.right());
-      this.moveVector = (new Vec2(var2, var1)).normalized();
+      float forwardImpulse = calculateImpulse(this.keyPresses.forward(), this.keyPresses.backward());
+      float leftImpulse = calculateImpulse(this.keyPresses.left(), this.keyPresses.right());
+      this.moveVector = (new Vec2(leftImpulse, forwardImpulse)).normalized();
    }
 }

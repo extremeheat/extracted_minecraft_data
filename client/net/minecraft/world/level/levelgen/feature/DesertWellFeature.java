@@ -21,94 +21,94 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
    private final BlockState sandstone;
    private final BlockState water;
 
-   public DesertWellFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public DesertWellFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
       this.sand = Blocks.SAND.defaultBlockState();
       this.sandSlab = Blocks.SANDSTONE_SLAB.defaultBlockState();
       this.sandstone = Blocks.SANDSTONE.defaultBlockState();
       this.water = Blocks.WATER.defaultBlockState();
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      WorldGenLevel var2 = var1.level();
-      BlockPos var3 = var1.origin();
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
 
-      for(var3 = var3.above(); var2.isEmptyBlock(var3) && var3.getY() > var2.getMinY() + 2; var3 = var3.below()) {
+      for(origin = origin.above(); level.isEmptyBlock(origin) && origin.getY() > level.getMinY() + 2; origin = origin.below()) {
       }
 
-      if (!IS_SAND.test(var2.getBlockState(var3))) {
+      if (!IS_SAND.test(level.getBlockState(origin))) {
          return false;
       } else {
-         for(int var4 = -2; var4 <= 2; ++var4) {
-            for(int var5 = -2; var5 <= 2; ++var5) {
-               if (var2.isEmptyBlock(var3.offset(var4, -1, var5)) && var2.isEmptyBlock(var3.offset(var4, -2, var5))) {
+         for(int ox = -2; ox <= 2; ++ox) {
+            for(int oz = -2; oz <= 2; ++oz) {
+               if (level.isEmptyBlock(origin.offset(ox, -1, oz)) && level.isEmptyBlock(origin.offset(ox, -2, oz))) {
                   return false;
                }
             }
          }
 
-         for(int var9 = -2; var9 <= 0; ++var9) {
-            for(int var12 = -2; var12 <= 2; ++var12) {
-               for(int var6 = -2; var6 <= 2; ++var6) {
-                  var2.setBlock(var3.offset(var12, var9, var6), this.sandstone, 2);
+         for(int oy = -2; oy <= 0; ++oy) {
+            for(int ox = -2; ox <= 2; ++ox) {
+               for(int oz = -2; oz <= 2; ++oz) {
+                  level.setBlock(origin.offset(ox, oy, oz), this.sandstone, 2);
                }
             }
          }
 
-         var2.setBlock(var3, this.water, 2);
+         level.setBlock(origin, this.water, 2);
 
-         for(Direction var13 : Direction.Plane.HORIZONTAL) {
-            var2.setBlock(var3.relative(var13), this.water, 2);
+         for(Direction direction : Direction.Plane.HORIZONTAL) {
+            level.setBlock(origin.relative(direction), this.water, 2);
          }
 
-         BlockPos var11 = var3.below();
-         var2.setBlock(var11, this.sand, 2);
+         BlockPos sandCenter = origin.below();
+         level.setBlock(sandCenter, this.sand, 2);
 
-         for(Direction var18 : Direction.Plane.HORIZONTAL) {
-            var2.setBlock(var11.relative(var18), this.sand, 2);
+         for(Direction direction : Direction.Plane.HORIZONTAL) {
+            level.setBlock(sandCenter.relative(direction), this.sand, 2);
          }
 
-         for(int var15 = -2; var15 <= 2; ++var15) {
-            for(int var19 = -2; var19 <= 2; ++var19) {
-               if (var15 == -2 || var15 == 2 || var19 == -2 || var19 == 2) {
-                  var2.setBlock(var3.offset(var15, 1, var19), this.sandstone, 2);
+         for(int ox = -2; ox <= 2; ++ox) {
+            for(int oz = -2; oz <= 2; ++oz) {
+               if (ox == -2 || ox == 2 || oz == -2 || oz == 2) {
+                  level.setBlock(origin.offset(ox, 1, oz), this.sandstone, 2);
                }
             }
          }
 
-         var2.setBlock(var3.offset(2, 1, 0), this.sandSlab, 2);
-         var2.setBlock(var3.offset(-2, 1, 0), this.sandSlab, 2);
-         var2.setBlock(var3.offset(0, 1, 2), this.sandSlab, 2);
-         var2.setBlock(var3.offset(0, 1, -2), this.sandSlab, 2);
+         level.setBlock(origin.offset(2, 1, 0), this.sandSlab, 2);
+         level.setBlock(origin.offset(-2, 1, 0), this.sandSlab, 2);
+         level.setBlock(origin.offset(0, 1, 2), this.sandSlab, 2);
+         level.setBlock(origin.offset(0, 1, -2), this.sandSlab, 2);
 
-         for(int var16 = -1; var16 <= 1; ++var16) {
-            for(int var20 = -1; var20 <= 1; ++var20) {
-               if (var16 == 0 && var20 == 0) {
-                  var2.setBlock(var3.offset(var16, 4, var20), this.sandstone, 2);
+         for(int ox = -1; ox <= 1; ++ox) {
+            for(int oz = -1; oz <= 1; ++oz) {
+               if (ox == 0 && oz == 0) {
+                  level.setBlock(origin.offset(ox, 4, oz), this.sandstone, 2);
                } else {
-                  var2.setBlock(var3.offset(var16, 4, var20), this.sandSlab, 2);
+                  level.setBlock(origin.offset(ox, 4, oz), this.sandSlab, 2);
                }
             }
          }
 
-         for(int var17 = 1; var17 <= 3; ++var17) {
-            var2.setBlock(var3.offset(-1, var17, -1), this.sandstone, 2);
-            var2.setBlock(var3.offset(-1, var17, 1), this.sandstone, 2);
-            var2.setBlock(var3.offset(1, var17, -1), this.sandstone, 2);
-            var2.setBlock(var3.offset(1, var17, 1), this.sandstone, 2);
+         for(int oy = 1; oy <= 3; ++oy) {
+            level.setBlock(origin.offset(-1, oy, -1), this.sandstone, 2);
+            level.setBlock(origin.offset(-1, oy, 1), this.sandstone, 2);
+            level.setBlock(origin.offset(1, oy, -1), this.sandstone, 2);
+            level.setBlock(origin.offset(1, oy, 1), this.sandstone, 2);
          }
 
-         List var21 = List.of(var3, var3.east(), var3.south(), var3.west(), var3.north());
-         RandomSource var7 = var1.random();
-         placeSusSand(var2, ((BlockPos)Util.getRandom(var21, var7)).below(1));
-         placeSusSand(var2, ((BlockPos)Util.getRandom(var21, var7)).below(2));
+         List<BlockPos> waterPositions = List.of(origin, origin.east(), origin.south(), origin.west(), origin.north());
+         RandomSource random = context.random();
+         placeSusSand(level, ((BlockPos)Util.getRandom(waterPositions, random)).below(1));
+         placeSusSand(level, ((BlockPos)Util.getRandom(waterPositions, random)).below(2));
          return true;
       }
    }
 
-   private static void placeSusSand(WorldGenLevel var0, BlockPos var1) {
-      var0.setBlock(var1, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 3);
-      var0.getBlockEntity(var1, BlockEntityType.BRUSHABLE_BLOCK).ifPresent((var1x) -> var1x.setLootTable(BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY, var1.asLong()));
+   private static void placeSusSand(final WorldGenLevel level, final BlockPos pos) {
+      level.setBlock(pos, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 3);
+      level.getBlockEntity(pos, BlockEntityType.BRUSHABLE_BLOCK).ifPresent((e) -> e.setLootTable(BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY, pos.asLong()));
    }
 
    static {

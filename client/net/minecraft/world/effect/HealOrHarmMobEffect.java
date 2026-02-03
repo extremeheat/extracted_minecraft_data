@@ -8,31 +8,31 @@ import org.jspecify.annotations.Nullable;
 class HealOrHarmMobEffect extends InstantenousMobEffect {
    private final boolean isHarm;
 
-   public HealOrHarmMobEffect(MobEffectCategory var1, int var2, boolean var3) {
-      super(var1, var2);
-      this.isHarm = var3;
+   public HealOrHarmMobEffect(final MobEffectCategory category, final int color, final boolean isHarm) {
+      super(category, color);
+      this.isHarm = isHarm;
    }
 
-   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
-      if (this.isHarm == var2.isInvertedHealAndHarm()) {
-         var2.heal((float)Math.max(4 << var3, 0));
+   public boolean applyEffectTick(final ServerLevel level, final LivingEntity mob, final int amplification) {
+      if (this.isHarm == mob.isInvertedHealAndHarm()) {
+         mob.heal((float)Math.max(4 << amplification, 0));
       } else {
-         var2.hurtServer(var1, var2.damageSources().magic(), (float)(6 << var3));
+         mob.hurtServer(level, mob.damageSources().magic(), (float)(6 << amplification));
       }
 
       return true;
    }
 
-   public void applyInstantenousEffect(ServerLevel var1, @Nullable Entity var2, @Nullable Entity var3, LivingEntity var4, int var5, double var6) {
-      if (this.isHarm == var4.isInvertedHealAndHarm()) {
-         int var8 = (int)(var6 * (double)(4 << var5) + 0.5);
-         var4.heal((float)var8);
+   public void applyInstantenousEffect(final ServerLevel serverLevel, final @Nullable Entity source, final @Nullable Entity owner, final LivingEntity mob, final int amplification, final double scale) {
+      if (this.isHarm == mob.isInvertedHealAndHarm()) {
+         int amount = (int)(scale * (double)(4 << amplification) + 0.5);
+         mob.heal((float)amount);
       } else {
-         int var9 = (int)(var6 * (double)(6 << var5) + 0.5);
-         if (var2 == null) {
-            var4.hurtServer(var1, var4.damageSources().magic(), (float)var9);
+         int amount = (int)(scale * (double)(6 << amplification) + 0.5);
+         if (source == null) {
+            mob.hurtServer(serverLevel, mob.damageSources().magic(), (float)amount);
          } else {
-            var4.hurtServer(var1, var4.damageSources().indirectMagic(var2, var3), (float)var9);
+            mob.hurtServer(serverLevel, mob.damageSources().indirectMagic(source, owner), (float)amount);
          }
       }
 

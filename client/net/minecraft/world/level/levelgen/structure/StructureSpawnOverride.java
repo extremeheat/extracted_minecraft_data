@@ -7,12 +7,10 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 
 public record StructureSpawnOverride(BoundingBoxType boundingBox, WeightedList<MobSpawnSettings.SpawnerData> spawns) {
-   public static final Codec<StructureSpawnOverride> CODEC = RecordCodecBuilder.create((var0) -> var0.group(StructureSpawnOverride.BoundingBoxType.CODEC.fieldOf("bounding_box").forGetter(StructureSpawnOverride::boundingBox), WeightedList.codec(MobSpawnSettings.SpawnerData.CODEC).fieldOf("spawns").forGetter(StructureSpawnOverride::spawns)).apply(var0, StructureSpawnOverride::new));
+   public static final Codec<StructureSpawnOverride> CODEC = RecordCodecBuilder.create((i) -> i.group(StructureSpawnOverride.BoundingBoxType.CODEC.fieldOf("bounding_box").forGetter(StructureSpawnOverride::boundingBox), WeightedList.codec(MobSpawnSettings.SpawnerData.CODEC).fieldOf("spawns").forGetter(StructureSpawnOverride::spawns)).apply(i, StructureSpawnOverride::new));
 
-   public StructureSpawnOverride(BoundingBoxType var1, WeightedList<MobSpawnSettings.SpawnerData> var2) {
+   public StructureSpawnOverride {
       super();
-      this.boundingBox = var1;
-      this.spawns = var2;
    }
 
    public static enum BoundingBoxType implements StringRepresentable {
@@ -22,8 +20,8 @@ public record StructureSpawnOverride(BoundingBoxType boundingBox, WeightedList<M
       public static final Codec<BoundingBoxType> CODEC = StringRepresentable.<BoundingBoxType>fromEnum(BoundingBoxType::values);
       private final String id;
 
-      private BoundingBoxType(final String var3) {
-         this.id = var3;
+      private BoundingBoxType(final String id) {
+         this.id = id;
       }
 
       public String getSerializedName() {

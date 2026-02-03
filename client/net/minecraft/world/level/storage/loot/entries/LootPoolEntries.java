@@ -4,38 +4,27 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 
 public class LootPoolEntries {
    public static final Codec<LootPoolEntryContainer> CODEC;
-   public static final LootPoolEntryType EMPTY;
-   public static final LootPoolEntryType ITEM;
-   public static final LootPoolEntryType LOOT_TABLE;
-   public static final LootPoolEntryType DYNAMIC;
-   public static final LootPoolEntryType TAG;
-   public static final LootPoolEntryType SLOTS;
-   public static final LootPoolEntryType ALTERNATIVES;
-   public static final LootPoolEntryType SEQUENCE;
-   public static final LootPoolEntryType GROUP;
 
    public LootPoolEntries() {
       super();
    }
 
-   private static LootPoolEntryType register(String var0, MapCodec<? extends LootPoolEntryContainer> var1) {
-      return (LootPoolEntryType)Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootPoolEntryType(var1));
+   public static MapCodec<? extends LootPoolEntryContainer> bootstrap(final Registry<MapCodec<? extends LootPoolEntryContainer>> registry) {
+      Registry.register(registry, (String)"empty", EmptyLootItem.MAP_CODEC);
+      Registry.register(registry, (String)"item", LootItem.MAP_CODEC);
+      Registry.register(registry, (String)"loot_table", NestedLootTable.MAP_CODEC);
+      Registry.register(registry, (String)"dynamic", DynamicLoot.MAP_CODEC);
+      Registry.register(registry, (String)"tag", TagEntry.MAP_CODEC);
+      Registry.register(registry, (String)"slots", SlotLoot.MAP_CODEC);
+      Registry.register(registry, (String)"alternatives", AlternativesEntry.MAP_CODEC);
+      Registry.register(registry, (String)"sequence", SequentialEntry.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (String)"group", EntryGroup.MAP_CODEC);
    }
 
    static {
-      CODEC = BuiltInRegistries.LOOT_POOL_ENTRY_TYPE.byNameCodec().dispatch(LootPoolEntryContainer::getType, LootPoolEntryType::codec);
-      EMPTY = register("empty", EmptyLootItem.CODEC);
-      ITEM = register("item", LootItem.CODEC);
-      LOOT_TABLE = register("loot_table", NestedLootTable.CODEC);
-      DYNAMIC = register("dynamic", DynamicLoot.CODEC);
-      TAG = register("tag", TagEntry.CODEC);
-      SLOTS = register("slots", SlotLoot.CODEC);
-      ALTERNATIVES = register("alternatives", AlternativesEntry.CODEC);
-      SEQUENCE = register("sequence", SequentialEntry.CODEC);
-      GROUP = register("group", EntryGroup.CODEC);
+      CODEC = BuiltInRegistries.LOOT_POOL_ENTRY_TYPE.byNameCodec().dispatch(LootPoolEntryContainer::codec, (c) -> c);
    }
 }

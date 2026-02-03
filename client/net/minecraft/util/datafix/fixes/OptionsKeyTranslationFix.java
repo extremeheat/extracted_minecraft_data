@@ -10,20 +10,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OptionsKeyTranslationFix extends DataFix {
-   public OptionsKeyTranslationFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public OptionsKeyTranslationFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("OptionsKeyTranslationFix", this.getInputSchema().getType(References.OPTIONS), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> (Dynamic)var0x.getMapValues().map((var1) -> var0x.createMap((Map)var1.entrySet().stream().map((var1x) -> {
-                  if (((Dynamic)var1x.getKey()).asString("").startsWith("key_")) {
-                     String var2 = ((Dynamic)var1x.getValue()).asString("");
-                     if (!var2.startsWith("key.mouse") && !var2.startsWith("scancode.")) {
-                        return Pair.of((Dynamic)var1x.getKey(), var0x.createString("key.keyboard." + var2.substring("key.".length())));
+      return this.fixTypeEverywhereTyped("OptionsKeyTranslationFix", this.getInputSchema().getType(References.OPTIONS), (input) -> input.update(DSL.remainderFinder(), (tag) -> (Dynamic)tag.getMapValues().map((map1) -> tag.createMap((Map)map1.entrySet().stream().map((entry) -> {
+                  if (((Dynamic)entry.getKey()).asString("").startsWith("key_")) {
+                     String oldValue = ((Dynamic)entry.getValue()).asString("");
+                     if (!oldValue.startsWith("key.mouse") && !oldValue.startsWith("scancode.")) {
+                        return Pair.of((Dynamic)entry.getKey(), tag.createString("key.keyboard." + oldValue.substring("key.".length())));
                      }
                   }
 
-                  return Pair.of((Dynamic)var1x.getKey(), (Dynamic)var1x.getValue());
-               }).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)))).result().orElse(var0x)));
+                  return Pair.of((Dynamic)entry.getKey(), (Dynamic)entry.getValue());
+               }).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)))).result().orElse(tag)));
    }
 }

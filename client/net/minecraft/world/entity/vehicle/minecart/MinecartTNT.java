@@ -41,8 +41,8 @@ public class MinecartTNT extends AbstractMinecart {
    private float explosionPowerBase = 4.0F;
    private float explosionSpeedFactor = 1.0F;
 
-   public MinecartTNT(EntityType<? extends MinecartTNT> var1, Level var2) {
-      super(var1, var2);
+   public MinecartTNT(final EntityType<? extends MinecartTNT> type, final Level level) {
+      super(type, level);
    }
 
    public BlockState getDefaultDisplayBlockState() {
@@ -59,33 +59,33 @@ public class MinecartTNT extends AbstractMinecart {
       }
 
       if (this.horizontalCollision) {
-         double var1 = this.getDeltaMovement().horizontalDistanceSqr();
-         if (var1 >= 0.009999999776482582) {
-            this.explode(this.ignitionSource, var1);
+         double speedSqr = this.getDeltaMovement().horizontalDistanceSqr();
+         if (speedSqr >= 0.009999999776482582) {
+            this.explode(this.ignitionSource, speedSqr);
          }
       }
 
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      Entity var4 = var2.getDirectEntity();
-      if (var4 instanceof AbstractArrow var5) {
-         if (var5.isOnFire()) {
-            DamageSource var6 = this.damageSources().explosion(this, var2.getEntity());
-            this.explode(var6, var5.getDeltaMovement().lengthSqr());
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      Entity sourceEntity = source.getDirectEntity();
+      if (sourceEntity instanceof AbstractArrow projectile) {
+         if (projectile.isOnFire()) {
+            DamageSource damageSource = this.damageSources().explosion(this, source.getEntity());
+            this.explode(damageSource, projectile.getDeltaMovement().lengthSqr());
          }
       }
 
-      return super.hurtServer(var1, var2, var3);
+      return super.hurtServer(level, source, damage);
    }
 
-   public void destroy(ServerLevel var1, DamageSource var2) {
-      double var3 = this.getDeltaMovement().horizontalDistanceSqr();
-      if (!damageSourceIgnitesTnt(var2) && !(var3 >= 0.009999999776482582)) {
-         this.destroy(var1, this.getDropItem());
+   public void destroy(final ServerLevel level, final DamageSource source) {
+      double speedSqr = this.getDeltaMovement().horizontalDistanceSqr();
+      if (!damageSourceIgnitesTnt(source) && !(speedSqr >= 0.009999999776482582)) {
+         this.destroy(level, this.getDropItem());
       } else {
          if (this.fuse < 0) {
-            this.primeFuse(var2);
+            this.primeFuse(source);
             this.fuse = this.random.nextInt(20) + this.random.nextInt(20);
          }
 
@@ -100,12 +100,12 @@ public class MinecartTNT extends AbstractMinecart {
       return new ItemStack(Items.TNT_MINECART);
    }
 
-   protected void explode(@Nullable DamageSource var1, double var2) {
+   protected void explode(final @Nullable DamageSource damageSource, final double speedSqr) {
       Level var5 = this.level();
-      if (var5 instanceof ServerLevel var4) {
-         if ((Boolean)var4.getGameRules().get(GameRules.TNT_EXPLODES)) {
-            double var7 = Math.min(Math.sqrt(var2), 5.0);
-            var4.explode(this, var1, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), (float)((double)this.explosionPowerBase + (double)this.explosionSpeedFactor * this.random.nextDouble() * 1.5 * var7), false, Level.ExplosionInteraction.TNT);
+      if (var5 instanceof ServerLevel level) {
+         if ((Boolean)level.getGameRules().get(GameRules.TNT_EXPLODES)) {
+            double speed = Math.min(Math.sqrt(speedSqr), 5.0);
+            level.explode(this, damageSource, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), (float)((double)this.explosionPowerBase + (double)this.explosionSpeedFactor * this.random.nextDouble() * 1.5 * speed), false, Level.ExplosionInteraction.TNT);
             this.discard();
          } else if (this.isPrimed()) {
             this.discard();
@@ -114,43 +114,43 @@ public class MinecartTNT extends AbstractMinecart {
 
    }
 
-   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
-      if (var1 >= 3.0) {
-         double var5 = var1 / 10.0;
-         this.explode(this.ignitionSource, var5 * var5);
+   public boolean causeFallDamage(final double fallDistance, final float damageModifier, final DamageSource damageSource) {
+      if (fallDistance >= 3.0) {
+         double power = fallDistance / 10.0;
+         this.explode(this.ignitionSource, power * power);
       }
 
-      return super.causeFallDamage(var1, var3, var4);
+      return super.causeFallDamage(fallDistance, damageModifier, damageSource);
    }
 
-   public void activateMinecart(ServerLevel var1, int var2, int var3, int var4, boolean var5) {
-      if (var5 && this.fuse < 0) {
+   public void activateMinecart(final ServerLevel level, final int xt, final int yt, final int zt, final boolean state) {
+      if (state && this.fuse < 0) {
          this.primeFuse((DamageSource)null);
       }
 
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 10) {
+   public void handleEntityEvent(final byte id) {
+      if (id == 10) {
          this.primeFuse((DamageSource)null);
       } else {
-         super.handleEntityEvent(var1);
+         super.handleEntityEvent(id);
       }
 
    }
 
-   public void primeFuse(@Nullable DamageSource var1) {
+   public void primeFuse(final @Nullable DamageSource source) {
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         if (!(Boolean)var2.getGameRules().get(GameRules.TNT_EXPLODES)) {
+      if (var3 instanceof ServerLevel serverLevel) {
+         if (!(Boolean)serverLevel.getGameRules().get(GameRules.TNT_EXPLODES)) {
             return;
          }
       }
 
       this.fuse = 80;
       if (!this.level().isClientSide()) {
-         if (var1 != null && this.ignitionSource == null) {
-            this.ignitionSource = this.damageSources().explosion(this, var1.getEntity());
+         if (source != null && this.ignitionSource == null) {
+            this.ignitionSource = this.damageSources().explosion(this, source.getEntity());
          }
 
          this.level().broadcastEntityEvent(this, (byte)10);
@@ -169,44 +169,44 @@ public class MinecartTNT extends AbstractMinecart {
       return this.fuse > -1;
    }
 
-   public float getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5, float var6) {
-      return !this.isPrimed() || !var4.is(BlockTags.RAILS) && !var2.getBlockState(var3.above()).is(BlockTags.RAILS) ? super.getBlockExplosionResistance(var1, var2, var3, var4, var5, var6) : 0.0F;
+   public float getBlockExplosionResistance(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState block, final FluidState fluid, final float resistance) {
+      return !this.isPrimed() || !block.is(BlockTags.RAILS) && !level.getBlockState(pos.above()).is(BlockTags.RAILS) ? super.getBlockExplosionResistance(explosion, level, pos, block, fluid, resistance) : 0.0F;
    }
 
-   public boolean shouldBlockExplode(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, float var5) {
-      return !this.isPrimed() || !var4.is(BlockTags.RAILS) && !var2.getBlockState(var3.above()).is(BlockTags.RAILS) ? super.shouldBlockExplode(var1, var2, var3, var4, var5) : false;
+   public boolean shouldBlockExplode(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState state, final float power) {
+      return !this.isPrimed() || !state.is(BlockTags.RAILS) && !level.getBlockState(pos.above()).is(BlockTags.RAILS) ? super.shouldBlockExplode(explosion, level, pos, state, power) : false;
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.fuse = var1.getIntOr("fuse", -1);
-      this.explosionPowerBase = Mth.clamp(var1.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
-      this.explosionSpeedFactor = Mth.clamp(var1.getFloatOr("explosion_speed_factor", 1.0F), 0.0F, 128.0F);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.fuse = input.getIntOr("fuse", -1);
+      this.explosionPowerBase = Mth.clamp(input.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
+      this.explosionSpeedFactor = Mth.clamp(input.getFloatOr("explosion_speed_factor", 1.0F), 0.0F, 128.0F);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("fuse", this.fuse);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("fuse", this.fuse);
       if (this.explosionPowerBase != 4.0F) {
-         var1.putFloat("explosion_power", this.explosionPowerBase);
+         output.putFloat("explosion_power", this.explosionPowerBase);
       }
 
       if (this.explosionSpeedFactor != 1.0F) {
-         var1.putFloat("explosion_speed_factor", this.explosionSpeedFactor);
+         output.putFloat("explosion_speed_factor", this.explosionSpeedFactor);
       }
 
    }
 
-   protected boolean shouldSourceDestroy(DamageSource var1) {
-      return damageSourceIgnitesTnt(var1);
+   protected boolean shouldSourceDestroy(final DamageSource source) {
+      return damageSourceIgnitesTnt(source);
    }
 
-   private static boolean damageSourceIgnitesTnt(DamageSource var0) {
-      Entity var2 = var0.getDirectEntity();
-      if (var2 instanceof Projectile var1) {
-         return var1.isOnFire();
+   private static boolean damageSourceIgnitesTnt(final DamageSource source) {
+      Entity var2 = source.getDirectEntity();
+      if (var2 instanceof Projectile projectile) {
+         return projectile.isOnFire();
       } else {
-         return var0.is(DamageTypeTags.IS_FIRE) || var0.is(DamageTypeTags.IS_EXPLOSION);
+         return source.is(DamageTypeTags.IS_FIRE) || source.is(DamageTypeTags.IS_EXPLOSION);
       }
    }
 }

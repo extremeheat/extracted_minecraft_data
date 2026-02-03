@@ -17,51 +17,51 @@ import org.joml.Quaternionfc;
 public class MushroomCowMushroomLayer extends RenderLayer<MushroomCowRenderState, CowModel> {
    private final BlockRenderDispatcher blockRenderer;
 
-   public MushroomCowMushroomLayer(RenderLayerParent<MushroomCowRenderState, CowModel> var1, BlockRenderDispatcher var2) {
-      super(var1);
-      this.blockRenderer = var2;
+   public MushroomCowMushroomLayer(final RenderLayerParent<MushroomCowRenderState, CowModel> renderer, final BlockRenderDispatcher blockRenderer) {
+      super(renderer);
+      this.blockRenderer = blockRenderer;
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, MushroomCowRenderState var4, float var5, float var6) {
-      if (!var4.isBaby) {
-         boolean var7 = var4.appearsGlowing() && var4.isInvisible;
-         if (!var4.isInvisible || var7) {
-            BlockState var8 = var4.variant.getBlockState();
-            int var9 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
-            BlockStateModel var10 = this.blockRenderer.getBlockModel(var8);
-            var1.pushPose();
-            var1.translate(0.2F, -0.35F, 0.5F);
-            var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-48.0F));
-            var1.scale(-1.0F, -1.0F, 1.0F);
-            var1.translate(-0.5F, -0.5F, -0.5F);
-            this.submitMushroomBlock(var1, var2, var3, var7, var4.outlineColor, var8, var9, var10);
-            var1.popPose();
-            var1.pushPose();
-            var1.translate(0.2F, -0.35F, 0.5F);
-            var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(42.0F));
-            var1.translate(0.1F, 0.0F, -0.6F);
-            var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-48.0F));
-            var1.scale(-1.0F, -1.0F, 1.0F);
-            var1.translate(-0.5F, -0.5F, -0.5F);
-            this.submitMushroomBlock(var1, var2, var3, var7, var4.outlineColor, var8, var9, var10);
-            var1.popPose();
-            var1.pushPose();
-            ((CowModel)this.getParentModel()).getHead().translateAndRotate(var1);
-            var1.translate(0.0F, -0.7F, -0.2F);
-            var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-78.0F));
-            var1.scale(-1.0F, -1.0F, 1.0F);
-            var1.translate(-0.5F, -0.5F, -0.5F);
-            this.submitMushroomBlock(var1, var2, var3, var7, var4.outlineColor, var8, var9, var10);
-            var1.popPose();
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final MushroomCowRenderState state, final float yRot, final float xRot) {
+      if (!state.isBaby) {
+         boolean appearsGlowingWithInvisibility = state.appearsGlowing() && state.isInvisible;
+         if (!state.isInvisible || appearsGlowingWithInvisibility) {
+            BlockState mushroomBlockState = state.variant.getBlockState();
+            int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
+            BlockStateModel model = this.blockRenderer.getBlockModel(mushroomBlockState);
+            poseStack.pushPose();
+            poseStack.translate(0.2F, -0.35F, 0.5F);
+            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-48.0F));
+            poseStack.scale(-1.0F, -1.0F, 1.0F);
+            poseStack.translate(-0.5F, -0.5F, -0.5F);
+            this.submitMushroomBlock(poseStack, submitNodeCollector, lightCoords, appearsGlowingWithInvisibility, state.outlineColor, mushroomBlockState, overlayCoords, model);
+            poseStack.popPose();
+            poseStack.pushPose();
+            poseStack.translate(0.2F, -0.35F, 0.5F);
+            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(42.0F));
+            poseStack.translate(0.1F, 0.0F, -0.6F);
+            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-48.0F));
+            poseStack.scale(-1.0F, -1.0F, 1.0F);
+            poseStack.translate(-0.5F, -0.5F, -0.5F);
+            this.submitMushroomBlock(poseStack, submitNodeCollector, lightCoords, appearsGlowingWithInvisibility, state.outlineColor, mushroomBlockState, overlayCoords, model);
+            poseStack.popPose();
+            poseStack.pushPose();
+            ((CowModel)this.getParentModel()).getHead().translateAndRotate(poseStack);
+            poseStack.translate(0.0F, -0.7F, -0.2F);
+            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-78.0F));
+            poseStack.scale(-1.0F, -1.0F, 1.0F);
+            poseStack.translate(-0.5F, -0.5F, -0.5F);
+            this.submitMushroomBlock(poseStack, submitNodeCollector, lightCoords, appearsGlowingWithInvisibility, state.outlineColor, mushroomBlockState, overlayCoords, model);
+            poseStack.popPose();
          }
       }
    }
 
-   private void submitMushroomBlock(PoseStack var1, SubmitNodeCollector var2, int var3, boolean var4, int var5, BlockState var6, int var7, BlockStateModel var8) {
-      if (var4) {
-         var2.submitBlockModel(var1, RenderTypes.outline(TextureAtlas.LOCATION_BLOCKS), var8, 0.0F, 0.0F, 0.0F, var3, var7, var5);
+   private void submitMushroomBlock(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final boolean appearsGlowingWithInvisibility, final int outlineColor, final BlockState mushroomBlockState, final int overlayCoords, final BlockStateModel model) {
+      if (appearsGlowingWithInvisibility) {
+         submitNodeCollector.submitBlockModel(poseStack, RenderTypes.outline(TextureAtlas.LOCATION_BLOCKS), model, 0.0F, 0.0F, 0.0F, lightCoords, overlayCoords, outlineColor);
       } else {
-         var2.submitBlock(var1, var6, var3, var7, var5);
+         submitNodeCollector.submitBlock(poseStack, mushroomBlockState, lightCoords, overlayCoords, outlineColor);
       }
 
    }

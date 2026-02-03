@@ -1,7 +1,7 @@
 package com.mojang.realmsclient.exception;
 
 public class RealmsHttpException extends RuntimeException {
-   public RealmsHttpException(String var1, Exception var2) {
-      super(var1, var2);
+   public RealmsHttpException(final String s, final Exception e) {
+      super(s, e);
    }
 }

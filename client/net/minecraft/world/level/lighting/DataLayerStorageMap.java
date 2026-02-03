@@ -11,65 +11,65 @@ public abstract class DataLayerStorageMap<M extends DataLayerStorageMap<M>> {
    private boolean cacheEnabled;
    protected final Long2ObjectOpenHashMap<DataLayer> map;
 
-   protected DataLayerStorageMap(Long2ObjectOpenHashMap<DataLayer> var1) {
+   protected DataLayerStorageMap(final Long2ObjectOpenHashMap<DataLayer> map) {
       super();
-      this.map = var1;
+      this.map = map;
       this.clearCache();
       this.cacheEnabled = true;
    }
 
    public abstract M copy();
 
-   public DataLayer copyDataLayer(long var1) {
-      DataLayer var3 = ((DataLayer)this.map.get(var1)).copy();
-      this.map.put(var1, var3);
+   public DataLayer copyDataLayer(final long sectionNode) {
+      DataLayer newDataLayer = ((DataLayer)this.map.get(sectionNode)).copy();
+      this.map.put(sectionNode, newDataLayer);
       this.clearCache();
-      return var3;
+      return newDataLayer;
    }
 
-   public boolean hasLayer(long var1) {
-      return this.map.containsKey(var1);
+   public boolean hasLayer(final long sectionNode) {
+      return this.map.containsKey(sectionNode);
    }
 
-   public @Nullable DataLayer getLayer(long var1) {
+   public @Nullable DataLayer getLayer(final long sectionNode) {
       if (this.cacheEnabled) {
-         for(int var3 = 0; var3 < 2; ++var3) {
-            if (var1 == this.lastSectionKeys[var3]) {
-               return this.lastSections[var3];
+         for(int i = 0; i < 2; ++i) {
+            if (sectionNode == this.lastSectionKeys[i]) {
+               return this.lastSections[i];
             }
          }
       }
 
-      DataLayer var5 = (DataLayer)this.map.get(var1);
-      if (var5 == null) {
+      DataLayer data = (DataLayer)this.map.get(sectionNode);
+      if (data == null) {
          return null;
       } else {
          if (this.cacheEnabled) {
-            for(int var4 = 1; var4 > 0; --var4) {
-               this.lastSectionKeys[var4] = this.lastSectionKeys[var4 - 1];
-               this.lastSections[var4] = this.lastSections[var4 - 1];
+            for(int i = 1; i > 0; --i) {
+               this.lastSectionKeys[i] = this.lastSectionKeys[i - 1];
+               this.lastSections[i] = this.lastSections[i - 1];
             }
 
-            this.lastSectionKeys[0] = var1;
-            this.lastSections[0] = var5;
+            this.lastSectionKeys[0] = sectionNode;
+            this.lastSections[0] = data;
          }
 
-         return var5;
+         return data;
       }
    }
 
-   public @Nullable DataLayer removeLayer(long var1) {
-      return (DataLayer)this.map.remove(var1);
+   public @Nullable DataLayer removeLayer(final long sectionNode) {
+      return (DataLayer)this.map.remove(sectionNode);
    }
 
-   public void setLayer(long var1, DataLayer var3) {
-      this.map.put(var1, var3);
+   public void setLayer(final long sectionNode, final DataLayer layer) {
+      this.map.put(sectionNode, layer);
    }
 
    public void clearCache() {
-      for(int var1 = 0; var1 < 2; ++var1) {
-         this.lastSectionKeys[var1] = 9223372036854775807L;
-         this.lastSections[var1] = null;
+      for(int i = 0; i < 2; ++i) {
+         this.lastSectionKeys[i] = 9223372036854775807L;
+         this.lastSections[i] = null;
       }
 
    }

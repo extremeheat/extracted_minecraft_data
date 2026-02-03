@@ -7,7 +7,7 @@ import net.minecraft.client.gui.render.TextureSetup;
 import org.jspecify.annotations.Nullable;
 
 public interface GuiElementRenderState extends ScreenArea {
-   void buildVertices(VertexConsumer var1);
+   void buildVertices(final VertexConsumer vertexConsumer);
 
    RenderPipeline pipeline();
 

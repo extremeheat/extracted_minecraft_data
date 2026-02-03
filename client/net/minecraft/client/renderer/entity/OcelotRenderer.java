@@ -1,41 +1,32 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.animal.feline.OcelotModel;
+import net.minecraft.client.model.animal.feline.AbstractFelineModel;
+import net.minecraft.client.model.animal.feline.AdultOcelotModel;
+import net.minecraft.client.model.animal.feline.BabyOcelotModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FelineRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.feline.Ocelot;
 
-public class OcelotRenderer extends AgeableMobRenderer<Ocelot, FelineRenderState, OcelotModel> {
+public class OcelotRenderer extends AgeableMobRenderer<Ocelot, FelineRenderState, AbstractFelineModel<FelineRenderState>> {
    private static final Identifier CAT_OCELOT_LOCATION = Identifier.withDefaultNamespace("textures/entity/cat/ocelot.png");
+   private static final Identifier CAT_OCELOT_BABY_LOCATION = Identifier.withDefaultNamespace("textures/entity/cat/ocelot_baby.png");
 
-   public OcelotRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new OcelotModel(var1.bakeLayer(ModelLayers.OCELOT)), new OcelotModel(var1.bakeLayer(ModelLayers.OCELOT_BABY)), 0.4F);
+   public OcelotRenderer(final EntityRendererProvider.Context context) {
+      super(context, new AdultOcelotModel(context.bakeLayer(ModelLayers.OCELOT)), new BabyOcelotModel(context.bakeLayer(ModelLayers.OCELOT_BABY)), 0.4F);
    }
 
-   public Identifier getTextureLocation(FelineRenderState var1) {
-      return CAT_OCELOT_LOCATION;
+   public Identifier getTextureLocation(final FelineRenderState state) {
+      return state.isBaby ? CAT_OCELOT_BABY_LOCATION : CAT_OCELOT_LOCATION;
    }
 
    public FelineRenderState createRenderState() {
       return new FelineRenderState();
    }
 
-   public void extractRenderState(Ocelot var1, FelineRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.isCrouching = var1.isCrouching();
-      var2.isSprinting = var1.isSprinting();
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((FelineRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final Ocelot entity, final FelineRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.isCrouching = entity.isCrouching();
+      state.isSprinting = entity.isSprinting();
    }
 }

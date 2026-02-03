@@ -4,8 +4,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.skeleton.BoggedModel;
 import net.minecraft.client.renderer.entity.layers.SkeletonClothingLayer;
 import net.minecraft.client.renderer.entity.state.BoggedRenderState;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.skeleton.Bogged;
 
@@ -13,12 +11,12 @@ public class BoggedRenderer extends AbstractSkeletonRenderer<Bogged, BoggedRende
    private static final Identifier BOGGED_SKELETON_LOCATION = Identifier.withDefaultNamespace("textures/entity/skeleton/bogged.png");
    private static final Identifier BOGGED_OUTER_LAYER_LOCATION = Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png");
 
-   public BoggedRenderer(EntityRendererProvider.Context var1) {
-      super(var1, (ArmorModelSet)ModelLayers.BOGGED_ARMOR, new BoggedModel(var1.bakeLayer(ModelLayers.BOGGED)));
-      this.addLayer(new SkeletonClothingLayer(this, var1.getModelSet(), ModelLayers.BOGGED_OUTER_LAYER, BOGGED_OUTER_LAYER_LOCATION));
+   public BoggedRenderer(final EntityRendererProvider.Context context) {
+      super(context, (ArmorModelSet)ModelLayers.BOGGED_ARMOR, new BoggedModel(context.bakeLayer(ModelLayers.BOGGED)));
+      this.addLayer(new SkeletonClothingLayer(this, context.getModelSet(), ModelLayers.BOGGED_OUTER_LAYER, BOGGED_OUTER_LAYER_LOCATION));
    }
 
-   public Identifier getTextureLocation(BoggedRenderState var1) {
+   public Identifier getTextureLocation(final BoggedRenderState state) {
       return BOGGED_SKELETON_LOCATION;
    }
 
@@ -26,18 +24,8 @@ public class BoggedRenderer extends AbstractSkeletonRenderer<Bogged, BoggedRende
       return new BoggedRenderState();
    }
 
-   public void extractRenderState(Bogged var1, BoggedRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.isSheared = var1.isSheared();
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((BoggedRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final Bogged entity, final BoggedRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.isSheared = entity.isSheared();
    }
 }

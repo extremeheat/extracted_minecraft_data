@@ -30,31 +30,31 @@ public class BookSignScreen extends Screen {
    private EditBox titleBox;
    private String titleValue = "";
 
-   public BookSignScreen(BookEditScreen var1, Player var2, InteractionHand var3, List<String> var4) {
+   public BookSignScreen(final BookEditScreen bookEditScreen, final Player owner, final InteractionHand hand, final List<String> pages) {
       super(TITLE);
-      this.bookEditScreen = var1;
-      this.owner = var2;
-      this.hand = var3;
-      this.pages = var4;
-      this.ownerText = Component.translatable("book.byAuthor", var2.getName()).withStyle(ChatFormatting.DARK_GRAY);
+      this.bookEditScreen = bookEditScreen;
+      this.owner = owner;
+      this.hand = hand;
+      this.pages = pages;
+      this.ownerText = Component.translatable("book.byAuthor", owner.getName()).withStyle(ChatFormatting.DARK_GRAY);
    }
 
    protected void init() {
-      Button var1 = Button.builder(Component.translatable("book.finalizeButton"), (var1x) -> {
+      Button finalizeButton = Button.builder(Component.translatable("book.finalizeButton"), (button) -> {
          this.saveChanges();
          this.minecraft.setScreen((Screen)null);
       }).bounds(this.width / 2 - 100, 196, 98, 20).build();
-      var1.active = false;
+      finalizeButton.active = false;
       this.titleBox = (EditBox)this.addRenderableWidget(new EditBox(this.minecraft.font, (this.width - 114) / 2 - 3, 50, 114, 20, TITLE_EDIT_BOX));
       this.titleBox.setMaxLength(15);
       this.titleBox.setBordered(false);
       this.titleBox.setCentered(true);
       this.titleBox.setTextColor(-16777216);
       this.titleBox.setTextShadow(false);
-      this.titleBox.setResponder((var1x) -> var1.active = !StringUtil.isBlank(var1x));
+      this.titleBox.setResponder((value) -> finalizeButton.active = !StringUtil.isBlank(value));
       this.titleBox.setValue(this.titleValue);
-      this.addRenderableWidget(var1);
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
+      this.addRenderableWidget(finalizeButton);
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> {
          this.titleValue = this.titleBox.getValue();
          this.minecraft.setScreen(this.bookEditScreen);
       }).bounds(this.width / 2 + 2, 196, 98, 20).build());
@@ -65,37 +65,37 @@ public class BookSignScreen extends Screen {
    }
 
    private void saveChanges() {
-      int var1 = this.hand == InteractionHand.MAIN_HAND ? this.owner.getInventory().getSelectedSlot() : 40;
-      this.minecraft.getConnection().send(new ServerboundEditBookPacket(var1, this.pages, Optional.of(this.titleBox.getValue().trim())));
+      int slot = this.hand == InteractionHand.MAIN_HAND ? this.owner.getInventory().getSelectedSlot() : 40;
+      this.minecraft.getConnection().send(new ServerboundEditBookPacket(slot, this.pages, Optional.of(this.titleBox.getValue().trim())));
    }
 
    public boolean isInGameUi() {
       return true;
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (this.titleBox.isFocused() && !this.titleBox.getValue().isEmpty() && var1.isConfirmation()) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (this.titleBox.isFocused() && !this.titleBox.getValue().isEmpty() && event.isConfirmation()) {
          this.saveChanges();
          this.minecraft.setScreen((Screen)null);
          return true;
       } else {
-         return super.keyPressed(var1);
+         return super.keyPressed(event);
       }
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      int var5 = (this.width - 192) / 2;
-      boolean var6 = true;
-      int var7 = this.font.width((FormattedText)EDIT_TITLE_LABEL);
-      var1.drawString(this.font, (Component)EDIT_TITLE_LABEL, var5 + 36 + (114 - var7) / 2, 34, -16777216, false);
-      int var8 = this.font.width((FormattedText)this.ownerText);
-      var1.drawString(this.font, (Component)this.ownerText, var5 + 36 + (114 - var8) / 2, 60, -16777216, false);
-      var1.drawWordWrap(this.font, FINALIZE_WARNING_LABEL, var5 + 36, 82, 114, -16777216, false);
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
+      int xo = (this.width - 192) / 2;
+      int yo = 2;
+      int titleHeaderWidth = this.font.width((FormattedText)EDIT_TITLE_LABEL);
+      graphics.drawString(this.font, (Component)EDIT_TITLE_LABEL, xo + 36 + (114 - titleHeaderWidth) / 2, 34, -16777216, false);
+      int nameWidth = this.font.width((FormattedText)this.ownerText);
+      graphics.drawString(this.font, (Component)this.ownerText, xo + 36 + (114 - nameWidth) / 2, 60, -16777216, false);
+      graphics.drawWordWrap(this.font, FINALIZE_WARNING_LABEL, xo + 36, 82, 114, -16777216, false);
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      super.renderBackground(var1, var2, var3, var4);
-      var1.blit(RenderPipelines.GUI_TEXTURED, BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
+   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.renderBackground(graphics, mouseX, mouseY, a);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
    }
 }

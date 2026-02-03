@@ -33,49 +33,49 @@ public class ImposterProtoChunk extends ProtoChunk {
    private final LevelChunk wrapped;
    private final boolean allowWrites;
 
-   public ImposterProtoChunk(LevelChunk var1, boolean var2) {
-      super(var1.getPos(), UpgradeData.EMPTY, var1.levelHeightAccessor, var1.getLevel().palettedContainerFactory(), var1.getBlendingData());
-      this.wrapped = var1;
-      this.allowWrites = var2;
+   public ImposterProtoChunk(final LevelChunk wrapped, final boolean allowWrites) {
+      super(wrapped.getPos(), UpgradeData.EMPTY, wrapped.levelHeightAccessor, wrapped.getLevel().palettedContainerFactory(), wrapped.getBlendingData());
+      this.wrapped = wrapped;
+      this.allowWrites = allowWrites;
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
-      return this.wrapped.getBlockEntity(var1);
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
+      return this.wrapped.getBlockEntity(pos);
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      return this.wrapped.getBlockState(var1);
+   public BlockState getBlockState(final BlockPos pos) {
+      return this.wrapped.getBlockState(pos);
    }
 
-   public FluidState getFluidState(BlockPos var1) {
-      return this.wrapped.getFluidState(var1);
+   public FluidState getFluidState(final BlockPos pos) {
+      return this.wrapped.getFluidState(pos);
    }
 
-   public LevelChunkSection getSection(int var1) {
-      return this.allowWrites ? this.wrapped.getSection(var1) : super.getSection(var1);
+   public LevelChunkSection getSection(final int sectionIndex) {
+      return this.allowWrites ? this.wrapped.getSection(sectionIndex) : super.getSection(sectionIndex);
    }
 
-   public @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
-      return this.allowWrites ? this.wrapped.setBlockState(var1, var2, var3) : null;
+   public @Nullable BlockState setBlockState(final BlockPos pos, final BlockState state, final @Block.UpdateFlags int flags) {
+      return this.allowWrites ? this.wrapped.setBlockState(pos, state, flags) : null;
    }
 
-   public void setBlockEntity(BlockEntity var1) {
+   public void setBlockEntity(final BlockEntity blockEntity) {
       if (this.allowWrites) {
-         this.wrapped.setBlockEntity(var1);
+         this.wrapped.setBlockEntity(blockEntity);
       }
 
    }
 
-   public void addEntity(Entity var1) {
+   public void addEntity(final Entity entity) {
       if (this.allowWrites) {
-         this.wrapped.addEntity(var1);
+         this.wrapped.addEntity(entity);
       }
 
    }
 
-   public void setPersistedStatus(ChunkStatus var1) {
+   public void setPersistedStatus(final ChunkStatus status) {
       if (this.allowWrites) {
-         super.setPersistedStatus(var1);
+         super.setPersistedStatus(status);
       }
 
    }
@@ -84,59 +84,59 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.wrapped.getSections();
    }
 
-   public void setHeightmap(Heightmap.Types var1, long[] var2) {
+   public void setHeightmap(final Heightmap.Types key, final long[] data) {
    }
 
-   private Heightmap.Types fixType(Heightmap.Types var1) {
-      if (var1 == Heightmap.Types.WORLD_SURFACE_WG) {
+   private Heightmap.Types fixType(final Heightmap.Types type) {
+      if (type == Heightmap.Types.WORLD_SURFACE_WG) {
          return Heightmap.Types.WORLD_SURFACE;
       } else {
-         return var1 == Heightmap.Types.OCEAN_FLOOR_WG ? Heightmap.Types.OCEAN_FLOOR : var1;
+         return type == Heightmap.Types.OCEAN_FLOOR_WG ? Heightmap.Types.OCEAN_FLOOR : type;
       }
    }
 
-   public Heightmap getOrCreateHeightmapUnprimed(Heightmap.Types var1) {
-      return this.wrapped.getOrCreateHeightmapUnprimed(var1);
+   public Heightmap getOrCreateHeightmapUnprimed(final Heightmap.Types type) {
+      return this.wrapped.getOrCreateHeightmapUnprimed(type);
    }
 
-   public int getHeight(Heightmap.Types var1, int var2, int var3) {
-      return this.wrapped.getHeight(this.fixType(var1), var2, var3);
+   public int getHeight(final Heightmap.Types type, final int x, final int z) {
+      return this.wrapped.getHeight(this.fixType(type), x, z);
    }
 
-   public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
-      return this.wrapped.getNoiseBiome(var1, var2, var3);
+   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
+      return this.wrapped.getNoiseBiome(quartX, quartY, quartZ);
    }
 
    public ChunkPos getPos() {
       return this.wrapped.getPos();
    }
 
-   public @Nullable StructureStart getStartForStructure(Structure var1) {
-      return this.wrapped.getStartForStructure(var1);
+   public @Nullable StructureStart getStartForStructure(final Structure structure) {
+      return this.wrapped.getStartForStructure(structure);
    }
 
-   public void setStartForStructure(Structure var1, StructureStart var2) {
+   public void setStartForStructure(final Structure structure, final StructureStart structureStart) {
    }
 
    public Map<Structure, StructureStart> getAllStarts() {
       return this.wrapped.getAllStarts();
    }
 
-   public void setAllStarts(Map<Structure, StructureStart> var1) {
+   public void setAllStarts(final Map<Structure, StructureStart> starts) {
    }
 
-   public LongSet getReferencesForStructure(Structure var1) {
-      return this.wrapped.getReferencesForStructure(var1);
+   public LongSet getReferencesForStructure(final Structure structure) {
+      return this.wrapped.getReferencesForStructure(structure);
    }
 
-   public void addReferenceForStructure(Structure var1, long var2) {
+   public void addReferenceForStructure(final Structure structure, final long reference) {
    }
 
    public Map<Structure, LongSet> getAllReferences() {
       return this.wrapped.getAllReferences();
    }
 
-   public void setAllReferences(Map<Structure, LongSet> var1) {
+   public void setAllReferences(final Map<Structure, LongSet> data) {
    }
 
    public void markUnsaved() {
@@ -159,25 +159,25 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.wrapped.getPersistedStatus();
    }
 
-   public void removeBlockEntity(BlockPos var1) {
+   public void removeBlockEntity(final BlockPos pos) {
    }
 
-   public void markPosForPostprocessing(BlockPos var1) {
+   public void markPosForPostprocessing(final BlockPos blockPos) {
    }
 
-   public void setBlockEntityNbt(CompoundTag var1) {
+   public void setBlockEntityNbt(final CompoundTag entityTag) {
    }
 
-   public @Nullable CompoundTag getBlockEntityNbt(BlockPos var1) {
-      return this.wrapped.getBlockEntityNbt(var1);
+   public @Nullable CompoundTag getBlockEntityNbt(final BlockPos blockPos) {
+      return this.wrapped.getBlockEntityNbt(blockPos);
    }
 
-   public @Nullable CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
-      return this.wrapped.getBlockEntityNbtForSaving(var1, var2);
+   public @Nullable CompoundTag getBlockEntityNbtForSaving(final BlockPos blockPos, final HolderLookup.Provider registryAccess) {
+      return this.wrapped.getBlockEntityNbtForSaving(blockPos, registryAccess);
    }
 
-   public void findBlocks(Predicate<BlockState> var1, BiConsumer<BlockPos, BlockState> var2) {
-      this.wrapped.findBlocks(var1, var2);
+   public void findBlocks(final Predicate<BlockState> predicate, final BiConsumer<BlockPos, BlockState> consumer) {
+      this.wrapped.findBlocks(predicate, consumer);
    }
 
    public TickContainerAccess<Block> getBlockTicks() {
@@ -188,8 +188,8 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.allowWrites ? this.wrapped.getFluidTicks() : BlackholeTickAccess.emptyContainer();
    }
 
-   public ChunkAccess.PackedTicks getTicksForSerialization(long var1) {
-      return this.wrapped.getTicksForSerialization(var1);
+   public ChunkAccess.PackedTicks getTicksForSerialization(final long currentTick) {
+      return this.wrapped.getTicksForSerialization(currentTick);
    }
 
    public @Nullable BlendingData getBlendingData() {
@@ -220,13 +220,13 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.wrapped.isLightCorrect();
    }
 
-   public void setLightCorrect(boolean var1) {
-      this.wrapped.setLightCorrect(var1);
+   public void setLightCorrect(final boolean isLightCorrect) {
+      this.wrapped.setLightCorrect(isLightCorrect);
    }
 
-   public void fillBiomesFromNoise(BiomeResolver var1, Climate.Sampler var2) {
+   public void fillBiomesFromNoise(final BiomeResolver biomeResolver, final Climate.Sampler sampler) {
       if (this.allowWrites) {
-         this.wrapped.fillBiomesFromNoise(var1, var2);
+         this.wrapped.fillBiomesFromNoise(biomeResolver, sampler);
       }
 
    }

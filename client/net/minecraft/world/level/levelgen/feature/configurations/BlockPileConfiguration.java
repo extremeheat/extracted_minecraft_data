@@ -7,12 +7,12 @@ public class BlockPileConfiguration implements FeatureConfiguration {
    public static final Codec<BlockPileConfiguration> CODEC;
    public final BlockStateProvider stateProvider;
 
-   public BlockPileConfiguration(BlockStateProvider var1) {
+   public BlockPileConfiguration(final BlockStateProvider stateProvider) {
       super();
-      this.stateProvider = var1;
+      this.stateProvider = stateProvider;
    }
 
    static {
-      CODEC = BlockStateProvider.CODEC.fieldOf("state_provider").xmap(BlockPileConfiguration::new, (var0) -> var0.stateProvider).codec();
+      CODEC = BlockStateProvider.CODEC.fieldOf("state_provider").xmap(BlockPileConfiguration::new, (c) -> c.stateProvider).codec();
    }
 }

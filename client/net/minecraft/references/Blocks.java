@@ -17,7 +17,7 @@ public class Blocks {
       super();
    }
 
-   private static ResourceKey<Block> createKey(String var0) {
-      return ResourceKey.create(Registries.BLOCK, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<Block> createKey(final String name) {
+      return ResourceKey.create(Registries.BLOCK, Identifier.withDefaultNamespace(name));
    }
 }

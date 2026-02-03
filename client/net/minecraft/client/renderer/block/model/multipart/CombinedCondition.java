@@ -10,40 +10,38 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.StateHolder;
 
 public record CombinedCondition(Operation operation, List<Condition> terms) implements Condition {
-   public CombinedCondition(Operation var1, List<Condition> var2) {
+   public CombinedCondition {
       super();
-      this.operation = var1;
-      this.terms = var2;
    }
 
-   public <O, S extends StateHolder<O, S>> Predicate<S> instantiate(StateDefinition<O, S> var1) {
-      return this.operation.<S>apply(Lists.transform(this.terms, (var1x) -> var1x.instantiate(var1)));
+   public <O, S extends StateHolder<O, S>> Predicate<S> instantiate(final StateDefinition<O, S> definition) {
+      return this.operation.<S>apply(Lists.transform(this.terms, (c) -> c.instantiate(definition)));
    }
 
    public static enum Operation implements StringRepresentable {
       AND("AND") {
-         public <V> Predicate<V> apply(List<Predicate<V>> var1) {
-            return Util.allOf(var1);
+         public <V> Predicate<V> apply(final List<Predicate<V>> terms) {
+            return Util.allOf(terms);
          }
       },
       OR("OR") {
-         public <V> Predicate<V> apply(List<Predicate<V>> var1) {
-            return Util.anyOf(var1);
+         public <V> Predicate<V> apply(final List<Predicate<V>> terms) {
+            return Util.anyOf(terms);
          }
       };
 
       public static final Codec<Operation> CODEC = StringRepresentable.<Operation>fromEnum(Operation::values);
       private final String name;
 
-      Operation(final String var3) {
-         this.name = var3;
+      private Operation(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {
          return this.name;
       }
 
-      public abstract <V> Predicate<V> apply(List<Predicate<V>> var1);
+      public abstract <V> Predicate<V> apply(List<Predicate<V>> terms);
 
       // $FF: synthetic method
       private static Operation[] $values() {

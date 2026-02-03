@@ -17,26 +17,25 @@ public record GameRuleCategory(Identifier id) {
    public static final GameRuleCategory CHAT = register("chat");
    public static final GameRuleCategory MISC = register("misc");
 
-   public GameRuleCategory(Identifier var1) {
+   public GameRuleCategory {
       super();
-      this.id = var1;
    }
 
    public Identifier getDescriptionId() {
       return this.id;
    }
 
-   private static GameRuleCategory register(String var0) {
-      return register(Identifier.withDefaultNamespace(var0));
+   private static GameRuleCategory register(final String name) {
+      return register(Identifier.withDefaultNamespace(name));
    }
 
-   public static GameRuleCategory register(Identifier var0) {
-      GameRuleCategory var1 = new GameRuleCategory(var0);
-      if (SORT_ORDER.contains(var1)) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "Category '%s' is already registered.", var0));
+   public static GameRuleCategory register(final Identifier id) {
+      GameRuleCategory category = new GameRuleCategory(id);
+      if (SORT_ORDER.contains(category)) {
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "Category '%s' is already registered.", id));
       } else {
-         SORT_ORDER.add(var1);
-         return var1;
+         SORT_ORDER.add(category);
+         return category;
       }
    }
 

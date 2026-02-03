@@ -9,29 +9,29 @@ public class Crackiness {
    private final float fractionMedium;
    private final float fractionHigh;
 
-   private Crackiness(float var1, float var2, float var3) {
+   private Crackiness(final float fractionLow, final float fractionMedium, final float fractionHigh) {
       super();
-      this.fractionLow = var1;
-      this.fractionMedium = var2;
-      this.fractionHigh = var3;
+      this.fractionLow = fractionLow;
+      this.fractionMedium = fractionMedium;
+      this.fractionHigh = fractionHigh;
    }
 
-   public Level byFraction(float var1) {
-      if (var1 < this.fractionHigh) {
+   public Level byFraction(final float fraction) {
+      if (fraction < this.fractionHigh) {
          return Crackiness.Level.HIGH;
-      } else if (var1 < this.fractionMedium) {
+      } else if (fraction < this.fractionMedium) {
          return Crackiness.Level.MEDIUM;
       } else {
-         return var1 < this.fractionLow ? Crackiness.Level.LOW : Crackiness.Level.NONE;
+         return fraction < this.fractionLow ? Crackiness.Level.LOW : Crackiness.Level.NONE;
       }
    }
 
-   public Level byDamage(ItemStack var1) {
-      return !var1.isDamageableItem() ? Crackiness.Level.NONE : this.byDamage(var1.getDamageValue(), var1.getMaxDamage());
+   public Level byDamage(final ItemStack item) {
+      return !item.isDamageableItem() ? Crackiness.Level.NONE : this.byDamage(item.getDamageValue(), item.getMaxDamage());
    }
 
-   public Level byDamage(int var1, int var2) {
-      return this.byFraction((float)(var2 - var1) / (float)var2);
+   public Level byDamage(final int damage, final int maxDamage) {
+      return this.byFraction((float)(maxDamage - damage) / (float)maxDamage);
    }
 
    public static enum Level {

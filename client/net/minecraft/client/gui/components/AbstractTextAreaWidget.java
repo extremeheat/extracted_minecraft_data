@@ -15,58 +15,58 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
    private boolean showBackground;
    private boolean showDecorations;
 
-   public AbstractTextAreaWidget(int var1, int var2, int var3, int var4, Component var5) {
-      super(var1, var2, var3, var4, var5);
+   public AbstractTextAreaWidget(final int x, final int y, final int width, final int height, final Component narration, final AbstractScrollArea.ScrollbarSettings scrollbarSettings) {
+      super(x, y, width, height, narration, scrollbarSettings);
       this.showBackground = true;
       this.showDecorations = true;
    }
 
-   public AbstractTextAreaWidget(int var1, int var2, int var3, int var4, Component var5, boolean var6, boolean var7) {
-      this(var1, var2, var3, var4, var5);
-      this.showBackground = var6;
-      this.showDecorations = var7;
+   public AbstractTextAreaWidget(final int x, final int y, final int width, final int height, final Component narration, final AbstractScrollArea.ScrollbarSettings scrollbarSettings, final boolean showBackground, final boolean showDecorations) {
+      this(x, y, width, height, narration, scrollbarSettings);
+      this.showBackground = showBackground;
+      this.showDecorations = showDecorations;
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      boolean var3 = this.updateScrolling(var1);
-      return super.mouseClicked(var1, var2) || var3;
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+      boolean scrolling = this.updateScrolling(event);
+      return super.mouseClicked(event, doubleClick) || scrolling;
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      boolean var2 = var1.isUp();
-      boolean var3 = var1.isDown();
-      if (var2 || var3) {
-         double var4 = this.scrollAmount();
-         this.setScrollAmount(this.scrollAmount() + (double)(var2 ? -1 : 1) * this.scrollRate());
-         if (var4 != this.scrollAmount()) {
+   public boolean keyPressed(final KeyEvent event) {
+      boolean isUp = event.isUp();
+      boolean isDown = event.isDown();
+      if (isUp || isDown) {
+         double previousScrollAmount = this.scrollAmount();
+         this.setScrollAmount(this.scrollAmount() + (double)(isUp ? -1 : 1) * this.scrollRate());
+         if (previousScrollAmount != this.scrollAmount()) {
             return true;
          }
       }
 
-      return super.keyPressed(var1);
+      return super.keyPressed(event);
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
       if (this.visible) {
          if (this.showBackground) {
-            this.renderBackground(var1);
+            this.renderBackground(graphics);
          }
 
-         var1.enableScissor(this.getX() + 1, this.getY() + 1, this.getX() + this.width - 1, this.getY() + this.height - 1);
-         var1.pose().pushMatrix();
-         var1.pose().translate(0.0F, (float)(-this.scrollAmount()));
-         this.renderContents(var1, var2, var3, var4);
-         var1.pose().popMatrix();
-         var1.disableScissor();
-         this.renderScrollbar(var1, var2, var3);
+         graphics.enableScissor(this.getX() + 1, this.getY() + 1, this.getX() + this.width - 1, this.getY() + this.height - 1);
+         graphics.pose().pushMatrix();
+         graphics.pose().translate(0.0F, (float)(-this.scrollAmount()));
+         this.renderContents(graphics, mouseX, mouseY, a);
+         graphics.pose().popMatrix();
+         graphics.disableScissor();
+         this.renderScrollbar(graphics, mouseX, mouseY);
          if (this.showDecorations) {
-            this.renderDecorations(var1);
+            this.renderDecorations(graphics);
          }
 
       }
    }
 
-   protected void renderDecorations(GuiGraphics var1) {
+   protected void renderDecorations(final GuiGraphics graphics) {
    }
 
    protected int innerPadding() {
@@ -77,8 +77,8 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
       return this.innerPadding() * 2;
    }
 
-   public boolean isMouseOver(double var1, double var3) {
-      return this.active && this.visible && var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)(this.getRight() + 6) && var3 < (double)this.getBottom();
+   public boolean isMouseOver(final double mouseX, final double mouseY) {
+      return this.active && this.visible && mouseX >= (double)this.getX() && mouseY >= (double)this.getY() && mouseX < (double)(this.getRight() + this.scrollbarWidth()) && mouseY < (double)this.getBottom();
    }
 
    protected int scrollBarX() {
@@ -89,22 +89,22 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
       return this.getInnerHeight() + this.totalInnerPadding();
    }
 
-   protected void renderBackground(GuiGraphics var1) {
-      this.renderBorder(var1, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+   protected void renderBackground(final GuiGraphics graphics) {
+      this.renderBorder(graphics, this.getX(), this.getY(), this.getWidth(), this.getHeight());
    }
 
-   protected void renderBorder(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      Identifier var6 = BACKGROUND_SPRITES.get(this.isActive(), this.isFocused());
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var6, var2, var3, var4, var5);
+   protected void renderBorder(final GuiGraphics graphics, final int x, final int y, final int width, final int height) {
+      Identifier sprite = BACKGROUND_SPRITES.get(this.isActive(), this.isFocused());
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, width, height);
    }
 
-   protected boolean withinContentAreaTopBottom(int var1, int var2) {
-      return (double)var2 - this.scrollAmount() >= (double)this.getY() && (double)var1 - this.scrollAmount() <= (double)(this.getY() + this.height);
+   protected boolean withinContentAreaTopBottom(final int top, final int bottom) {
+      return (double)bottom - this.scrollAmount() >= (double)this.getY() && (double)top - this.scrollAmount() <= (double)(this.getY() + this.height);
    }
 
    protected abstract int getInnerHeight();
 
-   protected abstract void renderContents(GuiGraphics var1, int var2, int var3, float var4);
+   protected abstract void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a);
 
    protected int getInnerLeft() {
       return this.getX() + this.innerPadding();
@@ -114,6 +114,6 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
       return this.getY() + this.innerPadding();
    }
 
-   public void playDownSound(SoundManager var1) {
+   public void playDownSound(final SoundManager soundManager) {
    }
 }

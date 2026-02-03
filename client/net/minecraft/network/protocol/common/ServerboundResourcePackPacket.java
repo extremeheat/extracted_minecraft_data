@@ -9,27 +9,25 @@ import net.minecraft.network.protocol.PacketType;
 public record ServerboundResourcePackPacket(UUID id, Action action) implements Packet<ServerCommonPacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundResourcePackPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundResourcePackPacket>codec(ServerboundResourcePackPacket::write, ServerboundResourcePackPacket::new);
 
-   private ServerboundResourcePackPacket(FriendlyByteBuf var1) {
-      this(var1.readUUID(), (Action)var1.readEnum(Action.class));
+   private ServerboundResourcePackPacket(final FriendlyByteBuf input) {
+      this(input.readUUID(), (Action)input.readEnum(Action.class));
    }
 
-   public ServerboundResourcePackPacket(UUID var1, Action var2) {
+   public ServerboundResourcePackPacket {
       super();
-      this.id = var1;
-      this.action = var2;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeUUID(this.id);
-      var1.writeEnum(this.action);
+   private void write(final FriendlyByteBuf output) {
+      output.writeUUID(this.id);
+      output.writeEnum(this.action);
    }
 
    public PacketType<ServerboundResourcePackPacket> type() {
       return CommonPacketTypes.SERVERBOUND_RESOURCE_PACK;
    }
 
-   public void handle(ServerCommonPacketListener var1) {
-      var1.handleResourcePackResponse(this);
+   public void handle(final ServerCommonPacketListener listener) {
+      listener.handleResourcePackResponse(this);
    }
 
    public static enum Action {

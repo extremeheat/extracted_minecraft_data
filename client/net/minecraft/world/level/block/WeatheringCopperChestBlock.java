@@ -14,27 +14,27 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
 public class WeatheringCopperChestBlock extends CopperChestBlock implements WeatheringCopper {
-   public static final MapCodec<WeatheringCopperChestBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperChestBlock::getState), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(var0, WeatheringCopperChestBlock::new));
+   public static final MapCodec<WeatheringCopperChestBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperChestBlock::getState), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(i, WeatheringCopperChestBlock::new));
 
    public MapCodec<WeatheringCopperChestBlock> codec() {
       return CODEC;
    }
 
-   public WeatheringCopperChestBlock(WeatheringCopper.WeatherState var1, SoundEvent var2, SoundEvent var3, BlockBehaviour.Properties var4) {
-      super(var1, var2, var3, var4);
+   public WeatheringCopperChestBlock(final WeatheringCopper.WeatherState weatherState, final SoundEvent openSound, final SoundEvent closeSound, final BlockBehaviour.Properties properties) {
+      super(weatherState, openSound, closeSound, properties);
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return WeatheringCopper.getNext(var1.getBlock()).isPresent();
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return WeatheringCopper.getNext(state.getBlock()).isPresent();
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!((ChestType)var1.getValue(ChestBlock.TYPE)).equals(ChestType.RIGHT)) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!((ChestType)state.getValue(ChestBlock.TYPE)).equals(ChestType.RIGHT)) {
+         BlockEntity var6 = level.getBlockEntity(pos);
          if (var6 instanceof ChestBlockEntity) {
-            ChestBlockEntity var5 = (ChestBlockEntity)var6;
-            if (var5.getEntitiesWithContainerOpen().isEmpty()) {
-               this.changeOverTime(var1, var2, var3, var4);
+            ChestBlockEntity chestBlockEntity = (ChestBlockEntity)var6;
+            if (chestBlockEntity.getEntitiesWithContainerOpen().isEmpty()) {
+               this.changeOverTime(state, level, pos, random);
             }
          }
       }
@@ -47,10 +47,5 @@ public class WeatheringCopperChestBlock extends CopperChestBlock implements Weat
 
    public boolean isWaxed() {
       return false;
-   }
-
-   // $FF: synthetic method
-   public Enum getAge() {
-      return this.getAge();
    }
 }

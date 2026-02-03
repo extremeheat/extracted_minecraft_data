@@ -12,24 +12,24 @@ import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 
 public class RandomSpreadStructurePlacement extends StructurePlacement {
-   public static final MapCodec<RandomSpreadStructurePlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> placementCodec(var0).and(var0.group(Codec.intRange(0, 4096).fieldOf("spacing").forGetter(RandomSpreadStructurePlacement::spacing), Codec.intRange(0, 4096).fieldOf("separation").forGetter(RandomSpreadStructurePlacement::separation), RandomSpreadType.CODEC.optionalFieldOf("spread_type", RandomSpreadType.LINEAR).forGetter(RandomSpreadStructurePlacement::spreadType))).apply(var0, RandomSpreadStructurePlacement::new)).validate(RandomSpreadStructurePlacement::validate);
+   public static final MapCodec<RandomSpreadStructurePlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> placementCodec(i).and(i.group(Codec.intRange(0, 4096).fieldOf("spacing").forGetter(RandomSpreadStructurePlacement::spacing), Codec.intRange(0, 4096).fieldOf("separation").forGetter(RandomSpreadStructurePlacement::separation), RandomSpreadType.CODEC.optionalFieldOf("spread_type", RandomSpreadType.LINEAR).forGetter(RandomSpreadStructurePlacement::spreadType))).apply(i, RandomSpreadStructurePlacement::new)).validate(RandomSpreadStructurePlacement::validate);
    private final int spacing;
    private final int separation;
    private final RandomSpreadType spreadType;
 
-   private static DataResult<RandomSpreadStructurePlacement> validate(RandomSpreadStructurePlacement var0) {
-      return var0.spacing <= var0.separation ? DataResult.error(() -> "Spacing has to be larger than separation") : DataResult.success(var0);
+   private static DataResult<RandomSpreadStructurePlacement> validate(final RandomSpreadStructurePlacement c) {
+      return c.spacing <= c.separation ? DataResult.error(() -> "Spacing has to be larger than separation") : DataResult.success(c);
    }
 
-   public RandomSpreadStructurePlacement(Vec3i var1, StructurePlacement.FrequencyReductionMethod var2, float var3, int var4, Optional<StructurePlacement.ExclusionZone> var5, int var6, int var7, RandomSpreadType var8) {
-      super(var1, var2, var3, var4, var5);
-      this.spacing = var6;
-      this.separation = var7;
-      this.spreadType = var8;
+   public RandomSpreadStructurePlacement(final Vec3i locateOffset, final StructurePlacement.FrequencyReductionMethod frequencyReductionMethod, final float frequency, final int salt, final Optional<StructurePlacement.ExclusionZone> exclusionZone, final int spacing, final int separation, final RandomSpreadType spreadType) {
+      super(locateOffset, frequencyReductionMethod, frequency, salt, exclusionZone);
+      this.spacing = spacing;
+      this.separation = separation;
+      this.spreadType = spreadType;
    }
 
-   public RandomSpreadStructurePlacement(int var1, int var2, RandomSpreadType var3, int var4) {
-      this(Vec3i.ZERO, StructurePlacement.FrequencyReductionMethod.DEFAULT, 1.0F, var4, Optional.empty(), var1, var2, var3);
+   public RandomSpreadStructurePlacement(final int spacing, final int separation, final RandomSpreadType spreadType, final int salt) {
+      this(Vec3i.ZERO, StructurePlacement.FrequencyReductionMethod.DEFAULT, 1.0F, salt, Optional.empty(), spacing, separation, spreadType);
    }
 
    public int spacing() {
@@ -44,20 +44,20 @@ public class RandomSpreadStructurePlacement extends StructurePlacement {
       return this.spreadType;
    }
 
-   public ChunkPos getPotentialStructureChunk(long var1, int var3, int var4) {
-      int var5 = Math.floorDiv(var3, this.spacing);
-      int var6 = Math.floorDiv(var4, this.spacing);
-      WorldgenRandom var7 = new WorldgenRandom(new LegacyRandomSource(0L));
-      var7.setLargeFeatureWithSalt(var1, var5, var6, this.salt());
-      int var8 = this.spacing - this.separation;
-      int var9 = this.spreadType.evaluate(var7, var8);
-      int var10 = this.spreadType.evaluate(var7, var8);
-      return new ChunkPos(var5 * this.spacing + var9, var6 * this.spacing + var10);
+   public ChunkPos getPotentialStructureChunk(final long seed, final int sourceX, final int sourceZ) {
+      int spacedGridX = Math.floorDiv(sourceX, this.spacing);
+      int spacedGridZ = Math.floorDiv(sourceZ, this.spacing);
+      WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
+      random.setLargeFeatureWithSalt(seed, spacedGridX, spacedGridZ, this.salt());
+      int limit = this.spacing - this.separation;
+      int spreadX = this.spreadType.evaluate(random, limit);
+      int spreadZ = this.spreadType.evaluate(random, limit);
+      return new ChunkPos(spacedGridX * this.spacing + spreadX, spacedGridZ * this.spacing + spreadZ);
    }
 
-   protected boolean isPlacementChunk(ChunkGeneratorStructureState var1, int var2, int var3) {
-      ChunkPos var4 = this.getPotentialStructureChunk(var1.getLevelSeed(), var2, var3);
-      return var4.x == var2 && var4.z == var3;
+   protected boolean isPlacementChunk(final ChunkGeneratorStructureState state, final int sourceX, final int sourceZ) {
+      ChunkPos chunkPos = this.getPotentialStructureChunk(state.getLevelSeed(), sourceX, sourceZ);
+      return chunkPos.x() == sourceX && chunkPos.z() == sourceZ;
    }
 
    public StructurePlacementType<?> type() {

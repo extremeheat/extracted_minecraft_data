@@ -10,12 +10,12 @@ import org.slf4j.Logger;
 public interface SignedMessageValidator {
    Logger LOGGER = LogUtils.getLogger();
    SignedMessageValidator ACCEPT_UNSIGNED = PlayerChatMessage::removeSignature;
-   SignedMessageValidator REJECT_ALL = (var0) -> {
-      LOGGER.error("Received chat message from {}, but they have no chat session initialized and secure chat is enforced", var0.sender());
+   SignedMessageValidator REJECT_ALL = (message) -> {
+      LOGGER.error("Received chat message from {}, but they have no chat session initialized and secure chat is enforced", message.sender());
       return null;
    };
 
-   @Nullable PlayerChatMessage updateAndValidate(PlayerChatMessage var1);
+   @Nullable PlayerChatMessage updateAndValidate(PlayerChatMessage message);
 
    public static class KeyBased implements SignedMessageValidator {
       private final SignatureValidator validator;
@@ -23,42 +23,42 @@ public interface SignedMessageValidator {
       private @Nullable PlayerChatMessage lastMessage;
       private boolean isChainValid = true;
 
-      public KeyBased(SignatureValidator var1, BooleanSupplier var2) {
+      public KeyBased(final SignatureValidator validator, final BooleanSupplier expired) {
          super();
-         this.validator = var1;
-         this.expired = var2;
+         this.validator = validator;
+         this.expired = expired;
       }
 
-      private boolean validateChain(PlayerChatMessage var1) {
-         if (var1.equals(this.lastMessage)) {
+      private boolean validateChain(final PlayerChatMessage message) {
+         if (message.equals(this.lastMessage)) {
             return true;
-         } else if (this.lastMessage != null && !var1.link().isDescendantOf(this.lastMessage.link())) {
-            LOGGER.error("Received out-of-order chat message from {}: expected index > {} for session {}, but was {} for session {}", new Object[]{var1.sender(), this.lastMessage.link().index(), this.lastMessage.link().sessionId(), var1.link().index(), var1.link().sessionId()});
+         } else if (this.lastMessage != null && !message.link().isDescendantOf(this.lastMessage.link())) {
+            LOGGER.error("Received out-of-order chat message from {}: expected index > {} for session {}, but was {} for session {}", new Object[]{message.sender(), this.lastMessage.link().index(), this.lastMessage.link().sessionId(), message.link().index(), message.link().sessionId()});
             return false;
          } else {
             return true;
          }
       }
 
-      private boolean validate(PlayerChatMessage var1) {
+      private boolean validate(final PlayerChatMessage message) {
          if (this.expired.getAsBoolean()) {
-            LOGGER.error("Received message with expired profile public key from {} with session {}", var1.sender(), var1.link().sessionId());
+            LOGGER.error("Received message with expired profile public key from {} with session {}", message.sender(), message.link().sessionId());
             return false;
-         } else if (!var1.verify(this.validator)) {
-            LOGGER.error("Received message with invalid signature (is the session wrong, or signature cache out of sync?): {}", PlayerChatMessage.describeSigned(var1));
+         } else if (!message.verify(this.validator)) {
+            LOGGER.error("Received message with invalid signature (is the session wrong, or signature cache out of sync?): {}", PlayerChatMessage.describeSigned(message));
             return false;
          } else {
-            return this.validateChain(var1);
+            return this.validateChain(message);
          }
       }
 
-      public @Nullable PlayerChatMessage updateAndValidate(PlayerChatMessage var1) {
-         this.isChainValid = this.isChainValid && this.validate(var1);
+      public @Nullable PlayerChatMessage updateAndValidate(final PlayerChatMessage message) {
+         this.isChainValid = this.isChainValid && this.validate(message);
          if (!this.isChainValid) {
             return null;
          } else {
-            this.lastMessage = var1;
-            return var1;
+            this.lastMessage = message;
+            return message;
          }
       }
    }

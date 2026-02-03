@@ -56,85 +56,85 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
    private Component startDate;
    private Subscription.@Nullable SubscriptionType type;
 
-   RealmsSubscriptionTab(RealmsConfigureWorldScreen var1, Minecraft var2, RealmsServer var3) {
+   RealmsSubscriptionTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData) {
       super(TITLE);
       this.daysLeft = UNKNOWN;
       this.startDate = UNKNOWN;
-      this.configurationScreen = var1;
-      this.minecraft = var2;
-      this.serverData = var3;
-      GridLayout.RowHelper var4 = this.layout.rowSpacing(6).createRowHelper(1);
-      Font var5 = var1.getFont();
-      Objects.requireNonNull(var5);
-      var4.addChild(new StringWidget(200, 9, SUBSCRIPTION_START_LABEL, var5));
-      Objects.requireNonNull(var5);
-      this.startDateWidget = (StringWidget)var4.addChild(new StringWidget(200, 9, this.startDate, var5));
-      var4.addChild(SpacerElement.height(2));
-      Objects.requireNonNull(var5);
-      this.daysLeftLabelWidget = (StringWidget)var4.addChild(new StringWidget(200, 9, TIME_LEFT_LABEL, var5));
-      Objects.requireNonNull(var5);
-      this.daysLeftWidget = (StringWidget)var4.addChild(new StringWidget(200, 9, this.daysLeft, var5));
-      var4.addChild(SpacerElement.height(2));
-      var4.addChild(Button.builder(Component.translatable("mco.configure.world.subscription.extend"), (var3x) -> ConfirmLinkScreen.confirmLinkNow(var1, (String)CommonLinks.extendRealms(var3.remoteSubscriptionId, var2.getUser().getProfileId()))).bounds(0, 0, 200, 20).build());
-      var4.addChild(SpacerElement.height(2));
-      this.deleteButton = (Button)var4.addChild(Button.builder(Component.translatable("mco.configure.world.delete.button"), (var3x) -> var2.setScreen(RealmsPopups.warningPopupScreen(var1, Component.translatable("mco.configure.world.delete.question.line1"), (var1x) -> this.deleteRealm()))).bounds(0, 0, 200, 20).build());
-      var4.addChild(SpacerElement.height(2));
-      this.subscriptionInfo = (FocusableTextWidget)var4.addChild(FocusableTextWidget.builder(Component.empty(), var5).maxWidth(200).build(), LayoutSettings.defaults().alignHorizontallyCenter());
+      this.configurationScreen = configurationScreen;
+      this.minecraft = minecraft;
+      this.serverData = serverData;
+      GridLayout.RowHelper helper = this.layout.rowSpacing(6).createRowHelper(1);
+      Font font = configurationScreen.getFont();
+      Objects.requireNonNull(font);
+      helper.addChild(new StringWidget(200, 9, SUBSCRIPTION_START_LABEL, font));
+      Objects.requireNonNull(font);
+      this.startDateWidget = (StringWidget)helper.addChild(new StringWidget(200, 9, this.startDate, font));
+      helper.addChild(SpacerElement.height(2));
+      Objects.requireNonNull(font);
+      this.daysLeftLabelWidget = (StringWidget)helper.addChild(new StringWidget(200, 9, TIME_LEFT_LABEL, font));
+      Objects.requireNonNull(font);
+      this.daysLeftWidget = (StringWidget)helper.addChild(new StringWidget(200, 9, this.daysLeft, font));
+      helper.addChild(SpacerElement.height(2));
+      helper.addChild(Button.builder(Component.translatable("mco.configure.world.subscription.extend"), (button) -> ConfirmLinkScreen.confirmLinkNow(configurationScreen, (String)CommonLinks.extendRealms(serverData.remoteSubscriptionId, minecraft.getUser().getProfileId()))).bounds(0, 0, 200, 20).build());
+      helper.addChild(SpacerElement.height(2));
+      this.deleteButton = (Button)helper.addChild(Button.builder(Component.translatable("mco.configure.world.delete.button"), (button) -> minecraft.setScreen(RealmsPopups.warningPopupScreen(configurationScreen, Component.translatable("mco.configure.world.delete.question.line1"), (popup) -> this.deleteRealm()))).bounds(0, 0, 200, 20).build());
+      helper.addChild(SpacerElement.height(2));
+      this.subscriptionInfo = (FocusableTextWidget)helper.addChild(FocusableTextWidget.builder(Component.empty(), font).maxWidth(200).build(), LayoutSettings.defaults().alignHorizontallyCenter());
       this.subscriptionInfo.setCentered(false);
-      this.updateData(var3);
+      this.updateData(serverData);
    }
 
    private void deleteRealm() {
-      RealmsUtil.RealmsIoConsumer var10000 = (var1) -> var1.deleteRealm(this.serverData.id);
+      RealmsUtil.RealmsIoConsumer var10000 = (client) -> client.deleteRealm(this.serverData.id);
       RealmsConfigureWorldScreen var10001 = this.configurationScreen;
       Objects.requireNonNull(var10001);
       RealmsUtil.runAsync(var10000, RealmsUtil.openScreenAndLogOnFailure(var10001::createErrorScreen, "Couldn't delete world")).thenRunAsync(() -> this.minecraft.setScreen(this.configurationScreen.getLastScreen()), this.minecraft);
       this.minecraft.setScreen(this.configurationScreen);
    }
 
-   private void getSubscription(long var1) {
-      RealmsClient var3 = RealmsClient.getOrCreate();
+   private void getSubscription(final long realmId) {
+      RealmsClient client = RealmsClient.getOrCreate();
 
       try {
-         Subscription var4 = var3.subscriptionFor(var1);
-         this.daysLeft = this.daysLeftPresentation(var4.daysLeft());
-         this.startDate = localPresentation(var4.startDate());
-         this.type = var4.type();
-      } catch (RealmsServiceException var5) {
-         LOGGER.error("Couldn't get subscription", var5);
-         this.minecraft.setScreen(this.configurationScreen.createErrorScreen(var5));
+         Subscription subscription = client.subscriptionFor(realmId);
+         this.daysLeft = this.daysLeftPresentation(subscription.daysLeft());
+         this.startDate = localPresentation(subscription.startDate());
+         this.type = subscription.type();
+      } catch (RealmsServiceException e) {
+         LOGGER.error("Couldn't get subscription", e);
+         this.minecraft.setScreen(this.configurationScreen.createErrorScreen(e));
       }
 
    }
 
-   private static Component localPresentation(Instant var0) {
-      String var1 = ZonedDateTime.ofInstant(var0, ZoneId.systemDefault()).format(Util.localizedDateFormatter(FormatStyle.MEDIUM));
-      return Component.literal(var1).withStyle(ChatFormatting.GRAY);
+   private static Component localPresentation(final Instant time) {
+      String formattedDate = ZonedDateTime.ofInstant(time, ZoneId.systemDefault()).format(Util.localizedDateFormatter(FormatStyle.MEDIUM));
+      return Component.literal(formattedDate).withStyle(ChatFormatting.GRAY);
    }
 
-   private Component daysLeftPresentation(int var1) {
-      if (var1 < 0 && this.serverData.expired) {
+   private Component daysLeftPresentation(final int daysLeft) {
+      if (daysLeft < 0 && this.serverData.expired) {
          return SUBSCRIPTION_EXPIRED_TEXT;
-      } else if (var1 <= 1) {
+      } else if (daysLeft <= 1) {
          return SUBSCRIPTION_LESS_THAN_A_DAY_TEXT;
       } else {
-         int var2 = var1 / 30;
-         int var3 = var1 % 30;
-         boolean var4 = var2 > 0;
-         boolean var5 = var3 > 0;
-         if (var4 && var5) {
-            return Component.translatable("mco.configure.world.subscription.remaining.months.days", var2, var3).withStyle(ChatFormatting.GRAY);
-         } else if (var4) {
-            return Component.translatable("mco.configure.world.subscription.remaining.months", var2).withStyle(ChatFormatting.GRAY);
+         int months = daysLeft / 30;
+         int days = daysLeft % 30;
+         boolean showMonths = months > 0;
+         boolean showDays = days > 0;
+         if (showMonths && showDays) {
+            return Component.translatable("mco.configure.world.subscription.remaining.months.days", months, days).withStyle(ChatFormatting.GRAY);
+         } else if (showMonths) {
+            return Component.translatable("mco.configure.world.subscription.remaining.months", months).withStyle(ChatFormatting.GRAY);
          } else {
-            return var5 ? Component.translatable("mco.configure.world.subscription.remaining.days", var3).withStyle(ChatFormatting.GRAY) : Component.empty();
+            return showDays ? Component.translatable("mco.configure.world.subscription.remaining.days", days).withStyle(ChatFormatting.GRAY) : Component.empty();
          }
       }
    }
 
-   public void updateData(RealmsServer var1) {
-      this.serverData = var1;
-      this.getSubscription(var1.id);
+   public void updateData(final RealmsServer serverData) {
+      this.serverData = serverData;
+      this.getSubscription(serverData.id);
       this.startDateWidget.setMessage(this.startDate);
       if (this.type == Subscription.SubscriptionType.NORMAL) {
          this.daysLeftLabelWidget.setMessage(TIME_LEFT_LABEL);
@@ -143,10 +143,10 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
       }
 
       this.daysLeftWidget.setMessage(this.daysLeft);
-      boolean var2 = RealmsMainScreen.isSnapshot() && var1.parentWorldName != null;
-      this.deleteButton.active = var1.expired;
-      if (var2) {
-         this.subscriptionInfo.setMessage(Component.translatable("mco.snapshot.subscription.info", var1.parentWorldName));
+      boolean snapshotWorld = RealmsMainScreen.isSnapshot() && serverData.parentWorldName != null;
+      this.deleteButton.active = serverData.expired;
+      if (snapshotWorld) {
+         this.subscriptionInfo.setMessage(Component.translatable("mco.snapshot.subscription.info", serverData.parentWorldName));
       } else {
          this.subscriptionInfo.setMessage(RECURRING_INFO);
       }

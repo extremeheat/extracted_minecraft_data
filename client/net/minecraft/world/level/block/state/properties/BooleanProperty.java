@@ -8,21 +8,21 @@ public final class BooleanProperty extends Property<Boolean> {
    private static final int TRUE_INDEX = 0;
    private static final int FALSE_INDEX = 1;
 
-   private BooleanProperty(String var1) {
-      super(var1, Boolean.class);
+   private BooleanProperty(final String name) {
+      super(name, Boolean.class);
    }
 
    public List<Boolean> getPossibleValues() {
       return VALUES;
    }
 
-   public static BooleanProperty create(String var0) {
-      return new BooleanProperty(var0);
+   public static BooleanProperty create(final String name) {
+      return new BooleanProperty(name);
    }
 
-   public Optional<Boolean> getValue(String var1) {
+   public Optional<Boolean> getValue(final String name) {
       Optional var10000;
-      switch (var1) {
+      switch (name) {
          case "true" -> var10000 = Optional.of(true);
          case "false" -> var10000 = Optional.of(false);
          default -> var10000 = Optional.empty();
@@ -31,21 +31,11 @@ public final class BooleanProperty extends Property<Boolean> {
       return var10000;
    }
 
-   public String getName(Boolean var1) {
-      return var1.toString();
+   public String getName(final Boolean value) {
+      return value.toString();
    }
 
-   public int getInternalIndex(Boolean var1) {
-      return var1 ? 0 : 1;
-   }
-
-   // $FF: synthetic method
-   public int getInternalIndex(final Comparable var1) {
-      return this.getInternalIndex((Boolean)var1);
-   }
-
-   // $FF: synthetic method
-   public String getName(final Comparable var1) {
-      return this.getName((Boolean)var1);
+   public int getInternalIndex(final Boolean value) {
+      return value ? 0 : 1;
    }
 }

@@ -5,19 +5,19 @@ import java.util.List;
 import net.minecraft.network.chat.Component;
 
 public interface NarrationElementOutput {
-   default void add(NarratedElementType var1, Component var2) {
-      this.add(var1, NarrationThunk.from(var2.getString()));
+   default void add(final NarratedElementType type, final Component contents) {
+      this.add(type, NarrationThunk.from(contents.getString()));
    }
 
-   default void add(NarratedElementType var1, String var2) {
-      this.add(var1, NarrationThunk.from(var2));
+   default void add(final NarratedElementType type, final String contents) {
+      this.add(type, NarrationThunk.from(contents));
    }
 
-   default void add(NarratedElementType var1, Component... var2) {
-      this.add(var1, NarrationThunk.from((List)ImmutableList.copyOf(var2)));
+   default void add(final NarratedElementType type, final Component... contents) {
+      this.add(type, NarrationThunk.from((List)ImmutableList.copyOf(contents)));
    }
 
-   void add(NarratedElementType var1, NarrationThunk<?> var2);
+   void add(final NarratedElementType type, final NarrationThunk<?> contents);
 
    NarrationElementOutput nest();
 }

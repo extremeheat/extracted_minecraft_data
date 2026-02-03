@@ -1,21 +1,22 @@
 package net.minecraft.util;
 
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
+import java.util.Objects;
 import java.util.function.Function;
 
 public interface BoundedFloatFunction<C> {
-   BoundedFloatFunction<Float> IDENTITY = createUnlimited((var0) -> var0);
+   BoundedFloatFunction<Float> IDENTITY = createUnlimited((input) -> input);
 
-   float apply(C var1);
+   float apply(final C c);
 
    float minValue();
 
    float maxValue();
 
-   static BoundedFloatFunction<Float> createUnlimited(final Float2FloatFunction var0) {
+   static BoundedFloatFunction<Float> createUnlimited(final Float2FloatFunction function) {
       return new BoundedFloatFunction<Float>() {
-         public float apply(Float var1) {
-            return (Float)var0.apply(var1);
+         public float apply(final Float aFloat) {
+            return (Float)function.apply(aFloat);
          }
 
          public float minValue() {
@@ -28,10 +29,14 @@ public interface BoundedFloatFunction<C> {
       };
    }
 
-   default <C2> BoundedFloatFunction<C2> comap(final Function<C2, C> var1) {
+   default <C2> BoundedFloatFunction<C2> comap(final Function<C2, C> function) {
       return new BoundedFloatFunction<C2>() {
-         public float apply(C2 var1x) {
-            return BoundedFloatFunction.this.apply(var1.apply(var1x));
+         {
+            Objects.requireNonNull(BoundedFloatFunction.this);
+         }
+
+         public float apply(final C2 c2) {
+            return BoundedFloatFunction.this.apply(function.apply(c2));
          }
 
          public float minValue() {

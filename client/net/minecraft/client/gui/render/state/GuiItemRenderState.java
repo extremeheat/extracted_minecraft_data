@@ -8,7 +8,6 @@ import org.joml.Matrix3x2f;
 import org.jspecify.annotations.Nullable;
 
 public final class GuiItemRenderState implements ScreenArea {
-   private final String name;
    private final Matrix3x2f pose;
    private final TrackingItemStackRenderState itemStackRenderState;
    private final int x;
@@ -17,42 +16,37 @@ public final class GuiItemRenderState implements ScreenArea {
    private final @Nullable ScreenRectangle oversizedItemBounds;
    private final @Nullable ScreenRectangle bounds;
 
-   public GuiItemRenderState(String var1, Matrix3x2f var2, TrackingItemStackRenderState var3, int var4, int var5, @Nullable ScreenRectangle var6) {
+   public GuiItemRenderState(final Matrix3x2f pose, final TrackingItemStackRenderState itemStackRenderState, final int x, final int y, final @Nullable ScreenRectangle scissorArea) {
       super();
-      this.name = var1;
-      this.pose = var2;
-      this.itemStackRenderState = var3;
-      this.x = var4;
-      this.y = var5;
-      this.scissorArea = var6;
+      this.pose = pose;
+      this.itemStackRenderState = itemStackRenderState;
+      this.x = x;
+      this.y = y;
+      this.scissorArea = scissorArea;
       this.oversizedItemBounds = this.itemStackRenderState().isOversizedInGui() ? this.calculateOversizedItemBounds() : null;
       this.bounds = this.calculateBounds(this.oversizedItemBounds != null ? this.oversizedItemBounds : new ScreenRectangle(this.x, this.y, 16, 16));
    }
 
    private @Nullable ScreenRectangle calculateOversizedItemBounds() {
-      AABB var1 = this.itemStackRenderState.getModelBoundingBox();
-      int var2 = Mth.ceil(var1.getXsize() * 16.0);
-      int var3 = Mth.ceil(var1.getYsize() * 16.0);
-      if (var2 <= 16 && var3 <= 16) {
+      AABB aabb = this.itemStackRenderState.getModelBoundingBox();
+      int actualXSize = Mth.ceil(aabb.getXsize() * 16.0);
+      int actualYSize = Mth.ceil(aabb.getYsize() * 16.0);
+      if (actualXSize <= 16 && actualYSize <= 16) {
          return null;
       } else {
-         float var4 = (float)(var1.minX * 16.0);
-         float var5 = (float)(var1.maxY * 16.0);
-         int var6 = Mth.floor(var4);
-         int var7 = Mth.floor(var5);
-         int var8 = this.x + var6 + 8;
-         int var9 = this.y - var7 + 8;
-         return new ScreenRectangle(var8, var9, var2, var3);
+         float xOffset = (float)(aabb.minX * 16.0);
+         float yOffset = (float)(aabb.maxY * 16.0);
+         int flooredXOffset = Mth.floor(xOffset);
+         int flooredYOffset = Mth.floor(yOffset);
+         int actualX = this.x + flooredXOffset + 8;
+         int actualY = this.y - flooredYOffset + 8;
+         return new ScreenRectangle(actualX, actualY, actualXSize, actualYSize);
       }
    }
 
-   private @Nullable ScreenRectangle calculateBounds(ScreenRectangle var1) {
-      ScreenRectangle var2 = var1.transformMaxBounds(this.pose);
-      return this.scissorArea != null ? this.scissorArea.intersection(var2) : var2;
-   }
-
-   public String name() {
-      return this.name;
+   private @Nullable ScreenRectangle calculateBounds(final ScreenRectangle itemBounds) {
+      ScreenRectangle bounds = itemBounds.transformMaxBounds(this.pose);
+      return this.scissorArea != null ? this.scissorArea.intersection(bounds) : bounds;
    }
 
    public Matrix3x2f pose() {

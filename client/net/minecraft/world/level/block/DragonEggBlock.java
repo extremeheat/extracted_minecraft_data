@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -24,43 +25,44 @@ public class DragonEggBlock extends FallingBlock {
       return CODEC;
    }
 
-   public DragonEggBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public DragonEggBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      this.teleport(var1, var2, var3);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      this.teleport(state, level, pos);
       return InteractionResult.SUCCESS;
    }
 
-   protected void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      this.teleport(var1, var2, var3);
+   protected void attack(final BlockState state, final Level level, final BlockPos pos, final Player player) {
+      this.teleport(state, level, pos);
    }
 
-   private void teleport(BlockState var1, Level var2, BlockPos var3) {
-      WorldBorder var4 = var2.getWorldBorder();
+   private void teleport(final BlockState state, final Level level, final BlockPos pos) {
+      WorldBorder worldBorder = level.getWorldBorder();
+      RandomSource random = level.getRandom();
 
-      for(int var5 = 0; var5 < 1000; ++var5) {
-         BlockPos var6 = var3.offset(var2.random.nextInt(16) - var2.random.nextInt(16), var2.random.nextInt(8) - var2.random.nextInt(8), var2.random.nextInt(16) - var2.random.nextInt(16));
-         if (var2.getBlockState(var6).isAir() && var4.isWithinBounds(var6) && !var2.isOutsideBuildHeight(var6)) {
-            if (var2.isClientSide()) {
-               for(int var7 = 0; var7 < 128; ++var7) {
-                  double var8 = var2.random.nextDouble();
-                  float var10 = (var2.random.nextFloat() - 0.5F) * 0.2F;
-                  float var11 = (var2.random.nextFloat() - 0.5F) * 0.2F;
-                  float var12 = (var2.random.nextFloat() - 0.5F) * 0.2F;
-                  double var13 = Mth.lerp(var8, (double)var6.getX(), (double)var3.getX()) + (var2.random.nextDouble() - 0.5) + 0.5;
-                  double var15 = Mth.lerp(var8, (double)var6.getY(), (double)var3.getY()) + var2.random.nextDouble() - 0.5;
-                  double var17 = Mth.lerp(var8, (double)var6.getZ(), (double)var3.getZ()) + (var2.random.nextDouble() - 0.5) + 0.5;
-                  var2.addParticle(ParticleTypes.PORTAL, var13, var15, var17, (double)var10, (double)var11, (double)var12);
+      for(int i = 0; i < 1000; ++i) {
+         BlockPos testPos = pos.offset(random.nextInt(16) - random.nextInt(16), random.nextInt(8) - random.nextInt(8), random.nextInt(16) - random.nextInt(16));
+         if (level.getBlockState(testPos).isAir() && worldBorder.isWithinBounds(testPos) && !level.isOutsideBuildHeight(testPos)) {
+            if (level.isClientSide()) {
+               for(int j = 0; j < 128; ++j) {
+                  double d = random.nextDouble();
+                  float xa = (random.nextFloat() - 0.5F) * 0.2F;
+                  float ya = (random.nextFloat() - 0.5F) * 0.2F;
+                  float za = (random.nextFloat() - 0.5F) * 0.2F;
+                  double x = Mth.lerp(d, (double)testPos.getX(), (double)pos.getX()) + (random.nextDouble() - 0.5) + 0.5;
+                  double y = Mth.lerp(d, (double)testPos.getY(), (double)pos.getY()) + random.nextDouble() - 0.5;
+                  double z = Mth.lerp(d, (double)testPos.getZ(), (double)pos.getZ()) + (random.nextDouble() - 0.5) + 0.5;
+                  level.addParticle(ParticleTypes.PORTAL, x, y, z, (double)xa, (double)ya, (double)za);
                }
             } else {
-               var2.setBlock(var6, var1, 2);
-               var2.removeBlock(var3, false);
+               level.setBlock(testPos, state, 2);
+               level.removeBlock(pos, false);
             }
 
             return;
@@ -73,11 +75,11 @@ public class DragonEggBlock extends FallingBlock {
       return 5;
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   public int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3) {
+   public int getDustColor(final BlockState blockState, final BlockGetter level, final BlockPos pos) {
       return -16777216;
    }
 }

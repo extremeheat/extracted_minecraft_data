@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,30 +39,30 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
    private final Set<String> customCompletionSuggestions = new HashSet();
    private final PermissionSet permissions;
 
-   public ClientSuggestionProvider(ClientPacketListener var1, Minecraft var2, PermissionSet var3) {
+   public ClientSuggestionProvider(final ClientPacketListener connection, final Minecraft minecraft, final PermissionSet permissions) {
       super();
-      this.connection = var1;
-      this.minecraft = var2;
-      this.permissions = var3;
+      this.connection = connection;
+      this.minecraft = minecraft;
+      this.permissions = permissions;
    }
 
    public Collection<String> getOnlinePlayerNames() {
-      ArrayList var1 = Lists.newArrayList();
+      List<String> result = Lists.newArrayList();
 
-      for(PlayerInfo var3 : this.connection.getOnlinePlayers()) {
-         var1.add(var3.getProfile().name());
+      for(PlayerInfo info : this.connection.getOnlinePlayers()) {
+         result.add(info.getProfile().name());
       }
 
-      return var1;
+      return result;
    }
 
    public Collection<String> getCustomTabSugggestions() {
       if (this.customCompletionSuggestions.isEmpty()) {
          return this.getOnlinePlayerNames();
       } else {
-         HashSet var1 = new HashSet(this.getOnlinePlayerNames());
-         var1.addAll(this.customCompletionSuggestions);
-         return var1;
+         Set<String> result = new HashSet(this.getOnlinePlayerNames());
+         result.addAll(this.customCompletionSuggestions);
+         return result;
       }
    }
 
@@ -83,47 +82,47 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
       return this.permissions;
    }
 
-   public CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4) {
-      return (CompletableFuture)this.registryAccess().lookup(var1).map((var3x) -> {
-         this.suggestRegistryElements(var3x, var2, var3);
-         return var3.buildFuture();
-      }).orElseGet(() -> this.customSuggestion(var4));
+   public CompletableFuture<Suggestions> suggestRegistryElements(final ResourceKey<? extends Registry<?>> key, final SharedSuggestionProvider.ElementSuggestionType elements, final SuggestionsBuilder builder, final CommandContext<?> context) {
+      return (CompletableFuture)this.registryAccess().lookup(key).map((registry) -> {
+         this.suggestRegistryElements(registry, elements, builder);
+         return builder.buildFuture();
+      }).orElseGet(() -> this.customSuggestion(context));
    }
 
-   public CompletableFuture<Suggestions> customSuggestion(CommandContext<?> var1) {
+   public CompletableFuture<Suggestions> customSuggestion(final CommandContext<?> context) {
       if (this.pendingSuggestionsFuture != null) {
          this.pendingSuggestionsFuture.cancel(false);
       }
 
       this.pendingSuggestionsFuture = new CompletableFuture();
-      int var2 = ++this.pendingSuggestionsId;
-      this.connection.send(new ServerboundCommandSuggestionPacket(var2, var1.getInput()));
+      int id = ++this.pendingSuggestionsId;
+      this.connection.send(new ServerboundCommandSuggestionPacket(id, context.getInput()));
       return this.pendingSuggestionsFuture;
    }
 
-   private static String prettyPrint(double var0) {
-      return String.format(Locale.ROOT, "%.2f", var0);
+   private static String prettyPrint(final double value) {
+      return String.format(Locale.ROOT, "%.2f", value);
    }
 
-   private static String prettyPrint(int var0) {
-      return Integer.toString(var0);
+   private static String prettyPrint(final int value) {
+      return Integer.toString(value);
    }
 
    public Collection<SharedSuggestionProvider.TextCoordinates> getRelevantCoordinates() {
-      HitResult var1 = this.minecraft.hitResult;
-      if (var1 != null && var1.getType() == HitResult.Type.BLOCK) {
-         BlockPos var2 = ((BlockHitResult)var1).getBlockPos();
-         return Collections.singleton(new SharedSuggestionProvider.TextCoordinates(prettyPrint(var2.getX()), prettyPrint(var2.getY()), prettyPrint(var2.getZ())));
+      HitResult hitResult = this.minecraft.hitResult;
+      if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK) {
+         BlockPos pos = ((BlockHitResult)hitResult).getBlockPos();
+         return Collections.singleton(new SharedSuggestionProvider.TextCoordinates(prettyPrint(pos.getX()), prettyPrint(pos.getY()), prettyPrint(pos.getZ())));
       } else {
          return SharedSuggestionProvider.super.getRelevantCoordinates();
       }
    }
 
    public Collection<SharedSuggestionProvider.TextCoordinates> getAbsoluteCoordinates() {
-      HitResult var1 = this.minecraft.hitResult;
-      if (var1 != null && var1.getType() == HitResult.Type.BLOCK) {
-         Vec3 var2 = var1.getLocation();
-         return Collections.singleton(new SharedSuggestionProvider.TextCoordinates(prettyPrint(var2.x), prettyPrint(var2.y), prettyPrint(var2.z)));
+      HitResult hitResult = this.minecraft.hitResult;
+      if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK) {
+         Vec3 pos = hitResult.getLocation();
+         return Collections.singleton(new SharedSuggestionProvider.TextCoordinates(prettyPrint(pos.x), prettyPrint(pos.y), prettyPrint(pos.z)));
       } else {
          return SharedSuggestionProvider.super.getAbsoluteCoordinates();
       }
@@ -141,28 +140,28 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
       return this.connection.enabledFeatures();
    }
 
-   public void completeCustomSuggestions(int var1, Suggestions var2) {
-      if (var1 == this.pendingSuggestionsId) {
-         this.pendingSuggestionsFuture.complete(var2);
+   public void completeCustomSuggestions(final int id, final Suggestions result) {
+      if (id == this.pendingSuggestionsId) {
+         this.pendingSuggestionsFuture.complete(result);
          this.pendingSuggestionsFuture = null;
          this.pendingSuggestionsId = -1;
       }
 
    }
 
-   public void modifyCustomCompletions(ClientboundCustomChatCompletionsPacket.Action var1, List<String> var2) {
-      switch (var1) {
+   public void modifyCustomCompletions(final ClientboundCustomChatCompletionsPacket.Action action, final List<String> entries) {
+      switch (action) {
          case ADD:
-            this.customCompletionSuggestions.addAll(var2);
+            this.customCompletionSuggestions.addAll(entries);
             break;
          case REMOVE:
             Set var10001 = this.customCompletionSuggestions;
             Objects.requireNonNull(var10001);
-            var2.forEach(var10001::remove);
+            entries.forEach(var10001::remove);
             break;
          case SET:
             this.customCompletionSuggestions.clear();
-            this.customCompletionSuggestions.addAll(var2);
+            this.customCompletionSuggestions.addAll(entries);
       }
 
    }

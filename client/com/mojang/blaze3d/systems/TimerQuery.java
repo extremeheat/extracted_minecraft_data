@@ -33,10 +33,10 @@ public class TimerQuery {
       RenderSystem.assertOnRenderThread();
       if (this.activeGpuQuery != null && this.activeEncoder != null) {
          this.activeEncoder.timerQueryEnd(this.activeGpuQuery);
-         FrameProfile var1 = new FrameProfile(this.activeGpuQuery);
+         FrameProfile frameProfile = new FrameProfile(this.activeGpuQuery);
          this.activeGpuQuery = null;
          this.activeEncoder = null;
-         return var1;
+         return frameProfile;
       } else {
          throw new IllegalStateException("endProfile called before beginProfile");
       }
@@ -48,9 +48,9 @@ public class TimerQuery {
       private final GpuQuery gpuQuery;
       private long timerResult = 0L;
 
-      FrameProfile(GpuQuery var1) {
+      private FrameProfile(final GpuQuery gpuQuery) {
          super();
-         this.gpuQuery = var1;
+         this.gpuQuery = gpuQuery;
       }
 
       public void cancel() {
@@ -66,9 +66,9 @@ public class TimerQuery {
          if (this.timerResult != 0L) {
             return true;
          } else {
-            OptionalLong var1 = this.gpuQuery.getValue();
-            if (var1.isPresent()) {
-               this.timerResult = var1.getAsLong();
+            OptionalLong value = this.gpuQuery.getValue();
+            if (value.isPresent()) {
+               this.timerResult = value.getAsLong();
                this.gpuQuery.close();
                return true;
             } else {
@@ -80,9 +80,9 @@ public class TimerQuery {
       public long get() {
          RenderSystem.assertOnRenderThread();
          if (this.timerResult == 0L) {
-            OptionalLong var1 = this.gpuQuery.getValue();
-            if (var1.isPresent()) {
-               this.timerResult = var1.getAsLong();
+            OptionalLong value = this.gpuQuery.getValue();
+            if (value.isPresent()) {
+               this.timerResult = value.getAsLong();
                this.gpuQuery.close();
             }
          }
@@ -91,8 +91,8 @@ public class TimerQuery {
       }
    }
 
-   static class TimerQueryLazyLoader {
-      static final TimerQuery INSTANCE = instantiate();
+   private static class TimerQueryLazyLoader {
+      private static final TimerQuery INSTANCE = instantiate();
 
       private TimerQueryLazyLoader() {
          super();

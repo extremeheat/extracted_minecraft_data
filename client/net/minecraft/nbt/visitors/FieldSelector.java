@@ -4,22 +4,19 @@ import java.util.List;
 import net.minecraft.nbt.TagType;
 
 public record FieldSelector(List<String> path, TagType<?> type, String name) {
-   public FieldSelector(TagType<?> var1, String var2) {
-      this(List.of(), var1, var2);
+   public FieldSelector(final TagType<?> type, final String name) {
+      this(List.of(), type, name);
    }
 
-   public FieldSelector(String var1, TagType<?> var2, String var3) {
-      this(List.of(var1), var2, var3);
+   public FieldSelector(final String parent, final TagType<?> type, final String name) {
+      this(List.of(parent), type, name);
    }
 
-   public FieldSelector(String var1, String var2, TagType<?> var3, String var4) {
-      this(List.of(var1, var2), var3, var4);
+   public FieldSelector(final String grandparent, final String parent, final TagType<?> type, final String name) {
+      this(List.of(grandparent, parent), type, name);
    }
 
-   public FieldSelector(List<String> var1, TagType<?> var2, String var3) {
+   public FieldSelector {
       super();
-      this.path = var1;
-      this.type = var2;
-      this.name = var3;
    }
 }

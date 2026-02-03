@@ -16,37 +16,37 @@ public class ServerboundSetCommandMinecartPacket implements Packet<ServerGamePac
    private final String command;
    private final boolean trackOutput;
 
-   public ServerboundSetCommandMinecartPacket(int var1, String var2, boolean var3) {
+   public ServerboundSetCommandMinecartPacket(final int entity, final String command, final boolean trackOutput) {
       super();
-      this.entity = var1;
-      this.command = var2;
-      this.trackOutput = var3;
+      this.entity = entity;
+      this.command = command;
+      this.trackOutput = trackOutput;
    }
 
-   private ServerboundSetCommandMinecartPacket(FriendlyByteBuf var1) {
+   private ServerboundSetCommandMinecartPacket(final FriendlyByteBuf input) {
       super();
-      this.entity = var1.readVarInt();
-      this.command = var1.readUtf();
-      this.trackOutput = var1.readBoolean();
+      this.entity = input.readVarInt();
+      this.command = input.readUtf();
+      this.trackOutput = input.readBoolean();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.entity);
-      var1.writeUtf(this.command);
-      var1.writeBoolean(this.trackOutput);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.entity);
+      output.writeUtf(this.command);
+      output.writeBoolean(this.trackOutput);
    }
 
    public PacketType<ServerboundSetCommandMinecartPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_COMMAND_MINECART;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSetCommandMinecart(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleSetCommandMinecart(this);
    }
 
-   public @Nullable BaseCommandBlock getCommandBlock(Level var1) {
-      Entity var2 = var1.getEntity(this.entity);
-      return var2 instanceof MinecartCommandBlock ? ((MinecartCommandBlock)var2).getCommandBlock() : null;
+   public @Nullable BaseCommandBlock getCommandBlock(final Level level) {
+      Entity entity = level.getEntity(this.entity);
+      return entity instanceof MinecartCommandBlock ? ((MinecartCommandBlock)entity).getCommandBlock() : null;
    }
 
    public String getCommand() {

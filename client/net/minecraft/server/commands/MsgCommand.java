@@ -19,34 +19,34 @@ public class MsgCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      LiteralCommandNode var1 = var0.register((LiteralArgumentBuilder)Commands.literal("msg").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("message", MessageArgument.message()).executes((var0x) -> {
-         Collection var1 = EntityArgument.getPlayers(var0x, "targets");
-         if (!var1.isEmpty()) {
-            MessageArgument.resolveChatMessage(var0x, "message", (var2) -> sendMessage((CommandSourceStack)var0x.getSource(), var1, var2));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      LiteralCommandNode<CommandSourceStack> msg = dispatcher.register((LiteralArgumentBuilder)Commands.literal("msg").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("message", MessageArgument.message()).executes((c) -> {
+         Collection<ServerPlayer> players = EntityArgument.getPlayers(c, "targets");
+         if (!players.isEmpty()) {
+            MessageArgument.resolveChatMessage(c, "message", (message) -> sendMessage((CommandSourceStack)c.getSource(), players, message));
          }
 
-         return var1.size();
+         return players.size();
       }))));
-      var0.register((LiteralArgumentBuilder)Commands.literal("tell").redirect(var1));
-      var0.register((LiteralArgumentBuilder)Commands.literal("w").redirect(var1));
+      dispatcher.register((LiteralArgumentBuilder)Commands.literal("tell").redirect(msg));
+      dispatcher.register((LiteralArgumentBuilder)Commands.literal("w").redirect(msg));
    }
 
-   private static void sendMessage(CommandSourceStack var0, Collection<ServerPlayer> var1, PlayerChatMessage var2) {
-      ChatType.Bound var3 = ChatType.bind(ChatType.MSG_COMMAND_INCOMING, var0);
-      OutgoingChatMessage var4 = OutgoingChatMessage.create(var2);
-      boolean var5 = false;
+   private static void sendMessage(final CommandSourceStack source, final Collection<ServerPlayer> players, final PlayerChatMessage message) {
+      ChatType.Bound incomingChatType = ChatType.bind(ChatType.MSG_COMMAND_INCOMING, source);
+      OutgoingChatMessage tracked = OutgoingChatMessage.create(message);
+      boolean wasFullyFiltered = false;
 
-      for(ServerPlayer var7 : var1) {
-         ChatType.Bound var8 = ChatType.bind(ChatType.MSG_COMMAND_OUTGOING, var0).withTargetName(var7.getDisplayName());
-         var0.sendChatMessage(var4, false, var8);
-         boolean var9 = var0.shouldFilterMessageTo(var7);
-         var7.sendChatMessage(var4, var9, var3);
-         var5 |= var9 && var2.isFullyFiltered();
+      for(ServerPlayer player : players) {
+         ChatType.Bound outgoingChatType = ChatType.bind(ChatType.MSG_COMMAND_OUTGOING, source).withTargetName(player.getDisplayName());
+         source.sendChatMessage(tracked, false, outgoingChatType);
+         boolean filtered = source.shouldFilterMessageTo(player);
+         player.sendChatMessage(tracked, filtered, incomingChatType);
+         wasFullyFiltered |= filtered && message.isFullyFiltered();
       }
 
-      if (var5) {
-         var0.sendSystemMessage(PlayerList.CHAT_FILTERED_FULL);
+      if (wasFullyFiltered) {
+         source.sendSystemMessage(PlayerList.CHAT_FILTERED_FULL);
       }
 
    }

@@ -14,22 +14,22 @@ import org.joml.Vector3fc;
 public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
    private final TridentModel model;
 
-   public TridentSpecialRenderer(TridentModel var1) {
+   public TridentSpecialRenderer(final TridentModel model) {
       super();
-      this.model = var1;
+      this.model = model;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      var2.pushPose();
-      var2.scale(1.0F, -1.0F, -1.0F);
-      var3.submitModelPart(this.model.root(), var2, this.model.renderType(TridentModel.TEXTURE), var4, var5, (TextureAtlasSprite)null, false, var6, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var7);
-      var2.popPose();
+   public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      poseStack.pushPose();
+      poseStack.scale(1.0F, -1.0F, -1.0F);
+      submitNodeCollector.submitModelPart(this.model.root(), poseStack, this.model.renderType(TridentModel.TEXTURE), lightCoords, overlayCoords, (TextureAtlasSprite)null, false, hasFoil, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      poseStack.popPose();
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      PoseStack var2 = new PoseStack();
-      var2.scale(1.0F, -1.0F, -1.0F);
-      this.model.root().getExtentsForGui(var2, var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
+      poseStack.scale(1.0F, -1.0F, -1.0F);
+      this.model.root().getExtentsForGui(poseStack, output);
    }
 
    public static record Unbaked() implements SpecialModelRenderer.Unbaked {
@@ -43,8 +43,8 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         return new TridentSpecialRenderer(new TridentModel(var1.entityModelSet().bakeLayer(ModelLayers.TRIDENT)));
+      public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+         return new TridentSpecialRenderer(new TridentModel(context.entityModelSet().bakeLayer(ModelLayers.TRIDENT)));
       }
    }
 }

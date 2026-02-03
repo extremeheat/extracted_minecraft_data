@@ -54,28 +54,28 @@ public class MouseHandler {
    private double lastHandleMovementTime = 4.9E-324;
    private boolean mouseGrabbed;
 
-   public MouseHandler(Minecraft var1) {
+   public MouseHandler(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
       this.scrollWheelHandler = new ScrollWheelHandler();
    }
 
-   private void onButton(long var1, MouseButtonInfo var3, @MouseButtonInfo.Action int var4) {
-      Window var5 = this.minecraft.getWindow();
-      if (var1 == var5.handle()) {
+   private void onButton(final long handle, final MouseButtonInfo rawButtonInfo, final @MouseButtonInfo.Action int action) {
+      Window window = this.minecraft.getWindow();
+      if (handle == window.handle()) {
          this.minecraft.getFramerateLimitTracker().onInputReceived();
          if (this.minecraft.screen != null) {
             this.minecraft.setLastInputType(InputType.MOUSE);
          }
 
-         boolean var6 = var4 == 1;
-         MouseButtonInfo var7 = this.simulateRightClick(var3, var6);
-         if (var6) {
+         boolean pressed = action == 1;
+         MouseButtonInfo buttonInfo = this.simulateRightClick(rawButtonInfo, pressed);
+         if (pressed) {
             if ((Boolean)this.minecraft.options.touchscreen().get() && this.clickDepth++ > 0) {
                return;
             }
 
-            this.activeButton = var7;
+            this.activeButton = buttonInfo;
             this.mousePressedTime = Blaze3D.getTime();
          } else if (this.activeButton != null) {
             if ((Boolean)this.minecraft.options.touchscreen().get() && --this.clickDepth > 0) {
@@ -87,120 +87,120 @@ public class MouseHandler {
 
          if (this.minecraft.getOverlay() == null) {
             if (this.minecraft.screen == null) {
-               if (!this.mouseGrabbed && var6) {
+               if (!this.mouseGrabbed && pressed) {
                   this.grabMouse();
                }
             } else {
-               double var8 = this.getScaledXPos(var5);
-               double var10 = this.getScaledYPos(var5);
-               Screen var12 = this.minecraft.screen;
-               MouseButtonEvent var13 = new MouseButtonEvent(var8, var10, var7);
-               if (var6) {
-                  var12.afterMouseAction();
+               double xm = this.getScaledXPos(window);
+               double ym = this.getScaledYPos(window);
+               Screen screen = this.minecraft.screen;
+               MouseButtonEvent event = new MouseButtonEvent(xm, ym, buttonInfo);
+               if (pressed) {
+                  screen.afterMouseAction();
 
                   try {
-                     long var14 = Util.getMillis();
-                     boolean var21 = this.lastClick != null && var14 - this.lastClick.time() < 250L && this.lastClick.screen() == var12 && this.lastClickButton == var13.button();
-                     if (var12.mouseClicked(var13, var21)) {
-                        this.lastClick = new LastClick(var14, var12);
-                        this.lastClickButton = var7.button();
+                     long currentTime = Util.getMillis();
+                     boolean doubleClick = this.lastClick != null && currentTime - this.lastClick.time() < 250L && this.lastClick.screen() == screen && this.lastClickButton == event.button();
+                     if (screen.mouseClicked(event, doubleClick)) {
+                        this.lastClick = new LastClick(currentTime, screen);
+                        this.lastClickButton = buttonInfo.button();
                         return;
                      }
-                  } catch (Throwable var18) {
-                     CrashReport var15 = CrashReport.forThrowable(var18, "mouseClicked event handler");
-                     var12.fillCrashDetails(var15);
-                     CrashReportCategory var16 = var15.addCategory("Mouse");
-                     this.fillMousePositionDetails(var16, var5);
-                     var16.setDetail("Button", var13.button());
-                     throw new ReportedException(var15);
+                  } catch (Throwable t) {
+                     CrashReport report = CrashReport.forThrowable(t, "mouseClicked event handler");
+                     screen.fillCrashDetails(report);
+                     CrashReportCategory mouseDetails = report.addCategory("Mouse");
+                     this.fillMousePositionDetails(mouseDetails, window);
+                     mouseDetails.setDetail("Button", event.button());
+                     throw new ReportedException(report);
                   }
                } else {
                   try {
-                     if (var12.mouseReleased(var13)) {
+                     if (screen.mouseReleased(event)) {
                         return;
                      }
-                  } catch (Throwable var17) {
-                     CrashReport var20 = CrashReport.forThrowable(var17, "mouseReleased event handler");
-                     var12.fillCrashDetails(var20);
-                     CrashReportCategory var22 = var20.addCategory("Mouse");
-                     this.fillMousePositionDetails(var22, var5);
-                     var22.setDetail("Button", var13.button());
-                     throw new ReportedException(var20);
+                  } catch (Throwable t) {
+                     CrashReport report = CrashReport.forThrowable(t, "mouseReleased event handler");
+                     screen.fillCrashDetails(report);
+                     CrashReportCategory mouseDetails = report.addCategory("Mouse");
+                     this.fillMousePositionDetails(mouseDetails, window);
+                     mouseDetails.setDetail("Button", event.button());
+                     throw new ReportedException(report);
                   }
                }
             }
          }
 
          if (this.minecraft.screen == null && this.minecraft.getOverlay() == null) {
-            if (var7.button() == 0) {
-               this.isLeftPressed = var6;
-            } else if (var7.button() == 2) {
-               this.isMiddlePressed = var6;
-            } else if (var7.button() == 1) {
-               this.isRightPressed = var6;
+            if (buttonInfo.button() == 0) {
+               this.isLeftPressed = pressed;
+            } else if (buttonInfo.button() == 2) {
+               this.isMiddlePressed = pressed;
+            } else if (buttonInfo.button() == 1) {
+               this.isRightPressed = pressed;
             }
 
-            InputConstants.Key var19 = InputConstants.Type.MOUSE.getOrCreate(var7.button());
-            KeyMapping.set(var19, var6);
-            if (var6) {
-               KeyMapping.click(var19);
+            InputConstants.Key mouseKey = InputConstants.Type.MOUSE.getOrCreate(buttonInfo.button());
+            KeyMapping.set(mouseKey, pressed);
+            if (pressed) {
+               KeyMapping.click(mouseKey);
             }
          }
 
       }
    }
 
-   private MouseButtonInfo simulateRightClick(MouseButtonInfo var1, boolean var2) {
-      if (InputQuirks.SIMULATE_RIGHT_CLICK_WITH_LONG_LEFT_CLICK && var1.button() == 0) {
-         if (var2) {
-            if ((var1.modifiers() & 2) == 2) {
+   private MouseButtonInfo simulateRightClick(final MouseButtonInfo info, final boolean pressed) {
+      if (InputQuirks.SIMULATE_RIGHT_CLICK_WITH_LONG_LEFT_CLICK && info.button() == 0) {
+         if (pressed) {
+            if ((info.modifiers() & 2) == 2) {
                ++this.fakeRightMouse;
-               return new MouseButtonInfo(1, var1.modifiers());
+               return new MouseButtonInfo(1, info.modifiers());
             }
          } else if (this.fakeRightMouse > 0) {
             --this.fakeRightMouse;
-            return new MouseButtonInfo(1, var1.modifiers());
+            return new MouseButtonInfo(1, info.modifiers());
          }
       }
 
-      return var1;
+      return info;
    }
 
-   public void fillMousePositionDetails(CrashReportCategory var1, Window var2) {
-      var1.setDetail("Mouse location", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%f, %f). Absolute: (%f, %f)", getScaledXPos(var2, this.xpos), getScaledYPos(var2, this.ypos), this.xpos, this.ypos)));
-      var1.setDetail("Screen size", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%d, %d). Scale factor of %d", var2.getGuiScaledWidth(), var2.getGuiScaledHeight(), var2.getWidth(), var2.getHeight(), var2.getGuiScale())));
+   public void fillMousePositionDetails(final CrashReportCategory category, final Window window) {
+      category.setDetail("Mouse location", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%f, %f). Absolute: (%f, %f)", getScaledXPos(window, this.xpos), getScaledYPos(window, this.ypos), this.xpos, this.ypos)));
+      category.setDetail("Screen size", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%d, %d). Scale factor of %d", window.getGuiScaledWidth(), window.getGuiScaledHeight(), window.getWidth(), window.getHeight(), window.getGuiScale())));
    }
 
-   private void onScroll(long var1, double var3, double var5) {
-      if (var1 == this.minecraft.getWindow().handle()) {
+   private void onScroll(final long handle, final double xoffset, final double yoffset) {
+      if (handle == this.minecraft.getWindow().handle()) {
          this.minecraft.getFramerateLimitTracker().onInputReceived();
-         boolean var7 = (Boolean)this.minecraft.options.discreteMouseScroll().get();
-         double var8 = (Double)this.minecraft.options.mouseWheelSensitivity().get();
-         double var10 = (var7 ? Math.signum(var3) : var3) * var8;
-         double var12 = (var7 ? Math.signum(var5) : var5) * var8;
+         boolean discreteScroll = (Boolean)this.minecraft.options.discreteMouseScroll().get();
+         double scrollSensitivity = (Double)this.minecraft.options.mouseWheelSensitivity().get();
+         double scaledXOffset = (discreteScroll ? Math.signum(xoffset) : xoffset) * scrollSensitivity;
+         double scaledYOffset = (discreteScroll ? Math.signum(yoffset) : yoffset) * scrollSensitivity;
          if (this.minecraft.getOverlay() == null) {
             if (this.minecraft.screen != null) {
-               double var14 = this.getScaledXPos(this.minecraft.getWindow());
-               double var16 = this.getScaledYPos(this.minecraft.getWindow());
-               this.minecraft.screen.mouseScrolled(var14, var16, var10, var12);
+               double xm = this.getScaledXPos(this.minecraft.getWindow());
+               double ym = this.getScaledYPos(this.minecraft.getWindow());
+               this.minecraft.screen.mouseScrolled(xm, ym, scaledXOffset, scaledYOffset);
                this.minecraft.screen.afterMouseAction();
             } else if (this.minecraft.player != null) {
-               Vector2i var18 = this.scrollWheelHandler.onMouseScroll(var10, var12);
-               if (var18.x == 0 && var18.y == 0) {
+               Vector2i wheelXY = this.scrollWheelHandler.onMouseScroll(scaledXOffset, scaledYOffset);
+               if (wheelXY.x == 0 && wheelXY.y == 0) {
                   return;
                }
 
-               int var15 = var18.y == 0 ? -var18.x : var18.y;
+               int wheel = wheelXY.y == 0 ? -wheelXY.x : wheelXY.y;
                if (this.minecraft.player.isSpectator()) {
                   if (this.minecraft.gui.getSpectatorGui().isMenuActive()) {
-                     this.minecraft.gui.getSpectatorGui().onMouseScrolled(-var15);
+                     this.minecraft.gui.getSpectatorGui().onMouseScrolled(-wheel);
                   } else {
-                     float var19 = Mth.clamp(this.minecraft.player.getAbilities().getFlyingSpeed() + (float)var18.y * 0.005F, 0.0F, 0.2F);
-                     this.minecraft.player.getAbilities().setFlyingSpeed(var19);
+                     float speed = Mth.clamp(this.minecraft.player.getAbilities().getFlyingSpeed() + (float)wheelXY.y * 0.005F, 0.0F, 0.2F);
+                     this.minecraft.player.getAbilities().setFlyingSpeed(speed);
                   }
                } else {
-                  Inventory var20 = this.minecraft.player.getInventory();
-                  var20.setSelectedSlot(ScrollWheelHandler.getNextScrollWheelSelection((double)var15, var20.getSelectedSlot(), Inventory.getSelectionSize()));
+                  Inventory inventory = this.minecraft.player.getInventory();
+                  inventory.setSelectedSlot(ScrollWheelHandler.getNextScrollWheelSelection((double)wheel, inventory.getSelectedSlot(), Inventory.getSelectionSize()));
                }
             }
          }
@@ -208,108 +208,108 @@ public class MouseHandler {
 
    }
 
-   private void onDrop(long var1, List<Path> var3, int var4) {
+   private void onDrop(final long handle, final List<Path> files, final int failedCount) {
       this.minecraft.getFramerateLimitTracker().onInputReceived();
       if (this.minecraft.screen != null) {
-         this.minecraft.screen.onFilesDrop(var3);
+         this.minecraft.screen.onFilesDrop(files);
       }
 
-      if (var4 > 0) {
-         SystemToast.onFileDropFailure(this.minecraft, var4);
+      if (failedCount > 0) {
+         SystemToast.onFileDropFailure(this.minecraft, failedCount);
       }
 
    }
 
-   public void setup(Window var1) {
-      InputConstants.setupMouseCallbacks(var1, (var1x, var3, var5) -> this.minecraft.execute(() -> this.onMove(var1x, var3, var5)), (var1x, var3, var4, var5) -> {
-         MouseButtonInfo var6 = new MouseButtonInfo(var3, var5);
-         this.minecraft.execute(() -> this.onButton(var1x, var6, var4));
-      }, (var1x, var3, var5) -> this.minecraft.execute(() -> this.onScroll(var1x, var3, var5)), (var1x, var3, var4) -> {
-         ArrayList var6 = new ArrayList(var3);
-         int var7 = 0;
+   public void setup(final Window window) {
+      InputConstants.setupMouseCallbacks(window, (window1, xpos, ypos) -> this.minecraft.execute(() -> this.onMove(window1, xpos, ypos)), (window1, button, action, mods) -> {
+         MouseButtonInfo buttonInfo = new MouseButtonInfo(button, mods);
+         this.minecraft.execute(() -> this.onButton(window1, buttonInfo, action));
+      }, (window1, xoffset, yoffset) -> this.minecraft.execute(() -> this.onScroll(window1, xoffset, yoffset)), (window1, count, namesPtr) -> {
+         List<Path> names = new ArrayList(count);
+         int failedCount = 0;
 
-         for(int var8 = 0; var8 < var3; ++var8) {
-            String var9 = GLFWDropCallback.getName(var4, var8);
+         for(int i = 0; i < count; ++i) {
+            String name = GLFWDropCallback.getName(namesPtr, i);
 
             try {
-               var6.add(Paths.get(var9));
-            } catch (InvalidPathException var11) {
-               ++var7;
-               LOGGER.error("Failed to parse path '{}'", var9, var11);
+               names.add(Paths.get(name));
+            } catch (InvalidPathException e) {
+               ++failedCount;
+               LOGGER.error("Failed to parse path '{}'", name, e);
             }
          }
 
-         if (!var6.isEmpty()) {
-            this.minecraft.execute(() -> this.onDrop(var1x, var6, var7));
+         if (!names.isEmpty()) {
+            this.minecraft.execute(() -> this.onDrop(window1, names, failedCount));
          }
 
       });
    }
 
-   private void onMove(long var1, double var3, double var5) {
-      if (var1 == this.minecraft.getWindow().handle()) {
+   private void onMove(final long handle, final double xpos, final double ypos) {
+      if (handle == this.minecraft.getWindow().handle()) {
          if (this.ignoreFirstMove) {
-            this.xpos = var3;
-            this.ypos = var5;
+            this.xpos = xpos;
+            this.ypos = ypos;
             this.ignoreFirstMove = false;
          } else {
             if (this.minecraft.isWindowActive()) {
-               this.accumulatedDX += var3 - this.xpos;
-               this.accumulatedDY += var5 - this.ypos;
+               this.accumulatedDX += xpos - this.xpos;
+               this.accumulatedDY += ypos - this.ypos;
             }
 
-            this.xpos = var3;
-            this.ypos = var5;
+            this.xpos = xpos;
+            this.ypos = ypos;
          }
       }
    }
 
    public void handleAccumulatedMovement() {
-      double var1 = Blaze3D.getTime();
-      double var3 = var1 - this.lastHandleMovementTime;
-      this.lastHandleMovementTime = var1;
+      double time = Blaze3D.getTime();
+      double mousea = time - this.lastHandleMovementTime;
+      this.lastHandleMovementTime = time;
       if (this.minecraft.isWindowActive()) {
-         Screen var5 = this.minecraft.screen;
-         boolean var6 = this.accumulatedDX != 0.0 || this.accumulatedDY != 0.0;
-         if (var6) {
+         Screen screen = this.minecraft.screen;
+         boolean mouseMoved = this.accumulatedDX != 0.0 || this.accumulatedDY != 0.0;
+         if (mouseMoved) {
             this.minecraft.getFramerateLimitTracker().onInputReceived();
          }
 
-         if (var5 != null && this.minecraft.getOverlay() == null && var6) {
-            Window var7 = this.minecraft.getWindow();
-            double var8 = this.getScaledXPos(var7);
-            double var10 = this.getScaledYPos(var7);
+         if (screen != null && this.minecraft.getOverlay() == null && mouseMoved) {
+            Window window = this.minecraft.getWindow();
+            double xm = this.getScaledXPos(window);
+            double ym = this.getScaledYPos(window);
 
             try {
-               var5.mouseMoved(var8, var10);
-            } catch (Throwable var20) {
-               CrashReport var13 = CrashReport.forThrowable(var20, "mouseMoved event handler");
-               var5.fillCrashDetails(var13);
-               CrashReportCategory var14 = var13.addCategory("Mouse");
-               this.fillMousePositionDetails(var14, var7);
-               throw new ReportedException(var13);
+               screen.mouseMoved(xm, ym);
+            } catch (Throwable t) {
+               CrashReport report = CrashReport.forThrowable(t, "mouseMoved event handler");
+               screen.fillCrashDetails(report);
+               CrashReportCategory mouseDetails = report.addCategory("Mouse");
+               this.fillMousePositionDetails(mouseDetails, window);
+               throw new ReportedException(report);
             }
 
             if (this.activeButton != null && this.mousePressedTime > 0.0) {
-               double var12 = getScaledXPos(var7, this.accumulatedDX);
-               double var21 = getScaledYPos(var7, this.accumulatedDY);
+               double dx = getScaledXPos(window, this.accumulatedDX);
+               double dy = getScaledYPos(window, this.accumulatedDY);
 
                try {
-                  var5.mouseDragged(new MouseButtonEvent(var8, var10, this.activeButton), var12, var21);
-               } catch (Throwable var19) {
-                  CrashReport var17 = CrashReport.forThrowable(var19, "mouseDragged event handler");
-                  var5.fillCrashDetails(var17);
-                  CrashReportCategory var18 = var17.addCategory("Mouse");
-                  this.fillMousePositionDetails(var18, var7);
-                  throw new ReportedException(var17);
+                  screen.mouseDragged(new MouseButtonEvent(xm, ym, this.activeButton), dx, dy);
+               } catch (Throwable t) {
+                  CrashReport report = CrashReport.forThrowable(t, "mouseDragged event handler");
+                  screen.fillCrashDetails(report);
+                  CrashReportCategory mouseDetails = report.addCategory("Mouse");
+                  this.fillMousePositionDetails(mouseDetails, window);
+                  throw new ReportedException(report);
                }
             }
 
-            var5.afterMouseMove();
+            screen.afterMouseMove();
          }
 
          if (this.isMouseGrabbed() && this.minecraft.player != null) {
-            this.turnPlayer(var3);
+            this.turnPlayer(mousea);
          }
       }
 
@@ -317,48 +317,48 @@ public class MouseHandler {
       this.accumulatedDY = 0.0;
    }
 
-   public static double getScaledXPos(Window var0, double var1) {
-      return var1 * (double)var0.getGuiScaledWidth() / (double)var0.getScreenWidth();
+   public static double getScaledXPos(final Window window, final double x) {
+      return x * (double)window.getGuiScaledWidth() / (double)window.getScreenWidth();
    }
 
-   public double getScaledXPos(Window var1) {
-      return getScaledXPos(var1, this.xpos);
+   public double getScaledXPos(final Window window) {
+      return getScaledXPos(window, this.xpos);
    }
 
-   public static double getScaledYPos(Window var0, double var1) {
-      return var1 * (double)var0.getGuiScaledHeight() / (double)var0.getScreenHeight();
+   public static double getScaledYPos(final Window window, final double y) {
+      return y * (double)window.getGuiScaledHeight() / (double)window.getScreenHeight();
    }
 
-   public double getScaledYPos(Window var1) {
-      return getScaledYPos(var1, this.ypos);
+   public double getScaledYPos(final Window window) {
+      return getScaledYPos(window, this.ypos);
    }
 
-   private void turnPlayer(double var1) {
-      double var7 = (Double)this.minecraft.options.sensitivity().get() * 0.6000000238418579 + 0.20000000298023224;
-      double var9 = var7 * var7 * var7;
-      double var11 = var9 * 8.0;
-      double var3;
-      double var5;
+   private void turnPlayer(final double mousea) {
+      double ss = (Double)this.minecraft.options.sensitivity().get() * 0.6000000238418579 + 0.20000000298023224;
+      double sensitivityMod = ss * ss * ss;
+      double sens = sensitivityMod * 8.0;
+      double xo;
+      double yo;
       if (this.minecraft.options.smoothCamera) {
-         double var13 = this.smoothTurnX.getNewDeltaValue(this.accumulatedDX * var11, var1 * var11);
-         double var15 = this.smoothTurnY.getNewDeltaValue(this.accumulatedDY * var11, var1 * var11);
-         var3 = var13;
-         var5 = var15;
+         double dx = this.smoothTurnX.getNewDeltaValue(this.accumulatedDX * sens, mousea * sens);
+         double dy = this.smoothTurnY.getNewDeltaValue(this.accumulatedDY * sens, mousea * sens);
+         xo = dx;
+         yo = dy;
       } else if (this.minecraft.options.getCameraType().isFirstPerson() && this.minecraft.player.isScoping()) {
          this.smoothTurnX.reset();
          this.smoothTurnY.reset();
-         var3 = this.accumulatedDX * var9;
-         var5 = this.accumulatedDY * var9;
+         xo = this.accumulatedDX * sensitivityMod;
+         yo = this.accumulatedDY * sensitivityMod;
       } else {
          this.smoothTurnX.reset();
          this.smoothTurnY.reset();
-         var3 = this.accumulatedDX * var11;
-         var5 = this.accumulatedDY * var11;
+         xo = this.accumulatedDX * sens;
+         yo = this.accumulatedDY * sens;
       }
 
-      this.minecraft.getTutorial().onMouse(var3, var5);
+      this.minecraft.getTutorial().onMouse(xo, yo);
       if (this.minecraft.player != null) {
-         this.minecraft.player.turn((Boolean)this.minecraft.options.invertMouseX().get() ? -var3 : var3, (Boolean)this.minecraft.options.invertMouseY().get() ? -var5 : var5);
+         this.minecraft.player.turn((Boolean)this.minecraft.options.invertMouseX().get() ? -xo : xo, (Boolean)this.minecraft.options.invertMouseY().get() ? -yo : yo);
       }
 
    }
@@ -422,19 +422,17 @@ public class MouseHandler {
       this.ignoreFirstMove = true;
    }
 
-   public void drawDebugMouseInfo(Font var1, GuiGraphics var2) {
-      Window var3 = this.minecraft.getWindow();
-      double var4 = this.getScaledXPos(var3);
-      double var6 = this.getScaledYPos(var3) - 8.0;
-      String var8 = String.format(Locale.ROOT, "%.0f,%.0f", var4, var6);
-      var2.drawString(var1, (String)var8, (int)var4, (int)var6, -1);
+   public void drawDebugMouseInfo(final Font font, final GuiGraphics graphics) {
+      Window window = this.minecraft.getWindow();
+      double x = this.getScaledXPos(window);
+      double y = this.getScaledYPos(window) - 8.0;
+      String text = String.format(Locale.ROOT, "%.0f,%.0f", x, y);
+      graphics.drawString(font, (String)text, (int)x, (int)y, -1);
    }
 
-   static record LastClick(long time, Screen screen) {
-      LastClick(long var1, Screen var3) {
+   private static record LastClick(long time, Screen screen) {
+      private LastClick {
          super();
-         this.time = var1;
-         this.screen = var3;
       }
    }
 }

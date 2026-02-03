@@ -3,9 +3,9 @@ package net.minecraft.client.resources.server;
 import java.util.UUID;
 
 public interface PackLoadFeedback {
-   void reportUpdate(UUID var1, Update var2);
+   void reportUpdate(UUID id, Update result);
 
-   void reportFinalResult(UUID var1, FinalResult var2);
+   void reportFinalResult(UUID id, FinalResult result);
 
    public static enum Update {
       ACCEPTED,

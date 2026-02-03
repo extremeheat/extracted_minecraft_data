@@ -15,24 +15,24 @@ public class SetHiddenState {
       super();
    }
 
-   public static BehaviorControl<LivingEntity> create(int var0, int var1) {
-      int var2 = var0 * 20;
-      MutableInt var3 = new MutableInt(0);
-      return BehaviorBuilder.create((Function)((var3x) -> var3x.group(var3x.present(MemoryModuleType.HIDING_PLACE), var3x.present(MemoryModuleType.HEARD_BELL_TIME)).apply(var3x, (var4, var5) -> (var6, var7, var8) -> {
-               long var10 = (Long)var3x.get(var5);
-               boolean var12 = var10 + 300L <= var8;
-               if (var3.intValue() <= var2 && !var12) {
-                  BlockPos var13 = ((GlobalPos)var3x.get(var4)).pos();
-                  if (var13.closerThan(var7.blockPosition(), (double)var1)) {
-                     var3.increment();
+   public static BehaviorControl<LivingEntity> create(final int seconds, final int closeEnoughDist) {
+      int stayHiddenTicks = seconds * 20;
+      MutableInt ticksHidden = new MutableInt(0);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.HIDING_PLACE), i.present(MemoryModuleType.HEARD_BELL_TIME)).apply(i, (hidingPlace, heardBellTime) -> (level, body, timestamp) -> {
+               long timeTriggered = (Long)i.get(heardBellTime);
+               boolean timedOutTryingToHide = timeTriggered + 300L <= timestamp;
+               if (ticksHidden.intValue() <= stayHiddenTicks && !timedOutTryingToHide) {
+                  BlockPos hidePos = ((GlobalPos)i.get(hidingPlace)).pos();
+                  if (hidePos.closerThan(body.blockPosition(), (double)closeEnoughDist)) {
+                     ticksHidden.increment();
                   }
 
                   return true;
                } else {
-                  var5.erase();
-                  var4.erase();
-                  var7.getBrain().updateActivityFromSchedule(var6.environmentAttributes(), var6.getGameTime(), var7.position());
-                  var3.setValue(0);
+                  heardBellTime.erase();
+                  hidingPlace.erase();
+                  body.getBrain().updateActivityFromSchedule(level.environmentAttributes(), level.getGameTime(), body.position());
+                  ticksHidden.setValue(0);
                   return true;
                }
             })));

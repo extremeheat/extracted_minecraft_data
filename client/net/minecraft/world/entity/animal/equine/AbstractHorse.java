@@ -1,14 +1,15 @@
 package net.minecraft.world.entity.animal.equine;
 
 import com.google.common.collect.UnmodifiableIterator;
+import java.util.Objects;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntUnaryOperator;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -77,7 +78,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public abstract class AbstractHorse extends Animal implements HasCustomInventoryScreen, OwnableEntity, PlayerRideableJumping {
+public abstract class AbstractHorse extends Animal implements PlayerRideableJumping, HasCustomInventoryScreen, OwnableEntity {
    public static final int CHEST_SLOT_OFFSET = 499;
    public static final int INVENTORY_SLOT_OFFSET = 500;
    public static final double BREEDING_CROSS_FACTOR = 0.15;
@@ -85,14 +86,14 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    private static final float MAX_MOVEMENT_SPEED = (float)generateSpeed(() -> 1.0);
    private static final float MIN_JUMP_STRENGTH = (float)generateJumpStrength(() -> 0.0);
    private static final float MAX_JUMP_STRENGTH = (float)generateJumpStrength(() -> 1.0);
-   private static final float MIN_HEALTH = generateMaxHealth((var0) -> 0);
-   private static final float MAX_HEALTH = generateMaxHealth((var0) -> var0 - 1);
+   private static final float MIN_HEALTH = generateMaxHealth((i) -> 0);
+   private static final float MAX_HEALTH = generateMaxHealth((i) -> i - 1);
    private static final float BACKWARDS_MOVE_SPEED_FACTOR = 0.25F;
    private static final float SIDEWAYS_MOVE_SPEED_FACTOR = 0.5F;
-   private static final TargetingConditions.Selector PARENT_HORSE_SELECTOR = (var0, var1) -> {
+   private static final TargetingConditions.Selector PARENT_HORSE_SELECTOR = (target, level) -> {
       boolean var10000;
-      if (var0 instanceof AbstractHorse var2) {
-         if (var2.isBred()) {
+      if (target instanceof AbstractHorse horse) {
+         if (horse.isBred()) {
             var10000 = true;
             return var10000;
          }
@@ -108,6 +109,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    private static final int FLAG_EATING = 16;
    private static final int FLAG_STANDING = 32;
    private static final int FLAG_OPEN_MOUTH = 64;
+   protected static final float BABY_SCALE = 0.7F;
    public static final int INVENTORY_ROWS = 3;
    private static final int DEFAULT_TEMPER = 0;
    private static final boolean DEFAULT_EATING_HAYSTACK = false;
@@ -132,13 +134,12 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    protected int gallopSoundCounter;
    private @Nullable EntityReference<LivingEntity> owner;
 
-   protected AbstractHorse(EntityType<? extends AbstractHorse> var1, Level var2) {
-      super(var1, var2);
+   protected AbstractHorse(final EntityType<? extends AbstractHorse> type, final Level level) {
+      super(type, level);
       this.createInventory();
    }
 
    protected void registerGoals() {
-      this.goalSelector.addGoal(1, new MountPanicGoal(1.2));
       this.goalSelector.addGoal(1, new RunAroundLikeCrazyGoal(this, 1.2));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0, AbstractHorse.class));
       this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.0));
@@ -154,24 +155,25 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
    protected void addBehaviourGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (var0) -> var0.is(ItemTags.HORSE_TEMPT_ITEMS), false));
+      this.goalSelector.addGoal(1, new MountPanicGoal(1.2));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (i) -> i.is(ItemTags.HORSE_TEMPT_ITEMS), false));
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_ID_FLAGS, (byte)0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_ID_FLAGS, (byte)0);
    }
 
-   protected boolean getFlag(int var1) {
-      return ((Byte)this.entityData.get(DATA_ID_FLAGS) & var1) != 0;
+   protected boolean getFlag(final int flag) {
+      return ((Byte)this.entityData.get(DATA_ID_FLAGS) & flag) != 0;
    }
 
-   protected void setFlag(int var1, boolean var2) {
-      byte var3 = (Byte)this.entityData.get(DATA_ID_FLAGS);
-      if (var2) {
-         this.entityData.set(DATA_ID_FLAGS, (byte)(var3 | var1));
+   protected void setFlag(final int flag, final boolean value) {
+      byte current = (Byte)this.entityData.get(DATA_ID_FLAGS);
+      if (value) {
+         this.entityData.set(DATA_ID_FLAGS, (byte)(current | flag));
       } else {
-         this.entityData.set(DATA_ID_FLAGS, (byte)(var3 & ~var1));
+         this.entityData.set(DATA_ID_FLAGS, (byte)(current & ~flag));
       }
 
    }
@@ -184,12 +186,12 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return this.owner;
    }
 
-   public void setOwner(@Nullable LivingEntity var1) {
-      this.owner = EntityReference.of(var1);
+   public void setOwner(final @Nullable LivingEntity owner) {
+      this.owner = EntityReference.of(owner);
    }
 
-   public void setTamed(boolean var1) {
-      this.setFlag(2, var1);
+   public void setTamed(final boolean flag) {
+      this.setFlag(2, flag);
    }
 
    public void onElasticLeashPull() {
@@ -220,41 +222,41 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return this.getFlag(8);
    }
 
-   public void setBred(boolean var1) {
-      this.setFlag(8, var1);
+   public void setBred(final boolean flag) {
+      this.setFlag(8, flag);
    }
 
-   public boolean canUseSlot(EquipmentSlot var1) {
-      if (var1 != EquipmentSlot.SADDLE) {
-         return super.canUseSlot(var1);
+   public boolean canUseSlot(final EquipmentSlot slot) {
+      if (slot != EquipmentSlot.SADDLE) {
+         return super.canUseSlot(slot);
       } else {
          return this.isAlive() && !this.isBaby() && this.isTamed();
       }
    }
 
-   public void equipBodyArmor(Player var1, ItemStack var2) {
-      if (this.isEquippableInSlot(var2, EquipmentSlot.BODY)) {
-         this.setBodyArmorItem(var2.consumeAndReturn(1, var1));
+   public void equipBodyArmor(final Player player, final ItemStack itemStack) {
+      if (this.isEquippableInSlot(itemStack, EquipmentSlot.BODY)) {
+         this.setBodyArmorItem(itemStack.consumeAndReturn(1, player));
       }
 
    }
 
-   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
-      return (var1 == EquipmentSlot.BODY || var1 == EquipmentSlot.SADDLE) && this.isTamed() || super.canDispenserEquipIntoSlot(var1);
+   protected boolean canDispenserEquipIntoSlot(final EquipmentSlot slot) {
+      return (slot == EquipmentSlot.BODY || slot == EquipmentSlot.SADDLE) && this.isTamed() || super.canDispenserEquipIntoSlot(slot);
    }
 
    public int getTemper() {
       return this.temper;
    }
 
-   public void setTemper(int var1) {
-      this.temper = var1;
+   public void setTemper(final int temper) {
+      this.temper = temper;
    }
 
-   public int modifyTemper(int var1) {
-      int var2 = Mth.clamp(this.getTemper() + var1, 0, this.getMaxTemper());
-      this.setTemper(var2);
-      return var2;
+   public int modifyTemper(final int amount) {
+      int temper = Mth.clamp(this.getTemper() + amount, 0, this.getMaxTemper());
+      this.setTemper(temper);
+      return temper;
    }
 
    public boolean isPushable() {
@@ -264,25 +266,25 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    private void eating() {
       this.openMouth();
       if (!this.isSilent()) {
-         SoundEvent var1 = this.getEatingSound();
-         if (var1 != null) {
-            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+         SoundEvent eatingSound = this.getEatingSound();
+         if (eatingSound != null) {
+            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), eatingSound, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
       }
 
    }
 
-   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
-      if (var1 > 1.0) {
-         this.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
+   public boolean causeFallDamage(final double fallDistance, final float damageModifier, final DamageSource damageSource) {
+      if (fallDistance > 1.0) {
+         this.playSound(this.isBaby() ? SoundEvents.HORSE_LAND_BABY : SoundEvents.HORSE_LAND, 0.4F, 1.0F);
       }
 
-      int var5 = this.calculateFallDamage(var1, var3);
-      if (var5 <= 0) {
+      int dmg = this.calculateFallDamage(fallDistance, damageModifier);
+      if (dmg <= 0) {
          return false;
       } else {
-         this.hurt(var4, (float)var5);
-         this.propagateFallToPassengers(var1, var3, var4);
+         this.hurt(damageSource, (float)dmg);
+         this.propagateFallToPassengers(fallDistance, damageModifier, damageSource);
          this.playBlockFallSound();
          return true;
       }
@@ -293,32 +295,32 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    }
 
    protected void createInventory() {
-      SimpleContainer var1 = this.inventory;
+      SimpleContainer old = this.inventory;
       this.inventory = new SimpleContainer(this.getInventorySize());
-      if (var1 != null) {
-         int var2 = Math.min(var1.getContainerSize(), this.inventory.getContainerSize());
+      if (old != null) {
+         int max = Math.min(old.getContainerSize(), this.inventory.getContainerSize());
 
-         for(int var3 = 0; var3 < var2; ++var3) {
-            ItemStack var4 = var1.getItem(var3);
-            if (!var4.isEmpty()) {
-               this.inventory.setItem(var3, var4.copy());
+         for(int slot = 0; slot < max; ++slot) {
+            ItemStack itemStack = old.getItem(slot);
+            if (!itemStack.isEmpty()) {
+               this.inventory.setItem(slot, itemStack.copy());
             }
          }
       }
 
    }
 
-   protected Holder<SoundEvent> getEquipSound(EquipmentSlot var1, ItemStack var2, Equippable var3) {
-      return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE ? SoundEvents.HORSE_SADDLE : super.getEquipSound(var1, var2, var3));
+   protected Holder<SoundEvent> getEquipSound(final EquipmentSlot slot, final ItemStack stack, final Equippable equippable) {
+      return (Holder<SoundEvent>)(slot == EquipmentSlot.SADDLE ? SoundEvents.HORSE_SADDLE : super.getEquipSound(slot, stack, equippable));
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      boolean var4 = super.hurtServer(var1, var2, var3);
-      if (var4 && this.random.nextInt(3) == 0) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      boolean wasHurt = super.hurtServer(level, source, damage);
+      if (wasHurt && this.random.nextInt(3) == 0) {
          this.standIfPossible();
       }
 
-      return var4;
+      return wasHurt;
    }
 
    protected boolean canPerformRearing() {
@@ -333,36 +335,36 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return null;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
-      if (!var2.liquid()) {
-         BlockState var3 = this.level().getBlockState(var1.above());
-         SoundType var4 = var2.getSoundType();
-         if (var3.is(Blocks.SNOW)) {
-            var4 = var3.getSoundType();
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
+      if (!blockState.liquid()) {
+         BlockState aboveState = this.level().getBlockState(pos.above());
+         SoundType soundType = blockState.getSoundType();
+         if (aboveState.is(Blocks.SNOW)) {
+            soundType = aboveState.getSoundType();
          }
 
          if (this.isVehicle() && this.canGallop) {
             ++this.gallopSoundCounter;
             if (this.gallopSoundCounter > 5 && this.gallopSoundCounter % 3 == 0) {
-               this.playGallopSound(var4);
+               this.playGallopSound(soundType);
             } else if (this.gallopSoundCounter <= 5) {
-               this.playSound(SoundEvents.HORSE_STEP_WOOD, var4.getVolume() * 0.15F, var4.getPitch());
+               this.playSound(SoundEvents.HORSE_STEP_WOOD, soundType.getVolume() * 0.15F, soundType.getPitch());
             }
-         } else if (this.isWoodSoundType(var4)) {
-            this.playSound(SoundEvents.HORSE_STEP_WOOD, var4.getVolume() * 0.15F, var4.getPitch());
+         } else if (this.isWoodSoundType(soundType)) {
+            this.playSound(SoundEvents.HORSE_STEP_WOOD, soundType.getVolume() * 0.15F, soundType.getPitch());
          } else {
-            this.playSound(SoundEvents.HORSE_STEP, var4.getVolume() * 0.15F, var4.getPitch());
+            this.playSound(this.isBaby() ? SoundEvents.HORSE_STEP_BABY : SoundEvents.HORSE_STEP, soundType.getVolume() * 0.15F, soundType.getPitch());
          }
 
       }
    }
 
-   private boolean isWoodSoundType(SoundType var1) {
-      return var1 == SoundType.WOOD || var1 == SoundType.NETHER_WOOD || var1 == SoundType.STEM || var1 == SoundType.CHERRY_WOOD || var1 == SoundType.BAMBOO_WOOD;
+   private boolean isWoodSoundType(final SoundType soundType) {
+      return soundType == SoundType.WOOD || soundType == SoundType.NETHER_WOOD || soundType == SoundType.STEM || soundType == SoundType.CHERRY_WOOD || soundType == SoundType.BAMBOO_WOOD;
    }
 
-   protected void playGallopSound(SoundType var1) {
-      this.playSound(SoundEvents.HORSE_GALLOP, var1.getVolume() * 0.15F, var1.getPitch());
+   protected void playGallopSound(final SoundType soundType) {
+      this.playSound(SoundEvents.HORSE_GALLOP, soundType.getVolume() * 0.15F, soundType.getPitch());
    }
 
    public static AttributeSupplier.Builder createBaseHorseAttributes() {
@@ -385,101 +387,101 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return 400;
    }
 
-   public void openCustomInventoryScreen(Player var1) {
-      if (!this.level().isClientSide() && (!this.isVehicle() || this.hasPassenger(var1)) && this.isTamed()) {
-         var1.openHorseInventory(this, this.inventory);
+   public void openCustomInventoryScreen(final Player player) {
+      if (!this.level().isClientSide() && (!this.isVehicle() || this.hasPassenger(player)) && this.isTamed()) {
+         player.openHorseInventory(this, this.inventory);
       }
 
    }
 
-   public InteractionResult fedFood(Player var1, ItemStack var2) {
-      boolean var3 = this.handleEating(var1, var2);
-      if (var3) {
-         var2.consume(1, var1);
+   public InteractionResult fedFood(final Player player, final ItemStack itemStack) {
+      boolean ateFood = this.handleEating(player, itemStack);
+      if (ateFood) {
+         itemStack.consume(1, player);
       }
 
-      return (InteractionResult)(!var3 && !this.level().isClientSide() ? InteractionResult.PASS : InteractionResult.SUCCESS_SERVER);
+      return (InteractionResult)(!ateFood && !this.level().isClientSide() ? InteractionResult.PASS : InteractionResult.SUCCESS_SERVER);
    }
 
-   protected boolean handleEating(Player var1, ItemStack var2) {
-      boolean var3 = false;
-      float var4 = 0.0F;
-      short var5 = 0;
-      byte var6 = 0;
-      if (var2.is(Items.WHEAT)) {
-         var4 = 2.0F;
-         var5 = 20;
-         var6 = 3;
-      } else if (var2.is(Items.SUGAR)) {
-         var4 = 1.0F;
-         var5 = 30;
-         var6 = 3;
-      } else if (var2.is(Blocks.HAY_BLOCK.asItem())) {
-         var4 = 20.0F;
-         var5 = 180;
-      } else if (var2.is(Items.APPLE)) {
-         var4 = 3.0F;
-         var5 = 60;
-         var6 = 3;
-      } else if (var2.is(Items.RED_MUSHROOM)) {
-         var4 = 3.0F;
-         var5 = 0;
-         var6 = 3;
-      } else if (var2.is(Items.CARROT)) {
-         var4 = 3.0F;
-         var5 = 60;
-         var6 = 3;
-      } else if (var2.is(Items.GOLDEN_CARROT)) {
-         var4 = 4.0F;
-         var5 = 60;
-         var6 = 5;
+   protected boolean handleEating(final Player player, final ItemStack itemStack) {
+      boolean itemUsed = false;
+      float heal = 0.0F;
+      int ageUp = 0;
+      int temper = 0;
+      if (itemStack.is(Items.WHEAT)) {
+         heal = 2.0F;
+         ageUp = 20;
+         temper = 3;
+      } else if (itemStack.is(Items.SUGAR)) {
+         heal = 1.0F;
+         ageUp = 30;
+         temper = 3;
+      } else if (itemStack.is(Items.HAY_BLOCK)) {
+         heal = 20.0F;
+         ageUp = 180;
+      } else if (itemStack.is(Items.APPLE)) {
+         heal = 3.0F;
+         ageUp = 60;
+         temper = 3;
+      } else if (itemStack.is(Items.RED_MUSHROOM)) {
+         heal = 3.0F;
+         ageUp = 0;
+         temper = 3;
+      } else if (itemStack.is(Items.CARROT)) {
+         heal = 3.0F;
+         ageUp = 60;
+         temper = 3;
+      } else if (itemStack.is(Items.GOLDEN_CARROT)) {
+         heal = 4.0F;
+         ageUp = 60;
+         temper = 5;
          if (!this.level().isClientSide() && this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
-            var3 = true;
-            this.setInLove(var1);
+            itemUsed = true;
+            this.setInLove(player);
          }
-      } else if (var2.is(Items.GOLDEN_APPLE) || var2.is(Items.ENCHANTED_GOLDEN_APPLE)) {
-         var4 = 10.0F;
-         var5 = 240;
-         var6 = 10;
+      } else if (itemStack.is(Items.GOLDEN_APPLE) || itemStack.is(Items.ENCHANTED_GOLDEN_APPLE)) {
+         heal = 10.0F;
+         ageUp = 240;
+         temper = 10;
          if (!this.level().isClientSide() && this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
-            var3 = true;
-            this.setInLove(var1);
+            itemUsed = true;
+            this.setInLove(player);
          }
       }
 
-      if (this.getHealth() < this.getMaxHealth() && var4 > 0.0F) {
-         this.heal(var4);
-         var3 = true;
+      if (this.getHealth() < this.getMaxHealth() && heal > 0.0F) {
+         this.heal(heal);
+         itemUsed = true;
       }
 
-      if (this.isBaby() && var5 > 0) {
+      if (this.isBaby() && ageUp > 0 && !this.isAgeLocked()) {
          this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
          if (!this.level().isClientSide()) {
-            this.ageUp(var5);
-            var3 = true;
+            this.ageUp(ageUp);
+            itemUsed = true;
          }
       }
 
-      if (var6 > 0 && (var3 || !this.isTamed()) && this.getTemper() < this.getMaxTemper() && !this.level().isClientSide()) {
-         this.modifyTemper(var6);
-         var3 = true;
+      if (temper > 0 && (itemUsed || !this.isTamed()) && this.getTemper() < this.getMaxTemper() && !this.level().isClientSide()) {
+         this.modifyTemper(temper);
+         itemUsed = true;
       }
 
-      if (var3) {
+      if (itemUsed) {
          this.eating();
          this.gameEvent(GameEvent.EAT);
       }
 
-      return var3;
+      return itemUsed;
    }
 
-   protected void doPlayerRide(Player var1) {
+   protected void doPlayerRide(final Player player) {
       this.setEating(false);
       this.clearStanding();
       if (!this.level().isClientSide()) {
-         var1.setYRot(this.getYRot());
-         var1.setXRot(this.getXRot());
-         var1.startRiding(this);
+         player.setYRot(this.getYRot());
+         player.setXRot(this.getXRot());
+         player.startRiding(this);
       }
 
    }
@@ -488,21 +490,21 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return super.isImmobile() && this.isVehicle() && this.isSaddled() || this.isEating() || this.isStanding();
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.HORSE_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.HORSE_FOOD);
    }
 
    private void moveTail() {
       this.tailCounter = 1;
    }
 
-   protected void dropEquipment(ServerLevel var1) {
-      super.dropEquipment(var1);
+   protected void dropEquipment(final ServerLevel level) {
+      super.dropEquipment(level);
       if (this.inventory != null) {
-         for(int var2 = 0; var2 < this.inventory.getContainerSize(); ++var2) {
-            ItemStack var3 = this.inventory.getItem(var2);
-            if (!var3.isEmpty() && !EnchantmentHelper.has(var3, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-               this.spawnAtLocation(var1, var3);
+         for(int i = 0; i < this.inventory.getContainerSize(); ++i) {
+            ItemStack itemStack = this.inventory.getItem(i);
+            if (!itemStack.isEmpty() && !EnchantmentHelper.has(itemStack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+               this.spawnAtLocation(level, itemStack);
             }
          }
 
@@ -516,14 +518,14 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
       super.aiStep();
       Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
+      if (var2 instanceof ServerLevel level) {
          if (this.isAlive()) {
             if (this.random.nextInt(900) == 0 && this.deathTime == 0) {
                this.heal(1.0F);
             }
 
             if (this.canEatGrass()) {
-               if (!this.isEating() && !this.isVehicle() && this.random.nextInt(300) == 0 && var1.getBlockState(this.blockPosition().below()).is(Blocks.GRASS_BLOCK)) {
+               if (!this.isEating() && !this.isVehicle() && this.random.nextInt(300) == 0 && level.getBlockState(this.blockPosition().below()).is(Blocks.GRASS_BLOCK)) {
                   this.setEating(true);
                }
 
@@ -533,18 +535,18 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
                }
             }
 
-            this.followMommy(var1);
+            this.followMommy(level);
             return;
          }
       }
 
    }
 
-   protected void followMommy(ServerLevel var1) {
+   protected void followMommy(final ServerLevel level) {
       if (this.isBred() && this.isBaby() && !this.isEating()) {
-         LivingEntity var2 = var1.getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0));
-         if (var2 != null && this.distanceToSqr(var2) > 4.0) {
-            this.navigation.createPath(var2, 0);
+         LivingEntity mommy = level.getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0));
+         if (mommy != null && this.distanceToSqr(mommy) > 4.0) {
+            this.navigation.createPath(mommy, 0);
          }
       }
 
@@ -620,30 +622,30 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
       if (!this.isVehicle() && !this.isBaby()) {
-         if (this.isTamed() && var1.isSecondaryUseActive()) {
-            this.openCustomInventoryScreen(var1);
+         if (this.isTamed() && player.isSecondaryUseActive()) {
+            this.openCustomInventoryScreen(player);
             return InteractionResult.SUCCESS;
          } else {
-            ItemStack var3 = var1.getItemInHand(var2);
-            if (!var3.isEmpty()) {
-               InteractionResult var4 = var3.interactLivingEntity(var1, this, var2);
-               if (var4.consumesAction()) {
-                  return var4;
+            ItemStack itemStack = player.getItemInHand(hand);
+            if (!itemStack.isEmpty()) {
+               InteractionResult interactionResult = itemStack.interactLivingEntity(player, this, hand);
+               if (interactionResult.consumesAction()) {
+                  return interactionResult;
                }
 
-               if (this.isEquippableInSlot(var3, EquipmentSlot.BODY) && !this.isWearingBodyArmor()) {
-                  this.equipBodyArmor(var1, var3);
+               if (this.isEquippableInSlot(itemStack, EquipmentSlot.BODY) && !this.isWearingBodyArmor()) {
+                  this.equipBodyArmor(player, itemStack);
                   return InteractionResult.SUCCESS;
                }
             }
 
-            this.doPlayerRide(var1);
+            this.doPlayerRide(player);
             return InteractionResult.SUCCESS;
          }
       } else {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
@@ -655,14 +657,14 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
    }
 
-   public void setEating(boolean var1) {
-      this.setFlag(16, var1);
+   public void setEating(final boolean flag) {
+      this.setFlag(16, flag);
    }
 
-   public void setStanding(int var1) {
+   public void setStanding(final int ticks) {
       this.setEating(false);
       this.setFlag(32, true);
-      this.standCounter = var1;
+      this.standCounter = ticks;
    }
 
    public void clearStanding() {
@@ -689,30 +691,30 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
    }
 
-   public boolean tameWithName(Player var1) {
-      this.setOwner(var1);
+   public boolean tameWithName(final Player player) {
+      this.setOwner(player);
       this.setTamed(true);
-      if (var1 instanceof ServerPlayer) {
-         CriteriaTriggers.TAME_ANIMAL.trigger((ServerPlayer)var1, this);
+      if (player instanceof ServerPlayer) {
+         CriteriaTriggers.TAME_ANIMAL.trigger((ServerPlayer)player, this);
       }
 
       this.level().broadcastEntityEvent(this, (byte)7);
       return true;
    }
 
-   protected void tickRidden(Player var1, Vec3 var2) {
-      super.tickRidden(var1, var2);
-      Vec2 var3 = this.getRiddenRotation(var1);
-      this.setRot(var3.y, var3.x);
+   protected void tickRidden(final Player controller, final Vec3 riddenInput) {
+      super.tickRidden(controller, riddenInput);
+      Vec2 rotation = this.getRiddenRotation(controller);
+      this.setRot(rotation.y, rotation.x);
       this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
       if (this.isLocalInstanceAuthoritative()) {
-         if (var2.z <= 0.0) {
+         if (riddenInput.z <= 0.0) {
             this.gallopSoundCounter = 0;
          }
 
          if (this.onGround()) {
             if (this.playerJumpPendingScale > 0.0F && !this.isJumping()) {
-               this.executeRidersJump(this.playerJumpPendingScale, var2);
+               this.executeRidersJump(this.playerJumpPendingScale, riddenInput);
             }
 
             this.playerJumpPendingScale = 0.0F;
@@ -721,42 +723,42 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
    }
 
-   protected Vec2 getRiddenRotation(LivingEntity var1) {
-      return new Vec2(var1.getXRot() * 0.5F, var1.getYRot());
+   protected Vec2 getRiddenRotation(final LivingEntity controller) {
+      return new Vec2(controller.getXRot() * 0.5F, controller.getYRot());
    }
 
-   protected void addPassenger(Entity var1) {
-      super.addPassenger(var1);
-      var1.absSnapRotationTo(this.getViewYRot(0.0F), this.getViewXRot(0.0F));
+   protected void addPassenger(final Entity passenger) {
+      super.addPassenger(passenger);
+      passenger.absSnapRotationTo(this.getViewYRot(0.0F), this.getViewXRot(0.0F));
    }
 
-   protected Vec3 getRiddenInput(Player var1, Vec3 var2) {
+   protected Vec3 getRiddenInput(final Player controller, final Vec3 selfInput) {
       if (this.onGround() && this.playerJumpPendingScale == 0.0F && this.isStanding() && !this.allowStandSliding) {
          return Vec3.ZERO;
       } else {
-         float var3 = var1.xxa * 0.5F;
-         float var4 = var1.zza;
-         if (var4 <= 0.0F) {
-            var4 *= 0.25F;
+         float sideways = controller.xxa * 0.5F;
+         float forward = controller.zza;
+         if (forward <= 0.0F) {
+            forward *= 0.25F;
          }
 
-         return new Vec3((double)var3, 0.0, (double)var4);
+         return new Vec3((double)sideways, 0.0, (double)forward);
       }
    }
 
-   protected float getRiddenSpeed(Player var1) {
+   protected float getRiddenSpeed(final Player controller) {
       return (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED);
    }
 
-   protected void executeRidersJump(float var1, Vec3 var2) {
-      double var3 = (double)this.getJumpPower(var1);
-      Vec3 var5 = this.getDeltaMovement();
-      this.setDeltaMovement(var5.x, var3, var5.z);
+   protected void executeRidersJump(final float amount, final Vec3 input) {
+      double impulse = (double)this.getJumpPower(amount);
+      Vec3 movement = this.getDeltaMovement();
+      this.setDeltaMovement(movement.x, impulse, movement.z);
       this.needsSync = true;
-      if (var2.z > 0.0) {
-         float var6 = Mth.sin((double)(this.getYRot() * 0.017453292F));
-         float var7 = Mth.cos((double)(this.getYRot() * 0.017453292F));
-         this.setDeltaMovement(this.getDeltaMovement().add((double)(-0.4F * var6 * var1), 0.0, (double)(0.4F * var7 * var1)));
+      if (input.z > 0.0) {
+         float sin = Mth.sin((double)(this.getYRot() * 0.017453292F));
+         float cos = Mth.cos((double)(this.getYRot() * 0.017453292F));
+         this.setDeltaMovement(this.getDeltaMovement().add((double)(-0.4F * sin * amount), 0.0, (double)(0.4F * cos * amount)));
       }
 
    }
@@ -765,25 +767,25 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       this.playSound(SoundEvents.HORSE_JUMP, 0.4F, 1.0F);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("EatingHaystack", this.isEating());
-      var1.putBoolean("Bred", this.isBred());
-      var1.putInt("Temper", this.getTemper());
-      var1.putBoolean("Tame", this.isTamed());
-      EntityReference.store(this.owner, var1, "Owner");
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("EatingHaystack", this.isEating());
+      output.putBoolean("Bred", this.isBred());
+      output.putInt("Temper", this.getTemper());
+      output.putBoolean("Tame", this.isTamed());
+      EntityReference.store(this.owner, output, "Owner");
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setEating(var1.getBooleanOr("EatingHaystack", false));
-      this.setBred(var1.getBooleanOr("Bred", false));
-      this.setTemper(var1.getIntOr("Temper", 0));
-      this.setTamed(var1.getBooleanOr("Tame", false));
-      this.owner = EntityReference.<LivingEntity>readWithOldOwnerConversion(var1, "Owner", this.level());
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setEating(input.getBooleanOr("EatingHaystack", false));
+      this.setBred(input.getBooleanOr("Bred", false));
+      this.setTemper(input.getIntOr("Temper", 0));
+      this.setTamed(input.getBooleanOr("Tame", false));
+      this.owner = EntityReference.<LivingEntity>readWithOldOwnerConversion(input, "Owner", this.level());
    }
 
-   public boolean canMate(Animal var1) {
+   public boolean canMate(final Animal partner) {
       return false;
    }
 
@@ -795,66 +797,66 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return false;
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       return null;
    }
 
-   protected void setOffspringAttributes(AgeableMob var1, AbstractHorse var2) {
-      this.setOffspringAttribute(var1, var2, Attributes.MAX_HEALTH, (double)MIN_HEALTH, (double)MAX_HEALTH);
-      this.setOffspringAttribute(var1, var2, Attributes.JUMP_STRENGTH, (double)MIN_JUMP_STRENGTH, (double)MAX_JUMP_STRENGTH);
-      this.setOffspringAttribute(var1, var2, Attributes.MOVEMENT_SPEED, (double)MIN_MOVEMENT_SPEED, (double)MAX_MOVEMENT_SPEED);
+   protected void setOffspringAttributes(final AgeableMob partner, final AbstractHorse baby) {
+      this.setOffspringAttribute(partner, baby, Attributes.MAX_HEALTH, (double)MIN_HEALTH, (double)MAX_HEALTH);
+      this.setOffspringAttribute(partner, baby, Attributes.JUMP_STRENGTH, (double)MIN_JUMP_STRENGTH, (double)MAX_JUMP_STRENGTH);
+      this.setOffspringAttribute(partner, baby, Attributes.MOVEMENT_SPEED, (double)MIN_MOVEMENT_SPEED, (double)MAX_MOVEMENT_SPEED);
    }
 
-   private void setOffspringAttribute(AgeableMob var1, AbstractHorse var2, Holder<Attribute> var3, double var4, double var6) {
-      double var8 = createOffspringAttribute(this.getAttributeBaseValue(var3), var1.getAttributeBaseValue(var3), var4, var6, this.random);
-      var2.getAttribute(var3).setBaseValue(var8);
+   private void setOffspringAttribute(final AgeableMob partner, final AbstractHorse baby, final Holder<Attribute> attribute, final double attributeRangeMin, final double attributeRangeMax) {
+      double newValue = createOffspringAttribute(this.getAttributeBaseValue(attribute), partner.getAttributeBaseValue(attribute), attributeRangeMin, attributeRangeMax, this.random);
+      baby.getAttribute(attribute).setBaseValue(newValue);
    }
 
-   static double createOffspringAttribute(double var0, double var2, double var4, double var6, RandomSource var8) {
-      if (var6 <= var4) {
+   static double createOffspringAttribute(double parentAValue, double parentBValue, final double attributeRangeMin, final double attributeRangeMax, final RandomSource random) {
+      if (attributeRangeMax <= attributeRangeMin) {
          throw new IllegalArgumentException("Incorrect range for an attribute");
       } else {
-         var0 = Mth.clamp(var0, var4, var6);
-         var2 = Mth.clamp(var2, var4, var6);
-         double var9 = 0.15 * (var6 - var4);
-         double var11 = Math.abs(var0 - var2) + var9 * 2.0;
-         double var13 = (var0 + var2) / 2.0;
-         double var15 = (var8.nextDouble() + var8.nextDouble() + var8.nextDouble()) / 3.0 - 0.5;
-         double var17 = var13 + var11 * var15;
-         if (var17 > var6) {
-            double var23 = var17 - var6;
-            return var6 - var23;
-         } else if (var17 < var4) {
-            double var19 = var4 - var17;
-            return var4 + var19;
+         parentAValue = Mth.clamp(parentAValue, attributeRangeMin, attributeRangeMax);
+         parentBValue = Mth.clamp(parentBValue, attributeRangeMin, attributeRangeMax);
+         double margin = 0.15 * (attributeRangeMax - attributeRangeMin);
+         double range = Math.abs(parentAValue - parentBValue) + margin * 2.0;
+         double average = (parentAValue + parentBValue) / 2.0;
+         double babyQuality = (random.nextDouble() + random.nextDouble() + random.nextDouble()) / 3.0 - 0.5;
+         double newValue = average + range * babyQuality;
+         if (newValue > attributeRangeMax) {
+            double difference = newValue - attributeRangeMax;
+            return attributeRangeMax - difference;
+         } else if (newValue < attributeRangeMin) {
+            double difference = attributeRangeMin - newValue;
+            return attributeRangeMin + difference;
          } else {
-            return var17;
+            return newValue;
          }
       }
    }
 
-   public float getEatAnim(float var1) {
-      return Mth.lerp(var1, this.eatAnimO, this.eatAnim);
+   public float getEatAnim(final float a) {
+      return Mth.lerp(a, this.eatAnimO, this.eatAnim);
    }
 
-   public float getStandAnim(float var1) {
-      return Mth.lerp(var1, this.standAnimO, this.standAnim);
+   public float getStandAnim(final float a) {
+      return Mth.lerp(a, this.standAnimO, this.standAnim);
    }
 
-   public float getMouthAnim(float var1) {
-      return Mth.lerp(var1, this.mouthAnimO, this.mouthAnim);
+   public float getMouthAnim(final float a) {
+      return Mth.lerp(a, this.mouthAnimO, this.mouthAnim);
    }
 
-   public void onPlayerJump(int var1) {
+   public void onPlayerJump(int jumpAmount) {
       if (this.isSaddled()) {
-         if (var1 < 0) {
-            var1 = 0;
+         if (jumpAmount < 0) {
+            jumpAmount = 0;
          } else {
             this.allowStandSliding = true;
             this.standIfPossible();
          }
 
-         this.playerJumpPendingScale = this.getPlayerJumpPendingScale(var1);
+         this.playerJumpPendingScale = this.getPlayerJumpPendingScale(jumpAmount);
       }
    }
 
@@ -862,7 +864,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return this.isSaddled();
    }
 
-   public void handleStartJump(int var1) {
+   public void handleStartJump(final int jumpScale) {
       this.allowStandSliding = true;
       this.standIfPossible();
       this.playJumpSound();
@@ -871,99 +873,99 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    public void handleStopJump() {
    }
 
-   protected void spawnTamingParticles(boolean var1) {
-      SimpleParticleType var2 = var1 ? ParticleTypes.HEART : ParticleTypes.SMOKE;
+   protected void spawnTamingParticles(final boolean success) {
+      ParticleOptions particle = success ? ParticleTypes.HEART : ParticleTypes.SMOKE;
 
-      for(int var3 = 0; var3 < 7; ++var3) {
-         double var4 = this.random.nextGaussian() * 0.02;
-         double var6 = this.random.nextGaussian() * 0.02;
-         double var8 = this.random.nextGaussian() * 0.02;
-         this.level().addParticle(var2, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var4, var6, var8);
+      for(int i = 0; i < 7; ++i) {
+         double xa = this.random.nextGaussian() * 0.02;
+         double ya = this.random.nextGaussian() * 0.02;
+         double za = this.random.nextGaussian() * 0.02;
+         this.level().addParticle(particle, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), xa, ya, za);
       }
 
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 7) {
+   public void handleEntityEvent(final byte id) {
+      if (id == 7) {
          this.spawnTamingParticles(true);
-      } else if (var1 == 6) {
+      } else if (id == 6) {
          this.spawnTamingParticles(false);
       } else {
-         super.handleEntityEvent(var1);
+         super.handleEntityEvent(id);
       }
 
    }
 
-   protected void positionRider(Entity var1, Entity.MoveFunction var2) {
-      super.positionRider(var1, var2);
-      if (var1 instanceof LivingEntity) {
-         ((LivingEntity)var1).yBodyRot = this.yBodyRot;
+   protected void positionRider(final Entity passenger, final Entity.MoveFunction moveFunction) {
+      super.positionRider(passenger, moveFunction);
+      if (passenger instanceof LivingEntity) {
+         ((LivingEntity)passenger).yBodyRot = this.yBodyRot;
       }
 
    }
 
-   protected static float generateMaxHealth(IntUnaryOperator var0) {
-      return 15.0F + (float)var0.applyAsInt(8) + (float)var0.applyAsInt(9);
+   protected static float generateMaxHealth(final IntUnaryOperator integerByBoundProvider) {
+      return 15.0F + (float)integerByBoundProvider.applyAsInt(8) + (float)integerByBoundProvider.applyAsInt(9);
    }
 
-   protected static double generateJumpStrength(DoubleSupplier var0) {
-      return 0.4000000059604645 + var0.getAsDouble() * 0.2 + var0.getAsDouble() * 0.2 + var0.getAsDouble() * 0.2;
+   protected static double generateJumpStrength(final DoubleSupplier probabilityProvider) {
+      return 0.4000000059604645 + probabilityProvider.getAsDouble() * 0.2 + probabilityProvider.getAsDouble() * 0.2 + probabilityProvider.getAsDouble() * 0.2;
    }
 
-   protected static double generateSpeed(DoubleSupplier var0) {
-      return (0.44999998807907104 + var0.getAsDouble() * 0.3 + var0.getAsDouble() * 0.3 + var0.getAsDouble() * 0.3) * 0.25;
+   protected static double generateSpeed(final DoubleSupplier probabilityProvider) {
+      return (0.44999998807907104 + probabilityProvider.getAsDouble() * 0.3 + probabilityProvider.getAsDouble() * 0.3 + probabilityProvider.getAsDouble() * 0.3) * 0.25;
    }
 
    public boolean onClimbable() {
       return false;
    }
 
-   public @Nullable SlotAccess getSlot(int var1) {
-      int var2 = var1 - 500;
-      return var2 >= 0 && var2 < this.inventory.getContainerSize() ? this.inventory.getSlot(var2) : super.getSlot(var1);
+   public @Nullable SlotAccess getSlot(final int slot) {
+      int inventorySlot = slot - 500;
+      return inventorySlot >= 0 && inventorySlot < this.inventory.getContainerSize() ? this.inventory.getSlot(inventorySlot) : super.getSlot(slot);
    }
 
    public @Nullable LivingEntity getControllingPassenger() {
       if (this.isSaddled()) {
          Entity var2 = this.getFirstPassenger();
          if (var2 instanceof Player) {
-            Player var1 = (Player)var2;
-            return var1;
+            Player passenger = (Player)var2;
+            return passenger;
          }
       }
 
       return super.getControllingPassenger();
    }
 
-   private @Nullable Vec3 getDismountLocationInDirection(Vec3 var1, LivingEntity var2) {
-      double var3 = this.getX() + var1.x;
-      double var5 = this.getBoundingBox().minY;
-      double var7 = this.getZ() + var1.z;
-      BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
-      UnmodifiableIterator var10 = var2.getDismountPoses().iterator();
+   private @Nullable Vec3 getDismountLocationInDirection(final Vec3 direction, final LivingEntity passenger) {
+      double targetX = this.getX() + direction.x;
+      double targetY = this.getBoundingBox().minY;
+      double targetZ = this.getZ() + direction.z;
+      BlockPos.MutableBlockPos targetBlockPos = new BlockPos.MutableBlockPos();
+      UnmodifiableIterator var10 = passenger.getDismountPoses().iterator();
 
       while(var10.hasNext()) {
-         Pose var11 = (Pose)var10.next();
-         var9.set(var3, var5, var7);
-         double var12 = this.getBoundingBox().maxY + 0.75;
+         Pose dismountPose = (Pose)var10.next();
+         targetBlockPos.set(targetX, targetY, targetZ);
+         double dismountJumpLimit = this.getBoundingBox().maxY + 0.75;
 
          while(true) {
-            double var14 = this.level().getBlockFloorHeight(var9);
-            if ((double)var9.getY() + var14 > var12) {
+            double blockFloorHeight = this.level().getBlockFloorHeight(targetBlockPos);
+            if ((double)targetBlockPos.getY() + blockFloorHeight > dismountJumpLimit) {
                break;
             }
 
-            if (DismountHelper.isBlockFloorValid(var14)) {
-               AABB var16 = var2.getLocalBoundsForPose(var11);
-               Vec3 var17 = new Vec3(var3, (double)var9.getY() + var14, var7);
-               if (DismountHelper.canDismountTo(this.level(), var2, var16.move(var17))) {
-                  var2.setPose(var11);
-                  return var17;
+            if (DismountHelper.isBlockFloorValid(blockFloorHeight)) {
+               AABB poseCollisionBox = passenger.getLocalBoundsForPose(dismountPose);
+               Vec3 location = new Vec3(targetX, (double)targetBlockPos.getY() + blockFloorHeight, targetZ);
+               if (DismountHelper.canDismountTo(this.level(), passenger, poseCollisionBox.move(location))) {
+                  passenger.setPose(dismountPose);
+                  return location;
                }
             }
 
-            var9.move(Direction.UP);
-            if (!((double)var9.getY() < var12)) {
+            targetBlockPos.move(Direction.UP);
+            if (!((double)targetBlockPos.getY() < dismountJumpLimit)) {
                break;
             }
          }
@@ -972,40 +974,40 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return null;
    }
 
-   public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
-      Vec3 var2 = getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)var1.getBbWidth(), this.getYRot() + (var1.getMainArm() == HumanoidArm.RIGHT ? 90.0F : -90.0F));
-      Vec3 var3 = this.getDismountLocationInDirection(var2, var1);
-      if (var3 != null) {
-         return var3;
+   public Vec3 getDismountLocationForPassenger(final LivingEntity passenger) {
+      Vec3 mainHandDirection = getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)passenger.getBbWidth(), this.getYRot() + (passenger.getMainArm() == HumanoidArm.RIGHT ? 90.0F : -90.0F));
+      Vec3 mainHandLocation = this.getDismountLocationInDirection(mainHandDirection, passenger);
+      if (mainHandLocation != null) {
+         return mainHandLocation;
       } else {
-         Vec3 var4 = getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)var1.getBbWidth(), this.getYRot() + (var1.getMainArm() == HumanoidArm.LEFT ? 90.0F : -90.0F));
-         Vec3 var5 = this.getDismountLocationInDirection(var4, var1);
-         return var5 != null ? var5 : this.position();
+         Vec3 offHandDirection = getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)passenger.getBbWidth(), this.getYRot() + (passenger.getMainArm() == HumanoidArm.LEFT ? 90.0F : -90.0F));
+         Vec3 offHandLocation = this.getDismountLocationInDirection(offHandDirection, passenger);
+         return offHandLocation != null ? offHandLocation : this.position();
       }
    }
 
-   protected void randomizeAttributes(RandomSource var1) {
+   protected void randomizeAttributes(final RandomSource random) {
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(0.2F);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
+      if (groupData == null) {
+         groupData = new AgeableMob.AgeableMobGroupData(0.2F);
       }
 
-      this.randomizeAttributes(var1.getRandom());
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
+      this.randomizeAttributes(level.getRandom());
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   public boolean hasInventoryChanged(Container var1) {
-      return this.inventory != var1;
+   public boolean hasInventoryChanged(final Container oldInventory) {
+      return this.inventory != oldInventory;
    }
 
    public int getAmbientStandInterval() {
       return this.getAmbientSoundInterval();
    }
 
-   protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return super.getPassengerAttachmentPoint(var1, var2, var3).add((new Vec3(0.0, 0.15 * (double)this.standAnimO * (double)var3, -0.7 * (double)this.standAnimO * (double)var3)).yRot(-this.getYRot() * 0.017453292F));
+   protected Vec3 getPassengerAttachmentPoint(final Entity passenger, final EntityDimensions dimensions, final float scale) {
+      return super.getPassengerAttachmentPoint(passenger, dimensions, scale).add((new Vec3(0.0, 0.15 * (double)this.standAnimO * (double)scale, -0.7 * (double)this.standAnimO * (double)scale)).yRot(-this.getYRot() * 0.017453292F));
    }
 
    public int getInventoryColumns() {
@@ -1017,9 +1019,10 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       DATA_ID_FLAGS = SynchedEntityData.<Byte>defineId(AbstractHorse.class, EntityDataSerializers.BYTE);
    }
 
-   class MountPanicGoal extends PanicGoal {
-      public MountPanicGoal(final double var2) {
-         super(AbstractHorse.this, var2);
+   private class MountPanicGoal extends PanicGoal {
+      public MountPanicGoal(final double speedModifier) {
+         Objects.requireNonNull(AbstractHorse.this);
+         super(AbstractHorse.this, speedModifier);
       }
 
       public boolean shouldPanic() {

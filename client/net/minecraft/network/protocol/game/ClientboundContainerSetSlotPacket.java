@@ -13,35 +13,35 @@ public class ClientboundContainerSetSlotPacket implements Packet<ClientGamePacke
    private final int slot;
    private final ItemStack itemStack;
 
-   public ClientboundContainerSetSlotPacket(int var1, int var2, int var3, ItemStack var4) {
+   public ClientboundContainerSetSlotPacket(final int containerId, final int stateId, final int slot, final ItemStack itemStack) {
       super();
-      this.containerId = var1;
-      this.stateId = var2;
-      this.slot = var3;
-      this.itemStack = var4.copy();
+      this.containerId = containerId;
+      this.stateId = stateId;
+      this.slot = slot;
+      this.itemStack = itemStack.copy();
    }
 
-   private ClientboundContainerSetSlotPacket(RegistryFriendlyByteBuf var1) {
+   private ClientboundContainerSetSlotPacket(final RegistryFriendlyByteBuf input) {
       super();
-      this.containerId = var1.readContainerId();
-      this.stateId = var1.readVarInt();
-      this.slot = var1.readShort();
-      this.itemStack = (ItemStack)ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
+      this.containerId = input.readContainerId();
+      this.stateId = input.readVarInt();
+      this.slot = input.readShort();
+      this.itemStack = (ItemStack)ItemStack.OPTIONAL_STREAM_CODEC.decode(input);
    }
 
-   private void write(RegistryFriendlyByteBuf var1) {
-      var1.writeContainerId(this.containerId);
-      var1.writeVarInt(this.stateId);
-      var1.writeShort(this.slot);
-      ItemStack.OPTIONAL_STREAM_CODEC.encode(var1, this.itemStack);
+   private void write(final RegistryFriendlyByteBuf output) {
+      output.writeContainerId(this.containerId);
+      output.writeVarInt(this.stateId);
+      output.writeShort(this.slot);
+      ItemStack.OPTIONAL_STREAM_CODEC.encode(output, this.itemStack);
    }
 
    public PacketType<ClientboundContainerSetSlotPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CONTAINER_SET_SLOT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleContainerSetSlot(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleContainerSetSlot(this);
    }
 
    public int getContainerId() {

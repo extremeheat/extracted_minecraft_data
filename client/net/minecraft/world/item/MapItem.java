@@ -2,6 +2,7 @@ package net.minecraft.world.item;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultiset;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -34,140 +36,140 @@ public class MapItem extends Item {
    public static final int IMAGE_WIDTH = 128;
    public static final int IMAGE_HEIGHT = 128;
 
-   public MapItem(Item.Properties var1) {
-      super(var1);
+   public MapItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public static ItemStack create(ServerLevel var0, int var1, int var2, byte var3, boolean var4, boolean var5) {
-      ItemStack var6 = new ItemStack(Items.FILLED_MAP);
-      MapId var7 = createNewSavedData(var0, var1, var2, var3, var4, var5, var0.dimension());
-      var6.set(DataComponents.MAP_ID, var7);
-      return var6;
+   public static ItemStack create(final ServerLevel level, final int originX, final int originZ, final byte scale, final boolean trackPosition, final boolean unlimitedTracking) {
+      ItemStack map = new ItemStack(Items.FILLED_MAP);
+      MapId newId = createNewSavedData(level, originX, originZ, scale, trackPosition, unlimitedTracking, level.dimension());
+      map.set(DataComponents.MAP_ID, newId);
+      return map;
    }
 
-   public static @Nullable MapItemSavedData getSavedData(@Nullable MapId var0, Level var1) {
-      return var0 == null ? null : var1.getMapData(var0);
+   public static @Nullable MapItemSavedData getSavedData(final @Nullable MapId id, final Level level) {
+      return id == null ? null : level.getMapData(id);
    }
 
-   public static @Nullable MapItemSavedData getSavedData(ItemStack var0, Level var1) {
-      MapId var2 = (MapId)var0.get(DataComponents.MAP_ID);
-      return getSavedData(var2, var1);
+   public static @Nullable MapItemSavedData getSavedData(final ItemStack itemStack, final Level level) {
+      MapId id = (MapId)itemStack.get(DataComponents.MAP_ID);
+      return getSavedData(id, level);
    }
 
-   private static MapId createNewSavedData(ServerLevel var0, int var1, int var2, int var3, boolean var4, boolean var5, ResourceKey<Level> var6) {
-      MapItemSavedData var7 = MapItemSavedData.createFresh((double)var1, (double)var2, (byte)var3, var4, var5, var6);
-      MapId var8 = var0.getFreeMapId();
-      var0.setMapData(var8, var7);
-      return var8;
+   private static MapId createNewSavedData(final ServerLevel level, final int xSpawn, final int zSpawn, final int scale, final boolean trackingPosition, final boolean unlimitedTracking, final ResourceKey<Level> dimension) {
+      MapItemSavedData newData = MapItemSavedData.createFresh((double)xSpawn, (double)zSpawn, (byte)scale, trackingPosition, unlimitedTracking, dimension);
+      MapId id = level.getFreeMapId();
+      level.setMapData(id, newData);
+      return id;
    }
 
-   public void update(Level var1, Entity var2, MapItemSavedData var3) {
-      if (var1.dimension() == var3.dimension && var2 instanceof Player) {
-         int var4 = 1 << var3.scale;
-         int var5 = var3.centerX;
-         int var6 = var3.centerZ;
-         int var7 = Mth.floor(var2.getX() - (double)var5) / var4 + 64;
-         int var8 = Mth.floor(var2.getZ() - (double)var6) / var4 + 64;
-         int var9 = 128 / var4;
-         if (var1.dimensionType().hasCeiling()) {
-            var9 /= 2;
+   public void update(final Level level, final Entity player, final MapItemSavedData data) {
+      if (level.dimension() == data.dimension && player instanceof Player) {
+         int scale = 1 << data.scale;
+         int centerX = data.centerX;
+         int centerZ = data.centerZ;
+         int playerImgX = Mth.floor(player.getX() - (double)centerX) / scale + 64;
+         int playerImgY = Mth.floor(player.getZ() - (double)centerZ) / scale + 64;
+         int radius = 128 / scale;
+         if (level.dimensionType().hasCeiling()) {
+            radius /= 2;
          }
 
-         MapItemSavedData.HoldingPlayer var10 = var3.getHoldingPlayer((Player)var2);
-         ++var10.step;
-         BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
-         BlockPos.MutableBlockPos var12 = new BlockPos.MutableBlockPos();
-         boolean var13 = false;
+         MapItemSavedData.HoldingPlayer holdingPlayer = data.getHoldingPlayer((Player)player);
+         ++holdingPlayer.step;
+         BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
+         BlockPos.MutableBlockPos belowPos = new BlockPos.MutableBlockPos();
+         boolean foundConsecutiveChanges = false;
 
-         for(int var14 = var7 - var9 + 1; var14 < var7 + var9; ++var14) {
-            if ((var14 & 15) == (var10.step & 15) || var13) {
-               var13 = false;
-               double var15 = 0.0;
+         for(int imgX = playerImgX - radius + 1; imgX < playerImgX + radius; ++imgX) {
+            if ((imgX & 15) == (holdingPlayer.step & 15) || foundConsecutiveChanges) {
+               foundConsecutiveChanges = false;
+               double previousAverageAreaHeight = 0.0;
 
-               for(int var17 = var8 - var9 - 1; var17 < var8 + var9; ++var17) {
-                  if (var14 >= 0 && var17 >= -1 && var14 < 128 && var17 < 128) {
-                     int var18 = Mth.square(var14 - var7) + Mth.square(var17 - var8);
-                     boolean var19 = var18 > (var9 - 2) * (var9 - 2);
-                     int var20 = (var5 / var4 + var14 - 64) * var4;
-                     int var21 = (var6 / var4 + var17 - 64) * var4;
-                     LinkedHashMultiset var22 = LinkedHashMultiset.create();
-                     LevelChunk var23 = var1.getChunk(SectionPos.blockToSectionCoord(var20), SectionPos.blockToSectionCoord(var21));
-                     if (!var23.isEmpty()) {
-                        int var24 = 0;
-                        double var25 = 0.0;
-                        if (var1.dimensionType().hasCeiling()) {
-                           int var27 = var20 + var21 * 231871;
-                           var27 = var27 * var27 * 31287121 + var27 * 11;
-                           if ((var27 >> 20 & 1) == 0) {
-                              var22.add(Blocks.DIRT.defaultBlockState().getMapColor(var1, BlockPos.ZERO), 10);
+               for(int imgY = playerImgY - radius - 1; imgY < playerImgY + radius; ++imgY) {
+                  if (imgX >= 0 && imgY >= -1 && imgX < 128 && imgY < 128) {
+                     int distanceToPlayerSqr = Mth.square(imgX - playerImgX) + Mth.square(imgY - playerImgY);
+                     boolean ditherBlack = distanceToPlayerSqr > (radius - 2) * (radius - 2);
+                     int averagingAreaMinX = (centerX / scale + imgX - 64) * scale;
+                     int averagingAreaMinZ = (centerZ / scale + imgY - 64) * scale;
+                     Multiset<MapColor> colorCount = LinkedHashMultiset.create();
+                     LevelChunk chunk = level.getChunk(SectionPos.blockToSectionCoord(averagingAreaMinX), SectionPos.blockToSectionCoord(averagingAreaMinZ));
+                     if (!chunk.isEmpty()) {
+                        int waterDepth = 0;
+                        double averageAreaHeight = 0.0;
+                        if (level.dimensionType().hasCeiling()) {
+                           int ceilingNoise = averagingAreaMinX + averagingAreaMinZ * 231871;
+                           ceilingNoise = ceilingNoise * ceilingNoise * 31287121 + ceilingNoise * 11;
+                           if ((ceilingNoise >> 20 & 1) == 0) {
+                              colorCount.add(Blocks.DIRT.defaultBlockState().getMapColor(level, BlockPos.ZERO), 10);
                            } else {
-                              var22.add(Blocks.STONE.defaultBlockState().getMapColor(var1, BlockPos.ZERO), 100);
+                              colorCount.add(Blocks.STONE.defaultBlockState().getMapColor(level, BlockPos.ZERO), 100);
                            }
 
-                           var25 = 100.0;
+                           averageAreaHeight = 100.0;
                         } else {
-                           for(int var35 = 0; var35 < var4; ++var35) {
-                              for(int var28 = 0; var28 < var4; ++var28) {
-                                 var11.set(var20 + var35, 0, var21 + var28);
-                                 int var29 = var23.getHeight(Heightmap.Types.WORLD_SURFACE, var11.getX(), var11.getZ()) + 1;
-                                 BlockState var30;
-                                 if (var29 <= var1.getMinY()) {
-                                    var30 = Blocks.BEDROCK.defaultBlockState();
+                           for(int averagingAreaDeltaX = 0; averagingAreaDeltaX < scale; ++averagingAreaDeltaX) {
+                              for(int averagingAreaDeltaZ = 0; averagingAreaDeltaZ < scale; ++averagingAreaDeltaZ) {
+                                 blockPos.set(averagingAreaMinX + averagingAreaDeltaX, 0, averagingAreaMinZ + averagingAreaDeltaZ);
+                                 int columnY = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, blockPos.getX(), blockPos.getZ()) + 1;
+                                 BlockState state;
+                                 if (columnY <= level.getMinY()) {
+                                    state = Blocks.BEDROCK.defaultBlockState();
                                  } else {
                                     do {
-                                       --var29;
-                                       var11.setY(var29);
-                                       var30 = var23.getBlockState(var11);
-                                    } while(var30.getMapColor(var1, var11) == MapColor.NONE && var29 > var1.getMinY());
+                                       --columnY;
+                                       blockPos.setY(columnY);
+                                       state = chunk.getBlockState(blockPos);
+                                    } while(state.getMapColor(level, blockPos) == MapColor.NONE && columnY > level.getMinY());
 
-                                    if (var29 > var1.getMinY() && !var30.getFluidState().isEmpty()) {
-                                       int var31 = var29 - 1;
-                                       var12.set(var11);
+                                    if (columnY > level.getMinY() && !state.getFluidState().isEmpty()) {
+                                       int solidY = columnY - 1;
+                                       belowPos.set(blockPos);
 
-                                       BlockState var32;
+                                       BlockState belowBlock;
                                        do {
-                                          var12.setY(var31--);
-                                          var32 = var23.getBlockState(var12);
-                                          ++var24;
-                                       } while(var31 > var1.getMinY() && !var32.getFluidState().isEmpty());
+                                          belowPos.setY(solidY--);
+                                          belowBlock = chunk.getBlockState(belowPos);
+                                          ++waterDepth;
+                                       } while(solidY > level.getMinY() && !belowBlock.getFluidState().isEmpty());
 
-                                       var30 = this.getCorrectStateForFluidBlock(var1, var30, var11);
+                                       state = this.getCorrectStateForFluidBlock(level, state, blockPos);
                                     }
                                  }
 
-                                 var3.checkBanners(var1, var11.getX(), var11.getZ());
-                                 var25 += (double)var29 / (double)(var4 * var4);
-                                 var22.add(var30.getMapColor(var1, var11));
+                                 data.checkBanners(level, blockPos.getX(), blockPos.getZ());
+                                 averageAreaHeight += (double)columnY / (double)(scale * scale);
+                                 colorCount.add(state.getMapColor(level, blockPos));
                               }
                            }
                         }
 
-                        var24 /= var4 * var4;
-                        MapColor var36 = (MapColor)Iterables.getFirst(Multisets.copyHighestCountFirst(var22), MapColor.NONE);
-                        MapColor.Brightness var37;
-                        if (var36 == MapColor.WATER) {
-                           double var38 = (double)var24 * 0.1 + (double)(var14 + var17 & 1) * 0.2;
-                           if (var38 < 0.5) {
-                              var37 = MapColor.Brightness.HIGH;
-                           } else if (var38 > 0.9) {
-                              var37 = MapColor.Brightness.LOW;
+                        waterDepth /= scale * scale;
+                        MapColor color = (MapColor)Iterables.getFirst(Multisets.copyHighestCountFirst(colorCount), MapColor.NONE);
+                        MapColor.Brightness brightness;
+                        if (color == MapColor.WATER) {
+                           double diff = (double)waterDepth * 0.1 + (double)(imgX + imgY & 1) * 0.2;
+                           if (diff < 0.5) {
+                              brightness = MapColor.Brightness.HIGH;
+                           } else if (diff > 0.9) {
+                              brightness = MapColor.Brightness.LOW;
                            } else {
-                              var37 = MapColor.Brightness.NORMAL;
+                              brightness = MapColor.Brightness.NORMAL;
                            }
                         } else {
-                           double var39 = (var25 - var15) * 4.0 / (double)(var4 + 4) + ((double)(var14 + var17 & 1) - 0.5) * 0.4;
-                           if (var39 > 0.6) {
-                              var37 = MapColor.Brightness.HIGH;
-                           } else if (var39 < -0.6) {
-                              var37 = MapColor.Brightness.LOW;
+                           double diff = (averageAreaHeight - previousAverageAreaHeight) * 4.0 / (double)(scale + 4) + ((double)(imgX + imgY & 1) - 0.5) * 0.4;
+                           if (diff > 0.6) {
+                              brightness = MapColor.Brightness.HIGH;
+                           } else if (diff < -0.6) {
+                              brightness = MapColor.Brightness.LOW;
                            } else {
-                              var37 = MapColor.Brightness.NORMAL;
+                              brightness = MapColor.Brightness.NORMAL;
                            }
                         }
 
-                        var15 = var25;
-                        if (var17 >= 0 && var18 < var9 * var9 && (!var19 || (var14 + var17 & 1) != 0)) {
-                           var13 |= var3.updateColor(var14, var17, var36.getPackedId(var37));
+                        previousAverageAreaHeight = averageAreaHeight;
+                        if (imgY >= 0 && distanceToPlayerSqr < radius * radius && (!ditherBlack || (imgX + imgY & 1) != 0)) {
+                           foundConsecutiveChanges |= data.updateColor(imgX, imgY, color.getPackedId(brightness));
                         }
                      }
                   }
@@ -178,83 +180,83 @@ public class MapItem extends Item {
       }
    }
 
-   private BlockState getCorrectStateForFluidBlock(Level var1, BlockState var2, BlockPos var3) {
-      FluidState var4 = var2.getFluidState();
-      return !var4.isEmpty() && !var2.isFaceSturdy(var1, var3, Direction.UP) ? var4.createLegacyBlock() : var2;
+   private BlockState getCorrectStateForFluidBlock(final Level level, final BlockState state, final BlockPos pos) {
+      FluidState fluidState = state.getFluidState();
+      return !fluidState.isEmpty() && !state.isFaceSturdy(level, pos, Direction.UP) ? fluidState.createLegacyBlock() : state;
    }
 
-   private static boolean isBiomeWatery(boolean[] var0, int var1, int var2) {
-      return var0[var2 * 128 + var1];
+   private static boolean isBiomeWatery(final boolean[] isBiomeWatery, final int x, final int z) {
+      return isBiomeWatery[z * 128 + x];
    }
 
-   public static void renderBiomePreviewMap(ServerLevel var0, ItemStack var1) {
-      MapItemSavedData var2 = getSavedData((ItemStack)var1, var0);
-      if (var2 != null) {
-         if (var0.dimension() == var2.dimension) {
-            int var3 = 1 << var2.scale;
-            int var4 = var2.centerX;
-            int var5 = var2.centerZ;
-            boolean[] var6 = new boolean[16384];
-            int var7 = var4 / var3 - 64;
-            int var8 = var5 / var3 - 64;
-            BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
+   public static void renderBiomePreviewMap(final ServerLevel level, final ItemStack mapItemStack) {
+      MapItemSavedData data = getSavedData((ItemStack)mapItemStack, level);
+      if (data != null) {
+         if (level.dimension() == data.dimension) {
+            int scale = 1 << data.scale;
+            int centerX = data.centerX;
+            int centerZ = data.centerZ;
+            boolean[] isBiomeWatery = new boolean[16384];
+            int unscaledStartX = centerX / scale - 64;
+            int unscaledStartZ = centerZ / scale - 64;
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-            for(int var10 = 0; var10 < 128; ++var10) {
-               for(int var11 = 0; var11 < 128; ++var11) {
-                  Holder var12 = var0.getBiome(var9.set((var7 + var11) * var3, 0, (var8 + var10) * var3));
-                  var6[var10 * 128 + var11] = var12.is(BiomeTags.WATER_ON_MAP_OUTLINES);
+            for(int row = 0; row < 128; ++row) {
+               for(int column = 0; column < 128; ++column) {
+                  Holder<Biome> biome = level.getBiome(pos.set((unscaledStartX + column) * scale, 0, (unscaledStartZ + row) * scale));
+                  isBiomeWatery[row * 128 + column] = biome.is(BiomeTags.WATER_ON_MAP_OUTLINES);
                }
             }
 
-            for(int var15 = 1; var15 < 127; ++var15) {
-               for(int var16 = 1; var16 < 127; ++var16) {
-                  int var17 = 0;
+            for(int mx = 1; mx < 127; ++mx) {
+               for(int mz = 1; mz < 127; ++mz) {
+                  int waterCount = 0;
 
-                  for(int var13 = -1; var13 < 2; ++var13) {
-                     for(int var14 = -1; var14 < 2; ++var14) {
-                        if ((var13 != 0 || var14 != 0) && isBiomeWatery(var6, var15 + var13, var16 + var14)) {
-                           ++var17;
+                  for(int dx = -1; dx < 2; ++dx) {
+                     for(int dz = -1; dz < 2; ++dz) {
+                        if ((dx != 0 || dz != 0) && isBiomeWatery(isBiomeWatery, mx + dx, mz + dz)) {
+                           ++waterCount;
                         }
                      }
                   }
 
-                  MapColor.Brightness var18 = MapColor.Brightness.LOWEST;
-                  MapColor var19 = MapColor.NONE;
-                  if (isBiomeWatery(var6, var15, var16)) {
-                     var19 = MapColor.COLOR_ORANGE;
-                     if (var17 > 7 && var16 % 2 == 0) {
-                        switch ((var15 + (int)(Mth.sin((double)((float)var16 + 0.0F)) * 7.0F)) / 8 % 5) {
+                  MapColor.Brightness brightness = MapColor.Brightness.LOWEST;
+                  MapColor newColor = MapColor.NONE;
+                  if (isBiomeWatery(isBiomeWatery, mx, mz)) {
+                     newColor = MapColor.COLOR_ORANGE;
+                     if (waterCount > 7 && mz % 2 == 0) {
+                        switch ((mx + (int)(Mth.sin((double)((float)mz + 0.0F)) * 7.0F)) / 8 % 5) {
                            case 0:
                            case 4:
-                              var18 = MapColor.Brightness.LOW;
+                              brightness = MapColor.Brightness.LOW;
                               break;
                            case 1:
                            case 3:
-                              var18 = MapColor.Brightness.NORMAL;
+                              brightness = MapColor.Brightness.NORMAL;
                               break;
                            case 2:
-                              var18 = MapColor.Brightness.HIGH;
+                              brightness = MapColor.Brightness.HIGH;
                         }
-                     } else if (var17 > 7) {
-                        var19 = MapColor.NONE;
-                     } else if (var17 > 5) {
-                        var18 = MapColor.Brightness.NORMAL;
-                     } else if (var17 > 3) {
-                        var18 = MapColor.Brightness.LOW;
-                     } else if (var17 > 1) {
-                        var18 = MapColor.Brightness.LOW;
+                     } else if (waterCount > 7) {
+                        newColor = MapColor.NONE;
+                     } else if (waterCount > 5) {
+                        brightness = MapColor.Brightness.NORMAL;
+                     } else if (waterCount > 3) {
+                        brightness = MapColor.Brightness.LOW;
+                     } else if (waterCount > 1) {
+                        brightness = MapColor.Brightness.LOW;
                      }
-                  } else if (var17 > 0) {
-                     var19 = MapColor.COLOR_BROWN;
-                     if (var17 > 3) {
-                        var18 = MapColor.Brightness.NORMAL;
+                  } else if (waterCount > 0) {
+                     newColor = MapColor.COLOR_BROWN;
+                     if (waterCount > 3) {
+                        brightness = MapColor.Brightness.NORMAL;
                      } else {
-                        var18 = MapColor.Brightness.LOWEST;
+                        brightness = MapColor.Brightness.LOWEST;
                      }
                   }
 
-                  if (var19 != MapColor.NONE) {
-                     var2.setColor(var15, var16, var19.getPackedId(var18));
+                  if (newColor != MapColor.NONE) {
+                     data.setColor(mx, mz, newColor.getPackedId(brightness));
                   }
                }
             }
@@ -263,69 +265,69 @@ public class MapItem extends Item {
       }
    }
 
-   public void inventoryTick(ItemStack var1, ServerLevel var2, Entity var3, @Nullable EquipmentSlot var4) {
-      MapItemSavedData var5 = getSavedData((ItemStack)var1, var2);
-      if (var5 != null) {
-         if (var3 instanceof Player) {
-            Player var6 = (Player)var3;
-            var5.tickCarriedBy(var6, var1);
+   public void inventoryTick(final ItemStack itemStack, final ServerLevel level, final Entity owner, final @Nullable EquipmentSlot slot) {
+      MapItemSavedData data = getSavedData((ItemStack)itemStack, level);
+      if (data != null) {
+         if (owner instanceof Player) {
+            Player player = (Player)owner;
+            data.tickCarriedBy(player, itemStack);
          }
 
-         if (!var5.locked && var4 != null && var4.getType() == EquipmentSlot.Type.HAND) {
-            this.update(var2, var3, var5);
+         if (!data.locked && slot != null && slot.getType() == EquipmentSlot.Type.HAND) {
+            this.update(level, owner, data);
          }
 
       }
    }
 
-   public void onCraftedPostProcess(ItemStack var1, Level var2) {
-      MapPostProcessing var3 = (MapPostProcessing)var1.remove(DataComponents.MAP_POST_PROCESSING);
-      if (var3 != null) {
-         if (var2 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var2;
-            switch (var3) {
-               case LOCK -> lockMap(var1, var4);
-               case SCALE -> scaleMap(var1, var4);
+   public void onCraftedPostProcess(final ItemStack itemStack, final Level level) {
+      MapPostProcessing postProcessing = (MapPostProcessing)itemStack.remove(DataComponents.MAP_POST_PROCESSING);
+      if (postProcessing != null) {
+         if (level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
+            switch (postProcessing) {
+               case LOCK -> lockMap(itemStack, serverLevel);
+               case SCALE -> scaleMap(itemStack, serverLevel);
             }
          }
 
       }
    }
 
-   private static void scaleMap(ItemStack var0, ServerLevel var1) {
-      MapItemSavedData var2 = getSavedData((ItemStack)var0, var1);
-      if (var2 != null) {
-         MapId var3 = var1.getFreeMapId();
-         var1.setMapData(var3, var2.scaled());
-         var0.set(DataComponents.MAP_ID, var3);
+   private static void scaleMap(final ItemStack itemStack, final ServerLevel level) {
+      MapItemSavedData original = getSavedData((ItemStack)itemStack, level);
+      if (original != null) {
+         MapId id = level.getFreeMapId();
+         level.setMapData(id, original.scaled());
+         itemStack.set(DataComponents.MAP_ID, id);
       }
 
    }
 
-   private static void lockMap(ItemStack var0, ServerLevel var1) {
-      MapItemSavedData var2 = getSavedData((ItemStack)var0, var1);
-      if (var2 != null) {
-         MapId var3 = var1.getFreeMapId();
-         MapItemSavedData var4 = var2.locked();
-         var1.setMapData(var3, var4);
-         var0.set(DataComponents.MAP_ID, var3);
+   private static void lockMap(final ItemStack map, final ServerLevel level) {
+      MapItemSavedData mapData = getSavedData((ItemStack)map, level);
+      if (mapData != null) {
+         MapId id = level.getFreeMapId();
+         MapItemSavedData newData = mapData.locked();
+         level.setMapData(id, newData);
+         map.set(DataComponents.MAP_ID, id);
       }
 
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
-      if (var2.is(BlockTags.BANNERS)) {
-         if (!var1.getLevel().isClientSide()) {
-            MapItemSavedData var3 = getSavedData(var1.getItemInHand(), var1.getLevel());
-            if (var3 != null && !var3.toggleBanner(var1.getLevel(), var1.getClickedPos())) {
+   public InteractionResult useOn(final UseOnContext context) {
+      BlockState clicked = context.getLevel().getBlockState(context.getClickedPos());
+      if (clicked.is(BlockTags.BANNERS)) {
+         if (!context.getLevel().isClientSide()) {
+            MapItemSavedData data = getSavedData(context.getItemInHand(), context.getLevel());
+            if (data != null && !data.toggleBanner(context.getLevel(), context.getClickedPos())) {
                return InteractionResult.FAIL;
             }
          }
 
          return InteractionResult.SUCCESS;
       } else {
-         return super.useOn(var1);
+         return super.useOn(context);
       }
    }
 }

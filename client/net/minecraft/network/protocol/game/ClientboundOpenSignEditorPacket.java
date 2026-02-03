@@ -11,29 +11,29 @@ public class ClientboundOpenSignEditorPacket implements Packet<ClientGamePacketL
    private final BlockPos pos;
    private final boolean isFrontText;
 
-   public ClientboundOpenSignEditorPacket(BlockPos var1, boolean var2) {
+   public ClientboundOpenSignEditorPacket(final BlockPos pos, final boolean isFrontText) {
       super();
-      this.pos = var1;
-      this.isFrontText = var2;
+      this.pos = pos;
+      this.isFrontText = isFrontText;
    }
 
-   private ClientboundOpenSignEditorPacket(FriendlyByteBuf var1) {
+   private ClientboundOpenSignEditorPacket(final FriendlyByteBuf input) {
       super();
-      this.pos = var1.readBlockPos();
-      this.isFrontText = var1.readBoolean();
+      this.pos = input.readBlockPos();
+      this.isFrontText = input.readBoolean();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBlockPos(this.pos);
-      var1.writeBoolean(this.isFrontText);
+   private void write(final FriendlyByteBuf output) {
+      output.writeBlockPos(this.pos);
+      output.writeBoolean(this.isFrontText);
    }
 
    public PacketType<ClientboundOpenSignEditorPacket> type() {
       return GamePacketTypes.CLIENTBOUND_OPEN_SIGN_EDITOR;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleOpenSignEditor(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleOpenSignEditor(this);
    }
 
    public BlockPos getPos() {

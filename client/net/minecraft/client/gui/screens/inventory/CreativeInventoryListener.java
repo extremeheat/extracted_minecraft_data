@@ -8,15 +8,15 @@ import net.minecraft.world.item.ItemStack;
 public class CreativeInventoryListener implements ContainerListener {
    private final Minecraft minecraft;
 
-   public CreativeInventoryListener(Minecraft var1) {
+   public CreativeInventoryListener(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
-      this.minecraft.gameMode.handleCreativeModeItemAdd(var3, var2);
+   public void slotChanged(final AbstractContainerMenu container, final int slotIndex, final ItemStack itemStack) {
+      this.minecraft.gameMode.handleCreativeModeItemAdd(itemStack, slotIndex);
    }
 
-   public void dataChanged(AbstractContainerMenu var1, int var2, int var3) {
+   public void dataChanged(final AbstractContainerMenu container, final int id, final int value) {
    }
 }

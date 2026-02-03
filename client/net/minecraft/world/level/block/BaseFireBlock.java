@@ -29,174 +29,174 @@ public abstract class BaseFireBlock extends Block {
    private final float fireDamage;
    protected static final VoxelShape SHAPE = Block.column(16.0, 0.0, 1.0);
 
-   public BaseFireBlock(BlockBehaviour.Properties var1, float var2) {
-      super(var1);
-      this.fireDamage = var2;
+   public BaseFireBlock(final BlockBehaviour.Properties properties, final float fireDamage) {
+      super(properties);
+      this.fireDamage = fireDamage;
    }
 
    protected abstract MapCodec<? extends BaseFireBlock> codec();
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return getState(var1.getLevel(), var1.getClickedPos());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return getState(context.getLevel(), context.getClickedPos());
    }
 
-   public static BlockState getState(BlockGetter var0, BlockPos var1) {
-      BlockPos var2 = var1.below();
-      BlockState var3 = var0.getBlockState(var2);
-      return SoulFireBlock.canSurviveOnBlock(var3) ? Blocks.SOUL_FIRE.defaultBlockState() : ((FireBlock)Blocks.FIRE).getStateForPlacement(var0, var1);
+   public static BlockState getState(final BlockGetter level, final BlockPos pos) {
+      BlockPos below = pos.below();
+      BlockState belowState = level.getBlockState(below);
+      return SoulFireBlock.canSurviveOnBlock(belowState) ? Blocks.SOUL_FIRE.defaultBlockState() : ((FireBlock)Blocks.FIRE).getStateForPlacement(level, pos);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var4.nextInt(24) == 0) {
-         var2.playLocalSound((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 1.0F + var4.nextFloat(), var4.nextFloat() * 0.7F + 0.3F, false);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if (random.nextInt(24) == 0) {
+         level.playLocalSound((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 1.0F + random.nextFloat(), random.nextFloat() * 0.7F + 0.3F, false);
       }
 
-      BlockPos var5 = var3.below();
-      BlockState var6 = var2.getBlockState(var5);
-      if (!this.canBurn(var6) && !var6.isFaceSturdy(var2, var5, Direction.UP)) {
-         if (this.canBurn(var2.getBlockState(var3.west()))) {
-            for(int var14 = 0; var14 < 2; ++var14) {
-               double var19 = (double)var3.getX() + var4.nextDouble() * 0.10000000149011612;
-               double var24 = (double)var3.getY() + var4.nextDouble();
-               double var29 = (double)var3.getZ() + var4.nextDouble();
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, var19, var24, var29, 0.0, 0.0, 0.0);
+      BlockPos below = pos.below();
+      BlockState belowState = level.getBlockState(below);
+      if (!this.canBurn(belowState) && !belowState.isFaceSturdy(level, below, Direction.UP)) {
+         if (this.canBurn(level.getBlockState(pos.west()))) {
+            for(int i = 0; i < 2; ++i) {
+               double xx = (double)pos.getX() + random.nextDouble() * 0.10000000149011612;
+               double yy = (double)pos.getY() + random.nextDouble();
+               double zz = (double)pos.getZ() + random.nextDouble();
+               level.addParticle(ParticleTypes.LARGE_SMOKE, xx, yy, zz, 0.0, 0.0, 0.0);
             }
          }
 
-         if (this.canBurn(var2.getBlockState(var3.east()))) {
-            for(int var15 = 0; var15 < 2; ++var15) {
-               double var20 = (double)(var3.getX() + 1) - var4.nextDouble() * 0.10000000149011612;
-               double var25 = (double)var3.getY() + var4.nextDouble();
-               double var30 = (double)var3.getZ() + var4.nextDouble();
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, var20, var25, var30, 0.0, 0.0, 0.0);
+         if (this.canBurn(level.getBlockState(pos.east()))) {
+            for(int i = 0; i < 2; ++i) {
+               double xx = (double)(pos.getX() + 1) - random.nextDouble() * 0.10000000149011612;
+               double yy = (double)pos.getY() + random.nextDouble();
+               double zz = (double)pos.getZ() + random.nextDouble();
+               level.addParticle(ParticleTypes.LARGE_SMOKE, xx, yy, zz, 0.0, 0.0, 0.0);
             }
          }
 
-         if (this.canBurn(var2.getBlockState(var3.north()))) {
-            for(int var16 = 0; var16 < 2; ++var16) {
-               double var21 = (double)var3.getX() + var4.nextDouble();
-               double var26 = (double)var3.getY() + var4.nextDouble();
-               double var31 = (double)var3.getZ() + var4.nextDouble() * 0.10000000149011612;
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, var21, var26, var31, 0.0, 0.0, 0.0);
+         if (this.canBurn(level.getBlockState(pos.north()))) {
+            for(int i = 0; i < 2; ++i) {
+               double xx = (double)pos.getX() + random.nextDouble();
+               double yy = (double)pos.getY() + random.nextDouble();
+               double zz = (double)pos.getZ() + random.nextDouble() * 0.10000000149011612;
+               level.addParticle(ParticleTypes.LARGE_SMOKE, xx, yy, zz, 0.0, 0.0, 0.0);
             }
          }
 
-         if (this.canBurn(var2.getBlockState(var3.south()))) {
-            for(int var17 = 0; var17 < 2; ++var17) {
-               double var22 = (double)var3.getX() + var4.nextDouble();
-               double var27 = (double)var3.getY() + var4.nextDouble();
-               double var32 = (double)(var3.getZ() + 1) - var4.nextDouble() * 0.10000000149011612;
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, var22, var27, var32, 0.0, 0.0, 0.0);
+         if (this.canBurn(level.getBlockState(pos.south()))) {
+            for(int i = 0; i < 2; ++i) {
+               double xx = (double)pos.getX() + random.nextDouble();
+               double yy = (double)pos.getY() + random.nextDouble();
+               double zz = (double)(pos.getZ() + 1) - random.nextDouble() * 0.10000000149011612;
+               level.addParticle(ParticleTypes.LARGE_SMOKE, xx, yy, zz, 0.0, 0.0, 0.0);
             }
          }
 
-         if (this.canBurn(var2.getBlockState(var3.above()))) {
-            for(int var18 = 0; var18 < 2; ++var18) {
-               double var23 = (double)var3.getX() + var4.nextDouble();
-               double var28 = (double)(var3.getY() + 1) - var4.nextDouble() * 0.10000000149011612;
-               double var33 = (double)var3.getZ() + var4.nextDouble();
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, var23, var28, var33, 0.0, 0.0, 0.0);
+         if (this.canBurn(level.getBlockState(pos.above()))) {
+            for(int i = 0; i < 2; ++i) {
+               double xx = (double)pos.getX() + random.nextDouble();
+               double yy = (double)(pos.getY() + 1) - random.nextDouble() * 0.10000000149011612;
+               double zz = (double)pos.getZ() + random.nextDouble();
+               level.addParticle(ParticleTypes.LARGE_SMOKE, xx, yy, zz, 0.0, 0.0, 0.0);
             }
          }
       } else {
-         for(int var7 = 0; var7 < 3; ++var7) {
-            double var8 = (double)var3.getX() + var4.nextDouble();
-            double var10 = (double)var3.getY() + var4.nextDouble() * 0.5 + 0.5;
-            double var12 = (double)var3.getZ() + var4.nextDouble();
-            var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0, 0.0, 0.0);
+         for(int i = 0; i < 3; ++i) {
+            double xx = (double)pos.getX() + random.nextDouble();
+            double yy = (double)pos.getY() + random.nextDouble() * 0.5 + 0.5;
+            double zz = (double)pos.getZ() + random.nextDouble();
+            level.addParticle(ParticleTypes.LARGE_SMOKE, xx, yy, zz, 0.0, 0.0, 0.0);
          }
       }
 
    }
 
-   protected abstract boolean canBurn(BlockState var1);
+   protected abstract boolean canBurn(final BlockState state);
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      var5.apply(InsideBlockEffectType.CLEAR_FREEZE);
-      var5.apply(InsideBlockEffectType.FIRE_IGNITE);
-      var5.runAfter(InsideBlockEffectType.FIRE_IGNITE, (var1x) -> var1x.hurt(var1x.level().damageSources().inFire(), this.fireDamage));
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      effectApplier.apply(InsideBlockEffectType.CLEAR_FREEZE);
+      effectApplier.apply(InsideBlockEffectType.FIRE_IGNITE);
+      effectApplier.runAfter(InsideBlockEffectType.FIRE_IGNITE, (e) -> e.hurt(e.level().damageSources().inFire(), this.fireDamage));
    }
 
-   public static void fireIgnite(Entity var0) {
-      if (!var0.fireImmune()) {
-         if (var0.getRemainingFireTicks() < 0) {
-            var0.setRemainingFireTicks(var0.getRemainingFireTicks() + 1);
-         } else if (var0 instanceof ServerPlayer) {
-            int var1 = var0.level().getRandom().nextInt(1, 3);
-            var0.setRemainingFireTicks(var0.getRemainingFireTicks() + var1);
+   public static void fireIgnite(final Entity entity) {
+      if (!entity.fireImmune()) {
+         if (entity.getRemainingFireTicks() < 0) {
+            entity.setRemainingFireTicks(entity.getRemainingFireTicks() + 1);
+         } else if (entity instanceof ServerPlayer) {
+            int addedFireTicks = entity.level().getRandom().nextInt(1, 3);
+            entity.setRemainingFireTicks(entity.getRemainingFireTicks() + addedFireTicks);
          }
 
-         if (var0.getRemainingFireTicks() >= 0) {
-            var0.igniteForSeconds(8.0F);
+         if (entity.getRemainingFireTicks() >= 0) {
+            entity.igniteForSeconds(8.0F);
          }
       }
 
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
-         if (inPortalDimension(var2)) {
-            Optional var6 = PortalShape.findEmptyPortalShape(var2, var3, Direction.Axis.X);
-            if (var6.isPresent()) {
-               ((PortalShape)var6.get()).createPortalBlocks(var2);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!oldState.is(state.getBlock())) {
+         if (inPortalDimension(level)) {
+            Optional<PortalShape> optionalShape = PortalShape.findEmptyPortalShape(level, pos, Direction.Axis.X);
+            if (optionalShape.isPresent()) {
+               ((PortalShape)optionalShape.get()).createPortalBlocks(level);
                return;
             }
          }
 
-         if (!var1.canSurvive(var2, var3)) {
-            var2.removeBlock(var3, false);
+         if (!state.canSurvive(level, pos)) {
+            level.removeBlock(pos, false);
          }
 
       }
    }
 
-   private static boolean inPortalDimension(Level var0) {
-      return var0.dimension() == Level.OVERWORLD || var0.dimension() == Level.NETHER;
+   private static boolean inPortalDimension(final Level level) {
+      return level.dimension() == Level.OVERWORLD || level.dimension() == Level.NETHER;
    }
 
-   protected void spawnDestroyParticles(Level var1, Player var2, BlockPos var3, BlockState var4) {
+   protected void spawnDestroyParticles(final Level level, final Player player, final BlockPos pos, final BlockState state) {
    }
 
-   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide()) {
-         var1.levelEvent((Entity)null, 1009, var2, 0);
+   public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+      if (!level.isClientSide()) {
+         level.levelEvent((Entity)null, 1009, pos, 0);
       }
 
-      return super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(level, pos, state, player);
    }
 
-   public static boolean canBePlacedAt(Level var0, BlockPos var1, Direction var2) {
-      BlockState var3 = var0.getBlockState(var1);
-      if (!var3.isAir()) {
+   public static boolean canBePlacedAt(final Level level, final BlockPos pos, final Direction forwardDirection) {
+      BlockState state = level.getBlockState(pos);
+      if (!state.isAir()) {
          return false;
       } else {
-         return getState(var0, var1).canSurvive(var0, var1) || isPortal(var0, var1, var2);
+         return getState(level, pos).canSurvive(level, pos) || isPortal(level, pos, forwardDirection);
       }
    }
 
-   private static boolean isPortal(Level var0, BlockPos var1, Direction var2) {
-      if (!inPortalDimension(var0)) {
+   private static boolean isPortal(final Level level, final BlockPos pos, final Direction forwardDirection) {
+      if (!inPortalDimension(level)) {
          return false;
       } else {
-         BlockPos.MutableBlockPos var3 = var1.mutable();
-         boolean var4 = false;
+         BlockPos.MutableBlockPos testPos = pos.mutable();
+         boolean hasObsidian = false;
 
-         for(Direction var8 : Direction.values()) {
-            if (var0.getBlockState(var3.set(var1).move(var8)).is(Blocks.OBSIDIAN)) {
-               var4 = true;
+         for(Direction face : Direction.values()) {
+            if (level.getBlockState(testPos.set(pos).move(face)).is(Blocks.OBSIDIAN)) {
+               hasObsidian = true;
                break;
             }
          }
 
-         if (!var4) {
+         if (!hasObsidian) {
             return false;
          } else {
-            Direction.Axis var9 = var2.getAxis().isHorizontal() ? var2.getCounterClockWise().getAxis() : Direction.Plane.HORIZONTAL.getRandomAxis(var0.random);
-            return PortalShape.findEmptyPortalShape(var0, var1, var9).isPresent();
+            Direction.Axis preferredAxis = forwardDirection.getAxis().isHorizontal() ? forwardDirection.getCounterClockWise().getAxis() : Direction.Plane.HORIZONTAL.getRandomAxis(level.getRandom());
+            return PortalShape.findEmptyPortalShape(level, pos, preferredAxis).isPresent();
          }
       }
    }

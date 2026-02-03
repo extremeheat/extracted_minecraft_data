@@ -1,21 +1,26 @@
 package net.minecraft.world.entity;
 
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,29 +42,29 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    protected static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> DATA_OWNERUUID_ID;
    private boolean orderedToSit = false;
 
-   protected TamableAnimal(EntityType<? extends TamableAnimal> var1, Level var2) {
-      super(var1, var2);
+   protected TamableAnimal(final EntityType<? extends TamableAnimal> type, final Level level) {
+      super(type, level);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_FLAGS_ID, (byte)0);
-      var1.define(DATA_OWNERUUID_ID, Optional.empty());
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_FLAGS_ID, (byte)0);
+      entityData.define(DATA_OWNERUUID_ID, Optional.empty());
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      EntityReference var2 = this.getOwnerReference();
-      EntityReference.store(var2, var1, "Owner");
-      var1.putBoolean("Sitting", this.orderedToSit);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      EntityReference<LivingEntity> owner = this.getOwnerReference();
+      EntityReference.store(owner, output, "Owner");
+      output.putBoolean("Sitting", this.orderedToSit);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      EntityReference var2 = EntityReference.readWithOldOwnerConversion(var1, "Owner", this.level());
-      if (var2 != null) {
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      EntityReference<LivingEntity> owner = EntityReference.<LivingEntity>readWithOldOwnerConversion(input, "Owner", this.level());
+      if (owner != null) {
          try {
-            this.entityData.set(DATA_OWNERUUID_ID, Optional.of(var2));
+            this.entityData.set(DATA_OWNERUUID_ID, Optional.of(owner));
             this.setTame(true, false);
          } catch (Throwable var4) {
             this.setTame(false, true);
@@ -69,7 +74,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
          this.setTame(false, true);
       }
 
-      this.orderedToSit = var1.getBooleanOr("Sitting", false);
+      this.orderedToSit = input.getBooleanOr("Sitting", false);
       this.setInSittingPose(this.orderedToSit);
    }
 
@@ -77,28 +82,28 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return true;
    }
 
-   protected void spawnTamingParticles(boolean var1) {
-      SimpleParticleType var2 = ParticleTypes.HEART;
-      if (!var1) {
-         var2 = ParticleTypes.SMOKE;
+   protected void spawnTamingParticles(final boolean success) {
+      ParticleOptions particle = ParticleTypes.HEART;
+      if (!success) {
+         particle = ParticleTypes.SMOKE;
       }
 
-      for(int var3 = 0; var3 < 7; ++var3) {
-         double var4 = this.random.nextGaussian() * 0.02;
-         double var6 = this.random.nextGaussian() * 0.02;
-         double var8 = this.random.nextGaussian() * 0.02;
-         this.level().addParticle(var2, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var4, var6, var8);
+      for(int i = 0; i < 7; ++i) {
+         double xa = this.random.nextGaussian() * 0.02;
+         double ya = this.random.nextGaussian() * 0.02;
+         double za = this.random.nextGaussian() * 0.02;
+         this.level().addParticle(particle, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), xa, ya, za);
       }
 
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 7) {
+   public void handleEntityEvent(final byte id) {
+      if (id == 7) {
          this.spawnTamingParticles(true);
-      } else if (var1 == 6) {
+      } else if (id == 6) {
          this.spawnTamingParticles(false);
       } else {
-         super.handleEntityEvent(var1);
+         super.handleEntityEvent(id);
       }
 
    }
@@ -107,15 +112,15 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return ((Byte)this.entityData.get(DATA_FLAGS_ID) & 4) != 0;
    }
 
-   public void setTame(boolean var1, boolean var2) {
-      byte var3 = (Byte)this.entityData.get(DATA_FLAGS_ID);
-      if (var1) {
-         this.entityData.set(DATA_FLAGS_ID, (byte)(var3 | 4));
+   public void setTame(final boolean isTame, final boolean includeSideEffects) {
+      byte current = (Byte)this.entityData.get(DATA_FLAGS_ID);
+      if (isTame) {
+         this.entityData.set(DATA_FLAGS_ID, (byte)(current | 4));
       } else {
-         this.entityData.set(DATA_FLAGS_ID, (byte)(var3 & -5));
+         this.entityData.set(DATA_FLAGS_ID, (byte)(current & -5));
       }
 
-      if (var2) {
+      if (includeSideEffects) {
          this.applyTamingSideEffects();
       }
 
@@ -124,16 +129,23 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    protected void applyTamingSideEffects() {
    }
 
+   protected void feed(final Player player, final InteractionHand hand, final ItemStack itemStack, final float healingFactor, final float defaultHeal) {
+      FoodProperties foodProperties = (FoodProperties)itemStack.get(DataComponents.FOOD);
+      this.usePlayerItem(player, hand, itemStack);
+      this.heal(foodProperties != null ? healingFactor * (float)foodProperties.nutrition() : defaultHeal);
+      this.playEatingSound();
+   }
+
    public boolean isInSittingPose() {
       return ((Byte)this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
    }
 
-   public void setInSittingPose(boolean var1) {
-      byte var2 = (Byte)this.entityData.get(DATA_FLAGS_ID);
-      if (var1) {
-         this.entityData.set(DATA_FLAGS_ID, (byte)(var2 | 1));
+   public void setInSittingPose(final boolean value) {
+      byte current = (Byte)this.entityData.get(DATA_FLAGS_ID);
+      if (value) {
+         this.entityData.set(DATA_FLAGS_ID, (byte)(current | 1));
       } else {
-         this.entityData.set(DATA_FLAGS_ID, (byte)(var2 & -2));
+         this.entityData.set(DATA_FLAGS_ID, (byte)(current & -2));
       }
 
    }
@@ -142,44 +154,44 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return (EntityReference)((Optional)this.entityData.get(DATA_OWNERUUID_ID)).orElse((Object)null);
    }
 
-   public void setOwner(@Nullable LivingEntity var1) {
-      this.entityData.set(DATA_OWNERUUID_ID, Optional.ofNullable(var1).map(EntityReference::of));
+   public void setOwner(final @Nullable LivingEntity owner) {
+      this.entityData.set(DATA_OWNERUUID_ID, Optional.ofNullable(owner).map(EntityReference::of));
    }
 
-   public void setOwnerReference(@Nullable EntityReference<LivingEntity> var1) {
-      this.entityData.set(DATA_OWNERUUID_ID, Optional.ofNullable(var1));
+   public void setOwnerReference(final @Nullable EntityReference<LivingEntity> owner) {
+      this.entityData.set(DATA_OWNERUUID_ID, Optional.ofNullable(owner));
    }
 
-   public void tame(Player var1) {
+   public void tame(final Player player) {
       this.setTame(true, true);
-      this.setOwner(var1);
-      if (var1 instanceof ServerPlayer var2) {
-         CriteriaTriggers.TAME_ANIMAL.trigger(var2, this);
+      this.setOwner(player);
+      if (player instanceof ServerPlayer serverPlayer) {
+         CriteriaTriggers.TAME_ANIMAL.trigger(serverPlayer, this);
       }
 
    }
 
-   public boolean canAttack(LivingEntity var1) {
-      return this.isOwnedBy(var1) ? false : super.canAttack(var1);
+   public boolean canAttack(final LivingEntity target) {
+      return this.isOwnedBy(target) ? false : super.canAttack(target);
    }
 
-   public boolean isOwnedBy(LivingEntity var1) {
-      return var1 == this.getOwner();
+   public boolean isOwnedBy(final LivingEntity entity) {
+      return entity == this.getOwner();
    }
 
-   public boolean wantsToAttack(LivingEntity var1, LivingEntity var2) {
+   public boolean wantsToAttack(final LivingEntity target, final LivingEntity owner) {
       return true;
    }
 
    public @Nullable PlayerTeam getTeam() {
-      PlayerTeam var1 = super.getTeam();
-      if (var1 != null) {
-         return var1;
+      PlayerTeam ownTeam = super.getTeam();
+      if (ownTeam != null) {
+         return ownTeam;
       } else {
          if (this.isTame()) {
-            LivingEntity var2 = this.getRootOwner();
-            if (var2 != null) {
-               return var2.getTeam();
+            LivingEntity owner = this.getRootOwner();
+            if (owner != null) {
+               return owner.getTeam();
             }
          }
 
@@ -187,64 +199,64 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       }
    }
 
-   protected boolean considersEntityAsAlly(Entity var1) {
+   protected boolean considersEntityAsAlly(final Entity other) {
       if (this.isTame()) {
-         LivingEntity var2 = this.getRootOwner();
-         if (var1 == var2) {
+         LivingEntity owner = this.getRootOwner();
+         if (other == owner) {
             return true;
          }
 
-         if (var2 != null) {
-            return var2.considersEntityAsAlly(var1);
+         if (owner != null) {
+            return owner.considersEntityAsAlly(other);
          }
       }
 
-      return super.considersEntityAsAlly(var1);
+      return super.considersEntityAsAlly(other);
    }
 
-   public void die(DamageSource var1) {
+   public void die(final DamageSource source) {
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         if ((Boolean)var2.getGameRules().get(GameRules.SHOW_DEATH_MESSAGES)) {
+      if (var3 instanceof ServerLevel serverLevel) {
+         if ((Boolean)serverLevel.getGameRules().get(GameRules.SHOW_DEATH_MESSAGES)) {
             LivingEntity var4 = this.getOwner();
             if (var4 instanceof ServerPlayer) {
-               ServerPlayer var5 = (ServerPlayer)var4;
-               var5.sendSystemMessage(this.getCombatTracker().getDeathMessage());
+               ServerPlayer serverPlayer = (ServerPlayer)var4;
+               serverPlayer.sendSystemMessage(this.getCombatTracker().getDeathMessage());
             }
          }
       }
 
-      super.die(var1);
+      super.die(source);
    }
 
    public boolean isOrderedToSit() {
       return this.orderedToSit;
    }
 
-   public void setOrderedToSit(boolean var1) {
-      this.orderedToSit = var1;
+   public void setOrderedToSit(final boolean orderedToSit) {
+      this.orderedToSit = orderedToSit;
    }
 
    public void tryToTeleportToOwner() {
-      LivingEntity var1 = this.getOwner();
-      if (var1 != null) {
-         this.teleportToAroundBlockPos(var1.blockPosition());
+      LivingEntity owner = this.getOwner();
+      if (owner != null) {
+         this.teleportToAroundBlockPos(owner.blockPosition());
       }
 
    }
 
    public boolean shouldTryTeleportToOwner() {
-      LivingEntity var1 = this.getOwner();
-      return var1 != null && this.distanceToSqr(this.getOwner()) >= 144.0;
+      LivingEntity owner = this.getOwner();
+      return owner != null && this.distanceToSqr(this.getOwner()) >= 144.0;
    }
 
-   private void teleportToAroundBlockPos(BlockPos var1) {
-      for(int var2 = 0; var2 < 10; ++var2) {
-         int var3 = this.random.nextIntBetweenInclusive(-3, 3);
-         int var4 = this.random.nextIntBetweenInclusive(-3, 3);
-         if (Math.abs(var3) >= 2 || Math.abs(var4) >= 2) {
-            int var5 = this.random.nextIntBetweenInclusive(-1, 1);
-            if (this.maybeTeleportTo(var1.getX() + var3, var1.getY() + var5, var1.getZ() + var4)) {
+   private void teleportToAroundBlockPos(final BlockPos targetPos) {
+      for(int attempt = 0; attempt < 10; ++attempt) {
+         int xd = this.random.nextIntBetweenInclusive(-3, 3);
+         int zd = this.random.nextIntBetweenInclusive(-3, 3);
+         if (Math.abs(xd) >= 2 || Math.abs(zd) >= 2) {
+            int yd = this.random.nextIntBetweenInclusive(-1, 1);
+            if (this.maybeTeleportTo(targetPos.getX() + xd, targetPos.getY() + yd, targetPos.getZ() + zd)) {
                return;
             }
          }
@@ -252,27 +264,27 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    }
 
-   private boolean maybeTeleportTo(int var1, int var2, int var3) {
-      if (!this.canTeleportTo(new BlockPos(var1, var2, var3))) {
+   private boolean maybeTeleportTo(final int x, final int y, final int z) {
+      if (!this.canTeleportTo(new BlockPos(x, y, z))) {
          return false;
       } else {
-         this.snapTo((double)var1 + 0.5, (double)var2, (double)var3 + 0.5, this.getYRot(), this.getXRot());
+         this.snapTo((double)x + 0.5, (double)y, (double)z + 0.5, this.getYRot(), this.getXRot());
          this.navigation.stop();
          return true;
       }
    }
 
-   private boolean canTeleportTo(BlockPos var1) {
-      PathType var2 = WalkNodeEvaluator.getPathTypeStatic((Mob)this, (BlockPos)var1);
-      if (var2 != PathType.WALKABLE) {
+   private boolean canTeleportTo(final BlockPos pos) {
+      PathType pathType = WalkNodeEvaluator.getPathTypeStatic((Mob)this, (BlockPos)pos);
+      if (pathType != PathType.WALKABLE) {
          return false;
       } else {
-         BlockState var3 = this.level().getBlockState(var1.below());
-         if (!this.canFlyToOwner() && var3.getBlock() instanceof LeavesBlock) {
+         BlockState blockStateBelow = this.level().getBlockState(pos.below());
+         if (!this.canFlyToOwner() && blockStateBelow.getBlock() instanceof LeavesBlock) {
             return false;
          } else {
-            BlockPos var4 = var1.subtract(this.blockPosition());
-            return this.level().noCollision(this, this.getBoundingBox().move(var4));
+            BlockPos delta = pos.subtract(this.blockPosition());
+            return this.level().noCollision(this, this.getBoundingBox().move(delta));
          }
       }
    }
@@ -291,12 +303,14 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    }
 
    public class TamableAnimalPanicGoal extends PanicGoal {
-      public TamableAnimalPanicGoal(final double var2, final TagKey<DamageType> var4) {
-         super(TamableAnimal.this, var2, var4);
+      public TamableAnimalPanicGoal(final double speedModifier, final TagKey<DamageType> panicCausingDamageTypes) {
+         Objects.requireNonNull(TamableAnimal.this);
+         super(TamableAnimal.this, speedModifier, panicCausingDamageTypes);
       }
 
-      public TamableAnimalPanicGoal(final double var2) {
-         super(TamableAnimal.this, var2);
+      public TamableAnimalPanicGoal(final double speedModifier) {
+         Objects.requireNonNull(TamableAnimal.this);
+         super(TamableAnimal.this, speedModifier);
       }
 
       public void tick() {

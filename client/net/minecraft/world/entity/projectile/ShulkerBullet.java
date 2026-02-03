@@ -2,7 +2,7 @@ package net.minecraft.world.entity.projectile;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
@@ -42,127 +42,127 @@ public class ShulkerBullet extends Projectile {
    private double targetDeltaY;
    private double targetDeltaZ;
 
-   public ShulkerBullet(EntityType<? extends ShulkerBullet> var1, Level var2) {
-      super(var1, var2);
+   public ShulkerBullet(final EntityType<? extends ShulkerBullet> type, final Level level) {
+      super(type, level);
       this.noPhysics = true;
    }
 
-   public ShulkerBullet(Level var1, LivingEntity var2, Entity var3, Direction.Axis var4) {
-      this(EntityType.SHULKER_BULLET, var1);
-      this.setOwner(var2);
-      Vec3 var5 = var2.getBoundingBox().getCenter();
-      this.snapTo(var5.x, var5.y, var5.z, this.getYRot(), this.getXRot());
-      this.finalTarget = EntityReference.of(var3);
+   public ShulkerBullet(final Level level, final LivingEntity owner, final Entity target, final Direction.Axis invalidStartAxis) {
+      this(EntityType.SHULKER_BULLET, level);
+      this.setOwner(owner);
+      Vec3 position = owner.getBoundingBox().getCenter();
+      this.snapTo(position.x, position.y, position.z, this.getYRot(), this.getXRot());
+      this.finalTarget = EntityReference.of(target);
       this.currentMoveDirection = Direction.UP;
-      this.selectNextMoveDirection(var4, var3);
+      this.selectNextMoveDirection(invalidStartAxis, target);
    }
 
    public SoundSource getSoundSource() {
       return SoundSource.HOSTILE;
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
       if (this.finalTarget != null) {
-         var1.store("Target", UUIDUtil.CODEC, this.finalTarget.getUUID());
+         output.store("Target", UUIDUtil.CODEC, this.finalTarget.getUUID());
       }
 
-      var1.storeNullable("Dir", Direction.LEGACY_ID_CODEC, this.currentMoveDirection);
-      var1.putInt("Steps", this.flightSteps);
-      var1.putDouble("TXD", this.targetDeltaX);
-      var1.putDouble("TYD", this.targetDeltaY);
-      var1.putDouble("TZD", this.targetDeltaZ);
+      output.storeNullable("Dir", Direction.LEGACY_ID_CODEC, this.currentMoveDirection);
+      output.putInt("Steps", this.flightSteps);
+      output.putDouble("TXD", this.targetDeltaX);
+      output.putDouble("TYD", this.targetDeltaY);
+      output.putDouble("TZD", this.targetDeltaZ);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.flightSteps = var1.getIntOr("Steps", 0);
-      this.targetDeltaX = var1.getDoubleOr("TXD", 0.0);
-      this.targetDeltaY = var1.getDoubleOr("TYD", 0.0);
-      this.targetDeltaZ = var1.getDoubleOr("TZD", 0.0);
-      this.currentMoveDirection = (Direction)var1.read("Dir", Direction.LEGACY_ID_CODEC).orElse((Object)null);
-      this.finalTarget = EntityReference.<Entity>read(var1, "Target");
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.flightSteps = input.getIntOr("Steps", 0);
+      this.targetDeltaX = input.getDoubleOr("TXD", 0.0);
+      this.targetDeltaY = input.getDoubleOr("TYD", 0.0);
+      this.targetDeltaZ = input.getDoubleOr("TZD", 0.0);
+      this.currentMoveDirection = (Direction)input.read("Dir", Direction.LEGACY_ID_CODEC).orElse((Object)null);
+      this.finalTarget = EntityReference.<Entity>read(input, "Target");
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
    }
 
    private @Nullable Direction getMoveDirection() {
       return this.currentMoveDirection;
    }
 
-   private void setMoveDirection(@Nullable Direction var1) {
-      this.currentMoveDirection = var1;
+   private void setMoveDirection(final @Nullable Direction direction) {
+      this.currentMoveDirection = direction;
    }
 
-   private void selectNextMoveDirection(Direction.@Nullable Axis var1, @Nullable Entity var2) {
-      double var4 = 0.5;
-      BlockPos var3;
-      if (var2 == null) {
-         var3 = this.blockPosition().below();
+   private void selectNextMoveDirection(final Direction.@Nullable Axis avoidAxis, final @Nullable Entity target) {
+      double yOffset = 0.5;
+      BlockPos targetPos;
+      if (target == null) {
+         targetPos = this.blockPosition().below();
       } else {
-         var4 = (double)var2.getBbHeight() * 0.5;
-         var3 = BlockPos.containing(var2.getX(), var2.getY() + var4, var2.getZ());
+         yOffset = (double)target.getBbHeight() * 0.5;
+         targetPos = BlockPos.containing(target.getX(), target.getY() + yOffset, target.getZ());
       }
 
-      double var6 = (double)var3.getX() + 0.5;
-      double var8 = (double)var3.getY() + var4;
-      double var10 = (double)var3.getZ() + 0.5;
-      Direction var12 = null;
-      if (!var3.closerToCenterThan(this.position(), 2.0)) {
-         BlockPos var13 = this.blockPosition();
-         ArrayList var14 = Lists.newArrayList();
-         if (var1 != Direction.Axis.X) {
-            if (var13.getX() < var3.getX() && this.level().isEmptyBlock(var13.east())) {
-               var14.add(Direction.EAST);
-            } else if (var13.getX() > var3.getX() && this.level().isEmptyBlock(var13.west())) {
-               var14.add(Direction.WEST);
+      double targetX = (double)targetPos.getX() + 0.5;
+      double targetY = (double)targetPos.getY() + yOffset;
+      double targetZ = (double)targetPos.getZ() + 0.5;
+      Direction selection = null;
+      if (!targetPos.closerToCenterThan(this.position(), 2.0)) {
+         BlockPos current = this.blockPosition();
+         List<Direction> options = Lists.newArrayList();
+         if (avoidAxis != Direction.Axis.X) {
+            if (current.getX() < targetPos.getX() && this.level().isEmptyBlock(current.east())) {
+               options.add(Direction.EAST);
+            } else if (current.getX() > targetPos.getX() && this.level().isEmptyBlock(current.west())) {
+               options.add(Direction.WEST);
             }
          }
 
-         if (var1 != Direction.Axis.Y) {
-            if (var13.getY() < var3.getY() && this.level().isEmptyBlock(var13.above())) {
-               var14.add(Direction.UP);
-            } else if (var13.getY() > var3.getY() && this.level().isEmptyBlock(var13.below())) {
-               var14.add(Direction.DOWN);
+         if (avoidAxis != Direction.Axis.Y) {
+            if (current.getY() < targetPos.getY() && this.level().isEmptyBlock(current.above())) {
+               options.add(Direction.UP);
+            } else if (current.getY() > targetPos.getY() && this.level().isEmptyBlock(current.below())) {
+               options.add(Direction.DOWN);
             }
          }
 
-         if (var1 != Direction.Axis.Z) {
-            if (var13.getZ() < var3.getZ() && this.level().isEmptyBlock(var13.south())) {
-               var14.add(Direction.SOUTH);
-            } else if (var13.getZ() > var3.getZ() && this.level().isEmptyBlock(var13.north())) {
-               var14.add(Direction.NORTH);
+         if (avoidAxis != Direction.Axis.Z) {
+            if (current.getZ() < targetPos.getZ() && this.level().isEmptyBlock(current.south())) {
+               options.add(Direction.SOUTH);
+            } else if (current.getZ() > targetPos.getZ() && this.level().isEmptyBlock(current.north())) {
+               options.add(Direction.NORTH);
             }
          }
 
-         var12 = Direction.getRandom(this.random);
-         if (var14.isEmpty()) {
-            for(int var15 = 5; !this.level().isEmptyBlock(var13.relative(var12)) && var15 > 0; --var15) {
-               var12 = Direction.getRandom(this.random);
+         selection = Direction.getRandom(this.random);
+         if (options.isEmpty()) {
+            for(int attempts = 5; !this.level().isEmptyBlock(current.relative(selection)) && attempts > 0; --attempts) {
+               selection = Direction.getRandom(this.random);
             }
          } else {
-            var12 = (Direction)var14.get(this.random.nextInt(var14.size()));
+            selection = (Direction)options.get(this.random.nextInt(options.size()));
          }
 
-         var6 = this.getX() + (double)var12.getStepX();
-         var8 = this.getY() + (double)var12.getStepY();
-         var10 = this.getZ() + (double)var12.getStepZ();
+         targetX = this.getX() + (double)selection.getStepX();
+         targetY = this.getY() + (double)selection.getStepY();
+         targetZ = this.getZ() + (double)selection.getStepZ();
       }
 
-      this.setMoveDirection(var12);
-      double var21 = var6 - this.getX();
-      double var22 = var8 - this.getY();
-      double var17 = var10 - this.getZ();
-      double var19 = Math.sqrt(var21 * var21 + var22 * var22 + var17 * var17);
-      if (var19 == 0.0) {
+      this.setMoveDirection(selection);
+      double xa = targetX - this.getX();
+      double ya = targetY - this.getY();
+      double za = targetZ - this.getZ();
+      double distance = Math.sqrt(xa * xa + ya * ya + za * za);
+      if (distance == 0.0) {
          this.targetDeltaX = 0.0;
          this.targetDeltaY = 0.0;
          this.targetDeltaZ = 0.0;
       } else {
-         this.targetDeltaX = var21 / var19 * 0.15;
-         this.targetDeltaY = var22 / var19 * 0.15;
-         this.targetDeltaZ = var17 / var19 * 0.15;
+         this.targetDeltaX = xa / distance * 0.15;
+         this.targetDeltaY = ya / distance * 0.15;
+         this.targetDeltaZ = za / distance * 0.15;
       }
 
       this.needsSync = true;
@@ -182,57 +182,57 @@ public class ShulkerBullet extends Projectile {
 
    public void tick() {
       super.tick();
-      Entity var1 = !this.level().isClientSide() ? EntityReference.getEntity(this.finalTarget, this.level()) : null;
-      HitResult var2 = null;
+      Entity finalTarget = !this.level().isClientSide() ? EntityReference.getEntity(this.finalTarget, this.level()) : null;
+      HitResult hitResult = null;
       if (!this.level().isClientSide()) {
-         if (var1 == null) {
+         if (finalTarget == null) {
             this.finalTarget = null;
          }
 
-         if (var1 == null || !var1.isAlive() || var1 instanceof Player && var1.isSpectator()) {
+         if (finalTarget == null || !finalTarget.isAlive() || finalTarget instanceof Player && finalTarget.isSpectator()) {
             this.applyGravity();
          } else {
             this.targetDeltaX = Mth.clamp(this.targetDeltaX * 1.025, -1.0, 1.0);
             this.targetDeltaY = Mth.clamp(this.targetDeltaY * 1.025, -1.0, 1.0);
             this.targetDeltaZ = Mth.clamp(this.targetDeltaZ * 1.025, -1.0, 1.0);
-            Vec3 var3 = this.getDeltaMovement();
-            this.setDeltaMovement(var3.add((this.targetDeltaX - var3.x) * 0.2, (this.targetDeltaY - var3.y) * 0.2, (this.targetDeltaZ - var3.z) * 0.2));
+            Vec3 movement = this.getDeltaMovement();
+            this.setDeltaMovement(movement.add((this.targetDeltaX - movement.x) * 0.2, (this.targetDeltaY - movement.y) * 0.2, (this.targetDeltaZ - movement.z) * 0.2));
          }
 
-         var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+         hitResult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       }
 
-      Vec3 var7 = this.getDeltaMovement();
-      this.setPos(this.position().add(var7));
+      Vec3 movement = this.getDeltaMovement();
+      this.setPos(this.position().add(movement));
       this.applyEffectsFromBlocks();
       if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
          this.handlePortal();
       }
 
-      if (var2 != null && this.isAlive() && var2.getType() != HitResult.Type.MISS) {
-         this.hitTargetOrDeflectSelf(var2);
+      if (hitResult != null && this.isAlive() && hitResult.getType() != HitResult.Type.MISS) {
+         this.hitTargetOrDeflectSelf(hitResult);
       }
 
       ProjectileUtil.rotateTowardsMovement(this, 0.5F);
       if (this.level().isClientSide()) {
-         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var7.x, this.getY() - var7.y + 0.15, this.getZ() - var7.z, 0.0, 0.0, 0.0);
-      } else if (var1 != null) {
+         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - movement.x, this.getY() - movement.y + 0.15, this.getZ() - movement.z, 0.0, 0.0, 0.0);
+      } else if (finalTarget != null) {
          if (this.flightSteps > 0) {
             --this.flightSteps;
             if (this.flightSteps == 0) {
-               this.selectNextMoveDirection(this.currentMoveDirection == null ? null : this.currentMoveDirection.getAxis(), var1);
+               this.selectNextMoveDirection(this.currentMoveDirection == null ? null : this.currentMoveDirection.getAxis(), finalTarget);
             }
          }
 
          if (this.currentMoveDirection != null) {
-            BlockPos var4 = this.blockPosition();
-            Direction.Axis var5 = this.currentMoveDirection.getAxis();
-            if (this.level().loadedAndEntityCanStandOn(var4.relative(this.currentMoveDirection), this)) {
-               this.selectNextMoveDirection(var5, var1);
+            BlockPos current = this.blockPosition();
+            Direction.Axis axis = this.currentMoveDirection.getAxis();
+            if (this.level().loadedAndEntityCanStandOn(current.relative(this.currentMoveDirection), this)) {
+               this.selectNextMoveDirection(axis, finalTarget);
             } else {
-               BlockPos var6 = var1.blockPosition();
-               if (var5 == Direction.Axis.X && var4.getX() == var6.getX() || var5 == Direction.Axis.Z && var4.getZ() == var6.getZ() || var5 == Direction.Axis.Y && var4.getY() == var6.getY()) {
-                  this.selectNextMoveDirection(var5, var1);
+               BlockPos targetPos = finalTarget.blockPosition();
+               if (axis == Direction.Axis.X && current.getX() == targetPos.getX() || axis == Direction.Axis.Z && current.getZ() == targetPos.getZ() || axis == Direction.Axis.Y && current.getY() == targetPos.getY()) {
+                  this.selectNextMoveDirection(axis, finalTarget);
                }
             }
          }
@@ -244,46 +244,46 @@ public class ShulkerBullet extends Projectile {
       return !this.isRemoved();
    }
 
-   protected boolean canHitEntity(Entity var1) {
-      return super.canHitEntity(var1) && !var1.noPhysics;
+   protected boolean canHitEntity(final Entity entity) {
+      return super.canHitEntity(entity) && !entity.noPhysics;
    }
 
    public boolean isOnFire() {
       return false;
    }
 
-   public boolean shouldRenderAtSqrDistance(double var1) {
-      return var1 < 16384.0;
+   public boolean shouldRenderAtSqrDistance(final double distance) {
+      return distance < 16384.0;
    }
 
    public float getLightLevelDependentMagicValue() {
       return 1.0F;
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
-      Entity var2 = var1.getEntity();
-      Entity var3 = this.getOwner();
-      LivingEntity var4 = var3 instanceof LivingEntity ? (LivingEntity)var3 : null;
-      DamageSource var5 = this.damageSources().mobProjectile(this, var4);
-      boolean var6 = var2.hurtOrSimulate(var5, 4.0F);
-      if (var6) {
+   protected void onHitEntity(final EntityHitResult hitResult) {
+      super.onHitEntity(hitResult);
+      Entity target = hitResult.getEntity();
+      Entity owner = this.getOwner();
+      LivingEntity livingOwner = owner instanceof LivingEntity ? (LivingEntity)owner : null;
+      DamageSource damageSource = this.damageSources().mobProjectile(this, livingOwner);
+      boolean wasHurt = target.hurtOrSimulate(damageSource, 4.0F);
+      if (wasHurt) {
          Level var8 = this.level();
          if (var8 instanceof ServerLevel) {
-            ServerLevel var7 = (ServerLevel)var8;
-            EnchantmentHelper.doPostAttackEffects(var7, var2, var5);
+            ServerLevel serverLevel = (ServerLevel)var8;
+            EnchantmentHelper.doPostAttackEffects(serverLevel, target, damageSource);
          }
 
-         if (var2 instanceof LivingEntity) {
-            LivingEntity var9 = (LivingEntity)var2;
-            var9.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 200), (Entity)MoreObjects.firstNonNull(var3, this));
+         if (target instanceof LivingEntity) {
+            LivingEntity livingTarget = (LivingEntity)target;
+            livingTarget.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 200), (Entity)MoreObjects.firstNonNull(owner, this));
          }
       }
 
    }
 
-   protected void onHitBlock(BlockHitResult var1) {
-      super.onHitBlock(var1);
+   protected void onHitBlock(final BlockHitResult hitResult) {
+      super.onHitBlock(hitResult);
       ((ServerLevel)this.level()).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(), this.getZ(), 2, 0.2, 0.2, 0.2, 0.0);
       this.playSound(SoundEvents.SHULKER_BULLET_HIT, 1.0F, 1.0F);
    }
@@ -293,8 +293,8 @@ public class ShulkerBullet extends Projectile {
       this.level().gameEvent(GameEvent.ENTITY_DAMAGE, this.position(), GameEvent.Context.of((Entity)this));
    }
 
-   protected void onHit(HitResult var1) {
-      super.onHit(var1);
+   protected void onHit(final HitResult hitResult) {
+      super.onHit(hitResult);
       this.destroy();
    }
 
@@ -302,19 +302,19 @@ public class ShulkerBullet extends Projectile {
       return true;
    }
 
-   public boolean hurtClient(DamageSource var1) {
+   public boolean hurtClient(final DamageSource source) {
       return true;
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
-      var1.sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
+      level.sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
       this.destroy();
       return true;
    }
 
-   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
-      super.recreateFromPacket(var1);
-      this.setDeltaMovement(var1.getMovement());
+   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
+      super.recreateFromPacket(packet);
+      this.setDeltaMovement(packet.getMovement());
    }
 }

@@ -27,12 +27,12 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
    private int contentTop;
    private int buttonWidth;
 
-   protected UnsupportedGraphicsWarningScreen(Component var1, List<Component> var2, ImmutableList<ButtonOption> var3) {
-      super(var1);
+   protected UnsupportedGraphicsWarningScreen(final Component title, final List<Component> message, final ImmutableList<ButtonOption> buttonOptions) {
+      super(title);
       this.messageLines = MultiLineLabel.EMPTY;
-      this.message = var2;
-      this.narrationMessage = CommonComponents.joinForNarration(var1, ComponentUtils.formatList(var2, CommonComponents.EMPTY));
-      this.buttonOptions = var3;
+      this.message = message;
+      this.narrationMessage = CommonComponents.joinForNarration(title, ComponentUtils.formatList(message, CommonComponents.EMPTY));
+      this.buttonOptions = buttonOptions;
    }
 
    public Component getNarrationMessage() {
@@ -40,45 +40,45 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
    }
 
    public void init() {
-      ButtonOption var2;
-      for(UnmodifiableIterator var1 = this.buttonOptions.iterator(); var1.hasNext(); this.buttonWidth = Math.max(this.buttonWidth, 20 + this.font.width((FormattedText)var2.message) + 20)) {
-         var2 = (ButtonOption)var1.next();
+      ButtonOption buttonOption;
+      for(UnmodifiableIterator var1 = this.buttonOptions.iterator(); var1.hasNext(); this.buttonWidth = Math.max(this.buttonWidth, 20 + this.font.width((FormattedText)buttonOption.message) + 20)) {
+         buttonOption = (ButtonOption)var1.next();
       }
 
-      int var8 = 5 + this.buttonWidth + 5;
-      int var9 = var8 * this.buttonOptions.size();
-      this.messageLines = MultiLineLabel.create(this.font, var9, (Component[])this.message.toArray(new Component[0]));
+      int buttonAdvance = 5 + this.buttonWidth + 5;
+      int contentWidth = buttonAdvance * this.buttonOptions.size();
+      this.messageLines = MultiLineLabel.create(this.font, contentWidth, (Component[])this.message.toArray(new Component[0]));
       int var10000 = this.messageLines.getLineCount();
       Objects.requireNonNull(this.font);
-      int var3 = var10000 * 9;
-      this.contentTop = (int)((double)this.height / 2.0 - (double)var3 / 2.0);
-      var10000 = this.contentTop + var3;
+      int messageHeight = var10000 * 9;
+      this.contentTop = (int)((double)this.height / 2.0 - (double)messageHeight / 2.0);
+      var10000 = this.contentTop + messageHeight;
       Objects.requireNonNull(this.font);
-      int var4 = var10000 + 9 * 2;
-      int var5 = (int)((double)this.width / 2.0 - (double)var9 / 2.0);
+      int buttonTop = var10000 + 9 * 2;
+      int x = (int)((double)this.width / 2.0 - (double)contentWidth / 2.0);
 
-      for(UnmodifiableIterator var6 = this.buttonOptions.iterator(); var6.hasNext(); var5 += var8) {
-         ButtonOption var7 = (ButtonOption)var6.next();
-         this.addRenderableWidget(Button.builder(var7.message, var7.onPress).bounds(var5, var4, this.buttonWidth, 20).build());
+      for(UnmodifiableIterator var6 = this.buttonOptions.iterator(); var6.hasNext(); x += buttonAdvance) {
+         ButtonOption buttonOption = (ButtonOption)var6.next();
+         this.addRenderableWidget(Button.builder(buttonOption.message, buttonOption.onPress).bounds(x, buttonTop, this.buttonWidth, 20).build());
       }
 
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      ActiveTextCollector var5 = var1.textRenderer();
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
+      ActiveTextCollector textRenderer = graphics.textRenderer();
       Font var10001 = this.font;
       Component var10002 = this.title;
       int var10003 = this.width / 2;
       int var10004 = this.contentTop;
       Objects.requireNonNull(this.font);
-      var1.drawCenteredString(var10001, (Component)var10002, var10003, var10004 - 9 * 2, -1);
+      graphics.drawCenteredString(var10001, (Component)var10002, var10003, var10004 - 9 * 2, -1);
       MultiLineLabel var10000 = this.messageLines;
       TextAlignment var6 = TextAlignment.CENTER;
       int var7 = this.width / 2;
       var10003 = this.contentTop;
       Objects.requireNonNull(this.font);
-      var10000.visitLines(var6, var7, var10003, 9, var5);
+      var10000.visitLines(var6, var7, var10003, 9, textRenderer);
    }
 
    public boolean shouldCloseOnEsc() {
@@ -86,13 +86,13 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
    }
 
    public static final class ButtonOption {
-      final Component message;
-      final Button.OnPress onPress;
+      private final Component message;
+      private final Button.OnPress onPress;
 
-      public ButtonOption(Component var1, Button.OnPress var2) {
+      public ButtonOption(final Component message, final Button.OnPress onPress) {
          super();
-         this.message = var1;
-         this.onPress = var2;
+         this.message = message;
+         this.onPress = onPress;
       }
    }
 }

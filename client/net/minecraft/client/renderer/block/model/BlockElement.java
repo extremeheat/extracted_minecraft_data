@@ -8,7 +8,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
-import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.core.Direction;
@@ -22,18 +21,12 @@ public record BlockElement(Vector3fc from, Vector3fc to, Map<Direction, BlockEle
    private static final float MIN_EXTENT = -16.0F;
    private static final float MAX_EXTENT = 32.0F;
 
-   public BlockElement(Vector3fc var1, Vector3fc var2, Map<Direction, BlockElementFace> var3) {
-      this(var1, var2, var3, (BlockElementRotation)null, true, 0);
+   public BlockElement(final Vector3fc from, final Vector3fc to, final Map<Direction, BlockElementFace> faces) {
+      this(from, to, faces, (BlockElementRotation)null, true, 0);
    }
 
-   public BlockElement(Vector3fc var1, Vector3fc var2, Map<Direction, BlockElementFace> var3, @Nullable BlockElementRotation var4, boolean var5, int var6) {
+   public BlockElement {
       super();
-      this.from = var1;
-      this.to = var2;
-      this.faces = var3;
-      this.rotation = var4;
-      this.shade = var5;
-      this.lightEmission = var6;
    }
 
    protected static class Deserializer implements JsonDeserializer<BlockElement> {
@@ -57,127 +50,122 @@ public record BlockElement(Vector3fc from, Vector3fc to, Map<Direction, BlockEle
          super();
       }
 
-      public BlockElement deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         JsonObject var4 = var1.getAsJsonObject();
-         Vector3f var5 = getPosition(var4, "from");
-         Vector3f var6 = getPosition(var4, "to");
-         BlockElementRotation var7 = this.getRotation(var4);
-         Map var8 = this.getFaces(var3, var4);
-         if (var4.has("shade") && !GsonHelper.isBooleanValue(var4, "shade")) {
+      public BlockElement deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
+         JsonObject object = json.getAsJsonObject();
+         Vector3f from = getPosition(object, "from");
+         Vector3f to = getPosition(object, "to");
+         BlockElementRotation rotation = this.getRotation(object);
+         Map<Direction, BlockElementFace> faces = this.getFaces(context, object);
+         if (object.has("shade") && !GsonHelper.isBooleanValue(object, "shade")) {
             throw new JsonParseException("Expected 'shade' to be a Boolean");
          } else {
-            boolean var9 = GsonHelper.getAsBoolean(var4, "shade", true);
-            int var10 = 0;
-            if (var4.has("light_emission")) {
-               boolean var11 = GsonHelper.isNumberValue(var4, "light_emission");
-               if (var11) {
-                  var10 = GsonHelper.getAsInt(var4, "light_emission");
+            boolean shade = GsonHelper.getAsBoolean(object, "shade", true);
+            int lightEmission = 0;
+            if (object.has("light_emission")) {
+               boolean isNumber = GsonHelper.isNumberValue(object, "light_emission");
+               if (isNumber) {
+                  lightEmission = GsonHelper.getAsInt(object, "light_emission");
                }
 
-               if (!var11 || var10 < 0 || var10 > 15) {
+               if (!isNumber || lightEmission < 0 || lightEmission > 15) {
                   throw new JsonParseException("Expected 'light_emission' to be an Integer between (inclusive) 0 and 15");
                }
             }
 
-            return new BlockElement(var5, var6, var8, var7, var9, var10);
+            return new BlockElement(from, to, faces, rotation, shade, lightEmission);
          }
       }
 
-      private @Nullable BlockElementRotation getRotation(JsonObject var1) {
-         if (!var1.has("rotation")) {
+      private @Nullable BlockElementRotation getRotation(final JsonObject object) {
+         if (!object.has("rotation")) {
             return null;
          } else {
-            JsonObject var2 = GsonHelper.getAsJsonObject(var1, "rotation");
-            Vector3f var3 = getVector3f(var2, "origin");
-            var3.mul(0.0625F);
-            Object var4;
-            if (!var2.has("axis") && !var2.has("angle")) {
-               if (!var2.has("x") && !var2.has("y") && !var2.has("z")) {
+            JsonObject rotationObject = GsonHelper.getAsJsonObject(object, "rotation");
+            Vector3f origin = getVector3f(rotationObject, "origin");
+            origin.mul(0.0625F);
+            BlockElementRotation.RotationValue rotationValue;
+            if (!rotationObject.has("axis") && !rotationObject.has("angle")) {
+               if (!rotationObject.has("x") && !rotationObject.has("y") && !rotationObject.has("z")) {
                   throw new JsonParseException("Missing rotation value, expected either 'axis' and 'angle' or 'x', 'y' and 'z'");
                }
 
-               float var8 = GsonHelper.getAsFloat(var2, "x", 0.0F);
-               float var10 = GsonHelper.getAsFloat(var2, "y", 0.0F);
-               float var7 = GsonHelper.getAsFloat(var2, "z", 0.0F);
-               var4 = new BlockElementRotation.EulerXYZRotation(var8, var10, var7);
+               float x = GsonHelper.getAsFloat(rotationObject, "x", 0.0F);
+               float y = GsonHelper.getAsFloat(rotationObject, "y", 0.0F);
+               float z = GsonHelper.getAsFloat(rotationObject, "z", 0.0F);
+               rotationValue = new BlockElementRotation.EulerXYZRotation(x, y, z);
             } else {
-               Direction.Axis var5 = this.getAxis(var2);
-               float var6 = GsonHelper.getAsFloat(var2, "angle");
-               var4 = new BlockElementRotation.SingleAxisRotation(var5, var6);
+               Direction.Axis axis = this.getAxis(rotationObject);
+               float angle = GsonHelper.getAsFloat(rotationObject, "angle");
+               rotationValue = new BlockElementRotation.SingleAxisRotation(axis, angle);
             }
 
-            boolean var9 = GsonHelper.getAsBoolean(var2, "rescale", false);
-            return new BlockElementRotation(var3, (BlockElementRotation.RotationValue)var4, var9);
+            boolean rescale = GsonHelper.getAsBoolean(rotationObject, "rescale", false);
+            return new BlockElementRotation(origin, rotationValue, rescale);
          }
       }
 
-      private Direction.Axis getAxis(JsonObject var1) {
-         String var2 = GsonHelper.getAsString(var1, "axis");
-         Direction.Axis var3 = Direction.Axis.byName(var2.toLowerCase(Locale.ROOT));
-         if (var3 == null) {
-            throw new JsonParseException("Invalid rotation axis: " + var2);
+      private Direction.Axis getAxis(final JsonObject object) {
+         String axisName = GsonHelper.getAsString(object, "axis");
+         Direction.Axis axis = Direction.Axis.byName(axisName.toLowerCase(Locale.ROOT));
+         if (axis == null) {
+            throw new JsonParseException("Invalid rotation axis: " + axisName);
          } else {
-            return var3;
+            return axis;
          }
       }
 
-      private Map<Direction, BlockElementFace> getFaces(JsonDeserializationContext var1, JsonObject var2) {
-         Map var3 = this.filterNullFromFaces(var1, var2);
-         if (var3.isEmpty()) {
+      private Map<Direction, BlockElementFace> getFaces(final JsonDeserializationContext context, final JsonObject object) {
+         Map<Direction, BlockElementFace> faces = this.filterNullFromFaces(context, object);
+         if (faces.isEmpty()) {
             throw new JsonParseException("Expected between 1 and 6 unique faces, got 0");
          } else {
-            return var3;
+            return faces;
          }
       }
 
-      private Map<Direction, BlockElementFace> filterNullFromFaces(JsonDeserializationContext var1, JsonObject var2) {
-         EnumMap var3 = Maps.newEnumMap(Direction.class);
-         JsonObject var4 = GsonHelper.getAsJsonObject(var2, "faces");
+      private Map<Direction, BlockElementFace> filterNullFromFaces(final JsonDeserializationContext context, final JsonObject object) {
+         Map<Direction, BlockElementFace> result = Maps.newEnumMap(Direction.class);
+         JsonObject faceObjects = GsonHelper.getAsJsonObject(object, "faces");
 
-         for(Map.Entry var6 : var4.entrySet()) {
-            Direction var7 = this.getFacing((String)var6.getKey());
-            var3.put(var7, (BlockElementFace)var1.deserialize((JsonElement)var6.getValue(), BlockElementFace.class));
+         for(Map.Entry<String, JsonElement> entry : faceObjects.entrySet()) {
+            Direction direction = this.getFacing((String)entry.getKey());
+            result.put(direction, (BlockElementFace)context.deserialize((JsonElement)entry.getValue(), BlockElementFace.class));
          }
 
-         return var3;
+         return result;
       }
 
-      private Direction getFacing(String var1) {
-         Direction var2 = Direction.byName(var1);
-         if (var2 == null) {
-            throw new JsonParseException("Unknown facing: " + var1);
+      private Direction getFacing(final String name) {
+         Direction direction = Direction.byName(name);
+         if (direction == null) {
+            throw new JsonParseException("Unknown facing: " + name);
          } else {
-            return var2;
+            return direction;
          }
       }
 
-      private static Vector3f getPosition(JsonObject var0, String var1) {
-         Vector3f var2 = getVector3f(var0, var1);
-         if (!(var2.x() < -16.0F) && !(var2.y() < -16.0F) && !(var2.z() < -16.0F) && !(var2.x() > 32.0F) && !(var2.y() > 32.0F) && !(var2.z() > 32.0F)) {
-            return var2;
+      private static Vector3f getPosition(final JsonObject object, final String key) {
+         Vector3f from = getVector3f(object, key);
+         if (!(from.x() < -16.0F) && !(from.y() < -16.0F) && !(from.z() < -16.0F) && !(from.x() > 32.0F) && !(from.y() > 32.0F) && !(from.z() > 32.0F)) {
+            return from;
          } else {
-            throw new JsonParseException("'" + var1 + "' specifier exceeds the allowed boundaries: " + String.valueOf(var2));
+            throw new JsonParseException("'" + key + "' specifier exceeds the allowed boundaries: " + String.valueOf(from));
          }
       }
 
-      private static Vector3f getVector3f(JsonObject var0, String var1) {
-         JsonArray var2 = GsonHelper.getAsJsonArray(var0, var1);
-         if (var2.size() != 3) {
-            throw new JsonParseException("Expected 3 " + var1 + " values, found: " + var2.size());
+      private static Vector3f getVector3f(final JsonObject object, final String key) {
+         JsonArray vecArray = GsonHelper.getAsJsonArray(object, key);
+         if (vecArray.size() != 3) {
+            throw new JsonParseException("Expected 3 " + key + " values, found: " + vecArray.size());
          } else {
-            float[] var3 = new float[3];
+            float[] elements = new float[3];
 
-            for(int var4 = 0; var4 < var3.length; ++var4) {
-               var3[var4] = GsonHelper.convertToFloat(var2.get(var4), var1 + "[" + var4 + "]");
+            for(int i = 0; i < elements.length; ++i) {
+               elements[i] = GsonHelper.convertToFloat(vecArray.get(i), key + "[" + i + "]");
             }
 
-            return new Vector3f(var3[0], var3[1], var3[2]);
+            return new Vector3f(elements[0], elements[1], elements[2]);
          }
-      }
-
-      // $FF: synthetic method
-      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
-         return this.deserialize(var1, var2, var3);
       }
    }
 }

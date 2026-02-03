@@ -20,79 +20,79 @@ public class TextFieldHelper {
    private int cursorPos;
    private int selectionPos;
 
-   public TextFieldHelper(Supplier<String> var1, Consumer<String> var2, Supplier<String> var3, Consumer<String> var4, Predicate<String> var5) {
+   public TextFieldHelper(final Supplier<String> getMessageFn, final Consumer<String> setMessageFn, final Supplier<String> getClipboardFn, final Consumer<String> setClipboardFn, final Predicate<String> stringValidator) {
       super();
-      this.getMessageFn = var1;
-      this.setMessageFn = var2;
-      this.getClipboardFn = var3;
-      this.setClipboardFn = var4;
-      this.stringValidator = var5;
+      this.getMessageFn = getMessageFn;
+      this.setMessageFn = setMessageFn;
+      this.getClipboardFn = getClipboardFn;
+      this.setClipboardFn = setClipboardFn;
+      this.stringValidator = stringValidator;
       this.setCursorToEnd();
    }
 
-   public static Supplier<String> createClipboardGetter(Minecraft var0) {
-      return () -> getClipboardContents(var0);
+   public static Supplier<String> createClipboardGetter(final Minecraft minecraft) {
+      return () -> getClipboardContents(minecraft);
    }
 
-   public static String getClipboardContents(Minecraft var0) {
-      return ChatFormatting.stripFormatting(var0.keyboardHandler.getClipboard().replaceAll("\\r", ""));
+   public static String getClipboardContents(final Minecraft minecraft) {
+      return ChatFormatting.stripFormatting(minecraft.keyboardHandler.getClipboard().replaceAll("\\r", ""));
    }
 
-   public static Consumer<String> createClipboardSetter(Minecraft var0) {
-      return (var1) -> setClipboardContents(var0, var1);
+   public static Consumer<String> createClipboardSetter(final Minecraft minecraft) {
+      return (text) -> setClipboardContents(minecraft, text);
    }
 
-   public static void setClipboardContents(Minecraft var0, String var1) {
-      var0.keyboardHandler.setClipboard(var1);
+   public static void setClipboardContents(final Minecraft minecraft, final String text) {
+      minecraft.keyboardHandler.setClipboard(text);
    }
 
-   public boolean charTyped(CharacterEvent var1) {
-      if (var1.isAllowedChatCharacter()) {
-         this.insertText((String)this.getMessageFn.get(), var1.codepointAsString());
+   public boolean charTyped(final CharacterEvent event) {
+      if (event.isAllowedChatCharacter()) {
+         this.insertText((String)this.getMessageFn.get(), event.codepointAsString());
       }
 
       return true;
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (var1.isSelectAll()) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (event.isSelectAll()) {
          this.selectAll();
          return true;
-      } else if (var1.isCopy()) {
+      } else if (event.isCopy()) {
          this.copy();
          return true;
-      } else if (var1.isPaste()) {
+      } else if (event.isPaste()) {
          this.paste();
          return true;
-      } else if (var1.isCut()) {
+      } else if (event.isCut()) {
          this.cut();
          return true;
       } else {
-         CursorStep var2 = var1.hasControlDownWithQuirk() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
-         if (var1.key() == 259) {
-            this.removeFromCursor(-1, var2);
+         CursorStep cursorStep = event.hasControlDownWithQuirk() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
+         if (event.key() == 259) {
+            this.removeFromCursor(-1, cursorStep);
             return true;
          } else {
-            if (var1.key() == 261) {
-               this.removeFromCursor(1, var2);
+            if (event.key() == 261) {
+               this.removeFromCursor(1, cursorStep);
             } else {
-               if (var1.isLeft()) {
-                  this.moveBy(-1, var1.hasShiftDown(), var2);
+               if (event.isLeft()) {
+                  this.moveBy(-1, event.hasShiftDown(), cursorStep);
                   return true;
                }
 
-               if (var1.isRight()) {
-                  this.moveBy(1, var1.hasShiftDown(), var2);
+               if (event.isRight()) {
+                  this.moveBy(1, event.hasShiftDown(), cursorStep);
                   return true;
                }
 
-               if (var1.key() == 268) {
-                  this.setCursorToStart(var1.hasShiftDown());
+               if (event.key() == 268) {
+                  this.setCursorToStart(event.hasShiftDown());
                   return true;
                }
 
-               if (var1.key() == 269) {
-                  this.setCursorToEnd(var1.hasShiftDown());
+               if (event.key() == 269) {
+                  this.setCursorToEnd(event.hasShiftDown());
                   return true;
                }
             }
@@ -102,99 +102,99 @@ public class TextFieldHelper {
       }
    }
 
-   private int clampToMsgLength(int var1) {
-      return Mth.clamp(var1, 0, ((String)this.getMessageFn.get()).length());
+   private int clampToMsgLength(final int value) {
+      return Mth.clamp(value, 0, ((String)this.getMessageFn.get()).length());
    }
 
-   private void insertText(String var1, String var2) {
+   private void insertText(String message, final String text) {
       if (this.selectionPos != this.cursorPos) {
-         var1 = this.deleteSelection(var1);
+         message = this.deleteSelection(message);
       }
 
-      this.cursorPos = Mth.clamp(this.cursorPos, 0, var1.length());
-      String var3 = (new StringBuilder(var1)).insert(this.cursorPos, var2).toString();
-      if (this.stringValidator.test(var3)) {
-         this.setMessageFn.accept(var3);
-         this.selectionPos = this.cursorPos = Math.min(var3.length(), this.cursorPos + var2.length());
+      this.cursorPos = Mth.clamp(this.cursorPos, 0, message.length());
+      String newPageText = (new StringBuilder(message)).insert(this.cursorPos, text).toString();
+      if (this.stringValidator.test(newPageText)) {
+         this.setMessageFn.accept(newPageText);
+         this.selectionPos = this.cursorPos = Math.min(newPageText.length(), this.cursorPos + text.length());
       }
 
    }
 
-   public void insertText(String var1) {
-      this.insertText((String)this.getMessageFn.get(), var1);
+   public void insertText(final String text) {
+      this.insertText((String)this.getMessageFn.get(), text);
    }
 
-   private void resetSelectionIfNeeded(boolean var1) {
-      if (!var1) {
+   private void resetSelectionIfNeeded(final boolean selecting) {
+      if (!selecting) {
          this.selectionPos = this.cursorPos;
       }
 
    }
 
-   public void moveBy(int var1, boolean var2, CursorStep var3) {
-      switch (var3.ordinal()) {
-         case 0 -> this.moveByChars(var1, var2);
-         case 1 -> this.moveByWords(var1, var2);
+   public void moveBy(final int count, final boolean selecting, final CursorStep scope) {
+      switch (scope.ordinal()) {
+         case 0 -> this.moveByChars(count, selecting);
+         case 1 -> this.moveByWords(count, selecting);
       }
 
    }
 
-   public void moveByChars(int var1) {
-      this.moveByChars(var1, false);
+   public void moveByChars(final int count) {
+      this.moveByChars(count, false);
    }
 
-   public void moveByChars(int var1, boolean var2) {
-      this.cursorPos = Util.offsetByCodepoints((String)this.getMessageFn.get(), this.cursorPos, var1);
-      this.resetSelectionIfNeeded(var2);
+   public void moveByChars(final int count, final boolean selecting) {
+      this.cursorPos = Util.offsetByCodepoints((String)this.getMessageFn.get(), this.cursorPos, count);
+      this.resetSelectionIfNeeded(selecting);
    }
 
-   public void moveByWords(int var1) {
-      this.moveByWords(var1, false);
+   public void moveByWords(final int count) {
+      this.moveByWords(count, false);
    }
 
-   public void moveByWords(int var1, boolean var2) {
-      this.cursorPos = StringSplitter.getWordPosition((String)this.getMessageFn.get(), var1, this.cursorPos, true);
-      this.resetSelectionIfNeeded(var2);
+   public void moveByWords(final int count, final boolean selecting) {
+      this.cursorPos = StringSplitter.getWordPosition((String)this.getMessageFn.get(), count, this.cursorPos, true);
+      this.resetSelectionIfNeeded(selecting);
    }
 
-   public void removeFromCursor(int var1, CursorStep var2) {
-      switch (var2.ordinal()) {
-         case 0 -> this.removeCharsFromCursor(var1);
-         case 1 -> this.removeWordsFromCursor(var1);
+   public void removeFromCursor(final int count, final CursorStep scope) {
+      switch (scope.ordinal()) {
+         case 0 -> this.removeCharsFromCursor(count);
+         case 1 -> this.removeWordsFromCursor(count);
       }
 
    }
 
-   public void removeWordsFromCursor(int var1) {
-      int var2 = StringSplitter.getWordPosition((String)this.getMessageFn.get(), var1, this.cursorPos, true);
-      this.removeCharsFromCursor(var2 - this.cursorPos);
+   public void removeWordsFromCursor(final int count) {
+      int wordPosition = StringSplitter.getWordPosition((String)this.getMessageFn.get(), count, this.cursorPos, true);
+      this.removeCharsFromCursor(wordPosition - this.cursorPos);
    }
 
-   public void removeCharsFromCursor(int var1) {
-      String var2 = (String)this.getMessageFn.get();
-      if (!var2.isEmpty()) {
-         String var3;
+   public void removeCharsFromCursor(final int count) {
+      String message = (String)this.getMessageFn.get();
+      if (!message.isEmpty()) {
+         String newMessage;
          if (this.selectionPos != this.cursorPos) {
-            var3 = this.deleteSelection(var2);
+            newMessage = this.deleteSelection(message);
          } else {
-            int var4 = Util.offsetByCodepoints(var2, this.cursorPos, var1);
-            int var5 = Math.min(var4, this.cursorPos);
-            int var6 = Math.max(var4, this.cursorPos);
-            var3 = (new StringBuilder(var2)).delete(var5, var6).toString();
-            if (var1 < 0) {
-               this.selectionPos = this.cursorPos = var5;
+            int otherPos = Util.offsetByCodepoints(message, this.cursorPos, count);
+            int start = Math.min(otherPos, this.cursorPos);
+            int end = Math.max(otherPos, this.cursorPos);
+            newMessage = (new StringBuilder(message)).delete(start, end).toString();
+            if (count < 0) {
+               this.selectionPos = this.cursorPos = start;
             }
          }
 
-         this.setMessageFn.accept(var3);
+         this.setMessageFn.accept(newMessage);
       }
 
    }
 
    public void cut() {
-      String var1 = (String)this.getMessageFn.get();
-      this.setClipboardFn.accept(this.getSelected(var1));
-      this.setMessageFn.accept(this.deleteSelection(var1));
+      String message = (String)this.getMessageFn.get();
+      this.setClipboardFn.accept(this.getSelected(message));
+      this.setMessageFn.accept(this.deleteSelection(message));
    }
 
    public void paste() {
@@ -211,22 +211,22 @@ public class TextFieldHelper {
       this.cursorPos = ((String)this.getMessageFn.get()).length();
    }
 
-   private String getSelected(String var1) {
-      int var2 = Math.min(this.cursorPos, this.selectionPos);
-      int var3 = Math.max(this.cursorPos, this.selectionPos);
-      return var1.substring(var2, var3);
+   private String getSelected(final String text) {
+      int startIndex = Math.min(this.cursorPos, this.selectionPos);
+      int endIndex = Math.max(this.cursorPos, this.selectionPos);
+      return text.substring(startIndex, endIndex);
    }
 
-   private String deleteSelection(String var1) {
+   private String deleteSelection(final String message) {
       if (this.selectionPos == this.cursorPos) {
-         return var1;
+         return message;
       } else {
-         int var2 = Math.min(this.cursorPos, this.selectionPos);
-         int var3 = Math.max(this.cursorPos, this.selectionPos);
-         String var10000 = var1.substring(0, var2);
-         String var4 = var10000 + var1.substring(var3);
-         this.selectionPos = this.cursorPos = var2;
-         return var4;
+         int startIndex = Math.min(this.cursorPos, this.selectionPos);
+         int endIndex = Math.max(this.cursorPos, this.selectionPos);
+         String var10000 = message.substring(0, startIndex);
+         String updatedText = var10000 + message.substring(endIndex);
+         this.selectionPos = this.cursorPos = startIndex;
+         return updatedText;
       }
    }
 
@@ -234,45 +234,45 @@ public class TextFieldHelper {
       this.setCursorToStart(false);
    }
 
-   public void setCursorToStart(boolean var1) {
+   public void setCursorToStart(final boolean selecting) {
       this.cursorPos = 0;
-      this.resetSelectionIfNeeded(var1);
+      this.resetSelectionIfNeeded(selecting);
    }
 
    public void setCursorToEnd() {
       this.setCursorToEnd(false);
    }
 
-   public void setCursorToEnd(boolean var1) {
+   public void setCursorToEnd(final boolean selecting) {
       this.cursorPos = ((String)this.getMessageFn.get()).length();
-      this.resetSelectionIfNeeded(var1);
+      this.resetSelectionIfNeeded(selecting);
    }
 
    public int getCursorPos() {
       return this.cursorPos;
    }
 
-   public void setCursorPos(int var1) {
-      this.setCursorPos(var1, true);
+   public void setCursorPos(final int value) {
+      this.setCursorPos(value, true);
    }
 
-   public void setCursorPos(int var1, boolean var2) {
-      this.cursorPos = this.clampToMsgLength(var1);
-      this.resetSelectionIfNeeded(var2);
+   public void setCursorPos(final int value, final boolean selecting) {
+      this.cursorPos = this.clampToMsgLength(value);
+      this.resetSelectionIfNeeded(selecting);
    }
 
    public int getSelectionPos() {
       return this.selectionPos;
    }
 
-   public void setSelectionPos(int var1) {
-      this.selectionPos = this.clampToMsgLength(var1);
+   public void setSelectionPos(final int value) {
+      this.selectionPos = this.clampToMsgLength(value);
    }
 
-   public void setSelectionRange(int var1, int var2) {
-      int var3 = ((String)this.getMessageFn.get()).length();
-      this.cursorPos = Mth.clamp(var1, 0, var3);
-      this.selectionPos = Mth.clamp(var2, 0, var3);
+   public void setSelectionRange(final int start, final int end) {
+      int maxSize = ((String)this.getMessageFn.get()).length();
+      this.cursorPos = Mth.clamp(start, 0, maxSize);
+      this.selectionPos = Mth.clamp(end, 0, maxSize);
    }
 
    public boolean isSelecting() {

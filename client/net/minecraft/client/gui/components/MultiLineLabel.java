@@ -14,8 +14,8 @@ import org.jspecify.annotations.Nullable;
 
 public interface MultiLineLabel {
    MultiLineLabel EMPTY = new MultiLineLabel() {
-      public int visitLines(TextAlignment var1, int var2, int var3, int var4, ActiveTextCollector var5) {
-         return var3;
+      public int visitLines(final TextAlignment align, final int anchorX, final int topY, final int lineHeight, final ActiveTextCollector output) {
+         return topY;
       }
 
       public int getLineCount() {
@@ -27,60 +27,60 @@ public interface MultiLineLabel {
       }
    };
 
-   static MultiLineLabel create(Font var0, Component... var1) {
-      return create(var0, 2147483647, 2147483647, var1);
+   static MultiLineLabel create(final Font font, final Component... messages) {
+      return create(font, 2147483647, 2147483647, messages);
    }
 
-   static MultiLineLabel create(Font var0, int var1, Component... var2) {
-      return create(var0, var1, 2147483647, var2);
+   static MultiLineLabel create(final Font font, final int maxWidth, final Component... messages) {
+      return create(font, maxWidth, 2147483647, messages);
    }
 
-   static MultiLineLabel create(Font var0, Component var1, int var2) {
-      return create(var0, var2, 2147483647, var1);
+   static MultiLineLabel create(final Font font, final Component message, final int maxWidth) {
+      return create(font, maxWidth, 2147483647, message);
    }
 
-   static MultiLineLabel create(final Font var0, final int var1, final int var2, final Component... var3) {
-      return var3.length == 0 ? EMPTY : new MultiLineLabel() {
+   static MultiLineLabel create(final Font font, final int maxWidth, final int maxLines, final Component... messages) {
+      return messages.length == 0 ? EMPTY : new MultiLineLabel() {
          private @Nullable List<TextAndWidth> cachedTextAndWidth;
          private @Nullable Language splitWithLanguage;
 
-         public int visitLines(TextAlignment var1x, int var2x, int var3x, int var4, ActiveTextCollector var5) {
-            int var6 = var3x;
+         public int visitLines(final TextAlignment align, final int anchorX, final int topY, final int lineHeight, final ActiveTextCollector output) {
+            int y = topY;
 
-            for(TextAndWidth var8 : this.getSplitMessage()) {
-               int var9 = var1x.calculateLeft(var2x, var8.width);
-               var5.accept(var9, var6, var8.text);
-               var6 += var4;
+            for(TextAndWidth splitLine : this.getSplitMessage()) {
+               int leftX = align.calculateLeft(anchorX, splitLine.width);
+               output.accept(leftX, y, splitLine.text);
+               y += lineHeight;
             }
 
-            return var6;
+            return y;
          }
 
          private List<TextAndWidth> getSplitMessage() {
-            Language var1x = Language.getInstance();
-            if (this.cachedTextAndWidth != null && var1x == this.splitWithLanguage) {
+            Language currentLanguage = Language.getInstance();
+            if (this.cachedTextAndWidth != null && currentLanguage == this.splitWithLanguage) {
                return this.cachedTextAndWidth;
             } else {
-               this.splitWithLanguage = var1x;
-               ArrayList var2x = new ArrayList();
+               this.splitWithLanguage = currentLanguage;
+               List<FormattedText> splitMessage = new ArrayList();
 
-               for(Component var6 : var3) {
-                  var2x.addAll(var0.splitIgnoringLanguage(var6, var1));
+               for(Component message : messages) {
+                  splitMessage.addAll(font.splitIgnoringLanguage(message, maxWidth));
                }
 
                this.cachedTextAndWidth = new ArrayList();
-               int var10 = Math.min(var2x.size(), var2);
-               List var11 = var2x.subList(0, var10);
+               int actualMaxLines = Math.min(splitMessage.size(), maxLines);
+               List<FormattedText> linesToAdd = splitMessage.subList(0, actualMaxLines);
 
-               for(int var12 = 0; var12 < var11.size(); ++var12) {
-                  FormattedText var13 = (FormattedText)var11.get(var12);
-                  FormattedCharSequence var7 = Language.getInstance().getVisualOrder(var13);
-                  if (var12 == var11.size() - 1 && var10 == var2 && var10 != var2x.size()) {
-                     FormattedText var8 = var0.substrByWidth(var13, var0.width(var13) - var0.width((FormattedText)CommonComponents.ELLIPSIS));
-                     FormattedText var9 = FormattedText.composite(var8, CommonComponents.ELLIPSIS.copy().withStyle(var3[var3.length - 1].getStyle()));
-                     this.cachedTextAndWidth.add(new TextAndWidth(Language.getInstance().getVisualOrder(var9), var0.width(var9)));
+               for(int i = 0; i < linesToAdd.size(); ++i) {
+                  FormattedText formattedText = (FormattedText)linesToAdd.get(i);
+                  FormattedCharSequence formattedCharSequence = Language.getInstance().getVisualOrder(formattedText);
+                  if (i == linesToAdd.size() - 1 && actualMaxLines == maxLines && actualMaxLines != splitMessage.size()) {
+                     FormattedText clippedText = font.substrByWidth(formattedText, font.width(formattedText) - font.width((FormattedText)CommonComponents.ELLIPSIS));
+                     FormattedText withEllipsis = FormattedText.composite(clippedText, CommonComponents.ELLIPSIS.copy().withStyle(messages[messages.length - 1].getStyle()));
+                     this.cachedTextAndWidth.add(new TextAndWidth(Language.getInstance().getVisualOrder(withEllipsis), font.width(withEllipsis)));
                   } else {
-                     this.cachedTextAndWidth.add(new TextAndWidth(var7, var0.width(var7)));
+                     this.cachedTextAndWidth.add(new TextAndWidth(formattedCharSequence, font.width(formattedCharSequence)));
                   }
                }
 
@@ -93,25 +93,20 @@ public interface MultiLineLabel {
          }
 
          public int getWidth() {
-            return Math.min(var1, this.getSplitMessage().stream().mapToInt(TextAndWidth::width).max().orElse(0));
+            return Math.min(maxWidth, this.getSplitMessage().stream().mapToInt(TextAndWidth::width).max().orElse(0));
          }
       };
    }
 
-   int visitLines(TextAlignment var1, int var2, int var3, int var4, ActiveTextCollector var5);
+   int visitLines(TextAlignment align, int anchorX, int topY, int lineHeight, ActiveTextCollector output);
 
    int getLineCount();
 
    int getWidth();
 
    public static record TextAndWidth(FormattedCharSequence text, int width) {
-      final FormattedCharSequence text;
-      final int width;
-
-      public TextAndWidth(FormattedCharSequence var1, int var2) {
+      public TextAndWidth {
          super();
-         this.text = var1;
-         this.width = var2;
       }
    }
 }

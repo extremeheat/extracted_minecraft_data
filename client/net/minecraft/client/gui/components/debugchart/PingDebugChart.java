@@ -8,23 +8,23 @@ import net.minecraft.util.debugchart.SampleStorage;
 public class PingDebugChart extends AbstractDebugChart {
    private static final int CHART_TOP_VALUE = 500;
 
-   public PingDebugChart(Font var1, SampleStorage var2) {
-      super(var1, var2);
+   public PingDebugChart(final Font font, final SampleStorage sampleStorage) {
+      super(font, sampleStorage);
    }
 
-   protected void renderAdditionalLinesAndLabels(GuiGraphics var1, int var2, int var3, int var4) {
-      this.drawStringWithShade(var1, "500 ms", var2 + 1, var4 - 60 + 1);
+   protected void renderAdditionalLinesAndLabels(final GuiGraphics graphics, final int left, final int width, final int bottom) {
+      this.drawStringWithShade(graphics, "500 ms", left + 1, bottom - 60 + 1);
    }
 
-   protected String toDisplayString(double var1) {
-      return String.format(Locale.ROOT, "%d ms", (int)Math.round(var1));
+   protected String toDisplayString(final double millis) {
+      return String.format(Locale.ROOT, "%d ms", (int)Math.round(millis));
    }
 
-   protected int getSampleHeight(double var1) {
-      return (int)Math.round(var1 * 60.0 / 500.0);
+   protected int getSampleHeight(final double millis) {
+      return (int)Math.round(millis * 60.0 / 500.0);
    }
 
-   protected int getSampleColor(long var1) {
-      return this.getSampleColor((double)var1, 0.0, -16711936, 250.0, -256, 500.0, -65536);
+   protected int getSampleColor(final long millis) {
+      return this.getSampleColor((double)millis, 0.0, -16711936, 250.0, -256, 500.0, -65536);
    }
 }

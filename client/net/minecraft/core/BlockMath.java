@@ -19,29 +19,29 @@ public class BlockMath {
       super();
    }
 
-   public static Transformation blockCenterToCorner(Transformation var0) {
-      Matrix4f var1 = (new Matrix4f()).translation(0.5F, 0.5F, 0.5F);
-      var1.mul(var0.getMatrix());
-      var1.translate(-0.5F, -0.5F, -0.5F);
-      return new Transformation(var1);
+   public static Transformation blockCenterToCorner(final Transformation transform) {
+      Matrix4f ret = (new Matrix4f()).translation(0.5F, 0.5F, 0.5F);
+      ret.mul(transform.getMatrix());
+      ret.translate(-0.5F, -0.5F, -0.5F);
+      return new Transformation(ret);
    }
 
-   public static Transformation blockCornerToCenter(Transformation var0) {
-      Matrix4f var1 = (new Matrix4f()).translation(-0.5F, -0.5F, -0.5F);
-      var1.mul(var0.getMatrix());
-      var1.translate(0.5F, 0.5F, 0.5F);
-      return new Transformation(var1);
+   public static Transformation blockCornerToCenter(final Transformation transform) {
+      Matrix4f ret = (new Matrix4f()).translation(-0.5F, -0.5F, -0.5F);
+      ret.mul(transform.getMatrix());
+      ret.translate(0.5F, 0.5F, 0.5F);
+      return new Transformation(ret);
    }
 
-   public static Transformation getFaceTransformation(Transformation var0, Direction var1) {
-      if (MatrixUtil.isIdentity(var0.getMatrix())) {
-         return var0;
+   public static Transformation getFaceTransformation(final Transformation transformation, final Direction originalSide) {
+      if (MatrixUtil.isIdentity(transformation.getMatrix())) {
+         return transformation;
       } else {
-         Transformation var2 = (Transformation)VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL.get(var1);
-         var2 = var0.compose(var2);
-         Vector3f var3 = var2.getMatrix().transformDirection(new Vector3f(0.0F, 0.0F, 1.0F));
-         Direction var4 = Direction.getApproximateNearest(var3.x, var3.y, var3.z);
-         return ((Transformation)VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL.get(var4)).compose(var2);
+         Transformation faceAction = (Transformation)VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL.get(originalSide);
+         faceAction = transformation.compose(faceAction);
+         Vector3f transformedNormal = faceAction.getMatrix().transformDirection(new Vector3f(0.0F, 0.0F, 1.0F));
+         Direction newSide = Direction.getApproximateNearest(transformedNormal.x, transformedNormal.y, transformedNormal.z);
+         return ((Transformation)VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL.get(newSide)).compose(faceAction);
       }
    }
 

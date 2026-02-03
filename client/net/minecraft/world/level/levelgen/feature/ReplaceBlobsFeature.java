@@ -12,49 +12,49 @@ import net.minecraft.world.level.levelgen.feature.configurations.ReplaceSphereCo
 import org.jspecify.annotations.Nullable;
 
 public class ReplaceBlobsFeature extends Feature<ReplaceSphereConfiguration> {
-   public ReplaceBlobsFeature(Codec<ReplaceSphereConfiguration> var1) {
-      super(var1);
+   public ReplaceBlobsFeature(final Codec<ReplaceSphereConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<ReplaceSphereConfiguration> var1) {
-      ReplaceSphereConfiguration var2 = (ReplaceSphereConfiguration)var1.config();
-      WorldGenLevel var3 = var1.level();
-      RandomSource var4 = var1.random();
-      Block var5 = var2.targetState.getBlock();
-      BlockPos var6 = findTarget(var3, var1.origin().mutable().clamp(Direction.Axis.Y, var3.getMinY() + 1, var3.getMaxY()), var5);
-      if (var6 == null) {
+   public boolean place(final FeaturePlaceContext<ReplaceSphereConfiguration> context) {
+      ReplaceSphereConfiguration config = context.config();
+      WorldGenLevel level = context.level();
+      RandomSource random = context.random();
+      Block targetBlock = config.targetState.getBlock();
+      BlockPos centerPos = findTarget(level, context.origin().mutable().clamp(Direction.Axis.Y, level.getMinY() + 1, level.getMaxY()), targetBlock);
+      if (centerPos == null) {
          return false;
       } else {
-         int var7 = var2.radius().sample(var4);
-         int var8 = var2.radius().sample(var4);
-         int var9 = var2.radius().sample(var4);
-         int var10 = Math.max(var7, Math.max(var8, var9));
-         boolean var11 = false;
+         int radiusX = config.radius().sample(random);
+         int radiusY = config.radius().sample(random);
+         int radiusZ = config.radius().sample(random);
+         int maximumRadius = Math.max(radiusX, Math.max(radiusY, radiusZ));
+         boolean replacedAny = false;
 
-         for(BlockPos var13 : BlockPos.withinManhattan(var6, var7, var8, var9)) {
-            if (var13.distManhattan(var6) > var10) {
+         for(BlockPos pos : BlockPos.withinManhattan(centerPos, radiusX, radiusY, radiusZ)) {
+            if (pos.distManhattan(centerPos) > maximumRadius) {
                break;
             }
 
-            BlockState var14 = var3.getBlockState(var13);
-            if (var14.is(var5)) {
-               this.setBlock(var3, var13, var2.replaceState);
-               var11 = true;
+            BlockState blockState = level.getBlockState(pos);
+            if (blockState.is(targetBlock)) {
+               this.setBlock(level, pos, config.replaceState);
+               replacedAny = true;
             }
          }
 
-         return var11;
+         return replacedAny;
       }
    }
 
-   private static @Nullable BlockPos findTarget(LevelAccessor var0, BlockPos.MutableBlockPos var1, Block var2) {
-      while(var1.getY() > var0.getMinY() + 1) {
-         BlockState var3 = var0.getBlockState(var1);
-         if (var3.is(var2)) {
-            return var1;
+   private static @Nullable BlockPos findTarget(final LevelAccessor level, final BlockPos.MutableBlockPos cursor, final Block target) {
+      while(cursor.getY() > level.getMinY() + 1) {
+         BlockState blockState = level.getBlockState(cursor);
+         if (blockState.is(target)) {
+            return cursor;
          }
 
-         var1.move(Direction.DOWN);
+         cursor.move(Direction.DOWN);
       }
 
       return null;

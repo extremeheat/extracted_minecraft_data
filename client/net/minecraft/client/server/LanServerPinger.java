@@ -22,26 +22,26 @@ public class LanServerPinger extends Thread {
    private boolean isRunning = true;
    private final String serverAddress;
 
-   public LanServerPinger(String var1, String var2) throws IOException {
+   public LanServerPinger(final String motd, final String serverAddress) throws IOException {
       super("LanServerPinger #" + UNIQUE_THREAD_ID.incrementAndGet());
-      this.motd = var1;
-      this.serverAddress = var2;
+      this.motd = motd;
+      this.serverAddress = serverAddress;
       this.setDaemon(true);
       this.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
       this.socket = new DatagramSocket();
    }
 
    public void run() {
-      String var1 = createPingString(this.motd, this.serverAddress);
-      byte[] var2 = var1.getBytes(StandardCharsets.UTF_8);
+      String pingString = createPingString(this.motd, this.serverAddress);
+      byte[] ping = pingString.getBytes(StandardCharsets.UTF_8);
 
       while(!this.isInterrupted() && this.isRunning) {
          try {
-            InetAddress var3 = InetAddress.getByName("224.0.2.60");
-            DatagramPacket var4 = new DatagramPacket(var2, var2.length, var3, 4445);
-            this.socket.send(var4);
-         } catch (IOException var6) {
-            LOGGER.warn("LanServerPinger: {}", var6.getMessage());
+            InetAddress group = InetAddress.getByName("224.0.2.60");
+            DatagramPacket packet = new DatagramPacket(ping, ping.length, group, 4445);
+            this.socket.send(packet);
+         } catch (IOException e) {
+            LOGGER.warn("LanServerPinger: {}", e.getMessage());
             break;
          }
 
@@ -58,35 +58,35 @@ public class LanServerPinger extends Thread {
       this.isRunning = false;
    }
 
-   public static String createPingString(String var0, String var1) {
-      return "[MOTD]" + var0 + "[/MOTD][AD]" + var1 + "[/AD]";
+   public static String createPingString(final String motd, final String address) {
+      return "[MOTD]" + motd + "[/MOTD][AD]" + address + "[/AD]";
    }
 
-   public static String parseMotd(String var0) {
-      int var1 = var0.indexOf("[MOTD]");
-      if (var1 < 0) {
+   public static String parseMotd(final String pingString) {
+      int startIndex = pingString.indexOf("[MOTD]");
+      if (startIndex < 0) {
          return "missing no";
       } else {
-         int var2 = var0.indexOf("[/MOTD]", var1 + "[MOTD]".length());
-         return var2 < var1 ? "missing no" : var0.substring(var1 + "[MOTD]".length(), var2);
+         int endIndex = pingString.indexOf("[/MOTD]", startIndex + "[MOTD]".length());
+         return endIndex < startIndex ? "missing no" : pingString.substring(startIndex + "[MOTD]".length(), endIndex);
       }
    }
 
-   public static @Nullable String parseAddress(String var0) {
-      int var1 = var0.indexOf("[/MOTD]");
-      if (var1 < 0) {
+   public static @Nullable String parseAddress(final String pingString) {
+      int endMotdIndex = pingString.indexOf("[/MOTD]");
+      if (endMotdIndex < 0) {
          return null;
       } else {
-         int var2 = var0.indexOf("[/MOTD]", var1 + "[/MOTD]".length());
-         if (var2 >= 0) {
+         int secondEndMotdIndex = pingString.indexOf("[/MOTD]", endMotdIndex + "[/MOTD]".length());
+         if (secondEndMotdIndex >= 0) {
             return null;
          } else {
-            int var3 = var0.indexOf("[AD]", var1 + "[/MOTD]".length());
-            if (var3 < 0) {
+            int startIndex = pingString.indexOf("[AD]", endMotdIndex + "[/MOTD]".length());
+            if (startIndex < 0) {
                return null;
             } else {
-               int var4 = var0.indexOf("[/AD]", var3 + "[AD]".length());
-               return var4 < var3 ? null : var0.substring(var3 + "[AD]".length(), var4);
+               int endIndex = pingString.indexOf("[/AD]", startIndex + "[AD]".length());
+               return endIndex < startIndex ? null : pingString.substring(startIndex + "[AD]".length(), endIndex);
             }
          }
       }

@@ -18,10 +18,10 @@ public class StrollThroughVillageGoal extends Goal {
    private final int interval;
    private @Nullable BlockPos wantedPos;
 
-   public StrollThroughVillageGoal(PathfinderMob var1, int var2) {
+   public StrollThroughVillageGoal(final PathfinderMob mob, final int interval) {
       super();
-      this.mob = var1;
-      this.interval = reducedTickDelay(var2);
+      this.mob = mob;
+      this.interval = reducedTickDelay(interval);
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
@@ -33,13 +33,13 @@ public class StrollThroughVillageGoal extends Goal {
       } else if (this.mob.getRandom().nextInt(this.interval) != 0) {
          return false;
       } else {
-         ServerLevel var1 = (ServerLevel)this.mob.level();
-         BlockPos var2 = this.mob.blockPosition();
-         if (!var1.isCloseToVillage(var2, 6)) {
+         ServerLevel level = (ServerLevel)this.mob.level();
+         BlockPos pos = this.mob.blockPosition();
+         if (!level.isCloseToVillage(pos, 6)) {
             return false;
          } else {
-            Vec3 var3 = LandRandomPos.getPos(this.mob, 15, 7, (var1x) -> (double)(-var1.sectionsToVillage(SectionPos.of(var1x))));
-            this.wantedPos = var3 == null ? null : BlockPos.containing(var3);
+            Vec3 landPos = LandRandomPos.getPos(this.mob, 15, 7, (p) -> (double)(-level.sectionsToVillage(SectionPos.of(p))));
+            this.wantedPos = landPos == null ? null : BlockPos.containing(landPos);
             return this.wantedPos != null;
          }
       }
@@ -51,16 +51,16 @@ public class StrollThroughVillageGoal extends Goal {
 
    public void tick() {
       if (this.wantedPos != null) {
-         PathNavigation var1 = this.mob.getNavigation();
-         if (var1.isDone() && !this.wantedPos.closerToCenterThan(this.mob.position(), 10.0)) {
-            Vec3 var2 = Vec3.atBottomCenterOf(this.wantedPos);
-            Vec3 var3 = this.mob.position();
-            Vec3 var4 = var3.subtract(var2);
-            var2 = var4.scale(0.4).add(var2);
-            Vec3 var5 = var2.subtract(var3).normalize().scale(10.0).add(var3);
-            BlockPos var6 = BlockPos.containing(var5);
-            var6 = this.mob.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var6);
-            if (!var1.moveTo((double)var6.getX(), (double)var6.getY(), (double)var6.getZ(), 1.0)) {
+         PathNavigation navigation = this.mob.getNavigation();
+         if (navigation.isDone() && !this.wantedPos.closerToCenterThan(this.mob.position(), 10.0)) {
+            Vec3 longDistanceTarget = Vec3.atBottomCenterOf(this.wantedPos);
+            Vec3 selfVector = this.mob.position();
+            Vec3 distance = selfVector.subtract(longDistanceTarget);
+            longDistanceTarget = distance.scale(0.4).add(longDistanceTarget);
+            Vec3 moveTarget = longDistanceTarget.subtract(selfVector).normalize().scale(10.0).add(selfVector);
+            BlockPos pathTarget = BlockPos.containing(moveTarget);
+            pathTarget = this.mob.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pathTarget);
+            if (!navigation.moveTo((double)pathTarget.getX(), (double)pathTarget.getY(), (double)pathTarget.getZ(), 1.0)) {
                this.moveRandomly();
             }
          }
@@ -69,8 +69,8 @@ public class StrollThroughVillageGoal extends Goal {
    }
 
    private void moveRandomly() {
-      RandomSource var1 = this.mob.getRandom();
-      BlockPos var2 = this.mob.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, this.mob.blockPosition().offset(-8 + var1.nextInt(16), 0, -8 + var1.nextInt(16)));
-      this.mob.getNavigation().moveTo((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), 1.0);
+      RandomSource random = this.mob.getRandom();
+      BlockPos pathTarget = this.mob.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, this.mob.blockPosition().offset(-8 + random.nextInt(16), 0, -8 + random.nextInt(16)));
+      this.mob.getNavigation().moveTo((double)pathTarget.getX(), (double)pathTarget.getY(), (double)pathTarget.getZ(), 1.0);
    }
 }

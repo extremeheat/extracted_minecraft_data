@@ -4,9 +4,9 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2BooleanLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.ScrollableLayout;
@@ -34,15 +34,15 @@ public class ExperimentsScreen extends Screen {
    private final Object2BooleanMap<Pack> packs = new Object2BooleanLinkedOpenHashMap();
    private @Nullable ScrollableLayout scrollArea;
 
-   public ExperimentsScreen(Screen var1, PackRepository var2, Consumer<PackRepository> var3) {
+   public ExperimentsScreen(final Screen parent, final PackRepository packRepository, final Consumer<PackRepository> output) {
       super(TITLE);
-      this.parent = var1;
-      this.packRepository = var2;
-      this.output = var3;
+      this.parent = parent;
+      this.packRepository = packRepository;
+      this.output = output;
 
-      for(Pack var5 : var2.getAvailablePacks()) {
-         if (var5.getPackSource() == PackSource.FEATURE) {
-            this.packs.put(var5, var2.getSelectedPacks().contains(var5));
+      for(Pack pack : packRepository.getAvailablePacks()) {
+         if (pack.getPackSource() == PackSource.FEATURE) {
+            this.packs.put(pack, packRepository.getSelectedPacks().contains(pack));
          }
       }
 
@@ -50,33 +50,31 @@ public class ExperimentsScreen extends Screen {
 
    protected void init() {
       this.layout.addTitleHeader(TITLE, this.font);
-      LinearLayout var1 = (LinearLayout)this.layout.addToContents(LinearLayout.vertical());
-      var1.addChild((new MultiLineTextWidget(INFO, this.font)).setMaxWidth(310), (Consumer)((var0) -> var0.paddingBottom(15)));
-      SwitchGrid.Builder var2 = SwitchGrid.builder(299).withInfoUnderneath(2, true).withRowSpacing(4);
-      this.packs.forEach((var2x, var3x) -> var2.addSwitch(getHumanReadableTitle(var2x), () -> this.packs.getBoolean(var2x), (var2xx) -> this.packs.put(var2x, var2xx)).withInfo(var2x.getDescription()));
-      Layout var3 = var2.build().layout();
-      this.scrollArea = new ScrollableLayout(this.minecraft, var3, 130);
+      LinearLayout content = (LinearLayout)this.layout.addToContents(LinearLayout.vertical());
+      content.addChild((new MultiLineTextWidget(INFO, this.font)).setMaxWidth(310), (Consumer)((s) -> s.paddingBottom(15)));
+      SwitchGrid.Builder switchGridBuilder = SwitchGrid.builder(299).withInfoUnderneath(2, true).withRowSpacing(4);
+      this.packs.forEach((pack, selected) -> switchGridBuilder.addSwitch(getHumanReadableTitle(pack), () -> this.packs.getBoolean(pack), (newSelected) -> this.packs.put(pack, newSelected)).withInfo(pack.getDescription()));
+      Layout switchGridLayout = switchGridBuilder.build().layout();
+      this.scrollArea = new ScrollableLayout(this.minecraft, switchGridLayout, 130);
       this.scrollArea.setMinWidth(310);
-      var1.addChild(this.scrollArea);
-      LinearLayout var4 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var4.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).build());
-      var4.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).build());
-      this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-      });
+      content.addChild(this.scrollArea);
+      LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      footer.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onDone()).build());
+      footer.addChild(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onClose()).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
-   private static Component getHumanReadableTitle(Pack var0) {
-      String var1 = "dataPack." + var0.getId() + ".name";
-      return (Component)(I18n.exists(var1) ? Component.translatable(var1) : var0.getTitle());
+   private static Component getHumanReadableTitle(final Pack pack) {
+      String translationKey = "dataPack." + pack.getId() + ".name";
+      return (Component)(I18n.exists(translationKey) ? Component.translatable(translationKey) : pack.getTitle());
    }
 
    protected void repositionElements() {
       this.scrollArea.setMaxHeight(130);
       this.layout.arrangeElements();
-      int var1 = this.height - this.layout.getFooterHeight() - this.scrollArea.getRectangle().bottom();
-      this.scrollArea.setMaxHeight(this.scrollArea.getHeight() + var1);
+      int availableExtraHeight = this.height - this.layout.getFooterHeight() - this.scrollArea.getRectangle().bottom();
+      this.scrollArea.setMaxHeight(this.scrollArea.getHeight() + availableExtraHeight);
    }
 
    public Component getNarrationMessage() {
@@ -88,17 +86,17 @@ public class ExperimentsScreen extends Screen {
    }
 
    private void onDone() {
-      ArrayList var1 = new ArrayList(this.packRepository.getSelectedPacks());
-      ArrayList var2 = new ArrayList();
-      this.packs.forEach((var2x, var3) -> {
-         var1.remove(var2x);
-         if (var3) {
-            var2.add(var2x);
+      List<Pack> selectedPacks = new ArrayList(this.packRepository.getSelectedPacks());
+      List<Pack> selectedFeatures = new ArrayList();
+      this.packs.forEach((pack, selected) -> {
+         selectedPacks.remove(pack);
+         if (selected) {
+            selectedFeatures.add(pack);
          }
 
       });
-      var1.addAll(Lists.reverse(var2));
-      this.packRepository.setSelected(var1.stream().map(Pack::getId).toList());
+      selectedPacks.addAll(Lists.reverse(selectedFeatures));
+      this.packRepository.setSelected(selectedPacks.stream().map(Pack::getId).toList());
       this.output.accept(this.packRepository);
    }
 

@@ -10,34 +10,34 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import org.jspecify.annotations.Nullable;
 
 public class GravityProcessor extends StructureProcessor {
-   public static final MapCodec<GravityProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").orElse(Heightmap.Types.WORLD_SURFACE_WG).forGetter((var0x) -> var0x.heightmap), Codec.INT.fieldOf("offset").orElse(0).forGetter((var0x) -> var0x.offset)).apply(var0, GravityProcessor::new));
+   public static final MapCodec<GravityProcessor> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Heightmap.Types.CODEC.fieldOf("heightmap").orElse(Heightmap.Types.WORLD_SURFACE_WG).forGetter((p) -> p.heightmap), Codec.INT.fieldOf("offset").orElse(0).forGetter((p) -> p.offset)).apply(i, GravityProcessor::new));
    private final Heightmap.Types heightmap;
    private final int offset;
 
-   public GravityProcessor(Heightmap.Types var1, int var2) {
+   public GravityProcessor(final Heightmap.Types heightmap, final int offset) {
       super();
-      this.heightmap = var1;
-      this.offset = var2;
+      this.heightmap = heightmap;
+      this.offset = offset;
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      Heightmap.Types var7;
-      if (var1 instanceof ServerLevel) {
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+      Heightmap.Types heightmap;
+      if (level instanceof ServerLevel) {
          if (this.heightmap == Heightmap.Types.WORLD_SURFACE_WG) {
-            var7 = Heightmap.Types.WORLD_SURFACE;
+            heightmap = Heightmap.Types.WORLD_SURFACE;
          } else if (this.heightmap == Heightmap.Types.OCEAN_FLOOR_WG) {
-            var7 = Heightmap.Types.OCEAN_FLOOR;
+            heightmap = Heightmap.Types.OCEAN_FLOOR;
          } else {
-            var7 = this.heightmap;
+            heightmap = this.heightmap;
          }
       } else {
-         var7 = this.heightmap;
+         heightmap = this.heightmap;
       }
 
-      BlockPos var8 = var5.pos();
-      int var9 = var1.getHeight(var7, var8.getX(), var8.getZ()) + this.offset;
-      int var10 = var4.pos().getY();
-      return new StructureTemplate.StructureBlockInfo(new BlockPos(var8.getX(), var9 + var10, var8.getZ()), var5.state(), var5.nbt());
+      BlockPos pos = processedBlockInfo.pos();
+      int height = level.getHeight(heightmap, pos.getX(), pos.getZ()) + this.offset;
+      int delta = originalBlockInfo.pos().getY();
+      return new StructureTemplate.StructureBlockInfo(new BlockPos(pos.getX(), height + delta, pos.getZ()), processedBlockInfo.state(), processedBlockInfo.nbt());
    }
 
    protected StructureProcessorType<?> getType() {

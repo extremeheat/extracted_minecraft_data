@@ -10,14 +10,14 @@ public class FastBufferedInputStream extends InputStream {
    private int limit;
    private int position;
 
-   public FastBufferedInputStream(InputStream var1) {
-      this(var1, 8192);
+   public FastBufferedInputStream(final InputStream in) {
+      this(in, 8192);
    }
 
-   public FastBufferedInputStream(InputStream var1, int var2) {
+   public FastBufferedInputStream(final InputStream in, final int bufferSize) {
       super();
-      this.in = var1;
-      this.buffer = new byte[var2];
+      this.in = in;
+      this.buffer = new byte[bufferSize];
    }
 
    public int read() throws IOException {
@@ -31,43 +31,43 @@ public class FastBufferedInputStream extends InputStream {
       return Byte.toUnsignedInt(this.buffer[this.position++]);
    }
 
-   public int read(byte[] var1, int var2, int var3) throws IOException {
-      int var4 = this.bytesInBuffer();
-      if (var4 <= 0) {
-         if (var3 >= this.buffer.length) {
-            return this.in.read(var1, var2, var3);
+   public int read(final byte[] output, final int offset, int length) throws IOException {
+      int availableInBuffer = this.bytesInBuffer();
+      if (availableInBuffer <= 0) {
+         if (length >= this.buffer.length) {
+            return this.in.read(output, offset, length);
          }
 
          this.fill();
-         var4 = this.bytesInBuffer();
-         if (var4 <= 0) {
+         availableInBuffer = this.bytesInBuffer();
+         if (availableInBuffer <= 0) {
             return -1;
          }
       }
 
-      if (var3 > var4) {
-         var3 = var4;
+      if (length > availableInBuffer) {
+         length = availableInBuffer;
       }
 
-      System.arraycopy(this.buffer, this.position, var1, var2, var3);
-      this.position += var3;
-      return var3;
+      System.arraycopy(this.buffer, this.position, output, offset, length);
+      this.position += length;
+      return length;
    }
 
-   public long skip(long var1) throws IOException {
-      if (var1 <= 0L) {
+   public long skip(long count) throws IOException {
+      if (count <= 0L) {
          return 0L;
       } else {
-         long var3 = (long)this.bytesInBuffer();
-         if (var3 <= 0L) {
-            return this.in.skip(var1);
+         long availableInBuffer = (long)this.bytesInBuffer();
+         if (availableInBuffer <= 0L) {
+            return this.in.skip(count);
          } else {
-            if (var1 > var3) {
-               var1 = var3;
+            if (count > availableInBuffer) {
+               count = availableInBuffer;
             }
 
-            this.position = (int)((long)this.position + var1);
-            return var1;
+            this.position = (int)((long)this.position + count);
+            return count;
          }
       }
    }
@@ -87,9 +87,9 @@ public class FastBufferedInputStream extends InputStream {
    private void fill() throws IOException {
       this.limit = 0;
       this.position = 0;
-      int var1 = this.in.read(this.buffer, 0, this.buffer.length);
-      if (var1 > 0) {
-         this.limit = var1;
+      int actuallyRead = this.in.read(this.buffer, 0, this.buffer.length);
+      if (actuallyRead > 0) {
+         this.limit = actuallyRead;
       }
 
    }

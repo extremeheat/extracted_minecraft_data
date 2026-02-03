@@ -7,7 +7,7 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
-import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
 import org.jspecify.annotations.Nullable;
 
 public abstract class TargetGoal extends Goal {
@@ -23,47 +23,47 @@ public abstract class TargetGoal extends Goal {
    protected @Nullable LivingEntity targetMob;
    protected int unseenMemoryTicks;
 
-   public TargetGoal(Mob var1, boolean var2) {
-      this(var1, var2, false);
+   public TargetGoal(final Mob mob, final boolean mustSee) {
+      this(mob, mustSee, false);
    }
 
-   public TargetGoal(Mob var1, boolean var2, boolean var3) {
+   public TargetGoal(final Mob mob, final boolean mustSee, final boolean mustReach) {
       super();
       this.unseenMemoryTicks = 60;
-      this.mob = var1;
-      this.mustSee = var2;
-      this.mustReach = var3;
+      this.mob = mob;
+      this.mustSee = mustSee;
+      this.mustReach = mustReach;
    }
 
    public boolean canContinueToUse() {
-      LivingEntity var1 = this.mob.getTarget();
-      if (var1 == null) {
-         var1 = this.targetMob;
+      LivingEntity target = this.mob.getTarget();
+      if (target == null) {
+         target = this.targetMob;
       }
 
-      if (var1 == null) {
+      if (target == null) {
          return false;
-      } else if (!this.mob.canAttack(var1)) {
+      } else if (!this.mob.canAttack(target)) {
          return false;
       } else {
-         PlayerTeam var2 = this.mob.getTeam();
-         PlayerTeam var3 = var1.getTeam();
-         if (var2 != null && var3 == var2) {
+         Team mobTeam = this.mob.getTeam();
+         Team targetTeam = target.getTeam();
+         if (mobTeam != null && targetTeam == mobTeam) {
             return false;
          } else {
-            double var4 = this.getFollowDistance();
-            if (this.mob.distanceToSqr(var1) > var4 * var4) {
+            double within = this.getFollowDistance();
+            if (this.mob.distanceToSqr(target) > within * within) {
                return false;
             } else {
                if (this.mustSee) {
-                  if (this.mob.getSensing().hasLineOfSight(var1)) {
+                  if (this.mob.getSensing().hasLineOfSight(target)) {
                      this.unseenTicks = 0;
                   } else if (++this.unseenTicks > reducedTickDelay(this.unseenMemoryTicks)) {
                      return false;
                   }
                }
 
-               this.mob.setTarget(var1);
+               this.mob.setTarget(target);
                return true;
             }
          }
@@ -85,12 +85,12 @@ public abstract class TargetGoal extends Goal {
       this.targetMob = null;
    }
 
-   protected boolean canAttack(@Nullable LivingEntity var1, TargetingConditions var2) {
-      if (var1 == null) {
+   protected boolean canAttack(final @Nullable LivingEntity target, final TargetingConditions targetConditions) {
+      if (target == null) {
          return false;
-      } else if (!var2.test(getServerLevel(this.mob), this.mob, var1)) {
+      } else if (!targetConditions.test(getServerLevel(this.mob), this.mob, target)) {
          return false;
-      } else if (!this.mob.isWithinHome(var1.blockPosition())) {
+      } else if (!this.mob.isWithinHome(target.blockPosition())) {
          return false;
       } else {
          if (this.mustReach) {
@@ -99,7 +99,7 @@ public abstract class TargetGoal extends Goal {
             }
 
             if (this.reachCache == 0) {
-               this.reachCache = this.canReach(var1) ? 1 : 2;
+               this.reachCache = this.canReach(target) ? 1 : 2;
             }
 
             if (this.reachCache == 2) {
@@ -111,25 +111,25 @@ public abstract class TargetGoal extends Goal {
       }
    }
 
-   private boolean canReach(LivingEntity var1) {
+   private boolean canReach(final LivingEntity target) {
       this.reachCacheTime = reducedTickDelay(10 + this.mob.getRandom().nextInt(5));
-      Path var2 = this.mob.getNavigation().createPath(var1, 0);
-      if (var2 == null) {
+      Path path = this.mob.getNavigation().createPath(target, 0);
+      if (path == null) {
          return false;
       } else {
-         Node var3 = var2.getEndNode();
-         if (var3 == null) {
+         Node last = path.getEndNode();
+         if (last == null) {
             return false;
          } else {
-            int var4 = var3.x - var1.getBlockX();
-            int var5 = var3.z - var1.getBlockZ();
-            return (double)(var4 * var4 + var5 * var5) <= 2.25;
+            int xx = last.x - target.getBlockX();
+            int zz = last.z - target.getBlockZ();
+            return (double)(xx * xx + zz * zz) <= 2.25;
          }
       }
    }
 
-   public TargetGoal setUnseenMemoryTicks(int var1) {
-      this.unseenMemoryTicks = var1;
+   public TargetGoal setUnseenMemoryTicks(final int unseenMemoryTicks) {
+      this.unseenMemoryTicks = unseenMemoryTicks;
       return this;
    }
 }

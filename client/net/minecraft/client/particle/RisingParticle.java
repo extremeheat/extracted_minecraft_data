@@ -4,12 +4,12 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 public abstract class RisingParticle extends SingleQuadParticle {
-   protected RisingParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
-      super(var1, var2, var4, var6, var8, var10, var12, var14);
+   protected RisingParticle(final ClientLevel level, final double x, final double y, final double z, final double xd, final double yd, final double zd, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, xd, yd, zd, sprite);
       this.friction = 0.96F;
-      this.xd = this.xd * 0.009999999776482582 + var8;
-      this.yd = this.yd * 0.009999999776482582 + var10;
-      this.zd = this.zd * 0.009999999776482582 + var12;
+      this.xd = this.xd * 0.009999999776482582 + xd;
+      this.yd = this.yd * 0.009999999776482582 + yd;
+      this.zd = this.zd * 0.009999999776482582 + zd;
       this.x += (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.05F);
       this.y += (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.05F);
       this.z += (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.05F);

@@ -24,27 +24,27 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
    private final CopperGolemStatueModel model;
    private final Identifier texture;
 
-   public CopperGolemStatueSpecialRenderer(CopperGolemStatueModel var1, Identifier var2) {
+   public CopperGolemStatueSpecialRenderer(final CopperGolemStatueModel model, final Identifier texture) {
       super();
-      this.model = var1;
-      this.texture = var2;
+      this.model = model;
+      this.texture = texture;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      positionModel(var2);
-      var3.submitModel(this.model, Direction.SOUTH, var2, RenderTypes.entityCutoutNoCull(this.texture), var4, var5, -1, (TextureAtlasSprite)null, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      positionModel(poseStack);
+      submitNodeCollector.submitModel(this.model, Direction.SOUTH, poseStack, RenderTypes.entityCutoutNoCull(this.texture), lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      PoseStack var2 = new PoseStack();
-      positionModel(var2);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
+      positionModel(poseStack);
       this.model.setupAnim(MODEL_STATE);
-      this.model.root().getExtentsForGui(var2, var1);
+      this.model.root().getExtentsForGui(poseStack, output);
    }
 
-   private static void positionModel(PoseStack var0) {
-      var0.translate(0.5F, 1.5F, 0.5F);
-      var0.scale(-1.0F, -1.0F, 1.0F);
+   private static void positionModel(final PoseStack poseStack) {
+      poseStack.translate(0.5F, 1.5F, 0.5F);
+      poseStack.scale(-1.0F, -1.0F, 1.0F);
    }
 
    static {
@@ -52,30 +52,28 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
    }
 
    public static record Unbaked(Identifier texture, CopperGolemStatueBlock.Pose pose) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), CopperGolemStatueBlock.Pose.CODEC.fieldOf("pose").forGetter(Unbaked::pose)).apply(var0, Unbaked::new));
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), CopperGolemStatueBlock.Pose.CODEC.fieldOf("pose").forGetter(Unbaked::pose)).apply(i, Unbaked::new));
 
-      public Unbaked(WeatheringCopper.WeatherState var1, CopperGolemStatueBlock.Pose var2) {
-         this(CopperGolemOxidationLevels.getOxidationLevel(var1).texture(), var2);
+      public Unbaked(final WeatheringCopper.WeatherState state, final CopperGolemStatueBlock.Pose pose) {
+         this(CopperGolemOxidationLevels.getOxidationLevel(state).texture(), pose);
       }
 
-      public Unbaked(Identifier var1, CopperGolemStatueBlock.Pose var2) {
+      public Unbaked {
          super();
-         this.texture = var1;
-         this.pose = var2;
       }
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         CopperGolemStatueModel var2 = new CopperGolemStatueModel(var1.entityModelSet().bakeLayer(getModel(this.pose)));
-         return new CopperGolemStatueSpecialRenderer(var2, this.texture);
+      public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+         CopperGolemStatueModel model = new CopperGolemStatueModel(context.entityModelSet().bakeLayer(getModel(this.pose)));
+         return new CopperGolemStatueSpecialRenderer(model, this.texture);
       }
 
-      private static ModelLayerLocation getModel(CopperGolemStatueBlock.Pose var0) {
+      private static ModelLayerLocation getModel(final CopperGolemStatueBlock.Pose pose) {
          ModelLayerLocation var10000;
-         switch (var0) {
+         switch (pose) {
             case STANDING -> var10000 = ModelLayers.COPPER_GOLEM;
             case SITTING -> var10000 = ModelLayers.COPPER_GOLEM_SITTING;
             case STAR -> var10000 = ModelLayers.COPPER_GOLEM_STAR;

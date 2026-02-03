@@ -9,20 +9,19 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public record SlimePredicate(MinMaxBounds.Ints size) implements EntitySubPredicate {
-   public static final MapCodec<SlimePredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("size", MinMaxBounds.Ints.ANY).forGetter(SlimePredicate::size)).apply(var0, SlimePredicate::new));
+   public static final MapCodec<SlimePredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("size", MinMaxBounds.Ints.ANY).forGetter(SlimePredicate::size)).apply(i, SlimePredicate::new));
 
-   public SlimePredicate(MinMaxBounds.Ints var1) {
+   public SlimePredicate {
       super();
-      this.size = var1;
    }
 
-   public static SlimePredicate sized(MinMaxBounds.Ints var0) {
-      return new SlimePredicate(var0);
+   public static SlimePredicate sized(final MinMaxBounds.Ints size) {
+      return new SlimePredicate(size);
    }
 
-   public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
-      if (var1 instanceof Slime var4) {
-         return this.size.matches(var4.getSize());
+   public boolean matches(final Entity entity, final ServerLevel level, final @Nullable Vec3 position) {
+      if (entity instanceof Slime slime) {
+         return this.size.matches(slime.getSize());
       } else {
          return false;
       }

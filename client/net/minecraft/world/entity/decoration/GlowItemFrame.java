@@ -10,12 +10,12 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 public class GlowItemFrame extends ItemFrame {
-   public GlowItemFrame(EntityType<? extends ItemFrame> var1, Level var2) {
-      super(var1, var2);
+   public GlowItemFrame(final EntityType<? extends ItemFrame> type, final Level level) {
+      super(type, level);
    }
 
-   public GlowItemFrame(Level var1, BlockPos var2, Direction var3) {
-      super(EntityType.GLOW_ITEM_FRAME, var1, var2, var3);
+   public GlowItemFrame(final Level level, final BlockPos pos, final Direction direction) {
+      super(EntityType.GLOW_ITEM_FRAME, level, pos, direction);
    }
 
    public SoundEvent getRemoveItemSound() {

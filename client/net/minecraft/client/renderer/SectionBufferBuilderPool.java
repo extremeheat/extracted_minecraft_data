@@ -13,45 +13,45 @@ public class SectionBufferBuilderPool {
    private final Queue<SectionBufferBuilderPack> freeBuffers;
    private volatile int freeBufferCount;
 
-   private SectionBufferBuilderPool(List<SectionBufferBuilderPack> var1) {
+   private SectionBufferBuilderPool(final List<SectionBufferBuilderPack> buffers) {
       super();
-      this.freeBuffers = Queues.newArrayDeque(var1);
+      this.freeBuffers = Queues.newArrayDeque(buffers);
       this.freeBufferCount = this.freeBuffers.size();
    }
 
-   public static SectionBufferBuilderPool allocate(int var0) {
-      int var1 = Math.max(1, (int)((double)Runtime.getRuntime().maxMemory() * 0.3) / SectionBufferBuilderPack.TOTAL_BUFFERS_SIZE);
-      int var2 = Math.max(1, Math.min(var0, var1));
-      ArrayList var3 = new ArrayList(var2);
+   public static SectionBufferBuilderPool allocate(final int maxWorkers) {
+      int maxBuffers = Math.max(1, (int)((double)Runtime.getRuntime().maxMemory() * 0.3) / SectionBufferBuilderPack.TOTAL_BUFFERS_SIZE);
+      int targetBufferCount = Math.max(1, Math.min(maxWorkers, maxBuffers));
+      List<SectionBufferBuilderPack> buffers = new ArrayList(targetBufferCount);
 
       try {
-         for(int var4 = 0; var4 < var2; ++var4) {
-            var3.add(new SectionBufferBuilderPack());
+         for(int i = 0; i < targetBufferCount; ++i) {
+            buffers.add(new SectionBufferBuilderPack());
          }
       } catch (OutOfMemoryError var7) {
-         LOGGER.warn("Allocated only {}/{} buffers", var3.size(), var2);
-         int var5 = Math.min(var3.size() * 2 / 3, var3.size() - 1);
+         LOGGER.warn("Allocated only {}/{} buffers", buffers.size(), targetBufferCount);
+         int buffersToDrop = Math.min(buffers.size() * 2 / 3, buffers.size() - 1);
 
-         for(int var6 = 0; var6 < var5; ++var6) {
-            ((SectionBufferBuilderPack)var3.remove(var3.size() - 1)).close();
+         for(int i = 0; i < buffersToDrop; ++i) {
+            ((SectionBufferBuilderPack)buffers.remove(buffers.size() - 1)).close();
          }
       }
 
-      return new SectionBufferBuilderPool(var3);
+      return new SectionBufferBuilderPool(buffers);
    }
 
    public @Nullable SectionBufferBuilderPack acquire() {
-      SectionBufferBuilderPack var1 = (SectionBufferBuilderPack)this.freeBuffers.poll();
-      if (var1 != null) {
+      SectionBufferBuilderPack buffer = (SectionBufferBuilderPack)this.freeBuffers.poll();
+      if (buffer != null) {
          this.freeBufferCount = this.freeBuffers.size();
-         return var1;
+         return buffer;
       } else {
          return null;
       }
    }
 
-   public void release(SectionBufferBuilderPack var1) {
-      this.freeBuffers.add(var1);
+   public void release(final SectionBufferBuilderPack buffer) {
+      this.freeBuffers.add(buffer);
       this.freeBufferCount = this.freeBuffers.size();
    }
 

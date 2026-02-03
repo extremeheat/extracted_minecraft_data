@@ -17,34 +17,32 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 public record BlockDataSource(String posPattern, @Nullable Coordinates compiledPos) implements DataSource {
-   public static final MapCodec<BlockDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("block").forGetter(BlockDataSource::posPattern)).apply(var0, BlockDataSource::new));
+   public static final MapCodec<BlockDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.STRING.fieldOf("block").forGetter(BlockDataSource::posPattern)).apply(i, BlockDataSource::new));
 
-   public BlockDataSource(String var1) {
-      this(var1, compilePos(var1));
+   public BlockDataSource(final String pos) {
+      this(pos, compilePos(pos));
    }
 
-   public BlockDataSource(String var1, @Nullable Coordinates var2) {
+   public BlockDataSource {
       super();
-      this.posPattern = var1;
-      this.compiledPos = var2;
    }
 
-   private static @Nullable Coordinates compilePos(String var0) {
+   private static @Nullable Coordinates compilePos(final String pos) {
       try {
-         return BlockPosArgument.blockPos().parse(new StringReader(var0));
+         return BlockPosArgument.blockPos().parse(new StringReader(pos));
       } catch (CommandSyntaxException var2) {
          return null;
       }
    }
 
-   public Stream<CompoundTag> getData(CommandSourceStack var1) {
+   public Stream<CompoundTag> getData(final CommandSourceStack sender) {
       if (this.compiledPos != null) {
-         ServerLevel var2 = var1.getLevel();
-         BlockPos var3 = this.compiledPos.getBlockPos(var1);
-         if (var2.isLoaded(var3)) {
-            BlockEntity var4 = var2.getBlockEntity(var3);
-            if (var4 != null) {
-               return Stream.of(var4.saveWithFullMetadata((HolderLookup.Provider)var1.registryAccess()));
+         ServerLevel level = sender.getLevel();
+         BlockPos pos = this.compiledPos.getBlockPos(sender);
+         if (level.isLoaded(pos)) {
+            BlockEntity entity = level.getBlockEntity(pos);
+            if (entity != null) {
+               return Stream.of(entity.saveWithFullMetadata((HolderLookup.Provider)sender.registryAccess()));
             }
          }
       }
@@ -60,14 +58,14 @@ public record BlockDataSource(String posPattern, @Nullable Coordinates compiledP
       return "block=" + this.posPattern;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof BlockDataSource) {
-            BlockDataSource var2 = (BlockDataSource)var1;
-            if (this.posPattern.equals(var2.posPattern)) {
+         if (o instanceof BlockDataSource) {
+            BlockDataSource that = (BlockDataSource)o;
+            if (this.posPattern.equals(that.posPattern)) {
                var10000 = true;
                return var10000;
             }

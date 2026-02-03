@@ -17,64 +17,64 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ConcretePowderBlock extends FallingBlock {
-   public static final MapCodec<ConcretePowderBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("concrete").forGetter((var0x) -> var0x.concrete), propertiesCodec()).apply(var0, ConcretePowderBlock::new));
+   public static final MapCodec<ConcretePowderBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("concrete").forGetter((b) -> b.concrete), propertiesCodec()).apply(i, ConcretePowderBlock::new));
    private final Block concrete;
 
    public MapCodec<ConcretePowderBlock> codec() {
       return CODEC;
    }
 
-   public ConcretePowderBlock(Block var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.concrete = var1;
+   public ConcretePowderBlock(final Block concrete, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.concrete = concrete;
    }
 
-   public void onLand(Level var1, BlockPos var2, BlockState var3, BlockState var4, FallingBlockEntity var5) {
-      if (shouldSolidify(var1, var2, var4)) {
-         var1.setBlock(var2, this.concrete.defaultBlockState(), 3);
+   public void onLand(final Level level, final BlockPos pos, final BlockState state, final BlockState replacedBlock, final FallingBlockEntity entity) {
+      if (shouldSolidify(level, pos, replacedBlock)) {
+         level.setBlock(pos, this.concrete.defaultBlockState(), 3);
       }
 
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      BlockState var4 = var2.getBlockState(var3);
-      return shouldSolidify(var2, var3, var4) ? this.concrete.defaultBlockState() : super.getStateForPlacement(var1);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockGetter level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      BlockState replacedBlock = level.getBlockState(pos);
+      return shouldSolidify(level, pos, replacedBlock) ? this.concrete.defaultBlockState() : super.getStateForPlacement(context);
    }
 
-   private static boolean shouldSolidify(BlockGetter var0, BlockPos var1, BlockState var2) {
-      return canSolidify(var2) || touchesLiquid(var0, var1);
+   private static boolean shouldSolidify(final BlockGetter level, final BlockPos pos, final BlockState replacedBlock) {
+      return canSolidify(replacedBlock) || touchesLiquid(level, pos);
    }
 
-   private static boolean touchesLiquid(BlockGetter var0, BlockPos var1) {
-      boolean var2 = false;
-      BlockPos.MutableBlockPos var3 = var1.mutable();
+   private static boolean touchesLiquid(final BlockGetter level, final BlockPos pos) {
+      boolean touchesLiquid = false;
+      BlockPos.MutableBlockPos testPos = pos.mutable();
 
-      for(Direction var7 : Direction.values()) {
-         BlockState var8 = var0.getBlockState(var3);
-         if (var7 != Direction.DOWN || canSolidify(var8)) {
-            var3.setWithOffset(var1, (Direction)var7);
-            var8 = var0.getBlockState(var3);
-            if (canSolidify(var8) && !var8.isFaceSturdy(var0, var1, var7.getOpposite())) {
-               var2 = true;
+      for(Direction direction : Direction.values()) {
+         BlockState blockState = level.getBlockState(testPos);
+         if (direction != Direction.DOWN || canSolidify(blockState)) {
+            testPos.setWithOffset(pos, (Direction)direction);
+            blockState = level.getBlockState(testPos);
+            if (canSolidify(blockState) && !blockState.isFaceSturdy(level, pos, direction.getOpposite())) {
+               touchesLiquid = true;
                break;
             }
          }
       }
 
-      return var2;
+      return touchesLiquid;
    }
 
-   private static boolean canSolidify(BlockState var0) {
-      return var0.getFluidState().is(FluidTags.WATER);
+   private static boolean canSolidify(final BlockState state) {
+      return state.getFluidState().is(FluidTags.WATER);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return touchesLiquid(var2, var4) ? this.concrete.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return touchesLiquid(level, pos) ? this.concrete.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.getMapColor(var2, var3).col;
+   public int getDustColor(final BlockState blockState, final BlockGetter level, final BlockPos pos) {
+      return blockState.getMapColor(level, pos).col;
    }
 }

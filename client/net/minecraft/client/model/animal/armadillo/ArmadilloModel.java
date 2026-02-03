@@ -34,42 +34,42 @@ public class ArmadilloModel extends EntityModel<ArmadilloRenderState> {
    private final KeyframeAnimation rollUpAnimation;
    private final KeyframeAnimation peekAnimation;
 
-   public ArmadilloModel(ModelPart var1) {
-      super(var1);
-      this.body = var1.getChild("body");
-      this.rightHindLeg = var1.getChild("right_hind_leg");
-      this.leftHindLeg = var1.getChild("left_hind_leg");
+   public ArmadilloModel(final ModelPart root) {
+      super(root);
+      this.body = root.getChild("body");
+      this.rightHindLeg = root.getChild("right_hind_leg");
+      this.leftHindLeg = root.getChild("left_hind_leg");
       this.head = this.body.getChild("head");
       this.tail = this.body.getChild("tail");
-      this.cube = var1.getChild("cube");
-      this.walkAnimation = ArmadilloAnimation.ARMADILLO_WALK.bake(var1);
-      this.rollOutAnimation = ArmadilloAnimation.ARMADILLO_ROLL_OUT.bake(var1);
-      this.rollUpAnimation = ArmadilloAnimation.ARMADILLO_ROLL_UP.bake(var1);
-      this.peekAnimation = ArmadilloAnimation.ARMADILLO_PEEK.bake(var1);
+      this.cube = root.getChild("cube");
+      this.walkAnimation = ArmadilloAnimation.ARMADILLO_WALK.bake(root);
+      this.rollOutAnimation = ArmadilloAnimation.ARMADILLO_ROLL_OUT.bake(root);
+      this.rollUpAnimation = ArmadilloAnimation.ARMADILLO_ROLL_UP.bake(root);
+      this.peekAnimation = ArmadilloAnimation.ARMADILLO_PEEK.bake(root);
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 20).addBox(-4.0F, -7.0F, -10.0F, 8.0F, 8.0F, 12.0F, new CubeDeformation(0.3F)).texOffs(0, 40).addBox(-4.0F, -7.0F, -10.0F, 8.0F, 8.0F, 12.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 21.0F, 4.0F));
-      var2.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(44, 53).addBox(-0.5F, -0.0865F, 0.0933F, 1.0F, 6.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -3.0F, 1.0F, 0.5061F, 0.0F, 0.0F));
-      PartDefinition var3 = var2.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.offset(0.0F, -2.0F, -11.0F));
-      var3.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(43, 15).addBox(-1.5F, -1.0F, -1.0F, 3.0F, 5.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, -0.3927F, 0.0F, 0.0F));
-      PartDefinition var4 = var3.addOrReplaceChild("right_ear", CubeListBuilder.create(), PartPose.offset(-1.0F, -1.0F, 0.0F));
-      var4.addOrReplaceChild("right_ear_cube", CubeListBuilder.create().texOffs(43, 10).addBox(-2.0F, -3.0F, 0.0F, 2.0F, 5.0F, 0.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-0.5F, 0.0F, -0.6F, 0.1886F, -0.3864F, -0.0718F));
-      PartDefinition var5 = var3.addOrReplaceChild("left_ear", CubeListBuilder.create(), PartPose.offset(1.0F, -2.0F, 0.0F));
-      var5.addOrReplaceChild("left_ear_cube", CubeListBuilder.create().texOffs(47, 10).addBox(0.0F, -3.0F, 0.0F, 2.0F, 5.0F, 0.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.5F, 1.0F, -0.6F, 0.1886F, 0.3864F, 0.0718F));
-      var1.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().texOffs(51, 31).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(-2.0F, 21.0F, 4.0F));
-      var1.addOrReplaceChild("left_hind_leg", CubeListBuilder.create().texOffs(42, 31).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(2.0F, 21.0F, 4.0F));
-      var1.addOrReplaceChild("right_front_leg", CubeListBuilder.create().texOffs(51, 43).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(-2.0F, 21.0F, -4.0F));
-      var1.addOrReplaceChild("left_front_leg", CubeListBuilder.create().texOffs(42, 43).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(2.0F, 21.0F, -4.0F));
-      var1.addOrReplaceChild("cube", CubeListBuilder.create().texOffs(0, 0).addBox(-5.0F, -10.0F, -6.0F, 10.0F, 10.0F, 10.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 24.0F, 0.0F));
-      return LayerDefinition.create(var0, 64, 64);
+      MeshDefinition meshdefinition = new MeshDefinition();
+      PartDefinition partdefinition = meshdefinition.getRoot();
+      PartDefinition body = partdefinition.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 20).addBox(-4.0F, -7.0F, -10.0F, 8.0F, 8.0F, 12.0F, new CubeDeformation(0.3F)).texOffs(0, 40).addBox(-4.0F, -7.0F, -10.0F, 8.0F, 8.0F, 12.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 21.0F, 4.0F));
+      body.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(44, 53).addBox(-0.5F, -0.0865F, 0.0933F, 1.0F, 6.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -3.0F, 1.0F, 0.5061F, 0.0F, 0.0F));
+      PartDefinition head = body.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.offset(0.0F, -2.0F, -11.0F));
+      head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(43, 15).addBox(-1.5F, -1.0F, -1.0F, 3.0F, 5.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, -0.3927F, 0.0F, 0.0F));
+      PartDefinition right_ear = head.addOrReplaceChild("right_ear", CubeListBuilder.create(), PartPose.offset(-1.0F, -1.0F, 0.0F));
+      right_ear.addOrReplaceChild("right_ear_cube", CubeListBuilder.create().texOffs(43, 10).addBox(-2.0F, -3.0F, 0.0F, 2.0F, 5.0F, 0.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-0.5F, 0.0F, -0.6F, 0.1886F, -0.3864F, -0.0718F));
+      PartDefinition left_ear = head.addOrReplaceChild("left_ear", CubeListBuilder.create(), PartPose.offset(1.0F, -2.0F, 0.0F));
+      left_ear.addOrReplaceChild("left_ear_cube", CubeListBuilder.create().texOffs(47, 10).addBox(0.0F, -3.0F, 0.0F, 2.0F, 5.0F, 0.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.5F, 1.0F, -0.6F, 0.1886F, 0.3864F, 0.0718F));
+      partdefinition.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().texOffs(51, 31).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(-2.0F, 21.0F, 4.0F));
+      partdefinition.addOrReplaceChild("left_hind_leg", CubeListBuilder.create().texOffs(42, 31).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(2.0F, 21.0F, 4.0F));
+      partdefinition.addOrReplaceChild("right_front_leg", CubeListBuilder.create().texOffs(51, 43).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(-2.0F, 21.0F, -4.0F));
+      partdefinition.addOrReplaceChild("left_front_leg", CubeListBuilder.create().texOffs(42, 43).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(2.0F, 21.0F, -4.0F));
+      partdefinition.addOrReplaceChild("cube", CubeListBuilder.create().texOffs(0, 0).addBox(-5.0F, -10.0F, -6.0F, 10.0F, 10.0F, 10.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 24.0F, 0.0F));
+      return LayerDefinition.create(meshdefinition, 64, 64);
    }
 
-   public void setupAnim(ArmadilloRenderState var1) {
-      super.setupAnim(var1);
-      if (var1.isHidingInShell) {
+   public void setupAnim(final ArmadilloRenderState state) {
+      super.setupAnim(state);
+      if (state.isHidingInShell) {
          this.body.skipDraw = true;
          this.leftHindLeg.visible = false;
          this.rightHindLeg.visible = false;
@@ -81,13 +81,13 @@ public class ArmadilloModel extends EntityModel<ArmadilloRenderState> {
          this.rightHindLeg.visible = true;
          this.tail.visible = true;
          this.cube.visible = false;
-         this.head.xRot = Mth.clamp(var1.xRot, -22.5F, 25.0F) * 0.017453292F;
-         this.head.yRot = Mth.clamp(var1.yRot, -32.5F, 32.5F) * 0.017453292F;
+         this.head.xRot = Mth.clamp(state.xRot, -22.5F, 25.0F) * 0.017453292F;
+         this.head.yRot = Mth.clamp(state.yRot, -32.5F, 32.5F) * 0.017453292F;
       }
 
-      this.walkAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 16.5F, 2.5F);
-      this.rollOutAnimation.apply(var1.rollOutAnimationState, var1.ageInTicks);
-      this.rollUpAnimation.apply(var1.rollUpAnimationState, var1.ageInTicks);
-      this.peekAnimation.apply(var1.peekAnimationState, var1.ageInTicks);
+      this.walkAnimation.applyWalk(state.walkAnimationPos, state.walkAnimationSpeed, 16.5F, 2.5F);
+      this.rollOutAnimation.apply(state.rollOutAnimationState, state.ageInTicks);
+      this.rollUpAnimation.apply(state.rollUpAnimationState, state.ageInTicks);
+      this.peekAnimation.apply(state.peekAnimationState, state.ageInTicks);
    }
 }

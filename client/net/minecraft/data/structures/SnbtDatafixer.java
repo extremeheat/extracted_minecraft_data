@@ -3,6 +3,7 @@ package net.minecraft.data.structures;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 import net.minecraft.DetectedVersion;
@@ -17,34 +18,34 @@ public class SnbtDatafixer {
       super();
    }
 
-   public static void main(String[] var0) throws IOException {
+   public static void main(final String[] args) throws IOException {
       SharedConstants.setVersion(DetectedVersion.BUILT_IN);
       Bootstrap.bootStrap();
 
-      for(String var4 : var0) {
-         updateInDirectory(var4);
+      for(String dir : args) {
+         updateInDirectory(dir);
       }
 
    }
 
-   private static void updateInDirectory(String var0) throws IOException {
-      Stream var1 = Files.walk(Paths.get(var0));
+   private static void updateInDirectory(final String structureDir) throws IOException {
+      Stream<Path> walk = Files.walk(Paths.get(structureDir));
 
       try {
-         var1.filter((var0x) -> var0x.toString().endsWith(".snbt")).forEach((var0x) -> {
+         walk.filter((path) -> path.toString().endsWith(".snbt")).forEach((path) -> {
             try {
-               String var1 = Files.readString(var0x);
-               CompoundTag var2 = NbtUtils.snbtToStructure(var1);
-               CompoundTag var3 = StructureUpdater.update(var0x.toString(), var2);
-               NbtToSnbt.writeSnbt(CachedOutput.NO_CACHE, var0x, NbtUtils.structureToSnbt(var3));
-            } catch (IOException | CommandSyntaxException var4) {
-               throw new RuntimeException(var4);
+               String snbt = Files.readString(path);
+               CompoundTag readSnbt = NbtUtils.snbtToStructure(snbt);
+               CompoundTag updatedTag = StructureUpdater.update(path.toString(), readSnbt);
+               NbtToSnbt.writeSnbt(CachedOutput.NO_CACHE, path, NbtUtils.structureToSnbt(updatedTag));
+            } catch (IOException | CommandSyntaxException e) {
+               throw new RuntimeException(e);
             }
          });
       } catch (Throwable var5) {
-         if (var1 != null) {
+         if (walk != null) {
             try {
-               var1.close();
+               walk.close();
             } catch (Throwable var4) {
                var5.addSuppressed(var4);
             }
@@ -53,8 +54,8 @@ public class SnbtDatafixer {
          throw var5;
       }
 
-      if (var1 != null) {
-         var1.close();
+      if (walk != null) {
+         walk.close();
       }
 
    }

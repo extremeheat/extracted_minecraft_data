@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,39 +21,39 @@ public final class PatchedDataComponentMap implements DataComponentMap {
    private Reference2ObjectMap<DataComponentType<?>, Optional<?>> patch;
    private boolean copyOnWrite;
 
-   public PatchedDataComponentMap(DataComponentMap var1) {
-      this(var1, Reference2ObjectMaps.emptyMap(), true);
+   public PatchedDataComponentMap(final DataComponentMap prototype) {
+      this(prototype, Reference2ObjectMaps.emptyMap(), true);
    }
 
-   private PatchedDataComponentMap(DataComponentMap var1, Reference2ObjectMap<DataComponentType<?>, Optional<?>> var2, boolean var3) {
+   private PatchedDataComponentMap(final DataComponentMap prototype, final Reference2ObjectMap<DataComponentType<?>, Optional<?>> patch, final boolean copyOnWrite) {
       super();
-      this.prototype = var1;
-      this.patch = var2;
-      this.copyOnWrite = var3;
+      this.prototype = prototype;
+      this.patch = patch;
+      this.copyOnWrite = copyOnWrite;
    }
 
-   public static PatchedDataComponentMap fromPatch(DataComponentMap var0, DataComponentPatch var1) {
-      if (isPatchSanitized(var0, var1.map)) {
-         return new PatchedDataComponentMap(var0, var1.map, true);
+   public static PatchedDataComponentMap fromPatch(final DataComponentMap prototype, final DataComponentPatch patch) {
+      if (isPatchSanitized(prototype, patch.map)) {
+         return new PatchedDataComponentMap(prototype, patch.map, true);
       } else {
-         PatchedDataComponentMap var2 = new PatchedDataComponentMap(var0);
-         var2.applyPatch(var1);
-         return var2;
+         PatchedDataComponentMap map = new PatchedDataComponentMap(prototype);
+         map.applyPatch(patch);
+         return map;
       }
    }
 
-   private static boolean isPatchSanitized(DataComponentMap var0, Reference2ObjectMap<DataComponentType<?>, Optional<?>> var1) {
-      ObjectIterator var2 = Reference2ObjectMaps.fastIterable(var1).iterator();
+   private static boolean isPatchSanitized(final DataComponentMap prototype, final Reference2ObjectMap<DataComponentType<?>, Optional<?>> patch) {
+      ObjectIterator var2 = Reference2ObjectMaps.fastIterable(patch).iterator();
 
       while(var2.hasNext()) {
-         Map.Entry var3 = (Map.Entry)var2.next();
-         Object var4 = var0.get((DataComponentType)var3.getKey());
-         Optional var5 = (Optional)var3.getValue();
-         if (var5.isPresent() && var5.get().equals(var4)) {
+         Map.Entry<DataComponentType<?>, Optional<?>> entry = (Map.Entry)var2.next();
+         Object defaultValue = prototype.get((DataComponentType)entry.getKey());
+         Optional<?> value = (Optional)entry.getValue();
+         if (value.isPresent() && value.get().equals(defaultValue)) {
             return false;
          }
 
-         if (var5.isEmpty() && var4 == null) {
+         if (value.isEmpty() && defaultValue == null) {
             return false;
          }
       }
@@ -60,76 +61,75 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       return true;
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      Optional var2 = (Optional)this.patch.get(var1);
-      return (T)(var2 != null ? var2.orElse((Object)null) : this.prototype.get(var1));
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)DataComponentPatch.getFromPatchAndPrototype(this.patch, this.prototype, type);
    }
 
-   public boolean hasNonDefault(DataComponentType<?> var1) {
-      return this.patch.containsKey(var1);
+   public boolean hasNonDefault(final DataComponentType<?> type) {
+      return this.patch.containsKey(type);
    }
 
-   public <T> @Nullable T set(DataComponentType<T> var1, @Nullable T var2) {
+   public <T> @Nullable T set(final DataComponentType<T> type, final @Nullable T value) {
       this.ensureMapOwnership();
-      Object var3 = this.prototype.get(var1);
-      Optional var4;
-      if (Objects.equals(var2, var3)) {
-         var4 = (Optional)this.patch.remove(var1);
+      T defaultValue = (T)this.prototype.get(type);
+      Optional<T> lastValue;
+      if (Objects.equals(value, defaultValue)) {
+         lastValue = (Optional)this.patch.remove(type);
       } else {
-         var4 = (Optional)this.patch.put(var1, Optional.ofNullable(var2));
+         lastValue = (Optional)this.patch.put(type, Optional.ofNullable(value));
       }
 
-      return (T)(var4 != null ? var4.orElse(var3) : var3);
+      return (T)(lastValue != null ? lastValue.orElse(defaultValue) : defaultValue);
    }
 
-   public <T> @Nullable T set(TypedDataComponent<T> var1) {
-      return (T)this.set(var1.type(), var1.value());
+   public <T> @Nullable T set(final TypedDataComponent<T> value) {
+      return (T)this.set(value.type(), value.value());
    }
 
-   public <T> @Nullable T remove(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T remove(final DataComponentType<? extends T> type) {
       this.ensureMapOwnership();
-      Object var2 = this.prototype.get(var1);
-      Optional var3;
-      if (var2 != null) {
-         var3 = (Optional)this.patch.put(var1, Optional.empty());
+      T defaultValue = (T)this.prototype.get(type);
+      Optional<? extends T> lastValue;
+      if (defaultValue != null) {
+         lastValue = (Optional)this.patch.put(type, Optional.empty());
       } else {
-         var3 = (Optional)this.patch.remove(var1);
+         lastValue = (Optional)this.patch.remove(type);
       }
 
-      return (T)(var3 != null ? var3.orElse((Object)null) : var2);
+      return (T)(lastValue != null ? lastValue.orElse((Object)null) : defaultValue);
    }
 
-   public void applyPatch(DataComponentPatch var1) {
+   public void applyPatch(final DataComponentPatch patch) {
       this.ensureMapOwnership();
-      ObjectIterator var2 = Reference2ObjectMaps.fastIterable(var1.map).iterator();
+      ObjectIterator var2 = Reference2ObjectMaps.fastIterable(patch.map).iterator();
 
       while(var2.hasNext()) {
-         Map.Entry var3 = (Map.Entry)var2.next();
-         this.applyPatch((DataComponentType)var3.getKey(), (Optional)var3.getValue());
+         Map.Entry<DataComponentType<?>, Optional<?>> entry = (Map.Entry)var2.next();
+         this.applyPatch((DataComponentType)entry.getKey(), (Optional)entry.getValue());
       }
 
    }
 
-   private void applyPatch(DataComponentType<?> var1, Optional<?> var2) {
-      Object var3 = this.prototype.get(var1);
-      if (var2.isPresent()) {
-         if (var2.get().equals(var3)) {
-            this.patch.remove(var1);
+   private void applyPatch(final DataComponentType<?> type, final Optional<?> value) {
+      Object defaultValue = this.prototype.get(type);
+      if (value.isPresent()) {
+         if (value.get().equals(defaultValue)) {
+            this.patch.remove(type);
          } else {
-            this.patch.put(var1, var2);
+            this.patch.put(type, value);
          }
-      } else if (var3 != null) {
-         this.patch.put(var1, Optional.empty());
+      } else if (defaultValue != null) {
+         this.patch.put(type, Optional.empty());
       } else {
-         this.patch.remove(var1);
+         this.patch.remove(type);
       }
 
    }
 
-   public void restorePatch(DataComponentPatch var1) {
+   public void restorePatch(final DataComponentPatch patch) {
       this.ensureMapOwnership();
       this.patch.clear();
-      this.patch.putAll(var1.map);
+      this.patch.putAll(patch.map);
    }
 
    public void clearPatch() {
@@ -137,9 +137,9 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       this.patch.clear();
    }
 
-   public void setAll(DataComponentMap var1) {
-      for(TypedDataComponent var3 : var1) {
-         var3.applyTo(this);
+   public void setAll(final DataComponentMap components) {
+      for(TypedDataComponent<?> entry : components) {
+         entry.applyTo(this);
       }
 
    }
@@ -156,20 +156,20 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       if (this.patch.isEmpty()) {
          return this.prototype.keySet();
       } else {
-         ReferenceArraySet var1 = new ReferenceArraySet(this.prototype.keySet());
+         Set<DataComponentType<?>> components = new ReferenceArraySet(this.prototype.keySet());
          ObjectIterator var2 = Reference2ObjectMaps.fastIterable(this.patch).iterator();
 
          while(var2.hasNext()) {
-            Reference2ObjectMap.Entry var3 = (Reference2ObjectMap.Entry)var2.next();
-            Optional var4 = (Optional)var3.getValue();
-            if (var4.isPresent()) {
-               var1.add((DataComponentType)var3.getKey());
+            Reference2ObjectMap.Entry<DataComponentType<?>, Optional<?>> entry = (Reference2ObjectMap.Entry)var2.next();
+            Optional<?> value = (Optional)entry.getValue();
+            if (value.isPresent()) {
+               components.add((DataComponentType)entry.getKey());
             } else {
-               var1.remove(var3.getKey());
+               components.remove(entry.getKey());
             }
          }
 
-         return var1;
+         return components;
       }
    }
 
@@ -177,40 +177,40 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       if (this.patch.isEmpty()) {
          return this.prototype.iterator();
       } else {
-         ArrayList var1 = new ArrayList(this.patch.size() + this.prototype.size());
+         List<TypedDataComponent<?>> components = new ArrayList(this.patch.size() + this.prototype.size());
          ObjectIterator var2 = Reference2ObjectMaps.fastIterable(this.patch).iterator();
 
          while(var2.hasNext()) {
-            Reference2ObjectMap.Entry var3 = (Reference2ObjectMap.Entry)var2.next();
-            if (((Optional)var3.getValue()).isPresent()) {
-               var1.add(TypedDataComponent.createUnchecked((DataComponentType)var3.getKey(), ((Optional)var3.getValue()).get()));
+            Reference2ObjectMap.Entry<DataComponentType<?>, Optional<?>> entry = (Reference2ObjectMap.Entry)var2.next();
+            if (((Optional)entry.getValue()).isPresent()) {
+               components.add(TypedDataComponent.createUnchecked((DataComponentType)entry.getKey(), ((Optional)entry.getValue()).get()));
             }
          }
 
-         for(TypedDataComponent var5 : this.prototype) {
-            if (!this.patch.containsKey(var5.type())) {
-               var1.add(var5);
+         for(TypedDataComponent<?> component : this.prototype) {
+            if (!this.patch.containsKey(component.type())) {
+               components.add(component);
             }
          }
 
-         return var1.iterator();
+         return components.iterator();
       }
    }
 
    public int size() {
-      int var1 = this.prototype.size();
+      int size = this.prototype.size();
       ObjectIterator var2 = Reference2ObjectMaps.fastIterable(this.patch).iterator();
 
       while(var2.hasNext()) {
-         Reference2ObjectMap.Entry var3 = (Reference2ObjectMap.Entry)var2.next();
-         boolean var4 = ((Optional)var3.getValue()).isPresent();
-         boolean var5 = this.prototype.has((DataComponentType)var3.getKey());
-         if (var4 != var5) {
-            var1 += var4 ? 1 : -1;
+         Reference2ObjectMap.Entry<DataComponentType<?>, Optional<?>> entry = (Reference2ObjectMap.Entry)var2.next();
+         boolean inPatch = ((Optional)entry.getValue()).isPresent();
+         boolean inPrototype = this.prototype.has((DataComponentType)entry.getKey());
+         if (inPatch != inPrototype) {
+            size += inPatch ? 1 : -1;
          }
       }
 
-      return var1;
+      return size;
    }
 
    public DataComponentPatch asPatch() {
@@ -231,14 +231,14 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       return (DataComponentMap)(this.patch.isEmpty() ? this.prototype : this.copy());
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object obj) {
+      if (this == obj) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof PatchedDataComponentMap) {
-            PatchedDataComponentMap var2 = (PatchedDataComponentMap)var1;
-            if (this.prototype.equals(var2.prototype) && this.patch.equals(var2.patch)) {
+         if (obj instanceof PatchedDataComponentMap) {
+            PatchedDataComponentMap otherMap = (PatchedDataComponentMap)obj;
+            if (this.prototype.equals(otherMap.prototype) && this.patch.equals(otherMap.patch)) {
                var10000 = true;
                return var10000;
             }

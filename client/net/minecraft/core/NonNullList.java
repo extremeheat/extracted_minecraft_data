@@ -15,44 +15,44 @@ public class NonNullList<E> extends AbstractList<E> {
       return new NonNullList<E>(Lists.newArrayList(), (Object)null);
    }
 
-   public static <E> NonNullList<E> createWithCapacity(int var0) {
-      return new NonNullList<E>(Lists.newArrayListWithCapacity(var0), (Object)null);
+   public static <E> NonNullList<E> createWithCapacity(final int capacity) {
+      return new NonNullList<E>(Lists.newArrayListWithCapacity(capacity), (Object)null);
    }
 
-   public static <E> NonNullList<E> withSize(int var0, E var1) {
-      Objects.requireNonNull(var1);
-      Object[] var2 = new Object[var0];
-      Arrays.fill(var2, var1);
-      return new NonNullList<E>(Arrays.asList(var2), var1);
+   public static <E> NonNullList<E> withSize(final int size, final E defaultValue) {
+      Objects.requireNonNull(defaultValue);
+      Object[] objects = new Object[size];
+      Arrays.fill(objects, defaultValue);
+      return new NonNullList<E>(Arrays.asList(objects), defaultValue);
    }
 
    @SafeVarargs
-   public static <E> NonNullList<E> of(E var0, E... var1) {
-      return new NonNullList<E>(Arrays.asList(var1), var0);
+   public static <E> NonNullList<E> of(final E defaultValue, final E... values) {
+      return new NonNullList<E>(Arrays.asList(values), defaultValue);
    }
 
-   protected NonNullList(List<E> var1, @Nullable E var2) {
+   protected NonNullList(final List<E> list, final @Nullable E defaultValue) {
       super();
-      this.list = var1;
-      this.defaultValue = var2;
+      this.list = list;
+      this.defaultValue = defaultValue;
    }
 
-   public E get(int var1) {
-      return (E)this.list.get(var1);
+   public E get(final int index) {
+      return (E)this.list.get(index);
    }
 
-   public E set(int var1, E var2) {
-      Objects.requireNonNull(var2);
-      return (E)this.list.set(var1, var2);
+   public E set(final int index, final E element) {
+      Objects.requireNonNull(element);
+      return (E)this.list.set(index, element);
    }
 
-   public void add(int var1, E var2) {
-      Objects.requireNonNull(var2);
-      this.list.add(var1, var2);
+   public void add(final int index, final E element) {
+      Objects.requireNonNull(element);
+      this.list.add(index, element);
    }
 
-   public E remove(int var1) {
-      return (E)this.list.remove(var1);
+   public E remove(final int index) {
+      return (E)this.list.remove(index);
    }
 
    public int size() {
@@ -63,8 +63,8 @@ public class NonNullList<E> extends AbstractList<E> {
       if (this.defaultValue == null) {
          super.clear();
       } else {
-         for(int var1 = 0; var1 < this.size(); ++var1) {
-            this.set(var1, this.defaultValue);
+         for(int i = 0; i < this.size(); ++i) {
+            this.set(i, this.defaultValue);
          }
       }
 

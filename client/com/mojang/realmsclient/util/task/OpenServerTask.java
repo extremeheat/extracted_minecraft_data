@@ -19,29 +19,29 @@ public class OpenServerTask extends LongRunningTask {
    private final boolean join;
    private final Minecraft minecraft;
 
-   public OpenServerTask(RealmsServer var1, Screen var2, boolean var3, Minecraft var4) {
+   public OpenServerTask(final RealmsServer realmsServer, final Screen returnScreen, final boolean join, final Minecraft minecraft) {
       super();
-      this.serverData = var1;
-      this.returnScreen = var2;
-      this.join = var3;
-      this.minecraft = var4;
+      this.serverData = realmsServer;
+      this.returnScreen = returnScreen;
+      this.join = join;
+      this.minecraft = minecraft;
    }
 
    public void run() {
-      RealmsClient var1 = RealmsClient.getOrCreate();
+      RealmsClient client = RealmsClient.getOrCreate();
 
-      for(int var2 = 0; var2 < 25; ++var2) {
+      for(int i = 0; i < 25; ++i) {
          if (this.aborted()) {
             return;
          }
 
          try {
-            boolean var3 = var1.open(this.serverData.id);
-            if (var3) {
+            boolean openResult = client.open(this.serverData.id);
+            if (openResult) {
                this.minecraft.execute(() -> {
-                  Screen var2 = this.returnScreen;
-                  if (var2 instanceof RealmsConfigureWorldScreen var1) {
-                     var1.stateChanged();
+                  Screen patt0$temp = this.returnScreen;
+                  if (patt0$temp instanceof RealmsConfigureWorldScreen screen) {
+                     screen.stateChanged();
                   }
 
                   this.serverData.state = RealmsServer.State.OPEN;
@@ -54,19 +54,19 @@ public class OpenServerTask extends LongRunningTask {
                });
                break;
             }
-         } catch (RetryCallException var4) {
+         } catch (RetryCallException e) {
             if (this.aborted()) {
                return;
             }
 
-            pause((long)var4.delaySeconds);
-         } catch (Exception var5) {
+            pause((long)e.delaySeconds);
+         } catch (Exception e) {
             if (this.aborted()) {
                return;
             }
 
-            LOGGER.error("Failed to open server", var5);
-            this.error(var5);
+            LOGGER.error("Failed to open server", e);
+            this.error(e);
          }
       }
 

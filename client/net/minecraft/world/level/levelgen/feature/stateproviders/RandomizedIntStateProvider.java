@@ -4,67 +4,67 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
 
 public class RandomizedIntStateProvider extends BlockStateProvider {
-   public static final MapCodec<RandomizedIntStateProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockStateProvider.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source), Codec.STRING.fieldOf("property").forGetter((var0x) -> var0x.propertyName), IntProvider.CODEC.fieldOf("values").forGetter((var0x) -> var0x.values)).apply(var0, RandomizedIntStateProvider::new));
+   public static final MapCodec<RandomizedIntStateProvider> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("source").forGetter((c) -> c.source), Codec.STRING.fieldOf("property").forGetter((c) -> c.propertyName), IntProvider.CODEC.fieldOf("values").forGetter((c) -> c.values)).apply(i, RandomizedIntStateProvider::new));
    private final BlockStateProvider source;
    private final String propertyName;
    private @Nullable IntegerProperty property;
    private final IntProvider values;
 
-   public RandomizedIntStateProvider(BlockStateProvider var1, IntegerProperty var2, IntProvider var3) {
+   public RandomizedIntStateProvider(final BlockStateProvider source, final IntegerProperty property, final IntProvider values) {
       super();
-      this.source = var1;
-      this.property = var2;
-      this.propertyName = var2.getName();
-      this.values = var3;
-      List var4 = var2.getPossibleValues();
+      this.source = source;
+      this.property = property;
+      this.propertyName = property.getName();
+      this.values = values;
+      Collection<Integer> possibleValues = property.getPossibleValues();
 
-      for(int var5 = var3.getMinValue(); var5 <= var3.getMaxValue(); ++var5) {
-         if (!var4.contains(var5)) {
-            String var10002 = var2.getName();
-            throw new IllegalArgumentException("Property value out of range: " + var10002 + ": " + var5);
+      for(int i = values.getMinValue(); i <= values.getMaxValue(); ++i) {
+         if (!possibleValues.contains(i)) {
+            String var10002 = property.getName();
+            throw new IllegalArgumentException("Property value out of range: " + var10002 + ": " + i);
          }
       }
 
    }
 
-   public RandomizedIntStateProvider(BlockStateProvider var1, String var2, IntProvider var3) {
+   public RandomizedIntStateProvider(final BlockStateProvider source, final String propertyName, final IntProvider values) {
       super();
-      this.source = var1;
-      this.propertyName = var2;
-      this.values = var3;
+      this.source = source;
+      this.propertyName = propertyName;
+      this.values = values;
    }
 
    protected BlockStateProviderType<?> type() {
       return BlockStateProviderType.RANDOMIZED_INT_STATE_PROVIDER;
    }
 
-   public BlockState getState(RandomSource var1, BlockPos var2) {
-      BlockState var3 = this.source.getState(var1, var2);
-      if (this.property == null || !var3.hasProperty(this.property)) {
-         IntegerProperty var4 = findProperty(var3, this.propertyName);
-         if (var4 == null) {
-            return var3;
+   public BlockState getState(final RandomSource random, final BlockPos pos) {
+      BlockState unmodifiedState = this.source.getState(random, pos);
+      if (this.property == null || !unmodifiedState.hasProperty(this.property)) {
+         IntegerProperty property = findProperty(unmodifiedState, this.propertyName);
+         if (property == null) {
+            return unmodifiedState;
          }
 
-         this.property = var4;
+         this.property = property;
       }
 
-      return (BlockState)var3.setValue(this.property, this.values.sample(var1));
+      return (BlockState)unmodifiedState.setValue(this.property, this.values.sample(random));
    }
 
-   private static @Nullable IntegerProperty findProperty(BlockState var0, String var1) {
-      Collection var2 = var0.getProperties();
-      Optional var3 = var2.stream().filter((var1x) -> var1x.getName().equals(var1)).filter((var0x) -> var0x instanceof IntegerProperty).map((var0x) -> (IntegerProperty)var0x).findAny();
-      return (IntegerProperty)var3.orElse((Object)null);
+   private static @Nullable IntegerProperty findProperty(final BlockState source, final String propertyName) {
+      Collection<Property<?>> properties = source.getProperties();
+      Optional<IntegerProperty> found = properties.stream().filter((p) -> p.getName().equals(propertyName)).filter((p) -> p instanceof IntegerProperty).map((p) -> (IntegerProperty)p).findAny();
+      return (IntegerProperty)found.orElse((Object)null);
    }
 }

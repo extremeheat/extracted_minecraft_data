@@ -49,88 +49,88 @@ public class GuiRenderState {
       this.current = this.current.up;
    }
 
-   public void submitItem(GuiItemRenderState var1) {
-      if (this.findAppropriateNode(var1)) {
-         this.itemModelIdentities.add(var1.itemStackRenderState().getModelIdentity());
-         this.current.submitItem(var1);
-         this.sumbitDebugRectangleIfEnabled(var1.bounds());
+   public void submitItem(final GuiItemRenderState itemState) {
+      if (this.findAppropriateNode(itemState)) {
+         this.itemModelIdentities.add(itemState.itemStackRenderState().getModelIdentity());
+         this.current.submitItem(itemState);
+         this.sumbitDebugRectangleIfEnabled(itemState.bounds());
       }
    }
 
-   public void submitText(GuiTextRenderState var1) {
-      if (this.findAppropriateNode(var1)) {
-         this.current.submitText(var1);
-         this.sumbitDebugRectangleIfEnabled(var1.bounds());
+   public void submitText(final GuiTextRenderState textState) {
+      if (this.findAppropriateNode(textState)) {
+         this.current.submitText(textState);
+         this.sumbitDebugRectangleIfEnabled(textState.bounds());
       }
    }
 
-   public void submitPicturesInPictureState(PictureInPictureRenderState var1) {
-      if (this.findAppropriateNode(var1)) {
-         this.current.submitPicturesInPictureState(var1);
-         this.sumbitDebugRectangleIfEnabled(var1.bounds());
+   public void submitPicturesInPictureState(final PictureInPictureRenderState picturesInPictureState) {
+      if (this.findAppropriateNode(picturesInPictureState)) {
+         this.current.submitPicturesInPictureState(picturesInPictureState);
+         this.sumbitDebugRectangleIfEnabled(picturesInPictureState.bounds());
       }
    }
 
-   public void submitGuiElement(GuiElementRenderState var1) {
-      if (this.findAppropriateNode(var1)) {
-         this.current.submitGuiElement(var1);
-         this.sumbitDebugRectangleIfEnabled(var1.bounds());
+   public void submitGuiElement(final GuiElementRenderState blitState) {
+      if (this.findAppropriateNode(blitState)) {
+         this.current.submitGuiElement(blitState);
+         this.sumbitDebugRectangleIfEnabled(blitState.bounds());
       }
    }
 
-   private void sumbitDebugRectangleIfEnabled(@Nullable ScreenRectangle var1) {
-      if (SharedConstants.DEBUG_RENDER_UI_LAYERING_RECTANGLES && var1 != null) {
+   private void sumbitDebugRectangleIfEnabled(final @Nullable ScreenRectangle bounds) {
+      if (SharedConstants.DEBUG_RENDER_UI_LAYERING_RECTANGLES && bounds != null) {
          this.up();
-         this.current.submitGuiElement(new ColoredRectangleRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), new Matrix3x2f(), 0, 0, 10000, 10000, 2000962815, 2000962815, var1));
+         this.current.submitGuiElement(new ColoredRectangleRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), new Matrix3x2f(), 0, 0, 10000, 10000, 2000962815, 2000962815, bounds));
       }
    }
 
-   private boolean findAppropriateNode(ScreenArea var1) {
-      ScreenRectangle var2 = var1.bounds();
-      if (var2 == null) {
+   private boolean findAppropriateNode(final ScreenArea screenArea) {
+      ScreenRectangle bounds = screenArea.bounds();
+      if (bounds == null) {
          return false;
       } else {
-         if (this.lastElementBounds != null && this.lastElementBounds.encompasses(var2)) {
+         if (this.lastElementBounds != null && this.lastElementBounds.encompasses(bounds)) {
             this.up();
          } else {
-            this.navigateToAboveHighestElementWithIntersectingBounds(var2);
+            this.navigateToAboveHighestElementWithIntersectingBounds(bounds);
          }
 
-         this.lastElementBounds = var2;
+         this.lastElementBounds = bounds;
          return true;
       }
    }
 
-   private void navigateToAboveHighestElementWithIntersectingBounds(ScreenRectangle var1) {
-      Node var2;
-      for(var2 = (Node)this.strata.getLast(); var2.up != null; var2 = var2.up) {
+   private void navigateToAboveHighestElementWithIntersectingBounds(final ScreenRectangle bounds) {
+      Node node;
+      for(node = (Node)this.strata.getLast(); node.up != null; node = node.up) {
       }
 
-      boolean var3 = false;
+      boolean found = false;
 
-      while(!var3) {
-         var3 = this.hasIntersection(var1, var2.elementStates) || this.hasIntersection(var1, var2.itemStates) || this.hasIntersection(var1, var2.textStates) || this.hasIntersection(var1, var2.picturesInPictureStates);
-         if (var2.parent == null) {
+      while(!found) {
+         found = this.hasIntersection(bounds, node.elementStates) || this.hasIntersection(bounds, node.itemStates) || this.hasIntersection(bounds, node.textStates) || this.hasIntersection(bounds, node.picturesInPictureStates);
+         if (node.parent == null) {
             break;
          }
 
-         if (!var3) {
-            var2 = var2.parent;
+         if (!found) {
+            node = node.parent;
          }
       }
 
-      this.current = var2;
-      if (var3) {
+      this.current = node;
+      if (found) {
          this.up();
       }
 
    }
 
-   private boolean hasIntersection(ScreenRectangle var1, @Nullable List<? extends ScreenArea> var2) {
-      if (var2 != null) {
-         for(ScreenArea var4 : var2) {
-            ScreenRectangle var5 = var4.bounds();
-            if (var5 != null && var5.intersects(var1)) {
+   private boolean hasIntersection(final ScreenRectangle bounds, final @Nullable List<? extends ScreenArea> states) {
+      if (states != null) {
+         for(ScreenArea area : states) {
+            ScreenRectangle existingBounds = area.bounds();
+            if (existingBounds != null && existingBounds.intersects(bounds)) {
                return true;
             }
          }
@@ -139,114 +139,114 @@ public class GuiRenderState {
       return false;
    }
 
-   public void submitBlitToCurrentLayer(BlitRenderState var1) {
-      this.current.submitGuiElement(var1);
+   public void submitBlitToCurrentLayer(final BlitRenderState blitState) {
+      this.current.submitGuiElement(blitState);
    }
 
-   public void submitGlyphToCurrentLayer(GuiElementRenderState var1) {
-      this.current.submitGlyph(var1);
+   public void submitGlyphToCurrentLayer(final GuiElementRenderState glyphState) {
+      this.current.submitGlyph(glyphState);
    }
 
    public Set<Object> getItemModelIdentities() {
       return this.itemModelIdentities;
    }
 
-   public void forEachElement(Consumer<GuiElementRenderState> var1, TraverseRange var2) {
-      this.traverse((Consumer)((var1x) -> {
-         if (var1x.elementStates != null || var1x.glyphStates != null) {
-            if (var1x.elementStates != null) {
-               for(GuiElementRenderState var3 : var1x.elementStates) {
-                  var1.accept(var3);
+   public void forEachElement(final Consumer<GuiElementRenderState> consumer, final TraverseRange range) {
+      this.traverse((Consumer)((node) -> {
+         if (node.elementStates != null || node.glyphStates != null) {
+            if (node.elementStates != null) {
+               for(GuiElementRenderState elementState : node.elementStates) {
+                  consumer.accept(elementState);
                }
             }
 
-            if (var1x.glyphStates != null) {
-               for(GuiElementRenderState var5 : var1x.glyphStates) {
-                  var1.accept(var5);
+            if (node.glyphStates != null) {
+               for(GuiElementRenderState glyphState : node.glyphStates) {
+                  consumer.accept(glyphState);
                }
             }
 
          }
-      }), var2);
+      }), range);
    }
 
-   public void forEachItem(Consumer<GuiItemRenderState> var1) {
-      Node var2 = this.current;
-      this.traverse((Consumer)((var2x) -> {
-         if (var2x.itemStates != null) {
-            this.current = var2x;
+   public void forEachItem(final Consumer<GuiItemRenderState> consumer) {
+      Node currentBackup = this.current;
+      this.traverse((Consumer)((node) -> {
+         if (node.itemStates != null) {
+            this.current = node;
 
-            for(GuiItemRenderState var4 : var2x.itemStates) {
-               var1.accept(var4);
+            for(GuiItemRenderState itemState : node.itemStates) {
+               consumer.accept(itemState);
             }
          }
 
       }), GuiRenderState.TraverseRange.ALL);
-      this.current = var2;
+      this.current = currentBackup;
    }
 
-   public void forEachText(Consumer<GuiTextRenderState> var1) {
-      Node var2 = this.current;
-      this.traverse((Consumer)((var2x) -> {
-         if (var2x.textStates != null) {
-            for(GuiTextRenderState var4 : var2x.textStates) {
-               this.current = var2x;
-               var1.accept(var4);
+   public void forEachText(final Consumer<GuiTextRenderState> consumer) {
+      Node currentBackup = this.current;
+      this.traverse((Consumer)((node) -> {
+         if (node.textStates != null) {
+            for(GuiTextRenderState textState : node.textStates) {
+               this.current = node;
+               consumer.accept(textState);
             }
          }
 
       }), GuiRenderState.TraverseRange.ALL);
-      this.current = var2;
+      this.current = currentBackup;
    }
 
-   public void forEachPictureInPicture(Consumer<PictureInPictureRenderState> var1) {
-      Node var2 = this.current;
-      this.traverse((Consumer)((var2x) -> {
-         if (var2x.picturesInPictureStates != null) {
-            this.current = var2x;
+   public void forEachPictureInPicture(final Consumer<PictureInPictureRenderState> consumer) {
+      Node currentBackup = this.current;
+      this.traverse((Consumer)((node) -> {
+         if (node.picturesInPictureStates != null) {
+            this.current = node;
 
-            for(PictureInPictureRenderState var4 : var2x.picturesInPictureStates) {
-               var1.accept(var4);
+            for(PictureInPictureRenderState pictureInPictureState : node.picturesInPictureStates) {
+               consumer.accept(pictureInPictureState);
             }
          }
 
       }), GuiRenderState.TraverseRange.ALL);
-      this.current = var2;
+      this.current = currentBackup;
    }
 
-   public void sortElements(Comparator<GuiElementRenderState> var1) {
-      this.traverse((Consumer)((var1x) -> {
-         if (var1x.elementStates != null) {
+   public void sortElements(final Comparator<GuiElementRenderState> comparator) {
+      this.traverse((Consumer)((node) -> {
+         if (node.elementStates != null) {
             if (SharedConstants.DEBUG_SHUFFLE_UI_RENDERING_ORDER) {
-               Collections.shuffle(var1x.elementStates);
+               Collections.shuffle(node.elementStates);
             }
 
-            var1x.elementStates.sort(var1);
+            node.elementStates.sort(comparator);
          }
 
       }), GuiRenderState.TraverseRange.ALL);
    }
 
-   private void traverse(Consumer<Node> var1, TraverseRange var2) {
-      int var3 = 0;
-      int var4 = this.strata.size();
-      if (var2 == GuiRenderState.TraverseRange.BEFORE_BLUR) {
-         var4 = Math.min(this.firstStratumAfterBlur, this.strata.size());
-      } else if (var2 == GuiRenderState.TraverseRange.AFTER_BLUR) {
-         var3 = this.firstStratumAfterBlur;
+   private void traverse(final Consumer<Node> consumer, final TraverseRange range) {
+      int startIndex = 0;
+      int endIndex = this.strata.size();
+      if (range == GuiRenderState.TraverseRange.BEFORE_BLUR) {
+         endIndex = Math.min(this.firstStratumAfterBlur, this.strata.size());
+      } else if (range == GuiRenderState.TraverseRange.AFTER_BLUR) {
+         startIndex = this.firstStratumAfterBlur;
       }
 
-      for(int var5 = var3; var5 < var4; ++var5) {
-         Node var6 = (Node)this.strata.get(var5);
-         this.traverse(var6, var1);
+      for(int i = startIndex; i < endIndex; ++i) {
+         Node stratum = (Node)this.strata.get(i);
+         this.traverse(stratum, consumer);
       }
 
    }
 
-   private void traverse(Node var1, Consumer<Node> var2) {
-      var2.accept(var1);
-      if (var1.up != null) {
-         this.traverse(var1.up, var2);
+   private void traverse(final Node node, final Consumer<Node> consumer) {
+      consumer.accept(node);
+      if (node.up != null) {
+         this.traverse(node.up, consumer);
       }
 
    }
@@ -258,7 +258,7 @@ public class GuiRenderState {
       this.nextStratum();
    }
 
-   static class Node {
+   private static class Node {
       public final @Nullable Node parent;
       public @Nullable Node up;
       public @Nullable List<GuiElementRenderState> elementStates;
@@ -267,49 +267,49 @@ public class GuiRenderState {
       public @Nullable List<GuiTextRenderState> textStates;
       public @Nullable List<PictureInPictureRenderState> picturesInPictureStates;
 
-      Node(@Nullable Node var1) {
+      private Node(final @Nullable Node parent) {
          super();
-         this.parent = var1;
+         this.parent = parent;
       }
 
-      public void submitItem(GuiItemRenderState var1) {
+      public void submitItem(final GuiItemRenderState itemState) {
          if (this.itemStates == null) {
             this.itemStates = new ArrayList();
          }
 
-         this.itemStates.add(var1);
+         this.itemStates.add(itemState);
       }
 
-      public void submitText(GuiTextRenderState var1) {
+      public void submitText(final GuiTextRenderState textState) {
          if (this.textStates == null) {
             this.textStates = new ArrayList();
          }
 
-         this.textStates.add(var1);
+         this.textStates.add(textState);
       }
 
-      public void submitPicturesInPictureState(PictureInPictureRenderState var1) {
+      public void submitPicturesInPictureState(final PictureInPictureRenderState picturesInPictureState) {
          if (this.picturesInPictureStates == null) {
             this.picturesInPictureStates = new ArrayList();
          }
 
-         this.picturesInPictureStates.add(var1);
+         this.picturesInPictureStates.add(picturesInPictureState);
       }
 
-      public void submitGuiElement(GuiElementRenderState var1) {
+      public void submitGuiElement(final GuiElementRenderState blitState) {
          if (this.elementStates == null) {
             this.elementStates = new ArrayList();
          }
 
-         this.elementStates.add(var1);
+         this.elementStates.add(blitState);
       }
 
-      public void submitGlyph(GuiElementRenderState var1) {
+      public void submitGlyph(final GuiElementRenderState glyphState) {
          if (this.glyphStates == null) {
             this.glyphStates = new ArrayList();
          }
 
-         this.glyphStates.add(var1);
+         this.glyphStates.add(glyphState);
       }
    }
 

@@ -5,8 +5,8 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 
 public abstract class AmbientCreature extends Mob {
-   protected AmbientCreature(EntityType<? extends AmbientCreature> var1, Level var2) {
-      super(var1, var2);
+   protected AmbientCreature(final EntityType<? extends AmbientCreature> type, final Level level) {
+      super(type, level);
    }
 
    public boolean canBeLeashed() {

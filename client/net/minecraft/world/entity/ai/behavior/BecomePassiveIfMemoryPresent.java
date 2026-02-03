@@ -11,10 +11,10 @@ public class BecomePassiveIfMemoryPresent {
       super();
    }
 
-   public static BehaviorControl<LivingEntity> create(MemoryModuleType<?> var0, int var1) {
-      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.registered(MemoryModuleType.ATTACK_TARGET), var2.absent(MemoryModuleType.PACIFIED), var2.present(var0)).apply(var2, var2.point(() -> "[BecomePassive if " + String.valueOf(var0) + " present]", (Function3)(var1x, var2x, var3) -> (var3x, var4, var5) -> {
-               var2x.setWithExpiry(true, (long)var1);
-               var1x.erase();
+   public static BehaviorControl<LivingEntity> create(final MemoryModuleType<?> pacifyingMemory, final int pacifyDuration) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.ATTACK_TARGET), i.absent(MemoryModuleType.PACIFIED), i.present(pacifyingMemory)).apply(i, i.point(() -> "[BecomePassive if " + String.valueOf(pacifyingMemory) + " present]", (Function3)(attackTarget, pacified, pacifying) -> (level, body, timestamp) -> {
+               pacified.setWithExpiry(true, (long)pacifyDuration);
+               attackTarget.erase();
                return true;
             }))));
    }

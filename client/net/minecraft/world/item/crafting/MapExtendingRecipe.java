@@ -1,63 +1,79 @@
 package net.minecraft.world.item.crafting;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.component.MapPostProcessing;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
-public class MapExtendingRecipe extends ShapedRecipe {
-   public MapExtendingRecipe(CraftingBookCategory var1) {
-      super("", var1, ShapedRecipePattern.of(Map.of('#', Ingredient.of((ItemLike)Items.PAPER), 'x', Ingredient.of((ItemLike)Items.FILLED_MAP)), "###", "#x#", "###"), new ItemStack(Items.MAP));
+public class MapExtendingRecipe extends CustomRecipe {
+   public static final MapCodec<MapExtendingRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Ingredient.CODEC.fieldOf("map").forGetter((o) -> o.map), Ingredient.CODEC.fieldOf("material").forGetter((o) -> o.material), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result)).apply(i, MapExtendingRecipe::new));
+   public static final StreamCodec<RegistryFriendlyByteBuf, MapExtendingRecipe> STREAM_CODEC;
+   public static final RecipeSerializer<MapExtendingRecipe> SERIALIZER;
+   private final ShapedRecipePattern pattern;
+   private final Ingredient map;
+   private final Ingredient material;
+   private final ItemStackTemplate result;
+
+   public MapExtendingRecipe(final Ingredient map, final Ingredient material, final ItemStackTemplate result) {
+      super();
+      this.map = map;
+      this.material = material;
+      this.result = result;
+      this.pattern = ShapedRecipePattern.of(Map.of('#', material, 'x', map), "###", "#x#", "###");
    }
 
-   public boolean matches(CraftingInput var1, Level var2) {
-      if (!super.matches(var1, var2)) {
+   public boolean matches(final CraftingInput input, final Level level) {
+      if (!this.pattern.matches(input)) {
          return false;
       } else {
-         ItemStack var3 = findFilledMap(var1);
-         if (var3.isEmpty()) {
+         ItemStack map = findFilledMap(input);
+         if (map.isEmpty()) {
             return false;
          } else {
-            MapItemSavedData var4 = MapItem.getSavedData(var3, var2);
-            if (var4 == null) {
+            MapItemSavedData data = MapItem.getSavedData(map, level);
+            if (data == null) {
                return false;
-            } else if (var4.isExplorationMap()) {
+            } else if (data.isExplorationMap()) {
                return false;
             } else {
-               return var4.scale < 4;
+               return data.scale < 4;
             }
          }
       }
    }
 
-   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      ItemStack var3 = findFilledMap(var1).copyWithCount(1);
-      var3.set(DataComponents.MAP_POST_PROCESSING, MapPostProcessing.SCALE);
-      return var3;
+   public ItemStack assemble(final CraftingInput input) {
+      ItemStack sourceMap = findFilledMap(input);
+      ItemStack map = TransmuteRecipe.createWithOriginalComponents(this.result, sourceMap);
+      map.set(DataComponents.MAP_POST_PROCESSING, MapPostProcessing.SCALE);
+      return map;
    }
 
-   private static ItemStack findFilledMap(CraftingInput var0) {
-      for(int var1 = 0; var1 < var0.size(); ++var1) {
-         ItemStack var2 = var0.getItem(var1);
-         if (var2.has(DataComponents.MAP_ID)) {
-            return var2;
+   private static ItemStack findFilledMap(final CraftingInput input) {
+      for(int i = 0; i < input.size(); ++i) {
+         ItemStack itemStack = input.getItem(i);
+         if (itemStack.has(DataComponents.MAP_ID)) {
+            return itemStack;
          }
       }
 
       return ItemStack.EMPTY;
    }
 
-   public boolean isSpecial() {
-      return true;
+   public RecipeSerializer<MapExtendingRecipe> getSerializer() {
+      return SERIALIZER;
    }
 
-   public RecipeSerializer<MapExtendingRecipe> getSerializer() {
-      return RecipeSerializer.MAP_EXTENDING;
+   static {
+      STREAM_CODEC = StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.map, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.material, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, MapExtendingRecipe::new);
+      SERIALIZER = new RecipeSerializer<MapExtendingRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

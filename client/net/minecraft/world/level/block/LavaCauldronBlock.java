@@ -23,29 +23,29 @@ public class LavaCauldronBlock extends AbstractCauldronBlock {
       return CODEC;
    }
 
-   public LavaCauldronBlock(BlockBehaviour.Properties var1) {
-      super(var1, CauldronInteraction.LAVA);
+   public LavaCauldronBlock(final BlockBehaviour.Properties properties) {
+      super(properties, CauldronInteraction.LAVA);
    }
 
-   protected double getContentHeight(BlockState var1) {
+   protected double getContentHeight(final BlockState state) {
       return 0.9375;
    }
 
-   public boolean isFull(BlockState var1) {
+   public boolean isFull(final BlockState state) {
       return true;
    }
 
-   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
+   protected VoxelShape getEntityInsideCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final Entity entity) {
       return FILLED_SHAPE;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      var5.apply(InsideBlockEffectType.CLEAR_FREEZE);
-      var5.apply(InsideBlockEffectType.LAVA_IGNITE);
-      var5.runAfter(InsideBlockEffectType.LAVA_IGNITE, Entity::lavaHurt);
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      effectApplier.apply(InsideBlockEffectType.CLEAR_FREEZE);
+      effectApplier.apply(InsideBlockEffectType.LAVA_IGNITE);
+      effectApplier.runAfter(InsideBlockEffectType.LAVA_IGNITE, Entity::lavaHurt);
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
       return 3;
    }
 

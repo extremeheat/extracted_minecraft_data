@@ -9,7 +9,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -21,7 +20,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WallBannerBlock extends AbstractBannerBlock {
-   public static final MapCodec<WallBannerBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(AbstractBannerBlock::getColor), propertiesCodec()).apply(var0, WallBannerBlock::new));
+   public static final MapCodec<WallBannerBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DyeColor.CODEC.fieldOf("color").forGetter(AbstractBannerBlock::getColor), propertiesCodec()).apply(i, WallBannerBlock::new));
    public static final EnumProperty<Direction> FACING;
    private static final Map<Direction, VoxelShape> SHAPES;
 
@@ -29,35 +28,35 @@ public class WallBannerBlock extends AbstractBannerBlock {
       return CODEC;
    }
 
-   public WallBannerBlock(DyeColor var1, BlockBehaviour.Properties var2) {
-      super(var1, var2);
+   public WallBannerBlock(final DyeColor color, final BlockBehaviour.Properties properties) {
+      super(color, properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH));
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return var2.getBlockState(var3.relative(((Direction)var1.getValue(FACING)).getOpposite())).isSolid();
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return level.getBlockState(pos.relative(((Direction)state.getValue(FACING)).getOpposite())).isSolid();
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var5 == ((Direction)var1.getValue(FACING)).getOpposite() && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return directionToNeighbour == ((Direction)state.getValue(FACING)).getOpposite() && !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)SHAPES.get(state.getValue(FACING));
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = this.defaultBlockState();
-      Level var3 = var1.getLevel();
-      BlockPos var4 = var1.getClickedPos();
-      Direction[] var5 = var1.getNearestLookingDirections();
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState state = this.defaultBlockState();
+      LevelReader level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      Direction[] directions = context.getNearestLookingDirections();
 
-      for(Direction var9 : var5) {
-         if (var9.getAxis().isHorizontal()) {
-            Direction var10 = var9.getOpposite();
-            var2 = (BlockState)var2.setValue(FACING, var10);
-            if (var2.canSurvive(var3, var4)) {
-               return var2;
+      for(Direction direction : directions) {
+         if (direction.getAxis().isHorizontal()) {
+            Direction facing = direction.getOpposite();
+            state = (BlockState)state.setValue(FACING, facing);
+            if (state.canSurvive(level, pos)) {
+               return state;
             }
          }
       }
@@ -65,16 +64,16 @@ public class WallBannerBlock extends AbstractBannerBlock {
       return null;
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING);
    }
 
    static {

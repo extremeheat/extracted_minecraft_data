@@ -12,23 +12,21 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 
 public record FluidPredicate(Optional<HolderSet<Fluid>> fluids, Optional<StatePropertiesPredicate> properties) {
-   public static final Codec<FluidPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.FLUID).optionalFieldOf("fluids").forGetter(FluidPredicate::fluids), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(FluidPredicate::properties)).apply(var0, FluidPredicate::new));
+   public static final Codec<FluidPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.FLUID).optionalFieldOf("fluids").forGetter(FluidPredicate::fluids), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(FluidPredicate::properties)).apply(i, FluidPredicate::new));
 
-   public FluidPredicate(Optional<HolderSet<Fluid>> var1, Optional<StatePropertiesPredicate> var2) {
+   public FluidPredicate {
       super();
-      this.fluids = var1;
-      this.properties = var2;
    }
 
-   public boolean matches(ServerLevel var1, BlockPos var2) {
-      if (!var1.isLoaded(var2)) {
+   public boolean matches(final ServerLevel level, final BlockPos pos) {
+      if (!level.isLoaded(pos)) {
          return false;
       } else {
-         FluidState var3 = var1.getFluidState(var2);
-         if (this.fluids.isPresent() && !var3.is((HolderSet)this.fluids.get())) {
+         FluidState state = level.getFluidState(pos);
+         if (this.fluids.isPresent() && !state.is((HolderSet)this.fluids.get())) {
             return false;
          } else {
-            return !this.properties.isPresent() || ((StatePropertiesPredicate)this.properties.get()).matches(var3);
+            return !this.properties.isPresent() || ((StatePropertiesPredicate)this.properties.get()).matches(state);
          }
       }
    }
@@ -45,18 +43,18 @@ public record FluidPredicate(Optional<HolderSet<Fluid>> fluids, Optional<StatePr
          return new Builder();
       }
 
-      public Builder of(Fluid var1) {
-         this.fluids = Optional.of(HolderSet.direct(var1.builtInRegistryHolder()));
+      public Builder of(final Fluid fluid) {
+         this.fluids = Optional.of(HolderSet.direct(fluid.builtInRegistryHolder()));
          return this;
       }
 
-      public Builder of(HolderSet<Fluid> var1) {
-         this.fluids = Optional.of(var1);
+      public Builder of(final HolderSet<Fluid> fluids) {
+         this.fluids = Optional.of(fluids);
          return this;
       }
 
-      public Builder setProperties(StatePropertiesPredicate var1) {
-         this.properties = Optional.of(var1);
+      public Builder setProperties(final StatePropertiesPredicate properties) {
+         this.properties = Optional.of(properties);
          return this;
       }
 

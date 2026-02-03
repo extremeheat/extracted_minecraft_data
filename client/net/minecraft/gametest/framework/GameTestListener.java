@@ -1,11 +1,11 @@
 package net.minecraft.gametest.framework;
 
 public interface GameTestListener {
-   void testStructureLoaded(GameTestInfo var1);
+   void testStructureLoaded(GameTestInfo testInfo);
 
-   void testPassed(GameTestInfo var1, GameTestRunner var2);
+   void testPassed(GameTestInfo testInfo, GameTestRunner runner);
 
-   void testFailed(GameTestInfo var1, GameTestRunner var2);
+   void testFailed(GameTestInfo testInfo, GameTestRunner runner);
 
-   void testAddedForRerun(GameTestInfo var1, GameTestInfo var2, GameTestRunner var3);
+   void testAddedForRerun(GameTestInfo original, GameTestInfo copy, GameTestRunner runner);
 }

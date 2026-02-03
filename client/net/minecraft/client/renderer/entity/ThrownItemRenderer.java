@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ThrownItemRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -18,41 +17,36 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
    private final float scale;
    private final boolean fullBright;
 
-   public ThrownItemRenderer(EntityRendererProvider.Context var1, float var2, boolean var3) {
-      super(var1);
-      this.itemModelResolver = var1.getItemModelResolver();
-      this.scale = var2;
-      this.fullBright = var3;
+   public ThrownItemRenderer(final EntityRendererProvider.Context context, final float scale, final boolean fullBright) {
+      super(context);
+      this.itemModelResolver = context.getItemModelResolver();
+      this.scale = scale;
+      this.fullBright = fullBright;
    }
 
-   public ThrownItemRenderer(EntityRendererProvider.Context var1) {
-      this(var1, 1.0F, false);
+   public ThrownItemRenderer(final EntityRendererProvider.Context context) {
+      this(context, 1.0F, false);
    }
 
-   protected int getBlockLightLevel(T var1, BlockPos var2) {
-      return this.fullBright ? 15 : super.getBlockLightLevel(var1, var2);
+   protected int getBlockLightLevel(final T entity, final BlockPos blockPos) {
+      return this.fullBright ? 15 : super.getBlockLightLevel(entity, blockPos);
    }
 
-   public void submit(ThrownItemRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      var2.pushPose();
-      var2.scale(this.scale, this.scale, this.scale);
-      var2.mulPose((Quaternionfc)var4.orientation);
-      var1.item.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
-      var2.popPose();
-      super.submit(var1, var2, var3, var4);
+   public void submit(final ThrownItemRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      poseStack.pushPose();
+      poseStack.scale(this.scale, this.scale, this.scale);
+      poseStack.mulPose((Quaternionfc)camera.orientation);
+      state.item.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+      poseStack.popPose();
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
    public ThrownItemRenderState createRenderState() {
       return new ThrownItemRenderState();
    }
 
-   public void extractRenderState(T var1, ThrownItemRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      this.itemModelResolver.updateForNonLiving(var2.item, ((ItemSupplier)var1).getItem(), ItemDisplayContext.GROUND, var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final T entity, final ThrownItemRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      this.itemModelResolver.updateForNonLiving(state.item, ((ItemSupplier)entity).getItem(), ItemDisplayContext.GROUND, entity);
    }
 }

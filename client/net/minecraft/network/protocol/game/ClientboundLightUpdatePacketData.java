@@ -23,7 +23,7 @@ public class ClientboundLightUpdatePacketData {
    private final List<byte[]> skyUpdates;
    private final List<byte[]> blockUpdates;
 
-   public ClientboundLightUpdatePacketData(ChunkPos var1, LevelLightEngine var2, @Nullable BitSet var3, @Nullable BitSet var4) {
+   public ClientboundLightUpdatePacketData(final ChunkPos chunkPos, final LevelLightEngine lightEngine, final @Nullable BitSet skyChangedLightSectionFilter, final @Nullable BitSet blockChangedLightSectionFilter) {
       super();
       this.skyYMask = new BitSet();
       this.blockYMask = new BitSet();
@@ -32,45 +32,45 @@ public class ClientboundLightUpdatePacketData {
       this.skyUpdates = Lists.newArrayList();
       this.blockUpdates = Lists.newArrayList();
 
-      for(int var5 = 0; var5 < var2.getLightSectionCount(); ++var5) {
-         if (var3 == null || var3.get(var5)) {
-            this.prepareSectionData(var1, var2, LightLayer.SKY, var5, this.skyYMask, this.emptySkyYMask, this.skyUpdates);
+      for(int sectionIndex = 0; sectionIndex < lightEngine.getLightSectionCount(); ++sectionIndex) {
+         if (skyChangedLightSectionFilter == null || skyChangedLightSectionFilter.get(sectionIndex)) {
+            this.prepareSectionData(chunkPos, lightEngine, LightLayer.SKY, sectionIndex, this.skyYMask, this.emptySkyYMask, this.skyUpdates);
          }
 
-         if (var4 == null || var4.get(var5)) {
-            this.prepareSectionData(var1, var2, LightLayer.BLOCK, var5, this.blockYMask, this.emptyBlockYMask, this.blockUpdates);
+         if (blockChangedLightSectionFilter == null || blockChangedLightSectionFilter.get(sectionIndex)) {
+            this.prepareSectionData(chunkPos, lightEngine, LightLayer.BLOCK, sectionIndex, this.blockYMask, this.emptyBlockYMask, this.blockUpdates);
          }
       }
 
    }
 
-   public ClientboundLightUpdatePacketData(FriendlyByteBuf var1, int var2, int var3) {
+   public ClientboundLightUpdatePacketData(final FriendlyByteBuf input, final int x, final int z) {
       super();
-      this.skyYMask = var1.readBitSet();
-      this.blockYMask = var1.readBitSet();
-      this.emptySkyYMask = var1.readBitSet();
-      this.emptyBlockYMask = var1.readBitSet();
-      this.skyUpdates = var1.<byte[]>readList(DATA_LAYER_STREAM_CODEC);
-      this.blockUpdates = var1.<byte[]>readList(DATA_LAYER_STREAM_CODEC);
+      this.skyYMask = input.readBitSet();
+      this.blockYMask = input.readBitSet();
+      this.emptySkyYMask = input.readBitSet();
+      this.emptyBlockYMask = input.readBitSet();
+      this.skyUpdates = input.<byte[]>readList(DATA_LAYER_STREAM_CODEC);
+      this.blockUpdates = input.<byte[]>readList(DATA_LAYER_STREAM_CODEC);
    }
 
-   public void write(FriendlyByteBuf var1) {
-      var1.writeBitSet(this.skyYMask);
-      var1.writeBitSet(this.blockYMask);
-      var1.writeBitSet(this.emptySkyYMask);
-      var1.writeBitSet(this.emptyBlockYMask);
-      var1.writeCollection(this.skyUpdates, DATA_LAYER_STREAM_CODEC);
-      var1.writeCollection(this.blockUpdates, DATA_LAYER_STREAM_CODEC);
+   public void write(final FriendlyByteBuf output) {
+      output.writeBitSet(this.skyYMask);
+      output.writeBitSet(this.blockYMask);
+      output.writeBitSet(this.emptySkyYMask);
+      output.writeBitSet(this.emptyBlockYMask);
+      output.writeCollection(this.skyUpdates, DATA_LAYER_STREAM_CODEC);
+      output.writeCollection(this.blockUpdates, DATA_LAYER_STREAM_CODEC);
    }
 
-   private void prepareSectionData(ChunkPos var1, LevelLightEngine var2, LightLayer var3, int var4, BitSet var5, BitSet var6, List<byte[]> var7) {
-      DataLayer var8 = var2.getLayerListener(var3).getDataLayerData(SectionPos.of(var1, var2.getMinLightSection() + var4));
-      if (var8 != null) {
-         if (var8.isEmpty()) {
-            var6.set(var4);
+   private void prepareSectionData(final ChunkPos pos, final LevelLightEngine lightEngine, final LightLayer layer, final int sectionIndex, final BitSet mask, final BitSet emptyMask, final List<byte[]> updates) {
+      DataLayer data = lightEngine.getLayerListener(layer).getDataLayerData(SectionPos.of(pos, lightEngine.getMinLightSection() + sectionIndex));
+      if (data != null) {
+         if (data.isEmpty()) {
+            emptyMask.set(sectionIndex);
          } else {
-            var5.set(var4);
-            var7.add(var8.copy().getData());
+            mask.set(sectionIndex);
+            updates.add(data.copy().getData());
          }
       }
 

@@ -9,13 +9,13 @@ public class FeatureSizeType<P extends FeatureSize> {
    public static final FeatureSizeType<ThreeLayersFeatureSize> THREE_LAYERS_FEATURE_SIZE;
    private final MapCodec<P> codec;
 
-   private static <P extends FeatureSize> FeatureSizeType<P> register(String var0, MapCodec<P> var1) {
-      return (FeatureSizeType)Registry.register(BuiltInRegistries.FEATURE_SIZE_TYPE, (String)var0, new FeatureSizeType(var1));
+   private static <P extends FeatureSize> FeatureSizeType<P> register(final String name, final MapCodec<P> codec) {
+      return (FeatureSizeType)Registry.register(BuiltInRegistries.FEATURE_SIZE_TYPE, (String)name, new FeatureSizeType(codec));
    }
 
-   private FeatureSizeType(MapCodec<P> var1) {
+   private FeatureSizeType(final MapCodec<P> codec) {
       super();
-      this.codec = var1;
+      this.codec = codec;
    }
 
    public MapCodec<P> codec() {

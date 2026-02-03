@@ -8,17 +8,17 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V3439 extends NamespacedSchema {
-   public V3439(int var1, Schema var2) {
-      super(var1, var2);
+   public V3439(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
-      Map var2 = super.registerBlockEntities(var1);
-      this.register(var2, "minecraft:sign", () -> sign(var1));
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerBlockEntities(schema);
+      this.register(map, "minecraft:sign", () -> sign(schema));
+      return map;
    }
 
-   public static TypeTemplate sign(Schema var0) {
-      return DSL.optionalFields("front_text", DSL.optionalFields("messages", DSL.list(References.TEXT_COMPONENT.in(var0)), "filtered_messages", DSL.list(References.TEXT_COMPONENT.in(var0))), "back_text", DSL.optionalFields("messages", DSL.list(References.TEXT_COMPONENT.in(var0)), "filtered_messages", DSL.list(References.TEXT_COMPONENT.in(var0))));
+   public static TypeTemplate sign(final Schema schema) {
+      return DSL.optionalFields("front_text", DSL.optionalFields("messages", DSL.list(References.TEXT_COMPONENT.in(schema)), "filtered_messages", DSL.list(References.TEXT_COMPONENT.in(schema))), "back_text", DSL.optionalFields("messages", DSL.list(References.TEXT_COMPONENT.in(schema)), "filtered_messages", DSL.list(References.TEXT_COMPONENT.in(schema))));
    }
 }

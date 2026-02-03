@@ -29,12 +29,12 @@ public class GuardianModel extends EntityModel<GuardianRenderState> {
    private final ModelPart[] spikeParts = new ModelPart[12];
    private final ModelPart[] tailParts;
 
-   public GuardianModel(ModelPart var1) {
-      super(var1);
-      this.head = var1.getChild("head");
+   public GuardianModel(final ModelPart root) {
+      super(root);
+      this.head = root.getChild("head");
 
-      for(int var2 = 0; var2 < this.spikeParts.length; ++var2) {
-         this.spikeParts[var2] = this.head.getChild(createSpikeName(var2));
+      for(int i = 0; i < this.spikeParts.length; ++i) {
+         this.spikeParts[i] = this.head.getChild(createSpikeName(i));
       }
 
       this.eye = this.head.getChild("eye");
@@ -44,87 +44,87 @@ public class GuardianModel extends EntityModel<GuardianRenderState> {
       this.tailParts[2] = this.tailParts[1].getChild("tail2");
    }
 
-   private static String createSpikeName(int var0) {
-      return "spike" + var0;
+   private static String createSpikeName(final int i) {
+      return "spike" + i;
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, 10.0F, -8.0F, 12.0F, 12.0F, 16.0F).texOffs(0, 28).addBox(-8.0F, 10.0F, -6.0F, 2.0F, 12.0F, 12.0F).texOffs(0, 28).addBox(6.0F, 10.0F, -6.0F, 2.0F, 12.0F, 12.0F, true).texOffs(16, 40).addBox(-6.0F, 8.0F, -6.0F, 12.0F, 2.0F, 12.0F).texOffs(16, 40).addBox(-6.0F, 22.0F, -6.0F, 12.0F, 2.0F, 12.0F), PartPose.ZERO);
-      CubeListBuilder var3 = CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, -4.5F, -1.0F, 2.0F, 9.0F, 2.0F);
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      PartDefinition head = root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, 10.0F, -8.0F, 12.0F, 12.0F, 16.0F).texOffs(0, 28).addBox(-8.0F, 10.0F, -6.0F, 2.0F, 12.0F, 12.0F).texOffs(0, 28).addBox(6.0F, 10.0F, -6.0F, 2.0F, 12.0F, 12.0F, true).texOffs(16, 40).addBox(-6.0F, 8.0F, -6.0F, 12.0F, 2.0F, 12.0F).texOffs(16, 40).addBox(-6.0F, 22.0F, -6.0F, 12.0F, 2.0F, 12.0F), PartPose.ZERO);
+      CubeListBuilder spike = CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, -4.5F, -1.0F, 2.0F, 9.0F, 2.0F);
 
-      for(int var4 = 0; var4 < 12; ++var4) {
-         float var5 = getSpikeX(var4, 0.0F, 0.0F);
-         float var6 = getSpikeY(var4, 0.0F, 0.0F);
-         float var7 = getSpikeZ(var4, 0.0F, 0.0F);
-         float var8 = 3.1415927F * SPIKE_X_ROT[var4];
-         float var9 = 3.1415927F * SPIKE_Y_ROT[var4];
-         float var10 = 3.1415927F * SPIKE_Z_ROT[var4];
-         var2.addOrReplaceChild(createSpikeName(var4), var3, PartPose.offsetAndRotation(var5, var6, var7, var8, var9, var10));
+      for(int i = 0; i < 12; ++i) {
+         float x = getSpikeX(i, 0.0F, 0.0F);
+         float y = getSpikeY(i, 0.0F, 0.0F);
+         float z = getSpikeZ(i, 0.0F, 0.0F);
+         float xRot = 3.1415927F * SPIKE_X_ROT[i];
+         float yRot = 3.1415927F * SPIKE_Y_ROT[i];
+         float zRot = 3.1415927F * SPIKE_Z_ROT[i];
+         head.addOrReplaceChild(createSpikeName(i), spike, PartPose.offsetAndRotation(x, y, z, xRot, yRot, zRot));
       }
 
-      var2.addOrReplaceChild("eye", CubeListBuilder.create().texOffs(8, 0).addBox(-1.0F, 15.0F, 0.0F, 2.0F, 2.0F, 1.0F), PartPose.offset(0.0F, 0.0F, -8.25F));
-      PartDefinition var11 = var2.addOrReplaceChild("tail0", CubeListBuilder.create().texOffs(40, 0).addBox(-2.0F, 14.0F, 7.0F, 4.0F, 4.0F, 8.0F), PartPose.ZERO);
-      PartDefinition var12 = var11.addOrReplaceChild("tail1", CubeListBuilder.create().texOffs(0, 54).addBox(0.0F, 14.0F, 0.0F, 3.0F, 3.0F, 7.0F), PartPose.offset(-1.5F, 0.5F, 14.0F));
-      var12.addOrReplaceChild("tail2", CubeListBuilder.create().texOffs(41, 32).addBox(0.0F, 14.0F, 0.0F, 2.0F, 2.0F, 6.0F).texOffs(25, 19).addBox(1.0F, 10.5F, 3.0F, 1.0F, 9.0F, 9.0F), PartPose.offset(0.5F, 0.5F, 6.0F));
-      return LayerDefinition.create(var0, 64, 64);
+      head.addOrReplaceChild("eye", CubeListBuilder.create().texOffs(8, 0).addBox(-1.0F, 15.0F, 0.0F, 2.0F, 2.0F, 1.0F), PartPose.offset(0.0F, 0.0F, -8.25F));
+      PartDefinition tailPart0 = head.addOrReplaceChild("tail0", CubeListBuilder.create().texOffs(40, 0).addBox(-2.0F, 14.0F, 7.0F, 4.0F, 4.0F, 8.0F), PartPose.ZERO);
+      PartDefinition tailPart1 = tailPart0.addOrReplaceChild("tail1", CubeListBuilder.create().texOffs(0, 54).addBox(0.0F, 14.0F, 0.0F, 3.0F, 3.0F, 7.0F), PartPose.offset(-1.5F, 0.5F, 14.0F));
+      tailPart1.addOrReplaceChild("tail2", CubeListBuilder.create().texOffs(41, 32).addBox(0.0F, 14.0F, 0.0F, 2.0F, 2.0F, 6.0F).texOffs(25, 19).addBox(1.0F, 10.5F, 3.0F, 1.0F, 9.0F, 9.0F), PartPose.offset(0.5F, 0.5F, 6.0F));
+      return LayerDefinition.create(mesh, 64, 64);
    }
 
    public static LayerDefinition createElderGuardianLayer() {
       return createBodyLayer().apply(ELDER_GUARDIAN_SCALE);
    }
 
-   public void setupAnim(GuardianRenderState var1) {
-      super.setupAnim(var1);
-      this.head.yRot = var1.yRot * 0.017453292F;
-      this.head.xRot = var1.xRot * 0.017453292F;
-      float var2 = (1.0F - var1.spikesAnimation) * 0.55F;
-      this.setupSpikes(var1.ageInTicks, var2);
-      if (var1.lookAtPosition != null && var1.lookDirection != null) {
-         double var3 = var1.lookAtPosition.y - var1.eyePosition.y;
-         if (var3 > 0.0) {
+   public void setupAnim(final GuardianRenderState state) {
+      super.setupAnim(state);
+      this.head.yRot = state.yRot * 0.017453292F;
+      this.head.xRot = state.xRot * 0.017453292F;
+      float withdrawal = (1.0F - state.spikesAnimation) * 0.55F;
+      this.setupSpikes(state.ageInTicks, withdrawal);
+      if (state.lookAtPosition != null && state.lookDirection != null) {
+         double dy = state.lookAtPosition.y - state.eyePosition.y;
+         if (dy > 0.0) {
             this.eye.y = 0.0F;
          } else {
             this.eye.y = 1.0F;
          }
 
-         Vec3 var5 = var1.lookDirection;
-         var5 = new Vec3(var5.x, 0.0, var5.z);
-         Vec3 var6 = (new Vec3(var1.eyePosition.x - var1.lookAtPosition.x, 0.0, var1.eyePosition.z - var1.lookAtPosition.z)).normalize().yRot(1.5707964F);
-         double var7 = var5.dot(var6);
-         this.eye.x = Mth.sqrt((float)Math.abs(var7)) * 2.0F * (float)Math.signum(var7);
+         Vec3 viewVector = state.lookDirection;
+         viewVector = new Vec3(viewVector.x, 0.0, viewVector.z);
+         Vec3 delta = (new Vec3(state.eyePosition.x - state.lookAtPosition.x, 0.0, state.eyePosition.z - state.lookAtPosition.z)).normalize().yRot(1.5707964F);
+         double dot = viewVector.dot(delta);
+         this.eye.x = Mth.sqrt((float)Math.abs(dot)) * 2.0F * (float)Math.signum(dot);
       }
 
       this.eye.visible = true;
-      float var9 = var1.tailAnimation;
-      this.tailParts[0].yRot = Mth.sin((double)var9) * 3.1415927F * 0.05F;
-      this.tailParts[1].yRot = Mth.sin((double)var9) * 3.1415927F * 0.1F;
-      this.tailParts[2].yRot = Mth.sin((double)var9) * 3.1415927F * 0.15F;
+      float swim = state.tailAnimation;
+      this.tailParts[0].yRot = Mth.sin((double)swim) * 3.1415927F * 0.05F;
+      this.tailParts[1].yRot = Mth.sin((double)swim) * 3.1415927F * 0.1F;
+      this.tailParts[2].yRot = Mth.sin((double)swim) * 3.1415927F * 0.15F;
    }
 
-   private void setupSpikes(float var1, float var2) {
-      for(int var3 = 0; var3 < 12; ++var3) {
-         this.spikeParts[var3].x = getSpikeX(var3, var1, var2);
-         this.spikeParts[var3].y = getSpikeY(var3, var1, var2);
-         this.spikeParts[var3].z = getSpikeZ(var3, var1, var2);
+   private void setupSpikes(final float ageInTicks, final float withdrawal) {
+      for(int i = 0; i < 12; ++i) {
+         this.spikeParts[i].x = getSpikeX(i, ageInTicks, withdrawal);
+         this.spikeParts[i].y = getSpikeY(i, ageInTicks, withdrawal);
+         this.spikeParts[i].z = getSpikeZ(i, ageInTicks, withdrawal);
       }
 
    }
 
-   private static float getSpikeOffset(int var0, float var1, float var2) {
-      return 1.0F + Mth.cos((double)(var1 * 1.5F + (float)var0)) * 0.01F - var2;
+   private static float getSpikeOffset(final int spike, final float ageInTicks, final float withdrawal) {
+      return 1.0F + Mth.cos((double)(ageInTicks * 1.5F + (float)spike)) * 0.01F - withdrawal;
    }
 
-   private static float getSpikeX(int var0, float var1, float var2) {
-      return SPIKE_X[var0] * getSpikeOffset(var0, var1, var2);
+   private static float getSpikeX(final int spike, final float ageInTicks, final float withdrawal) {
+      return SPIKE_X[spike] * getSpikeOffset(spike, ageInTicks, withdrawal);
    }
 
-   private static float getSpikeY(int var0, float var1, float var2) {
-      return 16.0F + SPIKE_Y[var0] * getSpikeOffset(var0, var1, var2);
+   private static float getSpikeY(final int spike, final float ageInTicks, final float withdrawal) {
+      return 16.0F + SPIKE_Y[spike] * getSpikeOffset(spike, ageInTicks, withdrawal);
    }
 
-   private static float getSpikeZ(int var0, float var1, float var2) {
-      return SPIKE_Z[var0] * getSpikeOffset(var0, var1, var2);
+   private static float getSpikeZ(final int spike, final float ageInTicks, final float withdrawal) {
+      return SPIKE_Z[spike] * getSpikeOffset(spike, ageInTicks, withdrawal);
    }
 }

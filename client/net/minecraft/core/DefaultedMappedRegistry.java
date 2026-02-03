@@ -11,50 +11,50 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
    private final Identifier defaultKey;
    private Holder.Reference<T> defaultValue;
 
-   public DefaultedMappedRegistry(String var1, ResourceKey<? extends Registry<T>> var2, Lifecycle var3, boolean var4) {
-      super(var2, var3, var4);
-      this.defaultKey = Identifier.parse(var1);
+   public DefaultedMappedRegistry(final String defaultKey, final ResourceKey<? extends Registry<T>> key, final Lifecycle lifecycle, final boolean intrusiveHolders) {
+      super(key, lifecycle, intrusiveHolders);
+      this.defaultKey = Identifier.parse(defaultKey);
    }
 
-   public Holder.Reference<T> register(ResourceKey<T> var1, T var2, RegistrationInfo var3) {
-      Holder.Reference var4 = super.register(var1, var2, var3);
-      if (this.defaultKey.equals(var1.identifier())) {
-         this.defaultValue = var4;
+   public Holder.Reference<T> register(final ResourceKey<T> key, final T value, final RegistrationInfo registrationInfo) {
+      Holder.Reference<T> result = super.register(key, value, registrationInfo);
+      if (this.defaultKey.equals(key.identifier())) {
+         this.defaultValue = result;
       }
 
-      return var4;
+      return result;
    }
 
-   public int getId(@Nullable T var1) {
-      int var2 = super.getId(var1);
-      return var2 == -1 ? super.getId(this.defaultValue.value()) : var2;
+   public int getId(final @Nullable T thing) {
+      int id = super.getId(thing);
+      return id == -1 ? super.getId(this.defaultValue.value()) : id;
    }
 
-   public Identifier getKey(T var1) {
-      Identifier var2 = super.getKey(var1);
-      return var2 == null ? this.defaultKey : var2;
+   public Identifier getKey(final T thing) {
+      Identifier k = super.getKey(thing);
+      return k == null ? this.defaultKey : k;
    }
 
-   public T getValue(@Nullable Identifier var1) {
-      Object var2 = super.getValue(var1);
-      return (T)(var2 == null ? this.defaultValue.value() : var2);
+   public T getValue(final @Nullable Identifier key) {
+      T t = (T)super.getValue(key);
+      return (T)(t == null ? this.defaultValue.value() : t);
    }
 
-   public Optional<T> getOptional(@Nullable Identifier var1) {
-      return Optional.ofNullable(super.getValue(var1));
+   public Optional<T> getOptional(final @Nullable Identifier key) {
+      return Optional.ofNullable(super.getValue(key));
    }
 
    public Optional<Holder.Reference<T>> getAny() {
       return Optional.ofNullable(this.defaultValue);
    }
 
-   public T byId(int var1) {
-      Object var2 = super.byId(var1);
-      return (T)(var2 == null ? this.defaultValue.value() : var2);
+   public T byId(final int id) {
+      T t = (T)super.byId(id);
+      return (T)(t == null ? this.defaultValue.value() : t);
    }
 
-   public Optional<Holder.Reference<T>> getRandom(RandomSource var1) {
-      return super.getRandom(var1).or(() -> Optional.of(this.defaultValue));
+   public Optional<Holder.Reference<T>> getRandom(final RandomSource random) {
+      return super.getRandom(random).or(() -> Optional.of(this.defaultValue));
    }
 
    public Identifier getDefaultKey() {

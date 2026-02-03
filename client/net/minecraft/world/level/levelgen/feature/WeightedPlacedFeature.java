@@ -10,17 +10,17 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class WeightedPlacedFeature {
-   public static final Codec<WeightedPlacedFeature> CODEC = RecordCodecBuilder.create((var0) -> var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> var0x.feature), Codec.floatRange(0.0F, 1.0F).fieldOf("chance").forGetter((var0x) -> var0x.chance)).apply(var0, WeightedPlacedFeature::new));
+   public static final Codec<WeightedPlacedFeature> CODEC = RecordCodecBuilder.create((i) -> i.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((f) -> f.feature), Codec.floatRange(0.0F, 1.0F).fieldOf("chance").forGetter((f) -> f.chance)).apply(i, WeightedPlacedFeature::new));
    public final Holder<PlacedFeature> feature;
    public final float chance;
 
-   public WeightedPlacedFeature(Holder<PlacedFeature> var1, float var2) {
+   public WeightedPlacedFeature(final Holder<PlacedFeature> feature, final float chance) {
       super();
-      this.feature = var1;
-      this.chance = var2;
+      this.feature = feature;
+      this.chance = chance;
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, RandomSource var3, BlockPos var4) {
-      return ((PlacedFeature)this.feature.value()).place(var1, var2, var3, var4);
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      return ((PlacedFeature)this.feature.value()).place(level, chunkGenerator, random, origin);
    }
 }

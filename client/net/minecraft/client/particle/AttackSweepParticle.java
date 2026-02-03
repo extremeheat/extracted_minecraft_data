@@ -7,19 +7,19 @@ import net.minecraft.util.RandomSource;
 public class AttackSweepParticle extends SingleQuadParticle {
    private final SpriteSet sprites;
 
-   AttackSweepParticle(ClientLevel var1, double var2, double var4, double var6, double var8, SpriteSet var10) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var10.first());
-      this.sprites = var10;
+   private AttackSweepParticle(final ClientLevel level, final double x, final double y, final double z, final double size, final SpriteSet sprites) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprites.first());
+      this.sprites = sprites;
       this.lifetime = 4;
-      float var11 = this.random.nextFloat() * 0.6F + 0.4F;
-      this.rCol = var11;
-      this.gCol = var11;
-      this.bCol = var11;
-      this.quadSize = 1.0F - (float)var8 * 0.5F;
-      this.setSpriteFromAge(var10);
+      float col = this.random.nextFloat() * 0.6F + 0.4F;
+      this.rCol = col;
+      this.gCol = col;
+      this.bCol = col;
+      this.quadSize = 1.0F - (float)size * 0.5F;
+      this.setSpriteFromAge(sprites);
    }
 
-   public int getLightColor(float var1) {
+   public int getLightCoords(final float a) {
       return 15728880;
    }
 
@@ -41,13 +41,13 @@ public class AttackSweepParticle extends SingleQuadParticle {
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new AttackSweepParticle(var2, var3, var5, var7, var9, this.sprites);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new AttackSweepParticle(level, x, y, z, xAux, this.sprites);
       }
    }
 }

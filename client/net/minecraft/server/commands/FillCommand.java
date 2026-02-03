@@ -8,8 +8,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -19,7 +19,6 @@ import net.minecraft.commands.arguments.blocks.BlockPredicateArgument;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -31,82 +30,77 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.jspecify.annotations.Nullable;
 
 public class FillCommand {
-   private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.fill.toobig", var0, var1));
-   static final BlockInput HOLLOW_CORE;
+   private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((max, count) -> Component.translatableEscape("commands.fill.toobig", max, count));
+   private static final BlockInput HOLLOW_CORE;
    private static final SimpleCommandExceptionType ERROR_FAILED;
 
    public FillCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fill").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).then(wrapWithMode(var1, Commands.argument("block", BlockStateArgument.block(var1)), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "from"), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "to"), (var0x) -> BlockStateArgument.getBlock(var0x, "block"), (var0x) -> null).then(((LiteralArgumentBuilder)Commands.literal("replace").executes((var0x) -> fillBlocks((CommandSourceStack)var0x.getSource(), BoundingBox.fromCorners(BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to")), BlockStateArgument.getBlock(var0x, "block"), FillCommand.Mode.REPLACE, (Predicate)null, false))).then(wrapWithMode(var1, Commands.argument("filter", BlockPredicateArgument.blockPredicate(var1)), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "from"), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "to"), (var0x) -> BlockStateArgument.getBlock(var0x, "block"), (var0x) -> BlockPredicateArgument.getBlockPredicate(var0x, "filter")))).then(Commands.literal("keep").executes((var0x) -> fillBlocks((CommandSourceStack)var0x.getSource(), BoundingBox.fromCorners(BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to")), BlockStateArgument.getBlock(var0x, "block"), FillCommand.Mode.REPLACE, (var0) -> var0.getLevel().isEmptyBlock(var0.getPos()), false)))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fill").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).then(wrapWithMode(context, Commands.argument("block", BlockStateArgument.block(context)), (c) -> BlockPosArgument.getLoadedBlockPos(c, "from"), (c) -> BlockPosArgument.getLoadedBlockPos(c, "to"), (c) -> BlockStateArgument.getBlock(c, "block"), (c) -> null).then(((LiteralArgumentBuilder)Commands.literal("replace").executes((c) -> fillBlocks((CommandSourceStack)c.getSource(), BoundingBox.fromCorners(BlockPosArgument.getLoadedBlockPos(c, "from"), BlockPosArgument.getLoadedBlockPos(c, "to")), BlockStateArgument.getBlock(c, "block"), FillCommand.Mode.REPLACE, (Predicate)null, false))).then(wrapWithMode(context, Commands.argument("filter", BlockPredicateArgument.blockPredicate(context)), (c) -> BlockPosArgument.getLoadedBlockPos(c, "from"), (c) -> BlockPosArgument.getLoadedBlockPos(c, "to"), (c) -> BlockStateArgument.getBlock(c, "block"), (c) -> BlockPredicateArgument.getBlockPredicate(c, "filter")))).then(Commands.literal("keep").executes((c) -> fillBlocks((CommandSourceStack)c.getSource(), BoundingBox.fromCorners(BlockPosArgument.getLoadedBlockPos(c, "from"), BlockPosArgument.getLoadedBlockPos(c, "to")), BlockStateArgument.getBlock(c, "block"), FillCommand.Mode.REPLACE, (b) -> b.getLevel().isEmptyBlock(b.getPos()), false)))))));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> wrapWithMode(CommandBuildContext var0, ArgumentBuilder<CommandSourceStack, ?> var1, InCommandFunction<CommandContext<CommandSourceStack>, BlockPos> var2, InCommandFunction<CommandContext<CommandSourceStack>, BlockPos> var3, InCommandFunction<CommandContext<CommandSourceStack>, BlockInput> var4, NullableCommandFunction<CommandContext<CommandSourceStack>, Predicate<BlockInWorld>> var5) {
-      return var1.executes((var4x) -> fillBlocks((CommandSourceStack)var4x.getSource(), BoundingBox.fromCorners((Vec3i)var2.apply(var4x), (Vec3i)var3.apply(var4x)), (BlockInput)var4.apply(var4x), FillCommand.Mode.REPLACE, (Predicate)var5.apply(var4x), false)).then(Commands.literal("outline").executes((var4x) -> fillBlocks((CommandSourceStack)var4x.getSource(), BoundingBox.fromCorners((Vec3i)var2.apply(var4x), (Vec3i)var3.apply(var4x)), (BlockInput)var4.apply(var4x), FillCommand.Mode.OUTLINE, (Predicate)var5.apply(var4x), false))).then(Commands.literal("hollow").executes((var4x) -> fillBlocks((CommandSourceStack)var4x.getSource(), BoundingBox.fromCorners((Vec3i)var2.apply(var4x), (Vec3i)var3.apply(var4x)), (BlockInput)var4.apply(var4x), FillCommand.Mode.HOLLOW, (Predicate)var5.apply(var4x), false))).then(Commands.literal("destroy").executes((var4x) -> fillBlocks((CommandSourceStack)var4x.getSource(), BoundingBox.fromCorners((Vec3i)var2.apply(var4x), (Vec3i)var3.apply(var4x)), (BlockInput)var4.apply(var4x), FillCommand.Mode.DESTROY, (Predicate)var5.apply(var4x), false))).then(Commands.literal("strict").executes((var4x) -> fillBlocks((CommandSourceStack)var4x.getSource(), BoundingBox.fromCorners((Vec3i)var2.apply(var4x), (Vec3i)var3.apply(var4x)), (BlockInput)var4.apply(var4x), FillCommand.Mode.REPLACE, (Predicate)var5.apply(var4x), true)));
+   private static ArgumentBuilder<CommandSourceStack, ?> wrapWithMode(final CommandBuildContext context, final ArgumentBuilder<CommandSourceStack, ?> builder, final InCommandFunction<CommandContext<CommandSourceStack>, BlockPos> from, final InCommandFunction<CommandContext<CommandSourceStack>, BlockPos> to, final InCommandFunction<CommandContext<CommandSourceStack>, BlockInput> block, final NullableCommandFunction<CommandContext<CommandSourceStack>, Predicate<BlockInWorld>> filter) {
+      return builder.executes((c) -> fillBlocks((CommandSourceStack)c.getSource(), BoundingBox.fromCorners(from.apply(c), to.apply(c)), block.apply(c), FillCommand.Mode.REPLACE, filter.apply(c), false)).then(Commands.literal("outline").executes((c) -> fillBlocks((CommandSourceStack)c.getSource(), BoundingBox.fromCorners(from.apply(c), to.apply(c)), block.apply(c), FillCommand.Mode.OUTLINE, filter.apply(c), false))).then(Commands.literal("hollow").executes((c) -> fillBlocks((CommandSourceStack)c.getSource(), BoundingBox.fromCorners(from.apply(c), to.apply(c)), block.apply(c), FillCommand.Mode.HOLLOW, filter.apply(c), false))).then(Commands.literal("destroy").executes((c) -> fillBlocks((CommandSourceStack)c.getSource(), BoundingBox.fromCorners(from.apply(c), to.apply(c)), block.apply(c), FillCommand.Mode.DESTROY, filter.apply(c), false))).then(Commands.literal("strict").executes((c) -> fillBlocks((CommandSourceStack)c.getSource(), BoundingBox.fromCorners(from.apply(c), to.apply(c)), block.apply(c), FillCommand.Mode.REPLACE, filter.apply(c), true)));
    }
 
-   private static int fillBlocks(CommandSourceStack var0, BoundingBox var1, BlockInput var2, Mode var3, @Nullable Predicate<BlockInWorld> var4, boolean var5) throws CommandSyntaxException {
-      int var6 = var1.getXSpan() * var1.getYSpan() * var1.getZSpan();
-      int var7 = (Integer)var0.getLevel().getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
-      if (var6 > var7) {
-         throw ERROR_AREA_TOO_LARGE.create(var7, var6);
+   private static int fillBlocks(final CommandSourceStack source, final BoundingBox region, final BlockInput target, final Mode mode, final @Nullable Predicate<BlockInWorld> predicate, final boolean strict) throws CommandSyntaxException {
+      int area = region.getXSpan() * region.getYSpan() * region.getZSpan();
+      int limit = (Integer)source.getLevel().getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
+      if (area > limit) {
+         throw ERROR_AREA_TOO_LARGE.create(limit, area);
       } else {
-         ArrayList var8 = Lists.newArrayList();
-         ServerLevel var9 = var0.getLevel();
-         if (var9.isDebug()) {
+         record UpdatedPosition(BlockPos pos, BlockState oldState) {
+            UpdatedPosition {
+               super();
+            }
+         }
+
+         List<UpdatedPosition> updatePositions = Lists.newArrayList();
+         ServerLevel level = source.getLevel();
+         if (level.isDebug()) {
             throw ERROR_FAILED.create();
          } else {
-            int var10 = 0;
+            int count = 0;
 
-            record 1UpdatedPosition(BlockPos pos, BlockState oldState) {
-               final BlockPos pos;
-               final BlockState oldState;
-
-               _UpdatedPosition/* $FF was: 1UpdatedPosition*/(BlockPos var1, BlockState var2) {
-                  super();
-                  this.pos = var1;
-                  this.oldState = var2;
-               }
-            }
-
-            for(BlockPos var12 : BlockPos.betweenClosed(var1.minX(), var1.minY(), var1.minZ(), var1.maxX(), var1.maxY(), var1.maxZ())) {
-               if (var4 == null || var4.test(new BlockInWorld(var9, var12, true))) {
-                  BlockState var13 = var9.getBlockState(var12);
-                  boolean var14 = false;
-                  if (var3.affector.affect(var9, var12)) {
-                     var14 = true;
+            for(BlockPos pos : BlockPos.betweenClosed(region.minX(), region.minY(), region.minZ(), region.maxX(), region.maxY(), region.maxZ())) {
+               if (predicate == null || predicate.test(new BlockInWorld(level, pos, true))) {
+                  BlockState oldState = level.getBlockState(pos);
+                  boolean affected = false;
+                  if (mode.affector.affect(level, pos)) {
+                     affected = true;
                   }
 
-                  BlockInput var15 = var3.filter.filter(var1, var12, var2, var9);
-                  if (var15 == null) {
-                     if (var14) {
-                        ++var10;
+                  BlockInput block = mode.filter.filter(region, pos, target, level);
+                  if (block == null) {
+                     if (affected) {
+                        ++count;
                      }
-                  } else if (!var15.place(var9, var12, 2 | (var5 ? 816 : 256))) {
-                     if (var14) {
-                        ++var10;
+                  } else if (!block.place(level, pos, 2 | (strict ? 816 : 256))) {
+                     if (affected) {
+                        ++count;
                      }
                   } else {
-                     if (!var5) {
-                        var8.add(new 1UpdatedPosition(var12.immutable(), var13));
+                     if (!strict) {
+                        updatePositions.add(new UpdatedPosition(pos.immutable(), oldState));
                      }
 
-                     ++var10;
+                     ++count;
                   }
                }
             }
 
-            for(1UpdatedPosition var17 : var8) {
-               var9.updateNeighboursOnBlockSet(var17.pos, var17.oldState);
+            for(UpdatedPosition pos : updatePositions) {
+               level.updateNeighboursOnBlockSet(pos.pos, pos.oldState);
             }
 
-            if (var10 == 0) {
+            if (count == 0) {
                throw ERROR_FAILED.create();
             } else {
-               var0.sendSuccess(() -> Component.translatable("commands.fill.success", var10), true);
-               return var10;
+               source.sendSuccess(() -> Component.translatable("commands.fill.success", count), true);
+               return count;
             }
          }
       }
@@ -117,18 +111,18 @@ public class FillCommand {
       ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.fill.failed"));
    }
 
-   static enum Mode {
+   private static enum Mode {
       REPLACE(FillCommand.Affector.NOOP, FillCommand.Filter.NOOP),
-      OUTLINE(FillCommand.Affector.NOOP, (var0, var1, var2, var3) -> var1.getX() != var0.minX() && var1.getX() != var0.maxX() && var1.getY() != var0.minY() && var1.getY() != var0.maxY() && var1.getZ() != var0.minZ() && var1.getZ() != var0.maxZ() ? null : var2),
-      HOLLOW(FillCommand.Affector.NOOP, (var0, var1, var2, var3) -> var1.getX() != var0.minX() && var1.getX() != var0.maxX() && var1.getY() != var0.minY() && var1.getY() != var0.maxY() && var1.getZ() != var0.minZ() && var1.getZ() != var0.maxZ() ? FillCommand.HOLLOW_CORE : var2),
-      DESTROY((var0, var1) -> var0.destroyBlock(var1, true), FillCommand.Filter.NOOP);
+      OUTLINE(FillCommand.Affector.NOOP, (r, p, b, l) -> p.getX() != r.minX() && p.getX() != r.maxX() && p.getY() != r.minY() && p.getY() != r.maxY() && p.getZ() != r.minZ() && p.getZ() != r.maxZ() ? null : b),
+      HOLLOW(FillCommand.Affector.NOOP, (r, p, b, l) -> p.getX() != r.minX() && p.getX() != r.maxX() && p.getY() != r.minY() && p.getY() != r.maxY() && p.getZ() != r.minZ() && p.getZ() != r.maxZ() ? FillCommand.HOLLOW_CORE : b),
+      DESTROY((l, p) -> l.destroyBlock(p, true), FillCommand.Filter.NOOP);
 
       public final Filter filter;
       public final Affector affector;
 
-      private Mode(final Affector var3, final Filter var4) {
-         this.affector = var3;
-         this.filter = var4;
+      private Mode(final Affector affector, final Filter filter) {
+         this.affector = affector;
+         this.filter = filter;
       }
 
       // $FF: synthetic method
@@ -139,20 +133,20 @@ public class FillCommand {
 
    @FunctionalInterface
    public interface Filter {
-      Filter NOOP = (var0, var1, var2, var3) -> var2;
+      Filter NOOP = (r, p, b, l) -> b;
 
-      @Nullable BlockInput filter(BoundingBox var1, BlockPos var2, BlockInput var3, ServerLevel var4);
+      @Nullable BlockInput filter(final BoundingBox region, final BlockPos pos, final BlockInput block, final ServerLevel level);
    }
 
    @FunctionalInterface
    public interface Affector {
-      Affector NOOP = (var0, var1) -> false;
+      Affector NOOP = (l, p) -> false;
 
-      boolean affect(ServerLevel var1, BlockPos var2);
+      boolean affect(final ServerLevel level, final BlockPos pos);
    }
 
    @FunctionalInterface
-   interface NullableCommandFunction<T, R> {
-      @Nullable R apply(T var1) throws CommandSyntaxException;
+   private interface NullableCommandFunction<T, R> {
+      @Nullable R apply(T t) throws CommandSyntaxException;
    }
 }

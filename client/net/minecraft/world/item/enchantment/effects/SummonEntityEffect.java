@@ -21,35 +21,33 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public record SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean joinTeam) implements EnchantmentEntityEffect {
-   public static final MapCodec<SummonEntityEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).fieldOf("entity").forGetter(SummonEntityEffect::entityTypes), Codec.BOOL.optionalFieldOf("join_team", false).forGetter(SummonEntityEffect::joinTeam)).apply(var0, SummonEntityEffect::new));
+   public static final MapCodec<SummonEntityEffect> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).fieldOf("entity").forGetter(SummonEntityEffect::entityTypes), Codec.BOOL.optionalFieldOf("join_team", false).forGetter(SummonEntityEffect::joinTeam)).apply(i, SummonEntityEffect::new));
 
-   public SummonEntityEffect(HolderSet<EntityType<?>> var1, boolean var2) {
+   public SummonEntityEffect {
       super();
-      this.entityTypes = var1;
-      this.joinTeam = var2;
    }
 
-   public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-      BlockPos var6 = BlockPos.containing(var5);
-      if (Level.isInSpawnableBounds(var6)) {
-         Optional var7 = this.entityTypes().getRandomElement(var1.getRandom());
-         if (!var7.isEmpty()) {
-            Entity var8 = ((EntityType)((Holder)var7.get()).value()).spawn(var1, var6, EntitySpawnReason.TRIGGERED);
-            if (var8 != null) {
-               if (var8 instanceof LightningBolt) {
-                  LightningBolt var9 = (LightningBolt)var8;
-                  LivingEntity var11 = var3.owner();
+   public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
+      BlockPos blockPos = BlockPos.containing(position);
+      if (Level.isInSpawnableBounds(blockPos)) {
+         Optional<Holder<EntityType<?>>> entityType = this.entityTypes().getRandomElement(serverLevel.getRandom());
+         if (!entityType.isEmpty()) {
+            Entity spawned = ((EntityType)((Holder)entityType.get()).value()).spawn(serverLevel, blockPos, EntitySpawnReason.TRIGGERED);
+            if (spawned != null) {
+               if (spawned instanceof LightningBolt) {
+                  LightningBolt lightningBolt = (LightningBolt)spawned;
+                  LivingEntity var11 = item.owner();
                   if (var11 instanceof ServerPlayer) {
-                     ServerPlayer var10 = (ServerPlayer)var11;
-                     var9.setCause(var10);
+                     ServerPlayer player = (ServerPlayer)var11;
+                     lightningBolt.setCause(player);
                   }
                }
 
-               if (this.joinTeam && var4.getTeam() != null) {
-                  var1.getScoreboard().addPlayerToTeam(var8.getScoreboardName(), var4.getTeam());
+               if (this.joinTeam && entity.getTeam() != null) {
+                  serverLevel.getScoreboard().addPlayerToTeam(spawned.getScoreboardName(), entity.getTeam());
                }
 
-               var8.snapTo(var5.x, var5.y, var5.z, var8.getYRot(), var8.getXRot());
+               spawned.snapTo(position.x, position.y, position.z, spawned.getYRot(), spawned.getXRot());
             }
          }
       }

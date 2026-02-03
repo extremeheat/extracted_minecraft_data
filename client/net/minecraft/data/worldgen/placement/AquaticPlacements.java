@@ -7,6 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.AquaticFeatures;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.BiomeFilter;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
@@ -33,30 +34,30 @@ public class AquaticPlacements {
       super();
    }
 
-   private static List<PlacementModifier> seagrassPlacement(int var0) {
-      return List.of(InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, CountPlacement.of(var0), BiomeFilter.biome());
+   private static List<PlacementModifier> seagrassPlacement(final int count) {
+      return List.of(InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, CountPlacement.of(count), BiomeFilter.biome());
    }
 
-   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
-      HolderGetter var1 = var0.lookup(Registries.CONFIGURED_FEATURE);
-      Holder.Reference var2 = var1.getOrThrow(AquaticFeatures.SEAGRASS_SHORT);
-      Holder.Reference var3 = var1.getOrThrow(AquaticFeatures.SEAGRASS_SLIGHTLY_LESS_SHORT);
-      Holder.Reference var4 = var1.getOrThrow(AquaticFeatures.SEAGRASS_MID);
-      Holder.Reference var5 = var1.getOrThrow(AquaticFeatures.SEAGRASS_TALL);
-      Holder.Reference var6 = var1.getOrThrow(AquaticFeatures.SEA_PICKLE);
-      Holder.Reference var7 = var1.getOrThrow(AquaticFeatures.KELP);
-      Holder.Reference var8 = var1.getOrThrow(AquaticFeatures.WARM_OCEAN_VEGETATION);
-      PlacementUtils.register(var0, SEAGRASS_WARM, var2, seagrassPlacement(80));
-      PlacementUtils.register(var0, SEAGRASS_NORMAL, var2, seagrassPlacement(48));
-      PlacementUtils.register(var0, SEAGRASS_COLD, var2, seagrassPlacement(32));
-      PlacementUtils.register(var0, SEAGRASS_RIVER, var3, seagrassPlacement(48));
-      PlacementUtils.register(var0, SEAGRASS_SWAMP, var4, seagrassPlacement(64));
-      PlacementUtils.register(var0, SEAGRASS_DEEP_WARM, var5, seagrassPlacement(80));
-      PlacementUtils.register(var0, SEAGRASS_DEEP, var5, seagrassPlacement(48));
-      PlacementUtils.register(var0, SEAGRASS_DEEP_COLD, var5, seagrassPlacement(40));
-      PlacementUtils.register(var0, SEA_PICKLE, var6, RarityFilter.onAverageOnceEvery(16), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome());
-      PlacementUtils.register(var0, KELP_COLD, var7, NoiseBasedCountPlacement.of(120, 80.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome());
-      PlacementUtils.register(var0, KELP_WARM, var7, NoiseBasedCountPlacement.of(80, 80.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome());
-      PlacementUtils.register(var0, WARM_OCEAN_VEGETATION, var8, NoiseBasedCountPlacement.of(20, 400.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome());
+   public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
+      HolderGetter<ConfiguredFeature<?, ?>> configuredFeatures = context.<ConfiguredFeature<?, ?>>lookup(Registries.CONFIGURED_FEATURE);
+      Holder.Reference<ConfiguredFeature<?, ?>> seagrassShort = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_SHORT);
+      Holder.Reference<ConfiguredFeature<?, ?>> seagrassSlightlyLessShort = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_SLIGHTLY_LESS_SHORT);
+      Holder.Reference<ConfiguredFeature<?, ?>> seagrassMid = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_MID);
+      Holder.Reference<ConfiguredFeature<?, ?>> seagrassTall = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_TALL);
+      Holder.Reference<ConfiguredFeature<?, ?>> seaPickle = configuredFeatures.getOrThrow(AquaticFeatures.SEA_PICKLE);
+      Holder.Reference<ConfiguredFeature<?, ?>> kelp = configuredFeatures.getOrThrow(AquaticFeatures.KELP);
+      Holder.Reference<ConfiguredFeature<?, ?>> warmOceanVegetation = configuredFeatures.getOrThrow(AquaticFeatures.WARM_OCEAN_VEGETATION);
+      PlacementUtils.register(context, SEAGRASS_WARM, seagrassShort, seagrassPlacement(80));
+      PlacementUtils.register(context, SEAGRASS_NORMAL, seagrassShort, seagrassPlacement(48));
+      PlacementUtils.register(context, SEAGRASS_COLD, seagrassShort, seagrassPlacement(32));
+      PlacementUtils.register(context, SEAGRASS_RIVER, seagrassSlightlyLessShort, seagrassPlacement(48));
+      PlacementUtils.register(context, SEAGRASS_SWAMP, seagrassMid, seagrassPlacement(64));
+      PlacementUtils.register(context, SEAGRASS_DEEP_WARM, seagrassTall, seagrassPlacement(80));
+      PlacementUtils.register(context, SEAGRASS_DEEP, seagrassTall, seagrassPlacement(48));
+      PlacementUtils.register(context, SEAGRASS_DEEP_COLD, seagrassTall, seagrassPlacement(40));
+      PlacementUtils.register(context, SEA_PICKLE, seaPickle, RarityFilter.onAverageOnceEvery(16), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome());
+      PlacementUtils.register(context, KELP_COLD, kelp, NoiseBasedCountPlacement.of(120, 80.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome());
+      PlacementUtils.register(context, KELP_WARM, kelp, NoiseBasedCountPlacement.of(80, 80.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome());
+      PlacementUtils.register(context, WARM_OCEAN_VEGETATION, warmOceanVegetation, NoiseBasedCountPlacement.of(20, 400.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome());
    }
 }

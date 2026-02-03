@@ -2,6 +2,7 @@ package net.minecraft.world.item.slot;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -13,70 +14,67 @@ public interface SlotCollection {
 
    Stream<ItemStack> itemCopies();
 
-   default SlotCollection filter(Predicate<ItemStack> var1) {
-      return new Filtered(this, var1);
+   default SlotCollection filter(final Predicate<? super ItemStack> predicate) {
+      return new Filtered(this, predicate);
    }
 
-   default SlotCollection flatMap(Function<ItemStack, ? extends SlotCollection> var1) {
-      return new FlatMapped(this, var1);
+   default SlotCollection flatMap(final Function<ItemStack, ? extends SlotCollection> mapper) {
+      return new FlatMapped(this, mapper);
    }
 
-   default SlotCollection limit(int var1) {
-      return new Limited(this, var1);
+   default SlotCollection limit(final int limit) {
+      return new Limited(this, limit);
    }
 
-   static SlotCollection of(SlotAccess var0) {
-      return () -> Stream.of(var0.get().copy());
+   static SlotCollection of(final SlotAccess slotAccess) {
+      return () -> Stream.of(slotAccess.get().copy());
    }
 
-   static SlotCollection of(Collection<? extends SlotAccess> var0) {
+   static SlotCollection of(final Collection<? extends SlotAccess> slots) {
       SlotCollection var10000;
-      switch (var0.size()) {
+      switch (slots.size()) {
          case 0 -> var10000 = EMPTY;
-         case 1 -> var10000 = of((SlotAccess)var0.iterator().next());
-         default -> var10000 = () -> var0.stream().map(SlotAccess::get).map(ItemStack::copy);
+         case 1 -> var10000 = of((SlotAccess)slots.iterator().next());
+         default -> var10000 = () -> slots.stream().map(SlotAccess::get).map(ItemStack::copy);
       }
 
       return var10000;
    }
 
-   static SlotCollection concat(SlotCollection var0, SlotCollection var1) {
-      return () -> Stream.concat(var0.itemCopies(), var1.itemCopies());
+   static SlotCollection concat(final SlotCollection first, final SlotCollection second) {
+      return () -> Stream.concat(first.itemCopies(), second.itemCopies());
    }
 
-   static SlotCollection concat(List<? extends SlotCollection> var0) {
+   static SlotCollection concat(final List<? extends SlotCollection> terms) {
       SlotCollection var10000;
-      switch (var0.size()) {
+      switch (terms.size()) {
          case 0 -> var10000 = EMPTY;
-         case 1 -> var10000 = (SlotCollection)var0.getFirst();
-         case 2 -> var10000 = concat((SlotCollection)var0.get(0), (SlotCollection)var0.get(1));
-         default -> var10000 = () -> var0.stream().flatMap(SlotCollection::itemCopies);
+         case 1 -> var10000 = (SlotCollection)terms.getFirst();
+         case 2 -> var10000 = concat((SlotCollection)terms.get(0), (SlotCollection)terms.get(1));
+         default -> var10000 = () -> terms.stream().flatMap(SlotCollection::itemCopies);
       }
 
       return var10000;
    }
 
-   public static record Filtered(SlotCollection slots, Predicate<ItemStack> filter) implements SlotCollection {
-      public Filtered(SlotCollection var1, Predicate<ItemStack> var2) {
+   public static record Filtered(SlotCollection slots, Predicate<? super ItemStack> filter) implements SlotCollection {
+      public Filtered {
          super();
-         this.slots = var1;
-         this.filter = var2;
       }
 
       public Stream<ItemStack> itemCopies() {
          return this.slots.itemCopies().filter(this.filter);
       }
 
-      public SlotCollection filter(Predicate<ItemStack> var1) {
-         return new Filtered(this.slots, this.filter.and(var1));
+      public SlotCollection filter(final Predicate<? super ItemStack> predicate) {
+         Objects.requireNonNull(predicate);
+         return new Filtered(this.slots, (t) -> this.filter.test(t) && predicate.test(t));
       }
    }
 
    public static record FlatMapped(SlotCollection slots, Function<ItemStack, ? extends SlotCollection> mapper) implements SlotCollection {
-      public FlatMapped(SlotCollection var1, Function<ItemStack, ? extends SlotCollection> var2) {
+      public FlatMapped {
          super();
-         this.slots = var1;
-         this.mapper = var2;
       }
 
       public Stream<ItemStack> itemCopies() {
@@ -85,18 +83,16 @@ public interface SlotCollection {
    }
 
    public static record Limited(SlotCollection slots, int limit) implements SlotCollection {
-      public Limited(SlotCollection var1, int var2) {
+      public Limited {
          super();
-         this.slots = var1;
-         this.limit = var2;
       }
 
       public Stream<ItemStack> itemCopies() {
          return this.slots.itemCopies().limit((long)this.limit);
       }
 
-      public SlotCollection limit(int var1) {
-         return new Limited(this.slots, Math.min(this.limit, var1));
+      public SlotCollection limit(final int limit) {
+         return new Limited(this.slots, Math.min(this.limit, limit));
       }
    }
 }

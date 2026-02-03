@@ -20,18 +20,18 @@ public class SetWorldSpawnCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setworldspawn").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition()), WorldCoordinates.ZERO_ROTATION))).then(((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), BlockPosArgument.getSpawnablePos(var0x, "pos"), WorldCoordinates.ZERO_ROTATION))).then(Commands.argument("rotation", RotationArgument.rotation()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), BlockPosArgument.getSpawnablePos(var0x, "pos"), RotationArgument.getRotation(var0x, "rotation"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setworldspawn").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), BlockPos.containing(((CommandSourceStack)c.getSource()).getPosition()), WorldCoordinates.ZERO_ROTATION))).then(((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), BlockPosArgument.getSpawnablePos(c, "pos"), WorldCoordinates.ZERO_ROTATION))).then(Commands.argument("rotation", RotationArgument.rotation()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), BlockPosArgument.getSpawnablePos(c, "pos"), RotationArgument.getRotation(c, "rotation"))))));
    }
 
-   private static int setSpawn(CommandSourceStack var0, BlockPos var1, Coordinates var2) {
-      ServerLevel var3 = var0.getLevel();
-      Vec2 var4 = var2.getRotation(var0);
-      float var5 = var4.y;
-      float var6 = var4.x;
-      LevelData.RespawnData var7 = LevelData.RespawnData.of(var3.dimension(), var1, var5, var6);
-      var3.setRespawnData(var7);
-      var0.sendSuccess(() -> Component.translatable("commands.setworldspawn.success", var1.getX(), var1.getY(), var1.getZ(), var7.yaw(), var7.pitch(), var3.dimension().identifier().toString()), true);
+   private static int setSpawn(final CommandSourceStack source, final BlockPos pos, final Coordinates rotation) {
+      ServerLevel level = source.getLevel();
+      Vec2 rotationVector = rotation.getRotation(source);
+      float yaw = rotationVector.y;
+      float pitch = rotationVector.x;
+      LevelData.RespawnData respawnData = LevelData.RespawnData.of(level.dimension(), pos, yaw, pitch);
+      level.setRespawnData(respawnData);
+      source.sendSuccess(() -> Component.translatable("commands.setworldspawn.success", pos.getX(), pos.getY(), pos.getZ(), respawnData.yaw(), respawnData.pitch(), level.dimension().identifier().toString()), true);
       return 1;
    }
 }

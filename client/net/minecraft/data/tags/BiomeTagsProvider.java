@@ -5,17 +5,18 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 
 public class BiomeTagsProvider extends KeyTagProvider<Biome> {
-   public BiomeTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
-      super(var1, Registries.BIOME, var2);
+   public BiomeTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
+      super(output, Registries.BIOME, lookupProvider);
    }
 
-   protected void addTags(HolderLookup.Provider var1) {
+   protected void addTags(final HolderLookup.Provider registries) {
       this.tag(BiomeTags.IS_DEEP_OCEAN).add(Biomes.DEEP_FROZEN_OCEAN).add(Biomes.DEEP_COLD_OCEAN).add(Biomes.DEEP_OCEAN).add(Biomes.DEEP_LUKEWARM_OCEAN);
       this.tag(BiomeTags.IS_OCEAN).addTag(BiomeTags.IS_DEEP_OCEAN).add(Biomes.FROZEN_OCEAN).add(Biomes.OCEAN).add(Biomes.COLD_OCEAN).add(Biomes.LUKEWARM_OCEAN).add(Biomes.WARM_OCEAN);
       this.tag(BiomeTags.IS_BEACH).add(Biomes.BEACH).add(Biomes.SNOWY_BEACH);
@@ -28,8 +29,8 @@ public class BiomeTagsProvider extends KeyTagProvider<Biome> {
       this.tag(BiomeTags.IS_FOREST).add(Biomes.FOREST).add(Biomes.FLOWER_FOREST).add(Biomes.BIRCH_FOREST).add(Biomes.OLD_GROWTH_BIRCH_FOREST).add(Biomes.DARK_FOREST).add(Biomes.PALE_GARDEN).add(Biomes.GROVE);
       this.tag(BiomeTags.IS_SAVANNA).add(Biomes.SAVANNA).add(Biomes.SAVANNA_PLATEAU).add(Biomes.WINDSWEPT_SAVANNA);
       this.tag(BiomeTags.IS_NETHER).addAll(MultiNoiseBiomeSourceParameterList.Preset.NETHER.usedBiomes());
-      List var2 = MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD.usedBiomes().toList();
-      this.tag(BiomeTags.IS_OVERWORLD).addAll(var2);
+      List<ResourceKey<Biome>> overworldBiomes = MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD.usedBiomes().toList();
+      this.tag(BiomeTags.IS_OVERWORLD).addAll(overworldBiomes);
       this.tag(BiomeTags.IS_END).add(Biomes.THE_END).add(Biomes.END_HIGHLANDS).add(Biomes.END_MIDLANDS).add(Biomes.SMALL_END_ISLANDS).add(Biomes.END_BARRENS);
       this.tag(BiomeTags.HAS_BURIED_TREASURE).addTag(BiomeTags.IS_BEACH);
       this.tag(BiomeTags.HAS_DESERT_PYRAMID).add(Biomes.DESERT);
@@ -61,7 +62,7 @@ public class BiomeTagsProvider extends KeyTagProvider<Biome> {
       this.tag(BiomeTags.HAS_WOODLAND_MANSION).add(Biomes.DARK_FOREST).add(Biomes.PALE_GARDEN);
       this.tag(BiomeTags.STRONGHOLD_BIASED_TO).add(Biomes.PLAINS).add(Biomes.SUNFLOWER_PLAINS).add(Biomes.SNOWY_PLAINS).add(Biomes.ICE_SPIKES).add(Biomes.DESERT).add(Biomes.FOREST).add(Biomes.FLOWER_FOREST).add(Biomes.BIRCH_FOREST).add(Biomes.DARK_FOREST).add(Biomes.PALE_GARDEN).add(Biomes.OLD_GROWTH_BIRCH_FOREST).add(Biomes.OLD_GROWTH_PINE_TAIGA).add(Biomes.OLD_GROWTH_SPRUCE_TAIGA).add(Biomes.TAIGA).add(Biomes.SNOWY_TAIGA).add(Biomes.SAVANNA).add(Biomes.SAVANNA_PLATEAU).add(Biomes.WINDSWEPT_HILLS).add(Biomes.WINDSWEPT_GRAVELLY_HILLS).add(Biomes.WINDSWEPT_FOREST).add(Biomes.WINDSWEPT_SAVANNA).add(Biomes.JUNGLE).add(Biomes.SPARSE_JUNGLE).add(Biomes.BAMBOO_JUNGLE).add(Biomes.BADLANDS).add(Biomes.ERODED_BADLANDS).add(Biomes.WOODED_BADLANDS).add(Biomes.MEADOW).add(Biomes.CHERRY_GROVE).add(Biomes.GROVE).add(Biomes.SNOWY_SLOPES).add(Biomes.FROZEN_PEAKS).add(Biomes.JAGGED_PEAKS).add(Biomes.STONY_PEAKS).add(Biomes.MUSHROOM_FIELDS).add(Biomes.DRIPSTONE_CAVES).add(Biomes.LUSH_CAVES);
       this.tag(BiomeTags.HAS_STRONGHOLD).addTag(BiomeTags.IS_OVERWORLD);
-      this.tag(BiomeTags.HAS_TRIAL_CHAMBERS).addAll(var2.stream().filter((var0) -> var0 != Biomes.DEEP_DARK));
+      this.tag(BiomeTags.HAS_TRIAL_CHAMBERS).addAll(overworldBiomes.stream().filter((biomeKey) -> biomeKey != Biomes.DEEP_DARK));
       this.tag(BiomeTags.HAS_NETHER_FORTRESS).addTag(BiomeTags.IS_NETHER);
       this.tag(BiomeTags.HAS_NETHER_FOSSIL).add(Biomes.SOUL_SAND_VALLEY);
       this.tag(BiomeTags.HAS_BASTION_REMNANT).add(Biomes.CRIMSON_FOREST).add(Biomes.NETHER_WASTES).add(Biomes.SOUL_SAND_VALLEY).add(Biomes.WARPED_FOREST);

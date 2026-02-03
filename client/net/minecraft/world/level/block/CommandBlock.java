@@ -32,7 +32,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
-   public static final MapCodec<CommandBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("automatic").forGetter((var0x) -> var0x.automatic), propertiesCodec()).apply(var0, CommandBlock::new));
+   public static final MapCodec<CommandBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("automatic").forGetter((b) -> b.automatic), propertiesCodec()).apply(i, CommandBlock::new));
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty CONDITIONAL;
@@ -42,179 +42,179 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       return CODEC;
    }
 
-   public CommandBlock(boolean var1, BlockBehaviour.Properties var2) {
-      super(var2);
+   public CommandBlock(final boolean automatic, final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(CONDITIONAL, false));
-      this.automatic = var1;
+      this.automatic = automatic;
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      CommandBlockEntity var3 = new CommandBlockEntity(var1, var2);
-      var3.setAutomatic(this.automatic);
-      return var3;
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      CommandBlockEntity blockEntity = new CommandBlockEntity(worldPosition, blockState);
+      blockEntity.setAutomatic(this.automatic);
+      return blockEntity;
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide()) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof CommandBlockEntity) {
-            CommandBlockEntity var8 = (CommandBlockEntity)var7;
-            this.setPoweredAndUpdate(var2, var3, var8, var2.hasNeighborSignal(var3));
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (!level.isClientSide()) {
+         BlockEntity blockEntity = level.getBlockEntity(pos);
+         if (blockEntity instanceof CommandBlockEntity) {
+            CommandBlockEntity commandBlock = (CommandBlockEntity)blockEntity;
+            this.setPoweredAndUpdate(level, pos, commandBlock, level.hasNeighborSignal(pos));
          }
 
       }
    }
 
-   private void setPoweredAndUpdate(Level var1, BlockPos var2, CommandBlockEntity var3, boolean var4) {
-      boolean var5 = var3.isPowered();
-      if (var4 != var5) {
-         var3.setPowered(var4);
-         if (var4) {
-            if (var3.isAutomatic() || var3.getMode() == CommandBlockEntity.Mode.SEQUENCE) {
+   private void setPoweredAndUpdate(final Level level, final BlockPos pos, final CommandBlockEntity commandBlock, final boolean isPowered) {
+      boolean wasPowered = commandBlock.isPowered();
+      if (isPowered != wasPowered) {
+         commandBlock.setPowered(isPowered);
+         if (isPowered) {
+            if (commandBlock.isAutomatic() || commandBlock.getMode() == CommandBlockEntity.Mode.SEQUENCE) {
                return;
             }
 
-            var3.markConditionMet();
-            var1.scheduleTick(var2, this, 1);
+            commandBlock.markConditionMet();
+            level.scheduleTick(pos, this, 1);
          }
 
       }
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof CommandBlockEntity var6) {
-         BaseCommandBlock var7 = var6.getCommandBlock();
-         boolean var8 = !StringUtil.isNullOrEmpty(var7.getCommand());
-         CommandBlockEntity.Mode var9 = var6.getMode();
-         boolean var10 = var6.wasConditionMet();
-         if (var9 == CommandBlockEntity.Mode.AUTO) {
-            var6.markConditionMet();
-            if (var10) {
-               this.execute(var1, var2, var3, var7, var8);
-            } else if (var6.isConditional()) {
-               var7.setSuccessCount(0);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof CommandBlockEntity commandBlock) {
+         BaseCommandBlock baseCommandBlock = commandBlock.getCommandBlock();
+         boolean commandSet = !StringUtil.isNullOrEmpty(baseCommandBlock.getCommand());
+         CommandBlockEntity.Mode mode = commandBlock.getMode();
+         boolean wasConditionMet = commandBlock.wasConditionMet();
+         if (mode == CommandBlockEntity.Mode.AUTO) {
+            commandBlock.markConditionMet();
+            if (wasConditionMet) {
+               this.execute(state, level, pos, baseCommandBlock, commandSet);
+            } else if (commandBlock.isConditional()) {
+               baseCommandBlock.setSuccessCount(0);
             }
 
-            if (var6.isPowered() || var6.isAutomatic()) {
-               var2.scheduleTick(var3, this, 1);
+            if (commandBlock.isPowered() || commandBlock.isAutomatic()) {
+               level.scheduleTick(pos, this, 1);
             }
-         } else if (var9 == CommandBlockEntity.Mode.REDSTONE) {
-            if (var10) {
-               this.execute(var1, var2, var3, var7, var8);
-            } else if (var6.isConditional()) {
-               var7.setSuccessCount(0);
+         } else if (mode == CommandBlockEntity.Mode.REDSTONE) {
+            if (wasConditionMet) {
+               this.execute(state, level, pos, baseCommandBlock, commandSet);
+            } else if (commandBlock.isConditional()) {
+               baseCommandBlock.setSuccessCount(0);
             }
          }
 
-         var2.updateNeighbourForOutputSignal(var3, this);
+         level.updateNeighbourForOutputSignal(pos, this);
       }
 
    }
 
-   private void execute(BlockState var1, ServerLevel var2, BlockPos var3, BaseCommandBlock var4, boolean var5) {
-      if (var5) {
-         var4.performCommand(var2);
+   private void execute(final BlockState state, final ServerLevel level, final BlockPos pos, final BaseCommandBlock baseCommandBlock, final boolean commandSet) {
+      if (commandSet) {
+         baseCommandBlock.performCommand(level);
       } else {
-         var4.setSuccessCount(0);
+         baseCommandBlock.setSuccessCount(0);
       }
 
-      executeChain(var2, var3, (Direction)var1.getValue(FACING));
+      executeChain(level, pos, (Direction)state.getValue(FACING));
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof CommandBlockEntity && var4.canUseGameMasterBlocks()) {
-         var4.openCommandBlock((CommandBlockEntity)var6);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof CommandBlockEntity && player.canUseGameMasterBlocks()) {
+         player.openCommandBlock((CommandBlockEntity)blockEntity);
          return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      return var5 instanceof CommandBlockEntity ? ((CommandBlockEntity)var5).getCommandBlock().getSuccessCount() : 0;
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      return blockEntity instanceof CommandBlockEntity ? ((CommandBlockEntity)blockEntity).getCommandBlock().getSuccessCount() : 0;
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      BlockEntity var6 = var1.getBlockEntity(var2);
-      if (var6 instanceof CommandBlockEntity var7) {
-         BaseCommandBlock var8 = var7.getCommandBlock();
-         if (var1 instanceof ServerLevel var9) {
-            if (!var5.has(DataComponents.BLOCK_ENTITY_DATA)) {
-               var8.setTrackOutput((Boolean)var9.getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK));
-               var7.setAutomatic(this.automatic);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof CommandBlockEntity commandBlockEntity) {
+         BaseCommandBlock commandBlock = commandBlockEntity.getCommandBlock();
+         if (level instanceof ServerLevel serverLevel) {
+            if (!itemStack.has(DataComponents.BLOCK_ENTITY_DATA)) {
+               commandBlock.setTrackOutput((Boolean)serverLevel.getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK));
+               commandBlockEntity.setAutomatic(this.automatic);
             }
 
-            boolean var10 = var1.hasNeighborSignal(var2);
-            this.setPoweredAndUpdate(var1, var2, var7, var10);
+            boolean hasNeighborSignal = level.hasNeighborSignal(pos);
+            this.setPoweredAndUpdate(level, pos, commandBlockEntity, hasNeighborSignal);
          }
 
       }
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, CONDITIONAL);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, CONDITIONAL);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
    }
 
-   private static void executeChain(ServerLevel var0, BlockPos var1, Direction var2) {
-      BlockPos.MutableBlockPos var3 = var1.mutable();
-      GameRules var4 = var0.getGameRules();
+   private static void executeChain(final ServerLevel level, final BlockPos blockPos, Direction direction) {
+      BlockPos.MutableBlockPos pos = blockPos.mutable();
+      GameRules gameRules = level.getGameRules();
 
-      int var5;
-      BlockState var6;
-      for(var5 = (Integer)var4.get(GameRules.MAX_COMMAND_SEQUENCE_LENGTH); var5-- > 0; var2 = (Direction)var6.getValue(FACING)) {
-         var3.move(var2);
-         var6 = var0.getBlockState(var3);
-         Block var7 = var6.getBlock();
-         if (!var6.is(Blocks.CHAIN_COMMAND_BLOCK)) {
+      int maxIterations;
+      BlockState state;
+      for(maxIterations = (Integer)gameRules.get(GameRules.MAX_COMMAND_SEQUENCE_LENGTH); maxIterations-- > 0; direction = (Direction)state.getValue(FACING)) {
+         pos.move(direction);
+         state = level.getBlockState(pos);
+         Block block = state.getBlock();
+         if (!state.is(Blocks.CHAIN_COMMAND_BLOCK)) {
             break;
          }
 
-         BlockEntity var8 = var0.getBlockEntity(var3);
-         if (!(var8 instanceof CommandBlockEntity)) {
+         BlockEntity blockEntity = level.getBlockEntity(pos);
+         if (!(blockEntity instanceof CommandBlockEntity)) {
             break;
          }
 
-         CommandBlockEntity var9 = (CommandBlockEntity)var8;
-         if (var9.getMode() != CommandBlockEntity.Mode.SEQUENCE) {
+         CommandBlockEntity commandBlock = (CommandBlockEntity)blockEntity;
+         if (commandBlock.getMode() != CommandBlockEntity.Mode.SEQUENCE) {
             break;
          }
 
-         if (var9.isPowered() || var9.isAutomatic()) {
-            BaseCommandBlock var10 = var9.getCommandBlock();
-            if (var9.markConditionMet()) {
-               if (!var10.performCommand(var0)) {
+         if (commandBlock.isPowered() || commandBlock.isAutomatic()) {
+            BaseCommandBlock baseCommandBlock = commandBlock.getCommandBlock();
+            if (commandBlock.markConditionMet()) {
+               if (!baseCommandBlock.performCommand(level)) {
                   break;
                }
 
-               var0.updateNeighbourForOutputSignal(var3, var7);
-            } else if (var9.isConditional()) {
-               var10.setSuccessCount(0);
+               level.updateNeighbourForOutputSignal(pos, block);
+            } else if (commandBlock.isConditional()) {
+               baseCommandBlock.setSuccessCount(0);
             }
          }
       }
 
-      if (var5 <= 0) {
-         int var11 = Math.max((Integer)var4.get(GameRules.MAX_COMMAND_SEQUENCE_LENGTH), 0);
-         LOGGER.warn("Command Block chain tried to execute more than {} steps!", var11);
+      if (maxIterations <= 0) {
+         int limit = Math.max((Integer)gameRules.get(GameRules.MAX_COMMAND_SEQUENCE_LENGTH), 0);
+         LOGGER.warn("Command Block chain tried to execute more than {} steps!", limit);
       }
 
    }

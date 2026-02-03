@@ -24,56 +24,56 @@ public class TagNetworkSerialization {
       super();
    }
 
-   public static Map<ResourceKey<? extends Registry<?>>, NetworkPayload> serializeTagsToNetwork(LayeredRegistryAccess<RegistryLayer> var0) {
-      return (Map)RegistrySynchronization.networkSafeRegistries(var0).map((var0x) -> Pair.of(var0x.key(), serializeToNetwork(var0x.value()))).filter((var0x) -> !((NetworkPayload)var0x.getSecond()).isEmpty()).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
+   public static Map<ResourceKey<? extends Registry<?>>, NetworkPayload> serializeTagsToNetwork(final LayeredRegistryAccess<RegistryLayer> registries) {
+      return (Map)RegistrySynchronization.networkSafeRegistries(registries).map((e) -> Pair.of(e.key(), serializeToNetwork(e.value()))).filter((e) -> !((NetworkPayload)e.getSecond()).isEmpty()).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
    }
 
-   private static <T> NetworkPayload serializeToNetwork(Registry<T> var0) {
-      HashMap var1 = new HashMap();
-      var0.getTags().forEach((var2) -> {
-         IntArrayList var3 = new IntArrayList(var2.size());
+   private static <T> NetworkPayload serializeToNetwork(final Registry<T> registry) {
+      Map<Identifier, IntList> result = new HashMap();
+      registry.getTags().forEach((tag) -> {
+         IntList ids = new IntArrayList(tag.size());
 
-         for(Holder var5 : var2) {
-            if (var5.kind() != Holder.Kind.REFERENCE) {
-               throw new IllegalStateException("Can't serialize unregistered value " + String.valueOf(var5));
+         for(Holder<T> holder : tag) {
+            if (holder.kind() != Holder.Kind.REFERENCE) {
+               throw new IllegalStateException("Can't serialize unregistered value " + String.valueOf(holder));
             }
 
-            var3.add(var0.getId(var5.value()));
+            ids.add(registry.getId(holder.value()));
          }
 
-         var1.put(var2.key().location(), var3);
+         result.put(tag.key().location(), ids);
       });
-      return new NetworkPayload(var1);
+      return new NetworkPayload(result);
    }
 
-   static <T> TagLoader.LoadResult<T> deserializeTagsFromNetwork(Registry<T> var0, NetworkPayload var1) {
-      ResourceKey var2 = var0.key();
-      HashMap var3 = new HashMap();
-      var1.tags.forEach((var3x, var4) -> {
-         TagKey var5 = TagKey.create(var2, var3x);
-         IntStream var10000 = var4.intStream();
-         Objects.requireNonNull(var0);
-         List var6 = (List)var10000.mapToObj(var0::get).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
-         var3.put(var5, var6);
+   private static <T> TagLoader.LoadResult<T> deserializeTagsFromNetwork(final Registry<T> registry, final NetworkPayload payload) {
+      ResourceKey<? extends Registry<T>> registryKey = registry.key();
+      Map<TagKey<T>, List<Holder<T>>> tags = new HashMap();
+      payload.tags.forEach((key, ids) -> {
+         TagKey<T> tagKey = TagKey.<T>create(registryKey, key);
+         IntStream var10000 = ids.intStream();
+         Objects.requireNonNull(registry);
+         List<Holder<T>> values = (List)var10000.mapToObj(registry::get).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
+         tags.put(tagKey, values);
       });
-      return new TagLoader.LoadResult<T>(var2, var3);
+      return new TagLoader.LoadResult<T>(registryKey, tags);
    }
 
    public static final class NetworkPayload {
       public static final NetworkPayload EMPTY = new NetworkPayload(Map.of());
-      final Map<Identifier, IntList> tags;
+      private final Map<Identifier, IntList> tags;
 
-      NetworkPayload(Map<Identifier, IntList> var1) {
+      NetworkPayload(final Map<Identifier, IntList> tags) {
          super();
-         this.tags = var1;
+         this.tags = tags;
       }
 
-      public void write(FriendlyByteBuf var1) {
-         var1.writeMap(this.tags, FriendlyByteBuf::writeIdentifier, FriendlyByteBuf::writeIntIdList);
+      public void write(final FriendlyByteBuf buf) {
+         buf.writeMap(this.tags, FriendlyByteBuf::writeIdentifier, FriendlyByteBuf::writeIntIdList);
       }
 
-      public static NetworkPayload read(FriendlyByteBuf var0) {
-         return new NetworkPayload(var0.readMap(FriendlyByteBuf::readIdentifier, FriendlyByteBuf::readIntIdList));
+      public static NetworkPayload read(final FriendlyByteBuf buf) {
+         return new NetworkPayload(buf.readMap(FriendlyByteBuf::readIdentifier, FriendlyByteBuf::readIntIdList));
       }
 
       public boolean isEmpty() {
@@ -84,8 +84,8 @@ public class TagNetworkSerialization {
          return this.tags.size();
       }
 
-      public <T> TagLoader.LoadResult<T> resolve(Registry<T> var1) {
-         return TagNetworkSerialization.<T>deserializeTagsFromNetwork(var1, this);
+      public <T> TagLoader.LoadResult<T> resolve(final Registry<T> registry) {
+         return TagNetworkSerialization.<T>deserializeTagsFromNetwork(registry, this);
       }
    }
 }

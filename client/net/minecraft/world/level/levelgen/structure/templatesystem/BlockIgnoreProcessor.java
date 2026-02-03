@@ -18,13 +18,13 @@ public class BlockIgnoreProcessor extends StructureProcessor {
    public static final BlockIgnoreProcessor STRUCTURE_AND_AIR;
    private final ImmutableList<Block> toIgnore;
 
-   public BlockIgnoreProcessor(List<Block> var1) {
+   public BlockIgnoreProcessor(final List<Block> toIgnore) {
       super();
-      this.toIgnore = ImmutableList.copyOf(var1);
+      this.toIgnore = ImmutableList.copyOf(toIgnore);
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      return this.toIgnore.contains(var5.state().getBlock()) ? null : var5;
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+      return this.toIgnore.contains(processedBlockInfo.state().getBlock()) ? null : processedBlockInfo;
    }
 
    protected StructureProcessorType<?> getType() {
@@ -32,7 +32,7 @@ public class BlockIgnoreProcessor extends StructureProcessor {
    }
 
    static {
-      CODEC = BlockState.CODEC.xmap(BlockBehaviour.BlockStateBase::getBlock, Block::defaultBlockState).listOf().fieldOf("blocks").xmap(BlockIgnoreProcessor::new, (var0) -> var0.toIgnore);
+      CODEC = BlockState.CODEC.xmap(BlockBehaviour.BlockStateBase::getBlock, Block::defaultBlockState).listOf().fieldOf("blocks").xmap(BlockIgnoreProcessor::new, (p) -> p.toIgnore);
       STRUCTURE_BLOCK = new BlockIgnoreProcessor(ImmutableList.of(Blocks.STRUCTURE_BLOCK));
       AIR = new BlockIgnoreProcessor(ImmutableList.of(Blocks.AIR));
       STRUCTURE_AND_AIR = new BlockIgnoreProcessor(ImmutableList.of(Blocks.AIR, Blocks.STRUCTURE_BLOCK));

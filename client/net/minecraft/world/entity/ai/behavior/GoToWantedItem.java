@@ -1,9 +1,11 @@
 package net.minecraft.world.entity.ai.behavior;
 
+import com.mojang.datafixers.kinds.K1;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
+import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -13,19 +15,19 @@ public class GoToWantedItem {
       super();
    }
 
-   public static BehaviorControl<LivingEntity> create(float var0, boolean var1, int var2) {
-      return create((var0x) -> true, var0, var1, var2);
+   public static BehaviorControl<LivingEntity> create(final float speedModifier, final boolean interruptOngoingWalk, final int maxDistToWalk) {
+      return create((body) -> true, speedModifier, interruptOngoingWalk, maxDistToWalk);
    }
 
-   public static <E extends LivingEntity> BehaviorControl<E> create(Predicate<E> var0, float var1, boolean var2, int var3) {
-      return BehaviorBuilder.create((Function)((var4) -> {
-         BehaviorBuilder var5 = var2 ? var4.registered(MemoryModuleType.WALK_TARGET) : var4.absent(MemoryModuleType.WALK_TARGET);
-         return var4.group(var4.registered(MemoryModuleType.LOOK_TARGET), var5, var4.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM), var4.registered(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS)).apply(var4, (var4x, var5x, var6, var7) -> (var8, var9, var10) -> {
-               ItemEntity var12 = (ItemEntity)var4.get(var6);
-               if (var4.tryGet(var7).isEmpty() && var0.test(var9) && var12.closerThan(var9, (double)var3) && var9.level().getWorldBorder().isWithinBounds(var12.blockPosition()) && var9.canPickUpLoot()) {
-                  WalkTarget var13 = new WalkTarget(new EntityTracker(var12, false), var1, 0);
-                  var4x.set(new EntityTracker(var12, true));
-                  var5x.set(var13);
+   public static <E extends LivingEntity> BehaviorControl<E> create(final Predicate<E> predicate, final float speedModifier, final boolean interruptOngoingWalk, final int maxDistToWalk) {
+      return BehaviorBuilder.create((Function)((i) -> {
+         BehaviorBuilder<E, ? extends MemoryAccessor<? extends K1, WalkTarget>> walkCondition = interruptOngoingWalk ? i.registered(MemoryModuleType.WALK_TARGET) : i.absent(MemoryModuleType.WALK_TARGET);
+         return i.group(i.registered(MemoryModuleType.LOOK_TARGET), walkCondition, i.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM), i.registered(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS)).apply(i, (lookTarget, walkTarget, wantedItem, cooldown) -> (level, body, timestamp) -> {
+               ItemEntity item = (ItemEntity)i.get(wantedItem);
+               if (i.tryGet(cooldown).isEmpty() && predicate.test(body) && item.closerThan(body, (double)maxDistToWalk) && body.level().getWorldBorder().isWithinBounds(item.blockPosition()) && body.canPickUpLoot()) {
+                  WalkTarget target = new WalkTarget(new EntityTracker(item, false), speedModifier, 0);
+                  lookTarget.set(new EntityTracker(item, true));
+                  walkTarget.set(target);
                   return true;
                } else {
                   return false;

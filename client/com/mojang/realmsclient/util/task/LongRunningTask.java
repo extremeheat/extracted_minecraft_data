@@ -19,38 +19,38 @@ public abstract class LongRunningTask implements Runnable {
       super();
    }
 
-   protected static void pause(long var0) {
+   protected static void pause(final long seconds) {
       try {
-         Thread.sleep(var0 * 1000L);
-      } catch (InterruptedException var3) {
+         Thread.sleep(seconds * 1000L);
+      } catch (InterruptedException e) {
          Thread.currentThread().interrupt();
-         LOGGER.error("", var3);
+         LOGGER.error("", e);
       }
 
    }
 
-   public static void setScreen(Screen var0) {
-      Minecraft var1 = Minecraft.getInstance();
-      var1.execute(() -> var1.setScreen(var0));
+   public static void setScreen(final Screen screen) {
+      Minecraft minecraft = Minecraft.getInstance();
+      minecraft.execute(() -> minecraft.setScreen(screen));
    }
 
-   protected void error(Component var1) {
+   protected void error(final Component errorMessage) {
       this.abortTask();
-      Minecraft var2 = Minecraft.getInstance();
-      var2.execute(() -> var2.setScreen(new RealmsGenericErrorScreen(var1, new RealmsMainScreen(new TitleScreen()))));
+      Minecraft minecraft = Minecraft.getInstance();
+      minecraft.execute(() -> minecraft.setScreen(new RealmsGenericErrorScreen(errorMessage, new RealmsMainScreen(new TitleScreen()))));
    }
 
-   protected void error(Exception var1) {
-      if (var1 instanceof RealmsServiceException var2) {
-         this.error(var2.realmsError.errorMessage());
+   protected void error(final Exception ex) {
+      if (ex instanceof RealmsServiceException rsx) {
+         this.error(rsx.realmsError.errorMessage());
       } else {
-         this.error((Component)Component.literal(var1.getMessage()));
+         this.error((Component)Component.literal(ex.getMessage()));
       }
 
    }
 
-   protected void error(RealmsServiceException var1) {
-      this.error(var1.realmsError.errorMessage());
+   protected void error(final RealmsServiceException ex) {
+      this.error(ex.realmsError.errorMessage());
    }
 
    public abstract Component getTitle();

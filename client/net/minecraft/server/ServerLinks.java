@@ -17,21 +17,20 @@ public record ServerLinks(List<Entry> entries) {
    public static final StreamCodec<ByteBuf, Either<KnownLinkType, Component>> TYPE_STREAM_CODEC;
    public static final StreamCodec<ByteBuf, List<UntrustedEntry>> UNTRUSTED_LINKS_STREAM_CODEC;
 
-   public ServerLinks(List<Entry> var1) {
+   public ServerLinks {
       super();
-      this.entries = var1;
    }
 
    public boolean isEmpty() {
       return this.entries.isEmpty();
    }
 
-   public Optional<Entry> findKnownType(KnownLinkType var1) {
-      return this.entries.stream().filter((var1x) -> (Boolean)var1x.type.map((var1xx) -> var1xx == var1, (var0) -> false)).findFirst();
+   public Optional<Entry> findKnownType(final KnownLinkType type) {
+      return this.entries.stream().filter((e) -> (Boolean)e.type.map((l) -> l == type, (r) -> false)).findFirst();
    }
 
    public List<UntrustedEntry> untrust() {
-      return this.entries.stream().map((var0) -> new UntrustedEntry(var0.type, var0.link.toString())).toList();
+      return this.entries.stream().map((e) -> new UntrustedEntry(e.type, e.link.toString())).toList();
    }
 
    static {
@@ -42,10 +41,8 @@ public record ServerLinks(List<Entry> entries) {
    public static record UntrustedEntry(Either<KnownLinkType, Component> type, String link) {
       public static final StreamCodec<ByteBuf, UntrustedEntry> STREAM_CODEC;
 
-      public UntrustedEntry(Either<KnownLinkType, Component> var1, String var2) {
+      public UntrustedEntry {
          super();
-         this.type = var1;
-         this.link = var2;
       }
 
       static {
@@ -54,25 +51,20 @@ public record ServerLinks(List<Entry> entries) {
    }
 
    public static record Entry(Either<KnownLinkType, Component> type, URI link) {
-      final Either<KnownLinkType, Component> type;
-      final URI link;
-
-      public Entry(Either<KnownLinkType, Component> var1, URI var2) {
+      public Entry {
          super();
-         this.type = var1;
-         this.link = var2;
       }
 
-      public static Entry knownType(KnownLinkType var0, URI var1) {
-         return new Entry(Either.left(var0), var1);
+      public static Entry knownType(final KnownLinkType type, final URI link) {
+         return new Entry(Either.left(type), link);
       }
 
-      public static Entry custom(Component var0, URI var1) {
-         return new Entry(Either.right(var0), var1);
+      public static Entry custom(final Component displayName, final URI link) {
+         return new Entry(Either.right(displayName), link);
       }
 
       public Component displayName() {
-         return (Component)this.type.map(KnownLinkType::displayName, (var0) -> var0);
+         return (Component)this.type.map(KnownLinkType::displayName, (r) -> r);
       }
    }
 
@@ -88,22 +80,22 @@ public record ServerLinks(List<Entry> entries) {
       NEWS(8, "news"),
       ANNOUNCEMENTS(9, "announcements");
 
-      private static final IntFunction<KnownLinkType> BY_ID = ByIdMap.<KnownLinkType>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, KnownLinkType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+      private static final IntFunction<KnownLinkType> BY_ID = ByIdMap.<KnownLinkType>continuous((e) -> e.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, KnownLinkType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (e) -> e.id);
       private final int id;
       private final String name;
 
-      private KnownLinkType(final int var3, final String var4) {
-         this.id = var3;
-         this.name = var4;
+      private KnownLinkType(final int id, final String name) {
+         this.id = id;
+         this.name = name;
       }
 
       private Component displayName() {
          return Component.translatable("known_server_link." + this.name);
       }
 
-      public Entry create(URI var1) {
-         return ServerLinks.Entry.knownType(this, var1);
+      public Entry create(final URI link) {
+         return ServerLinks.Entry.knownType(this, link);
       }
 
       // $FF: synthetic method

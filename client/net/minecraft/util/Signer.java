@@ -9,22 +9,22 @@ import org.slf4j.Logger;
 public interface Signer {
    Logger LOGGER = LogUtils.getLogger();
 
-   byte[] sign(SignatureUpdater var1);
+   byte[] sign(SignatureUpdater updater);
 
-   default byte[] sign(byte[] var1) {
-      return this.sign((SignatureUpdater)((var1x) -> var1x.update(var1)));
+   default byte[] sign(final byte[] payload) {
+      return this.sign((SignatureUpdater)((output) -> output.update(payload)));
    }
 
-   static Signer from(PrivateKey var0, String var1) {
-      return (var2) -> {
+   static Signer from(final PrivateKey privateKey, final String algorithm) {
+      return (updater) -> {
          try {
-            Signature var3 = Signature.getInstance(var1);
-            var3.initSign(var0);
-            Objects.requireNonNull(var3);
-            var2.update(var3::update);
-            return var3.sign();
-         } catch (Exception var4) {
-            throw new IllegalStateException("Failed to sign message", var4);
+            Signature signer = Signature.getInstance(algorithm);
+            signer.initSign(privateKey);
+            Objects.requireNonNull(signer);
+            updater.update(signer::update);
+            return signer.sign();
+         } catch (Exception e) {
+            throw new IllegalStateException("Failed to sign message", e);
          }
       };
    }

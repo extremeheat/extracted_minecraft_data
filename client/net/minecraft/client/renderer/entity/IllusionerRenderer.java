@@ -2,13 +2,12 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Arrays;
+import java.util.Objects;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.illager.IllagerModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.IllusionerRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -19,12 +18,16 @@ import net.minecraft.world.phys.Vec3;
 public class IllusionerRenderer extends IllagerRenderer<Illusioner, IllusionerRenderState> {
    private static final Identifier ILLUSIONER = Identifier.withDefaultNamespace("textures/entity/illager/illusioner.png");
 
-   public IllusionerRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new IllagerModel(var1.bakeLayer(ModelLayers.ILLUSIONER)), 0.5F);
+   public IllusionerRenderer(final EntityRendererProvider.Context context) {
+      super(context, new IllagerModel(context.bakeLayer(ModelLayers.ILLUSIONER)), 0.5F);
       this.addLayer(new ItemInHandLayer<IllusionerRenderState, IllagerModel<IllusionerRenderState>>(this) {
-         public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, IllusionerRenderState var4, float var5, float var6) {
-            if (var4.isCastingSpell || var4.isAggressive) {
-               super.submit(var1, var2, var3, var4, var5, var6);
+         {
+            Objects.requireNonNull(IllusionerRenderer.this);
+         }
+
+         public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final IllusionerRenderState state, final float yRot, final float xRot) {
+            if (state.isCastingSpell || state.isAggressive) {
+               super.submit(poseStack, submitNodeCollector, lightCoords, state, yRot, xRot);
             }
 
          }
@@ -32,7 +35,7 @@ public class IllusionerRenderer extends IllagerRenderer<Illusioner, IllusionerRe
       ((IllagerModel)this.model).getHat().visible = true;
    }
 
-   public Identifier getTextureLocation(IllusionerRenderState var1) {
+   public Identifier getTextureLocation(final IllusionerRenderState state) {
       return ILLUSIONER;
    }
 
@@ -40,49 +43,34 @@ public class IllusionerRenderer extends IllagerRenderer<Illusioner, IllusionerRe
       return new IllusionerRenderState();
    }
 
-   public void extractRenderState(Illusioner var1, IllusionerRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      Vec3[] var4 = var1.getIllusionOffsets(var3);
-      var2.illusionOffsets = (Vec3[])Arrays.copyOf(var4, var4.length);
-      var2.isCastingSpell = var1.isCastingSpell();
+   public void extractRenderState(final Illusioner entity, final IllusionerRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      Vec3[] illusionOffsets = entity.getIllusionOffsets(partialTicks);
+      state.illusionOffsets = (Vec3[])Arrays.copyOf(illusionOffsets, illusionOffsets.length);
+      state.isCastingSpell = entity.isCastingSpell();
    }
 
-   public void submit(IllusionerRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      if (var1.isInvisible) {
-         Vec3[] var5 = var1.illusionOffsets;
+   public void submit(final IllusionerRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      if (state.isInvisible) {
+         Vec3[] offsets = state.illusionOffsets;
 
-         for(int var6 = 0; var6 < var5.length; ++var6) {
-            var2.pushPose();
-            var2.translate(var5[var6].x + (double)Mth.cos((double)((float)var6 + var1.ageInTicks * 0.5F)) * 0.025, var5[var6].y + (double)Mth.cos((double)((float)var6 + var1.ageInTicks * 0.75F)) * 0.0125, var5[var6].z + (double)Mth.cos((double)((float)var6 + var1.ageInTicks * 0.7F)) * 0.025);
-            super.submit(var1, var2, var3, var4);
-            var2.popPose();
+         for(int i = 0; i < offsets.length; ++i) {
+            poseStack.pushPose();
+            poseStack.translate(offsets[i].x + (double)Mth.cos((double)((float)i + state.ageInTicks * 0.5F)) * 0.025, offsets[i].y + (double)Mth.cos((double)((float)i + state.ageInTicks * 0.75F)) * 0.0125, offsets[i].z + (double)Mth.cos((double)((float)i + state.ageInTicks * 0.7F)) * 0.025);
+            super.submit(state, poseStack, submitNodeCollector, camera);
+            poseStack.popPose();
          }
       } else {
-         super.submit(var1, var2, var3, var4);
+         super.submit(state, poseStack, submitNodeCollector, camera);
       }
 
    }
 
-   protected boolean isBodyVisible(IllusionerRenderState var1) {
+   protected boolean isBodyVisible(final IllusionerRenderState state) {
       return true;
    }
 
-   protected AABB getBoundingBoxForCulling(Illusioner var1) {
-      return super.getBoundingBoxForCulling(var1).inflate(3.0, 0.0, 3.0);
-   }
-
-   // $FF: synthetic method
-   protected boolean isBodyVisible(final LivingEntityRenderState var1) {
-      return this.isBodyVisible((IllusionerRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((IllusionerRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   protected AABB getBoundingBoxForCulling(final Illusioner entity) {
+      return super.getBoundingBoxForCulling(entity).inflate(3.0, 0.0, 3.0);
    }
 }

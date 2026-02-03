@@ -6,22 +6,23 @@ import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 
 public class ScoreboardDisplayNameFix extends DataFix {
    private final String name;
    private final DSL.TypeReference type;
 
-   public ScoreboardDisplayNameFix(Schema var1, String var2, DSL.TypeReference var3) {
-      super(var1, false);
-      this.name = var2;
-      this.type = var3;
+   public ScoreboardDisplayNameFix(final Schema outputSchema, final String name, final DSL.TypeReference type) {
+      super(outputSchema, false);
+      this.name = name;
+      this.type = type;
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(this.type);
-      OpticFinder var2 = var1.findField("DisplayName");
-      OpticFinder var3 = DSL.typeFinder(this.getInputSchema().getType(References.TEXT_COMPONENT));
-      return this.fixTypeEverywhereTyped(this.name, var1, (var2x) -> var2x.updateTyped(var2, (var1) -> var1.update(var3, (var0) -> var0.mapSecond(LegacyComponentDataFixUtils::createTextComponentJson))));
+      Type<?> inputType = this.getInputSchema().getType(this.type);
+      OpticFinder<?> displayNameF = inputType.findField("DisplayName");
+      OpticFinder<Pair<String, String>> textComponentF = DSL.typeFinder(this.getInputSchema().getType(References.TEXT_COMPONENT));
+      return this.fixTypeEverywhereTyped(this.name, inputType, (team) -> team.updateTyped(displayNameF, (displayName) -> displayName.update(textComponentF, (textComponent) -> textComponent.mapSecond(LegacyComponentDataFixUtils::createTextComponentJson))));
    }
 }

@@ -44,81 +44,81 @@ public class MovingPistonBlock extends BaseEntityBlock {
       return CODEC;
    }
 
-   public MovingPistonBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public MovingPistonBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TYPE, PistonType.DEFAULT));
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
       return null;
    }
 
-   public static BlockEntity newMovingBlockEntity(BlockPos var0, BlockState var1, BlockState var2, Direction var3, boolean var4, boolean var5) {
-      return new PistonMovingBlockEntity(var0, var1, var2, var3, var4, var5);
+   public static BlockEntity newMovingBlockEntity(final BlockPos position, final BlockState blockState, final BlockState movedState, final Direction direction, final boolean extending, final boolean isSourcePiston) {
+      return new PistonMovingBlockEntity(position, blockState, movedState, direction, extending, isSourcePiston);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.PISTON, PistonMovingBlockEntity::tick);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return createTickerHelper(type, BlockEntityType.PISTON, PistonMovingBlockEntity::tick);
    }
 
-   public void destroy(LevelAccessor var1, BlockPos var2, BlockState var3) {
-      BlockPos var4 = var2.relative(((Direction)var3.getValue(FACING)).getOpposite());
-      BlockState var5 = var1.getBlockState(var4);
-      if (var5.getBlock() instanceof PistonBaseBlock && (Boolean)var5.getValue(PistonBaseBlock.EXTENDED)) {
-         var1.removeBlock(var4, false);
+   public void destroy(final LevelAccessor level, final BlockPos pos, final BlockState state) {
+      BlockPos relative = pos.relative(((Direction)state.getValue(FACING)).getOpposite());
+      BlockState blockState = level.getBlockState(relative);
+      if (blockState.getBlock() instanceof PistonBaseBlock && (Boolean)blockState.getValue(PistonBaseBlock.EXTENDED)) {
+         level.removeBlock(relative, false);
       }
 
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide() && var2.getBlockEntity(var3) == null) {
-         var2.removeBlock(var3, false);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide() && level.getBlockEntity(pos) == null) {
+         level.removeBlock(pos, false);
          return InteractionResult.CONSUME;
       } else {
          return InteractionResult.PASS;
       }
    }
 
-   protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
-      PistonMovingBlockEntity var3 = this.getBlockEntity(var2.getLevel(), BlockPos.containing((Position)var2.getParameter(LootContextParams.ORIGIN)));
-      return var3 == null ? Collections.emptyList() : var3.getMovedState().getDrops(var2);
+   protected List<ItemStack> getDrops(final BlockState state, final LootParams.Builder params) {
+      PistonMovingBlockEntity entity = this.getBlockEntity(params.getLevel(), BlockPos.containing((Position)params.getParameter(LootContextParams.ORIGIN)));
+      return entity == null ? Collections.emptyList() : entity.getMovedState().getDrops(params);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return Shapes.empty();
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      PistonMovingBlockEntity var5 = this.getBlockEntity(var2, var3);
-      return var5 != null ? var5.getCollisionShape(var2, var3) : Shapes.empty();
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      PistonMovingBlockEntity blockEntity = this.getBlockEntity(level, pos);
+      return blockEntity != null ? blockEntity.getCollisionShape(level, pos) : Shapes.empty();
    }
 
-   private @Nullable PistonMovingBlockEntity getBlockEntity(BlockGetter var1, BlockPos var2) {
-      BlockEntity var3 = var1.getBlockEntity(var2);
-      return var3 instanceof PistonMovingBlockEntity ? (PistonMovingBlockEntity)var3 : null;
+   private @Nullable PistonMovingBlockEntity getBlockEntity(final BlockGetter level, final BlockPos pos) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      return blockEntity instanceof PistonMovingBlockEntity ? (PistonMovingBlockEntity)blockEntity : null;
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(final BlockState state) {
       return RenderShape.INVISIBLE;
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
       return ItemStack.EMPTY;
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, TYPE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, TYPE);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 

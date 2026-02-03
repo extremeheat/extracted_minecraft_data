@@ -9,30 +9,28 @@ import net.minecraft.world.entity.LivingEntity;
 public record ClientboundHurtAnimationPacket(int id, float yaw) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundHurtAnimationPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundHurtAnimationPacket>codec(ClientboundHurtAnimationPacket::write, ClientboundHurtAnimationPacket::new);
 
-   public ClientboundHurtAnimationPacket(LivingEntity var1) {
-      this(var1.getId(), var1.getHurtDir());
+   public ClientboundHurtAnimationPacket(final LivingEntity entity) {
+      this(entity.getId(), entity.getHurtDir());
    }
 
-   private ClientboundHurtAnimationPacket(FriendlyByteBuf var1) {
-      this(var1.readVarInt(), var1.readFloat());
+   private ClientboundHurtAnimationPacket(final FriendlyByteBuf input) {
+      this(input.readVarInt(), input.readFloat());
    }
 
-   public ClientboundHurtAnimationPacket(int var1, float var2) {
+   public ClientboundHurtAnimationPacket {
       super();
-      this.id = var1;
-      this.yaw = var2;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.id);
-      var1.writeFloat(this.yaw);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.id);
+      output.writeFloat(this.yaw);
    }
 
    public PacketType<ClientboundHurtAnimationPacket> type() {
       return GamePacketTypes.CLIENTBOUND_HURT_ANIMATION;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleHurtAnimation(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleHurtAnimation(this);
    }
 }

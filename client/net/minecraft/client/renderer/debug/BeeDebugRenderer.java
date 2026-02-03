@@ -49,187 +49,187 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private final Minecraft minecraft;
    private @Nullable UUID lastLookedAtUuid;
 
-   public BeeDebugRenderer(Minecraft var1) {
+   public BeeDebugRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      this.doRender(var7);
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      this.doRender(debugValues);
       if (!this.minecraft.player.isSpectator()) {
          this.updateLastLookedAtUuid();
       }
 
    }
 
-   private void doRender(DebugValueAccess var1) {
-      BlockPos var2 = this.getCamera().blockPosition();
-      var1.forEachEntity(DebugSubscriptions.BEES, (var2x, var3x) -> {
-         if (this.minecraft.player.closerThan(var2x, 30.0)) {
-            DebugGoalInfo var4 = (DebugGoalInfo)var1.getEntityValue(DebugSubscriptions.GOAL_SELECTORS, var2x);
-            this.renderBeeInfo(var2x, var3x, var4);
+   private void doRender(final DebugValueAccess debugValues) {
+      BlockPos playerPos = this.getCamera().blockPosition();
+      debugValues.forEachEntity(DebugSubscriptions.BEES, (entity, beeInfo) -> {
+         if (this.minecraft.player.closerThan(entity, 30.0)) {
+            DebugGoalInfo goalInfo = (DebugGoalInfo)debugValues.getEntityValue(DebugSubscriptions.GOAL_SELECTORS, entity);
+            this.renderBeeInfo(entity, beeInfo, goalInfo);
          }
 
       });
-      this.renderFlowerInfos(var1);
-      Map var3 = this.createHiveBlacklistMap(var1);
-      var1.forEachBlock(DebugSubscriptions.BEE_HIVES, (var4, var5) -> {
-         if (var2.closerThan(var4, 30.0)) {
-            highlightHive(var4);
-            Set var6 = (Set)var3.getOrDefault(var4, Set.of());
-            this.renderHiveInfo(var4, var5, var6, var1);
+      this.renderFlowerInfos(debugValues);
+      Map<BlockPos, Set<UUID>> hiveBlacklistMap = this.createHiveBlacklistMap(debugValues);
+      debugValues.forEachBlock(DebugSubscriptions.BEE_HIVES, (pos, hive) -> {
+         if (playerPos.closerThan(pos, 30.0)) {
+            highlightHive(pos);
+            Set<UUID> beesWhoBlacklistThisHive = (Set)hiveBlacklistMap.getOrDefault(pos, Set.of());
+            this.renderHiveInfo(pos, hive, beesWhoBlacklistThisHive, debugValues);
          }
 
       });
-      this.getGhostHives(var1).forEach((var2x, var3x) -> {
-         if (var2.closerThan(var2x, 30.0)) {
-            this.renderGhostHive(var2x, var3x);
+      this.getGhostHives(debugValues).forEach((ghostHivePos, value) -> {
+         if (playerPos.closerThan(ghostHivePos, 30.0)) {
+            this.renderGhostHive(ghostHivePos, value);
          }
 
       });
    }
 
-   private Map<BlockPos, Set<UUID>> createHiveBlacklistMap(DebugValueAccess var1) {
-      HashMap var2 = new HashMap();
-      var1.forEachEntity(DebugSubscriptions.BEES, (var1x, var2x) -> {
-         for(BlockPos var4 : var2x.blacklistedHives()) {
-            ((Set)var2.computeIfAbsent(var4, (var0) -> new HashSet())).add(var1x.getUUID());
+   private Map<BlockPos, Set<UUID>> createHiveBlacklistMap(final DebugValueAccess debugValues) {
+      Map<BlockPos, Set<UUID>> hiveBlacklistMap = new HashMap();
+      debugValues.forEachEntity(DebugSubscriptions.BEES, (entity, bee) -> {
+         for(BlockPos blacklistedFlowerPos : bee.blacklistedHives()) {
+            ((Set)hiveBlacklistMap.computeIfAbsent(blacklistedFlowerPos, (k) -> new HashSet())).add(entity.getUUID());
          }
 
       });
-      return var2;
+      return hiveBlacklistMap;
    }
 
-   private void renderFlowerInfos(DebugValueAccess var1) {
-      HashMap var2 = new HashMap();
-      var1.forEachEntity(DebugSubscriptions.BEES, (var1x, var2x) -> {
-         if (var2x.flowerPos().isPresent()) {
-            ((Set)var2.computeIfAbsent((BlockPos)var2x.flowerPos().get(), (var0) -> new HashSet())).add(var1x.getUUID());
+   private void renderFlowerInfos(final DebugValueAccess debugValues) {
+      Map<BlockPos, Set<UUID>> beesPerFlower = new HashMap();
+      debugValues.forEachEntity(DebugSubscriptions.BEES, (entity, bee) -> {
+         if (bee.flowerPos().isPresent()) {
+            ((Set)beesPerFlower.computeIfAbsent((BlockPos)bee.flowerPos().get(), (k) -> new HashSet())).add(entity.getUUID());
          }
 
       });
-      var2.forEach((var0, var1x) -> {
-         Set var2 = (Set)var1x.stream().map(DebugEntityNameGenerator::getEntityName).collect(Collectors.toSet());
-         int var3 = 1;
-         Gizmos.billboardTextOverBlock(var2.toString(), var0, var3++, -256, 0.32F);
-         Gizmos.billboardTextOverBlock("Flower", var0, var3++, -1, 0.32F);
-         Gizmos.cuboid(var0, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.8F, 0.8F, 0.0F)));
+      beesPerFlower.forEach((flowerPos, beesWithThisFlower) -> {
+         Set<String> beeNames = (Set)beesWithThisFlower.stream().map(DebugEntityNameGenerator::getEntityName).collect(Collectors.toSet());
+         int row = 1;
+         Gizmos.billboardTextOverBlock(beeNames.toString(), flowerPos, row++, -256, 0.32F);
+         Gizmos.billboardTextOverBlock("Flower", flowerPos, row++, -1, 0.32F);
+         Gizmos.cuboid(flowerPos, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.8F, 0.8F, 0.0F)));
       });
    }
 
-   private static String getBeeUuidsAsString(Collection<UUID> var0) {
-      if (var0.isEmpty()) {
+   private static String getBeeUuidsAsString(final Collection<UUID> uuids) {
+      if (uuids.isEmpty()) {
          return "-";
       } else {
-         return var0.size() > 3 ? var0.size() + " bees" : ((Set)var0.stream().map(DebugEntityNameGenerator::getEntityName).collect(Collectors.toSet())).toString();
+         return uuids.size() > 3 ? uuids.size() + " bees" : ((Set)uuids.stream().map(DebugEntityNameGenerator::getEntityName).collect(Collectors.toSet())).toString();
       }
    }
 
-   private static void highlightHive(BlockPos var0) {
-      float var1 = 0.05F;
-      Gizmos.cuboid(var0, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.2F, 0.2F, 1.0F)));
+   private static void highlightHive(final BlockPos hivePos) {
+      float padding = 0.05F;
+      Gizmos.cuboid(hivePos, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.2F, 0.2F, 1.0F)));
    }
 
-   private void renderGhostHive(BlockPos var1, List<String> var2) {
-      float var3 = 0.05F;
-      Gizmos.cuboid(var1, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.2F, 0.2F, 1.0F)));
-      Gizmos.billboardTextOverBlock(var2.toString(), var1, 0, -256, 0.32F);
-      Gizmos.billboardTextOverBlock("Ghost Hive", var1, 1, -65536, 0.32F);
+   private void renderGhostHive(final BlockPos ghostHivePos, final List<String> hiveMemberNames) {
+      float padding = 0.05F;
+      Gizmos.cuboid(ghostHivePos, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.2F, 0.2F, 1.0F)));
+      Gizmos.billboardTextOverBlock(hiveMemberNames.toString(), ghostHivePos, 0, -256, 0.32F);
+      Gizmos.billboardTextOverBlock("Ghost Hive", ghostHivePos, 1, -65536, 0.32F);
    }
 
-   private void renderHiveInfo(BlockPos var1, DebugHiveInfo var2, Collection<UUID> var3, DebugValueAccess var4) {
-      int var5 = 0;
-      if (!var3.isEmpty()) {
-         renderTextOverHive("Blacklisted by " + getBeeUuidsAsString(var3), var1, var5++, -65536);
+   private void renderHiveInfo(final BlockPos hivePos, final DebugHiveInfo hive, final Collection<UUID> beesWhoBlacklistThisHive, final DebugValueAccess debugValues) {
+      int row = 0;
+      if (!beesWhoBlacklistThisHive.isEmpty()) {
+         renderTextOverHive("Blacklisted by " + getBeeUuidsAsString(beesWhoBlacklistThisHive), hivePos, row++, -65536);
       }
 
-      renderTextOverHive("Out: " + getBeeUuidsAsString(this.getHiveMembers(var1, var4)), var1, var5++, -3355444);
-      if (var2.occupantCount() == 0) {
-         renderTextOverHive("In: -", var1, var5++, -256);
-      } else if (var2.occupantCount() == 1) {
-         renderTextOverHive("In: 1 bee", var1, var5++, -256);
+      renderTextOverHive("Out: " + getBeeUuidsAsString(this.getHiveMembers(hivePos, debugValues)), hivePos, row++, -3355444);
+      if (hive.occupantCount() == 0) {
+         renderTextOverHive("In: -", hivePos, row++, -256);
+      } else if (hive.occupantCount() == 1) {
+         renderTextOverHive("In: 1 bee", hivePos, row++, -256);
       } else {
-         renderTextOverHive("In: " + var2.occupantCount() + " bees", var1, var5++, -256);
+         renderTextOverHive("In: " + hive.occupantCount() + " bees", hivePos, row++, -256);
       }
 
-      int var12 = var2.honeyLevel();
-      renderTextOverHive("Honey: " + var12, var1, var5++, -23296);
-      renderTextOverHive(var2.type().getName().getString() + (var2.sedated() ? " (sedated)" : ""), var1, var5++, -1);
+      int var12 = hive.honeyLevel();
+      renderTextOverHive("Honey: " + var12, hivePos, row++, -23296);
+      renderTextOverHive(hive.type().getName().getString() + (hive.sedated() ? " (sedated)" : ""), hivePos, row++, -1);
    }
 
-   private void renderBeeInfo(Entity var1, DebugBeeInfo var2, @Nullable DebugGoalInfo var3) {
-      this.isBeeSelected(var1);
-      int var5 = 0;
-      Gizmos.billboardTextOverMob(var1, var5++, var2.toString(), -1, 0.48F);
-      if (var2.hivePos().isEmpty()) {
-         Gizmos.billboardTextOverMob(var1, var5++, "No hive", -98404, 0.32F);
+   private void renderBeeInfo(final Entity entity, final DebugBeeInfo beeInfo, final @Nullable DebugGoalInfo goalInfo) {
+      this.isBeeSelected(entity);
+      int row = 0;
+      Gizmos.billboardTextOverMob(entity, row++, beeInfo.toString(), -1, 0.48F);
+      if (beeInfo.hivePos().isEmpty()) {
+         Gizmos.billboardTextOverMob(entity, row++, "No hive", -98404, 0.32F);
       } else {
-         Gizmos.billboardTextOverMob(var1, var5++, "Hive: " + this.getPosDescription(var1, (BlockPos)var2.hivePos().get()), -256, 0.32F);
+         Gizmos.billboardTextOverMob(entity, row++, "Hive: " + this.getPosDescription(entity, (BlockPos)beeInfo.hivePos().get()), -256, 0.32F);
       }
 
-      if (var2.flowerPos().isEmpty()) {
-         Gizmos.billboardTextOverMob(var1, var5++, "No flower", -98404, 0.32F);
+      if (beeInfo.flowerPos().isEmpty()) {
+         Gizmos.billboardTextOverMob(entity, row++, "No flower", -98404, 0.32F);
       } else {
-         Gizmos.billboardTextOverMob(var1, var5++, "Flower: " + this.getPosDescription(var1, (BlockPos)var2.flowerPos().get()), -256, 0.32F);
+         Gizmos.billboardTextOverMob(entity, row++, "Flower: " + this.getPosDescription(entity, (BlockPos)beeInfo.flowerPos().get()), -256, 0.32F);
       }
 
-      if (var3 != null) {
-         for(DebugGoalInfo.DebugGoal var7 : var3.goals()) {
-            if (var7.isRunning()) {
-               Gizmos.billboardTextOverMob(var1, var5++, var7.name(), -16711936, 0.32F);
+      if (goalInfo != null) {
+         for(DebugGoalInfo.DebugGoal goal : goalInfo.goals()) {
+            if (goal.isRunning()) {
+               Gizmos.billboardTextOverMob(entity, row++, goal.name(), -16711936, 0.32F);
             }
          }
       }
 
-      if (var2.travelTicks() > 0) {
-         int var12 = var2.travelTicks() < 2400 ? -3355444 : -23296;
-         Gizmos.billboardTextOverMob(var1, var5++, "Travelling: " + var2.travelTicks() + " ticks", var12, 0.32F);
+      if (beeInfo.travelTicks() > 0) {
+         int color = beeInfo.travelTicks() < 2400 ? -3355444 : -23296;
+         Gizmos.billboardTextOverMob(entity, row++, "Travelling: " + beeInfo.travelTicks() + " ticks", color, 0.32F);
       }
 
    }
 
-   private static void renderTextOverHive(String var0, BlockPos var1, int var2, int var3) {
-      Gizmos.billboardTextOverBlock(var0, var1, var2, var3, 0.32F);
+   private static void renderTextOverHive(final String text, final BlockPos hivePos, final int row, final int color) {
+      Gizmos.billboardTextOverBlock(text, hivePos, row, color, 0.32F);
    }
 
    private Camera getCamera() {
       return this.minecraft.gameRenderer.getMainCamera();
    }
 
-   private String getPosDescription(Entity var1, BlockPos var2) {
-      double var3 = var2.distToCenterSqr(var1.position());
-      double var5 = (double)Math.round(var3 * 10.0) / 10.0;
-      String var10000 = var2.toShortString();
-      return var10000 + " (dist " + var5 + ")";
+   private String getPosDescription(final Entity entity, final BlockPos pos) {
+      double dist = pos.distToCenterSqr(entity.position());
+      double distRounded = (double)Math.round(dist * 10.0) / 10.0;
+      String var10000 = pos.toShortString();
+      return var10000 + " (dist " + distRounded + ")";
    }
 
-   private boolean isBeeSelected(Entity var1) {
-      return Objects.equals(this.lastLookedAtUuid, var1.getUUID());
+   private boolean isBeeSelected(final Entity entity) {
+      return Objects.equals(this.lastLookedAtUuid, entity.getUUID());
    }
 
-   private Collection<UUID> getHiveMembers(BlockPos var1, DebugValueAccess var2) {
-      HashSet var3 = new HashSet();
-      var2.forEachEntity(DebugSubscriptions.BEES, (var2x, var3x) -> {
-         if (var3x.hasHive(var1)) {
-            var3.add(var2x.getUUID());
+   private Collection<UUID> getHiveMembers(final BlockPos hivePos, final DebugValueAccess debugValues) {
+      Set<UUID> hiveMembers = new HashSet();
+      debugValues.forEachEntity(DebugSubscriptions.BEES, (entity, beeInfo) -> {
+         if (beeInfo.hasHive(hivePos)) {
+            hiveMembers.add(entity.getUUID());
          }
 
       });
-      return var3;
+      return hiveMembers;
    }
 
-   private Map<BlockPos, List<String>> getGhostHives(DebugValueAccess var1) {
-      HashMap var2 = new HashMap();
-      var1.forEachEntity(DebugSubscriptions.BEES, (var2x, var3) -> {
-         if (var3.hivePos().isPresent() && var1.getBlockValue(DebugSubscriptions.BEE_HIVES, (BlockPos)var3.hivePos().get()) == null) {
-            ((List)var2.computeIfAbsent((BlockPos)var3.hivePos().get(), (var0) -> Lists.newArrayList())).add(DebugEntityNameGenerator.getEntityName(var2x));
+   private Map<BlockPos, List<String>> getGhostHives(final DebugValueAccess debugValues) {
+      Map<BlockPos, List<String>> ghostHives = new HashMap();
+      debugValues.forEachEntity(DebugSubscriptions.BEES, (entity, beeInfo) -> {
+         if (beeInfo.hivePos().isPresent() && debugValues.getBlockValue(DebugSubscriptions.BEE_HIVES, (BlockPos)beeInfo.hivePos().get()) == null) {
+            ((List)ghostHives.computeIfAbsent((BlockPos)beeInfo.hivePos().get(), (k) -> Lists.newArrayList())).add(DebugEntityNameGenerator.getEntityName(entity));
          }
 
       });
-      return var2;
+      return ghostHives;
    }
 
    private void updateLastLookedAtUuid() {
-      DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent((var1) -> this.lastLookedAtUuid = var1.getUUID());
+      DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent((entity) -> this.lastLookedAtUuid = entity.getUUID());
    }
 }

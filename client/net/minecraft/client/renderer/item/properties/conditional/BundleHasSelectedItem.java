@@ -15,8 +15,8 @@ public record BundleHasSelectedItem() implements ConditionalItemModelProperty {
       super();
    }
 
-   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      return BundleItem.hasSelectedItem(var1);
+   public boolean get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      return BundleItem.getSelectedItem(itemStack) != null;
    }
 
    public MapCodec<BundleHasSelectedItem> type() {

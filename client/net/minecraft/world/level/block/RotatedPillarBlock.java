@@ -17,41 +17,41 @@ public class RotatedPillarBlock extends Block {
       return CODEC;
    }
 
-   public RotatedPillarBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public RotatedPillarBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(AXIS, Direction.Axis.Y));
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return rotatePillar(var1, var2);
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return rotatePillar(state, rotation);
    }
 
-   public static BlockState rotatePillar(BlockState var0, Rotation var1) {
-      switch (var1) {
+   public static BlockState rotatePillar(final BlockState state, final Rotation rotation) {
+      switch (rotation) {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:
-            switch ((Direction.Axis)var0.getValue(AXIS)) {
+            switch ((Direction.Axis)state.getValue(AXIS)) {
                case X -> {
-                  return (BlockState)var0.setValue(AXIS, Direction.Axis.Z);
+                  return (BlockState)state.setValue(AXIS, Direction.Axis.Z);
                }
                case Z -> {
-                  return (BlockState)var0.setValue(AXIS, Direction.Axis.X);
+                  return (BlockState)state.setValue(AXIS, Direction.Axis.X);
                }
                default -> {
-                  return var0;
+                  return state;
                }
             }
          default:
-            return var0;
+            return state;
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AXIS);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AXIS);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(AXIS, var1.getClickedFace().getAxis());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(AXIS, context.getClickedFace().getAxis());
    }
 
    static {

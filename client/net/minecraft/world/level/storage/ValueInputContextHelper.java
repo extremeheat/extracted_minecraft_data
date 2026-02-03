@@ -5,15 +5,20 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.Tag;
 
 public class ValueInputContextHelper {
-   final HolderLookup.Provider lookup;
+   private final HolderLookup.Provider lookup;
    private final DynamicOps<Tag> ops;
-   final ValueInput.ValueInputList emptyChildList = new ValueInput.ValueInputList() {
+   private final ValueInput.ValueInputList emptyChildList = new ValueInput.ValueInputList() {
+      {
+         Objects.requireNonNull(ValueInputContextHelper.this);
+      }
+
       public boolean isEmpty() {
          return true;
       }
@@ -27,6 +32,10 @@ public class ValueInputContextHelper {
       }
    };
    private final ValueInput.TypedInputList<Object> emptyTypedList = new ValueInput.TypedInputList<Object>() {
+      {
+         Objects.requireNonNull(ValueInputContextHelper.this);
+      }
+
       public boolean isEmpty() {
          return true;
       }
@@ -40,95 +49,99 @@ public class ValueInputContextHelper {
       }
    };
    private final ValueInput empty = new ValueInput() {
-      public <T> Optional<T> read(String var1, Codec<T> var2) {
+      {
+         Objects.requireNonNull(ValueInputContextHelper.this);
+      }
+
+      public <T> Optional<T> read(final String name, final Codec<T> codec) {
          return Optional.empty();
       }
 
-      public <T> Optional<T> read(MapCodec<T> var1) {
+      public <T> Optional<T> read(final MapCodec<T> codec) {
          return Optional.empty();
       }
 
-      public Optional<ValueInput> child(String var1) {
+      public Optional<ValueInput> child(final String name) {
          return Optional.empty();
       }
 
-      public ValueInput childOrEmpty(String var1) {
+      public ValueInput childOrEmpty(final String name) {
          return this;
       }
 
-      public Optional<ValueInput.ValueInputList> childrenList(String var1) {
+      public Optional<ValueInput.ValueInputList> childrenList(final String name) {
          return Optional.empty();
       }
 
-      public ValueInput.ValueInputList childrenListOrEmpty(String var1) {
+      public ValueInput.ValueInputList childrenListOrEmpty(final String name) {
          return ValueInputContextHelper.this.emptyChildList;
       }
 
-      public <T> Optional<ValueInput.TypedInputList<T>> list(String var1, Codec<T> var2) {
+      public <T> Optional<ValueInput.TypedInputList<T>> list(final String name, final Codec<T> codec) {
          return Optional.empty();
       }
 
-      public <T> ValueInput.TypedInputList<T> listOrEmpty(String var1, Codec<T> var2) {
+      public <T> ValueInput.TypedInputList<T> listOrEmpty(final String name, final Codec<T> codec) {
          return ValueInputContextHelper.this.<T>emptyTypedList();
       }
 
-      public boolean getBooleanOr(String var1, boolean var2) {
-         return var2;
+      public boolean getBooleanOr(final String name, final boolean defaultValue) {
+         return defaultValue;
       }
 
-      public byte getByteOr(String var1, byte var2) {
-         return var2;
+      public byte getByteOr(final String name, final byte defaultValue) {
+         return defaultValue;
       }
 
-      public int getShortOr(String var1, short var2) {
-         return var2;
+      public int getShortOr(final String name, final short defaultValue) {
+         return defaultValue;
       }
 
-      public Optional<Integer> getInt(String var1) {
+      public Optional<Integer> getInt(final String name) {
          return Optional.empty();
       }
 
-      public int getIntOr(String var1, int var2) {
-         return var2;
+      public int getIntOr(final String name, final int defaultValue) {
+         return defaultValue;
       }
 
-      public long getLongOr(String var1, long var2) {
-         return var2;
+      public long getLongOr(final String name, final long defaultValue) {
+         return defaultValue;
       }
 
-      public Optional<Long> getLong(String var1) {
+      public Optional<Long> getLong(final String name) {
          return Optional.empty();
       }
 
-      public float getFloatOr(String var1, float var2) {
-         return var2;
+      public float getFloatOr(final String name, final float defaultValue) {
+         return defaultValue;
       }
 
-      public double getDoubleOr(String var1, double var2) {
-         return var2;
+      public double getDoubleOr(final String name, final double defaultValue) {
+         return defaultValue;
       }
 
-      public Optional<String> getString(String var1) {
+      public Optional<String> getString(final String name) {
          return Optional.empty();
       }
 
-      public String getStringOr(String var1, String var2) {
-         return var2;
+      public String getStringOr(final String name, final String defaultValue) {
+         return defaultValue;
       }
 
       public HolderLookup.Provider lookup() {
          return ValueInputContextHelper.this.lookup;
       }
 
-      public Optional<int[]> getIntArray(String var1) {
+      public Optional<int[]> getIntArray(final String name) {
          return Optional.empty();
       }
    };
 
-   public ValueInputContextHelper(HolderLookup.Provider var1, DynamicOps<Tag> var2) {
+   public ValueInputContextHelper(final HolderLookup.Provider lookup, final DynamicOps<Tag> ops) {
       super();
-      this.lookup = var1;
-      this.ops = var1.<Tag>createSerializationContext(var2);
+      this.lookup = lookup;
+      this.ops = lookup.<Tag>createSerializationContext(ops);
    }
 
    public DynamicOps<Tag> ops() {

@@ -15,34 +15,34 @@ public class PathTypeCache {
       super();
    }
 
-   public PathType getOrCompute(BlockGetter var1, BlockPos var2) {
-      long var3 = var2.asLong();
-      int var5 = index(var3);
-      PathType var6 = this.get(var5, var3);
-      return var6 != null ? var6 : this.compute(var1, var2, var5, var3);
+   public PathType getOrCompute(final BlockGetter level, final BlockPos pos) {
+      long key = pos.asLong();
+      int index = index(key);
+      PathType cachedPathType = this.get(index, key);
+      return cachedPathType != null ? cachedPathType : this.compute(level, pos, index, key);
    }
 
-   private @Nullable PathType get(int var1, long var2) {
-      return this.positions[var1] == var2 ? this.pathTypes[var1] : null;
+   private @Nullable PathType get(final int index, final long key) {
+      return this.positions[index] == key ? this.pathTypes[index] : null;
    }
 
-   private PathType compute(BlockGetter var1, BlockPos var2, int var3, long var4) {
-      PathType var6 = WalkNodeEvaluator.getPathTypeFromState(var1, var2);
-      this.positions[var3] = var4;
-      this.pathTypes[var3] = var6;
-      return var6;
+   private PathType compute(final BlockGetter level, final BlockPos pos, final int index, final long key) {
+      PathType pathType = WalkNodeEvaluator.getPathTypeFromState(level, pos);
+      this.positions[index] = key;
+      this.pathTypes[index] = pathType;
+      return pathType;
    }
 
-   public void invalidate(BlockPos var1) {
-      long var2 = var1.asLong();
-      int var4 = index(var2);
-      if (this.positions[var4] == var2) {
-         this.pathTypes[var4] = null;
+   public void invalidate(final BlockPos pos) {
+      long key = pos.asLong();
+      int index = index(key);
+      if (this.positions[index] == key) {
+         this.pathTypes[index] = null;
       }
 
    }
 
-   private static int index(long var0) {
-      return (int)HashCommon.mix(var0) & 4095;
+   private static int index(final long pos) {
+      return (int)HashCommon.mix(pos) & 4095;
    }
 }

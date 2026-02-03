@@ -10,16 +10,16 @@ public interface VerticalAnchor {
    VerticalAnchor BOTTOM = aboveBottom(0);
    VerticalAnchor TOP = belowTop(0);
 
-   static VerticalAnchor absolute(int var0) {
-      return new Absolute(var0);
+   static VerticalAnchor absolute(final int value) {
+      return new Absolute(value);
    }
 
-   static VerticalAnchor aboveBottom(int var0) {
-      return new AboveBottom(var0);
+   static VerticalAnchor aboveBottom(final int offset) {
+      return new AboveBottom(offset);
    }
 
-   static VerticalAnchor belowTop(int var0) {
-      return new BelowTop(var0);
+   static VerticalAnchor belowTop(final int offset) {
+      return new BelowTop(offset);
    }
 
    static VerticalAnchor bottom() {
@@ -30,25 +30,24 @@ public interface VerticalAnchor {
       return TOP;
    }
 
-   private static VerticalAnchor merge(Either<Absolute, Either<AboveBottom, BelowTop>> var0) {
-      return (VerticalAnchor)var0.map(Function.identity(), Either::unwrap);
+   private static VerticalAnchor merge(final Either<Absolute, Either<AboveBottom, BelowTop>> either) {
+      return (VerticalAnchor)either.map(Function.identity(), Either::unwrap);
    }
 
-   private static Either<Absolute, Either<AboveBottom, BelowTop>> split(VerticalAnchor var0) {
-      return var0 instanceof Absolute ? Either.left((Absolute)var0) : Either.right(var0 instanceof AboveBottom ? Either.left((AboveBottom)var0) : Either.right((BelowTop)var0));
+   private static Either<Absolute, Either<AboveBottom, BelowTop>> split(final VerticalAnchor anchor) {
+      return anchor instanceof Absolute ? Either.left((Absolute)anchor) : Either.right(anchor instanceof AboveBottom ? Either.left((AboveBottom)anchor) : Either.right((BelowTop)anchor));
    }
 
-   int resolveY(WorldGenerationContext var1);
+   int resolveY(final WorldGenerationContext heightAccessor);
 
    public static record Absolute(int y) implements VerticalAnchor {
       public static final Codec<Absolute> CODEC;
 
-      public Absolute(int var1) {
+      public Absolute {
          super();
-         this.y = var1;
       }
 
-      public int resolveY(WorldGenerationContext var1) {
+      public int resolveY(final WorldGenerationContext heightAccessor) {
          return this.y;
       }
 
@@ -64,13 +63,12 @@ public interface VerticalAnchor {
    public static record AboveBottom(int offset) implements VerticalAnchor {
       public static final Codec<AboveBottom> CODEC;
 
-      public AboveBottom(int var1) {
+      public AboveBottom {
          super();
-         this.offset = var1;
       }
 
-      public int resolveY(WorldGenerationContext var1) {
-         return var1.getMinGenY() + this.offset;
+      public int resolveY(final WorldGenerationContext heightAccessor) {
+         return heightAccessor.getMinGenY() + this.offset;
       }
 
       public String toString() {
@@ -85,13 +83,12 @@ public interface VerticalAnchor {
    public static record BelowTop(int offset) implements VerticalAnchor {
       public static final Codec<BelowTop> CODEC;
 
-      public BelowTop(int var1) {
+      public BelowTop {
          super();
-         this.offset = var1;
       }
 
-      public int resolveY(WorldGenerationContext var1) {
-         return var1.getGenDepth() - 1 + var1.getMinGenY() - this.offset;
+      public int resolveY(final WorldGenerationContext heightAccessor) {
+         return heightAccessor.getGenDepth() - 1 + heightAccessor.getMinGenY() - this.offset;
       }
 
       public String toString() {

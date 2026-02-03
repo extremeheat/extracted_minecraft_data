@@ -13,15 +13,15 @@ import net.minecraft.world.level.gamerules.GameRules;
 
 public class EatBlockGoal extends Goal {
    private static final int EAT_ANIMATION_TICKS = 40;
-   private static final Predicate<BlockState> IS_EDIBLE = (var0) -> var0.is(BlockTags.EDIBLE_FOR_SHEEP);
+   private static final Predicate<BlockState> IS_EDIBLE = (state) -> state.is(BlockTags.EDIBLE_FOR_SHEEP);
    private final Mob mob;
    private final Level level;
    private int eatAnimationTick;
 
-   public EatBlockGoal(Mob var1) {
+   public EatBlockGoal(final Mob mob) {
       super();
-      this.mob = var1;
-      this.level = var1.level();
+      this.mob = mob;
+      this.level = mob.level();
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK, Goal.Flag.JUMP));
    }
 
@@ -29,11 +29,11 @@ public class EatBlockGoal extends Goal {
       if (this.mob.getRandom().nextInt(this.adjustedTickDelay(this.mob.isBaby() ? 50 : 1000)) != 0) {
          return false;
       } else {
-         BlockPos var1 = this.mob.blockPosition();
-         if (IS_EDIBLE.test(this.level.getBlockState(var1))) {
+         BlockPos pos = this.mob.blockPosition();
+         if (IS_EDIBLE.test(this.level.getBlockState(pos))) {
             return true;
          } else {
-            return this.level.getBlockState(var1.below()).is(Blocks.GRASS_BLOCK);
+            return this.level.getBlockState(pos.below()).is(Blocks.GRASS_BLOCK);
          }
       }
    }
@@ -59,19 +59,19 @@ public class EatBlockGoal extends Goal {
    public void tick() {
       this.eatAnimationTick = Math.max(0, this.eatAnimationTick - 1);
       if (this.eatAnimationTick == this.adjustedTickDelay(4)) {
-         BlockPos var1 = this.mob.blockPosition();
-         if (IS_EDIBLE.test(this.level.getBlockState(var1))) {
+         BlockPos pos = this.mob.blockPosition();
+         if (IS_EDIBLE.test(this.level.getBlockState(pos))) {
             if ((Boolean)getServerLevel(this.level).getGameRules().get(GameRules.MOB_GRIEFING)) {
-               this.level.destroyBlock(var1, false);
+               this.level.destroyBlock(pos, false);
             }
 
             this.mob.ate();
          } else {
-            BlockPos var2 = var1.below();
-            if (this.level.getBlockState(var2).is(Blocks.GRASS_BLOCK)) {
+            BlockPos below = pos.below();
+            if (this.level.getBlockState(below).is(Blocks.GRASS_BLOCK)) {
                if ((Boolean)getServerLevel(this.level).getGameRules().get(GameRules.MOB_GRIEFING)) {
-                  this.level.levelEvent(2001, var2, Block.getId(Blocks.GRASS_BLOCK.defaultBlockState()));
-                  this.level.setBlock(var2, Blocks.DIRT.defaultBlockState(), 2);
+                  this.level.levelEvent(2001, below, Block.getId(Blocks.GRASS_BLOCK.defaultBlockState()));
+                  this.level.setBlock(below, Blocks.DIRT.defaultBlockState(), 2);
                }
 
                this.mob.ate();

@@ -13,37 +13,37 @@ public enum Unit {
    private Unit() {
    }
 
-   public static Unit getLargest(long var0) {
-      if (var0 < 1024L) {
+   public static Unit getLargest(final long bytes) {
+      if (bytes < 1024L) {
          return B;
       } else {
          try {
-            int var2 = (int)(Math.log((double)var0) / Math.log(1024.0));
-            String var3 = String.valueOf("KMGTPE".charAt(var2 - 1));
-            return valueOf(var3 + "B");
+            int exp = (int)(Math.log((double)bytes) / Math.log(1024.0));
+            String pre = String.valueOf("KMGTPE".charAt(exp - 1));
+            return valueOf(pre + "B");
          } catch (Exception var4) {
             return GB;
          }
       }
    }
 
-   public static double convertTo(long var0, Unit var2) {
-      return var2 == B ? (double)var0 : (double)var0 / Math.pow(1024.0, (double)var2.ordinal());
+   public static double convertTo(final long bytes, final Unit unit) {
+      return unit == B ? (double)bytes : (double)bytes / Math.pow(1024.0, (double)unit.ordinal());
    }
 
-   public static String humanReadable(long var0) {
-      boolean var2 = true;
-      if (var0 < 1024L) {
-         return var0 + " B";
+   public static String humanReadable(final long bytes) {
+      int unit = 1024;
+      if (bytes < 1024L) {
+         return bytes + " B";
       } else {
-         int var3 = (int)(Math.log((double)var0) / Math.log(1024.0));
-         String var4 = "" + "KMGTPE".charAt(var3 - 1);
-         return String.format(Locale.ROOT, "%.1f %sB", (double)var0 / Math.pow(1024.0, (double)var3), var4);
+         int exp = (int)(Math.log((double)bytes) / Math.log(1024.0));
+         String pre = "" + "KMGTPE".charAt(exp - 1);
+         return String.format(Locale.ROOT, "%.1f %sB", (double)bytes / Math.pow(1024.0, (double)exp), pre);
       }
    }
 
-   public static String humanReadable(long var0, Unit var2) {
-      return String.format(Locale.ROOT, "%." + (var2 == GB ? "1" : "0") + "f %s", convertTo(var0, var2), var2.name());
+   public static String humanReadable(final long bytes, final Unit unit) {
+      return String.format(Locale.ROOT, "%." + (unit == GB ? "1" : "0") + "f %s", convertTo(bytes, unit), unit.name());
    }
 
    // $FF: synthetic method

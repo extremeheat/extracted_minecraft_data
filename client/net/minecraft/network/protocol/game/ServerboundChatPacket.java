@@ -12,32 +12,27 @@ import org.jspecify.annotations.Nullable;
 public record ServerboundChatPacket(String message, Instant timeStamp, long salt, @Nullable MessageSignature signature, LastSeenMessages.Update lastSeenMessages) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundChatPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChatPacket>codec(ServerboundChatPacket::write, ServerboundChatPacket::new);
 
-   private ServerboundChatPacket(FriendlyByteBuf var1) {
-      this(var1.readUtf(256), var1.readInstant(), var1.readLong(), (MessageSignature)var1.readNullable(MessageSignature::read), new LastSeenMessages.Update(var1));
+   private ServerboundChatPacket(final FriendlyByteBuf input) {
+      this(input.readUtf(256), input.readInstant(), input.readLong(), (MessageSignature)input.readNullable(MessageSignature::read), new LastSeenMessages.Update(input));
    }
 
-   public ServerboundChatPacket(String var1, Instant var2, long var3, @Nullable MessageSignature var5, LastSeenMessages.Update var6) {
+   public ServerboundChatPacket {
       super();
-      this.message = var1;
-      this.timeStamp = var2;
-      this.salt = var3;
-      this.signature = var5;
-      this.lastSeenMessages = var6;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.message, 256);
-      var1.writeInstant(this.timeStamp);
-      var1.writeLong(this.salt);
-      var1.writeNullable(this.signature, MessageSignature::write);
-      this.lastSeenMessages.write(var1);
+   private void write(final FriendlyByteBuf output) {
+      output.writeUtf(this.message, 256);
+      output.writeInstant(this.timeStamp);
+      output.writeLong(this.salt);
+      output.writeNullable(this.signature, MessageSignature::write);
+      this.lastSeenMessages.write(output);
    }
 
    public PacketType<ServerboundChatPacket> type() {
       return GamePacketTypes.SERVERBOUND_CHAT;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleChat(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleChat(this);
    }
 }

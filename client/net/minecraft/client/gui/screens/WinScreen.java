@@ -24,7 +24,6 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.Musics;
@@ -59,11 +58,11 @@ public class WinScreen extends Screen {
    private int direction;
    private final LogoRenderer logoRenderer = new LogoRenderer(false);
 
-   public WinScreen(boolean var1, Runnable var2) {
+   public WinScreen(final boolean poem, final Runnable onFinished) {
       super(GameNarrator.NO_TITLE);
-      this.poem = var1;
-      this.onFinished = var2;
-      if (!var1) {
+      this.poem = poem;
+      this.onFinished = onFinished;
+      if (!poem) {
          this.unmodifiedScrollSpeed = 0.75F;
       } else {
          this.unmodifiedScrollSpeed = 0.5F;
@@ -80,41 +79,41 @@ public class WinScreen extends Screen {
    public void tick() {
       this.minecraft.getMusicManager().tick();
       this.minecraft.getSoundManager().tick(false);
-      float var1 = (float)(this.totalScrollLength + this.height + this.height + 24);
-      if (this.scroll > var1) {
+      float maxScroll = (float)(this.totalScrollLength + this.height + this.height + 24);
+      if (this.scroll > maxScroll) {
          this.respawn();
       }
 
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (var1.isUp()) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (event.isUp()) {
          this.direction = -1;
-      } else if (var1.key() != 341 && var1.key() != 345) {
-         if (var1.key() == 32) {
+      } else if (event.key() != 341 && event.key() != 345) {
+         if (event.key() == 32) {
             this.speedupActive = true;
          }
       } else {
-         this.speedupModifiers.add(var1.key());
+         this.speedupModifiers.add(event.key());
       }
 
       this.scrollSpeed = this.calculateScrollSpeed();
-      return super.keyPressed(var1);
+      return super.keyPressed(event);
    }
 
-   public boolean keyReleased(KeyEvent var1) {
-      if (var1.isUp()) {
+   public boolean keyReleased(final KeyEvent event) {
+      if (event.isUp()) {
          this.direction = 1;
       }
 
-      if (var1.key() == 32) {
+      if (event.key() == 32) {
          this.speedupActive = false;
-      } else if (var1.key() == 341 || var1.key() == 345) {
-         this.speedupModifiers.remove(var1.key());
+      } else if (event.key() == 341 || event.key() == 345) {
+         this.speedupModifiers.remove(event.key());
       }
 
       this.scrollSpeed = this.calculateScrollSpeed();
-      return super.keyReleased(var1);
+      return super.keyReleased(event);
    }
 
    public void onClose() {
@@ -144,19 +143,19 @@ public class WinScreen extends Screen {
    }
 
    public Component getNarrationMessage() {
-      return CommonComponents.joinForNarration((Component[])this.narratorComponents.toArray((var0) -> new Component[var0]));
+      return CommonComponents.joinForNarration((Component[])this.narratorComponents.toArray((x$0) -> new Component[x$0]));
    }
 
-   private void wrapCreditsIO(Identifier var1, CreditsReader var2) {
+   private void wrapCreditsIO(final Identifier file, final CreditsReader creditsReader) {
       try {
-         BufferedReader var3 = this.minecraft.getResourceManager().openAsReader(var1);
+         Reader resource = this.minecraft.getResourceManager().openAsReader(file);
 
          try {
-            var2.read(var3);
+            creditsReader.read(resource);
          } catch (Throwable var7) {
-            if (var3 != null) {
+            if (resource != null) {
                try {
-                  ((Reader)var3).close();
+                  resource.close();
                } catch (Throwable var6) {
                   var7.addSuppressed(var6);
                }
@@ -165,67 +164,67 @@ public class WinScreen extends Screen {
             throw var7;
          }
 
-         if (var3 != null) {
-            ((Reader)var3).close();
+         if (resource != null) {
+            resource.close();
          }
-      } catch (Exception var8) {
-         LOGGER.error("Couldn't load credits from file {}", var1, var8);
+      } catch (Exception e) {
+         LOGGER.error("Couldn't load credits from file {}", file, e);
       }
 
    }
 
-   private void addPoemFile(Reader var1) throws IOException {
-      BufferedReader var2 = new BufferedReader(var1);
-      RandomSource var3 = RandomSource.create(8124371L);
+   private void addPoemFile(final Reader inputReader) throws IOException {
+      BufferedReader reader = new BufferedReader(inputReader);
+      RandomSource random = RandomSource.create(8124371L);
 
-      String var4;
-      while((var4 = var2.readLine()) != null) {
-         int var5;
-         String var6;
-         String var7;
-         for(var4 = var4.replaceAll("PLAYERNAME", this.minecraft.getUser().getName()); (var5 = var4.indexOf(OBFUSCATE_TOKEN)) != -1; var4 = var6 + String.valueOf(ChatFormatting.WHITE) + String.valueOf(ChatFormatting.OBFUSCATED) + "XXXXXXXX".substring(0, var3.nextInt(4) + 3) + var7) {
-            var6 = var4.substring(0, var5);
-            var7 = var4.substring(var5 + OBFUSCATE_TOKEN.length());
+      String line;
+      while((line = reader.readLine()) != null) {
+         int pos;
+         String before;
+         String after;
+         for(line = line.replaceAll("PLAYERNAME", this.minecraft.getUser().getName()); (pos = line.indexOf(OBFUSCATE_TOKEN)) != -1; line = before + String.valueOf(ChatFormatting.WHITE) + String.valueOf(ChatFormatting.OBFUSCATED) + "XXXXXXXX".substring(0, random.nextInt(4) + 3) + after) {
+            before = line.substring(0, pos);
+            after = line.substring(pos + OBFUSCATE_TOKEN.length());
          }
 
-         this.addPoemLines(var4);
+         this.addPoemLines(line);
          this.addEmptyLine();
       }
 
-      for(int var9 = 0; var9 < 8; ++var9) {
+      for(int i = 0; i < 8; ++i) {
          this.addEmptyLine();
       }
 
    }
 
-   private void addCreditsFile(Reader var1) {
-      for(JsonElement var4 : GsonHelper.parseArray(var1)) {
-         JsonObject var5 = var4.getAsJsonObject();
-         String var6 = var5.get("section").getAsString();
+   private void addCreditsFile(final Reader inputReader) {
+      for(JsonElement sectionElement : GsonHelper.parseArray(inputReader)) {
+         JsonObject section = sectionElement.getAsJsonObject();
+         String sectionName = section.get("section").getAsString();
          this.addCreditsLine(SECTION_HEADING, true, false);
-         this.addCreditsLine(Component.literal(var6).withStyle(ChatFormatting.YELLOW), true, true);
+         this.addCreditsLine(Component.literal(sectionName).withStyle(ChatFormatting.YELLOW), true, true);
          this.addCreditsLine(SECTION_HEADING, true, false);
          this.addEmptyLine();
          this.addEmptyLine();
 
-         for(JsonElement var9 : var5.getAsJsonArray("disciplines")) {
-            JsonObject var10 = var9.getAsJsonObject();
-            String var11 = var10.get("discipline").getAsString();
-            if (StringUtils.isNotEmpty(var11)) {
-               this.addCreditsLine(Component.literal(var11).withStyle(ChatFormatting.YELLOW), true, true);
+         for(JsonElement disciplineElement : section.getAsJsonArray("disciplines")) {
+            JsonObject discipline = disciplineElement.getAsJsonObject();
+            String disciplineName = discipline.get("discipline").getAsString();
+            if (StringUtils.isNotEmpty(disciplineName)) {
+               this.addCreditsLine(Component.literal(disciplineName).withStyle(ChatFormatting.YELLOW), true, true);
                this.addEmptyLine();
                this.addEmptyLine();
             }
 
-            for(JsonElement var14 : var10.getAsJsonArray("titles")) {
-               JsonObject var15 = var14.getAsJsonObject();
-               String var16 = var15.get("title").getAsString();
-               JsonArray var17 = var15.getAsJsonArray("names");
-               this.addCreditsLine(Component.literal(var16).withStyle(ChatFormatting.GRAY), false, true);
+            for(JsonElement titleElement : discipline.getAsJsonArray("titles")) {
+               JsonObject title = titleElement.getAsJsonObject();
+               String titleName = title.get("title").getAsString();
+               JsonArray names = title.getAsJsonArray("names");
+               this.addCreditsLine(Component.literal(titleName).withStyle(ChatFormatting.GRAY), false, true);
 
-               for(JsonElement var19 : var17) {
-                  String var20 = var19.getAsString();
-                  this.addCreditsLine(Component.literal("           ").append(var20).withStyle(ChatFormatting.WHITE), false, true);
+               for(JsonElement nameElement : names) {
+                  String name = nameElement.getAsString();
+                  this.addCreditsLine(Component.literal("           ").append(name).withStyle(ChatFormatting.WHITE), false, true);
                }
 
                this.addEmptyLine();
@@ -241,80 +240,80 @@ public class WinScreen extends Screen {
       this.narratorComponents.add(CommonComponents.EMPTY);
    }
 
-   private void addPoemLines(String var1) {
-      MutableComponent var2 = Component.literal(var1);
-      this.lines.addAll(this.minecraft.font.split(var2, 256));
-      this.narratorComponents.add(var2);
+   private void addPoemLines(final String line) {
+      Component component = Component.literal(line);
+      this.lines.addAll(this.minecraft.font.split(component, 256));
+      this.narratorComponents.add(component);
    }
 
-   private void addCreditsLine(Component var1, boolean var2, boolean var3) {
-      if (var2) {
+   private void addCreditsLine(final Component line, final boolean centered, final boolean narrated) {
+      if (centered) {
          this.centeredLines.add(this.lines.size());
       }
 
-      this.lines.add(var1.getVisualOrderText());
-      if (var3) {
-         this.narratorComponents.add(var1);
+      this.lines.add(line.getVisualOrderText());
+      if (narrated) {
+         this.narratorComponents.add(line);
       }
 
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.renderVignette(var1);
-      this.scroll = Math.max(0.0F, this.scroll + var4 * this.scrollSpeed);
-      int var5 = this.width / 2 - 128;
-      int var6 = this.height + 50;
-      float var7 = -this.scroll;
-      var1.pose().pushMatrix();
-      var1.pose().translate(0.0F, var7);
-      var1.nextStratum();
-      this.logoRenderer.renderLogo(var1, this.width, 1.0F, var6);
-      int var8 = var6 + 100;
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
+      this.renderVignette(graphics);
+      this.scroll = Math.max(0.0F, this.scroll + a * this.scrollSpeed);
+      int logoX = this.width / 2 - 128;
+      int logoY = this.height + 50;
+      float yOffs = -this.scroll;
+      graphics.pose().pushMatrix();
+      graphics.pose().translate(0.0F, yOffs);
+      graphics.nextStratum();
+      this.logoRenderer.renderLogo(graphics, this.width, 1.0F, logoY);
+      int yPos = logoY + 100;
 
-      for(int var9 = 0; var9 < this.lines.size(); ++var9) {
-         if (var9 == this.lines.size() - 1) {
-            float var10 = (float)var8 + var7 - (float)(this.height / 2 - 6);
-            if (var10 < 0.0F) {
-               var1.pose().translate(0.0F, -var10);
+      for(int i = 0; i < this.lines.size(); ++i) {
+         if (i == this.lines.size() - 1) {
+            float diff = (float)yPos + yOffs - (float)(this.height / 2 - 6);
+            if (diff < 0.0F) {
+               graphics.pose().translate(0.0F, -diff);
             }
          }
 
-         if ((float)var8 + var7 + 12.0F + 8.0F > 0.0F && (float)var8 + var7 < (float)this.height) {
-            FormattedCharSequence var11 = (FormattedCharSequence)this.lines.get(var9);
-            if (this.centeredLines.contains(var9)) {
-               var1.drawCenteredString(this.font, (FormattedCharSequence)var11, var5 + 128, var8, -1);
+         if ((float)yPos + yOffs + 12.0F + 8.0F > 0.0F && (float)yPos + yOffs < (float)this.height) {
+            FormattedCharSequence line = (FormattedCharSequence)this.lines.get(i);
+            if (this.centeredLines.contains(i)) {
+               graphics.drawCenteredString(this.font, (FormattedCharSequence)line, logoX + 128, yPos, -1);
             } else {
-               var1.drawString(this.font, (FormattedCharSequence)var11, var5, var8, -1);
+               graphics.drawString(this.font, (FormattedCharSequence)line, logoX, yPos, -1);
             }
          }
 
-         var8 += 12;
+         yPos += 12;
       }
 
-      var1.pose().popMatrix();
+      graphics.pose().popMatrix();
    }
 
-   private void renderVignette(GuiGraphics var1) {
-      var1.blit(RenderPipelines.VIGNETTE, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
+   private void renderVignette(final GuiGraphics graphics) {
+      graphics.blit(RenderPipelines.VIGNETTE, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
       if (this.poem) {
-         TextureManager var5 = Minecraft.getInstance().getTextureManager();
-         AbstractTexture var6 = var5.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
-         AbstractTexture var7 = var5.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
-         TextureSetup var8 = TextureSetup.doubleTexture(var6.getTextureView(), var6.getSampler(), var7.getTextureView(), var7.getSampler());
-         var1.fill(RenderPipelines.END_PORTAL, var8, 0, 0, this.width, this.height);
+         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
+         AbstractTexture skyTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
+         AbstractTexture portalTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
+         TextureSetup textureSetup = TextureSetup.doubleTexture(skyTexture.getTextureView(), skyTexture.getSampler(), portalTexture.getTextureView(), portalTexture.getSampler());
+         graphics.fill(RenderPipelines.END_PORTAL, textureSetup, 0, 0, this.width, this.height);
       } else {
-         super.renderBackground(var1, var2, var3, var4);
+         super.renderBackground(graphics, mouseX, mouseY, a);
       }
 
    }
 
-   protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      float var6 = this.scroll * 0.5F;
-      Screen.renderMenuBackgroundTexture(var1, Screen.MENU_BACKGROUND, 0, 0, 0.0F, var6, var4, var5);
+   protected void renderMenuBackground(final GuiGraphics graphics, final int x, final int y, final int width, final int height) {
+      float v = this.scroll * 0.5F;
+      Screen.renderMenuBackgroundTexture(graphics, Screen.MENU_BACKGROUND, 0, 0, 0.0F, v, width, height);
    }
 
    public boolean isPauseScreen() {
@@ -343,7 +342,7 @@ public class WinScreen extends Screen {
    }
 
    @FunctionalInterface
-   interface CreditsReader {
-      void read(Reader var1) throws IOException;
+   private interface CreditsReader {
+      void read(final Reader reader) throws IOException;
    }
 }

@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.FogType;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.waypoints.TrackedWaypoint;
@@ -59,62 +58,62 @@ public class Camera implements TrackedWaypoint.Camera {
       this.attributeProbe = new EnvironmentAttributeProbe();
    }
 
-   public void setup(Level var1, Entity var2, boolean var3, boolean var4, float var5) {
+   public void setup(final Level level, final Entity entity, final boolean detached, final boolean mirror, final float a) {
       label44: {
          this.initialized = true;
-         this.level = var1;
-         this.entity = var2;
-         this.detached = var3;
-         this.partialTickTime = var5;
-         if (var2.isPassenger()) {
-            Entity var8 = var2.getVehicle();
+         this.level = level;
+         this.entity = entity;
+         this.detached = detached;
+         this.partialTickTime = a;
+         if (entity.isPassenger()) {
+            Entity var8 = entity.getVehicle();
             if (var8 instanceof Minecart) {
-               Minecart var6 = (Minecart)var8;
-               MinecartBehavior var15 = var6.getBehavior();
+               Minecart minecart = (Minecart)var8;
+               MinecartBehavior var15 = minecart.getBehavior();
                if (var15 instanceof NewMinecartBehavior) {
-                  NewMinecartBehavior var7 = (NewMinecartBehavior)var15;
-                  if (var7.cartHasPosRotLerp()) {
-                     Vec3 var16 = var6.getPassengerRidingPosition(var2).subtract(var6.position()).subtract(var2.getVehicleAttachmentPoint(var6)).add(new Vec3(0.0, (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight), 0.0));
-                     this.setRotation(var2.getViewYRot(var5), var2.getViewXRot(var5));
-                     this.setPosition(var7.getCartLerpPosition(var5).add(var16));
+                  NewMinecartBehavior behavior = (NewMinecartBehavior)var15;
+                  if (behavior.cartHasPosRotLerp()) {
+                     Vec3 positionOffset = minecart.getPassengerRidingPosition(entity).subtract(minecart.position()).subtract(entity.getVehicleAttachmentPoint(minecart)).add(new Vec3(0.0, (double)Mth.lerp(a, this.eyeHeightOld, this.eyeHeight), 0.0));
+                     this.setRotation(entity.getViewYRot(a), entity.getViewXRot(a));
+                     this.setPosition(behavior.getCartLerpPosition(a).add(positionOffset));
                      break label44;
                   }
                }
             }
          }
 
-         this.setRotation(var2.getViewYRot(var5), var2.getViewXRot(var5));
-         this.setPosition(Mth.lerp((double)var5, var2.xo, var2.getX()), Mth.lerp((double)var5, var2.yo, var2.getY()) + (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight), Mth.lerp((double)var5, var2.zo, var2.getZ()));
+         this.setRotation(entity.getViewYRot(a), entity.getViewXRot(a));
+         this.setPosition(Mth.lerp((double)a, entity.xo, entity.getX()), Mth.lerp((double)a, entity.yo, entity.getY()) + (double)Mth.lerp(a, this.eyeHeightOld, this.eyeHeight), Mth.lerp((double)a, entity.zo, entity.getZ()));
       }
 
-      if (var3) {
-         if (var4) {
+      if (detached) {
+         if (mirror) {
             this.setRotation(this.yRot + 180.0F, -this.xRot);
          }
 
-         float var12 = 4.0F;
-         float var14 = 1.0F;
-         if (var2 instanceof LivingEntity) {
-            LivingEntity var17 = (LivingEntity)var2;
-            var14 = var17.getScale();
-            var12 = (float)var17.getAttributeValue(Attributes.CAMERA_DISTANCE);
+         float cameraDistance = 4.0F;
+         float cameraScale = 1.0F;
+         if (entity instanceof LivingEntity) {
+            LivingEntity living = (LivingEntity)entity;
+            cameraScale = living.getScale();
+            cameraDistance = (float)living.getAttributeValue(Attributes.CAMERA_DISTANCE);
          }
 
-         float var18 = var14;
-         float var9 = var12;
-         if (var2.isPassenger()) {
-            Entity var11 = var2.getVehicle();
+         float mountScale = cameraScale;
+         float mountDistance = cameraDistance;
+         if (entity.isPassenger()) {
+            Entity var11 = entity.getVehicle();
             if (var11 instanceof LivingEntity) {
-               LivingEntity var10 = (LivingEntity)var11;
-               var18 = var10.getScale();
-               var9 = (float)var10.getAttributeValue(Attributes.CAMERA_DISTANCE);
+               LivingEntity mount = (LivingEntity)var11;
+               mountScale = mount.getScale();
+               mountDistance = (float)mount.getAttributeValue(Attributes.CAMERA_DISTANCE);
             }
          }
 
-         this.move(-this.getMaxZoom(Math.max(var14 * var12, var18 * var9)), 0.0F, 0.0F);
-      } else if (var2 instanceof LivingEntity && ((LivingEntity)var2).isSleeping()) {
-         Direction var13 = ((LivingEntity)var2).getBedOrientation();
-         this.setRotation(var13 != null ? var13.toYRot() - 180.0F : 0.0F, 0.0F);
+         this.move(-this.getMaxZoom(Math.max(cameraScale * cameraDistance, mountScale * mountDistance)), 0.0F, 0.0F);
+      } else if (entity instanceof LivingEntity && ((LivingEntity)entity).isSleeping()) {
+         Direction bedOrientation = ((LivingEntity)entity).getBedOrientation();
+         this.setRotation(bedOrientation != null ? bedOrientation.toYRot() - 180.0F : 0.0F, 0.0F);
          this.move(0.0F, 0.3F, 0.0F);
       }
 
@@ -129,48 +128,48 @@ public class Camera implements TrackedWaypoint.Camera {
 
    }
 
-   private float getMaxZoom(float var1) {
-      float var2 = 0.1F;
+   private float getMaxZoom(float cameraDist) {
+      float jitterScale = 0.1F;
 
-      for(int var3 = 0; var3 < 8; ++var3) {
-         float var4 = (float)((var3 & 1) * 2 - 1);
-         float var5 = (float)((var3 >> 1 & 1) * 2 - 1);
-         float var6 = (float)((var3 >> 2 & 1) * 2 - 1);
-         Vec3 var7 = this.position.add((double)(var4 * 0.1F), (double)(var5 * 0.1F), (double)(var6 * 0.1F));
-         Vec3 var8 = var7.add((new Vec3(this.forwards)).scale((double)(-var1)));
-         BlockHitResult var9 = this.level.clip(new ClipContext(var7, var8, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, this.entity));
-         if (((HitResult)var9).getType() != HitResult.Type.MISS) {
-            float var10 = (float)((HitResult)var9).getLocation().distanceToSqr(this.position);
-            if (var10 < Mth.square(var1)) {
-               var1 = Mth.sqrt(var10);
+      for(int i = 0; i < 8; ++i) {
+         float offsetX = (float)((i & 1) * 2 - 1);
+         float offsetY = (float)((i >> 1 & 1) * 2 - 1);
+         float offsetZ = (float)((i >> 2 & 1) * 2 - 1);
+         Vec3 from = this.position.add((double)(offsetX * 0.1F), (double)(offsetY * 0.1F), (double)(offsetZ * 0.1F));
+         Vec3 to = from.add((new Vec3(this.forwards)).scale((double)(-cameraDist)));
+         HitResult hitResult = this.level.clip(new ClipContext(from, to, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, this.entity));
+         if (hitResult.getType() != HitResult.Type.MISS) {
+            float distSq = (float)hitResult.getLocation().distanceToSqr(this.position);
+            if (distSq < Mth.square(cameraDist)) {
+               cameraDist = Mth.sqrt(distSq);
             }
          }
       }
 
-      return var1;
+      return cameraDist;
    }
 
-   protected void move(float var1, float var2, float var3) {
-      Vector3f var4 = (new Vector3f(var3, var2, -var1)).rotate(this.rotation);
-      this.setPosition(new Vec3(this.position.x + (double)var4.x, this.position.y + (double)var4.y, this.position.z + (double)var4.z));
+   protected void move(final float forwards, final float up, final float right) {
+      Vector3f offset = (new Vector3f(right, up, -forwards)).rotate(this.rotation);
+      this.setPosition(new Vec3(this.position.x + (double)offset.x, this.position.y + (double)offset.y, this.position.z + (double)offset.z));
    }
 
-   protected void setRotation(float var1, float var2) {
-      this.xRot = var2;
-      this.yRot = var1;
-      this.rotation.rotationYXZ(3.1415927F - var1 * 0.017453292F, -var2 * 0.017453292F, 0.0F);
+   protected void setRotation(final float yRot, final float xRot) {
+      this.xRot = xRot;
+      this.yRot = yRot;
+      this.rotation.rotationYXZ(3.1415927F - yRot * 0.017453292F, -xRot * 0.017453292F, 0.0F);
       FORWARDS.rotate(this.rotation, this.forwards);
       UP.rotate(this.rotation, this.up);
       LEFT.rotate(this.rotation, this.left);
    }
 
-   protected void setPosition(double var1, double var3, double var5) {
-      this.setPosition(new Vec3(var1, var3, var5));
+   protected void setPosition(final double x, final double y, final double z) {
+      this.setPosition(new Vec3(x, y, z));
    }
 
-   protected void setPosition(Vec3 var1) {
-      this.position = var1;
-      this.blockPosition.set(var1.x, var1.y, var1.z);
+   protected void setPosition(final Vec3 position) {
+      this.position = position;
+      this.blockPosition.set(position.x, position.y, position.z);
    }
 
    public Vec3 position() {
@@ -214,37 +213,37 @@ public class Camera implements TrackedWaypoint.Camera {
    }
 
    public NearPlane getNearPlane() {
-      Minecraft var1 = Minecraft.getInstance();
-      double var2 = (double)var1.getWindow().getWidth() / (double)var1.getWindow().getHeight();
-      double var4 = Math.tan((double)((float)(Integer)var1.options.fov().get() * 0.017453292F) / 2.0) * 0.05000000074505806;
-      double var6 = var4 * var2;
-      Vec3 var8 = (new Vec3(this.forwards)).scale(0.05000000074505806);
-      Vec3 var9 = (new Vec3(this.left)).scale(var6);
-      Vec3 var10 = (new Vec3(this.up)).scale(var4);
-      return new NearPlane(var8, var9, var10);
+      Minecraft minecraft = Minecraft.getInstance();
+      double aspectRatio = (double)minecraft.getWindow().getWidth() / (double)minecraft.getWindow().getHeight();
+      double planeHeight = Math.tan((double)((float)(Integer)minecraft.options.fov().get() * 0.017453292F) / 2.0) * 0.05000000074505806;
+      double planeWidth = planeHeight * aspectRatio;
+      Vec3 forwardsVec3 = (new Vec3(this.forwards)).scale(0.05000000074505806);
+      Vec3 leftVec3 = (new Vec3(this.left)).scale(planeWidth);
+      Vec3 upVec3 = (new Vec3(this.up)).scale(planeHeight);
+      return new NearPlane(forwardsVec3, leftVec3, upVec3);
    }
 
    public FogType getFluidInCamera() {
       if (!this.initialized) {
          return FogType.NONE;
       } else {
-         FluidState var1 = this.level.getFluidState(this.blockPosition);
-         if (var1.is(FluidTags.WATER) && this.position.y < (double)((float)this.blockPosition.getY() + var1.getHeight(this.level, this.blockPosition))) {
+         FluidState fluidState1 = this.level.getFluidState(this.blockPosition);
+         if (fluidState1.is(FluidTags.WATER) && this.position.y < (double)((float)this.blockPosition.getY() + fluidState1.getHeight(this.level, this.blockPosition))) {
             return FogType.WATER;
          } else {
-            NearPlane var2 = this.getNearPlane();
+            NearPlane plane = this.getNearPlane();
 
-            for(Vec3 var5 : Arrays.asList(var2.forward, var2.getTopLeft(), var2.getTopRight(), var2.getBottomLeft(), var2.getBottomRight())) {
-               Vec3 var6 = this.position.add(var5);
-               BlockPos var7 = BlockPos.containing(var6);
-               FluidState var8 = this.level.getFluidState(var7);
-               if (var8.is(FluidTags.LAVA)) {
-                  if (var6.y <= (double)(var8.getHeight(this.level, var7) + (float)var7.getY())) {
+            for(Vec3 point : Arrays.asList(plane.forward, plane.getTopLeft(), plane.getTopRight(), plane.getBottomLeft(), plane.getBottomRight())) {
+               Vec3 offsetPos = this.position.add(point);
+               BlockPos checkPos = BlockPos.containing(offsetPos);
+               FluidState fluidState = this.level.getFluidState(checkPos);
+               if (fluidState.is(FluidTags.LAVA)) {
+                  if (offsetPos.y <= (double)(fluidState.getHeight(this.level, checkPos) + (float)checkPos.getY())) {
                      return FogType.LAVA;
                   }
                } else {
-                  BlockState var9 = this.level.getBlockState(var7);
-                  if (var9.is(Blocks.POWDER_SNOW)) {
+                  BlockState state = this.level.getBlockState(checkPos);
+                  if (state.is(Blocks.POWDER_SNOW)) {
                      return FogType.POWDER_SNOW;
                   }
                }
@@ -279,15 +278,15 @@ public class Camera implements TrackedWaypoint.Camera {
    }
 
    public static class NearPlane {
-      final Vec3 forward;
+      private final Vec3 forward;
       private final Vec3 left;
       private final Vec3 up;
 
-      NearPlane(Vec3 var1, Vec3 var2, Vec3 var3) {
+      private NearPlane(final Vec3 forward, final Vec3 left, final Vec3 up) {
          super();
-         this.forward = var1;
-         this.left = var2;
-         this.up = var3;
+         this.forward = forward;
+         this.left = left;
+         this.up = up;
       }
 
       public Vec3 getTopLeft() {
@@ -306,8 +305,8 @@ public class Camera implements TrackedWaypoint.Camera {
          return this.forward.subtract(this.up).subtract(this.left);
       }
 
-      public Vec3 getPointOnPlane(float var1, float var2) {
-         return this.forward.add(this.up.scale((double)var2)).subtract(this.left.scale((double)var1));
+      public Vec3 getPointOnPlane(final float x, final float y) {
+         return this.forward.add(this.up.scale((double)y)).subtract(this.left.scale((double)x));
       }
    }
 }

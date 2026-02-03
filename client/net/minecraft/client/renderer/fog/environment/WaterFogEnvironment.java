@@ -15,24 +15,24 @@ public class WaterFogEnvironment extends FogEnvironment {
       super();
    }
 
-   public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {
-      float var6 = var5.getGameTimeDeltaPartialTick(false);
-      var1.environmentalStart = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.WATER_FOG_START_DISTANCE, var6);
-      var1.environmentalEnd = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.WATER_FOG_END_DISTANCE, var6);
-      Entity var8 = var2.entity();
-      if (var8 instanceof LocalPlayer var7) {
-         var1.environmentalEnd *= Math.max(0.25F, var7.getWaterVision());
+   public void setupFog(final FogData fog, final Camera camera, final ClientLevel level, final float renderDistance, final DeltaTracker deltaTracker) {
+      float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
+      fog.environmentalStart = (Float)camera.attributeProbe().getValue(EnvironmentAttributes.WATER_FOG_START_DISTANCE, partialTicks);
+      fog.environmentalEnd = (Float)camera.attributeProbe().getValue(EnvironmentAttributes.WATER_FOG_END_DISTANCE, partialTicks);
+      Entity var8 = camera.entity();
+      if (var8 instanceof LocalPlayer player) {
+         fog.environmentalEnd *= Math.max(0.25F, player.getWaterVision());
       }
 
-      var1.skyEnd = var1.environmentalEnd;
-      var1.cloudEnd = var1.environmentalEnd;
+      fog.skyEnd = fog.environmentalEnd;
+      fog.cloudEnd = fog.environmentalEnd;
    }
 
-   public boolean isApplicable(@Nullable FogType var1, Entity var2) {
-      return var1 == FogType.WATER;
+   public boolean isApplicable(final @Nullable FogType fogType, final Entity entity) {
+      return fogType == FogType.WATER;
    }
 
-   public int getBaseColor(ClientLevel var1, Camera var2, int var3, float var4) {
-      return (Integer)var2.attributeProbe().getValue(EnvironmentAttributes.WATER_FOG_COLOR, var4);
+   public int getBaseColor(final ClientLevel level, final Camera camera, final int renderDistance, final float partialTicks) {
+      return (Integer)camera.attributeProbe().getValue(EnvironmentAttributes.WATER_FOG_COLOR, partialTicks);
    }
 }

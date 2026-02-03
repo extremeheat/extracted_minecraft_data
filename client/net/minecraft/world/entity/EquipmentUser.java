@@ -1,6 +1,5 @@
 package net.minecraft.world.entity;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,54 +12,54 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import org.jspecify.annotations.Nullable;
 
 public interface EquipmentUser {
-   void setItemSlot(EquipmentSlot var1, ItemStack var2);
+   void setItemSlot(final EquipmentSlot slot, final ItemStack stack);
 
-   ItemStack getItemBySlot(EquipmentSlot var1);
+   ItemStack getItemBySlot(final EquipmentSlot slot);
 
-   void setDropChance(EquipmentSlot var1, float var2);
+   void setDropChance(final EquipmentSlot slot, final float dropChance);
 
-   default void equip(EquipmentTable var1, LootParams var2) {
-      this.equip(var1.lootTable(), var2, var1.slotDropChances());
+   default void equip(final EquipmentTable equipment, final LootParams lootParams) {
+      this.equip(equipment.lootTable(), lootParams, equipment.slotDropChances());
    }
 
-   default void equip(ResourceKey<LootTable> var1, LootParams var2, Map<EquipmentSlot, Float> var3) {
-      this.equip(var1, var2, 0L, var3);
+   default void equip(final ResourceKey<LootTable> lootTable, final LootParams lootParams, final Map<EquipmentSlot, Float> dropChances) {
+      this.equip(lootTable, lootParams, 0L, dropChances);
    }
 
-   default void equip(ResourceKey<LootTable> var1, LootParams var2, long var3, Map<EquipmentSlot, Float> var5) {
-      LootTable var6 = var2.getLevel().getServer().reloadableRegistries().getLootTable(var1);
-      if (var6 != LootTable.EMPTY) {
-         ObjectArrayList var7 = var6.getRandomItems(var2, var3);
-         ArrayList var8 = new ArrayList();
+   default void equip(final ResourceKey<LootTable> lootTable, final LootParams lootParams, final long optionalLootTableSeed, final Map<EquipmentSlot, Float> dropChances) {
+      LootTable table = lootParams.getLevel().getServer().reloadableRegistries().getLootTable(lootTable);
+      if (table != LootTable.EMPTY) {
+         List<ItemStack> possibleEquipment = table.getRandomItems(lootParams, optionalLootTableSeed);
+         List<EquipmentSlot> insertedIntoSlots = new ArrayList();
 
-         for(ItemStack var10 : var7) {
-            EquipmentSlot var11 = this.resolveSlot(var10, var8);
-            if (var11 != null) {
-               ItemStack var12 = var11.limit(var10);
-               this.setItemSlot(var11, var12);
-               Float var13 = (Float)var5.get(var11);
-               if (var13 != null) {
-                  this.setDropChance(var11, var13);
+         for(ItemStack toEquip : possibleEquipment) {
+            EquipmentSlot slot = this.resolveSlot(toEquip, insertedIntoSlots);
+            if (slot != null) {
+               ItemStack equipped = slot.limit(toEquip);
+               this.setItemSlot(slot, equipped);
+               Float dropChance = (Float)dropChances.get(slot);
+               if (dropChance != null) {
+                  this.setDropChance(slot, dropChance);
                }
 
-               var8.add(var11);
+               insertedIntoSlots.add(slot);
             }
          }
 
       }
    }
 
-   default @Nullable EquipmentSlot resolveSlot(ItemStack var1, List<EquipmentSlot> var2) {
-      if (var1.isEmpty()) {
+   default @Nullable EquipmentSlot resolveSlot(final ItemStack toEquip, final List<EquipmentSlot> alreadyInsertedIntoSlots) {
+      if (toEquip.isEmpty()) {
          return null;
       } else {
-         Equippable var3 = (Equippable)var1.get(DataComponents.EQUIPPABLE);
-         if (var3 != null) {
-            EquipmentSlot var4 = var3.slot();
-            if (!var2.contains(var4)) {
-               return var4;
+         Equippable equippable = (Equippable)toEquip.get(DataComponents.EQUIPPABLE);
+         if (equippable != null) {
+            EquipmentSlot slot = equippable.slot();
+            if (!alreadyInsertedIntoSlots.contains(slot)) {
+               return slot;
             }
-         } else if (!var2.contains(EquipmentSlot.MAINHAND)) {
+         } else if (!alreadyInsertedIntoSlots.contains(EquipmentSlot.MAINHAND)) {
             return EquipmentSlot.MAINHAND;
          }
 

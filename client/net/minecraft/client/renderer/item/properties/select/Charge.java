@@ -20,10 +20,10 @@ public record Charge() implements SelectItemModelProperty<CrossbowItem.ChargeTyp
       super();
    }
 
-   public CrossbowItem.ChargeType get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      ChargedProjectiles var6 = (ChargedProjectiles)var1.get(DataComponents.CHARGED_PROJECTILES);
-      if (var6 != null && !var6.isEmpty()) {
-         return var6.contains(Items.FIREWORK_ROCKET) ? CrossbowItem.ChargeType.ROCKET : CrossbowItem.ChargeType.ARROW;
+   public CrossbowItem.ChargeType get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      ChargedProjectiles projectiles = (ChargedProjectiles)itemStack.get(DataComponents.CHARGED_PROJECTILES);
+      if (projectiles != null && !projectiles.isEmpty()) {
+         return projectiles.contains(Items.FIREWORK_ROCKET) ? CrossbowItem.ChargeType.ROCKET : CrossbowItem.ChargeType.ARROW;
       } else {
          return CrossbowItem.ChargeType.NONE;
       }
@@ -35,11 +35,6 @@ public record Charge() implements SelectItemModelProperty<CrossbowItem.ChargeTyp
 
    public Codec<CrossbowItem.ChargeType> valueCodec() {
       return VALUE_CODEC;
-   }
-
-   // $FF: synthetic method
-   public Object get(final ItemStack var1, final @Nullable ClientLevel var2, final @Nullable LivingEntity var3, final int var4, final ItemDisplayContext var5) {
-      return this.get(var1, var2, var3, var4, var5);
    }
 
    static {

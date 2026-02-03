@@ -13,58 +13,58 @@ import net.minecraft.world.level.chunk.LightChunkGetter;
 public final class BlockLightEngine extends LightEngine<BlockLightSectionStorage.BlockDataLayerStorageMap, BlockLightSectionStorage> {
    private final BlockPos.MutableBlockPos mutablePos;
 
-   public BlockLightEngine(LightChunkGetter var1) {
-      this(var1, new BlockLightSectionStorage(var1));
+   public BlockLightEngine(final LightChunkGetter chunkSource) {
+      this(chunkSource, new BlockLightSectionStorage(chunkSource));
    }
 
    @VisibleForTesting
-   public BlockLightEngine(LightChunkGetter var1, BlockLightSectionStorage var2) {
-      super(var1, var2);
+   public BlockLightEngine(final LightChunkGetter chunkSource, final BlockLightSectionStorage storage) {
+      super(chunkSource, storage);
       this.mutablePos = new BlockPos.MutableBlockPos();
    }
 
-   protected void checkNode(long var1) {
-      long var3 = SectionPos.blockToSection(var1);
-      if (((BlockLightSectionStorage)this.storage).storingLightForSection(var3)) {
-         BlockState var5 = this.getState(this.mutablePos.set(var1));
-         int var6 = this.getEmission(var1, var5);
-         int var7 = ((BlockLightSectionStorage)this.storage).getStoredLevel(var1);
-         if (var6 < var7) {
-            ((BlockLightSectionStorage)this.storage).setStoredLevel(var1, 0);
-            this.enqueueDecrease(var1, LightEngine.QueueEntry.decreaseAllDirections(var7));
+   protected void checkNode(final long blockNode) {
+      long sectionNode = SectionPos.blockToSection(blockNode);
+      if (((BlockLightSectionStorage)this.storage).storingLightForSection(sectionNode)) {
+         BlockState state = this.getState(this.mutablePos.set(blockNode));
+         int lightEmission = this.getEmission(blockNode, state);
+         int oldLevel = ((BlockLightSectionStorage)this.storage).getStoredLevel(blockNode);
+         if (lightEmission < oldLevel) {
+            ((BlockLightSectionStorage)this.storage).setStoredLevel(blockNode, 0);
+            this.enqueueDecrease(blockNode, LightEngine.QueueEntry.decreaseAllDirections(oldLevel));
          } else {
-            this.enqueueDecrease(var1, PULL_LIGHT_IN_ENTRY);
+            this.enqueueDecrease(blockNode, PULL_LIGHT_IN_ENTRY);
          }
 
-         if (var6 > 0) {
-            this.enqueueIncrease(var1, LightEngine.QueueEntry.increaseLightFromEmission(var6, isEmptyShape(var5)));
+         if (lightEmission > 0) {
+            this.enqueueIncrease(blockNode, LightEngine.QueueEntry.increaseLightFromEmission(lightEmission, isEmptyShape(state)));
          }
 
       }
    }
 
-   protected void propagateIncrease(long var1, long var3, int var5) {
-      BlockState var6 = null;
+   protected void propagateIncrease(final long fromNode, final long increaseData, final int fromLevel) {
+      BlockState fromState = null;
 
-      for(Direction var10 : PROPAGATION_DIRECTIONS) {
-         if (LightEngine.QueueEntry.shouldPropagateInDirection(var3, var10)) {
-            long var11 = BlockPos.offset(var1, var10);
-            if (((BlockLightSectionStorage)this.storage).storingLightForSection(SectionPos.blockToSection(var11))) {
-               int var13 = ((BlockLightSectionStorage)this.storage).getStoredLevel(var11);
-               int var14 = var5 - 1;
-               if (var14 > var13) {
-                  this.mutablePos.set(var11);
-                  BlockState var15 = this.getState(this.mutablePos);
-                  int var16 = var5 - this.getOpacity(var15);
-                  if (var16 > var13) {
-                     if (var6 == null) {
-                        var6 = LightEngine.QueueEntry.isFromEmptyShape(var3) ? Blocks.AIR.defaultBlockState() : this.getState(this.mutablePos.set(var1));
+      for(Direction propagationDirection : PROPAGATION_DIRECTIONS) {
+         if (LightEngine.QueueEntry.shouldPropagateInDirection(increaseData, propagationDirection)) {
+            long toNode = BlockPos.offset(fromNode, propagationDirection);
+            if (((BlockLightSectionStorage)this.storage).storingLightForSection(SectionPos.blockToSection(toNode))) {
+               int toLevel = ((BlockLightSectionStorage)this.storage).getStoredLevel(toNode);
+               int maxPossibleNewToLevel = fromLevel - 1;
+               if (maxPossibleNewToLevel > toLevel) {
+                  this.mutablePos.set(toNode);
+                  BlockState toState = this.getState(this.mutablePos);
+                  int newToLevel = fromLevel - this.getOpacity(toState);
+                  if (newToLevel > toLevel) {
+                     if (fromState == null) {
+                        fromState = LightEngine.QueueEntry.isFromEmptyShape(increaseData) ? Blocks.AIR.defaultBlockState() : this.getState(this.mutablePos.set(fromNode));
                      }
 
-                     if (!this.shapeOccludes(var6, var15, var10)) {
-                        ((BlockLightSectionStorage)this.storage).setStoredLevel(var11, var16);
-                        if (var16 > 1) {
-                           this.enqueueIncrease(var11, LightEngine.QueueEntry.increaseSkipOneDirection(var16, isEmptyShape(var15), var10.getOpposite()));
+                     if (!this.shapeOccludes(fromState, toState, propagationDirection)) {
+                        ((BlockLightSectionStorage)this.storage).setStoredLevel(toNode, newToLevel);
+                        if (newToLevel > 1) {
+                           this.enqueueIncrease(toNode, LightEngine.QueueEntry.increaseSkipOneDirection(newToLevel, isEmptyShape(toState), propagationDirection.getOpposite()));
                         }
                      }
                   }
@@ -75,28 +75,28 @@ public final class BlockLightEngine extends LightEngine<BlockLightSectionStorage
 
    }
 
-   protected void propagateDecrease(long var1, long var3) {
-      int var5 = LightEngine.QueueEntry.getFromLevel(var3);
+   protected void propagateDecrease(final long fromNode, final long decreaseData) {
+      int oldFromLevel = LightEngine.QueueEntry.getFromLevel(decreaseData);
 
-      for(Direction var9 : PROPAGATION_DIRECTIONS) {
-         if (LightEngine.QueueEntry.shouldPropagateInDirection(var3, var9)) {
-            long var10 = BlockPos.offset(var1, var9);
-            if (((BlockLightSectionStorage)this.storage).storingLightForSection(SectionPos.blockToSection(var10))) {
-               int var12 = ((BlockLightSectionStorage)this.storage).getStoredLevel(var10);
-               if (var12 != 0) {
-                  if (var12 <= var5 - 1) {
-                     BlockState var13 = this.getState(this.mutablePos.set(var10));
-                     int var14 = this.getEmission(var10, var13);
-                     ((BlockLightSectionStorage)this.storage).setStoredLevel(var10, 0);
-                     if (var14 < var12) {
-                        this.enqueueDecrease(var10, LightEngine.QueueEntry.decreaseSkipOneDirection(var12, var9.getOpposite()));
+      for(Direction propagationDirection : PROPAGATION_DIRECTIONS) {
+         if (LightEngine.QueueEntry.shouldPropagateInDirection(decreaseData, propagationDirection)) {
+            long toNode = BlockPos.offset(fromNode, propagationDirection);
+            if (((BlockLightSectionStorage)this.storage).storingLightForSection(SectionPos.blockToSection(toNode))) {
+               int toLevel = ((BlockLightSectionStorage)this.storage).getStoredLevel(toNode);
+               if (toLevel != 0) {
+                  if (toLevel <= oldFromLevel - 1) {
+                     BlockState toState = this.getState(this.mutablePos.set(toNode));
+                     int toEmission = this.getEmission(toNode, toState);
+                     ((BlockLightSectionStorage)this.storage).setStoredLevel(toNode, 0);
+                     if (toEmission < toLevel) {
+                        this.enqueueDecrease(toNode, LightEngine.QueueEntry.decreaseSkipOneDirection(toLevel, propagationDirection.getOpposite()));
                      }
 
-                     if (var14 > 0) {
-                        this.enqueueIncrease(var10, LightEngine.QueueEntry.increaseLightFromEmission(var14, isEmptyShape(var13)));
+                     if (toEmission > 0) {
+                        this.enqueueIncrease(toNode, LightEngine.QueueEntry.increaseLightFromEmission(toEmission, isEmptyShape(toState)));
                      }
                   } else {
-                     this.enqueueIncrease(var10, LightEngine.QueueEntry.increaseOnlyOneDirection(var12, false, var9.getOpposite()));
+                     this.enqueueIncrease(toNode, LightEngine.QueueEntry.increaseOnlyOneDirection(toLevel, false, propagationDirection.getOpposite()));
                   }
                }
             }
@@ -105,18 +105,18 @@ public final class BlockLightEngine extends LightEngine<BlockLightSectionStorage
 
    }
 
-   private int getEmission(long var1, BlockState var3) {
-      int var4 = var3.getLightEmission();
-      return var4 > 0 && ((BlockLightSectionStorage)this.storage).lightOnInSection(SectionPos.blockToSection(var1)) ? var4 : 0;
+   private int getEmission(final long blockNode, final BlockState state) {
+      int emission = state.getLightEmission();
+      return emission > 0 && ((BlockLightSectionStorage)this.storage).lightOnInSection(SectionPos.blockToSection(blockNode)) ? emission : 0;
    }
 
-   public void propagateLightSources(ChunkPos var1) {
-      this.setLightEnabled(var1, true);
-      LightChunk var2 = this.chunkSource.getChunkForLighting(var1.x, var1.z);
-      if (var2 != null) {
-         var2.findBlockLightSources((var1x, var2x) -> {
-            int var3 = var2x.getLightEmission();
-            this.enqueueIncrease(var1x.asLong(), LightEngine.QueueEntry.increaseLightFromEmission(var3, isEmptyShape(var2x)));
+   public void propagateLightSources(final ChunkPos pos) {
+      this.setLightEnabled(pos, true);
+      LightChunk chunk = this.chunkSource.getChunkForLighting(pos.x(), pos.z());
+      if (chunk != null) {
+         chunk.findBlockLightSources((lightPos, state) -> {
+            int lightEmission = state.getLightEmission();
+            this.enqueueIncrease(lightPos.asLong(), LightEngine.QueueEntry.increaseLightFromEmission(lightEmission, isEmptyShape(state)));
          });
       }
 

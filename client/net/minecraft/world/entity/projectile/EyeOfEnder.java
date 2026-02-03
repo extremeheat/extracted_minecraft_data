@@ -28,20 +28,20 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
    private int life;
    private boolean surviveAfterDeath;
 
-   public EyeOfEnder(EntityType<? extends EyeOfEnder> var1, Level var2) {
-      super(var1, var2);
+   public EyeOfEnder(final EntityType<? extends EyeOfEnder> type, final Level level) {
+      super(type, level);
    }
 
-   public EyeOfEnder(Level var1, double var2, double var4, double var6) {
-      this(EntityType.EYE_OF_ENDER, var1);
-      this.setPos(var2, var4, var6);
+   public EyeOfEnder(final Level level, final double x, final double y, final double z) {
+      this(EntityType.EYE_OF_ENDER, level);
+      this.setPos(x, y, z);
    }
 
-   public void setItem(ItemStack var1) {
-      if (var1.isEmpty()) {
+   public void setItem(final ItemStack source) {
+      if (source.isEmpty()) {
          this.getEntityData().set(DATA_ITEM_STACK, this.getDefaultItem());
       } else {
-         this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
+         this.getEntityData().set(DATA_ITEM_STACK, source.copyWithCount(1));
       }
 
    }
@@ -50,31 +50,31 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
       return (ItemStack)this.getEntityData().get(DATA_ITEM_STACK);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_ITEM_STACK, this.getDefaultItem());
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      entityData.define(DATA_ITEM_STACK, this.getDefaultItem());
    }
 
-   public boolean shouldRenderAtSqrDistance(double var1) {
-      if (this.tickCount < 2 && var1 < 12.25) {
+   public boolean shouldRenderAtSqrDistance(final double distance) {
+      if (this.tickCount < 2 && distance < 12.25) {
          return false;
       } else {
-         double var3 = this.getBoundingBox().getSize() * 4.0;
-         if (Double.isNaN(var3)) {
-            var3 = 4.0;
+         double size = this.getBoundingBox().getSize() * 4.0;
+         if (Double.isNaN(size)) {
+            size = 4.0;
          }
 
-         var3 *= 64.0;
-         return var1 < var3 * var3;
+         size *= 64.0;
+         return distance < size * size;
       }
    }
 
-   public void signalTo(Vec3 var1) {
-      Vec3 var2 = var1.subtract(this.position());
-      double var3 = var2.horizontalDistance();
-      if (var3 > 12.0) {
-         this.target = this.position().add(var2.x / var3 * 12.0, 8.0, var2.z / var3 * 12.0);
+   public void signalTo(final Vec3 target) {
+      Vec3 delta = target.subtract(this.position());
+      double horizontalDistance = delta.horizontalDistance();
+      if (horizontalDistance > 12.0) {
+         this.target = this.position().add(delta.x / horizontalDistance * 12.0, 8.0, delta.z / horizontalDistance * 12.0);
       } else {
-         this.target = var1;
+         this.target = target;
       }
 
       this.life = 0;
@@ -83,17 +83,17 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
    public void tick() {
       super.tick();
-      Vec3 var1 = this.position().add(this.getDeltaMovement());
+      Vec3 newPosition = this.position().add(this.getDeltaMovement());
       if (!this.level().isClientSide() && this.target != null) {
-         this.setDeltaMovement(updateDeltaMovement(this.getDeltaMovement(), var1, this.target));
+         this.setDeltaMovement(updateDeltaMovement(this.getDeltaMovement(), newPosition, this.target));
       }
 
       if (this.level().isClientSide()) {
-         Vec3 var2 = var1.subtract(this.getDeltaMovement().scale(0.25));
-         this.spawnParticles(var2, this.getDeltaMovement());
+         Vec3 particleOrigin = newPosition.subtract(this.getDeltaMovement().scale(0.25));
+         this.spawnParticles(particleOrigin, this.getDeltaMovement());
       }
 
-      this.setPos(var1);
+      this.setPos(newPosition);
       if (!this.level().isClientSide()) {
          ++this.life;
          if (this.life > 80 && !this.level().isClientSide()) {
@@ -109,37 +109,37 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
    }
 
-   private void spawnParticles(Vec3 var1, Vec3 var2) {
+   private void spawnParticles(final Vec3 origin, final Vec3 movement) {
       if (this.isInWater()) {
-         for(int var3 = 0; var3 < 4; ++var3) {
-            this.level().addParticle(ParticleTypes.BUBBLE, var1.x, var1.y, var1.z, var2.x, var2.y, var2.z);
+         for(int i = 0; i < 4; ++i) {
+            this.level().addParticle(ParticleTypes.BUBBLE, origin.x, origin.y, origin.z, movement.x, movement.y, movement.z);
          }
       } else {
-         this.level().addParticle(ParticleTypes.PORTAL, var1.x + this.random.nextDouble() * 0.6 - 0.3, var1.y - 0.5, var1.z + this.random.nextDouble() * 0.6 - 0.3, var2.x, var2.y, var2.z);
+         this.level().addParticle(ParticleTypes.PORTAL, origin.x + this.random.nextDouble() * 0.6 - 0.3, origin.y - 0.5, origin.z + this.random.nextDouble() * 0.6 - 0.3, movement.x, movement.y, movement.z);
       }
 
    }
 
-   private static Vec3 updateDeltaMovement(Vec3 var0, Vec3 var1, Vec3 var2) {
-      Vec3 var3 = new Vec3(var2.x - var1.x, 0.0, var2.z - var1.z);
-      double var4 = var3.length();
-      double var6 = Mth.lerp(0.0025, var0.horizontalDistance(), var4);
-      double var8 = var0.y;
-      if (var4 < 1.0) {
-         var6 *= 0.8;
-         var8 *= 0.8;
+   private static Vec3 updateDeltaMovement(final Vec3 oldMovement, final Vec3 position, final Vec3 target) {
+      Vec3 horizontalDelta = new Vec3(target.x - position.x, 0.0, target.z - position.z);
+      double horizontalLength = horizontalDelta.length();
+      double wantedSpeed = Mth.lerp(0.0025, oldMovement.horizontalDistance(), horizontalLength);
+      double movementY = oldMovement.y;
+      if (horizontalLength < 1.0) {
+         wantedSpeed *= 0.8;
+         movementY *= 0.8;
       }
 
-      double var10 = var1.y - var0.y < var2.y ? 1.0 : -1.0;
-      return var3.scale(var6 / var4).add(0.0, var8 + (var10 - var8) * 0.015, 0.0);
+      double wantedMovementY = position.y - oldMovement.y < target.y ? 1.0 : -1.0;
+      return horizontalDelta.scale(wantedSpeed / horizontalLength).add(0.0, movementY + (wantedMovementY - movementY) * 0.015, 0.0);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      var1.store("Item", ItemStack.CODEC, this.getItem());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      output.store("Item", ItemStack.CODEC, this.getItem());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC).orElse(this.getDefaultItem()));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      this.setItem((ItemStack)input.read("Item", ItemStack.CODEC).orElse(this.getDefaultItem()));
    }
 
    private ItemStack getDefaultItem() {
@@ -154,7 +154,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
       return false;
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       return false;
    }
 

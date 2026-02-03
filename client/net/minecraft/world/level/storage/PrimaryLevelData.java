@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.OptionalDynamic;
 import java.util.HashSet;
@@ -24,10 +25,11 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.resources.RegistryOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.clock.PackedClockStates;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LevelSettings;
@@ -53,7 +55,6 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private final Lifecycle worldGenSettingsLifecycle;
    private LevelData.RespawnData respawnData;
    private long gameTime;
-   private long dayTime;
    private final @Nullable CompoundTag loadedPlayerTag;
    private final int version;
    private int clearWeatherTime;
@@ -61,6 +62,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private int rainTime;
    private boolean thundering;
    private int thunderTime;
+   private PackedClockStates clockStates;
    private boolean initialized;
    private boolean difficultyLocked;
    /** @deprecated */
@@ -76,141 +78,141 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private final Set<String> removedFeatureFlags;
    private final TimerQueue<MinecraftServer> scheduledEvents;
 
-   private PrimaryLevelData(@Nullable CompoundTag var1, boolean var2, LevelData.RespawnData var3, long var4, long var6, int var8, int var9, int var10, boolean var11, int var12, boolean var13, boolean var14, boolean var15, Optional<WorldBorder.Settings> var16, int var17, int var18, @Nullable UUID var19, Set<String> var20, Set<String> var21, TimerQueue<MinecraftServer> var22, @Nullable CompoundTag var23, EndDragonFight.Data var24, LevelSettings var25, WorldOptions var26, SpecialWorldProperty var27, Lifecycle var28) {
+   private PrimaryLevelData(final @Nullable CompoundTag loadedPlayerTag, final boolean wasModded, final LevelData.RespawnData respawnData, final long gameTime, final int version, final int clearWeatherTime, final int rainTime, final boolean raining, final int thunderTime, final boolean thundering, final PackedClockStates clockStates, final boolean initialized, final boolean difficultyLocked, final Optional<WorldBorder.Settings> legacyWorldBorderSettings, final int wanderingTraderSpawnDelay, final int wanderingTraderSpawnChance, final @Nullable UUID wanderingTraderId, final Set<String> knownServerBrands, final Set<String> removedFeatureFlags, final TimerQueue<MinecraftServer> scheduledEvents, final @Nullable CompoundTag customBossEvents, final EndDragonFight.Data endDragonFightData, final LevelSettings settings, final WorldOptions worldOptions, final SpecialWorldProperty specialWorldProperty, final Lifecycle worldGenSettingsLifecycle) {
       super();
-      this.wasModded = var2;
-      this.respawnData = var3;
-      this.gameTime = var4;
-      this.dayTime = var6;
-      this.version = var8;
-      this.clearWeatherTime = var9;
-      this.rainTime = var10;
-      this.raining = var11;
-      this.thunderTime = var12;
-      this.thundering = var13;
-      this.initialized = var14;
-      this.difficultyLocked = var15;
-      this.legacyWorldBorderSettings = var16;
-      this.wanderingTraderSpawnDelay = var17;
-      this.wanderingTraderSpawnChance = var18;
-      this.wanderingTraderId = var19;
-      this.knownServerBrands = var20;
-      this.removedFeatureFlags = var21;
-      this.loadedPlayerTag = var1;
-      this.scheduledEvents = var22;
-      this.customBossEvents = var23;
-      this.endDragonFightData = var24;
-      this.settings = var25;
-      this.worldOptions = var26;
-      this.specialWorldProperty = var27;
-      this.worldGenSettingsLifecycle = var28;
+      this.wasModded = wasModded;
+      this.respawnData = respawnData;
+      this.gameTime = gameTime;
+      this.version = version;
+      this.clearWeatherTime = clearWeatherTime;
+      this.rainTime = rainTime;
+      this.raining = raining;
+      this.thunderTime = thunderTime;
+      this.thundering = thundering;
+      this.clockStates = clockStates;
+      this.initialized = initialized;
+      this.difficultyLocked = difficultyLocked;
+      this.legacyWorldBorderSettings = legacyWorldBorderSettings;
+      this.wanderingTraderSpawnDelay = wanderingTraderSpawnDelay;
+      this.wanderingTraderSpawnChance = wanderingTraderSpawnChance;
+      this.wanderingTraderId = wanderingTraderId;
+      this.knownServerBrands = knownServerBrands;
+      this.removedFeatureFlags = removedFeatureFlags;
+      this.loadedPlayerTag = loadedPlayerTag;
+      this.scheduledEvents = scheduledEvents;
+      this.customBossEvents = customBossEvents;
+      this.endDragonFightData = endDragonFightData;
+      this.settings = settings;
+      this.worldOptions = worldOptions;
+      this.specialWorldProperty = specialWorldProperty;
+      this.worldGenSettingsLifecycle = worldGenSettingsLifecycle;
    }
 
-   public PrimaryLevelData(LevelSettings var1, WorldOptions var2, SpecialWorldProperty var3, Lifecycle var4) {
-      this((CompoundTag)null, false, LevelData.RespawnData.DEFAULT, 0L, 0L, 19133, 0, 0, false, 0, false, false, false, Optional.empty(), 0, 0, (UUID)null, Sets.newLinkedHashSet(), new HashSet(), new TimerQueue(TimerCallbacks.SERVER_CALLBACKS), (CompoundTag)null, EndDragonFight.Data.DEFAULT, var1.copy(), var2, var3, var4);
+   public PrimaryLevelData(final LevelSettings levelSettings, final WorldOptions worldOptions, final SpecialWorldProperty specialWorldProperty, final Lifecycle lifecycle) {
+      this((CompoundTag)null, false, LevelData.RespawnData.DEFAULT, 0L, 19133, 0, 0, false, 0, false, PackedClockStates.EMPTY, false, false, Optional.empty(), 0, 0, (UUID)null, Sets.newLinkedHashSet(), new HashSet(), new TimerQueue(TimerCallbacks.SERVER_CALLBACKS), (CompoundTag)null, EndDragonFight.Data.DEFAULT, levelSettings.copy(), worldOptions, specialWorldProperty, lifecycle);
    }
 
-   public static <T> PrimaryLevelData parse(Dynamic<T> var0, LevelSettings var1, SpecialWorldProperty var2, WorldOptions var3, Lifecycle var4) {
-      long var5 = var0.get("Time").asLong(0L);
-      OptionalDynamic var10002 = var0.get("Player");
+   public static <T> PrimaryLevelData parse(final Dynamic<T> input, final LevelSettings settings, final SpecialWorldProperty specialWorldProperty, final WorldOptions worldOptions, final Lifecycle worldGenSettingsLifecycle) {
+      long gameTime = input.get("Time").asLong(0L);
+      OptionalDynamic var10002 = input.get("Player");
       Codec var10003 = CompoundTag.CODEC;
       Objects.requireNonNull(var10003);
       CompoundTag var7 = (CompoundTag)var10002.flatMap(var10003::parse).result().orElse((Object)null);
-      boolean var8 = var0.get("WasModded").asBoolean(false);
-      LevelData.RespawnData var10004 = (LevelData.RespawnData)var0.get("spawn").read(LevelData.RespawnData.CODEC).result().orElse(LevelData.RespawnData.DEFAULT);
-      long var10006 = var0.get("DayTime").asLong(var5);
-      int var10007 = LevelVersion.parse(var0).levelDataVersion();
-      int var10008 = var0.get("clearWeatherTime").asInt(0);
-      int var10009 = var0.get("rainTime").asInt(0);
-      boolean var10010 = var0.get("raining").asBoolean(false);
-      int var10011 = var0.get("thunderTime").asInt(0);
-      boolean var10012 = var0.get("thundering").asBoolean(false);
-      boolean var10013 = var0.get("initialized").asBoolean(true);
-      boolean var10014 = var0.get("DifficultyLocked").asBoolean(false);
-      Optional var10015 = WorldBorder.Settings.CODEC.parse(var0.get("world_border").orElseEmptyMap()).result();
-      int var10016 = var0.get("WanderingTraderSpawnDelay").asInt(0);
-      int var10017 = var0.get("WanderingTraderSpawnChance").asInt(0);
-      UUID var10018 = (UUID)var0.get("WanderingTraderId").read(UUIDUtil.CODEC).result().orElse((Object)null);
-      Set var10019 = (Set)var0.get("ServerBrands").asStream().flatMap((var0x) -> var0x.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet));
-      Set var10020 = (Set)var0.get("removed_features").asStream().flatMap((var0x) -> var0x.asString().result().stream()).collect(Collectors.toSet());
-      TimerQueue var10021 = new TimerQueue(TimerCallbacks.SERVER_CALLBACKS, var0.get("ScheduledEvents").asStream());
-      CompoundTag var10022 = (CompoundTag)var0.get("CustomBossEvents").orElseEmptyMap().getValue();
-      DataResult var10023 = var0.get("DragonFight").read(EndDragonFight.Data.CODEC);
+      boolean var8 = input.get("WasModded").asBoolean(false);
+      LevelData.RespawnData var10004 = (LevelData.RespawnData)input.get("spawn").read(LevelData.RespawnData.CODEC).result().orElse(LevelData.RespawnData.DEFAULT);
+      int var10006 = LevelVersion.parse(input).levelDataVersion();
+      int var10007 = input.get("clearWeatherTime").asInt(0);
+      int var10008 = input.get("rainTime").asInt(0);
+      boolean var10009 = input.get("raining").asBoolean(false);
+      int var10010 = input.get("thunderTime").asInt(0);
+      boolean var10011 = input.get("thundering").asBoolean(false);
+      PackedClockStates var10012 = (PackedClockStates)input.get("world_clocks").read(PackedClockStates.CODEC).resultOrPartial((error) -> LOGGER.warn("Failed to parse clocks: {}", error)).orElse(PackedClockStates.EMPTY);
+      boolean var10013 = input.get("initialized").asBoolean(true);
+      boolean var10014 = input.get("DifficultyLocked").asBoolean(false);
+      Optional var10015 = WorldBorder.Settings.CODEC.parse(input.get("world_border").orElseEmptyMap()).result();
+      int var10016 = input.get("WanderingTraderSpawnDelay").asInt(0);
+      int var10017 = input.get("WanderingTraderSpawnChance").asInt(0);
+      UUID var10018 = (UUID)input.get("WanderingTraderId").read(UUIDUtil.CODEC).result().orElse((Object)null);
+      Set var10019 = (Set)input.get("ServerBrands").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet));
+      Set var10020 = (Set)input.get("removed_features").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toSet());
+      TimerQueue var10021 = new TimerQueue(TimerCallbacks.SERVER_CALLBACKS, input.get("ScheduledEvents").asStream());
+      CompoundTag var10022 = (CompoundTag)input.get("CustomBossEvents").orElseEmptyMap().getValue();
+      DataResult var10023 = input.get("DragonFight").read(EndDragonFight.Data.CODEC);
       Logger var10024 = LOGGER;
       Objects.requireNonNull(var10024);
-      return new PrimaryLevelData(var7, var8, var10004, var5, var10006, var10007, var10008, var10009, var10010, var10011, var10012, var10013, var10014, var10015, var10016, var10017, var10018, var10019, var10020, var10021, var10022, (EndDragonFight.Data)var10023.resultOrPartial(var10024::error).orElse(EndDragonFight.Data.DEFAULT), var1, var3, var2, var4);
+      return new PrimaryLevelData(var7, var8, var10004, gameTime, var10006, var10007, var10008, var10009, var10010, var10011, var10012, var10013, var10014, var10015, var10016, var10017, var10018, var10019, var10020, var10021, var10022, (EndDragonFight.Data)var10023.resultOrPartial(var10024::error).orElse(EndDragonFight.Data.DEFAULT), settings, worldOptions, specialWorldProperty, worldGenSettingsLifecycle);
    }
 
-   public CompoundTag createTag(RegistryAccess var1, @Nullable CompoundTag var2) {
-      if (var2 == null) {
-         var2 = this.loadedPlayerTag;
+   public CompoundTag createTag(final RegistryAccess registryAccess, @Nullable CompoundTag playerData) {
+      if (playerData == null) {
+         playerData = this.loadedPlayerTag;
       }
 
-      CompoundTag var3 = new CompoundTag();
-      this.setTagData(var1, var3, var2);
-      return var3;
+      CompoundTag tag = new CompoundTag();
+      this.setTagData(registryAccess, tag, playerData);
+      return tag;
    }
 
-   private void setTagData(RegistryAccess var1, CompoundTag var2, @Nullable CompoundTag var3) {
-      var2.put("ServerBrands", stringCollectionToTag(this.knownServerBrands));
-      var2.putBoolean("WasModded", this.wasModded);
+   private void setTagData(final RegistryAccess registryAccess, final CompoundTag tag, final @Nullable CompoundTag playerTag) {
+      tag.put("ServerBrands", stringCollectionToTag(this.knownServerBrands));
+      tag.putBoolean("WasModded", this.wasModded);
       if (!this.removedFeatureFlags.isEmpty()) {
-         var2.put("removed_features", stringCollectionToTag(this.removedFeatureFlags));
+         tag.put("removed_features", stringCollectionToTag(this.removedFeatureFlags));
       }
 
-      CompoundTag var4 = new CompoundTag();
-      var4.putString("Name", SharedConstants.getCurrentVersion().name());
-      var4.putInt("Id", SharedConstants.getCurrentVersion().dataVersion().version());
-      var4.putBoolean("Snapshot", !SharedConstants.getCurrentVersion().stable());
-      var4.putString("Series", SharedConstants.getCurrentVersion().dataVersion().series());
-      var2.put("Version", var4);
-      NbtUtils.addCurrentDataVersion(var2);
-      RegistryOps var5 = var1.createSerializationContext(NbtOps.INSTANCE);
-      DataResult var10000 = WorldGenSettings.encode(var5, this.worldOptions, (RegistryAccess)var1);
+      CompoundTag worldVersion = new CompoundTag();
+      worldVersion.putString("Name", SharedConstants.getCurrentVersion().name());
+      worldVersion.putInt("Id", SharedConstants.getCurrentVersion().dataVersion().version());
+      worldVersion.putBoolean("Snapshot", !SharedConstants.getCurrentVersion().stable());
+      worldVersion.putString("Series", SharedConstants.getCurrentVersion().dataVersion().series());
+      tag.put("Version", worldVersion);
+      NbtUtils.addCurrentDataVersion(tag);
+      DynamicOps<Tag> ops = registryAccess.createSerializationContext(NbtOps.INSTANCE);
+      DataResult var10000 = WorldGenSettings.encode(ops, this.worldOptions, registryAccess);
       Logger var10002 = LOGGER;
       Objects.requireNonNull(var10002);
-      var10000.resultOrPartial(Util.prefix("WorldGenSettings: ", var10002::error)).ifPresent((var1x) -> var2.put("WorldGenSettings", var1x));
-      var2.putInt("GameType", this.settings.gameType().getId());
-      var2.store("spawn", LevelData.RespawnData.CODEC, this.respawnData);
-      var2.putLong("Time", this.gameTime);
-      var2.putLong("DayTime", this.dayTime);
-      var2.putLong("LastPlayed", Util.getEpochMillis());
-      var2.putString("LevelName", this.settings.levelName());
-      var2.putInt("version", 19133);
-      var2.putInt("clearWeatherTime", this.clearWeatherTime);
-      var2.putInt("rainTime", this.rainTime);
-      var2.putBoolean("raining", this.raining);
-      var2.putInt("thunderTime", this.thunderTime);
-      var2.putBoolean("thundering", this.thundering);
-      var2.putBoolean("hardcore", this.settings.hardcore());
-      var2.putBoolean("allowCommands", this.settings.allowCommands());
-      var2.putBoolean("initialized", this.initialized);
-      this.legacyWorldBorderSettings.ifPresent((var1x) -> var2.store("world_border", WorldBorder.Settings.CODEC, var1x));
-      var2.putByte("Difficulty", (byte)this.settings.difficulty().getId());
-      var2.putBoolean("DifficultyLocked", this.difficultyLocked);
-      var2.store("game_rules", GameRules.codec(this.enabledFeatures()), this.settings.gameRules());
-      var2.store("DragonFight", EndDragonFight.Data.CODEC, this.endDragonFightData);
-      if (var3 != null) {
-         var2.put("Player", var3);
+      var10000.resultOrPartial(Util.prefix("WorldGenSettings: ", var10002::error)).ifPresent((s) -> tag.put("WorldGenSettings", s));
+      tag.putInt("GameType", this.settings.gameType().getId());
+      tag.store("spawn", LevelData.RespawnData.CODEC, this.respawnData);
+      tag.putLong("Time", this.gameTime);
+      tag.putLong("LastPlayed", Util.getEpochMillis());
+      tag.putString("LevelName", this.settings.levelName());
+      tag.putInt("version", 19133);
+      tag.putInt("clearWeatherTime", this.clearWeatherTime);
+      tag.putInt("rainTime", this.rainTime);
+      tag.putBoolean("raining", this.raining);
+      tag.putInt("thunderTime", this.thunderTime);
+      tag.putBoolean("thundering", this.thundering);
+      tag.store("world_clocks", PackedClockStates.CODEC, ops, this.clockStates);
+      tag.putBoolean("hardcore", this.settings.hardcore());
+      tag.putBoolean("allowCommands", this.settings.allowCommands());
+      tag.putBoolean("initialized", this.initialized);
+      this.legacyWorldBorderSettings.ifPresent((settings) -> tag.store("world_border", WorldBorder.Settings.CODEC, settings));
+      tag.putByte("Difficulty", (byte)this.settings.difficulty().getId());
+      tag.putBoolean("DifficultyLocked", this.difficultyLocked);
+      tag.store("game_rules", GameRules.codec(this.enabledFeatures()), this.settings.gameRules());
+      tag.store("DragonFight", EndDragonFight.Data.CODEC, this.endDragonFightData);
+      if (playerTag != null) {
+         tag.put("Player", playerTag);
       }
 
-      var2.store(WorldDataConfiguration.MAP_CODEC, this.settings.getDataConfiguration());
+      tag.store(WorldDataConfiguration.MAP_CODEC, this.settings.getDataConfiguration());
       if (this.customBossEvents != null) {
-         var2.put("CustomBossEvents", this.customBossEvents);
+         tag.put("CustomBossEvents", this.customBossEvents);
       }
 
-      var2.put("ScheduledEvents", this.scheduledEvents.store());
-      var2.putInt("WanderingTraderSpawnDelay", this.wanderingTraderSpawnDelay);
-      var2.putInt("WanderingTraderSpawnChance", this.wanderingTraderSpawnChance);
-      var2.storeNullable("WanderingTraderId", UUIDUtil.CODEC, this.wanderingTraderId);
+      tag.put("ScheduledEvents", this.scheduledEvents.store());
+      tag.putInt("WanderingTraderSpawnDelay", this.wanderingTraderSpawnDelay);
+      tag.putInt("WanderingTraderSpawnChance", this.wanderingTraderSpawnChance);
+      tag.storeNullable("WanderingTraderId", UUIDUtil.CODEC, this.wanderingTraderId);
    }
 
-   private static ListTag stringCollectionToTag(Set<String> var0) {
-      ListTag var1 = new ListTag();
-      Stream var10000 = var0.stream().map(StringTag::valueOf);
-      Objects.requireNonNull(var1);
-      var10000.forEach(var1::add);
-      return var1;
+   private static ListTag stringCollectionToTag(final Set<String> values) {
+      ListTag result = new ListTag();
+      Stream var10000 = values.stream().map(StringTag::valueOf);
+      Objects.requireNonNull(result);
+      var10000.forEach(result::add);
+      return result;
    }
 
    public LevelData.RespawnData getRespawnData() {
@@ -221,24 +223,16 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.gameTime;
    }
 
-   public long getDayTime() {
-      return this.dayTime;
-   }
-
    public @Nullable CompoundTag getLoadedPlayerTag() {
       return this.loadedPlayerTag;
    }
 
-   public void setGameTime(long var1) {
-      this.gameTime = var1;
+   public void setGameTime(final long time) {
+      this.gameTime = time;
    }
 
-   public void setDayTime(long var1) {
-      this.dayTime = var1;
-   }
-
-   public void setSpawn(LevelData.RespawnData var1) {
-      this.respawnData = var1;
+   public void setSpawn(final LevelData.RespawnData respawnData) {
+      this.respawnData = respawnData;
    }
 
    public String getLevelName() {
@@ -253,48 +247,56 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.clearWeatherTime;
    }
 
-   public void setClearWeatherTime(int var1) {
-      this.clearWeatherTime = var1;
+   public void setClearWeatherTime(final int clearWeatherTime) {
+      this.clearWeatherTime = clearWeatherTime;
    }
 
    public boolean isThundering() {
       return this.thundering;
    }
 
-   public void setThundering(boolean var1) {
-      this.thundering = var1;
+   public void setThundering(final boolean thundering) {
+      this.thundering = thundering;
    }
 
    public int getThunderTime() {
       return this.thunderTime;
    }
 
-   public void setThunderTime(int var1) {
-      this.thunderTime = var1;
+   public void setThunderTime(final int thunderTime) {
+      this.thunderTime = thunderTime;
    }
 
    public boolean isRaining() {
       return this.raining;
    }
 
-   public void setRaining(boolean var1) {
-      this.raining = var1;
+   public void setRaining(final boolean raining) {
+      this.raining = raining;
    }
 
    public int getRainTime() {
       return this.rainTime;
    }
 
-   public void setRainTime(int var1) {
-      this.rainTime = var1;
+   public void setRainTime(final int rainTime) {
+      this.rainTime = rainTime;
+   }
+
+   public void setClockStates(final PackedClockStates packedClocks) {
+      this.clockStates = packedClocks;
+   }
+
+   public PackedClockStates clockStates() {
+      return this.clockStates;
    }
 
    public GameType getGameType() {
       return this.settings.gameType();
    }
 
-   public void setGameType(GameType var1) {
-      this.settings = this.settings.withGameType(var1);
+   public void setGameType(final GameType gameType) {
+      this.settings = this.settings.withGameType(gameType);
    }
 
    public boolean isHardcore() {
@@ -309,8 +311,8 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.initialized;
    }
 
-   public void setInitialized(boolean var1) {
-      this.initialized = var1;
+   public void setInitialized(final boolean initialized) {
+      this.initialized = initialized;
    }
 
    public GameRules getGameRules() {
@@ -321,33 +323,33 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.legacyWorldBorderSettings;
    }
 
-   public void setLegacyWorldBorderSettings(Optional<WorldBorder.Settings> var1) {
-      this.legacyWorldBorderSettings = var1;
+   public void setLegacyWorldBorderSettings(final Optional<WorldBorder.Settings> settings) {
+      this.legacyWorldBorderSettings = settings;
    }
 
    public Difficulty getDifficulty() {
       return this.settings.difficulty();
    }
 
-   public void setDifficulty(Difficulty var1) {
-      this.settings = this.settings.withDifficulty(var1);
+   public void setDifficulty(final Difficulty difficulty) {
+      this.settings = this.settings.withDifficulty(difficulty);
    }
 
    public boolean isDifficultyLocked() {
       return this.difficultyLocked;
    }
 
-   public void setDifficultyLocked(boolean var1) {
-      this.difficultyLocked = var1;
+   public void setDifficultyLocked(final boolean difficultyLocked) {
+      this.difficultyLocked = difficultyLocked;
    }
 
    public TimerQueue<MinecraftServer> getScheduledEvents() {
       return this.scheduledEvents;
    }
 
-   public void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
-      ServerLevelData.super.fillCrashReportCategory(var1, var2);
-      WorldData.super.fillCrashReportCategory(var1);
+   public void fillCrashReportCategory(final CrashReportCategory category, final LevelHeightAccessor levelHeightAccessor) {
+      ServerLevelData.super.fillCrashReportCategory(category, levelHeightAccessor);
+      WorldData.super.fillCrashReportCategory(category);
    }
 
    public WorldOptions worldGenOptions() {
@@ -370,53 +372,53 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.endDragonFightData;
    }
 
-   public void setEndDragonFightData(EndDragonFight.Data var1) {
-      this.endDragonFightData = var1;
+   public void setEndDragonFightData(final EndDragonFight.Data data) {
+      this.endDragonFightData = data;
    }
 
    public WorldDataConfiguration getDataConfiguration() {
       return this.settings.getDataConfiguration();
    }
 
-   public void setDataConfiguration(WorldDataConfiguration var1) {
-      this.settings = this.settings.withDataConfiguration(var1);
+   public void setDataConfiguration(final WorldDataConfiguration dataConfiguration) {
+      this.settings = this.settings.withDataConfiguration(dataConfiguration);
    }
 
    public @Nullable CompoundTag getCustomBossEvents() {
       return this.customBossEvents;
    }
 
-   public void setCustomBossEvents(@Nullable CompoundTag var1) {
-      this.customBossEvents = var1;
+   public void setCustomBossEvents(final @Nullable CompoundTag customBossEvents) {
+      this.customBossEvents = customBossEvents;
    }
 
    public int getWanderingTraderSpawnDelay() {
       return this.wanderingTraderSpawnDelay;
    }
 
-   public void setWanderingTraderSpawnDelay(int var1) {
-      this.wanderingTraderSpawnDelay = var1;
+   public void setWanderingTraderSpawnDelay(final int wanderingTraderSpawnDelay) {
+      this.wanderingTraderSpawnDelay = wanderingTraderSpawnDelay;
    }
 
    public int getWanderingTraderSpawnChance() {
       return this.wanderingTraderSpawnChance;
    }
 
-   public void setWanderingTraderSpawnChance(int var1) {
-      this.wanderingTraderSpawnChance = var1;
+   public void setWanderingTraderSpawnChance(final int wanderingTraderSpawnChance) {
+      this.wanderingTraderSpawnChance = wanderingTraderSpawnChance;
    }
 
    public @Nullable UUID getWanderingTraderId() {
       return this.wanderingTraderId;
    }
 
-   public void setWanderingTraderId(UUID var1) {
-      this.wanderingTraderId = var1;
+   public void setWanderingTraderId(final UUID wanderingTraderId) {
+      this.wanderingTraderId = wanderingTraderId;
    }
 
-   public void setModdedInfo(String var1, boolean var2) {
-      this.knownServerBrands.add(var1);
-      this.wasModded |= var2;
+   public void setModdedInfo(final String serverBrand, final boolean isModded) {
+      this.knownServerBrands.add(serverBrand);
+      this.wasModded |= isModded;
    }
 
    public boolean wasModded() {

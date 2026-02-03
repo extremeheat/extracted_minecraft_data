@@ -11,7 +11,7 @@ public class DummySensor extends Sensor<LivingEntity> {
       super();
    }
 
-   protected void doTick(ServerLevel var1, LivingEntity var2) {
+   protected void doTick(final ServerLevel level, final LivingEntity body) {
    }
 
    public Set<MemoryModuleType<?>> requires() {

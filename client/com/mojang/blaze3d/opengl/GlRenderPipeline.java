@@ -4,10 +4,8 @@ import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 
 public record GlRenderPipeline(RenderPipeline info, GlProgram program) implements CompiledRenderPipeline {
-   public GlRenderPipeline(RenderPipeline var1, GlProgram var2) {
+   public GlRenderPipeline {
       super();
-      this.info = var1;
-      this.program = var2;
    }
 
    public boolean isValid() {

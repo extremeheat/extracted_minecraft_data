@@ -9,7 +9,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.ShulkerBoxRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -31,87 +30,82 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
    private final MaterialSet materials;
    private final ShulkerBoxModel model;
 
-   public ShulkerBoxRenderer(BlockEntityRendererProvider.Context var1) {
-      this(var1.entityModelSet(), var1.materials());
+   public ShulkerBoxRenderer(final BlockEntityRendererProvider.Context context) {
+      this(context.entityModelSet(), context.materials());
    }
 
-   public ShulkerBoxRenderer(SpecialModelRenderer.BakingContext var1) {
-      this(var1.entityModelSet(), var1.materials());
+   public ShulkerBoxRenderer(final SpecialModelRenderer.BakingContext context) {
+      this(context.entityModelSet(), context.materials());
    }
 
-   public ShulkerBoxRenderer(EntityModelSet var1, MaterialSet var2) {
+   public ShulkerBoxRenderer(final EntityModelSet context, final MaterialSet materials) {
       super();
-      this.materials = var2;
-      this.model = new ShulkerBoxModel(var1.bakeLayer(ModelLayers.SHULKER_BOX));
+      this.materials = materials;
+      this.model = new ShulkerBoxModel(context.bakeLayer(ModelLayers.SHULKER_BOX));
    }
 
    public ShulkerBoxRenderState createRenderState() {
       return new ShulkerBoxRenderState();
    }
 
-   public void extractRenderState(ShulkerBoxBlockEntity var1, ShulkerBoxRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
-      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
-      var2.direction = (Direction)var1.getBlockState().getValueOrElse(ShulkerBoxBlock.FACING, Direction.UP);
-      var2.color = var1.getColor();
-      var2.progress = var1.getProgress(var3);
+   public void extractRenderState(final ShulkerBoxBlockEntity blockEntity, final ShulkerBoxRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+      state.direction = (Direction)blockEntity.getBlockState().getValueOrElse(ShulkerBoxBlock.FACING, Direction.UP);
+      state.color = blockEntity.getColor();
+      state.progress = blockEntity.getProgress(partialTicks);
    }
 
-   public void submit(ShulkerBoxRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      DyeColor var5 = var1.color;
-      Material var6;
-      if (var5 == null) {
-         var6 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
+   public void submit(final ShulkerBoxRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      DyeColor color = state.color;
+      Material material;
+      if (color == null) {
+         material = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
       } else {
-         var6 = Sheets.getShulkerBoxMaterial(var5);
+         material = Sheets.getShulkerBoxMaterial(color);
       }
 
-      this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.direction, var1.progress, var1.breakProgress, var6, 0);
+      this.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.direction, state.progress, state.breakProgress, material, 0);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Direction var5, float var6, ModelFeatureRenderer.@Nullable CrumblingOverlay var7, Material var8, int var9) {
-      var1.pushPose();
-      this.prepareModel(var1, var5, var6);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final Direction direction, final float progress, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress, final Material material, final int outlineColor) {
+      poseStack.pushPose();
+      this.prepareModel(poseStack, direction, progress);
       ShulkerBoxModel var10001 = this.model;
-      Float var10002 = var6;
+      Float var10002 = progress;
       ShulkerBoxModel var10005 = this.model;
       Objects.requireNonNull(var10005);
-      var2.submitModel(var10001, var10002, var1, var8.renderType(var10005::renderType), var3, var4, -1, this.materials.get(var8), var9, var7);
-      var1.popPose();
+      submitNodeCollector.submitModel(var10001, var10002, poseStack, material.renderType(var10005::renderType), lightCoords, overlayCoords, -1, this.materials.get(material), outlineColor, breakProgress);
+      poseStack.popPose();
    }
 
-   private void prepareModel(PoseStack var1, Direction var2, float var3) {
-      var1.translate(0.5F, 0.5F, 0.5F);
-      float var4 = 0.9995F;
-      var1.scale(0.9995F, 0.9995F, 0.9995F);
-      var1.mulPose((Quaternionfc)var2.getRotation());
-      var1.scale(1.0F, -1.0F, -1.0F);
-      var1.translate(0.0F, -1.0F, 0.0F);
-      this.model.setupAnim(var3);
+   private void prepareModel(final PoseStack poseStack, final Direction direction, final float progress) {
+      poseStack.translate(0.5F, 0.5F, 0.5F);
+      float scale = 0.9995F;
+      poseStack.scale(0.9995F, 0.9995F, 0.9995F);
+      poseStack.mulPose((Quaternionfc)direction.getRotation());
+      poseStack.scale(1.0F, -1.0F, -1.0F);
+      poseStack.translate(0.0F, -1.0F, 0.0F);
+      this.model.setupAnim(progress);
    }
 
-   public void getExtents(Direction var1, float var2, Consumer<Vector3fc> var3) {
-      PoseStack var4 = new PoseStack();
-      this.prepareModel(var4, var1, var2);
-      this.model.root().getExtentsForGui(var4, var3);
+   public void getExtents(final Direction direction, final float progress, final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
+      this.prepareModel(poseStack, direction, progress);
+      this.model.root().getExtentsForGui(poseStack, output);
    }
 
-   // $FF: synthetic method
-   public BlockEntityRenderState createRenderState() {
-      return this.createRenderState();
-   }
-
-   static class ShulkerBoxModel extends Model<Float> {
+   private static class ShulkerBoxModel extends Model<Float> {
       private final ModelPart lid;
 
-      public ShulkerBoxModel(ModelPart var1) {
-         super(var1, RenderTypes::entityCutoutNoCull);
-         this.lid = var1.getChild("lid");
+      public ShulkerBoxModel(final ModelPart root) {
+         super(root, RenderTypes::entityCutoutNoCull);
+         this.lid = root.getChild("lid");
       }
 
-      public void setupAnim(Float var1) {
-         super.setupAnim(var1);
-         this.lid.setPos(0.0F, 24.0F - var1 * 0.5F * 16.0F, 0.0F);
-         this.lid.yRot = 270.0F * var1 * 0.017453292F;
+      public void setupAnim(final Float progress) {
+         super.setupAnim(progress);
+         this.lid.setPos(0.0F, 24.0F - progress * 0.5F * 16.0F, 0.0F);
+         this.lid.yRot = 270.0F * progress * 0.017453292F;
       }
    }
 }

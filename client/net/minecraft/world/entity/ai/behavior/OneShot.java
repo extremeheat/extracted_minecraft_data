@@ -16,8 +16,8 @@ public abstract class OneShot<E extends LivingEntity> implements BehaviorControl
       return this.status;
    }
 
-   public final boolean tryStart(ServerLevel var1, E var2, long var3) {
-      if (this.trigger(var1, var2, var3)) {
+   public final boolean tryStart(final ServerLevel level, final E body, final long timestamp) {
+      if (this.trigger(level, body, timestamp)) {
          this.status = Behavior.Status.RUNNING;
          return true;
       } else {
@@ -25,11 +25,11 @@ public abstract class OneShot<E extends LivingEntity> implements BehaviorControl
       }
    }
 
-   public final void tickOrStop(ServerLevel var1, E var2, long var3) {
-      this.doStop(var1, var2, var3);
+   public final void tickOrStop(final ServerLevel level, final E body, final long timestamp) {
+      this.doStop(level, body, timestamp);
    }
 
-   public final void doStop(ServerLevel var1, E var2, long var3) {
+   public final void doStop(final ServerLevel level, final E body, final long timestamp) {
       this.status = Behavior.Status.STOPPED;
    }
 

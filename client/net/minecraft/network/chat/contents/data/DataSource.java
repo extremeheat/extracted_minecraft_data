@@ -7,7 +7,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 
 public interface DataSource {
-   Stream<CompoundTag> getData(CommandSourceStack var1) throws CommandSyntaxException;
+   Stream<CompoundTag> getData(final CommandSourceStack sender) throws CommandSyntaxException;
 
    MapCodec<? extends DataSource> codec();
 }

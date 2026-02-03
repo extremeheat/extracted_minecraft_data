@@ -13,32 +13,32 @@ import org.jspecify.annotations.Nullable;
 public class DragonLandingPhase extends AbstractDragonPhaseInstance {
    private @Nullable Vec3 targetLocation;
 
-   public DragonLandingPhase(EnderDragon var1) {
-      super(var1);
+   public DragonLandingPhase(final EnderDragon dragon) {
+      super(dragon);
    }
 
    public void doClientTick() {
-      Vec3 var1 = this.dragon.getHeadLookVector(1.0F).normalize();
-      var1.yRot(-0.7853982F);
-      double var2 = this.dragon.head.getX();
-      double var4 = this.dragon.head.getY(0.5);
-      double var6 = this.dragon.head.getZ();
+      Vec3 look = this.dragon.getHeadLookVector(1.0F).normalize();
+      look.yRot(-0.7853982F);
+      double particleX = this.dragon.head.getX();
+      double particleY = this.dragon.head.getY(0.5);
+      double particleZ = this.dragon.head.getZ();
 
-      for(int var8 = 0; var8 < 8; ++var8) {
-         RandomSource var9 = this.dragon.getRandom();
-         double var10 = var2 + var9.nextGaussian() / 2.0;
-         double var12 = var4 + var9.nextGaussian() / 2.0;
-         double var14 = var6 + var9.nextGaussian() / 2.0;
-         Vec3 var16 = this.dragon.getDeltaMovement();
-         this.dragon.level().addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F), var10, var12, var14, -var1.x * 0.07999999821186066 + var16.x, -var1.y * 0.30000001192092896 + var16.y, -var1.z * 0.07999999821186066 + var16.z);
-         var1.yRot(0.19634955F);
+      for(int i = 0; i < 8; ++i) {
+         RandomSource random = this.dragon.getRandom();
+         double px = particleX + random.nextGaussian() / 2.0;
+         double py = particleY + random.nextGaussian() / 2.0;
+         double pz = particleZ + random.nextGaussian() / 2.0;
+         Vec3 movement = this.dragon.getDeltaMovement();
+         this.dragon.level().addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F), px, py, pz, -look.x * 0.07999999821186066 + movement.x, -look.y * 0.30000001192092896 + movement.y, -look.z * 0.07999999821186066 + movement.z);
+         look.yRot(0.19634955F);
       }
 
    }
 
-   public void doServerTick(ServerLevel var1) {
+   public void doServerTick(final ServerLevel level) {
       if (this.targetLocation == null) {
-         this.targetLocation = Vec3.atBottomCenterOf(var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin())));
+         this.targetLocation = Vec3.atBottomCenterOf(level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin())));
       }
 
       if (this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ()) < 1.0) {
@@ -53,9 +53,9 @@ public class DragonLandingPhase extends AbstractDragonPhaseInstance {
    }
 
    public float getTurnSpeed() {
-      float var1 = (float)this.dragon.getDeltaMovement().horizontalDistance() + 1.0F;
-      float var2 = Math.min(var1, 40.0F);
-      return var2 / var1;
+      float rotSpeed = (float)this.dragon.getDeltaMovement().horizontalDistance() + 1.0F;
+      float dist = Math.min(rotSpeed, 40.0F);
+      return dist / rotSpeed;
    }
 
    public void begin() {

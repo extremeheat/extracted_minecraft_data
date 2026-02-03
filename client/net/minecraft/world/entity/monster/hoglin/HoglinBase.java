@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster.hoglin;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -13,40 +14,41 @@ public interface HoglinBase {
 
    int getAttackAnimationRemainingTicks();
 
-   static boolean hurtAndThrowTarget(ServerLevel var0, LivingEntity var1, LivingEntity var2) {
-      float var4 = (float)var1.getAttributeValue(Attributes.ATTACK_DAMAGE);
-      float var3;
-      if (!var1.isBaby() && (int)var4 > 0) {
-         var3 = var4 / 2.0F + (float)var0.random.nextInt((int)var4);
+   static boolean hurtAndThrowTarget(final ServerLevel level, final LivingEntity body, final LivingEntity target) {
+      float attackDamage = (float)body.getAttributeValue(Attributes.ATTACK_DAMAGE);
+      float actualDamage;
+      if (!body.isBaby() && (int)attackDamage > 0) {
+         actualDamage = attackDamage / 2.0F + (float)level.getRandom().nextInt((int)attackDamage);
       } else {
-         var3 = var4;
+         actualDamage = attackDamage;
       }
 
-      DamageSource var5 = var1.damageSources().mobAttack(var1);
-      boolean var6 = var2.hurtServer(var0, var5, var3);
-      if (var6) {
-         EnchantmentHelper.doPostAttackEffects(var0, var2, var5);
-         if (!var1.isBaby()) {
-            throwTarget(var1, var2);
+      DamageSource damageSource = body.damageSources().mobAttack(body);
+      boolean wasHurt = target.hurtServer(level, damageSource, actualDamage);
+      if (wasHurt) {
+         EnchantmentHelper.doPostAttackEffects(level, target, damageSource);
+         if (!body.isBaby()) {
+            throwTarget(body, target);
          }
       }
 
-      return var6;
+      return wasHurt;
    }
 
-   static void throwTarget(LivingEntity var0, LivingEntity var1) {
-      double var2 = var0.getAttributeValue(Attributes.ATTACK_KNOCKBACK);
-      double var4 = var1.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-      double var6 = var2 - var4;
-      if (!(var6 <= 0.0)) {
-         double var8 = var1.getX() - var0.getX();
-         double var10 = var1.getZ() - var0.getZ();
-         float var12 = (float)(var0.level().random.nextInt(21) - 10);
-         double var13 = var6 * (double)(var0.level().random.nextFloat() * 0.5F + 0.2F);
-         Vec3 var15 = (new Vec3(var8, 0.0, var10)).normalize().scale(var13).yRot(var12);
-         double var16 = var6 * (double)var0.level().random.nextFloat() * 0.5;
-         var1.push(var15.x, var16, var15.z);
-         var1.hurtMarked = true;
+   static void throwTarget(final LivingEntity body, final LivingEntity target) {
+      double knockbackPower = body.getAttributeValue(Attributes.ATTACK_KNOCKBACK);
+      double knockbackResistance = target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+      double effectiveKnockbackPower = knockbackPower - knockbackResistance;
+      if (!(effectiveKnockbackPower <= 0.0)) {
+         double xd = target.getX() - body.getX();
+         double zd = target.getZ() - body.getZ();
+         RandomSource random = body.level().getRandom();
+         float horizontalPushAngle = (float)(random.nextInt(21) - 10);
+         double horizontalScale = effectiveKnockbackPower * (double)(random.nextFloat() * 0.5F + 0.2F);
+         Vec3 horizontalPushVector = (new Vec3(xd, 0.0, zd)).normalize().scale(horizontalScale).yRot(horizontalPushAngle);
+         double verticalScale = effectiveKnockbackPower * (double)random.nextFloat() * 0.5;
+         target.push(horizontalPushVector.x, verticalScale, horizontalPushVector.z);
+         target.hurtMarked = true;
       }
    }
 }

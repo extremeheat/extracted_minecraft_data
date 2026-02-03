@@ -17,34 +17,32 @@ public record TooltipDisplay(boolean hideTooltip, SequencedSet<DataComponentType
    public static final StreamCodec<RegistryFriendlyByteBuf, TooltipDisplay> STREAM_CODEC;
    public static final TooltipDisplay DEFAULT;
 
-   public TooltipDisplay(boolean var1, SequencedSet<DataComponentType<?>> var2) {
+   public TooltipDisplay {
       super();
-      this.hideTooltip = var1;
-      this.hiddenComponents = var2;
    }
 
-   public TooltipDisplay withHidden(DataComponentType<?> var1, boolean var2) {
-      if (this.hiddenComponents.contains(var1) == var2) {
+   public TooltipDisplay withHidden(final DataComponentType<?> component, final boolean hidden) {
+      if (this.hiddenComponents.contains(component) == hidden) {
          return this;
       } else {
-         ReferenceLinkedOpenHashSet var3 = new ReferenceLinkedOpenHashSet(this.hiddenComponents);
-         if (var2) {
-            var3.add(var1);
+         SequencedSet<DataComponentType<?>> newHiddenComponents = new ReferenceLinkedOpenHashSet(this.hiddenComponents);
+         if (hidden) {
+            newHiddenComponents.add(component);
          } else {
-            var3.remove(var1);
+            newHiddenComponents.remove(component);
          }
 
-         return new TooltipDisplay(this.hideTooltip, var3);
+         return new TooltipDisplay(this.hideTooltip, newHiddenComponents);
       }
    }
 
-   public boolean shows(DataComponentType<?> var1) {
-      return !this.hideTooltip && !this.hiddenComponents.contains(var1);
+   public boolean shows(final DataComponentType<?> component) {
+      return !this.hideTooltip && !this.hiddenComponents.contains(component);
    }
 
    static {
       COMPONENT_SET_CODEC = DataComponentType.CODEC.listOf().xmap(ReferenceLinkedOpenHashSet::new, List::copyOf);
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.optionalFieldOf("hide_tooltip", false).forGetter(TooltipDisplay::hideTooltip), COMPONENT_SET_CODEC.optionalFieldOf("hidden_components", ReferenceSortedSets.emptySet()).forGetter(TooltipDisplay::hiddenComponents)).apply(var0, TooltipDisplay::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.optionalFieldOf("hide_tooltip", false).forGetter(TooltipDisplay::hideTooltip), COMPONENT_SET_CODEC.optionalFieldOf("hidden_components", ReferenceSortedSets.emptySet()).forGetter(TooltipDisplay::hiddenComponents)).apply(i, TooltipDisplay::new));
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, TooltipDisplay::hideTooltip, DataComponentType.STREAM_CODEC.apply(ByteBufCodecs.collection(ReferenceLinkedOpenHashSet::new)), TooltipDisplay::hiddenComponents, TooltipDisplay::new);
       DEFAULT = new TooltipDisplay(false, ReferenceSortedSets.emptySet());
    }

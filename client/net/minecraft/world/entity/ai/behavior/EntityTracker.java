@@ -13,15 +13,15 @@ public class EntityTracker implements PositionTracker {
    private final boolean trackEyeHeight;
    private final boolean targetEyeHeight;
 
-   public EntityTracker(Entity var1, boolean var2) {
-      this(var1, var2, false);
+   public EntityTracker(final Entity entity, final boolean trackEyeHeight) {
+      this(entity, trackEyeHeight, false);
    }
 
-   public EntityTracker(Entity var1, boolean var2, boolean var3) {
+   public EntityTracker(final Entity entity, final boolean trackEyeHeight, final boolean targetEyeHeight) {
       super();
-      this.entity = var1;
-      this.trackEyeHeight = var2;
-      this.targetEyeHeight = var3;
+      this.entity = entity;
+      this.trackEyeHeight = trackEyeHeight;
+      this.targetEyeHeight = targetEyeHeight;
    }
 
    public Vec3 currentPosition() {
@@ -32,14 +32,14 @@ public class EntityTracker implements PositionTracker {
       return this.targetEyeHeight ? BlockPos.containing(this.entity.getEyePosition()) : this.entity.blockPosition();
    }
 
-   public boolean isVisibleBy(LivingEntity var1) {
+   public boolean isVisibleBy(final LivingEntity body) {
       Entity var3 = this.entity;
-      if (var3 instanceof LivingEntity var2) {
-         if (!var2.isAlive()) {
+      if (var3 instanceof LivingEntity livingEntity) {
+         if (!livingEntity.isAlive()) {
             return false;
          } else {
-            Optional var4 = var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
-            return var4.isPresent() && ((NearestVisibleLivingEntities)var4.get()).contains(var2);
+            Optional<NearestVisibleLivingEntities> visibleEntities = body.getBrain().<NearestVisibleLivingEntities>getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
+            return visibleEntities.isPresent() && ((NearestVisibleLivingEntities)visibleEntities.get()).contains(livingEntity);
          }
       } else {
          return true;

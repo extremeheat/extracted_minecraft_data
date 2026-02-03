@@ -9,37 +9,37 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class MegaJungleFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<MegaJungleFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> foliagePlacerParts(var0).and(Codec.intRange(0, 16).fieldOf("height").forGetter((var0x) -> var0x.height)).apply(var0, MegaJungleFoliagePlacer::new));
+   public static final MapCodec<MegaJungleFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(Codec.intRange(0, 16).fieldOf("height").forGetter((p) -> p.height)).apply(i, MegaJungleFoliagePlacer::new));
    protected final int height;
 
-   public MegaJungleFoliagePlacer(IntProvider var1, IntProvider var2, int var3) {
-      super(var1, var2);
-      this.height = var3;
+   public MegaJungleFoliagePlacer(final IntProvider radius, final IntProvider offset, final int height) {
+      super(radius, offset);
+      this.height = height;
    }
 
    protected FoliagePlacerType<?> type() {
       return FoliagePlacerType.MEGA_JUNGLE_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(LevelSimulatedReader var1, FoliagePlacer.FoliageSetter var2, RandomSource var3, TreeConfiguration var4, int var5, FoliagePlacer.FoliageAttachment var6, int var7, int var8, int var9) {
-      int var10 = var6.doubleTrunk() ? var7 : 1 + var3.nextInt(2);
+   protected void createFoliage(final LevelSimulatedReader level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+      int leafHeight = foliageAttachment.doubleTrunk() ? foliageHeight : 1 + random.nextInt(2);
 
-      for(int var11 = var9; var11 >= var9 - var10; --var11) {
-         int var12 = var8 + var6.radiusOffset() + 1 - var11;
-         this.placeLeavesRow(var1, var2, var3, var4, var6.pos(), var12, var11, var6.doubleTrunk());
+      for(int yo = offset; yo >= offset - leafHeight; --yo) {
+         int currentRadius = leafRadius + foliageAttachment.radiusOffset() + 1 - yo;
+         this.placeLeavesRow(level, foliageSetter, random, config, foliageAttachment.pos(), currentRadius, yo, foliageAttachment.doubleTrunk());
       }
 
    }
 
-   public int foliageHeight(RandomSource var1, int var2, TreeConfiguration var3) {
+   public int foliageHeight(final RandomSource random, final int treeHeight, final TreeConfiguration config) {
       return this.height;
    }
 
-   protected boolean shouldSkipLocation(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
-      if (var2 + var4 >= 7) {
+   protected boolean shouldSkipLocation(final RandomSource random, final int dx, final int y, final int dz, final int currentRadius, final boolean doubleTrunk) {
+      if (dx + dz >= 7) {
          return true;
       } else {
-         return var2 * var2 + var4 * var4 > var5 * var5;
+         return dx * dx + dz * dz > currentRadius * currentRadius;
       }
    }
 }

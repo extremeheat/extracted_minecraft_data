@@ -50,13 +50,13 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    private int latency;
    private volatile boolean suspendFlushingOnServerThread = false;
 
-   public ServerCommonPacketListenerImpl(MinecraftServer var1, Connection var2, CommonListenerCookie var3) {
+   public ServerCommonPacketListenerImpl(final MinecraftServer server, final Connection connection, final CommonListenerCookie cookie) {
       super();
-      this.server = var1;
-      this.connection = var2;
+      this.server = server;
+      this.connection = connection;
       this.keepAliveTime = Util.getMillis();
-      this.latency = var3.latency();
-      this.transferred = var3.transferred();
+      this.latency = cookie.latency();
+      this.transferred = cookie.transferred();
    }
 
    private void close() {
@@ -67,7 +67,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
 
    }
 
-   public void onDisconnect(DisconnectionDetails var1) {
+   public void onDisconnect(final DisconnectionDetails details) {
       if (this.isSingleplayerOwner()) {
          LOGGER.info("Stopping singleplayer server as player logged out");
          this.server.halt(false);
@@ -75,15 +75,15 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
 
    }
 
-   public void onPacketError(Packet var1, Exception var2) throws ReportedException {
-      ServerCommonPacketListener.super.onPacketError(var1, var2);
-      this.server.reportPacketHandlingException(var2, var1.type());
+   public void onPacketError(final Packet packet, final Exception e) throws ReportedException {
+      ServerCommonPacketListener.super.onPacketError(packet, e);
+      this.server.reportPacketHandlingException(e, packet.type());
    }
 
-   public void handleKeepAlive(ServerboundKeepAlivePacket var1) {
-      if (this.keepAlivePending && var1.getId() == this.keepAliveChallenge) {
-         int var2 = (int)(Util.getMillis() - this.keepAliveTime);
-         this.latency = (this.latency * 3 + var2) / 4;
+   public void handleKeepAlive(final ServerboundKeepAlivePacket packet) {
+      if (this.keepAlivePending && packet.getId() == this.keepAliveChallenge) {
+         int time = (int)(Util.getMillis() - this.keepAliveTime);
+         this.latency = (this.latency * 3 + time) / 4;
          this.keepAlivePending = false;
       } else if (!this.isSingleplayerOwner()) {
          this.disconnect(TIMEOUT_DISCONNECTION_MESSAGE);
@@ -91,40 +91,40 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
 
    }
 
-   public void handlePong(ServerboundPongPacket var1) {
+   public void handlePong(final ServerboundPongPacket serverboundPongPacket) {
    }
 
-   public void handleCustomPayload(ServerboundCustomPayloadPacket var1) {
+   public void handleCustomPayload(final ServerboundCustomPayloadPacket packet) {
    }
 
-   public void handleCustomClickAction(ServerboundCustomClickActionPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.server.packetProcessor());
-      this.server.handleCustomClickAction(var1.id(), var1.payload());
+   public void handleCustomClickAction(final ServerboundCustomClickActionPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.server.packetProcessor());
+      this.server.handleCustomClickAction(packet.id(), packet.payload());
    }
 
-   public void handleResourcePackResponse(ServerboundResourcePackPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.server.packetProcessor());
-      if (var1.action() == ServerboundResourcePackPacket.Action.DECLINED && this.server.isResourcePackRequired()) {
-         LOGGER.info("Disconnecting {} due to resource pack {} rejection", this.playerProfile().name(), var1.id());
+   public void handleResourcePackResponse(final ServerboundResourcePackPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.server.packetProcessor());
+      if (packet.action() == ServerboundResourcePackPacket.Action.DECLINED && this.server.isResourcePackRequired()) {
+         LOGGER.info("Disconnecting {} due to resource pack {} rejection", this.playerProfile().name(), packet.id());
          this.disconnect((Component)Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
       }
 
    }
 
-   public void handleCookieResponse(ServerboundCookieResponsePacket var1) {
+   public void handleCookieResponse(final ServerboundCookieResponsePacket packet) {
       this.disconnect(DISCONNECT_UNEXPECTED_QUERY);
    }
 
    protected void keepConnectionAlive() {
       Profiler.get().push("keepAlive");
-      long var1 = Util.getMillis();
-      if (!this.isSingleplayerOwner() && var1 - this.keepAliveTime >= 15000L) {
+      long now = Util.getMillis();
+      if (!this.isSingleplayerOwner() && now - this.keepAliveTime >= 15000L) {
          if (this.keepAlivePending) {
             this.disconnect(TIMEOUT_DISCONNECTION_MESSAGE);
-         } else if (this.checkIfClosed(var1)) {
+         } else if (this.checkIfClosed(now)) {
             this.keepAlivePending = true;
-            this.keepAliveTime = var1;
-            this.keepAliveChallenge = var1;
+            this.keepAliveTime = now;
+            this.keepAliveChallenge = now;
             this.send(new ClientboundKeepAlivePacket(this.keepAliveChallenge));
          }
       }
@@ -132,9 +132,9 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       Profiler.get().pop();
    }
 
-   private boolean checkIfClosed(long var1) {
+   private boolean checkIfClosed(final long now) {
       if (this.closed) {
-         if (var1 - this.closedListenerTime >= 15000L) {
+         if (now - this.closedListenerTime >= 15000L) {
             this.disconnect(TIMEOUT_DISCONNECTION_MESSAGE);
          }
 
@@ -153,33 +153,33 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       this.connection.flushChannel();
    }
 
-   public void send(Packet<?> var1) {
-      this.send(var1, (ChannelFutureListener)null);
+   public void send(final Packet<?> packet) {
+      this.send(packet, (ChannelFutureListener)null);
    }
 
-   public void send(Packet<?> var1, @Nullable ChannelFutureListener var2) {
-      if (var1.isTerminal()) {
+   public void send(final Packet<?> packet, final @Nullable ChannelFutureListener listener) {
+      if (packet.isTerminal()) {
          this.close();
       }
 
-      boolean var3 = !this.suspendFlushingOnServerThread || !this.server.isSameThread();
+      boolean flush = !this.suspendFlushingOnServerThread || !this.server.isSameThread();
 
       try {
-         this.connection.send(var1, var2, var3);
-      } catch (Throwable var7) {
-         CrashReport var5 = CrashReport.forThrowable(var7, "Sending packet");
-         CrashReportCategory var6 = var5.addCategory("Packet being sent");
-         var6.setDetail("Packet class", (CrashReportDetail)(() -> var1.getClass().getCanonicalName()));
-         throw new ReportedException(var5);
+         this.connection.send(packet, listener, flush);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Sending packet");
+         CrashReportCategory category = report.addCategory("Packet being sent");
+         category.setDetail("Packet class", (CrashReportDetail)(() -> packet.getClass().getCanonicalName()));
+         throw new ReportedException(report);
       }
    }
 
-   public void disconnect(Component var1) {
-      this.disconnect(new DisconnectionDetails(var1));
+   public void disconnect(final Component reason) {
+      this.disconnect(new DisconnectionDetails(reason));
    }
 
-   public void disconnect(DisconnectionDetails var1) {
-      this.connection.send(new ClientboundDisconnectPacket(var1.reason()), PacketSendListener.thenRun(() -> this.connection.disconnect(var1)));
+   public void disconnect(final DisconnectionDetails details) {
+      this.connection.send(new ClientboundDisconnectPacket(details.reason()), PacketSendListener.thenRun(() -> this.connection.disconnect(details)));
       this.connection.setReadOnly();
       MinecraftServer var10000 = this.server;
       Connection var10001 = this.connection;
@@ -202,7 +202,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       return this.latency;
    }
 
-   protected CommonListenerCookie createCookie(ClientInformation var1) {
-      return new CommonListenerCookie(this.playerProfile(), this.latency, var1, this.transferred);
+   protected CommonListenerCookie createCookie(final ClientInformation clientInformation) {
+      return new CommonListenerCookie(this.playerProfile(), this.latency, clientInformation, this.transferred);
    }
 }

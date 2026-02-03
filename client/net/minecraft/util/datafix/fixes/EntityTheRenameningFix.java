@@ -10,16 +10,16 @@ public class EntityTheRenameningFix extends SimplestEntityRenameFix {
    public static final Map<String, String> RENAMED_ITEMS;
    private static final String MINECRAFT_BRED = "minecraft:bred_";
 
-   public EntityTheRenameningFix(Schema var1, boolean var2) {
-      super("EntityTheRenameningBlock", var1, var2);
+   public EntityTheRenameningFix(final Schema schema, final boolean changesType) {
+      super("EntityTheRenameningBlock", schema, changesType);
    }
 
-   protected String rename(String var1) {
-      if (var1.startsWith("minecraft:bred_")) {
-         var1 = "minecraft:" + var1.substring("minecraft:bred_".length());
+   protected String rename(String name) {
+      if (name.startsWith("minecraft:bred_")) {
+         name = "minecraft:" + name.substring("minecraft:bred_".length());
       }
 
-      return (String)RENAMED_IDS.getOrDefault(var1, var1);
+      return (String)RENAMED_IDS.getOrDefault(name, name);
    }
 
    static {

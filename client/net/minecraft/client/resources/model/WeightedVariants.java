@@ -12,33 +12,32 @@ public class WeightedVariants implements BlockStateModel {
    private final WeightedList<BlockStateModel> list;
    private final TextureAtlasSprite particleIcon;
 
-   public WeightedVariants(WeightedList<BlockStateModel> var1) {
+   public WeightedVariants(final WeightedList<BlockStateModel> list) {
       super();
-      this.list = var1;
-      BlockStateModel var2 = (BlockStateModel)((Weighted)var1.unwrap().getFirst()).value();
-      this.particleIcon = var2.particleIcon();
+      this.list = list;
+      BlockStateModel firstModel = (BlockStateModel)((Weighted)list.unwrap().getFirst()).value();
+      this.particleIcon = firstModel.particleIcon();
    }
 
    public TextureAtlasSprite particleIcon() {
       return this.particleIcon;
    }
 
-   public void collectParts(RandomSource var1, List<BlockModelPart> var2) {
-      (this.list.getRandomOrThrow(var1)).collectParts(var1, var2);
+   public void collectParts(final RandomSource random, final List<BlockModelPart> output) {
+      (this.list.getRandomOrThrow(random)).collectParts(random, output);
    }
 
    public static record Unbaked(WeightedList<BlockStateModel.Unbaked> entries) implements BlockStateModel.Unbaked {
-      public Unbaked(WeightedList<BlockStateModel.Unbaked> var1) {
+      public Unbaked {
          super();
-         this.entries = var1;
       }
 
-      public BlockStateModel bake(ModelBaker var1) {
-         return new WeightedVariants(this.entries.map((var1x) -> var1x.bake(var1)));
+      public BlockStateModel bake(final ModelBaker modelBakery) {
+         return new WeightedVariants(this.entries.map((m) -> m.bake(modelBakery)));
       }
 
-      public void resolveDependencies(ResolvableModel.Resolver var1) {
-         this.entries.unwrap().forEach((var1x) -> ((BlockStateModel.Unbaked)var1x.value()).resolveDependencies(var1));
+      public void resolveDependencies(final ResolvableModel.Resolver resolver) {
+         this.entries.unwrap().forEach((v) -> ((BlockStateModel.Unbaked)v.value()).resolveDependencies(resolver));
       }
    }
 }

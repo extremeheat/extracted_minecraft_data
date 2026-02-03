@@ -12,10 +12,8 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.Encoder;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,58 +25,58 @@ import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
 
 public class StateDefinition<O, S extends StateHolder<O, S>> {
-   static final Pattern NAME_PATTERN = Pattern.compile("^[a-z0-9_]+$");
+   private static final Pattern NAME_PATTERN = Pattern.compile("^[a-z0-9_]+$");
    private final O owner;
    private final ImmutableSortedMap<String, Property<?>> propertiesByName;
    private final ImmutableList<S> states;
 
-   protected StateDefinition(Function<O, S> var1, O var2, Factory<O, S> var3, Map<String, Property<?>> var4) {
+   protected StateDefinition(final Function<O, S> defaultState, final O owner, final Factory<O, S> factory, final Map<String, Property<?>> properties) {
       super();
-      this.owner = var2;
-      this.propertiesByName = ImmutableSortedMap.copyOf(var4);
-      Supplier var5 = () -> (StateHolder)var1.apply(var2);
-      MapCodec var6 = MapCodec.of(Encoder.empty(), Decoder.unit(var5));
+      this.owner = owner;
+      this.propertiesByName = ImmutableSortedMap.copyOf(properties);
+      Supplier<S> defaultSupplier = () -> (StateHolder)defaultState.apply(owner);
+      MapCodec<S> codec = MapCodec.of(Encoder.empty(), Decoder.unit(defaultSupplier));
 
-      Map.Entry var8;
-      for(UnmodifiableIterator var7 = this.propertiesByName.entrySet().iterator(); var7.hasNext(); var6 = appendPropertyCodec(var6, var5, (String)var8.getKey(), (Property)var8.getValue())) {
-         var8 = (Map.Entry)var7.next();
+      Map.Entry<String, Property<?>> entry;
+      for(UnmodifiableIterator var7 = this.propertiesByName.entrySet().iterator(); var7.hasNext(); codec = appendPropertyCodec(codec, defaultSupplier, (String)entry.getKey(), (Property)entry.getValue())) {
+         entry = (Map.Entry)var7.next();
       }
 
-      LinkedHashMap var13 = Maps.newLinkedHashMap();
-      ArrayList var9 = Lists.newArrayList();
-      Stream var10 = Stream.of(Collections.emptyList());
+      Map<Map<Property<?>, Comparable<?>>, S> statesByValues = Maps.newLinkedHashMap();
+      List<S> states = Lists.newArrayList();
+      Stream<List<Pair<Property<?>, Comparable<?>>>> stream = Stream.of(Collections.emptyList());
 
-      Property var12;
-      for(UnmodifiableIterator var11 = this.propertiesByName.values().iterator(); var11.hasNext(); var10 = var10.flatMap((var1x) -> var12.getPossibleValues().stream().map((var2) -> {
-            ArrayList var3 = Lists.newArrayList(var1x);
-            var3.add(Pair.of(var12, var2));
-            return var3;
+      Property<?> property;
+      for(UnmodifiableIterator var11 = this.propertiesByName.values().iterator(); var11.hasNext(); stream = stream.flatMap((list) -> property.getPossibleValues().stream().map((value) -> {
+            List<Pair<Property<?>, Comparable<?>>> newList = Lists.newArrayList(list);
+            newList.add(Pair.of(property, value));
+            return newList;
          }))) {
-         var12 = (Property)var11.next();
+         property = (Property)var11.next();
       }
 
-      var10.forEach((var5x) -> {
-         Reference2ObjectArrayMap var6x = new Reference2ObjectArrayMap(var5x.size());
+      stream.forEach((list) -> {
+         Reference2ObjectArrayMap<Property<?>, Comparable<?>> map = new Reference2ObjectArrayMap(list.size());
 
-         for(Pair var8 : var5x) {
-            var6x.put((Property)var8.getFirst(), (Comparable)var8.getSecond());
+         for(Pair<Property<?>, Comparable<?>> pair : list) {
+            map.put((Property)pair.getFirst(), (Comparable)pair.getSecond());
          }
 
-         StateHolder var9x = (StateHolder)var3.create(var2, var6x, var6);
-         var13.put(var6x, var9x);
-         var9.add(var9x);
+         S blockState = factory.create(owner, map, codec);
+         statesByValues.put(map, blockState);
+         states.add(blockState);
       });
 
-      for(StateHolder var15 : var9) {
-         var15.populateNeighbours(var13);
+      for(S blockState : states) {
+         ((StateHolder)blockState).populateNeighbours(statesByValues);
       }
 
-      this.states = ImmutableList.copyOf(var9);
+      this.states = ImmutableList.copyOf(states);
    }
 
-   private static <S extends StateHolder<?, S>, T extends Comparable<T>> MapCodec<S> appendPropertyCodec(MapCodec<S> var0, Supplier<S> var1, String var2, Property<T> var3) {
-      return Codec.mapPair(var0, var3.valueCodec().fieldOf(var2).orElseGet((var0x) -> {
-      }, () -> var3.value((StateHolder)var1.get()))).xmap((var1x) -> (StateHolder)((StateHolder)var1x.getFirst()).setValue(var3, ((Property.Value)var1x.getSecond()).value()), (var1x) -> Pair.of(var1x, var3.value(var1x)));
+   private static <S extends StateHolder<?, S>, T extends Comparable<T>> MapCodec<S> appendPropertyCodec(final MapCodec<S> codec, final Supplier<S> defaultSupplier, final String name, final Property<T> property) {
+      return Codec.mapPair(codec, property.valueCodec().fieldOf(name).orElseGet((e) -> {
+      }, () -> property.value((StateHolder)defaultSupplier.get()))).xmap((pair) -> (StateHolder)((StateHolder)pair.getFirst()).setValue(property, ((Property.Value)pair.getSecond()).value()), (state) -> Pair.of(state, property.value(state)));
    }
 
    public ImmutableList<S> getPossibleStates() {
@@ -101,60 +99,60 @@ public class StateDefinition<O, S extends StateHolder<O, S>> {
       return MoreObjects.toStringHelper(this).add("block", this.owner).add("properties", this.propertiesByName.values().stream().map(Property::getName).collect(Collectors.toList())).toString();
    }
 
-   public @Nullable Property<?> getProperty(String var1) {
-      return (Property)this.propertiesByName.get(var1);
+   public @Nullable Property<?> getProperty(final String name) {
+      return (Property)this.propertiesByName.get(name);
    }
 
    public static class Builder<O, S extends StateHolder<O, S>> {
       private final O owner;
       private final Map<String, Property<?>> properties = Maps.newHashMap();
 
-      public Builder(O var1) {
+      public Builder(final O owner) {
          super();
-         this.owner = var1;
+         this.owner = owner;
       }
 
-      public Builder<O, S> add(Property<?>... var1) {
-         for(Property var5 : var1) {
-            this.validateProperty(var5);
-            this.properties.put(var5.getName(), var5);
+      public Builder<O, S> add(final Property<?>... properties) {
+         for(Property<?> property : properties) {
+            this.validateProperty(property);
+            this.properties.put(property.getName(), property);
          }
 
          return this;
       }
 
-      private <T extends Comparable<T>> void validateProperty(Property<T> var1) {
-         String var2 = var1.getName();
-         if (!StateDefinition.NAME_PATTERN.matcher(var2).matches()) {
+      private <T extends Comparable<T>> void validateProperty(final Property<T> property) {
+         String name = property.getName();
+         if (!StateDefinition.NAME_PATTERN.matcher(name).matches()) {
             String var8 = String.valueOf(this.owner);
-            throw new IllegalArgumentException(var8 + " has invalidly named property: " + var2);
+            throw new IllegalArgumentException(var8 + " has invalidly named property: " + name);
          } else {
-            List var3 = var1.getPossibleValues();
-            if (var3.size() <= 1) {
+            Collection<T> values = property.getPossibleValues();
+            if (values.size() <= 1) {
                String var7 = String.valueOf(this.owner);
-               throw new IllegalArgumentException(var7 + " attempted use property " + var2 + " with <= 1 possible values");
+               throw new IllegalArgumentException(var7 + " attempted use property " + name + " with <= 1 possible values");
             } else {
-               for(Comparable var5 : var3) {
-                  String var6 = var1.getName(var5);
-                  if (!StateDefinition.NAME_PATTERN.matcher(var6).matches()) {
-                     throw new IllegalArgumentException(String.valueOf(this.owner) + " has property: " + var2 + " with invalidly named value: " + var6);
+               for(T comparable : values) {
+                  String valueName = property.getName(comparable);
+                  if (!StateDefinition.NAME_PATTERN.matcher(valueName).matches()) {
+                     throw new IllegalArgumentException(String.valueOf(this.owner) + " has property: " + name + " with invalidly named value: " + valueName);
                   }
                }
 
-               if (this.properties.containsKey(var2)) {
+               if (this.properties.containsKey(name)) {
                   String var10002 = String.valueOf(this.owner);
-                  throw new IllegalArgumentException(var10002 + " has duplicate property: " + var2);
+                  throw new IllegalArgumentException(var10002 + " has duplicate property: " + name);
                }
             }
          }
       }
 
-      public StateDefinition<O, S> create(Function<O, S> var1, Factory<O, S> var2) {
-         return new StateDefinition<O, S>(var1, this.owner, var2, this.properties);
+      public StateDefinition<O, S> create(final Function<O, S> defaultState, final Factory<O, S> factory) {
+         return new StateDefinition<O, S>(defaultState, this.owner, factory, this.properties);
       }
    }
 
    public interface Factory<O, S> {
-      S create(O var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<S> var3);
+      S create(O type, Reference2ObjectArrayMap<Property<?>, Comparable<?>> values, final MapCodec<S> propertiesCodec);
    }
 }

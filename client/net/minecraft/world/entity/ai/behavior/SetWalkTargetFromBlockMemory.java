@@ -16,35 +16,35 @@ public class SetWalkTargetFromBlockMemory {
       super();
    }
 
-   public static OneShot<Villager> create(MemoryModuleType<GlobalPos> var0, float var1, int var2, int var3, int var4) {
-      return BehaviorBuilder.create((Function)((var5) -> var5.group(var5.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE), var5.absent(MemoryModuleType.WALK_TARGET), var5.present(var0)).apply(var5, (var6, var7, var8) -> (var9, var10, var11) -> {
-               GlobalPos var13 = (GlobalPos)var5.get(var8);
-               Optional var14 = var5.tryGet(var6);
-               if (var13.dimension() == var9.dimension() && (!var14.isPresent() || var9.getGameTime() - (Long)var14.get() <= (long)var4)) {
-                  if (var13.pos().distManhattan(var10.blockPosition()) > var3) {
-                     Vec3 var15 = null;
-                     int var16 = 0;
-                     boolean var17 = true;
+   public static OneShot<Villager> create(final MemoryModuleType<GlobalPos> memoryType, final float speedModifier, final int closeEnoughDist, final int tooFarDistance, final int tooLongUnreachableDuration) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE), i.absent(MemoryModuleType.WALK_TARGET), i.present(memoryType)).apply(i, (cantReachSince, walkTarget, memory) -> (level, body, timestamp) -> {
+               GlobalPos targetPos = (GlobalPos)i.get(memory);
+               Optional<Long> cantReachTargetSince = i.<Long>tryGet(cantReachSince);
+               if (targetPos.dimension() == level.dimension() && (!cantReachTargetSince.isPresent() || level.getGameTime() - (Long)cantReachTargetSince.get() <= (long)tooLongUnreachableDuration)) {
+                  if (targetPos.pos().distManhattan(body.blockPosition()) > tooFarDistance) {
+                     Vec3 towardsTargetPos = null;
+                     int tries = 0;
+                     int MAX_TRIES = 1000;
 
-                     while(var15 == null || BlockPos.containing(var15).distManhattan(var10.blockPosition()) > var3) {
-                        var15 = DefaultRandomPos.getPosTowards(var10, 15, 7, Vec3.atBottomCenterOf(var13.pos()), 1.5707963705062866);
-                        ++var16;
-                        if (var16 == 1000) {
-                           var10.releasePoi(var0);
-                           var8.erase();
-                           var6.set(var11);
+                     while(towardsTargetPos == null || BlockPos.containing(towardsTargetPos).distManhattan(body.blockPosition()) > tooFarDistance) {
+                        towardsTargetPos = DefaultRandomPos.getPosTowards(body, 15, 7, Vec3.atBottomCenterOf(targetPos.pos()), 1.5707963705062866);
+                        ++tries;
+                        if (tries == 1000) {
+                           body.releasePoi(memoryType);
+                           memory.erase();
+                           cantReachSince.set(timestamp);
                            return true;
                         }
                      }
 
-                     var7.set(new WalkTarget(var15, var1, var2));
-                  } else if (var13.pos().distManhattan(var10.blockPosition()) > var2) {
-                     var7.set(new WalkTarget(var13.pos(), var1, var2));
+                     walkTarget.set(new WalkTarget(towardsTargetPos, speedModifier, closeEnoughDist));
+                  } else if (targetPos.pos().distManhattan(body.blockPosition()) > closeEnoughDist) {
+                     walkTarget.set(new WalkTarget(targetPos.pos(), speedModifier, closeEnoughDist));
                   }
                } else {
-                  var10.releasePoi(var0);
-                  var8.erase();
-                  var6.set(var11);
+                  body.releasePoi(memoryType);
+                  memory.erase();
+                  cantReachSince.set(timestamp);
                }
 
                return true;

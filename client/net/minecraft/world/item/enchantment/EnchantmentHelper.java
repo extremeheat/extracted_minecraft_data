@@ -35,6 +35,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
@@ -52,98 +53,98 @@ public class EnchantmentHelper {
       super();
    }
 
-   public static int getItemEnchantmentLevel(Holder<Enchantment> var0, ItemStack var1) {
-      ItemEnchantments var2 = (ItemEnchantments)var1.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
-      return var2.getLevel(var0);
+   public static int getItemEnchantmentLevel(final Holder<Enchantment> enchantment, final ItemInstance piece) {
+      ItemEnchantments enchantments = (ItemEnchantments)piece.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+      return enchantments.getLevel(enchantment);
    }
 
-   public static ItemEnchantments updateEnchantments(ItemStack var0, Consumer<ItemEnchantments.Mutable> var1) {
-      DataComponentType var2 = getComponentType(var0);
-      ItemEnchantments var3 = (ItemEnchantments)var0.get(var2);
-      if (var3 == null) {
+   public static ItemEnchantments updateEnchantments(final ItemStack itemStack, final Consumer<ItemEnchantments.Mutable> consumer) {
+      DataComponentType<ItemEnchantments> componentType = getComponentType(itemStack);
+      ItemEnchantments oldEnchantments = (ItemEnchantments)itemStack.get(componentType);
+      if (oldEnchantments == null) {
          return ItemEnchantments.EMPTY;
       } else {
-         ItemEnchantments.Mutable var4 = new ItemEnchantments.Mutable(var3);
-         var1.accept(var4);
-         ItemEnchantments var5 = var4.toImmutable();
-         var0.set(var2, var5);
-         return var5;
+         ItemEnchantments.Mutable mutableEnchantments = new ItemEnchantments.Mutable(oldEnchantments);
+         consumer.accept(mutableEnchantments);
+         ItemEnchantments newEnchantments = mutableEnchantments.toImmutable();
+         itemStack.set(componentType, newEnchantments);
+         return newEnchantments;
       }
    }
 
-   public static boolean canStoreEnchantments(ItemStack var0) {
-      return var0.has(getComponentType(var0));
+   public static boolean canStoreEnchantments(final ItemStack itemStack) {
+      return itemStack.has(getComponentType(itemStack));
    }
 
-   public static void setEnchantments(ItemStack var0, ItemEnchantments var1) {
-      var0.set(getComponentType(var0), var1);
+   public static void setEnchantments(final ItemStack itemStack, final ItemEnchantments enchantments) {
+      itemStack.set(getComponentType(itemStack), enchantments);
    }
 
-   public static ItemEnchantments getEnchantmentsForCrafting(ItemStack var0) {
-      return (ItemEnchantments)var0.getOrDefault(getComponentType(var0), ItemEnchantments.EMPTY);
+   public static ItemEnchantments getEnchantmentsForCrafting(final ItemStack itemStack) {
+      return (ItemEnchantments)itemStack.getOrDefault(getComponentType(itemStack), ItemEnchantments.EMPTY);
    }
 
-   private static DataComponentType<ItemEnchantments> getComponentType(ItemStack var0) {
-      return var0.is(Items.ENCHANTED_BOOK) ? DataComponents.STORED_ENCHANTMENTS : DataComponents.ENCHANTMENTS;
+   private static DataComponentType<ItemEnchantments> getComponentType(final ItemStack itemStack) {
+      return itemStack.is(Items.ENCHANTED_BOOK) ? DataComponents.STORED_ENCHANTMENTS : DataComponents.ENCHANTMENTS;
    }
 
-   public static boolean hasAnyEnchantments(ItemStack var0) {
-      return !((ItemEnchantments)var0.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY)).isEmpty() || !((ItemEnchantments)var0.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY)).isEmpty();
+   public static boolean hasAnyEnchantments(final ItemStack itemStack) {
+      return !((ItemEnchantments)itemStack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY)).isEmpty() || !((ItemEnchantments)itemStack.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY)).isEmpty();
    }
 
-   public static int processDurabilityChange(ServerLevel var0, ItemStack var1, int var2) {
-      MutableFloat var3 = new MutableFloat((float)var2);
-      runIterationOnItem(var1, (var3x, var4) -> ((Enchantment)var3x.value()).modifyDurabilityChange(var0, var4, var1, var3));
-      return var3.intValue();
+   public static int processDurabilityChange(final ServerLevel serverLevel, final ItemStack itemStack, final int amount) {
+      MutableFloat modifiedAmount = new MutableFloat((float)amount);
+      runIterationOnItem(itemStack, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyDurabilityChange(serverLevel, level, itemStack, modifiedAmount));
+      return modifiedAmount.intValue();
    }
 
-   public static int processAmmoUse(ServerLevel var0, ItemStack var1, ItemStack var2, int var3) {
-      MutableFloat var4 = new MutableFloat((float)var3);
-      runIterationOnItem(var1, (var3x, var4x) -> ((Enchantment)var3x.value()).modifyAmmoCount(var0, var4x, var2, var4));
-      return var4.intValue();
+   public static int processAmmoUse(final ServerLevel serverLevel, final ItemStack weapon, final ItemStack ammo, final int amount) {
+      MutableFloat modifiedAmount = new MutableFloat((float)amount);
+      runIterationOnItem(weapon, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyAmmoCount(serverLevel, level, ammo, modifiedAmount));
+      return modifiedAmount.intValue();
    }
 
-   public static int processBlockExperience(ServerLevel var0, ItemStack var1, int var2) {
-      MutableFloat var3 = new MutableFloat((float)var2);
-      runIterationOnItem(var1, (var3x, var4) -> ((Enchantment)var3x.value()).modifyBlockExperience(var0, var4, var1, var3));
-      return var3.intValue();
+   public static int processBlockExperience(final ServerLevel serverLevel, final ItemStack itemStack, final int amount) {
+      MutableFloat modifiedAmount = new MutableFloat((float)amount);
+      runIterationOnItem(itemStack, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyBlockExperience(serverLevel, level, itemStack, modifiedAmount));
+      return modifiedAmount.intValue();
    }
 
-   public static int processMobExperience(ServerLevel var0, @Nullable Entity var1, Entity var2, int var3) {
-      if (var1 instanceof LivingEntity var4) {
-         MutableFloat var5 = new MutableFloat((float)var3);
-         runIterationOnEquipment(var4, (var3x, var4x, var5x) -> ((Enchantment)var3x.value()).modifyMobExperience(var0, var4x, var5x.itemStack(), var2, var5));
-         return var5.intValue();
+   public static int processMobExperience(final ServerLevel serverLevel, final @Nullable Entity killer, final Entity killed, final int amount) {
+      if (killer instanceof LivingEntity livingKiller) {
+         MutableFloat modifiedAmount = new MutableFloat((float)amount);
+         runIterationOnEquipment(livingKiller, (enchantment, level, item) -> ((Enchantment)enchantment.value()).modifyMobExperience(serverLevel, level, item.itemStack(), killed, modifiedAmount));
+         return modifiedAmount.intValue();
       } else {
-         return var3;
+         return amount;
       }
    }
 
-   public static ItemStack createBook(EnchantmentInstance var0) {
-      ItemStack var1 = new ItemStack(Items.ENCHANTED_BOOK);
-      var1.enchant(var0.enchantment(), var0.level());
-      return var1;
+   public static ItemStack createBook(final EnchantmentInstance enchant) {
+      ItemStack itemStack = new ItemStack(Items.ENCHANTED_BOOK);
+      itemStack.enchant(enchant.enchantment(), enchant.level());
+      return itemStack;
    }
 
-   private static void runIterationOnItem(ItemStack var0, EnchantmentVisitor var1) {
-      ItemEnchantments var2 = (ItemEnchantments)var0.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+   private static void runIterationOnItem(final ItemStack piece, final EnchantmentVisitor method) {
+      ItemEnchantments enchantments = (ItemEnchantments)piece.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 
-      for(Object2IntMap.Entry var4 : var2.entrySet()) {
-         var1.accept((Holder)var4.getKey(), var4.getIntValue());
+      for(Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
+         method.accept((Holder)entry.getKey(), entry.getIntValue());
       }
 
    }
 
-   private static void runIterationOnItem(ItemStack var0, EquipmentSlot var1, LivingEntity var2, EnchantmentInSlotVisitor var3) {
-      if (!var0.isEmpty()) {
-         ItemEnchantments var4 = (ItemEnchantments)var0.get(DataComponents.ENCHANTMENTS);
-         if (var4 != null && !var4.isEmpty()) {
-            EnchantedItemInUse var5 = new EnchantedItemInUse(var0, var1, var2);
+   private static void runIterationOnItem(final ItemStack piece, final EquipmentSlot slot, final LivingEntity owner, final EnchantmentInSlotVisitor method) {
+      if (!piece.isEmpty()) {
+         ItemEnchantments itemEnchantments = (ItemEnchantments)piece.get(DataComponents.ENCHANTMENTS);
+         if (itemEnchantments != null && !itemEnchantments.isEmpty()) {
+            EnchantedItemInUse itemInUse = new EnchantedItemInUse(piece, slot, owner);
 
-            for(Object2IntMap.Entry var7 : var4.entrySet()) {
-               Holder var8 = (Holder)var7.getKey();
-               if (((Enchantment)var8.value()).matchingSlot(var1)) {
-                  var3.accept(var8, var7.getIntValue(), var5);
+            for(Object2IntMap.Entry<Holder<Enchantment>> entry : itemEnchantments.entrySet()) {
+               Holder<Enchantment> enchantment = (Holder)entry.getKey();
+               if (((Enchantment)enchantment.value()).matchingSlot(slot)) {
+                  method.accept(enchantment, entry.getIntValue(), itemInUse);
                }
             }
 
@@ -151,247 +152,244 @@ public class EnchantmentHelper {
       }
    }
 
-   private static void runIterationOnEquipment(LivingEntity var0, EnchantmentInSlotVisitor var1) {
-      for(EquipmentSlot var3 : EquipmentSlot.VALUES) {
-         runIterationOnItem(var0.getItemBySlot(var3), var3, var0, var1);
+   private static void runIterationOnEquipment(final LivingEntity owner, final EnchantmentInSlotVisitor method) {
+      for(EquipmentSlot slot : EquipmentSlot.VALUES) {
+         runIterationOnItem(owner.getItemBySlot(slot), slot, owner, method);
       }
 
    }
 
-   public static boolean isImmuneToDamage(ServerLevel var0, LivingEntity var1, DamageSource var2) {
-      MutableBoolean var3 = new MutableBoolean();
-      runIterationOnEquipment(var1, (var4, var5, var6) -> var3.setValue(var3.isTrue() || ((Enchantment)var4.value()).isImmuneToDamage(var0, var5, var1, var2)));
-      return var3.isTrue();
+   public static boolean isImmuneToDamage(final ServerLevel serverLevel, final LivingEntity victim, final DamageSource source) {
+      MutableBoolean result = new MutableBoolean();
+      runIterationOnEquipment(victim, (enchantment, level, item) -> result.setValue(result.isTrue() || ((Enchantment)enchantment.value()).isImmuneToDamage(serverLevel, level, victim, source)));
+      return result.isTrue();
    }
 
-   public static float getDamageProtection(ServerLevel var0, LivingEntity var1, DamageSource var2) {
-      MutableFloat var3 = new MutableFloat(0.0F);
-      runIterationOnEquipment(var1, (var4, var5, var6) -> ((Enchantment)var4.value()).modifyDamageProtection(var0, var5, var6.itemStack(), var1, var2, var3));
-      return var3.floatValue();
+   public static float getDamageProtection(final ServerLevel serverLevel, final LivingEntity victim, final DamageSource source) {
+      MutableFloat result = new MutableFloat(0.0F);
+      runIterationOnEquipment(victim, (enchantment, level, item) -> ((Enchantment)enchantment.value()).modifyDamageProtection(serverLevel, level, item.itemStack(), victim, source, result));
+      return result.floatValue();
    }
 
-   public static float modifyDamage(ServerLevel var0, ItemStack var1, Entity var2, DamageSource var3, float var4) {
-      MutableFloat var5 = new MutableFloat(var4);
-      runIterationOnItem(var1, (var5x, var6) -> ((Enchantment)var5x.value()).modifyDamage(var0, var6, var1, var2, var3, var5));
-      return var5.floatValue();
+   public static float modifyDamage(final ServerLevel serverLevel, final ItemStack itemStack, final Entity victim, final DamageSource damageSource, final float damage) {
+      MutableFloat result = new MutableFloat(damage);
+      runIterationOnItem(itemStack, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyDamage(serverLevel, level, itemStack, victim, damageSource, result));
+      return result.floatValue();
    }
 
-   public static float modifyFallBasedDamage(ServerLevel var0, ItemStack var1, Entity var2, DamageSource var3, float var4) {
-      MutableFloat var5 = new MutableFloat(var4);
-      runIterationOnItem(var1, (var5x, var6) -> ((Enchantment)var5x.value()).modifyFallBasedDamage(var0, var6, var1, var2, var3, var5));
-      return var5.floatValue();
+   public static float modifyFallBasedDamage(final ServerLevel serverLevel, final ItemStack itemStack, final Entity victim, final DamageSource damageSource, final float damage) {
+      MutableFloat result = new MutableFloat(damage);
+      runIterationOnItem(itemStack, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyFallBasedDamage(serverLevel, level, itemStack, victim, damageSource, result));
+      return result.floatValue();
    }
 
-   public static float modifyArmorEffectiveness(ServerLevel var0, ItemStack var1, Entity var2, DamageSource var3, float var4) {
-      MutableFloat var5 = new MutableFloat(var4);
-      runIterationOnItem(var1, (var5x, var6) -> ((Enchantment)var5x.value()).modifyArmorEffectivness(var0, var6, var1, var2, var3, var5));
-      return var5.floatValue();
+   public static float modifyArmorEffectiveness(final ServerLevel serverLevel, final ItemStack itemStack, final Entity victim, final DamageSource damageSource, final float armorFraction) {
+      MutableFloat result = new MutableFloat(armorFraction);
+      runIterationOnItem(itemStack, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyArmorEffectivness(serverLevel, level, itemStack, victim, damageSource, result));
+      return result.floatValue();
    }
 
-   public static float modifyKnockback(ServerLevel var0, ItemStack var1, Entity var2, DamageSource var3, float var4) {
-      MutableFloat var5 = new MutableFloat(var4);
-      runIterationOnItem(var1, (var5x, var6) -> ((Enchantment)var5x.value()).modifyKnockback(var0, var6, var1, var2, var3, var5));
-      return var5.floatValue();
+   public static float modifyKnockback(final ServerLevel serverLevel, final ItemStack itemStack, final Entity victim, final DamageSource damageSource, final float knockback) {
+      MutableFloat result = new MutableFloat(knockback);
+      runIterationOnItem(itemStack, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyKnockback(serverLevel, level, itemStack, victim, damageSource, result));
+      return result.floatValue();
    }
 
-   public static void doPostAttackEffects(ServerLevel var0, Entity var1, DamageSource var2) {
-      Entity var4 = var2.getEntity();
-      if (var4 instanceof LivingEntity var3) {
-         doPostAttackEffectsWithItemSource(var0, var1, var2, var3.getWeaponItem());
+   public static void doPostAttackEffects(final ServerLevel serverLevel, final Entity victim, final DamageSource damageSource) {
+      Entity var4 = damageSource.getEntity();
+      if (var4 instanceof LivingEntity attacker) {
+         doPostAttackEffectsWithItemSource(serverLevel, victim, damageSource, attacker.getWeaponItem());
       } else {
-         doPostAttackEffectsWithItemSource(var0, var1, var2, (ItemStack)null);
+         doPostAttackEffectsWithItemSource(serverLevel, victim, damageSource, (ItemStack)null);
       }
 
    }
 
-   public static void doLungeEffects(ServerLevel var0, Entity var1) {
-      if (var1 instanceof LivingEntity var2) {
-         runIterationOnItem(var1.getWeaponItem(), EquipmentSlot.MAINHAND, var2, (var2x, var3, var4) -> ((Enchantment)var2x.value()).doLunge(var0, var3, var4, var1));
-      }
-
+   public static void doPostPiercingAttackEffects(final ServerLevel serverLevel, final LivingEntity user) {
+      runIterationOnItem(user.getWeaponItem(), EquipmentSlot.MAINHAND, user, (enchantment, level, item) -> ((Enchantment)enchantment.value()).doPostPiercingAttack(serverLevel, level, item, user));
    }
 
-   public static void doPostAttackEffectsWithItemSource(ServerLevel var0, Entity var1, DamageSource var2, @Nullable ItemStack var3) {
-      doPostAttackEffectsWithItemSourceOnBreak(var0, var1, var2, var3, (Consumer)null);
+   public static void doPostAttackEffectsWithItemSource(final ServerLevel serverLevel, final Entity victim, final DamageSource damageSource, final @Nullable ItemStack source) {
+      doPostAttackEffectsWithItemSourceOnBreak(serverLevel, victim, damageSource, source, (Consumer)null);
    }
 
-   public static void doPostAttackEffectsWithItemSourceOnBreak(ServerLevel var0, Entity var1, DamageSource var2, @Nullable ItemStack var3, @Nullable Consumer<Item> var4) {
-      if (var1 instanceof LivingEntity var5) {
-         runIterationOnEquipment(var5, (var3x, var4x, var5x) -> ((Enchantment)var3x.value()).doPostAttack(var0, var4x, var5x, EnchantmentTarget.VICTIM, var1, var2));
+   public static void doPostAttackEffectsWithItemSourceOnBreak(final ServerLevel serverLevel, final Entity victim, final DamageSource damageSource, final @Nullable ItemStack source, final @Nullable Consumer<Item> attackerlessOnBreak) {
+      if (victim instanceof LivingEntity livingVictim) {
+         runIterationOnEquipment(livingVictim, (enchantment, level, item) -> ((Enchantment)enchantment.value()).doPostAttack(serverLevel, level, item, EnchantmentTarget.VICTIM, victim, damageSource));
       }
 
-      if (var3 != null) {
-         Entity var6 = var2.getEntity();
+      if (source != null) {
+         Entity var6 = damageSource.getEntity();
          if (var6 instanceof LivingEntity) {
-            LivingEntity var7 = (LivingEntity)var6;
-            runIterationOnItem(var3, EquipmentSlot.MAINHAND, var7, (var3x, var4x, var5x) -> ((Enchantment)var3x.value()).doPostAttack(var0, var4x, var5x, EnchantmentTarget.ATTACKER, var1, var2));
-         } else if (var4 != null) {
-            EnchantedItemInUse var8 = new EnchantedItemInUse(var3, (EquipmentSlot)null, (LivingEntity)null, var4);
-            runIterationOnItem(var3, (var4x, var5x) -> ((Enchantment)var4x.value()).doPostAttack(var0, var5x, var8, EnchantmentTarget.ATTACKER, var1, var2));
+            LivingEntity attacker = (LivingEntity)var6;
+            runIterationOnItem(source, EquipmentSlot.MAINHAND, attacker, (enchantment, level, item) -> ((Enchantment)enchantment.value()).doPostAttack(serverLevel, level, item, EnchantmentTarget.ATTACKER, victim, damageSource));
+         } else if (attackerlessOnBreak != null) {
+            EnchantedItemInUse item = new EnchantedItemInUse(source, (EquipmentSlot)null, (LivingEntity)null, attackerlessOnBreak);
+            runIterationOnItem(source, (enchantment, level) -> ((Enchantment)enchantment.value()).doPostAttack(serverLevel, level, item, EnchantmentTarget.ATTACKER, victim, damageSource));
          }
       }
 
    }
 
-   public static void runLocationChangedEffects(ServerLevel var0, LivingEntity var1) {
-      runIterationOnEquipment(var1, (var2, var3, var4) -> ((Enchantment)var2.value()).runLocationChangedEffects(var0, var3, var4, var1));
+   public static void runLocationChangedEffects(final ServerLevel serverLevel, final LivingEntity entity) {
+      runIterationOnEquipment(entity, (enchantment, level, item) -> ((Enchantment)enchantment.value()).runLocationChangedEffects(serverLevel, level, item, entity));
    }
 
-   public static void runLocationChangedEffects(ServerLevel var0, ItemStack var1, LivingEntity var2, EquipmentSlot var3) {
-      runIterationOnItem(var1, var3, var2, (var2x, var3x, var4) -> ((Enchantment)var2x.value()).runLocationChangedEffects(var0, var3x, var4, var2));
+   public static void runLocationChangedEffects(final ServerLevel serverLevel, final ItemStack stack, final LivingEntity entity, final EquipmentSlot slot) {
+      runIterationOnItem(stack, slot, entity, (enchantment, level, item) -> ((Enchantment)enchantment.value()).runLocationChangedEffects(serverLevel, level, item, entity));
    }
 
-   public static void stopLocationBasedEffects(LivingEntity var0) {
-      runIterationOnEquipment(var0, (var1, var2, var3) -> ((Enchantment)var1.value()).stopLocationBasedEffects(var2, var3, var0));
+   public static void stopLocationBasedEffects(final LivingEntity entity) {
+      runIterationOnEquipment(entity, (enchantment, level, item) -> ((Enchantment)enchantment.value()).stopLocationBasedEffects(level, item, entity));
    }
 
-   public static void stopLocationBasedEffects(ItemStack var0, LivingEntity var1, EquipmentSlot var2) {
-      runIterationOnItem(var0, var2, var1, (var1x, var2x, var3) -> ((Enchantment)var1x.value()).stopLocationBasedEffects(var2x, var3, var1));
+   public static void stopLocationBasedEffects(final ItemStack stack, final LivingEntity entity, final EquipmentSlot slot) {
+      runIterationOnItem(stack, slot, entity, (enchantment, level, item) -> ((Enchantment)enchantment.value()).stopLocationBasedEffects(level, item, entity));
    }
 
-   public static void tickEffects(ServerLevel var0, LivingEntity var1) {
-      runIterationOnEquipment(var1, (var2, var3, var4) -> ((Enchantment)var2.value()).tick(var0, var3, var4, var1));
+   public static void tickEffects(final ServerLevel serverLevel, final LivingEntity entity) {
+      runIterationOnEquipment(entity, (enchantment, level, item) -> ((Enchantment)enchantment.value()).tick(serverLevel, level, item, entity));
    }
 
-   public static int getEnchantmentLevel(Holder<Enchantment> var0, LivingEntity var1) {
-      Collection var2 = ((Enchantment)var0.value()).getSlotItems(var1).values();
-      int var3 = 0;
+   public static int getEnchantmentLevel(final Holder<Enchantment> enchantment, final LivingEntity entity) {
+      Iterable<ItemStack> allowedSlots = ((Enchantment)enchantment.value()).getSlotItems(entity).values();
+      int bestLevel = 0;
 
-      for(ItemStack var5 : var2) {
-         int var6 = getItemEnchantmentLevel(var0, var5);
-         if (var6 > var3) {
-            var3 = var6;
+      for(ItemStack piece : allowedSlots) {
+         int newLevel = getItemEnchantmentLevel(enchantment, piece);
+         if (newLevel > bestLevel) {
+            bestLevel = newLevel;
          }
       }
 
-      return var3;
+      return bestLevel;
    }
 
-   public static int processProjectileCount(ServerLevel var0, ItemStack var1, Entity var2, int var3) {
-      MutableFloat var4 = new MutableFloat((float)var3);
-      runIterationOnItem(var1, (var4x, var5) -> ((Enchantment)var4x.value()).modifyProjectileCount(var0, var5, var1, var2, var4));
-      return Math.max(0, var4.intValue());
+   public static int processProjectileCount(final ServerLevel serverLevel, final ItemStack weapon, final Entity shooter, final int count) {
+      MutableFloat modifiedCount = new MutableFloat((float)count);
+      runIterationOnItem(weapon, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyProjectileCount(serverLevel, level, weapon, shooter, modifiedCount));
+      return Math.max(0, modifiedCount.intValue());
    }
 
-   public static float processProjectileSpread(ServerLevel var0, ItemStack var1, Entity var2, float var3) {
-      MutableFloat var4 = new MutableFloat(var3);
-      runIterationOnItem(var1, (var4x, var5) -> ((Enchantment)var4x.value()).modifyProjectileSpread(var0, var5, var1, var2, var4));
-      return Math.max(0.0F, var4.floatValue());
+   public static float processProjectileSpread(final ServerLevel serverLevel, final ItemStack weapon, final Entity shooter, final float angle) {
+      MutableFloat modifiedAngle = new MutableFloat(angle);
+      runIterationOnItem(weapon, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyProjectileSpread(serverLevel, level, weapon, shooter, modifiedAngle));
+      return Math.max(0.0F, modifiedAngle.floatValue());
    }
 
-   public static int getPiercingCount(ServerLevel var0, ItemStack var1, ItemStack var2) {
-      MutableFloat var3 = new MutableFloat(0.0F);
-      runIterationOnItem(var1, (var3x, var4) -> ((Enchantment)var3x.value()).modifyPiercingCount(var0, var4, var2, var3));
-      return Math.max(0, var3.intValue());
+   public static int getPiercingCount(final ServerLevel serverLevel, final ItemStack weapon, final ItemStack ammo) {
+      MutableFloat modifiedAmount = new MutableFloat(0.0F);
+      runIterationOnItem(weapon, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyPiercingCount(serverLevel, level, ammo, modifiedAmount));
+      return Math.max(0, modifiedAmount.intValue());
    }
 
-   public static void onProjectileSpawned(ServerLevel var0, ItemStack var1, Projectile var2, Consumer<Item> var3) {
-      Entity var6 = var2.getOwner();
+   public static void onProjectileSpawned(final ServerLevel serverLevel, final ItemStack weapon, final Projectile projectileEntity, final Consumer<Item> onBreak) {
+      Entity var6 = projectileEntity.getOwner();
       LivingEntity var10000;
-      if (var6 instanceof LivingEntity var5) {
-         var10000 = var5;
+      if (var6 instanceof LivingEntity le) {
+         var10000 = le;
       } else {
          var10000 = null;
       }
 
-      LivingEntity var4 = var10000;
-      EnchantedItemInUse var7 = new EnchantedItemInUse(var1, (EquipmentSlot)null, var4, var3);
-      runIterationOnItem(var1, (var3x, var4x) -> ((Enchantment)var3x.value()).onProjectileSpawned(var0, var4x, var7, var2));
+      LivingEntity owner = var10000;
+      EnchantedItemInUse item = new EnchantedItemInUse(weapon, (EquipmentSlot)null, owner, onBreak);
+      runIterationOnItem(weapon, (enchantment, level) -> ((Enchantment)enchantment.value()).onProjectileSpawned(serverLevel, level, item, projectileEntity));
    }
 
-   public static void onHitBlock(ServerLevel var0, ItemStack var1, @Nullable LivingEntity var2, Entity var3, @Nullable EquipmentSlot var4, Vec3 var5, BlockState var6, Consumer<Item> var7) {
-      EnchantedItemInUse var8 = new EnchantedItemInUse(var1, var4, var2, var7);
-      runIterationOnItem(var1, (var5x, var6x) -> ((Enchantment)var5x.value()).onHitBlock(var0, var6x, var8, var3, var5, var6));
+   public static void onHitBlock(final ServerLevel serverLevel, final ItemStack weapon, final @Nullable LivingEntity owner, final Entity entity, final @Nullable EquipmentSlot slot, final Vec3 hitLocation, final BlockState hitBlock, final Consumer<Item> onBreak) {
+      EnchantedItemInUse item = new EnchantedItemInUse(weapon, slot, owner, onBreak);
+      runIterationOnItem(weapon, (enchantment, level) -> ((Enchantment)enchantment.value()).onHitBlock(serverLevel, level, item, entity, hitLocation, hitBlock));
    }
 
-   public static int modifyDurabilityToRepairFromXp(ServerLevel var0, ItemStack var1, int var2) {
-      MutableFloat var3 = new MutableFloat((float)var2);
-      runIterationOnItem(var1, (var3x, var4) -> ((Enchantment)var3x.value()).modifyDurabilityToRepairFromXp(var0, var4, var1, var3));
-      return Math.max(0, var3.intValue());
+   public static int modifyDurabilityToRepairFromXp(final ServerLevel serverLevel, final ItemStack item, final int durability) {
+      MutableFloat modifiedDurability = new MutableFloat((float)durability);
+      runIterationOnItem(item, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyDurabilityToRepairFromXp(serverLevel, level, item, modifiedDurability));
+      return Math.max(0, modifiedDurability.intValue());
    }
 
-   public static float processEquipmentDropChance(ServerLevel var0, LivingEntity var1, DamageSource var2, float var3) {
-      MutableFloat var4 = new MutableFloat(var3);
-      RandomSource var5 = var1.getRandom();
-      runIterationOnEquipment(var1, (var5x, var6x, var7x) -> {
-         LootContext var8 = Enchantment.damageContext(var0, var6x, var1, var2);
-         ((Enchantment)var5x.value()).getEffects(EnchantmentEffectComponents.EQUIPMENT_DROPS).forEach((var4x) -> {
-            if (var4x.enchanted() == EnchantmentTarget.VICTIM && var4x.affected() == EnchantmentTarget.VICTIM && var4x.matches(var8)) {
-               var4.setValue(((EnchantmentValueEffect)var4x.effect()).process(var6x, var5, var4.floatValue()));
+   public static float processEquipmentDropChance(final ServerLevel serverLevel, final LivingEntity entity, final DamageSource killingBlow, final float chance) {
+      MutableFloat modifiedChance = new MutableFloat(chance);
+      RandomSource random = entity.getRandom();
+      runIterationOnEquipment(entity, (enchantment, level, item) -> {
+         LootContext context = Enchantment.damageContext(serverLevel, level, entity, killingBlow);
+         ((Enchantment)enchantment.value()).getEffects(EnchantmentEffectComponents.EQUIPMENT_DROPS).forEach((filteredEffect) -> {
+            if (filteredEffect.enchanted() == EnchantmentTarget.VICTIM && filteredEffect.affected() == EnchantmentTarget.VICTIM && filteredEffect.matches(context)) {
+               modifiedChance.setValue(((EnchantmentValueEffect)filteredEffect.effect()).process(level, random, modifiedChance.floatValue()));
             }
 
          });
       });
-      Entity var6 = var2.getEntity();
-      if (var6 instanceof LivingEntity var7) {
-         runIterationOnEquipment(var7, (var5x, var6x, var7x) -> {
-            LootContext var8 = Enchantment.damageContext(var0, var6x, var1, var2);
-            ((Enchantment)var5x.value()).getEffects(EnchantmentEffectComponents.EQUIPMENT_DROPS).forEach((var4x) -> {
-               if (var4x.enchanted() == EnchantmentTarget.ATTACKER && var4x.affected() == EnchantmentTarget.VICTIM && var4x.matches(var8)) {
-                  var4.setValue(((EnchantmentValueEffect)var4x.effect()).process(var6x, var5, var4.floatValue()));
+      Entity attacker = killingBlow.getEntity();
+      if (attacker instanceof LivingEntity livingAttacker) {
+         runIterationOnEquipment(livingAttacker, (enchantment, level, item) -> {
+            LootContext context = Enchantment.damageContext(serverLevel, level, entity, killingBlow);
+            ((Enchantment)enchantment.value()).getEffects(EnchantmentEffectComponents.EQUIPMENT_DROPS).forEach((filteredEffect) -> {
+               if (filteredEffect.enchanted() == EnchantmentTarget.ATTACKER && filteredEffect.affected() == EnchantmentTarget.VICTIM && filteredEffect.matches(context)) {
+                  modifiedChance.setValue(((EnchantmentValueEffect)filteredEffect.effect()).process(level, random, modifiedChance.floatValue()));
                }
 
             });
          });
       }
 
-      return var4.floatValue();
+      return modifiedChance.floatValue();
    }
 
-   public static void forEachModifier(ItemStack var0, EquipmentSlotGroup var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
-      runIterationOnItem(var0, (var2x, var3) -> ((Enchantment)var2x.value()).getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((var4) -> {
-            if (((Enchantment)var2x.value()).definition().slots().contains(var1)) {
-               var2.accept(var4.attribute(), var4.getModifier(var3, var1));
+   public static void forEachModifier(final ItemStack itemStack, final EquipmentSlotGroup slot, final BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
+      runIterationOnItem(itemStack, (enchantment, level) -> ((Enchantment)enchantment.value()).getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((effect) -> {
+            if (((Enchantment)enchantment.value()).definition().slots().contains(slot)) {
+               consumer.accept(effect.attribute(), effect.getModifier(level, slot));
             }
 
          }));
    }
 
-   public static void forEachModifier(ItemStack var0, EquipmentSlot var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
-      runIterationOnItem(var0, (var2x, var3) -> ((Enchantment)var2x.value()).getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((var4) -> {
-            if (((Enchantment)var2x.value()).matchingSlot(var1)) {
-               var2.accept(var4.attribute(), var4.getModifier(var3, var1));
+   public static void forEachModifier(final ItemStack itemStack, final EquipmentSlot slot, final BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
+      runIterationOnItem(itemStack, (enchantment, level) -> ((Enchantment)enchantment.value()).getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((effect) -> {
+            if (((Enchantment)enchantment.value()).matchingSlot(slot)) {
+               consumer.accept(effect.attribute(), effect.getModifier(level, slot));
             }
 
          }));
    }
 
-   public static int getFishingLuckBonus(ServerLevel var0, ItemStack var1, Entity var2) {
-      MutableFloat var3 = new MutableFloat(0.0F);
-      runIterationOnItem(var1, (var4, var5) -> ((Enchantment)var4.value()).modifyFishingLuckBonus(var0, var5, var1, var2, var3));
-      return Math.max(0, var3.intValue());
+   public static int getFishingLuckBonus(final ServerLevel serverLevel, final ItemStack rod, final Entity fisher) {
+      MutableFloat modifiedSpeed = new MutableFloat(0.0F);
+      runIterationOnItem(rod, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyFishingLuckBonus(serverLevel, level, rod, fisher, modifiedSpeed));
+      return Math.max(0, modifiedSpeed.intValue());
    }
 
-   public static float getFishingTimeReduction(ServerLevel var0, ItemStack var1, Entity var2) {
-      MutableFloat var3 = new MutableFloat(0.0F);
-      runIterationOnItem(var1, (var4, var5) -> ((Enchantment)var4.value()).modifyFishingTimeReduction(var0, var5, var1, var2, var3));
-      return Math.max(0.0F, var3.floatValue());
+   public static float getFishingTimeReduction(final ServerLevel serverLevel, final ItemStack rod, final Entity fisher) {
+      MutableFloat modifiedSpeed = new MutableFloat(0.0F);
+      runIterationOnItem(rod, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyFishingTimeReduction(serverLevel, level, rod, fisher, modifiedSpeed));
+      return Math.max(0.0F, modifiedSpeed.floatValue());
    }
 
-   public static int getTridentReturnToOwnerAcceleration(ServerLevel var0, ItemStack var1, Entity var2) {
-      MutableFloat var3 = new MutableFloat(0.0F);
-      runIterationOnItem(var1, (var4, var5) -> ((Enchantment)var4.value()).modifyTridentReturnToOwnerAcceleration(var0, var5, var1, var2, var3));
-      return Math.max(0, var3.intValue());
+   public static int getTridentReturnToOwnerAcceleration(final ServerLevel serverLevel, final ItemStack weapon, final Entity trident) {
+      MutableFloat modifiedAcceleration = new MutableFloat(0.0F);
+      runIterationOnItem(weapon, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyTridentReturnToOwnerAcceleration(serverLevel, level, weapon, trident, modifiedAcceleration));
+      return Math.max(0, modifiedAcceleration.intValue());
    }
 
-   public static float modifyCrossbowChargingTime(ItemStack var0, LivingEntity var1, float var2) {
-      MutableFloat var3 = new MutableFloat(var2);
-      runIterationOnItem(var0, (var2x, var3x) -> ((Enchantment)var2x.value()).modifyCrossbowChargeTime(var1.getRandom(), var3x, var3));
-      return Math.max(0.0F, var3.floatValue());
+   public static float modifyCrossbowChargingTime(final ItemStack crossbow, final LivingEntity holder, final float time) {
+      MutableFloat modifiedTime = new MutableFloat(time);
+      runIterationOnItem(crossbow, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyCrossbowChargeTime(holder.getRandom(), level, modifiedTime));
+      return Math.max(0.0F, modifiedTime.floatValue());
    }
 
-   public static float getTridentSpinAttackStrength(ItemStack var0, LivingEntity var1) {
-      MutableFloat var2 = new MutableFloat(0.0F);
-      runIterationOnItem(var0, (var2x, var3) -> ((Enchantment)var2x.value()).modifyTridentSpinAttackStrength(var1.getRandom(), var3, var2));
-      return var2.floatValue();
+   public static float getTridentSpinAttackStrength(final ItemStack trident, final LivingEntity holder) {
+      MutableFloat strength = new MutableFloat(0.0F);
+      runIterationOnItem(trident, (enchantment, level) -> ((Enchantment)enchantment.value()).modifyTridentSpinAttackStrength(holder.getRandom(), level, strength));
+      return strength.floatValue();
    }
 
-   public static boolean hasTag(ItemStack var0, TagKey<Enchantment> var1) {
-      ItemEnchantments var2 = (ItemEnchantments)var0.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+   public static boolean hasTag(final ItemStack item, final TagKey<Enchantment> tag) {
+      ItemEnchantments enchantments = (ItemEnchantments)item.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 
-      for(Object2IntMap.Entry var4 : var2.entrySet()) {
-         Holder var5 = (Holder)var4.getKey();
-         if (var5.is(var1)) {
+      for(Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
+         Holder<Enchantment> enchantment = (Holder)entry.getKey();
+         if (enchantment.is(tag)) {
             return true;
          }
       }
@@ -399,139 +397,139 @@ public class EnchantmentHelper {
       return false;
    }
 
-   public static boolean has(ItemStack var0, DataComponentType<?> var1) {
-      MutableBoolean var2 = new MutableBoolean(false);
-      runIterationOnItem(var0, (var2x, var3) -> {
-         if (((Enchantment)var2x.value()).effects().has(var1)) {
-            var2.setTrue();
+   public static boolean has(final ItemStack item, final DataComponentType<?> effectType) {
+      MutableBoolean found = new MutableBoolean(false);
+      runIterationOnItem(item, (enchantment, level) -> {
+         if (((Enchantment)enchantment.value()).effects().has(effectType)) {
+            found.setTrue();
          }
 
       });
-      return var2.booleanValue();
+      return found.booleanValue();
    }
 
-   public static <T> Optional<T> pickHighestLevel(ItemStack var0, DataComponentType<List<T>> var1) {
-      Pair var2 = getHighestLevel(var0, var1);
-      if (var2 != null) {
-         List var3 = (List)var2.getFirst();
-         int var4 = (Integer)var2.getSecond();
-         return Optional.of(var3.get(Math.min(var4, var3.size()) - 1));
+   public static <T> Optional<T> pickHighestLevel(final ItemStack itemStack, final DataComponentType<List<T>> componentType) {
+      Pair<List<T>, Integer> picked = getHighestLevel(itemStack, componentType);
+      if (picked != null) {
+         List<T> list = (List)picked.getFirst();
+         int enchantmentLevel = (Integer)picked.getSecond();
+         return Optional.of(list.get(Math.min(enchantmentLevel, list.size()) - 1));
       } else {
          return Optional.empty();
       }
    }
 
-   public static <T> Pair<T, Integer> getHighestLevel(ItemStack var0, DataComponentType<T> var1) {
-      MutableObject var2 = new MutableObject();
-      runIterationOnItem(var0, (var2x, var3) -> {
-         if (var2.get() == null || (Integer)((Pair)var2.get()).getSecond() < var3) {
-            Object var4 = ((Enchantment)var2x.value()).effects().get(var1);
-            if (var4 != null) {
-               var2.setValue(Pair.of(var4, var3));
+   public static <T> Pair<T, Integer> getHighestLevel(final ItemStack item, final DataComponentType<T> effectType) {
+      MutableObject<Pair<T, Integer>> found = new MutableObject();
+      runIterationOnItem(item, (enchantment, level) -> {
+         if (found.get() == null || (Integer)((Pair)found.get()).getSecond() < level) {
+            T effect = (T)((Enchantment)enchantment.value()).effects().get(effectType);
+            if (effect != null) {
+               found.setValue(Pair.of(effect, level));
             }
          }
 
       });
-      return (Pair)var2.get();
+      return (Pair)found.get();
    }
 
-   public static Optional<EnchantedItemInUse> getRandomItemWith(DataComponentType<?> var0, LivingEntity var1, Predicate<ItemStack> var2) {
-      ArrayList var3 = new ArrayList();
+   public static Optional<EnchantedItemInUse> getRandomItemWith(final DataComponentType<?> componentType, final LivingEntity source, final Predicate<ItemStack> predicate) {
+      List<EnchantedItemInUse> items = new ArrayList();
 
-      for(EquipmentSlot var5 : EquipmentSlot.VALUES) {
-         ItemStack var6 = var1.getItemBySlot(var5);
-         if (var2.test(var6)) {
-            ItemEnchantments var7 = (ItemEnchantments)var6.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+      for(EquipmentSlot slot : EquipmentSlot.VALUES) {
+         ItemStack item = source.getItemBySlot(slot);
+         if (predicate.test(item)) {
+            ItemEnchantments enchantments = (ItemEnchantments)item.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 
-            for(Object2IntMap.Entry var9 : var7.entrySet()) {
-               Holder var10 = (Holder)var9.getKey();
-               if (((Enchantment)var10.value()).effects().has(var0) && ((Enchantment)var10.value()).matchingSlot(var5)) {
-                  var3.add(new EnchantedItemInUse(var6, var5, var1));
+            for(Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
+               Holder<Enchantment> enchantment = (Holder)entry.getKey();
+               if (((Enchantment)enchantment.value()).effects().has(componentType) && ((Enchantment)enchantment.value()).matchingSlot(slot)) {
+                  items.add(new EnchantedItemInUse(item, slot, source));
                }
             }
          }
       }
 
-      return Util.<EnchantedItemInUse>getRandomSafe(var3, var1.getRandom());
+      return Util.<EnchantedItemInUse>getRandomSafe(items, source.getRandom());
    }
 
-   public static int getEnchantmentCost(RandomSource var0, int var1, int var2, ItemStack var3) {
-      Enchantable var4 = (Enchantable)var3.get(DataComponents.ENCHANTABLE);
-      if (var4 == null) {
+   public static int getEnchantmentCost(final RandomSource random, final int slot, int bookcases, final ItemStack itemStack) {
+      Enchantable enchantable = (Enchantable)itemStack.get(DataComponents.ENCHANTABLE);
+      if (enchantable == null) {
          return 0;
       } else {
-         if (var2 > 15) {
-            var2 = 15;
+         if (bookcases > 15) {
+            bookcases = 15;
          }
 
-         int var5 = var0.nextInt(8) + 1 + (var2 >> 1) + var0.nextInt(var2 + 1);
-         if (var1 == 0) {
-            return Math.max(var5 / 3, 1);
+         int selected = random.nextInt(8) + 1 + (bookcases >> 1) + random.nextInt(bookcases + 1);
+         if (slot == 0) {
+            return Math.max(selected / 3, 1);
          } else {
-            return var1 == 1 ? var5 * 2 / 3 + 1 : Math.max(var5, var2 * 2);
+            return slot == 1 ? selected * 2 / 3 + 1 : Math.max(selected, bookcases * 2);
          }
       }
    }
 
-   public static ItemStack enchantItem(RandomSource var0, ItemStack var1, int var2, RegistryAccess var3, Optional<? extends HolderSet<Enchantment>> var4) {
-      return enchantItem(var0, var1, var2, (Stream)var4.map(HolderSet::stream).orElseGet(() -> var3.lookupOrThrow(Registries.ENCHANTMENT).listElements().map((var0) -> var0)));
+   public static ItemStack enchantItem(final RandomSource random, final ItemStack itemStack, final int enchantmentCost, final RegistryAccess registryAccess, final Optional<? extends HolderSet<Enchantment>> set) {
+      return enchantItem(random, itemStack, enchantmentCost, (Stream)set.map(HolderSet::stream).orElseGet(() -> registryAccess.lookupOrThrow(Registries.ENCHANTMENT).listElements().map((h) -> h)));
    }
 
-   public static ItemStack enchantItem(RandomSource var0, ItemStack var1, int var2, Stream<Holder<Enchantment>> var3) {
-      List var4 = selectEnchantment(var0, var1, var2, var3);
-      if (var1.is(Items.BOOK)) {
-         var1 = new ItemStack(Items.ENCHANTED_BOOK);
+   public static ItemStack enchantItem(final RandomSource random, ItemStack itemStack, final int enchantmentCost, final Stream<Holder<Enchantment>> source) {
+      List<EnchantmentInstance> enchants = selectEnchantment(random, itemStack, enchantmentCost, source);
+      if (itemStack.is(Items.BOOK)) {
+         itemStack = new ItemStack(Items.ENCHANTED_BOOK);
       }
 
-      for(EnchantmentInstance var6 : var4) {
-         var1.enchant(var6.enchantment(), var6.level());
+      for(EnchantmentInstance enchant : enchants) {
+         itemStack.enchant(enchant.enchantment(), enchant.level());
       }
 
-      return var1;
+      return itemStack;
    }
 
-   public static List<EnchantmentInstance> selectEnchantment(RandomSource var0, ItemStack var1, int var2, Stream<Holder<Enchantment>> var3) {
-      ArrayList var4 = Lists.newArrayList();
-      Enchantable var5 = (Enchantable)var1.get(DataComponents.ENCHANTABLE);
-      if (var5 == null) {
-         return var4;
+   public static List<EnchantmentInstance> selectEnchantment(final RandomSource random, final ItemStack itemStack, int enchantmentCost, final Stream<Holder<Enchantment>> source) {
+      List<EnchantmentInstance> results = Lists.newArrayList();
+      Enchantable enchantable = (Enchantable)itemStack.get(DataComponents.ENCHANTABLE);
+      if (enchantable == null) {
+         return results;
       } else {
-         var2 += 1 + var0.nextInt(var5.value() / 4 + 1) + var0.nextInt(var5.value() / 4 + 1);
-         float var6 = (var0.nextFloat() + var0.nextFloat() - 1.0F) * 0.15F;
-         var2 = Mth.clamp(Math.round((float)var2 + (float)var2 * var6), 1, 2147483647);
-         List var7 = getAvailableEnchantmentResults(var2, var1, var3);
-         if (!var7.isEmpty()) {
-            Optional var10000 = WeightedRandom.getRandomItem(var0, var7, EnchantmentInstance::weight);
-            Objects.requireNonNull(var4);
-            var10000.ifPresent(var4::add);
+         enchantmentCost += 1 + random.nextInt(enchantable.value() / 4 + 1) + random.nextInt(enchantable.value() / 4 + 1);
+         float randomSpan = (random.nextFloat() + random.nextFloat() - 1.0F) * 0.15F;
+         enchantmentCost = Mth.clamp(Math.round((float)enchantmentCost + (float)enchantmentCost * randomSpan), 1, 2147483647);
+         List<EnchantmentInstance> enchantments = getAvailableEnchantmentResults(enchantmentCost, itemStack, source);
+         if (!enchantments.isEmpty()) {
+            Optional var10000 = WeightedRandom.getRandomItem(random, enchantments, EnchantmentInstance::weight);
+            Objects.requireNonNull(results);
+            var10000.ifPresent(results::add);
 
-            while(var0.nextInt(50) <= var2) {
-               if (!var4.isEmpty()) {
-                  filterCompatibleEnchantments(var7, (EnchantmentInstance)var4.getLast());
+            while(random.nextInt(50) <= enchantmentCost) {
+               if (!results.isEmpty()) {
+                  filterCompatibleEnchantments(enchantments, (EnchantmentInstance)results.getLast());
                }
 
-               if (var7.isEmpty()) {
+               if (enchantments.isEmpty()) {
                   break;
                }
 
-               var10000 = WeightedRandom.getRandomItem(var0, var7, EnchantmentInstance::weight);
-               Objects.requireNonNull(var4);
-               var10000.ifPresent(var4::add);
-               var2 /= 2;
+               var10000 = WeightedRandom.getRandomItem(random, enchantments, EnchantmentInstance::weight);
+               Objects.requireNonNull(results);
+               var10000.ifPresent(results::add);
+               enchantmentCost /= 2;
             }
          }
 
-         return var4;
+         return results;
       }
    }
 
-   public static void filterCompatibleEnchantments(List<EnchantmentInstance> var0, EnchantmentInstance var1) {
-      var0.removeIf((var1x) -> !Enchantment.areCompatible(var1.enchantment(), var1x.enchantment()));
+   public static void filterCompatibleEnchantments(final List<EnchantmentInstance> enchants, final EnchantmentInstance target) {
+      enchants.removeIf((e) -> !Enchantment.areCompatible(target.enchantment(), e.enchantment()));
    }
 
-   public static boolean isEnchantmentCompatible(Collection<Holder<Enchantment>> var0, Holder<Enchantment> var1) {
-      for(Holder var3 : var0) {
-         if (!Enchantment.areCompatible(var3, var1)) {
+   public static boolean isEnchantmentCompatible(final Collection<Holder<Enchantment>> enchants, final Holder<Enchantment> target) {
+      for(Holder<Enchantment> existing : enchants) {
+         if (!Enchantment.areCompatible(existing, target)) {
             return false;
          }
       }
@@ -539,38 +537,38 @@ public class EnchantmentHelper {
       return true;
    }
 
-   public static List<EnchantmentInstance> getAvailableEnchantmentResults(int var0, ItemStack var1, Stream<Holder<Enchantment>> var2) {
-      ArrayList var3 = Lists.newArrayList();
-      boolean var4 = var1.is(Items.BOOK);
-      var2.filter((var2x) -> ((Enchantment)var2x.value()).isPrimaryItem(var1) || var4).forEach((var2x) -> {
-         Enchantment var3x = (Enchantment)var2x.value();
+   public static List<EnchantmentInstance> getAvailableEnchantmentResults(final int value, final ItemStack itemStack, final Stream<Holder<Enchantment>> source) {
+      List<EnchantmentInstance> results = Lists.newArrayList();
+      boolean isBook = itemStack.is(Items.BOOK);
+      source.filter((enchantment) -> ((Enchantment)enchantment.value()).isPrimaryItem(itemStack) || isBook).forEach((holder) -> {
+         Enchantment enchantment = (Enchantment)holder.value();
 
-         for(int var4 = var3x.getMaxLevel(); var4 >= var3x.getMinLevel(); --var4) {
-            if (var0 >= var3x.getMinCost(var4) && var0 <= var3x.getMaxCost(var4)) {
-               var3.add(new EnchantmentInstance(var2x, var4));
+         for(int level = enchantment.getMaxLevel(); level >= enchantment.getMinLevel(); --level) {
+            if (value >= enchantment.getMinCost(level) && value <= enchantment.getMaxCost(level)) {
+               results.add(new EnchantmentInstance(holder, level));
                break;
             }
          }
 
       });
-      return var3;
+      return results;
    }
 
-   public static void enchantItemFromProvider(ItemStack var0, RegistryAccess var1, ResourceKey<EnchantmentProvider> var2, DifficultyInstance var3, RandomSource var4) {
-      EnchantmentProvider var5 = (EnchantmentProvider)var1.lookupOrThrow(Registries.ENCHANTMENT_PROVIDER).getValue(var2);
-      if (var5 != null) {
-         updateEnchantments(var0, (var4x) -> var5.enchant(var0, var4x, var4, var3));
+   public static void enchantItemFromProvider(final ItemStack itemStack, final RegistryAccess registryAccess, final ResourceKey<EnchantmentProvider> providerKey, final DifficultyInstance difficulty, final RandomSource random) {
+      EnchantmentProvider provider = (EnchantmentProvider)registryAccess.lookupOrThrow(Registries.ENCHANTMENT_PROVIDER).getValue(providerKey);
+      if (provider != null) {
+         updateEnchantments(itemStack, (enchantments) -> provider.enchant(itemStack, enchantments, random, difficulty));
       }
 
    }
 
    @FunctionalInterface
-   interface EnchantmentInSlotVisitor {
-      void accept(Holder<Enchantment> var1, int var2, EnchantedItemInUse var3);
+   private interface EnchantmentInSlotVisitor {
+      void accept(Holder<Enchantment> enchantment, int level, EnchantedItemInUse item);
    }
 
    @FunctionalInterface
-   interface EnchantmentVisitor {
-      void accept(Holder<Enchantment> var1, int var2);
+   private interface EnchantmentVisitor {
+      void accept(Holder<Enchantment> enchantment, int level);
    }
 }

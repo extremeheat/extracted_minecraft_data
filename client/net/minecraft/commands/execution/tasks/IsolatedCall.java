@@ -12,15 +12,15 @@ public class IsolatedCall<T extends ExecutionCommandSource<T>> implements EntryA
    private final Consumer<ExecutionControl<T>> taskProducer;
    private final CommandResultCallback output;
 
-   public IsolatedCall(Consumer<ExecutionControl<T>> var1, CommandResultCallback var2) {
+   public IsolatedCall(final Consumer<ExecutionControl<T>> taskOutput, final CommandResultCallback output) {
       super();
-      this.taskProducer = var1;
-      this.output = var2;
+      this.taskProducer = taskOutput;
+      this.output = output;
    }
 
-   public void execute(ExecutionContext<T> var1, Frame var2) {
-      int var3 = var2.depth() + 1;
-      Frame var4 = new Frame(var3, this.output, var1.frameControlForDepth(var3));
-      this.taskProducer.accept(ExecutionControl.create(var1, var4));
+   public void execute(final ExecutionContext<T> context, final Frame frame) {
+      int newFrameDepth = frame.depth() + 1;
+      Frame newFrame = new Frame(newFrameDepth, this.output, context.frameControlForDepth(newFrameDepth));
+      this.taskProducer.accept(ExecutionControl.create(context, newFrame));
    }
 }

@@ -10,27 +10,27 @@ import org.jspecify.annotations.Nullable;
 public class WallClimberNavigation extends GroundPathNavigation {
    private @Nullable BlockPos pathToPosition;
 
-   public WallClimberNavigation(Mob var1, Level var2) {
-      super(var1, var2);
+   public WallClimberNavigation(final Mob mob, final Level level) {
+      super(mob, level);
    }
 
-   public Path createPath(BlockPos var1, int var2) {
-      this.pathToPosition = var1;
-      return super.createPath(var1, var2);
+   public Path createPath(final BlockPos pos, final int reachRange) {
+      this.pathToPosition = pos;
+      return super.createPath(pos, reachRange);
    }
 
-   public Path createPath(Entity var1, int var2) {
-      this.pathToPosition = var1.blockPosition();
-      return super.createPath(var1, var2);
+   public Path createPath(final Entity target, final int reachRange) {
+      this.pathToPosition = target.blockPosition();
+      return super.createPath(target, reachRange);
    }
 
-   public boolean moveTo(Entity var1, double var2) {
-      Path var4 = this.createPath((Entity)var1, 0);
-      if (var4 != null) {
-         return this.moveTo(var4, var2);
+   public boolean moveTo(final Entity target, final double speedModifier) {
+      Path newPath = this.createPath((Entity)target, 0);
+      if (newPath != null) {
+         return this.moveTo(newPath, speedModifier);
       } else {
-         this.pathToPosition = var1.blockPosition();
-         this.speedModifier = var2;
+         this.pathToPosition = target.blockPosition();
+         this.speedModifier = speedModifier;
          return true;
       }
    }

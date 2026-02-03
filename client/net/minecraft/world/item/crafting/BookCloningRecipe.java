@@ -1,104 +1,136 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.core.HolderLookup;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.tags.ItemTags;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
 
 public class BookCloningRecipe extends CustomRecipe {
-   public BookCloningRecipe(CraftingBookCategory var1) {
-      super(var1);
+   public static final MinMaxBounds.Ints ALLOWED_BOOK_GENERATION_RANGES = MinMaxBounds.Ints.between(0, 2);
+   public static final MinMaxBounds.Ints DEFAULT_BOOK_GENERATION_RANGES = MinMaxBounds.Ints.between(0, 1);
+   private static final Codec<MinMaxBounds.Ints> ALLOWED_GENERATION_CODEC;
+   public static final MapCodec<BookCloningRecipe> MAP_CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, BookCloningRecipe> STREAM_CODEC;
+   public static final RecipeSerializer<BookCloningRecipe> SERIALIZER;
+   private final Ingredient source;
+   private final Ingredient material;
+   private final MinMaxBounds.Ints allowedGenerations;
+   private final ItemStackTemplate result;
+
+   public BookCloningRecipe(final Ingredient source, final Ingredient material, final MinMaxBounds.Ints allowedGenerations, final ItemStackTemplate result) {
+      super();
+      this.source = source;
+      this.material = material;
+      this.allowedGenerations = allowedGenerations;
+      this.result = result;
    }
 
-   public boolean matches(CraftingInput var1, Level var2) {
-      if (var1.ingredientCount() < 2) {
+   private boolean canCraftCopy(final WrittenBookContent writtenBookContent) {
+      return this.allowedGenerations.matches(writtenBookContent.generation());
+   }
+
+   public boolean matches(final CraftingInput input, final Level level) {
+      if (input.ingredientCount() < 2) {
          return false;
       } else {
-         boolean var3 = false;
-         boolean var4 = false;
+         boolean hasMaterial = false;
+         boolean hasSource = false;
 
-         for(int var5 = 0; var5 < var1.size(); ++var5) {
-            ItemStack var6 = var1.getItem(var5);
-            if (!var6.isEmpty()) {
-               if (var6.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
-                  if (var4) {
+         for(int slot = 0; slot < input.size(); ++slot) {
+            ItemStack itemStack = input.getItem(slot);
+            if (!itemStack.isEmpty()) {
+               if (this.source.test(itemStack)) {
+                  WrittenBookContent writtenBookContent = (WrittenBookContent)itemStack.get(DataComponents.WRITTEN_BOOK_CONTENT);
+                  if (writtenBookContent == null || !this.canCraftCopy(writtenBookContent)) {
                      return false;
                   }
 
-                  var4 = true;
+                  if (hasSource) {
+                     return false;
+                  }
+
+                  hasSource = true;
                } else {
-                  if (!var6.is(ItemTags.BOOK_CLONING_TARGET)) {
+                  if (!this.material.test(itemStack)) {
                      return false;
                   }
 
-                  var3 = true;
+                  hasMaterial = true;
                }
             }
          }
 
-         return var4 && var3;
+         return hasSource && hasMaterial;
       }
    }
 
-   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      int var3 = 0;
-      ItemStack var4 = ItemStack.EMPTY;
+   public ItemStack assemble(final CraftingInput input) {
+      int count = 0;
+      ItemStack source = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         ItemStack var6 = var1.getItem(var5);
-         if (!var6.isEmpty()) {
-            if (var6.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
-               if (!var4.isEmpty()) {
+      for(int slot = 0; slot < input.size(); ++slot) {
+         ItemStack itemStack = input.getItem(slot);
+         if (!itemStack.isEmpty()) {
+            if (this.source.test(itemStack) && itemStack.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
+               if (!source.isEmpty()) {
                   return ItemStack.EMPTY;
                }
 
-               var4 = var6;
+               source = itemStack;
             } else {
-               if (!var6.is(ItemTags.BOOK_CLONING_TARGET)) {
+               if (!this.material.test(itemStack)) {
                   return ItemStack.EMPTY;
                }
 
-               ++var3;
+               ++count;
             }
          }
       }
 
-      WrittenBookContent var8 = (WrittenBookContent)var4.get(DataComponents.WRITTEN_BOOK_CONTENT);
-      if (!var4.isEmpty() && var3 >= 1 && var8 != null) {
-         WrittenBookContent var9 = var8.tryCraftCopy();
-         if (var9 == null) {
-            return ItemStack.EMPTY;
-         } else {
-            ItemStack var7 = var4.copyWithCount(var3);
-            var7.set(DataComponents.WRITTEN_BOOK_CONTENT, var9);
-            return var7;
-         }
-      } else {
+      WrittenBookContent sourceContent = (WrittenBookContent)source.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      if (sourceContent == null) {
          return ItemStack.EMPTY;
+      } else {
+         WrittenBookContent copiedContent = sourceContent.craftCopy();
+         ItemStack result = TransmuteRecipe.createWithOriginalComponents(this.result, source, count - 1);
+         result.set(DataComponents.WRITTEN_BOOK_CONTENT, copiedContent);
+         return result;
       }
    }
 
-   public NonNullList<ItemStack> getRemainingItems(CraftingInput var1) {
-      NonNullList var2 = NonNullList.withSize(var1.size(), ItemStack.EMPTY);
+   public NonNullList<ItemStack> getRemainingItems(final CraftingInput input) {
+      NonNullList<ItemStack> result = NonNullList.<ItemStack>withSize(input.size(), ItemStack.EMPTY);
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
-         ItemStack var4 = var1.getItem(var3);
-         ItemStack var5 = var4.getItem().getCraftingRemainder();
-         if (!var5.isEmpty()) {
-            var2.set(var3, var5);
-         } else if (var4.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
-            var2.set(var3, var4.copyWithCount(1));
+      for(int slot = 0; slot < result.size(); ++slot) {
+         ItemStack itemStack = input.getItem(slot);
+         ItemStackTemplate remainder = itemStack.getItem().getCraftingRemainder();
+         if (remainder != null) {
+            result.set(slot, remainder.create());
+         } else if (itemStack.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
+            result.set(slot, itemStack.copyWithCount(1));
             break;
          }
       }
 
-      return var2;
+      return result;
    }
 
    public RecipeSerializer<BookCloningRecipe> getSerializer() {
-      return RecipeSerializer.BOOK_CLONING;
+      return SERIALIZER;
+   }
+
+   static {
+      ALLOWED_GENERATION_CODEC = MinMaxBounds.Ints.CODEC.validate(MinMaxBounds.validateContainedInRange(ALLOWED_BOOK_GENERATION_RANGES));
+      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Ingredient.CODEC.fieldOf("source").forGetter((o) -> o.source), Ingredient.CODEC.fieldOf("material").forGetter((o) -> o.material), ALLOWED_GENERATION_CODEC.optionalFieldOf("allowed_generations", DEFAULT_BOOK_GENERATION_RANGES).forGetter((o) -> o.allowedGenerations), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result)).apply(i, BookCloningRecipe::new));
+      STREAM_CODEC = StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.source, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.material, MinMaxBounds.Ints.STREAM_CODEC, (o) -> o.allowedGenerations, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, BookCloningRecipe::new);
+      SERIALIZER = new RecipeSerializer<BookCloningRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

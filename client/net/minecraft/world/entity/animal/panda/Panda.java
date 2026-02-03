@@ -3,6 +3,7 @@ package net.minecraft.world.entity.animal.panda;
 import com.mojang.serialization.Codec;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.IntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -57,6 +58,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -76,7 +79,7 @@ public class Panda extends Animal {
    private static final EntityDataAccessor<Byte> MAIN_GENE_ID;
    private static final EntityDataAccessor<Byte> HIDDEN_GENE_ID;
    private static final EntityDataAccessor<Byte> DATA_ID_FLAGS;
-   static final TargetingConditions BREED_TARGETING;
+   private static final TargetingConditions BREED_TARGETING;
    private static final EntityDimensions BABY_DIMENSIONS;
    private static final int FLAG_SNEEZE = 2;
    private static final int FLAG_ROLL = 4;
@@ -85,8 +88,8 @@ public class Panda extends Animal {
    private static final int EAT_TICK_INTERVAL = 5;
    public static final int TOTAL_ROLL_STEPS = 32;
    private static final int TOTAL_UNHAPPY_TIME = 32;
-   boolean gotBamboo;
-   boolean didBite;
+   private boolean gotBamboo;
+   private boolean didBite;
    public int rollCounter;
    private Vec3 rollDelta;
    private float sitAmount;
@@ -95,10 +98,10 @@ public class Panda extends Animal {
    private float onBackAmountO;
    private float rollAmount;
    private float rollAmountO;
-   PandaLookAtPlayerGoal lookAtPlayerGoal;
+   private PandaLookAtPlayerGoal lookAtPlayerGoal;
 
-   public Panda(EntityType<? extends Panda> var1, Level var2) {
-      super(var1, var2);
+   public Panda(final EntityType<? extends Panda> type, final Level level) {
+      super(type, level);
       this.moveControl = new PandaMoveControl(this);
       if (!this.isBaby()) {
          this.setCanPickUpLoot(true);
@@ -106,16 +109,16 @@ public class Panda extends Animal {
 
    }
 
-   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
-      return var1 == EquipmentSlot.MAINHAND && this.canPickUpLoot();
+   protected boolean canDispenserEquipIntoSlot(final EquipmentSlot slot) {
+      return slot == EquipmentSlot.MAINHAND && this.canPickUpLoot();
    }
 
    public int getUnhappyCounter() {
       return (Integer)this.entityData.get(UNHAPPY_COUNTER);
    }
 
-   public void setUnhappyCounter(int var1) {
-      this.entityData.set(UNHAPPY_COUNTER, var1);
+   public void setUnhappyCounter(final int value) {
+      this.entityData.set(UNHAPPY_COUNTER, value);
    }
 
    public boolean isSneezing() {
@@ -126,37 +129,37 @@ public class Panda extends Animal {
       return this.getFlag(8);
    }
 
-   public void sit(boolean var1) {
-      this.setFlag(8, var1);
+   public void sit(final boolean value) {
+      this.setFlag(8, value);
    }
 
    public boolean isOnBack() {
       return this.getFlag(16);
    }
 
-   public void setOnBack(boolean var1) {
-      this.setFlag(16, var1);
+   public void setOnBack(final boolean value) {
+      this.setFlag(16, value);
    }
 
    public boolean isEating() {
       return (Integer)this.entityData.get(EAT_COUNTER) > 0;
    }
 
-   public void eat(boolean var1) {
-      this.entityData.set(EAT_COUNTER, var1 ? 1 : 0);
+   public void eat(final boolean value) {
+      this.entityData.set(EAT_COUNTER, value ? 1 : 0);
    }
 
    private int getEatCounter() {
       return (Integer)this.entityData.get(EAT_COUNTER);
    }
 
-   private void setEatCounter(int var1) {
-      this.entityData.set(EAT_COUNTER, var1);
+   private void setEatCounter(final int value) {
+      this.entityData.set(EAT_COUNTER, value);
    }
 
-   public void sneeze(boolean var1) {
-      this.setFlag(2, var1);
-      if (!var1) {
+   public void sneeze(final boolean value) {
+      this.setFlag(2, value);
+      if (!value) {
          this.setSneezeCounter(0);
       }
 
@@ -166,90 +169,90 @@ public class Panda extends Animal {
       return (Integer)this.entityData.get(SNEEZE_COUNTER);
    }
 
-   public void setSneezeCounter(int var1) {
-      this.entityData.set(SNEEZE_COUNTER, var1);
+   public void setSneezeCounter(final int value) {
+      this.entityData.set(SNEEZE_COUNTER, value);
    }
 
    public Gene getMainGene() {
       return Panda.Gene.byId((Byte)this.entityData.get(MAIN_GENE_ID));
    }
 
-   public void setMainGene(Gene var1) {
-      if (var1.getId() > 6) {
-         var1 = Panda.Gene.getRandom(this.random);
+   public void setMainGene(Gene gene) {
+      if (gene.getId() > 6) {
+         gene = Panda.Gene.getRandom(this.random);
       }
 
-      this.entityData.set(MAIN_GENE_ID, (byte)var1.getId());
+      this.entityData.set(MAIN_GENE_ID, (byte)gene.getId());
    }
 
    public Gene getHiddenGene() {
       return Panda.Gene.byId((Byte)this.entityData.get(HIDDEN_GENE_ID));
    }
 
-   public void setHiddenGene(Gene var1) {
-      if (var1.getId() > 6) {
-         var1 = Panda.Gene.getRandom(this.random);
+   public void setHiddenGene(Gene gene) {
+      if (gene.getId() > 6) {
+         gene = Panda.Gene.getRandom(this.random);
       }
 
-      this.entityData.set(HIDDEN_GENE_ID, (byte)var1.getId());
+      this.entityData.set(HIDDEN_GENE_ID, (byte)gene.getId());
    }
 
    public boolean isRolling() {
       return this.getFlag(4);
    }
 
-   public void roll(boolean var1) {
-      this.setFlag(4, var1);
+   public void roll(final boolean value) {
+      this.setFlag(4, value);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(UNHAPPY_COUNTER, 0);
-      var1.define(SNEEZE_COUNTER, 0);
-      var1.define(MAIN_GENE_ID, (byte)0);
-      var1.define(HIDDEN_GENE_ID, (byte)0);
-      var1.define(DATA_ID_FLAGS, (byte)0);
-      var1.define(EAT_COUNTER, 0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(UNHAPPY_COUNTER, 0);
+      entityData.define(SNEEZE_COUNTER, 0);
+      entityData.define(MAIN_GENE_ID, (byte)0);
+      entityData.define(HIDDEN_GENE_ID, (byte)0);
+      entityData.define(DATA_ID_FLAGS, (byte)0);
+      entityData.define(EAT_COUNTER, 0);
    }
 
-   private boolean getFlag(int var1) {
-      return ((Byte)this.entityData.get(DATA_ID_FLAGS) & var1) != 0;
+   private boolean getFlag(final int flag) {
+      return ((Byte)this.entityData.get(DATA_ID_FLAGS) & flag) != 0;
    }
 
-   private void setFlag(int var1, boolean var2) {
-      byte var3 = (Byte)this.entityData.get(DATA_ID_FLAGS);
-      if (var2) {
-         this.entityData.set(DATA_ID_FLAGS, (byte)(var3 | var1));
+   private void setFlag(final int flag, final boolean value) {
+      byte current = (Byte)this.entityData.get(DATA_ID_FLAGS);
+      if (value) {
+         this.entityData.set(DATA_ID_FLAGS, (byte)(current | flag));
       } else {
-         this.entityData.set(DATA_ID_FLAGS, (byte)(var3 & ~var1));
+         this.entityData.set(DATA_ID_FLAGS, (byte)(current & ~flag));
       }
 
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.store("MainGene", Panda.Gene.CODEC, this.getMainGene());
-      var1.store("HiddenGene", Panda.Gene.CODEC, this.getHiddenGene());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.store("MainGene", Panda.Gene.CODEC, this.getMainGene());
+      output.store("HiddenGene", Panda.Gene.CODEC, this.getHiddenGene());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setMainGene((Gene)var1.read("MainGene", Panda.Gene.CODEC).orElse(Panda.Gene.NORMAL));
-      this.setHiddenGene((Gene)var1.read("HiddenGene", Panda.Gene.CODEC).orElse(Panda.Gene.NORMAL));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setMainGene((Gene)input.read("MainGene", Panda.Gene.CODEC).orElse(Panda.Gene.NORMAL));
+      this.setHiddenGene((Gene)input.read("HiddenGene", Panda.Gene.CODEC).orElse(Panda.Gene.NORMAL));
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Panda var3 = EntityType.PANDA.create(var1, EntitySpawnReason.BREEDING);
-      if (var3 != null) {
-         if (var2 instanceof Panda) {
-            Panda var4 = (Panda)var2;
-            var3.setGeneFromParents(this, var4);
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      Panda baby = EntityType.PANDA.create(level, EntitySpawnReason.BREEDING);
+      if (baby != null) {
+         if (partner instanceof Panda) {
+            Panda partnerPanda = (Panda)partner;
+            baby.setGeneFromParents(this, partnerPanda);
          }
 
-         var3.setAttributes();
+         baby.setAttributes();
       }
 
-      return var3;
+      return baby;
    }
 
    protected void registerGoals() {
@@ -257,7 +260,7 @@ public class Panda extends Animal {
       this.goalSelector.addGoal(2, new PandaPanicGoal(this, 2.0));
       this.goalSelector.addGoal(2, new PandaBreedGoal(this, 1.0));
       this.goalSelector.addGoal(3, new PandaAttackGoal(this, 1.2000000476837158, true));
-      this.goalSelector.addGoal(4, new TemptGoal(this, 1.0, (var0) -> var0.is(ItemTags.PANDA_FOOD), false));
+      this.goalSelector.addGoal(4, new TemptGoal(this, 1.0, (i) -> i.is(ItemTags.PANDA_FOOD), false));
       this.goalSelector.addGoal(6, new PandaAvoidGoal(this, Player.class, 8.0F, 2.0, 2.0));
       this.goalSelector.addGoal(6, new PandaAvoidGoal(this, Monster.class, 4.0F, 2.0, 2.0));
       this.goalSelector.addGoal(7, new PandaSitGoal());
@@ -308,12 +311,12 @@ public class Panda extends Animal {
       return false;
    }
 
-   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+   public boolean doHurtTarget(final ServerLevel level, final Entity target) {
       if (!this.isAggressive()) {
          this.didBite = true;
       }
 
-      return super.doHurtTarget(var1, var2);
+      return super.doHurtTarget(level, target);
    }
 
    public void playAttackSound() {
@@ -331,15 +334,15 @@ public class Panda extends Animal {
          }
       }
 
-      LivingEntity var1 = this.getTarget();
-      if (var1 == null) {
+      LivingEntity target = this.getTarget();
+      if (target == null) {
          this.gotBamboo = false;
          this.didBite = false;
       }
 
       if (this.getUnhappyCounter() > 0) {
-         if (var1 != null) {
-            this.lookAt(var1, 90.0F, 90.0F);
+         if (target != null) {
+            this.lookAt(target, 90.0F, 90.0F);
          }
 
          if (this.getUnhappyCounter() == 29 || this.getUnhappyCounter() == 14) {
@@ -410,16 +413,15 @@ public class Panda extends Animal {
    private void addEatingParticles() {
       if (this.getEatCounter() % 5 == 0) {
          this.playSound(SoundEvents.PANDA_EAT, 0.5F + 0.5F * (float)this.random.nextInt(2), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+         ItemStack heldItem = this.getItemBySlot(EquipmentSlot.MAINHAND);
+         if (!heldItem.isEmpty()) {
+            ItemParticleOption breakParticle = new ItemParticleOption(ParticleTypes.ITEM, ItemStackTemplate.fromNonEmptyStack(heldItem));
 
-         for(int var1 = 0; var1 < 6; ++var1) {
-            Vec3 var2 = new Vec3(((double)this.random.nextFloat() - 0.5) * 0.1, (double)this.random.nextFloat() * 0.1 + 0.1, ((double)this.random.nextFloat() - 0.5) * 0.1);
-            var2 = var2.xRot(-this.getXRot() * 0.017453292F);
-            var2 = var2.yRot(-this.getYRot() * 0.017453292F);
-            double var3 = (double)(-this.random.nextFloat()) * 0.6 - 0.3;
-            Vec3 var5 = new Vec3(((double)this.random.nextFloat() - 0.5) * 0.8, var3, 1.0 + ((double)this.random.nextFloat() - 0.5) * 0.4);
-            var5 = var5.yRot(-this.yBodyRot * 0.017453292F);
-            var5 = var5.add(this.getX(), this.getEyeY() + 1.0, this.getZ());
-            this.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, this.getItemBySlot(EquipmentSlot.MAINHAND)), var5.x, var5.y, var5.z, var2.x, var2.y + 0.05, var2.z);
+            for(int i = 0; i < 6; ++i) {
+               Vec3 velocity = (new Vec3(((double)this.random.nextFloat() - 0.5) * 0.1, (double)this.random.nextFloat() * 0.1 + 0.1, ((double)this.random.nextFloat() - 0.5) * 0.1)).xRot(-this.getXRot() * 0.017453292F).yRot(-this.getYRot() * 0.017453292F);
+               Vec3 position = (new Vec3(((double)this.random.nextFloat() - 0.5) * 0.8, (double)(-this.random.nextFloat()) * 0.6 - 0.3, 1.0 + ((double)this.random.nextFloat() - 0.5) * 0.4)).yRot(-this.yBodyRot * 0.017453292F).add(this.getX(), this.getEyeY() + 1.0, this.getZ());
+               this.level().addParticle(breakParticle, position.x, position.y, position.z, velocity.x, velocity.y + 0.05, velocity.z);
+            }
          }
       }
 
@@ -455,16 +457,16 @@ public class Panda extends Animal {
 
    }
 
-   public float getSitAmount(float var1) {
-      return Mth.lerp(var1, this.sitAmountO, this.sitAmount);
+   public float getSitAmount(final float a) {
+      return Mth.lerp(a, this.sitAmountO, this.sitAmount);
    }
 
-   public float getLieOnBackAmount(float var1) {
-      return Mth.lerp(var1, this.onBackAmountO, this.onBackAmount);
+   public float getLieOnBackAmount(final float a) {
+      return Mth.lerp(a, this.onBackAmountO, this.onBackAmount);
    }
 
-   public float getRollAmount(float var1) {
-      return Mth.lerp(var1, this.rollAmountO, this.rollAmount);
+   public float getRollAmount(final float a) {
+      return Mth.lerp(a, this.rollAmountO, this.rollAmount);
    }
 
    private void handleRoll() {
@@ -473,16 +475,16 @@ public class Panda extends Animal {
          this.roll(false);
       } else {
          if (!this.level().isClientSide()) {
-            Vec3 var1 = this.getDeltaMovement();
+            Vec3 movement = this.getDeltaMovement();
             if (this.rollCounter == 1) {
-               float var2 = this.getYRot() * 0.017453292F;
-               float var3 = this.isBaby() ? 0.1F : 0.2F;
-               this.rollDelta = new Vec3(var1.x + (double)(-Mth.sin((double)var2) * var3), 0.0, var1.z + (double)(Mth.cos((double)var2) * var3));
+               float angle = this.getYRot() * 0.017453292F;
+               float multiplier = this.isBaby() ? 0.1F : 0.2F;
+               this.rollDelta = new Vec3(movement.x + (double)(-Mth.sin((double)angle) * multiplier), 0.0, movement.z + (double)(Mth.cos((double)angle) * multiplier));
                this.setDeltaMovement(this.rollDelta.add(0.0, 0.27, 0.0));
             } else if ((float)this.rollCounter != 7.0F && (float)this.rollCounter != 15.0F && (float)this.rollCounter != 23.0F) {
-               this.setDeltaMovement(this.rollDelta.x, var1.y, this.rollDelta.z);
+               this.setDeltaMovement(this.rollDelta.x, movement.y, this.rollDelta.z);
             } else {
-               this.setDeltaMovement(0.0, this.onGround() ? 0.27 : var1.y, 0.0);
+               this.setDeltaMovement(0.0, this.onGround() ? 0.27 : movement.y, 0.0);
             }
          }
 
@@ -490,70 +492,70 @@ public class Panda extends Animal {
    }
 
    private void afterSneeze() {
-      Vec3 var1 = this.getDeltaMovement();
-      Level var2 = this.level();
-      var2.addParticle(ParticleTypes.SNEEZE, this.getX() - (double)(this.getBbWidth() + 1.0F) * 0.5 * (double)Mth.sin((double)(this.yBodyRot * 0.017453292F)), this.getEyeY() - 0.10000000149011612, this.getZ() + (double)(this.getBbWidth() + 1.0F) * 0.5 * (double)Mth.cos((double)(this.yBodyRot * 0.017453292F)), var1.x, 0.0, var1.z);
+      Vec3 movement = this.getDeltaMovement();
+      Level level = this.level();
+      level.addParticle(ParticleTypes.SNEEZE, this.getX() - (double)(this.getBbWidth() + 1.0F) * 0.5 * (double)Mth.sin((double)(this.yBodyRot * 0.017453292F)), this.getEyeY() - 0.10000000149011612, this.getZ() + (double)(this.getBbWidth() + 1.0F) * 0.5 * (double)Mth.cos((double)(this.yBodyRot * 0.017453292F)), movement.x, 0.0, movement.z);
       this.playSound(SoundEvents.PANDA_SNEEZE, 1.0F, 1.0F);
 
-      for(Panda var5 : var2.getEntitiesOfClass(Panda.class, this.getBoundingBox().inflate(10.0))) {
-         if (!var5.isBaby() && var5.onGround() && !var5.isInWater() && var5.canPerformAction()) {
-            var5.jumpFromGround();
+      for(Panda panda : level.getEntitiesOfClass(Panda.class, this.getBoundingBox().inflate(10.0))) {
+         if (!panda.isBaby() && panda.onGround() && !panda.isInWater() && panda.canPerformAction()) {
+            panda.jumpFromGround();
          }
       }
 
       Level var7 = this.level();
-      if (var7 instanceof ServerLevel var6) {
-         if ((Boolean)var6.getGameRules().get(GameRules.MOB_DROPS)) {
-            this.dropFromGiftLootTable(var6, BuiltInLootTables.PANDA_SNEEZE, this::spawnAtLocation);
+      if (var7 instanceof ServerLevel serverLevel) {
+         if ((Boolean)serverLevel.getGameRules().get(GameRules.MOB_DROPS)) {
+            this.dropFromGiftLootTable(serverLevel, BuiltInLootTables.PANDA_SNEEZE, this::spawnAtLocation);
          }
       }
 
    }
 
-   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
-      if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && canPickUpAndEat(var2)) {
-         this.onItemPickup(var2);
-         ItemStack var3 = var2.getItem();
-         this.setItemSlot(EquipmentSlot.MAINHAND, var3);
+   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
+      if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && canPickUpAndEat(entity)) {
+         this.onItemPickup(entity);
+         ItemStack itemStack = entity.getItem();
+         this.setItemSlot(EquipmentSlot.MAINHAND, itemStack);
          this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
-         this.take(var2, var3.getCount());
-         var2.discard();
+         this.take(entity, itemStack.getCount());
+         entity.discard();
       }
 
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       this.sit(false);
-      return super.hurtServer(var1, var2, var3);
+      return super.hurtServer(level, source, damage);
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      RandomSource var5 = var1.getRandom();
-      this.setMainGene(Panda.Gene.getRandom(var5));
-      this.setHiddenGene(Panda.Gene.getRandom(var5));
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
+      RandomSource random = level.getRandom();
+      this.setMainGene(Panda.Gene.getRandom(random));
+      this.setHiddenGene(Panda.Gene.getRandom(random));
       this.setAttributes();
-      if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(0.2F);
+      if (groupData == null) {
+         groupData = new AgeableMob.AgeableMobGroupData(0.2F);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   public void setGeneFromParents(Panda var1, @Nullable Panda var2) {
-      if (var2 == null) {
+   public void setGeneFromParents(final Panda parent1, final @Nullable Panda parent2) {
+      if (parent2 == null) {
          if (this.random.nextBoolean()) {
-            this.setMainGene(var1.getOneOfGenesRandomly());
+            this.setMainGene(parent1.getOneOfGenesRandomly());
             this.setHiddenGene(Panda.Gene.getRandom(this.random));
          } else {
             this.setMainGene(Panda.Gene.getRandom(this.random));
-            this.setHiddenGene(var1.getOneOfGenesRandomly());
+            this.setHiddenGene(parent1.getOneOfGenesRandomly());
          }
       } else if (this.random.nextBoolean()) {
-         this.setMainGene(var1.getOneOfGenesRandomly());
-         this.setHiddenGene(var2.getOneOfGenesRandomly());
+         this.setMainGene(parent1.getOneOfGenesRandomly());
+         this.setHiddenGene(parent2.getOneOfGenesRandomly());
       } else {
-         this.setMainGene(var2.getOneOfGenesRandomly());
-         this.setHiddenGene(var1.getOneOfGenesRandomly());
+         this.setMainGene(parent2.getOneOfGenesRandomly());
+         this.setHiddenGene(parent1.getOneOfGenesRandomly());
       }
 
       if (this.random.nextInt(32) == 0) {
@@ -581,7 +583,7 @@ public class Panda extends Animal {
 
    }
 
-   void tryToSit() {
+   private void tryToSit() {
       if (!this.isInWater()) {
          this.setZza(0.0F);
          this.getNavigation().stop();
@@ -590,49 +592,49 @@ public class Panda extends Animal {
 
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack interactionItemStack = player.getItemInHand(hand);
       if (this.isScared()) {
          return InteractionResult.PASS;
       } else if (this.isOnBack()) {
          this.setOnBack(false);
          return InteractionResult.SUCCESS;
-      } else if (this.isFood(var3)) {
+      } else if (this.isFood(interactionItemStack)) {
          if (this.getTarget() != null) {
             this.gotBamboo = true;
          }
 
-         if (this.isBaby()) {
-            this.usePlayerItem(var1, var2, var3);
+         if (this.canAgeUp()) {
+            this.usePlayerItem(player, hand, interactionItemStack);
             this.ageUp((int)((float)(-this.getAge() / 20) * 0.1F), true);
          } else if (!this.level().isClientSide() && this.getAge() == 0 && this.canFallInLove()) {
-            this.usePlayerItem(var1, var2, var3);
-            this.setInLove(var1);
+            this.usePlayerItem(player, hand, interactionItemStack);
+            this.setInLove(player);
          } else {
             Level var5 = this.level();
             if (!(var5 instanceof ServerLevel)) {
                return InteractionResult.PASS;
             }
 
-            ServerLevel var4 = (ServerLevel)var5;
+            ServerLevel level = (ServerLevel)var5;
             if (this.isSitting() || this.isInWater()) {
                return InteractionResult.PASS;
             }
 
             this.tryToSit();
             this.eat(true);
-            ItemStack var6 = this.getItemBySlot(EquipmentSlot.MAINHAND);
-            if (!var6.isEmpty() && !var1.hasInfiniteMaterials()) {
-               this.spawnAtLocation(var4, var6);
+            ItemStack pandasCurrentItem = this.getItemBySlot(EquipmentSlot.MAINHAND);
+            if (!pandasCurrentItem.isEmpty() && !player.hasInfiniteMaterials()) {
+               this.spawnAtLocation(level, pandasCurrentItem);
             }
 
-            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(var3.getItem(), 1));
-            this.usePlayerItem(var1, var2, var3);
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(interactionItemStack.getItem(), 1));
+            this.usePlayerItem(player, hand, interactionItemStack);
          }
 
          return InteractionResult.SUCCESS_SERVER;
       } else {
-         return InteractionResult.PASS;
+         return (InteractionResult)(this.isBaby() && player.isHolding(Items.GOLDEN_DANDELION) ? super.mobInteract(player, hand) : InteractionResult.PASS);
       }
    }
 
@@ -644,19 +646,19 @@ public class Panda extends Animal {
       }
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(SoundEvents.PANDA_STEP, 0.15F, 1.0F);
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.PANDA_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.PANDA_FOOD);
    }
 
    protected @Nullable SoundEvent getDeathSound() {
       return SoundEvents.PANDA_DEATH;
    }
 
-   protected @Nullable SoundEvent getHurtSound(DamageSource var1) {
+   protected @Nullable SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.PANDA_HURT;
    }
 
@@ -664,12 +666,12 @@ public class Panda extends Animal {
       return !this.isOnBack() && !this.isScared() && !this.isEating() && !this.isRolling() && !this.isSitting();
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
-   private static boolean canPickUpAndEat(ItemEntity var0) {
-      return var0.getItem().is(ItemTags.PANDA_EATS_FROM_GROUND) && var0.isAlive() && !var0.hasPickUpDelay();
+   private static boolean canPickUpAndEat(final ItemEntity entity) {
+      return entity.getItem().is(ItemTags.PANDA_EATS_FROM_GROUND) && entity.isAlive() && !entity.hasPickUpDelay();
    }
 
    static {
@@ -699,10 +701,10 @@ public class Panda extends Animal {
       private final String name;
       private final boolean isRecessive;
 
-      private Gene(final int var3, final String var4, final boolean var5) {
-         this.id = var3;
-         this.name = var4;
-         this.isRecessive = var5;
+      private Gene(final int id, final String name, final boolean isRecessive) {
+         this.id = id;
+         this.name = name;
+         this.isRecessive = isRecessive;
       }
 
       public int getId() {
@@ -717,32 +719,32 @@ public class Panda extends Animal {
          return this.isRecessive;
       }
 
-      static Gene getVariantFromGenes(Gene var0, Gene var1) {
-         if (var0.isRecessive()) {
-            return var0 == var1 ? var0 : NORMAL;
+      private static Gene getVariantFromGenes(final Gene mainGene, final Gene hiddenGene) {
+         if (mainGene.isRecessive()) {
+            return mainGene == hiddenGene ? mainGene : NORMAL;
          } else {
-            return var0;
+            return mainGene;
          }
       }
 
-      public static Gene byId(int var0) {
-         return (Gene)BY_ID.apply(var0);
+      public static Gene byId(final int id) {
+         return (Gene)BY_ID.apply(id);
       }
 
-      public static Gene getRandom(RandomSource var0) {
-         int var1 = var0.nextInt(16);
-         if (var1 == 0) {
+      public static Gene getRandom(final RandomSource random) {
+         int nextInt = random.nextInt(16);
+         if (nextInt == 0) {
             return LAZY;
-         } else if (var1 == 1) {
+         } else if (nextInt == 1) {
             return WORRIED;
-         } else if (var1 == 2) {
+         } else if (nextInt == 2) {
             return PLAYFUL;
-         } else if (var1 == 4) {
+         } else if (nextInt == 4) {
             return AGGRESSIVE;
-         } else if (var1 < 9) {
+         } else if (nextInt < 9) {
             return WEAK;
          } else {
-            return var1 < 11 ? BROWN : NORMAL;
+            return nextInt < 11 ? BROWN : NORMAL;
          }
       }
 
@@ -752,12 +754,12 @@ public class Panda extends Animal {
       }
    }
 
-   static class PandaMoveControl extends MoveControl {
+   private static class PandaMoveControl extends MoveControl {
       private final Panda panda;
 
-      public PandaMoveControl(Panda var1) {
-         super(var1);
-         this.panda = var1;
+      public PandaMoveControl(final Panda mob) {
+         super(mob);
+         this.panda = mob;
       }
 
       public void tick() {
@@ -767,12 +769,12 @@ public class Panda extends Animal {
       }
    }
 
-   static class PandaAttackGoal extends MeleeAttackGoal {
+   private static class PandaAttackGoal extends MeleeAttackGoal {
       private final Panda panda;
 
-      public PandaAttackGoal(Panda var1, double var2, boolean var4) {
-         super(var1, var2, var4);
-         this.panda = var1;
+      public PandaAttackGoal(final Panda mob, final double speedModifier, final boolean trackTarget) {
+         super(mob, speedModifier, trackTarget);
+         this.panda = mob;
       }
 
       public boolean canUse() {
@@ -780,16 +782,16 @@ public class Panda extends Animal {
       }
    }
 
-   static class PandaLookAtPlayerGoal extends LookAtPlayerGoal {
+   private static class PandaLookAtPlayerGoal extends LookAtPlayerGoal {
       private final Panda panda;
 
-      public PandaLookAtPlayerGoal(Panda var1, Class<? extends LivingEntity> var2, float var3) {
-         super(var1, var2, var3);
-         this.panda = var1;
+      public PandaLookAtPlayerGoal(final Panda mob, final Class<? extends LivingEntity> lookAtType, final float lookDistance) {
+         super(mob, lookAtType, lookDistance);
+         this.panda = mob;
       }
 
-      public void setTarget(LivingEntity var1) {
-         this.lookAt = var1;
+      public void setTarget(final LivingEntity entity) {
+         this.lookAt = entity;
       }
 
       public boolean canContinueToUse() {
@@ -801,11 +803,11 @@ public class Panda extends Animal {
             return false;
          } else {
             if (this.lookAt == null) {
-               ServerLevel var1 = getServerLevel(this.mob);
+               ServerLevel level = getServerLevel(this.mob);
                if (this.lookAtType == Player.class) {
-                  this.lookAt = var1.getNearestPlayer(this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+                  this.lookAt = level.getNearestPlayer(this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
                } else {
-                  this.lookAt = var1.getNearestEntity(this.mob.level().getEntitiesOfClass(this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0, (double)this.lookDistance), (var0) -> true), this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+                  this.lookAt = level.getNearestEntity(this.mob.level().getEntitiesOfClass(this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0, (double)this.lookDistance), (entity) -> true), this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
                }
             }
 
@@ -821,12 +823,12 @@ public class Panda extends Animal {
       }
    }
 
-   static class PandaRollGoal extends Goal {
+   private static class PandaRollGoal extends Goal {
       private final Panda panda;
 
-      public PandaRollGoal(Panda var1) {
+      public PandaRollGoal(final Panda panda) {
          super();
-         this.panda = var1;
+         this.panda = panda;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK, Goal.Flag.JUMP));
       }
 
@@ -835,12 +837,12 @@ public class Panda extends Animal {
             if (!this.panda.canPerformAction()) {
                return false;
             } else {
-               float var1 = this.panda.getYRot() * 0.017453292F;
-               float var2 = -Mth.sin((double)var1);
-               float var3 = Mth.cos((double)var1);
-               int var4 = (double)Math.abs(var2) > 0.5 ? Mth.sign((double)var2) : 0;
-               int var5 = (double)Math.abs(var3) > 0.5 ? Mth.sign((double)var3) : 0;
-               if (this.panda.level().getBlockState(this.panda.blockPosition().offset(var4, -1, var5)).isAir()) {
+               float angle = this.panda.getYRot() * 0.017453292F;
+               float xDir = -Mth.sin((double)angle);
+               float zDir = Mth.cos((double)angle);
+               int xStep = (double)Math.abs(xDir) > 0.5 ? Mth.sign((double)xDir) : 0;
+               int zStep = (double)Math.abs(zDir) > 0.5 ? Mth.sign((double)zDir) : 0;
+               if (this.panda.level().getBlockState(this.panda.blockPosition().offset(xStep, -1, zStep)).isAir()) {
                   return true;
                } else if (this.panda.isPlayful() && this.panda.random.nextInt(reducedTickDelay(60)) == 1) {
                   return true;
@@ -866,12 +868,12 @@ public class Panda extends Animal {
       }
    }
 
-   static class PandaSneezeGoal extends Goal {
+   private static class PandaSneezeGoal extends Goal {
       private final Panda panda;
 
-      public PandaSneezeGoal(Panda var1) {
+      public PandaSneezeGoal(final Panda panda) {
          super();
-         this.panda = var1;
+         this.panda = panda;
       }
 
       public boolean canUse() {
@@ -895,13 +897,13 @@ public class Panda extends Animal {
       }
    }
 
-   static class PandaBreedGoal extends BreedGoal {
+   private static class PandaBreedGoal extends BreedGoal {
       private final Panda panda;
       private int unhappyCooldown;
 
-      public PandaBreedGoal(Panda var1, double var2) {
-         super(var1, var2);
-         this.panda = var1;
+      public PandaBreedGoal(final Panda panda, final double speedModifier) {
+         super(panda, speedModifier);
+         this.panda = panda;
       }
 
       public boolean canUse() {
@@ -911,8 +913,8 @@ public class Panda extends Animal {
                   this.panda.setUnhappyCounter(32);
                   this.unhappyCooldown = this.panda.tickCount + 600;
                   if (this.panda.isEffectiveAi()) {
-                     Player var1 = this.level.getNearestPlayer(Panda.BREED_TARGETING, this.panda);
-                     this.panda.lookAtPlayerGoal.setTarget(var1);
+                     Player player = this.level.getNearestPlayer(Panda.BREED_TARGETING, this.panda);
+                     this.panda.lookAtPlayerGoal.setTarget(player);
                   }
                }
 
@@ -926,15 +928,15 @@ public class Panda extends Animal {
       }
 
       private boolean canFindBamboo() {
-         BlockPos var1 = this.panda.blockPosition();
-         BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
+         BlockPos pandaPos = this.panda.blockPosition();
+         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-         for(int var3 = 0; var3 < 3; ++var3) {
-            for(int var4 = 0; var4 < 8; ++var4) {
-               for(int var5 = 0; var5 <= var4; var5 = var5 > 0 ? -var5 : 1 - var5) {
-                  for(int var6 = var5 < var4 && var5 > -var4 ? var4 : 0; var6 <= var4; var6 = var6 > 0 ? -var6 : 1 - var6) {
-                     var2.setWithOffset(var1, var5, var3, var6);
-                     if (this.level.getBlockState(var2).is(Blocks.BAMBOO)) {
+         for(int yOff = 0; yOff < 3; ++yOff) {
+            for(int r = 0; r < 8; ++r) {
+               for(int x = 0; x <= r; x = x > 0 ? -x : 1 - x) {
+                  for(int z = x < r && x > -r ? r : 0; z <= r; z = z > 0 ? -z : 1 - z) {
+                     pos.setWithOffset(pandaPos, x, yOff, z);
+                     if (this.level.getBlockState(pos).is(Blocks.BAMBOO)) {
                         return true;
                      }
                   }
@@ -946,12 +948,12 @@ public class Panda extends Animal {
       }
    }
 
-   static class PandaAvoidGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
+   private static class PandaAvoidGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
       private final Panda panda;
 
-      public PandaAvoidGoal(Panda var1, Class<T> var2, float var3, double var4, double var6) {
-         super(var1, var2, var3, var4, var6, EntitySelector.NO_SPECTATORS);
-         this.panda = var1;
+      public PandaAvoidGoal(final Panda panda, final Class<T> avoidClass, final float maxDist, final double walkSpeedModifier, final double sprintSpeedModifier) {
+         super(panda, avoidClass, maxDist, walkSpeedModifier, sprintSpeedModifier, EntitySelector.NO_SPECTATORS);
+         this.panda = panda;
       }
 
       public boolean canUse() {
@@ -959,10 +961,11 @@ public class Panda extends Animal {
       }
    }
 
-   class PandaSitGoal extends Goal {
+   private class PandaSitGoal extends Goal {
       private int cooldown;
 
       public PandaSitGoal() {
+         Objects.requireNonNull(Panda.this);
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
@@ -996,9 +999,9 @@ public class Panda extends Animal {
 
       public void start() {
          if (Panda.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()) {
-            List var1 = Panda.this.level().getEntitiesOfClass(ItemEntity.class, Panda.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Panda::canPickUpAndEat);
-            if (!var1.isEmpty()) {
-               Panda.this.getNavigation().moveTo((Entity)var1.getFirst(), 1.2000000476837158);
+            List<ItemEntity> items = Panda.this.level().getEntitiesOfClass(ItemEntity.class, Panda.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Panda::canPickUpAndEat);
+            if (!items.isEmpty()) {
+               Panda.this.getNavigation().moveTo((Entity)items.getFirst(), 1.2000000476837158);
             }
          } else {
             Panda.this.tryToSit();
@@ -1008,25 +1011,25 @@ public class Panda extends Animal {
       }
 
       public void stop() {
-         ItemStack var1 = Panda.this.getItemBySlot(EquipmentSlot.MAINHAND);
-         if (!var1.isEmpty()) {
-            Panda.this.spawnAtLocation(getServerLevel(Panda.this.level()), var1);
+         ItemStack itemStack = Panda.this.getItemBySlot(EquipmentSlot.MAINHAND);
+         if (!itemStack.isEmpty()) {
+            Panda.this.spawnAtLocation(getServerLevel(Panda.this.level()), itemStack);
             Panda.this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-            int var2 = Panda.this.isLazy() ? Panda.this.random.nextInt(50) + 10 : Panda.this.random.nextInt(150) + 10;
-            this.cooldown = Panda.this.tickCount + var2 * 20;
+            int waitSeconds = Panda.this.isLazy() ? Panda.this.random.nextInt(50) + 10 : Panda.this.random.nextInt(150) + 10;
+            this.cooldown = Panda.this.tickCount + waitSeconds * 20;
          }
 
          Panda.this.sit(false);
       }
    }
 
-   static class PandaLieOnBackGoal extends Goal {
+   private static class PandaLieOnBackGoal extends Goal {
       private final Panda panda;
       private int cooldown;
 
-      public PandaLieOnBackGoal(Panda var1) {
+      public PandaLieOnBackGoal(final Panda panda) {
          super();
-         this.panda = var1;
+         this.panda = panda;
       }
 
       public boolean canUse() {
@@ -1052,12 +1055,12 @@ public class Panda extends Animal {
       }
    }
 
-   static class PandaHurtByTargetGoal extends HurtByTargetGoal {
+   private static class PandaHurtByTargetGoal extends HurtByTargetGoal {
       private final Panda panda;
 
-      public PandaHurtByTargetGoal(Panda var1, Class<?>... var2) {
-         super(var1, var2);
-         this.panda = var1;
+      public PandaHurtByTargetGoal(final Panda mob, final Class<?>... ignoreDamageFromTheseTypes) {
+         super(mob, ignoreDamageFromTheseTypes);
+         this.panda = mob;
       }
 
       public boolean canContinueToUse() {
@@ -1069,20 +1072,20 @@ public class Panda extends Animal {
          }
       }
 
-      protected void alertOther(Mob var1, LivingEntity var2) {
-         if (var1 instanceof Panda && var1.isAggressive()) {
-            var1.setTarget(var2);
+      protected void alertOther(final Mob other, final LivingEntity hurtByMob) {
+         if (other instanceof Panda && other.isAggressive()) {
+            other.setTarget(hurtByMob);
          }
 
       }
    }
 
-   static class PandaPanicGoal extends PanicGoal {
+   private static class PandaPanicGoal extends PanicGoal {
       private final Panda panda;
 
-      public PandaPanicGoal(Panda var1, double var2) {
-         super(var1, var2, DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES);
-         this.panda = var1;
+      public PandaPanicGoal(final Panda mob, final double speedModifier) {
+         super(mob, speedModifier, DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES);
+         this.panda = mob;
       }
 
       public boolean canContinueToUse() {

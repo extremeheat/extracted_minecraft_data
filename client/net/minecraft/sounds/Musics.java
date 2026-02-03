@@ -20,8 +20,8 @@ public class Musics {
       super();
    }
 
-   public static Music createGameMusic(Holder<SoundEvent> var0) {
-      return new Music(var0, 12000, 24000, false);
+   public static Music createGameMusic(final Holder<SoundEvent> soundEvent) {
+      return new Music(soundEvent, 12000, 24000, false);
    }
 
    static {

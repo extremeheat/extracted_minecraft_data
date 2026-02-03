@@ -24,67 +24,67 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class CopyBlockState extends LootItemConditionalFunction {
-   public static final MapCodec<CopyBlockState> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter((var0x) -> var0x.block), Codec.STRING.listOf().fieldOf("properties").forGetter((var0x) -> var0x.properties.stream().map(Property::getName).toList()))).apply(var0, CopyBlockState::new));
+   public static final MapCodec<CopyBlockState> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter((f) -> f.block), Codec.STRING.listOf().fieldOf("properties").forGetter((f) -> f.properties.stream().map(Property::getName).toList()))).apply(i, CopyBlockState::new));
    private final Holder<Block> block;
    private final Set<Property<?>> properties;
 
-   CopyBlockState(List<LootItemCondition> var1, Holder<Block> var2, Set<Property<?>> var3) {
-      super(var1);
-      this.block = var2;
-      this.properties = var3;
+   private CopyBlockState(final List<LootItemCondition> predicates, final Holder<Block> block, final Set<Property<?>> properties) {
+      super(predicates);
+      this.block = block;
+      this.properties = properties;
    }
 
-   private CopyBlockState(List<LootItemCondition> var1, Holder<Block> var2, List<String> var3) {
-      Stream var10003 = var3.stream();
-      StateDefinition var10004 = ((Block)var2.value()).getStateDefinition();
+   private CopyBlockState(final List<LootItemCondition> predicates, final Holder<Block> block, final List<String> propertyNames) {
+      Stream var10003 = propertyNames.stream();
+      StateDefinition var10004 = (block.value()).getStateDefinition();
       Objects.requireNonNull(var10004);
-      this(var1, var2, (Set)var10003.map(var10004::getProperty).filter(Objects::nonNull).collect(Collectors.toSet()));
+      this(predicates, block, (Set)var10003.map(var10004::getProperty).filter(Objects::nonNull).collect(Collectors.toSet()));
    }
 
-   public LootItemFunctionType<CopyBlockState> getType() {
-      return LootItemFunctions.COPY_STATE;
+   public MapCodec<CopyBlockState> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Set.of(LootContextParams.BLOCK_STATE);
    }
 
-   protected ItemStack run(ItemStack var1, LootContext var2) {
-      BlockState var3 = (BlockState)var2.getOptionalParameter(LootContextParams.BLOCK_STATE);
-      if (var3 != null) {
-         var1.update(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY, (var2x) -> {
-            for(Property var4 : this.properties) {
-               if (var3.hasProperty(var4)) {
-                  var2x = var2x.with(var4, var3);
+   protected ItemStack run(final ItemStack itemStack, final LootContext context) {
+      BlockState state = (BlockState)context.getOptionalParameter(LootContextParams.BLOCK_STATE);
+      if (state != null) {
+         itemStack.update(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY, (itemState) -> {
+            for(Property<?> property : this.properties) {
+               if (state.hasProperty(property)) {
+                  itemState = itemState.with(property, state);
                }
             }
 
-            return var2x;
+            return itemState;
          });
       }
 
-      return var1;
+      return itemStack;
    }
 
-   public static Builder copyState(Block var0) {
-      return new Builder(var0);
+   public static Builder copyState(final Block block) {
+      return new Builder(block);
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
       private final Holder<Block> block;
       private final ImmutableSet.Builder<Property<?>> properties = ImmutableSet.builder();
 
-      Builder(Block var1) {
+      private Builder(final Block block) {
          super();
-         this.block = var1.builtInRegistryHolder();
+         this.block = block.builtInRegistryHolder();
       }
 
-      public Builder copy(Property<?> var1) {
-         if (!((Block)this.block.value()).getStateDefinition().getProperties().contains(var1)) {
-            String var10002 = String.valueOf(var1);
+      public Builder copy(final Property<?> property) {
+         if (!((Block)this.block.value()).getStateDefinition().getProperties().contains(property)) {
+            String var10002 = String.valueOf(property);
             throw new IllegalStateException("Property " + var10002 + " is not present on block " + String.valueOf(this.block));
          } else {
-            this.properties.add(var1);
+            this.properties.add(property);
             return this;
          }
       }
@@ -95,11 +95,6 @@ public class CopyBlockState extends LootItemConditionalFunction {
 
       public LootItemFunction build() {
          return new CopyBlockState(this.getConditions(), this.block, this.properties.build());
-      }
-
-      // $FF: synthetic method
-      protected LootItemConditionalFunction.Builder getThis() {
-         return this.getThis();
       }
    }
 }

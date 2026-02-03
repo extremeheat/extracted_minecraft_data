@@ -29,9 +29,9 @@ public abstract class AbstractSliderButton extends AbstractWidget.WithInactiveMe
    protected boolean canChangeValue;
    private boolean dragging;
 
-   public AbstractSliderButton(int var1, int var2, int var3, int var4, Component var5, double var6) {
-      super(var1, var2, var3, var4, var5);
-      this.value = var6;
+   public AbstractSliderButton(final int x, final int y, final int width, final int height, final Component message, final double initialValue) {
+      super(x, y, width, height, message);
+      this.value = initialValue;
    }
 
    private Identifier getSprite() {
@@ -46,61 +46,61 @@ public abstract class AbstractSliderButton extends AbstractWidget.WithInactiveMe
       return Component.translatable("gui.narrate.slider", this.getMessage());
    }
 
-   public void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
+   public void updateWidgetNarration(final NarrationElementOutput output) {
+      output.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
       if (this.active) {
          if (this.isFocused()) {
             if (this.canChangeValue) {
-               var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.focused"));
+               output.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.focused"));
             } else {
-               var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.focused.keyboard_cannot_change_value"));
+               output.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.focused.keyboard_cannot_change_value"));
             }
          } else {
-            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.hovered"));
+            output.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.hovered"));
          }
       }
 
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight(), ARGB.white(this.alpha));
-      this.renderScrollingStringOverContents(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE), this.getMessage(), 2);
+   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight(), ARGB.white(this.alpha));
+      this.renderScrollingStringOverContents(graphics.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE), this.getMessage(), 2);
       if (this.isHovered()) {
-         var1.requestCursor(this.dragging ? CursorTypes.RESIZE_EW : CursorTypes.POINTING_HAND);
+         graphics.requestCursor(this.dragging ? CursorTypes.RESIZE_EW : CursorTypes.POINTING_HAND);
       }
 
    }
 
-   public void onClick(MouseButtonEvent var1, boolean var2) {
+   public void onClick(final MouseButtonEvent event, final boolean doubleClick) {
       this.dragging = this.active;
-      this.setValueFromMouse(var1);
+      this.setValueFromMouse(event);
    }
 
-   public void setFocused(boolean var1) {
-      super.setFocused(var1);
-      if (!var1) {
+   public void setFocused(final boolean focused) {
+      super.setFocused(focused);
+      if (!focused) {
          this.canChangeValue = false;
       } else {
-         InputType var2 = Minecraft.getInstance().getLastInputType();
-         if (var2 == InputType.MOUSE || var2 == InputType.KEYBOARD_TAB) {
+         InputType lastInputType = Minecraft.getInstance().getLastInputType();
+         if (lastInputType == InputType.MOUSE || lastInputType == InputType.KEYBOARD_TAB) {
             this.canChangeValue = true;
          }
 
       }
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (var1.isSelection()) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (event.isSelection()) {
          this.canChangeValue = !this.canChangeValue;
          return true;
       } else {
          if (this.canChangeValue) {
-            boolean var2 = var1.isLeft();
-            boolean var3 = var1.isRight();
-            if (var2 || var3) {
-               float var4 = var2 ? -1.0F : 1.0F;
-               this.setValue(this.value + (double)(var4 / (float)(this.width - 8)));
+            boolean left = event.isLeft();
+            boolean right = event.isRight();
+            if (left || right) {
+               float direction = left ? -1.0F : 1.0F;
+               this.setValue(this.value + (double)(direction / (float)(this.width - 8)));
                return true;
             }
          }
@@ -109,29 +109,29 @@ public abstract class AbstractSliderButton extends AbstractWidget.WithInactiveMe
       }
    }
 
-   private void setValueFromMouse(MouseButtonEvent var1) {
-      this.setValue((var1.x() - (double)(this.getX() + 4)) / (double)(this.width - 8));
+   private void setValueFromMouse(final MouseButtonEvent event) {
+      this.setValue((event.x() - (double)(this.getX() + 4)) / (double)(this.width - 8));
    }
 
-   protected void setValue(double var1) {
-      double var3 = this.value;
-      this.value = Mth.clamp(var1, 0.0, 1.0);
-      if (var3 != this.value) {
+   protected void setValue(final double newValue) {
+      double oldValue = this.value;
+      this.value = Mth.clamp(newValue, 0.0, 1.0);
+      if (oldValue != this.value) {
          this.applyValue();
       }
 
       this.updateMessage();
    }
 
-   protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
-      this.setValueFromMouse(var1);
-      super.onDrag(var1, var2, var4);
+   protected void onDrag(final MouseButtonEvent event, final double dx, final double dy) {
+      this.setValueFromMouse(event);
+      super.onDrag(event, dx, dy);
    }
 
-   public void playDownSound(SoundManager var1) {
+   public void playDownSound(final SoundManager soundManager) {
    }
 
-   public void onRelease(MouseButtonEvent var1) {
+   public void onRelease(final MouseButtonEvent event) {
       this.dragging = false;
       super.playDownSound(Minecraft.getInstance().getSoundManager());
    }

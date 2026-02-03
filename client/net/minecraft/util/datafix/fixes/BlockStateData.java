@@ -12,8 +12,8 @@ import org.jspecify.annotations.Nullable;
 public class BlockStateData {
    private static final @Nullable Dynamic<?>[] MAP = new Dynamic[4096];
    private static final @Nullable Dynamic<?>[] BLOCK_DEFAULTS = new Dynamic[256];
-   private static final Object2IntMap<Dynamic<?>> ID_BY_OLD = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (var0) -> var0.defaultReturnValue(-1));
-   private static final Object2IntMap<String> ID_BY_OLD_NAME = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (var0) -> var0.defaultReturnValue(-1));
+   private static final Object2IntMap<Dynamic<?>> ID_BY_OLD = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (map) -> map.defaultReturnValue(-1));
+   private static final Object2IntMap<String> ID_BY_OLD_NAME = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (map) -> map.defaultReturnValue(-1));
    static final String FILTER_ME = "%%FILTER_ME%%";
    private static final String TAG_NAME = "Name";
    private static final String TAG_PROPERTIES = "Properties";
@@ -415,74 +415,74 @@ public class BlockStateData {
       super();
    }
 
-   private static Dynamic<?> create(String var0) {
-      return (new Dynamic(JavaOps.INSTANCE, Map.of("Name", var0))).convert(NbtOps.INSTANCE);
+   private static Dynamic<?> create(final String name) {
+      return (new Dynamic(JavaOps.INSTANCE, Map.of("Name", name))).convert(NbtOps.INSTANCE);
    }
 
-   private static Dynamic<?> create(String var0, Map<String, String> var1) {
-      return (new Dynamic(JavaOps.INSTANCE, Map.of("Name", var0, "Properties", var1))).convert(NbtOps.INSTANCE);
+   private static Dynamic<?> create(final String name, final Map<String, String> properties) {
+      return (new Dynamic(JavaOps.INSTANCE, Map.of("Name", name, "Properties", properties))).convert(NbtOps.INSTANCE);
    }
 
-   private static void register(int var0, Dynamic<?> var1, Dynamic<?>... var2) {
-      MAP[var0] = var1;
-      int var3 = var0 >> 4;
-      if (BLOCK_DEFAULTS[var3] == null) {
-         BLOCK_DEFAULTS[var3] = var1;
+   private static void register(final int id, final Dynamic<?> tag, final Dynamic<?>... legacy) {
+      MAP[id] = tag;
+      int blockId = id >> 4;
+      if (BLOCK_DEFAULTS[blockId] == null) {
+         BLOCK_DEFAULTS[blockId] = tag;
       }
 
-      for(Dynamic var7 : var2) {
-         String var8 = var7.get("Name").asString("");
-         ID_BY_OLD_NAME.putIfAbsent(var8, var0);
-         ID_BY_OLD.put(var7, var0);
+      for(Dynamic<?> oldTag : legacy) {
+         String name = oldTag.get("Name").asString("");
+         ID_BY_OLD_NAME.putIfAbsent(name, id);
+         ID_BY_OLD.put(oldTag, id);
       }
 
    }
 
    private static void finalizeMaps() {
-      for(int var0 = 0; var0 < MAP.length; ++var0) {
-         if (MAP[var0] == null) {
-            MAP[var0] = BLOCK_DEFAULTS[var0 >> 4];
+      for(int i = 0; i < MAP.length; ++i) {
+         if (MAP[i] == null) {
+            MAP[i] = BLOCK_DEFAULTS[i >> 4];
          }
       }
 
    }
 
-   public static Dynamic<?> upgradeBlockStateTag(Dynamic<?> var0) {
-      int var1 = ID_BY_OLD.getInt(var0);
-      if (var1 >= 0 && var1 < MAP.length) {
-         Dynamic var2 = MAP[var1];
-         return var2 == null ? var0 : var2;
+   public static Dynamic<?> upgradeBlockStateTag(final Dynamic<?> oldTag) {
+      int id = ID_BY_OLD.getInt(oldTag);
+      if (id >= 0 && id < MAP.length) {
+         Dynamic<?> tag = MAP[id];
+         return tag == null ? oldTag : tag;
       } else {
-         return var0;
+         return oldTag;
       }
    }
 
-   public static String upgradeBlock(String var0) {
-      int var1 = ID_BY_OLD_NAME.getInt(var0);
-      if (var1 >= 0 && var1 < MAP.length) {
-         Dynamic var2 = MAP[var1];
-         return var2 == null ? var0 : var2.get("Name").asString("");
+   public static String upgradeBlock(final String oldName) {
+      int id = ID_BY_OLD_NAME.getInt(oldName);
+      if (id >= 0 && id < MAP.length) {
+         Dynamic<?> tag = MAP[id];
+         return tag == null ? oldName : tag.get("Name").asString("");
       } else {
-         return var0;
+         return oldName;
       }
    }
 
-   public static String upgradeBlock(int var0) {
-      if (var0 >= 0 && var0 < MAP.length) {
-         Dynamic var1 = MAP[var0];
-         return var1 == null ? "minecraft:air" : var1.get("Name").asString("");
+   public static String upgradeBlock(final int id) {
+      if (id >= 0 && id < MAP.length) {
+         Dynamic<?> tag = MAP[id];
+         return tag == null ? "minecraft:air" : tag.get("Name").asString("");
       } else {
          return "minecraft:air";
       }
    }
 
-   public static Dynamic<?> getTag(int var0) {
-      Dynamic var1 = null;
-      if (var0 >= 0 && var0 < MAP.length) {
-         var1 = MAP[var0];
+   public static Dynamic<?> getTag(final int id) {
+      Dynamic<?> tag = null;
+      if (id >= 0 && id < MAP.length) {
+         tag = MAP[id];
       }
 
-      return var1 == null ? MAP[0] : var1;
+      return tag == null ? MAP[0] : tag;
    }
 
    private static void bootstrap0() {

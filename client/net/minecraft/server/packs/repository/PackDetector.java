@@ -14,44 +14,44 @@ import org.jspecify.annotations.Nullable;
 public abstract class PackDetector<T> {
    private final DirectoryValidator validator;
 
-   protected PackDetector(DirectoryValidator var1) {
+   protected PackDetector(final DirectoryValidator validator) {
       super();
-      this.validator = var1;
+      this.validator = validator;
    }
 
-   public @Nullable T detectPackResources(Path var1, List<ForbiddenSymlinkInfo> var2) throws IOException {
-      Path var3 = var1;
+   public @Nullable T detectPackResources(final Path content, final List<ForbiddenSymlinkInfo> issues) throws IOException {
+      Path targetContext = content;
 
-      BasicFileAttributes var4;
+      BasicFileAttributes attributes;
       try {
-         var4 = Files.readAttributes(var1, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+         attributes = Files.readAttributes(content, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
       } catch (NoSuchFileException var6) {
          return null;
       }
 
-      if (var4.isSymbolicLink()) {
-         this.validator.validateSymlink(var1, var2);
-         if (!var2.isEmpty()) {
+      if (attributes.isSymbolicLink()) {
+         this.validator.validateSymlink(content, issues);
+         if (!issues.isEmpty()) {
             return null;
          }
 
-         var3 = Files.readSymbolicLink(var1);
-         var4 = Files.readAttributes(var3, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+         targetContext = Files.readSymbolicLink(content);
+         attributes = Files.readAttributes(targetContext, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
       }
 
-      if (var4.isDirectory()) {
-         this.validator.validateKnownDirectory(var3, var2);
-         if (!var2.isEmpty()) {
+      if (attributes.isDirectory()) {
+         this.validator.validateKnownDirectory(targetContext, issues);
+         if (!issues.isEmpty()) {
             return null;
          } else {
-            return (T)(!Files.isRegularFile(var3.resolve("pack.mcmeta"), new LinkOption[0]) ? null : this.createDirectoryPack(var3));
+            return (T)(!Files.isRegularFile(targetContext.resolve("pack.mcmeta"), new LinkOption[0]) ? null : this.createDirectoryPack(targetContext));
          }
       } else {
-         return (T)(var4.isRegularFile() && var3.getFileName().toString().endsWith(".zip") ? this.createZipPack(var3) : null);
+         return (T)(attributes.isRegularFile() && targetContext.getFileName().toString().endsWith(".zip") ? this.createZipPack(targetContext) : null);
       }
    }
 
-   protected abstract @Nullable T createZipPack(Path var1) throws IOException;
+   protected abstract @Nullable T createZipPack(final Path content) throws IOException;
 
-   protected abstract @Nullable T createDirectoryPack(Path var1) throws IOException;
+   protected abstract @Nullable T createDirectoryPack(final Path content) throws IOException;
 }

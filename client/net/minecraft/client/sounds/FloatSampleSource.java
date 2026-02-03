@@ -7,23 +7,23 @@ import java.nio.ByteBuffer;
 public interface FloatSampleSource extends FiniteAudioStream {
    int EXPECTED_MAX_FRAME_SIZE = 8192;
 
-   boolean readChunk(FloatConsumer var1) throws IOException;
+   boolean readChunk(FloatConsumer output) throws IOException;
 
-   default ByteBuffer read(int var1) throws IOException {
-      ChunkedSampleByteBuf var2 = new ChunkedSampleByteBuf(var1 + 8192);
+   default ByteBuffer read(final int expectedSize) throws IOException {
+      ChunkedSampleByteBuf output = new ChunkedSampleByteBuf(expectedSize + 8192);
 
-      while(this.readChunk(var2) && var2.size() < var1) {
+      while(this.readChunk(output) && output.size() < expectedSize) {
       }
 
-      return var2.get();
+      return output.get();
    }
 
    default ByteBuffer readAll() throws IOException {
-      ChunkedSampleByteBuf var1 = new ChunkedSampleByteBuf(16384);
+      ChunkedSampleByteBuf output = new ChunkedSampleByteBuf(16384);
 
-      while(this.readChunk(var1)) {
+      while(this.readChunk(output)) {
       }
 
-      return var1.get();
+      return output.get();
    }
 }

@@ -12,19 +12,19 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BlastFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
    private static final Component DEFAULT_NAME = Component.translatable("container.blast_furnace");
 
-   public BlastFurnaceBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.BLAST_FURNACE, var1, var2, RecipeType.BLASTING);
+   public BlastFurnaceBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.BLAST_FURNACE, worldPosition, blockState, RecipeType.BLASTING);
    }
 
    protected Component getDefaultName() {
       return DEFAULT_NAME;
    }
 
-   protected int getBurnDuration(FuelValues var1, ItemStack var2) {
-      return super.getBurnDuration(var1, var2) / 2;
+   protected int getBurnDuration(final FuelValues fuelValues, final ItemStack itemStack) {
+      return super.getBurnDuration(fuelValues, itemStack) / 2;
    }
 
-   protected AbstractContainerMenu createMenu(int var1, Inventory var2) {
-      return new BlastFurnaceMenu(var1, var2, this, this.dataAccess);
+   protected AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
+      return new BlastFurnaceMenu(containerId, inventory, this, this.dataAccess);
    }
 }

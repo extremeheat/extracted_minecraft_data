@@ -1,22 +1,20 @@
 package net.minecraft.world;
 
 public record Stopwatch(long creationTime, long accumulatedElapsedTime) {
-   public Stopwatch(long var1) {
-      this(var1, 0L);
+   public Stopwatch(final long creationTime) {
+      this(creationTime, 0L);
    }
 
-   public Stopwatch(long var1, long var3) {
+   public Stopwatch {
       super();
-      this.creationTime = var1;
-      this.accumulatedElapsedTime = var3;
    }
 
-   public long elapsedMilliseconds(long var1) {
-      long var3 = var1 - this.creationTime;
-      return this.accumulatedElapsedTime + var3;
+   public long elapsedMilliseconds(final long currentTime) {
+      long timeSinceInstanceCreation = currentTime - this.creationTime;
+      return this.accumulatedElapsedTime + timeSinceInstanceCreation;
    }
 
-   public double elapsedSeconds(long var1) {
-      return (double)this.elapsedMilliseconds(var1) / 1000.0;
+   public double elapsedSeconds(final long currentTime) {
+      return (double)this.elapsedMilliseconds(currentTime) / 1000.0;
    }
 }

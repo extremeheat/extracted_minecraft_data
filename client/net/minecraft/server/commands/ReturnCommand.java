@@ -21,53 +21,53 @@ public class ReturnCommand {
       super();
    }
 
-   public static <T extends ExecutionCommandSource<T>> void register(CommandDispatcher<T> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)LiteralArgumentBuilder.literal("return").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(RequiredArgumentBuilder.argument("value", IntegerArgumentType.integer()).executes(new ReturnValueCustomExecutor()))).then(LiteralArgumentBuilder.literal("fail").executes(new ReturnFailCustomExecutor()))).then(LiteralArgumentBuilder.literal("run").forward(var0.getRoot(), new ReturnFromCommandCustomModifier(), false)));
+   public static <T extends ExecutionCommandSource<T>> void register(final CommandDispatcher<T> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)LiteralArgumentBuilder.literal("return").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(RequiredArgumentBuilder.argument("value", IntegerArgumentType.integer()).executes(new ReturnValueCustomExecutor()))).then(LiteralArgumentBuilder.literal("fail").executes(new ReturnFailCustomExecutor()))).then(LiteralArgumentBuilder.literal("run").forward(dispatcher.getRoot(), new ReturnFromCommandCustomModifier(), false)));
    }
 
-   static class ReturnValueCustomExecutor<T extends ExecutionCommandSource<T>> implements CustomCommandExecutor.CommandAdapter<T> {
-      ReturnValueCustomExecutor() {
+   private static class ReturnValueCustomExecutor<T extends ExecutionCommandSource<T>> implements CustomCommandExecutor.CommandAdapter<T> {
+      private ReturnValueCustomExecutor() {
          super();
       }
 
-      public void run(T var1, ContextChain<T> var2, ChainModifiers var3, ExecutionControl<T> var4) {
-         int var5 = IntegerArgumentType.getInteger(var2.getTopContext(), "value");
-         var1.callback().onSuccess(var5);
-         Frame var6 = var4.currentFrame();
-         var6.returnSuccess(var5);
-         var6.discard();
+      public void run(final T sender, final ContextChain<T> currentStep, final ChainModifiers modifiers, final ExecutionControl<T> output) {
+         int returnValue = IntegerArgumentType.getInteger(currentStep.getTopContext(), "value");
+         sender.callback().onSuccess(returnValue);
+         Frame frame = output.currentFrame();
+         frame.returnSuccess(returnValue);
+         frame.discard();
       }
    }
 
-   static class ReturnFailCustomExecutor<T extends ExecutionCommandSource<T>> implements CustomCommandExecutor.CommandAdapter<T> {
-      ReturnFailCustomExecutor() {
+   private static class ReturnFailCustomExecutor<T extends ExecutionCommandSource<T>> implements CustomCommandExecutor.CommandAdapter<T> {
+      private ReturnFailCustomExecutor() {
          super();
       }
 
-      public void run(T var1, ContextChain<T> var2, ChainModifiers var3, ExecutionControl<T> var4) {
-         var1.callback().onFailure();
-         Frame var5 = var4.currentFrame();
-         var5.returnFailure();
-         var5.discard();
+      public void run(final T sender, final ContextChain<T> currentStep, final ChainModifiers modifiers, final ExecutionControl<T> output) {
+         sender.callback().onFailure();
+         Frame frame = output.currentFrame();
+         frame.returnFailure();
+         frame.discard();
       }
    }
 
-   static class ReturnFromCommandCustomModifier<T extends ExecutionCommandSource<T>> implements CustomModifierExecutor.ModifierAdapter<T> {
-      ReturnFromCommandCustomModifier() {
+   private static class ReturnFromCommandCustomModifier<T extends ExecutionCommandSource<T>> implements CustomModifierExecutor.ModifierAdapter<T> {
+      private ReturnFromCommandCustomModifier() {
          super();
       }
 
-      public void apply(T var1, List<T> var2, ContextChain<T> var3, ChainModifiers var4, ExecutionControl<T> var5) {
-         if (var2.isEmpty()) {
-            if (var4.isReturn()) {
-               var5.queueNext(FallthroughTask.instance());
+      public void apply(final T originalSource, final List<T> currentSources, final ContextChain<T> currentStep, final ChainModifiers modifiers, final ExecutionControl<T> output) {
+         if (currentSources.isEmpty()) {
+            if (modifiers.isReturn()) {
+               output.queueNext(FallthroughTask.instance());
             }
 
          } else {
-            var5.currentFrame().discard();
-            ContextChain var6 = var3.nextStage();
-            String var7 = var6.getTopContext().getInput();
-            var5.queueNext(new BuildContexts.Continuation(var7, var6, var4.setReturn(), var1, var2));
+            output.currentFrame().discard();
+            ContextChain<T> nextState = currentStep.nextStage();
+            String command = nextState.getTopContext().getInput();
+            output.queueNext(new BuildContexts.Continuation(command, nextState, modifiers.setReturn(), originalSource, currentSources));
          }
       }
    }

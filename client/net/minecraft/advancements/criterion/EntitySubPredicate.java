@@ -14,5 +14,5 @@ public interface EntitySubPredicate {
 
    MapCodec<? extends EntitySubPredicate> codec();
 
-   boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3);
+   boolean matches(Entity entity, ServerLevel level, @Nullable Vec3 position);
 }

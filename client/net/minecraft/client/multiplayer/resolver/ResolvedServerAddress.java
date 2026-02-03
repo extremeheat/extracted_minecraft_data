@@ -11,22 +11,22 @@ public interface ResolvedServerAddress {
 
    InetSocketAddress asInetSocketAddress();
 
-   static ResolvedServerAddress from(final InetSocketAddress var0) {
+   static ResolvedServerAddress from(final InetSocketAddress address) {
       return new ResolvedServerAddress() {
          public String getHostName() {
-            return var0.getAddress().getHostName();
+            return address.getAddress().getHostName();
          }
 
          public String getHostIp() {
-            return var0.getAddress().getHostAddress();
+            return address.getAddress().getHostAddress();
          }
 
          public int getPort() {
-            return var0.getPort();
+            return address.getPort();
          }
 
          public InetSocketAddress asInetSocketAddress() {
-            return var0;
+            return address;
          }
       };
    }

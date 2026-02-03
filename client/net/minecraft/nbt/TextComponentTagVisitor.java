@@ -3,10 +3,10 @@ package net.minecraft.nbt;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -47,109 +47,109 @@ public class TextComponentTagVisitor implements TagVisitor {
    private int depth;
    private final MutableComponent result = Component.empty();
 
-   public TextComponentTagVisitor(String var1) {
+   public TextComponentTagVisitor(final String indentation) {
       super();
-      this.indentation = var1;
+      this.indentation = indentation;
    }
 
-   public Component visit(Tag var1) {
-      var1.accept((TagVisitor)this);
+   public Component visit(final Tag tag) {
+      tag.accept((TagVisitor)this);
       return this.result;
    }
 
-   public void visitString(StringTag var1) {
-      String var2 = StringTag.quoteAndEscape(var1.value());
-      String var3 = var2.substring(0, 1);
-      MutableComponent var4 = Component.literal(var2.substring(1, var2.length() - 1)).withStyle(SYNTAX_HIGHLIGHTING_STRING);
-      this.result.append(var3).append((Component)var4).append(var3);
+   public void visitString(final StringTag tag) {
+      String quoted = StringTag.quoteAndEscape(tag.value());
+      String quote = quoted.substring(0, 1);
+      Component inner = Component.literal(quoted.substring(1, quoted.length() - 1)).withStyle(SYNTAX_HIGHLIGHTING_STRING);
+      this.result.append(quote).append(inner).append(quote);
    }
 
-   public void visitByte(ByteTag var1) {
-      this.result.append((Component)Component.literal(String.valueOf(var1.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(BYTE_TYPE);
+   public void visitByte(final ByteTag tag) {
+      this.result.append((Component)Component.literal(String.valueOf(tag.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(BYTE_TYPE);
    }
 
-   public void visitShort(ShortTag var1) {
-      this.result.append((Component)Component.literal(String.valueOf(var1.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(SHORT_TYPE);
+   public void visitShort(final ShortTag tag) {
+      this.result.append((Component)Component.literal(String.valueOf(tag.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(SHORT_TYPE);
    }
 
-   public void visitInt(IntTag var1) {
-      this.result.append((Component)Component.literal(String.valueOf(var1.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER));
+   public void visitInt(final IntTag tag) {
+      this.result.append((Component)Component.literal(String.valueOf(tag.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER));
    }
 
-   public void visitLong(LongTag var1) {
-      this.result.append((Component)Component.literal(String.valueOf(var1.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(LONG_TYPE);
+   public void visitLong(final LongTag tag) {
+      this.result.append((Component)Component.literal(String.valueOf(tag.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(LONG_TYPE);
    }
 
-   public void visitFloat(FloatTag var1) {
-      this.result.append((Component)Component.literal(String.valueOf(var1.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(FLOAT_TYPE);
+   public void visitFloat(final FloatTag tag) {
+      this.result.append((Component)Component.literal(String.valueOf(tag.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(FLOAT_TYPE);
    }
 
-   public void visitDouble(DoubleTag var1) {
-      this.result.append((Component)Component.literal(String.valueOf(var1.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(DOUBLE_TYPE);
+   public void visitDouble(final DoubleTag tag) {
+      this.result.append((Component)Component.literal(String.valueOf(tag.value())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(DOUBLE_TYPE);
    }
 
-   public void visitByteArray(ByteArrayTag var1) {
+   public void visitByteArray(final ByteArrayTag tag) {
       this.result.append("[").append(BYTE_ARRAY_TYPE).append(";");
-      byte[] var2 = var1.getAsByteArray();
+      byte[] data = tag.getAsByteArray();
 
-      for(int var3 = 0; var3 < var2.length && var3 < 128; ++var3) {
-         MutableComponent var4 = Component.literal(String.valueOf(var2[var3])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
-         this.result.append(" ").append((Component)var4).append(BYTE_ARRAY_TYPE);
-         if (var3 != var2.length - 1) {
+      for(int i = 0; i < data.length && i < 128; ++i) {
+         MutableComponent line = Component.literal(String.valueOf(data[i])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+         this.result.append(" ").append((Component)line).append(BYTE_ARRAY_TYPE);
+         if (i != data.length - 1) {
             this.result.append(ELEMENT_SEPARATOR);
          }
       }
 
-      if (var2.length > 128) {
+      if (data.length > 128) {
          this.result.append(FOLDED);
       }
 
       this.result.append("]");
    }
 
-   public void visitIntArray(IntArrayTag var1) {
+   public void visitIntArray(final IntArrayTag tag) {
       this.result.append("[").append(INT_TYPE).append(";");
-      int[] var2 = var1.getAsIntArray();
+      int[] data = tag.getAsIntArray();
 
-      for(int var3 = 0; var3 < var2.length && var3 < 128; ++var3) {
-         this.result.append(" ").append((Component)Component.literal(String.valueOf(var2[var3])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER));
-         if (var3 != var2.length - 1) {
+      for(int i = 0; i < data.length && i < 128; ++i) {
+         this.result.append(" ").append((Component)Component.literal(String.valueOf(data[i])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER));
+         if (i != data.length - 1) {
             this.result.append(ELEMENT_SEPARATOR);
          }
       }
 
-      if (var2.length > 128) {
+      if (data.length > 128) {
          this.result.append(FOLDED);
       }
 
       this.result.append("]");
    }
 
-   public void visitLongArray(LongArrayTag var1) {
+   public void visitLongArray(final LongArrayTag tag) {
       this.result.append("[").append(LONG_TYPE).append(";");
-      long[] var2 = var1.getAsLongArray();
+      long[] data = tag.getAsLongArray();
 
-      for(int var3 = 0; var3 < var2.length && var3 < 128; ++var3) {
-         MutableComponent var4 = Component.literal(String.valueOf(var2[var3])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
-         this.result.append(" ").append((Component)var4).append(LONG_TYPE);
-         if (var3 != var2.length - 1) {
+      for(int i = 0; i < data.length && i < 128; ++i) {
+         Component line = Component.literal(String.valueOf(data[i])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+         this.result.append(" ").append(line).append(LONG_TYPE);
+         if (i != data.length - 1) {
             this.result.append(ELEMENT_SEPARATOR);
          }
       }
 
-      if (var2.length > 128) {
+      if (data.length > 128) {
          this.result.append(FOLDED);
       }
 
       this.result.append("]");
    }
 
-   private static boolean shouldWrapListElements(ListTag var0) {
-      if (var0.size() >= 8) {
+   private static boolean shouldWrapListElements(final ListTag list) {
+      if (list.size() >= 8) {
          return false;
       } else {
-         for(Tag var2 : var0) {
-            if (!(var2 instanceof NumericTag)) {
+         for(Tag element : list) {
+            if (!(element instanceof NumericTag)) {
                return true;
             }
          }
@@ -158,20 +158,20 @@ public class TextComponentTagVisitor implements TagVisitor {
       }
    }
 
-   public void visitList(ListTag var1) {
-      if (var1.isEmpty()) {
+   public void visitList(final ListTag tag) {
+      if (tag.isEmpty()) {
          this.result.append("[]");
       } else if (this.depth >= 64) {
          this.result.append("[").append(FOLDED).append("]");
-      } else if (!shouldWrapListElements(var1)) {
+      } else if (!shouldWrapListElements(tag)) {
          this.result.append("[");
 
-         for(int var4 = 0; var4 < var1.size(); ++var4) {
-            if (var4 != 0) {
+         for(int i = 0; i < tag.size(); ++i) {
+            if (i != 0) {
                this.result.append(SPACED_ELEMENT_SEPARATOR);
             }
 
-            this.appendSubTag(var1.get(var4), false);
+            this.appendSubTag(tag.get(i), false);
          }
 
          this.result.append("]");
@@ -181,18 +181,18 @@ public class TextComponentTagVisitor implements TagVisitor {
             this.result.append("\n");
          }
 
-         String var2 = Strings.repeat(this.indentation, this.indentDepth + 1);
+         String entryIndent = Strings.repeat(this.indentation, this.indentDepth + 1);
 
-         for(int var3 = 0; var3 < var1.size() && var3 < 128; ++var3) {
-            this.result.append(var2);
-            this.appendSubTag(var1.get(var3), true);
-            if (var3 != var1.size() - 1) {
+         for(int i = 0; i < tag.size() && i < 128; ++i) {
+            this.result.append(entryIndent);
+            this.appendSubTag(tag.get(i), true);
+            if (i != tag.size() - 1) {
                this.result.append(this.indentation.isEmpty() ? SPACED_ELEMENT_SEPARATOR : WRAPPED_ELEMENT_SEPARATOR);
             }
          }
 
-         if (var1.size() > 128) {
-            this.result.append(var2).append(FOLDED);
+         if (tag.size() > 128) {
+            this.result.append(entryIndent).append(FOLDED);
          }
 
          if (!this.indentation.isEmpty()) {
@@ -203,32 +203,32 @@ public class TextComponentTagVisitor implements TagVisitor {
       }
    }
 
-   public void visitCompound(CompoundTag var1) {
-      if (var1.isEmpty()) {
+   public void visitCompound(final CompoundTag tag) {
+      if (tag.isEmpty()) {
          this.result.append("{}");
       } else if (this.depth >= 64) {
          this.result.append("{").append(FOLDED).append("}");
       } else {
          this.result.append("{");
-         Object var2 = var1.keySet();
+         Collection<String> strings = tag.keySet();
          if (LOGGER.isDebugEnabled()) {
-            ArrayList var3 = Lists.newArrayList(var1.keySet());
-            Collections.sort(var3);
-            var2 = var3;
+            List<String> keys = Lists.newArrayList(tag.keySet());
+            Collections.sort(keys);
+            strings = keys;
          }
 
          if (!this.indentation.isEmpty()) {
             this.result.append("\n");
          }
 
-         String var6 = Strings.repeat(this.indentation, this.indentDepth + 1);
-         Iterator var4 = ((Collection)var2).iterator();
+         String entryIndent = Strings.repeat(this.indentation, this.indentDepth + 1);
+         Iterator<String> iterator = strings.iterator();
 
-         while(var4.hasNext()) {
-            String var5 = (String)var4.next();
-            this.result.append(var6).append(handleEscapePretty(var5)).append(": ");
-            this.appendSubTag(var1.get(var5), true);
-            if (var4.hasNext()) {
+         while(iterator.hasNext()) {
+            String key = (String)iterator.next();
+            this.result.append(entryIndent).append(handleEscapePretty(key)).append(": ");
+            this.appendSubTag(tag.get(key), true);
+            if (iterator.hasNext()) {
                this.result.append(this.indentation.isEmpty() ? SPACED_ELEMENT_SEPARATOR : WRAPPED_ELEMENT_SEPARATOR);
             }
          }
@@ -241,17 +241,17 @@ public class TextComponentTagVisitor implements TagVisitor {
       }
    }
 
-   private void appendSubTag(Tag var1, boolean var2) {
-      if (var2) {
+   private void appendSubTag(final Tag tag, final boolean indent) {
+      if (indent) {
          ++this.indentDepth;
       }
 
       ++this.depth;
 
       try {
-         var1.accept((TagVisitor)this);
+         tag.accept((TagVisitor)this);
       } finally {
-         if (var2) {
+         if (indent) {
             --this.indentDepth;
          }
 
@@ -260,18 +260,18 @@ public class TextComponentTagVisitor implements TagVisitor {
 
    }
 
-   protected static Component handleEscapePretty(String var0) {
-      if (SIMPLE_VALUE.matcher(var0).matches()) {
-         return Component.literal(var0).withStyle(SYNTAX_HIGHLIGHTING_KEY);
+   protected static Component handleEscapePretty(final String input) {
+      if (SIMPLE_VALUE.matcher(input).matches()) {
+         return Component.literal(input).withStyle(SYNTAX_HIGHLIGHTING_KEY);
       } else {
-         String var1 = StringTag.quoteAndEscape(var0);
-         String var2 = var1.substring(0, 1);
-         MutableComponent var3 = Component.literal(var1.substring(1, var1.length() - 1)).withStyle(SYNTAX_HIGHLIGHTING_KEY);
-         return Component.literal(var2).append((Component)var3).append(var2);
+         String quoted = StringTag.quoteAndEscape(input);
+         String quote = quoted.substring(0, 1);
+         Component inner = Component.literal(quoted.substring(1, quoted.length() - 1)).withStyle(SYNTAX_HIGHLIGHTING_KEY);
+         return Component.literal(quote).append(inner).append(quote);
       }
    }
 
-   public void visitEnd(EndTag var1) {
+   public void visitEnd(final EndTag tag) {
    }
 
    static {

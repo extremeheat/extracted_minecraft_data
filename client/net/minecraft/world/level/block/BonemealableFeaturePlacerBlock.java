@@ -14,28 +14,28 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
 public class BonemealableFeaturePlacerBlock extends Block implements BonemealableBlock {
-   public static final MapCodec<BonemealableFeaturePlacerBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((var0x) -> var0x.feature), propertiesCodec()).apply(var0, BonemealableFeaturePlacerBlock::new));
+   public static final MapCodec<BonemealableFeaturePlacerBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((b) -> b.feature), propertiesCodec()).apply(i, BonemealableFeaturePlacerBlock::new));
    private final ResourceKey<ConfiguredFeature<?, ?>> feature;
 
    public MapCodec<BonemealableFeaturePlacerBlock> codec() {
       return CODEC;
    }
 
-   public BonemealableFeaturePlacerBlock(ResourceKey<ConfiguredFeature<?, ?>> var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.feature = var1;
+   public BonemealableFeaturePlacerBlock(final ResourceKey<ConfiguredFeature<?, ?>> feature, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.feature = feature;
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return var1.getBlockState(var2.above()).isAir();
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return level.getBlockState(pos.above()).isAir();
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      var1.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var1x) -> var1x.get(this.feature)).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var3.above()));
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      level.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((registry) -> registry.get(this.feature)).ifPresent((mossPatch) -> ((ConfiguredFeature)mossPatch.value()).place(level, level.getChunkSource().getGenerator(), random, pos.above()));
    }
 
    public BonemealableBlock.Type getType() {

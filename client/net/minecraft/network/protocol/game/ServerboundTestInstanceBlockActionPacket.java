@@ -19,23 +19,20 @@ import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 public record ServerboundTestInstanceBlockActionPacket(BlockPos pos, Action action, TestInstanceBlockEntity.Data data) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundTestInstanceBlockActionPacket> STREAM_CODEC;
 
-   public ServerboundTestInstanceBlockActionPacket(BlockPos var1, Action var2, Optional<ResourceKey<GameTestInstance>> var3, Vec3i var4, Rotation var5, boolean var6) {
-      this(var1, var2, new TestInstanceBlockEntity.Data(var3, var4, var5, var6, TestInstanceBlockEntity.Status.CLEARED, Optional.empty()));
+   public ServerboundTestInstanceBlockActionPacket(final BlockPos pos, final Action action, final Optional<ResourceKey<GameTestInstance>> test, final Vec3i size, final Rotation rotation, final boolean ignoreEntities) {
+      this(pos, action, new TestInstanceBlockEntity.Data(test, size, rotation, ignoreEntities, TestInstanceBlockEntity.Status.CLEARED, Optional.empty()));
    }
 
-   public ServerboundTestInstanceBlockActionPacket(BlockPos var1, Action var2, TestInstanceBlockEntity.Data var3) {
+   public ServerboundTestInstanceBlockActionPacket {
       super();
-      this.pos = var1;
-      this.action = var2;
-      this.data = var3;
    }
 
    public PacketType<ServerboundTestInstanceBlockActionPacket> type() {
       return GamePacketTypes.SERVERBOUND_TEST_INSTANCE_BLOCK_ACTION;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleTestInstanceBlockAction(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleTestInstanceBlockAction(this);
    }
 
    static {
@@ -51,12 +48,12 @@ public record ServerboundTestInstanceBlockActionPacket(BlockPos pos, Action acti
       EXPORT(5),
       RUN(6);
 
-      private static final IntFunction<Action> BY_ID = ByIdMap.<Action>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+      private static final IntFunction<Action> BY_ID = ByIdMap.<Action>continuous((e) -> e.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (e) -> e.id);
       private final int id;
 
-      private Action(final int var3) {
-         this.id = var3;
+      private Action(final int id) {
+         this.id = id;
       }
 
       // $FF: synthetic method

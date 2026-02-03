@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -134,7 +133,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    public static final int CRAFTING_SLOT_OFFSET = 500;
    public static final float DEFAULT_BLOCK_INTERACTION_RANGE = 4.5F;
    public static final float DEFAULT_ENTITY_INTERACTION_RANGE = 3.0F;
-   private static final int CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 40;
    private static final EntityDataAccessor<Float> DATA_PLAYER_ABSORPTION_ID;
    private static final EntityDataAccessor<Integer> DATA_SCORE_ID;
    private static final EntityDataAccessor<OptionalInt> DATA_SHOULDER_PARROT_LEFT;
@@ -146,10 +144,8 @@ public abstract class Player extends Avatar implements ContainerUser {
    private static final int NO_ENCHANTMENT_SEED = 0;
    private static final int DEFAULT_SELECTED_SLOT = 0;
    private static final int DEFAULT_SCORE = 0;
-   private static final boolean DEFAULT_IGNORE_FALL_DAMAGE_FROM_CURRENT_IMPULSE = false;
-   private static final int DEFAULT_CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME = 0;
    public static final float CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER_VALUE = 2.0F;
-   final Inventory inventory;
+   private final Inventory inventory;
    protected PlayerEnderChestContainer enderChestInventory = new PlayerEnderChestContainer();
    public final InventoryMenu inventoryMenu;
    public AbstractContainerMenu containerMenu;
@@ -172,22 +168,16 @@ public abstract class Player extends Avatar implements ContainerUser {
    private Optional<GlobalPos> lastDeathLocation;
    public @Nullable FishingHook fishing;
    protected float hurtDir;
-   public @Nullable Vec3 currentImpulseImpactPos;
-   public @Nullable Entity currentExplosionCause;
-   private boolean ignoreFallDamageFromCurrentImpulse;
-   private int currentImpulseContextResetGraceTime;
 
-   public Player(Level var1, GameProfile var2) {
-      super(EntityType.PLAYER, var1);
+   public Player(final Level level, final GameProfile gameProfile) {
+      super(EntityType.PLAYER, level);
       this.lastItemInMainHand = ItemStack.EMPTY;
       this.cooldowns = this.createItemCooldowns();
       this.lastDeathLocation = Optional.empty();
-      this.ignoreFallDamageFromCurrentImpulse = false;
-      this.currentImpulseContextResetGraceTime = 0;
-      this.setUUID(var2.id());
-      this.gameProfile = var2;
+      this.setUUID(gameProfile.id());
+      this.gameProfile = gameProfile;
       this.inventory = new Inventory(this, this.equipment);
-      this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide(), this);
+      this.inventoryMenu = new InventoryMenu(this.inventory, !level.isClientSide(), this);
       this.containerMenu = this.inventoryMenu;
    }
 
@@ -195,16 +185,16 @@ public abstract class Player extends Avatar implements ContainerUser {
       return new PlayerEquipment(this);
    }
 
-   public boolean blockActionRestricted(Level var1, BlockPos var2, GameType var3) {
-      if (!var3.isBlockPlacingRestricted()) {
+   public boolean blockActionRestricted(final Level level, final BlockPos pos, final GameType gameType) {
+      if (!gameType.isBlockPlacingRestricted()) {
          return false;
-      } else if (var3 == GameType.SPECTATOR) {
+      } else if (gameType == GameType.SPECTATOR) {
          return true;
       } else if (this.mayBuild()) {
          return false;
       } else {
-         ItemStack var4 = this.getMainHandItem();
-         return var4.isEmpty() || !var4.canBreakBlockInAdventureMode(new BlockInWorld(var1, var2, false));
+         ItemStack itemStack = this.getMainHandItem();
+         return itemStack.isEmpty() || !itemStack.canBreakBlockInAdventureMode(new BlockInWorld(level, pos, false));
       }
    }
 
@@ -212,12 +202,12 @@ public abstract class Player extends Avatar implements ContainerUser {
       return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, 1.0).add(Attributes.MOVEMENT_SPEED, 0.10000000149011612).add(Attributes.ATTACK_SPEED).add(Attributes.LUCK).add(Attributes.BLOCK_INTERACTION_RANGE, 4.5).add(Attributes.ENTITY_INTERACTION_RANGE, 3.0).add(Attributes.BLOCK_BREAK_SPEED).add(Attributes.SUBMERGED_MINING_SPEED).add(Attributes.SNEAKING_SPEED).add(Attributes.MINING_EFFICIENCY).add(Attributes.SWEEPING_DAMAGE_RATIO).add(Attributes.WAYPOINT_TRANSMIT_RANGE, 6.0E7).add(Attributes.WAYPOINT_RECEIVE_RANGE, 6.0E7);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_PLAYER_ABSORPTION_ID, 0.0F);
-      var1.define(DATA_SCORE_ID, 0);
-      var1.define(DATA_SHOULDER_PARROT_LEFT, OptionalInt.empty());
-      var1.define(DATA_SHOULDER_PARROT_RIGHT, OptionalInt.empty());
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_PLAYER_ABSORPTION_ID, 0.0F);
+      entityData.define(DATA_SCORE_ID, 0);
+      entityData.define(DATA_SHOULDER_PARROT_LEFT, OptionalInt.empty());
+      entityData.define(DATA_SHOULDER_PARROT_RIGHT, OptionalInt.empty());
    }
 
    public void tick() {
@@ -248,22 +238,22 @@ public abstract class Player extends Avatar implements ContainerUser {
 
       this.updateIsUnderwater();
       super.tick();
-      int var1 = 29999999;
-      double var2 = Mth.clamp(this.getX(), -2.9999999E7, 2.9999999E7);
-      double var4 = Mth.clamp(this.getZ(), -2.9999999E7, 2.9999999E7);
-      if (var2 != this.getX() || var4 != this.getZ()) {
-         this.setPos(var2, this.getY(), var4);
+      int maxPositionOffset = 29999999;
+      double nx = Mth.clamp(this.getX(), -2.9999999E7, 2.9999999E7);
+      double nz = Mth.clamp(this.getZ(), -2.9999999E7, 2.9999999E7);
+      if (nx != this.getX() || nz != this.getZ()) {
+         this.setPos(nx, this.getY(), nz);
       }
 
       ++this.attackStrengthTicker;
       ++this.itemSwapTicker;
-      ItemStack var6 = this.getMainHandItem();
-      if (!ItemStack.matches(this.lastItemInMainHand, var6)) {
-         if (!ItemStack.isSameItem(this.lastItemInMainHand, var6)) {
+      ItemStack mainHandItemStack = this.getMainHandItem();
+      if (!ItemStack.matches(this.lastItemInMainHand, mainHandItemStack)) {
+         if (!ItemStack.isSameItem(this.lastItemInMainHand, mainHandItemStack)) {
             this.resetAttackStrengthTicker();
          }
 
-         this.lastItemInMainHand = var6.copy();
+         this.lastItemInMainHand = mainHandItemStack.copy();
       }
 
       if (!this.isEyeInFluid(FluidTags.WATER) && this.isEquipped(Items.TURTLE_HELMET)) {
@@ -272,10 +262,6 @@ public abstract class Player extends Avatar implements ContainerUser {
 
       this.cooldowns.tick();
       this.updatePlayerPose();
-      if (this.currentImpulseContextResetGraceTime > 0) {
-         --this.currentImpulseContextResetGraceTime;
-      }
-
    }
 
    protected float getMaxHeadRotationRelativeToBody() {
@@ -299,16 +285,16 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.wasUnderwater;
    }
 
-   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
+   public void onAboveBubbleColumn(final boolean dragDown, final BlockPos pos) {
       if (!this.getAbilities().flying) {
-         super.onAboveBubbleColumn(var1, var2);
+         super.onAboveBubbleColumn(dragDown, pos);
       }
 
    }
 
-   public void onInsideBubbleColumn(boolean var1) {
+   public void onInsideBubbleColumn(final boolean dragDown) {
       if (!this.getAbilities().flying) {
-         super.onInsideBubbleColumn(var1);
+         super.onInsideBubbleColumn(dragDown);
       }
 
    }
@@ -317,11 +303,11 @@ public abstract class Player extends Avatar implements ContainerUser {
       this.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 200, 0, false, false, true));
    }
 
-   private boolean isEquipped(Item var1) {
-      for(EquipmentSlot var3 : EquipmentSlot.VALUES) {
-         ItemStack var4 = this.getItemBySlot(var3);
-         Equippable var5 = (Equippable)var4.get(DataComponents.EQUIPPABLE);
-         if (var4.is(var1) && var5 != null && var5.slot() == var3) {
+   private boolean isEquipped(final Item item) {
+      for(EquipmentSlot slot : EquipmentSlot.VALUES) {
+         ItemStack itemStack = this.getItemBySlot(slot);
+         Equippable equippable = (Equippable)itemStack.get(DataComponents.EQUIPPABLE);
+         if (itemStack.is(item) && equippable != null && equippable.slot() == slot) {
             return true;
          }
       }
@@ -335,19 +321,19 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    protected void updatePlayerPose() {
       if (this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.SWIMMING)) {
-         Pose var1 = this.getDesiredPose();
-         Pose var2;
-         if (!this.isSpectator() && !this.isPassenger() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(var1)) {
+         Pose desiredPose = this.getDesiredPose();
+         Pose actualPose;
+         if (!this.isSpectator() && !this.isPassenger() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(desiredPose)) {
             if (this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING)) {
-               var2 = Pose.CROUCHING;
+               actualPose = Pose.CROUCHING;
             } else {
-               var2 = Pose.SWIMMING;
+               actualPose = Pose.SWIMMING;
             }
          } else {
-            var2 = var1;
+            actualPose = desiredPose;
          }
 
-         this.setPose(var2);
+         this.setPose(actualPose);
       }
    }
 
@@ -365,8 +351,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
    }
 
-   protected boolean canPlayerFitWithinBlocksAndEntitiesWhen(Pose var1) {
-      return this.level().noCollision(this, this.getDimensions(var1).makeBoundingBox(this.position()).deflate(1.0E-7));
+   protected boolean canPlayerFitWithinBlocksAndEntitiesWhen(final Pose newPose) {
+      return this.level().noCollision(this, this.getDimensions(newPose).makeBoundingBox(this.position()).deflate(1.0E-7));
    }
 
    protected SoundEvent getSwimSound() {
@@ -385,8 +371,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       return 10;
    }
 
-   public void playSound(SoundEvent var1, float var2, float var3) {
-      this.level().playSound(this, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), var2, var3);
+   public void playSound(final SoundEvent sound, final float volume, final float pitch) {
+      this.level().playSound(this, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), volume, pitch);
    }
 
    public SoundSource getSoundSource() {
@@ -397,15 +383,15 @@ public abstract class Player extends Avatar implements ContainerUser {
       return 20;
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 9) {
+   public void handleEntityEvent(final byte id) {
+      if (id == 9) {
          this.completeUsingItem();
-      } else if (var1 == 23) {
+      } else if (id == 23) {
          this.setReducedDebugInfo(false);
-      } else if (var1 == 22) {
+      } else if (id == 22) {
          this.setReducedDebugInfo(true);
       } else {
-         super.handleEntityEvent(var1);
+         super.handleEntityEvent(id);
       }
 
    }
@@ -442,26 +428,26 @@ public abstract class Player extends Avatar implements ContainerUser {
       this.yHeadRot = this.getYRot();
       this.setSpeed((float)this.getAttributeValue(Attributes.MOVEMENT_SPEED));
       if (this.getHealth() > 0.0F && !this.isSpectator()) {
-         AABB var1;
+         AABB pickupArea;
          if (this.isPassenger() && !this.getVehicle().isRemoved()) {
-            var1 = this.getBoundingBox().minmax(this.getVehicle().getBoundingBox()).inflate(1.0, 0.0, 1.0);
+            pickupArea = this.getBoundingBox().minmax(this.getVehicle().getBoundingBox()).inflate(1.0, 0.0, 1.0);
          } else {
-            var1 = this.getBoundingBox().inflate(1.0, 0.5, 1.0);
+            pickupArea = this.getBoundingBox().inflate(1.0, 0.5, 1.0);
          }
 
-         List var2 = this.level().getEntities(this, var1);
-         ArrayList var3 = Lists.newArrayList();
+         List<Entity> entities = this.level().getEntities(this, pickupArea);
+         List<Entity> orbs = Lists.newArrayList();
 
-         for(Entity var5 : var2) {
-            if (var5.getType() == EntityType.EXPERIENCE_ORB) {
-               var3.add(var5);
-            } else if (!var5.isRemoved()) {
-               this.touch(var5);
+         for(Entity entity : entities) {
+            if (entity.is(EntityType.EXPERIENCE_ORB)) {
+               orbs.add(entity);
+            } else if (!entity.isRemoved()) {
+               this.touch(entity);
             }
          }
 
-         if (!var3.isEmpty()) {
-            this.touch((Entity)Util.getRandom(var3, this.random));
+         if (!orbs.isEmpty()) {
+            this.touch((Entity)Util.getRandom(orbs, this.random));
          }
       }
 
@@ -477,27 +463,27 @@ public abstract class Player extends Avatar implements ContainerUser {
    protected void removeEntitiesOnShoulder() {
    }
 
-   private void touch(Entity var1) {
-      var1.playerTouch(this);
+   private void touch(final Entity entity) {
+      entity.playerTouch(this);
    }
 
    public int getScore() {
       return (Integer)this.entityData.get(DATA_SCORE_ID);
    }
 
-   public void setScore(int var1) {
-      this.entityData.set(DATA_SCORE_ID, var1);
+   public void setScore(final int value) {
+      this.entityData.set(DATA_SCORE_ID, value);
    }
 
-   public void increaseScore(int var1) {
-      int var2 = this.getScore();
-      this.entityData.set(DATA_SCORE_ID, var2 + var1);
+   public void increaseScore(final int amount) {
+      int score = this.getScore();
+      this.entityData.set(DATA_SCORE_ID, score + amount);
    }
 
-   public void startAutoSpinAttack(int var1, float var2, ItemStack var3) {
-      this.autoSpinAttackTicks = var1;
-      this.autoSpinAttackDmg = var2;
-      this.autoSpinAttackItemStack = var3;
+   public void startAutoSpinAttack(final int activationTicks, final float dmg, final ItemStack itemStackUsed) {
+      this.autoSpinAttackTicks = activationTicks;
+      this.autoSpinAttackDmg = dmg;
+      this.autoSpinAttackItemStack = itemStackUsed;
       if (!this.level().isClientSide()) {
          this.removeEntitiesOnShoulder();
          this.setLivingEntityFlag(4, true);
@@ -509,18 +495,18 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.isAutoSpinAttack() && this.autoSpinAttackItemStack != null ? this.autoSpinAttackItemStack : super.getWeaponItem();
    }
 
-   public void die(DamageSource var1) {
-      super.die(var1);
+   public void die(final DamageSource source) {
+      super.die(source);
       this.reapplyPosition();
       if (!this.isSpectator()) {
          Level var3 = this.level();
          if (var3 instanceof ServerLevel) {
-            ServerLevel var2 = (ServerLevel)var3;
-            this.dropAllDeathLoot(var2, var1);
+            ServerLevel level = (ServerLevel)var3;
+            this.dropAllDeathLoot(level, source);
          }
       }
 
-      if (var1 != null) {
+      if (source != null) {
          this.setDeltaMovement((double)(-Mth.cos((double)((this.getHurtDir() + this.getYRot()) * 0.017453292F)) * 0.1F), 0.10000000149011612, (double)(-Mth.sin((double)((this.getHurtDir() + this.getYRot()) * 0.017453292F)) * 0.1F));
       } else {
          this.setDeltaMovement(0.0, 0.1, 0.0);
@@ -534,9 +520,9 @@ public abstract class Player extends Avatar implements ContainerUser {
       this.setLastDeathLocation(Optional.of(GlobalPos.of(this.level().dimension(), this.blockPosition())));
    }
 
-   protected void dropEquipment(ServerLevel var1) {
-      super.dropEquipment(var1);
-      if (!(Boolean)var1.getGameRules().get(GameRules.KEEP_INVENTORY)) {
+   protected void dropEquipment(final ServerLevel level) {
+      super.dropEquipment(level);
+      if (!(Boolean)level.getGameRules().get(GameRules.KEEP_INVENTORY)) {
          this.destroyVanishingCursedItems();
          this.inventory.dropAll();
       }
@@ -544,38 +530,38 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    protected void destroyVanishingCursedItems() {
-      for(int var1 = 0; var1 < this.inventory.getContainerSize(); ++var1) {
-         ItemStack var2 = this.inventory.getItem(var1);
-         if (!var2.isEmpty() && EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-            this.inventory.removeItemNoUpdate(var1);
+      for(int i = 0; i < this.inventory.getContainerSize(); ++i) {
+         ItemStack itemStack = this.inventory.getItem(i);
+         if (!itemStack.isEmpty() && EnchantmentHelper.has(itemStack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+            this.inventory.removeItemNoUpdate(i);
          }
       }
 
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
-      return var1.type().effects().sound();
+   protected SoundEvent getHurtSound(final DamageSource source) {
+      return source.type().effects().sound();
    }
 
    protected SoundEvent getDeathSound() {
       return SoundEvents.PLAYER_DEATH;
    }
 
-   public void handleCreativeModeItemDrop(ItemStack var1) {
+   public void handleCreativeModeItemDrop(final ItemStack stack) {
    }
 
-   public @Nullable ItemEntity drop(ItemStack var1, boolean var2) {
-      return this.drop(var1, false, var2);
+   public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean thrownFromHand) {
+      return this.drop(itemStack, false, thrownFromHand);
    }
 
-   public float getDestroySpeed(BlockState var1) {
-      float var2 = this.inventory.getSelectedItem().getDestroySpeed(var1);
-      if (var2 > 1.0F) {
-         var2 += (float)this.getAttributeValue(Attributes.MINING_EFFICIENCY);
+   public float getDestroySpeed(final BlockState state) {
+      float speed = this.inventory.getSelectedItem().getDestroySpeed(state);
+      if (speed > 1.0F) {
+         speed += (float)this.getAttributeValue(Attributes.MINING_EFFICIENCY);
       }
 
       if (MobEffectUtil.hasDigSpeed(this)) {
-         var2 *= 1.0F + (float)(MobEffectUtil.getDigSpeedAmplification(this) + 1) * 0.2F;
+         speed *= 1.0F + (float)(MobEffectUtil.getDigSpeedAmplification(this) + 1) * 0.2F;
       }
 
       if (this.hasEffect(MobEffects.MINING_FATIGUE)) {
@@ -587,94 +573,88 @@ public abstract class Player extends Avatar implements ContainerUser {
             default -> var10000 = 8.1E-4F;
          }
 
-         float var3 = var10000;
-         var2 *= var3;
+         float scale = var10000;
+         speed *= scale;
       }
 
-      var2 *= (float)this.getAttributeValue(Attributes.BLOCK_BREAK_SPEED);
+      speed *= (float)this.getAttributeValue(Attributes.BLOCK_BREAK_SPEED);
       if (this.isEyeInFluid(FluidTags.WATER)) {
-         var2 *= (float)this.getAttribute(Attributes.SUBMERGED_MINING_SPEED).getValue();
+         speed *= (float)this.getAttribute(Attributes.SUBMERGED_MINING_SPEED).getValue();
       }
 
       if (!this.onGround()) {
-         var2 /= 5.0F;
+         speed /= 5.0F;
       }
 
-      return var2;
+      return speed;
    }
 
-   public boolean hasCorrectToolForDrops(BlockState var1) {
-      return !var1.requiresCorrectToolForDrops() || this.inventory.getSelectedItem().isCorrectToolForDrops(var1);
+   public boolean hasCorrectToolForDrops(final BlockState state) {
+      return !state.requiresCorrectToolForDrops() || this.inventory.getSelectedItem().isCorrectToolForDrops(state);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
       this.setUUID(this.gameProfile.id());
-      this.inventory.load(var1.listOrEmpty("Inventory", ItemStackWithSlot.CODEC));
-      this.inventory.setSelectedSlot(var1.getIntOr("SelectedItemSlot", 0));
-      this.sleepCounter = var1.getShortOr("SleepTimer", (short)0);
-      this.experienceProgress = var1.getFloatOr("XpP", 0.0F);
-      this.experienceLevel = var1.getIntOr("XpLevel", 0);
-      this.totalExperience = var1.getIntOr("XpTotal", 0);
-      this.enchantmentSeed = var1.getIntOr("XpSeed", 0);
+      this.inventory.load(input.listOrEmpty("Inventory", ItemStackWithSlot.CODEC));
+      this.inventory.setSelectedSlot(input.getIntOr("SelectedItemSlot", 0));
+      this.sleepCounter = input.getShortOr("SleepTimer", (short)0);
+      this.experienceProgress = input.getFloatOr("XpP", 0.0F);
+      this.experienceLevel = input.getIntOr("XpLevel", 0);
+      this.totalExperience = input.getIntOr("XpTotal", 0);
+      this.enchantmentSeed = input.getIntOr("XpSeed", 0);
       if (this.enchantmentSeed == 0) {
          this.enchantmentSeed = this.random.nextInt();
       }
 
-      this.setScore(var1.getIntOr("Score", 0));
-      this.foodData.readAdditionalSaveData(var1);
-      Optional var10000 = var1.read("abilities", Abilities.Packed.CODEC);
+      this.setScore(input.getIntOr("Score", 0));
+      this.foodData.readAdditionalSaveData(input);
+      Optional var10000 = input.read("abilities", Abilities.Packed.CODEC);
       Abilities var10001 = this.abilities;
       Objects.requireNonNull(var10001);
       var10000.ifPresent(var10001::apply);
       this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)this.abilities.getWalkingSpeed());
-      this.enderChestInventory.fromSlots(var1.listOrEmpty("EnderItems", ItemStackWithSlot.CODEC));
-      this.setLastDeathLocation(var1.read("LastDeathLocation", GlobalPos.CODEC));
-      this.currentImpulseImpactPos = (Vec3)var1.read("current_explosion_impact_pos", Vec3.CODEC).orElse((Object)null);
-      this.ignoreFallDamageFromCurrentImpulse = var1.getBooleanOr("ignore_fall_damage_from_current_explosion", false);
-      this.currentImpulseContextResetGraceTime = var1.getIntOr("current_impulse_context_reset_grace_time", 0);
+      this.enderChestInventory.fromSlots(input.listOrEmpty("EnderItems", ItemStackWithSlot.CODEC));
+      this.setLastDeathLocation(input.read("LastDeathLocation", GlobalPos.CODEC));
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      NbtUtils.addCurrentDataVersion(var1);
-      this.inventory.save(var1.list("Inventory", ItemStackWithSlot.CODEC));
-      var1.putInt("SelectedItemSlot", this.inventory.getSelectedSlot());
-      var1.putShort("SleepTimer", (short)this.sleepCounter);
-      var1.putFloat("XpP", this.experienceProgress);
-      var1.putInt("XpLevel", this.experienceLevel);
-      var1.putInt("XpTotal", this.totalExperience);
-      var1.putInt("XpSeed", this.enchantmentSeed);
-      var1.putInt("Score", this.getScore());
-      this.foodData.addAdditionalSaveData(var1);
-      var1.store("abilities", Abilities.Packed.CODEC, this.abilities.pack());
-      this.enderChestInventory.storeAsSlots(var1.list("EnderItems", ItemStackWithSlot.CODEC));
-      this.lastDeathLocation.ifPresent((var1x) -> var1.store("LastDeathLocation", GlobalPos.CODEC, var1x));
-      var1.storeNullable("current_explosion_impact_pos", Vec3.CODEC, this.currentImpulseImpactPos);
-      var1.putBoolean("ignore_fall_damage_from_current_explosion", this.ignoreFallDamageFromCurrentImpulse);
-      var1.putInt("current_impulse_context_reset_grace_time", this.currentImpulseContextResetGraceTime);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      NbtUtils.addCurrentDataVersion(output);
+      this.inventory.save(output.list("Inventory", ItemStackWithSlot.CODEC));
+      output.putInt("SelectedItemSlot", this.inventory.getSelectedSlot());
+      output.putShort("SleepTimer", (short)this.sleepCounter);
+      output.putFloat("XpP", this.experienceProgress);
+      output.putInt("XpLevel", this.experienceLevel);
+      output.putInt("XpTotal", this.totalExperience);
+      output.putInt("XpSeed", this.enchantmentSeed);
+      output.putInt("Score", this.getScore());
+      this.foodData.addAdditionalSaveData(output);
+      output.store("abilities", Abilities.Packed.CODEC, this.abilities.pack());
+      this.enderChestInventory.storeAsSlots(output.list("EnderItems", ItemStackWithSlot.CODEC));
+      this.lastDeathLocation.ifPresent((pos) -> output.store("LastDeathLocation", GlobalPos.CODEC, pos));
    }
 
-   public boolean isInvulnerableTo(ServerLevel var1, DamageSource var2) {
-      if (super.isInvulnerableTo(var1, var2)) {
+   public boolean isInvulnerableTo(final ServerLevel level, final DamageSource source) {
+      if (super.isInvulnerableTo(level, source)) {
          return true;
-      } else if (var2.is(DamageTypeTags.IS_DROWNING)) {
-         return !(Boolean)var1.getGameRules().get(GameRules.DROWNING_DAMAGE);
-      } else if (var2.is(DamageTypeTags.IS_FALL)) {
-         return !(Boolean)var1.getGameRules().get(GameRules.FALL_DAMAGE);
-      } else if (var2.is(DamageTypeTags.IS_FIRE)) {
-         return !(Boolean)var1.getGameRules().get(GameRules.FIRE_DAMAGE);
-      } else if (var2.is(DamageTypeTags.IS_FREEZING)) {
-         return !(Boolean)var1.getGameRules().get(GameRules.FREEZE_DAMAGE);
+      } else if (source.is(DamageTypeTags.IS_DROWNING)) {
+         return !(Boolean)level.getGameRules().get(GameRules.DROWNING_DAMAGE);
+      } else if (source.is(DamageTypeTags.IS_FALL)) {
+         return !(Boolean)level.getGameRules().get(GameRules.FALL_DAMAGE);
+      } else if (source.is(DamageTypeTags.IS_FIRE)) {
+         return !(Boolean)level.getGameRules().get(GameRules.FIRE_DAMAGE);
+      } else if (source.is(DamageTypeTags.IS_FREEZING)) {
+         return !(Boolean)level.getGameRules().get(GameRules.FREEZE_DAMAGE);
       } else {
          return false;
       }
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      if (this.isInvulnerableTo(var1, var2)) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, float damage) {
+      if (this.isInvulnerableTo(level, source)) {
          return false;
-      } else if (this.abilities.invulnerable && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+      } else if (this.abilities.invulnerable && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          return false;
       } else {
          this.noActionTime = 0;
@@ -682,32 +662,32 @@ public abstract class Player extends Avatar implements ContainerUser {
             return false;
          } else {
             this.removeEntitiesOnShoulder();
-            if (var2.scalesWithDifficulty()) {
-               if (var1.getDifficulty() == Difficulty.PEACEFUL) {
-                  var3 = 0.0F;
+            if (source.scalesWithDifficulty()) {
+               if (level.getDifficulty() == Difficulty.PEACEFUL) {
+                  damage = 0.0F;
                }
 
-               if (var1.getDifficulty() == Difficulty.EASY) {
-                  var3 = Math.min(var3 / 2.0F + 1.0F, var3);
+               if (level.getDifficulty() == Difficulty.EASY) {
+                  damage = Math.min(damage / 2.0F + 1.0F, damage);
                }
 
-               if (var1.getDifficulty() == Difficulty.HARD) {
-                  var3 = var3 * 3.0F / 2.0F;
+               if (level.getDifficulty() == Difficulty.HARD) {
+                  damage = damage * 3.0F / 2.0F;
                }
             }
 
-            return var3 == 0.0F ? false : super.hurtServer(var1, var2, var3);
+            return damage == 0.0F ? false : super.hurtServer(level, source, damage);
          }
       }
    }
 
-   protected void blockUsingItem(ServerLevel var1, LivingEntity var2) {
-      super.blockUsingItem(var1, var2);
-      ItemStack var3 = this.getItemBlockingWith();
-      BlocksAttacks var4 = var3 != null ? (BlocksAttacks)var3.get(DataComponents.BLOCKS_ATTACKS) : null;
-      float var5 = var2.getSecondsToDisableBlocking();
-      if (var5 > 0.0F && var4 != null) {
-         var4.disable(var1, this, var5, var3);
+   protected void blockUsingItem(final ServerLevel level, final LivingEntity attacker) {
+      super.blockUsingItem(level, attacker);
+      ItemStack itemBlockingWith = this.getItemBlockingWith();
+      BlocksAttacks blocksAttacks = itemBlockingWith != null ? (BlocksAttacks)itemBlockingWith.get(DataComponents.BLOCKS_ATTACKS) : null;
+      float secondsToDisableBlocking = attacker.getSecondsToDisableBlocking();
+      if (secondsToDisableBlocking > 0.0F && blocksAttacks != null) {
+         blocksAttacks.disable(level, this, secondsToDisableBlocking, itemBlockingWith);
       }
 
    }
@@ -716,42 +696,42 @@ public abstract class Player extends Avatar implements ContainerUser {
       return !this.getAbilities().invulnerable && super.canBeSeenAsEnemy();
    }
 
-   public boolean canHarmPlayer(Player var1) {
-      PlayerTeam var2 = this.getTeam();
-      PlayerTeam var3 = var1.getTeam();
-      if (var2 == null) {
+   public boolean canHarmPlayer(final Player target) {
+      Team team = this.getTeam();
+      Team otherTeam = target.getTeam();
+      if (team == null) {
          return true;
       } else {
-         return !((Team)var2).isAlliedTo(var3) ? true : ((Team)var2).isAllowFriendlyFire();
+         return !team.isAlliedTo(otherTeam) ? true : team.isAllowFriendlyFire();
       }
    }
 
-   protected void hurtArmor(DamageSource var1, float var2) {
-      this.doHurtEquipment(var1, var2, new EquipmentSlot[]{EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD});
+   protected void hurtArmor(final DamageSource damageSource, final float damage) {
+      this.doHurtEquipment(damageSource, damage, new EquipmentSlot[]{EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD});
    }
 
-   protected void hurtHelmet(DamageSource var1, float var2) {
-      this.doHurtEquipment(var1, var2, new EquipmentSlot[]{EquipmentSlot.HEAD});
+   protected void hurtHelmet(final DamageSource damageSource, final float damage) {
+      this.doHurtEquipment(damageSource, damage, new EquipmentSlot[]{EquipmentSlot.HEAD});
    }
 
-   protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
-      if (!this.isInvulnerableTo(var1, var2)) {
-         var3 = this.getDamageAfterArmorAbsorb(var2, var3);
-         var3 = this.getDamageAfterMagicAbsorb(var2, var3);
-         float var4 = var3;
-         var3 = Math.max(var3 - this.getAbsorptionAmount(), 0.0F);
-         this.setAbsorptionAmount(this.getAbsorptionAmount() - (var4 - var3));
-         float var5 = var4 - var3;
-         if (var5 > 0.0F && var5 < 3.4028235E37F) {
-            this.awardStat(Stats.DAMAGE_ABSORBED, Math.round(var5 * 10.0F));
+   protected void actuallyHurt(final ServerLevel level, final DamageSource source, float dmg) {
+      if (!this.isInvulnerableTo(level, source)) {
+         dmg = this.getDamageAfterArmorAbsorb(source, dmg);
+         dmg = this.getDamageAfterMagicAbsorb(source, dmg);
+         float originalDamage = dmg;
+         dmg = Math.max(dmg - this.getAbsorptionAmount(), 0.0F);
+         this.setAbsorptionAmount(this.getAbsorptionAmount() - (originalDamage - dmg));
+         float absorbedDamage = originalDamage - dmg;
+         if (absorbedDamage > 0.0F && absorbedDamage < 3.4028235E37F) {
+            this.awardStat(Stats.DAMAGE_ABSORBED, Math.round(absorbedDamage * 10.0F));
          }
 
-         if (var3 != 0.0F) {
-            this.causeFoodExhaustion(var2.getFoodExhaustion());
-            this.getCombatTracker().recordDamage(var2, var3);
-            this.setHealth(this.getHealth() - var3);
-            if (var3 < 3.4028235E37F) {
-               this.awardStat(Stats.DAMAGE_TAKEN, Math.round(var3 * 10.0F));
+         if (dmg != 0.0F) {
+            this.causeFoodExhaustion(source.getFoodExhaustion());
+            this.getCombatTracker().recordDamage(source, dmg);
+            this.setHealth(this.getHealth() - dmg);
+            if (dmg < 3.4028235E37F) {
+               this.awardStat(Stats.DAMAGE_TAKEN, Math.round(dmg * 10.0F));
             }
 
             this.gameEvent(GameEvent.ENTITY_DAMAGE);
@@ -763,77 +743,77 @@ public abstract class Player extends Avatar implements ContainerUser {
       return false;
    }
 
-   public void openTextEdit(SignBlockEntity var1, boolean var2) {
+   public void openTextEdit(final SignBlockEntity sign, final boolean isFrontText) {
    }
 
-   public void openMinecartCommandBlock(MinecartCommandBlock var1) {
+   public void openMinecartCommandBlock(final MinecartCommandBlock commandBlock) {
    }
 
-   public void openCommandBlock(CommandBlockEntity var1) {
+   public void openCommandBlock(final CommandBlockEntity commandBlock) {
    }
 
-   public void openStructureBlock(StructureBlockEntity var1) {
+   public void openStructureBlock(final StructureBlockEntity structureBlock) {
    }
 
-   public void openTestBlock(TestBlockEntity var1) {
+   public void openTestBlock(final TestBlockEntity testBlock) {
    }
 
-   public void openTestInstanceBlock(TestInstanceBlockEntity var1) {
+   public void openTestInstanceBlock(final TestInstanceBlockEntity testInstanceBlock) {
    }
 
-   public void openJigsawBlock(JigsawBlockEntity var1) {
+   public void openJigsawBlock(final JigsawBlockEntity jigsawBlock) {
    }
 
-   public void openHorseInventory(AbstractHorse var1, Container var2) {
+   public void openHorseInventory(final AbstractHorse horse, final Container container) {
    }
 
-   public void openNautilusInventory(AbstractNautilus var1, Container var2) {
+   public void openNautilusInventory(final AbstractNautilus nautilus, final Container container) {
    }
 
-   public OptionalInt openMenu(@Nullable MenuProvider var1) {
+   public OptionalInt openMenu(final @Nullable MenuProvider provider) {
       return OptionalInt.empty();
    }
 
-   public void openDialog(Holder<Dialog> var1) {
+   public void openDialog(final Holder<Dialog> dialog) {
    }
 
-   public void sendMerchantOffers(int var1, MerchantOffers var2, int var3, int var4, boolean var5, boolean var6) {
+   public void sendMerchantOffers(final int containerId, final MerchantOffers offers, final int merchantLevel, final int merchantXp, final boolean showProgressBar, final boolean canRestock) {
    }
 
-   public void openItemGui(ItemStack var1, InteractionHand var2) {
+   public void openItemGui(final ItemStack itemStack, final InteractionHand hand) {
    }
 
-   public InteractionResult interactOn(Entity var1, InteractionHand var2) {
+   public InteractionResult interactOn(final Entity entity, final InteractionHand hand, final Vec3 location) {
       if (this.isSpectator()) {
-         if (var1 instanceof MenuProvider) {
-            this.openMenu((MenuProvider)var1);
+         if (entity instanceof MenuProvider) {
+            this.openMenu((MenuProvider)entity);
          }
 
          return InteractionResult.PASS;
       } else {
-         ItemStack var3 = this.getItemInHand(var2);
-         ItemStack var4 = var3.copy();
-         InteractionResult var5 = var1.interact(this, var2);
-         if (var5.consumesAction()) {
-            if (this.hasInfiniteMaterials() && var3 == this.getItemInHand(var2) && var3.getCount() < var4.getCount()) {
-               var3.setCount(var4.getCount());
+         ItemStack itemStack = this.getItemInHand(hand);
+         ItemStack itemStackClone = itemStack.copy();
+         InteractionResult interact = entity.interact(this, hand, location);
+         if (interact.consumesAction()) {
+            if (this.hasInfiniteMaterials() && itemStack == this.getItemInHand(hand) && itemStack.getCount() < itemStackClone.getCount()) {
+               itemStack.setCount(itemStackClone.getCount());
             }
 
-            return var5;
+            return interact;
          } else {
-            if (!var3.isEmpty() && var1 instanceof LivingEntity) {
+            if (!itemStack.isEmpty() && entity instanceof LivingEntity) {
                if (this.hasInfiniteMaterials()) {
-                  var3 = var4;
+                  itemStack = itemStackClone;
                }
 
-               InteractionResult var6 = var3.interactLivingEntity(this, (LivingEntity)var1, var2);
-               if (var6.consumesAction()) {
-                  this.level().gameEvent(GameEvent.ENTITY_INTERACT, var1.position(), GameEvent.Context.of((Entity)this));
-                  if (var3.isEmpty() && !this.hasInfiniteMaterials()) {
-                     this.setItemInHand(var2, ItemStack.EMPTY);
+               InteractionResult interactionResult = itemStack.interactLivingEntity(this, (LivingEntity)entity, hand);
+               if (interactionResult.consumesAction()) {
+                  this.level().gameEvent(GameEvent.ENTITY_INTERACT, entity.position(), GameEvent.Context.of((Entity)this));
+                  if (itemStack.isEmpty() && !this.hasInfiniteMaterials()) {
+                     this.setItemInHand(hand, ItemStack.EMPTY);
                   }
 
-                  return var6;
+                  return interactionResult;
                }
             }
 
@@ -855,132 +835,132 @@ public abstract class Player extends Avatar implements ContainerUser {
       return !this.abilities.flying;
    }
 
-   protected Vec3 maybeBackOffFromEdge(Vec3 var1, MoverType var2) {
-      float var3 = this.maxUpStep();
-      if (!this.abilities.flying && !(var1.y > 0.0) && (var2 == MoverType.SELF || var2 == MoverType.PLAYER) && this.isStayingOnGroundSurface() && this.isAboveGround(var3)) {
-         double var4 = var1.x;
-         double var6 = var1.z;
-         double var8 = 0.05;
-         double var10 = Math.signum(var4) * 0.05;
+   protected Vec3 maybeBackOffFromEdge(final Vec3 delta, final MoverType moverType) {
+      float maxDownStep = this.maxUpStep();
+      if (!this.abilities.flying && !(delta.y > 0.0) && (moverType == MoverType.SELF || moverType == MoverType.PLAYER) && this.isStayingOnGroundSurface() && this.isAboveGround(maxDownStep)) {
+         double deltaX = delta.x;
+         double deltaZ = delta.z;
+         double step = 0.05;
+         double stepX = Math.signum(deltaX) * 0.05;
 
-         double var12;
-         for(var12 = Math.signum(var6) * 0.05; var4 != 0.0 && this.canFallAtLeast(var4, 0.0, (double)var3); var4 -= var10) {
-            if (Math.abs(var4) <= 0.05) {
-               var4 = 0.0;
+         double stepZ;
+         for(stepZ = Math.signum(deltaZ) * 0.05; deltaX != 0.0 && this.canFallAtLeast(deltaX, 0.0, (double)maxDownStep); deltaX -= stepX) {
+            if (Math.abs(deltaX) <= 0.05) {
+               deltaX = 0.0;
                break;
             }
          }
 
-         while(var6 != 0.0 && this.canFallAtLeast(0.0, var6, (double)var3)) {
-            if (Math.abs(var6) <= 0.05) {
-               var6 = 0.0;
+         while(deltaZ != 0.0 && this.canFallAtLeast(0.0, deltaZ, (double)maxDownStep)) {
+            if (Math.abs(deltaZ) <= 0.05) {
+               deltaZ = 0.0;
                break;
             }
 
-            var6 -= var12;
+            deltaZ -= stepZ;
          }
 
-         while(var4 != 0.0 && var6 != 0.0 && this.canFallAtLeast(var4, var6, (double)var3)) {
-            if (Math.abs(var4) <= 0.05) {
-               var4 = 0.0;
+         while(deltaX != 0.0 && deltaZ != 0.0 && this.canFallAtLeast(deltaX, deltaZ, (double)maxDownStep)) {
+            if (Math.abs(deltaX) <= 0.05) {
+               deltaX = 0.0;
             } else {
-               var4 -= var10;
+               deltaX -= stepX;
             }
 
-            if (Math.abs(var6) <= 0.05) {
-               var6 = 0.0;
+            if (Math.abs(deltaZ) <= 0.05) {
+               deltaZ = 0.0;
             } else {
-               var6 -= var12;
+               deltaZ -= stepZ;
             }
          }
 
-         return new Vec3(var4, var1.y, var6);
+         return new Vec3(deltaX, delta.y, deltaZ);
       } else {
-         return var1;
+         return delta;
       }
    }
 
-   private boolean isAboveGround(float var1) {
-      return this.onGround() || this.fallDistance < (double)var1 && !this.canFallAtLeast(0.0, 0.0, (double)var1 - this.fallDistance);
+   private boolean isAboveGround(final float maxDownStep) {
+      return this.onGround() || this.fallDistance < (double)maxDownStep && !this.canFallAtLeast(0.0, 0.0, (double)maxDownStep - this.fallDistance);
    }
 
-   private boolean canFallAtLeast(double var1, double var3, double var5) {
-      AABB var7 = this.getBoundingBox();
-      return this.level().noCollision(this, new AABB(var7.minX + 1.0E-7 + var1, var7.minY - var5 - 1.0E-7, var7.minZ + 1.0E-7 + var3, var7.maxX - 1.0E-7 + var1, var7.minY, var7.maxZ - 1.0E-7 + var3));
+   private boolean canFallAtLeast(final double deltaX, final double deltaZ, final double minHeight) {
+      AABB boundingBox = this.getBoundingBox();
+      return this.level().noCollision(this, new AABB(boundingBox.minX + 1.0E-7 + deltaX, boundingBox.minY - minHeight - 1.0E-7, boundingBox.minZ + 1.0E-7 + deltaZ, boundingBox.maxX - 1.0E-7 + deltaX, boundingBox.minY, boundingBox.maxZ - 1.0E-7 + deltaZ));
    }
 
-   public void attack(Entity var1) {
-      if (!this.cannotAttack(var1)) {
-         float var2 = this.isAutoSpinAttack() ? this.autoSpinAttackDmg : (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
-         ItemStack var3 = this.getWeaponItem();
-         DamageSource var4 = this.createAttackSource(var3);
-         float var5 = this.getAttackStrengthScale(0.5F);
-         float var6 = var5 * (this.getEnchantedDamage(var1, var2, var4) - var2);
-         var2 *= this.baseDamageScaleFactor();
+   public void attack(final Entity entity) {
+      if (!this.cannotAttack(entity)) {
+         float baseDamage = this.isAutoSpinAttack() ? this.autoSpinAttackDmg : (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
+         ItemStack attackingItemStack = this.getWeaponItem();
+         DamageSource damageSource = this.createAttackSource(attackingItemStack);
+         float attackStrengthScale = this.getAttackStrengthScale(0.5F);
+         float magicBoost = attackStrengthScale * (this.getEnchantedDamage(entity, baseDamage, damageSource) - baseDamage);
+         baseDamage *= this.baseDamageScaleFactor();
          this.onAttack();
-         if (!this.deflectProjectile(var1)) {
-            if (var2 > 0.0F || var6 > 0.0F) {
-               boolean var7 = var5 > 0.9F;
-               boolean var8;
-               if (this.isSprinting() && var7) {
+         if (!this.deflectProjectile(entity)) {
+            if (baseDamage > 0.0F || magicBoost > 0.0F) {
+               boolean fullStrengthAttack = attackStrengthScale > 0.9F;
+               boolean knockbackAttack;
+               if (this.isSprinting() && fullStrengthAttack) {
                   this.playServerSideSound(SoundEvents.PLAYER_ATTACK_KNOCKBACK);
-                  var8 = true;
+                  knockbackAttack = true;
                } else {
-                  var8 = false;
+                  knockbackAttack = false;
                }
 
-               var2 += var3.getItem().getAttackDamageBonus(var1, var2, var4);
-               boolean var9 = var7 && this.canCriticalAttack(var1);
-               if (var9) {
-                  var2 *= 1.5F;
+               baseDamage += attackingItemStack.getItem().getAttackDamageBonus(entity, baseDamage, damageSource);
+               boolean criticalAttack = fullStrengthAttack && this.canCriticalAttack(entity);
+               if (criticalAttack) {
+                  baseDamage *= 1.5F;
                }
 
-               float var10 = var2 + var6;
-               boolean var11 = this.isSweepAttack(var7, var9, var8);
-               float var12 = 0.0F;
-               if (var1 instanceof LivingEntity) {
-                  LivingEntity var13 = (LivingEntity)var1;
-                  var12 = var13.getHealth();
+               float totalDamage = baseDamage + magicBoost;
+               boolean sweepAttack = this.isSweepAttack(fullStrengthAttack, criticalAttack, knockbackAttack);
+               float oldLivingEntityHealth = 0.0F;
+               if (entity instanceof LivingEntity) {
+                  LivingEntity livingTarget = (LivingEntity)entity;
+                  oldLivingEntityHealth = livingTarget.getHealth();
                }
 
-               Vec3 var17 = var1.getDeltaMovement();
-               boolean var14 = var1.hurtOrSimulate(var4, var10);
-               if (var14) {
-                  this.causeExtraKnockback(var1, this.getKnockback(var1, var4) + (var8 ? 0.5F : 0.0F), var17);
-                  if (var11) {
-                     this.doSweepAttack(var1, var2, var4, var5);
+               Vec3 oldMovement = entity.getDeltaMovement();
+               boolean wasHurt = entity.hurtOrSimulate(damageSource, totalDamage);
+               if (wasHurt) {
+                  this.causeExtraKnockback(entity, this.getKnockback(entity, damageSource) + (knockbackAttack ? 0.5F : 0.0F), oldMovement);
+                  if (sweepAttack) {
+                     this.doSweepAttack(entity, baseDamage, damageSource, attackStrengthScale);
                   }
 
-                  this.attackVisualEffects(var1, var9, var11, var7, false, var6);
-                  this.setLastHurtMob(var1);
-                  this.itemAttackInteraction(var1, var3, var4, true);
-                  this.damageStatsAndHearts(var1, var12);
+                  this.attackVisualEffects(entity, criticalAttack, sweepAttack, fullStrengthAttack, false, magicBoost);
+                  this.setLastHurtMob(entity);
+                  this.itemAttackInteraction(entity, attackingItemStack, damageSource, true);
+                  this.damageStatsAndHearts(entity, oldLivingEntityHealth);
                   this.causeFoodExhaustion(0.1F);
                } else {
                   this.playServerSideSound(SoundEvents.PLAYER_ATTACK_NODAMAGE);
                }
             }
 
-            this.lungeForwardMaybe();
+            this.postPiercingAttack();
          }
       }
    }
 
-   private void playServerSideSound(SoundEvent var1) {
-      this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), 1.0F, 1.0F);
+   private void playServerSideSound(final SoundEvent sound) {
+      this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 1.0F, 1.0F);
    }
 
-   private DamageSource createAttackSource(ItemStack var1) {
-      return var1.getDamageSource(this, () -> this.damageSources().playerAttack(this));
+   private DamageSource createAttackSource(final ItemStack attackingItemStack) {
+      return attackingItemStack.getDamageSource(this, () -> this.damageSources().playerAttack(this));
    }
 
-   private boolean cannotAttack(Entity var1) {
-      return !var1.isAttackable() ? true : var1.skipAttackInteraction(this);
+   private boolean cannotAttack(final Entity entity) {
+      return !entity.isAttackable() ? true : entity.skipAttackInteraction(this);
    }
 
-   private boolean deflectProjectile(Entity var1) {
-      if (var1.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && var1 instanceof Projectile var2) {
-         if (var2.deflect(ProjectileDeflection.AIM_DEFLECT, this, EntityReference.of(this), true)) {
+   private boolean deflectProjectile(final Entity entity) {
+      if (entity.is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof Projectile projectile) {
+         if (projectile.deflect(ProjectileDeflection.AIM_DEFLECT, this, EntityReference.of(this), true)) {
             this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource());
             return true;
          }
@@ -989,15 +969,15 @@ public abstract class Player extends Avatar implements ContainerUser {
       return false;
    }
 
-   private boolean canCriticalAttack(Entity var1) {
-      return this.fallDistance > 0.0 && !this.onGround() && !this.onClimbable() && !this.isInWater() && !this.isMobilityRestricted() && !this.isPassenger() && var1 instanceof LivingEntity && !this.isSprinting();
+   private boolean canCriticalAttack(final Entity entity) {
+      return this.fallDistance > 0.0 && !this.onGround() && !this.onClimbable() && !this.isInWater() && !this.isMobilityRestricted() && !this.isPassenger() && entity instanceof LivingEntity && !this.isSprinting();
    }
 
-   private boolean isSweepAttack(boolean var1, boolean var2, boolean var3) {
-      if (var1 && !var2 && !var3 && this.onGround()) {
-         double var4 = this.getKnownMovement().horizontalDistanceSqr();
-         double var6 = (double)this.getSpeed() * 2.5;
-         if (var4 < Mth.square(var6)) {
+   private boolean isSweepAttack(final boolean fullStrengthAttack, final boolean criticalAttack, final boolean knockbackAttack) {
+      if (fullStrengthAttack && !criticalAttack && !knockbackAttack && this.onGround()) {
+         double approximateSpeedSq = this.getKnownMovement().horizontalDistanceSqr();
+         double maxSpeedForSweepAttack = (double)this.getSpeed() * 2.5;
+         if (approximateSpeedSq < Mth.square(maxSpeedForSweepAttack)) {
             return this.getItemInHand(InteractionHand.MAIN_HAND).is(ItemTags.SWORDS);
          }
       }
@@ -1005,59 +985,59 @@ public abstract class Player extends Avatar implements ContainerUser {
       return false;
    }
 
-   private void attackVisualEffects(Entity var1, boolean var2, boolean var3, boolean var4, boolean var5, float var6) {
-      if (var2) {
+   private void attackVisualEffects(final Entity entity, final boolean criticalAttack, final boolean sweepAttack, final boolean fullStrengthAttack, final boolean stabAttack, final float magicBoost) {
+      if (criticalAttack) {
          this.playServerSideSound(SoundEvents.PLAYER_ATTACK_CRIT);
-         this.crit(var1);
+         this.crit(entity);
       }
 
-      if (!var2 && !var3 && !var5) {
-         this.playServerSideSound(var4 ? SoundEvents.PLAYER_ATTACK_STRONG : SoundEvents.PLAYER_ATTACK_WEAK);
+      if (!criticalAttack && !sweepAttack && !stabAttack) {
+         this.playServerSideSound(fullStrengthAttack ? SoundEvents.PLAYER_ATTACK_STRONG : SoundEvents.PLAYER_ATTACK_WEAK);
       }
 
-      if (var6 > 0.0F) {
-         this.magicCrit(var1);
+      if (magicBoost > 0.0F) {
+         this.magicCrit(entity);
       }
 
    }
 
-   private void damageStatsAndHearts(Entity var1, float var2) {
-      if (var1 instanceof LivingEntity) {
-         float var3 = var2 - ((LivingEntity)var1).getHealth();
-         this.awardStat(Stats.DAMAGE_DEALT, Math.round(var3 * 10.0F));
-         if (this.level() instanceof ServerLevel && var3 > 2.0F) {
-            int var4 = (int)((double)var3 * 0.5);
-            ((ServerLevel)this.level()).sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5), var1.getZ(), var4, 0.1, 0.0, 0.1, 0.2);
+   private void damageStatsAndHearts(final Entity entity, final float oldLivingEntityHealth) {
+      if (entity instanceof LivingEntity) {
+         float actualDamage = oldLivingEntityHealth - ((LivingEntity)entity).getHealth();
+         this.awardStat(Stats.DAMAGE_DEALT, Math.round(actualDamage * 10.0F));
+         if (this.level() instanceof ServerLevel && actualDamage > 2.0F) {
+            int count = (int)((double)actualDamage * 0.5);
+            ((ServerLevel)this.level()).sendParticles(ParticleTypes.DAMAGE_INDICATOR, entity.getX(), entity.getY(0.5), entity.getZ(), count, 0.1, 0.0, 0.1, 0.2);
          }
       }
 
    }
 
-   private void itemAttackInteraction(Entity var1, ItemStack var2, DamageSource var3, boolean var4) {
-      Object var5 = var1;
-      if (var1 instanceof EnderDragonPart) {
-         var5 = ((EnderDragonPart)var1).parentMob;
+   private void itemAttackInteraction(final Entity entity, final ItemStack attackingItemStack, final DamageSource damageSource, final boolean applyToTarget) {
+      Entity hurtTarget = entity;
+      if (entity instanceof EnderDragonPart) {
+         hurtTarget = ((EnderDragonPart)entity).parentMob;
       }
 
-      boolean var6 = false;
+      boolean itemHurtEnemy = false;
       Level var8 = this.level();
-      if (var8 instanceof ServerLevel var7) {
-         if (var5 instanceof LivingEntity var9) {
-            var6 = var2.hurtEnemy(var9, this);
+      if (var8 instanceof ServerLevel serverLevel) {
+         if (hurtTarget instanceof LivingEntity livingTarget) {
+            itemHurtEnemy = attackingItemStack.hurtEnemy(livingTarget, this);
          }
 
-         if (var4) {
-            EnchantmentHelper.doPostAttackEffectsWithItemSource(var7, var1, var3, var2);
+         if (applyToTarget) {
+            EnchantmentHelper.doPostAttackEffectsWithItemSource(serverLevel, entity, damageSource, attackingItemStack);
          }
       }
 
-      if (!this.level().isClientSide() && !var2.isEmpty() && var5 instanceof LivingEntity) {
-         if (var6) {
-            var2.postHurtEnemy((LivingEntity)var5, this);
+      if (!this.level().isClientSide() && !attackingItemStack.isEmpty() && hurtTarget instanceof LivingEntity) {
+         if (itemHurtEnemy) {
+            attackingItemStack.postHurtEnemy((LivingEntity)hurtTarget, this);
          }
 
-         if (var2.isEmpty()) {
-            if (var2 == this.getMainHandItem()) {
+         if (attackingItemStack.isEmpty()) {
+            if (attackingItemStack == this.getMainHandItem()) {
                this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             } else {
                this.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
@@ -1067,23 +1047,23 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    }
 
-   public void causeExtraKnockback(Entity var1, float var2, Vec3 var3) {
-      if (var2 > 0.0F) {
-         if (var1 instanceof LivingEntity) {
-            LivingEntity var4 = (LivingEntity)var1;
-            var4.knockback((double)var2, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))));
+   public void causeExtraKnockback(final Entity entity, final float knockbackAmount, final Vec3 oldMovement) {
+      if (knockbackAmount > 0.0F) {
+         if (entity instanceof LivingEntity) {
+            LivingEntity livingTarget = (LivingEntity)entity;
+            livingTarget.knockback((double)knockbackAmount, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))));
          } else {
-            var1.push((double)(-Mth.sin((double)(this.getYRot() * 0.017453292F)) * var2), 0.1, (double)(Mth.cos((double)(this.getYRot() * 0.017453292F)) * var2));
+            entity.push((double)(-Mth.sin((double)(this.getYRot() * 0.017453292F)) * knockbackAmount), 0.1, (double)(Mth.cos((double)(this.getYRot() * 0.017453292F)) * knockbackAmount));
          }
 
          this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
          this.setSprinting(false);
       }
 
-      if (var1 instanceof ServerPlayer && var1.hurtMarked) {
-         ((ServerPlayer)var1).connection.send(new ClientboundSetEntityMotionPacket(var1));
-         var1.hurtMarked = false;
-         var1.setDeltaMovement(var3);
+      if (entity instanceof ServerPlayer && entity.hurtMarked) {
+         ((ServerPlayer)entity).connection.send(new ClientboundSetEntityMotionPacket(entity));
+         entity.hurtMarked = false;
+         entity.setDeltaMovement(oldMovement);
       }
 
    }
@@ -1092,94 +1072,94 @@ public abstract class Player extends Avatar implements ContainerUser {
       return 1.0F;
    }
 
-   private void doSweepAttack(Entity var1, float var2, DamageSource var3, float var4) {
+   private void doSweepAttack(final Entity entity, final float baseDamage, final DamageSource damageSource, final float attackStrengthScale) {
       this.playServerSideSound(SoundEvents.PLAYER_ATTACK_SWEEP);
       Level var6 = this.level();
-      if (var6 instanceof ServerLevel var5) {
-         float var12 = 1.0F + (float)this.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * var2;
+      if (var6 instanceof ServerLevel serverLevel) {
+         float var12 = 1.0F + (float)this.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * baseDamage;
 
-         for(LivingEntity var9 : this.level().getEntitiesOfClass(LivingEntity.class, var1.getBoundingBox().inflate(1.0, 0.25, 1.0))) {
-            if (var9 != this && var9 != var1 && !this.isAlliedTo(var9)) {
-               if (var9 instanceof ArmorStand) {
-                  ArmorStand var10 = (ArmorStand)var9;
-                  if (var10.isMarker()) {
+         for(LivingEntity nearby : this.level().getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(1.0, 0.25, 1.0))) {
+            if (nearby != this && nearby != entity && !this.isAlliedTo(nearby)) {
+               if (nearby instanceof ArmorStand) {
+                  ArmorStand armorStand = (ArmorStand)nearby;
+                  if (armorStand.isMarker()) {
                      continue;
                   }
                }
 
-               if (this.distanceToSqr(var9) < 9.0) {
-                  float var14 = this.getEnchantedDamage(var9, var12, var3) * var4;
-                  if (var9.hurtServer(var5, var3, var14)) {
-                     var9.knockback(0.4000000059604645, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))));
-                     EnchantmentHelper.doPostAttackEffects(var5, var9, var3);
+               if (this.distanceToSqr(nearby) < 9.0) {
+                  float enchantedDamage = this.getEnchantedDamage(nearby, var12, damageSource) * attackStrengthScale;
+                  if (nearby.hurtServer(serverLevel, damageSource, enchantedDamage)) {
+                     nearby.knockback(0.4000000059604645, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))));
+                     EnchantmentHelper.doPostAttackEffects(serverLevel, nearby, damageSource);
                   }
                }
             }
          }
 
-         double var13 = (double)(-Mth.sin((double)(this.getYRot() * 0.017453292F)));
-         double var15 = (double)Mth.cos((double)(this.getYRot() * 0.017453292F));
-         var5.sendParticles(ParticleTypes.SWEEP_ATTACK, this.getX() + var13, this.getY(0.5), this.getZ() + var15, 0, var13, 0.0, var15, 0.0);
+         double dx = (double)(-Mth.sin((double)(this.getYRot() * 0.017453292F)));
+         double dz = (double)Mth.cos((double)(this.getYRot() * 0.017453292F));
+         serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK, this.getX() + dx, this.getY(0.5), this.getZ() + dz, 0, dx, 0.0, dz, 0.0);
       }
    }
 
-   protected float getEnchantedDamage(Entity var1, float var2, DamageSource var3) {
-      return var2;
+   protected float getEnchantedDamage(final Entity entity, final float dmg, final DamageSource damageSource) {
+      return dmg;
    }
 
-   protected void doAutoAttackOnTouch(LivingEntity var1) {
-      this.attack(var1);
+   protected void doAutoAttackOnTouch(final LivingEntity entity) {
+      this.attack(entity);
    }
 
-   public void crit(Entity var1) {
+   public void crit(final Entity entity) {
    }
 
    private float baseDamageScaleFactor() {
-      float var1 = this.getAttackStrengthScale(0.5F);
-      return 0.2F + var1 * var1 * 0.8F;
+      float attackStrengthScale = this.getAttackStrengthScale(0.5F);
+      return 0.2F + attackStrengthScale * attackStrengthScale * 0.8F;
    }
 
-   public boolean stabAttack(EquipmentSlot var1, Entity var2, float var3, boolean var4, boolean var5, boolean var6) {
-      if (this.cannotAttack(var2)) {
+   public boolean stabAttack(final EquipmentSlot slot, final Entity target, float baseDamage, final boolean dealsDamage, final boolean dealsKnockback, final boolean dismounts) {
+      if (this.cannotAttack(target)) {
          return false;
       } else {
-         ItemStack var7 = this.getItemBySlot(var1);
-         DamageSource var8 = this.createAttackSource(var7);
-         float var9 = this.getEnchantedDamage(var2, var3, var8) - var3;
-         if (!this.isUsingItem() || this.getUsedItemHand().asEquipmentSlot() != var1) {
-            var9 *= this.getAttackStrengthScale(0.5F);
-            var3 *= this.baseDamageScaleFactor();
+         ItemStack weaponItem = this.getItemBySlot(slot);
+         DamageSource damageSource = this.createAttackSource(weaponItem);
+         float magicBoost = this.getEnchantedDamage(target, baseDamage, damageSource) - baseDamage;
+         if (!this.isUsingItem() || this.getUsedItemHand().asEquipmentSlot() != slot) {
+            magicBoost *= this.getAttackStrengthScale(0.5F);
+            baseDamage *= this.baseDamageScaleFactor();
          }
 
-         if (var5 && this.deflectProjectile(var2)) {
+         if (dealsKnockback && this.deflectProjectile(target)) {
             return true;
          } else {
-            float var10 = var4 ? var3 + var9 : 0.0F;
-            float var11 = 0.0F;
-            if (var2 instanceof LivingEntity) {
-               LivingEntity var12 = (LivingEntity)var2;
-               var11 = var12.getHealth();
+            float totalDamage = dealsDamage ? baseDamage + magicBoost : 0.0F;
+            float oldLivingEntityHealth = 0.0F;
+            if (target instanceof LivingEntity) {
+               LivingEntity livingTarget = (LivingEntity)target;
+               oldLivingEntityHealth = livingTarget.getHealth();
             }
 
-            Vec3 var15 = var2.getDeltaMovement();
-            boolean var13 = var4 && var2.hurtOrSimulate(var8, var10);
-            if (var5) {
-               this.causeExtraKnockback(var2, 0.4F + this.getKnockback(var2, var8), var15);
+            Vec3 oldMovement = target.getDeltaMovement();
+            boolean wasHurt = dealsDamage && target.hurtOrSimulate(damageSource, totalDamage);
+            if (dealsKnockback) {
+               this.causeExtraKnockback(target, 0.4F + this.getKnockback(target, damageSource), oldMovement);
             }
 
-            boolean var14 = false;
-            if (var6 && var2.isPassenger()) {
-               var14 = true;
-               var2.stopRiding();
+            boolean dismounted = false;
+            if (dismounts && target.isPassenger()) {
+               dismounted = true;
+               target.stopRiding();
             }
 
-            if (!var13 && !var5 && !var14) {
+            if (!wasHurt && !dealsKnockback && !dismounted) {
                return false;
             } else {
-               this.attackVisualEffects(var2, false, false, var4, true, var9);
-               this.setLastHurtMob(var2);
-               this.itemAttackInteraction(var2, var7, var8, var13);
-               this.damageStatsAndHearts(var2, var11);
+               this.attackVisualEffects(target, false, false, dealsDamage, true, magicBoost);
+               this.setLastHurtMob(target);
+               this.itemAttackInteraction(target, weaponItem, damageSource, wasHurt);
+               this.damageStatsAndHearts(target, oldLivingEntityHealth);
                this.causeFoodExhaustion(0.1F);
                return true;
             }
@@ -1187,11 +1167,11 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
    }
 
-   public void magicCrit(Entity var1) {
+   public void magicCrit(final Entity entity) {
    }
 
-   public void remove(Entity.RemovalReason var1) {
-      super.remove(var1);
+   public void remove(final Entity.RemovalReason reason) {
+      super.remove(reason);
       this.inventoryMenu.removed(this);
       if (this.hasContainerOpen()) {
          this.doCloseContainer();
@@ -1243,7 +1223,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.abilities.instabuild;
    }
 
-   public void updateTutorialInventoryAction(ItemStack var1, ItemStack var2, ClickAction var3) {
+   public void updateTutorialInventoryAction(final ItemStack itemCarried, final ItemStack itemInSlot, final ClickAction clickAction) {
    }
 
    public boolean hasContainerOpen() {
@@ -1254,19 +1234,19 @@ public abstract class Player extends Avatar implements ContainerUser {
       return true;
    }
 
-   public Either<BedSleepingProblem, Unit> startSleepInBed(BlockPos var1) {
-      this.startSleeping(var1);
+   public Either<BedSleepingProblem, Unit> startSleepInBed(final BlockPos pos) {
+      this.startSleeping(pos);
       this.sleepCounter = 0;
       return Either.right(Unit.INSTANCE);
    }
 
-   public void stopSleepInBed(boolean var1, boolean var2) {
+   public void stopSleepInBed(final boolean forcefulWakeUp, final boolean updateLevelList) {
       super.stopSleeping();
-      if (this.level() instanceof ServerLevel && var2) {
+      if (this.level() instanceof ServerLevel && updateLevelList) {
          ((ServerLevel)this.level()).updateSleepingPlayerList();
       }
 
-      this.sleepCounter = var1 ? 0 : 100;
+      this.sleepCounter = forcefulWakeUp ? 0 : 100;
    }
 
    public void stopSleeping() {
@@ -1281,60 +1261,60 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.sleepCounter;
    }
 
-   public void displayClientMessage(Component var1, boolean var2) {
+   public void displayClientMessage(final Component component, final boolean overlayMessage) {
    }
 
-   public void awardStat(Identifier var1) {
-      this.awardStat(Stats.CUSTOM.get(var1));
+   public void awardStat(final Identifier location) {
+      this.awardStat(Stats.CUSTOM.get(location));
    }
 
-   public void awardStat(Identifier var1, int var2) {
-      this.awardStat(Stats.CUSTOM.get(var1), var2);
+   public void awardStat(final Identifier location, final int count) {
+      this.awardStat(Stats.CUSTOM.get(location), count);
    }
 
-   public void awardStat(Stat<?> var1) {
-      this.awardStat((Stat)var1, 1);
+   public void awardStat(final Stat<?> stat) {
+      this.awardStat((Stat)stat, 1);
    }
 
-   public void awardStat(Stat<?> var1, int var2) {
+   public void awardStat(final Stat<?> stat, final int count) {
    }
 
-   public void resetStat(Stat<?> var1) {
+   public void resetStat(final Stat<?> stat) {
    }
 
-   public int awardRecipes(Collection<RecipeHolder<?>> var1) {
+   public int awardRecipes(final Collection<RecipeHolder<?>> recipes) {
       return 0;
    }
 
-   public void triggerRecipeCrafted(RecipeHolder<?> var1, List<ItemStack> var2) {
+   public void triggerRecipeCrafted(final RecipeHolder<?> recipe, final List<ItemStack> itemStacks) {
    }
 
-   public void awardRecipesByKey(List<ResourceKey<Recipe<?>>> var1) {
+   public void awardRecipesByKey(final List<ResourceKey<Recipe<?>>> recipeIds) {
    }
 
-   public int resetRecipes(Collection<RecipeHolder<?>> var1) {
+   public int resetRecipes(final Collection<RecipeHolder<?>> recipe) {
       return 0;
    }
 
-   public void travel(Vec3 var1) {
+   public void travel(final Vec3 input) {
       if (this.isPassenger()) {
-         super.travel(var1);
+         super.travel(input);
       } else {
          if (this.isSwimming()) {
-            double var2 = this.getLookAngle().y;
-            double var4 = var2 < -0.2 ? 0.085 : 0.06;
-            if (var2 <= 0.0 || this.jumping || !this.level().getFluidState(BlockPos.containing(this.getX(), this.getY() + 1.0 - 0.1, this.getZ())).isEmpty()) {
-               Vec3 var6 = this.getDeltaMovement();
-               this.setDeltaMovement(var6.add(0.0, (var2 - var6.y) * var4, 0.0));
+            double lookAngleY = this.getLookAngle().y;
+            double multiplier = lookAngleY < -0.2 ? 0.085 : 0.06;
+            if (lookAngleY <= 0.0 || this.jumping || !this.level().getFluidState(BlockPos.containing(this.getX(), this.getY() + 1.0 - 0.1, this.getZ())).isEmpty()) {
+               Vec3 movement = this.getDeltaMovement();
+               this.setDeltaMovement(movement.add(0.0, (lookAngleY - movement.y) * multiplier, 0.0));
             }
          }
 
          if (this.getAbilities().flying) {
-            double var7 = this.getDeltaMovement().y;
-            super.travel(var1);
-            this.setDeltaMovement(this.getDeltaMovement().with(Direction.Axis.Y, var7 * 0.6));
+            double originalMovementY = this.getDeltaMovement().y;
+            super.travel(input);
+            this.setDeltaMovement(this.getDeltaMovement().with(Direction.Axis.Y, originalMovementY * 0.6));
          } else {
-            super.travel(var1);
+            super.travel(input);
          }
 
       }
@@ -1353,43 +1333,23 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    }
 
-   protected boolean freeAt(BlockPos var1) {
-      return !this.level().getBlockState(var1).isSuffocating(this.level(), var1);
+   protected boolean freeAt(final BlockPos pos) {
+      return !this.level().getBlockState(pos).isSuffocating(this.level(), pos);
    }
 
    public float getSpeed() {
       return (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED);
    }
 
-   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
+   public boolean causeFallDamage(final double fallDistance, final float damageModifier, final DamageSource damageSource) {
       if (this.abilities.mayfly) {
          return false;
       } else {
-         if (var1 >= 2.0) {
-            this.awardStat(Stats.FALL_ONE_CM, (int)Math.round(var1 * 100.0));
+         if (fallDistance >= 2.0) {
+            this.awardStat(Stats.FALL_ONE_CM, (int)Math.round(fallDistance * 100.0));
          }
 
-         boolean var7 = this.currentImpulseImpactPos != null && this.ignoreFallDamageFromCurrentImpulse;
-         double var5;
-         if (var7) {
-            var5 = Math.min(var1, this.currentImpulseImpactPos.y - this.getY());
-            boolean var8 = var5 <= 0.0;
-            if (var8) {
-               this.resetCurrentImpulseContext();
-            } else {
-               this.tryResetCurrentImpulseContext();
-            }
-         } else {
-            var5 = var1;
-         }
-
-         if (var5 > 0.0 && super.causeFallDamage(var5, var3, var4)) {
-            this.resetCurrentImpulseContext();
-            return true;
-         } else {
-            this.propagateFallToPassengers(var1, var3, var4);
-            return false;
-         }
+         return super.causeFallDamage(fallDistance, damageModifier, damageSource);
       }
    }
 
@@ -1413,21 +1373,21 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos onPos, final BlockState onState) {
       if (this.isInWater()) {
          this.waterSwimSound();
-         this.playMuffledStepSound(var2);
+         this.playMuffledStepSound(onState);
       } else {
-         BlockPos var3 = this.getPrimaryStepSoundBlockPos(var1);
-         if (!var1.equals(var3)) {
-            BlockState var4 = this.level().getBlockState(var3);
-            if (var4.is(BlockTags.COMBINATION_STEP_SOUND_BLOCKS)) {
-               this.playCombinationStepSounds(var4, var2);
+         BlockPos primaryStepSoundPos = this.getPrimaryStepSoundBlockPos(onPos);
+         if (!onPos.equals(primaryStepSoundPos)) {
+            BlockState primaryStepState = this.level().getBlockState(primaryStepSoundPos);
+            if (primaryStepState.is(BlockTags.COMBINATION_STEP_SOUND_BLOCKS)) {
+               this.playCombinationStepSounds(primaryStepState, onState);
             } else {
-               super.playStepSound(var3, var4);
+               super.playStepSound(primaryStepSoundPos, primaryStepState);
             }
          } else {
-            super.playStepSound(var1, var2);
+            super.playStepSound(onPos, onState);
          }
       }
 
@@ -1437,29 +1397,29 @@ public abstract class Player extends Avatar implements ContainerUser {
       return new LivingEntity.Fallsounds(SoundEvents.PLAYER_SMALL_FALL, SoundEvents.PLAYER_BIG_FALL);
    }
 
-   public boolean killedEntity(ServerLevel var1, LivingEntity var2, DamageSource var3) {
-      this.awardStat(Stats.ENTITY_KILLED.get(var2.getType()));
+   public boolean killedEntity(final ServerLevel level, final LivingEntity entity, final DamageSource source) {
+      this.awardStat(Stats.ENTITY_KILLED.get(entity.getType()));
       return true;
    }
 
-   public void makeStuckInBlock(BlockState var1, Vec3 var2) {
+   public void makeStuckInBlock(final BlockState blockState, final Vec3 speedMultiplier) {
       if (!this.abilities.flying) {
-         super.makeStuckInBlock(var1, var2);
+         super.makeStuckInBlock(blockState, speedMultiplier);
       }
 
       this.tryResetCurrentImpulseContext();
    }
 
-   public void giveExperiencePoints(int var1) {
-      this.increaseScore(var1);
-      this.experienceProgress += (float)var1 / (float)this.getXpNeededForNextLevel();
-      this.totalExperience = Mth.clamp(this.totalExperience + var1, 0, 2147483647);
+   public void giveExperiencePoints(final int i) {
+      this.increaseScore(i);
+      this.experienceProgress += (float)i / (float)this.getXpNeededForNextLevel();
+      this.totalExperience = Mth.clamp(this.totalExperience + i, 0, 2147483647);
 
       while(this.experienceProgress < 0.0F) {
-         float var2 = this.experienceProgress * (float)this.getXpNeededForNextLevel();
+         float remaining = this.experienceProgress * (float)this.getXpNeededForNextLevel();
          if (this.experienceLevel > 0) {
             this.giveExperienceLevels(-1);
-            this.experienceProgress = 1.0F + var2 / (float)this.getXpNeededForNextLevel();
+            this.experienceProgress = 1.0F + remaining / (float)this.getXpNeededForNextLevel();
          } else {
             this.giveExperienceLevels(-1);
             this.experienceProgress = 0.0F;
@@ -1478,8 +1438,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.enchantmentSeed;
    }
 
-   public void onEnchantmentPerformed(ItemStack var1, int var2) {
-      this.experienceLevel -= var2;
+   public void onEnchantmentPerformed(final ItemStack itemStack, final int enchantmentCost) {
+      this.experienceLevel -= enchantmentCost;
       if (this.experienceLevel < 0) {
          this.experienceLevel = 0;
          this.experienceProgress = 0.0F;
@@ -1489,17 +1449,17 @@ public abstract class Player extends Avatar implements ContainerUser {
       this.enchantmentSeed = this.random.nextInt();
    }
 
-   public void giveExperienceLevels(int var1) {
-      this.experienceLevel = IntMath.saturatedAdd(this.experienceLevel, var1);
+   public void giveExperienceLevels(final int amount) {
+      this.experienceLevel = IntMath.saturatedAdd(this.experienceLevel, amount);
       if (this.experienceLevel < 0) {
          this.experienceLevel = 0;
          this.experienceProgress = 0.0F;
          this.totalExperience = 0;
       }
 
-      if (var1 > 0 && this.experienceLevel % 5 == 0 && (float)this.lastLevelUpTime < (float)this.tickCount - 100.0F) {
-         float var2 = this.experienceLevel > 30 ? 1.0F : (float)this.experienceLevel / 30.0F;
-         this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_LEVELUP, this.getSoundSource(), var2 * 0.75F, 1.0F);
+      if (amount > 0 && this.experienceLevel % 5 == 0 && (float)this.lastLevelUpTime < (float)this.tickCount - 100.0F) {
+         float vol = this.experienceLevel > 30 ? 1.0F : (float)this.experienceLevel / 30.0F;
+         this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_LEVELUP, this.getSoundSource(), vol * 0.75F, 1.0F);
          this.lastLevelUpTime = this.tickCount;
       }
 
@@ -1513,20 +1473,13 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
    }
 
-   public void causeFoodExhaustion(float var1) {
+   public void causeFoodExhaustion(final float amount) {
       if (!this.abilities.invulnerable) {
          if (!this.level().isClientSide()) {
-            this.foodData.addExhaustion(var1);
+            this.foodData.addExhaustion(amount);
          }
 
       }
-   }
-
-   public void lungeForwardMaybe() {
-      if (this.hasEnoughFoodToDoExhaustiveManoeuvres()) {
-         super.lungeForwardMaybe();
-      }
-
    }
 
    protected boolean hasEnoughFoodToDoExhaustiveManoeuvres() {
@@ -1541,8 +1494,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.foodData;
    }
 
-   public boolean canEat(boolean var1) {
-      return this.abilities.invulnerable || var1 || this.foodData.needsFood();
+   public boolean canEat(final boolean canAlwaysEat) {
+      return this.abilities.invulnerable || canAlwaysEat || this.foodData.needsFood();
    }
 
    public boolean isHurt() {
@@ -1553,18 +1506,18 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.abilities.mayBuild;
    }
 
-   public boolean mayUseItemAt(BlockPos var1, Direction var2, ItemStack var3) {
+   public boolean mayUseItemAt(final BlockPos pos, final Direction direction, final ItemStack itemStack) {
       if (this.abilities.mayBuild) {
          return true;
       } else {
-         BlockPos var4 = var1.relative(var2.getOpposite());
-         BlockInWorld var5 = new BlockInWorld(this.level(), var4, false);
-         return var3.canPlaceOnBlockInAdventureMode(var5);
+         BlockPos target = pos.relative(direction.getOpposite());
+         BlockInWorld block = new BlockInWorld(this.level(), target, false);
+         return itemStack.canPlaceOnBlockInAdventureMode(block);
       }
    }
 
-   protected int getBaseExperienceReward(ServerLevel var1) {
-      return !(Boolean)var1.getGameRules().get(GameRules.KEEP_INVENTORY) && !this.isSpectator() ? Math.min(this.experienceLevel * 7, 100) : 0;
+   protected int getBaseExperienceReward(final ServerLevel level) {
+      return !(Boolean)level.getGameRules().get(GameRules.KEEP_INVENTORY) && !this.isSpectator() ? Math.min(this.experienceLevel * 7, 100) : 0;
    }
 
    protected boolean isAlwaysExperienceDropper() {
@@ -1594,12 +1547,12 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.enderChestInventory;
    }
 
-   protected boolean doesEmitEquipEvent(EquipmentSlot var1) {
-      return var1.getType() == EquipmentSlot.Type.HUMANOID_ARMOR;
+   protected boolean doesEmitEquipEvent(final EquipmentSlot slot) {
+      return slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR;
    }
 
-   public boolean addItem(ItemStack var1) {
-      return this.inventory.add(var1);
+   public boolean addItem(final ItemStack itemStack) {
+      return this.inventory.add(itemStack);
    }
 
    public abstract @Nullable GameType gameMode();
@@ -1608,8 +1561,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.gameMode() == GameType.SPECTATOR;
    }
 
-   public boolean canBeHitByProjectile() {
-      return !this.isSpectator() && super.canBeHitByProjectile();
+   public boolean isPickable() {
+      return !this.isSpectator() && super.isPickable();
    }
 
    public boolean isSwimming() {
@@ -1625,58 +1578,66 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public Component getDisplayName() {
-      MutableComponent var1 = PlayerTeam.formatNameForTeam(this.getTeam(), this.getName());
-      return this.decorateDisplayNameComponent(var1);
+      MutableComponent result = PlayerTeam.formatNameForTeam(this.getTeam(), this.getName());
+      return this.decorateDisplayNameComponent(result);
    }
 
-   private MutableComponent decorateDisplayNameComponent(MutableComponent var1) {
-      String var2 = this.getGameProfile().name();
-      return var1.withStyle((UnaryOperator)((var2x) -> var2x.withClickEvent(new ClickEvent.SuggestCommand("/tell " + var2 + " ")).withHoverEvent(this.createHoverEvent()).withInsertion(var2)));
+   private MutableComponent decorateDisplayNameComponent(final MutableComponent nameComponent) {
+      String name = this.getGameProfile().name();
+      return nameComponent.withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.SuggestCommand("/tell " + name + " ")).withHoverEvent(this.createHoverEvent()).withInsertion(name)));
    }
 
    public String getScoreboardName() {
       return this.getGameProfile().name();
    }
 
-   protected void internalSetAbsorptionAmount(float var1) {
-      this.getEntityData().set(DATA_PLAYER_ABSORPTION_ID, var1);
+   protected void internalSetAbsorptionAmount(final float absorptionAmount) {
+      this.getEntityData().set(DATA_PLAYER_ABSORPTION_ID, absorptionAmount);
    }
 
    public float getAbsorptionAmount() {
       return (Float)this.getEntityData().get(DATA_PLAYER_ABSORPTION_ID);
    }
 
-   public @Nullable SlotAccess getSlot(int var1) {
-      if (var1 == 499) {
+   public @Nullable SlotAccess getSlot(final int slot) {
+      if (slot == 499) {
          return new SlotAccess() {
+            {
+               Objects.requireNonNull(Player.this);
+            }
+
             public ItemStack get() {
                return Player.this.containerMenu.getCarried();
             }
 
-            public boolean set(ItemStack var1) {
-               Player.this.containerMenu.setCarried(var1);
+            public boolean set(final ItemStack itemStack) {
+               Player.this.containerMenu.setCarried(itemStack);
                return true;
             }
          };
       } else {
-         final int var2 = var1 - 500;
-         if (var2 >= 0 && var2 < 4) {
+         final int craftSlot = slot - 500;
+         if (craftSlot >= 0 && craftSlot < 4) {
             return new SlotAccess() {
-               public ItemStack get() {
-                  return Player.this.inventoryMenu.getCraftSlots().getItem(var2);
+               {
+                  Objects.requireNonNull(Player.this);
                }
 
-               public boolean set(ItemStack var1) {
-                  Player.this.inventoryMenu.getCraftSlots().setItem(var2, var1);
+               public ItemStack get() {
+                  return Player.this.inventoryMenu.getCraftSlots().getItem(craftSlot);
+               }
+
+               public boolean set(final ItemStack itemStack) {
+                  Player.this.inventoryMenu.getCraftSlots().setItem(craftSlot, itemStack);
                   Player.this.inventoryMenu.slotsChanged(Player.this.inventory);
                   return true;
                }
             };
-         } else if (var1 >= 0 && var1 < this.inventory.getNonEquipmentItems().size()) {
-            return this.inventory.getSlot(var1);
+         } else if (slot >= 0 && slot < this.inventory.getNonEquipmentItems().size()) {
+            return this.inventory.getSlot(slot);
          } else {
-            int var3 = var1 - 200;
-            return var3 >= 0 && var3 < this.enderChestInventory.getContainerSize() ? this.enderChestInventory.getSlot(var3) : super.getSlot(var1);
+            int enderSlot = slot - 200;
+            return enderSlot >= 0 && enderSlot < this.enderChestInventory.getContainerSize() ? this.enderChestInventory.getSlot(enderSlot) : super.getSlot(slot);
          }
       }
    }
@@ -1685,43 +1646,43 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.reducedDebugInfo;
    }
 
-   public void setReducedDebugInfo(boolean var1) {
-      this.reducedDebugInfo = var1;
+   public void setReducedDebugInfo(final boolean reducedDebugInfo) {
+      this.reducedDebugInfo = reducedDebugInfo;
    }
 
-   public void setRemainingFireTicks(int var1) {
-      super.setRemainingFireTicks(this.abilities.invulnerable ? Math.min(var1, 1) : var1);
+   public void setRemainingFireTicks(final int remainingTicks) {
+      super.setRemainingFireTicks(this.abilities.invulnerable ? Math.min(remainingTicks, 1) : remainingTicks);
    }
 
-   protected static Optional<Parrot.Variant> extractParrotVariant(CompoundTag var0) {
-      if (!var0.isEmpty()) {
-         EntityType var1 = (EntityType)var0.read("id", EntityType.CODEC).orElse((Object)null);
-         if (var1 == EntityType.PARROT) {
-            return var0.read("Variant", Parrot.Variant.LEGACY_CODEC);
+   protected static Optional<Parrot.Variant> extractParrotVariant(final CompoundTag tag) {
+      if (!tag.isEmpty()) {
+         EntityType<?> entityType = (EntityType)tag.read("id", EntityType.CODEC).orElse((Object)null);
+         if (entityType == EntityType.PARROT) {
+            return tag.read("Variant", Parrot.Variant.LEGACY_CODEC);
          }
       }
 
       return Optional.empty();
    }
 
-   protected static OptionalInt convertParrotVariant(Optional<Parrot.Variant> var0) {
-      return (OptionalInt)var0.map((var0x) -> OptionalInt.of(var0x.getId())).orElse(OptionalInt.empty());
+   protected static OptionalInt convertParrotVariant(final Optional<Parrot.Variant> variant) {
+      return (OptionalInt)variant.map((v) -> OptionalInt.of(v.getId())).orElse(OptionalInt.empty());
    }
 
-   private static Optional<Parrot.Variant> convertParrotVariant(OptionalInt var0) {
-      return var0.isPresent() ? Optional.of(Parrot.Variant.byId(var0.getAsInt())) : Optional.empty();
+   private static Optional<Parrot.Variant> convertParrotVariant(final OptionalInt variant) {
+      return variant.isPresent() ? Optional.of(Parrot.Variant.byId(variant.getAsInt())) : Optional.empty();
    }
 
-   public void setShoulderParrotLeft(Optional<Parrot.Variant> var1) {
-      this.entityData.set(DATA_SHOULDER_PARROT_LEFT, convertParrotVariant(var1));
+   public void setShoulderParrotLeft(final Optional<Parrot.Variant> variant) {
+      this.entityData.set(DATA_SHOULDER_PARROT_LEFT, convertParrotVariant(variant));
    }
 
    public Optional<Parrot.Variant> getShoulderParrotLeft() {
       return convertParrotVariant((OptionalInt)this.entityData.get(DATA_SHOULDER_PARROT_LEFT));
    }
 
-   public void setShoulderParrotRight(Optional<Parrot.Variant> var1) {
-      this.entityData.set(DATA_SHOULDER_PARROT_RIGHT, convertParrotVariant(var1));
+   public void setShoulderParrotRight(final Optional<Parrot.Variant> variant) {
+      this.entityData.set(DATA_SHOULDER_PARROT_RIGHT, convertParrotVariant(variant));
    }
 
    public Optional<Parrot.Variant> getShoulderParrotRight() {
@@ -1732,18 +1693,18 @@ public abstract class Player extends Avatar implements ContainerUser {
       return (float)(1.0 / this.getAttributeValue(Attributes.ATTACK_SPEED) * 20.0);
    }
 
-   public boolean cannotAttackWithItem(ItemStack var1, int var2) {
-      float var3 = (Float)var1.getOrDefault(DataComponents.MINIMUM_ATTACK_CHARGE, 0.0F);
-      float var4 = (float)(this.attackStrengthTicker + var2) / this.getCurrentItemAttackStrengthDelay();
-      return var3 > 0.0F && var4 < var3;
+   public boolean cannotAttackWithItem(final ItemStack itemStack, final int tolerance) {
+      float requiredStrength = (Float)itemStack.getOrDefault(DataComponents.MINIMUM_ATTACK_CHARGE, 0.0F);
+      float optimisticStrength = (float)(this.attackStrengthTicker + tolerance) / this.getCurrentItemAttackStrengthDelay();
+      return requiredStrength > 0.0F && optimisticStrength < requiredStrength;
    }
 
-   public float getAttackStrengthScale(float var1) {
-      return Mth.clamp(((float)this.attackStrengthTicker + var1) / this.getCurrentItemAttackStrengthDelay(), 0.0F, 1.0F);
+   public float getAttackStrengthScale(final float a) {
+      return Mth.clamp(((float)this.attackStrengthTicker + a) / this.getCurrentItemAttackStrengthDelay(), 0.0F, 1.0F);
    }
 
-   public float getItemSwapScale(float var1) {
-      return Mth.clamp(((float)this.itemSwapTicker + var1) / this.getCurrentItemAttackStrengthDelay(), 0.0F, 1.0F);
+   public float getItemSwapScale(final float a) {
+      return Mth.clamp(((float)this.itemSwapTicker + a) / this.getCurrentItemAttackStrengthDelay(), 0.0F, 1.0F);
    }
 
    public void resetAttackStrengthTicker() {
@@ -1784,21 +1745,21 @@ public abstract class Player extends Avatar implements ContainerUser {
       return ImmutableList.of(Pose.STANDING, Pose.CROUCHING, Pose.SWIMMING);
    }
 
-   public ItemStack getProjectile(ItemStack var1) {
-      if (!(var1.getItem() instanceof ProjectileWeaponItem)) {
+   public ItemStack getProjectile(final ItemStack heldWeapon) {
+      if (!(heldWeapon.getItem() instanceof ProjectileWeaponItem)) {
          return ItemStack.EMPTY;
       } else {
-         Predicate var2 = ((ProjectileWeaponItem)var1.getItem()).getSupportedHeldProjectiles();
-         ItemStack var3 = ProjectileWeaponItem.getHeldProjectile(this, var2);
-         if (!var3.isEmpty()) {
-            return var3;
+         Predicate<ItemStack> supportedProjectiles = ((ProjectileWeaponItem)heldWeapon.getItem()).getSupportedHeldProjectiles();
+         ItemStack heldProjectile = ProjectileWeaponItem.getHeldProjectile(this, supportedProjectiles);
+         if (!heldProjectile.isEmpty()) {
+            return heldProjectile;
          } else {
-            var2 = ((ProjectileWeaponItem)var1.getItem()).getAllSupportedProjectiles();
+            supportedProjectiles = ((ProjectileWeaponItem)heldWeapon.getItem()).getAllSupportedProjectiles();
 
-            for(int var4 = 0; var4 < this.inventory.getContainerSize(); ++var4) {
-               ItemStack var5 = this.inventory.getItem(var4);
-               if (var2.test(var5)) {
-                  return var5;
+            for(int i = 0; i < this.inventory.getContainerSize(); ++i) {
+               ItemStack itemStack = this.inventory.getItem(i);
+               if (supportedProjectiles.test(itemStack)) {
+                  return itemStack;
                }
             }
 
@@ -1807,33 +1768,33 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
    }
 
-   public Vec3 getRopeHoldPosition(float var1) {
-      double var2 = 0.22 * (this.getMainArm() == HumanoidArm.RIGHT ? -1.0 : 1.0);
-      float var4 = Mth.lerp(var1 * 0.5F, this.getXRot(), this.xRotO) * 0.017453292F;
-      float var5 = Mth.lerp(var1, this.yBodyRotO, this.yBodyRot) * 0.017453292F;
+   public Vec3 getRopeHoldPosition(final float partialTickTime) {
+      double xOff = 0.22 * (this.getMainArm() == HumanoidArm.RIGHT ? -1.0 : 1.0);
+      float xRot = Mth.lerp(partialTickTime * 0.5F, this.getXRot(), this.xRotO) * 0.017453292F;
+      float yRot = Mth.lerp(partialTickTime, this.yBodyRotO, this.yBodyRot) * 0.017453292F;
       if (!this.isFallFlying() && !this.isAutoSpinAttack()) {
          if (this.isVisuallySwimming()) {
-            return this.getPosition(var1).add((new Vec3(var2, 0.2, -0.15)).xRot(-var4).yRot(-var5));
+            return this.getPosition(partialTickTime).add((new Vec3(xOff, 0.2, -0.15)).xRot(-xRot).yRot(-yRot));
          } else {
-            double var17 = this.getBoundingBox().getYsize() - 1.0;
-            double var18 = this.isCrouching() ? -0.2 : 0.07;
-            return this.getPosition(var1).add((new Vec3(var2, var17, var18)).yRot(-var5));
+            double yOff = this.getBoundingBox().getYsize() - 1.0;
+            double zOff = this.isCrouching() ? -0.2 : 0.07;
+            return this.getPosition(partialTickTime).add((new Vec3(xOff, yOff, zOff)).yRot(-yRot));
          }
       } else {
-         Vec3 var6 = this.getViewVector(var1);
-         Vec3 var7 = this.getDeltaMovement();
-         double var8 = var7.horizontalDistanceSqr();
-         double var10 = var6.horizontalDistanceSqr();
-         float var12;
-         if (var8 > 0.0 && var10 > 0.0) {
-            double var13 = (var7.x * var6.x + var7.z * var6.z) / Math.sqrt(var8 * var10);
-            double var15 = var7.x * var6.z - var7.z * var6.x;
-            var12 = (float)(Math.signum(var15) * Math.acos(var13));
+         Vec3 lookAngle = this.getViewVector(partialTickTime);
+         Vec3 movement = this.getDeltaMovement();
+         double speedLen = movement.horizontalDistanceSqr();
+         double lookLen = lookAngle.horizontalDistanceSqr();
+         float zRot;
+         if (speedLen > 0.0 && lookLen > 0.0) {
+            double dot = (movement.x * lookAngle.x + movement.z * lookAngle.z) / Math.sqrt(speedLen * lookLen);
+            double sign = movement.x * lookAngle.z - movement.z * lookAngle.x;
+            zRot = (float)(Math.signum(sign) * Math.acos(dot));
          } else {
-            var12 = 0.0F;
+            zRot = 0.0F;
          }
 
-         return this.getPosition(var1).add((new Vec3(var2, -0.11, 0.85)).zRot(-var12).xRot(-var4).yRot(-var5));
+         return this.getPosition(partialTickTime).add((new Vec3(xOff, -0.11, 0.85)).zRot(-zRot).xRot(-xRot).yRot(-yRot));
       }
    }
 
@@ -1853,17 +1814,17 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.lastDeathLocation;
    }
 
-   public void setLastDeathLocation(Optional<GlobalPos> var1) {
-      this.lastDeathLocation = var1;
+   public void setLastDeathLocation(final Optional<GlobalPos> pos) {
+      this.lastDeathLocation = pos;
    }
 
    public float getHurtDir() {
       return this.hurtDir;
    }
 
-   public void animateHurt(float var1) {
-      super.animateHurt(var1);
-      this.hurtDir = var1;
+   public void animateHurt(final float yaw) {
+      super.animateHurt(yaw);
+      this.hurtDir = yaw;
    }
 
    public boolean isMobilityRestricted() {
@@ -1882,8 +1843,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
    }
 
-   public boolean hasContainerOpen(ContainerOpenersCounter var1, BlockPos var2) {
-      return var1.isOwnContainer(this);
+   public boolean hasContainerOpen(final ContainerOpenersCounter container, final BlockPos blockPos) {
+      return container.isOwnContainer(this);
    }
 
    public double getContainerInteractionRange() {
@@ -1898,59 +1859,23 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
    }
 
-   public boolean isWithinEntityInteractionRange(Entity var1, double var2) {
-      return var1.isRemoved() ? false : this.isWithinEntityInteractionRange(var1.getBoundingBox(), var2);
+   public boolean isWithinEntityInteractionRange(final Entity entity, final double buffer) {
+      return entity.isRemoved() ? false : this.isWithinEntityInteractionRange(entity.getBoundingBox(), buffer);
    }
 
-   public boolean isWithinEntityInteractionRange(AABB var1, double var2) {
-      double var4 = this.entityInteractionRange() + var2;
-      double var6 = var1.distanceToSqr(this.getEyePosition());
-      return var6 < var4 * var4;
+   public boolean isWithinEntityInteractionRange(final AABB aabb, final double buffer) {
+      double maxRange = this.entityInteractionRange() + buffer;
+      double distanceToSq = aabb.distanceToSqr(this.getEyePosition());
+      return distanceToSq < maxRange * maxRange;
    }
 
-   public boolean isWithinAttackRange(AABB var1, double var2) {
-      return this.entityAttackRange().isInRange(this, var1, var2);
+   public boolean isWithinAttackRange(final ItemStack weaponItem, final AABB aabb, final double buffer) {
+      return this.getAttackRangeWith(weaponItem).isInRange(this, aabb, buffer);
    }
 
-   public boolean isWithinBlockInteractionRange(BlockPos var1, double var2) {
-      double var4 = this.blockInteractionRange() + var2;
-      return (new AABB(var1)).distanceToSqr(this.getEyePosition()) < var4 * var4;
-   }
-
-   public void setIgnoreFallDamageFromCurrentImpulse(boolean var1) {
-      this.ignoreFallDamageFromCurrentImpulse = var1;
-      if (var1) {
-         this.applyPostImpulseGraceTime(40);
-      } else {
-         this.currentImpulseContextResetGraceTime = 0;
-      }
-
-   }
-
-   public void applyPostImpulseGraceTime(int var1) {
-      this.currentImpulseContextResetGraceTime = Math.max(this.currentImpulseContextResetGraceTime, var1);
-   }
-
-   public boolean isIgnoringFallDamageFromCurrentImpulse() {
-      return this.ignoreFallDamageFromCurrentImpulse;
-   }
-
-   public void tryResetCurrentImpulseContext() {
-      if (this.currentImpulseContextResetGraceTime == 0) {
-         this.resetCurrentImpulseContext();
-      }
-
-   }
-
-   public boolean isInPostImpulseGraceTime() {
-      return this.currentImpulseContextResetGraceTime > 0;
-   }
-
-   public void resetCurrentImpulseContext() {
-      this.currentImpulseContextResetGraceTime = 0;
-      this.currentExplosionCause = null;
-      this.currentImpulseImpactPos = null;
-      this.ignoreFallDamageFromCurrentImpulse = false;
+   public boolean isWithinBlockInteractionRange(final BlockPos pos, final double buffer) {
+      double maxRange = this.blockInteractionRange() + buffer;
+      return (new AABB(pos)).distanceToSqr(this.getEyePosition()) < maxRange * maxRange;
    }
 
    public boolean shouldRotateWithMinecart() {
@@ -1978,9 +1903,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       public static final BedSleepingProblem OTHER_PROBLEM = new BedSleepingProblem((Component)null);
       public static final BedSleepingProblem NOT_SAFE = new BedSleepingProblem(Component.translatable("block.minecraft.bed.not_safe"));
 
-      public BedSleepingProblem(@Nullable Component var1) {
+      public BedSleepingProblem {
          super();
-         this.message = var1;
       }
    }
 }

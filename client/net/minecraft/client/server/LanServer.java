@@ -7,10 +7,10 @@ public class LanServer {
    private final String address;
    private long pingTime;
 
-   public LanServer(String var1, String var2) {
+   public LanServer(final String motd, final String address) {
       super();
-      this.motd = var1;
-      this.address = var2;
+      this.motd = motd;
+      this.address = address;
       this.pingTime = Util.getMillis();
    }
 

@@ -30,44 +30,39 @@ import net.minecraft.world.phys.Vec3;
 public class SculkCatalystBlockEntity extends BlockEntity implements GameEventListener.Provider<CatalystListener> {
    private final CatalystListener catalystListener;
 
-   public SculkCatalystBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.SCULK_CATALYST, var1, var2);
-      this.catalystListener = new CatalystListener(var2, new BlockPositionSource(var1));
+   public SculkCatalystBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.SCULK_CATALYST, worldPosition, blockState);
+      this.catalystListener = new CatalystListener(blockState, new BlockPositionSource(worldPosition));
    }
 
-   public static void serverTick(Level var0, BlockPos var1, BlockState var2, SculkCatalystBlockEntity var3) {
-      var3.catalystListener.getSculkSpreader().updateCursors(var0, var1, var0.getRandom(), true);
+   public static void serverTick(final Level level, final BlockPos pos, final BlockState state, final SculkCatalystBlockEntity entity) {
+      entity.catalystListener.getSculkSpreader().updateCursors(level, pos, level.getRandom(), true);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.catalystListener.sculkSpreader.load(var1);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.catalystListener.sculkSpreader.load(input);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      this.catalystListener.sculkSpreader.save(var1);
-      super.saveAdditional(var1);
+   protected void saveAdditional(final ValueOutput output) {
+      this.catalystListener.sculkSpreader.save(output);
+      super.saveAdditional(output);
    }
 
    public CatalystListener getListener() {
       return this.catalystListener;
    }
 
-   // $FF: synthetic method
-   public GameEventListener getListener() {
-      return this.getListener();
-   }
-
    public static class CatalystListener implements GameEventListener {
       public static final int PULSE_TICKS = 8;
-      final SculkSpreader sculkSpreader;
+      private final SculkSpreader sculkSpreader;
       private final BlockState blockState;
       private final PositionSource positionSource;
 
-      public CatalystListener(BlockState var1, PositionSource var2) {
+      public CatalystListener(final BlockState blockState, final PositionSource positionSource) {
          super();
-         this.blockState = var1;
-         this.positionSource = var2;
+         this.blockState = blockState;
+         this.positionSource = positionSource;
          this.sculkSpreader = SculkSpreader.createLevelSpreader();
       }
 
@@ -83,21 +78,21 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
          return GameEventListener.DeliveryMode.BY_DISTANCE;
       }
 
-      public boolean handleGameEvent(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
-         if (var2.is((Holder)GameEvent.ENTITY_DIE)) {
-            Entity var6 = var3.sourceEntity();
+      public boolean handleGameEvent(final ServerLevel level, final Holder<GameEvent> event, final GameEvent.Context context, final Vec3 sourcePosition) {
+         if (event.is((Holder)GameEvent.ENTITY_DIE)) {
+            Entity var6 = context.sourceEntity();
             if (var6 instanceof LivingEntity) {
-               LivingEntity var5 = (LivingEntity)var6;
-               if (!var5.wasExperienceConsumed()) {
-                  DamageSource var8 = var5.getLastDamageSource();
-                  int var7 = var5.getExperienceReward(var1, (Entity)Optionull.map(var8, DamageSource::getEntity));
-                  if (var5.shouldDropExperience() && var7 > 0) {
-                     this.sculkSpreader.addCursors(BlockPos.containing(var4.relative(Direction.UP, 0.5)), var7);
-                     this.tryAwardItSpreadsAdvancement(var1, var5);
+               LivingEntity mob = (LivingEntity)var6;
+               if (!mob.wasExperienceConsumed()) {
+                  DamageSource lastDamageSource = mob.getLastDamageSource();
+                  int experienceWouldDrop = mob.getExperienceReward(level, (Entity)Optionull.map(lastDamageSource, DamageSource::getEntity));
+                  if (mob.shouldDropExperience() && experienceWouldDrop > 0) {
+                     this.sculkSpreader.addCursors(BlockPos.containing(sourcePosition.relative(Direction.UP, 0.5)), experienceWouldDrop);
+                     this.tryAwardItSpreadsAdvancement(level, mob);
                   }
 
-                  var5.skipDropExperience();
-                  this.positionSource.getPosition(var1).ifPresent((var2x) -> this.bloom(var1, BlockPos.containing(var2x), this.blockState, var1.getRandom()));
+                  mob.skipDropExperience();
+                  this.positionSource.getPosition(level).ifPresent((vec3) -> this.bloom(level, BlockPos.containing(vec3), this.blockState, level.getRandom()));
                }
 
                return true;
@@ -112,18 +107,18 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
          return this.sculkSpreader;
       }
 
-      private void bloom(ServerLevel var1, BlockPos var2, BlockState var3, RandomSource var4) {
-         var1.setBlock(var2, (BlockState)var3.setValue(SculkCatalystBlock.PULSE, true), 3);
-         var1.scheduleTick(var2, var3.getBlock(), 8);
-         var1.sendParticles(ParticleTypes.SCULK_SOUL, (double)var2.getX() + 0.5, (double)var2.getY() + 1.15, (double)var2.getZ() + 0.5, 2, 0.2, 0.0, 0.2, 0.0);
-         var1.playSound((Entity)null, var2, SoundEvents.SCULK_CATALYST_BLOOM, SoundSource.BLOCKS, 2.0F, 0.6F + var4.nextFloat() * 0.4F);
+      private void bloom(final ServerLevel level, final BlockPos pos, final BlockState state, final RandomSource random) {
+         level.setBlock(pos, (BlockState)state.setValue(SculkCatalystBlock.PULSE, true), 3);
+         level.scheduleTick(pos, state.getBlock(), 8);
+         level.sendParticles(ParticleTypes.SCULK_SOUL, (double)pos.getX() + 0.5, (double)pos.getY() + 1.15, (double)pos.getZ() + 0.5, 2, 0.2, 0.0, 0.2, 0.0);
+         level.playSound((Entity)null, pos, SoundEvents.SCULK_CATALYST_BLOOM, SoundSource.BLOCKS, 2.0F, 0.6F + random.nextFloat() * 0.4F);
       }
 
-      private void tryAwardItSpreadsAdvancement(Level var1, LivingEntity var2) {
-         LivingEntity var3 = var2.getLastHurtByMob();
-         if (var3 instanceof ServerPlayer var4) {
-            DamageSource var5 = var2.getLastDamageSource() == null ? var1.damageSources().playerAttack(var4) : var2.getLastDamageSource();
-            CriteriaTriggers.KILL_MOB_NEAR_SCULK_CATALYST.trigger(var4, var2, var5);
+      private void tryAwardItSpreadsAdvancement(final Level level, final LivingEntity mob) {
+         LivingEntity lastHurtByMob = mob.getLastHurtByMob();
+         if (lastHurtByMob instanceof ServerPlayer player) {
+            DamageSource damageSource = mob.getLastDamageSource() == null ? level.damageSources().playerAttack(player) : mob.getLastDamageSource();
+            CriteriaTriggers.KILL_MOB_NEAR_SCULK_CATALYST.trigger(player, mob, damageSource);
          }
 
       }

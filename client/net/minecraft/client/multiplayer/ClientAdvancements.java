@@ -27,43 +27,43 @@ public class ClientAdvancements {
    private @Nullable Listener listener;
    private @Nullable AdvancementHolder selectedTab;
 
-   public ClientAdvancements(Minecraft var1, WorldSessionTelemetryManager var2) {
+   public ClientAdvancements(final Minecraft minecraft, final WorldSessionTelemetryManager telemetryManager) {
       super();
-      this.minecraft = var1;
-      this.telemetryManager = var2;
+      this.minecraft = minecraft;
+      this.telemetryManager = telemetryManager;
    }
 
-   public void update(ClientboundUpdateAdvancementsPacket var1) {
-      if (var1.shouldReset()) {
+   public void update(final ClientboundUpdateAdvancementsPacket packet) {
+      if (packet.shouldReset()) {
          this.tree.clear();
          this.progress.clear();
       }
 
-      this.tree.remove(var1.getRemoved());
-      this.tree.addAll(var1.getAdded());
+      this.tree.remove(packet.getRemoved());
+      this.tree.addAll(packet.getAdded());
 
-      for(Map.Entry var3 : var1.getProgress().entrySet()) {
-         AdvancementNode var4 = this.tree.get((Identifier)var3.getKey());
-         if (var4 != null) {
-            AdvancementProgress var5 = (AdvancementProgress)var3.getValue();
-            var5.update(var4.advancement().requirements());
-            this.progress.put(var4.holder(), var5);
+      for(Map.Entry<Identifier, AdvancementProgress> entry : packet.getProgress().entrySet()) {
+         AdvancementNode node = this.tree.get((Identifier)entry.getKey());
+         if (node != null) {
+            AdvancementProgress progress = (AdvancementProgress)entry.getValue();
+            progress.update(node.advancement().requirements());
+            this.progress.put(node.holder(), progress);
             if (this.listener != null) {
-               this.listener.onUpdateAdvancementProgress(var4, var5);
+               this.listener.onUpdateAdvancementProgress(node, progress);
             }
 
-            if (!var1.shouldReset() && var5.isDone()) {
+            if (!packet.shouldReset() && progress.isDone()) {
                if (this.minecraft.level != null) {
-                  this.telemetryManager.onAdvancementDone(this.minecraft.level, var4.holder());
+                  this.telemetryManager.onAdvancementDone(this.minecraft.level, node.holder());
                }
 
-               Optional var6 = var4.advancement().display();
-               if (var1.shouldShowAdvancements() && var6.isPresent() && ((DisplayInfo)var6.get()).shouldShowToast()) {
-                  this.minecraft.getToastManager().addToast(new AdvancementToast(var4.holder()));
+               Optional<DisplayInfo> display = node.advancement().display();
+               if (packet.shouldShowAdvancements() && display.isPresent() && ((DisplayInfo)display.get()).shouldShowToast()) {
+                  this.minecraft.getToastManager().addToast(new AdvancementToast(node.holder()));
                }
             }
          } else {
-            LOGGER.warn("Server informed client about progress for unknown advancement {}", var3.getKey());
+            LOGGER.warn("Server informed client about progress for unknown advancement {}", entry.getKey());
          }
       }
 
@@ -73,45 +73,45 @@ public class ClientAdvancements {
       return this.tree;
    }
 
-   public void setSelectedTab(@Nullable AdvancementHolder var1, boolean var2) {
-      ClientPacketListener var3 = this.minecraft.getConnection();
-      if (var3 != null && var1 != null && var2) {
-         var3.send(ServerboundSeenAdvancementsPacket.openedTab(var1));
+   public void setSelectedTab(final @Nullable AdvancementHolder selectedTab, final boolean tellServer) {
+      ClientPacketListener connection = this.minecraft.getConnection();
+      if (connection != null && selectedTab != null && tellServer) {
+         connection.send(ServerboundSeenAdvancementsPacket.openedTab(selectedTab));
       }
 
-      if (this.selectedTab != var1) {
-         this.selectedTab = var1;
+      if (this.selectedTab != selectedTab) {
+         this.selectedTab = selectedTab;
          if (this.listener != null) {
-            this.listener.onSelectedTabChanged(var1);
+            this.listener.onSelectedTabChanged(selectedTab);
          }
       }
 
    }
 
-   public void setListener(@Nullable Listener var1) {
-      this.listener = var1;
-      this.tree.setListener(var1);
-      if (var1 != null) {
-         this.progress.forEach((var2, var3) -> {
-            AdvancementNode var4 = this.tree.get(var2);
-            if (var4 != null) {
-               var1.onUpdateAdvancementProgress(var4, var3);
+   public void setListener(final @Nullable Listener listener) {
+      this.listener = listener;
+      this.tree.setListener(listener);
+      if (listener != null) {
+         this.progress.forEach((holder, progress) -> {
+            AdvancementNode node = this.tree.get(holder);
+            if (node != null) {
+               listener.onUpdateAdvancementProgress(node, progress);
             }
 
          });
-         var1.onSelectedTabChanged(this.selectedTab);
+         listener.onSelectedTabChanged(this.selectedTab);
       }
 
    }
 
-   public @Nullable AdvancementHolder get(Identifier var1) {
-      AdvancementNode var2 = this.tree.get(var1);
-      return var2 != null ? var2.holder() : null;
+   public @Nullable AdvancementHolder get(final Identifier id) {
+      AdvancementNode node = this.tree.get(id);
+      return node != null ? node.holder() : null;
    }
 
    public interface Listener extends AdvancementTree.Listener {
-      void onUpdateAdvancementProgress(AdvancementNode var1, AdvancementProgress var2);
+      void onUpdateAdvancementProgress(AdvancementNode advancement, AdvancementProgress progress);
 
-      void onSelectedTabChanged(@Nullable AdvancementHolder var1);
+      void onSelectedTabChanged(@Nullable AdvancementHolder selectedTab);
    }
 }

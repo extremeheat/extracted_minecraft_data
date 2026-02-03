@@ -25,100 +25,100 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
    private static final EntityType<?>[] MOBS;
    private static final BlockState AIR;
 
-   public MonsterRoomFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public MonsterRoomFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      Predicate var2 = Feature.isReplaceable(BlockTags.FEATURES_CANNOT_REPLACE);
-      BlockPos var3 = var1.origin();
-      RandomSource var4 = var1.random();
-      WorldGenLevel var5 = var1.level();
-      boolean var6 = true;
-      int var7 = var4.nextInt(2) + 2;
-      int var8 = -var7 - 1;
-      int var9 = var7 + 1;
-      boolean var10 = true;
-      boolean var11 = true;
-      int var12 = var4.nextInt(2) + 2;
-      int var13 = -var12 - 1;
-      int var14 = var12 + 1;
-      int var15 = 0;
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      Predicate<BlockState> replaceableTag = Feature.isReplaceable(BlockTags.FEATURES_CANNOT_REPLACE);
+      BlockPos origin = context.origin();
+      RandomSource random = context.random();
+      WorldGenLevel level = context.level();
+      int hr = 3;
+      int xr = random.nextInt(2) + 2;
+      int minX = -xr - 1;
+      int maxX = xr + 1;
+      int minY = -1;
+      int maxY = 4;
+      int zr = random.nextInt(2) + 2;
+      int minZ = -zr - 1;
+      int maxZ = zr + 1;
+      int holeCount = 0;
 
-      for(int var16 = var8; var16 <= var9; ++var16) {
-         for(int var17 = -1; var17 <= 4; ++var17) {
-            for(int var18 = var13; var18 <= var14; ++var18) {
-               BlockPos var19 = var3.offset(var16, var17, var18);
-               boolean var20 = var5.getBlockState(var19).isSolid();
-               if (var17 == -1 && !var20) {
+      for(int dx = minX; dx <= maxX; ++dx) {
+         for(int dy = -1; dy <= 4; ++dy) {
+            for(int dz = minZ; dz <= maxZ; ++dz) {
+               BlockPos holePos = origin.offset(dx, dy, dz);
+               boolean solid = level.getBlockState(holePos).isSolid();
+               if (dy == -1 && !solid) {
                   return false;
                }
 
-               if (var17 == 4 && !var20) {
+               if (dy == 4 && !solid) {
                   return false;
                }
 
-               if ((var16 == var8 || var16 == var9 || var18 == var13 || var18 == var14) && var17 == 0 && var5.isEmptyBlock(var19) && var5.isEmptyBlock(var19.above())) {
-                  ++var15;
+               if ((dx == minX || dx == maxX || dz == minZ || dz == maxZ) && dy == 0 && level.isEmptyBlock(holePos) && level.isEmptyBlock(holePos.above())) {
+                  ++holeCount;
                }
             }
          }
       }
 
-      if (var15 >= 1 && var15 <= 5) {
-         for(int var25 = var8; var25 <= var9; ++var25) {
-            for(int var28 = 3; var28 >= -1; --var28) {
-               for(int var31 = var13; var31 <= var14; ++var31) {
-                  BlockPos var33 = var3.offset(var25, var28, var31);
-                  BlockState var35 = var5.getBlockState(var33);
-                  if (var25 != var8 && var28 != -1 && var31 != var13 && var25 != var9 && var28 != 4 && var31 != var14) {
-                     if (!var35.is(Blocks.CHEST) && !var35.is(Blocks.SPAWNER)) {
-                        this.safeSetBlock(var5, var33, AIR, var2);
+      if (holeCount >= 1 && holeCount <= 5) {
+         for(int dx = minX; dx <= maxX; ++dx) {
+            for(int dy = 3; dy >= -1; --dy) {
+               for(int dz = minZ; dz <= maxZ; ++dz) {
+                  BlockPos wallBlock = origin.offset(dx, dy, dz);
+                  BlockState wallState = level.getBlockState(wallBlock);
+                  if (dx != minX && dy != -1 && dz != minZ && dx != maxX && dy != 4 && dz != maxZ) {
+                     if (!wallState.is(Blocks.CHEST) && !wallState.is(Blocks.SPAWNER)) {
+                        this.safeSetBlock(level, wallBlock, AIR, replaceableTag);
                      }
-                  } else if (var33.getY() >= var5.getMinY() && !var5.getBlockState(var33.below()).isSolid()) {
-                     var5.setBlock(var33, AIR, 2);
-                  } else if (var35.isSolid() && !var35.is(Blocks.CHEST)) {
-                     if (var28 == -1 && var4.nextInt(4) != 0) {
-                        this.safeSetBlock(var5, var33, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), var2);
+                  } else if (wallBlock.getY() >= level.getMinY() && !level.getBlockState(wallBlock.below()).isSolid()) {
+                     level.setBlock(wallBlock, AIR, 2);
+                  } else if (wallState.isSolid() && !wallState.is(Blocks.CHEST)) {
+                     if (dy == -1 && random.nextInt(4) != 0) {
+                        this.safeSetBlock(level, wallBlock, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), replaceableTag);
                      } else {
-                        this.safeSetBlock(var5, var33, Blocks.COBBLESTONE.defaultBlockState(), var2);
+                        this.safeSetBlock(level, wallBlock, Blocks.COBBLESTONE.defaultBlockState(), replaceableTag);
                      }
                   }
                }
             }
          }
 
-         for(int var26 = 0; var26 < 2; ++var26) {
-            for(int var29 = 0; var29 < 3; ++var29) {
-               int var32 = var3.getX() + var4.nextInt(var7 * 2 + 1) - var7;
-               int var34 = var3.getY();
-               int var36 = var3.getZ() + var4.nextInt(var12 * 2 + 1) - var12;
-               BlockPos var21 = new BlockPos(var32, var34, var36);
-               if (var5.isEmptyBlock(var21)) {
-                  int var22 = 0;
+         for(int cc = 0; cc < 2; ++cc) {
+            for(int i = 0; i < 3; ++i) {
+               int xc = origin.getX() + random.nextInt(xr * 2 + 1) - xr;
+               int yc = origin.getY();
+               int zc = origin.getZ() + random.nextInt(zr * 2 + 1) - zr;
+               BlockPos chestPos = new BlockPos(xc, yc, zc);
+               if (level.isEmptyBlock(chestPos)) {
+                  int wallCount = 0;
 
-                  for(Direction var24 : Direction.Plane.HORIZONTAL) {
-                     if (var5.getBlockState(var21.relative(var24)).isSolid()) {
-                        ++var22;
+                  for(Direction direction : Direction.Plane.HORIZONTAL) {
+                     if (level.getBlockState(chestPos.relative(direction)).isSolid()) {
+                        ++wallCount;
                      }
                   }
 
-                  if (var22 == 1) {
-                     this.safeSetBlock(var5, var21, StructurePiece.reorient(var5, var21, Blocks.CHEST.defaultBlockState()), var2);
-                     RandomizableContainer.setBlockEntityLootTable(var5, var4, var21, BuiltInLootTables.SIMPLE_DUNGEON);
+                  if (wallCount == 1) {
+                     this.safeSetBlock(level, chestPos, StructurePiece.reorient(level, chestPos, Blocks.CHEST.defaultBlockState()), replaceableTag);
+                     RandomizableContainer.setBlockEntityLootTable(level, random, chestPos, BuiltInLootTables.SIMPLE_DUNGEON);
                      break;
                   }
                }
             }
          }
 
-         this.safeSetBlock(var5, var3, Blocks.SPAWNER.defaultBlockState(), var2);
-         BlockEntity var27 = var5.getBlockEntity(var3);
-         if (var27 instanceof SpawnerBlockEntity) {
-            SpawnerBlockEntity var30 = (SpawnerBlockEntity)var27;
-            var30.setEntityId(this.randomEntityId(var4), var4);
+         this.safeSetBlock(level, origin, Blocks.SPAWNER.defaultBlockState(), replaceableTag);
+         BlockEntity blockEntity = level.getBlockEntity(origin);
+         if (blockEntity instanceof SpawnerBlockEntity) {
+            SpawnerBlockEntity spawner = (SpawnerBlockEntity)blockEntity;
+            spawner.setEntityId(this.randomEntityId(random), random);
          } else {
-            LOGGER.error("Failed to fetch mob spawner entity at ({}, {}, {})", new Object[]{var3.getX(), var3.getY(), var3.getZ()});
+            LOGGER.error("Failed to fetch mob spawner entity at ({}, {}, {})", new Object[]{origin.getX(), origin.getY(), origin.getZ()});
          }
 
          return true;
@@ -127,8 +127,8 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
       }
    }
 
-   private EntityType<?> randomEntityId(RandomSource var1) {
-      return (EntityType)Util.getRandom(MOBS, var1);
+   private EntityType<?> randomEntityId(final RandomSource random) {
+      return (EntityType)Util.getRandom(MOBS, random);
    }
 
    static {

@@ -21,27 +21,27 @@ public class ManageServerScreen extends Screen {
    private EditBox nameEdit;
    private final Screen lastScreen;
 
-   public ManageServerScreen(Screen var1, Component var2, BooleanConsumer var3, ServerData var4) {
-      super(var2);
-      this.lastScreen = var1;
-      this.callback = var3;
-      this.serverData = var4;
+   public ManageServerScreen(final Screen lastScreen, final Component title, final BooleanConsumer callback, final ServerData serverData) {
+      super(title);
+      this.lastScreen = lastScreen;
+      this.callback = callback;
+      this.serverData = serverData;
    }
 
    protected void init() {
       this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, NAME_LABEL);
       this.nameEdit.setValue(this.serverData.name);
       this.nameEdit.setHint(DEFAULT_SERVER_NAME);
-      this.nameEdit.setResponder((var1) -> this.updateAddButtonStatus());
+      this.nameEdit.setResponder((v) -> this.updateAddButtonStatus());
       this.addWidget(this.nameEdit);
       this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 106, 200, 20, IP_LABEL);
       this.ipEdit.setMaxLength(128);
       this.ipEdit.setValue(this.serverData.ip);
-      this.ipEdit.setResponder((var1) -> this.updateAddButtonStatus());
+      this.ipEdit.setResponder((v) -> this.updateAddButtonStatus());
       this.addWidget(this.ipEdit);
-      this.addRenderableWidget(CycleButton.builder(ServerData.ServerPackStatus::getName, this.serverData.getResourcePackStatus()).withValues(ServerData.ServerPackStatus.values()).create(this.width / 2 - 100, this.height / 4 + 72, 200, 20, Component.translatable("manageServer.resourcePack"), (var1, var2) -> this.serverData.setResourcePackStatus(var2)));
-      this.addButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onAdd()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.callback.accept(false)).bounds(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20).build());
+      this.addRenderableWidget(CycleButton.builder(ServerData.ServerPackStatus::getName, this.serverData.getResourcePackStatus()).withValues(ServerData.ServerPackStatus.values()).create(this.width / 2 - 100, this.height / 4 + 72, 200, 20, Component.translatable("manageServer.resourcePack"), (button, value) -> this.serverData.setResourcePackStatus(value)));
+      this.addButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onAdd()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.callback.accept(false)).bounds(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20).build());
       this.updateAddButtonStatus();
    }
 
@@ -49,17 +49,17 @@ public class ManageServerScreen extends Screen {
       this.setInitialFocus(this.nameEdit);
    }
 
-   public void resize(int var1, int var2) {
-      String var3 = this.ipEdit.getValue();
-      String var4 = this.nameEdit.getValue();
-      this.init(var1, var2);
-      this.ipEdit.setValue(var3);
-      this.nameEdit.setValue(var4);
+   public void resize(final int width, final int height) {
+      String oldIpEdit = this.ipEdit.getValue();
+      String oldNameEdit = this.nameEdit.getValue();
+      this.init(width, height);
+      this.ipEdit.setValue(oldIpEdit);
+      this.nameEdit.setValue(oldNameEdit);
    }
 
    private void onAdd() {
-      String var1 = this.nameEdit.getValue();
-      this.serverData.name = var1.isEmpty() ? DEFAULT_SERVER_NAME.getString() : var1;
+      String name = this.nameEdit.getValue();
+      this.serverData.name = name.isEmpty() ? DEFAULT_SERVER_NAME.getString() : name;
       this.serverData.ip = this.ipEdit.getValue();
       this.callback.accept(true);
    }
@@ -72,12 +72,12 @@ public class ManageServerScreen extends Screen {
       this.addButton.active = ServerAddress.isValidAddress(this.ipEdit.getValue());
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
-      var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 100 + 1, 53, -6250336);
-      var1.drawString(this.font, (Component)IP_LABEL, this.width / 2 - 100 + 1, 94, -6250336);
-      this.nameEdit.render(var1, var2, var3, var4);
-      this.ipEdit.render(var1, var2, var3, var4);
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
+      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
+      graphics.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 100 + 1, 53, -6250336);
+      graphics.drawString(this.font, (Component)IP_LABEL, this.width / 2 - 100 + 1, 94, -6250336);
+      this.nameEdit.render(graphics, mouseX, mouseY, a);
+      this.ipEdit.render(graphics, mouseX, mouseY, a);
    }
 }

@@ -7,20 +7,19 @@ import net.minecraft.network.codec.StreamMemberEncoder;
 import net.minecraft.resources.Identifier;
 
 public record DiscardedPayload(Identifier id) implements CustomPacketPayload {
-   public DiscardedPayload(Identifier var1) {
+   public DiscardedPayload {
       super();
-      this.id = var1;
    }
 
-   public static <T extends FriendlyByteBuf> StreamCodec<T, DiscardedPayload> codec(Identifier var0, int var1) {
-      return CustomPacketPayload.codec((StreamMemberEncoder)((var0x, var1x) -> {
-      }), (StreamDecoder)((var2) -> {
-         int var3 = var2.readableBytes();
-         if (var3 >= 0 && var3 <= var1) {
-            var2.skipBytes(var3);
-            return new DiscardedPayload(var0);
+   public static <T extends FriendlyByteBuf> StreamCodec<T, DiscardedPayload> codec(final Identifier id, final int maxPayloadSize) {
+      return CustomPacketPayload.codec((StreamMemberEncoder)((payload, buf) -> {
+      }), (StreamDecoder)((buf) -> {
+         int length = buf.readableBytes();
+         if (length >= 0 && length <= maxPayloadSize) {
+            buf.skipBytes(length);
+            return new DiscardedPayload(id);
          } else {
-            throw new IllegalArgumentException("Payload may not be larger than " + var1 + " bytes");
+            throw new IllegalArgumentException("Payload may not be larger than " + maxPayloadSize + " bytes");
          }
       }));
    }

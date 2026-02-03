@@ -46,6 +46,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -60,8 +61,8 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    private static final int SLOT_OFFSET = 300;
    private final SimpleContainer inventory = new SimpleContainer(5);
 
-   public Pillager(EntityType<? extends Pillager> var1, Level var2) {
-      super(var1, var2);
+   public Pillager(final EntityType<? extends Pillager> type, final Level level) {
+      super(type, level);
    }
 
    protected void registerGoals() {
@@ -83,21 +84,21 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.3499999940395355).add(Attributes.MAX_HEALTH, 24.0).add(Attributes.ATTACK_DAMAGE, 5.0).add(Attributes.FOLLOW_RANGE, 32.0);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(IS_CHARGING_CROSSBOW, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(IS_CHARGING_CROSSBOW, false);
    }
 
-   public boolean canUseNonMeleeWeapon(ItemStack var1) {
-      return var1.getItem() == Items.CROSSBOW;
+   public boolean canUseNonMeleeWeapon(final ItemStack item) {
+      return item.getItem() == Items.CROSSBOW;
    }
 
    public boolean isChargingCrossbow() {
       return (Boolean)this.entityData.get(IS_CHARGING_CROSSBOW);
    }
 
-   public void setChargingCrossbow(boolean var1) {
-      this.entityData.set(IS_CHARGING_CROSSBOW, var1);
+   public void setChargingCrossbow(final boolean isCharging) {
+      this.entityData.set(IS_CHARGING_CROSSBOW, isCharging);
    }
 
    public void onCrossbowAttackPerformed() {
@@ -108,9 +109,9 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return ItemTags.PILLAGER_PREFERRED_WEAPONS;
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      this.writeInventoryToTag(var1);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      this.writeInventoryToTag(output);
    }
 
    public AbstractIllager.IllagerArmPose getArmPose() {
@@ -123,13 +124,13 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       }
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.readInventoryFromTag(var1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.readInventoryFromTag(input);
       this.setCanPickUpLoot(true);
    }
 
-   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
+   public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {
       return 0.0F;
    }
 
@@ -137,23 +138,23 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return 1;
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      RandomSource var5 = var1.getRandom();
-      this.populateDefaultEquipmentSlots(var5, var2);
-      this.populateDefaultEquipmentEnchantments(var1, var5, var2);
-      return super.finalizeSpawn(var1, var2, var3, var4);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      RandomSource random = level.getRandom();
+      this.populateDefaultEquipmentSlots(random, difficulty);
+      this.populateDefaultEquipmentEnchantments(level, random, difficulty);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
+   protected void populateDefaultEquipmentSlots(final RandomSource random, final DifficultyInstance difficulty) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
    }
 
-   protected void enchantSpawnedWeapon(ServerLevelAccessor var1, RandomSource var2, DifficultyInstance var3) {
-      super.enchantSpawnedWeapon(var1, var2, var3);
-      if (var2.nextInt(300) == 0) {
-         ItemStack var4 = this.getMainHandItem();
-         if (var4.is(Items.CROSSBOW)) {
-            EnchantmentHelper.enchantItemFromProvider(var4, var1.registryAccess(), VanillaEnchantmentProviders.PILLAGER_SPAWN_CROSSBOW, var3, var2);
+   protected void enchantSpawnedWeapon(final ServerLevelAccessor level, final RandomSource random, final DifficultyInstance difficulty) {
+      super.enchantSpawnedWeapon(level, random, difficulty);
+      if (random.nextInt(300) == 0) {
+         ItemStack weapon = this.getMainHandItem();
+         if (weapon.is(Items.CROSSBOW)) {
+            EnchantmentHelper.enchantItemFromProvider(weapon, level.registryAccess(), VanillaEnchantmentProviders.PILLAGER_SPAWN_CROSSBOW, difficulty, random);
          }
       }
 
@@ -167,11 +168,11 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return SoundEvents.PILLAGER_DEATH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.PILLAGER_HURT;
    }
 
-   public void performRangedAttack(LivingEntity var1, float var2) {
+   public void performRangedAttack(final LivingEntity target, final float power) {
       this.performCrossbowAttack(this, 1.6F);
    }
 
@@ -179,48 +180,48 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return this.inventory;
    }
 
-   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
-      ItemStack var3 = var2.getItem();
-      if (var3.getItem() instanceof BannerItem) {
-         super.pickUpItem(var1, var2);
-      } else if (this.wantsItem(var3)) {
-         this.onItemPickup(var2);
-         ItemStack var4 = this.inventory.addItem(var3);
-         if (var4.isEmpty()) {
-            var2.discard();
+   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
+      ItemStack itemStack = entity.getItem();
+      if (itemStack.getItem() instanceof BannerItem) {
+         super.pickUpItem(level, entity);
+      } else if (this.wantsItem(itemStack)) {
+         this.onItemPickup(entity);
+         ItemStack remainder = this.inventory.addItem(itemStack);
+         if (remainder.isEmpty()) {
+            entity.discard();
          } else {
-            var3.setCount(var4.getCount());
+            itemStack.setCount(remainder.getCount());
          }
       }
 
    }
 
-   private boolean wantsItem(ItemStack var1) {
-      return this.hasActiveRaid() && var1.is(Items.WHITE_BANNER);
+   private boolean wantsItem(final ItemStack itemStack) {
+      return this.hasActiveRaid() && itemStack.is(Items.WHITE_BANNER);
    }
 
-   public @Nullable SlotAccess getSlot(int var1) {
-      int var2 = var1 - 300;
-      return var2 >= 0 && var2 < this.inventory.getContainerSize() ? this.inventory.getSlot(var2) : super.getSlot(var1);
+   public @Nullable SlotAccess getSlot(final int slot) {
+      int inventorySlot = slot - 300;
+      return inventorySlot >= 0 && inventorySlot < this.inventory.getContainerSize() ? this.inventory.getSlot(inventorySlot) : super.getSlot(slot);
    }
 
-   public void applyRaidBuffs(ServerLevel var1, int var2, boolean var3) {
-      Raid var4 = this.getCurrentRaid();
-      boolean var5 = this.random.nextFloat() <= var4.getEnchantOdds();
-      if (var5) {
-         ItemStack var6 = new ItemStack(Items.CROSSBOW);
-         ResourceKey var7;
-         if (var2 > var4.getNumGroups(Difficulty.NORMAL)) {
-            var7 = VanillaEnchantmentProviders.RAID_PILLAGER_POST_WAVE_5;
-         } else if (var2 > var4.getNumGroups(Difficulty.EASY)) {
-            var7 = VanillaEnchantmentProviders.RAID_PILLAGER_POST_WAVE_3;
+   public void applyRaidBuffs(final ServerLevel level, final int wave, final boolean isCaptain) {
+      Raid raid = this.getCurrentRaid();
+      boolean shouldEnchant = this.random.nextFloat() <= raid.getEnchantOdds();
+      if (shouldEnchant) {
+         ItemStack crossbow = new ItemStack(Items.CROSSBOW);
+         ResourceKey<EnchantmentProvider> provider;
+         if (wave > raid.getNumGroups(Difficulty.NORMAL)) {
+            provider = VanillaEnchantmentProviders.RAID_PILLAGER_POST_WAVE_5;
+         } else if (wave > raid.getNumGroups(Difficulty.EASY)) {
+            provider = VanillaEnchantmentProviders.RAID_PILLAGER_POST_WAVE_3;
          } else {
-            var7 = null;
+            provider = null;
          }
 
-         if (var7 != null) {
-            EnchantmentHelper.enchantItemFromProvider(var6, var1.registryAccess(), var7, var1.getCurrentDifficultyAt(this.blockPosition()), this.getRandom());
-            this.setItemSlot(EquipmentSlot.MAINHAND, var6);
+         if (provider != null) {
+            EnchantmentHelper.enchantItemFromProvider(crossbow, level.registryAccess(), provider, level.getCurrentDifficultyAt(this.blockPosition()), this.getRandom());
+            this.setItemSlot(EquipmentSlot.MAINHAND, crossbow);
          }
       }
 

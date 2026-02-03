@@ -5,16 +5,16 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 public class IdenticalMerger implements IndexMerger {
    private final DoubleList coords;
 
-   public IdenticalMerger(DoubleList var1) {
+   public IdenticalMerger(final DoubleList coords) {
       super();
-      this.coords = var1;
+      this.coords = coords;
    }
 
-   public boolean forMergedIndexes(IndexMerger.IndexConsumer var1) {
-      int var2 = this.coords.size() - 1;
+   public boolean forMergedIndexes(final IndexMerger.IndexConsumer consumer) {
+      int size = this.coords.size() - 1;
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         if (!var1.merge(var3, var3, var3)) {
+      for(int i = 0; i < size; ++i) {
+         if (!consumer.merge(i, i, i)) {
             return false;
          }
       }

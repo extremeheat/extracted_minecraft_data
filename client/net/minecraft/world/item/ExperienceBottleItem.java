@@ -15,24 +15,24 @@ import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownExper
 import net.minecraft.world.level.Level;
 
 public class ExperienceBottleItem extends Item implements ProjectileItem {
-   public ExperienceBottleItem(Item.Properties var1) {
-      super(var1);
+   public ExperienceBottleItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.EXPERIENCE_BOTTLE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
-      if (var1 instanceof ServerLevel var5) {
-         Projectile.spawnProjectileFromRotation(ThrownExperienceBottle::new, var5, var4, var2, -20.0F, 0.7F, 1.0F);
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.EXPERIENCE_BOTTLE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+      if (level instanceof ServerLevel serverLevel) {
+         Projectile.spawnProjectileFromRotation(ThrownExperienceBottle::new, serverLevel, itemStack, player, -20.0F, 0.7F, 1.0F);
       }
 
-      var2.awardStat(Stats.ITEM_USED.get(this));
-      var4.consume(1, var2);
+      player.awardStat(Stats.ITEM_USED.get(this));
+      itemStack.consume(1, player);
       return InteractionResult.SUCCESS;
    }
 
-   public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
-      return new ThrownExperienceBottle(var1, var2.x(), var2.y(), var2.z(), var3);
+   public Projectile asProjectile(final Level level, final Position position, final ItemStack itemStack, final Direction direction) {
+      return new ThrownExperienceBottle(level, position.x(), position.y(), position.z(), itemStack);
    }
 
    public ProjectileItem.DispenseConfig createDispenseConfig() {

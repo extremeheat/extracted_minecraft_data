@@ -23,9 +23,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -54,7 +56,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<CampfireBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("spawn_particles").forGetter((var0x) -> var0x.spawnParticles), Codec.intRange(0, 1000).fieldOf("fire_damage").forGetter((var0x) -> var0x.fireDamage), propertiesCodec()).apply(var0, CampfireBlock::new));
+   public static final MapCodec<CampfireBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("spawn_particles").forGetter((b) -> b.spawnParticles), Codec.intRange(0, 1000).fieldOf("fire_damage").forGetter((b) -> b.fireDamage), propertiesCodec()).apply(i, CampfireBlock::new));
    public static final BooleanProperty LIT;
    public static final BooleanProperty SIGNAL_FIRE;
    public static final BooleanProperty WATERLOGGED;
@@ -69,22 +71,22 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       return CODEC;
    }
 
-   public CampfireBlock(boolean var1, int var2, BlockBehaviour.Properties var3) {
-      super(var3);
-      this.spawnParticles = var1;
-      this.fireDamage = var2;
+   public CampfireBlock(final boolean spawnParticles, final int fireDamage, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.spawnParticles = spawnParticles;
+      this.fireDamage = fireDamage;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(LIT, true)).setValue(SIGNAL_FIRE, false)).setValue(WATERLOGGED, false)).setValue(FACING, Direction.NORTH));
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      BlockEntity var8 = var3.getBlockEntity(var4);
-      if (var8 instanceof CampfireBlockEntity var9) {
-         ItemStack var10 = var5.getItemInHand(var6);
-         if (var3.recipeAccess().propertySet(RecipePropertySet.CAMPFIRE_INPUT).test(var10)) {
-            if (var3 instanceof ServerLevel) {
-               ServerLevel var11 = (ServerLevel)var3;
-               if (var9.placeFood(var11, var5, var10)) {
-                  var5.awardStat(Stats.INTERACT_WITH_CAMPFIRE);
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof CampfireBlockEntity campfire) {
+         ItemStack itemInHand = player.getItemInHand(hand);
+         if (level.recipeAccess().propertySet(RecipePropertySet.CAMPFIRE_INPUT).test(itemInHand)) {
+            if (level instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)level;
+               if (campfire.placeFood(serverLevel, player, itemInHand)) {
+                  player.awardStat(Stats.INTERACT_WITH_CAMPFIRE);
                   return InteractionResult.SUCCESS_SERVER;
                }
             }
@@ -96,162 +98,162 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       return InteractionResult.TRY_WITH_EMPTY_HAND;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      if ((Boolean)var1.getValue(LIT) && var4 instanceof LivingEntity) {
-         var4.hurt(var2.damageSources().campfire(), (float)this.fireDamage);
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      if ((Boolean)state.getValue(LIT) && entity instanceof LivingEntity) {
+         entity.hurt(level.damageSources().campfire(), (float)this.fireDamage);
       }
 
-      super.entityInside(var1, var2, var3, var4, var5, var6);
+      super.entityInside(state, level, pos, entity, effectApplier, isPrecise);
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      boolean var4 = var2.getFluidState(var3).getType() == Fluids.WATER;
-      return (BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, var4)).setValue(SIGNAL_FIRE, this.isSmokeSource(var2.getBlockState(var3.below())))).setValue(LIT, !var4)).setValue(FACING, var1.getHorizontalDirection());
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      LevelAccessor level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      boolean replacedWater = level.getFluidState(pos).is(Fluids.WATER);
+      return (BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, replacedWater)).setValue(SIGNAL_FIRE, this.isSmokeSource(level.getBlockState(pos.below())))).setValue(LIT, !replacedWater)).setValue(FACING, context.getHorizontalDirection());
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return var5 == Direction.DOWN ? (BlockState)var1.setValue(SIGNAL_FIRE, this.isSmokeSource(var7)) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return directionToNeighbour == Direction.DOWN ? (BlockState)state.setValue(SIGNAL_FIRE, this.isSmokeSource(neighbourState)) : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   private boolean isSmokeSource(BlockState var1) {
-      return var1.is(Blocks.HAY_BLOCK);
+   private boolean isSmokeSource(final BlockState blockState) {
+      return blockState.is(Blocks.HAY_BLOCK);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if ((Boolean)var1.getValue(LIT)) {
-         if (var4.nextInt(10) == 0) {
-            var2.playLocalSound((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.CAMPFIRE_CRACKLE, SoundSource.BLOCKS, 0.5F + var4.nextFloat(), var4.nextFloat() * 0.7F + 0.6F, false);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if ((Boolean)state.getValue(LIT)) {
+         if (random.nextInt(10) == 0) {
+            level.playLocalSound((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.CAMPFIRE_CRACKLE, SoundSource.BLOCKS, 0.5F + random.nextFloat(), random.nextFloat() * 0.7F + 0.6F, false);
          }
 
-         if (this.spawnParticles && var4.nextInt(5) == 0) {
-            for(int var5 = 0; var5 < var4.nextInt(1) + 1; ++var5) {
-               var2.addParticle(ParticleTypes.LAVA, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, (double)(var4.nextFloat() / 2.0F), 5.0E-5, (double)(var4.nextFloat() / 2.0F));
+         if (this.spawnParticles && random.nextInt(5) == 0) {
+            for(int i = 0; i < random.nextInt(1) + 1; ++i) {
+               level.addParticle(ParticleTypes.LAVA, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, (double)(random.nextFloat() / 2.0F), 5.0E-5, (double)(random.nextFloat() / 2.0F));
             }
          }
 
       }
    }
 
-   public static void dowse(@Nullable Entity var0, LevelAccessor var1, BlockPos var2, BlockState var3) {
-      if (var1.isClientSide()) {
-         for(int var4 = 0; var4 < 20; ++var4) {
-            makeParticles((Level)var1, var2, (Boolean)var3.getValue(SIGNAL_FIRE), true);
+   public static void dowse(final @Nullable Entity source, final LevelAccessor level, final BlockPos pos, final BlockState state) {
+      if (level.isClientSide()) {
+         for(int j = 0; j < 20; ++j) {
+            makeParticles((Level)level, pos, (Boolean)state.getValue(SIGNAL_FIRE), true);
          }
       }
 
-      var1.gameEvent(var0, (Holder)GameEvent.BLOCK_CHANGE, (BlockPos)var2);
+      level.gameEvent(source, (Holder)GameEvent.BLOCK_CHANGE, (BlockPos)pos);
    }
 
-   public boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
-      if (!(Boolean)var3.getValue(BlockStateProperties.WATERLOGGED) && var4.getType() == Fluids.WATER) {
-         boolean var5 = (Boolean)var3.getValue(LIT);
-         if (var5) {
-            if (!var1.isClientSide()) {
-               var1.playSound((Entity)null, var2, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 1.0F, 1.0F);
+   public boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
+      if (!(Boolean)state.getValue(BlockStateProperties.WATERLOGGED) && fluidState.is(Fluids.WATER)) {
+         boolean isLit = (Boolean)state.getValue(LIT);
+         if (isLit) {
+            if (!level.isClientSide()) {
+               level.playSound((Entity)null, pos, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
 
-            dowse((Entity)null, var1, var2, var3);
+            dowse((Entity)null, level, pos, state);
          }
 
-         var1.setBlock(var2, (BlockState)((BlockState)var3.setValue(WATERLOGGED, true)).setValue(LIT, false), 3);
-         var1.scheduleTick(var2, var4.getType(), var4.getType().getTickDelay(var1));
+         level.setBlock(pos, (BlockState)((BlockState)state.setValue(WATERLOGGED, true)).setValue(LIT, false), 3);
+         level.scheduleTick(pos, fluidState.getType(), fluidState.getType().getTickDelay(level));
          return true;
       } else {
          return false;
       }
    }
 
-   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
-      BlockPos var5 = var3.getBlockPos();
-      if (var1 instanceof ServerLevel var6) {
-         if (var4.isOnFire() && var4.mayInteract(var6, var5) && !(Boolean)var2.getValue(LIT) && !(Boolean)var2.getValue(WATERLOGGED)) {
-            var1.setBlock(var5, (BlockState)var2.setValue(BlockStateProperties.LIT, true), 11);
+   protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile projectile) {
+      BlockPos pos = blockHit.getBlockPos();
+      if (level instanceof ServerLevel serverLevel) {
+         if (projectile.isOnFire() && projectile.mayInteract(serverLevel, pos) && !(Boolean)state.getValue(LIT) && !(Boolean)state.getValue(WATERLOGGED)) {
+            level.setBlock(pos, (BlockState)state.setValue(BlockStateProperties.LIT, true), 11);
          }
       }
 
    }
 
-   public static void makeParticles(Level var0, BlockPos var1, boolean var2, boolean var3) {
-      RandomSource var4 = var0.getRandom();
-      SimpleParticleType var5 = var2 ? ParticleTypes.CAMPFIRE_SIGNAL_SMOKE : ParticleTypes.CAMPFIRE_COSY_SMOKE;
-      var0.addAlwaysVisibleParticle(var5, true, (double)var1.getX() + 0.5 + var4.nextDouble() / 3.0 * (double)(var4.nextBoolean() ? 1 : -1), (double)var1.getY() + var4.nextDouble() + var4.nextDouble(), (double)var1.getZ() + 0.5 + var4.nextDouble() / 3.0 * (double)(var4.nextBoolean() ? 1 : -1), 0.0, 0.07, 0.0);
-      if (var3) {
-         var0.addParticle(ParticleTypes.SMOKE, (double)var1.getX() + 0.5 + var4.nextDouble() / 4.0 * (double)(var4.nextBoolean() ? 1 : -1), (double)var1.getY() + 0.4, (double)var1.getZ() + 0.5 + var4.nextDouble() / 4.0 * (double)(var4.nextBoolean() ? 1 : -1), 0.0, 0.005, 0.0);
+   public static void makeParticles(final Level level, final BlockPos pos, final boolean isSignalFire, final boolean smoking) {
+      RandomSource random = level.getRandom();
+      SimpleParticleType smokeParticle = isSignalFire ? ParticleTypes.CAMPFIRE_SIGNAL_SMOKE : ParticleTypes.CAMPFIRE_COSY_SMOKE;
+      level.addAlwaysVisibleParticle(smokeParticle, true, (double)pos.getX() + 0.5 + random.nextDouble() / 3.0 * (double)(random.nextBoolean() ? 1 : -1), (double)pos.getY() + random.nextDouble() + random.nextDouble(), (double)pos.getZ() + 0.5 + random.nextDouble() / 3.0 * (double)(random.nextBoolean() ? 1 : -1), 0.0, 0.07, 0.0);
+      if (smoking) {
+         level.addParticle(ParticleTypes.SMOKE, (double)pos.getX() + 0.5 + random.nextDouble() / 4.0 * (double)(random.nextBoolean() ? 1 : -1), (double)pos.getY() + 0.4, (double)pos.getZ() + 0.5 + random.nextDouble() / 4.0 * (double)(random.nextBoolean() ? 1 : -1), 0.0, 0.005, 0.0);
       }
 
    }
 
-   public static boolean isSmokeyPos(Level var0, BlockPos var1) {
-      for(int var2 = 1; var2 <= 5; ++var2) {
-         BlockPos var3 = var1.below(var2);
-         BlockState var4 = var0.getBlockState(var3);
-         if (isLitCampfire(var4)) {
+   public static boolean isSmokeyPos(final Level level, final BlockPos pos) {
+      for(int i = 1; i <= 5; ++i) {
+         BlockPos posToCheck = pos.below(i);
+         BlockState blockState = level.getBlockState(posToCheck);
+         if (isLitCampfire(blockState)) {
             return true;
          }
 
-         boolean var5 = Shapes.joinIsNotEmpty(SHAPE_VIRTUAL_POST, var4.getCollisionShape(var0, var1, CollisionContext.empty()), BooleanOp.AND);
-         if (var5) {
-            BlockState var6 = var0.getBlockState(var3.below());
-            return isLitCampfire(var6);
+         boolean smokeBlocked = Shapes.joinIsNotEmpty(SHAPE_VIRTUAL_POST, blockState.getCollisionShape(level, pos, CollisionContext.empty()), BooleanOp.AND);
+         if (smokeBlocked) {
+            BlockState belowState = level.getBlockState(posToCheck.below());
+            return isLitCampfire(belowState);
          }
       }
 
       return false;
    }
 
-   public static boolean isLitCampfire(BlockState var0) {
-      return var0.hasProperty(LIT) && var0.is(BlockTags.CAMPFIRES) && (Boolean)var0.getValue(LIT);
+   public static boolean isLitCampfire(final BlockState blockState) {
+      return blockState.hasProperty(LIT) && blockState.is(BlockTags.CAMPFIRES) && (Boolean)blockState.getValue(LIT);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(LIT, SIGNAL_FIRE, WATERLOGGED, FACING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(LIT, SIGNAL_FIRE, WATERLOGGED, FACING);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new CampfireBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new CampfireBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      if (var1 instanceof ServerLevel var4) {
-         if ((Boolean)var2.getValue(LIT)) {
-            RecipeManager.CachedCheck var5 = RecipeManager.createCheck(RecipeType.CAMPFIRE_COOKING);
-            return createTickerHelper(var3, BlockEntityType.CAMPFIRE, (var2x, var3x, var4x, var5x) -> CampfireBlockEntity.cookTick(var4, var3x, var4x, var5x, var5));
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      if (level instanceof ServerLevel serverLevel) {
+         if ((Boolean)blockState.getValue(LIT)) {
+            RecipeManager.CachedCheck<SingleRecipeInput, CampfireCookingRecipe> quickCheck = RecipeManager.<SingleRecipeInput, CampfireCookingRecipe>createCheck(RecipeType.CAMPFIRE_COOKING);
+            return createTickerHelper(type, BlockEntityType.CAMPFIRE, (innerLevel, pos, state, entity) -> CampfireBlockEntity.cookTick(serverLevel, pos, state, entity, quickCheck));
          } else {
-            return createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::cooldownTick);
+            return createTickerHelper(type, BlockEntityType.CAMPFIRE, CampfireBlockEntity::cooldownTick);
          }
       } else {
-         return (Boolean)var2.getValue(LIT) ? createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::particleTick) : null;
+         return (Boolean)blockState.getValue(LIT) ? createTickerHelper(type, BlockEntityType.CAMPFIRE, CampfireBlockEntity::particleTick) : null;
       }
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   public static boolean canLight(BlockState var0) {
-      return var0.is(BlockTags.CAMPFIRES, (var0x) -> var0x.hasProperty(WATERLOGGED) && var0x.hasProperty(LIT)) && !(Boolean)var0.getValue(WATERLOGGED) && !(Boolean)var0.getValue(LIT);
+   public static boolean canLight(final BlockState state) {
+      return state.is(BlockTags.CAMPFIRES, (s) -> s.hasProperty(WATERLOGGED) && s.hasProperty(LIT)) && !(Boolean)state.getValue(WATERLOGGED) && !(Boolean)state.getValue(LIT);
    }
 
    static {

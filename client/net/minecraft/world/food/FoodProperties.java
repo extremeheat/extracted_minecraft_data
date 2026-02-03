@@ -20,22 +20,19 @@ import net.minecraft.world.item.component.ConsumableListener;
 import net.minecraft.world.level.Level;
 
 public record FoodProperties(int nutrition, float saturation, boolean canAlwaysEat) implements ConsumableListener {
-   public static final Codec<FoodProperties> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("nutrition").forGetter(FoodProperties::nutrition), Codec.FLOAT.fieldOf("saturation").forGetter(FoodProperties::saturation), Codec.BOOL.optionalFieldOf("can_always_eat", false).forGetter(FoodProperties::canAlwaysEat)).apply(var0, FoodProperties::new));
+   public static final Codec<FoodProperties> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("nutrition").forGetter(FoodProperties::nutrition), Codec.FLOAT.fieldOf("saturation").forGetter(FoodProperties::saturation), Codec.BOOL.optionalFieldOf("can_always_eat", false).forGetter(FoodProperties::canAlwaysEat)).apply(i, FoodProperties::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, FoodProperties> DIRECT_STREAM_CODEC;
 
-   public FoodProperties(int var1, float var2, boolean var3) {
+   public FoodProperties {
       super();
-      this.nutrition = var1;
-      this.saturation = var2;
-      this.canAlwaysEat = var3;
    }
 
-   public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {
-      RandomSource var5 = var2.getRandom();
-      var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var4.sound().value(), SoundSource.NEUTRAL, 1.0F, var5.triangle(1.0F, 0.4F));
-      if (var2 instanceof Player var6) {
-         var6.getFoodData().eat(this);
-         var1.playSound((Entity)null, var6.getX(), var6.getY(), var6.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, Mth.randomBetween(var5, 0.9F, 1.0F));
+   public void onConsume(final Level level, final LivingEntity user, final ItemStack stack, final Consumable consumable) {
+      RandomSource random = user.getRandom();
+      level.playSound((Entity)null, user.getX(), user.getY(), user.getZ(), (SoundEvent)consumable.sound().value(), SoundSource.NEUTRAL, 1.0F, random.triangle(1.0F, 0.4F));
+      if (user instanceof Player player) {
+         player.getFoodData().eat(this);
+         level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, Mth.randomBetween(random, 0.9F, 1.0F));
       }
 
    }
@@ -53,13 +50,13 @@ public record FoodProperties(int nutrition, float saturation, boolean canAlwaysE
          super();
       }
 
-      public Builder nutrition(int var1) {
-         this.nutrition = var1;
+      public Builder nutrition(final int nutrition) {
+         this.nutrition = nutrition;
          return this;
       }
 
-      public Builder saturationModifier(float var1) {
-         this.saturationModifier = var1;
+      public Builder saturationModifier(final float saturationModifier) {
+         this.saturationModifier = saturationModifier;
          return this;
       }
 
@@ -69,8 +66,8 @@ public record FoodProperties(int nutrition, float saturation, boolean canAlwaysE
       }
 
       public FoodProperties build() {
-         float var1 = FoodConstants.saturationByModifier(this.nutrition, this.saturationModifier);
-         return new FoodProperties(this.nutrition, var1, this.canAlwaysEat);
+         float saturation = FoodConstants.saturationByModifier(this.nutrition, this.saturationModifier);
+         return new FoodProperties(this.nutrition, saturation, this.canAlwaysEat);
       }
    }
 }

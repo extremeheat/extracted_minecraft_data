@@ -21,77 +21,77 @@ import net.minecraft.world.item.SwingAnimationType;
 import net.minecraft.world.item.component.SwingAnimation;
 
 public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRenderState, M extends HumanoidModel<S>> extends AgeableMobRenderer<T, S, M> {
-   public HumanoidMobRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
-      this(var1, var2, var2, var3);
+   public HumanoidMobRenderer(final EntityRendererProvider.Context context, final M model, final float shadow) {
+      this(context, model, model, shadow);
    }
 
-   public HumanoidMobRenderer(EntityRendererProvider.Context var1, M var2, M var3, float var4) {
-      this(var1, var2, var3, var4, CustomHeadLayer.Transforms.DEFAULT);
+   public HumanoidMobRenderer(final EntityRendererProvider.Context context, final M model, final M babyModel, final float shadow) {
+      this(context, model, babyModel, shadow, CustomHeadLayer.Transforms.DEFAULT);
    }
 
-   public HumanoidMobRenderer(EntityRendererProvider.Context var1, M var2, M var3, float var4, CustomHeadLayer.Transforms var5) {
-      super(var1, var2, var3, var4);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache(), var5));
-      this.addLayer(new WingsLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
+   public HumanoidMobRenderer(final EntityRendererProvider.Context context, final M model, final M babyModel, final float shadow, final CustomHeadLayer.Transforms customHeadTransforms) {
+      super(context, model, babyModel, shadow);
+      this.addLayer(new CustomHeadLayer(this, context.getModelSet(), context.getPlayerSkinRenderCache(), customHeadTransforms));
+      this.addLayer(new WingsLayer(this, context.getModelSet(), context.getEquipmentRenderer()));
       this.addLayer(new ItemInHandLayer(this));
    }
 
-   protected HumanoidModel.ArmPose getArmPose(T var1, HumanoidArm var2) {
-      ItemStack var3 = var1.getItemHeldByArm(var2);
-      SwingAnimation var4 = (SwingAnimation)var3.get(DataComponents.SWING_ANIMATION);
-      if (var4 != null && var4.type() == SwingAnimationType.STAB && var1.swinging) {
+   protected HumanoidModel.ArmPose getArmPose(final T mob, final HumanoidArm arm) {
+      ItemStack itemHeldByArm = mob.getItemHeldByArm(arm);
+      SwingAnimation anim = (SwingAnimation)itemHeldByArm.get(DataComponents.SWING_ANIMATION);
+      if (anim != null && anim.type() == SwingAnimationType.STAB && mob.swinging) {
          return HumanoidModel.ArmPose.SPEAR;
       } else {
-         return var3.is(ItemTags.SPEARS) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.EMPTY;
+         return itemHeldByArm.is(ItemTags.SPEARS) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.EMPTY;
       }
    }
 
-   public void extractRenderState(T var1, S var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      extractHumanoidRenderState(var1, var2, var3, this.itemModelResolver);
-      var2.leftArmPose = this.getArmPose(var1, HumanoidArm.LEFT);
-      var2.rightArmPose = this.getArmPose(var1, HumanoidArm.RIGHT);
+   public void extractRenderState(final T entity, final S state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      extractHumanoidRenderState(entity, state, partialTicks, this.itemModelResolver);
+      state.leftArmPose = this.getArmPose(entity, HumanoidArm.LEFT);
+      state.rightArmPose = this.getArmPose(entity, HumanoidArm.RIGHT);
    }
 
-   public static void extractHumanoidRenderState(LivingEntity var0, HumanoidRenderState var1, float var2, ItemModelResolver var3) {
-      ArmedEntityRenderState.extractArmedEntityRenderState(var0, var1, var3, var2);
-      var1.isCrouching = var0.isCrouching();
-      var1.isFallFlying = var0.isFallFlying();
-      var1.isVisuallySwimming = var0.isVisuallySwimming();
-      var1.isPassenger = var0.isPassenger();
-      var1.speedValue = 1.0F;
-      if (var1.isFallFlying) {
-         var1.speedValue = (float)var0.getDeltaMovement().lengthSqr();
-         var1.speedValue /= 0.2F;
-         var1.speedValue *= var1.speedValue * var1.speedValue;
+   public static void extractHumanoidRenderState(final LivingEntity entity, final HumanoidRenderState state, final float partialTicks, final ItemModelResolver itemModelResolver) {
+      ArmedEntityRenderState.extractArmedEntityRenderState(entity, state, itemModelResolver, partialTicks);
+      state.isCrouching = entity.isCrouching();
+      state.isFallFlying = entity.isFallFlying();
+      state.isVisuallySwimming = entity.isVisuallySwimming();
+      state.isPassenger = entity.isPassenger();
+      state.speedValue = 1.0F;
+      if (state.isFallFlying) {
+         state.speedValue = (float)entity.getDeltaMovement().lengthSqr();
+         state.speedValue /= 0.2F;
+         state.speedValue *= state.speedValue * state.speedValue;
       }
 
-      if (var1.speedValue < 1.0F) {
-         var1.speedValue = 1.0F;
+      if (state.speedValue < 1.0F) {
+         state.speedValue = 1.0F;
       }
 
-      var1.swimAmount = var0.getSwimAmount(var2);
-      var1.attackArm = getAttackArm(var0);
-      var1.useItemHand = var0.getUsedItemHand();
-      var1.maxCrossbowChargeDuration = (float)CrossbowItem.getChargeDuration(var0.getUseItem(), var0);
-      var1.ticksUsingItem = var0.getTicksUsingItem(var2);
-      var1.isUsingItem = var0.isUsingItem();
-      var1.elytraRotX = var0.elytraAnimationState.getRotX(var2);
-      var1.elytraRotY = var0.elytraAnimationState.getRotY(var2);
-      var1.elytraRotZ = var0.elytraAnimationState.getRotZ(var2);
-      var1.headEquipment = getEquipmentIfRenderable(var0, EquipmentSlot.HEAD);
-      var1.chestEquipment = getEquipmentIfRenderable(var0, EquipmentSlot.CHEST);
-      var1.legsEquipment = getEquipmentIfRenderable(var0, EquipmentSlot.LEGS);
-      var1.feetEquipment = getEquipmentIfRenderable(var0, EquipmentSlot.FEET);
+      state.swimAmount = entity.getSwimAmount(partialTicks);
+      state.attackArm = getAttackArm(entity);
+      state.useItemHand = entity.getUsedItemHand();
+      state.maxCrossbowChargeDuration = (float)CrossbowItem.getChargeDuration(entity.getUseItem(), entity);
+      state.ticksUsingItem = entity.getTicksUsingItem(partialTicks);
+      state.isUsingItem = entity.isUsingItem();
+      state.elytraRotX = entity.elytraAnimationState.getRotX(partialTicks);
+      state.elytraRotY = entity.elytraAnimationState.getRotY(partialTicks);
+      state.elytraRotZ = entity.elytraAnimationState.getRotZ(partialTicks);
+      state.headEquipment = getEquipmentIfRenderable(entity, EquipmentSlot.HEAD);
+      state.chestEquipment = getEquipmentIfRenderable(entity, EquipmentSlot.CHEST);
+      state.legsEquipment = getEquipmentIfRenderable(entity, EquipmentSlot.LEGS);
+      state.feetEquipment = getEquipmentIfRenderable(entity, EquipmentSlot.FEET);
    }
 
-   private static ItemStack getEquipmentIfRenderable(LivingEntity var0, EquipmentSlot var1) {
-      ItemStack var2 = var0.getItemBySlot(var1);
-      return HumanoidArmorLayer.shouldRender(var2, var1) ? var2.copy() : ItemStack.EMPTY;
+   private static ItemStack getEquipmentIfRenderable(final LivingEntity entity, final EquipmentSlot slot) {
+      ItemStack itemStack = entity.getItemBySlot(slot);
+      return HumanoidArmorLayer.shouldRender(itemStack, slot) ? itemStack.copy() : ItemStack.EMPTY;
    }
 
-   private static HumanoidArm getAttackArm(LivingEntity var0) {
-      HumanoidArm var1 = var0.getMainArm();
-      return var0.swingingArm == InteractionHand.MAIN_HAND ? var1 : var1.getOpposite();
+   private static HumanoidArm getAttackArm(final LivingEntity entity) {
+      HumanoidArm mainArm = entity.getMainArm();
+      return entity.swingingArm == InteractionHand.MAIN_HAND ? mainArm : mainArm.getOpposite();
    }
 }

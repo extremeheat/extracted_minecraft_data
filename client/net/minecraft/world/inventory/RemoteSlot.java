@@ -7,57 +7,57 @@ import org.jspecify.annotations.Nullable;
 
 public interface RemoteSlot {
    RemoteSlot PLACEHOLDER = new RemoteSlot() {
-      public void receive(HashedStack var1) {
+      public void receive(final HashedStack incoming) {
       }
 
-      public void force(ItemStack var1) {
+      public void force(final ItemStack outgoing) {
       }
 
-      public boolean matches(ItemStack var1) {
+      public boolean matches(final ItemStack local) {
          return true;
       }
    };
 
-   void force(ItemStack var1);
+   void force(ItemStack outgoing);
 
-   void receive(HashedStack var1);
+   void receive(HashedStack incoming);
 
-   boolean matches(ItemStack var1);
+   boolean matches(ItemStack local);
 
    public static class Synchronized implements RemoteSlot {
       private final HashedPatchMap.HashGenerator hasher;
       private @Nullable ItemStack remoteStack = null;
       private @Nullable HashedStack remoteHash = null;
 
-      public Synchronized(HashedPatchMap.HashGenerator var1) {
+      public Synchronized(final HashedPatchMap.HashGenerator hasher) {
          super();
-         this.hasher = var1;
+         this.hasher = hasher;
       }
 
-      public void force(ItemStack var1) {
-         this.remoteStack = var1.copy();
+      public void force(final ItemStack outgoing) {
+         this.remoteStack = outgoing.copy();
          this.remoteHash = null;
       }
 
-      public void receive(HashedStack var1) {
+      public void receive(final HashedStack incoming) {
          this.remoteStack = null;
-         this.remoteHash = var1;
+         this.remoteHash = incoming;
       }
 
-      public boolean matches(ItemStack var1) {
+      public boolean matches(final ItemStack local) {
          if (this.remoteStack != null) {
-            return ItemStack.matches(this.remoteStack, var1);
-         } else if (this.remoteHash != null && this.remoteHash.matches(var1, this.hasher)) {
-            this.remoteStack = var1.copy();
+            return ItemStack.matches(this.remoteStack, local);
+         } else if (this.remoteHash != null && this.remoteHash.matches(local, this.hasher)) {
+            this.remoteStack = local.copy();
             return true;
          } else {
             return false;
          }
       }
 
-      public void copyFrom(Synchronized var1) {
-         this.remoteStack = var1.remoteStack;
-         this.remoteHash = var1.remoteHash;
+      public void copyFrom(final Synchronized other) {
+         this.remoteStack = other.remoteStack;
+         this.remoteHash = other.remoteHash;
       }
    }
 }

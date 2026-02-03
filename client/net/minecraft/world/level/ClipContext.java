@@ -25,17 +25,17 @@ public class ClipContext {
    private final Fluid fluid;
    private final CollisionContext collisionContext;
 
-   public ClipContext(Vec3 var1, Vec3 var2, Block var3, Fluid var4, Entity var5) {
-      this(var1, var2, var3, var4, CollisionContext.of(var5));
+   public ClipContext(final Vec3 from, final Vec3 to, final Block block, final Fluid fluid, final Entity entity) {
+      this(from, to, block, fluid, CollisionContext.of(entity));
    }
 
-   public ClipContext(Vec3 var1, Vec3 var2, Block var3, Fluid var4, CollisionContext var5) {
+   public ClipContext(final Vec3 from, final Vec3 to, final Block block, final Fluid fluid, final CollisionContext collisionContext) {
       super();
-      this.from = var1;
-      this.to = var2;
-      this.block = var3;
-      this.fluid = var4;
-      this.collisionContext = var5;
+      this.from = from;
+      this.to = to;
+      this.block = block;
+      this.fluid = fluid;
+      this.collisionContext = collisionContext;
    }
 
    public Vec3 getTo() {
@@ -46,32 +46,32 @@ public class ClipContext {
       return this.from;
    }
 
-   public VoxelShape getBlockShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return this.block.get(var1, var2, var3, this.collisionContext);
+   public VoxelShape getBlockShape(final BlockState blockState, final BlockGetter level, final BlockPos pos) {
+      return this.block.get(blockState, level, pos, this.collisionContext);
    }
 
-   public VoxelShape getFluidShape(FluidState var1, BlockGetter var2, BlockPos var3) {
-      return this.fluid.canPick(var1) ? var1.getShape(var2, var3) : Shapes.empty();
+   public VoxelShape getFluidShape(final FluidState fluidState, final BlockGetter level, final BlockPos pos) {
+      return this.fluid.canPick(fluidState) ? fluidState.getShape(level, pos) : Shapes.empty();
    }
 
    public static enum Block implements ShapeGetter {
       COLLIDER(BlockBehaviour.BlockStateBase::getCollisionShape),
       OUTLINE(BlockBehaviour.BlockStateBase::getShape),
       VISUAL(BlockBehaviour.BlockStateBase::getVisualShape),
-      FALLDAMAGE_RESETTING((var0, var1, var2, var3) -> {
-         if (var0.is(BlockTags.FALL_DAMAGE_RESETTING)) {
+      FALLDAMAGE_RESETTING((state, level, pos, collisionContext) -> {
+         if (state.is(BlockTags.FALL_DAMAGE_RESETTING)) {
             return Shapes.block();
          } else {
-            if (var3 instanceof EntityCollisionContext) {
-               EntityCollisionContext var4 = (EntityCollisionContext)var3;
-               if (var4.getEntity() != null && var4.getEntity().getType() == EntityType.PLAYER) {
-                  if (var0.is(Blocks.END_GATEWAY) || var0.is(Blocks.END_PORTAL)) {
+            if (collisionContext instanceof EntityCollisionContext) {
+               EntityCollisionContext entityCollisionContext = (EntityCollisionContext)collisionContext;
+               if (entityCollisionContext.getEntity() != null && entityCollisionContext.getEntity().is(EntityType.PLAYER)) {
+                  if (state.is(Blocks.END_GATEWAY) || state.is(Blocks.END_PORTAL)) {
                      return Shapes.block();
                   }
 
-                  if (var1 instanceof ServerLevel) {
-                     ServerLevel var5 = (ServerLevel)var1;
-                     if (var0.is(Blocks.NETHER_PORTAL) && (Integer)var5.getGameRules().get(GameRules.PLAYERS_NETHER_PORTAL_DEFAULT_DELAY) == 0) {
+                  if (level instanceof ServerLevel) {
+                     ServerLevel serverLevel = (ServerLevel)level;
+                     if (state.is(Blocks.NETHER_PORTAL) && (Integer)serverLevel.getGameRules().get(GameRules.PLAYERS_NETHER_PORTAL_DEFAULT_DELAY) == 0) {
                         return Shapes.block();
                      }
                   }
@@ -84,12 +84,12 @@ public class ClipContext {
 
       private final ShapeGetter shapeGetter;
 
-      private Block(final ShapeGetter var3) {
-         this.shapeGetter = var3;
+      private Block(final ShapeGetter getShape) {
+         this.shapeGetter = getShape;
       }
 
-      public VoxelShape get(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-         return this.shapeGetter.get(var1, var2, var3, var4);
+      public VoxelShape get(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+         return this.shapeGetter.get(state, level, pos, context);
       }
 
       // $FF: synthetic method
@@ -99,19 +99,19 @@ public class ClipContext {
    }
 
    public static enum Fluid {
-      NONE((var0) -> false),
+      NONE((state) -> false),
       SOURCE_ONLY(FluidState::isSource),
-      ANY((var0) -> !var0.isEmpty()),
-      WATER((var0) -> var0.is(FluidTags.WATER));
+      ANY((state) -> !state.isEmpty()),
+      WATER((fluidState) -> fluidState.is(FluidTags.WATER));
 
       private final Predicate<FluidState> canPick;
 
-      private Fluid(final Predicate<FluidState> var3) {
-         this.canPick = var3;
+      private Fluid(final Predicate<FluidState> canPick) {
+         this.canPick = canPick;
       }
 
-      public boolean canPick(FluidState var1) {
-         return this.canPick.test(var1);
+      public boolean canPick(final FluidState fluidState) {
+         return this.canPick.test(fluidState);
       }
 
       // $FF: synthetic method
@@ -121,6 +121,6 @@ public class ClipContext {
    }
 
    public interface ShapeGetter {
-      VoxelShape get(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4);
+      VoxelShape get(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context);
    }
 }

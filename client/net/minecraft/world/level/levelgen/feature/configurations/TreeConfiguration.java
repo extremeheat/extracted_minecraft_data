@@ -14,7 +14,7 @@ import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacer;
 
 public class TreeConfiguration implements FeatureConfiguration {
-   public static final Codec<TreeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((var0x) -> var0x.trunkProvider), TrunkPlacer.CODEC.fieldOf("trunk_placer").forGetter((var0x) -> var0x.trunkPlacer), BlockStateProvider.CODEC.fieldOf("foliage_provider").forGetter((var0x) -> var0x.foliageProvider), FoliagePlacer.CODEC.fieldOf("foliage_placer").forGetter((var0x) -> var0x.foliagePlacer), RootPlacer.CODEC.optionalFieldOf("root_placer").forGetter((var0x) -> var0x.rootPlacer), BlockStateProvider.CODEC.fieldOf("dirt_provider").forGetter((var0x) -> var0x.dirtProvider), FeatureSize.CODEC.fieldOf("minimum_size").forGetter((var0x) -> var0x.minimumSize), TreeDecorator.CODEC.listOf().fieldOf("decorators").forGetter((var0x) -> var0x.decorators), Codec.BOOL.fieldOf("ignore_vines").orElse(false).forGetter((var0x) -> var0x.ignoreVines), Codec.BOOL.fieldOf("force_dirt").orElse(false).forGetter((var0x) -> var0x.forceDirt)).apply(var0, TreeConfiguration::new));
+   public static final Codec<TreeConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((c) -> c.trunkProvider), TrunkPlacer.CODEC.fieldOf("trunk_placer").forGetter((c) -> c.trunkPlacer), BlockStateProvider.CODEC.fieldOf("foliage_provider").forGetter((c) -> c.foliageProvider), FoliagePlacer.CODEC.fieldOf("foliage_placer").forGetter((c) -> c.foliagePlacer), RootPlacer.CODEC.optionalFieldOf("root_placer").forGetter((c) -> c.rootPlacer), BlockStateProvider.CODEC.fieldOf("dirt_provider").forGetter((c) -> c.dirtProvider), FeatureSize.CODEC.fieldOf("minimum_size").forGetter((c) -> c.minimumSize), TreeDecorator.CODEC.listOf().fieldOf("decorators").forGetter((c) -> c.decorators), Codec.BOOL.fieldOf("ignore_vines").orElse(false).forGetter((c) -> c.ignoreVines), Codec.BOOL.fieldOf("force_dirt").orElse(false).forGetter((c) -> c.forceDirt)).apply(i, TreeConfiguration::new));
    public final BlockStateProvider trunkProvider;
    public final BlockStateProvider dirtProvider;
    public final TrunkPlacer trunkPlacer;
@@ -26,18 +26,18 @@ public class TreeConfiguration implements FeatureConfiguration {
    public final boolean ignoreVines;
    public final boolean forceDirt;
 
-   protected TreeConfiguration(BlockStateProvider var1, TrunkPlacer var2, BlockStateProvider var3, FoliagePlacer var4, Optional<RootPlacer> var5, BlockStateProvider var6, FeatureSize var7, List<TreeDecorator> var8, boolean var9, boolean var10) {
+   protected TreeConfiguration(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final Optional<RootPlacer> rootPlacer, final BlockStateProvider dirtProvider, final FeatureSize minimumSize, final List<TreeDecorator> decorators, final boolean ignoreVines, final boolean forceDirt) {
       super();
-      this.trunkProvider = var1;
-      this.trunkPlacer = var2;
-      this.foliageProvider = var3;
-      this.foliagePlacer = var4;
-      this.rootPlacer = var5;
-      this.dirtProvider = var6;
-      this.minimumSize = var7;
-      this.decorators = var8;
-      this.ignoreVines = var9;
-      this.forceDirt = var10;
+      this.trunkProvider = trunkProvider;
+      this.trunkPlacer = trunkPlacer;
+      this.foliageProvider = foliageProvider;
+      this.foliagePlacer = foliagePlacer;
+      this.rootPlacer = rootPlacer;
+      this.dirtProvider = dirtProvider;
+      this.minimumSize = minimumSize;
+      this.decorators = decorators;
+      this.ignoreVines = ignoreVines;
+      this.forceDirt = forceDirt;
    }
 
    public static class TreeConfigurationBuilder {
@@ -52,29 +52,29 @@ public class TreeConfiguration implements FeatureConfiguration {
       private boolean ignoreVines;
       private boolean forceDirt;
 
-      public TreeConfigurationBuilder(BlockStateProvider var1, TrunkPlacer var2, BlockStateProvider var3, FoliagePlacer var4, Optional<RootPlacer> var5, FeatureSize var6) {
+      public TreeConfigurationBuilder(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final Optional<RootPlacer> rootPlacer, final FeatureSize minimumSize) {
          super();
          this.decorators = ImmutableList.of();
-         this.trunkProvider = var1;
-         this.trunkPlacer = var2;
-         this.foliageProvider = var3;
+         this.trunkProvider = trunkProvider;
+         this.trunkPlacer = trunkPlacer;
+         this.foliageProvider = foliageProvider;
          this.dirtProvider = BlockStateProvider.simple(Blocks.DIRT);
-         this.foliagePlacer = var4;
-         this.rootPlacer = var5;
-         this.minimumSize = var6;
+         this.foliagePlacer = foliagePlacer;
+         this.rootPlacer = rootPlacer;
+         this.minimumSize = minimumSize;
       }
 
-      public TreeConfigurationBuilder(BlockStateProvider var1, TrunkPlacer var2, BlockStateProvider var3, FoliagePlacer var4, FeatureSize var5) {
-         this(var1, var2, var3, var4, Optional.empty(), var5);
+      public TreeConfigurationBuilder(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final FeatureSize minimumSize) {
+         this(trunkProvider, trunkPlacer, foliageProvider, foliagePlacer, Optional.empty(), minimumSize);
       }
 
-      public TreeConfigurationBuilder dirt(BlockStateProvider var1) {
-         this.dirtProvider = var1;
+      public TreeConfigurationBuilder dirt(final BlockStateProvider dirtProvider) {
+         this.dirtProvider = dirtProvider;
          return this;
       }
 
-      public TreeConfigurationBuilder decorators(List<TreeDecorator> var1) {
-         this.decorators = var1;
+      public TreeConfigurationBuilder decorators(final List<TreeDecorator> decorators) {
+         this.decorators = decorators;
          return this;
       }
 

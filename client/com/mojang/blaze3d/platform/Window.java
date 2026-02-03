@@ -2,7 +2,12 @@ package com.mojang.blaze3d.platform;
 
 import com.mojang.blaze3d.TracyFrameCapture;
 import com.mojang.blaze3d.platform.cursor.CursorType;
+import com.mojang.blaze3d.shaders.GpuDebugOptions;
+import com.mojang.blaze3d.shaders.ShaderSource;
+import com.mojang.blaze3d.systems.BackendCreationException;
+import com.mojang.blaze3d.systems.GpuBackend;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.WindowAndDevice;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,44 +67,39 @@ public final class Window implements AutoCloseable {
    private boolean allowCursorChanges;
    private CursorType currentCursor;
 
-   public Window(WindowEventHandler var1, ScreenManager var2, DisplayData var3, @Nullable String var4, String var5) {
+   public Window(final WindowEventHandler eventHandler, final DisplayData displayData, final @Nullable String fullscreenVideoModeString, final String title, final GpuBackend[] backends, final ShaderSource defaultShaderSource, final GpuDebugOptions debugOptions) {
       super();
       this.currentCursor = CursorType.DEFAULT;
-      this.screenManager = var2;
+      this.screenManager = new ScreenManager(Monitor::new);
       this.setBootErrorCallback();
       this.setErrorSection("Pre startup");
-      this.eventHandler = var1;
-      Optional var6 = VideoMode.read(var4);
-      if (var6.isPresent()) {
-         this.preferredFullscreenVideoMode = var6;
-      } else if (var3.fullscreenWidth().isPresent() && var3.fullscreenHeight().isPresent()) {
-         this.preferredFullscreenVideoMode = Optional.of(new VideoMode(var3.fullscreenWidth().getAsInt(), var3.fullscreenHeight().getAsInt(), 8, 8, 8, 60));
+      this.eventHandler = eventHandler;
+      Optional<VideoMode> optionsMode = VideoMode.read(fullscreenVideoModeString);
+      if (optionsMode.isPresent()) {
+         this.preferredFullscreenVideoMode = optionsMode;
+      } else if (displayData.fullscreenWidth().isPresent() && displayData.fullscreenHeight().isPresent()) {
+         this.preferredFullscreenVideoMode = Optional.of(new VideoMode(displayData.fullscreenWidth().getAsInt(), displayData.fullscreenHeight().getAsInt(), 8, 8, 8, 60));
       } else {
          this.preferredFullscreenVideoMode = Optional.empty();
       }
 
-      this.actuallyFullscreen = this.fullscreen = var3.isFullscreen();
-      Monitor var7 = var2.getMonitor(GLFW.glfwGetPrimaryMonitor());
-      this.windowedWidth = this.width = Math.max(var3.width(), 1);
-      this.windowedHeight = this.height = Math.max(var3.height(), 1);
-      GLFW.glfwDefaultWindowHints();
-      GLFW.glfwWindowHint(139265, 196609);
-      GLFW.glfwWindowHint(139275, 221185);
-      GLFW.glfwWindowHint(139266, 3);
-      GLFW.glfwWindowHint(139267, 3);
-      GLFW.glfwWindowHint(139272, 204801);
-      GLFW.glfwWindowHint(139270, 1);
-      this.handle = GLFW.glfwCreateWindow(this.width, this.height, var5, this.fullscreen && var7 != null ? var7.getMonitor() : 0L, 0L);
-      if (var7 != null) {
-         VideoMode var8 = var7.getPreferredVidMode(this.fullscreen ? this.preferredFullscreenVideoMode : Optional.empty());
-         this.windowedX = this.x = var7.getX() + var8.getWidth() / 2 - this.width / 2;
-         this.windowedY = this.y = var7.getY() + var8.getHeight() / 2 - this.height / 2;
+      this.actuallyFullscreen = this.fullscreen = displayData.isFullscreen();
+      Monitor initialMonitor = this.screenManager.getMonitor(GLFW.glfwGetPrimaryMonitor());
+      this.windowedWidth = this.width = Math.max(displayData.width(), 1);
+      this.windowedHeight = this.height = Math.max(displayData.height(), 1);
+      WindowAndDevice windowAndDevice = this.initializeBackend(backends, this.width, this.height, title, this.fullscreen && initialMonitor != null ? initialMonitor.getMonitor() : 0L, defaultShaderSource, debugOptions);
+      this.handle = windowAndDevice.window();
+      RenderSystem.initRenderer(windowAndDevice.device());
+      if (initialMonitor != null) {
+         VideoMode mode = initialMonitor.getPreferredVidMode(this.fullscreen ? this.preferredFullscreenVideoMode : Optional.empty());
+         this.windowedX = this.x = initialMonitor.getX() + mode.getWidth() / 2 - this.width / 2;
+         this.windowedY = this.y = initialMonitor.getY() + mode.getHeight() / 2 - this.height / 2;
       } else {
-         int[] var10 = new int[1];
-         int[] var9 = new int[1];
-         GLFW.glfwGetWindowPos(this.handle, var10, var9);
-         this.windowedX = this.x = var10[0];
-         this.windowedY = this.y = var9[0];
+         int[] actualX = new int[1];
+         int[] actualY = new int[1];
+         GLFW.glfwGetWindowPos(this.handle, actualX, actualY);
+         this.windowedX = this.x = actualX[0];
+         this.windowedY = this.y = actualY[0];
       }
 
       this.setMode();
@@ -112,17 +112,32 @@ public final class Window implements AutoCloseable {
       GLFW.glfwSetWindowIconifyCallback(this.handle, this::onIconify);
    }
 
+   private WindowAndDevice initializeBackend(final GpuBackend[] backends, final int width, final int height, final String title, final long initialMonitor, final ShaderSource defaultShaderSource, final GpuDebugOptions debugOptions) {
+      StringBuilder error = new StringBuilder("No supported graphics backend was found.");
+
+      for(GpuBackend backend : backends) {
+         try {
+            return backend.createDeviceWithWindow(width, height, title, initialMonitor, defaultShaderSource, debugOptions);
+         } catch (BackendCreationException exception) {
+            error.append("\n\n- Tried ").append(backend.getName()).append(": \n  ").append(exception.getMessage());
+         }
+      }
+
+      TinyFileDialogs.tinyfd_messageBox("Minecraft", error.toString(), "ok", "error", false);
+      throw new WindowInitFailed(error.toString());
+   }
+
    public static String getPlatform() {
-      int var0 = GLFW.glfwGetPlatform();
+      int platform = GLFW.glfwGetPlatform();
       String var10000;
-      switch (var0) {
+      switch (platform) {
          case 0 -> var10000 = "<error>";
          case 393217 -> var10000 = "win32";
          case 393218 -> var10000 = "cocoa";
          case 393219 -> var10000 = "wayland";
          case 393220 -> var10000 = "x11";
          case 393221 -> var10000 = "null";
-         default -> var10000 = String.format(Locale.ROOT, "unknown (%08X)", var0);
+         default -> var10000 = String.format(Locale.ROOT, "unknown (%08X)", platform);
       }
 
       return var10000;
@@ -137,21 +152,21 @@ public final class Window implements AutoCloseable {
       return GLX._shouldClose(this);
    }
 
-   public static void checkGlfwError(BiConsumer<Integer, String> var0) {
-      MemoryStack var1 = MemoryStack.stackPush();
+   public static void checkGlfwError(final BiConsumer<Integer, String> errorConsumer) {
+      MemoryStack stack = MemoryStack.stackPush();
 
       try {
-         PointerBuffer var2 = var1.mallocPointer(1);
-         int var3 = GLFW.glfwGetError(var2);
-         if (var3 != 0) {
-            long var4 = var2.get();
-            String var6 = var4 == 0L ? "" : MemoryUtil.memUTF8(var4);
-            var0.accept(var3, var6);
+         PointerBuffer errorDescription = stack.mallocPointer(1);
+         int errorCode = GLFW.glfwGetError(errorDescription);
+         if (errorCode != 0) {
+            long errorDescriptionAddress = errorDescription.get();
+            String errorMessage = errorDescriptionAddress == 0L ? "" : MemoryUtil.memUTF8(errorDescriptionAddress);
+            errorConsumer.accept(errorCode, errorMessage);
          }
       } catch (Throwable var8) {
-         if (var1 != null) {
+         if (stack != null) {
             try {
-               var1.close();
+               stack.close();
             } catch (Throwable var7) {
                var8.addSuppressed(var7);
             }
@@ -160,41 +175,41 @@ public final class Window implements AutoCloseable {
          throw var8;
       }
 
-      if (var1 != null) {
-         var1.close();
+      if (stack != null) {
+         stack.close();
       }
 
    }
 
-   public void setIcon(PackResources var1, IconSet var2) throws IOException {
-      int var3 = GLFW.glfwGetPlatform();
-      switch (var3) {
+   public void setIcon(final PackResources resources, final IconSet iconSet) throws IOException {
+      int platform = GLFW.glfwGetPlatform();
+      switch (platform) {
          case 393217:
          case 393220:
-            List var4 = var2.getStandardIcons(var1);
-            ArrayList var5 = new ArrayList(var4.size());
+            List<IoSupplier<InputStream>> iconStreams = iconSet.getStandardIcons(resources);
+            List<ByteBuffer> allocatedBuffers = new ArrayList(iconStreams.size());
 
             try {
-               MemoryStack var6 = MemoryStack.stackPush();
+               MemoryStack stack = MemoryStack.stackPush();
 
                try {
-                  GLFWImage.Buffer var7 = GLFWImage.malloc(var4.size(), var6);
+                  GLFWImage.Buffer icons = GLFWImage.malloc(iconStreams.size(), stack);
 
-                  for(int var8 = 0; var8 < var4.size(); ++var8) {
-                     NativeImage var9 = NativeImage.read((InputStream)((IoSupplier)var4.get(var8)).get());
+                  for(int i = 0; i < iconStreams.size(); ++i) {
+                     NativeImage image = NativeImage.read((InputStream)((IoSupplier)iconStreams.get(i)).get());
 
                      try {
-                        ByteBuffer var10 = MemoryUtil.memAlloc(var9.getWidth() * var9.getHeight() * 4);
-                        var5.add(var10);
-                        var10.asIntBuffer().put(var9.getPixelsABGR());
-                        var7.position(var8);
-                        var7.width(var9.getWidth());
-                        var7.height(var9.getHeight());
-                        var7.pixels(var10);
+                        ByteBuffer pixels = MemoryUtil.memAlloc(image.getWidth() * image.getHeight() * 4);
+                        allocatedBuffers.add(pixels);
+                        pixels.asIntBuffer().put(image.getPixelsABGR());
+                        icons.position(i);
+                        icons.width(image.getWidth());
+                        icons.height(image.getHeight());
+                        icons.pixels(pixels);
                      } catch (Throwable var20) {
-                        if (var9 != null) {
+                        if (image != null) {
                            try {
-                              var9.close();
+                              image.close();
                            } catch (Throwable var19) {
                               var20.addSuppressed(var19);
                            }
@@ -203,16 +218,16 @@ public final class Window implements AutoCloseable {
                         throw var20;
                      }
 
-                     if (var9 != null) {
-                        var9.close();
+                     if (image != null) {
+                        image.close();
                      }
                   }
 
-                  GLFW.glfwSetWindowIcon(this.handle, (GLFWImage.Buffer)var7.position(0));
+                  GLFW.glfwSetWindowIcon(this.handle, (GLFWImage.Buffer)icons.position(0));
                } catch (Throwable var21) {
-                  if (var6 != null) {
+                  if (stack != null) {
                      try {
-                        var6.close();
+                        stack.close();
                      } catch (Throwable var18) {
                         var21.addSuppressed(var18);
                      }
@@ -221,90 +236,91 @@ public final class Window implements AutoCloseable {
                   throw var21;
                }
 
-               if (var6 != null) {
-                  var6.close();
+               if (stack != null) {
+                  stack.close();
                }
                break;
             } finally {
-               var5.forEach(MemoryUtil::memFree);
+               allocatedBuffers.forEach(MemoryUtil::memFree);
             }
          case 393218:
-            MacosUtil.loadIcon(var2.getMacIcon(var1));
+            MacosUtil.loadIcon(iconSet.getMacIcon(resources));
          case 393219:
          case 393221:
             break;
          default:
-            LOGGER.warn("Not setting icon for unrecognized platform: {}", var3);
+            LOGGER.warn("Not setting icon for unrecognized platform: {}", platform);
       }
 
    }
 
-   public void setErrorSection(String var1) {
-      this.errorSection = var1;
+   public void setErrorSection(final String string) {
+      this.errorSection = string;
    }
 
    private void setBootErrorCallback() {
       GLFW.glfwSetErrorCallback(Window::bootCrash);
    }
 
-   private static void bootCrash(int var0, long var1) {
-      String var3 = "GLFW error " + var0 + ": " + MemoryUtil.memUTF8(var1);
-      TinyFileDialogs.tinyfd_messageBox("Minecraft", var3 + ".\n\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).", "ok", "error", false);
-      throw new WindowInitFailed(var3);
+   private static void bootCrash(final int error, final long description) {
+      String message = "GLFW error " + error + ": " + MemoryUtil.memUTF8(description);
+      TinyFileDialogs.tinyfd_messageBox("Minecraft", message + ".\n\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).", "ok", "error", false);
+      throw new WindowInitFailed(message);
    }
 
-   public void defaultErrorCallback(int var1, long var2) {
+   public void defaultErrorCallback(final int errorCode, final long description) {
       RenderSystem.assertOnRenderThread();
-      String var4 = MemoryUtil.memUTF8(var2);
+      String errorString = MemoryUtil.memUTF8(description);
       LOGGER.error("########## GL ERROR ##########");
       LOGGER.error("@ {}", this.errorSection);
-      LOGGER.error("{}: {}", var1, var4);
+      LOGGER.error("{}: {}", errorCode, errorString);
    }
 
    public void setDefaultErrorCallback() {
-      GLFWErrorCallback var1 = GLFW.glfwSetErrorCallback(this.defaultErrorCallback);
-      if (var1 != null) {
-         var1.free();
+      GLFWErrorCallback previousCallback = GLFW.glfwSetErrorCallback(this.defaultErrorCallback);
+      if (previousCallback != null) {
+         previousCallback.free();
       }
 
    }
 
-   public void updateVsync(boolean var1) {
+   public void updateVsync(final boolean enableVsync) {
       RenderSystem.assertOnRenderThread();
-      this.vsync = var1;
-      GLFW.glfwSwapInterval(var1 ? 1 : 0);
+      this.vsync = enableVsync;
+      RenderSystem.getDevice().setVsync(enableVsync);
    }
 
    public void close() {
       RenderSystem.assertOnRenderThread();
+      this.screenManager.shutdown();
       Callbacks.glfwFreeCallbacks(this.handle);
       this.defaultErrorCallback.close();
       GLFW.glfwDestroyWindow(this.handle);
       GLFW.glfwTerminate();
    }
 
-   private void onMove(long var1, int var3, int var4) {
-      this.x = var3;
-      this.y = var4;
+   private void onMove(final long handle, final int x, final int y) {
+      this.x = x;
+      this.y = y;
    }
 
-   private void onFramebufferResize(long var1, int var3, int var4) {
-      if (var1 == this.handle) {
-         int var5 = this.getWidth();
-         int var6 = this.getHeight();
-         if (var3 != 0 && var4 != 0) {
+   private void onFramebufferResize(final long handle, final int newWidth, final int newHeight) {
+      if (handle == this.handle) {
+         int oldWidth = this.getWidth();
+         int oldHeight = this.getHeight();
+         if (newWidth != 0 && newHeight != 0) {
             this.minimized = false;
-            this.framebufferWidth = var3;
-            this.framebufferHeight = var4;
-            if (this.getWidth() != var5 || this.getHeight() != var6) {
+            this.framebufferWidth = newWidth;
+            this.framebufferHeight = newHeight;
+            if (this.getWidth() != oldWidth || this.getHeight() != oldHeight) {
                try {
                   this.eventHandler.resizeDisplay();
-               } catch (Exception var10) {
-                  CrashReport var8 = CrashReport.forThrowable(var10, "Window resize");
-                  CrashReportCategory var9 = var8.addCategory("Window Dimensions");
-                  var9.setDetail("Old", var5 + "x" + var6);
-                  var9.setDetail("New", var3 + "x" + var4);
-                  throw new ReportedException(var8);
+               } catch (Exception e) {
+                  CrashReport report = CrashReport.forThrowable(e, "Window resize");
+                  CrashReportCategory windowSizeDetails = report.addCategory("Window Dimensions");
+                  windowSizeDetails.setDetail("Old", oldWidth + "x" + oldHeight);
+                  windowSizeDetails.setDetail("New", newWidth + "x" + newHeight);
+                  throw new ReportedException(report);
                }
             }
 
@@ -315,41 +331,41 @@ public final class Window implements AutoCloseable {
    }
 
    private void refreshFramebufferSize() {
-      int[] var1 = new int[1];
-      int[] var2 = new int[1];
-      GLFW.glfwGetFramebufferSize(this.handle, var1, var2);
-      this.framebufferWidth = var1[0] > 0 ? var1[0] : 1;
-      this.framebufferHeight = var2[0] > 0 ? var2[0] : 1;
+      int[] outWidth = new int[1];
+      int[] outHeight = new int[1];
+      GLFW.glfwGetFramebufferSize(this.handle, outWidth, outHeight);
+      this.framebufferWidth = outWidth[0] > 0 ? outWidth[0] : 1;
+      this.framebufferHeight = outHeight[0] > 0 ? outHeight[0] : 1;
    }
 
-   private void onResize(long var1, int var3, int var4) {
-      this.width = var3;
-      this.height = var4;
+   private void onResize(final long handle, final int newWidth, final int newHeight) {
+      this.width = newWidth;
+      this.height = newHeight;
    }
 
-   private void onFocus(long var1, boolean var3) {
-      if (var1 == this.handle) {
-         this.eventHandler.setWindowActive(var3);
+   private void onFocus(final long handle, final boolean focused) {
+      if (handle == this.handle) {
+         this.eventHandler.setWindowActive(focused);
       }
 
    }
 
-   private void onEnter(long var1, boolean var3) {
-      if (var3) {
+   private void onEnter(final long handle, final boolean entered) {
+      if (entered) {
          this.eventHandler.cursorEntered();
       }
 
    }
 
-   private void onIconify(long var1, boolean var3) {
-      this.iconified = var3;
+   private void onIconify(final long handle, final boolean iconified) {
+      this.iconified = iconified;
    }
 
-   public void updateDisplay(@Nullable TracyFrameCapture var1) {
-      RenderSystem.flipFrame(this, var1);
+   public void updateDisplay(final @Nullable TracyFrameCapture tracyFrameCapture) {
+      RenderSystem.flipFrame(tracyFrameCapture);
       if (this.fullscreen != this.actuallyFullscreen) {
          this.actuallyFullscreen = this.fullscreen;
-         this.updateFullscreen(this.vsync, var1);
+         this.updateFullscreen(this.vsync, tracyFrameCapture);
       }
 
    }
@@ -358,10 +374,10 @@ public final class Window implements AutoCloseable {
       return this.preferredFullscreenVideoMode;
    }
 
-   public void setPreferredFullscreenVideoMode(Optional<VideoMode> var1) {
-      boolean var2 = !var1.equals(this.preferredFullscreenVideoMode);
-      this.preferredFullscreenVideoMode = var1;
-      if (var2) {
+   public void setPreferredFullscreenVideoMode(final Optional<VideoMode> preferredFullscreenVideoMode) {
+      boolean changed = !preferredFullscreenVideoMode.equals(this.preferredFullscreenVideoMode);
+      this.preferredFullscreenVideoMode = preferredFullscreenVideoMode;
+      if (changed) {
          this.dirty = true;
       }
 
@@ -377,10 +393,10 @@ public final class Window implements AutoCloseable {
    }
 
    private void setMode() {
-      boolean var1 = GLFW.glfwGetWindowMonitor(this.handle) != 0L;
+      boolean wasFullscreen = GLFW.glfwGetWindowMonitor(this.handle) != 0L;
       if (this.fullscreen) {
-         Monitor var2 = this.screenManager.findBestMonitor(this);
-         if (var2 == null) {
+         Monitor monitor = this.screenManager.findBestMonitor(this);
+         if (monitor == null) {
             LOGGER.warn("Failed to find suitable monitor for fullscreen mode");
             this.fullscreen = false;
          } else {
@@ -388,8 +404,8 @@ public final class Window implements AutoCloseable {
                MacosUtil.exitNativeFullscreen(this);
             }
 
-            VideoMode var3 = var2.getPreferredVidMode(this.preferredFullscreenVideoMode);
-            if (!var1) {
+            VideoMode mode = monitor.getPreferredVidMode(this.preferredFullscreenVideoMode);
+            if (!wasFullscreen) {
                this.windowedX = this.x;
                this.windowedY = this.y;
                this.windowedWidth = this.width;
@@ -398,9 +414,9 @@ public final class Window implements AutoCloseable {
 
             this.x = 0;
             this.y = 0;
-            this.width = var3.getWidth();
-            this.height = var3.getHeight();
-            GLFW.glfwSetWindowMonitor(this.handle, var2.getMonitor(), this.x, this.y, this.width, this.height, var3.getRefreshRate());
+            this.width = mode.getWidth();
+            this.height = mode.getHeight();
+            GLFW.glfwSetWindowMonitor(this.handle, monitor.getMonitor(), this.x, this.y, this.width, this.height, mode.getRefreshRate());
             if (MacosUtil.IS_MACOS) {
                MacosUtil.clearResizableBit(this);
             }
@@ -419,50 +435,50 @@ public final class Window implements AutoCloseable {
       this.fullscreen = !this.fullscreen;
    }
 
-   public void setWindowed(int var1, int var2) {
-      this.windowedWidth = var1;
-      this.windowedHeight = var2;
+   public void setWindowed(final int width, final int height) {
+      this.windowedWidth = width;
+      this.windowedHeight = height;
       this.fullscreen = false;
       this.setMode();
    }
 
-   private void updateFullscreen(boolean var1, @Nullable TracyFrameCapture var2) {
+   private void updateFullscreen(final boolean enableVsync, final @Nullable TracyFrameCapture tracyFrameCapture) {
       RenderSystem.assertOnRenderThread();
 
       try {
          this.setMode();
          this.eventHandler.resizeDisplay();
-         this.updateVsync(var1);
-         this.updateDisplay(var2);
-      } catch (Exception var4) {
-         LOGGER.error("Couldn't toggle fullscreen", var4);
+         this.updateVsync(enableVsync);
+         this.updateDisplay(tracyFrameCapture);
+      } catch (Exception e) {
+         LOGGER.error("Couldn't toggle fullscreen", e);
       }
 
    }
 
-   public int calculateScale(int var1, boolean var2) {
-      int var3;
-      for(var3 = 1; var3 != var1 && var3 < this.framebufferWidth && var3 < this.framebufferHeight && this.framebufferWidth / (var3 + 1) >= 320 && this.framebufferHeight / (var3 + 1) >= 240; ++var3) {
+   public int calculateScale(final int maxScale, final boolean enforceUnicode) {
+      int scale;
+      for(scale = 1; scale != maxScale && scale < this.framebufferWidth && scale < this.framebufferHeight && this.framebufferWidth / (scale + 1) >= 320 && this.framebufferHeight / (scale + 1) >= 240; ++scale) {
       }
 
-      if (var2 && var3 % 2 != 0) {
-         ++var3;
+      if (enforceUnicode && scale % 2 != 0) {
+         ++scale;
       }
 
-      return var3;
+      return scale;
    }
 
-   public void setGuiScale(int var1) {
-      this.guiScale = var1;
-      double var2 = (double)var1;
-      int var4 = (int)((double)this.framebufferWidth / var2);
-      this.guiScaledWidth = (double)this.framebufferWidth / var2 > (double)var4 ? var4 + 1 : var4;
-      int var5 = (int)((double)this.framebufferHeight / var2);
-      this.guiScaledHeight = (double)this.framebufferHeight / var2 > (double)var5 ? var5 + 1 : var5;
+   public void setGuiScale(final int guiScale) {
+      this.guiScale = guiScale;
+      double doubleGuiScale = (double)guiScale;
+      int width = (int)((double)this.framebufferWidth / doubleGuiScale);
+      this.guiScaledWidth = (double)this.framebufferWidth / doubleGuiScale > (double)width ? width + 1 : width;
+      int height = (int)((double)this.framebufferHeight / doubleGuiScale);
+      this.guiScaledHeight = (double)this.framebufferHeight / doubleGuiScale > (double)height ? height + 1 : height;
    }
 
-   public void setTitle(String var1) {
-      GLFW.glfwSetWindowTitle(this.handle, var1);
+   public void setTitle(final String title) {
+      GLFW.glfwSetWindowTitle(this.handle, title);
    }
 
    public long handle() {
@@ -485,12 +501,12 @@ public final class Window implements AutoCloseable {
       return this.framebufferHeight;
    }
 
-   public void setWidth(int var1) {
-      this.framebufferWidth = var1;
+   public void setWidth(final int width) {
+      this.framebufferWidth = width;
    }
 
-   public void setHeight(int var1) {
-      this.framebufferHeight = var1;
+   public void setHeight(final int height) {
+      this.framebufferHeight = height;
    }
 
    public int getScreenWidth() {
@@ -525,14 +541,14 @@ public final class Window implements AutoCloseable {
       return this.screenManager.findBestMonitor(this);
    }
 
-   public void updateRawMouseInput(boolean var1) {
-      InputConstants.updateRawMouseInput(this, var1);
+   public void updateRawMouseInput(final boolean value) {
+      InputConstants.updateRawMouseInput(this, value);
    }
 
-   public void setWindowCloseCallback(Runnable var1) {
-      GLFWWindowCloseCallback var2 = GLFW.glfwSetWindowCloseCallback(this.handle, (var1x) -> var1.run());
-      if (var2 != null) {
-         var2.free();
+   public void setWindowCloseCallback(final Runnable task) {
+      GLFWWindowCloseCallback prev = GLFW.glfwSetWindowCloseCallback(this.handle, (id) -> task.run());
+      if (prev != null) {
+         prev.free();
       }
 
    }
@@ -541,15 +557,15 @@ public final class Window implements AutoCloseable {
       return this.minimized;
    }
 
-   public void setAllowCursorChanges(boolean var1) {
-      this.allowCursorChanges = var1;
+   public void setAllowCursorChanges(final boolean value) {
+      this.allowCursorChanges = value;
    }
 
-   public void selectCursor(CursorType var1) {
-      CursorType var2 = this.allowCursorChanges ? var1 : CursorType.DEFAULT;
-      if (this.currentCursor != var2) {
-         this.currentCursor = var2;
-         var2.select(this);
+   public void selectCursor(final CursorType cursor) {
+      CursorType effectiveCursor = this.allowCursorChanges ? cursor : CursorType.DEFAULT;
+      if (this.currentCursor != effectiveCursor) {
+         this.currentCursor = effectiveCursor;
+         effectiveCursor.select(this);
       }
 
    }
@@ -559,8 +575,8 @@ public final class Window implements AutoCloseable {
    }
 
    public static class WindowInitFailed extends SilentInitException {
-      WindowInitFailed(String var1) {
-         super(var1);
+      private WindowInitFailed(final String message) {
+         super(message);
       }
    }
 }

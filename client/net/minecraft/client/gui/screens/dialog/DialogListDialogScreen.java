@@ -13,15 +13,15 @@ import net.minecraft.server.dialog.action.StaticAction;
 import org.jspecify.annotations.Nullable;
 
 public class DialogListDialogScreen extends ButtonListDialogScreen<DialogListDialog> {
-   public DialogListDialogScreen(@Nullable Screen var1, DialogListDialog var2, DialogConnectionAccess var3) {
-      super(var1, var2, var3);
+   public DialogListDialogScreen(final @Nullable Screen previousScreen, final DialogListDialog dialog, final DialogConnectionAccess connectionAccess) {
+      super(previousScreen, dialog, connectionAccess);
    }
 
-   protected Stream<ActionButton> createListActions(DialogListDialog var1, DialogConnectionAccess var2) {
-      return var1.dialogs().stream().map((var1x) -> createDialogClickAction(var1, var1x));
+   protected Stream<ActionButton> createListActions(final DialogListDialog data, final DialogConnectionAccess connectionAccess) {
+      return data.dialogs().stream().map((subDialog) -> createDialogClickAction(data, subDialog));
    }
 
-   private static ActionButton createDialogClickAction(DialogListDialog var0, Holder<Dialog> var1) {
-      return new ActionButton(new CommonButtonData(((Dialog)var1.value()).common().computeExternalTitle(), var0.buttonWidth()), Optional.of(new StaticAction(new ClickEvent.ShowDialog(var1))));
+   private static ActionButton createDialogClickAction(final DialogListDialog data, final Holder<Dialog> subDialog) {
+      return new ActionButton(new CommonButtonData(((Dialog)subDialog.value()).common().computeExternalTitle(), data.buttonWidth()), Optional.of(new StaticAction(new ClickEvent.ShowDialog(subDialog))));
    }
 }

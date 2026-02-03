@@ -39,13 +39,13 @@ public class ActiveProfiler implements ProfileCollector {
    private final BooleanSupplier suppressWarnings;
    private final Set<Pair<String, MetricCategory>> chartedPaths = new ObjectArraySet();
 
-   public ActiveProfiler(LongSupplier var1, IntSupplier var2, BooleanSupplier var3) {
+   public ActiveProfiler(final LongSupplier getRealTime, final IntSupplier getTickTime, final BooleanSupplier suppressWarnings) {
       super();
-      this.startTimeNano = var1.getAsLong();
-      this.getRealTime = var1;
-      this.startTimeTicks = var2.getAsInt();
-      this.getTickTime = var2;
-      this.suppressWarnings = var3;
+      this.startTimeNano = getRealTime.getAsLong();
+      this.getRealTime = getRealTime;
+      this.startTimeTicks = getTickTime.getAsInt();
+      this.getTickTime = getTickTime;
+      this.suppressWarnings = suppressWarnings;
    }
 
    public void startTick() {
@@ -72,27 +72,27 @@ public class ActiveProfiler implements ProfileCollector {
       }
    }
 
-   public void push(String var1) {
+   public void push(final String name) {
       if (!this.started) {
-         LOGGER.error("Cannot push '{}' to profiler if profiler tick hasn't started - missing startTick()?", var1);
+         LOGGER.error("Cannot push '{}' to profiler if profiler tick hasn't started - missing startTick()?", name);
       } else {
          if (!this.path.isEmpty()) {
             this.path = this.path + "\u001e";
          }
 
-         this.path = this.path + var1;
+         this.path = this.path + name;
          this.paths.add(this.path);
          this.startTimes.add(Util.getNanos());
          this.currentEntry = null;
       }
    }
 
-   public void push(Supplier<String> var1) {
-      this.push((String)var1.get());
+   public void push(final Supplier<String> name) {
+      this.push((String)name.get());
    }
 
-   public void markForCharting(MetricCategory var1) {
-      this.chartedPaths.add(Pair.of(this.path, var1));
+   public void markForCharting(final MetricCategory category) {
+      this.chartedPaths.add(Pair.of(this.path, category));
    }
 
    public void pop() {
@@ -101,17 +101,17 @@ public class ActiveProfiler implements ProfileCollector {
       } else if (this.startTimes.isEmpty()) {
          LOGGER.error("Tried to pop one too many times! Mismatched push() and pop()?");
       } else {
-         long var1 = Util.getNanos();
-         long var3 = this.startTimes.removeLong(this.startTimes.size() - 1);
+         long endTime = Util.getNanos();
+         long startTime = this.startTimes.removeLong(this.startTimes.size() - 1);
          this.paths.removeLast();
-         long var5 = var1 - var3;
-         PathEntry var7 = this.getCurrentEntry();
-         var7.accumulatedDuration += var5;
-         ++var7.count;
-         var7.maxDuration = Math.max(var7.maxDuration, var5);
-         var7.minDuration = Math.min(var7.minDuration, var5);
-         if (var5 > WARNING_TIME_NANOS && !this.suppressWarnings.getAsBoolean()) {
-            LOGGER.warn("Something's taking too long! '{}' took aprox {} ms", LogUtils.defer(() -> ProfileResults.demanglePath(this.path)), LogUtils.defer(() -> (double)var5 / 1000000.0));
+         long time = endTime - startTime;
+         PathEntry currentEntry = this.getCurrentEntry();
+         currentEntry.accumulatedDuration += time;
+         ++currentEntry.count;
+         currentEntry.maxDuration = Math.max(currentEntry.maxDuration, time);
+         currentEntry.minDuration = Math.min(currentEntry.minDuration, time);
+         if (time > WARNING_TIME_NANOS && !this.suppressWarnings.getAsBoolean()) {
+            LOGGER.warn("Something's taking too long! '{}' took aprox {} ms", LogUtils.defer(() -> ProfileResults.demanglePath(this.path)), LogUtils.defer(() -> (double)time / 1000000.0));
          }
 
          this.path = this.paths.isEmpty() ? "" : (String)this.paths.getLast();
@@ -119,38 +119,38 @@ public class ActiveProfiler implements ProfileCollector {
       }
    }
 
-   public void popPush(String var1) {
+   public void popPush(final String name) {
       this.pop();
-      this.push(var1);
+      this.push(name);
    }
 
-   public void popPush(Supplier<String> var1) {
+   public void popPush(final Supplier<String> name) {
       this.pop();
-      this.push(var1);
+      this.push(name);
    }
 
    private PathEntry getCurrentEntry() {
       if (this.currentEntry == null) {
-         this.currentEntry = (PathEntry)this.entries.computeIfAbsent(this.path, (var0) -> new PathEntry());
+         this.currentEntry = (PathEntry)this.entries.computeIfAbsent(this.path, (key) -> new PathEntry());
       }
 
       return this.currentEntry;
    }
 
-   public void incrementCounter(String var1, int var2) {
-      this.getCurrentEntry().counters.addTo(var1, (long)var2);
+   public void incrementCounter(final String name, final int amount) {
+      this.getCurrentEntry().counters.addTo(name, (long)amount);
    }
 
-   public void incrementCounter(Supplier<String> var1, int var2) {
-      this.getCurrentEntry().counters.addTo((String)var1.get(), (long)var2);
+   public void incrementCounter(final Supplier<String> name, final int amount) {
+      this.getCurrentEntry().counters.addTo((String)name.get(), (long)amount);
    }
 
    public ProfileResults getResults() {
       return new FilledProfileResults(this.entries, this.startTimeNano, this.startTimeTicks, this.getRealTime.getAsLong(), this.getTickTime.getAsInt());
    }
 
-   public @Nullable PathEntry getEntry(String var1) {
-      return (PathEntry)this.entries.get(var1);
+   public @Nullable PathEntry getEntry(final String path) {
+      return (PathEntry)this.entries.get(path);
    }
 
    public Set<Pair<String, MetricCategory>> getChartedPaths() {
@@ -158,11 +158,11 @@ public class ActiveProfiler implements ProfileCollector {
    }
 
    public static class PathEntry implements ProfilerPathEntry {
-      long maxDuration = -9223372036854775808L;
-      long minDuration = 9223372036854775807L;
-      long accumulatedDuration;
-      long count;
-      final Object2LongOpenHashMap<String> counters = new Object2LongOpenHashMap();
+      private long maxDuration = -9223372036854775808L;
+      private long minDuration = 9223372036854775807L;
+      private long accumulatedDuration;
+      private long count;
+      private final Object2LongOpenHashMap<String> counters = new Object2LongOpenHashMap();
 
       public PathEntry() {
          super();

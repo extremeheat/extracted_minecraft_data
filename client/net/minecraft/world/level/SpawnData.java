@@ -15,25 +15,22 @@ import net.minecraft.world.entity.EquipmentTable;
 
 public record SpawnData(CompoundTag entityToSpawn, Optional<CustomSpawnRules> customSpawnRules, Optional<EquipmentTable> equipment) {
    public static final String ENTITY_TAG = "entity";
-   public static final Codec<SpawnData> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CompoundTag.CODEC.fieldOf("entity").forGetter((var0x) -> var0x.entityToSpawn), SpawnData.CustomSpawnRules.CODEC.optionalFieldOf("custom_spawn_rules").forGetter((var0x) -> var0x.customSpawnRules), EquipmentTable.CODEC.optionalFieldOf("equipment").forGetter((var0x) -> var0x.equipment)).apply(var0, SpawnData::new));
+   public static final Codec<SpawnData> CODEC = RecordCodecBuilder.create((i) -> i.group(CompoundTag.CODEC.fieldOf("entity").forGetter((s) -> s.entityToSpawn), SpawnData.CustomSpawnRules.CODEC.optionalFieldOf("custom_spawn_rules").forGetter((o) -> o.customSpawnRules), EquipmentTable.CODEC.optionalFieldOf("equipment").forGetter((o) -> o.equipment)).apply(i, SpawnData::new));
    public static final Codec<WeightedList<SpawnData>> LIST_CODEC;
 
    public SpawnData() {
       this(new CompoundTag(), Optional.empty(), Optional.empty());
    }
 
-   public SpawnData(CompoundTag var1, Optional<CustomSpawnRules> var2, Optional<EquipmentTable> var3) {
+   public SpawnData {
       super();
-      Optional var4 = var1.read("id", Identifier.CODEC);
-      if (var4.isPresent()) {
-         var1.store("id", Identifier.CODEC, (Identifier)var4.get());
+      Optional<Identifier> id = entityToSpawn.read("id", Identifier.CODEC);
+      if (id.isPresent()) {
+         entityToSpawn.store("id", Identifier.CODEC, (Identifier)id.get());
       } else {
-         var1.remove("id");
+         entityToSpawn.remove("id");
       }
 
-      this.entityToSpawn = var1;
-      this.customSpawnRules = var2;
-      this.equipment = var3;
    }
 
    public CompoundTag getEntityToSpawn() {
@@ -54,24 +51,22 @@ public record SpawnData(CompoundTag entityToSpawn, Optional<CustomSpawnRules> cu
 
    public static record CustomSpawnRules(InclusiveRange<Integer> blockLightLimit, InclusiveRange<Integer> skyLightLimit) {
       private static final InclusiveRange<Integer> LIGHT_RANGE = new InclusiveRange<Integer>(0, 15);
-      public static final Codec<CustomSpawnRules> CODEC = RecordCodecBuilder.create((var0) -> var0.group(lightLimit("block_light_limit").forGetter((var0x) -> var0x.blockLightLimit), lightLimit("sky_light_limit").forGetter((var0x) -> var0x.skyLightLimit)).apply(var0, CustomSpawnRules::new));
+      public static final Codec<CustomSpawnRules> CODEC = RecordCodecBuilder.create((i) -> i.group(lightLimit("block_light_limit").forGetter((o) -> o.blockLightLimit), lightLimit("sky_light_limit").forGetter((o) -> o.skyLightLimit)).apply(i, CustomSpawnRules::new));
 
-      public CustomSpawnRules(InclusiveRange<Integer> var1, InclusiveRange<Integer> var2) {
+      public CustomSpawnRules {
          super();
-         this.blockLightLimit = var1;
-         this.skyLightLimit = var2;
       }
 
-      private static DataResult<InclusiveRange<Integer>> checkLightBoundaries(InclusiveRange<Integer> var0) {
-         return !LIGHT_RANGE.contains(var0) ? DataResult.error(() -> "Light values must be withing range " + String.valueOf(LIGHT_RANGE)) : DataResult.success(var0);
+      private static DataResult<InclusiveRange<Integer>> checkLightBoundaries(final InclusiveRange<Integer> range) {
+         return !LIGHT_RANGE.contains(range) ? DataResult.error(() -> "Light values must be withing range " + String.valueOf(LIGHT_RANGE)) : DataResult.success(range);
       }
 
-      private static MapCodec<InclusiveRange<Integer>> lightLimit(String var0) {
-         return InclusiveRange.INT.lenientOptionalFieldOf(var0, LIGHT_RANGE).validate(CustomSpawnRules::checkLightBoundaries);
+      private static MapCodec<InclusiveRange<Integer>> lightLimit(final String name) {
+         return InclusiveRange.INT.lenientOptionalFieldOf(name, LIGHT_RANGE).validate(CustomSpawnRules::checkLightBoundaries);
       }
 
-      public boolean isValidPosition(BlockPos var1, ServerLevel var2) {
-         return this.blockLightLimit.isValueInRange(var2.getBrightness(LightLayer.BLOCK, var1)) && this.skyLightLimit.isValueInRange(var2.getBrightness(LightLayer.SKY, var1));
+      public boolean isValidPosition(final BlockPos blockSpawnPos, final ServerLevel level) {
+         return this.blockLightLimit.isValueInRange(level.getBrightness(LightLayer.BLOCK, blockSpawnPos)) && this.skyLightLimit.isValueInRange(level.getBrightness(LightLayer.SKY, blockSpawnPos));
       }
    }
 }

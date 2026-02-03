@@ -11,7 +11,7 @@ public class FlatLevelGeneratorPresetTags {
       super();
    }
 
-   private static TagKey<FlatLevelGeneratorPreset> create(String var0) {
-      return TagKey.<FlatLevelGeneratorPreset>create(Registries.FLAT_LEVEL_GENERATOR_PRESET, Identifier.withDefaultNamespace(var0));
+   private static TagKey<FlatLevelGeneratorPreset> create(final String name) {
+      return TagKey.<FlatLevelGeneratorPreset>create(Registries.FLAT_LEVEL_GENERATOR_PRESET, Identifier.withDefaultNamespace(name));
    }
 }

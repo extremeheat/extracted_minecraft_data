@@ -19,26 +19,26 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class FlintAndSteelItem extends Item {
-   public FlintAndSteelItem(Item.Properties var1) {
-      super(var1);
+   public FlintAndSteelItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Player var2 = var1.getPlayer();
-      Level var3 = var1.getLevel();
-      BlockPos var4 = var1.getClickedPos();
-      BlockState var5 = var3.getBlockState(var4);
-      if (!CampfireBlock.canLight(var5) && !CandleBlock.canLight(var5) && !CandleCakeBlock.canLight(var5)) {
-         BlockPos var6 = var4.relative(var1.getClickedFace());
-         if (BaseFireBlock.canBePlacedAt(var3, var6, var1.getHorizontalDirection())) {
-            var3.playSound(var2, (BlockPos)var6, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
-            BlockState var7 = BaseFireBlock.getState(var3, var6);
-            var3.setBlock(var6, var7, 11);
-            var3.gameEvent(var2, GameEvent.BLOCK_PLACE, var4);
-            ItemStack var8 = var1.getItemInHand();
-            if (var2 instanceof ServerPlayer) {
-               CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)var2, var6, var8);
-               var8.hurtAndBreak(1, var2, (EquipmentSlot)var1.getHand().asEquipmentSlot());
+   public InteractionResult useOn(final UseOnContext context) {
+      Player player = context.getPlayer();
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      BlockState state = level.getBlockState(pos);
+      if (!CampfireBlock.canLight(state) && !CandleBlock.canLight(state) && !CandleCakeBlock.canLight(state)) {
+         BlockPos relativePos = pos.relative(context.getClickedFace());
+         if (BaseFireBlock.canBePlacedAt(level, relativePos, context.getHorizontalDirection())) {
+            level.playSound(player, (BlockPos)relativePos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.4F + 0.8F);
+            BlockState fireState = BaseFireBlock.getState(level, relativePos);
+            level.setBlock(relativePos, fireState, 11);
+            level.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
+            ItemStack itemStack = context.getItemInHand();
+            if (player instanceof ServerPlayer) {
+               CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)player, relativePos, itemStack);
+               itemStack.hurtAndBreak(1, player, (EquipmentSlot)context.getHand().asEquipmentSlot());
             }
 
             return InteractionResult.SUCCESS;
@@ -46,11 +46,11 @@ public class FlintAndSteelItem extends Item {
             return InteractionResult.FAIL;
          }
       } else {
-         var3.playSound(var2, (BlockPos)var4, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
-         var3.setBlock(var4, (BlockState)var5.setValue(BlockStateProperties.LIT, true), 11);
-         var3.gameEvent(var2, GameEvent.BLOCK_CHANGE, var4);
-         if (var2 != null) {
-            var1.getItemInHand().hurtAndBreak(1, var2, (EquipmentSlot)var1.getHand().asEquipmentSlot());
+         level.playSound(player, (BlockPos)pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.4F + 0.8F);
+         level.setBlock(pos, (BlockState)state.setValue(BlockStateProperties.LIT, true), 11);
+         level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+         if (player != null) {
+            context.getItemInHand().hurtAndBreak(1, player, (EquipmentSlot)context.getHand().asEquipmentSlot());
          }
 
          return InteractionResult.SUCCESS;

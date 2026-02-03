@@ -83,7 +83,6 @@ import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.server.commands.data.DataCommands;
@@ -131,253 +130,253 @@ import org.slf4j.Logger;
 public class ExecuteCommand {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_TEST_AREA = 32768;
-   private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.execute.blocks.toobig", var0, var1));
+   private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((max, count) -> Component.translatableEscape("commands.execute.blocks.toobig", max, count));
    private static final SimpleCommandExceptionType ERROR_CONDITIONAL_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.execute.conditional.fail"));
-   private static final DynamicCommandExceptionType ERROR_CONDITIONAL_FAILED_COUNT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.execute.conditional.fail_count", var0));
+   private static final DynamicCommandExceptionType ERROR_CONDITIONAL_FAILED_COUNT = new DynamicCommandExceptionType((count) -> Component.translatableEscape("commands.execute.conditional.fail_count", count));
    @VisibleForTesting
-   public static final Dynamic2CommandExceptionType ERROR_FUNCTION_CONDITION_INSTANTATION_FAILURE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.execute.function.instantiationFailure", var0, var1));
+   public static final Dynamic2CommandExceptionType ERROR_FUNCTION_CONDITION_INSTANTATION_FAILURE = new Dynamic2CommandExceptionType((id, reason) -> Component.translatableEscape("commands.execute.function.instantiationFailure", id, reason));
 
    public ExecuteCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      LiteralCommandNode var2 = var0.register((LiteralArgumentBuilder)Commands.literal("execute").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)));
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("execute").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("run").redirect(var0.getRoot()))).then(addConditionals(var2, Commands.literal("if"), true, var1))).then(addConditionals(var2, Commands.literal("unless"), false, var1))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, (var0x) -> {
-         ArrayList var1 = Lists.newArrayList();
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      LiteralCommandNode<CommandSourceStack> execute = dispatcher.register((LiteralArgumentBuilder)Commands.literal("execute").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("execute").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("run").redirect(dispatcher.getRoot()))).then(addConditionals(execute, Commands.literal("if"), true, context))).then(addConditionals(execute, Commands.literal("unless"), false, context))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(execute, (c) -> {
+         List<CommandSourceStack> result = Lists.newArrayList();
 
-         for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-            var1.add(((CommandSourceStack)var0x.getSource()).withEntity(var3));
+         for(Entity entity : EntityArgument.getOptionalEntities(c, "targets")) {
+            result.add(((CommandSourceStack)c.getSource()).withEntity(entity));
          }
 
-         return var1;
-      })))).then(Commands.literal("at").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, (var0x) -> {
-         ArrayList var1 = Lists.newArrayList();
+         return result;
+      })))).then(Commands.literal("at").then(Commands.argument("targets", EntityArgument.entities()).fork(execute, (c) -> {
+         List<CommandSourceStack> result = Lists.newArrayList();
 
-         for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-            var1.add(((CommandSourceStack)var0x.getSource()).withLevel((ServerLevel)var3.level()).withPosition(var3.position()).withRotation(var3.getRotationVector()));
+         for(Entity entity : EntityArgument.getOptionalEntities(c, "targets")) {
+            result.add(((CommandSourceStack)c.getSource()).withLevel((ServerLevel)entity.level()).withPosition(entity.position()).withRotation(entity.getRotationVector()));
          }
 
-         return var1;
-      })))).then(((LiteralArgumentBuilder)Commands.literal("store").then(wrapStores(var2, Commands.literal("result"), true))).then(wrapStores(var2, Commands.literal("success"), false)))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("positioned").then(Commands.argument("pos", Vec3Argument.vec3()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withPosition(Vec3Argument.getVec3(var0x, "pos")).withAnchor(EntityAnchorArgument.Anchor.FEET)))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, (var0x) -> {
-         ArrayList var1 = Lists.newArrayList();
+         return result;
+      })))).then(((LiteralArgumentBuilder)Commands.literal("store").then(wrapStores(execute, Commands.literal("result"), true))).then(wrapStores(execute, Commands.literal("success"), false)))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("positioned").then(Commands.argument("pos", Vec3Argument.vec3()).redirect(execute, (c) -> ((CommandSourceStack)c.getSource()).withPosition(Vec3Argument.getVec3(c, "pos")).withAnchor(EntityAnchorArgument.Anchor.FEET)))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(execute, (c) -> {
+         List<CommandSourceStack> result = Lists.newArrayList();
 
-         for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-            var1.add(((CommandSourceStack)var0x.getSource()).withPosition(var3.position()));
+         for(Entity entity : EntityArgument.getOptionalEntities(c, "targets")) {
+            result.add(((CommandSourceStack)c.getSource()).withPosition(entity.position()));
          }
 
-         return var1;
-      })))).then(Commands.literal("over").then(Commands.argument("heightmap", HeightmapTypeArgument.heightmap()).redirect(var2, (var0x) -> {
-         Vec3 var1 = ((CommandSourceStack)var0x.getSource()).getPosition();
-         ServerLevel var2 = ((CommandSourceStack)var0x.getSource()).getLevel();
-         double var3 = var1.x();
-         double var5 = var1.z();
-         if (!var2.hasChunk(SectionPos.blockToSectionCoord(var3), SectionPos.blockToSectionCoord(var5))) {
+         return result;
+      })))).then(Commands.literal("over").then(Commands.argument("heightmap", HeightmapTypeArgument.heightmap()).redirect(execute, (c) -> {
+         Vec3 position = ((CommandSourceStack)c.getSource()).getPosition();
+         ServerLevel level = ((CommandSourceStack)c.getSource()).getLevel();
+         double x = position.x();
+         double z = position.z();
+         if (!level.hasChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z))) {
             throw BlockPosArgument.ERROR_NOT_LOADED.create();
          } else {
-            int var7 = var2.getHeight(HeightmapTypeArgument.getHeightmap(var0x, "heightmap"), Mth.floor(var3), Mth.floor(var5));
-            return ((CommandSourceStack)var0x.getSource()).withPosition(new Vec3(var3, (double)var7, var5));
+            int height = level.getHeight(HeightmapTypeArgument.getHeightmap(c, "heightmap"), Mth.floor(x), Mth.floor(z));
+            return ((CommandSourceStack)c.getSource()).withPosition(new Vec3(x, (double)height, z));
          }
-      }))))).then(((LiteralArgumentBuilder)Commands.literal("rotated").then(Commands.argument("rot", RotationArgument.rotation()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withRotation(RotationArgument.getRotation(var0x, "rot").getRotation((CommandSourceStack)var0x.getSource()))))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, (var0x) -> {
-         ArrayList var1 = Lists.newArrayList();
+      }))))).then(((LiteralArgumentBuilder)Commands.literal("rotated").then(Commands.argument("rot", RotationArgument.rotation()).redirect(execute, (c) -> ((CommandSourceStack)c.getSource()).withRotation(RotationArgument.getRotation(c, "rot").getRotation((CommandSourceStack)c.getSource()))))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(execute, (c) -> {
+         List<CommandSourceStack> result = Lists.newArrayList();
 
-         for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-            var1.add(((CommandSourceStack)var0x.getSource()).withRotation(var3.getRotationVector()));
-         }
-
-         return var1;
-      }))))).then(((LiteralArgumentBuilder)Commands.literal("facing").then(Commands.literal("entity").then(Commands.argument("targets", EntityArgument.entities()).then(Commands.argument("anchor", EntityAnchorArgument.anchor()).fork(var2, (var0x) -> {
-         ArrayList var1 = Lists.newArrayList();
-         EntityAnchorArgument.Anchor var2 = EntityAnchorArgument.getAnchor(var0x, "anchor");
-
-         for(Entity var4 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-            var1.add(((CommandSourceStack)var0x.getSource()).facing(var4, var2));
+         for(Entity entity : EntityArgument.getOptionalEntities(c, "targets")) {
+            result.add(((CommandSourceStack)c.getSource()).withRotation(entity.getRotationVector()));
          }
 
-         return var1;
-      }))))).then(Commands.argument("pos", Vec3Argument.vec3()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).facing(Vec3Argument.getVec3(var0x, "pos")))))).then(Commands.literal("align").then(Commands.argument("axes", SwizzleArgument.swizzle()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withPosition(((CommandSourceStack)var0x.getSource()).getPosition().align(SwizzleArgument.getSwizzle(var0x, "axes"))))))).then(Commands.literal("anchored").then(Commands.argument("anchor", EntityAnchorArgument.anchor()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withAnchor(EntityAnchorArgument.getAnchor(var0x, "anchor")))))).then(Commands.literal("in").then(Commands.argument("dimension", DimensionArgument.dimension()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withLevel(DimensionArgument.getDimension(var0x, "dimension")))))).then(Commands.literal("summon").then(Commands.argument("entity", ResourceArgument.resource(var1, Registries.ENTITY_TYPE)).suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES)).redirect(var2, (var0x) -> spawnEntityAndRedirect((CommandSourceStack)var0x.getSource(), ResourceArgument.getSummonableEntityType(var0x, "entity")))))).then(createRelationOperations(var2, Commands.literal("on"))));
+         return result;
+      }))))).then(((LiteralArgumentBuilder)Commands.literal("facing").then(Commands.literal("entity").then(Commands.argument("targets", EntityArgument.entities()).then(Commands.argument("anchor", EntityAnchorArgument.anchor()).fork(execute, (c) -> {
+         List<CommandSourceStack> result = Lists.newArrayList();
+         EntityAnchorArgument.Anchor anchor = EntityAnchorArgument.getAnchor(c, "anchor");
+
+         for(Entity entity : EntityArgument.getOptionalEntities(c, "targets")) {
+            result.add(((CommandSourceStack)c.getSource()).facing(entity, anchor));
+         }
+
+         return result;
+      }))))).then(Commands.argument("pos", Vec3Argument.vec3()).redirect(execute, (c) -> ((CommandSourceStack)c.getSource()).facing(Vec3Argument.getVec3(c, "pos")))))).then(Commands.literal("align").then(Commands.argument("axes", SwizzleArgument.swizzle()).redirect(execute, (c) -> ((CommandSourceStack)c.getSource()).withPosition(((CommandSourceStack)c.getSource()).getPosition().align(SwizzleArgument.getSwizzle(c, "axes"))))))).then(Commands.literal("anchored").then(Commands.argument("anchor", EntityAnchorArgument.anchor()).redirect(execute, (c) -> ((CommandSourceStack)c.getSource()).withAnchor(EntityAnchorArgument.getAnchor(c, "anchor")))))).then(Commands.literal("in").then(Commands.argument("dimension", DimensionArgument.dimension()).redirect(execute, (c) -> ((CommandSourceStack)c.getSource()).withLevel(DimensionArgument.getDimension(c, "dimension")))))).then(Commands.literal("summon").then(Commands.argument("entity", ResourceArgument.resource(context, Registries.ENTITY_TYPE)).suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES)).redirect(execute, (c) -> spawnEntityAndRedirect((CommandSourceStack)c.getSource(), ResourceArgument.getSummonableEntityType(c, "entity")))))).then(createRelationOperations(execute, Commands.literal("on"))));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> wrapStores(LiteralCommandNode<CommandSourceStack> var0, LiteralArgumentBuilder<CommandSourceStack> var1, boolean var2) {
-      var1.then(Commands.literal("score").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).redirect(var0, (var1x) -> storeValue((CommandSourceStack)var1x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var1x, "targets"), ObjectiveArgument.getObjective(var1x, "objective"), var2)))));
-      var1.then(Commands.literal("bossbar").then(((RequiredArgumentBuilder)Commands.argument("id", IdentifierArgument.id()).suggests(BossBarCommands.SUGGEST_BOSS_BAR).then(Commands.literal("value").redirect(var0, (var1x) -> storeValue((CommandSourceStack)var1x.getSource(), BossBarCommands.getBossBar(var1x), true, var2)))).then(Commands.literal("max").redirect(var0, (var1x) -> storeValue((CommandSourceStack)var1x.getSource(), BossBarCommands.getBossBar(var1x), false, var2)))));
+   private static ArgumentBuilder<CommandSourceStack, ?> wrapStores(final LiteralCommandNode<CommandSourceStack> execute, final LiteralArgumentBuilder<CommandSourceStack> literal, final boolean storeResult) {
+      literal.then(Commands.literal("score").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).redirect(execute, (c) -> storeValue((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), ObjectiveArgument.getObjective(c, "objective"), storeResult)))));
+      literal.then(Commands.literal("bossbar").then(((RequiredArgumentBuilder)Commands.argument("id", IdentifierArgument.id()).suggests(BossBarCommands.SUGGEST_BOSS_BAR).then(Commands.literal("value").redirect(execute, (c) -> storeValue((CommandSourceStack)c.getSource(), BossBarCommands.getBossBar(c), true, storeResult)))).then(Commands.literal("max").redirect(execute, (c) -> storeValue((CommandSourceStack)c.getSource(), BossBarCommands.getBossBar(c), false, storeResult)))));
 
-      for(DataCommands.DataProvider var4 : DataCommands.TARGET_PROVIDERS) {
-         var4.wrap(var1, (var3) -> var3.then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("path", NbtPathArgument.nbtPath()).then(Commands.literal("int").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> IntTag.valueOf((int)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale"))), var2))))).then(Commands.literal("float").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> FloatTag.valueOf((float)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale"))), var2))))).then(Commands.literal("short").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> ShortTag.valueOf((short)((int)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale")))), var2))))).then(Commands.literal("long").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> LongTag.valueOf((long)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale"))), var2))))).then(Commands.literal("double").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> DoubleTag.valueOf((double)var1 * DoubleArgumentType.getDouble(var2x, "scale")), var2))))).then(Commands.literal("byte").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> ByteTag.valueOf((byte)((int)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale")))), var2))))));
+      for(DataCommands.DataProvider provider : DataCommands.TARGET_PROVIDERS) {
+         provider.wrap(literal, (p) -> p.then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("path", NbtPathArgument.nbtPath()).then(Commands.literal("int").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(execute, (c) -> storeData((CommandSourceStack)c.getSource(), provider.access(c), NbtPathArgument.getPath(c, "path"), (v) -> IntTag.valueOf((int)((double)v * DoubleArgumentType.getDouble(c, "scale"))), storeResult))))).then(Commands.literal("float").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(execute, (c) -> storeData((CommandSourceStack)c.getSource(), provider.access(c), NbtPathArgument.getPath(c, "path"), (v) -> FloatTag.valueOf((float)((double)v * DoubleArgumentType.getDouble(c, "scale"))), storeResult))))).then(Commands.literal("short").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(execute, (c) -> storeData((CommandSourceStack)c.getSource(), provider.access(c), NbtPathArgument.getPath(c, "path"), (v) -> ShortTag.valueOf((short)((int)((double)v * DoubleArgumentType.getDouble(c, "scale")))), storeResult))))).then(Commands.literal("long").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(execute, (c) -> storeData((CommandSourceStack)c.getSource(), provider.access(c), NbtPathArgument.getPath(c, "path"), (v) -> LongTag.valueOf((long)((double)v * DoubleArgumentType.getDouble(c, "scale"))), storeResult))))).then(Commands.literal("double").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(execute, (c) -> storeData((CommandSourceStack)c.getSource(), provider.access(c), NbtPathArgument.getPath(c, "path"), (v) -> DoubleTag.valueOf((double)v * DoubleArgumentType.getDouble(c, "scale")), storeResult))))).then(Commands.literal("byte").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(execute, (c) -> storeData((CommandSourceStack)c.getSource(), provider.access(c), NbtPathArgument.getPath(c, "path"), (v) -> ByteTag.valueOf((byte)((int)((double)v * DoubleArgumentType.getDouble(c, "scale")))), storeResult))))));
       }
 
-      return var1;
+      return literal;
    }
 
-   private static CommandSourceStack storeValue(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, boolean var3) {
-      ServerScoreboard var4 = var0.getServer().getScoreboard();
-      return var0.withCallback((var4x, var5) -> {
-         for(ScoreHolder var7 : var1) {
-            ScoreAccess var8 = var4.getOrCreatePlayerScore(var7, var2);
-            int var9 = var3 ? var5 : (var4x ? 1 : 0);
-            var8.set(var9);
+   private static CommandSourceStack storeValue(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final boolean storeResult) {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
+      return source.withCallback((success, result) -> {
+         for(ScoreHolder name : names) {
+            ScoreAccess score = scoreboard.getOrCreatePlayerScore(name, objective);
+            int value = storeResult ? result : (success ? 1 : 0);
+            score.set(value);
          }
 
       }, CommandResultCallback::chain);
    }
 
-   private static CommandSourceStack storeValue(CommandSourceStack var0, CustomBossEvent var1, boolean var2, boolean var3) {
-      return var0.withCallback((var3x, var4) -> {
-         int var5 = var3 ? var4 : (var3x ? 1 : 0);
-         if (var2) {
-            var1.setValue(var5);
+   private static CommandSourceStack storeValue(final CommandSourceStack source, final CustomBossEvent event, final boolean storeIntoValue, final boolean storeResult) {
+      return source.withCallback((success, result) -> {
+         int value = storeResult ? result : (success ? 1 : 0);
+         if (storeIntoValue) {
+            event.setValue(value);
          } else {
-            var1.setMax(var5);
+            event.setMax(value);
          }
 
       }, CommandResultCallback::chain);
    }
 
-   private static CommandSourceStack storeData(CommandSourceStack var0, DataAccessor var1, NbtPathArgument.NbtPath var2, IntFunction<Tag> var3, boolean var4) {
-      return var0.withCallback((var4x, var5) -> {
+   private static CommandSourceStack storeData(final CommandSourceStack source, final DataAccessor accessor, final NbtPathArgument.NbtPath path, final IntFunction<Tag> constructor, final boolean storeResult) {
+      return source.withCallback((success, result) -> {
          try {
-            CompoundTag var6 = var1.getData();
-            int var7 = var4 ? var5 : (var4x ? 1 : 0);
-            var2.set(var6, (Tag)var3.apply(var7));
-            var1.setData(var6);
+            CompoundTag data = accessor.getData();
+            int value = storeResult ? result : (success ? 1 : 0);
+            path.set(data, (Tag)constructor.apply(value));
+            accessor.setData(data);
          } catch (CommandSyntaxException var8) {
          }
 
       }, CommandResultCallback::chain);
    }
 
-   private static boolean isChunkLoaded(ServerLevel var0, BlockPos var1) {
-      ChunkPos var2 = new ChunkPos(var1);
-      LevelChunk var3 = var0.getChunkSource().getChunkNow(var2.x, var2.z);
-      if (var3 == null) {
+   private static boolean isChunkLoaded(final ServerLevel level, final BlockPos pos) {
+      ChunkPos chunkPos = ChunkPos.containing(pos);
+      LevelChunk chunk = level.getChunkSource().getChunkNow(chunkPos.x(), chunkPos.z());
+      if (chunk == null) {
          return false;
       } else {
-         return var3.getFullStatus() == FullChunkStatus.ENTITY_TICKING && var0.areEntitiesLoaded(var2.toLong());
+         return chunk.getFullStatus() == FullChunkStatus.ENTITY_TICKING && level.areEntitiesLoaded(chunkPos.pack());
       }
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> addConditionals(CommandNode<CommandSourceStack> var0, LiteralArgumentBuilder<CommandSourceStack> var1, boolean var2, CommandBuildContext var3) {
-      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(addConditional(var0, Commands.argument("block", BlockPredicateArgument.blockPredicate(var3)), var2, (var0x) -> BlockPredicateArgument.getBlockPredicate(var0x, "block").test(new BlockInWorld(((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), true))))))).then(Commands.literal("biome").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(addConditional(var0, Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(var3, Registries.BIOME)), var2, (var0x) -> ResourceOrTagArgument.getResourceOrTag(var0x, "biome", Registries.BIOME).test(((CommandSourceStack)var0x.getSource()).getLevel().getBiome(BlockPosArgument.getLoadedBlockPos(var0x, "pos")))))))).then(Commands.literal("loaded").then(addConditional(var0, Commands.argument("pos", BlockPosArgument.blockPos()), var2, (var0x) -> isChunkLoaded(((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getBlockPos(var0x, "pos")))))).then(Commands.literal("dimension").then(addConditional(var0, Commands.argument("dimension", DimensionArgument.dimension()), var2, (var0x) -> DimensionArgument.getDimension(var0x, "dimension") == ((CommandSourceStack)var0x.getSource()).getLevel())))).then(Commands.literal("score").then(Commands.argument("target", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targetObjective", ObjectiveArgument.objective()).then(Commands.literal("=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 == var1))))))).then(Commands.literal("<").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 < var1))))))).then(Commands.literal("<=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 <= var1))))))).then(Commands.literal(">").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 > var1))))))).then(Commands.literal(">=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 >= var1))))))).then(Commands.literal("matches").then(addConditional(var0, Commands.argument("range", RangeArgument.intRange()), var2, (var0x) -> checkScore(var0x, RangeArgument.Ints.getRange(var0x, "range"))))))))).then(Commands.literal("blocks").then(Commands.argument("start", BlockPosArgument.blockPos()).then(Commands.argument("end", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("destination", BlockPosArgument.blockPos()).then(addIfBlocksConditional(var0, Commands.literal("all"), var2, false))).then(addIfBlocksConditional(var0, Commands.literal("masked"), var2, true))))))).then(Commands.literal("entity").then(((RequiredArgumentBuilder)Commands.argument("entities", EntityArgument.entities()).fork(var0, (var1x) -> expect(var1x, var2, !EntityArgument.getOptionalEntities(var1x, "entities").isEmpty()))).executes(createNumericConditionalHandler(var2, (var0x) -> EntityArgument.getOptionalEntities(var0x, "entities").size()))))).then(Commands.literal("predicate").then(addConditional(var0, Commands.argument("predicate", ResourceOrIdArgument.lootPredicate(var3)), var2, (var0x) -> checkCustomPredicate((CommandSourceStack)var0x.getSource(), ResourceOrIdArgument.getLootPredicate(var0x, "predicate")))))).then(Commands.literal("function").then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).fork(var0, new ExecuteIfFunctionCustomModifier(var2))))).then(((LiteralArgumentBuilder)Commands.literal("items").then(Commands.literal("entity").then(Commands.argument("entities", EntityArgument.entities()).then(Commands.argument("slots", SlotsArgument.slots()).then(((RequiredArgumentBuilder)Commands.argument("item_predicate", ItemPredicateArgument.itemPredicate(var3)).fork(var0, (var1x) -> expect(var1x, var2, countItems(EntityArgument.getEntities(var1x, "entities"), SlotsArgument.getSlots(var1x, "slots"), ItemPredicateArgument.getItemPredicate(var1x, "item_predicate")) > 0))).executes(createNumericConditionalHandler(var2, (var0x) -> countItems(EntityArgument.getEntities(var0x, "entities"), SlotsArgument.getSlots(var0x, "slots"), ItemPredicateArgument.getItemPredicate(var0x, "item_predicate"))))))))).then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(Commands.argument("slots", SlotsArgument.slots()).then(((RequiredArgumentBuilder)Commands.argument("item_predicate", ItemPredicateArgument.itemPredicate(var3)).fork(var0, (var1x) -> expect(var1x, var2, countItems((CommandSourceStack)var1x.getSource(), BlockPosArgument.getLoadedBlockPos(var1x, "pos"), SlotsArgument.getSlots(var1x, "slots"), ItemPredicateArgument.getItemPredicate(var1x, "item_predicate")) > 0))).executes(createNumericConditionalHandler(var2, (var0x) -> countItems((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotsArgument.getSlots(var0x, "slots"), ItemPredicateArgument.getItemPredicate(var0x, "item_predicate")))))))))).then(Commands.literal("stopwatch").then(Commands.argument("id", IdentifierArgument.id()).suggests(StopwatchCommand.SUGGEST_STOPWATCHES).then(addConditional(var0, Commands.argument("range", RangeArgument.floatRange()), var2, (var0x) -> checkStopwatch(var0x, RangeArgument.Floats.getRange(var0x, "range"))))));
+   private static ArgumentBuilder<CommandSourceStack, ?> addConditionals(final CommandNode<CommandSourceStack> execute, final LiteralArgumentBuilder<CommandSourceStack> parent, final boolean expected, final CommandBuildContext context) {
+      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)parent.then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(addConditional(execute, Commands.argument("block", BlockPredicateArgument.blockPredicate(context)), expected, (c) -> BlockPredicateArgument.getBlockPredicate(c, "block").test(new BlockInWorld(((CommandSourceStack)c.getSource()).getLevel(), BlockPosArgument.getLoadedBlockPos(c, "pos"), true))))))).then(Commands.literal("biome").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(addConditional(execute, Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(context, Registries.BIOME)), expected, (c) -> ResourceOrTagArgument.getResourceOrTag(c, "biome", Registries.BIOME).test(((CommandSourceStack)c.getSource()).getLevel().getBiome(BlockPosArgument.getLoadedBlockPos(c, "pos")))))))).then(Commands.literal("loaded").then(addConditional(execute, Commands.argument("pos", BlockPosArgument.blockPos()), expected, (c) -> isChunkLoaded(((CommandSourceStack)c.getSource()).getLevel(), BlockPosArgument.getBlockPos(c, "pos")))))).then(Commands.literal("dimension").then(addConditional(execute, Commands.argument("dimension", DimensionArgument.dimension()), expected, (c) -> DimensionArgument.getDimension(c, "dimension") == ((CommandSourceStack)c.getSource()).getLevel())))).then(Commands.literal("score").then(Commands.argument("target", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targetObjective", ObjectiveArgument.objective()).then(Commands.literal("=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(execute, Commands.argument("sourceObjective", ObjectiveArgument.objective()), expected, (c) -> checkScore(c, (IntBiPredicate)((a, b) -> a == b))))))).then(Commands.literal("<").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(execute, Commands.argument("sourceObjective", ObjectiveArgument.objective()), expected, (c) -> checkScore(c, (IntBiPredicate)((a, b) -> a < b))))))).then(Commands.literal("<=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(execute, Commands.argument("sourceObjective", ObjectiveArgument.objective()), expected, (c) -> checkScore(c, (IntBiPredicate)((a, b) -> a <= b))))))).then(Commands.literal(">").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(execute, Commands.argument("sourceObjective", ObjectiveArgument.objective()), expected, (c) -> checkScore(c, (IntBiPredicate)((a, b) -> a > b))))))).then(Commands.literal(">=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(execute, Commands.argument("sourceObjective", ObjectiveArgument.objective()), expected, (c) -> checkScore(c, (IntBiPredicate)((a, b) -> a >= b))))))).then(Commands.literal("matches").then(addConditional(execute, Commands.argument("range", RangeArgument.intRange()), expected, (c) -> checkScore(c, RangeArgument.Ints.getRange(c, "range"))))))))).then(Commands.literal("blocks").then(Commands.argument("start", BlockPosArgument.blockPos()).then(Commands.argument("end", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("destination", BlockPosArgument.blockPos()).then(addIfBlocksConditional(execute, Commands.literal("all"), expected, false))).then(addIfBlocksConditional(execute, Commands.literal("masked"), expected, true))))))).then(Commands.literal("entity").then(((RequiredArgumentBuilder)Commands.argument("entities", EntityArgument.entities()).fork(execute, (c) -> expect(c, expected, !EntityArgument.getOptionalEntities(c, "entities").isEmpty()))).executes(createNumericConditionalHandler(expected, (c) -> EntityArgument.getOptionalEntities(c, "entities").size()))))).then(Commands.literal("predicate").then(addConditional(execute, Commands.argument("predicate", ResourceOrIdArgument.lootPredicate(context)), expected, (c) -> checkCustomPredicate((CommandSourceStack)c.getSource(), ResourceOrIdArgument.getLootPredicate(c, "predicate")))))).then(Commands.literal("function").then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).fork(execute, new ExecuteIfFunctionCustomModifier(expected))))).then(((LiteralArgumentBuilder)Commands.literal("items").then(Commands.literal("entity").then(Commands.argument("entities", EntityArgument.entities()).then(Commands.argument("slots", SlotsArgument.slots()).then(((RequiredArgumentBuilder)Commands.argument("item_predicate", ItemPredicateArgument.itemPredicate(context)).fork(execute, (c) -> expect(c, expected, countItems(EntityArgument.getEntities(c, "entities"), SlotsArgument.getSlots(c, "slots"), ItemPredicateArgument.getItemPredicate(c, "item_predicate")) > 0))).executes(createNumericConditionalHandler(expected, (c) -> countItems(EntityArgument.getEntities(c, "entities"), SlotsArgument.getSlots(c, "slots"), ItemPredicateArgument.getItemPredicate(c, "item_predicate"))))))))).then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(Commands.argument("slots", SlotsArgument.slots()).then(((RequiredArgumentBuilder)Commands.argument("item_predicate", ItemPredicateArgument.itemPredicate(context)).fork(execute, (c) -> expect(c, expected, countItems((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "pos"), SlotsArgument.getSlots(c, "slots"), ItemPredicateArgument.getItemPredicate(c, "item_predicate")) > 0))).executes(createNumericConditionalHandler(expected, (c) -> countItems((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "pos"), SlotsArgument.getSlots(c, "slots"), ItemPredicateArgument.getItemPredicate(c, "item_predicate")))))))))).then(Commands.literal("stopwatch").then(Commands.argument("id", IdentifierArgument.id()).suggests(StopwatchCommand.SUGGEST_STOPWATCHES).then(addConditional(execute, Commands.argument("range", RangeArgument.floatRange()), expected, (c) -> checkStopwatch(c, RangeArgument.Floats.getRange(c, "range"))))));
 
-      for(DataCommands.DataProvider var5 : DataCommands.SOURCE_PROVIDERS) {
-         var1.then(var5.wrap(Commands.literal("data"), (var3x) -> var3x.then(((RequiredArgumentBuilder)Commands.argument("path", NbtPathArgument.nbtPath()).fork(var0, (var2x) -> expect(var2x, var2, checkMatchingData(var5.access(var2x), NbtPathArgument.getPath(var2x, "path")) > 0))).executes(createNumericConditionalHandler(var2, (var1) -> checkMatchingData(var5.access(var1), NbtPathArgument.getPath(var1, "path")))))));
+      for(DataCommands.DataProvider provider : DataCommands.SOURCE_PROVIDERS) {
+         parent.then(provider.wrap(Commands.literal("data"), (p) -> p.then(((RequiredArgumentBuilder)Commands.argument("path", NbtPathArgument.nbtPath()).fork(execute, (c) -> expect(c, expected, checkMatchingData(provider.access(c), NbtPathArgument.getPath(c, "path")) > 0))).executes(createNumericConditionalHandler(expected, (c) -> checkMatchingData(provider.access(c), NbtPathArgument.getPath(c, "path")))))));
       }
 
-      return var1;
+      return parent;
    }
 
-   private static int countItems(Iterable<? extends SlotProvider> var0, SlotRange var1, Predicate<ItemStack> var2) {
-      int var3 = 0;
+   private static int countItems(final Iterable<? extends SlotProvider> sources, final SlotRange slotRange, final Predicate<ItemStack> predicate) {
+      int count = 0;
 
-      for(SlotProvider var5 : var0) {
-         IntList var6 = var1.slots();
+      for(SlotProvider slotProvider : sources) {
+         IntList slots = slotRange.slots();
 
-         for(int var7 = 0; var7 < var6.size(); ++var7) {
-            int var8 = var6.getInt(var7);
-            SlotAccess var9 = var5.getSlot(var8);
-            if (var9 != null) {
-               ItemStack var10 = var9.get();
-               if (var2.test(var10)) {
-                  var3 += var10.getCount();
+         for(int i = 0; i < slots.size(); ++i) {
+            int slotId = slots.getInt(i);
+            SlotAccess slot = slotProvider.getSlot(slotId);
+            if (slot != null) {
+               ItemStack contents = slot.get();
+               if (predicate.test(contents)) {
+                  count += contents.getCount();
                }
             }
          }
       }
 
-      return var3;
+      return count;
    }
 
-   private static int countItems(CommandSourceStack var0, BlockPos var1, SlotRange var2, Predicate<ItemStack> var3) throws CommandSyntaxException {
-      int var4 = 0;
-      Container var5 = ItemCommands.getContainer(var0, var1, ItemCommands.ERROR_SOURCE_NOT_A_CONTAINER);
-      int var6 = var5.getContainerSize();
-      IntList var7 = var2.slots();
+   private static int countItems(final CommandSourceStack source, final BlockPos pos, final SlotRange slotRange, final Predicate<ItemStack> predicate) throws CommandSyntaxException {
+      int count = 0;
+      Container container = ItemCommands.getContainer(source, pos, ItemCommands.ERROR_SOURCE_NOT_A_CONTAINER);
+      int containerSize = container.getContainerSize();
+      IntList slots = slotRange.slots();
 
-      for(int var8 = 0; var8 < var7.size(); ++var8) {
-         int var9 = var7.getInt(var8);
-         if (var9 >= 0 && var9 < var6) {
-            ItemStack var10 = var5.getItem(var9);
-            if (var3.test(var10)) {
-               var4 += var10.getCount();
+      for(int i = 0; i < slots.size(); ++i) {
+         int slotId = slots.getInt(i);
+         if (slotId >= 0 && slotId < containerSize) {
+            ItemStack contents = container.getItem(slotId);
+            if (predicate.test(contents)) {
+               count += contents.getCount();
             }
          }
       }
 
-      return var4;
+      return count;
    }
 
-   private static Command<CommandSourceStack> createNumericConditionalHandler(boolean var0, CommandNumericPredicate var1) {
-      return var0 ? (var1x) -> {
-         int var2 = var1.test(var1x);
-         if (var2 > 0) {
-            ((CommandSourceStack)var1x.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass_count", var2), false);
-            return var2;
+   private static Command<CommandSourceStack> createNumericConditionalHandler(final boolean expected, final CommandNumericPredicate condition) {
+      return expected ? (c) -> {
+         int count = condition.test(c);
+         if (count > 0) {
+            ((CommandSourceStack)c.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass_count", count), false);
+            return count;
          } else {
             throw ERROR_CONDITIONAL_FAILED.create();
          }
-      } : (var1x) -> {
-         int var2 = var1.test(var1x);
-         if (var2 == 0) {
-            ((CommandSourceStack)var1x.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass"), false);
+      } : (c) -> {
+         int count = condition.test(c);
+         if (count == 0) {
+            ((CommandSourceStack)c.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass"), false);
             return 1;
          } else {
-            throw ERROR_CONDITIONAL_FAILED_COUNT.create(var2);
+            throw ERROR_CONDITIONAL_FAILED_COUNT.create(count);
          }
       };
    }
 
-   private static int checkMatchingData(DataAccessor var0, NbtPathArgument.NbtPath var1) throws CommandSyntaxException {
-      return var1.countMatching(var0.getData());
+   private static int checkMatchingData(final DataAccessor accessor, final NbtPathArgument.NbtPath path) throws CommandSyntaxException {
+      return path.countMatching(accessor.getData());
    }
 
-   private static boolean checkScore(CommandContext<CommandSourceStack> var0, IntBiPredicate var1) throws CommandSyntaxException {
-      ScoreHolder var2 = ScoreHolderArgument.getName(var0, "target");
-      Objective var3 = ObjectiveArgument.getObjective(var0, "targetObjective");
-      ScoreHolder var4 = ScoreHolderArgument.getName(var0, "source");
-      Objective var5 = ObjectiveArgument.getObjective(var0, "sourceObjective");
-      ServerScoreboard var6 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
-      ReadOnlyScoreInfo var7 = ((Scoreboard)var6).getPlayerScoreInfo(var2, var3);
-      ReadOnlyScoreInfo var8 = ((Scoreboard)var6).getPlayerScoreInfo(var4, var5);
-      return var7 != null && var8 != null ? var1.test(var7.value(), var8.value()) : false;
+   private static boolean checkScore(final CommandContext<CommandSourceStack> context, final IntBiPredicate operation) throws CommandSyntaxException {
+      ScoreHolder target = ScoreHolderArgument.getName(context, "target");
+      Objective targetObjective = ObjectiveArgument.getObjective(context, "targetObjective");
+      ScoreHolder source = ScoreHolderArgument.getName(context, "source");
+      Objective sourceObjective = ObjectiveArgument.getObjective(context, "sourceObjective");
+      Scoreboard scoreboard = ((CommandSourceStack)context.getSource()).getServer().getScoreboard();
+      ReadOnlyScoreInfo a = scoreboard.getPlayerScoreInfo(target, targetObjective);
+      ReadOnlyScoreInfo b = scoreboard.getPlayerScoreInfo(source, sourceObjective);
+      return a != null && b != null ? operation.test(a.value(), b.value()) : false;
    }
 
-   private static boolean checkScore(CommandContext<CommandSourceStack> var0, MinMaxBounds.Ints var1) throws CommandSyntaxException {
-      ScoreHolder var2 = ScoreHolderArgument.getName(var0, "target");
-      Objective var3 = ObjectiveArgument.getObjective(var0, "targetObjective");
-      ServerScoreboard var4 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
-      ReadOnlyScoreInfo var5 = ((Scoreboard)var4).getPlayerScoreInfo(var2, var3);
-      return var5 == null ? false : var1.matches(var5.value());
+   private static boolean checkScore(final CommandContext<CommandSourceStack> context, final MinMaxBounds.Ints range) throws CommandSyntaxException {
+      ScoreHolder target = ScoreHolderArgument.getName(context, "target");
+      Objective targetObjective = ObjectiveArgument.getObjective(context, "targetObjective");
+      Scoreboard scoreboard = ((CommandSourceStack)context.getSource()).getServer().getScoreboard();
+      ReadOnlyScoreInfo scoreInfo = scoreboard.getPlayerScoreInfo(target, targetObjective);
+      return scoreInfo == null ? false : range.matches(scoreInfo.value());
    }
 
-   private static boolean checkStopwatch(CommandContext<CommandSourceStack> var0, MinMaxBounds.Doubles var1) throws CommandSyntaxException {
-      Identifier var2 = IdentifierArgument.getId(var0, "id");
-      Stopwatches var3 = ((CommandSourceStack)var0.getSource()).getServer().getStopwatches();
-      Stopwatch var4 = var3.get(var2);
-      if (var4 == null) {
-         throw StopwatchCommand.ERROR_DOES_NOT_EXIST.create(var2);
+   private static boolean checkStopwatch(final CommandContext<CommandSourceStack> context, final MinMaxBounds.Doubles range) throws CommandSyntaxException {
+      Identifier id = IdentifierArgument.getId(context, "id");
+      Stopwatches stopwatches = ((CommandSourceStack)context.getSource()).getServer().getStopwatches();
+      Stopwatch stopwatch = stopwatches.get(id);
+      if (stopwatch == null) {
+         throw StopwatchCommand.ERROR_DOES_NOT_EXIST.create(id);
       } else {
-         long var5 = Stopwatches.currentTime();
-         double var7 = var4.elapsedSeconds(var5);
-         return var1.matches(var7);
+         long currentTime = Stopwatches.currentTime();
+         double elapsedSeconds = stopwatch.elapsedSeconds(currentTime);
+         return range.matches(elapsedSeconds);
       }
    }
 
-   private static boolean checkCustomPredicate(CommandSourceStack var0, Holder<LootItemCondition> var1) {
-      ServerLevel var2 = var0.getLevel();
-      LootParams var3 = (new LootParams.Builder(var2)).withParameter(LootContextParams.ORIGIN, var0.getPosition()).withOptionalParameter(LootContextParams.THIS_ENTITY, var0.getEntity()).create(LootContextParamSets.COMMAND);
-      LootContext var4 = (new LootContext.Builder(var3)).create(Optional.empty());
-      var4.pushVisitedElement(LootContext.createVisitedEntry((LootItemCondition)var1.value()));
-      return ((LootItemCondition)var1.value()).test(var4);
+   private static boolean checkCustomPredicate(final CommandSourceStack source, final Holder<LootItemCondition> predicate) {
+      ServerLevel level = source.getLevel();
+      LootParams lootParams = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, source.getPosition()).withOptionalParameter(LootContextParams.THIS_ENTITY, source.getEntity()).create(LootContextParamSets.COMMAND);
+      LootContext context = (new LootContext.Builder(lootParams)).create(Optional.empty());
+      context.pushVisitedElement(LootContext.createVisitedEntry(predicate.value()));
+      return ((LootItemCondition)predicate.value()).test(context);
    }
 
-   private static Collection<CommandSourceStack> expect(CommandContext<CommandSourceStack> var0, boolean var1, boolean var2) {
-      return (Collection<CommandSourceStack>)(var2 == var1 ? Collections.singleton((CommandSourceStack)var0.getSource()) : Collections.emptyList());
+   private static Collection<CommandSourceStack> expect(final CommandContext<CommandSourceStack> context, final boolean expected, final boolean result) {
+      return (Collection<CommandSourceStack>)(result == expected ? Collections.singleton((CommandSourceStack)context.getSource()) : Collections.emptyList());
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> addConditional(CommandNode<CommandSourceStack> var0, ArgumentBuilder<CommandSourceStack, ?> var1, boolean var2, CommandPredicate var3) {
-      return var1.fork(var0, (var2x) -> expect(var2x, var2, var3.test(var2x))).executes((var2x) -> {
-         if (var2 == var3.test(var2x)) {
-            ((CommandSourceStack)var2x.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass"), false);
+   private static ArgumentBuilder<CommandSourceStack, ?> addConditional(final CommandNode<CommandSourceStack> root, final ArgumentBuilder<CommandSourceStack, ?> argument, final boolean expected, final CommandPredicate predicate) {
+      return argument.fork(root, (c) -> expect(c, expected, predicate.test(c))).executes((c) -> {
+         if (expected == predicate.test(c)) {
+            ((CommandSourceStack)c.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass"), false);
             return 1;
          } else {
             throw ERROR_CONDITIONAL_FAILED.create();
@@ -385,245 +384,245 @@ public class ExecuteCommand {
       });
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> addIfBlocksConditional(CommandNode<CommandSourceStack> var0, ArgumentBuilder<CommandSourceStack, ?> var1, boolean var2, boolean var3) {
-      return var1.fork(var0, (var2x) -> expect(var2x, var2, checkRegions(var2x, var3).isPresent())).executes(var2 ? (var1x) -> checkIfRegions(var1x, var3) : (var1x) -> checkUnlessRegions(var1x, var3));
+   private static ArgumentBuilder<CommandSourceStack, ?> addIfBlocksConditional(final CommandNode<CommandSourceStack> root, final ArgumentBuilder<CommandSourceStack, ?> argument, final boolean expected, final boolean skipAir) {
+      return argument.fork(root, (c) -> expect(c, expected, checkRegions(c, skipAir).isPresent())).executes(expected ? (c) -> checkIfRegions(c, skipAir) : (c) -> checkUnlessRegions(c, skipAir));
    }
 
-   private static int checkIfRegions(CommandContext<CommandSourceStack> var0, boolean var1) throws CommandSyntaxException {
-      OptionalInt var2 = checkRegions(var0, var1);
-      if (var2.isPresent()) {
-         ((CommandSourceStack)var0.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass_count", var2.getAsInt()), false);
-         return var2.getAsInt();
+   private static int checkIfRegions(final CommandContext<CommandSourceStack> context, final boolean skipAir) throws CommandSyntaxException {
+      OptionalInt count = checkRegions(context, skipAir);
+      if (count.isPresent()) {
+         ((CommandSourceStack)context.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass_count", count.getAsInt()), false);
+         return count.getAsInt();
       } else {
          throw ERROR_CONDITIONAL_FAILED.create();
       }
    }
 
-   private static int checkUnlessRegions(CommandContext<CommandSourceStack> var0, boolean var1) throws CommandSyntaxException {
-      OptionalInt var2 = checkRegions(var0, var1);
-      if (var2.isPresent()) {
-         throw ERROR_CONDITIONAL_FAILED_COUNT.create(var2.getAsInt());
+   private static int checkUnlessRegions(final CommandContext<CommandSourceStack> context, final boolean skipAir) throws CommandSyntaxException {
+      OptionalInt count = checkRegions(context, skipAir);
+      if (count.isPresent()) {
+         throw ERROR_CONDITIONAL_FAILED_COUNT.create(count.getAsInt());
       } else {
-         ((CommandSourceStack)var0.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass"), false);
+         ((CommandSourceStack)context.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass"), false);
          return 1;
       }
    }
 
-   private static OptionalInt checkRegions(CommandContext<CommandSourceStack> var0, boolean var1) throws CommandSyntaxException {
-      return checkRegions(((CommandSourceStack)var0.getSource()).getLevel(), BlockPosArgument.getLoadedBlockPos(var0, "start"), BlockPosArgument.getLoadedBlockPos(var0, "end"), BlockPosArgument.getLoadedBlockPos(var0, "destination"), var1);
+   private static OptionalInt checkRegions(final CommandContext<CommandSourceStack> context, final boolean skipAir) throws CommandSyntaxException {
+      return checkRegions(((CommandSourceStack)context.getSource()).getLevel(), BlockPosArgument.getLoadedBlockPos(context, "start"), BlockPosArgument.getLoadedBlockPos(context, "end"), BlockPosArgument.getLoadedBlockPos(context, "destination"), skipAir);
    }
 
-   private static OptionalInt checkRegions(ServerLevel var0, BlockPos var1, BlockPos var2, BlockPos var3, boolean var4) throws CommandSyntaxException {
-      BoundingBox var5 = BoundingBox.fromCorners(var1, var2);
-      BoundingBox var6 = BoundingBox.fromCorners(var3, var3.offset(var5.getLength()));
-      BlockPos var7 = new BlockPos(var6.minX() - var5.minX(), var6.minY() - var5.minY(), var6.minZ() - var5.minZ());
-      int var8 = var5.getXSpan() * var5.getYSpan() * var5.getZSpan();
-      if (var8 > 32768) {
-         throw ERROR_AREA_TOO_LARGE.create(32768, var8);
+   private static OptionalInt checkRegions(final ServerLevel level, final BlockPos startPos, final BlockPos endPos, final BlockPos destPos, final boolean skipAir) throws CommandSyntaxException {
+      BoundingBox from = BoundingBox.fromCorners(startPos, endPos);
+      BoundingBox destination = BoundingBox.fromCorners(destPos, destPos.offset(from.getLength()));
+      BlockPos offset = new BlockPos(destination.minX() - from.minX(), destination.minY() - from.minY(), destination.minZ() - from.minZ());
+      int area = from.getXSpan() * from.getYSpan() * from.getZSpan();
+      if (area > 32768) {
+         throw ERROR_AREA_TOO_LARGE.create(32768, area);
       } else {
-         int var9 = 0;
-         RegistryAccess var10 = var0.registryAccess();
+         int count = 0;
+         RegistryAccess registryAccess = level.registryAccess();
 
-         try (ProblemReporter.ScopedCollector var11 = new ProblemReporter.ScopedCollector(LOGGER)) {
-            for(int var12 = var5.minZ(); var12 <= var5.maxZ(); ++var12) {
-               for(int var13 = var5.minY(); var13 <= var5.maxY(); ++var13) {
-                  for(int var14 = var5.minX(); var14 <= var5.maxX(); ++var14) {
-                     BlockPos var15 = new BlockPos(var14, var13, var12);
-                     BlockPos var16 = var15.offset(var7);
-                     BlockState var17 = var0.getBlockState(var15);
-                     if (!var4 || !var17.is(Blocks.AIR)) {
-                        if (var17 != var0.getBlockState(var16)) {
+         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
+            for(int z = from.minZ(); z <= from.maxZ(); ++z) {
+               for(int y = from.minY(); y <= from.maxY(); ++y) {
+                  for(int x = from.minX(); x <= from.maxX(); ++x) {
+                     BlockPos sourcePos = new BlockPos(x, y, z);
+                     BlockPos destinationPos = sourcePos.offset(offset);
+                     BlockState sourceBlock = level.getBlockState(sourcePos);
+                     if (!skipAir || !sourceBlock.is(Blocks.AIR)) {
+                        if (sourceBlock != level.getBlockState(destinationPos)) {
                            return OptionalInt.empty();
                         }
 
-                        BlockEntity var18 = var0.getBlockEntity(var15);
-                        BlockEntity var19 = var0.getBlockEntity(var16);
-                        if (var18 != null) {
-                           if (var19 == null) {
+                        BlockEntity sourceBlockEntity = level.getBlockEntity(sourcePos);
+                        BlockEntity destinationBlockEntity = level.getBlockEntity(destinationPos);
+                        if (sourceBlockEntity != null) {
+                           if (destinationBlockEntity == null) {
                               return OptionalInt.empty();
                            }
 
-                           if (var19.getType() != var18.getType()) {
+                           if (destinationBlockEntity.getType() != sourceBlockEntity.getType()) {
                               return OptionalInt.empty();
                            }
 
-                           if (!var18.components().equals(var19.components())) {
+                           if (!sourceBlockEntity.components().equals(destinationBlockEntity.components())) {
                               return OptionalInt.empty();
                            }
 
-                           TagValueOutput var20 = TagValueOutput.createWithContext(var11.forChild(var18.problemPath()), var10);
-                           var18.saveCustomOnly((ValueOutput)var20);
-                           CompoundTag var21 = var20.buildResult();
-                           TagValueOutput var22 = TagValueOutput.createWithContext(var11.forChild(var19.problemPath()), var10);
-                           var19.saveCustomOnly((ValueOutput)var22);
-                           CompoundTag var23 = var22.buildResult();
-                           if (!var21.equals(var23)) {
+                           TagValueOutput sourceOutput = TagValueOutput.createWithContext(reporter.forChild(sourceBlockEntity.problemPath()), registryAccess);
+                           sourceBlockEntity.saveCustomOnly((ValueOutput)sourceOutput);
+                           CompoundTag sourceTag = sourceOutput.buildResult();
+                           TagValueOutput destinationOutput = TagValueOutput.createWithContext(reporter.forChild(destinationBlockEntity.problemPath()), registryAccess);
+                           destinationBlockEntity.saveCustomOnly((ValueOutput)destinationOutput);
+                           CompoundTag destinationTag = destinationOutput.buildResult();
+                           if (!sourceTag.equals(destinationTag)) {
                               return OptionalInt.empty();
                            }
                         }
 
-                        ++var9;
+                        ++count;
                      }
                   }
                }
             }
          }
 
-         return OptionalInt.of(var9);
+         return OptionalInt.of(count);
       }
    }
 
-   private static RedirectModifier<CommandSourceStack> expandOneToOneEntityRelation(Function<Entity, Optional<Entity>> var0) {
-      return (var1) -> {
-         CommandSourceStack var2 = (CommandSourceStack)var1.getSource();
-         Entity var3 = var2.getEntity();
-         return (Collection)(var3 == null ? List.of() : (Collection)((Optional)var0.apply(var3)).filter((var0x) -> !var0x.isRemoved()).map((var1x) -> List.of(var2.withEntity(var1x))).orElse(List.of()));
+   private static RedirectModifier<CommandSourceStack> expandOneToOneEntityRelation(final Function<Entity, Optional<Entity>> unpacker) {
+      return (context) -> {
+         CommandSourceStack source = (CommandSourceStack)context.getSource();
+         Entity entity = source.getEntity();
+         return (Collection)(entity == null ? List.of() : (Collection)((Optional)unpacker.apply(entity)).filter((e) -> !e.isRemoved()).map((e) -> List.of(source.withEntity(e))).orElse(List.of()));
       };
    }
 
-   private static RedirectModifier<CommandSourceStack> expandOneToManyEntityRelation(Function<Entity, Stream<Entity>> var0) {
-      return (var1) -> {
-         CommandSourceStack var2 = (CommandSourceStack)var1.getSource();
-         Entity var3 = var2.getEntity();
-         if (var3 == null) {
+   private static RedirectModifier<CommandSourceStack> expandOneToManyEntityRelation(final Function<Entity, Stream<Entity>> unpacker) {
+      return (context) -> {
+         CommandSourceStack source = (CommandSourceStack)context.getSource();
+         Entity entity = source.getEntity();
+         if (entity == null) {
             return List.of();
          } else {
-            Stream var10000 = ((Stream)var0.apply(var3)).filter((var0x) -> !var0x.isRemoved());
-            Objects.requireNonNull(var2);
-            return var10000.map(var2::withEntity).toList();
+            Stream var10000 = ((Stream)unpacker.apply(entity)).filter((e) -> !e.isRemoved());
+            Objects.requireNonNull(source);
+            return var10000.map(source::withEntity).toList();
          }
       };
    }
 
-   private static LiteralArgumentBuilder<CommandSourceStack> createRelationOperations(CommandNode<CommandSourceStack> var0, LiteralArgumentBuilder<CommandSourceStack> var1) {
-      return (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(Commands.literal("owner").fork(var0, expandOneToOneEntityRelation((var0x) -> {
+   private static LiteralArgumentBuilder<CommandSourceStack> createRelationOperations(final CommandNode<CommandSourceStack> execute, final LiteralArgumentBuilder<CommandSourceStack> on) {
+      return (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)on.then(Commands.literal("owner").fork(execute, expandOneToOneEntityRelation((e) -> {
          Optional var10000;
-         if (var0x instanceof OwnableEntity var1) {
-            var10000 = Optional.ofNullable(var1.getOwner());
+         if (e instanceof OwnableEntity ownableEntity) {
+            var10000 = Optional.ofNullable(ownableEntity.getOwner());
          } else {
             var10000 = Optional.empty();
          }
 
          return var10000;
-      })))).then(Commands.literal("leasher").fork(var0, expandOneToOneEntityRelation((var0x) -> {
+      })))).then(Commands.literal("leasher").fork(execute, expandOneToOneEntityRelation((e) -> {
          Optional var10000;
-         if (var0x instanceof Leashable var1) {
-            var10000 = Optional.ofNullable(var1.getLeashHolder());
+         if (e instanceof Leashable leashable) {
+            var10000 = Optional.ofNullable(leashable.getLeashHolder());
          } else {
             var10000 = Optional.empty();
          }
 
          return var10000;
-      })))).then(Commands.literal("target").fork(var0, expandOneToOneEntityRelation((var0x) -> {
+      })))).then(Commands.literal("target").fork(execute, expandOneToOneEntityRelation((e) -> {
          Optional var10000;
-         if (var0x instanceof Targeting var1) {
-            var10000 = Optional.ofNullable(var1.getTarget());
+         if (e instanceof Targeting targeting) {
+            var10000 = Optional.ofNullable(targeting.getTarget());
          } else {
             var10000 = Optional.empty();
          }
 
          return var10000;
-      })))).then(Commands.literal("attacker").fork(var0, expandOneToOneEntityRelation((var0x) -> {
+      })))).then(Commands.literal("attacker").fork(execute, expandOneToOneEntityRelation((e) -> {
          Optional var10000;
-         if (var0x instanceof Attackable var1) {
-            var10000 = Optional.ofNullable(var1.getLastAttacker());
+         if (e instanceof Attackable attackable) {
+            var10000 = Optional.ofNullable(attackable.getLastAttacker());
          } else {
             var10000 = Optional.empty();
          }
 
          return var10000;
-      })))).then(Commands.literal("vehicle").fork(var0, expandOneToOneEntityRelation((var0x) -> Optional.ofNullable(var0x.getVehicle()))))).then(Commands.literal("controller").fork(var0, expandOneToOneEntityRelation((var0x) -> Optional.ofNullable(var0x.getControllingPassenger()))))).then(Commands.literal("origin").fork(var0, expandOneToOneEntityRelation((var0x) -> {
+      })))).then(Commands.literal("vehicle").fork(execute, expandOneToOneEntityRelation((e) -> Optional.ofNullable(e.getVehicle()))))).then(Commands.literal("controller").fork(execute, expandOneToOneEntityRelation((e) -> Optional.ofNullable(e.getControllingPassenger()))))).then(Commands.literal("origin").fork(execute, expandOneToOneEntityRelation((e) -> {
          Optional var10000;
-         if (var0x instanceof TraceableEntity var1) {
-            var10000 = Optional.ofNullable(var1.getOwner());
+         if (e instanceof TraceableEntity traceable) {
+            var10000 = Optional.ofNullable(traceable.getOwner());
          } else {
             var10000 = Optional.empty();
          }
 
          return var10000;
-      })))).then(Commands.literal("passengers").fork(var0, expandOneToManyEntityRelation((var0x) -> var0x.getPassengers().stream())));
+      })))).then(Commands.literal("passengers").fork(execute, expandOneToManyEntityRelation((e) -> e.getPassengers().stream())));
    }
 
-   private static CommandSourceStack spawnEntityAndRedirect(CommandSourceStack var0, Holder.Reference<EntityType<?>> var1) throws CommandSyntaxException {
-      Entity var2 = SummonCommand.createEntity(var0, var1, var0.getPosition(), new CompoundTag(), true);
-      return var0.withEntity(var2);
+   private static CommandSourceStack spawnEntityAndRedirect(final CommandSourceStack source, final Holder.Reference<EntityType<?>> type) throws CommandSyntaxException {
+      Entity entity = SummonCommand.createEntity(source, type, source.getPosition(), new CompoundTag(), true);
+      return source.withEntity(entity);
    }
 
-   public static <T extends ExecutionCommandSource<T>> void scheduleFunctionConditionsAndTest(T var0, List<T> var1, Function<T, T> var2, IntPredicate var3, ContextChain<T> var4, @Nullable CompoundTag var5, ExecutionControl<T> var6, InCommandFunction<CommandContext<T>, Collection<CommandFunction<T>>> var7, ChainModifiers var8) {
-      ArrayList var9 = new ArrayList(var1.size());
+   public static <T extends ExecutionCommandSource<T>> void scheduleFunctionConditionsAndTest(final T originalSource, final List<T> currentSources, final Function<T, T> functionContextModifier, final IntPredicate check, final ContextChain<T> currentStep, final @Nullable CompoundTag parameters, final ExecutionControl<T> output, final InCommandFunction<CommandContext<T>, Collection<CommandFunction<T>>> functionGetter, final ChainModifiers modifiers) {
+      List<T> filteredSources = new ArrayList(currentSources.size());
 
-      Collection var10;
+      Collection<CommandFunction<T>> functionsToRun;
       try {
-         var10 = (Collection)var7.apply(var4.getTopContext().copyFor(var0));
-      } catch (CommandSyntaxException var18) {
-         var0.handleError(var18, var8.isForked(), var6.tracer());
+         functionsToRun = functionGetter.apply(currentStep.getTopContext().copyFor(originalSource));
+      } catch (CommandSyntaxException e) {
+         originalSource.handleError(e, modifiers.isForked(), output.tracer());
          return;
       }
 
-      int var11 = var10.size();
-      if (var11 != 0) {
-         ArrayList var12 = new ArrayList(var11);
+      int functionCount = functionsToRun.size();
+      if (functionCount != 0) {
+         List<InstantiatedFunction<T>> instantiatedFunctions = new ArrayList(functionCount);
 
          try {
-            for(CommandFunction var14 : var10) {
+            for(CommandFunction<T> function : functionsToRun) {
                try {
-                  var12.add(var14.instantiate(var5, var0.dispatcher()));
-               } catch (FunctionInstantiationException var17) {
-                  throw ERROR_FUNCTION_CONDITION_INSTANTATION_FAILURE.create(var14.id(), var17.messageComponent());
+                  instantiatedFunctions.add(function.instantiate(parameters, originalSource.dispatcher()));
+               } catch (FunctionInstantiationException e) {
+                  throw ERROR_FUNCTION_CONDITION_INSTANTATION_FAILURE.create(function.id(), e.messageComponent());
                }
             }
-         } catch (CommandSyntaxException var19) {
-            var0.handleError(var19, var8.isForked(), var6.tracer());
+         } catch (CommandSyntaxException e) {
+            originalSource.handleError(e, modifiers.isForked(), output.tracer());
          }
 
-         for(ExecutionCommandSource var22 : var1) {
-            ExecutionCommandSource var15 = (ExecutionCommandSource)var2.apply(var22.clearCallbacks());
-            CommandResultCallback var16 = (var3x, var4x) -> {
-               if (var3.test(var4x)) {
-                  var9.add(var22);
+         for(T source : currentSources) {
+            T newFunctionContext = (T)(functionContextModifier.apply(source.clearCallbacks()));
+            CommandResultCallback functionCallback = (success, result) -> {
+               if (check.test(result)) {
+                  filteredSources.add(source);
                }
 
             };
-            var6.queueNext(new IsolatedCall((var2x) -> {
-               for(InstantiatedFunction var4 : var12) {
-                  var2x.queueNext((new CallFunction(var4, var2x.currentFrame().returnValueConsumer(), true)).bind(var15));
+            output.queueNext(new IsolatedCall((o) -> {
+               for(InstantiatedFunction<T> function : instantiatedFunctions) {
+                  o.queueNext((new CallFunction(function, o.currentFrame().returnValueConsumer(), true)).bind(newFunctionContext));
                }
 
-               var2x.queueNext(FallthroughTask.instance());
-            }, var16));
+               o.queueNext(FallthroughTask.instance());
+            }, functionCallback));
          }
 
-         ContextChain var21 = var4.nextStage();
-         String var23 = var4.getTopContext().getInput();
-         var6.queueNext(new BuildContexts.Continuation(var23, var21, var8, var0, var9));
+         ContextChain<T> nextStage = currentStep.nextStage();
+         String input = currentStep.getTopContext().getInput();
+         output.queueNext(new BuildContexts.Continuation(input, nextStage, modifiers, originalSource, filteredSources));
       }
    }
 
-   static class ExecuteIfFunctionCustomModifier implements CustomModifierExecutor.ModifierAdapter<CommandSourceStack> {
+   private static class ExecuteIfFunctionCustomModifier implements CustomModifierExecutor.ModifierAdapter<CommandSourceStack> {
       private final IntPredicate check;
 
-      ExecuteIfFunctionCustomModifier(boolean var1) {
+      private ExecuteIfFunctionCustomModifier(final boolean check) {
          super();
-         this.check = var1 ? (var0) -> var0 != 0 : (var0) -> var0 == 0;
+         this.check = check ? (value) -> value != 0 : (value) -> value == 0;
       }
 
-      public void apply(CommandSourceStack var1, List<CommandSourceStack> var2, ContextChain<CommandSourceStack> var3, ChainModifiers var4, ExecutionControl<CommandSourceStack> var5) {
-         ExecuteCommand.scheduleFunctionConditionsAndTest(var1, var2, FunctionCommand::modifySenderForExecution, this.check, var3, (CompoundTag)null, var5, (var0) -> FunctionArgument.getFunctions(var0, "name"), var4);
+      public void apply(final CommandSourceStack originalSource, final List<CommandSourceStack> currentSources, final ContextChain<CommandSourceStack> currentStep, final ChainModifiers modifiers, final ExecutionControl<CommandSourceStack> output) {
+         ExecuteCommand.scheduleFunctionConditionsAndTest(originalSource, currentSources, FunctionCommand::modifySenderForExecution, this.check, currentStep, (CompoundTag)null, output, (c) -> FunctionArgument.getFunctions(c, "name"), modifiers);
       }
    }
 
    @FunctionalInterface
-   interface CommandNumericPredicate {
-      int test(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
+   private interface CommandNumericPredicate {
+      int test(CommandContext<CommandSourceStack> c) throws CommandSyntaxException;
    }
 
    @FunctionalInterface
-   interface CommandPredicate {
-      boolean test(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
+   private interface CommandPredicate {
+      boolean test(CommandContext<CommandSourceStack> c) throws CommandSyntaxException;
    }
 
    @FunctionalInterface
-   interface IntBiPredicate {
-      boolean test(int var1, int var2);
+   private interface IntBiPredicate {
+      boolean test(int a, int b);
    }
 }

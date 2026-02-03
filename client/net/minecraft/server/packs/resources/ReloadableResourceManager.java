@@ -17,51 +17,51 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.util.Unit;
 import org.slf4j.Logger;
 
-public class ReloadableResourceManager implements ResourceManager, AutoCloseable {
+public class ReloadableResourceManager implements AutoCloseable, ResourceManager {
    private static final Logger LOGGER = LogUtils.getLogger();
    private CloseableResourceManager resources;
    private final List<PreparableReloadListener> listeners = Lists.newArrayList();
    private final PackType type;
 
-   public ReloadableResourceManager(PackType var1) {
+   public ReloadableResourceManager(final PackType type) {
       super();
-      this.type = var1;
-      this.resources = new MultiPackResourceManager(var1, List.of());
+      this.type = type;
+      this.resources = new MultiPackResourceManager(type, List.of());
    }
 
    public void close() {
       this.resources.close();
    }
 
-   public void registerReloadListener(PreparableReloadListener var1) {
-      this.listeners.add(var1);
+   public void registerReloadListener(final PreparableReloadListener listener) {
+      this.listeners.add(listener);
    }
 
-   public ReloadInstance createReload(Executor var1, Executor var2, CompletableFuture<Unit> var3, List<PackResources> var4) {
-      LOGGER.info("Reloading ResourceManager: {}", LogUtils.defer(() -> var4.stream().map(PackResources::packId).collect(Collectors.joining(", "))));
+   public ReloadInstance createReload(final Executor backgroundExecutor, final Executor mainThreadExecutor, final CompletableFuture<Unit> initialTask, final List<PackResources> resourcePacks) {
+      LOGGER.info("Reloading ResourceManager: {}", LogUtils.defer(() -> resourcePacks.stream().map(PackResources::packId).collect(Collectors.joining(", "))));
       this.resources.close();
-      this.resources = new MultiPackResourceManager(this.type, var4);
-      return SimpleReloadInstance.create(this.resources, this.listeners, var1, var2, var3, LOGGER.isDebugEnabled());
+      this.resources = new MultiPackResourceManager(this.type, resourcePacks);
+      return SimpleReloadInstance.create(this.resources, this.listeners, backgroundExecutor, mainThreadExecutor, initialTask, LOGGER.isDebugEnabled());
    }
 
-   public Optional<Resource> getResource(Identifier var1) {
-      return this.resources.getResource(var1);
+   public Optional<Resource> getResource(final Identifier location) {
+      return this.resources.getResource(location);
    }
 
    public Set<String> getNamespaces() {
       return this.resources.getNamespaces();
    }
 
-   public List<Resource> getResourceStack(Identifier var1) {
-      return this.resources.getResourceStack(var1);
+   public List<Resource> getResourceStack(final Identifier location) {
+      return this.resources.getResourceStack(location);
    }
 
-   public Map<Identifier, Resource> listResources(String var1, Predicate<Identifier> var2) {
-      return this.resources.listResources(var1, var2);
+   public Map<Identifier, Resource> listResources(final String directory, final Predicate<Identifier> filenameFilter) {
+      return this.resources.listResources(directory, filenameFilter);
    }
 
-   public Map<Identifier, List<Resource>> listResourceStacks(String var1, Predicate<Identifier> var2) {
-      return this.resources.listResourceStacks(var1, var2);
+   public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final Predicate<Identifier> filter) {
+      return this.resources.listResourceStacks(directory, filter);
    }
 
    public Stream<PackResources> listPacks() {

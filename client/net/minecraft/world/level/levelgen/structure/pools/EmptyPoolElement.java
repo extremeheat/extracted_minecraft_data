@@ -23,19 +23,19 @@ public class EmptyPoolElement extends StructurePoolElement {
       super(StructureTemplatePool.Projection.TERRAIN_MATCHING);
    }
 
-   public Vec3i getSize(StructureTemplateManager var1, Rotation var2) {
+   public Vec3i getSize(final StructureTemplateManager structureTemplateManager, final Rotation rotation) {
       return Vec3i.ZERO;
    }
 
-   public List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(StructureTemplateManager var1, BlockPos var2, Rotation var3, RandomSource var4) {
+   public List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final RandomSource random) {
       return Collections.emptyList();
    }
 
-   public BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3) {
+   public BoundingBox getBoundingBox(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation) {
       throw new IllegalStateException("Invalid call to EmptyPoolElement.getBoundingBox, filter me!");
    }
 
-   public boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, LiquidSettings var10, boolean var11) {
+   public boolean place(final StructureTemplateManager structureTemplateManager, final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final BlockPos position, final BlockPos referencePos, final Rotation rotation, final BoundingBox chunkBB, final RandomSource random, final LiquidSettings liquidSettings, final boolean keepJigsaws) {
       return true;
    }
 

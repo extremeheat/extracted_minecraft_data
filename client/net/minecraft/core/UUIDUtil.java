@@ -35,80 +35,70 @@ public final class UUIDUtil {
       super();
    }
 
-   public static UUID uuidFromIntArray(int[] var0) {
-      return new UUID((long)var0[0] << 32 | (long)var0[1] & 4294967295L, (long)var0[2] << 32 | (long)var0[3] & 4294967295L);
+   public static UUID uuidFromIntArray(final int[] intArray) {
+      return new UUID((long)intArray[0] << 32 | (long)intArray[1] & 4294967295L, (long)intArray[2] << 32 | (long)intArray[3] & 4294967295L);
    }
 
-   public static int[] uuidToIntArray(UUID var0) {
-      long var1 = var0.getMostSignificantBits();
-      long var3 = var0.getLeastSignificantBits();
-      return leastMostToIntArray(var1, var3);
+   public static int[] uuidToIntArray(final UUID uuid) {
+      long mostSignificantBits = uuid.getMostSignificantBits();
+      long leastSignificantBits = uuid.getLeastSignificantBits();
+      return leastMostToIntArray(mostSignificantBits, leastSignificantBits);
    }
 
-   private static int[] leastMostToIntArray(long var0, long var2) {
-      return new int[]{(int)(var0 >> 32), (int)var0, (int)(var2 >> 32), (int)var2};
+   private static int[] leastMostToIntArray(final long mostSignificantBits, final long leastSignificantBits) {
+      return new int[]{(int)(mostSignificantBits >> 32), (int)mostSignificantBits, (int)(leastSignificantBits >> 32), (int)leastSignificantBits};
    }
 
-   public static byte[] uuidToByteArray(UUID var0) {
-      byte[] var1 = new byte[16];
-      ByteBuffer.wrap(var1).order(ByteOrder.BIG_ENDIAN).putLong(var0.getMostSignificantBits()).putLong(var0.getLeastSignificantBits());
-      return var1;
+   public static byte[] uuidToByteArray(final UUID uuid) {
+      byte[] bytes = new byte[16];
+      ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).putLong(uuid.getMostSignificantBits()).putLong(uuid.getLeastSignificantBits());
+      return bytes;
    }
 
-   public static UUID readUUID(Dynamic<?> var0) {
-      int[] var1 = var0.asIntStream().toArray();
-      if (var1.length != 4) {
-         throw new IllegalArgumentException("Could not read UUID. Expected int-array of length 4, got " + var1.length + ".");
+   public static UUID readUUID(final Dynamic<?> input) {
+      int[] intArray = input.asIntStream().toArray();
+      if (intArray.length != 4) {
+         throw new IllegalArgumentException("Could not read UUID. Expected int-array of length 4, got " + intArray.length + ".");
       } else {
-         return uuidFromIntArray(var1);
+         return uuidFromIntArray(intArray);
       }
    }
 
-   public static UUID createOfflinePlayerUUID(String var0) {
-      return UUID.nameUUIDFromBytes(("OfflinePlayer:" + var0).getBytes(StandardCharsets.UTF_8));
+   public static UUID createOfflinePlayerUUID(final String playerName) {
+      return UUID.nameUUIDFromBytes(("OfflinePlayer:" + playerName).getBytes(StandardCharsets.UTF_8));
    }
 
-   public static GameProfile createOfflineProfile(String var0) {
-      UUID var1 = createOfflinePlayerUUID(var0);
-      return new GameProfile(var1, var0);
+   public static GameProfile createOfflineProfile(final String playerName) {
+      UUID id = createOfflinePlayerUUID(playerName);
+      return new GameProfile(id, playerName);
    }
 
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 4).map(UUIDUtil::uuidFromIntArray), (var0) -> Arrays.stream(uuidToIntArray(var0)));
+      CODEC = Codec.INT_STREAM.comapFlatMap((list) -> Util.fixedSize((IntStream)list, 4).map(UUIDUtil::uuidFromIntArray), (uuid) -> Arrays.stream(uuidToIntArray(uuid)));
       CODEC_SET = Codec.list(CODEC).xmap(Sets::newHashSet, Lists::newArrayList);
       CODEC_LINKED_SET = Codec.list(CODEC).xmap(Sets::newLinkedHashSet, Lists::newArrayList);
-      STRING_CODEC = Codec.STRING.comapFlatMap((var0) -> {
+      STRING_CODEC = Codec.STRING.comapFlatMap((s) -> {
          try {
-            return DataResult.success(UUID.fromString(var0), Lifecycle.stable());
-         } catch (IllegalArgumentException var2) {
-            return DataResult.error(() -> "Invalid UUID " + var0 + ": " + var2.getMessage());
+            return DataResult.success(UUID.fromString(s), Lifecycle.stable());
+         } catch (IllegalArgumentException e) {
+            return DataResult.error(() -> "Invalid UUID " + s + ": " + e.getMessage());
          }
       }, UUID::toString);
-      AUTHLIB_CODEC = Codec.withAlternative(Codec.STRING.comapFlatMap((var0) -> {
+      AUTHLIB_CODEC = Codec.withAlternative(Codec.STRING.comapFlatMap((s) -> {
          try {
-            return DataResult.success(UndashedUuid.fromStringLenient(var0), Lifecycle.stable());
-         } catch (IllegalArgumentException var2) {
-            return DataResult.error(() -> "Invalid UUID " + var0 + ": " + var2.getMessage());
+            return DataResult.success(UndashedUuid.fromStringLenient(s), Lifecycle.stable());
+         } catch (IllegalArgumentException e) {
+            return DataResult.error(() -> "Invalid UUID " + s + ": " + e.getMessage());
          }
       }, UndashedUuid::toString), CODEC);
       LENIENT_CODEC = Codec.withAlternative(CODEC, STRING_CODEC);
       STREAM_CODEC = new StreamCodec<ByteBuf, UUID>() {
-         public UUID decode(ByteBuf var1) {
-            return FriendlyByteBuf.readUUID(var1);
+         public UUID decode(final ByteBuf input) {
+            return FriendlyByteBuf.readUUID(input);
          }
 
-         public void encode(ByteBuf var1, UUID var2) {
-            FriendlyByteBuf.writeUUID(var1, var2);
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((ByteBuf)var1, (UUID)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((ByteBuf)var1);
+         public void encode(final ByteBuf output, final UUID value) {
+            FriendlyByteBuf.writeUUID(output, value);
          }
       };
    }

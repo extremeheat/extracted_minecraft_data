@@ -11,19 +11,19 @@ public class SpecialBlockModelRenderer {
    public static final SpecialBlockModelRenderer EMPTY = new SpecialBlockModelRenderer(Map.of());
    private final Map<Block, SpecialModelRenderer<?>> renderers;
 
-   public SpecialBlockModelRenderer(Map<Block, SpecialModelRenderer<?>> var1) {
+   public SpecialBlockModelRenderer(final Map<Block, SpecialModelRenderer<?>> renderers) {
       super();
-      this.renderers = var1;
+      this.renderers = renderers;
    }
 
-   public static SpecialBlockModelRenderer vanilla(SpecialModelRenderer.BakingContext var0) {
-      return new SpecialBlockModelRenderer(SpecialModelRenderers.createBlockRenderers(var0));
+   public static SpecialBlockModelRenderer vanilla(final SpecialModelRenderer.BakingContext context) {
+      return new SpecialBlockModelRenderer(SpecialModelRenderers.createBlockRenderers(context));
    }
 
-   public void renderByBlock(Block var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, int var7) {
-      SpecialModelRenderer var8 = (SpecialModelRenderer)this.renderers.get(var1);
-      if (var8 != null) {
-         var8.submit((Object)null, var2, var3, var4, var5, var6, false, var7);
+   public void renderByBlock(final Block block, final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final int outlineColor) {
+      SpecialModelRenderer<?> specialRenderer = (SpecialModelRenderer)this.renderers.get(block);
+      if (specialRenderer != null) {
+         specialRenderer.submit((Object)null, type, poseStack, submitNodeCollector, lightCoords, overlayCoords, false, outlineColor);
       }
 
    }

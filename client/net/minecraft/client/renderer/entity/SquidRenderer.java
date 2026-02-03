@@ -3,8 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.animal.squid.SquidModel;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SquidRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -13,41 +11,32 @@ import org.joml.Quaternionfc;
 
 public class SquidRenderer<T extends Squid> extends AgeableMobRenderer<T, SquidRenderState, SquidModel> {
    private static final Identifier SQUID_LOCATION = Identifier.withDefaultNamespace("textures/entity/squid/squid.png");
+   private static final Identifier SQUID_BABY_LOCATION = Identifier.withDefaultNamespace("textures/entity/squid/squid_baby.png");
 
-   public SquidRenderer(EntityRendererProvider.Context var1, SquidModel var2, SquidModel var3) {
-      super(var1, var2, var3, 0.7F);
+   public SquidRenderer(final EntityRendererProvider.Context context, final SquidModel model, final SquidModel babyModel) {
+      super(context, model, babyModel, 0.7F);
    }
 
-   public Identifier getTextureLocation(SquidRenderState var1) {
-      return SQUID_LOCATION;
+   public Identifier getTextureLocation(final SquidRenderState state) {
+      return state.isBaby ? SQUID_BABY_LOCATION : SQUID_LOCATION;
    }
 
    public SquidRenderState createRenderState() {
       return new SquidRenderState();
    }
 
-   public void extractRenderState(T var1, SquidRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.tentacleAngle = Mth.lerp(var3, var1.oldTentacleAngle, var1.tentacleAngle);
-      var2.xBodyRot = Mth.lerp(var3, var1.xBodyRotO, var1.xBodyRot);
-      var2.zBodyRot = Mth.lerp(var3, var1.zBodyRotO, var1.zBodyRot);
+   public void extractRenderState(final T entity, final SquidRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.tentacleAngle = Mth.lerp(partialTicks, entity.oldTentacleAngle, entity.tentacleAngle);
+      state.xBodyRot = Mth.lerp(partialTicks, entity.xBodyRotO, entity.xBodyRot);
+      state.zBodyRot = Mth.lerp(partialTicks, entity.zBodyRotO, entity.zBodyRot);
    }
 
-   protected void setupRotations(SquidRenderState var1, PoseStack var2, float var3, float var4) {
-      var2.translate(0.0F, var1.isBaby ? 0.25F : 0.5F, 0.0F);
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var3));
-      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var1.xBodyRot));
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.zBodyRot));
-      var2.translate(0.0F, var1.isBaby ? -0.6F : -1.2F, 0.0F);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((SquidRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   protected void setupRotations(final SquidRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
+      poseStack.translate(0.0F, state.isBaby ? 0.25F : 0.5F, 0.0F);
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - bodyRot));
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(state.xBodyRot));
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.zBodyRot));
+      poseStack.translate(0.0F, state.isBaby ? -0.6F : -1.2F, 0.0F);
    }
 }

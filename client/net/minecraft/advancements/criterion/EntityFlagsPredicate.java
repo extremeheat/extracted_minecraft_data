@@ -8,46 +8,37 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolean> isOnFire, Optional<Boolean> isCrouching, Optional<Boolean> isSprinting, Optional<Boolean> isSwimming, Optional<Boolean> isFlying, Optional<Boolean> isBaby, Optional<Boolean> isInWater, Optional<Boolean> isFallFlying) {
-   public static final Codec<EntityFlagsPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.optionalFieldOf("is_on_ground").forGetter(EntityFlagsPredicate::isOnGround), Codec.BOOL.optionalFieldOf("is_on_fire").forGetter(EntityFlagsPredicate::isOnFire), Codec.BOOL.optionalFieldOf("is_sneaking").forGetter(EntityFlagsPredicate::isCrouching), Codec.BOOL.optionalFieldOf("is_sprinting").forGetter(EntityFlagsPredicate::isSprinting), Codec.BOOL.optionalFieldOf("is_swimming").forGetter(EntityFlagsPredicate::isSwimming), Codec.BOOL.optionalFieldOf("is_flying").forGetter(EntityFlagsPredicate::isFlying), Codec.BOOL.optionalFieldOf("is_baby").forGetter(EntityFlagsPredicate::isBaby), Codec.BOOL.optionalFieldOf("is_in_water").forGetter(EntityFlagsPredicate::isInWater), Codec.BOOL.optionalFieldOf("is_fall_flying").forGetter(EntityFlagsPredicate::isFallFlying)).apply(var0, EntityFlagsPredicate::new));
+   public static final Codec<EntityFlagsPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.optionalFieldOf("is_on_ground").forGetter(EntityFlagsPredicate::isOnGround), Codec.BOOL.optionalFieldOf("is_on_fire").forGetter(EntityFlagsPredicate::isOnFire), Codec.BOOL.optionalFieldOf("is_sneaking").forGetter(EntityFlagsPredicate::isCrouching), Codec.BOOL.optionalFieldOf("is_sprinting").forGetter(EntityFlagsPredicate::isSprinting), Codec.BOOL.optionalFieldOf("is_swimming").forGetter(EntityFlagsPredicate::isSwimming), Codec.BOOL.optionalFieldOf("is_flying").forGetter(EntityFlagsPredicate::isFlying), Codec.BOOL.optionalFieldOf("is_baby").forGetter(EntityFlagsPredicate::isBaby), Codec.BOOL.optionalFieldOf("is_in_water").forGetter(EntityFlagsPredicate::isInWater), Codec.BOOL.optionalFieldOf("is_fall_flying").forGetter(EntityFlagsPredicate::isFallFlying)).apply(i, EntityFlagsPredicate::new));
 
-   public EntityFlagsPredicate(Optional<Boolean> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5, Optional<Boolean> var6, Optional<Boolean> var7, Optional<Boolean> var8, Optional<Boolean> var9) {
+   public EntityFlagsPredicate {
       super();
-      this.isOnGround = var1;
-      this.isOnFire = var2;
-      this.isCrouching = var3;
-      this.isSprinting = var4;
-      this.isSwimming = var5;
-      this.isFlying = var6;
-      this.isBaby = var7;
-      this.isInWater = var8;
-      this.isFallFlying = var9;
    }
 
-   public boolean matches(Entity var1) {
-      if (this.isOnGround.isPresent() && var1.onGround() != (Boolean)this.isOnGround.get()) {
+   public boolean matches(final Entity entity) {
+      if (this.isOnGround.isPresent() && entity.onGround() != (Boolean)this.isOnGround.get()) {
          return false;
-      } else if (this.isOnFire.isPresent() && var1.isOnFire() != (Boolean)this.isOnFire.get()) {
+      } else if (this.isOnFire.isPresent() && entity.isOnFire() != (Boolean)this.isOnFire.get()) {
          return false;
-      } else if (this.isCrouching.isPresent() && var1.isCrouching() != (Boolean)this.isCrouching.get()) {
+      } else if (this.isCrouching.isPresent() && entity.isCrouching() != (Boolean)this.isCrouching.get()) {
          return false;
-      } else if (this.isSprinting.isPresent() && var1.isSprinting() != (Boolean)this.isSprinting.get()) {
+      } else if (this.isSprinting.isPresent() && entity.isSprinting() != (Boolean)this.isSprinting.get()) {
          return false;
-      } else if (this.isSwimming.isPresent() && var1.isSwimming() != (Boolean)this.isSwimming.get()) {
+      } else if (this.isSwimming.isPresent() && entity.isSwimming() != (Boolean)this.isSwimming.get()) {
          return false;
       } else {
          if (this.isFlying.isPresent()) {
             boolean var10000;
             label68: {
                label67: {
-                  if (var1 instanceof LivingEntity) {
-                     LivingEntity var4 = (LivingEntity)var1;
-                     if (var4.isFallFlying()) {
+                  if (entity instanceof LivingEntity) {
+                     LivingEntity living = (LivingEntity)entity;
+                     if (living.isFallFlying()) {
                         break label67;
                      }
 
-                     if (var4 instanceof Player) {
-                        Player var3 = (Player)var4;
-                        if (var3.getAbilities().flying) {
+                     if (living instanceof Player) {
+                        Player player = (Player)living;
+                        if (player.getAbilities().flying) {
                            break label67;
                         }
                      }
@@ -60,25 +51,25 @@ public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolea
                var10000 = true;
             }
 
-            boolean var2 = var10000;
-            if (var2 != (Boolean)this.isFlying.get()) {
+            boolean entityIsFlying = var10000;
+            if (entityIsFlying != (Boolean)this.isFlying.get()) {
                return false;
             }
          }
 
-         if (this.isInWater.isPresent() && var1.isInWater() != (Boolean)this.isInWater.get()) {
+         if (this.isInWater.isPresent() && entity.isInWater() != (Boolean)this.isInWater.get()) {
             return false;
          } else {
-            if (this.isFallFlying.isPresent() && var1 instanceof LivingEntity) {
-               LivingEntity var5 = (LivingEntity)var1;
-               if (var5.isFallFlying() != (Boolean)this.isFallFlying.get()) {
+            if (this.isFallFlying.isPresent() && entity instanceof LivingEntity) {
+               LivingEntity living = (LivingEntity)entity;
+               if (living.isFallFlying() != (Boolean)this.isFallFlying.get()) {
                   return false;
                }
             }
 
-            if (this.isBaby.isPresent() && var1 instanceof LivingEntity) {
-               LivingEntity var6 = (LivingEntity)var1;
-               if (var6.isBaby() != (Boolean)this.isBaby.get()) {
+            if (this.isBaby.isPresent() && entity instanceof LivingEntity) {
+               LivingEntity living = (LivingEntity)entity;
+               if (living.isBaby() != (Boolean)this.isBaby.get()) {
                   return false;
                }
             }
@@ -107,48 +98,48 @@ public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolea
          return new Builder();
       }
 
-      public Builder setOnGround(Boolean var1) {
-         this.isOnGround = Optional.of(var1);
+      public Builder setOnGround(final Boolean onGround) {
+         this.isOnGround = Optional.of(onGround);
          return this;
       }
 
-      public Builder setOnFire(Boolean var1) {
-         this.isOnFire = Optional.of(var1);
+      public Builder setOnFire(final Boolean onFire) {
+         this.isOnFire = Optional.of(onFire);
          return this;
       }
 
-      public Builder setCrouching(Boolean var1) {
-         this.isCrouching = Optional.of(var1);
+      public Builder setCrouching(final Boolean crouching) {
+         this.isCrouching = Optional.of(crouching);
          return this;
       }
 
-      public Builder setSprinting(Boolean var1) {
-         this.isSprinting = Optional.of(var1);
+      public Builder setSprinting(final Boolean sprinting) {
+         this.isSprinting = Optional.of(sprinting);
          return this;
       }
 
-      public Builder setSwimming(Boolean var1) {
-         this.isSwimming = Optional.of(var1);
+      public Builder setSwimming(final Boolean swimming) {
+         this.isSwimming = Optional.of(swimming);
          return this;
       }
 
-      public Builder setIsFlying(Boolean var1) {
-         this.isFlying = Optional.of(var1);
+      public Builder setIsFlying(final Boolean flying) {
+         this.isFlying = Optional.of(flying);
          return this;
       }
 
-      public Builder setIsBaby(Boolean var1) {
-         this.isBaby = Optional.of(var1);
+      public Builder setIsBaby(final Boolean baby) {
+         this.isBaby = Optional.of(baby);
          return this;
       }
 
-      public Builder setIsInWater(Boolean var1) {
-         this.isInWater = Optional.of(var1);
+      public Builder setIsInWater(final Boolean inWater) {
+         this.isInWater = Optional.of(inWater);
          return this;
       }
 
-      public Builder setIsFallFlying(Boolean var1) {
-         this.isFallFlying = Optional.of(var1);
+      public Builder setIsFallFlying(final Boolean fallFlying) {
+         this.isFallFlying = Optional.of(fallFlying);
          return this;
       }
 

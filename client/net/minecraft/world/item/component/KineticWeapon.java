@@ -29,80 +29,71 @@ import net.minecraft.world.phys.Vec3;
 
 public record KineticWeapon(int contactCooldownTicks, int delayTicks, Optional<Condition> dismountConditions, Optional<Condition> knockbackConditions, Optional<Condition> damageConditions, float forwardMovement, float damageMultiplier, Optional<Holder<SoundEvent>> sound, Optional<Holder<SoundEvent>> hitSound) {
    public static final int HIT_FEEDBACK_TICKS = 10;
-   public static final Codec<KineticWeapon> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("contact_cooldown_ticks", 10).forGetter(KineticWeapon::contactCooldownTicks), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("delay_ticks", 0).forGetter(KineticWeapon::delayTicks), KineticWeapon.Condition.CODEC.optionalFieldOf("dismount_conditions").forGetter(KineticWeapon::dismountConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("knockback_conditions").forGetter(KineticWeapon::knockbackConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("damage_conditions").forGetter(KineticWeapon::damageConditions), Codec.FLOAT.optionalFieldOf("forward_movement", 0.0F).forGetter(KineticWeapon::forwardMovement), Codec.FLOAT.optionalFieldOf("damage_multiplier", 1.0F).forGetter(KineticWeapon::damageMultiplier), SoundEvent.CODEC.optionalFieldOf("sound").forGetter(KineticWeapon::sound), SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(KineticWeapon::hitSound)).apply(var0, KineticWeapon::new));
+   public static final Codec<KineticWeapon> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("contact_cooldown_ticks", 10).forGetter(KineticWeapon::contactCooldownTicks), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("delay_ticks", 0).forGetter(KineticWeapon::delayTicks), KineticWeapon.Condition.CODEC.optionalFieldOf("dismount_conditions").forGetter(KineticWeapon::dismountConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("knockback_conditions").forGetter(KineticWeapon::knockbackConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("damage_conditions").forGetter(KineticWeapon::damageConditions), Codec.FLOAT.optionalFieldOf("forward_movement", 0.0F).forGetter(KineticWeapon::forwardMovement), Codec.FLOAT.optionalFieldOf("damage_multiplier", 1.0F).forGetter(KineticWeapon::damageMultiplier), SoundEvent.CODEC.optionalFieldOf("sound").forGetter(KineticWeapon::sound), SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(KineticWeapon::hitSound)).apply(i, KineticWeapon::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, KineticWeapon> STREAM_CODEC;
 
-   public KineticWeapon(int var1, int var2, Optional<Condition> var3, Optional<Condition> var4, Optional<Condition> var5, float var6, float var7, Optional<Holder<SoundEvent>> var8, Optional<Holder<SoundEvent>> var9) {
+   public KineticWeapon {
       super();
-      this.contactCooldownTicks = var1;
-      this.delayTicks = var2;
-      this.dismountConditions = var3;
-      this.knockbackConditions = var4;
-      this.damageConditions = var5;
-      this.forwardMovement = var6;
-      this.damageMultiplier = var7;
-      this.sound = var8;
-      this.hitSound = var9;
    }
 
-   public static Vec3 getMotion(Entity var0) {
-      if (!(var0 instanceof Player) && var0.isPassenger()) {
-         var0 = var0.getRootVehicle();
+   public static Vec3 getMotion(Entity livingEntity) {
+      if (!(livingEntity instanceof Player) && livingEntity.isPassenger()) {
+         livingEntity = livingEntity.getRootVehicle();
       }
 
-      return var0.getKnownSpeed().scale(20.0);
+      return livingEntity.getKnownSpeed().scale(20.0);
    }
 
-   public void makeSound(Entity var1) {
-      this.sound.ifPresent((var1x) -> var1.level().playSound(var1, var1.getX(), var1.getY(), var1.getZ(), var1x, var1.getSoundSource(), 1.0F, 1.0F));
+   public void makeSound(final Entity causer) {
+      this.sound.ifPresent((s) -> causer.level().playSound(causer, causer.getX(), causer.getY(), causer.getZ(), s, causer.getSoundSource(), 1.0F, 1.0F));
    }
 
-   public void makeLocalHitSound(Entity var1) {
-      this.hitSound.ifPresent((var1x) -> var1.level().playLocalSound(var1, (SoundEvent)var1x.value(), var1.getSoundSource(), 1.0F, 1.0F));
+   public void makeLocalHitSound(final Entity causer) {
+      this.hitSound.ifPresent((s) -> causer.level().playLocalSound(causer, (SoundEvent)s.value(), causer.getSoundSource(), 1.0F, 1.0F));
    }
 
    public int computeDamageUseDuration() {
       return this.delayTicks + (Integer)this.damageConditions.map(Condition::maxDurationTicks).orElse(0);
    }
 
-   public void damageEntities(ItemStack var1, int var2, LivingEntity var3, EquipmentSlot var4) {
-      int var5 = var1.getUseDuration(var3) - var2;
-      if (var5 >= this.delayTicks) {
-         var5 -= this.delayTicks;
-         Vec3 var6 = var3.getLookAngle();
-         double var7 = var6.dot(getMotion(var3));
-         float var9 = var3 instanceof Player ? 1.0F : 0.2F;
-         AttackRange var10 = var3.entityAttackRange();
-         double var11 = var3.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
-         boolean var13 = false;
+   public void damageEntities(final ItemStack stack, final int ticksRemaining, final LivingEntity livingEntity, final EquipmentSlot equipmentSlot) {
+      int ticksUsed = stack.getUseDuration(livingEntity) - ticksRemaining;
+      if (ticksUsed >= this.delayTicks) {
+         ticksUsed -= this.delayTicks;
+         Vec3 attackerLookVector = livingEntity.getLookAngle();
+         double attackerSpeedProjection = attackerLookVector.dot(getMotion(livingEntity));
+         float actionFactor = livingEntity instanceof Player ? 1.0F : 0.2F;
+         AttackRange attackRange = livingEntity.getAttackRangeWith(stack);
+         double baseMobDamage = livingEntity.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
+         boolean affected = false;
 
-         for(EntityHitResult var15 : (Collection)ProjectileUtil.getHitEntitiesAlong(var3, var10, (var1x) -> PiercingWeapon.canHitEntity(var3, var1x), ClipContext.Block.COLLIDER).map((var0) -> List.of(), (var0) -> var0)) {
-            Object var16 = var15.getEntity();
-            if (var16 instanceof EnderDragonPart) {
-               EnderDragonPart var17 = (EnderDragonPart)var16;
-               var16 = var17.parentMob;
+         for(EntityHitResult hitResult : (Collection)ProjectileUtil.getHitEntitiesAlong(livingEntity, attackRange, (e) -> PiercingWeapon.canHitEntity(livingEntity, e), ClipContext.Block.COLLIDER).map((a) -> List.of(), (e) -> e)) {
+            Entity otherEntity = hitResult.getEntity();
+            if (otherEntity instanceof EnderDragonPart) {
+               EnderDragonPart dragonPart = (EnderDragonPart)otherEntity;
+               otherEntity = dragonPart.parentMob;
             }
 
-            boolean var28 = var3.wasRecentlyStabbed((Entity)var16, this.contactCooldownTicks);
-            if (!var28) {
-               var3.rememberStabbedEntity((Entity)var16);
-               double var18 = var6.dot(getMotion((Entity)var16));
-               double var20 = Math.max(0.0, var7 - var18);
-               boolean var22 = this.dismountConditions.isPresent() && ((Condition)this.dismountConditions.get()).test(var5, var7, var20, (double)var9);
-               boolean var23 = this.knockbackConditions.isPresent() && ((Condition)this.knockbackConditions.get()).test(var5, var7, var20, (double)var9);
-               boolean var24 = this.damageConditions.isPresent() && ((Condition)this.damageConditions.get()).test(var5, var7, var20, (double)var9);
-               if (var22 || var23 || var24) {
-                  float var25 = (float)var11 + (float)Mth.floor(var20 * (double)this.damageMultiplier);
-                  var13 |= var3.stabAttack(var4, (Entity)var16, var25, var24, var23, var22);
+            boolean wasStabbed = livingEntity.wasRecentlyStabbed(otherEntity, this.contactCooldownTicks);
+            if (!wasStabbed) {
+               livingEntity.rememberStabbedEntity(otherEntity);
+               double targetSpeedProjection = attackerLookVector.dot(getMotion(otherEntity));
+               double relativeSpeed = Math.max(0.0, attackerSpeedProjection - targetSpeedProjection);
+               boolean dealsDismount = this.dismountConditions.isPresent() && ((Condition)this.dismountConditions.get()).test(ticksUsed, attackerSpeedProjection, relativeSpeed, (double)actionFactor);
+               boolean dealsKnockback = this.knockbackConditions.isPresent() && ((Condition)this.knockbackConditions.get()).test(ticksUsed, attackerSpeedProjection, relativeSpeed, (double)actionFactor);
+               boolean dealsDamage = this.damageConditions.isPresent() && ((Condition)this.damageConditions.get()).test(ticksUsed, attackerSpeedProjection, relativeSpeed, (double)actionFactor);
+               if (dealsDismount || dealsKnockback || dealsDamage) {
+                  float damageDealt = (float)baseMobDamage + (float)Mth.floor(relativeSpeed * (double)this.damageMultiplier);
+                  affected |= livingEntity.stabAttack(equipmentSlot, otherEntity, damageDealt, dealsDamage, dealsKnockback, dealsDismount);
                }
             }
          }
 
-         if (var13) {
-            var3.level().broadcastEntityEvent(var3, (byte)2);
-            if (var3 instanceof ServerPlayer) {
-               ServerPlayer var27 = (ServerPlayer)var3;
-               CriteriaTriggers.SPEAR_MOBS_TRIGGER.trigger(var27, var3.stabbedEntities((var0) -> var0 instanceof LivingEntity));
+         if (affected) {
+            livingEntity.level().broadcastEntityEvent(livingEntity, (byte)2);
+            if (livingEntity instanceof ServerPlayer) {
+               ServerPlayer player = (ServerPlayer)livingEntity;
+               CriteriaTriggers.SPEAR_MOBS_TRIGGER.trigger(player, livingEntity.stabbedEntities((e) -> e instanceof LivingEntity));
             }
          }
 
@@ -114,26 +105,23 @@ public record KineticWeapon(int contactCooldownTicks, int delayTicks, Optional<C
    }
 
    public static record Condition(int maxDurationTicks, float minSpeed, float minRelativeSpeed) {
-      public static final Codec<Condition> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("max_duration_ticks").forGetter(Condition::maxDurationTicks), Codec.FLOAT.optionalFieldOf("min_speed", 0.0F).forGetter(Condition::minSpeed), Codec.FLOAT.optionalFieldOf("min_relative_speed", 0.0F).forGetter(Condition::minRelativeSpeed)).apply(var0, Condition::new));
+      public static final Codec<Condition> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("max_duration_ticks").forGetter(Condition::maxDurationTicks), Codec.FLOAT.optionalFieldOf("min_speed", 0.0F).forGetter(Condition::minSpeed), Codec.FLOAT.optionalFieldOf("min_relative_speed", 0.0F).forGetter(Condition::minRelativeSpeed)).apply(i, Condition::new));
       public static final StreamCodec<ByteBuf, Condition> STREAM_CODEC;
 
-      public Condition(int var1, float var2, float var3) {
+      public Condition {
          super();
-         this.maxDurationTicks = var1;
-         this.minSpeed = var2;
-         this.minRelativeSpeed = var3;
       }
 
-      public boolean test(int var1, double var2, double var4, double var6) {
-         return var1 <= this.maxDurationTicks && var2 >= (double)this.minSpeed * var6 && var4 >= (double)this.minRelativeSpeed * var6;
+      public boolean test(final int ticksUsed, final double attackerSpeed, final double relativeSpeed, final double entityFactor) {
+         return ticksUsed <= this.maxDurationTicks && attackerSpeed >= (double)this.minSpeed * entityFactor && relativeSpeed >= (double)this.minRelativeSpeed * entityFactor;
       }
 
-      public static Optional<Condition> ofAttackerSpeed(int var0, float var1) {
-         return Optional.of(new Condition(var0, var1, 0.0F));
+      public static Optional<Condition> ofAttackerSpeed(final int untilTicks, final float minAttackerSpeed) {
+         return Optional.of(new Condition(untilTicks, minAttackerSpeed, 0.0F));
       }
 
-      public static Optional<Condition> ofRelativeSpeed(int var0, float var1) {
-         return Optional.of(new Condition(var0, 0.0F, var1));
+      public static Optional<Condition> ofRelativeSpeed(final int untilTicks, final float minRelativeSpeed) {
+         return Optional.of(new Condition(untilTicks, 0.0F, minRelativeSpeed));
       }
 
       static {

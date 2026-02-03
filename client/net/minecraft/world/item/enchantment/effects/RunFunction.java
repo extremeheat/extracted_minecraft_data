@@ -18,20 +18,19 @@ import org.slf4j.Logger;
 
 public record RunFunction(Identifier function) implements EnchantmentEntityEffect {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<RunFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(var0, RunFunction::new));
+   public static final MapCodec<RunFunction> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(i, RunFunction::new));
 
-   public RunFunction(Identifier var1) {
+   public RunFunction {
       super();
-      this.function = var1;
    }
 
-   public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-      MinecraftServer var6 = var1.getServer();
-      ServerFunctionManager var7 = var6.getFunctions();
-      Optional var8 = var7.get(this.function);
-      if (var8.isPresent()) {
-         CommandSourceStack var9 = var6.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput().withEntity(var4).withLevel(var1).withPosition(var5).withRotation(var4.getRotationVector());
-         var7.execute((CommandFunction)var8.get(), var9);
+   public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
+      MinecraftServer server = serverLevel.getServer();
+      ServerFunctionManager functions = server.getFunctions();
+      Optional<CommandFunction<CommandSourceStack>> function = functions.get(this.function);
+      if (function.isPresent()) {
+         CommandSourceStack source = server.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput().withEntity(entity).withLevel(serverLevel).withPosition(position).withRotation(entity.getRotationVector());
+         functions.execute((CommandFunction)function.get(), source);
       } else {
          LOGGER.error("Enchantment run_function effect failed for non-existent function {}", this.function);
       }

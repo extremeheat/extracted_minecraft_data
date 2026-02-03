@@ -9,26 +9,26 @@ public class ServerboundPingRequestPacket implements Packet<ServerPingPacketList
    public static final StreamCodec<ByteBuf, ServerboundPingRequestPacket> STREAM_CODEC = Packet.<ByteBuf, ServerboundPingRequestPacket>codec(ServerboundPingRequestPacket::write, ServerboundPingRequestPacket::new);
    private final long time;
 
-   public ServerboundPingRequestPacket(long var1) {
+   public ServerboundPingRequestPacket(final long time) {
       super();
-      this.time = var1;
+      this.time = time;
    }
 
-   private ServerboundPingRequestPacket(ByteBuf var1) {
+   private ServerboundPingRequestPacket(final ByteBuf input) {
       super();
-      this.time = var1.readLong();
+      this.time = input.readLong();
    }
 
-   private void write(ByteBuf var1) {
-      var1.writeLong(this.time);
+   private void write(final ByteBuf output) {
+      output.writeLong(this.time);
    }
 
    public PacketType<ServerboundPingRequestPacket> type() {
       return PingPacketTypes.SERVERBOUND_PING_REQUEST;
    }
 
-   public void handle(ServerPingPacketListener var1) {
-      var1.handlePingRequest(this);
+   public void handle(final ServerPingPacketListener listener) {
+      listener.handlePingRequest(this);
    }
 
    public long getTime() {

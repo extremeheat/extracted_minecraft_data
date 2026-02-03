@@ -11,18 +11,18 @@ public class ColorParticleOption implements ParticleOptions {
    private final ParticleType<ColorParticleOption> type;
    private final int color;
 
-   public static MapCodec<ColorParticleOption> codec(ParticleType<ColorParticleOption> var0) {
-      return ExtraCodecs.ARGB_COLOR_CODEC.xmap((var1) -> new ColorParticleOption(var0, var1), (var0x) -> var0x.color).fieldOf("color");
+   public static MapCodec<ColorParticleOption> codec(final ParticleType<ColorParticleOption> type) {
+      return ExtraCodecs.ARGB_COLOR_CODEC.xmap((color) -> new ColorParticleOption(type, color), (o) -> o.color).fieldOf("color");
    }
 
-   public static StreamCodec<? super ByteBuf, ColorParticleOption> streamCodec(ParticleType<ColorParticleOption> var0) {
-      return ByteBufCodecs.INT.map((var1) -> new ColorParticleOption(var0, var1), (var0x) -> var0x.color);
+   public static StreamCodec<? super ByteBuf, ColorParticleOption> streamCodec(final ParticleType<ColorParticleOption> type) {
+      return ByteBufCodecs.INT.map((color) -> new ColorParticleOption(type, color), (o) -> o.color);
    }
 
-   private ColorParticleOption(ParticleType<ColorParticleOption> var1, int var2) {
+   private ColorParticleOption(final ParticleType<ColorParticleOption> type, final int color) {
       super();
-      this.type = var1;
-      this.color = var2;
+      this.type = type;
+      this.color = color;
    }
 
    public ParticleType<ColorParticleOption> getType() {
@@ -45,11 +45,11 @@ public class ColorParticleOption implements ParticleOptions {
       return (float)ARGB.alpha(this.color) / 255.0F;
    }
 
-   public static ColorParticleOption create(ParticleType<ColorParticleOption> var0, int var1) {
-      return new ColorParticleOption(var0, var1);
+   public static ColorParticleOption create(final ParticleType<ColorParticleOption> type, final int color) {
+      return new ColorParticleOption(type, color);
    }
 
-   public static ColorParticleOption create(ParticleType<ColorParticleOption> var0, float var1, float var2, float var3) {
-      return create(var0, ARGB.colorFromFloat(1.0F, var1, var2, var3));
+   public static ColorParticleOption create(final ParticleType<ColorParticleOption> type, final float red, final float green, final float blue) {
+      return create(type, ARGB.colorFromFloat(1.0F, red, green, blue));
    }
 }

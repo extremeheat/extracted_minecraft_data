@@ -17,56 +17,56 @@ public class DeltaFeature extends Feature<DeltaFeatureConfiguration> {
    private static final Direction[] DIRECTIONS;
    private static final double RIM_SPAWN_CHANCE = 0.9;
 
-   public DeltaFeature(Codec<DeltaFeatureConfiguration> var1) {
-      super(var1);
+   public DeltaFeature(final Codec<DeltaFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<DeltaFeatureConfiguration> var1) {
-      boolean var2 = false;
-      RandomSource var3 = var1.random();
-      WorldGenLevel var4 = var1.level();
-      DeltaFeatureConfiguration var5 = (DeltaFeatureConfiguration)var1.config();
-      BlockPos var6 = var1.origin();
-      boolean var7 = var3.nextDouble() < 0.9;
-      int var8 = var7 ? var5.rimSize().sample(var3) : 0;
-      int var9 = var7 ? var5.rimSize().sample(var3) : 0;
-      boolean var10 = var7 && var8 != 0 && var9 != 0;
-      int var11 = var5.size().sample(var3);
-      int var12 = var5.size().sample(var3);
-      int var13 = Math.max(var11, var12);
+   public boolean place(final FeaturePlaceContext<DeltaFeatureConfiguration> context) {
+      boolean anyPlaced = false;
+      RandomSource random = context.random();
+      WorldGenLevel level = context.level();
+      DeltaFeatureConfiguration config = context.config();
+      BlockPos origin = context.origin();
+      boolean spawnRim = random.nextDouble() < 0.9;
+      int rimX = spawnRim ? config.rimSize().sample(random) : 0;
+      int rimZ = spawnRim ? config.rimSize().sample(random) : 0;
+      boolean hasRim = spawnRim && rimX != 0 && rimZ != 0;
+      int radiusX = config.size().sample(random);
+      int radiusZ = config.size().sample(random);
+      int radiusLimit = Math.max(radiusX, radiusZ);
 
-      for(BlockPos var15 : BlockPos.withinManhattan(var6, var11, 0, var12)) {
-         if (var15.distManhattan(var6) > var13) {
+      for(BlockPos pos : BlockPos.withinManhattan(origin, radiusX, 0, radiusZ)) {
+         if (pos.distManhattan(origin) > radiusLimit) {
             break;
          }
 
-         if (isClear(var4, var15, var5)) {
-            if (var10) {
-               var2 = true;
-               this.setBlock(var4, var15, var5.rim());
+         if (isClear(level, pos, config)) {
+            if (hasRim) {
+               anyPlaced = true;
+               this.setBlock(level, pos, config.rim());
             }
 
-            BlockPos var16 = var15.offset(var8, 0, var9);
-            if (isClear(var4, var16, var5)) {
-               var2 = true;
-               this.setBlock(var4, var16, var5.contents());
+            BlockPos posOffset = pos.offset(rimX, 0, rimZ);
+            if (isClear(level, posOffset, config)) {
+               anyPlaced = true;
+               this.setBlock(level, posOffset, config.contents());
             }
          }
       }
 
-      return var2;
+      return anyPlaced;
    }
 
-   private static boolean isClear(LevelAccessor var0, BlockPos var1, DeltaFeatureConfiguration var2) {
-      BlockState var3 = var0.getBlockState(var1);
-      if (var3.is(var2.contents().getBlock())) {
+   private static boolean isClear(final LevelAccessor level, final BlockPos pos, final DeltaFeatureConfiguration config) {
+      BlockState state = level.getBlockState(pos);
+      if (state.is(config.contents().getBlock())) {
          return false;
-      } else if (CANNOT_REPLACE.contains(var3.getBlock())) {
+      } else if (CANNOT_REPLACE.contains(state.getBlock())) {
          return false;
       } else {
-         for(Direction var7 : DIRECTIONS) {
-            boolean var8 = var0.getBlockState(var1.relative(var7)).isAir();
-            if (var8 && var7 != Direction.UP || !var8 && var7 == Direction.UP) {
+         for(Direction d : DIRECTIONS) {
+            boolean isAir = level.getBlockState(pos.relative(d)).isAir();
+            if (isAir && d != Direction.UP || !isAir && d == Direction.UP) {
                return false;
             }
          }

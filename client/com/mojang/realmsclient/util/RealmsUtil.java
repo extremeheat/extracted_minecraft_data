@@ -30,45 +30,45 @@ public class RealmsUtil {
       super();
    }
 
-   public static Component convertToAgePresentation(long var0) {
-      if (var0 < 0L) {
+   public static Component convertToAgePresentation(final long timeDiff) {
+      if (timeDiff < 0L) {
          return RIGHT_NOW;
       } else {
-         long var2 = var0 / 1000L;
-         if (var2 < 60L) {
-            return Component.translatable("mco.time.secondsAgo", var2);
-         } else if (var2 < 3600L) {
-            long var7 = var2 / 60L;
-            return Component.translatable("mco.time.minutesAgo", var7);
-         } else if (var2 < 86400L) {
-            long var6 = var2 / 3600L;
-            return Component.translatable("mco.time.hoursAgo", var6);
+         long timeDiffInSeconds = timeDiff / 1000L;
+         if (timeDiffInSeconds < 60L) {
+            return Component.translatable("mco.time.secondsAgo", timeDiffInSeconds);
+         } else if (timeDiffInSeconds < 3600L) {
+            long minutes = timeDiffInSeconds / 60L;
+            return Component.translatable("mco.time.minutesAgo", minutes);
+         } else if (timeDiffInSeconds < 86400L) {
+            long hours = timeDiffInSeconds / 3600L;
+            return Component.translatable("mco.time.hoursAgo", hours);
          } else {
-            long var4 = var2 / 86400L;
-            return Component.translatable("mco.time.daysAgo", var4);
+            long days = timeDiffInSeconds / 86400L;
+            return Component.translatable("mco.time.daysAgo", days);
          }
       }
    }
 
-   public static Component convertToAgePresentationFromInstant(Instant var0) {
-      return convertToAgePresentation(System.currentTimeMillis() - var0.toEpochMilli());
+   public static Component convertToAgePresentationFromInstant(final Instant date) {
+      return convertToAgePresentation(System.currentTimeMillis() - date.toEpochMilli());
    }
 
-   public static void renderPlayerFace(GuiGraphics var0, int var1, int var2, int var3, UUID var4) {
-      PlayerSkinRenderCache.RenderInfo var5 = Minecraft.getInstance().playerSkinRenderCache().getOrDefault(ResolvableProfile.createUnresolved(var4));
-      PlayerFaceRenderer.draw(var0, var5.playerSkin(), var1, var2, var3);
+   public static void renderPlayerFace(final GuiGraphics graphics, final int x, final int y, final int size, final UUID playerId) {
+      PlayerSkinRenderCache.RenderInfo renderInfo = Minecraft.getInstance().playerSkinRenderCache().getOrDefault(ResolvableProfile.createUnresolved(playerId));
+      PlayerFaceRenderer.draw(graphics, renderInfo.playerSkin(), x, y, size);
    }
 
-   public static <T> CompletableFuture<T> supplyAsync(RealmsIoFunction<T> var0, @Nullable Consumer<RealmsServiceException> var1) {
+   public static <T> CompletableFuture<T> supplyAsync(final RealmsIoFunction<T> function, final @Nullable Consumer<RealmsServiceException> onFailure) {
       return CompletableFuture.supplyAsync(() -> {
-         RealmsClient var2 = RealmsClient.getOrCreate();
+         RealmsClient client = RealmsClient.getOrCreate();
 
          try {
-            return var0.apply(var2);
+            return function.apply(client);
          } catch (Throwable var5) {
-            if (var5 instanceof RealmsServiceException var4) {
-               if (var1 != null) {
-                  var1.accept(var4);
+            if (var5 instanceof RealmsServiceException e) {
+               if (onFailure != null) {
+                  onFailure.accept(e);
                }
             } else {
                LOGGER.error("Unhandled exception", var5);
@@ -79,31 +79,31 @@ public class RealmsUtil {
       }, Util.nonCriticalIoPool());
    }
 
-   public static CompletableFuture<Void> runAsync(RealmsIoConsumer var0, @Nullable Consumer<RealmsServiceException> var1) {
-      return supplyAsync(var0, var1);
+   public static CompletableFuture<Void> runAsync(final RealmsIoConsumer function, final @Nullable Consumer<RealmsServiceException> onFailure) {
+      return supplyAsync(function, onFailure);
    }
 
-   public static Consumer<RealmsServiceException> openScreenOnFailure(Function<RealmsServiceException, Screen> var0) {
-      Minecraft var1 = Minecraft.getInstance();
-      return (var2) -> var1.execute(() -> var1.setScreen((Screen)var0.apply(var2)));
+   public static Consumer<RealmsServiceException> openScreenOnFailure(final Function<RealmsServiceException, Screen> errorScreen) {
+      Minecraft minecraft = Minecraft.getInstance();
+      return (e) -> minecraft.execute(() -> minecraft.setScreen((Screen)errorScreen.apply(e)));
    }
 
-   public static Consumer<RealmsServiceException> openScreenAndLogOnFailure(Function<RealmsServiceException, Screen> var0, String var1) {
-      return openScreenOnFailure(var0).andThen((var1x) -> LOGGER.error(var1, var1x));
+   public static Consumer<RealmsServiceException> openScreenAndLogOnFailure(final Function<RealmsServiceException, Screen> errorScreen, final String errorMessage) {
+      return openScreenOnFailure(errorScreen).andThen((e) -> LOGGER.error(errorMessage, e));
    }
 
    @FunctionalInterface
    public interface RealmsIoConsumer extends RealmsIoFunction<Void> {
-      void accept(RealmsClient var1) throws RealmsServiceException;
+      void accept(final RealmsClient client) throws RealmsServiceException;
 
-      default Void apply(RealmsClient var1) throws RealmsServiceException {
-         this.accept(var1);
+      default Void apply(final RealmsClient client) throws RealmsServiceException {
+         this.accept(client);
          return null;
       }
    }
 
    @FunctionalInterface
    public interface RealmsIoFunction<T> {
-      T apply(RealmsClient var1) throws RealmsServiceException;
+      T apply(final RealmsClient client) throws RealmsServiceException;
    }
 }

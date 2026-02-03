@@ -6,9 +6,9 @@ public class ConsoleInput {
    public final String msg;
    public final CommandSourceStack source;
 
-   public ConsoleInput(String var1, CommandSourceStack var2) {
+   public ConsoleInput(final String msg, final CommandSourceStack source) {
       super();
-      this.msg = var1;
-      this.source = var2;
+      this.msg = msg;
+      this.source = source;
    }
 }

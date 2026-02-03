@@ -44,7 +44,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<CopperGolemStatueBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperGolemStatueBlock::getWeatheringState), propertiesCodec()).apply(var0, CopperGolemStatueBlock::new));
+   public static final MapCodec<CopperGolemStatueBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperGolemStatueBlock::getWeatheringState), propertiesCodec()).apply(i, CopperGolemStatueBlock::new));
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<Pose> POSE;
    public static final BooleanProperty WATERLOGGED;
@@ -55,31 +55,31 @@ public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWat
       return CODEC;
    }
 
-   public CopperGolemStatueBlock(WeatheringCopper.WeatherState var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.weatheringState = var1;
+   public CopperGolemStatueBlock(final WeatheringCopper.WeatherState weatherState, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.weatheringState = weatherState;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, Direction.NORTH)).setValue(POSE, CopperGolemStatueBlock.Pose.STANDING)).setValue(WATERLOGGED, false));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      super.createBlockStateDefinition(var1);
-      var1.add(FACING, POSE, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      super.createBlockStateDefinition(builder);
+      builder.add(FACING, POSE, WATERLOGGED);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite())).setValue(WATERLOGGED, var2.getType() == Fluids.WATER);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite())).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
@@ -87,64 +87,64 @@ public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWat
       return this.weatheringState;
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      if (var1.is(ItemTags.AXES)) {
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      if (itemStack.is(ItemTags.AXES)) {
          return InteractionResult.PASS;
       } else {
-         this.updatePose(var3, var2, var4, var5);
+         this.updatePose(level, state, pos, player);
          return InteractionResult.SUCCESS;
       }
    }
 
-   void updatePose(Level var1, BlockState var2, BlockPos var3, Player var4) {
-      var1.playSound((Entity)null, var3, SoundEvents.COPPER_GOLEM_BECOME_STATUE, SoundSource.BLOCKS);
-      var1.setBlock(var3, (BlockState)var2.setValue(POSE, ((Pose)var2.getValue(POSE)).getNextPose()), 3);
-      var1.gameEvent(var4, GameEvent.BLOCK_CHANGE, var3);
+   void updatePose(final Level level, final BlockState state, final BlockPos pos, final Player player) {
+      level.playSound((Entity)null, pos, SoundEvents.COPPER_GOLEM_BECOME_STATUE, SoundSource.BLOCKS);
+      level.setBlock(pos, (BlockState)state.setValue(POSE, ((Pose)state.getValue(POSE)).getNextPose()), 3);
+      level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      return var2 == PathComputationType.WATER && var1.getFluidState().is(FluidTags.WATER);
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
+      return type == PathComputationType.WATER && state.getFluidState().is(FluidTags.WATER);
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new CopperGolemStatueBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new CopperGolemStatueBlockEntity(worldPosition, blockState);
    }
 
-   public boolean shouldChangedStateKeepBlockEntity(BlockState var1) {
-      return var1.is(BlockTags.COPPER_GOLEM_STATUES);
+   public boolean shouldChangedStateKeepBlockEntity(final BlockState oldState) {
+      return oldState.is(BlockTags.COPPER_GOLEM_STATUES);
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      return ((Pose)var1.getValue(POSE)).ordinal() + 1;
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      return ((Pose)state.getValue(POSE)).ordinal() + 1;
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      BlockEntity var6 = var1.getBlockEntity(var2);
-      if (var6 instanceof CopperGolemStatueBlockEntity var5) {
-         return var5.getItem(this.asItem().getDefaultInstance(), (Pose)var3.getValue(POSE));
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
+      BlockEntity var6 = level.getBlockEntity(pos);
+      if (var6 instanceof CopperGolemStatueBlockEntity entity) {
+         return entity.getItem(this.asItem().getDefaultInstance(), (Pose)state.getValue(POSE));
       } else {
-         return super.getCloneItemStack(var1, var2, var3, var4);
+         return super.getCloneItemStack(level, pos, state, includeData);
       }
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      var2.updateNeighbourForOutputSignal(var3, var1.getBlock());
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      level.updateNeighbourForOutputSignal(pos, state.getBlock());
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
    static {
@@ -164,8 +164,8 @@ public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWat
       public static final Codec<Pose> CODEC = StringRepresentable.<Pose>fromEnum(Pose::values);
       private final String name;
 
-      private Pose(final String var3) {
-         this.name = var3;
+      private Pose(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {

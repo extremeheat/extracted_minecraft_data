@@ -70,14 +70,14 @@ public class Turtle extends Animal {
    private static final float BABY_SCALE = 0.3F;
    private static final EntityDimensions BABY_DIMENSIONS;
    private static final boolean DEFAULT_HAS_EGG = false;
-   int layEggCounter;
+   private int layEggCounter;
    public static final TargetingConditions.Selector BABY_ON_LAND_SELECTOR;
-   BlockPos homePos;
-   @Nullable BlockPos travelPos;
-   boolean goingHome;
+   private BlockPos homePos;
+   private @Nullable BlockPos travelPos;
+   private boolean goingHome;
 
-   public Turtle(EntityType<? extends Turtle> var1, Level var2) {
-      super(var1, var2);
+   public Turtle(final EntityType<? extends Turtle> type, final Level level) {
+      super(type, level);
       this.homePos = BlockPos.ZERO;
       this.setPathfindingMalus(PathType.WATER, 0.0F);
       this.setPathfindingMalus(PathType.DOOR_IRON_CLOSED, -1.0F);
@@ -86,59 +86,59 @@ public class Turtle extends Animal {
       this.moveControl = new TurtleMoveControl(this);
    }
 
-   public void setHomePos(BlockPos var1) {
-      this.homePos = var1;
+   public void setHomePos(final BlockPos pos) {
+      this.homePos = pos;
    }
 
    public boolean hasEgg() {
       return (Boolean)this.entityData.get(HAS_EGG);
    }
 
-   void setHasEgg(boolean var1) {
-      this.entityData.set(HAS_EGG, var1);
+   private void setHasEgg(final boolean onOff) {
+      this.entityData.set(HAS_EGG, onOff);
    }
 
    public boolean isLayingEgg() {
       return (Boolean)this.entityData.get(LAYING_EGG);
    }
 
-   void setLayingEgg(boolean var1) {
-      this.layEggCounter = var1 ? 1 : 0;
-      this.entityData.set(LAYING_EGG, var1);
+   private void setLayingEgg(final boolean on) {
+      this.layEggCounter = on ? 1 : 0;
+      this.entityData.set(LAYING_EGG, on);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(HAS_EGG, false);
-      var1.define(LAYING_EGG, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(HAS_EGG, false);
+      entityData.define(LAYING_EGG, false);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.store("home_pos", BlockPos.CODEC, this.homePos);
-      var1.putBoolean("has_egg", this.hasEgg());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.store("home_pos", BlockPos.CODEC, this.homePos);
+      output.putBoolean("has_egg", this.hasEgg());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      this.setHomePos((BlockPos)var1.read("home_pos", BlockPos.CODEC).orElse(this.blockPosition()));
-      super.readAdditionalSaveData(var1);
-      this.setHasEgg(var1.getBooleanOr("has_egg", false));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      this.setHomePos((BlockPos)input.read("home_pos", BlockPos.CODEC).orElse(this.blockPosition()));
+      super.readAdditionalSaveData(input);
+      this.setHasEgg(input.getBooleanOr("has_egg", false));
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
       this.setHomePos(this.blockPosition());
-      return super.finalizeSpawn(var1, var2, var3, var4);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   public static boolean checkTurtleSpawnRules(EntityType<Turtle> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      return var3.getY() < var1.getSeaLevel() + 4 && TurtleEggBlock.onSand(var1, var3) && isBrightEnoughToSpawn(var1, var3);
+   public static boolean checkTurtleSpawnRules(final EntityType<Turtle> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      return pos.getY() < level.getSeaLevel() + 4 && TurtleEggBlock.onSand(level, pos) && isBrightEnoughToSpawn(level, pos);
    }
 
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new TurtlePanicGoal(this, 1.2));
       this.goalSelector.addGoal(1, new TurtleBreedGoal(this, 1.0));
       this.goalSelector.addGoal(1, new TurtleLayEggGoal(this, 1.0));
-      this.goalSelector.addGoal(2, new TemptGoal(this, 1.1, (var0) -> var0.is(ItemTags.TURTLE_FOOD), false));
+      this.goalSelector.addGoal(2, new TemptGoal(this, 1.1, (i) -> i.is(ItemTags.TURTLE_FOOD), false));
       this.goalSelector.addGoal(3, new TurtleGoToWaterGoal(this, 1.0));
       this.goalSelector.addGoal(4, new TurtleGoHomeGoal(this, 1.0));
       this.goalSelector.addGoal(7, new TurtleTravelGoal(this, 1.0));
@@ -162,15 +162,15 @@ public class Turtle extends Animal {
       return !this.isInWater() && this.onGround() && !this.isBaby() ? SoundEvents.TURTLE_AMBIENT_LAND : super.getAmbientSound();
    }
 
-   protected void playSwimSound(float var1) {
-      super.playSwimSound(var1 * 1.5F);
+   protected void playSwimSound(final float volume) {
+      super.playSwimSound(volume * 1.5F);
    }
 
    protected SoundEvent getSwimSound() {
       return SoundEvents.TURTLE_SWIM;
    }
 
-   protected @Nullable SoundEvent getHurtSound(DamageSource var1) {
+   protected @Nullable SoundEvent getHurtSound(final DamageSource source) {
       return this.isBaby() ? SoundEvents.TURTLE_HURT_BABY : SoundEvents.TURTLE_HURT;
    }
 
@@ -178,9 +178,9 @@ public class Turtle extends Animal {
       return this.isBaby() ? SoundEvents.TURTLE_DEATH_BABY : SoundEvents.TURTLE_DEATH;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
-      SoundEvent var3 = this.isBaby() ? SoundEvents.TURTLE_SHAMBLE_BABY : SoundEvents.TURTLE_SHAMBLE;
-      this.playSound(var3, 0.15F, 1.0F);
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
+      SoundEvent sound = this.isBaby() ? SoundEvents.TURTLE_SHAMBLE_BABY : SoundEvents.TURTLE_SHAMBLE;
+      this.playSound(sound, 0.15F, 1.0F);
    }
 
    public boolean canFallInLove() {
@@ -195,32 +195,32 @@ public class Turtle extends Animal {
       return this.isBaby() ? 0.3F : 1.0F;
    }
 
-   protected PathNavigation createNavigation(Level var1) {
-      return new TurtlePathNavigation(this, var1);
+   protected PathNavigation createNavigation(final Level level) {
+      return new TurtlePathNavigation(this, level);
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.TURTLE.create(var1, EntitySpawnReason.BREEDING);
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      return EntityType.TURTLE.create(level, EntitySpawnReason.BREEDING);
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.TURTLE_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.TURTLE_FOOD);
    }
 
-   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
-      if (!this.goingHome && var2.getFluidState(var1).is(FluidTags.WATER)) {
+   public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {
+      if (!this.goingHome && level.getFluidState(pos).is(FluidTags.WATER)) {
          return 10.0F;
       } else {
-         return TurtleEggBlock.onSand(var2, var1) ? 10.0F : var2.getPathfindingCostFromLightLevels(var1);
+         return TurtleEggBlock.onSand(level, pos) ? 10.0F : level.getPathfindingCostFromLightLevels(pos);
       }
    }
 
    public void aiStep() {
       super.aiStep();
       if (this.isAlive() && this.isLayingEgg() && this.layEggCounter >= 1 && this.layEggCounter % 5 == 0) {
-         BlockPos var1 = this.blockPosition();
-         if (TurtleEggBlock.onSand(this.level(), var1)) {
-            this.level().levelEvent(2001, var1, Block.getId(this.level().getBlockState(var1.below())));
+         BlockPos pos = this.blockPosition();
+         if (TurtleEggBlock.onSand(this.level(), pos)) {
+            this.level().levelEvent(2001, pos, Block.getId(this.level().getBlockState(pos.below())));
             this.gameEvent(GameEvent.ENTITY_ACTION);
          }
       }
@@ -232,17 +232,17 @@ public class Turtle extends Animal {
       if (!this.isBaby()) {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
-            ServerLevel var1 = (ServerLevel)var2;
-            if ((Boolean)var1.getGameRules().get(GameRules.MOB_DROPS)) {
-               this.dropFromGiftLootTable(var1, BuiltInLootTables.TURTLE_GROW, this::spawnAtLocation);
+            ServerLevel level = (ServerLevel)var2;
+            if ((Boolean)level.getGameRules().get(GameRules.MOB_DROPS)) {
+               this.dropFromGiftLootTable(level, BuiltInLootTables.TURTLE_GROW, this::spawnAtLocation);
             }
          }
       }
 
    }
 
-   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
-      this.moveRelative(0.1F, var1);
+   protected void travelInWater(final Vec3 input, final double baseGravity, final boolean isFalling, final double oldY) {
+      this.moveRelative(0.1F, input);
       this.move(MoverType.SELF, this.getDeltaMovement());
       this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
       if (this.getTarget() == null && (!this.goingHome || !this.homePos.closerToCenterThan(this.position(), 20.0))) {
@@ -255,35 +255,35 @@ public class Turtle extends Animal {
       return false;
    }
 
-   public void thunderHit(ServerLevel var1, LightningBolt var2) {
-      this.hurtServer(var1, this.damageSources().lightningBolt(), 3.4028235E38F);
+   public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
+      this.hurtServer(level, this.damageSources().lightningBolt(), 3.4028235E38F);
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    static {
       HAS_EGG = SynchedEntityData.<Boolean>defineId(Turtle.class, EntityDataSerializers.BOOLEAN);
       LAYING_EGG = SynchedEntityData.<Boolean>defineId(Turtle.class, EntityDataSerializers.BOOLEAN);
       BABY_DIMENSIONS = EntityType.TURTLE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.TURTLE.getHeight(), -0.25F)).scale(0.3F);
-      BABY_ON_LAND_SELECTOR = (var0, var1) -> var0.isBaby() && !var0.isInWater();
+      BABY_ON_LAND_SELECTOR = (target, level) -> target.isBaby() && !target.isInWater();
    }
 
-   static class TurtlePanicGoal extends PanicGoal {
-      TurtlePanicGoal(Turtle var1, double var2) {
-         super(var1, var2);
+   private static class TurtlePanicGoal extends PanicGoal {
+      TurtlePanicGoal(final Turtle turtle, final double speedModifier) {
+         super(turtle, speedModifier);
       }
 
       public boolean canUse() {
          if (!this.shouldPanic()) {
             return false;
          } else {
-            BlockPos var1 = this.lookForWater(this.mob.level(), this.mob, 7);
-            if (var1 != null) {
-               this.posX = (double)var1.getX();
-               this.posY = (double)var1.getY();
-               this.posZ = (double)var1.getZ();
+            BlockPos blockPos = this.lookForWater(this.mob.level(), this.mob, 7);
+            if (blockPos != null) {
+               this.posX = (double)blockPos.getX();
+               this.posY = (double)blockPos.getY();
+               this.posZ = (double)blockPos.getZ();
                return true;
             } else {
                return this.findRandomPosition();
@@ -292,15 +292,15 @@ public class Turtle extends Animal {
       }
    }
 
-   static class TurtleTravelGoal extends Goal {
+   private static class TurtleTravelGoal extends Goal {
       private final Turtle turtle;
       private final double speedModifier;
       private boolean stuck;
 
-      TurtleTravelGoal(Turtle var1, double var2) {
+      TurtleTravelGoal(final Turtle turtle, final double speedModifier) {
          super();
-         this.turtle = var1;
-         this.speedModifier = var2;
+         this.turtle = turtle;
+         this.speedModifier = speedModifier;
       }
 
       public boolean canUse() {
@@ -308,17 +308,17 @@ public class Turtle extends Animal {
       }
 
       public void start() {
-         boolean var1 = true;
-         boolean var2 = true;
-         RandomSource var3 = this.turtle.random;
-         int var4 = var3.nextInt(1025) - 512;
-         int var5 = var3.nextInt(9) - 4;
-         int var6 = var3.nextInt(1025) - 512;
-         if ((double)var5 + this.turtle.getY() > (double)(this.turtle.level().getSeaLevel() - 1)) {
-            var5 = 0;
+         int xzDist = 512;
+         int yDist = 4;
+         RandomSource random = this.turtle.random;
+         int xt = random.nextInt(1025) - 512;
+         int yt = random.nextInt(9) - 4;
+         int zt = random.nextInt(1025) - 512;
+         if ((double)yt + this.turtle.getY() > (double)(this.turtle.level().getSeaLevel() - 1)) {
+            yt = 0;
          }
 
-         this.turtle.travelPos = BlockPos.containing((double)var4 + this.turtle.getX(), (double)var5 + this.turtle.getY(), (double)var6 + this.turtle.getZ());
+         this.turtle.travelPos = BlockPos.containing((double)xt + this.turtle.getX(), (double)yt + this.turtle.getY(), (double)zt + this.turtle.getZ());
          this.stuck = false;
       }
 
@@ -327,27 +327,27 @@ public class Turtle extends Animal {
             this.stuck = true;
          } else {
             if (this.turtle.getNavigation().isDone()) {
-               Vec3 var1 = Vec3.atBottomCenterOf(this.turtle.travelPos);
-               Vec3 var2 = DefaultRandomPos.getPosTowards(this.turtle, 16, 3, var1, 0.3141592741012573);
-               if (var2 == null) {
-                  var2 = DefaultRandomPos.getPosTowards(this.turtle, 8, 7, var1, 1.5707963705062866);
+               Vec3 targetPos = Vec3.atBottomCenterOf(this.turtle.travelPos);
+               Vec3 nextPos = DefaultRandomPos.getPosTowards(this.turtle, 16, 3, targetPos, 0.3141592741012573);
+               if (nextPos == null) {
+                  nextPos = DefaultRandomPos.getPosTowards(this.turtle, 8, 7, targetPos, 1.5707963705062866);
                }
 
-               if (var2 != null) {
-                  int var3 = Mth.floor(var2.x);
-                  int var4 = Mth.floor(var2.z);
-                  boolean var5 = true;
-                  if (!this.turtle.level().hasChunksAt(var3 - 34, var4 - 34, var3 + 34, var4 + 34)) {
-                     var2 = null;
+               if (nextPos != null) {
+                  int xc = Mth.floor(nextPos.x);
+                  int zc = Mth.floor(nextPos.z);
+                  int r = 34;
+                  if (!this.turtle.level().hasChunksAt(xc - 34, zc - 34, xc + 34, zc + 34)) {
+                     nextPos = null;
                   }
                }
 
-               if (var2 == null) {
+               if (nextPos == null) {
                   this.stuck = true;
                   return;
                }
 
-               this.turtle.getNavigation().moveTo(var2.x, var2.y, var2.z, this.speedModifier);
+               this.turtle.getNavigation().moveTo(nextPos.x, nextPos.y, nextPos.z, this.speedModifier);
             }
 
          }
@@ -363,17 +363,17 @@ public class Turtle extends Animal {
       }
    }
 
-   static class TurtleGoHomeGoal extends Goal {
+   private static class TurtleGoHomeGoal extends Goal {
       private final Turtle turtle;
       private final double speedModifier;
       private boolean stuck;
       private int closeToHomeTryTicks;
       private static final int GIVE_UP_TICKS = 600;
 
-      TurtleGoHomeGoal(Turtle var1, double var2) {
+      TurtleGoHomeGoal(final Turtle turtle, final double speedModifier) {
          super();
-         this.turtle = var1;
-         this.speedModifier = var2;
+         this.turtle = turtle;
+         this.speedModifier = speedModifier;
       }
 
       public boolean canUse() {
@@ -403,40 +403,40 @@ public class Turtle extends Animal {
       }
 
       public void tick() {
-         BlockPos var1 = this.turtle.homePos;
-         boolean var2 = var1.closerToCenterThan(this.turtle.position(), 16.0);
-         if (var2) {
+         BlockPos homePos = this.turtle.homePos;
+         boolean closeToHome = homePos.closerToCenterThan(this.turtle.position(), 16.0);
+         if (closeToHome) {
             ++this.closeToHomeTryTicks;
          }
 
          if (this.turtle.getNavigation().isDone()) {
-            Vec3 var3 = Vec3.atBottomCenterOf(var1);
-            Vec3 var4 = DefaultRandomPos.getPosTowards(this.turtle, 16, 3, var3, 0.3141592741012573);
-            if (var4 == null) {
-               var4 = DefaultRandomPos.getPosTowards(this.turtle, 8, 7, var3, 1.5707963705062866);
+            Vec3 homePosVec = Vec3.atBottomCenterOf(homePos);
+            Vec3 nextPos = DefaultRandomPos.getPosTowards(this.turtle, 16, 3, homePosVec, 0.3141592741012573);
+            if (nextPos == null) {
+               nextPos = DefaultRandomPos.getPosTowards(this.turtle, 8, 7, homePosVec, 1.5707963705062866);
             }
 
-            if (var4 != null && !var2 && !this.turtle.level().getBlockState(BlockPos.containing(var4)).is(Blocks.WATER)) {
-               var4 = DefaultRandomPos.getPosTowards(this.turtle, 16, 5, var3, 1.5707963705062866);
+            if (nextPos != null && !closeToHome && !this.turtle.level().getBlockState(BlockPos.containing(nextPos)).is(Blocks.WATER)) {
+               nextPos = DefaultRandomPos.getPosTowards(this.turtle, 16, 5, homePosVec, 1.5707963705062866);
             }
 
-            if (var4 == null) {
+            if (nextPos == null) {
                this.stuck = true;
                return;
             }
 
-            this.turtle.getNavigation().moveTo(var4.x, var4.y, var4.z, this.speedModifier);
+            this.turtle.getNavigation().moveTo(nextPos.x, nextPos.y, nextPos.z, this.speedModifier);
          }
 
       }
    }
 
-   static class TurtleBreedGoal extends BreedGoal {
+   private static class TurtleBreedGoal extends BreedGoal {
       private final Turtle turtle;
 
-      TurtleBreedGoal(Turtle var1, double var2) {
-         super(var1, var2);
-         this.turtle = var1;
+      TurtleBreedGoal(final Turtle turtle, final double speedModifier) {
+         super(turtle, speedModifier);
+         this.turtle = turtle;
       }
 
       public boolean canUse() {
@@ -444,14 +444,14 @@ public class Turtle extends Animal {
       }
 
       protected void breed() {
-         ServerPlayer var1 = this.animal.getLoveCause();
-         if (var1 == null && this.partner.getLoveCause() != null) {
-            var1 = this.partner.getLoveCause();
+         ServerPlayer loveCause = this.animal.getLoveCause();
+         if (loveCause == null && this.partner.getLoveCause() != null) {
+            loveCause = this.partner.getLoveCause();
          }
 
-         if (var1 != null) {
-            var1.awardStat(Stats.ANIMALS_BRED);
-            CriteriaTriggers.BRED_ANIMALS.trigger(var1, this.animal, this.partner, (AgeableMob)null);
+         if (loveCause != null) {
+            loveCause.awardStat(Stats.ANIMALS_BRED);
+            CriteriaTriggers.BRED_ANIMALS.trigger(loveCause, this.animal, this.partner, (AgeableMob)null);
          }
 
          this.turtle.setHasEgg(true);
@@ -459,20 +459,20 @@ public class Turtle extends Animal {
          this.partner.setAge(6000);
          this.animal.resetLove();
          this.partner.resetLove();
-         RandomSource var2 = this.animal.getRandom();
+         RandomSource random = this.animal.getRandom();
          if ((Boolean)getServerLevel(this.level).getGameRules().get(GameRules.MOB_DROPS)) {
-            this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), var2.nextInt(7) + 1));
+            this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), random.nextInt(7) + 1));
          }
 
       }
    }
 
-   static class TurtleLayEggGoal extends MoveToBlockGoal {
+   private static class TurtleLayEggGoal extends MoveToBlockGoal {
       private final Turtle turtle;
 
-      TurtleLayEggGoal(Turtle var1, double var2) {
-         super(var1, var2, 16);
-         this.turtle = var1;
+      TurtleLayEggGoal(final Turtle turtle, final double speedModifier) {
+         super(turtle, speedModifier, 16);
+         this.turtle = turtle;
       }
 
       public boolean canUse() {
@@ -485,17 +485,17 @@ public class Turtle extends Animal {
 
       public void tick() {
          super.tick();
-         BlockPos var1 = this.turtle.blockPosition();
+         BlockPos turtlePos = this.turtle.blockPosition();
          if (!this.turtle.isInWater() && this.isReachedTarget()) {
             if (this.turtle.layEggCounter < 1) {
                this.turtle.setLayingEgg(true);
             } else if (this.turtle.layEggCounter > this.adjustedTickDelay(200)) {
-               Level var2 = this.turtle.level();
-               var2.playSound((Entity)null, (BlockPos)var1, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + var2.random.nextFloat() * 0.2F);
-               BlockPos var3 = this.blockPos.above();
-               BlockState var4 = (BlockState)Blocks.TURTLE_EGG.defaultBlockState().setValue(TurtleEggBlock.EGGS, this.turtle.random.nextInt(4) + 1);
-               var2.setBlock(var3, var4, 3);
-               var2.gameEvent(GameEvent.BLOCK_PLACE, var3, GameEvent.Context.of(this.turtle, var4));
+               Level level = this.turtle.level();
+               level.playSound((Entity)null, (BlockPos)turtlePos, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + level.getRandom().nextFloat() * 0.2F);
+               BlockPos eggPos = this.blockPos.above();
+               BlockState eggState = (BlockState)Blocks.TURTLE_EGG.defaultBlockState().setValue(TurtleEggBlock.EGGS, this.turtle.random.nextInt(4) + 1);
+               level.setBlock(eggPos, eggState, 3);
+               level.gameEvent(GameEvent.BLOCK_PLACE, eggPos, GameEvent.Context.of(this.turtle, eggState));
                this.turtle.setHasEgg(false);
                this.turtle.setLayingEgg(false);
                this.turtle.setInLoveTime(600);
@@ -508,17 +508,17 @@ public class Turtle extends Animal {
 
       }
 
-      protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-         return !var1.isEmptyBlock(var2.above()) ? false : TurtleEggBlock.isSand(var1, var2);
+      protected boolean isValidTarget(final LevelReader level, final BlockPos pos) {
+         return !level.isEmptyBlock(pos.above()) ? false : TurtleEggBlock.isSand(level, pos);
       }
    }
 
-   static class TurtleRandomStrollGoal extends RandomStrollGoal {
+   private static class TurtleRandomStrollGoal extends RandomStrollGoal {
       private final Turtle turtle;
 
-      TurtleRandomStrollGoal(Turtle var1, double var2, int var4) {
-         super(var1, var2, var4);
-         this.turtle = var1;
+      private TurtleRandomStrollGoal(final Turtle turtle, final double speedModifier, final int interval) {
+         super(turtle, speedModifier, interval);
+         this.turtle = turtle;
       }
 
       public boolean canUse() {
@@ -526,13 +526,13 @@ public class Turtle extends Animal {
       }
    }
 
-   static class TurtleGoToWaterGoal extends MoveToBlockGoal {
+   private static class TurtleGoToWaterGoal extends MoveToBlockGoal {
       private static final int GIVE_UP_TICKS = 1200;
       private final Turtle turtle;
 
-      TurtleGoToWaterGoal(Turtle var1, double var2) {
-         super(var1, var1.isBaby() ? 2.0 : var2, 24);
-         this.turtle = var1;
+      private TurtleGoToWaterGoal(final Turtle turtle, final double speedModifier) {
+         super(turtle, turtle.isBaby() ? 2.0 : speedModifier, 24);
+         this.turtle = turtle;
          this.verticalSearchStart = -1;
       }
 
@@ -552,17 +552,17 @@ public class Turtle extends Animal {
          return this.tryTicks % 160 == 0;
       }
 
-      protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-         return var1.getBlockState(var2).is(Blocks.WATER);
+      protected boolean isValidTarget(final LevelReader level, final BlockPos pos) {
+         return level.getBlockState(pos).is(Blocks.WATER);
       }
    }
 
-   static class TurtleMoveControl extends MoveControl {
+   private static class TurtleMoveControl extends MoveControl {
       private final Turtle turtle;
 
-      TurtleMoveControl(Turtle var1) {
-         super(var1);
-         this.turtle = var1;
+      TurtleMoveControl(final Turtle turtle) {
+         super(turtle);
+         this.turtle = turtle;
       }
 
       private void updateSpeed() {
@@ -584,20 +584,20 @@ public class Turtle extends Animal {
       public void tick() {
          this.updateSpeed();
          if (this.operation == MoveControl.Operation.MOVE_TO && !this.turtle.getNavigation().isDone()) {
-            double var1 = this.wantedX - this.turtle.getX();
-            double var3 = this.wantedY - this.turtle.getY();
-            double var5 = this.wantedZ - this.turtle.getZ();
-            double var7 = Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5);
-            if (var7 < 9.999999747378752E-6) {
+            double xd = this.wantedX - this.turtle.getX();
+            double yd = this.wantedY - this.turtle.getY();
+            double zd = this.wantedZ - this.turtle.getZ();
+            double dd = Math.sqrt(xd * xd + yd * yd + zd * zd);
+            if (dd < 9.999999747378752E-6) {
                this.mob.setSpeed(0.0F);
             } else {
-               var3 /= var7;
-               float var9 = (float)(Mth.atan2(var5, var1) * 57.2957763671875) - 90.0F;
-               this.turtle.setYRot(this.rotlerp(this.turtle.getYRot(), var9, 90.0F));
+               yd /= dd;
+               float yRotD = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
+               this.turtle.setYRot(this.rotlerp(this.turtle.getYRot(), yRotD, 90.0F));
                this.turtle.yBodyRot = this.turtle.getYRot();
-               float var10 = (float)(this.speedModifier * this.turtle.getAttributeValue(Attributes.MOVEMENT_SPEED));
-               this.turtle.setSpeed(Mth.lerp(0.125F, this.turtle.getSpeed(), var10));
-               this.turtle.setDeltaMovement(this.turtle.getDeltaMovement().add(0.0, (double)this.turtle.getSpeed() * var3 * 0.1, 0.0));
+               float targetSpeed = (float)(this.speedModifier * this.turtle.getAttributeValue(Attributes.MOVEMENT_SPEED));
+               this.turtle.setSpeed(Mth.lerp(0.125F, this.turtle.getSpeed(), targetSpeed));
+               this.turtle.setDeltaMovement(this.turtle.getDeltaMovement().add(0.0, (double)this.turtle.getSpeed() * yd * 0.1, 0.0));
             }
          } else {
             this.turtle.setSpeed(0.0F);
@@ -605,20 +605,20 @@ public class Turtle extends Animal {
       }
    }
 
-   static class TurtlePathNavigation extends AmphibiousPathNavigation {
-      TurtlePathNavigation(Turtle var1, Level var2) {
-         super(var1, var2);
+   private static class TurtlePathNavigation extends AmphibiousPathNavigation {
+      TurtlePathNavigation(final Turtle mob, final Level level) {
+         super(mob, level);
       }
 
-      public boolean isStableDestination(BlockPos var1) {
+      public boolean isStableDestination(final BlockPos pos) {
          Mob var3 = this.mob;
-         if (var3 instanceof Turtle var2) {
-            if (var2.travelPos != null) {
-               return this.level.getBlockState(var1).is(Blocks.WATER);
+         if (var3 instanceof Turtle turtle) {
+            if (turtle.travelPos != null) {
+               return this.level.getBlockState(pos).is(Blocks.WATER);
             }
          }
 
-         return !this.level.getBlockState(var1.below()).isAir();
+         return !this.level.getBlockState(pos.below()).isAir();
       }
    }
 }

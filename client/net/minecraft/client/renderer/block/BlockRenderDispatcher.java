@@ -34,11 +34,11 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    private final List<BlockModelPart> singleThreadPartList = new ArrayList();
    private final BlockColors blockColors;
 
-   public BlockRenderDispatcher(BlockModelShaper var1, MaterialSet var2, BlockColors var3) {
+   public BlockRenderDispatcher(final BlockModelShaper blockModelShaper, final MaterialSet materials, final BlockColors blockColors) {
       super();
-      this.blockModelShaper = var1;
-      this.materials = var2;
-      this.blockColors = var3;
+      this.blockModelShaper = blockModelShaper;
+      this.materials = materials;
+      this.blockColors = blockColors;
       this.modelRenderer = new ModelBlockRenderer(this.blockColors);
    }
 
@@ -46,35 +46,35 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
       return this.blockModelShaper;
    }
 
-   public void renderBreakingTexture(BlockState var1, BlockPos var2, BlockAndTintGetter var3, PoseStack var4, VertexConsumer var5) {
-      if (var1.getRenderShape() == RenderShape.MODEL) {
-         BlockStateModel var6 = this.blockModelShaper.getBlockModel(var1);
-         this.singleThreadRandom.setSeed(var1.getSeed(var2));
+   public void renderBreakingTexture(final BlockState state, final BlockPos pos, final BlockAndTintGetter level, final PoseStack poseStack, final VertexConsumer builder) {
+      if (state.getRenderShape() == RenderShape.MODEL) {
+         BlockStateModel model = this.blockModelShaper.getBlockModel(state);
+         this.singleThreadRandom.setSeed(state.getSeed(pos));
          this.singleThreadPartList.clear();
-         var6.collectParts(this.singleThreadRandom, this.singleThreadPartList);
-         this.modelRenderer.tesselateBlock(var3, this.singleThreadPartList, var1, var2, var4, var5, true, OverlayTexture.NO_OVERLAY);
+         model.collectParts(this.singleThreadRandom, this.singleThreadPartList);
+         this.modelRenderer.tesselateBlock(level, this.singleThreadPartList, state, pos, poseStack, builder, true, OverlayTexture.NO_OVERLAY);
       }
    }
 
-   public void renderBatched(BlockState var1, BlockPos var2, BlockAndTintGetter var3, PoseStack var4, VertexConsumer var5, boolean var6, List<BlockModelPart> var7) {
+   public void renderBatched(final BlockState blockState, final BlockPos pos, final BlockAndTintGetter level, final PoseStack poseStack, final VertexConsumer builder, final boolean cull, final List<BlockModelPart> parts) {
       try {
-         this.modelRenderer.tesselateBlock(var3, var7, var1, var2, var4, var5, var6, OverlayTexture.NO_OVERLAY);
-      } catch (Throwable var11) {
-         CrashReport var9 = CrashReport.forThrowable(var11, "Tesselating block in world");
-         CrashReportCategory var10 = var9.addCategory("Block being tesselated");
-         CrashReportCategory.populateBlockDetails(var10, var3, var2, var1);
-         throw new ReportedException(var9);
+         this.modelRenderer.tesselateBlock(level, parts, blockState, pos, poseStack, builder, cull, OverlayTexture.NO_OVERLAY);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Tesselating block in world");
+         CrashReportCategory category = report.addCategory("Block being tesselated");
+         CrashReportCategory.populateBlockDetails(category, level, pos, blockState);
+         throw new ReportedException(report);
       }
    }
 
-   public void renderLiquid(BlockPos var1, BlockAndTintGetter var2, VertexConsumer var3, BlockState var4, FluidState var5) {
+   public void renderLiquid(final BlockPos pos, final BlockAndTintGetter level, final VertexConsumer builder, final BlockState blockState, final FluidState fluidState) {
       try {
-         ((LiquidBlockRenderer)Objects.requireNonNull(this.liquidBlockRenderer)).tesselate(var2, var1, var3, var4, var5);
-      } catch (Throwable var9) {
-         CrashReport var7 = CrashReport.forThrowable(var9, "Tesselating liquid in world");
-         CrashReportCategory var8 = var7.addCategory("Block being tesselated");
-         CrashReportCategory.populateBlockDetails(var8, var2, var1, var4);
-         throw new ReportedException(var7);
+         ((LiquidBlockRenderer)Objects.requireNonNull(this.liquidBlockRenderer)).tesselate(level, pos, builder, blockState, fluidState);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Tesselating liquid in world");
+         CrashReportCategory category = report.addCategory("Block being tesselated");
+         CrashReportCategory.populateBlockDetails(category, level, pos, blockState);
+         throw new ReportedException(report);
       }
    }
 
@@ -82,23 +82,23 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
       return this.modelRenderer;
    }
 
-   public BlockStateModel getBlockModel(BlockState var1) {
-      return this.blockModelShaper.getBlockModel(var1);
+   public BlockStateModel getBlockModel(final BlockState state) {
+      return this.blockModelShaper.getBlockModel(state);
    }
 
-   public void renderSingleBlock(BlockState var1, PoseStack var2, MultiBufferSource var3, int var4, int var5) {
-      RenderShape var6 = var1.getRenderShape();
-      if (var6 != RenderShape.INVISIBLE) {
-         BlockStateModel var7 = this.getBlockModel(var1);
-         int var8 = this.blockColors.getColor(var1, (BlockAndTintGetter)null, (BlockPos)null, 0);
-         float var9 = (float)(var8 >> 16 & 255) / 255.0F;
-         float var10 = (float)(var8 >> 8 & 255) / 255.0F;
-         float var11 = (float)(var8 & 255) / 255.0F;
-         ModelBlockRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1)), var7, var9, var10, var11, var4, var5);
+   public void renderSingleBlock(final BlockState state, final PoseStack poseStack, final MultiBufferSource bufferSource, final int lightCoords, final int overlayCoords) {
+      RenderShape shape = state.getRenderShape();
+      if (shape != RenderShape.INVISIBLE) {
+         BlockStateModel model = this.getBlockModel(state);
+         int col = this.blockColors.getColor(state, (BlockAndTintGetter)null, (BlockPos)null, 0);
+         float r = (float)(col >> 16 & 255) / 255.0F;
+         float g = (float)(col >> 8 & 255) / 255.0F;
+         float b = (float)(col & 255) / 255.0F;
+         ModelBlockRenderer.renderModel(poseStack.last(), bufferSource.getBuffer(ItemBlockRenderTypes.getRenderType(state)), model, r, g, b, lightCoords, overlayCoords);
       }
    }
 
-   public void onResourceManagerReload(ResourceManager var1) {
+   public void onResourceManagerReload(final ResourceManager resourceManager) {
       this.liquidBlockRenderer = new LiquidBlockRenderer(this.materials);
    }
 }

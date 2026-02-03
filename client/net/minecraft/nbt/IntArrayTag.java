@@ -10,29 +10,29 @@ import org.apache.commons.lang3.ArrayUtils;
 public final class IntArrayTag implements CollectionTag {
    private static final int SELF_SIZE_IN_BYTES = 24;
    public static final TagType<IntArrayTag> TYPE = new TagType.VariableSize<IntArrayTag>() {
-      public IntArrayTag load(DataInput var1, NbtAccounter var2) throws IOException {
-         return new IntArrayTag(readAccounted(var1, var2));
+      public IntArrayTag load(final DataInput input, final NbtAccounter accounter) throws IOException {
+         return new IntArrayTag(readAccounted(input, accounter));
       }
 
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
-         return var2.visit(readAccounted(var1, var3));
+      public StreamTagVisitor.ValueResult parse(final DataInput input, final StreamTagVisitor output, final NbtAccounter accounter) throws IOException {
+         return output.visit(readAccounted(input, accounter));
       }
 
-      private static int[] readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
-         var1.accountBytes(24L);
-         int var2 = var0.readInt();
-         var1.accountBytes(4L, (long)var2);
-         int[] var3 = new int[var2];
+      private static int[] readAccounted(final DataInput input, final NbtAccounter accounter) throws IOException {
+         accounter.accountBytes(24L);
+         int length = input.readInt();
+         accounter.accountBytes(4L, (long)length);
+         int[] data = new int[length];
 
-         for(int var4 = 0; var4 < var2; ++var4) {
-            var3[var4] = var0.readInt();
+         for(int i = 0; i < length; ++i) {
+            data[i] = input.readInt();
          }
 
-         return var3;
+         return data;
       }
 
-      public void skip(DataInput var1, NbtAccounter var2) throws IOException {
-         var1.skipBytes(var1.readInt() * 4);
+      public void skip(final DataInput input, final NbtAccounter accounter) throws IOException {
+         input.skipBytes(input.readInt() * 4);
       }
 
       public String getName() {
@@ -42,24 +42,19 @@ public final class IntArrayTag implements CollectionTag {
       public String getPrettyName() {
          return "TAG_Int_Array";
       }
-
-      // $FF: synthetic method
-      public Tag load(final DataInput var1, final NbtAccounter var2) throws IOException {
-         return this.load(var1, var2);
-      }
    };
    private int[] data;
 
-   public IntArrayTag(int[] var1) {
+   public IntArrayTag(final int[] data) {
       super();
-      this.data = var1;
+      this.data = data;
    }
 
-   public void write(DataOutput var1) throws IOException {
-      var1.writeInt(this.data.length);
+   public void write(final DataOutput output) throws IOException {
+      output.writeInt(this.data.length);
 
-      for(int var5 : this.data) {
-         var1.writeInt(var5);
+      for(int i : this.data) {
+         output.writeInt(i);
       }
 
    }
@@ -77,22 +72,22 @@ public final class IntArrayTag implements CollectionTag {
    }
 
    public String toString() {
-      StringTagVisitor var1 = new StringTagVisitor();
-      var1.visitIntArray(this);
-      return var1.build();
+      StringTagVisitor visitor = new StringTagVisitor();
+      visitor.visitIntArray(this);
+      return visitor.build();
    }
 
    public IntArrayTag copy() {
-      int[] var1 = new int[this.data.length];
-      System.arraycopy(this.data, 0, var1, 0, this.data.length);
-      return new IntArrayTag(var1);
+      int[] cp = new int[this.data.length];
+      System.arraycopy(this.data, 0, cp, 0, this.data.length);
+      return new IntArrayTag(cp);
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object obj) {
+      if (this == obj) {
          return true;
       } else {
-         return var1 instanceof IntArrayTag && Arrays.equals(this.data, ((IntArrayTag)var1).data);
+         return obj instanceof IntArrayTag && Arrays.equals(this.data, ((IntArrayTag)obj).data);
       }
    }
 
@@ -104,40 +99,40 @@ public final class IntArrayTag implements CollectionTag {
       return this.data;
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitIntArray(this);
+   public void accept(final TagVisitor visitor) {
+      visitor.visitIntArray(this);
    }
 
    public int size() {
       return this.data.length;
    }
 
-   public IntTag get(int var1) {
-      return IntTag.valueOf(this.data[var1]);
+   public IntTag get(final int index) {
+      return IntTag.valueOf(this.data[index]);
    }
 
-   public boolean setTag(int var1, Tag var2) {
-      if (var2 instanceof NumericTag var3) {
-         this.data[var1] = var3.intValue();
+   public boolean setTag(final int index, final Tag tag) {
+      if (tag instanceof NumericTag numeric) {
+         this.data[index] = numeric.intValue();
          return true;
       } else {
          return false;
       }
    }
 
-   public boolean addTag(int var1, Tag var2) {
-      if (var2 instanceof NumericTag var3) {
-         this.data = ArrayUtils.add(this.data, var1, var3.intValue());
+   public boolean addTag(final int index, final Tag tag) {
+      if (tag instanceof NumericTag numeric) {
+         this.data = ArrayUtils.add(this.data, index, numeric.intValue());
          return true;
       } else {
          return false;
       }
    }
 
-   public IntTag remove(int var1) {
-      int var2 = this.data[var1];
-      this.data = ArrayUtils.remove(this.data, var1);
-      return IntTag.valueOf(var2);
+   public IntTag remove(final int index) {
+      int prev = this.data[index];
+      this.data = ArrayUtils.remove(this.data, index);
+      return IntTag.valueOf(prev);
    }
 
    public void clear() {
@@ -148,22 +143,7 @@ public final class IntArrayTag implements CollectionTag {
       return Optional.of(this.data);
    }
 
-   public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      return var1.visit(this.data);
-   }
-
-   // $FF: synthetic method
-   public Tag get(final int var1) {
-      return this.get(var1);
-   }
-
-   // $FF: synthetic method
-   public Tag remove(final int var1) {
-      return this.remove(var1);
-   }
-
-   // $FF: synthetic method
-   public Tag copy() {
-      return this.copy();
+   public StreamTagVisitor.ValueResult accept(final StreamTagVisitor visitor) {
+      return visitor.visit(this.data);
    }
 }

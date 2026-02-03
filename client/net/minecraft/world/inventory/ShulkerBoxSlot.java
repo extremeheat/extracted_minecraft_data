@@ -4,11 +4,11 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
 public class ShulkerBoxSlot extends Slot {
-   public ShulkerBoxSlot(Container var1, int var2, int var3, int var4) {
-      super(var1, var2, var3, var4);
+   public ShulkerBoxSlot(final Container container, final int slot, final int x, final int y) {
+      super(container, slot, x, y);
    }
 
-   public boolean mayPlace(ItemStack var1) {
-      return var1.getItem().canFitInsideContainerItems();
+   public boolean mayPlace(final ItemStack itemStack) {
+      return itemStack.getItem().canFitInsideContainerItems();
    }
 }

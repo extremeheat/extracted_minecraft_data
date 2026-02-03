@@ -21,11 +21,11 @@ public class BoatRenderer extends AbstractBoatRenderer {
    private final Identifier texture;
    private final EntityModel<BoatRenderState> model;
 
-   public BoatRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2) {
-      super(var1);
-      this.texture = var2.model().withPath((UnaryOperator)((var0) -> "textures/entity/" + var0 + ".png"));
-      this.waterPatchModel = new Model.Simple(var1.bakeLayer(ModelLayers.BOAT_WATER_PATCH), (var0) -> RenderTypes.waterMask());
-      this.model = new BoatModel(var1.bakeLayer(var2));
+   public BoatRenderer(final EntityRendererProvider.Context context, final ModelLayerLocation modelId) {
+      super(context);
+      this.texture = modelId.model().withPath((UnaryOperator)((p) -> "textures/entity/" + p + ".png"));
+      this.waterPatchModel = new Model.Simple(context.bakeLayer(ModelLayers.BOAT_WATER_PATCH), (t) -> RenderTypes.waterMask());
+      this.model = new BoatModel(context.bakeLayer(modelId));
    }
 
    protected EntityModel<BoatRenderState> model() {
@@ -36,9 +36,9 @@ public class BoatRenderer extends AbstractBoatRenderer {
       return this.model.renderType(this.texture);
    }
 
-   protected void submitTypeAdditions(BoatRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4) {
-      if (!var1.isUnderWater) {
-         var3.submitModel(this.waterPatchModel, Unit.INSTANCE, var2, this.waterPatchModel.renderType(this.texture), var4, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   protected void submitTypeAdditions(final BoatRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
+      if (!state.isUnderWater) {
+         submitNodeCollector.submitModel(this.waterPatchModel, Unit.INSTANCE, poseStack, this.waterPatchModel.renderType(this.texture), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
    }

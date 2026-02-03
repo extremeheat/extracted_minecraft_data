@@ -35,69 +35,69 @@ public class BlockColors {
    }
 
    public static BlockColors createDefault() {
-      BlockColors var0 = new BlockColors();
-      var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var0x.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER ? var2.below() : var2) : GrassColor.getDefaultColor(), Blocks.LARGE_FERN, Blocks.TALL_GRASS);
-      var0.addColoringState(DoublePlantBlock.HALF, Blocks.LARGE_FERN, Blocks.TALL_GRASS);
-      var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var2) : GrassColor.getDefaultColor(), Blocks.GRASS_BLOCK, Blocks.FERN, Blocks.SHORT_GRASS, Blocks.POTTED_FERN, Blocks.BUSH);
-      var0.register((var0x, var1, var2, var3) -> {
-         if (var3 != 0) {
-            return var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var2) : GrassColor.getDefaultColor();
+      BlockColors colors = new BlockColors();
+      colors.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageGrassColor(level, state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER ? pos.below() : pos) : GrassColor.getDefaultColor(), Blocks.LARGE_FERN, Blocks.TALL_GRASS);
+      colors.addColoringState(DoublePlantBlock.HALF, Blocks.LARGE_FERN, Blocks.TALL_GRASS);
+      colors.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageGrassColor(level, pos) : GrassColor.getDefaultColor(), Blocks.GRASS_BLOCK, Blocks.FERN, Blocks.SHORT_GRASS, Blocks.POTTED_FERN, Blocks.BUSH);
+      colors.register((state, level, pos, tintIndex) -> {
+         if (tintIndex != 0) {
+            return level != null && pos != null ? BiomeColors.getAverageGrassColor(level, pos) : GrassColor.getDefaultColor();
          } else {
             return -1;
          }
       }, Blocks.PINK_PETALS, Blocks.WILDFLOWERS);
-      var0.register((var0x, var1, var2, var3) -> -10380959, Blocks.SPRUCE_LEAVES);
-      var0.register((var0x, var1, var2, var3) -> -8345771, Blocks.BIRCH_LEAVES);
-      var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageFoliageColor(var1, var2) : -12012264, Blocks.OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.VINE, Blocks.MANGROVE_LEAVES);
-      var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageDryFoliageColor(var1, var2) : -10732494, Blocks.LEAF_LITTER);
-      var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageWaterColor(var1, var2) : -1, Blocks.WATER, Blocks.BUBBLE_COLUMN, Blocks.WATER_CAULDRON);
-      var0.register((var0x, var1, var2, var3) -> RedStoneWireBlock.getColorForPower((Integer)var0x.getValue(RedStoneWireBlock.POWER)), Blocks.REDSTONE_WIRE);
-      var0.addColoringState(RedStoneWireBlock.POWER, Blocks.REDSTONE_WIRE);
-      var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var2) : -1, Blocks.SUGAR_CANE);
-      var0.register((var0x, var1, var2, var3) -> -2046180, Blocks.ATTACHED_MELON_STEM, Blocks.ATTACHED_PUMPKIN_STEM);
-      var0.register((var0x, var1, var2, var3) -> {
-         int var4 = (Integer)var0x.getValue(StemBlock.AGE);
-         return ARGB.color(var4 * 32, 255 - var4 * 8, var4 * 4);
+      colors.register((state, level, pos, tintIndex) -> -10380959, Blocks.SPRUCE_LEAVES);
+      colors.register((state, level, pos, tintIndex) -> -8345771, Blocks.BIRCH_LEAVES);
+      colors.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageFoliageColor(level, pos) : -12012264, Blocks.OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.VINE, Blocks.MANGROVE_LEAVES);
+      colors.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageDryFoliageColor(level, pos) : -10732494, Blocks.LEAF_LITTER);
+      colors.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageWaterColor(level, pos) : -1, Blocks.WATER, Blocks.BUBBLE_COLUMN, Blocks.WATER_CAULDRON);
+      colors.register((state, level, pos, tintIndex) -> RedStoneWireBlock.getColorForPower((Integer)state.getValue(RedStoneWireBlock.POWER)), Blocks.REDSTONE_WIRE);
+      colors.addColoringState(RedStoneWireBlock.POWER, Blocks.REDSTONE_WIRE);
+      colors.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageGrassColor(level, pos) : -1, Blocks.SUGAR_CANE);
+      colors.register((state, level, pos, tintIndex) -> -2046180, Blocks.ATTACHED_MELON_STEM, Blocks.ATTACHED_PUMPKIN_STEM);
+      colors.register((state, level, pos, tintIndex) -> {
+         int age = (Integer)state.getValue(StemBlock.AGE);
+         return ARGB.color(age * 32, 255 - age * 8, age * 4);
       }, Blocks.MELON_STEM, Blocks.PUMPKIN_STEM);
-      var0.addColoringState(StemBlock.AGE, Blocks.MELON_STEM, Blocks.PUMPKIN_STEM);
-      var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? -14647248 : -9321636, Blocks.LILY_PAD);
-      return var0;
+      colors.addColoringState(StemBlock.AGE, Blocks.MELON_STEM, Blocks.PUMPKIN_STEM);
+      colors.register((state, level, pos, tintIndex) -> level != null && pos != null ? -14647248 : -9321636, Blocks.LILY_PAD);
+      return colors;
    }
 
-   public int getColor(BlockState var1, Level var2, BlockPos var3) {
-      BlockColor var4 = this.blockColors.byId(BuiltInRegistries.BLOCK.getId(var1.getBlock()));
-      if (var4 != null) {
-         return var4.getColor(var1, (BlockAndTintGetter)null, (BlockPos)null, 0);
+   public int getColor(final BlockState state, final Level level, final BlockPos blockPos) {
+      BlockColor blockColor = this.blockColors.byId(BuiltInRegistries.BLOCK.getId(state.getBlock()));
+      if (blockColor != null) {
+         return blockColor.getColor(state, (BlockAndTintGetter)null, (BlockPos)null, 0);
       } else {
-         MapColor var5 = var1.getMapColor(var2, var3);
-         return var5 != null ? var5.col : -1;
+         MapColor color = state.getMapColor(level, blockPos);
+         return color != null ? color.col : -1;
       }
    }
 
-   public int getColor(BlockState var1, @Nullable BlockAndTintGetter var2, @Nullable BlockPos var3, int var4) {
-      BlockColor var5 = this.blockColors.byId(BuiltInRegistries.BLOCK.getId(var1.getBlock()));
-      return var5 == null ? -1 : var5.getColor(var1, var2, var3, var4);
+   public int getColor(final BlockState state, final @Nullable BlockAndTintGetter level, final @Nullable BlockPos pos, final int tintIndex) {
+      BlockColor blockColor = this.blockColors.byId(BuiltInRegistries.BLOCK.getId(state.getBlock()));
+      return blockColor == null ? -1 : blockColor.getColor(state, level, pos, tintIndex);
    }
 
-   public void register(BlockColor var1, Block... var2) {
-      for(Block var6 : var2) {
-         this.blockColors.addMapping(var1, BuiltInRegistries.BLOCK.getId(var6));
-      }
-
-   }
-
-   private void addColoringStates(Set<Property<?>> var1, Block... var2) {
-      for(Block var6 : var2) {
-         this.coloringStates.put(var6, var1);
+   public void register(final BlockColor color, final Block... blocks) {
+      for(Block block : blocks) {
+         this.blockColors.addMapping(color, BuiltInRegistries.BLOCK.getId(block));
       }
 
    }
 
-   private void addColoringState(Property<?> var1, Block... var2) {
-      this.addColoringStates(ImmutableSet.of(var1), var2);
+   private void addColoringStates(final Set<Property<?>> properties, final Block... blocks) {
+      for(Block block : blocks) {
+         this.coloringStates.put(block, properties);
+      }
+
    }
 
-   public Set<Property<?>> getColoringProperties(Block var1) {
-      return (Set)this.coloringStates.getOrDefault(var1, ImmutableSet.of());
+   private void addColoringState(final Property<?> property, final Block... blocks) {
+      this.addColoringStates(ImmutableSet.of(property), blocks);
+   }
+
+   public Set<Property<?>> getColoringProperties(final Block block) {
+      return (Set)this.coloringStates.getOrDefault(block, ImmutableSet.of());
    }
 }

@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,104 +28,108 @@ public class BeaconMenu extends AbstractContainerMenu {
    private final ContainerLevelAccess access;
    private final ContainerData beaconData;
 
-   public BeaconMenu(int var1, Container var2) {
-      this(var1, var2, new SimpleContainerData(3), ContainerLevelAccess.NULL);
+   public BeaconMenu(final int containerId, final Container inventory) {
+      this(containerId, inventory, new SimpleContainerData(3), ContainerLevelAccess.NULL);
    }
 
-   public BeaconMenu(int var1, Container var2, ContainerData var3, ContainerLevelAccess var4) {
-      super(MenuType.BEACON, var1);
+   public BeaconMenu(final int containerId, final Container inventory, final ContainerData beaconData, final ContainerLevelAccess access) {
+      super(MenuType.BEACON, containerId);
       this.beacon = new SimpleContainer(1) {
-         public boolean canPlaceItem(int var1, ItemStack var2) {
-            return var2.is(ItemTags.BEACON_PAYMENT_ITEMS);
+         {
+            Objects.requireNonNull(BeaconMenu.this);
+         }
+
+         public boolean canPlaceItem(final int slot, final ItemStack itemStack) {
+            return itemStack.is(ItemTags.BEACON_PAYMENT_ITEMS);
          }
 
          public int getMaxStackSize() {
             return 1;
          }
       };
-      checkContainerDataCount(var3, 3);
-      this.beaconData = var3;
-      this.access = var4;
+      checkContainerDataCount(beaconData, 3);
+      this.beaconData = beaconData;
+      this.access = access;
       this.paymentSlot = new PaymentSlot(this.beacon, 0, 136, 110);
       this.addSlot(this.paymentSlot);
-      this.addDataSlots(var3);
-      this.addStandardInventorySlots(var2, 36, 137);
+      this.addDataSlots(beaconData);
+      this.addStandardInventorySlots(inventory, 36, 137);
    }
 
-   public void removed(Player var1) {
-      super.removed(var1);
-      if (!var1.level().isClientSide()) {
-         ItemStack var2 = this.paymentSlot.remove(this.paymentSlot.getMaxStackSize());
-         if (!var2.isEmpty()) {
-            var1.drop(var2, false);
+   public void removed(final Player player) {
+      super.removed(player);
+      if (!player.level().isClientSide()) {
+         ItemStack itemStack = this.paymentSlot.remove(this.paymentSlot.getMaxStackSize());
+         if (!itemStack.isEmpty()) {
+            player.drop(itemStack, false);
          }
 
       }
    }
 
-   public boolean stillValid(Player var1) {
-      return stillValid(this.access, var1, Blocks.BEACON);
+   public boolean stillValid(final Player player) {
+      return stillValid(this.access, player, Blocks.BEACON);
    }
 
-   public void setData(int var1, int var2) {
-      super.setData(var1, var2);
+   public void setData(final int id, final int value) {
+      super.setData(id, value);
       this.broadcastChanges();
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4 != null && var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         var3 = var5.copy();
-         if (var2 == 0) {
-            if (!this.moveItemStackTo(var5, 1, 37, true)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot != null && slot.hasItem()) {
+         ItemStack stack = slot.getItem();
+         clicked = stack.copy();
+         if (slotIndex == 0) {
+            if (!this.moveItemStackTo(stack, 1, 37, true)) {
                return ItemStack.EMPTY;
             }
 
-            var4.onQuickCraft(var5, var3);
-         } else if (!this.paymentSlot.hasItem() && this.paymentSlot.mayPlace(var5) && var5.getCount() == 1) {
-            if (!this.moveItemStackTo(var5, 0, 1, false)) {
+            slot.onQuickCraft(stack, clicked);
+         } else if (!this.paymentSlot.hasItem() && this.paymentSlot.mayPlace(stack) && stack.getCount() == 1) {
+            if (!this.moveItemStackTo(stack, 0, 1, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var2 >= 1 && var2 < 28) {
-            if (!this.moveItemStackTo(var5, 28, 37, false)) {
+         } else if (slotIndex >= 1 && slotIndex < 28) {
+            if (!this.moveItemStackTo(stack, 28, 37, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var2 >= 28 && var2 < 37) {
-            if (!this.moveItemStackTo(var5, 1, 28, false)) {
+         } else if (slotIndex >= 28 && slotIndex < 37) {
+            if (!this.moveItemStackTo(stack, 1, 28, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (!this.moveItemStackTo(var5, 1, 37, false)) {
+         } else if (!this.moveItemStackTo(stack, 1, 37, false)) {
             return ItemStack.EMPTY;
          }
 
-         if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY);
+         if (stack.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY);
          } else {
-            var4.setChanged();
+            slot.setChanged();
          }
 
-         if (var5.getCount() == var3.getCount()) {
+         if (stack.getCount() == clicked.getCount()) {
             return ItemStack.EMPTY;
          }
 
-         var4.onTake(var1, var5);
+         slot.onTake(player, stack);
       }
 
-      return var3;
+      return clicked;
    }
 
    public int getLevels() {
       return this.beaconData.get(0);
    }
 
-   public static int encodeEffect(@Nullable Holder<MobEffect> var0) {
-      return var0 == null ? 0 : BuiltInRegistries.MOB_EFFECT.asHolderIdMap().getId(var0) + 1;
+   public static int encodeEffect(final @Nullable Holder<MobEffect> mobEffect) {
+      return mobEffect == null ? 0 : BuiltInRegistries.MOB_EFFECT.asHolderIdMap().getId(mobEffect) + 1;
    }
 
-   public static @Nullable Holder<MobEffect> decodeEffect(int var0) {
-      return var0 == 0 ? null : (Holder)BuiltInRegistries.MOB_EFFECT.asHolderIdMap().byId(var0 - 1);
+   public static @Nullable Holder<MobEffect> decodeEffect(final int id) {
+      return id == 0 ? null : (Holder)BuiltInRegistries.MOB_EFFECT.asHolderIdMap().byId(id - 1);
    }
 
    public @Nullable Holder<MobEffect> getPrimaryEffect() {
@@ -135,10 +140,10 @@ public class BeaconMenu extends AbstractContainerMenu {
       return decodeEffect(this.beaconData.get(2));
    }
 
-   public void updateEffects(Optional<Holder<MobEffect>> var1, Optional<Holder<MobEffect>> var2) {
+   public void updateEffects(final Optional<Holder<MobEffect>> primary, final Optional<Holder<MobEffect>> secondary) {
       if (this.paymentSlot.hasItem()) {
-         this.beaconData.set(1, encodeEffect((Holder)var1.orElse((Object)null)));
-         this.beaconData.set(2, encodeEffect((Holder)var2.orElse((Object)null)));
+         this.beaconData.set(1, encodeEffect((Holder)primary.orElse((Object)null)));
+         this.beaconData.set(2, encodeEffect((Holder)secondary.orElse((Object)null)));
          this.paymentSlot.remove(1);
          this.access.execute(Level::blockEntityChanged);
       }
@@ -149,13 +154,13 @@ public class BeaconMenu extends AbstractContainerMenu {
       return !this.beacon.getItem(0).isEmpty();
    }
 
-   static class PaymentSlot extends Slot {
-      public PaymentSlot(Container var1, int var2, int var3, int var4) {
-         super(var1, var2, var3, var4);
+   private static class PaymentSlot extends Slot {
+      public PaymentSlot(final Container container, final int slot, final int x, final int y) {
+         super(container, slot, x, y);
       }
 
-      public boolean mayPlace(ItemStack var1) {
-         return var1.is(ItemTags.BEACON_PAYMENT_ITEMS);
+      public boolean mayPlace(final ItemStack itemStack) {
+         return itemStack.is(ItemTags.BEACON_PAYMENT_ITEMS);
       }
 
       public int getMaxStackSize() {

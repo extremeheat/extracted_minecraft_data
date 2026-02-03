@@ -14,27 +14,27 @@ import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.Nullable;
 
 public class BlockRotProcessor extends StructureProcessor {
-   public static final MapCodec<BlockRotProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("rottable_blocks").forGetter((var0x) -> var0x.rottableBlocks), Codec.floatRange(0.0F, 1.0F).fieldOf("integrity").forGetter((var0x) -> var0x.integrity)).apply(var0, BlockRotProcessor::new));
+   public static final MapCodec<BlockRotProcessor> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("rottable_blocks").forGetter((t) -> t.rottableBlocks), Codec.floatRange(0.0F, 1.0F).fieldOf("integrity").forGetter((t) -> t.integrity)).apply(i, BlockRotProcessor::new));
    private final Optional<HolderSet<Block>> rottableBlocks;
    private final float integrity;
 
-   public BlockRotProcessor(HolderSet<Block> var1, float var2) {
-      this(Optional.of(var1), var2);
+   public BlockRotProcessor(final HolderSet<Block> tag, final float integrity) {
+      this(Optional.of(tag), integrity);
    }
 
-   public BlockRotProcessor(float var1) {
-      this(Optional.empty(), var1);
+   public BlockRotProcessor(final float integrity) {
+      this(Optional.empty(), integrity);
    }
 
-   private BlockRotProcessor(Optional<HolderSet<Block>> var1, float var2) {
+   private BlockRotProcessor(final Optional<HolderSet<Block>> blockTagKey, final float integrity) {
       super();
-      this.integrity = var2;
-      this.rottableBlocks = var1;
+      this.integrity = integrity;
+      this.rottableBlocks = blockTagKey;
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      RandomSource var7 = var6.getRandom(var5.pos());
-      return (!this.rottableBlocks.isPresent() || var4.state().is((HolderSet)this.rottableBlocks.get())) && !(var7.nextFloat() <= this.integrity) ? null : var5;
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+      RandomSource random = settings.getRandom(processedBlockInfo.pos());
+      return (!this.rottableBlocks.isPresent() || originalBlockInfo.state().is((HolderSet)this.rottableBlocks.get())) && !(random.nextFloat() <= this.integrity) ? null : processedBlockInfo;
    }
 
    protected StructureProcessorType<?> getType() {

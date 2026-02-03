@@ -13,13 +13,13 @@ public class BackUpIfTooClose {
       super();
    }
 
-   public static OneShot<Mob> create(int var0, float var1) {
-      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.absent(MemoryModuleType.WALK_TARGET), var2.registered(MemoryModuleType.LOOK_TARGET), var2.present(MemoryModuleType.ATTACK_TARGET), var2.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(var2, (var3, var4, var5, var6) -> (var6x, var7, var8) -> {
-               LivingEntity var10 = (LivingEntity)var2.get(var5);
-               if (var10.closerThan(var7, (double)var0) && ((NearestVisibleLivingEntities)var2.get(var6)).contains(var10)) {
-                  var4.set(new EntityTracker(var10, true));
-                  var7.getMoveControl().strafe(-var1, 0.0F);
-                  var7.setYRot(Mth.rotateIfNecessary(var7.getYRot(), var7.yHeadRot, 0.0F));
+   public static OneShot<Mob> create(final int tooCloseDistance, final float strafeSpeed) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.LOOK_TARGET), i.present(MemoryModuleType.ATTACK_TARGET), i.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(i, (walkTarget, lookTarget, attackTarget, nearestVisible) -> (level, body, timestamp) -> {
+               LivingEntity target = (LivingEntity)i.get(attackTarget);
+               if (target.closerThan(body, (double)tooCloseDistance) && ((NearestVisibleLivingEntities)i.get(nearestVisible)).contains(target)) {
+                  lookTarget.set(new EntityTracker(target, true));
+                  body.getMoveControl().strafe(-strafeSpeed, 0.0F);
+                  body.setYRot(Mth.rotateIfNecessary(body.getYRot(), body.yHeadRot, 0.0F));
                   return true;
                } else {
                   return false;

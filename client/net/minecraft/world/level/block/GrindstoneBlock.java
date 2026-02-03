@@ -36,62 +36,62 @@ public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
       return CODEC;
    }
 
-   protected GrindstoneBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected GrindstoneBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(FACE, AttachFace.WALL));
       this.shapes = this.makeShapes();
    }
 
    private Function<BlockState, VoxelShape> makeShapes() {
-      VoxelShape var1 = Shapes.or(Block.box(2.0, 6.0, 7.0, 4.0, 10.0, 16.0), Block.box(2.0, 5.0, 3.0, 4.0, 11.0, 9.0));
-      VoxelShape var2 = Shapes.rotate(var1, OctahedralGroup.INVERT_X);
-      VoxelShape var3 = Shapes.or(Block.boxZ(8.0, 2.0, 14.0, 0.0, 12.0), var1, var2);
-      Map var4 = Shapes.rotateAttachFace(var3);
-      return this.getShapeForEachState((var1x) -> (VoxelShape)((Map)var4.get(var1x.getValue(FACE))).get(var1x.getValue(FACING)));
+      VoxelShape leftLegs = Shapes.or(Block.box(2.0, 6.0, 7.0, 4.0, 10.0, 16.0), Block.box(2.0, 5.0, 3.0, 4.0, 11.0, 9.0));
+      VoxelShape rightLegs = Shapes.rotate(leftLegs, OctahedralGroup.INVERT_X);
+      VoxelShape north = Shapes.or(Block.boxZ(8.0, 2.0, 14.0, 0.0, 12.0), leftLegs, rightLegs);
+      Map<AttachFace, Map<Direction, VoxelShape>> attachFace = Shapes.rotateAttachFace(north);
+      return this.getShapeForEachState((state) -> (VoxelShape)((Map)attachFace.get(state.getValue(FACE))).get(state.getValue(FACING)));
    }
 
-   private VoxelShape getVoxelShape(BlockState var1) {
-      return (VoxelShape)this.shapes.apply(var1);
+   private VoxelShape getVoxelShape(final BlockState state) {
+      return (VoxelShape)this.shapes.apply(state);
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return this.getVoxelShape(var1);
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return this.getVoxelShape(state);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return this.getVoxelShape(var1);
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return this.getVoxelShape(state);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
       return true;
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide()) {
-         var4.openMenu(var1.getMenuProvider(var2, var3));
-         var4.awardStat(Stats.INTERACT_WITH_GRINDSTONE);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide()) {
+         player.openMenu(state.getMenuProvider(level, pos));
+         player.awardStat(Stats.INTERACT_WITH_GRINDSTONE);
       }
 
       return InteractionResult.SUCCESS;
    }
 
-   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> new GrindstoneMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
+   protected MenuProvider getMenuProvider(final BlockState state, final Level level, final BlockPos pos) {
+      return new SimpleMenuProvider((containerId, inventory, player) -> new GrindstoneMenu(containerId, inventory, ContainerLevelAccess.create(level, pos)), CONTAINER_TITLE);
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, FACE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, FACE);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 }

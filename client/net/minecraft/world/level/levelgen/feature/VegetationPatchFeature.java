@@ -15,90 +15,90 @@ import net.minecraft.world.level.levelgen.feature.configurations.VegetationPatch
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration> {
-   public VegetationPatchFeature(Codec<VegetationPatchConfiguration> var1) {
-      super(var1);
+   public VegetationPatchFeature(final Codec<VegetationPatchConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<VegetationPatchConfiguration> var1) {
-      WorldGenLevel var2 = var1.level();
-      VegetationPatchConfiguration var3 = (VegetationPatchConfiguration)var1.config();
-      RandomSource var4 = var1.random();
-      BlockPos var5 = var1.origin();
-      Predicate var6 = (var1x) -> var1x.is(var3.replaceable);
-      int var7 = var3.xzRadius.sample(var4) + 1;
-      int var8 = var3.xzRadius.sample(var4) + 1;
-      Set var9 = this.placeGroundPatch(var2, var3, var4, var5, var6, var7, var8);
-      this.distributeVegetation(var1, var2, var3, var4, var9, var7, var8);
-      return !var9.isEmpty();
+   public boolean place(final FeaturePlaceContext<VegetationPatchConfiguration> context) {
+      WorldGenLevel level = context.level();
+      VegetationPatchConfiguration config = context.config();
+      RandomSource random = context.random();
+      BlockPos origin = context.origin();
+      Predicate<BlockState> replaceable = (s) -> s.is(config.replaceable);
+      int xRadius = config.xzRadius.sample(random) + 1;
+      int zRadius = config.xzRadius.sample(random) + 1;
+      Set<BlockPos> surface = this.placeGroundPatch(level, config, random, origin, replaceable, xRadius, zRadius);
+      this.distributeVegetation(context, level, config, random, surface, xRadius, zRadius);
+      return !surface.isEmpty();
    }
 
-   protected Set<BlockPos> placeGroundPatch(WorldGenLevel var1, VegetationPatchConfiguration var2, RandomSource var3, BlockPos var4, Predicate<BlockState> var5, int var6, int var7) {
-      BlockPos.MutableBlockPos var8 = var4.mutable();
-      BlockPos.MutableBlockPos var9 = var8.mutable();
-      Direction var10 = var2.surface.getDirection();
-      Direction var11 = var10.getOpposite();
-      HashSet var12 = new HashSet();
+   protected Set<BlockPos> placeGroundPatch(final WorldGenLevel level, final VegetationPatchConfiguration config, final RandomSource random, final BlockPos origin, final Predicate<BlockState> replaceable, final int xRadius, final int zRadius) {
+      BlockPos.MutableBlockPos pos = origin.mutable();
+      BlockPos.MutableBlockPos belowPos = pos.mutable();
+      Direction inwards = config.surface.getDirection();
+      Direction outwards = inwards.getOpposite();
+      Set<BlockPos> surface = new HashSet();
 
-      for(int var13 = -var6; var13 <= var6; ++var13) {
-         boolean var14 = var13 == -var6 || var13 == var6;
+      for(int dx = -xRadius; dx <= xRadius; ++dx) {
+         boolean isXEdge = dx == -xRadius || dx == xRadius;
 
-         for(int var15 = -var7; var15 <= var7; ++var15) {
-            boolean var16 = var15 == -var7 || var15 == var7;
-            boolean var17 = var14 || var16;
-            boolean var18 = var14 && var16;
-            boolean var19 = var17 && !var18;
-            if (!var18 && (!var19 || var2.extraEdgeColumnChance != 0.0F && !(var3.nextFloat() > var2.extraEdgeColumnChance))) {
-               var8.setWithOffset(var4, var13, 0, var15);
+         for(int dz = -zRadius; dz <= zRadius; ++dz) {
+            boolean isZEdge = dz == -zRadius || dz == zRadius;
+            boolean isEdge = isXEdge || isZEdge;
+            boolean isCorner = isXEdge && isZEdge;
+            boolean isEdgeButNotCorner = isEdge && !isCorner;
+            if (!isCorner && (!isEdgeButNotCorner || config.extraEdgeColumnChance != 0.0F && !(random.nextFloat() > config.extraEdgeColumnChance))) {
+               pos.setWithOffset(origin, dx, 0, dz);
 
-               for(int var20 = 0; var1.isStateAtPosition(var8, BlockBehaviour.BlockStateBase::isAir) && var20 < var2.verticalRange; ++var20) {
-                  var8.move(var10);
+               for(int offset = 0; level.isStateAtPosition(pos, BlockBehaviour.BlockStateBase::isAir) && offset < config.verticalRange; ++offset) {
+                  pos.move(inwards);
                }
 
-               for(int var25 = 0; var1.isStateAtPosition(var8, (var0) -> !var0.isAir()) && var25 < var2.verticalRange; ++var25) {
-                  var8.move(var11);
+               for(int var25 = 0; level.isStateAtPosition(pos, (s) -> !s.isAir()) && var25 < config.verticalRange; ++var25) {
+                  pos.move(outwards);
                }
 
-               var9.setWithOffset(var8, (Direction)var2.surface.getDirection());
-               BlockState var21 = var1.getBlockState(var9);
-               if (var1.isEmptyBlock(var8) && var21.isFaceSturdy(var1, var9, var2.surface.getDirection().getOpposite())) {
-                  int var22 = var2.depth.sample(var3) + (var2.extraBottomBlockChance > 0.0F && var3.nextFloat() < var2.extraBottomBlockChance ? 1 : 0);
-                  BlockPos var23 = var9.immutable();
-                  boolean var24 = this.placeGround(var1, var2, var5, var3, var9, var22);
-                  if (var24) {
-                     var12.add(var23);
+               belowPos.setWithOffset(pos, (Direction)config.surface.getDirection());
+               BlockState belowState = level.getBlockState(belowPos);
+               if (level.isEmptyBlock(pos) && belowState.isFaceSturdy(level, belowPos, config.surface.getDirection().getOpposite())) {
+                  int depth = config.depth.sample(random) + (config.extraBottomBlockChance > 0.0F && random.nextFloat() < config.extraBottomBlockChance ? 1 : 0);
+                  BlockPos groundPos = belowPos.immutable();
+                  boolean groundPlaced = this.placeGround(level, config, replaceable, random, belowPos, depth);
+                  if (groundPlaced) {
+                     surface.add(groundPos);
                   }
                }
             }
          }
       }
 
-      return var12;
+      return surface;
    }
 
-   protected void distributeVegetation(FeaturePlaceContext<VegetationPatchConfiguration> var1, WorldGenLevel var2, VegetationPatchConfiguration var3, RandomSource var4, Set<BlockPos> var5, int var6, int var7) {
-      for(BlockPos var9 : var5) {
-         if (var3.vegetationChance > 0.0F && var4.nextFloat() < var3.vegetationChance) {
-            this.placeVegetation(var2, var3, var1.chunkGenerator(), var4, var9);
+   protected void distributeVegetation(final FeaturePlaceContext<VegetationPatchConfiguration> context, final WorldGenLevel level, final VegetationPatchConfiguration config, final RandomSource random, final Set<BlockPos> surface, final int xRadius, final int zRadius) {
+      for(BlockPos surfacePos : surface) {
+         if (config.vegetationChance > 0.0F && random.nextFloat() < config.vegetationChance) {
+            this.placeVegetation(level, config, context.chunkGenerator(), random, surfacePos);
          }
       }
 
    }
 
-   protected boolean placeVegetation(WorldGenLevel var1, VegetationPatchConfiguration var2, ChunkGenerator var3, RandomSource var4, BlockPos var5) {
-      return ((PlacedFeature)var2.vegetationFeature.value()).place(var1, var3, var4, var5.relative(var2.surface.getDirection().getOpposite()));
+   protected boolean placeVegetation(final WorldGenLevel level, final VegetationPatchConfiguration config, final ChunkGenerator generator, final RandomSource random, final BlockPos vegetationPos) {
+      return ((PlacedFeature)config.vegetationFeature.value()).place(level, generator, random, vegetationPos.relative(config.surface.getDirection().getOpposite()));
    }
 
-   protected boolean placeGround(WorldGenLevel var1, VegetationPatchConfiguration var2, Predicate<BlockState> var3, RandomSource var4, BlockPos.MutableBlockPos var5, int var6) {
-      for(int var7 = 0; var7 < var6; ++var7) {
-         BlockState var8 = var2.groundState.getState(var4, var5);
-         BlockState var9 = var1.getBlockState(var5);
-         if (!var8.is(var9.getBlock())) {
-            if (!var3.test(var9)) {
-               return var7 != 0;
+   protected boolean placeGround(final WorldGenLevel level, final VegetationPatchConfiguration config, final Predicate<BlockState> replaceable, final RandomSource random, final BlockPos.MutableBlockPos belowPos, final int depth) {
+      for(int i = 0; i < depth; ++i) {
+         BlockState stateToPlace = config.groundState.getState(random, belowPos);
+         BlockState belowState = level.getBlockState(belowPos);
+         if (!stateToPlace.is(belowState.getBlock())) {
+            if (!replaceable.test(belowState)) {
+               return i != 0;
             }
 
-            var1.setBlock(var5, var8, 2);
-            var5.move(var2.surface.getDirection());
+            level.setBlock(belowPos, stateToPlace, 2);
+            belowPos.move(config.surface.getDirection());
          }
       }
 

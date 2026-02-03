@@ -18,51 +18,51 @@ public class ClassInstanceMultiMap<T> extends AbstractCollection<T> {
    private final Class<T> baseClass;
    private final List<T> allInstances = Lists.newArrayList();
 
-   public ClassInstanceMultiMap(Class<T> var1) {
+   public ClassInstanceMultiMap(final Class<T> baseClass) {
       super();
-      this.baseClass = var1;
-      this.byClass.put(var1, this.allInstances);
+      this.baseClass = baseClass;
+      this.byClass.put(baseClass, this.allInstances);
    }
 
-   public boolean add(T var1) {
-      boolean var2 = false;
+   public boolean add(final T instance) {
+      boolean success = false;
 
-      for(Map.Entry var4 : this.byClass.entrySet()) {
-         if (((Class)var4.getKey()).isInstance(var1)) {
-            var2 |= ((List)var4.getValue()).add(var1);
+      for(Map.Entry<Class<?>, List<T>> entry : this.byClass.entrySet()) {
+         if (((Class)entry.getKey()).isInstance(instance)) {
+            success |= ((List)entry.getValue()).add(instance);
          }
       }
 
-      return var2;
+      return success;
    }
 
-   public boolean remove(Object var1) {
-      boolean var2 = false;
+   public boolean remove(final Object object) {
+      boolean success = false;
 
-      for(Map.Entry var4 : this.byClass.entrySet()) {
-         if (((Class)var4.getKey()).isInstance(var1)) {
-            List var5 = (List)var4.getValue();
-            var2 |= var5.remove(var1);
+      for(Map.Entry<Class<?>, List<T>> entry : this.byClass.entrySet()) {
+         if (((Class)entry.getKey()).isInstance(object)) {
+            List<T> list = (List)entry.getValue();
+            success |= list.remove(object);
          }
       }
 
-      return var2;
+      return success;
    }
 
-   public boolean contains(Object var1) {
-      return this.find(var1.getClass()).contains(var1);
+   public boolean contains(final Object o) {
+      return this.find(o.getClass()).contains(o);
    }
 
-   public <S> Collection<S> find(Class<S> var1) {
-      if (!this.baseClass.isAssignableFrom(var1)) {
-         throw new IllegalArgumentException("Don't know how to search for " + String.valueOf(var1));
+   public <S> Collection<S> find(final Class<S> index) {
+      if (!this.baseClass.isAssignableFrom(index)) {
+         throw new IllegalArgumentException("Don't know how to search for " + String.valueOf(index));
       } else {
-         List var2 = (List)this.byClass.computeIfAbsent(var1, (var1x) -> {
+         List<? extends T> instances = (List)this.byClass.computeIfAbsent(index, (k) -> {
             Stream var10000 = this.allInstances.stream();
-            Objects.requireNonNull(var1x);
-            return (List)var10000.filter(var1x::isInstance).collect(Util.toMutableList());
+            Objects.requireNonNull(k);
+            return (List)var10000.filter(k::isInstance).collect(Util.toMutableList());
          });
-         return Collections.unmodifiableCollection(var2);
+         return Collections.unmodifiableCollection(instances);
       }
    }
 

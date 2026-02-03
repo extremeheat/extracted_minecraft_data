@@ -9,26 +9,26 @@ public class ServerboundLockDifficultyPacket implements Packet<ServerGamePacketL
    public static final StreamCodec<FriendlyByteBuf, ServerboundLockDifficultyPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundLockDifficultyPacket>codec(ServerboundLockDifficultyPacket::write, ServerboundLockDifficultyPacket::new);
    private final boolean locked;
 
-   public ServerboundLockDifficultyPacket(boolean var1) {
+   public ServerboundLockDifficultyPacket(final boolean locked) {
       super();
-      this.locked = var1;
+      this.locked = locked;
    }
 
-   private ServerboundLockDifficultyPacket(FriendlyByteBuf var1) {
+   private ServerboundLockDifficultyPacket(final FriendlyByteBuf input) {
       super();
-      this.locked = var1.readBoolean();
+      this.locked = input.readBoolean();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBoolean(this.locked);
+   private void write(final FriendlyByteBuf output) {
+      output.writeBoolean(this.locked);
    }
 
    public PacketType<ServerboundLockDifficultyPacket> type() {
       return GamePacketTypes.SERVERBOUND_LOCK_DIFFICULTY;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleLockDifficulty(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleLockDifficulty(this);
    }
 
    public boolean isLocked() {

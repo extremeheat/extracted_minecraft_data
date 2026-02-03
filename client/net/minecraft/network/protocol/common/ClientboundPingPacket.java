@@ -9,26 +9,26 @@ public class ClientboundPingPacket implements Packet<ClientCommonPacketListener>
    public static final StreamCodec<FriendlyByteBuf, ClientboundPingPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundPingPacket>codec(ClientboundPingPacket::write, ClientboundPingPacket::new);
    private final int id;
 
-   public ClientboundPingPacket(int var1) {
+   public ClientboundPingPacket(final int id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
-   private ClientboundPingPacket(FriendlyByteBuf var1) {
+   private ClientboundPingPacket(final FriendlyByteBuf input) {
       super();
-      this.id = var1.readInt();
+      this.id = input.readInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeInt(this.id);
+   private void write(final FriendlyByteBuf output) {
+      output.writeInt(this.id);
    }
 
    public PacketType<ClientboundPingPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_PING;
    }
 
-   public void handle(ClientCommonPacketListener var1) {
-      var1.handlePing(this);
+   public void handle(final ClientCommonPacketListener listener) {
+      listener.handlePing(this);
    }
 
    public int getId() {

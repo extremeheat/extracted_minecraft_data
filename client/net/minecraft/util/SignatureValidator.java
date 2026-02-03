@@ -1,5 +1,6 @@
 package net.minecraft.util;
 
+import com.mojang.authlib.yggdrasil.ServicesKeyInfo;
 import com.mojang.authlib.yggdrasil.ServicesKeySet;
 import com.mojang.authlib.yggdrasil.ServicesKeyType;
 import com.mojang.logging.LogUtils;
@@ -12,43 +13,43 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public interface SignatureValidator {
-   SignatureValidator NO_VALIDATION = (var0, var1) -> true;
+   SignatureValidator NO_VALIDATION = (payload, signature) -> true;
    Logger LOGGER = LogUtils.getLogger();
 
-   boolean validate(SignatureUpdater var1, byte[] var2);
+   boolean validate(SignatureUpdater updater, byte[] signature);
 
-   default boolean validate(byte[] var1, byte[] var2) {
-      return this.validate((SignatureUpdater)((var1x) -> var1x.update(var1)), var2);
+   default boolean validate(final byte[] payload, final byte[] signature) {
+      return this.validate((SignatureUpdater)((output) -> output.update(payload)), signature);
    }
 
-   private static boolean verifySignature(SignatureUpdater var0, byte[] var1, Signature var2) throws SignatureException {
-      Objects.requireNonNull(var2);
-      var0.update(var2::update);
-      return var2.verify(var1);
+   private static boolean verifySignature(final SignatureUpdater updater, final byte[] signature, final Signature verifier) throws SignatureException {
+      Objects.requireNonNull(verifier);
+      updater.update(verifier::update);
+      return verifier.verify(signature);
    }
 
-   static SignatureValidator from(PublicKey var0, String var1) {
-      return (var2, var3) -> {
+   static SignatureValidator from(final PublicKey publicKey, final String algorithm) {
+      return (updater, signature) -> {
          try {
-            Signature var4 = Signature.getInstance(var1);
-            var4.initVerify(var0);
-            return verifySignature(var2, var3, var4);
-         } catch (Exception var5) {
-            LOGGER.error("Failed to verify signature", var5);
+            Signature verifier = Signature.getInstance(algorithm);
+            verifier.initVerify(publicKey);
+            return verifySignature(updater, signature, verifier);
+         } catch (Exception e) {
+            LOGGER.error("Failed to verify signature", e);
             return false;
          }
       };
    }
 
-   static @Nullable SignatureValidator from(ServicesKeySet var0, ServicesKeyType var1) {
-      Collection var2 = var0.keys(var1);
-      return var2.isEmpty() ? null : (var1x, var2x) -> var2.stream().anyMatch((var2xx) -> {
-            Signature var3 = var2xx.signature();
+   static @Nullable SignatureValidator from(final ServicesKeySet keySet, final ServicesKeyType type) {
+      Collection<ServicesKeyInfo> keys = keySet.keys(type);
+      return keys.isEmpty() ? null : (updater, signature) -> keys.stream().anyMatch((key) -> {
+            Signature verifier = key.signature();
 
             try {
-               return verifySignature(var1x, var2x, var3);
-            } catch (SignatureException var5) {
-               LOGGER.error("Failed to verify Services signature", var5);
+               return verifySignature(updater, signature, verifier);
+            } catch (SignatureException e) {
+               LOGGER.error("Failed to verify Services signature", e);
                return false;
             }
          });

@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -15,6 +14,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
 import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -24,62 +24,62 @@ public class SupportBlockRenderer implements DebugRenderer.SimpleDebugRenderer {
    private double lastUpdateTime = 4.9E-324;
    private List<Entity> surroundEntities = Collections.emptyList();
 
-   public SupportBlockRenderer(Minecraft var1) {
+   public SupportBlockRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      double var10 = (double)Util.getNanos();
-      if (var10 - this.lastUpdateTime > 1.0E8) {
-         this.lastUpdateTime = var10;
-         Entity var12 = this.minecraft.gameRenderer.getMainCamera().entity();
-         this.surroundEntities = ImmutableList.copyOf(var12.level().getEntities(var12, var12.getBoundingBox().inflate(16.0)));
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      double time = (double)Util.getNanos();
+      if (time - this.lastUpdateTime > 1.0E8) {
+         this.lastUpdateTime = time;
+         Entity cameraEntity = this.minecraft.gameRenderer.getMainCamera().entity();
+         this.surroundEntities = ImmutableList.copyOf(cameraEntity.level().getEntities(cameraEntity, cameraEntity.getBoundingBox().inflate(16.0)));
       }
 
-      LocalPlayer var15 = this.minecraft.player;
-      if (var15 != null && var15.mainSupportingBlockPos.isPresent()) {
-         this.drawHighlights(var15, () -> 0.0, -65536);
+      Player player = this.minecraft.player;
+      if (player != null && player.mainSupportingBlockPos.isPresent()) {
+         this.drawHighlights(player, () -> 0.0, -65536);
       }
 
-      for(Entity var14 : this.surroundEntities) {
-         if (var14 != var15) {
-            this.drawHighlights(var14, () -> this.getBias(var14), -16711936);
+      for(Entity entity : this.surroundEntities) {
+         if (entity != player) {
+            this.drawHighlights(entity, () -> this.getBias(entity), -16711936);
          }
       }
 
    }
 
-   private void drawHighlights(Entity var1, DoubleSupplier var2, int var3) {
-      var1.mainSupportingBlockPos.ifPresent((var4) -> {
-         double var5 = var2.getAsDouble();
-         BlockPos var7 = var1.getOnPos();
-         this.highlightPosition(var7, 0.02 + var5, var3);
-         BlockPos var8 = var1.getOnPosLegacy();
-         if (!var8.equals(var7)) {
-            this.highlightPosition(var8, 0.04 + var5, -16711681);
+   private void drawHighlights(final Entity entity, final DoubleSupplier biasGetter, final int color) {
+      entity.mainSupportingBlockPos.ifPresent((bp) -> {
+         double bias = biasGetter.getAsDouble();
+         BlockPos supportingBlock = entity.getOnPos();
+         this.highlightPosition(supportingBlock, 0.02 + bias, color);
+         BlockPos effect = entity.getOnPosLegacy();
+         if (!effect.equals(supportingBlock)) {
+            this.highlightPosition(effect, 0.04 + bias, -16711681);
          }
 
       });
    }
 
-   private double getBias(Entity var1) {
-      return 0.02 * (double)(String.valueOf((double)var1.getId() + 0.132453657).hashCode() % 1000) / 1000.0;
+   private double getBias(final Entity entity) {
+      return 0.02 * (double)(String.valueOf((double)entity.getId() + 0.132453657).hashCode() % 1000) / 1000.0;
    }
 
-   private void highlightPosition(BlockPos var1, double var2, int var4) {
-      double var5 = (double)var1.getX() - 2.0 * var2;
-      double var7 = (double)var1.getY() - 2.0 * var2;
-      double var9 = (double)var1.getZ() - 2.0 * var2;
-      double var11 = var5 + 1.0 + 4.0 * var2;
-      double var13 = var7 + 1.0 + 4.0 * var2;
-      double var15 = var9 + 1.0 + 4.0 * var2;
-      Gizmos.cuboid(new AABB(var5, var7, var9, var11, var13, var15), GizmoStyle.stroke(ARGB.color(0.4F, var4)));
-      VoxelShape var17 = this.minecraft.level.getBlockState(var1).getCollisionShape(this.minecraft.level, var1, CollisionContext.empty()).move((Vec3i)var1);
-      GizmoStyle var18 = GizmoStyle.stroke(var4);
+   private void highlightPosition(final BlockPos pos, final double offset, final int color) {
+      double fromX = (double)pos.getX() - 2.0 * offset;
+      double fromY = (double)pos.getY() - 2.0 * offset;
+      double fromZ = (double)pos.getZ() - 2.0 * offset;
+      double toX = fromX + 1.0 + 4.0 * offset;
+      double toY = fromY + 1.0 + 4.0 * offset;
+      double toZ = fromZ + 1.0 + 4.0 * offset;
+      Gizmos.cuboid(new AABB(fromX, fromY, fromZ, toX, toY, toZ), GizmoStyle.stroke(ARGB.color(0.4F, color)));
+      VoxelShape shape = this.minecraft.level.getBlockState(pos).getCollisionShape(this.minecraft.level, pos, CollisionContext.empty()).move((Vec3i)pos);
+      GizmoStyle style = GizmoStyle.stroke(color);
 
-      for(AABB var20 : var17.toAabbs()) {
-         Gizmos.cuboid(var20, var18);
+      for(AABB aabb : shape.toAabbs()) {
+         Gizmos.cuboid(aabb, style);
       }
 
    }

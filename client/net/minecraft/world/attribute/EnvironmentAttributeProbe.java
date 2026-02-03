@@ -12,10 +12,10 @@ import org.jspecify.annotations.Nullable;
 
 public class EnvironmentAttributeProbe {
    private final Map<EnvironmentAttribute<?>, ValueProbe<?>> valueProbes = new Reference2ObjectOpenHashMap();
-   private final Function<EnvironmentAttribute<?>, ValueProbe<?>> valueProbeFactory = (var1) -> new ValueProbe(var1);
-   @Nullable Level level;
-   @Nullable Vec3 position;
-   final SpatialAttributeInterpolator biomeInterpolator = new SpatialAttributeInterpolator();
+   private final Function<EnvironmentAttribute<?>, ValueProbe<?>> valueProbeFactory = (x$0) -> new ValueProbe(x$0);
+   private @Nullable Level level;
+   private @Nullable Vec3 position;
+   private final SpatialAttributeInterpolator biomeInterpolator = new SpatialAttributeInterpolator();
 
    public EnvironmentAttributeProbe() {
       super();
@@ -28,35 +28,36 @@ public class EnvironmentAttributeProbe {
       this.valueProbes.clear();
    }
 
-   public void tick(Level var1, Vec3 var2) {
-      this.level = var1;
-      this.position = var2;
+   public void tick(final Level level, final Vec3 position) {
+      this.level = level;
+      this.position = position;
       this.valueProbes.values().removeIf(ValueProbe::tick);
       this.biomeInterpolator.clear();
-      Vec3 var10000 = var2.scale(0.25);
-      BiomeManager var10001 = var1.getBiomeManager();
+      Vec3 var10000 = position.scale(0.25);
+      BiomeManager var10001 = level.getBiomeManager();
       Objects.requireNonNull(var10001);
-      GaussianSampler.sample(var10000, var10001::getNoiseBiomeAtQuart, (var1x, var3) -> this.biomeInterpolator.accumulate(var1x, ((Biome)var3.value()).getAttributes()));
+      GaussianSampler.sample(var10000, var10001::getNoiseBiomeAtQuart, (weight, biome) -> this.biomeInterpolator.accumulate(weight, ((Biome)biome.value()).getAttributes()));
    }
 
-   public <Value> Value getValue(EnvironmentAttribute<Value> var1, float var2) {
-      ValueProbe var3 = (ValueProbe)this.valueProbes.computeIfAbsent(var1, this.valueProbeFactory);
-      return (Value)var3.get(var1, var2);
+   public <Value> Value getValue(final EnvironmentAttribute<Value> attribute, final float partialTicks) {
+      ValueProbe<Value> valueProbe = (ValueProbe)this.valueProbes.computeIfAbsent(attribute, this.valueProbeFactory);
+      return valueProbe.get(attribute, partialTicks);
    }
 
-   class ValueProbe<Value> {
+   private class ValueProbe<Value> {
       private Value lastValue;
       private @Nullable Value newValue;
 
-      public ValueProbe(final EnvironmentAttribute<Value> var2) {
+      public ValueProbe(final EnvironmentAttribute<Value> attribute) {
+         Objects.requireNonNull(EnvironmentAttributeProbe.this);
          super();
-         Object var3 = this.getValueFromLevel(var2);
-         this.lastValue = (Value)var3;
-         this.newValue = (Value)var3;
+         Value value = (Value)this.getValueFromLevel(attribute);
+         this.lastValue = value;
+         this.newValue = value;
       }
 
-      private Value getValueFromLevel(EnvironmentAttribute<Value> var1) {
-         return (Value)(EnvironmentAttributeProbe.this.level != null && EnvironmentAttributeProbe.this.position != null ? EnvironmentAttributeProbe.this.level.environmentAttributes().getValue(var1, EnvironmentAttributeProbe.this.position, EnvironmentAttributeProbe.this.biomeInterpolator) : var1.defaultValue());
+      private Value getValueFromLevel(final EnvironmentAttribute<Value> attribute) {
+         return (Value)(EnvironmentAttributeProbe.this.level != null && EnvironmentAttributeProbe.this.position != null ? EnvironmentAttributeProbe.this.level.environmentAttributes().getValue(attribute, EnvironmentAttributeProbe.this.position, EnvironmentAttributeProbe.this.biomeInterpolator) : attribute.defaultValue());
       }
 
       public boolean tick() {
@@ -69,12 +70,12 @@ public class EnvironmentAttributeProbe {
          }
       }
 
-      public Value get(EnvironmentAttribute<Value> var1, float var2) {
+      public Value get(final EnvironmentAttribute<Value> attribute, final float partialTicks) {
          if (this.newValue == null) {
-            this.newValue = (Value)this.getValueFromLevel(var1);
+            this.newValue = (Value)this.getValueFromLevel(attribute);
          }
 
-         return (Value)var1.type().partialTickLerp().apply(var2, this.lastValue, this.newValue);
+         return attribute.type().partialTickLerp().apply(partialTicks, this.lastValue, this.newValue);
       }
    }
 }

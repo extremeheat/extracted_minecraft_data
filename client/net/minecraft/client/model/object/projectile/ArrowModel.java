@@ -13,26 +13,26 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 
 public class ArrowModel extends EntityModel<ArrowRenderState> {
-   public ArrowModel(ModelPart var1) {
-      super(var1, RenderTypes::entityCutout);
+   public ArrowModel(final ModelPart root) {
+      super(root, RenderTypes::entityCutout);
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("back", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, -2.5F, -2.5F, 0.0F, 5.0F, 5.0F), PartPose.offsetAndRotation(-11.0F, 0.0F, 0.0F, 0.7853982F, 0.0F, 0.0F).withScale(0.8F));
-      CubeListBuilder var2 = CubeListBuilder.create().texOffs(0, 0).addBox(-12.0F, -2.0F, 0.0F, 16.0F, 4.0F, 0.0F, CubeDeformation.NONE, 1.0F, 0.8F);
-      var1.addOrReplaceChild("cross_1", var2, PartPose.rotation(0.7853982F, 0.0F, 0.0F));
-      var1.addOrReplaceChild("cross_2", var2, PartPose.rotation(2.3561945F, 0.0F, 0.0F));
-      return LayerDefinition.create(var0.transformed((var0x) -> var0x.scaled(0.9F)), 32, 32);
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      root.addOrReplaceChild("back", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, -2.5F, -2.5F, 0.0F, 5.0F, 5.0F), PartPose.offsetAndRotation(-11.0F, 0.0F, 0.0F, 0.7853982F, 0.0F, 0.0F).withScale(0.8F));
+      CubeListBuilder cross = CubeListBuilder.create().texOffs(0, 0).addBox(-12.0F, -2.0F, 0.0F, 16.0F, 4.0F, 0.0F, CubeDeformation.NONE, 1.0F, 0.8F);
+      root.addOrReplaceChild("cross_1", cross, PartPose.rotation(0.7853982F, 0.0F, 0.0F));
+      root.addOrReplaceChild("cross_2", cross, PartPose.rotation(2.3561945F, 0.0F, 0.0F));
+      return LayerDefinition.create(mesh.transformed((pose) -> pose.scaled(0.9F)), 32, 32);
    }
 
-   public void setupAnim(ArrowRenderState var1) {
-      super.setupAnim(var1);
-      if (var1.shake > 0.0F) {
-         float var2 = -Mth.sin((double)(var1.shake * 3.0F)) * var1.shake;
+   public void setupAnim(final ArrowRenderState state) {
+      super.setupAnim(state);
+      if (state.shake > 0.0F) {
+         float pow = -Mth.sin((double)(state.shake * 3.0F)) * state.shake;
          ModelPart var10000 = this.root;
-         var10000.zRot += var2 * 0.017453292F;
+         var10000.zRot += pow * 0.017453292F;
       }
 
    }

@@ -16,33 +16,28 @@ public class ExecuteCommand<T extends ExecutionCommandSource<T>> implements Unbo
    private final ChainModifiers modifiers;
    private final CommandContext<T> executionContext;
 
-   public ExecuteCommand(String var1, ChainModifiers var2, CommandContext<T> var3) {
+   public ExecuteCommand(final String commandInput, final ChainModifiers modifiers, final CommandContext<T> executionContext) {
       super();
-      this.commandInput = var1;
-      this.modifiers = var2;
-      this.executionContext = var3;
+      this.commandInput = commandInput;
+      this.modifiers = modifiers;
+      this.executionContext = executionContext;
    }
 
-   public void execute(T var1, ExecutionContext<T> var2, Frame var3) {
-      var2.profiler().push((Supplier)(() -> "execute " + this.commandInput));
+   public void execute(final T sender, final ExecutionContext<T> context, final Frame frame) {
+      context.profiler().push((Supplier)(() -> "execute " + this.commandInput));
 
       try {
-         var2.incrementCost();
-         int var4 = ContextChain.runExecutable(this.executionContext, var1, ExecutionCommandSource.resultConsumer(), this.modifiers.isForked());
-         TraceCallbacks var5 = var2.tracer();
-         if (var5 != null) {
-            var5.onReturn(var3.depth(), this.commandInput, var4);
+         context.incrementCost();
+         int result = ContextChain.runExecutable(this.executionContext, sender, ExecutionCommandSource.resultConsumer(), this.modifiers.isForked());
+         TraceCallbacks tracer = context.tracer();
+         if (tracer != null) {
+            tracer.onReturn(frame.depth(), this.commandInput, result);
          }
-      } catch (CommandSyntaxException var9) {
-         var1.handleError(var9, this.modifiers.isForked(), var2.tracer());
+      } catch (CommandSyntaxException e) {
+         sender.handleError(e, this.modifiers.isForked(), context.tracer());
       } finally {
-         var2.profiler().pop();
+         context.profiler().pop();
       }
 
-   }
-
-   // $FF: synthetic method
-   public void execute(final Object var1, final ExecutionContext var2, final Frame var3) {
-      this.execute((ExecutionCommandSource)var1, var2, var3);
    }
 }

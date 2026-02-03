@@ -6,21 +6,21 @@ public class LayerDefinition {
    private final MeshDefinition mesh;
    private final MaterialDefinition material;
 
-   private LayerDefinition(MeshDefinition var1, MaterialDefinition var2) {
+   private LayerDefinition(final MeshDefinition mesh, final MaterialDefinition material) {
       super();
-      this.mesh = var1;
-      this.material = var2;
+      this.mesh = mesh;
+      this.material = material;
    }
 
-   public LayerDefinition apply(MeshTransformer var1) {
-      return new LayerDefinition(var1.apply(this.mesh), this.material);
+   public LayerDefinition apply(final MeshTransformer transformer) {
+      return new LayerDefinition(transformer.apply(this.mesh), this.material);
    }
 
    public ModelPart bakeRoot() {
       return this.mesh.getRoot().bake(this.material.xTexSize, this.material.yTexSize);
    }
 
-   public static LayerDefinition create(MeshDefinition var0, int var1, int var2) {
-      return new LayerDefinition(var0, new MaterialDefinition(var1, var2));
+   public static LayerDefinition create(final MeshDefinition mesh, final int xTexSize, final int yTexSize) {
+      return new LayerDefinition(mesh, new MaterialDefinition(xTexSize, yTexSize));
    }
 }

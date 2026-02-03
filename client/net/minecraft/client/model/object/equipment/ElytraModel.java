@@ -16,27 +16,27 @@ public class ElytraModel extends EntityModel<HumanoidRenderState> {
    private final ModelPart rightWing;
    private final ModelPart leftWing;
 
-   public ElytraModel(ModelPart var1) {
-      super(var1);
-      this.leftWing = var1.getChild("left_wing");
-      this.rightWing = var1.getChild("right_wing");
+   public ElytraModel(final ModelPart root) {
+      super(root);
+      this.leftWing = root.getChild("left_wing");
+      this.rightWing = root.getChild("right_wing");
    }
 
    public static LayerDefinition createLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      CubeDeformation var2 = new CubeDeformation(1.0F);
-      var1.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(22, 0).addBox(-10.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, var2), PartPose.offsetAndRotation(5.0F, 0.0F, 0.0F, 0.2617994F, 0.0F, -0.2617994F));
-      var1.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(22, 0).mirror().addBox(0.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, var2), PartPose.offsetAndRotation(-5.0F, 0.0F, 0.0F, 0.2617994F, 0.0F, 0.2617994F));
-      return LayerDefinition.create(var0, 64, 32);
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      CubeDeformation windDeformation = new CubeDeformation(1.0F);
+      root.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(22, 0).addBox(-10.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, windDeformation), PartPose.offsetAndRotation(5.0F, 0.0F, 0.0F, 0.2617994F, 0.0F, -0.2617994F));
+      root.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(22, 0).mirror().addBox(0.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, windDeformation), PartPose.offsetAndRotation(-5.0F, 0.0F, 0.0F, 0.2617994F, 0.0F, 0.2617994F));
+      return LayerDefinition.create(mesh, 64, 32);
    }
 
-   public void setupAnim(HumanoidRenderState var1) {
-      super.setupAnim(var1);
-      this.leftWing.y = var1.isCrouching ? 3.0F : 0.0F;
-      this.leftWing.xRot = var1.elytraRotX;
-      this.leftWing.zRot = var1.elytraRotZ;
-      this.leftWing.yRot = var1.elytraRotY;
+   public void setupAnim(final HumanoidRenderState state) {
+      super.setupAnim(state);
+      this.leftWing.y = state.isCrouching ? 3.0F : 0.0F;
+      this.leftWing.xRot = state.elytraRotX;
+      this.leftWing.zRot = state.elytraRotZ;
+      this.leftWing.yRot = state.elytraRotY;
       this.rightWing.yRot = -this.leftWing.yRot;
       this.rightWing.y = this.leftWing.y;
       this.rightWing.xRot = this.leftWing.xRot;

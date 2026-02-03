@@ -17,21 +17,21 @@ public class ShulkerBoxDispenseBehavior extends OptionalDispenseItemBehavior {
       super();
    }
 
-   protected ItemStack execute(BlockSource var1, ItemStack var2) {
+   protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
       this.setSuccess(false);
-      Item var3 = var2.getItem();
-      if (var3 instanceof BlockItem) {
-         Direction var4 = (Direction)var1.state().getValue(DispenserBlock.FACING);
-         BlockPos var5 = var1.pos().relative(var4);
-         Direction var6 = var1.level().isEmptyBlock(var5.below()) ? var4 : Direction.UP;
+      Item item = dispensed.getItem();
+      if (item instanceof BlockItem) {
+         Direction facing = (Direction)source.state().getValue(DispenserBlock.FACING);
+         BlockPos relativePos = source.pos().relative(facing);
+         Direction clickedFace = source.level().isEmptyBlock(relativePos.below()) ? facing : Direction.UP;
 
          try {
-            this.setSuccess(((BlockItem)var3).place(new DirectionalPlaceContext(var1.level(), var5, var4, var2, var6)).consumesAction());
-         } catch (Exception var8) {
-            LOGGER.error("Error trying to place shulker box at {}", var5, var8);
+            this.setSuccess(((BlockItem)item).place(new DirectionalPlaceContext(source.level(), relativePos, facing, dispensed, clickedFace)).consumesAction());
+         } catch (Exception e) {
+            LOGGER.error("Error trying to place shulker box at {}", relativePos, e);
          }
       }
 
-      return var2;
+      return dispensed;
    }
 }

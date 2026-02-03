@@ -14,23 +14,23 @@ public class BlockPlaceContext extends UseOnContext {
    private final BlockPos relativePos;
    protected boolean replaceClicked;
 
-   public BlockPlaceContext(Player var1, InteractionHand var2, ItemStack var3, BlockHitResult var4) {
-      this(var1.level(), var1, var2, var3, var4);
+   public BlockPlaceContext(final Player player, final InteractionHand hand, final ItemStack itemInHand, final BlockHitResult hitResult) {
+      this(player.level(), player, hand, itemInHand, hitResult);
    }
 
-   public BlockPlaceContext(UseOnContext var1) {
-      this(var1.getLevel(), var1.getPlayer(), var1.getHand(), var1.getItemInHand(), var1.getHitResult());
+   public BlockPlaceContext(final UseOnContext context) {
+      this(context.getLevel(), context.getPlayer(), context.getHand(), context.getItemInHand(), context.getHitResult());
    }
 
-   protected BlockPlaceContext(Level var1, @Nullable Player var2, InteractionHand var3, ItemStack var4, BlockHitResult var5) {
-      super(var1, var2, var3, var4, var5);
+   protected BlockPlaceContext(final Level level, final @Nullable Player player, final InteractionHand hand, final ItemStack itemStackInHand, final BlockHitResult hitResult) {
+      super(level, player, hand, itemStackInHand, hitResult);
       this.replaceClicked = true;
-      this.relativePos = var5.getBlockPos().relative(var5.getDirection());
-      this.replaceClicked = var1.getBlockState(var5.getBlockPos()).canBeReplaced(this);
+      this.relativePos = hitResult.getBlockPos().relative(hitResult.getDirection());
+      this.replaceClicked = level.getBlockState(hitResult.getBlockPos()).canBeReplaced(this);
    }
 
-   public static BlockPlaceContext at(BlockPlaceContext var0, BlockPos var1, Direction var2) {
-      return new BlockPlaceContext(var0.getLevel(), var0.getPlayer(), var0.getHand(), var0.getItemInHand(), new BlockHitResult(new Vec3((double)var1.getX() + 0.5 + (double)var2.getStepX() * 0.5, (double)var1.getY() + 0.5 + (double)var2.getStepY() * 0.5, (double)var1.getZ() + 0.5 + (double)var2.getStepZ() * 0.5), var2, var1, false));
+   public static BlockPlaceContext at(final BlockPlaceContext context, final BlockPos pos, final Direction direction) {
+      return new BlockPlaceContext(context.getLevel(), context.getPlayer(), context.getHand(), context.getItemInHand(), new BlockHitResult(new Vec3((double)pos.getX() + 0.5 + (double)direction.getStepX() * 0.5, (double)pos.getY() + 0.5 + (double)direction.getStepY() * 0.5, (double)pos.getZ() + 0.5 + (double)direction.getStepZ() * 0.5), direction, pos, false));
    }
 
    public BlockPos getClickedPos() {
@@ -54,22 +54,22 @@ public class BlockPlaceContext extends UseOnContext {
    }
 
    public Direction[] getNearestLookingDirections() {
-      Direction[] var1 = Direction.orderedByNearest(this.getPlayer());
+      Direction[] directions = Direction.orderedByNearest(this.getPlayer());
       if (this.replaceClicked) {
-         return var1;
+         return directions;
       } else {
-         Direction var2 = this.getClickedFace();
+         Direction clickedFace = this.getClickedFace();
 
-         int var3;
-         for(var3 = 0; var3 < var1.length && var1[var3] != var2.getOpposite(); ++var3) {
+         int index;
+         for(index = 0; index < directions.length && directions[index] != clickedFace.getOpposite(); ++index) {
          }
 
-         if (var3 > 0) {
-            System.arraycopy(var1, 0, var1, 1, var3);
-            var1[0] = var2.getOpposite();
+         if (index > 0) {
+            System.arraycopy(directions, 0, directions, 1, index);
+            directions[0] = clickedFace.getOpposite();
          }
 
-         return var1;
+         return directions;
       }
    }
 }

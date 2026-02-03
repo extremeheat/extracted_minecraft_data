@@ -10,7 +10,7 @@ import net.minecraft.server.permissions.PermissionSetSupplier;
 import org.jspecify.annotations.Nullable;
 
 public interface ExecutionCommandSource<T extends ExecutionCommandSource<T>> extends PermissionSetSupplier {
-   T withCallback(CommandResultCallback var1);
+   T withCallback(CommandResultCallback resultCallback);
 
    CommandResultCallback callback();
 
@@ -20,15 +20,15 @@ public interface ExecutionCommandSource<T extends ExecutionCommandSource<T>> ext
 
    CommandDispatcher<T> dispatcher();
 
-   void handleError(CommandExceptionType var1, Message var2, boolean var3, @Nullable TraceCallbacks var4);
+   void handleError(CommandExceptionType type, Message message, boolean forked, @Nullable TraceCallbacks tracer);
 
    boolean isSilent();
 
-   default void handleError(CommandSyntaxException var1, boolean var2, @Nullable TraceCallbacks var3) {
-      this.handleError(var1.getType(), var1.getRawMessage(), var2, var3);
+   default void handleError(final CommandSyntaxException e, final boolean forked, final @Nullable TraceCallbacks tracer) {
+      this.handleError(e.getType(), e.getRawMessage(), forked, tracer);
    }
 
    static <T extends ExecutionCommandSource<T>> ResultConsumer<T> resultConsumer() {
-      return (var0, var1, var2) -> ((ExecutionCommandSource)var0.getSource()).callback().onResult(var1, var2);
+      return (context, success, result) -> ((ExecutionCommandSource)context.getSource()).callback().onResult(success, result);
    }
 }

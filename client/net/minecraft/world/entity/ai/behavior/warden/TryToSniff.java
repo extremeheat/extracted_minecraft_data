@@ -18,11 +18,11 @@ public class TryToSniff {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.registered(MemoryModuleType.IS_SNIFFING), var0.registered(MemoryModuleType.WALK_TARGET), var0.absent(MemoryModuleType.SNIFF_COOLDOWN), var0.present(MemoryModuleType.NEAREST_ATTACKABLE), var0.absent(MemoryModuleType.DISTURBANCE_LOCATION)).apply(var0, (var0x, var1, var2, var3, var4) -> (var3x, var4x, var5) -> {
-               var0x.set(Unit.INSTANCE);
-               var2.setWithExpiry(Unit.INSTANCE, (long)SNIFF_COOLDOWN.sample(var3x.getRandom()));
-               var1.erase();
-               var4x.setPose(Pose.SNIFFING);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.IS_SNIFFING), i.registered(MemoryModuleType.WALK_TARGET), i.absent(MemoryModuleType.SNIFF_COOLDOWN), i.present(MemoryModuleType.NEAREST_ATTACKABLE), i.absent(MemoryModuleType.DISTURBANCE_LOCATION)).apply(i, (sniffing, walkTarget, cooldown, attackable, disturbance) -> (level, body, timestamp) -> {
+               sniffing.set(Unit.INSTANCE);
+               cooldown.setWithExpiry(Unit.INSTANCE, (long)SNIFF_COOLDOWN.sample(level.getRandom()));
+               walkTarget.erase();
+               body.setPose(Pose.SNIFFING);
                return true;
             })));
    }

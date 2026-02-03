@@ -20,26 +20,26 @@ public class YieldJobSite {
       super();
    }
 
-   public static BehaviorControl<Villager> create(float var0) {
-      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.present(MemoryModuleType.POTENTIAL_JOB_SITE), var1.absent(MemoryModuleType.JOB_SITE), var1.present(MemoryModuleType.NEAREST_LIVING_ENTITIES), var1.registered(MemoryModuleType.WALK_TARGET), var1.registered(MemoryModuleType.LOOK_TARGET)).apply(var1, (var2, var3, var4, var5, var6) -> (var6x, var7, var8) -> {
-               if (var7.isBaby()) {
+   public static BehaviorControl<Villager> create(final float speedModifier) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.POTENTIAL_JOB_SITE), i.absent(MemoryModuleType.JOB_SITE), i.present(MemoryModuleType.NEAREST_LIVING_ENTITIES), i.registered(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.LOOK_TARGET)).apply(i, (potentialJob, jobSite, nearestEntities, walkTarget, lookTarget) -> (level, body, timestamp) -> {
+               if (body.isBaby()) {
                   return false;
-               } else if (!var7.getVillagerData().profession().is(VillagerProfession.NONE)) {
+               } else if (!body.getVillagerData().profession().is(VillagerProfession.NONE)) {
                   return false;
                } else {
-                  BlockPos var10 = ((GlobalPos)var1.get(var2)).pos();
-                  Optional var11 = var6x.getPoiManager().getType(var10);
-                  if (var11.isEmpty()) {
+                  BlockPos poiPos = ((GlobalPos)i.get(potentialJob)).pos();
+                  Optional<Holder<PoiType>> poiType = level.getPoiManager().getType(poiPos);
+                  if (poiType.isEmpty()) {
                      return true;
                   } else {
-                     ((List)var1.get(var4)).stream().filter((var1x) -> var1x instanceof Villager && var1x != var7).map((var0x) -> (Villager)var0x).filter(LivingEntity::isAlive).filter((var2x) -> nearbyWantsJobsite((Holder)var11.get(), var2x, var10)).findFirst().ifPresent((var6xx) -> {
-                        var5.erase();
-                        var6.erase();
-                        var2.erase();
-                        if (var6xx.getBrain().getMemory(MemoryModuleType.JOB_SITE).isEmpty()) {
-                           BehaviorUtils.setWalkAndLookTargetMemories(var6xx, (BlockPos)var10, var0, 1);
-                           var6xx.getBrain().setMemory(MemoryModuleType.POTENTIAL_JOB_SITE, GlobalPos.of(var6x.dimension(), var10));
-                           var6x.debugSynchronizers().updatePoi(var10);
+                     ((List)i.get(nearestEntities)).stream().filter((v) -> v instanceof Villager && v != body).map((v) -> (Villager)v).filter(LivingEntity::isAlive).filter((v) -> nearbyWantsJobsite((Holder)poiType.get(), v, poiPos)).findFirst().ifPresent((nearbyVillager) -> {
+                        walkTarget.erase();
+                        lookTarget.erase();
+                        potentialJob.erase();
+                        if (nearbyVillager.getBrain().getMemory(MemoryModuleType.JOB_SITE).isEmpty()) {
+                           BehaviorUtils.setWalkAndLookTargetMemories(nearbyVillager, (BlockPos)poiPos, speedModifier, 1);
+                           nearbyVillager.getBrain().setMemory(MemoryModuleType.POTENTIAL_JOB_SITE, GlobalPos.of(level.dimension(), poiPos));
+                           level.debugSynchronizers().updatePoi(poiPos);
                         }
 
                      });
@@ -49,23 +49,23 @@ public class YieldJobSite {
             })));
    }
 
-   private static boolean nearbyWantsJobsite(Holder<PoiType> var0, Villager var1, BlockPos var2) {
-      boolean var3 = var1.getBrain().getMemory(MemoryModuleType.POTENTIAL_JOB_SITE).isPresent();
-      if (var3) {
+   private static boolean nearbyWantsJobsite(final Holder<PoiType> type, final Villager nearbyVillager, final BlockPos poiPos) {
+      boolean nearbyHasPotentialJobSite = nearbyVillager.getBrain().getMemory(MemoryModuleType.POTENTIAL_JOB_SITE).isPresent();
+      if (nearbyHasPotentialJobSite) {
          return false;
       } else {
-         Optional var4 = var1.getBrain().getMemory(MemoryModuleType.JOB_SITE);
-         Holder var5 = var1.getVillagerData().profession();
-         if (((VillagerProfession)var5.value()).heldJobSite().test(var0)) {
-            return var4.isEmpty() ? canReachPos(var1, var2, (PoiType)var0.value()) : ((GlobalPos)var4.get()).pos().equals(var2);
+         Optional<GlobalPos> nearbyVillagerJobSiteMemory = nearbyVillager.getBrain().<GlobalPos>getMemory(MemoryModuleType.JOB_SITE);
+         Holder<VillagerProfession> nearbyProfession = nearbyVillager.getVillagerData().profession();
+         if (((VillagerProfession)nearbyProfession.value()).heldJobSite().test(type)) {
+            return nearbyVillagerJobSiteMemory.isEmpty() ? canReachPos(nearbyVillager, poiPos, type.value()) : ((GlobalPos)nearbyVillagerJobSiteMemory.get()).pos().equals(poiPos);
          } else {
             return false;
          }
       }
    }
 
-   private static boolean canReachPos(PathfinderMob var0, BlockPos var1, PoiType var2) {
-      Path var3 = var0.getNavigation().createPath(var1, var2.validRange());
-      return var3 != null && var3.canReach();
+   private static boolean canReachPos(final PathfinderMob nearbyVillager, final BlockPos poiPos, final PoiType type) {
+      Path path = nearbyVillager.getNavigation().createPath(poiPos, type.validRange());
+      return path != null && path.canReach();
    }
 }

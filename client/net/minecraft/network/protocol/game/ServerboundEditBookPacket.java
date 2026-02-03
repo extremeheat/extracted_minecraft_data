@@ -11,20 +11,20 @@ import net.minecraft.network.protocol.PacketType;
 public record ServerboundEditBookPacket(int slot, List<String> pages, Optional<String> title) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundEditBookPacket> STREAM_CODEC;
 
-   public ServerboundEditBookPacket(int var1, List<String> var2, Optional<String> var3) {
+   public ServerboundEditBookPacket(int slot, List<String> pages, Optional<String> title) {
       super();
-      var2 = List.copyOf(var2);
-      this.slot = var1;
-      this.pages = var2;
-      this.title = var3;
+      pages = List.copyOf(pages);
+      this.slot = slot;
+      this.pages = pages;
+      this.title = title;
    }
 
    public PacketType<ServerboundEditBookPacket> type() {
       return GamePacketTypes.SERVERBOUND_EDIT_BOOK;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleEditBook(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleEditBook(this);
    }
 
    static {

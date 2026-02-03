@@ -13,32 +13,32 @@ import net.minecraft.world.level.storage.loot.LootContextArg;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class CopyNameFunction extends LootItemConditionalFunction {
-   public static final MapCodec<CopyNameFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(LootContextArg.ENTITY_OR_BLOCK.fieldOf("source").forGetter((var0x) -> var0x.source)).apply(var0, CopyNameFunction::new));
+   public static final MapCodec<CopyNameFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(LootContextArg.ENTITY_OR_BLOCK.fieldOf("source").forGetter((f) -> f.source)).apply(i, CopyNameFunction::new));
    private final LootContextArg<Object> source;
 
-   private CopyNameFunction(List<LootItemCondition> var1, LootContextArg<?> var2) {
-      super(var1);
-      this.source = LootContextArg.<Object>cast(var2);
+   private CopyNameFunction(final List<LootItemCondition> predicates, final LootContextArg<?> source) {
+      super(predicates);
+      this.source = LootContextArg.<Object>cast(source);
    }
 
-   public LootItemFunctionType<CopyNameFunction> getType() {
-      return LootItemFunctions.COPY_NAME;
+   public MapCodec<CopyNameFunction> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Set.of(this.source.contextParam());
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      Object var3 = this.source.get(var2);
-      if (var3 instanceof Nameable var4) {
-         var1.set(DataComponents.CUSTOM_NAME, var4.getCustomName());
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      Object maybeNameable = this.source.get(context);
+      if (maybeNameable instanceof Nameable nameable) {
+         itemStack.set(DataComponents.CUSTOM_NAME, nameable.getCustomName());
       }
 
-      return var1;
+      return itemStack;
    }
 
-   public static LootItemConditionalFunction.Builder<?> copyName(LootContextArg<?> var0) {
-      return simpleBuilder((var1) -> new CopyNameFunction(var1, var0));
+   public static LootItemConditionalFunction.Builder<?> copyName(final LootContextArg<?> target) {
+      return simpleBuilder((conditions) -> new CopyNameFunction(conditions, target));
    }
 }

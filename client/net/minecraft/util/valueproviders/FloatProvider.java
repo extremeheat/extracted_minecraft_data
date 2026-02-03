@@ -13,12 +13,12 @@ public abstract class FloatProvider implements SampledFloat {
       super();
    }
 
-   public static Codec<FloatProvider> codec(float var0, float var1) {
-      return CODEC.validate((var2) -> {
-         if (var2.getMinValue() < var0) {
-            return DataResult.error(() -> "Value provider too low: " + var0 + " [" + var2.getMinValue() + "-" + var2.getMaxValue() + "]");
+   public static Codec<FloatProvider> codec(final float minValue, final float maxValue) {
+      return CODEC.validate((value) -> {
+         if (value.getMinValue() < minValue) {
+            return DataResult.error(() -> "Value provider too low: " + minValue + " [" + value.getMinValue() + "-" + value.getMaxValue() + "]");
          } else {
-            return var2.getMaxValue() > var1 ? DataResult.error(() -> "Value provider too high: " + var1 + " [" + var2.getMinValue() + "-" + var2.getMaxValue() + "]") : DataResult.success(var2);
+            return value.getMaxValue() > maxValue ? DataResult.error(() -> "Value provider too high: " + maxValue + " [" + value.getMinValue() + "-" + value.getMaxValue() + "]") : DataResult.success(value);
          }
       });
    }
@@ -31,6 +31,6 @@ public abstract class FloatProvider implements SampledFloat {
 
    static {
       CONSTANT_OR_DISPATCH_CODEC = Codec.either(Codec.FLOAT, BuiltInRegistries.FLOAT_PROVIDER_TYPE.byNameCodec().dispatch(FloatProvider::getType, FloatProviderType::codec));
-      CODEC = CONSTANT_OR_DISPATCH_CODEC.xmap((var0) -> (FloatProvider)var0.map(ConstantFloat::of, (var0x) -> var0x), (var0) -> var0.getType() == FloatProviderType.CONSTANT ? Either.left(((ConstantFloat)var0).getValue()) : Either.right(var0));
+      CODEC = CONSTANT_OR_DISPATCH_CODEC.xmap((either) -> (FloatProvider)either.map(ConstantFloat::of, (f) -> f), (f) -> f.getType() == FloatProviderType.CONSTANT ? Either.left(((ConstantFloat)f).getValue()) : Either.right(f));
    }
 }

@@ -20,25 +20,23 @@ import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 
 public record ArmorTrim(Holder<TrimMaterial> material, Holder<TrimPattern> pattern) implements TooltipProvider {
-   public static final Codec<ArmorTrim> CODEC = RecordCodecBuilder.create((var0) -> var0.group(TrimMaterial.CODEC.fieldOf("material").forGetter(ArmorTrim::material), TrimPattern.CODEC.fieldOf("pattern").forGetter(ArmorTrim::pattern)).apply(var0, ArmorTrim::new));
+   public static final Codec<ArmorTrim> CODEC = RecordCodecBuilder.create((i) -> i.group(TrimMaterial.CODEC.fieldOf("material").forGetter(ArmorTrim::material), TrimPattern.CODEC.fieldOf("pattern").forGetter(ArmorTrim::pattern)).apply(i, ArmorTrim::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ArmorTrim> STREAM_CODEC;
    private static final Component UPGRADE_TITLE;
 
-   public ArmorTrim(Holder<TrimMaterial> var1, Holder<TrimPattern> var2) {
+   public ArmorTrim {
       super();
-      this.material = var1;
-      this.pattern = var2;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      var2.accept(UPGRADE_TITLE);
-      var2.accept(CommonComponents.space().append((this.pattern.value()).copyWithStyle(this.material)));
-      var2.accept(CommonComponents.space().append(((TrimMaterial)this.material.value()).description()));
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      consumer.accept(UPGRADE_TITLE);
+      consumer.accept(CommonComponents.space().append((this.pattern.value()).copyWithStyle(this.material)));
+      consumer.accept(CommonComponents.space().append(((TrimMaterial)this.material.value()).description()));
    }
 
-   public Identifier layerAssetId(String var1, ResourceKey<EquipmentAsset> var2) {
-      MaterialAssetGroup.AssetInfo var3 = ((TrimMaterial)this.material().value()).assets().assetId(var2);
-      return ((TrimPattern)this.pattern().value()).assetId().withPath((UnaryOperator)((var2x) -> var1 + "/" + var2x + "_" + var3.suffix()));
+   public Identifier layerAssetId(final String layerAssetPrefix, final ResourceKey<EquipmentAsset> equipmentAsset) {
+      MaterialAssetGroup.AssetInfo materialAsset = ((TrimMaterial)this.material().value()).assets().assetId(equipmentAsset);
+      return ((TrimPattern)this.pattern().value()).assetId().withPath((UnaryOperator)((patternPath) -> layerAssetPrefix + "/" + patternPath + "_" + materialAsset.suffix()));
    }
 
    static {

@@ -13,12 +13,12 @@ public class VillagerCalmDown {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.registered(MemoryModuleType.HURT_BY), var0.registered(MemoryModuleType.HURT_BY_ENTITY), var0.registered(MemoryModuleType.NEAREST_HOSTILE)).apply(var0, (var1, var2, var3) -> (var4, var5, var6) -> {
-               boolean var8 = var0.tryGet(var1).isPresent() || var0.tryGet(var3).isPresent() || var0.tryGet(var2).filter((var1x) -> var1x.distanceToSqr(var5) <= 36.0).isPresent();
-               if (!var8) {
-                  var1.erase();
-                  var2.erase();
-                  var5.getBrain().updateActivityFromSchedule(var4.environmentAttributes(), var4.getGameTime(), var5.position());
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.HURT_BY), i.registered(MemoryModuleType.HURT_BY_ENTITY), i.registered(MemoryModuleType.NEAREST_HOSTILE)).apply(i, (hurtBy, hurtByEntity, nearestHostile) -> (level, body, timestamp) -> {
+               boolean feelScared = i.tryGet(hurtBy).isPresent() || i.tryGet(nearestHostile).isPresent() || i.tryGet(hurtByEntity).filter((entity) -> entity.distanceToSqr(body) <= 36.0).isPresent();
+               if (!feelScared) {
+                  hurtBy.erase();
+                  hurtByEntity.erase();
+                  body.getBrain().updateActivityFromSchedule(level.environmentAttributes(), level.getGameTime(), body.position());
                }
 
                return true;

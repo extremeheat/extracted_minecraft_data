@@ -13,26 +13,26 @@ public class RegionBitmap {
       super();
    }
 
-   public void force(int var1, int var2) {
-      this.used.set(var1, var1 + var2);
+   public void force(final int position, final int size) {
+      this.used.set(position, position + size);
    }
 
-   public void free(int var1, int var2) {
-      this.used.clear(var1, var1 + var2);
+   public void free(final int position, final int size) {
+      this.used.clear(position, position + size);
    }
 
-   public int allocate(int var1) {
-      int var2 = 0;
+   public int allocate(final int size) {
+      int current = 0;
 
       while(true) {
-         int var3 = this.used.nextClearBit(var2);
-         int var4 = this.used.nextSetBit(var3);
-         if (var4 == -1 || var4 - var3 >= var1) {
-            this.force(var3, var1);
-            return var3;
+         int freeStart = this.used.nextClearBit(current);
+         int freeEnd = this.used.nextSetBit(freeStart);
+         if (freeEnd == -1 || freeEnd - freeStart >= size) {
+            this.force(freeStart, size);
+            return freeStart;
          }
 
-         var2 = var4;
+         current = freeEnd;
       }
    }
 

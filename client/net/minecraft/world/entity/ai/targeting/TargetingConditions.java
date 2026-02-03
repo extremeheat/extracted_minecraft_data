@@ -15,9 +15,9 @@ public class TargetingConditions {
    private boolean testInvisible = true;
    private @Nullable Selector selector;
 
-   private TargetingConditions(boolean var1) {
+   private TargetingConditions(final boolean isCombat) {
       super();
-      this.isCombat = var1;
+      this.isCombat = isCombat;
    }
 
    public static TargetingConditions forCombat() {
@@ -29,16 +29,16 @@ public class TargetingConditions {
    }
 
    public TargetingConditions copy() {
-      TargetingConditions var1 = this.isCombat ? forCombat() : forNonCombat();
-      var1.range = this.range;
-      var1.checkLineOfSight = this.checkLineOfSight;
-      var1.testInvisible = this.testInvisible;
-      var1.selector = this.selector;
-      return var1;
+      TargetingConditions clone = this.isCombat ? forCombat() : forNonCombat();
+      clone.range = this.range;
+      clone.checkLineOfSight = this.checkLineOfSight;
+      clone.testInvisible = this.testInvisible;
+      clone.selector = this.selector;
+      return clone;
    }
 
-   public TargetingConditions range(double var1) {
-      this.range = var1;
+   public TargetingConditions range(final double range) {
+      this.range = range;
       return this;
    }
 
@@ -52,40 +52,40 @@ public class TargetingConditions {
       return this;
    }
 
-   public TargetingConditions selector(@Nullable Selector var1) {
-      this.selector = var1;
+   public TargetingConditions selector(final @Nullable Selector selector) {
+      this.selector = selector;
       return this;
    }
 
-   public boolean test(ServerLevel var1, @Nullable LivingEntity var2, LivingEntity var3) {
-      if (var2 == var3) {
+   public boolean test(final ServerLevel level, final @Nullable LivingEntity targeter, final LivingEntity target) {
+      if (targeter == target) {
          return false;
-      } else if (!var3.canBeSeenByAnyone()) {
+      } else if (!target.canBeSeenByAnyone()) {
          return false;
-      } else if (this.selector != null && !this.selector.test(var3, var1)) {
+      } else if (this.selector != null && !this.selector.test(target, level)) {
          return false;
       } else {
-         if (var2 == null) {
-            if (this.isCombat && (!var3.canBeSeenAsEnemy() || var1.getDifficulty() == Difficulty.PEACEFUL)) {
+         if (targeter == null) {
+            if (this.isCombat && (!target.canBeSeenAsEnemy() || level.getDifficulty() == Difficulty.PEACEFUL)) {
                return false;
             }
          } else {
-            if (this.isCombat && (!var2.canAttack(var3) || !var2.canAttackType(var3.getType()) || var2.isAlliedTo(var3))) {
+            if (this.isCombat && (!targeter.canAttack(target) || targeter.isAlliedTo(target))) {
                return false;
             }
 
             if (this.range > 0.0) {
-               double var4 = this.testInvisible ? var3.getVisibilityPercent(var2) : 1.0;
-               double var6 = Math.max(this.range * var4, 2.0);
-               double var8 = var2.distanceToSqr(var3.getX(), var3.getY(), var3.getZ());
-               if (var8 > var6 * var6) {
+               double modifier = this.testInvisible ? target.getVisibilityPercent(targeter) : 1.0;
+               double visibilityDistance = Math.max(this.range * modifier, 2.0);
+               double distanceToSqr = targeter.distanceToSqr(target.getX(), target.getY(), target.getZ());
+               if (distanceToSqr > visibilityDistance * visibilityDistance) {
                   return false;
                }
             }
 
-            if (this.checkLineOfSight && var2 instanceof Mob) {
-               Mob var10 = (Mob)var2;
-               if (!var10.getSensing().hasLineOfSight(var3)) {
+            if (this.checkLineOfSight && targeter instanceof Mob) {
+               Mob mob = (Mob)targeter;
+               if (!mob.getSensing().hasLineOfSight(target)) {
                   return false;
                }
             }
@@ -97,6 +97,6 @@ public class TargetingConditions {
 
    @FunctionalInterface
    public interface Selector {
-      boolean test(LivingEntity var1, ServerLevel var2);
+      boolean test(LivingEntity target, ServerLevel level);
    }
 }

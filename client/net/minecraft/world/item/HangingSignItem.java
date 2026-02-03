@@ -8,18 +8,18 @@ import net.minecraft.world.level.block.WallHangingSignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class HangingSignItem extends SignItem {
-   public HangingSignItem(Block var1, Block var2, Item.Properties var3) {
-      super(var3, var1, var2, Direction.UP);
+   public HangingSignItem(final Block hangingSign, final Block wallHangingSign, final Item.Properties properties) {
+      super(properties, hangingSign, wallHangingSign, Direction.UP);
    }
 
-   protected boolean canPlace(LevelReader var1, BlockState var2, BlockPos var3) {
-      Block var5 = var2.getBlock();
-      if (var5 instanceof WallHangingSignBlock var4) {
-         if (!var4.canPlace(var2, var1, var3)) {
+   protected boolean canPlace(final LevelReader level, final BlockState possibleState, final BlockPos pos) {
+      Block var5 = possibleState.getBlock();
+      if (var5 instanceof WallHangingSignBlock hangingSign) {
+         if (!hangingSign.canPlace(possibleState, level, pos)) {
             return false;
          }
       }
 
-      return super.canPlace(var1, var2, var3);
+      return super.canPlace(level, possibleState, pos);
    }
 }

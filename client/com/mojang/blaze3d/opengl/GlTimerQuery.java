@@ -11,9 +11,9 @@ public class GlTimerQuery implements GpuQuery {
    private boolean closed;
    private OptionalLong result = OptionalLong.empty();
 
-   GlTimerQuery(int var1) {
+   GlTimerQuery(final int queryId) {
       super();
-      this.queryId = var1;
+      this.queryId = queryId;
    }
 
    public OptionalLong getValue() {

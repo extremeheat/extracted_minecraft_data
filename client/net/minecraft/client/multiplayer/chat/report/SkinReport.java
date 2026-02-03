@@ -16,11 +16,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 
 public class SkinReport extends Report {
-   final Supplier<PlayerSkin> skinGetter;
+   private final Supplier<PlayerSkin> skinGetter;
 
-   SkinReport(UUID var1, Instant var2, UUID var3, Supplier<PlayerSkin> var4) {
-      super(var1, var2, var3);
-      this.skinGetter = var4;
+   private SkinReport(final UUID reportId, final Instant createdAt, final UUID reportedProfileId, final Supplier<PlayerSkin> skinGetter) {
+      super(reportId, createdAt, reportedProfileId);
+      this.skinGetter = skinGetter;
    }
 
    public Supplier<PlayerSkin> getSkinGetter() {
@@ -28,29 +28,24 @@ public class SkinReport extends Report {
    }
 
    public SkinReport copy() {
-      SkinReport var1 = new SkinReport(this.reportId, this.createdAt, this.reportedProfileId, this.skinGetter);
-      var1.comments = this.comments;
-      var1.reason = this.reason;
-      var1.attested = this.attested;
-      return var1;
+      SkinReport result = new SkinReport(this.reportId, this.createdAt, this.reportedProfileId, this.skinGetter);
+      result.comments = this.comments;
+      result.reason = this.reason;
+      result.attested = this.attested;
+      return result;
    }
 
-   public Screen createScreen(Screen var1, ReportingContext var2) {
-      return new SkinReportScreen(var1, var2, this);
-   }
-
-   // $FF: synthetic method
-   public Report copy() {
-      return this.copy();
+   public Screen createScreen(final Screen lastScreen, final ReportingContext context) {
+      return new SkinReportScreen(lastScreen, context, this);
    }
 
    public static class Builder extends Report.Builder<SkinReport> {
-      public Builder(SkinReport var1, AbuseReportLimits var2) {
-         super(var1, var2);
+      public Builder(final SkinReport report, final AbuseReportLimits limits) {
+         super(report, limits);
       }
 
-      public Builder(UUID var1, Supplier<PlayerSkin> var2, AbuseReportLimits var3) {
-         super(new SkinReport(UUID.randomUUID(), Instant.now(), var1, var2), var3);
+      public Builder(final UUID reportedProfileId, final Supplier<PlayerSkin> skin, final AbuseReportLimits limits) {
+         super(new SkinReport(UUID.randomUUID(), Instant.now(), reportedProfileId, skin), limits);
       }
 
       public boolean hasContent() {
@@ -65,26 +60,26 @@ public class SkinReport extends Report {
          }
       }
 
-      public Either<Report.Result, Report.CannotBuildReason> build(ReportingContext var1) {
-         Report.CannotBuildReason var2 = this.checkBuildable();
-         if (var2 != null) {
-            return Either.right(var2);
+      public Either<Report.Result, Report.CannotBuildReason> build(final ReportingContext reportingContext) {
+         Report.CannotBuildReason error = this.checkBuildable();
+         if (error != null) {
+            return Either.right(error);
          } else {
-            String var3 = ((ReportReason)Objects.requireNonNull((this.report).reason)).backendName();
-            ReportedEntity var4 = new ReportedEntity((this.report).reportedProfileId);
-            PlayerSkin var5 = (PlayerSkin)(this.report).skinGetter.get();
-            ClientAsset.Texture var8 = var5.body();
+            String reason = ((ReportReason)Objects.requireNonNull((this.report).reason)).backendName();
+            ReportedEntity reportedEntity = new ReportedEntity((this.report).reportedProfileId);
+            PlayerSkin skin = (PlayerSkin)(this.report).skinGetter.get();
+            ClientAsset.Texture var8 = skin.body();
             String var10000;
             if (var8 instanceof ClientAsset.DownloadedTexture) {
-               ClientAsset.DownloadedTexture var7 = (ClientAsset.DownloadedTexture)var8;
-               var10000 = var7.url();
+               ClientAsset.DownloadedTexture downloadedTexture = (ClientAsset.DownloadedTexture)var8;
+               var10000 = downloadedTexture.url();
             } else {
                var10000 = null;
             }
 
-            String var6 = var10000;
-            AbuseReport var9 = AbuseReport.skin((this.report).comments, var3, var6, var4, (this.report).createdAt);
-            return Either.left(new Report.Result((this.report).reportId, ReportType.SKIN, var9));
+            String skinUrl = var10000;
+            AbuseReport abuseReport = AbuseReport.skin((this.report).comments, reason, skinUrl, reportedEntity, (this.report).createdAt);
+            return Either.left(new Report.Result((this.report).reportId, ReportType.SKIN, abuseReport));
          }
       }
    }

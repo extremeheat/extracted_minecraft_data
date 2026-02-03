@@ -10,8 +10,8 @@ public enum SideChainPart implements StringRepresentable {
 
    private final String name;
 
-   private SideChainPart(final String var3) {
-      this.name = var3;
+   private SideChainPart(final String name) {
+      this.name = name;
    }
 
    public String toString() {
@@ -26,8 +26,8 @@ public enum SideChainPart implements StringRepresentable {
       return this != UNCONNECTED;
    }
 
-   public boolean isConnectionTowards(SideChainPart var1) {
-      return this == CENTER || this == var1;
+   public boolean isConnectionTowards(final SideChainPart endPart) {
+      return this == CENTER || this == endPart;
    }
 
    public boolean isChainEnd() {

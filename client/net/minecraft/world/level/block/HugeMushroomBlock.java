@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -29,31 +29,31 @@ public class HugeMushroomBlock extends Block {
       return CODEC;
    }
 
-   public HugeMushroomBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public HugeMushroomBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, true)).setValue(EAST, true)).setValue(SOUTH, true)).setValue(WEST, true)).setValue(UP, true)).setValue(DOWN, true));
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(DOWN, !var2.getBlockState(var3.below()).is(this))).setValue(UP, !var2.getBlockState(var3.above()).is(this))).setValue(NORTH, !var2.getBlockState(var3.north()).is(this))).setValue(EAST, !var2.getBlockState(var3.east()).is(this))).setValue(SOUTH, !var2.getBlockState(var3.south()).is(this))).setValue(WEST, !var2.getBlockState(var3.west()).is(this));
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockGetter level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(DOWN, !level.getBlockState(pos.below()).is(this))).setValue(UP, !level.getBlockState(pos.above()).is(this))).setValue(NORTH, !level.getBlockState(pos.north()).is(this))).setValue(EAST, !level.getBlockState(pos.east()).is(this))).setValue(SOUTH, !level.getBlockState(pos.south()).is(this))).setValue(WEST, !level.getBlockState(pos.west()).is(this));
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var7.is(this) ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var5), false) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return neighbourState.is(this) ? (BlockState)state.setValue((Property)PROPERTY_BY_DIRECTION.get(directionToNeighbour), false) : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var2.rotate(Direction.NORTH)), (Boolean)var1.getValue(NORTH))).setValue((Property)PROPERTY_BY_DIRECTION.get(var2.rotate(Direction.SOUTH)), (Boolean)var1.getValue(SOUTH))).setValue((Property)PROPERTY_BY_DIRECTION.get(var2.rotate(Direction.EAST)), (Boolean)var1.getValue(EAST))).setValue((Property)PROPERTY_BY_DIRECTION.get(var2.rotate(Direction.WEST)), (Boolean)var1.getValue(WEST))).setValue((Property)PROPERTY_BY_DIRECTION.get(var2.rotate(Direction.UP)), (Boolean)var1.getValue(UP))).setValue((Property)PROPERTY_BY_DIRECTION.get(var2.rotate(Direction.DOWN)), (Boolean)var1.getValue(DOWN));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)state.setValue((Property)PROPERTY_BY_DIRECTION.get(rotation.rotate(Direction.NORTH)), (Boolean)state.getValue(NORTH))).setValue((Property)PROPERTY_BY_DIRECTION.get(rotation.rotate(Direction.SOUTH)), (Boolean)state.getValue(SOUTH))).setValue((Property)PROPERTY_BY_DIRECTION.get(rotation.rotate(Direction.EAST)), (Boolean)state.getValue(EAST))).setValue((Property)PROPERTY_BY_DIRECTION.get(rotation.rotate(Direction.WEST)), (Boolean)state.getValue(WEST))).setValue((Property)PROPERTY_BY_DIRECTION.get(rotation.rotate(Direction.UP)), (Boolean)state.getValue(UP))).setValue((Property)PROPERTY_BY_DIRECTION.get(rotation.rotate(Direction.DOWN)), (Boolean)state.getValue(DOWN));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var2.mirror(Direction.NORTH)), (Boolean)var1.getValue(NORTH))).setValue((Property)PROPERTY_BY_DIRECTION.get(var2.mirror(Direction.SOUTH)), (Boolean)var1.getValue(SOUTH))).setValue((Property)PROPERTY_BY_DIRECTION.get(var2.mirror(Direction.EAST)), (Boolean)var1.getValue(EAST))).setValue((Property)PROPERTY_BY_DIRECTION.get(var2.mirror(Direction.WEST)), (Boolean)var1.getValue(WEST))).setValue((Property)PROPERTY_BY_DIRECTION.get(var2.mirror(Direction.UP)), (Boolean)var1.getValue(UP))).setValue((Property)PROPERTY_BY_DIRECTION.get(var2.mirror(Direction.DOWN)), (Boolean)var1.getValue(DOWN));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)state.setValue((Property)PROPERTY_BY_DIRECTION.get(mirror.mirror(Direction.NORTH)), (Boolean)state.getValue(NORTH))).setValue((Property)PROPERTY_BY_DIRECTION.get(mirror.mirror(Direction.SOUTH)), (Boolean)state.getValue(SOUTH))).setValue((Property)PROPERTY_BY_DIRECTION.get(mirror.mirror(Direction.EAST)), (Boolean)state.getValue(EAST))).setValue((Property)PROPERTY_BY_DIRECTION.get(mirror.mirror(Direction.WEST)), (Boolean)state.getValue(WEST))).setValue((Property)PROPERTY_BY_DIRECTION.get(mirror.mirror(Direction.UP)), (Boolean)state.getValue(UP))).setValue((Property)PROPERTY_BY_DIRECTION.get(mirror.mirror(Direction.DOWN)), (Boolean)state.getValue(DOWN));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(UP, DOWN, NORTH, EAST, SOUTH, WEST);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(UP, DOWN, NORTH, EAST, SOUTH, WEST);
    }
 
    static {

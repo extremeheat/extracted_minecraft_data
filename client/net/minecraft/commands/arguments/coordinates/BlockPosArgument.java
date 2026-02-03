@@ -33,61 +33,56 @@ public class BlockPosArgument implements ArgumentType<Coordinates> {
       return new BlockPosArgument();
    }
 
-   public static BlockPos getLoadedBlockPos(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      ServerLevel var2 = ((CommandSourceStack)var0.getSource()).getLevel();
-      return getLoadedBlockPos(var0, var2, var1);
+   public static BlockPos getLoadedBlockPos(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      ServerLevel level = ((CommandSourceStack)context.getSource()).getLevel();
+      return getLoadedBlockPos(context, level, name);
    }
 
-   public static BlockPos getLoadedBlockPos(CommandContext<CommandSourceStack> var0, ServerLevel var1, String var2) throws CommandSyntaxException {
-      BlockPos var3 = getBlockPos(var0, var2);
-      if (!var1.hasChunkAt(var3)) {
+   public static BlockPos getLoadedBlockPos(final CommandContext<CommandSourceStack> context, final ServerLevel level, final String name) throws CommandSyntaxException {
+      BlockPos pos = getBlockPos(context, name);
+      if (!level.hasChunkAt(pos)) {
          throw ERROR_NOT_LOADED.create();
-      } else if (!var1.isInWorldBounds(var3)) {
+      } else if (!level.isInWorldBounds(pos)) {
          throw ERROR_OUT_OF_WORLD.create();
       } else {
-         return var3;
+         return pos;
       }
    }
 
-   public static BlockPos getBlockPos(CommandContext<CommandSourceStack> var0, String var1) {
-      return ((Coordinates)var0.getArgument(var1, Coordinates.class)).getBlockPos((CommandSourceStack)var0.getSource());
+   public static BlockPos getBlockPos(final CommandContext<CommandSourceStack> context, final String name) {
+      return ((Coordinates)context.getArgument(name, Coordinates.class)).getBlockPos((CommandSourceStack)context.getSource());
    }
 
-   public static BlockPos getSpawnablePos(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      BlockPos var2 = getBlockPos(var0, var1);
-      if (!Level.isInSpawnableBounds(var2)) {
+   public static BlockPos getSpawnablePos(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      BlockPos pos = getBlockPos(context, name);
+      if (!Level.isInSpawnableBounds(pos)) {
          throw ERROR_OUT_OF_BOUNDS.create();
       } else {
-         return var2;
+         return pos;
       }
    }
 
-   public Coordinates parse(StringReader var1) throws CommandSyntaxException {
-      return (Coordinates)(var1.canRead() && var1.peek() == '^' ? LocalCoordinates.parse(var1) : WorldCoordinates.parseInt(var1));
+   public Coordinates parse(final StringReader reader) throws CommandSyntaxException {
+      return (Coordinates)(reader.canRead() && reader.peek() == '^' ? LocalCoordinates.parse(reader) : WorldCoordinates.parseInt(reader));
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      if (!(var1.getSource() instanceof SharedSuggestionProvider)) {
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      if (!(context.getSource() instanceof SharedSuggestionProvider)) {
          return Suggestions.empty();
       } else {
-         String var3 = var2.getRemaining();
-         Object var4;
-         if (!var3.isEmpty() && var3.charAt(0) == '^') {
-            var4 = Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_LOCAL);
+         String remainder = builder.getRemaining();
+         Collection<SharedSuggestionProvider.TextCoordinates> suggestedCoordinates;
+         if (!remainder.isEmpty() && remainder.charAt(0) == '^') {
+            suggestedCoordinates = Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_LOCAL);
          } else {
-            var4 = ((SharedSuggestionProvider)var1.getSource()).getRelevantCoordinates();
+            suggestedCoordinates = ((SharedSuggestionProvider)context.getSource()).getRelevantCoordinates();
          }
 
-         return SharedSuggestionProvider.suggestCoordinates(var3, (Collection)var4, var2, Commands.createValidator(this::parse));
+         return SharedSuggestionProvider.suggestCoordinates(remainder, suggestedCoordinates, builder, Commands.createValidator(this::parse));
       }
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

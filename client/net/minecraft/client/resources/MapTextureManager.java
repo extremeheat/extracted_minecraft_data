@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.util.Objects;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
@@ -13,41 +14,41 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class MapTextureManager implements AutoCloseable {
    private final Int2ObjectMap<MapInstance> maps = new Int2ObjectOpenHashMap();
-   final TextureManager textureManager;
+   private final TextureManager textureManager;
 
-   public MapTextureManager(TextureManager var1) {
+   public MapTextureManager(final TextureManager textureManager) {
       super();
-      this.textureManager = var1;
+      this.textureManager = textureManager;
    }
 
-   public void update(MapId var1, MapItemSavedData var2) {
-      this.getOrCreateMapInstance(var1, var2).forceUpload();
+   public void update(final MapId id, final MapItemSavedData data) {
+      this.getOrCreateMapInstance(id, data).forceUpload();
    }
 
-   public Identifier prepareMapTexture(MapId var1, MapItemSavedData var2) {
-      MapInstance var3 = this.getOrCreateMapInstance(var1, var2);
-      var3.updateTextureIfNeeded();
-      return var3.location;
+   public Identifier prepareMapTexture(final MapId id, final MapItemSavedData data) {
+      MapInstance mapInstance = this.getOrCreateMapInstance(id, data);
+      mapInstance.updateTextureIfNeeded();
+      return mapInstance.location;
    }
 
    public void resetData() {
       ObjectIterator var1 = this.maps.values().iterator();
 
       while(var1.hasNext()) {
-         MapInstance var2 = (MapInstance)var1.next();
-         var2.close();
+         MapInstance mapInstance = (MapInstance)var1.next();
+         mapInstance.close();
       }
 
       this.maps.clear();
    }
 
-   private MapInstance getOrCreateMapInstance(MapId var1, MapItemSavedData var2) {
-      return (MapInstance)this.maps.compute(var1.id(), (var2x, var3) -> {
-         if (var3 == null) {
-            return new MapInstance(var2x, var2);
+   private MapInstance getOrCreateMapInstance(final MapId id, final MapItemSavedData data) {
+      return (MapInstance)this.maps.compute(id.id(), (k, instance) -> {
+         if (instance == null) {
+            return new MapInstance(k, data);
          } else {
-            var3.replaceMapData(var2);
-            return var3;
+            instance.replaceMapData(data);
+            return instance;
          }
       });
    }
@@ -56,39 +57,40 @@ public class MapTextureManager implements AutoCloseable {
       this.resetData();
    }
 
-   class MapInstance implements AutoCloseable {
+   private class MapInstance implements AutoCloseable {
       private MapItemSavedData data;
       private final DynamicTexture texture;
-      private boolean requiresUpload = true;
-      final Identifier location;
+      private boolean requiresUpload;
+      private final Identifier location;
 
-      MapInstance(final int var2, final MapItemSavedData var3) {
+      private MapInstance(final int id, final MapItemSavedData data) {
+         Objects.requireNonNull(MapTextureManager.this);
          super();
-         this.data = var3;
-         this.texture = new DynamicTexture(() -> "Map " + var2, 128, 128, true);
-         this.location = Identifier.withDefaultNamespace("map/" + var2);
+         this.requiresUpload = true;
+         this.data = data;
+         this.texture = new DynamicTexture(() -> "Map " + id, 128, 128, true);
+         this.location = Identifier.withDefaultNamespace("map/" + id);
          MapTextureManager.this.textureManager.register(this.location, this.texture);
       }
 
-      void replaceMapData(MapItemSavedData var1) {
-         boolean var2 = this.data != var1;
-         this.data = var1;
-         this.requiresUpload |= var2;
+      private void replaceMapData(final MapItemSavedData data) {
+         boolean dataChanged = this.data != data;
+         this.data = data;
+         this.requiresUpload |= dataChanged;
       }
 
       public void forceUpload() {
          this.requiresUpload = true;
       }
 
-      void updateTextureIfNeeded() {
+      private void updateTextureIfNeeded() {
          if (this.requiresUpload) {
-            NativeImage var1 = this.texture.getPixels();
-            if (var1 != null) {
-               for(int var2 = 0; var2 < 128; ++var2) {
-                  for(int var3 = 0; var3 < 128; ++var3) {
-                     int var4 = var3 + var2 * 128;
-                     var1.setPixel(var3, var2, MapColor.getColorFromPackedId(this.data.colors[var4]));
-                  }
+            NativeImage pixels = this.texture.getPixels();
+
+            for(int y = 0; y < 128; ++y) {
+               for(int x = 0; x < 128; ++x) {
+                  int i = x + y * 128;
+                  pixels.setPixel(x, y, MapColor.getColorFromPackedId(this.data.colors[i]));
                }
             }
 

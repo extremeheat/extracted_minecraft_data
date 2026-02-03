@@ -4,7 +4,6 @@ import com.mojang.authlib.GameProfile;
 import java.util.function.UnaryOperator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 import org.jspecify.annotations.Nullable;
 
 public interface ScoreHolder {
@@ -22,32 +21,32 @@ public interface ScoreHolder {
    }
 
    default Component getFeedbackDisplayName() {
-      Component var1 = this.getDisplayName();
-      return var1 != null ? var1.copy().withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent.ShowText(Component.literal(this.getScoreboardName()))))) : Component.literal(this.getScoreboardName());
+      Component displayName = this.getDisplayName();
+      return displayName != null ? displayName.copy().withStyle((UnaryOperator)((style) -> style.withHoverEvent(new HoverEvent.ShowText(Component.literal(this.getScoreboardName()))))) : Component.literal(this.getScoreboardName());
    }
 
-   static ScoreHolder forNameOnly(final String var0) {
-      if (var0.equals("*")) {
+   static ScoreHolder forNameOnly(final String name) {
+      if (name.equals("*")) {
          return WILDCARD;
       } else {
-         final MutableComponent var1 = Component.literal(var0);
+         final Component feedbackName = Component.literal(name);
          return new ScoreHolder() {
             public String getScoreboardName() {
-               return var0;
+               return name;
             }
 
             public Component getFeedbackDisplayName() {
-               return var1;
+               return feedbackName;
             }
          };
       }
    }
 
-   static ScoreHolder fromGameProfile(GameProfile var0) {
-      final String var1 = var0.name();
+   static ScoreHolder fromGameProfile(final GameProfile profile) {
+      final String name = profile.name();
       return new ScoreHolder() {
          public String getScoreboardName() {
-            return var1;
+            return name;
          }
       };
    }

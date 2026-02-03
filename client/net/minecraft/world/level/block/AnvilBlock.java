@@ -41,76 +41,76 @@ public class AnvilBlock extends FallingBlock {
       return CODEC;
    }
 
-   public AnvilBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public AnvilBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH));
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getClockWise());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getClockWise());
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide()) {
-         var4.openMenu(var1.getMenuProvider(var2, var3));
-         var4.awardStat(Stats.INTERACT_WITH_ANVIL);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide()) {
+         player.openMenu(state.getMenuProvider(level, pos));
+         player.awardStat(Stats.INTERACT_WITH_ANVIL);
       }
 
       return InteractionResult.SUCCESS;
    }
 
-   protected @Nullable MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> new AnvilMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
+   protected @Nullable MenuProvider getMenuProvider(final BlockState state, final Level level, final BlockPos pos) {
+      return new SimpleMenuProvider((containerId, inventory, player) -> new AnvilMenu(containerId, inventory, ContainerLevelAccess.create(level, pos)), CONTAINER_TITLE);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPES.get(((Direction)var1.getValue(FACING)).getAxis());
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)SHAPES.get(((Direction)state.getValue(FACING)).getAxis());
    }
 
-   protected void falling(FallingBlockEntity var1) {
-      var1.setHurtsEntities(2.0F, 40);
+   protected void falling(final FallingBlockEntity entity) {
+      entity.setHurtsEntities(2.0F, 40);
    }
 
-   public void onLand(Level var1, BlockPos var2, BlockState var3, BlockState var4, FallingBlockEntity var5) {
-      if (!var5.isSilent()) {
-         var1.levelEvent(1031, var2, 0);
+   public void onLand(final Level level, final BlockPos pos, final BlockState state, final BlockState replacedBlock, final FallingBlockEntity entity) {
+      if (!entity.isSilent()) {
+         level.levelEvent(1031, pos, 0);
       }
 
    }
 
-   public void onBrokenAfterFall(Level var1, BlockPos var2, FallingBlockEntity var3) {
-      if (!var3.isSilent()) {
-         var1.levelEvent(1029, var2, 0);
+   public void onBrokenAfterFall(final Level level, final BlockPos pos, final FallingBlockEntity entity) {
+      if (!entity.isSilent()) {
+         level.levelEvent(1029, pos, 0);
       }
 
    }
 
-   public DamageSource getFallDamageSource(Entity var1) {
-      return var1.damageSources().anvil(var1);
+   public DamageSource getFallDamageSource(final Entity entity) {
+      return entity.damageSources().anvil(entity);
    }
 
-   public static @Nullable BlockState damage(BlockState var0) {
-      if (var0.is(Blocks.ANVIL)) {
-         return (BlockState)Blocks.CHIPPED_ANVIL.defaultBlockState().setValue(FACING, (Direction)var0.getValue(FACING));
+   public static @Nullable BlockState damage(final BlockState blockState) {
+      if (blockState.is(Blocks.ANVIL)) {
+         return (BlockState)Blocks.CHIPPED_ANVIL.defaultBlockState().setValue(FACING, (Direction)blockState.getValue(FACING));
       } else {
-         return var0.is(Blocks.CHIPPED_ANVIL) ? (BlockState)Blocks.DAMAGED_ANVIL.defaultBlockState().setValue(FACING, (Direction)var0.getValue(FACING)) : null;
+         return blockState.is(Blocks.CHIPPED_ANVIL) ? (BlockState)Blocks.DAMAGED_ANVIL.defaultBlockState().setValue(FACING, (Direction)blockState.getValue(FACING)) : null;
       }
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   public int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.getMapColor(var2, var3).col;
+   public int getDustColor(final BlockState blockState, final BlockGetter level, final BlockPos pos) {
+      return blockState.getMapColor(level, pos).col;
    }
 
    static {

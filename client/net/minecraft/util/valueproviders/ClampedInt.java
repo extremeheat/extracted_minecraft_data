@@ -8,24 +8,24 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class ClampedInt extends IntProvider {
-   public static final MapCodec<ClampedInt> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(IntProvider.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source), Codec.INT.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter((var0x) -> var0x.maxInclusive)).apply(var0, ClampedInt::new)).validate((var0) -> var0.maxInclusive < var0.minInclusive ? DataResult.error(() -> "Max must be at least min, min_inclusive: " + var0.minInclusive + ", max_inclusive: " + var0.maxInclusive) : DataResult.success(var0));
+   public static final MapCodec<ClampedInt> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(IntProvider.CODEC.fieldOf("source").forGetter((u) -> u.source), Codec.INT.fieldOf("min_inclusive").forGetter((u) -> u.minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter((u) -> u.maxInclusive)).apply(i, ClampedInt::new)).validate((u) -> u.maxInclusive < u.minInclusive ? DataResult.error(() -> "Max must be at least min, min_inclusive: " + u.minInclusive + ", max_inclusive: " + u.maxInclusive) : DataResult.success(u));
    private final IntProvider source;
    private final int minInclusive;
    private final int maxInclusive;
 
-   public static ClampedInt of(IntProvider var0, int var1, int var2) {
-      return new ClampedInt(var0, var1, var2);
+   public static ClampedInt of(final IntProvider source, final int minInclusive, final int maxInclusive) {
+      return new ClampedInt(source, minInclusive, maxInclusive);
    }
 
-   public ClampedInt(IntProvider var1, int var2, int var3) {
+   public ClampedInt(final IntProvider source, final int minInclusive, final int maxInclusive) {
       super();
-      this.source = var1;
-      this.minInclusive = var2;
-      this.maxInclusive = var3;
+      this.source = source;
+      this.minInclusive = minInclusive;
+      this.maxInclusive = maxInclusive;
    }
 
-   public int sample(RandomSource var1) {
-      return Mth.clamp(this.source.sample(var1), this.minInclusive, this.maxInclusive);
+   public int sample(final RandomSource random) {
+      return Mth.clamp(this.source.sample(random), this.minInclusive, this.maxInclusive);
    }
 
    public int getMinValue() {

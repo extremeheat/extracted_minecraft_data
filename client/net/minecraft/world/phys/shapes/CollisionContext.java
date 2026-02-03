@@ -22,58 +22,58 @@ public interface CollisionContext {
       return EntityCollisionContext.Empty.WITH_FLUID_COLLISIONS;
    }
 
-   static CollisionContext of(Entity var0) {
-      Objects.requireNonNull(var0);
+   static CollisionContext of(final Entity entity) {
+      Objects.requireNonNull(entity);
       byte var2 = 0;
       Object var10000;
       //$FF: var2->value
       //0->net/minecraft/world/entity/vehicle/minecart/AbstractMinecart
-      switch (var0.typeSwitch<invokedynamic>(var0, var2)) {
+      switch (entity.typeSwitch<invokedynamic>(entity, var2)) {
          case 0:
-            AbstractMinecart var3 = (AbstractMinecart)var0;
-            var10000 = AbstractMinecart.useExperimentalMovement(var3.level()) ? new MinecartCollisionContext(var3, false) : new EntityCollisionContext(var0, false, false);
+            AbstractMinecart minecart = (AbstractMinecart)entity;
+            var10000 = AbstractMinecart.useExperimentalMovement(minecart.level()) ? new MinecartCollisionContext(minecart, false) : new EntityCollisionContext(entity, false, false);
             break;
          default:
-            var10000 = new EntityCollisionContext(var0, false, false);
+            var10000 = new EntityCollisionContext(entity, false, false);
       }
 
       return (CollisionContext)var10000;
    }
 
-   static CollisionContext of(Entity var0, boolean var1) {
-      return new EntityCollisionContext(var0, var1, false);
+   static CollisionContext of(final Entity entity, final boolean alwaysCollideWithFluid) {
+      return new EntityCollisionContext(entity, alwaysCollideWithFluid, false);
    }
 
-   static CollisionContext placementContext(@Nullable Player var0) {
-      return new EntityCollisionContext(var0 != null ? var0.isDescending() : false, true, var0 != null ? var0.getY() : -1.7976931348623157E308, var0 instanceof LivingEntity ? ((LivingEntity)var0).getMainHandItem() : ItemStack.EMPTY, false, var0);
+   static CollisionContext placementContext(final @Nullable Player player) {
+      return new EntityCollisionContext(player != null ? player.isDescending() : false, true, player != null ? player.getY() : -1.7976931348623157E308, player instanceof LivingEntity ? ((LivingEntity)player).getMainHandItem() : ItemStack.EMPTY, false, player);
    }
 
-   static CollisionContext withPosition(@Nullable Entity var0, double var1) {
+   static CollisionContext withPosition(final @Nullable Entity entity, final double position) {
       EntityCollisionContext var10000 = new EntityCollisionContext;
-      boolean var10002 = var0 != null ? var0.isDescending() : false;
-      double var10004 = var0 != null ? var1 : -1.7976931348623157E308;
+      boolean var10002 = entity != null ? entity.isDescending() : false;
+      double var10004 = entity != null ? position : -1.7976931348623157E308;
       ItemStack var10005;
-      if (var0 instanceof LivingEntity var3) {
-         var10005 = var3.getMainHandItem();
+      if (entity instanceof LivingEntity livingEntity) {
+         var10005 = livingEntity.getMainHandItem();
       } else {
          var10005 = ItemStack.EMPTY;
       }
 
-      var10000.<init>(var10002, true, var10004, var10005, false, var0);
+      var10000.<init>(var10002, true, var10004, var10005, false, entity);
       return var10000;
    }
 
    boolean isDescending();
 
-   boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3);
+   boolean isAbove(final VoxelShape shape, final BlockPos pos, final boolean defaultValue);
 
-   boolean isHoldingItem(Item var1);
+   boolean isHoldingItem(final Item item);
 
    boolean alwaysCollideWithFluid();
 
-   boolean canStandOnFluid(FluidState var1, FluidState var2);
+   boolean canStandOnFluid(final FluidState fluidStateAbove, final FluidState fluid);
 
-   VoxelShape getCollisionShape(BlockState var1, CollisionGetter var2, BlockPos var3);
+   VoxelShape getCollisionShape(BlockState state, CollisionGetter collisionGetter, BlockPos pos);
 
    default boolean isPlacement() {
       return false;

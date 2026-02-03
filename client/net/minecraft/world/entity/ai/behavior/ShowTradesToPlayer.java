@@ -24,106 +24,106 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
    private int displayIndex;
    private int lookTime;
 
-   public ShowTradesToPlayer(int var1, int var2) {
-      super(ImmutableMap.of(MemoryModuleType.INTERACTION_TARGET, MemoryStatus.VALUE_PRESENT), var1, var2);
+   public ShowTradesToPlayer(final int minDuration, final int maxDuration) {
+      super(ImmutableMap.of(MemoryModuleType.INTERACTION_TARGET, MemoryStatus.VALUE_PRESENT), minDuration, maxDuration);
    }
 
-   public boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      Brain var3 = var2.getBrain();
-      if (var3.getMemory(MemoryModuleType.INTERACTION_TARGET).isEmpty()) {
+   public boolean checkExtraStartConditions(final ServerLevel level, final Villager body) {
+      Brain<?> brain = body.getBrain();
+      if (brain.getMemory(MemoryModuleType.INTERACTION_TARGET).isEmpty()) {
          return false;
       } else {
-         LivingEntity var4 = (LivingEntity)var3.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-         return var4.getType() == EntityType.PLAYER && var2.isAlive() && var4.isAlive() && !var2.isBaby() && var2.distanceToSqr(var4) <= 17.0;
+         LivingEntity target = (LivingEntity)brain.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
+         return target.is(EntityType.PLAYER) && body.isAlive() && target.isAlive() && !body.isBaby() && body.distanceToSqr(target) <= 17.0;
       }
    }
 
-   public boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
-      return this.checkExtraStartConditions(var1, var2) && this.lookTime > 0 && var2.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).isPresent();
+   public boolean canStillUse(final ServerLevel level, final Villager body, final long timestamp) {
+      return this.checkExtraStartConditions(level, body) && this.lookTime > 0 && body.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).isPresent();
    }
 
-   public void start(ServerLevel var1, Villager var2, long var3) {
-      super.start(var1, var2, var3);
-      this.lookAtTarget(var2);
+   public void start(final ServerLevel level, final Villager body, final long timestamp) {
+      super.start(level, body, timestamp);
+      this.lookAtTarget(body);
       this.cycleCounter = 0;
       this.displayIndex = 0;
       this.lookTime = 40;
    }
 
-   public void tick(ServerLevel var1, Villager var2, long var3) {
-      LivingEntity var5 = this.lookAtTarget(var2);
-      this.findItemsToDisplay(var5, var2);
+   public void tick(final ServerLevel level, final Villager body, final long timestamp) {
+      LivingEntity target = this.lookAtTarget(body);
+      this.findItemsToDisplay(target, body);
       if (!this.displayItems.isEmpty()) {
-         this.displayCyclingItems(var2);
+         this.displayCyclingItems(body);
       } else {
-         clearHeldItem(var2);
+         clearHeldItem(body);
          this.lookTime = Math.min(this.lookTime, 40);
       }
 
       --this.lookTime;
    }
 
-   public void stop(ServerLevel var1, Villager var2, long var3) {
-      super.stop(var1, var2, var3);
-      var2.getBrain().eraseMemory(MemoryModuleType.INTERACTION_TARGET);
-      clearHeldItem(var2);
+   public void stop(final ServerLevel level, final Villager body, final long timestamp) {
+      super.stop(level, body, timestamp);
+      body.getBrain().eraseMemory(MemoryModuleType.INTERACTION_TARGET);
+      clearHeldItem(body);
       this.playerItemStack = null;
    }
 
-   private void findItemsToDisplay(LivingEntity var1, Villager var2) {
-      boolean var3 = false;
-      ItemStack var4 = var1.getMainHandItem();
-      if (this.playerItemStack == null || !ItemStack.isSameItem(this.playerItemStack, var4)) {
-         this.playerItemStack = var4;
-         var3 = true;
+   private void findItemsToDisplay(final LivingEntity player, final Villager villager) {
+      boolean changed = false;
+      ItemStack currentPlayerItemStack = player.getMainHandItem();
+      if (this.playerItemStack == null || !ItemStack.isSameItem(this.playerItemStack, currentPlayerItemStack)) {
+         this.playerItemStack = currentPlayerItemStack;
+         changed = true;
          this.displayItems.clear();
       }
 
-      if (var3 && !this.playerItemStack.isEmpty()) {
-         this.updateDisplayItems(var2);
+      if (changed && !this.playerItemStack.isEmpty()) {
+         this.updateDisplayItems(villager);
          if (!this.displayItems.isEmpty()) {
             this.lookTime = 900;
-            this.displayFirstItem(var2);
+            this.displayFirstItem(villager);
          }
       }
 
    }
 
-   private void displayFirstItem(Villager var1) {
-      displayAsHeldItem(var1, (ItemStack)this.displayItems.get(0));
+   private void displayFirstItem(final Villager villager) {
+      displayAsHeldItem(villager, (ItemStack)this.displayItems.get(0));
    }
 
-   private void updateDisplayItems(Villager var1) {
-      for(MerchantOffer var3 : var1.getOffers()) {
-         if (!var3.isOutOfStock() && this.playerItemStackMatchesCostOfOffer(var3)) {
-            this.displayItems.add(var3.assemble());
+   private void updateDisplayItems(final Villager villager) {
+      for(MerchantOffer offer : villager.getOffers()) {
+         if (!offer.isOutOfStock() && this.playerItemStackMatchesCostOfOffer(offer)) {
+            this.displayItems.add(offer.assemble());
          }
       }
 
    }
 
-   private boolean playerItemStackMatchesCostOfOffer(MerchantOffer var1) {
-      return ItemStack.isSameItem(this.playerItemStack, var1.getCostA()) || ItemStack.isSameItem(this.playerItemStack, var1.getCostB());
+   private boolean playerItemStackMatchesCostOfOffer(final MerchantOffer offer) {
+      return ItemStack.isSameItem(this.playerItemStack, offer.getCostA()) || ItemStack.isSameItem(this.playerItemStack, offer.getCostB());
    }
 
-   private static void clearHeldItem(Villager var0) {
-      var0.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-      var0.setDropChance(EquipmentSlot.MAINHAND, 0.085F);
+   private static void clearHeldItem(final Villager body) {
+      body.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+      body.setDropChance(EquipmentSlot.MAINHAND, 0.085F);
    }
 
-   private static void displayAsHeldItem(Villager var0, ItemStack var1) {
-      var0.setItemSlot(EquipmentSlot.MAINHAND, var1);
-      var0.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+   private static void displayAsHeldItem(final Villager body, final ItemStack itemStack) {
+      body.setItemSlot(EquipmentSlot.MAINHAND, itemStack);
+      body.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
    }
 
-   private LivingEntity lookAtTarget(Villager var1) {
-      Brain var2 = var1.getBrain();
-      LivingEntity var3 = (LivingEntity)var2.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-      var2.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var3, true));
-      return var3;
+   private LivingEntity lookAtTarget(final Villager myBody) {
+      Brain<?> brain = myBody.getBrain();
+      LivingEntity target = (LivingEntity)brain.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
+      brain.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(target, true));
+      return target;
    }
 
-   private void displayCyclingItems(Villager var1) {
+   private void displayCyclingItems(final Villager villager) {
       if (this.displayItems.size() >= 2 && ++this.cycleCounter >= 40) {
          ++this.displayIndex;
          this.cycleCounter = 0;
@@ -131,18 +131,8 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
             this.displayIndex = 0;
          }
 
-         displayAsHeldItem(var1, (ItemStack)this.displayItems.get(this.displayIndex));
+         displayAsHeldItem(villager, (ItemStack)this.displayItems.get(this.displayIndex));
       }
 
-   }
-
-   // $FF: synthetic method
-   public void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (Villager)var2, var3);
-   }
-
-   // $FF: synthetic method
-   public void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Villager)var2, var3);
    }
 }

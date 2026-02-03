@@ -9,37 +9,33 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.dimension.DimensionType;
 
 public record NoiseSettings(int minY, int height, int noiseSizeHorizontal, int noiseSizeVertical) {
-   public static final Codec<NoiseSettings> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("min_y").forGetter(NoiseSettings::minY), Codec.intRange(0, DimensionType.Y_SIZE).fieldOf("height").forGetter(NoiseSettings::height), Codec.intRange(1, 4).fieldOf("size_horizontal").forGetter(NoiseSettings::noiseSizeHorizontal), Codec.intRange(1, 4).fieldOf("size_vertical").forGetter(NoiseSettings::noiseSizeVertical)).apply(var0, NoiseSettings::new)).comapFlatMap(NoiseSettings::guardY, Function.identity());
+   public static final Codec<NoiseSettings> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("min_y").forGetter(NoiseSettings::minY), Codec.intRange(0, DimensionType.Y_SIZE).fieldOf("height").forGetter(NoiseSettings::height), Codec.intRange(1, 4).fieldOf("size_horizontal").forGetter(NoiseSettings::noiseSizeHorizontal), Codec.intRange(1, 4).fieldOf("size_vertical").forGetter(NoiseSettings::noiseSizeVertical)).apply(i, NoiseSettings::new)).comapFlatMap(NoiseSettings::guardY, Function.identity());
    protected static final NoiseSettings OVERWORLD_NOISE_SETTINGS = create(-64, 384, 1, 2);
    protected static final NoiseSettings NETHER_NOISE_SETTINGS = create(0, 128, 1, 2);
    protected static final NoiseSettings END_NOISE_SETTINGS = create(0, 128, 2, 1);
    protected static final NoiseSettings CAVES_NOISE_SETTINGS = create(-64, 192, 1, 2);
    protected static final NoiseSettings FLOATING_ISLANDS_NOISE_SETTINGS = create(0, 256, 2, 1);
 
-   public NoiseSettings(int var1, int var2, int var3, int var4) {
+   public NoiseSettings {
       super();
-      this.minY = var1;
-      this.height = var2;
-      this.noiseSizeHorizontal = var3;
-      this.noiseSizeVertical = var4;
    }
 
-   private static DataResult<NoiseSettings> guardY(NoiseSettings var0) {
-      if (var0.minY() + var0.height() > DimensionType.MAX_Y + 1) {
+   private static DataResult<NoiseSettings> guardY(final NoiseSettings dimensionType) {
+      if (dimensionType.minY() + dimensionType.height() > DimensionType.MAX_Y + 1) {
          return DataResult.error(() -> "min_y + height cannot be higher than: " + (DimensionType.MAX_Y + 1));
-      } else if (var0.height() % 16 != 0) {
+      } else if (dimensionType.height() % 16 != 0) {
          return DataResult.error(() -> "height has to be a multiple of 16");
       } else {
-         return var0.minY() % 16 != 0 ? DataResult.error(() -> "min_y has to be a multiple of 16") : DataResult.success(var0);
+         return dimensionType.minY() % 16 != 0 ? DataResult.error(() -> "min_y has to be a multiple of 16") : DataResult.success(dimensionType);
       }
    }
 
-   public static NoiseSettings create(int var0, int var1, int var2, int var3) {
-      NoiseSettings var4 = new NoiseSettings(var0, var1, var2, var3);
-      guardY(var4).error().ifPresent((var0x) -> {
-         throw new IllegalStateException(var0x.message());
+   public static NoiseSettings create(final int minY, final int height, final int noiseSizeHorizontal, final int noiseSizeVertical) {
+      NoiseSettings noiseSettings = new NoiseSettings(minY, height, noiseSizeHorizontal, noiseSizeVertical);
+      guardY(noiseSettings).error().ifPresent((error) -> {
+         throw new IllegalStateException(error.message());
       });
-      return var4;
+      return noiseSettings;
    }
 
    public int getCellHeight() {
@@ -50,9 +46,9 @@ public record NoiseSettings(int minY, int height, int noiseSizeHorizontal, int n
       return QuartPos.toBlock(this.noiseSizeHorizontal());
    }
 
-   public NoiseSettings clampToHeightAccessor(LevelHeightAccessor var1) {
-      int var2 = Math.max(this.minY, var1.getMinY());
-      int var3 = Math.min(this.minY + this.height, var1.getMaxY() + 1) - var2;
-      return new NoiseSettings(var2, var3, this.noiseSizeHorizontal, this.noiseSizeVertical);
+   public NoiseSettings clampToHeightAccessor(final LevelHeightAccessor heightAccessor) {
+      int newMinY = Math.max(this.minY, heightAccessor.getMinY());
+      int newHeight = Math.min(this.minY + this.height, heightAccessor.getMaxY() + 1) - newMinY;
+      return new NoiseSettings(newMinY, newHeight, this.noiseSizeHorizontal, this.noiseSizeVertical);
    }
 }

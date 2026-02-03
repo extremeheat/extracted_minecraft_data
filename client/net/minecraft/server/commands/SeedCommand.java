@@ -6,19 +6,18 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 
 public class SeedCommand {
    public SeedCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, boolean var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("seed").requires(Commands.hasPermission(var1 ? Commands.LEVEL_GAMEMASTERS : Commands.LEVEL_ALL))).executes((var0x) -> {
-         long var1 = ((CommandSourceStack)var0x.getSource()).getLevel().getSeed();
-         MutableComponent var3 = ComponentUtils.copyOnClickText(String.valueOf(var1));
-         ((CommandSourceStack)var0x.getSource()).sendSuccess(() -> Component.translatable("commands.seed.success", var3), false);
-         return (int)var1;
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final boolean checkPermissions) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("seed").requires(Commands.hasPermission(checkPermissions ? Commands.LEVEL_GAMEMASTERS : Commands.LEVEL_ALL))).executes((c) -> {
+         long seed = ((CommandSourceStack)c.getSource()).getLevel().getSeed();
+         Component seedText = ComponentUtils.copyOnClickText(String.valueOf(seed));
+         ((CommandSourceStack)c.getSource()).sendSuccess(() -> Component.translatable("commands.seed.success", seedText), false);
+         return (int)seed;
       }));
    }
 }

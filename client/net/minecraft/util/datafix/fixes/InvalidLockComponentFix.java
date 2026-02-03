@@ -10,24 +10,24 @@ import org.jspecify.annotations.Nullable;
 public class InvalidLockComponentFix extends DataComponentRemainderFix {
    private static final Optional<String> INVALID_LOCK_CUSTOM_NAME = Optional.of("\"\"");
 
-   public InvalidLockComponentFix(Schema var1) {
-      super(var1, "InvalidLockComponentPredicateFix", "minecraft:lock");
+   public InvalidLockComponentFix(final Schema outputSchema) {
+      super(outputSchema, "InvalidLockComponentPredicateFix", "minecraft:lock");
    }
 
-   protected <T> @Nullable Dynamic<T> fixComponent(Dynamic<T> var1) {
-      return fixLock(var1);
+   protected <T> @Nullable Dynamic<T> fixComponent(final Dynamic<T> input) {
+      return fixLock(input);
    }
 
-   public static <T> @Nullable Dynamic<T> fixLock(Dynamic<T> var0) {
-      return isBrokenLock(var0) ? null : var0;
+   public static <T> @Nullable Dynamic<T> fixLock(final Dynamic<T> input) {
+      return isBrokenLock(input) ? null : input;
    }
 
-   private static <T> boolean isBrokenLock(Dynamic<T> var0) {
-      return isMapWithOneField(var0, "components", (var0x) -> isMapWithOneField(var0x, "minecraft:custom_name", (var0) -> var0.asString().result().equals(INVALID_LOCK_CUSTOM_NAME)));
+   private static <T> boolean isBrokenLock(final Dynamic<T> input) {
+      return isMapWithOneField(input, "components", (components) -> isMapWithOneField(components, "minecraft:custom_name", (customName) -> customName.asString().result().equals(INVALID_LOCK_CUSTOM_NAME)));
    }
 
-   private static <T> boolean isMapWithOneField(Dynamic<T> var0, String var1, Predicate<Dynamic<T>> var2) {
-      Optional var3 = var0.getMapValues().result();
-      return !var3.isEmpty() && ((Map)var3.get()).size() == 1 ? var0.get(var1).result().filter(var2).isPresent() : false;
+   private static <T> boolean isMapWithOneField(final Dynamic<T> input, final String fieldName, final Predicate<Dynamic<T>> predicate) {
+      Optional<Map<Dynamic<T>, Dynamic<T>>> map = input.getMapValues().result();
+      return !map.isEmpty() && ((Map)map.get()).size() == 1 ? input.get(fieldName).result().filter(predicate).isPresent() : false;
    }
 }

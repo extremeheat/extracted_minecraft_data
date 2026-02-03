@@ -9,6 +9,7 @@ import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
@@ -17,7 +18,6 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Climate;
@@ -31,28 +31,28 @@ public class BiomeParametersDumpReport implements DataProvider {
    private static final MapCodec<ResourceKey<Biome>> ENTRY_CODEC;
    private static final Codec<Climate.ParameterList<ResourceKey<Biome>>> CODEC;
 
-   public BiomeParametersDumpReport(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
+   public BiomeParametersDumpReport(final PackOutput output, final CompletableFuture<HolderLookup.Provider> registries) {
       super();
-      this.topPath = var1.getOutputFolder(PackOutput.Target.REPORTS).resolve("biome_parameters");
-      this.registries = var2;
+      this.topPath = output.getOutputFolder(PackOutput.Target.REPORTS).resolve("biome_parameters");
+      this.registries = registries;
    }
 
-   public CompletableFuture<?> run(CachedOutput var1) {
-      return this.registries.thenCompose((var2) -> {
-         RegistryOps var3 = var2.createSerializationContext(JsonOps.INSTANCE);
-         ArrayList var4 = new ArrayList();
-         MultiNoiseBiomeSourceParameterList.knownPresets().forEach((var4x, var5) -> var4.add(dumpValue(this.createPath(var4x.id()), var1, var3, CODEC, var5)));
-         return CompletableFuture.allOf((CompletableFuture[])var4.toArray((var0) -> new CompletableFuture[var0]));
+   public CompletableFuture<?> run(final CachedOutput cache) {
+      return this.registries.thenCompose((registryAccess) -> {
+         DynamicOps<JsonElement> registryOps = registryAccess.<JsonElement>createSerializationContext(JsonOps.INSTANCE);
+         List<CompletableFuture<?>> result = new ArrayList();
+         MultiNoiseBiomeSourceParameterList.knownPresets().forEach((preset, parameterList) -> result.add(dumpValue(this.createPath(preset.id()), cache, registryOps, CODEC, parameterList)));
+         return CompletableFuture.allOf((CompletableFuture[])result.toArray((x$0) -> new CompletableFuture[x$0]));
       });
    }
 
-   private static <E> CompletableFuture<?> dumpValue(Path var0, CachedOutput var1, DynamicOps<JsonElement> var2, Encoder<E> var3, E var4) {
-      Optional var5 = var3.encodeStart(var2, var4).resultOrPartial((var1x) -> LOGGER.error("Couldn't serialize element {}: {}", var0, var1x));
-      return var5.isPresent() ? DataProvider.saveStable(var1, (JsonElement)var5.get(), var0) : CompletableFuture.completedFuture((Object)null);
+   private static <E> CompletableFuture<?> dumpValue(final Path path, final CachedOutput cache, final DynamicOps<JsonElement> ops, final Encoder<E> codec, final E value) {
+      Optional<JsonElement> result = codec.encodeStart(ops, value).resultOrPartial((e) -> LOGGER.error("Couldn't serialize element {}: {}", path, e));
+      return result.isPresent() ? DataProvider.saveStable(cache, (JsonElement)result.get(), path) : CompletableFuture.completedFuture((Object)null);
    }
 
-   private Path createPath(Identifier var1) {
-      return this.topPath.resolve(var1.getNamespace()).resolve(var1.getPath() + ".json");
+   private Path createPath(final Identifier element) {
+      return this.topPath.resolve(element.getNamespace()).resolve(element.getPath() + ".json");
    }
 
    public final String getName() {

@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.Maps;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,26 +29,26 @@ public class PlayTagWithOtherKids {
    }
 
    public static BehaviorControl<PathfinderMob> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.present(MemoryModuleType.VISIBLE_VILLAGER_BABIES), var0.absent(MemoryModuleType.WALK_TARGET), var0.registered(MemoryModuleType.LOOK_TARGET), var0.registered(MemoryModuleType.INTERACTION_TARGET)).apply(var0, (var1, var2, var3, var4) -> (var5, var6, var7) -> {
-               if (var5.getRandom().nextInt(10) != 0) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.VISIBLE_VILLAGER_BABIES), i.absent(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.LOOK_TARGET), i.registered(MemoryModuleType.INTERACTION_TARGET)).apply(i, (babies, walkTarget, lookTarget, interactionTarget) -> (level, me, timestamp) -> {
+               if (level.getRandom().nextInt(10) != 0) {
                   return false;
                } else {
-                  List var9 = (List)var0.get(var1);
-                  Optional var10 = var9.stream().filter((var1x) -> isFriendChasingMe(var6, var1x)).findAny();
-                  if (!var10.isPresent()) {
-                     Optional var13 = findSomeoneBeingChased(var9);
-                     if (var13.isPresent()) {
-                        chaseKid(var4, var3, var2, (LivingEntity)var13.get());
+                  List<LivingEntity> friendsNearby = (List)i.get(babies);
+                  Optional<LivingEntity> otherKidChasingMe = friendsNearby.stream().filter((friend) -> isFriendChasingMe(me, friend)).findAny();
+                  if (!otherKidChasingMe.isPresent()) {
+                     Optional<LivingEntity> otherKidBeingChased = findSomeoneBeingChased(friendsNearby);
+                     if (otherKidBeingChased.isPresent()) {
+                        chaseKid(interactionTarget, lookTarget, walkTarget, (LivingEntity)otherKidBeingChased.get());
                         return true;
                      } else {
-                        var9.stream().findAny().ifPresent((var3x) -> chaseKid(var4, var3, var2, var3x));
+                        friendsNearby.stream().findAny().ifPresent((entity) -> chaseKid(interactionTarget, lookTarget, walkTarget, entity));
                         return true;
                      }
                   } else {
-                     for(int var11 = 0; var11 < 10; ++var11) {
-                        Vec3 var12 = LandRandomPos.getPos(var6, 20, 8);
-                        if (var12 != null && var5.isVillage(BlockPos.containing(var12))) {
-                           var2.set(new WalkTarget(var12, 0.6F, 0));
+                     for(int j = 0; j < 10; ++j) {
+                        Vec3 pos = LandRandomPos.getPos(me, 20, 8);
+                        if (pos != null && level.isVillage(BlockPos.containing(pos))) {
+                           walkTarget.set(new WalkTarget(pos, 0.6F, 0));
                            break;
                         }
                      }
@@ -60,32 +59,32 @@ public class PlayTagWithOtherKids {
             })));
    }
 
-   private static void chaseKid(MemoryAccessor<?, LivingEntity> var0, MemoryAccessor<?, PositionTracker> var1, MemoryAccessor<?, WalkTarget> var2, LivingEntity var3) {
-      var0.set(var3);
-      var1.set(new EntityTracker(var3, true));
-      var2.set(new WalkTarget(new EntityTracker(var3, false), 0.6F, 1));
+   private static void chaseKid(final MemoryAccessor<?, LivingEntity> interactionTarget, final MemoryAccessor<?, PositionTracker> lookTarget, final MemoryAccessor<?, WalkTarget> walkTarget, final LivingEntity kidToChase) {
+      interactionTarget.set(kidToChase);
+      lookTarget.set(new EntityTracker(kidToChase, true));
+      walkTarget.set(new WalkTarget(new EntityTracker(kidToChase, false), 0.6F, 1));
    }
 
-   private static Optional<LivingEntity> findSomeoneBeingChased(List<LivingEntity> var0) {
-      Map var1 = checkHowManyChasersEachFriendHas(var0);
-      return var1.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).filter((var0x) -> (Integer)var0x.getValue() > 0 && (Integer)var0x.getValue() <= 5).map(Map.Entry::getKey).findFirst();
+   private static Optional<LivingEntity> findSomeoneBeingChased(final List<LivingEntity> friendsNearby) {
+      Map<LivingEntity, Integer> chasedKids = checkHowManyChasersEachFriendHas(friendsNearby);
+      return chasedKids.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).filter((entry) -> (Integer)entry.getValue() > 0 && (Integer)entry.getValue() <= 5).map(Map.Entry::getKey).findFirst();
    }
 
-   private static Map<LivingEntity, Integer> checkHowManyChasersEachFriendHas(List<LivingEntity> var0) {
-      HashMap var1 = Maps.newHashMap();
-      var0.stream().filter(PlayTagWithOtherKids::isChasingSomeone).forEach((var1x) -> var1.compute(whoAreYouChasing(var1x), (var0, var1xx) -> var1xx == null ? 1 : var1xx + 1));
-      return var1;
+   private static Map<LivingEntity, Integer> checkHowManyChasersEachFriendHas(final List<LivingEntity> friendsNearby) {
+      Map<LivingEntity, Integer> chasedKids = Maps.newHashMap();
+      friendsNearby.stream().filter(PlayTagWithOtherKids::isChasingSomeone).forEach((chaser) -> chasedKids.compute(whoAreYouChasing(chaser), (k, count) -> count == null ? 1 : count + 1));
+      return chasedKids;
    }
 
-   private static LivingEntity whoAreYouChasing(LivingEntity var0) {
-      return (LivingEntity)var0.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
+   private static LivingEntity whoAreYouChasing(final LivingEntity friend) {
+      return (LivingEntity)friend.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
    }
 
-   private static boolean isChasingSomeone(LivingEntity var0) {
-      return var0.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).isPresent();
+   private static boolean isChasingSomeone(final LivingEntity friend) {
+      return friend.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).isPresent();
    }
 
-   private static boolean isFriendChasingMe(LivingEntity var0, LivingEntity var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).filter((var1x) -> var1x == var0).isPresent();
+   private static boolean isFriendChasingMe(final LivingEntity me, final LivingEntity friend) {
+      return friend.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).filter((mob) -> mob == me).isPresent();
    }
 }

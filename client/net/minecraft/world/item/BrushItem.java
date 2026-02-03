@@ -32,61 +32,61 @@ public class BrushItem extends Item {
    public static final int ANIMATION_DURATION = 10;
    private static final int USE_DURATION = 200;
 
-   public BrushItem(Item.Properties var1) {
-      super(var1);
+   public BrushItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Player var2 = var1.getPlayer();
-      if (var2 != null && this.calculateHitResult(var2).getType() == HitResult.Type.BLOCK) {
-         var2.startUsingItem(var1.getHand());
+   public InteractionResult useOn(final UseOnContext context) {
+      Player player = context.getPlayer();
+      if (player != null && this.calculateHitResult(player).getType() == HitResult.Type.BLOCK) {
+         player.startUsingItem(context.getHand());
       }
 
       return InteractionResult.CONSUME;
    }
 
-   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+   public ItemUseAnimation getUseAnimation(final ItemStack itemStack) {
       return ItemUseAnimation.BRUSH;
    }
 
-   public int getUseDuration(ItemStack var1, LivingEntity var2) {
+   public int getUseDuration(final ItemStack itemStack, final LivingEntity user) {
       return 200;
    }
 
-   public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
-      if (var4 >= 0 && var2 instanceof Player var5) {
-         HitResult var6 = this.calculateHitResult(var5);
-         if (var6 instanceof BlockHitResult var7) {
-            if (var6.getType() == HitResult.Type.BLOCK) {
-               int var8 = this.getUseDuration(var3, var2) - var4 + 1;
-               boolean var9 = var8 % 10 == 5;
-               if (var9) {
-                  BlockPos var10 = var7.getBlockPos();
-                  BlockState var11 = var1.getBlockState(var10);
-                  HumanoidArm var12 = var2.getUsedItemHand() == InteractionHand.MAIN_HAND ? var5.getMainArm() : var5.getMainArm().getOpposite();
-                  if (var11.shouldSpawnTerrainParticles() && var11.getRenderShape() != RenderShape.INVISIBLE) {
-                     this.spawnDustParticles(var1, var7, var11, var2.getViewVector(0.0F), var12);
+   public void onUseTick(final Level level, final LivingEntity livingEntity, final ItemStack itemStack, final int ticksRemaining) {
+      if (ticksRemaining >= 0 && livingEntity instanceof Player player) {
+         HitResult hitResult = this.calculateHitResult(player);
+         if (hitResult instanceof BlockHitResult blockHitResult) {
+            if (hitResult.getType() == HitResult.Type.BLOCK) {
+               int timeElapsed = this.getUseDuration(itemStack, livingEntity) - ticksRemaining + 1;
+               boolean isLastTickBeforeBackswing = timeElapsed % 10 == 5;
+               if (isLastTickBeforeBackswing) {
+                  BlockPos pos = blockHitResult.getBlockPos();
+                  BlockState state = level.getBlockState(pos);
+                  HumanoidArm brushingArm = livingEntity.getUsedItemHand() == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
+                  if (state.shouldSpawnTerrainParticles() && state.getRenderShape() != RenderShape.INVISIBLE) {
+                     this.spawnDustParticles(level, blockHitResult, state, livingEntity.getViewVector(0.0F), brushingArm);
                   }
 
-                  Block var15 = var11.getBlock();
-                  SoundEvent var13;
+                  Block var15 = state.getBlock();
+                  SoundEvent brushSound;
                   if (var15 instanceof BrushableBlock) {
-                     BrushableBlock var14 = (BrushableBlock)var15;
-                     var13 = var14.getBrushSound();
+                     BrushableBlock brushableBlock = (BrushableBlock)var15;
+                     brushSound = brushableBlock.getBrushSound();
                   } else {
-                     var13 = SoundEvents.BRUSH_GENERIC;
+                     brushSound = SoundEvents.BRUSH_GENERIC;
                   }
 
-                  var1.playSound(var5, var10, var13, SoundSource.BLOCKS);
-                  if (var1 instanceof ServerLevel) {
-                     ServerLevel var18 = (ServerLevel)var1;
-                     BlockEntity var16 = var1.getBlockEntity(var10);
+                  level.playSound(player, pos, brushSound, SoundSource.BLOCKS);
+                  if (level instanceof ServerLevel) {
+                     ServerLevel serverLevel = (ServerLevel)level;
+                     BlockEntity var16 = level.getBlockEntity(pos);
                      if (var16 instanceof BrushableBlockEntity) {
-                        BrushableBlockEntity var19 = (BrushableBlockEntity)var16;
-                        boolean var20 = var19.brush(var1.getGameTime(), var18, var5, var7.getDirection(), var3);
-                        if (var20) {
-                           EquipmentSlot var17 = var3.equals(var5.getItemBySlot(EquipmentSlot.OFFHAND)) ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND;
-                           var3.hurtAndBreak(1, var5, (EquipmentSlot)var17);
+                        BrushableBlockEntity brushableBlockEntity = (BrushableBlockEntity)var16;
+                        boolean brushingUpdatedState = brushableBlockEntity.brush(level.getGameTime(), serverLevel, player, blockHitResult.getDirection(), itemStack);
+                        if (brushingUpdatedState) {
+                           EquipmentSlot equippedHand = itemStack.equals(player.getItemBySlot(EquipmentSlot.OFFHAND)) ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND;
+                           itemStack.hurtAndBreak(1, player, (EquipmentSlot)equippedHand);
                         }
                      }
                   }
@@ -96,49 +96,46 @@ public class BrushItem extends Item {
             }
          }
 
-         var2.releaseUsingItem();
+         livingEntity.releaseUsingItem();
       } else {
-         var2.releaseUsingItem();
+         livingEntity.releaseUsingItem();
       }
    }
 
-   private HitResult calculateHitResult(Player var1) {
-      return ProjectileUtil.getHitResultOnViewVector(var1, EntitySelector.CAN_BE_PICKED, var1.blockInteractionRange());
+   private HitResult calculateHitResult(final Player player) {
+      return ProjectileUtil.getHitResultOnViewVector(player, EntitySelector.CAN_BE_PICKED, player.blockInteractionRange());
    }
 
-   private void spawnDustParticles(Level var1, BlockHitResult var2, BlockState var3, Vec3 var4, HumanoidArm var5) {
-      double var6 = 3.0;
-      int var8 = var5 == HumanoidArm.RIGHT ? 1 : -1;
-      int var9 = var1.getRandom().nextInt(7, 12);
-      BlockParticleOption var10 = new BlockParticleOption(ParticleTypes.BLOCK, var3);
-      Direction var11 = var2.getDirection();
-      DustParticlesDelta var12 = BrushItem.DustParticlesDelta.fromDirection(var4, var11);
-      Vec3 var13 = var2.getLocation();
+   private void spawnDustParticles(final Level level, final BlockHitResult hitResult, final BlockState state, final Vec3 viewVector, final HumanoidArm brushingArm) {
+      double deltaScale = 3.0;
+      int flip = brushingArm == HumanoidArm.RIGHT ? 1 : -1;
+      int particles = level.getRandom().nextInt(7, 12);
+      BlockParticleOption particle = new BlockParticleOption(ParticleTypes.BLOCK, state);
+      Direction hitDirection = hitResult.getDirection();
+      DustParticlesDelta dustParticlesDelta = BrushItem.DustParticlesDelta.fromDirection(viewVector, hitDirection);
+      Vec3 hitLocation = hitResult.getLocation();
 
-      for(int var14 = 0; var14 < var9; ++var14) {
-         var1.addParticle(var10, var13.x - (double)(var11 == Direction.WEST ? 1.0E-6F : 0.0F), var13.y, var13.z - (double)(var11 == Direction.NORTH ? 1.0E-6F : 0.0F), var12.xd() * (double)var8 * 3.0 * var1.getRandom().nextDouble(), 0.0, var12.zd() * (double)var8 * 3.0 * var1.getRandom().nextDouble());
+      for(int i = 0; i < particles; ++i) {
+         level.addParticle(particle, hitLocation.x - (double)(hitDirection == Direction.WEST ? 1.0E-6F : 0.0F), hitLocation.y, hitLocation.z - (double)(hitDirection == Direction.NORTH ? 1.0E-6F : 0.0F), dustParticlesDelta.xd() * (double)flip * 3.0 * level.getRandom().nextDouble(), 0.0, dustParticlesDelta.zd() * (double)flip * 3.0 * level.getRandom().nextDouble());
       }
 
    }
 
-   static record DustParticlesDelta(double xd, double yd, double zd) {
+   private static record DustParticlesDelta(double xd, double yd, double zd) {
       private static final double ALONG_SIDE_DELTA = 1.0;
       private static final double OUT_FROM_SIDE_DELTA = 0.1;
 
-      private DustParticlesDelta(double var1, double var3, double var5) {
+      private DustParticlesDelta {
          super();
-         this.xd = var1;
-         this.yd = var3;
-         this.zd = var5;
       }
 
-      public static DustParticlesDelta fromDirection(Vec3 var0, Direction var1) {
-         double var2 = 0.0;
+      public static DustParticlesDelta fromDirection(final Vec3 viewVector, final Direction hitDirection) {
+         double yd = 0.0;
          DustParticlesDelta var10000;
-         switch (var1) {
+         switch (hitDirection) {
             case DOWN:
             case UP:
-               var10000 = new DustParticlesDelta(var0.z(), 0.0, -var0.x());
+               var10000 = new DustParticlesDelta(viewVector.z(), 0.0, -viewVector.x());
                break;
             case NORTH:
                var10000 = new DustParticlesDelta(1.0, 0.0, -0.1);

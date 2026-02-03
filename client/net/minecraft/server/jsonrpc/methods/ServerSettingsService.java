@@ -11,163 +11,163 @@ public class ServerSettingsService {
       super();
    }
 
-   public static boolean autosave(MinecraftApi var0) {
-      return var0.serverSettingsService().isAutoSave();
+   public static boolean autosave(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().isAutoSave();
    }
 
-   public static boolean setAutosave(MinecraftApi var0, boolean var1, ClientInfo var2) {
-      return var0.serverSettingsService().setAutoSave(var1, var2);
+   public static boolean setAutosave(final MinecraftApi minecraftApi, final boolean enabled, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setAutoSave(enabled, clientInfo);
    }
 
-   public static Difficulty difficulty(MinecraftApi var0) {
-      return var0.serverSettingsService().getDifficulty();
+   public static Difficulty difficulty(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getDifficulty();
    }
 
-   public static Difficulty setDifficulty(MinecraftApi var0, Difficulty var1, ClientInfo var2) {
-      return var0.serverSettingsService().setDifficulty(var1, var2);
+   public static Difficulty setDifficulty(final MinecraftApi minecraftApi, final Difficulty difficulty, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setDifficulty(difficulty, clientInfo);
    }
 
-   public static boolean enforceAllowlist(MinecraftApi var0) {
-      return var0.serverSettingsService().isEnforceWhitelist();
+   public static boolean enforceAllowlist(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().isEnforceWhitelist();
    }
 
-   public static boolean setEnforceAllowlist(MinecraftApi var0, boolean var1, ClientInfo var2) {
-      return var0.serverSettingsService().setEnforceWhitelist(var1, var2);
+   public static boolean setEnforceAllowlist(final MinecraftApi minecraftApi, final boolean enforce, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setEnforceWhitelist(enforce, clientInfo);
    }
 
-   public static boolean usingAllowlist(MinecraftApi var0) {
-      return var0.serverSettingsService().isUsingWhitelist();
+   public static boolean usingAllowlist(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().isUsingWhitelist();
    }
 
-   public static boolean setUsingAllowlist(MinecraftApi var0, boolean var1, ClientInfo var2) {
-      return var0.serverSettingsService().setUsingWhitelist(var1, var2);
+   public static boolean setUsingAllowlist(final MinecraftApi minecraftApi, final boolean use, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setUsingWhitelist(use, clientInfo);
    }
 
-   public static int maxPlayers(MinecraftApi var0) {
-      return var0.serverSettingsService().getMaxPlayers();
+   public static int maxPlayers(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getMaxPlayers();
    }
 
-   public static int setMaxPlayers(MinecraftApi var0, int var1, ClientInfo var2) {
-      return var0.serverSettingsService().setMaxPlayers(var1, var2);
+   public static int setMaxPlayers(final MinecraftApi minecraftApi, final int maxPlayers, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setMaxPlayers(maxPlayers, clientInfo);
    }
 
-   public static int pauseWhenEmpty(MinecraftApi var0) {
-      return var0.serverSettingsService().getPauseWhenEmptySeconds();
+   public static int pauseWhenEmpty(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getPauseWhenEmptySeconds();
    }
 
-   public static int setPauseWhenEmpty(MinecraftApi var0, int var1, ClientInfo var2) {
-      return var0.serverSettingsService().setPauseWhenEmptySeconds(var1, var2);
+   public static int setPauseWhenEmpty(final MinecraftApi minecraftApi, final int emptySeconds, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setPauseWhenEmptySeconds(emptySeconds, clientInfo);
    }
 
-   public static int playerIdleTimeout(MinecraftApi var0) {
-      return var0.serverSettingsService().getPlayerIdleTimeout();
+   public static int playerIdleTimeout(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getPlayerIdleTimeout();
    }
 
-   public static int setPlayerIdleTimeout(MinecraftApi var0, int var1, ClientInfo var2) {
-      return var0.serverSettingsService().setPlayerIdleTimeout(var1, var2);
+   public static int setPlayerIdleTimeout(final MinecraftApi minecraftApi, final int idleTime, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setPlayerIdleTimeout(idleTime, clientInfo);
    }
 
-   public static boolean allowFlight(MinecraftApi var0) {
-      return var0.serverSettingsService().allowFlight();
+   public static boolean allowFlight(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().allowFlight();
    }
 
-   public static boolean setAllowFlight(MinecraftApi var0, boolean var1, ClientInfo var2) {
-      return var0.serverSettingsService().setAllowFlight(var1, var2);
+   public static boolean setAllowFlight(final MinecraftApi minecraftApi, final boolean allow, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setAllowFlight(allow, clientInfo);
    }
 
-   public static int spawnProtection(MinecraftApi var0) {
-      return var0.serverSettingsService().getSpawnProtectionRadius();
+   public static int spawnProtection(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getSpawnProtectionRadius();
    }
 
-   public static int setSpawnProtection(MinecraftApi var0, int var1, ClientInfo var2) {
-      return var0.serverSettingsService().setSpawnProtectionRadius(var1, var2);
+   public static int setSpawnProtection(final MinecraftApi minecraftApi, final int spawnProtection, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setSpawnProtectionRadius(spawnProtection, clientInfo);
    }
 
-   public static String motd(MinecraftApi var0) {
-      return var0.serverSettingsService().getMotd();
+   public static String motd(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getMotd();
    }
 
-   public static String setMotd(MinecraftApi var0, String var1, ClientInfo var2) {
-      return var0.serverSettingsService().setMotd(var1, var2);
+   public static String setMotd(final MinecraftApi minecraftApi, final String motd, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setMotd(motd, clientInfo);
    }
 
-   public static boolean forceGameMode(MinecraftApi var0) {
-      return var0.serverSettingsService().forceGameMode();
+   public static boolean forceGameMode(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().forceGameMode();
    }
 
-   public static boolean setForceGameMode(MinecraftApi var0, boolean var1, ClientInfo var2) {
-      return var0.serverSettingsService().setForceGameMode(var1, var2);
+   public static boolean setForceGameMode(final MinecraftApi minecraftApi, final boolean force, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setForceGameMode(force, clientInfo);
    }
 
-   public static GameType gameMode(MinecraftApi var0) {
-      return var0.serverSettingsService().getGameMode();
+   public static GameType gameMode(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getGameMode();
    }
 
-   public static GameType setGameMode(MinecraftApi var0, GameType var1, ClientInfo var2) {
-      return var0.serverSettingsService().setGameMode(var1, var2);
+   public static GameType setGameMode(final MinecraftApi minecraftApi, final GameType gameMode, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setGameMode(gameMode, clientInfo);
    }
 
-   public static int viewDistance(MinecraftApi var0) {
-      return var0.serverSettingsService().getViewDistance();
+   public static int viewDistance(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getViewDistance();
    }
 
-   public static int setViewDistance(MinecraftApi var0, int var1, ClientInfo var2) {
-      return var0.serverSettingsService().setViewDistance(var1, var2);
+   public static int setViewDistance(final MinecraftApi minecraftApi, final int viewDistance, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setViewDistance(viewDistance, clientInfo);
    }
 
-   public static int simulationDistance(MinecraftApi var0) {
-      return var0.serverSettingsService().getSimulationDistance();
+   public static int simulationDistance(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getSimulationDistance();
    }
 
-   public static int setSimulationDistance(MinecraftApi var0, int var1, ClientInfo var2) {
-      return var0.serverSettingsService().setSimulationDistance(var1, var2);
+   public static int setSimulationDistance(final MinecraftApi minecraftApi, final int simulationDistance, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setSimulationDistance(simulationDistance, clientInfo);
    }
 
-   public static boolean acceptTransfers(MinecraftApi var0) {
-      return var0.serverSettingsService().acceptsTransfers();
+   public static boolean acceptTransfers(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().acceptsTransfers();
    }
 
-   public static boolean setAcceptTransfers(MinecraftApi var0, boolean var1, ClientInfo var2) {
-      return var0.serverSettingsService().setAcceptsTransfers(var1, var2);
+   public static boolean setAcceptTransfers(final MinecraftApi minecraftApi, final boolean accept, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setAcceptsTransfers(accept, clientInfo);
    }
 
-   public static int statusHeartbeatInterval(MinecraftApi var0) {
-      return var0.serverSettingsService().getStatusHeartbeatInterval();
+   public static int statusHeartbeatInterval(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getStatusHeartbeatInterval();
    }
 
-   public static int setStatusHeartbeatInterval(MinecraftApi var0, int var1, ClientInfo var2) {
-      return var0.serverSettingsService().setStatusHeartbeatInterval(var1, var2);
+   public static int setStatusHeartbeatInterval(final MinecraftApi minecraftApi, final int statusHeartbeatInterval, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setStatusHeartbeatInterval(statusHeartbeatInterval, clientInfo);
    }
 
-   public static PermissionLevel operatorUserPermissionLevel(MinecraftApi var0) {
-      return var0.serverSettingsService().getOperatorUserPermissions().level();
+   public static PermissionLevel operatorUserPermissionLevel(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getOperatorUserPermissions().level();
    }
 
-   public static PermissionLevel setOperatorUserPermissionLevel(MinecraftApi var0, PermissionLevel var1, ClientInfo var2) {
-      return var0.serverSettingsService().setOperatorUserPermissions(LevelBasedPermissionSet.forLevel(var1), var2).level();
+   public static PermissionLevel setOperatorUserPermissionLevel(final MinecraftApi minecraftApi, final PermissionLevel level, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setOperatorUserPermissions(LevelBasedPermissionSet.forLevel(level), clientInfo).level();
    }
 
-   public static boolean hidesOnlinePlayers(MinecraftApi var0) {
-      return var0.serverSettingsService().hidesOnlinePlayers();
+   public static boolean hidesOnlinePlayers(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().hidesOnlinePlayers();
    }
 
-   public static boolean setHidesOnlinePlayers(MinecraftApi var0, boolean var1, ClientInfo var2) {
-      return var0.serverSettingsService().setHidesOnlinePlayers(var1, var2);
+   public static boolean setHidesOnlinePlayers(final MinecraftApi minecraftApi, final boolean hide, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setHidesOnlinePlayers(hide, clientInfo);
    }
 
-   public static boolean repliesToStatus(MinecraftApi var0) {
-      return var0.serverSettingsService().repliesToStatus();
+   public static boolean repliesToStatus(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().repliesToStatus();
    }
 
-   public static boolean setRepliesToStatus(MinecraftApi var0, boolean var1, ClientInfo var2) {
-      return var0.serverSettingsService().setRepliesToStatus(var1, var2);
+   public static boolean setRepliesToStatus(final MinecraftApi minecraftApi, final boolean enable, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setRepliesToStatus(enable, clientInfo);
    }
 
-   public static int entityBroadcastRangePercentage(MinecraftApi var0) {
-      return var0.serverSettingsService().getEntityBroadcastRangePercentage();
+   public static int entityBroadcastRangePercentage(final MinecraftApi minecraftApi) {
+      return minecraftApi.serverSettingsService().getEntityBroadcastRangePercentage();
    }
 
-   public static int setEntityBroadcastRangePercentage(MinecraftApi var0, int var1, ClientInfo var2) {
-      return var0.serverSettingsService().setEntityBroadcastRangePercentage(var1, var2);
+   public static int setEntityBroadcastRangePercentage(final MinecraftApi minecraftApi, final int percentage, final ClientInfo clientInfo) {
+      return minecraftApi.serverSettingsService().setEntityBroadcastRangePercentage(percentage, clientInfo);
    }
 }

@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 public class WeightedPressurePlateBlock extends BasePressurePlateBlock {
-   public static final MapCodec<WeightedPressurePlateBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.intRange(1, 1024).fieldOf("max_weight").forGetter((var0x) -> var0x.maxWeight), BlockSetType.CODEC.fieldOf("block_set_type").forGetter((var0x) -> var0x.type), propertiesCodec()).apply(var0, WeightedPressurePlateBlock::new));
+   public static final MapCodec<WeightedPressurePlateBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.intRange(1, 1024).fieldOf("max_weight").forGetter((b) -> b.maxWeight), BlockSetType.CODEC.fieldOf("block_set_type").forGetter((b) -> b.type), propertiesCodec()).apply(i, WeightedPressurePlateBlock::new));
    public static final IntegerProperty POWER;
    private final int maxWeight;
 
@@ -23,36 +23,36 @@ public class WeightedPressurePlateBlock extends BasePressurePlateBlock {
       return CODEC;
    }
 
-   protected WeightedPressurePlateBlock(int var1, BlockSetType var2, BlockBehaviour.Properties var3) {
-      super(var3, var2);
+   protected WeightedPressurePlateBlock(final int maxWeight, final BlockSetType type, final BlockBehaviour.Properties properties) {
+      super(properties, type);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(POWER, 0));
-      this.maxWeight = var1;
+      this.maxWeight = maxWeight;
    }
 
-   protected int getSignalStrength(Level var1, BlockPos var2) {
-      int var3 = Math.min(getEntityCount(var1, TOUCH_AABB.move(var2), Entity.class), this.maxWeight);
-      if (var3 > 0) {
-         float var4 = (float)Math.min(this.maxWeight, var3) / (float)this.maxWeight;
-         return Mth.ceil(var4 * 15.0F);
+   protected int getSignalStrength(final Level level, final BlockPos pos) {
+      int count = Math.min(getEntityCount(level, TOUCH_AABB.move(pos), Entity.class), this.maxWeight);
+      if (count > 0) {
+         float percent = (float)Math.min(this.maxWeight, count) / (float)this.maxWeight;
+         return Mth.ceil(percent * 15.0F);
       } else {
          return 0;
       }
    }
 
-   protected int getSignalForState(BlockState var1) {
-      return (Integer)var1.getValue(POWER);
+   protected int getSignalForState(final BlockState state) {
+      return (Integer)state.getValue(POWER);
    }
 
-   protected BlockState setSignalForState(BlockState var1, int var2) {
-      return (BlockState)var1.setValue(POWER, var2);
+   protected BlockState setSignalForState(final BlockState state, final int signal) {
+      return (BlockState)state.setValue(POWER, signal);
    }
 
    protected int getPressedTime() {
       return 10;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(POWER);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(POWER);
    }
 
    static {

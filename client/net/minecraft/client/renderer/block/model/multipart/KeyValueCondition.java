@@ -20,26 +20,25 @@ import net.minecraft.world.level.block.state.properties.Property;
 import org.slf4j.Logger;
 
 public record KeyValueCondition(Map<String, Terms> tests) implements Condition {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<KeyValueCondition> CODEC;
 
-   public KeyValueCondition(Map<String, Terms> var1) {
+   public KeyValueCondition {
       super();
-      this.tests = var1;
    }
 
-   public <O, S extends StateHolder<O, S>> Predicate<S> instantiate(StateDefinition<O, S> var1) {
-      ArrayList var2 = new ArrayList(this.tests.size());
-      this.tests.forEach((var2x, var3) -> var2.add(instantiate(var1, var2x, var3)));
-      return Util.allOf(var2);
+   public <O, S extends StateHolder<O, S>> Predicate<S> instantiate(final StateDefinition<O, S> definition) {
+      List<Predicate<S>> predicates = new ArrayList(this.tests.size());
+      this.tests.forEach((key, valueTest) -> predicates.add(instantiate(definition, key, valueTest)));
+      return Util.allOf(predicates);
    }
 
-   private static <O, S extends StateHolder<O, S>> Predicate<S> instantiate(StateDefinition<O, S> var0, String var1, Terms var2) {
-      Property var3 = var0.getProperty(var1);
-      if (var3 == null) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "Unknown property '%s' on '%s'", var1, var0.getOwner()));
+   private static <O, S extends StateHolder<O, S>> Predicate<S> instantiate(final StateDefinition<O, S> definition, final String key, final Terms valueTest) {
+      Property<?> property = definition.getProperty(key);
+      if (property == null) {
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "Unknown property '%s' on '%s'", key, definition.getOwner()));
       } else {
-         return var2.instantiate(var0.getOwner(), var3);
+         return valueTest.instantiate(definition.getOwner(), property);
       }
    }
 
@@ -54,27 +53,25 @@ public record KeyValueCondition(Map<String, Terms> tests) implements Condition {
       private static final Codec<String> LEGACY_REPRESENTATION_CODEC;
       public static final Codec<Terms> CODEC;
 
-      public Terms(List<Term> var1) {
+      public Terms {
          super();
-         if (var1.isEmpty()) {
+         if (entries.isEmpty()) {
             throw new IllegalArgumentException("Empty value for property");
-         } else {
-            this.entries = var1;
          }
       }
 
-      public static DataResult<Terms> parse(String var0) {
-         List var1 = SPLITTER.splitToStream(var0).map(Term::parse).toList();
-         if (var1.isEmpty()) {
+      public static DataResult<Terms> parse(final String value) {
+         List<Term> terms = SPLITTER.splitToStream(value).map(Term::parse).toList();
+         if (terms.isEmpty()) {
             return DataResult.error(() -> "Empty value for property");
          } else {
-            for(Term var3 : var1) {
-               if (var3.value.isEmpty()) {
-                  return DataResult.error(() -> "Empty term in value '" + var0 + "'");
+            for(Term entry : terms) {
+               if (entry.value.isEmpty()) {
+                  return DataResult.error(() -> "Empty term in value '" + value + "'");
                }
             }
 
-            return DataResult.success(new Terms(var1));
+            return DataResult.success(new Terms(terms));
          }
       }
 
@@ -82,86 +79,81 @@ public record KeyValueCondition(Map<String, Terms> tests) implements Condition {
          return JOINER.join(this.entries);
       }
 
-      public <O, S extends StateHolder<O, S>, T extends Comparable<T>> Predicate<S> instantiate(O var1, Property<T> var2) {
-         Predicate var3 = Util.anyOf(Lists.transform(this.entries, (var3x) -> this.instantiate(var1, var2, var3x)));
-         ArrayList var4 = new ArrayList(var2.getPossibleValues());
-         int var5 = var4.size();
-         var4.removeIf(var3.negate());
-         int var6 = var4.size();
-         if (var6 == 0) {
-            KeyValueCondition.LOGGER.warn("Condition {} for property {} on {} is always false", new Object[]{this, var2.getName(), var1});
-            return (var0) -> false;
+      public <O, S extends StateHolder<O, S>, T extends Comparable<T>> Predicate<S> instantiate(final O owner, final Property<T> property) {
+         Predicate<T> allowedValueTest = Util.anyOf(Lists.transform(this.entries, (t) -> this.instantiate(owner, property, t)));
+         List<T> allowedValues = new ArrayList(property.getPossibleValues());
+         int allValuesCount = allowedValues.size();
+         allowedValues.removeIf(allowedValueTest.negate());
+         int allowedValuesCount = allowedValues.size();
+         if (allowedValuesCount == 0) {
+            KeyValueCondition.LOGGER.warn("Condition {} for property {} on {} is always false", new Object[]{this, property.getName(), owner});
+            return (blockState) -> false;
          } else {
-            int var7 = var5 - var6;
-            if (var7 == 0) {
-               KeyValueCondition.LOGGER.warn("Condition {} for property {} on {} is always true", new Object[]{this, var2.getName(), var1});
-               return (var0) -> true;
+            int rejectedValuesCount = allValuesCount - allowedValuesCount;
+            if (rejectedValuesCount == 0) {
+               KeyValueCondition.LOGGER.warn("Condition {} for property {} on {} is always true", new Object[]{this, property.getName(), owner});
+               return (blockState) -> true;
             } else {
-               boolean var8;
-               ArrayList var9;
-               if (var6 <= var7) {
-                  var8 = false;
-                  var9 = var4;
+               boolean negate;
+               List<T> valuesToMatch;
+               if (allowedValuesCount <= rejectedValuesCount) {
+                  negate = false;
+                  valuesToMatch = allowedValues;
                } else {
-                  var8 = true;
-                  ArrayList var10 = new ArrayList(var2.getPossibleValues());
-                  var10.removeIf(var3);
-                  var9 = var10;
+                  negate = true;
+                  List<T> rejectedValues = new ArrayList(property.getPossibleValues());
+                  rejectedValues.removeIf(allowedValueTest);
+                  valuesToMatch = rejectedValues;
                }
 
-               if (var9.size() == 1) {
-                  Comparable var11 = (Comparable)var9.getFirst();
-                  return (var3x) -> {
-                     Comparable var4 = var3x.getValue(var2);
-                     return var11.equals(var4) ^ var8;
+               if (valuesToMatch.size() == 1) {
+                  T expectedValue = (T)(valuesToMatch.getFirst());
+                  return (state) -> {
+                     T value = (T)state.getValue(property);
+                     return expectedValue.equals(value) ^ negate;
                   };
                } else {
-                  return (var3x) -> {
-                     Comparable var4 = var3x.getValue(var2);
-                     return var9.contains(var4) ^ var8;
+                  return (state) -> {
+                     T value = (T)state.getValue(property);
+                     return valuesToMatch.contains(value) ^ negate;
                   };
                }
             }
          }
       }
 
-      private <T extends Comparable<T>> T getValueOrThrow(Object var1, Property<T> var2, String var3) {
-         Optional var4 = var2.getValue(var3);
-         if (var4.isEmpty()) {
-            throw new RuntimeException(String.format(Locale.ROOT, "Unknown value '%s' for property '%s' on '%s' in '%s'", var3, var2, var1, this));
+      private <T extends Comparable<T>> T getValueOrThrow(final Object owner, final Property<T> property, final String input) {
+         Optional<T> value = property.getValue(input);
+         if (value.isEmpty()) {
+            throw new RuntimeException(String.format(Locale.ROOT, "Unknown value '%s' for property '%s' on '%s' in '%s'", input, property, owner, this));
          } else {
-            return (T)(var4.get());
+            return (T)(value.get());
          }
       }
 
-      private <T extends Comparable<T>> Predicate<T> instantiate(Object var1, Property<T> var2, Term var3) {
-         Comparable var4 = this.getValueOrThrow(var1, var2, var3.value);
-         return var3.negated ? (var1x) -> !var1x.equals(var4) : (var1x) -> var1x.equals(var4);
+      private <T extends Comparable<T>> Predicate<T> instantiate(final Object owner, final Property<T> property, final Term term) {
+         T parsedValue = this.getValueOrThrow(owner, property, term.value);
+         return term.negated ? (value) -> !value.equals(parsedValue) : (value) -> value.equals(parsedValue);
       }
 
       static {
-         LEGACY_REPRESENTATION_CODEC = Codec.either(Codec.INT, Codec.BOOL).flatComapMap((var0) -> (String)var0.map(String::valueOf, String::valueOf), (var0) -> DataResult.error(() -> "This codec can't be used for encoding"));
+         LEGACY_REPRESENTATION_CODEC = Codec.either(Codec.INT, Codec.BOOL).flatComapMap((either) -> (String)either.map(String::valueOf, String::valueOf), (o) -> DataResult.error(() -> "This codec can't be used for encoding"));
          CODEC = Codec.withAlternative(Codec.STRING, LEGACY_REPRESENTATION_CODEC).comapFlatMap(Terms::parse, Terms::toString);
       }
    }
 
    public static record Term(String value, boolean negated) {
-      final String value;
-      final boolean negated;
       private static final String NEGATE = "!";
 
-      public Term(String var1, boolean var2) {
+      public Term {
          super();
-         if (var1.isEmpty()) {
+         if (value.isEmpty()) {
             throw new IllegalArgumentException("Empty term");
-         } else {
-            this.value = var1;
-            this.negated = var2;
          }
       }
 
-      public static Term parse(String var0) {
-         return var0.startsWith("!") ? new Term(var0.substring(1), true) : new Term(var0, false);
+      public static Term parse(final String value) {
+         return value.startsWith("!") ? new Term(value.substring(1), true) : new Term(value, false);
       }
 
       public String toString() {

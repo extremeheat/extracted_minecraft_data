@@ -40,8 +40,8 @@ public enum ScreenAxis {
       return var10000;
    }
 
-   public ScreenDirection getDirection(boolean var1) {
-      return var1 ? this.getPositive() : this.getNegative();
+   public ScreenDirection getDirection(final boolean positive) {
+      return positive ? this.getPositive() : this.getNegative();
    }
 
    // $FF: synthetic method

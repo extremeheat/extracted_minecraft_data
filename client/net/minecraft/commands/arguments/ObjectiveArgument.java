@@ -13,14 +13,13 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.ServerScoreboard;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 
 public class ObjectiveArgument implements ArgumentType<String> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "*", "012");
-   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_NOT_FOUND = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.objective.notFound", var0));
-   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_READ_ONLY = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.objective.readonly", var0));
+   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_NOT_FOUND = new DynamicCommandExceptionType((name) -> Component.translatableEscape("arguments.objective.notFound", name));
+   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_READ_ONLY = new DynamicCommandExceptionType((name) -> Component.translatableEscape("arguments.objective.readonly", name));
 
    public ObjectiveArgument() {
       super();
@@ -30,36 +29,36 @@ public class ObjectiveArgument implements ArgumentType<String> {
       return new ObjectiveArgument();
    }
 
-   public static Objective getObjective(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      String var2 = (String)var0.getArgument(var1, String.class);
-      ServerScoreboard var3 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
-      Objective var4 = ((Scoreboard)var3).getObjective(var2);
-      if (var4 == null) {
-         throw ERROR_OBJECTIVE_NOT_FOUND.create(var2);
+   public static Objective getObjective(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      String id = (String)context.getArgument(name, String.class);
+      Scoreboard scoreboard = ((CommandSourceStack)context.getSource()).getServer().getScoreboard();
+      Objective objective = scoreboard.getObjective(id);
+      if (objective == null) {
+         throw ERROR_OBJECTIVE_NOT_FOUND.create(id);
       } else {
-         return var4;
+         return objective;
       }
    }
 
-   public static Objective getWritableObjective(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      Objective var2 = getObjective(var0, var1);
-      if (var2.getCriteria().isReadOnly()) {
-         throw ERROR_OBJECTIVE_READ_ONLY.create(var2.getName());
+   public static Objective getWritableObjective(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      Objective objective = getObjective(context, name);
+      if (objective.getCriteria().isReadOnly()) {
+         throw ERROR_OBJECTIVE_READ_ONLY.create(objective.getName());
       } else {
-         return var2;
+         return objective;
       }
    }
 
-   public String parse(StringReader var1) throws CommandSyntaxException {
-      return var1.readUnquotedString();
+   public String parse(final StringReader reader) throws CommandSyntaxException {
+      return reader.readUnquotedString();
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      Object var3 = var1.getSource();
-      if (var3 instanceof CommandSourceStack var4) {
-         return SharedSuggestionProvider.suggest(var4.getServer().getScoreboard().getObjectiveNames(), var2);
-      } else if (var3 instanceof SharedSuggestionProvider var5) {
-         return var5.customSuggestion(var1);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      S rawSource = (S)context.getSource();
+      if (rawSource instanceof CommandSourceStack source) {
+         return SharedSuggestionProvider.suggest(source.getServer().getScoreboard().getObjectiveNames(), builder);
+      } else if (rawSource instanceof SharedSuggestionProvider source) {
+         return source.customSuggestion(context);
       } else {
          return Suggestions.empty();
       }
@@ -67,10 +66,5 @@ public class ObjectiveArgument implements ArgumentType<String> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

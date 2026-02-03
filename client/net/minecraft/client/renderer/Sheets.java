@@ -128,8 +128,8 @@ public class Sheets {
       return CHEST_SHEET_TYPE;
    }
 
-   public static RenderType armorTrimsSheet(boolean var0) {
-      return var0 ? ARMOR_TRIMS_DECAL_SHEET_TYPE : ARMOR_TRIMS_SHEET_TYPE;
+   public static RenderType armorTrimsSheet(final boolean decal) {
+      return decal ? ARMOR_TRIMS_DECAL_SHEET_TYPE : ARMOR_TRIMS_SHEET_TYPE;
    }
 
    public static RenderType solidBlockSheet() {
@@ -148,92 +148,92 @@ public class Sheets {
       return TRANSLUCENT_BLOCK_ITEM_SHEET;
    }
 
-   public static Material getBedMaterial(DyeColor var0) {
-      return BED_TEXTURES[var0.getId()];
+   public static Material getBedMaterial(final DyeColor color) {
+      return BED_TEXTURES[color.getId()];
    }
 
-   public static Identifier colorToResourceMaterial(DyeColor var0) {
-      return Identifier.withDefaultNamespace(var0.getName());
+   public static Identifier colorToResourceMaterial(final DyeColor color) {
+      return Identifier.withDefaultNamespace(color.getName());
    }
 
-   public static Material createBedMaterial(DyeColor var0) {
-      return BED_MAPPER.apply(colorToResourceMaterial(var0));
+   public static Material createBedMaterial(final DyeColor color) {
+      return BED_MAPPER.apply(colorToResourceMaterial(color));
    }
 
-   public static Material getShulkerBoxMaterial(DyeColor var0) {
-      return (Material)SHULKER_TEXTURE_LOCATION.get(var0.getId());
+   public static Material getShulkerBoxMaterial(final DyeColor color) {
+      return (Material)SHULKER_TEXTURE_LOCATION.get(color.getId());
    }
 
-   public static Identifier colorToShulkerMaterial(DyeColor var0) {
-      return Identifier.withDefaultNamespace("shulker_" + var0.getName());
+   public static Identifier colorToShulkerMaterial(final DyeColor color) {
+      return Identifier.withDefaultNamespace("shulker_" + color.getName());
    }
 
-   public static Material createShulkerMaterial(DyeColor var0) {
-      return SHULKER_MAPPER.apply(colorToShulkerMaterial(var0));
+   public static Material createShulkerMaterial(final DyeColor color) {
+      return SHULKER_MAPPER.apply(colorToShulkerMaterial(color));
    }
 
-   private static Material createSignMaterial(WoodType var0) {
-      return SIGN_MAPPER.defaultNamespaceApply(var0.name());
+   private static Material createSignMaterial(final WoodType type) {
+      return SIGN_MAPPER.defaultNamespaceApply(type.name());
    }
 
-   private static Material createHangingSignMaterial(WoodType var0) {
-      return HANGING_SIGN_MAPPER.defaultNamespaceApply(var0.name());
+   private static Material createHangingSignMaterial(final WoodType type) {
+      return HANGING_SIGN_MAPPER.defaultNamespaceApply(type.name());
    }
 
-   public static Material getSignMaterial(WoodType var0) {
-      return (Material)SIGN_MATERIALS.get(var0);
+   public static Material getSignMaterial(final WoodType type) {
+      return (Material)SIGN_MATERIALS.get(type);
    }
 
-   public static Material getHangingSignMaterial(WoodType var0) {
-      return (Material)HANGING_SIGN_MATERIALS.get(var0);
+   public static Material getHangingSignMaterial(final WoodType type) {
+      return (Material)HANGING_SIGN_MATERIALS.get(type);
    }
 
-   public static Material getBannerMaterial(Holder<BannerPattern> var0) {
+   public static Material getBannerMaterial(final Holder<BannerPattern> pattern) {
       Map var10000 = BANNER_MATERIALS;
-      Identifier var10001 = ((BannerPattern)var0.value()).assetId();
+      Identifier var10001 = ((BannerPattern)pattern.value()).assetId();
       MaterialMapper var10002 = BANNER_MAPPER;
       Objects.requireNonNull(var10002);
       return (Material)var10000.computeIfAbsent(var10001, var10002::apply);
    }
 
-   public static Material getShieldMaterial(Holder<BannerPattern> var0) {
+   public static Material getShieldMaterial(final Holder<BannerPattern> pattern) {
       Map var10000 = SHIELD_MATERIALS;
-      Identifier var10001 = ((BannerPattern)var0.value()).assetId();
+      Identifier var10001 = ((BannerPattern)pattern.value()).assetId();
       MaterialMapper var10002 = SHIELD_MAPPER;
       Objects.requireNonNull(var10002);
       return (Material)var10000.computeIfAbsent(var10001, var10002::apply);
    }
 
-   public static @Nullable Material getDecoratedPotMaterial(@Nullable ResourceKey<DecoratedPotPattern> var0) {
-      return var0 == null ? null : (Material)DECORATED_POT_MATERIALS.get(var0);
+   public static @Nullable Material getDecoratedPotMaterial(final @Nullable ResourceKey<DecoratedPotPattern> pattern) {
+      return pattern == null ? null : (Material)DECORATED_POT_MATERIALS.get(pattern);
    }
 
-   public static Material chooseMaterial(ChestRenderState.ChestMaterialType var0, ChestType var1) {
+   public static Material chooseMaterial(final ChestRenderState.ChestMaterialType materialType, final ChestType type) {
       Material var10000;
-      switch (var0) {
+      switch (materialType) {
          case ENDER_CHEST -> var10000 = ENDER_CHEST_LOCATION;
-         case CHRISTMAS -> var10000 = chooseMaterial(var1, CHEST_XMAS_LOCATION, CHEST_XMAS_LOCATION_LEFT, CHEST_XMAS_LOCATION_RIGHT);
-         case TRAPPED -> var10000 = chooseMaterial(var1, CHEST_TRAP_LOCATION, CHEST_TRAP_LOCATION_LEFT, CHEST_TRAP_LOCATION_RIGHT);
-         case COPPER_UNAFFECTED -> var10000 = chooseMaterial(var1, COPPER_CHEST_LOCATION, COPPER_CHEST_LOCATION_LEFT, COPPER_CHEST_LOCATION_RIGHT);
-         case COPPER_EXPOSED -> var10000 = chooseMaterial(var1, EXPOSED_COPPER_CHEST_LOCATION, EXPOSED_COPPER_CHEST_LOCATION_LEFT, EXPOSED_COPPER_CHEST_LOCATION_RIGHT);
-         case COPPER_WEATHERED -> var10000 = chooseMaterial(var1, WEATHERED_COPPER_CHEST_LOCATION, WEATHERED_COPPER_CHEST_LOCATION_LEFT, WEATHERED_COPPER_CHEST_LOCATION_RIGHT);
-         case COPPER_OXIDIZED -> var10000 = chooseMaterial(var1, OXIDIZED_COPPER_CHEST_LOCATION, OXIDIZED_COPPER_CHEST_LOCATION_LEFT, OXIDIZED_COPPER_CHEST_LOCATION_RIGHT);
-         case REGULAR -> var10000 = chooseMaterial(var1, CHEST_LOCATION, CHEST_LOCATION_LEFT, CHEST_LOCATION_RIGHT);
+         case CHRISTMAS -> var10000 = chooseMaterial(type, CHEST_XMAS_LOCATION, CHEST_XMAS_LOCATION_LEFT, CHEST_XMAS_LOCATION_RIGHT);
+         case TRAPPED -> var10000 = chooseMaterial(type, CHEST_TRAP_LOCATION, CHEST_TRAP_LOCATION_LEFT, CHEST_TRAP_LOCATION_RIGHT);
+         case COPPER_UNAFFECTED -> var10000 = chooseMaterial(type, COPPER_CHEST_LOCATION, COPPER_CHEST_LOCATION_LEFT, COPPER_CHEST_LOCATION_RIGHT);
+         case COPPER_EXPOSED -> var10000 = chooseMaterial(type, EXPOSED_COPPER_CHEST_LOCATION, EXPOSED_COPPER_CHEST_LOCATION_LEFT, EXPOSED_COPPER_CHEST_LOCATION_RIGHT);
+         case COPPER_WEATHERED -> var10000 = chooseMaterial(type, WEATHERED_COPPER_CHEST_LOCATION, WEATHERED_COPPER_CHEST_LOCATION_LEFT, WEATHERED_COPPER_CHEST_LOCATION_RIGHT);
+         case COPPER_OXIDIZED -> var10000 = chooseMaterial(type, OXIDIZED_COPPER_CHEST_LOCATION, OXIDIZED_COPPER_CHEST_LOCATION_LEFT, OXIDIZED_COPPER_CHEST_LOCATION_RIGHT);
+         case REGULAR -> var10000 = chooseMaterial(type, CHEST_LOCATION, CHEST_LOCATION_LEFT, CHEST_LOCATION_RIGHT);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   private static Material chooseMaterial(ChestType var0, Material var1, Material var2, Material var3) {
-      switch (var0) {
+   private static Material chooseMaterial(final ChestType type, final Material single, final Material left, final Material right) {
+      switch (type) {
          case LEFT:
-            return var2;
+            return left;
          case RIGHT:
-            return var3;
+            return right;
          case SINGLE:
          default:
-            return var1;
+            return single;
       }
    }
 
@@ -269,10 +269,10 @@ public class Sheets {
       SHIELD_BASE = SHIELD_MAPPER.defaultNamespaceApply("base");
       BANNER_MATERIALS = new HashMap();
       SHIELD_MATERIALS = new HashMap();
-      DECORATED_POT_MATERIALS = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.listElements().collect(Collectors.toMap(Holder.Reference::key, (var0) -> DECORATED_POT_MAPPER.apply(((DecoratedPotPattern)var0.value()).assetId())));
+      DECORATED_POT_MATERIALS = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.listElements().collect(Collectors.toMap(Holder.Reference::key, (holder) -> DECORATED_POT_MAPPER.apply(((DecoratedPotPattern)holder.value()).assetId())));
       DECORATED_POT_BASE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_base");
       DECORATED_POT_SIDE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_side");
-      BED_TEXTURES = (Material[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedMaterial).toArray((var0) -> new Material[var0]);
+      BED_TEXTURES = (Material[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedMaterial).toArray((x$0) -> new Material[x$0]);
       CHEST_TRAP_LOCATION = CHEST_MAPPER.defaultNamespaceApply("trapped");
       CHEST_TRAP_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("trapped_left");
       CHEST_TRAP_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("trapped_right");

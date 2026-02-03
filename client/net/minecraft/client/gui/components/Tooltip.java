@@ -1,13 +1,16 @@
 package net.minecraft.client.gui.components;
 
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.narration.NarrationSupplier;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import org.jspecify.annotations.Nullable;
 
 public class Tooltip implements NarrationSupplier {
@@ -15,40 +18,56 @@ public class Tooltip implements NarrationSupplier {
    private final Component message;
    private @Nullable List<FormattedCharSequence> cachedTooltip;
    private @Nullable Language splitWithLanguage;
+   private final @Nullable Identifier style;
    private final @Nullable Component narration;
+   private final Optional<TooltipComponent> component;
 
-   private Tooltip(Component var1, @Nullable Component var2) {
+   private Tooltip(final Component message, final @Nullable Component narration, final Optional<TooltipComponent> component, final @Nullable Identifier style) {
       super();
-      this.message = var1;
-      this.narration = var2;
+      this.message = message;
+      this.narration = narration;
+      this.component = component;
+      this.style = style;
    }
 
-   public static Tooltip create(Component var0, @Nullable Component var1) {
-      return new Tooltip(var0, var1);
+   public static Tooltip create(final Component message) {
+      return new Tooltip(message, message, Optional.empty(), (Identifier)null);
    }
 
-   public static Tooltip create(Component var0) {
-      return new Tooltip(var0, var0);
+   public static Tooltip create(final Component message, final @Nullable Component narration) {
+      return new Tooltip(message, narration, Optional.empty(), (Identifier)null);
    }
 
-   public void updateNarration(NarrationElementOutput var1) {
+   public static Tooltip create(final Component message, final Optional<TooltipComponent> component, final @Nullable Identifier style) {
+      return new Tooltip(message, message, component, style);
+   }
+
+   public Optional<TooltipComponent> component() {
+      return this.component;
+   }
+
+   public @Nullable Identifier style() {
+      return this.style;
+   }
+
+   public void updateNarration(final NarrationElementOutput output) {
       if (this.narration != null) {
-         var1.add(NarratedElementType.HINT, this.narration);
+         output.add(NarratedElementType.HINT, this.narration);
       }
 
    }
 
-   public List<FormattedCharSequence> toCharSequence(Minecraft var1) {
-      Language var2 = Language.getInstance();
-      if (this.cachedTooltip == null || var2 != this.splitWithLanguage) {
-         this.cachedTooltip = splitTooltip(var1, this.message);
-         this.splitWithLanguage = var2;
+   public List<FormattedCharSequence> toCharSequence(final Minecraft minecraft) {
+      Language currentLanguage = Language.getInstance();
+      if (this.cachedTooltip == null || currentLanguage != this.splitWithLanguage) {
+         this.cachedTooltip = splitTooltip(minecraft, this.message);
+         this.splitWithLanguage = currentLanguage;
       }
 
       return this.cachedTooltip;
    }
 
-   public static List<FormattedCharSequence> splitTooltip(Minecraft var0, Component var1) {
-      return var0.font.split(var1, 170);
+   public static List<FormattedCharSequence> splitTooltip(final Minecraft minecraft, final Component message) {
+      return minecraft.font.split(message, 170);
    }
 }

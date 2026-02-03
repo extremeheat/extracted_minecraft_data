@@ -7,17 +7,17 @@ import java.io.IOException;
 public record LongTag(long value) implements NumericTag {
    private static final int SELF_SIZE_IN_BYTES = 16;
    public static final TagType<LongTag> TYPE = new TagType.StaticSize<LongTag>() {
-      public LongTag load(DataInput var1, NbtAccounter var2) throws IOException {
-         return LongTag.valueOf(readAccounted(var1, var2));
+      public LongTag load(final DataInput input, final NbtAccounter accounter) throws IOException {
+         return LongTag.valueOf(readAccounted(input, accounter));
       }
 
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
-         return var2.visit(readAccounted(var1, var3));
+      public StreamTagVisitor.ValueResult parse(final DataInput input, final StreamTagVisitor output, final NbtAccounter accounter) throws IOException {
+         return output.visit(readAccounted(input, accounter));
       }
 
-      private static long readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
-         var1.accountBytes(16L);
-         return var0.readLong();
+      private static long readAccounted(final DataInput input, final NbtAccounter accounter) throws IOException {
+         accounter.accountBytes(16L);
+         return input.readLong();
       }
 
       public int size() {
@@ -31,28 +31,23 @@ public record LongTag(long value) implements NumericTag {
       public String getPrettyName() {
          return "TAG_Long";
       }
-
-      // $FF: synthetic method
-      public Tag load(final DataInput var1, final NbtAccounter var2) throws IOException {
-         return this.load(var1, var2);
-      }
    };
 
    /** @deprecated */
    @Deprecated(
       forRemoval = true
    )
-   public LongTag(long var1) {
+   public LongTag(long value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
-   public static LongTag valueOf(long var0) {
-      return var0 >= -128L && var0 <= 1024L ? LongTag.Cache.cache[(int)var0 - -128] : new LongTag(var0);
+   public static LongTag valueOf(final long i) {
+      return i >= -128L && i <= 1024L ? LongTag.Cache.cache[(int)i - -128] : new LongTag(i);
    }
 
-   public void write(DataOutput var1) throws IOException {
-      var1.writeLong(this.value);
+   public void write(final DataOutput output) throws IOException {
+      output.writeLong(this.value);
    }
 
    public int sizeInBytes() {
@@ -71,8 +66,8 @@ public record LongTag(long value) implements NumericTag {
       return this;
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitLong(this);
+   public void accept(final TagVisitor visitor) {
+      visitor.visitLong(this);
    }
 
    public long longValue() {
@@ -103,22 +98,17 @@ public record LongTag(long value) implements NumericTag {
       return this.value;
    }
 
-   public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      return var1.visit(this.value);
+   public StreamTagVisitor.ValueResult accept(final StreamTagVisitor visitor) {
+      return visitor.visit(this.value);
    }
 
    public String toString() {
-      StringTagVisitor var1 = new StringTagVisitor();
-      var1.visitLong(this);
-      return var1.build();
+      StringTagVisitor visitor = new StringTagVisitor();
+      visitor.visitLong(this);
+      return visitor.build();
    }
 
-   // $FF: synthetic method
-   public Tag copy() {
-      return this.copy();
-   }
-
-   static class Cache {
+   private static class Cache {
       private static final int HIGH = 1024;
       private static final int LOW = -128;
       static final LongTag[] cache = new LongTag[1153];
@@ -128,8 +118,8 @@ public record LongTag(long value) implements NumericTag {
       }
 
       static {
-         for(int var0 = 0; var0 < cache.length; ++var0) {
-            cache[var0] = new LongTag((long)(-128 + var0));
+         for(int i = 0; i < cache.length; ++i) {
+            cache[i] = new LongTag((long)(-128 + i));
          }
 
       }

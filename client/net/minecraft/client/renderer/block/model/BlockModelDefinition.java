@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer.block.model;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,61 +19,59 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.StateHolder;
 import org.slf4j.Logger;
 
 public record BlockModelDefinition(Optional<SimpleModelSelectors> simpleModels, Optional<MultiPartDefinition> multiPart) {
-   static final Logger LOGGER = LogUtils.getLogger();
-   public static final Codec<BlockModelDefinition> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockModelDefinition.SimpleModelSelectors.CODEC.optionalFieldOf("variants").forGetter(BlockModelDefinition::simpleModels), BlockModelDefinition.MultiPartDefinition.CODEC.optionalFieldOf("multipart").forGetter(BlockModelDefinition::multiPart)).apply(var0, BlockModelDefinition::new)).validate((var0) -> var0.simpleModels().isEmpty() && var0.multiPart().isEmpty() ? DataResult.error(() -> "Neither 'variants' nor 'multipart' found") : DataResult.success(var0));
+   private static final Logger LOGGER = LogUtils.getLogger();
+   public static final Codec<BlockModelDefinition> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockModelDefinition.SimpleModelSelectors.CODEC.optionalFieldOf("variants").forGetter(BlockModelDefinition::simpleModels), BlockModelDefinition.MultiPartDefinition.CODEC.optionalFieldOf("multipart").forGetter(BlockModelDefinition::multiPart)).apply(i, BlockModelDefinition::new)).validate((o) -> o.simpleModels().isEmpty() && o.multiPart().isEmpty() ? DataResult.error(() -> "Neither 'variants' nor 'multipart' found") : DataResult.success(o));
 
-   public BlockModelDefinition(Optional<SimpleModelSelectors> var1, Optional<MultiPartDefinition> var2) {
+   public BlockModelDefinition {
       super();
-      this.simpleModels = var1;
-      this.multiPart = var2;
    }
 
-   public Map<BlockState, BlockStateModel.UnbakedRoot> instantiate(StateDefinition<Block, BlockState> var1, Supplier<String> var2) {
-      IdentityHashMap var3 = new IdentityHashMap();
-      this.simpleModels.ifPresent((var3x) -> var3x.instantiate(var1, var2, (var1x, var2x) -> {
-            BlockStateModel.UnbakedRoot var3x = (BlockStateModel.UnbakedRoot)var3.put(var1x, var2x);
-            if (var3x != null) {
-               throw new IllegalArgumentException("Overlapping definition on state: " + String.valueOf(var1x));
+   public Map<BlockState, BlockStateModel.UnbakedRoot> instantiate(final StateDefinition<Block, BlockState> stateDefinition, final Supplier<String> source) {
+      Map<BlockState, BlockStateModel.UnbakedRoot> matchedStates = new IdentityHashMap();
+      this.simpleModels.ifPresent((s) -> s.instantiate(stateDefinition, source, (state, model) -> {
+            BlockStateModel.UnbakedRoot previousValue = (BlockStateModel.UnbakedRoot)matchedStates.put(state, model);
+            if (previousValue != null) {
+               throw new IllegalArgumentException("Overlapping definition on state: " + String.valueOf(state));
             }
          }));
-      this.multiPart.ifPresent((var2x) -> {
-         ImmutableList var3x = var1.getPossibleStates();
-         MultiPartModel.Unbaked var4 = var2x.instantiate(var1);
+      this.multiPart.ifPresent((m) -> {
+         List<BlockState> possibleStates = stateDefinition.getPossibleStates();
+         BlockStateModel.UnbakedRoot model = m.instantiate(stateDefinition);
 
-         for(BlockState var6 : var3x) {
-            var3.putIfAbsent(var6, var4);
+         for(BlockState state : possibleStates) {
+            matchedStates.putIfAbsent(state, model);
          }
 
       });
-      return var3;
+      return matchedStates;
    }
 
    public static record SimpleModelSelectors(Map<String, BlockStateModel.Unbaked> models) {
       public static final Codec<SimpleModelSelectors> CODEC;
 
-      public SimpleModelSelectors(Map<String, BlockStateModel.Unbaked> var1) {
+      public SimpleModelSelectors {
          super();
-         this.models = var1;
       }
 
-      public void instantiate(StateDefinition<Block, BlockState> var1, Supplier<String> var2, BiConsumer<BlockState, BlockStateModel.UnbakedRoot> var3) {
-         this.models.forEach((var3x, var4) -> {
+      public void instantiate(final StateDefinition<Block, BlockState> stateDefinition, final Supplier<String> source, final BiConsumer<BlockState, BlockStateModel.UnbakedRoot> output) {
+         this.models.forEach((selectorString, model) -> {
             try {
-               Predicate var5 = VariantSelector.predicate(var1, var3x);
-               BlockStateModel.UnbakedRoot var6 = var4.asRoot();
-               UnmodifiableIterator var7 = var1.getPossibleStates().iterator();
+               Predicate<StateHolder<Block, BlockState>> selector = VariantSelector.predicate(stateDefinition, selectorString);
+               BlockStateModel.UnbakedRoot wrapper = model.asRoot();
+               Iterator i$ = stateDefinition.getPossibleStates().iterator();
 
-               while(var7.hasNext()) {
-                  BlockState var8 = (BlockState)var7.next();
-                  if (var5.test(var8)) {
-                     var3.accept(var8, var6);
+               while(i$.hasNext()) {
+                  BlockState state = (BlockState)i$.next();
+                  if (selector.test(state)) {
+                     output.accept(state, wrapper);
                   }
                }
-            } catch (Exception var9) {
-               BlockModelDefinition.LOGGER.warn("Exception loading blockstate definition: '{}' for variant: '{}': {}", new Object[]{var2.get(), var3x, var9.getMessage()});
+            } catch (Exception e) {
+               BlockModelDefinition.LOGGER.warn("Exception loading blockstate definition: '{}' for variant: '{}': {}", new Object[]{source.get(), selectorString, e.getMessage()});
             }
 
          });
@@ -87,19 +85,18 @@ public record BlockModelDefinition(Optional<SimpleModelSelectors> simpleModels, 
    public static record MultiPartDefinition(List<Selector> selectors) {
       public static final Codec<MultiPartDefinition> CODEC;
 
-      public MultiPartDefinition(List<Selector> var1) {
+      public MultiPartDefinition {
          super();
-         this.selectors = var1;
       }
 
-      public MultiPartModel.Unbaked instantiate(StateDefinition<Block, BlockState> var1) {
-         ImmutableList.Builder var2 = ImmutableList.builderWithExpectedSize(this.selectors.size());
+      public MultiPartModel.Unbaked instantiate(final StateDefinition<Block, BlockState> stateDefinition) {
+         ImmutableList.Builder<MultiPartModel.Selector<BlockStateModel.Unbaked>> instantiatedSelectors = ImmutableList.builderWithExpectedSize(this.selectors.size());
 
-         for(Selector var4 : this.selectors) {
-            var2.add(new MultiPartModel.Selector(var4.instantiate(var1), var4.variant()));
+         for(Selector selector : this.selectors) {
+            instantiatedSelectors.add(new MultiPartModel.Selector(selector.instantiate(stateDefinition), selector.variant()));
          }
 
-         return new MultiPartModel.Unbaked(var2.build());
+         return new MultiPartModel.Unbaked(instantiatedSelectors.build());
       }
 
       static {

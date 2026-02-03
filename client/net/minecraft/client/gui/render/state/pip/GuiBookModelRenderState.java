@@ -6,22 +6,11 @@ import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public record GuiBookModelRenderState(BookModel bookModel, Identifier texture, float open, float flip, int x0, int y0, int x1, int y1, float scale, @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds) implements PictureInPictureRenderState {
-   public GuiBookModelRenderState(BookModel var1, Identifier var2, float var3, float var4, int var5, int var6, int var7, int var8, float var9, @Nullable ScreenRectangle var10) {
-      this(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, PictureInPictureRenderState.getBounds(var5, var6, var7, var8, var10));
+   public GuiBookModelRenderState(final BookModel bookModel, final Identifier texture, final float open, final float flip, final int x0, final int y0, final int x1, final int y1, final float scale, final @Nullable ScreenRectangle scissorArea) {
+      this(bookModel, texture, open, flip, x0, y0, x1, y1, scale, scissorArea, PictureInPictureRenderState.getBounds(x0, y0, x1, y1, scissorArea));
    }
 
-   public GuiBookModelRenderState(BookModel var1, Identifier var2, float var3, float var4, int var5, int var6, int var7, int var8, float var9, @Nullable ScreenRectangle var10, @Nullable ScreenRectangle var11) {
+   public GuiBookModelRenderState {
       super();
-      this.bookModel = var1;
-      this.texture = var2;
-      this.open = var3;
-      this.flip = var4;
-      this.x0 = var5;
-      this.y0 = var6;
-      this.x1 = var7;
-      this.y1 = var8;
-      this.scale = var9;
-      this.scissorArea = var10;
-      this.bounds = var11;
    }
 }

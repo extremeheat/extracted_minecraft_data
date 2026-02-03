@@ -12,406 +12,409 @@ import com.mojang.datafixers.util.Function7;
 import com.mojang.datafixers.util.Function8;
 import com.mojang.datafixers.util.Function9;
 import io.netty.buffer.ByteBuf;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B, V> {
-   static <B, V> StreamCodec<B, V> of(final StreamEncoder<B, V> var0, final StreamDecoder<B, V> var1) {
+public interface StreamCodec<B, V> extends StreamEncoder<B, V>, StreamDecoder<B, V> {
+   static <B, V> StreamCodec<B, V> of(final StreamEncoder<B, V> encoder, final StreamDecoder<B, V> decoder) {
       return new StreamCodec<B, V>() {
-         public V decode(B var1x) {
-            return (V)var1.decode(var1x);
+         public V decode(final B input) {
+            return decoder.decode(input);
          }
 
-         public void encode(B var1x, V var2) {
-            var0.encode(var1x, var2);
+         public void encode(final B output, final V value) {
+            encoder.encode(output, value);
          }
       };
    }
 
-   static <B, V> StreamCodec<B, V> ofMember(final StreamMemberEncoder<B, V> var0, final StreamDecoder<B, V> var1) {
+   static <B, V> StreamCodec<B, V> ofMember(final StreamMemberEncoder<B, V> encoder, final StreamDecoder<B, V> decoder) {
       return new StreamCodec<B, V>() {
-         public V decode(B var1x) {
-            return (V)var1.decode(var1x);
+         public V decode(final B input) {
+            return decoder.decode(input);
          }
 
-         public void encode(B var1x, V var2) {
-            var0.encode(var2, var1x);
+         public void encode(final B output, final V value) {
+            encoder.encode(value, output);
          }
       };
    }
 
-   static <B, V> StreamCodec<B, V> unit(final V var0) {
+   static <B, V> StreamCodec<B, V> unit(final V instance) {
       return new StreamCodec<B, V>() {
-         public V decode(B var1) {
-            return (V)var0;
+         public V decode(final B input) {
+            return instance;
          }
 
-         public void encode(B var1, V var2) {
-            if (!var2.equals(var0)) {
-               String var10002 = String.valueOf(var2);
-               throw new IllegalStateException("Can't encode '" + var10002 + "', expected '" + String.valueOf(var0) + "'");
+         public void encode(final B output, final V value) {
+            if (!value.equals(instance)) {
+               String var10002 = String.valueOf(value);
+               throw new IllegalStateException("Can't encode '" + var10002 + "', expected '" + String.valueOf(instance) + "'");
             }
          }
       };
    }
 
-   default <O> StreamCodec<B, O> apply(CodecOperation<B, V, O> var1) {
-      return var1.apply(this);
+   default <O> StreamCodec<B, O> apply(final CodecOperation<B, V, O> operation) {
+      return operation.apply(this);
    }
 
-   default <O> StreamCodec<B, O> map(final Function<? super V, ? extends O> var1, final Function<? super O, ? extends V> var2) {
+   default <O> StreamCodec<B, O> map(final Function<? super V, ? extends O> to, final Function<? super O, ? extends V> from) {
       return new StreamCodec<B, O>() {
-         public O decode(B var1x) {
-            return (O)var1.apply(StreamCodec.this.decode(var1x));
+         {
+            Objects.requireNonNull(StreamCodec.this);
          }
 
-         public void encode(B var1x, O var2x) {
-            StreamCodec.this.encode(var1x, var2.apply(var2x));
+         public O decode(final B input) {
+            return (O)to.apply(StreamCodec.this.decode(input));
+         }
+
+         public void encode(final B output, final O value) {
+            StreamCodec.this.encode(output, from.apply(value));
          }
       };
    }
 
-   default <O extends ByteBuf> StreamCodec<O, V> mapStream(final Function<O, ? extends B> var1) {
+   default <O extends ByteBuf> StreamCodec<O, V> mapStream(final Function<O, ? extends B> operation) {
       return new StreamCodec<O, V>() {
-         public V decode(O var1x) {
-            Object var2 = var1.apply(var1x);
-            return (V)StreamCodec.this.decode(var2);
+         {
+            Objects.requireNonNull(StreamCodec.this);
          }
 
-         public void encode(O var1x, V var2) {
-            Object var3 = var1.apply(var1x);
-            StreamCodec.this.encode(var3, var2);
+         public V decode(final O input) {
+            B wrappedStream = (B)operation.apply(input);
+            return (V)StreamCodec.this.decode(wrappedStream);
          }
 
-         // $FF: synthetic method
-         public void encode(final Object var1x, final Object var2) {
-            this.encode((ByteBuf)var1x, var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1x) {
-            return this.decode((ByteBuf)var1x);
+         public void encode(final O output, final V value) {
+            B wrappedStream = (B)operation.apply(output);
+            StreamCodec.this.encode(wrappedStream, value);
          }
       };
    }
 
-   default <U> StreamCodec<B, U> dispatch(final Function<? super U, ? extends V> var1, final Function<? super V, ? extends StreamCodec<? super B, ? extends U>> var2) {
+   default <U> StreamCodec<B, U> dispatch(final Function<? super U, ? extends V> type, final Function<? super V, ? extends StreamCodec<? super B, ? extends U>> codec) {
       return new StreamCodec<B, U>() {
-         public U decode(B var1x) {
-            Object var2x = StreamCodec.this.decode(var1x);
-            StreamCodec var3 = (StreamCodec)var2.apply(var2x);
-            return (U)var3.decode(var1x);
+         {
+            Objects.requireNonNull(StreamCodec.this);
          }
 
-         public void encode(B var1x, U var2x) {
-            Object var3 = var1.apply(var2x);
-            StreamCodec var4 = (StreamCodec)var2.apply(var3);
-            StreamCodec.this.encode(var1x, var3);
-            var4.encode(var1x, var2x);
+         public U decode(final B input) {
+            V key = (V)StreamCodec.this.decode(input);
+            StreamCodec<? super B, ? extends U> valueCodec = (StreamCodec)codec.apply(key);
+            return (U)valueCodec.decode(input);
+         }
+
+         public void encode(final B output, final U value) {
+            V key = (V)type.apply(value);
+            StreamCodec<B, U> valueCodec = (StreamCodec)codec.apply(key);
+            StreamCodec.this.encode(output, key);
+            valueCodec.encode(output, value);
          }
       };
    }
 
-   static <B, C, T1> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final Function<T1, C> var2) {
+   static <B, C, T1> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final Function<T1, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            return (C)var2.apply(var2x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            return (C)constructor.apply(v1);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final BiFunction<T1, T2, C> var4) {
+   static <B, C, T1, T2> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final BiFunction<T1, T2, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            return (C)var4.apply(var2x, var3x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            return (C)constructor.apply(v1, v2);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2, T3> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final StreamCodec<? super B, T3> var4, final Function<C, T3> var5, final Function3<T1, T2, T3, C> var6) {
+   static <B, C, T1, T2, T3> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final Function3<T1, T2, T3, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            return (C)var6.apply(var2x, var3x, var4x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            return (C)constructor.apply(v1, v2, v3);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2, T3, T4> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final StreamCodec<? super B, T3> var4, final Function<C, T3> var5, final StreamCodec<? super B, T4> var6, final Function<C, T4> var7, final Function4<T1, T2, T3, T4, C> var8) {
+   static <B, C, T1, T2, T3, T4> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final Function4<T1, T2, T3, T4, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            return (C)var8.apply(var2x, var3x, var4x, var5x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2, T3, T4, T5> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final StreamCodec<? super B, T3> var4, final Function<C, T3> var5, final StreamCodec<? super B, T4> var6, final Function<C, T4> var7, final StreamCodec<? super B, T5> var8, final Function<C, T5> var9, final Function5<T1, T2, T3, T4, T5, C> var10) {
+   static <B, C, T1, T2, T3, T4, T5> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> codec5, final Function<C, T5> getter5, final Function5<T1, T2, T3, T4, T5, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
-            return (C)var10.apply(var2x, var3x, var4x, var5x, var6x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            T5 v5 = (T5)codec5.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4, v5);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
+            codec5.encode(output, getter5.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2, T3, T4, T5, T6> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final StreamCodec<? super B, T3> var4, final Function<C, T3> var5, final StreamCodec<? super B, T4> var6, final Function<C, T4> var7, final StreamCodec<? super B, T5> var8, final Function<C, T5> var9, final StreamCodec<? super B, T6> var10, final Function<C, T6> var11, final Function6<T1, T2, T3, T4, T5, T6, C> var12) {
+   static <B, C, T1, T2, T3, T4, T5, T6> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> codec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> codec6, final Function<C, T6> getter6, final Function6<T1, T2, T3, T4, T5, T6, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
-            Object var7x = var10.decode(var1x);
-            return (C)var12.apply(var2x, var3x, var4x, var5x, var6x, var7x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            T5 v5 = (T5)codec5.decode(input);
+            T6 v6 = (T6)codec6.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4, v5, v6);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
-            var10.encode(var1x, var11.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
+            codec5.encode(output, getter5.apply(value));
+            codec6.encode(output, getter6.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2, T3, T4, T5, T6, T7> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final StreamCodec<? super B, T3> var4, final Function<C, T3> var5, final StreamCodec<? super B, T4> var6, final Function<C, T4> var7, final StreamCodec<? super B, T5> var8, final Function<C, T5> var9, final StreamCodec<? super B, T6> var10, final Function<C, T6> var11, final StreamCodec<? super B, T7> var12, final Function<C, T7> var13, final Function7<T1, T2, T3, T4, T5, T6, T7, C> var14) {
+   static <B, C, T1, T2, T3, T4, T5, T6, T7> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> codec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> codec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> codec7, final Function<C, T7> getter7, final Function7<T1, T2, T3, T4, T5, T6, T7, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
-            Object var7x = var10.decode(var1x);
-            Object var8x = var12.decode(var1x);
-            return (C)var14.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            T5 v5 = (T5)codec5.decode(input);
+            T6 v6 = (T6)codec6.decode(input);
+            T7 v7 = (T7)codec7.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4, v5, v6, v7);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
-            var10.encode(var1x, var11.apply(var2x));
-            var12.encode(var1x, var13.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
+            codec5.encode(output, getter5.apply(value));
+            codec6.encode(output, getter6.apply(value));
+            codec7.encode(output, getter7.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final StreamCodec<? super B, T3> var4, final Function<C, T3> var5, final StreamCodec<? super B, T4> var6, final Function<C, T4> var7, final StreamCodec<? super B, T5> var8, final Function<C, T5> var9, final StreamCodec<? super B, T6> var10, final Function<C, T6> var11, final StreamCodec<? super B, T7> var12, final Function<C, T7> var13, final StreamCodec<? super B, T8> var14, final Function<C, T8> var15, final Function8<T1, T2, T3, T4, T5, T6, T7, T8, C> var16) {
+   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> codec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> codec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> codec7, final Function<C, T7> getter7, final StreamCodec<? super B, T8> codec8, final Function<C, T8> getter8, final Function8<T1, T2, T3, T4, T5, T6, T7, T8, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
-            Object var7x = var10.decode(var1x);
-            Object var8x = var12.decode(var1x);
-            Object var9x = var14.decode(var1x);
-            return (C)var16.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x, var9x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            T5 v5 = (T5)codec5.decode(input);
+            T6 v6 = (T6)codec6.decode(input);
+            T7 v7 = (T7)codec7.decode(input);
+            T8 v8 = (T8)codec8.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4, v5, v6, v7, v8);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
-            var10.encode(var1x, var11.apply(var2x));
-            var12.encode(var1x, var13.apply(var2x));
-            var14.encode(var1x, var15.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
+            codec5.encode(output, getter5.apply(value));
+            codec6.encode(output, getter6.apply(value));
+            codec7.encode(output, getter7.apply(value));
+            codec8.encode(output, getter8.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final StreamCodec<? super B, T3> var4, final Function<C, T3> var5, final StreamCodec<? super B, T4> var6, final Function<C, T4> var7, final StreamCodec<? super B, T5> var8, final Function<C, T5> var9, final StreamCodec<? super B, T6> var10, final Function<C, T6> var11, final StreamCodec<? super B, T7> var12, final Function<C, T7> var13, final StreamCodec<? super B, T8> var14, final Function<C, T8> var15, final StreamCodec<? super B, T9> var16, final Function<C, T9> var17, final Function9<T1, T2, T3, T4, T5, T6, T7, T8, T9, C> var18) {
+   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> codec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> codec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> codec7, final Function<C, T7> getter7, final StreamCodec<? super B, T8> codec8, final Function<C, T8> getter8, final StreamCodec<? super B, T9> codec9, final Function<C, T9> getter9, final Function9<T1, T2, T3, T4, T5, T6, T7, T8, T9, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
-            Object var7x = var10.decode(var1x);
-            Object var8x = var12.decode(var1x);
-            Object var9x = var14.decode(var1x);
-            Object var10x = var16.decode(var1x);
-            return (C)var18.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x, var9x, var10x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            T5 v5 = (T5)codec5.decode(input);
+            T6 v6 = (T6)codec6.decode(input);
+            T7 v7 = (T7)codec7.decode(input);
+            T8 v8 = (T8)codec8.decode(input);
+            T9 v9 = (T9)codec9.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4, v5, v6, v7, v8, v9);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
-            var10.encode(var1x, var11.apply(var2x));
-            var12.encode(var1x, var13.apply(var2x));
-            var14.encode(var1x, var15.apply(var2x));
-            var16.encode(var1x, var17.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
+            codec5.encode(output, getter5.apply(value));
+            codec6.encode(output, getter6.apply(value));
+            codec7.encode(output, getter7.apply(value));
+            codec8.encode(output, getter8.apply(value));
+            codec9.encode(output, getter9.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final StreamCodec<? super B, T3> var4, final Function<C, T3> var5, final StreamCodec<? super B, T4> var6, final Function<C, T4> var7, final StreamCodec<? super B, T5> var8, final Function<C, T5> var9, final StreamCodec<? super B, T6> var10, final Function<C, T6> var11, final StreamCodec<? super B, T7> var12, final Function<C, T7> var13, final StreamCodec<? super B, T8> var14, final Function<C, T8> var15, final StreamCodec<? super B, T9> var16, final Function<C, T9> var17, final StreamCodec<? super B, T10> var18, final Function<C, T10> var19, final Function10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, C> var20) {
+   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> codec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> codec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> codec7, final Function<C, T7> getter7, final StreamCodec<? super B, T8> codec8, final Function<C, T8> getter8, final StreamCodec<? super B, T9> codec9, final Function<C, T9> getter9, final StreamCodec<? super B, T10> codec10, final Function<C, T10> getter10, final Function10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
-            Object var7x = var10.decode(var1x);
-            Object var8x = var12.decode(var1x);
-            Object var9x = var14.decode(var1x);
-            Object var10x = var16.decode(var1x);
-            Object var11x = var18.decode(var1x);
-            return (C)var20.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x, var9x, var10x, var11x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            T5 v5 = (T5)codec5.decode(input);
+            T6 v6 = (T6)codec6.decode(input);
+            T7 v7 = (T7)codec7.decode(input);
+            T8 v8 = (T8)codec8.decode(input);
+            T9 v9 = (T9)codec9.decode(input);
+            T10 v10 = (T10)codec10.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
-            var10.encode(var1x, var11.apply(var2x));
-            var12.encode(var1x, var13.apply(var2x));
-            var14.encode(var1x, var15.apply(var2x));
-            var16.encode(var1x, var17.apply(var2x));
-            var18.encode(var1x, var19.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
+            codec5.encode(output, getter5.apply(value));
+            codec6.encode(output, getter6.apply(value));
+            codec7.encode(output, getter7.apply(value));
+            codec8.encode(output, getter8.apply(value));
+            codec9.encode(output, getter9.apply(value));
+            codec10.encode(output, getter10.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final StreamCodec<? super B, T3> var4, final Function<C, T3> var5, final StreamCodec<? super B, T4> var6, final Function<C, T4> var7, final StreamCodec<? super B, T5> var8, final Function<C, T5> var9, final StreamCodec<? super B, T6> var10, final Function<C, T6> var11, final StreamCodec<? super B, T7> var12, final Function<C, T7> var13, final StreamCodec<? super B, T8> var14, final Function<C, T8> var15, final StreamCodec<? super B, T9> var16, final Function<C, T9> var17, final StreamCodec<? super B, T10> var18, final Function<C, T10> var19, final StreamCodec<? super B, T11> var20, final Function<C, T11> var21, final Function11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, C> var22) {
+   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> codec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> codec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> codec7, final Function<C, T7> getter7, final StreamCodec<? super B, T8> codec8, final Function<C, T8> getter8, final StreamCodec<? super B, T9> codec9, final Function<C, T9> getter9, final StreamCodec<? super B, T10> codec10, final Function<C, T10> getter10, final StreamCodec<? super B, T11> codec11, final Function<C, T11> getter11, final Function11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
-            Object var7x = var10.decode(var1x);
-            Object var8x = var12.decode(var1x);
-            Object var9x = var14.decode(var1x);
-            Object var10x = var16.decode(var1x);
-            Object var11x = var18.decode(var1x);
-            Object var12x = var20.decode(var1x);
-            return (C)var22.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x, var9x, var10x, var11x, var12x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            T5 v5 = (T5)codec5.decode(input);
+            T6 v6 = (T6)codec6.decode(input);
+            T7 v7 = (T7)codec7.decode(input);
+            T8 v8 = (T8)codec8.decode(input);
+            T9 v9 = (T9)codec9.decode(input);
+            T10 v10 = (T10)codec10.decode(input);
+            T11 v11 = (T11)codec11.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
-            var10.encode(var1x, var11.apply(var2x));
-            var12.encode(var1x, var13.apply(var2x));
-            var14.encode(var1x, var15.apply(var2x));
-            var16.encode(var1x, var17.apply(var2x));
-            var18.encode(var1x, var19.apply(var2x));
-            var20.encode(var1x, var21.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
+            codec5.encode(output, getter5.apply(value));
+            codec6.encode(output, getter6.apply(value));
+            codec7.encode(output, getter7.apply(value));
+            codec8.encode(output, getter8.apply(value));
+            codec9.encode(output, getter9.apply(value));
+            codec10.encode(output, getter10.apply(value));
+            codec11.encode(output, getter11.apply(value));
          }
       };
    }
 
-   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> var0, final Function<C, T1> var1, final StreamCodec<? super B, T2> var2, final Function<C, T2> var3, final StreamCodec<? super B, T3> var4, final Function<C, T3> var5, final StreamCodec<? super B, T4> var6, final Function<C, T4> var7, final StreamCodec<? super B, T5> var8, final Function<C, T5> var9, final StreamCodec<? super B, T6> var10, final Function<C, T6> var11, final StreamCodec<? super B, T7> var12, final Function<C, T7> var13, final StreamCodec<? super B, T8> var14, final Function<C, T8> var15, final StreamCodec<? super B, T9> var16, final Function<C, T9> var17, final StreamCodec<? super B, T10> var18, final Function<C, T10> var19, final StreamCodec<? super B, T11> var20, final Function<C, T11> var21, final StreamCodec<? super B, T12> var22, final Function<C, T12> var23, final Function12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, C> var24) {
+   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> codec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> codec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> codec7, final Function<C, T7> getter7, final StreamCodec<? super B, T8> codec8, final Function<C, T8> getter8, final StreamCodec<? super B, T9> codec9, final Function<C, T9> getter9, final StreamCodec<? super B, T10> codec10, final Function<C, T10> getter10, final StreamCodec<? super B, T11> codec11, final Function<C, T11> getter11, final StreamCodec<? super B, T12> codec12, final Function<C, T12> getter12, final Function12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, C> constructor) {
       return new StreamCodec<B, C>() {
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
-            Object var7x = var10.decode(var1x);
-            Object var8x = var12.decode(var1x);
-            Object var9x = var14.decode(var1x);
-            Object var10x = var16.decode(var1x);
-            Object var11x = var18.decode(var1x);
-            Object var12x = var20.decode(var1x);
-            Object var13x = var22.decode(var1x);
-            return (C)var24.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x, var9x, var10x, var11x, var12x, var13x);
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            T5 v5 = (T5)codec5.decode(input);
+            T6 v6 = (T6)codec6.decode(input);
+            T7 v7 = (T7)codec7.decode(input);
+            T8 v8 = (T8)codec8.decode(input);
+            T9 v9 = (T9)codec9.decode(input);
+            T10 v10 = (T10)codec10.decode(input);
+            T11 v11 = (T11)codec11.decode(input);
+            T12 v12 = (T12)codec12.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
          }
 
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
-            var10.encode(var1x, var11.apply(var2x));
-            var12.encode(var1x, var13.apply(var2x));
-            var14.encode(var1x, var15.apply(var2x));
-            var16.encode(var1x, var17.apply(var2x));
-            var18.encode(var1x, var19.apply(var2x));
-            var20.encode(var1x, var21.apply(var2x));
-            var22.encode(var1x, var23.apply(var2x));
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
+            codec5.encode(output, getter5.apply(value));
+            codec6.encode(output, getter6.apply(value));
+            codec7.encode(output, getter7.apply(value));
+            codec8.encode(output, getter8.apply(value));
+            codec9.encode(output, getter9.apply(value));
+            codec10.encode(output, getter10.apply(value));
+            codec11.encode(output, getter11.apply(value));
+            codec12.encode(output, getter12.apply(value));
          }
       };
    }
 
-   static <B, T> StreamCodec<B, T> recursive(final UnaryOperator<StreamCodec<B, T>> var0) {
+   static <B, T> StreamCodec<B, T> recursive(final UnaryOperator<StreamCodec<B, T>> factory) {
       return new StreamCodec<B, T>() {
-         private final Supplier<StreamCodec<B, T>> inner = Suppliers.memoize(() -> (StreamCodec)var0.apply(this));
+         private final Supplier<StreamCodec<B, T>> inner = Suppliers.memoize(() -> (StreamCodec)factory.apply(this));
 
-         public T decode(B var1) {
-            return (T)((StreamCodec)this.inner.get()).decode(var1);
+         public T decode(final B input) {
+            return (T)((StreamCodec)this.inner.get()).decode(input);
          }
 
-         public void encode(B var1, T var2) {
-            ((StreamCodec)this.inner.get()).encode(var1, var2);
+         public void encode(final B output, final T value) {
+            ((StreamCodec)this.inner.get()).encode(output, value);
          }
       };
    }
@@ -422,6 +425,6 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
 
    @FunctionalInterface
    public interface CodecOperation<B, S, T> {
-      StreamCodec<B, T> apply(StreamCodec<B, S> var1);
+      StreamCodec<B, T> apply(StreamCodec<B, S> original);
    }
 }

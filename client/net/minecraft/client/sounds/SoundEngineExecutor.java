@@ -14,26 +14,26 @@ public class SoundEngineExecutor extends BlockableEventLoop<Runnable> {
    }
 
    private Thread createThread() {
-      Thread var1 = new Thread(this::run);
-      var1.setDaemon(true);
-      var1.setName("Sound engine");
-      var1.setUncaughtExceptionHandler((var0, var1x) -> Minecraft.getInstance().delayCrash(CrashReport.forThrowable(var1x, "Uncaught exception on thread: " + var0.getName())));
-      var1.start();
-      return var1;
+      Thread thread = new Thread(this::run);
+      thread.setDaemon(true);
+      thread.setName("Sound engine");
+      thread.setUncaughtExceptionHandler((t, e) -> Minecraft.getInstance().delayCrash(CrashReport.forThrowable(e, "Uncaught exception on thread: " + t.getName())));
+      thread.start();
+      return thread;
    }
 
-   public Runnable wrapRunnable(Runnable var1) {
-      return var1;
+   public Runnable wrapRunnable(final Runnable runnable) {
+      return runnable;
    }
 
-   public void schedule(Runnable var1) {
+   public void schedule(final Runnable runnable) {
       if (!this.shutdown) {
-         super.schedule(var1);
+         super.schedule(runnable);
       }
 
    }
 
-   protected boolean shouldRun(Runnable var1) {
+   protected boolean shouldRun(final Runnable task) {
       return !this.shutdown;
    }
 

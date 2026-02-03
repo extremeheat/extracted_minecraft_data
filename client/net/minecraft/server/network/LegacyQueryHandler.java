@@ -15,102 +15,102 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final ServerInfo server;
 
-   public LegacyQueryHandler(ServerInfo var1) {
+   public LegacyQueryHandler(final ServerInfo server) {
       super();
-      this.server = var1;
+      this.server = server;
    }
 
-   public void channelRead(ChannelHandlerContext var1, Object var2) {
-      ByteBuf var3 = (ByteBuf)var2;
-      var3.markReaderIndex();
-      boolean var4 = true;
+   public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+      ByteBuf in = (ByteBuf)msg;
+      in.markReaderIndex();
+      boolean connectNormally = true;
 
       try {
-         if (var3.readUnsignedByte() == 254) {
-            SocketAddress var5 = var1.channel().remoteAddress();
-            int var6 = var3.readableBytes();
-            if (var6 == 0) {
-               LOGGER.debug("Ping: (<1.3.x) from {}", var5);
-               String var7 = createVersion0Response(this.server);
-               sendFlushAndClose(var1, createLegacyDisconnectPacket(var1.alloc(), var7));
+         if (in.readUnsignedByte() == 254) {
+            SocketAddress socket = ctx.channel().remoteAddress();
+            int length = in.readableBytes();
+            if (length == 0) {
+               LOGGER.debug("Ping: (<1.3.x) from {}", socket);
+               String body = createVersion0Response(this.server);
+               sendFlushAndClose(ctx, createLegacyDisconnectPacket(ctx.alloc(), body));
             } else {
-               if (var3.readUnsignedByte() != 1) {
+               if (in.readUnsignedByte() != 1) {
                   return;
                }
 
-               if (var3.isReadable()) {
-                  if (!readCustomPayloadPacket(var3)) {
+               if (in.isReadable()) {
+                  if (!readCustomPayloadPacket(in)) {
                      return;
                   }
 
-                  LOGGER.debug("Ping: (1.6) from {}", var5);
+                  LOGGER.debug("Ping: (1.6) from {}", socket);
                } else {
-                  LOGGER.debug("Ping: (1.4-1.5.x) from {}", var5);
+                  LOGGER.debug("Ping: (1.4-1.5.x) from {}", socket);
                }
 
-               String var13 = createVersion1Response(this.server);
-               sendFlushAndClose(var1, createLegacyDisconnectPacket(var1.alloc(), var13));
+               String body = createVersion1Response(this.server);
+               sendFlushAndClose(ctx, createLegacyDisconnectPacket(ctx.alloc(), body));
             }
 
-            var3.release();
-            var4 = false;
+            in.release();
+            connectNormally = false;
             return;
          }
       } catch (RuntimeException var11) {
          return;
       } finally {
-         if (var4) {
-            var3.resetReaderIndex();
-            var1.channel().pipeline().remove(this);
-            var1.fireChannelRead(var2);
+         if (connectNormally) {
+            in.resetReaderIndex();
+            ctx.channel().pipeline().remove(this);
+            ctx.fireChannelRead(msg);
          }
 
       }
 
    }
 
-   private static boolean readCustomPayloadPacket(ByteBuf var0) {
-      short var1 = var0.readUnsignedByte();
-      if (var1 != 250) {
+   private static boolean readCustomPayloadPacket(final ByteBuf in) {
+      short packetId = in.readUnsignedByte();
+      if (packetId != 250) {
          return false;
       } else {
-         String var2 = LegacyProtocolUtils.readLegacyString(var0);
-         if (!"MC|PingHost".equals(var2)) {
+         String channelId = LegacyProtocolUtils.readLegacyString(in);
+         if (!"MC|PingHost".equals(channelId)) {
             return false;
          } else {
-            int var3 = var0.readUnsignedShort();
-            if (var0.readableBytes() != var3) {
+            int payloadSize = in.readUnsignedShort();
+            if (in.readableBytes() != payloadSize) {
                return false;
             } else {
-               short var4 = var0.readUnsignedByte();
-               if (var4 < 73) {
+               short protocolVersion = in.readUnsignedByte();
+               if (protocolVersion < 73) {
                   return false;
                } else {
-                  String var5 = LegacyProtocolUtils.readLegacyString(var0);
-                  int var6 = var0.readInt();
-                  return var6 <= 65535;
+                  String host = LegacyProtocolUtils.readLegacyString(in);
+                  int port = in.readInt();
+                  return port <= 65535;
                }
             }
          }
       }
    }
 
-   private static String createVersion0Response(ServerInfo var0) {
-      return String.format(Locale.ROOT, "%s\u00a7%d\u00a7%d", var0.getMotd(), var0.getPlayerCount(), var0.getMaxPlayers());
+   private static String createVersion0Response(final ServerInfo server) {
+      return String.format(Locale.ROOT, "%s\u00a7%d\u00a7%d", server.getMotd(), server.getPlayerCount(), server.getMaxPlayers());
    }
 
-   private static String createVersion1Response(ServerInfo var0) {
-      return String.format(Locale.ROOT, "\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, var0.getServerVersion(), var0.getMotd(), var0.getPlayerCount(), var0.getMaxPlayers());
+   private static String createVersion1Response(final ServerInfo server) {
+      return String.format(Locale.ROOT, "\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, server.getServerVersion(), server.getMotd(), server.getPlayerCount(), server.getMaxPlayers());
    }
 
-   private static void sendFlushAndClose(ChannelHandlerContext var0, ByteBuf var1) {
-      var0.pipeline().firstContext().writeAndFlush(var1).addListener(ChannelFutureListener.CLOSE);
+   private static void sendFlushAndClose(final ChannelHandlerContext ctx, final ByteBuf out) {
+      ctx.pipeline().firstContext().writeAndFlush(out).addListener(ChannelFutureListener.CLOSE);
    }
 
-   private static ByteBuf createLegacyDisconnectPacket(ByteBufAllocator var0, String var1) {
-      ByteBuf var2 = var0.buffer();
-      var2.writeByte(255);
-      LegacyProtocolUtils.writeLegacyString(var2, var1);
-      return var2;
+   private static ByteBuf createLegacyDisconnectPacket(final ByteBufAllocator alloc, final String reason) {
+      ByteBuf out = alloc.buffer();
+      out.writeByte(255);
+      LegacyProtocolUtils.writeLegacyString(out, reason);
+      return out;
    }
 }

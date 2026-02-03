@@ -13,14 +13,14 @@ public abstract class AgeableMobRenderer<T extends Mob, S extends LivingEntityRe
    private final M adultModel;
    private final M babyModel;
 
-   public AgeableMobRenderer(EntityRendererProvider.Context var1, M var2, M var3, float var4) {
-      super(var1, var2, var4);
-      this.adultModel = var2;
-      this.babyModel = var3;
+   public AgeableMobRenderer(final EntityRendererProvider.Context context, final M adultModel, final M babyModel, final float shadow) {
+      super(context, adultModel, shadow);
+      this.adultModel = adultModel;
+      this.babyModel = babyModel;
    }
 
-   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      this.model = var1.isBaby ? this.babyModel : this.adultModel;
-      super.submit(var1, var2, var3, var4);
+   public void submit(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      this.model = state.isBaby ? this.babyModel : this.adultModel;
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 }

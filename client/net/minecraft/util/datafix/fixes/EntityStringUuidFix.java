@@ -8,18 +8,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class EntityStringUuidFix extends DataFix {
-   public EntityStringUuidFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public EntityStringUuidFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("EntityStringUuidFix", this.getInputSchema().getType(References.ENTITY), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> {
-            Optional var1 = var0x.get("UUID").asString().result();
-            if (var1.isPresent()) {
-               UUID var2 = UUID.fromString((String)var1.get());
-               return var0x.remove("UUID").set("UUIDMost", var0x.createLong(var2.getMostSignificantBits())).set("UUIDLeast", var0x.createLong(var2.getLeastSignificantBits()));
+      return this.fixTypeEverywhereTyped("EntityStringUuidFix", this.getInputSchema().getType(References.ENTITY), (input) -> input.update(DSL.remainderFinder(), (tag) -> {
+            Optional<String> uuidString = tag.get("UUID").asString().result();
+            if (uuidString.isPresent()) {
+               UUID uuid = UUID.fromString((String)uuidString.get());
+               return tag.remove("UUID").set("UUIDMost", tag.createLong(uuid.getMostSignificantBits())).set("UUIDLeast", tag.createLong(uuid.getLeastSignificantBits()));
             } else {
-               return var0x;
+               return tag;
             }
          }));
    }

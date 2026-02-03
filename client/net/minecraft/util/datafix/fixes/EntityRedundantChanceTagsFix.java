@@ -12,28 +12,28 @@ import java.util.Objects;
 public class EntityRedundantChanceTagsFix extends DataFix {
    private static final Codec<List<Float>> FLOAT_LIST_CODEC;
 
-   public EntityRedundantChanceTagsFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public EntityRedundantChanceTagsFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("EntityRedundantChanceTagsFix", this.getInputSchema().getType(References.ENTITY), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> {
-            if (isZeroList(var0x.get("HandDropChances"), 2)) {
-               var0x = var0x.remove("HandDropChances");
+      return this.fixTypeEverywhereTyped("EntityRedundantChanceTagsFix", this.getInputSchema().getType(References.ENTITY), (input) -> input.update(DSL.remainderFinder(), (tag) -> {
+            if (isZeroList(tag.get("HandDropChances"), 2)) {
+               tag = tag.remove("HandDropChances");
             }
 
-            if (isZeroList(var0x.get("ArmorDropChances"), 4)) {
-               var0x = var0x.remove("ArmorDropChances");
+            if (isZeroList(tag.get("ArmorDropChances"), 4)) {
+               tag = tag.remove("ArmorDropChances");
             }
 
-            return var0x;
+            return tag;
          }));
    }
 
-   private static boolean isZeroList(OptionalDynamic<?> var0, int var1) {
+   private static boolean isZeroList(final OptionalDynamic<?> element, final int size) {
       Codec var10001 = FLOAT_LIST_CODEC;
       Objects.requireNonNull(var10001);
-      return (Boolean)var0.flatMap(var10001::parse).map((var1x) -> var1x.size() == var1 && var1x.stream().allMatch((var0) -> var0 == 0.0F)).result().orElse(false);
+      return (Boolean)element.flatMap(var10001::parse).map((floats) -> floats.size() == size && floats.stream().allMatch((f) -> f == 0.0F)).result().orElse(false);
    }
 
    static {

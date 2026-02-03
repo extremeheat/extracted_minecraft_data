@@ -30,12 +30,12 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
 
    public TeleportToTeamMenuCategory() {
       super();
-      Minecraft var1 = Minecraft.getInstance();
-      this.items = createTeamEntries(var1, var1.level.getScoreboard());
+      Minecraft minecraft = Minecraft.getInstance();
+      this.items = createTeamEntries(minecraft, minecraft.level.getScoreboard());
    }
 
-   private static List<SpectatorMenuItem> createTeamEntries(Minecraft var0, Scoreboard var1) {
-      return var1.getPlayerTeams().stream().flatMap((var1x) -> TeleportToTeamMenuCategory.TeamSelectionItem.create(var0, var1x).stream()).toList();
+   private static List<SpectatorMenuItem> createTeamEntries(final Minecraft minecraft, final Scoreboard scoreboard) {
+      return scoreboard.getPlayerTeams().stream().flatMap((team) -> TeleportToTeamMenuCategory.TeamSelectionItem.create(minecraft, team).stream()).toList();
    }
 
    public List<SpectatorMenuItem> getItems() {
@@ -46,71 +46,71 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
       return TELEPORT_PROMPT;
    }
 
-   public void selectItem(SpectatorMenu var1) {
-      var1.selectCategory(this);
+   public void selectItem(final SpectatorMenu menu) {
+      menu.selectCategory(this);
    }
 
    public Component getName() {
       return TELEPORT_TEXT;
    }
 
-   public void renderIcon(GuiGraphics var1, float var2, float var3) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TELEPORT_TO_TEAM_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
+   public void renderIcon(final GuiGraphics graphics, final float brightness, final float alpha) {
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TELEPORT_TO_TEAM_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(alpha, brightness, brightness, brightness));
    }
 
    public boolean isEnabled() {
       return !this.items.isEmpty();
    }
 
-   static class TeamSelectionItem implements SpectatorMenuItem {
+   private static class TeamSelectionItem implements SpectatorMenuItem {
       private final PlayerTeam team;
       private final Supplier<PlayerSkin> iconSkin;
       private final List<PlayerInfo> players;
 
-      private TeamSelectionItem(PlayerTeam var1, List<PlayerInfo> var2, Supplier<PlayerSkin> var3) {
+      private TeamSelectionItem(final PlayerTeam team, final List<PlayerInfo> players, final Supplier<PlayerSkin> iconSkin) {
          super();
-         this.team = var1;
-         this.players = var2;
-         this.iconSkin = var3;
+         this.team = team;
+         this.players = players;
+         this.iconSkin = iconSkin;
       }
 
-      public static Optional<SpectatorMenuItem> create(Minecraft var0, PlayerTeam var1) {
-         ArrayList var2 = new ArrayList();
+      public static Optional<SpectatorMenuItem> create(final Minecraft minecraft, final PlayerTeam team) {
+         List<PlayerInfo> players = new ArrayList();
 
-         for(String var4 : var1.getPlayers()) {
-            PlayerInfo var5 = var0.getConnection().getPlayerInfo(var4);
-            if (var5 != null && var5.getGameMode() != GameType.SPECTATOR) {
-               var2.add(var5);
+         for(String name : team.getPlayers()) {
+            PlayerInfo info = minecraft.getConnection().getPlayerInfo(name);
+            if (info != null && info.getGameMode() != GameType.SPECTATOR) {
+               players.add(info);
             }
          }
 
-         if (var2.isEmpty()) {
+         if (players.isEmpty()) {
             return Optional.empty();
          } else {
-            PlayerInfo var6 = (PlayerInfo)var2.get(RandomSource.create().nextInt(var2.size()));
-            Objects.requireNonNull(var6);
-            return Optional.of(new TeamSelectionItem(var1, var2, var6::getSkin));
+            PlayerInfo playerInfo = (PlayerInfo)players.get(RandomSource.create().nextInt(players.size()));
+            Objects.requireNonNull(playerInfo);
+            return Optional.of(new TeamSelectionItem(team, players, playerInfo::getSkin));
          }
       }
 
-      public void selectItem(SpectatorMenu var1) {
-         var1.selectCategory(new TeleportToPlayerMenuCategory(this.players));
+      public void selectItem(final SpectatorMenu menu) {
+         menu.selectCategory(new TeleportToPlayerMenuCategory(this.players));
       }
 
       public Component getName() {
          return this.team.getDisplayName();
       }
 
-      public void renderIcon(GuiGraphics var1, float var2, float var3) {
-         Integer var4 = this.team.getColor().getColor();
-         if (var4 != null) {
-            float var5 = (float)(var4 >> 16 & 255) / 255.0F;
-            float var6 = (float)(var4 >> 8 & 255) / 255.0F;
-            float var7 = (float)(var4 & 255) / 255.0F;
-            var1.fill(1, 1, 15, 15, ARGB.colorFromFloat(var3, var5 * var2, var6 * var2, var7 * var2));
+      public void renderIcon(final GuiGraphics graphics, final float brightness, final float alpha) {
+         Integer teamColor = this.team.getColor().getColor();
+         if (teamColor != null) {
+            float red = (float)(teamColor >> 16 & 255) / 255.0F;
+            float green = (float)(teamColor >> 8 & 255) / 255.0F;
+            float blue = (float)(teamColor & 255) / 255.0F;
+            graphics.fill(1, 1, 15, 15, ARGB.colorFromFloat(alpha, red * brightness, green * brightness, blue * brightness));
          }
 
-         PlayerFaceRenderer.draw(var1, (PlayerSkin)this.iconSkin.get(), 2, 2, 12, ARGB.colorFromFloat(var3, var2, var2, var2));
+         PlayerFaceRenderer.draw(graphics, (PlayerSkin)this.iconSkin.get(), 2, 2, 12, ARGB.colorFromFloat(alpha, brightness, brightness, brightness));
       }
 
       public boolean isEnabled() {

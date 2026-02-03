@@ -9,56 +9,44 @@ import net.minecraft.network.codec.StreamCodec;
 
 public record TypedDataComponent<T>(DataComponentType<T> type, T value) {
    public static final StreamCodec<RegistryFriendlyByteBuf, TypedDataComponent<?>> STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, TypedDataComponent<?>>() {
-      public TypedDataComponent<?> decode(RegistryFriendlyByteBuf var1) {
-         DataComponentType var2 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
-         return decodeTyped(var1, var2);
+      public TypedDataComponent<?> decode(final RegistryFriendlyByteBuf input) {
+         DataComponentType<?> type = (DataComponentType)DataComponentType.STREAM_CODEC.decode(input);
+         return decodeTyped(input, type);
       }
 
-      private static <T> TypedDataComponent<T> decodeTyped(RegistryFriendlyByteBuf var0, DataComponentType<T> var1) {
-         return new TypedDataComponent<T>(var1, var1.streamCodec().decode(var0));
+      private static <T> TypedDataComponent<T> decodeTyped(final RegistryFriendlyByteBuf input, final DataComponentType<T> type) {
+         return new TypedDataComponent<T>(type, type.streamCodec().decode(input));
       }
 
-      public void encode(RegistryFriendlyByteBuf var1, TypedDataComponent<?> var2) {
-         encodeCap(var1, var2);
+      public void encode(final RegistryFriendlyByteBuf output, final TypedDataComponent<?> value) {
+         encodeCap(output, value);
       }
 
-      private static <T> void encodeCap(RegistryFriendlyByteBuf var0, TypedDataComponent<T> var1) {
-         DataComponentType.STREAM_CODEC.encode(var0, var1.type());
-         var1.type().streamCodec().encode(var0, var1.value());
-      }
-
-      // $FF: synthetic method
-      public void encode(final Object var1, final Object var2) {
-         this.encode((RegistryFriendlyByteBuf)var1, (TypedDataComponent)var2);
-      }
-
-      // $FF: synthetic method
-      public Object decode(final Object var1) {
-         return this.decode((RegistryFriendlyByteBuf)var1);
+      private static <T> void encodeCap(final RegistryFriendlyByteBuf output, final TypedDataComponent<T> component) {
+         DataComponentType.STREAM_CODEC.encode(output, component.type());
+         component.type().streamCodec().encode(output, component.value());
       }
    };
 
-   public TypedDataComponent(DataComponentType<T> var1, T var2) {
+   public TypedDataComponent {
       super();
-      this.type = var1;
-      this.value = var2;
    }
 
-   static TypedDataComponent<?> fromEntryUnchecked(Map.Entry<DataComponentType<?>, Object> var0) {
-      return createUnchecked((DataComponentType)var0.getKey(), var0.getValue());
+   static TypedDataComponent<?> fromEntryUnchecked(final Map.Entry<DataComponentType<?>, Object> entry) {
+      return createUnchecked((DataComponentType)entry.getKey(), entry.getValue());
    }
 
-   public static <T> TypedDataComponent<T> createUnchecked(DataComponentType<T> var0, Object var1) {
-      return new TypedDataComponent<T>(var0, var1);
+   public static <T> TypedDataComponent<T> createUnchecked(final DataComponentType<T> type, final Object value) {
+      return new TypedDataComponent<T>(type, value);
    }
 
-   public void applyTo(PatchedDataComponentMap var1) {
-      var1.set(this.type, this.value);
+   public void applyTo(final PatchedDataComponentMap components) {
+      components.set(this.type, this.value);
    }
 
-   public <D> DataResult<D> encodeValue(DynamicOps<D> var1) {
-      Codec var2 = this.type.codec();
-      return var2 == null ? DataResult.error(() -> "Component of type " + String.valueOf(this.type) + " is not encodable") : var2.encodeStart(var1, this.value);
+   public <D> DataResult<D> encodeValue(final DynamicOps<D> ops) {
+      Codec<T> codec = this.type.codec();
+      return codec == null ? DataResult.error(() -> "Component of type " + String.valueOf(this.type) + " is not encodable") : codec.encodeStart(ops, this.value);
    }
 
    public String toString() {

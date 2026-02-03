@@ -20,10 +20,10 @@ public class NumberFormatTypes {
       super();
    }
 
-   public static NumberFormatType<?> bootstrap(Registry<NumberFormatType<?>> var0) {
-      Registry.register(var0, (String)"blank", BlankFormat.TYPE);
-      Registry.register(var0, (String)"styled", StyledFormat.TYPE);
-      return (NumberFormatType)Registry.register(var0, (String)"fixed", FixedFormat.TYPE);
+   public static NumberFormatType<?> bootstrap(final Registry<NumberFormatType<?>> registry) {
+      Registry.register(registry, (String)"blank", BlankFormat.TYPE);
+      Registry.register(registry, (String)"styled", StyledFormat.TYPE);
+      return (NumberFormatType)Registry.register(registry, (String)"fixed", FixedFormat.TYPE);
    }
 
    static {

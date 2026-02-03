@@ -11,150 +11,150 @@ public class VertexMultiConsumer {
       throw new IllegalArgumentException();
    }
 
-   public static VertexConsumer create(VertexConsumer var0) {
-      return var0;
+   public static VertexConsumer create(final VertexConsumer consumer) {
+      return consumer;
    }
 
-   public static VertexConsumer create(VertexConsumer var0, VertexConsumer var1) {
-      return new Double(var0, var1);
+   public static VertexConsumer create(final VertexConsumer first, final VertexConsumer second) {
+      return new Double(first, second);
    }
 
-   public static VertexConsumer create(VertexConsumer... var0) {
-      return new Multiple(var0);
+   public static VertexConsumer create(final VertexConsumer... consumers) {
+      return new Multiple(consumers);
    }
 
-   static class Double implements VertexConsumer {
+   private static class Double implements VertexConsumer {
       private final VertexConsumer first;
       private final VertexConsumer second;
 
-      public Double(VertexConsumer var1, VertexConsumer var2) {
+      public Double(final VertexConsumer first, final VertexConsumer second) {
          super();
-         if (var1 == var2) {
+         if (first == second) {
             throw new IllegalArgumentException("Duplicate delegates");
          } else {
-            this.first = var1;
-            this.second = var2;
+            this.first = first;
+            this.second = second;
          }
       }
 
-      public VertexConsumer addVertex(float var1, float var2, float var3) {
-         this.first.addVertex(var1, var2, var3);
-         this.second.addVertex(var1, var2, var3);
+      public VertexConsumer addVertex(final float x, final float y, final float z) {
+         this.first.addVertex(x, y, z);
+         this.second.addVertex(x, y, z);
          return this;
       }
 
-      public VertexConsumer setColor(int var1, int var2, int var3, int var4) {
-         this.first.setColor(var1, var2, var3, var4);
-         this.second.setColor(var1, var2, var3, var4);
+      public VertexConsumer setColor(final int r, final int g, final int b, final int a) {
+         this.first.setColor(r, g, b, a);
+         this.second.setColor(r, g, b, a);
          return this;
       }
 
-      public VertexConsumer setColor(int var1) {
-         this.first.setColor(var1);
-         this.second.setColor(var1);
+      public VertexConsumer setColor(final int color) {
+         this.first.setColor(color);
+         this.second.setColor(color);
          return this;
       }
 
-      public VertexConsumer setUv(float var1, float var2) {
-         this.first.setUv(var1, var2);
-         this.second.setUv(var1, var2);
+      public VertexConsumer setUv(final float u, final float v) {
+         this.first.setUv(u, v);
+         this.second.setUv(u, v);
          return this;
       }
 
-      public VertexConsumer setUv1(int var1, int var2) {
-         this.first.setUv1(var1, var2);
-         this.second.setUv1(var1, var2);
+      public VertexConsumer setUv1(final int u, final int v) {
+         this.first.setUv1(u, v);
+         this.second.setUv1(u, v);
          return this;
       }
 
-      public VertexConsumer setUv2(int var1, int var2) {
-         this.first.setUv2(var1, var2);
-         this.second.setUv2(var1, var2);
+      public VertexConsumer setUv2(final int u, final int v) {
+         this.first.setUv2(u, v);
+         this.second.setUv2(u, v);
          return this;
       }
 
-      public VertexConsumer setNormal(float var1, float var2, float var3) {
-         this.first.setNormal(var1, var2, var3);
-         this.second.setNormal(var1, var2, var3);
+      public VertexConsumer setNormal(final float x, final float y, final float z) {
+         this.first.setNormal(x, y, z);
+         this.second.setNormal(x, y, z);
          return this;
       }
 
-      public VertexConsumer setLineWidth(float var1) {
-         this.first.setLineWidth(var1);
-         this.second.setLineWidth(var1);
+      public VertexConsumer setLineWidth(final float width) {
+         this.first.setLineWidth(width);
+         this.second.setLineWidth(width);
          return this;
       }
 
-      public void addVertex(float var1, float var2, float var3, int var4, float var5, float var6, int var7, int var8, float var9, float var10, float var11) {
-         this.first.addVertex(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
-         this.second.addVertex(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
+      public void addVertex(final float x, final float y, final float z, final int color, final float u, final float v, final int overlayCoords, final int lightCoords, final float nx, final float ny, final float nz) {
+         this.first.addVertex(x, y, z, color, u, v, overlayCoords, lightCoords, nx, ny, nz);
+         this.second.addVertex(x, y, z, color, u, v, overlayCoords, lightCoords, nx, ny, nz);
       }
    }
 
-   static record Multiple(VertexConsumer[] delegates) implements VertexConsumer {
-      Multiple(VertexConsumer[] var1) {
+   private static record Multiple(VertexConsumer[] delegates) implements VertexConsumer {
+      private Multiple(VertexConsumer[] delegates) {
          super();
 
-         for(int var2 = 0; var2 < var1.length; ++var2) {
-            for(int var3 = var2 + 1; var3 < var1.length; ++var3) {
-               if (var1[var2] == var1[var3]) {
+         for(int i = 0; i < delegates.length; ++i) {
+            for(int j = i + 1; j < delegates.length; ++j) {
+               if (delegates[i] == delegates[j]) {
                   throw new IllegalArgumentException("Duplicate delegates");
                }
             }
          }
 
-         this.delegates = var1;
+         this.delegates = delegates;
       }
 
-      private void forEach(Consumer<VertexConsumer> var1) {
-         for(VertexConsumer var5 : this.delegates) {
-            var1.accept(var5);
+      private void forEach(final Consumer<VertexConsumer> out) {
+         for(VertexConsumer delegate : this.delegates) {
+            out.accept(delegate);
          }
 
       }
 
-      public VertexConsumer addVertex(float var1, float var2, float var3) {
-         this.forEach((var3x) -> var3x.addVertex(var1, var2, var3));
+      public VertexConsumer addVertex(final float x, final float y, final float z) {
+         this.forEach((d) -> d.addVertex(x, y, z));
          return this;
       }
 
-      public VertexConsumer setColor(int var1, int var2, int var3, int var4) {
-         this.forEach((var4x) -> var4x.setColor(var1, var2, var3, var4));
+      public VertexConsumer setColor(final int r, final int g, final int b, final int a) {
+         this.forEach((d) -> d.setColor(r, g, b, a));
          return this;
       }
 
-      public VertexConsumer setColor(int var1) {
-         this.forEach((var1x) -> var1x.setColor(var1));
+      public VertexConsumer setColor(final int color) {
+         this.forEach((d) -> d.setColor(color));
          return this;
       }
 
-      public VertexConsumer setUv(float var1, float var2) {
-         this.forEach((var2x) -> var2x.setUv(var1, var2));
+      public VertexConsumer setUv(final float u, final float v) {
+         this.forEach((d) -> d.setUv(u, v));
          return this;
       }
 
-      public VertexConsumer setUv1(int var1, int var2) {
-         this.forEach((var2x) -> var2x.setUv1(var1, var2));
+      public VertexConsumer setUv1(final int u, final int v) {
+         this.forEach((d) -> d.setUv1(u, v));
          return this;
       }
 
-      public VertexConsumer setUv2(int var1, int var2) {
-         this.forEach((var2x) -> var2x.setUv2(var1, var2));
+      public VertexConsumer setUv2(final int u, final int v) {
+         this.forEach((d) -> d.setUv2(u, v));
          return this;
       }
 
-      public VertexConsumer setNormal(float var1, float var2, float var3) {
-         this.forEach((var3x) -> var3x.setNormal(var1, var2, var3));
+      public VertexConsumer setNormal(final float x, final float y, final float z) {
+         this.forEach((d) -> d.setNormal(x, y, z));
          return this;
       }
 
-      public VertexConsumer setLineWidth(float var1) {
-         this.forEach((var1x) -> var1x.setLineWidth(var1));
+      public VertexConsumer setLineWidth(final float width) {
+         this.forEach((d) -> d.setLineWidth(width));
          return this;
       }
 
-      public void addVertex(float var1, float var2, float var3, int var4, float var5, float var6, int var7, int var8, float var9, float var10, float var11) {
-         this.forEach((var11x) -> var11x.addVertex(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11));
+      public void addVertex(final float x, final float y, final float z, final int color, final float u, final float v, final int overlayCoords, final int lightCoords, final float nx, final float ny, final float nz) {
+         this.forEach((d) -> d.addVertex(x, y, z, color, u, v, overlayCoords, lightCoords, nx, ny, nz));
       }
    }
 }

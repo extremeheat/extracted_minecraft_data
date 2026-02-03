@@ -36,81 +36,81 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
       return CODEC;
    }
 
-   public LightningRodBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public LightningRodBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.UP)).setValue(WATERLOGGED, false)).setValue(POWERED, false));
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      boolean var3 = var2.getType() == Fluids.WATER;
-      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var1.getClickedFace())).setValue(WATERLOGGED, var3);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      boolean isWaterSource = replacedFluidState.is(Fluids.WATER);
+      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getClickedFace())).setValue(WATERLOGGED, isWaterSource);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return (Boolean)var1.getValue(POWERED) ? 15 : 0;
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return (Boolean)state.getValue(POWERED) ? 15 : 0;
    }
 
-   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return (Boolean)var1.getValue(POWERED) && var1.getValue(FACING) == var4 ? 15 : 0;
+   protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return (Boolean)state.getValue(POWERED) && state.getValue(FACING) == direction ? 15 : 0;
    }
 
-   public void onLightningStrike(BlockState var1, Level var2, BlockPos var3) {
-      var2.setBlock(var3, (BlockState)var1.setValue(POWERED, true), 3);
-      this.updateNeighbours(var1, var2, var3);
-      var2.scheduleTick(var3, this, 8);
-      var2.levelEvent(3002, var3, ((Direction)var1.getValue(FACING)).getAxis().ordinal());
+   public void onLightningStrike(final BlockState state, final Level level, final BlockPos pos) {
+      level.setBlock(pos, (BlockState)state.setValue(POWERED, true), 3);
+      this.updateNeighbours(state, level, pos);
+      level.scheduleTick(pos, this, 8);
+      level.levelEvent(3002, pos, ((Direction)state.getValue(FACING)).getAxis().ordinal());
    }
 
-   private void updateNeighbours(BlockState var1, Level var2, BlockPos var3) {
-      Direction var4 = ((Direction)var1.getValue(FACING)).getOpposite();
-      var2.updateNeighborsAt(var3.relative(var4), this, ExperimentalRedstoneUtils.initialOrientation(var2, var4, (Direction)null));
+   private void updateNeighbours(final BlockState state, final Level level, final BlockPos pos) {
+      Direction front = ((Direction)state.getValue(FACING)).getOpposite();
+      level.updateNeighborsAt(pos.relative(front), this, ExperimentalRedstoneUtils.initialOrientation(level, front, (Direction)null));
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      var2.setBlock(var3, (BlockState)var1.setValue(POWERED, false), 3);
-      this.updateNeighbours(var1, var2, var3);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      level.setBlock(pos, (BlockState)state.setValue(POWERED, false), 3);
+      this.updateNeighbours(state, level, pos);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var2.isThundering() && (long)var2.random.nextInt(200) <= var2.getGameTime() % 200L && var3.getY() == var2.getHeight(Heightmap.Types.WORLD_SURFACE, var3.getX(), var3.getZ()) - 1) {
-         ParticleUtils.spawnParticlesAlongAxis(((Direction)var1.getValue(FACING)).getAxis(), var2, var3, 0.125, ParticleTypes.ELECTRIC_SPARK, UniformInt.of(1, 2));
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if (level.isThundering() && (long)level.getRandom().nextInt(200) <= level.getGameTime() % 200L && pos.getY() == level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) - 1) {
+         ParticleUtils.spawnParticlesAlongAxis(((Direction)state.getValue(FACING)).getAxis(), level, pos, 0.125, ParticleTypes.ELECTRIC_SPARK, UniformInt.of(1, 2));
       }
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      if ((Boolean)var1.getValue(POWERED)) {
-         this.updateNeighbours(var1, var2, var3);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      if ((Boolean)state.getValue(POWERED)) {
+         this.updateNeighbours(state, level, pos);
       }
 
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         if ((Boolean)var1.getValue(POWERED) && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
-            var2.scheduleTick(var3, this, 8);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!state.is(oldState.getBlock())) {
+         if ((Boolean)state.getValue(POWERED) && !level.getBlockTicks().hasScheduledTick(pos, this)) {
+            level.scheduleTick(pos, this, 8);
          }
 
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, POWERED, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, POWERED, WATERLOGGED);
    }
 
-   protected boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(final BlockState state) {
       return true;
    }
 

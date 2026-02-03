@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -30,53 +31,53 @@ public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockCo
       return CODEC;
    }
 
-   public TallSeagrassBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public TallSeagrassBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.isFaceSturdy(var2, var3, Direction.UP) && !var1.is(Blocks.MAGMA_BLOCK);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.isFaceSturdy(level, pos, Direction.UP) && !state.is(BlockTags.CANNOT_SUPPORT_SEAGRASS);
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
       return new ItemStack(Blocks.SEAGRASS);
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = super.getStateForPlacement(var1);
-      if (var2 != null) {
-         FluidState var3 = var1.getLevel().getFluidState(var1.getClickedPos().above());
-         if (var3.is(FluidTags.WATER) && var3.getAmount() == 8) {
-            return var2;
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState state = super.getStateForPlacement(context);
+      if (state != null) {
+         FluidState fluidState = context.getLevel().getFluidState(context.getClickedPos().above());
+         if (fluidState.is(FluidTags.WATER) && fluidState.isFull()) {
+            return state;
          }
       }
 
       return null;
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      if (var1.getValue(HALF) == DoubleBlockHalf.UPPER) {
-         BlockState var5 = var2.getBlockState(var3.below());
-         return var5.is(this) && var5.getValue(HALF) == DoubleBlockHalf.LOWER;
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      if (state.getValue(HALF) == DoubleBlockHalf.UPPER) {
+         BlockState belowState = level.getBlockState(pos.below());
+         return belowState.is(this) && belowState.getValue(HALF) == DoubleBlockHalf.LOWER;
       } else {
-         FluidState var4 = var2.getFluidState(var3);
-         return super.canSurvive(var1, var2, var3) && var4.is(FluidTags.WATER) && var4.getAmount() == 8;
+         FluidState fluidState = level.getFluidState(pos);
+         return super.canSurvive(state, level, pos) && fluidState.is(FluidTags.WATER) && fluidState.isFull();
       }
    }
 
-   protected FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(final BlockState state) {
       return Fluids.WATER.getSource(false);
    }
 
-   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
+   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid type) {
       return false;
    }
 
-   public boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
+   public boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
       return false;
    }
 

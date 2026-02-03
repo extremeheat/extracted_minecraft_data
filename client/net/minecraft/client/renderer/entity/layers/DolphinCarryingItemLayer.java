@@ -10,25 +10,25 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 
 public class DolphinCarryingItemLayer extends RenderLayer<DolphinRenderState, DolphinModel> {
-   public DolphinCarryingItemLayer(RenderLayerParent<DolphinRenderState, DolphinModel> var1) {
-      super(var1);
+   public DolphinCarryingItemLayer(final RenderLayerParent<DolphinRenderState, DolphinModel> renderer) {
+      super(renderer);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, DolphinRenderState var4, float var5, float var6) {
-      ItemStackRenderState var7 = var4.heldItem;
-      if (!var7.isEmpty()) {
-         var1.pushPose();
-         float var8 = 1.0F;
-         float var9 = -1.0F;
-         float var10 = Mth.abs(var4.xRot) / 60.0F;
-         if (var4.xRot < 0.0F) {
-            var1.translate(0.0F, 1.0F - var10 * 0.5F, -1.0F + var10 * 0.5F);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final DolphinRenderState state, final float yRot, final float xRot) {
+      ItemStackRenderState item = state.heldItem;
+      if (!item.isEmpty()) {
+         poseStack.pushPose();
+         float y = 1.0F;
+         float z = -1.0F;
+         float angleXPercent = Mth.abs(state.xRot) / 60.0F;
+         if (state.xRot < 0.0F) {
+            poseStack.translate(0.0F, 1.0F - angleXPercent * 0.5F, -1.0F + angleXPercent * 0.5F);
          } else {
-            var1.translate(0.0F, 1.0F + var10 * 0.8F, -1.0F + var10 * 0.2F);
+            poseStack.translate(0.0F, 1.0F + angleXPercent * 0.8F, -1.0F + angleXPercent * 0.2F);
          }
 
-         var7.submit(var1, var2, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
-         var1.popPose();
+         item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+         poseStack.popPose();
       }
    }
 }

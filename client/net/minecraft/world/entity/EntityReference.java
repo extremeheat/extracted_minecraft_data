@@ -30,113 +30,113 @@ public final class EntityReference<StoredEntityType extends UniquelyIdentifyable
       return STREAM_CODEC;
    }
 
-   private EntityReference(StoredEntityType var1) {
+   private EntityReference(final StoredEntityType entity) {
       super();
-      this.entity = Either.right(var1);
+      this.entity = Either.right(entity);
    }
 
-   private EntityReference(UUID var1) {
+   private EntityReference(final UUID uuid) {
       super();
-      this.entity = Either.left(var1);
+      this.entity = Either.left(uuid);
    }
 
-   public static <T extends UniquelyIdentifyable> @Nullable EntityReference<T> of(@Nullable T var0) {
-      return var0 != null ? new EntityReference(var0) : null;
+   public static <T extends UniquelyIdentifyable> @Nullable EntityReference<T> of(final @Nullable T entity) {
+      return entity != null ? new EntityReference(entity) : null;
    }
 
-   public static <T extends UniquelyIdentifyable> EntityReference<T> of(UUID var0) {
-      return new EntityReference<T>(var0);
+   public static <T extends UniquelyIdentifyable> EntityReference<T> of(final UUID uuid) {
+      return new EntityReference<T>(uuid);
    }
 
    public UUID getUUID() {
-      return (UUID)this.entity.map((var0) -> var0, UniquelyIdentifyable::getUUID);
+      return (UUID)this.entity.map((uuid) -> uuid, UniquelyIdentifyable::getUUID);
    }
 
-   public @Nullable StoredEntityType getEntity(UUIDLookup<? extends UniquelyIdentifyable> var1, Class<StoredEntityType> var2) {
-      Optional var3 = this.entity.right();
-      if (var3.isPresent()) {
-         UniquelyIdentifyable var4 = (UniquelyIdentifyable)var3.get();
-         if (!var4.isRemoved()) {
-            return (StoredEntityType)var4;
+   public @Nullable StoredEntityType getEntity(final UUIDLookup<? extends UniquelyIdentifyable> lookup, final Class<StoredEntityType> clazz) {
+      Optional<StoredEntityType> stored = this.entity.right();
+      if (stored.isPresent()) {
+         StoredEntityType storedEntity = (StoredEntityType)(stored.get());
+         if (!storedEntity.isRemoved()) {
+            return storedEntity;
          }
 
-         this.entity = Either.left(var4.getUUID());
+         this.entity = Either.left(storedEntity.getUUID());
       }
 
-      Optional var6 = this.entity.left();
-      if (var6.isPresent()) {
-         UniquelyIdentifyable var5 = this.resolve(var1.lookup((UUID)var6.get()), var2);
-         if (var5 != null && !var5.isRemoved()) {
-            this.entity = Either.right(var5);
-            return (StoredEntityType)var5;
+      Optional<UUID> uuid = this.entity.left();
+      if (uuid.isPresent()) {
+         StoredEntityType resolved = this.resolve(lookup.lookup((UUID)uuid.get()), clazz);
+         if (resolved != null && !resolved.isRemoved()) {
+            this.entity = Either.right(resolved);
+            return resolved;
          }
       }
 
       return null;
    }
 
-   public @Nullable StoredEntityType getEntity(Level var1, Class<StoredEntityType> var2) {
-      if (Player.class.isAssignableFrom(var2)) {
-         Objects.requireNonNull(var1);
-         return (StoredEntityType)this.getEntity(var1::getPlayerInAnyDimension, var2);
+   public @Nullable StoredEntityType getEntity(final Level level, final Class<StoredEntityType> clazz) {
+      if (Player.class.isAssignableFrom(clazz)) {
+         Objects.requireNonNull(level);
+         return (StoredEntityType)this.getEntity(level::getPlayerInAnyDimension, clazz);
       } else {
-         Objects.requireNonNull(var1);
-         return (StoredEntityType)this.getEntity(var1::getEntityInAnyDimension, var2);
+         Objects.requireNonNull(level);
+         return (StoredEntityType)this.getEntity(level::getEntityInAnyDimension, clazz);
       }
    }
 
-   private @Nullable StoredEntityType resolve(@Nullable UniquelyIdentifyable var1, Class<StoredEntityType> var2) {
-      return (StoredEntityType)(var1 != null && var2.isAssignableFrom(var1.getClass()) ? (UniquelyIdentifyable)var2.cast(var1) : null);
+   private @Nullable StoredEntityType resolve(final @Nullable UniquelyIdentifyable entity, final Class<StoredEntityType> clazz) {
+      return (StoredEntityType)(entity != null && clazz.isAssignableFrom(entity.getClass()) ? (UniquelyIdentifyable)clazz.cast(entity) : null);
    }
 
-   public boolean matches(StoredEntityType var1) {
-      return this.getUUID().equals(var1.getUUID());
+   public boolean matches(final StoredEntityType entity) {
+      return this.getUUID().equals(entity.getUUID());
    }
 
-   public void store(ValueOutput var1, String var2) {
-      var1.store(var2, UUIDUtil.CODEC, this.getUUID());
+   public void store(final ValueOutput output, final String key) {
+      output.store(key, UUIDUtil.CODEC, this.getUUID());
    }
 
-   public static void store(@Nullable EntityReference<?> var0, ValueOutput var1, String var2) {
-      if (var0 != null) {
-         var0.store(var1, var2);
+   public static void store(final @Nullable EntityReference<?> reference, final ValueOutput output, final String key) {
+      if (reference != null) {
+         reference.store(output, key);
       }
 
    }
 
-   public static <StoredEntityType extends UniquelyIdentifyable> @Nullable StoredEntityType get(@Nullable EntityReference<StoredEntityType> var0, Level var1, Class<StoredEntityType> var2) {
-      return (StoredEntityType)(var0 != null ? var0.getEntity(var1, var2) : null);
+   public static <StoredEntityType extends UniquelyIdentifyable> @Nullable StoredEntityType get(final @Nullable EntityReference<StoredEntityType> reference, final Level level, final Class<StoredEntityType> clazz) {
+      return (StoredEntityType)(reference != null ? reference.getEntity(level, clazz) : null);
    }
 
-   public static @Nullable Entity getEntity(@Nullable EntityReference<Entity> var0, Level var1) {
-      return (Entity)get(var0, var1, Entity.class);
+   public static @Nullable Entity getEntity(final @Nullable EntityReference<Entity> reference, final Level level) {
+      return (Entity)get(reference, level, Entity.class);
    }
 
-   public static @Nullable LivingEntity getLivingEntity(@Nullable EntityReference<LivingEntity> var0, Level var1) {
-      return (LivingEntity)get(var0, var1, LivingEntity.class);
+   public static @Nullable LivingEntity getLivingEntity(final @Nullable EntityReference<LivingEntity> reference, final Level level) {
+      return (LivingEntity)get(reference, level, LivingEntity.class);
    }
 
-   public static @Nullable Player getPlayer(@Nullable EntityReference<Player> var0, Level var1) {
-      return (Player)get(var0, var1, Player.class);
+   public static @Nullable Player getPlayer(final @Nullable EntityReference<Player> reference, final Level level) {
+      return (Player)get(reference, level, Player.class);
    }
 
-   public static <StoredEntityType extends UniquelyIdentifyable> @Nullable EntityReference<StoredEntityType> read(ValueInput var0, String var1) {
-      return (EntityReference)var0.read(var1, codec()).orElse((Object)null);
+   public static <StoredEntityType extends UniquelyIdentifyable> @Nullable EntityReference<StoredEntityType> read(final ValueInput input, final String key) {
+      return (EntityReference)input.read(key, codec()).orElse((Object)null);
    }
 
-   public static <StoredEntityType extends UniquelyIdentifyable> @Nullable EntityReference<StoredEntityType> readWithOldOwnerConversion(ValueInput var0, String var1, Level var2) {
-      Optional var3 = var0.read(var1, UUIDUtil.CODEC);
-      return var3.isPresent() ? of((UUID)var3.get()) : (EntityReference)var0.getString(var1).map((var1x) -> OldUsersConverter.convertMobOwnerIfNecessary(var2.getServer(), var1x)).map(EntityReference::new).orElse((Object)null);
+   public static <StoredEntityType extends UniquelyIdentifyable> @Nullable EntityReference<StoredEntityType> readWithOldOwnerConversion(final ValueInput input, final String key, final Level level) {
+      Optional<UUID> uuid = input.<UUID>read(key, UUIDUtil.CODEC);
+      return uuid.isPresent() ? of((UUID)uuid.get()) : (EntityReference)input.getString(key).map((oldName) -> OldUsersConverter.convertMobOwnerIfNecessary(level.getServer(), oldName)).map(EntityReference::new).orElse((Object)null);
    }
 
-   public boolean equals(Object var1) {
-      if (var1 == this) {
+   public boolean equals(final Object obj) {
+      if (obj == this) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof EntityReference) {
-            EntityReference var2 = (EntityReference)var1;
-            if (this.getUUID().equals(var2.getUUID())) {
+         if (obj instanceof EntityReference) {
+            EntityReference<?> reference = (EntityReference)obj;
+            if (this.getUUID().equals(reference.getUUID())) {
                var10000 = true;
                return var10000;
             }

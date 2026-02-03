@@ -16,25 +16,25 @@ public class ItemClusterRenderState extends EntityRenderState {
       super();
    }
 
-   public void extractItemGroupRenderState(Entity var1, ItemStack var2, ItemModelResolver var3) {
-      var3.updateForNonLiving(this.item, var2, ItemDisplayContext.GROUND, var1);
-      this.count = getRenderedAmount(var2.getCount());
-      this.seed = getSeedForItemStack(var2);
+   public void extractItemGroupRenderState(final Entity entity, final ItemStack stack, final ItemModelResolver itemModelResolver) {
+      itemModelResolver.updateForNonLiving(this.item, stack, ItemDisplayContext.GROUND, entity);
+      this.count = getRenderedAmount(stack.getCount());
+      this.seed = getSeedForItemStack(stack);
    }
 
-   public static int getSeedForItemStack(ItemStack var0) {
-      return var0.isEmpty() ? 187 : Item.getId(var0.getItem()) + var0.getDamageValue();
+   public static int getSeedForItemStack(final ItemStack itemStack) {
+      return itemStack.isEmpty() ? 187 : Item.getId(itemStack.getItem()) + itemStack.getDamageValue();
    }
 
-   public static int getRenderedAmount(int var0) {
-      if (var0 <= 1) {
+   public static int getRenderedAmount(final int stackCount) {
+      if (stackCount <= 1) {
          return 1;
-      } else if (var0 <= 16) {
+      } else if (stackCount <= 16) {
          return 2;
-      } else if (var0 <= 32) {
+      } else if (stackCount <= 32) {
          return 3;
       } else {
-         return var0 <= 48 ? 4 : 5;
+         return stackCount <= 48 ? 4 : 5;
       }
    }
 }

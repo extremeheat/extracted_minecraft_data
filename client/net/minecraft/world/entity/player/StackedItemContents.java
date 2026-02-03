@@ -15,48 +15,48 @@ public class StackedItemContents {
       super();
    }
 
-   public void accountSimpleStack(ItemStack var1) {
-      if (Inventory.isUsableForCrafting(var1)) {
-         this.accountStack(var1);
+   public void accountSimpleStack(final ItemStack itemStack) {
+      if (Inventory.isUsableForCrafting(itemStack)) {
+         this.accountStack(itemStack);
       }
 
    }
 
-   public void accountStack(ItemStack var1) {
-      this.accountStack(var1, var1.getMaxStackSize());
+   public void accountStack(final ItemStack itemStack) {
+      this.accountStack(itemStack, itemStack.getMaxStackSize());
    }
 
-   public void accountStack(ItemStack var1, int var2) {
-      if (!var1.isEmpty()) {
-         int var3 = Math.min(var2, var1.getCount());
-         this.raw.account(var1.getItemHolder(), var3);
+   public void accountStack(final ItemStack itemStack, final int maxCount) {
+      if (!itemStack.isEmpty()) {
+         int count = Math.min(maxCount, itemStack.getCount());
+         this.raw.account(itemStack.typeHolder(), count);
       }
 
    }
 
-   public boolean canCraft(Recipe<?> var1, StackedContents.@Nullable Output<Holder<Item>> var2) {
-      return this.canCraft(var1, 1, var2);
+   public boolean canCraft(final Recipe<?> recipe, final StackedContents.@Nullable Output<Holder<Item>> output) {
+      return this.canCraft(recipe, 1, output);
    }
 
-   public boolean canCraft(Recipe<?> var1, int var2, StackedContents.@Nullable Output<Holder<Item>> var3) {
-      PlacementInfo var4 = var1.placementInfo();
-      return var4.isImpossibleToPlace() ? false : this.canCraft(var4.ingredients(), var2, var3);
+   public boolean canCraft(final Recipe<?> recipe, final int amount, final StackedContents.@Nullable Output<Holder<Item>> output) {
+      PlacementInfo placementInfo = recipe.placementInfo();
+      return placementInfo.isImpossibleToPlace() ? false : this.canCraft(placementInfo.ingredients(), amount, output);
    }
 
-   public boolean canCraft(List<? extends StackedContents.IngredientInfo<Holder<Item>>> var1, StackedContents.@Nullable Output<Holder<Item>> var2) {
-      return this.canCraft(var1, 1, var2);
+   public boolean canCraft(final List<? extends StackedContents.IngredientInfo<Holder<Item>>> contents, final StackedContents.@Nullable Output<Holder<Item>> output) {
+      return this.canCraft(contents, 1, output);
    }
 
-   private boolean canCraft(List<? extends StackedContents.IngredientInfo<Holder<Item>>> var1, int var2, StackedContents.@Nullable Output<Holder<Item>> var3) {
-      return this.raw.tryPick(var1, var2, var3);
+   private boolean canCraft(final List<? extends StackedContents.IngredientInfo<Holder<Item>>> contents, final int amount, final StackedContents.@Nullable Output<Holder<Item>> output) {
+      return this.raw.tryPick(contents, amount, output);
    }
 
-   public int getBiggestCraftableStack(Recipe<?> var1, StackedContents.@Nullable Output<Holder<Item>> var2) {
-      return this.getBiggestCraftableStack(var1, 2147483647, var2);
+   public int getBiggestCraftableStack(final Recipe<?> recipe, final StackedContents.@Nullable Output<Holder<Item>> output) {
+      return this.getBiggestCraftableStack(recipe, 2147483647, output);
    }
 
-   public int getBiggestCraftableStack(Recipe<?> var1, int var2, StackedContents.@Nullable Output<Holder<Item>> var3) {
-      return this.raw.tryPickAll(var1.placementInfo().ingredients(), var2, var3);
+   public int getBiggestCraftableStack(final Recipe<?> recipe, final int maxSize, final StackedContents.@Nullable Output<Holder<Item>> output) {
+      return this.raw.tryPickAll(recipe.placementInfo().ingredients(), maxSize, output);
    }
 
    public void clear() {

@@ -8,25 +8,23 @@ import com.mojang.serialization.DataResult;
 public record SelectorPattern(String pattern, EntitySelector resolved) {
    public static final Codec<SelectorPattern> CODEC;
 
-   public SelectorPattern(String var1, EntitySelector var2) {
+   public SelectorPattern {
       super();
-      this.pattern = var1;
-      this.resolved = var2;
    }
 
-   public static DataResult<SelectorPattern> parse(String var0) {
+   public static DataResult<SelectorPattern> parse(final String pattern) {
       try {
-         EntitySelectorParser var1 = new EntitySelectorParser(new StringReader(var0), true);
-         return DataResult.success(new SelectorPattern(var0, var1.parse()));
-      } catch (CommandSyntaxException var2) {
-         return DataResult.error(() -> "Invalid selector component: " + var0 + ": " + var2.getMessage());
+         EntitySelectorParser parser = new EntitySelectorParser(new StringReader(pattern), true);
+         return DataResult.success(new SelectorPattern(pattern, parser.parse()));
+      } catch (CommandSyntaxException ex) {
+         return DataResult.error(() -> "Invalid selector component: " + pattern + ": " + ex.getMessage());
       }
    }
 
-   public boolean equals(Object var1) {
+   public boolean equals(final Object obj) {
       boolean var10000;
-      if (var1 instanceof SelectorPattern var2) {
-         if (this.pattern.equals(var2.pattern)) {
+      if (obj instanceof SelectorPattern selector) {
+         if (this.pattern.equals(selector.pattern)) {
             var10000 = true;
             return var10000;
          }

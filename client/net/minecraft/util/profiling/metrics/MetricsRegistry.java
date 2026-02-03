@@ -15,61 +15,61 @@ public class MetricsRegistry {
       super();
    }
 
-   public void add(ProfilerMeasured var1) {
-      this.measuredInstances.put(var1, (Object)null);
+   public void add(final ProfilerMeasured profilerMeasured) {
+      this.measuredInstances.put(profilerMeasured, (Object)null);
    }
 
    public List<MetricSampler> getRegisteredSamplers() {
-      Map var1 = (Map)this.measuredInstances.keySet().stream().flatMap((var0) -> var0.profiledMetrics().stream()).collect(Collectors.groupingBy(MetricSampler::getName));
-      return aggregateDuplicates(var1);
+      Map<String, List<MetricSampler>> samplersByName = (Map)this.measuredInstances.keySet().stream().flatMap((measuredInstance) -> measuredInstance.profiledMetrics().stream()).collect(Collectors.groupingBy(MetricSampler::getName));
+      return aggregateDuplicates(samplersByName);
    }
 
-   private static List<MetricSampler> aggregateDuplicates(Map<String, List<MetricSampler>> var0) {
-      return (List)var0.entrySet().stream().map((var0x) -> {
-         String var1 = (String)var0x.getKey();
-         List var2 = (List)var0x.getValue();
-         return (MetricSampler)(var2.size() > 1 ? new AggregatedMetricSampler(var1, var2) : (MetricSampler)var2.get(0));
+   private static List<MetricSampler> aggregateDuplicates(final Map<String, List<MetricSampler>> potentialDuplicates) {
+      return (List)potentialDuplicates.entrySet().stream().map((entry) -> {
+         String samplerName = (String)entry.getKey();
+         List<MetricSampler> duplicateSamplers = (List)entry.getValue();
+         return (MetricSampler)(duplicateSamplers.size() > 1 ? new AggregatedMetricSampler(samplerName, duplicateSamplers) : (MetricSampler)duplicateSamplers.get(0));
       }).collect(Collectors.toList());
    }
 
-   static class AggregatedMetricSampler extends MetricSampler {
+   private static class AggregatedMetricSampler extends MetricSampler {
       private final List<MetricSampler> delegates;
 
-      AggregatedMetricSampler(String var1, List<MetricSampler> var2) {
-         super(var1, ((MetricSampler)var2.get(0)).getCategory(), () -> averageValueFromDelegates(var2), () -> beforeTick(var2), thresholdTest(var2));
-         this.delegates = var2;
+      private AggregatedMetricSampler(final String name, final List<MetricSampler> delegates) {
+         super(name, ((MetricSampler)delegates.get(0)).getCategory(), () -> averageValueFromDelegates(delegates), () -> beforeTick(delegates), thresholdTest(delegates));
+         this.delegates = delegates;
       }
 
-      private static MetricSampler.ThresholdTest thresholdTest(List<MetricSampler> var0) {
-         return (var1) -> var0.stream().anyMatch((var2) -> var2.thresholdTest != null ? var2.thresholdTest.test(var1) : false);
+      private static MetricSampler.ThresholdTest thresholdTest(final List<MetricSampler> delegates) {
+         return (value) -> delegates.stream().anyMatch((delegate) -> delegate.thresholdTest != null ? delegate.thresholdTest.test(value) : false);
       }
 
-      private static void beforeTick(List<MetricSampler> var0) {
-         for(MetricSampler var2 : var0) {
-            var2.onStartTick();
+      private static void beforeTick(final List<MetricSampler> delegates) {
+         for(MetricSampler delegate : delegates) {
+            delegate.onStartTick();
          }
 
       }
 
-      private static double averageValueFromDelegates(List<MetricSampler> var0) {
-         double var1 = 0.0;
+      private static double averageValueFromDelegates(final List<MetricSampler> delegates) {
+         double aggregatedValue = 0.0;
 
-         for(MetricSampler var4 : var0) {
-            var1 += var4.getSampler().getAsDouble();
+         for(MetricSampler delegate : delegates) {
+            aggregatedValue += delegate.getSampler().getAsDouble();
          }
 
-         return var1 / (double)var0.size();
+         return aggregatedValue / (double)delegates.size();
       }
 
-      public boolean equals(@Nullable Object var1) {
-         if (this == var1) {
+      public boolean equals(final @Nullable Object o) {
+         if (this == o) {
             return true;
-         } else if (var1 != null && this.getClass() == var1.getClass()) {
-            if (!super.equals(var1)) {
+         } else if (o != null && this.getClass() == o.getClass()) {
+            if (!super.equals(o)) {
                return false;
             } else {
-               AggregatedMetricSampler var2 = (AggregatedMetricSampler)var1;
-               return this.delegates.equals(var2.delegates);
+               AggregatedMetricSampler that = (AggregatedMetricSampler)o;
+               return this.delegates.equals(that.delegates);
             }
          } else {
             return false;

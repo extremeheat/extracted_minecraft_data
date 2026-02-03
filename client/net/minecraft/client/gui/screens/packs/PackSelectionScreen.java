@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.StringWidget;
@@ -49,12 +49,13 @@ import net.minecraft.server.packs.repository.PackDetector;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.util.Util;
+import net.minecraft.world.level.validation.ForbiddenSymlinkInfo;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PackSelectionScreen extends Screen {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component AVAILABLE_TITLE = Component.translatable("pack.available.title");
    private static final Component SELECTED_TITLE = Component.translatable("pack.selected.title");
    private static final Component OPEN_PACK_FOLDER_TITLE = Component.translatable("pack.openFolder");
@@ -77,11 +78,11 @@ public class PackSelectionScreen extends Screen {
    private @Nullable Button doneButton;
    private final Map<String, Identifier> packIcons = Maps.newHashMap();
 
-   public PackSelectionScreen(PackRepository var1, Consumer<PackRepository> var2, Path var3, Component var4) {
-      super(var4);
-      this.model = new PackSelectionModel(this::populateLists, this::getPackIcon, var1, var2);
-      this.packDir = var3;
-      this.watcher = PackSelectionScreen.Watcher.create(var3);
+   public PackSelectionScreen(final PackRepository repository, final Consumer<PackRepository> output, final Path packDir, final Component title) {
+      super(title);
+      this.model = new PackSelectionModel(this::populateLists, this::getPackIcon, repository, output);
+      this.packDir = packDir;
+      this.watcher = PackSelectionScreen.Watcher.create(packDir);
    }
 
    public void onClose() {
@@ -106,21 +107,19 @@ public class PackSelectionScreen extends Screen {
       int var10001 = 4 + 9 + 4;
       Objects.requireNonNull(this.font);
       var10000.setHeaderHeight(var10001 + 9 + 4 + 15 + 4);
-      LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(4));
-      var1.defaultCellSetting().alignHorizontallyCenter();
-      var1.addChild(new StringWidget(this.getTitle(), this.font));
-      var1.addChild(new StringWidget(DRAG_AND_DROP, this.font));
-      this.search = (EditBox)var1.addChild(new EditBox(this.font, 0, 0, 200, 15, Component.empty()));
+      LinearLayout header = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(4));
+      header.defaultCellSetting().alignHorizontallyCenter();
+      header.addChild(new StringWidget(this.getTitle(), this.font));
+      header.addChild(new StringWidget(DRAG_AND_DROP, this.font));
+      this.search = (EditBox)header.addChild(new EditBox(this.font, 0, 0, 200, 15, Component.empty()));
       this.search.setHint(SEARCH);
       this.search.setResponder(this::updateFilteredEntries);
       this.availablePackList = (TransferableSelectionList)this.layout.addToContents(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, AVAILABLE_TITLE));
       this.selectedPackList = (TransferableSelectionList)this.layout.addToContents(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, SELECTED_TITLE));
-      LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var2.addChild(Button.builder(OPEN_PACK_FOLDER_TITLE, (var1x) -> Util.getPlatform().openPath(this.packDir)).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build());
-      this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).build());
-      this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-      });
+      LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      footer.addChild(Button.builder(OPEN_PACK_FOLDER_TITLE, (button) -> Util.getPlatform().openPath(this.packDir)).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build());
+      this.doneButton = (Button)footer.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
       this.reload();
    }
@@ -134,16 +133,16 @@ public class PackSelectionScreen extends Screen {
 
    }
 
-   private void updateFilteredEntries(String var1) {
-      this.filterEntries(var1, this.model.getSelected(), this.selectedPackList);
-      this.filterEntries(var1, this.model.getUnselected(), this.availablePackList);
+   private void updateFilteredEntries(final String value) {
+      this.filterEntries(value, this.model.getSelected(), this.selectedPackList);
+      this.filterEntries(value, this.model.getUnselected(), this.availablePackList);
    }
 
-   private void filterEntries(String var1, Stream<PackSelectionModel.Entry> var2, @Nullable TransferableSelectionList var3) {
-      if (var3 != null) {
-         String var4 = var1.toLowerCase(Locale.ROOT);
-         Stream var5 = var2.filter((var2x) -> var1.isBlank() || var2x.getId().toLowerCase(Locale.ROOT).contains(var4) || var2x.getTitle().getString().toLowerCase(Locale.ROOT).contains(var4) || var2x.getDescription().getString().toLowerCase(Locale.ROOT).contains(var4));
-         var3.updateList(var5, (PackSelectionModel.EntryBase)null);
+   private void filterEntries(final String value, final Stream<PackSelectionModel.Entry> oldEntries, final @Nullable TransferableSelectionList listToUpdate) {
+      if (listToUpdate != null) {
+         String lowerCaseValue = value.toLowerCase(Locale.ROOT);
+         Stream<PackSelectionModel.Entry> filteredEntries = oldEntries.filter((packEntry) -> value.isBlank() || packEntry.getId().toLowerCase(Locale.ROOT).contains(lowerCaseValue) || packEntry.getTitle().getString().toLowerCase(Locale.ROOT).contains(lowerCaseValue) || packEntry.getDescription().getString().toLowerCase(Locale.ROOT).contains(lowerCaseValue));
+         listToUpdate.updateList(filteredEntries, (PackSelectionModel.EntryBase)null);
       }
    }
 
@@ -177,13 +176,13 @@ public class PackSelectionScreen extends Screen {
 
    }
 
-   private void populateLists(PackSelectionModel.EntryBase var1) {
+   private void populateLists(final PackSelectionModel.EntryBase transferredEntry) {
       if (this.selectedPackList != null) {
-         this.selectedPackList.updateList(this.model.getSelected(), var1);
+         this.selectedPackList.updateList(this.model.getSelected(), transferredEntry);
       }
 
       if (this.availablePackList != null) {
-         this.availablePackList.updateList(this.model.getUnselected(), var1);
+         this.availablePackList.updateList(this.model.getUnselected(), transferredEntry);
       }
 
       if (this.search != null) {
@@ -203,138 +202,132 @@ public class PackSelectionScreen extends Screen {
       this.packIcons.clear();
    }
 
-   protected static void copyPacks(Minecraft var0, List<Path> var1, Path var2) {
-      MutableBoolean var3 = new MutableBoolean();
-      var1.forEach((var2x) -> {
+   protected static void copyPacks(final Minecraft minecraft, final List<Path> files, final Path targetDir) {
+      MutableBoolean showErrorToast = new MutableBoolean();
+      files.forEach((pack) -> {
          try {
-            Stream var3x = Files.walk(var2x);
+            Stream<Path> contents = Files.walk(pack);
 
             try {
-               var3x.forEach((var3xx) -> {
+               contents.forEach((path) -> {
                   try {
-                     Util.copyBetweenDirs(var2x.getParent(), var2, var3xx);
-                  } catch (IOException var5) {
-                     LOGGER.warn("Failed to copy datapack file  from {} to {}", new Object[]{var3xx, var2, var5});
-                     var3.setTrue();
+                     Util.copyBetweenDirs(pack.getParent(), targetDir, path);
+                  } catch (IOException e) {
+                     LOGGER.warn("Failed to copy datapack file  from {} to {}", new Object[]{path, targetDir, e});
+                     showErrorToast.setTrue();
                   }
 
                });
             } catch (Throwable var7) {
-               if (var3x != null) {
+               if (contents != null) {
                   try {
-                     var3x.close();
-                  } catch (Throwable var6) {
-                     var7.addSuppressed(var6);
+                     contents.close();
+                  } catch (Throwable x2) {
+                     var7.addSuppressed(x2);
                   }
                }
 
                throw var7;
             }
 
-            if (var3x != null) {
-               var3x.close();
+            if (contents != null) {
+               contents.close();
             }
          } catch (IOException var8) {
-            LOGGER.warn("Failed to copy datapack file from {} to {}", var2x, var2);
-            var3.setTrue();
+            LOGGER.warn("Failed to copy datapack file from {} to {}", pack, targetDir);
+            showErrorToast.setTrue();
          }
 
       });
-      if (var3.isTrue()) {
-         SystemToast.onPackCopyFailure(var0, var2.toString());
+      if (showErrorToast.isTrue()) {
+         SystemToast.onPackCopyFailure(minecraft, targetDir.toString());
       }
 
    }
 
-   public void onFilesDrop(List<Path> var1) {
-      String var2 = (String)extractPackNames(var1).collect(Collectors.joining(", "));
-      this.minecraft.setScreen(new ConfirmScreen((var2x) -> {
-         if (var2x) {
-            ArrayList var3 = new ArrayList(var1.size());
-            HashSet var4 = new HashSet(var1);
-            PackDetector var5 = new PackDetector<Path>(this.minecraft.directoryValidator()) {
-               protected Path createZipPack(Path var1) {
-                  return var1;
+   public void onFilesDrop(final List<Path> files) {
+      String names = (String)extractPackNames(files).collect(Collectors.joining(", "));
+      this.minecraft.setScreen(new ConfirmScreen((result) -> {
+         if (result) {
+            List<Path> packCandidates = new ArrayList(files.size());
+            Set<Path> leftoverPacks = new HashSet(files);
+            PackDetector<Path> packDetector = new PackDetector<Path>(this.minecraft.directoryValidator()) {
+               {
+                  Objects.requireNonNull(PackSelectionScreen.this);
                }
 
-               protected Path createDirectoryPack(Path var1) {
-                  return var1;
+               protected Path createZipPack(final Path content) {
+                  return content;
                }
 
-               // $FF: synthetic method
-               protected Object createDirectoryPack(final Path var1) throws IOException {
-                  return this.createDirectoryPack(var1);
-               }
-
-               // $FF: synthetic method
-               protected Object createZipPack(final Path var1) throws IOException {
-                  return this.createZipPack(var1);
+               protected Path createDirectoryPack(final Path content) {
+                  return content;
                }
             };
-            ArrayList var6 = new ArrayList();
+            List<ForbiddenSymlinkInfo> issues = new ArrayList();
 
-            for(Path var8 : var1) {
+            for(Path path : files) {
                try {
-                  Path var9 = (Path)var5.detectPackResources(var8, var6);
-                  if (var9 == null) {
-                     LOGGER.warn("Path {} does not seem like pack", var8);
+                  Path candidate = packDetector.detectPackResources(path, issues);
+                  if (candidate == null) {
+                     LOGGER.warn("Path {} does not seem like pack", path);
                   } else {
-                     var3.add(var9);
-                     var4.remove(var9);
+                     packCandidates.add(candidate);
+                     leftoverPacks.remove(candidate);
                   }
-               } catch (IOException var10) {
-                  LOGGER.warn("Failed to check {} for packs", var8, var10);
+               } catch (IOException e) {
+                  LOGGER.warn("Failed to check {} for packs", path, e);
                }
             }
 
-            if (!var6.isEmpty()) {
+            if (!issues.isEmpty()) {
                this.minecraft.setScreen(NoticeWithLinkScreen.createPackSymlinkWarningScreen(() -> this.minecraft.setScreen(this)));
                return;
             }
 
-            if (!var3.isEmpty()) {
-               copyPacks(this.minecraft, var3, this.packDir);
+            if (!packCandidates.isEmpty()) {
+               copyPacks(this.minecraft, packCandidates, this.packDir);
                this.reload();
             }
 
-            if (!var4.isEmpty()) {
-               String var11 = (String)extractPackNames(var4).collect(Collectors.joining(", "));
-               this.minecraft.setScreen(new AlertScreen(() -> this.minecraft.setScreen(this), Component.translatable("pack.dropRejected.title"), Component.translatable("pack.dropRejected.message", var11)));
+            if (!leftoverPacks.isEmpty()) {
+               String leftoverNames = (String)extractPackNames(leftoverPacks).collect(Collectors.joining(", "));
+               this.minecraft.setScreen(new AlertScreen(() -> this.minecraft.setScreen(this), Component.translatable("pack.dropRejected.title"), Component.translatable("pack.dropRejected.message", leftoverNames)));
                return;
             }
          }
 
          this.minecraft.setScreen(this);
-      }, Component.translatable("pack.dropConfirm"), Component.literal(var2)));
+      }, Component.translatable("pack.dropConfirm"), Component.literal(names)));
    }
 
-   private static Stream<String> extractPackNames(Collection<Path> var0) {
-      return var0.stream().map(Path::getFileName).map(Path::toString);
+   private static Stream<String> extractPackNames(final Collection<Path> files) {
+      return files.stream().map(Path::getFileName).map(Path::toString);
    }
 
-   private Identifier loadPackIcon(TextureManager var1, Pack var2) {
+   private Identifier loadPackIcon(final TextureManager textureManager, final Pack pack) {
       try {
          Identifier var9;
-         try (PackResources var3 = var2.open()) {
-            IoSupplier var4 = var3.getRootResource("pack.png");
-            if (var4 == null) {
+         try (PackResources packResources = pack.open()) {
+            IoSupplier<InputStream> resource = packResources.getRootResource("pack.png");
+            if (resource == null) {
                return DEFAULT_ICON;
             }
 
-            String var5 = var2.getId();
-            String var10000 = Util.sanitizeName(var5, Identifier::validPathChar);
-            Identifier var6 = Identifier.withDefaultNamespace("pack/" + var10000 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var5)) + "/icon");
-            InputStream var7 = (InputStream)var4.get();
+            String id = pack.getId();
+            String var10000 = Util.sanitizeName(id, Identifier::validPathChar);
+            Identifier location = Identifier.withDefaultNamespace("pack/" + var10000 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(id)) + "/icon");
+            InputStream stream = resource.get();
 
             try {
-               NativeImage var8 = NativeImage.read(var7);
-               Objects.requireNonNull(var6);
-               var1.register(var6, new DynamicTexture(var6::toString, var8));
-               var9 = var6;
+               NativeImage iconImage = NativeImage.read(stream);
+               Objects.requireNonNull(location);
+               textureManager.register(location, new DynamicTexture(location::toString, iconImage));
+               var9 = location;
             } catch (Throwable var12) {
-               if (var7 != null) {
+               if (stream != null) {
                   try {
-                     var7.close();
+                     stream.close();
                   } catch (Throwable var11) {
                      var12.addSuppressed(var11);
                   }
@@ -343,20 +336,20 @@ public class PackSelectionScreen extends Screen {
                throw var12;
             }
 
-            if (var7 != null) {
-               var7.close();
+            if (stream != null) {
+               stream.close();
             }
          }
 
          return var9;
-      } catch (Exception var14) {
-         LOGGER.warn("Failed to load icon from pack {}", var2.getId(), var14);
+      } catch (Exception e) {
+         LOGGER.warn("Failed to load icon from pack {}", pack.getId(), e);
          return DEFAULT_ICON;
       }
    }
 
-   private Identifier getPackIcon(Pack var1) {
-      return (Identifier)this.packIcons.computeIfAbsent(var1.getId(), (var2) -> this.loadPackIcon(this.minecraft.getTextureManager(), var1));
+   private Identifier getPackIcon(final Pack pack) {
+      return (Identifier)this.packIcons.computeIfAbsent(pack.getId(), (s) -> this.loadPackIcon(this.minecraft.getTextureManager(), pack));
    }
 
    static {
@@ -366,29 +359,29 @@ public class PackSelectionScreen extends Screen {
       DEFAULT_ICON = Identifier.withDefaultNamespace("textures/misc/unknown_pack.png");
    }
 
-   static class Watcher implements AutoCloseable {
+   private static class Watcher implements AutoCloseable {
       private final WatchService watcher;
       private final Path packPath;
 
-      public Watcher(Path var1) throws IOException {
+      public Watcher(final Path packPath) throws IOException {
          super();
-         this.packPath = var1;
-         this.watcher = var1.getFileSystem().newWatchService();
+         this.packPath = packPath;
+         this.watcher = packPath.getFileSystem().newWatchService();
 
          try {
-            this.watchDir(var1);
-            DirectoryStream var2 = Files.newDirectoryStream(var1);
+            this.watchDir(packPath);
+            DirectoryStream<Path> paths = Files.newDirectoryStream(packPath);
 
             try {
-               for(Path var4 : var2) {
-                  if (Files.isDirectory(var4, new LinkOption[]{LinkOption.NOFOLLOW_LINKS})) {
-                     this.watchDir(var4);
+               for(Path path : paths) {
+                  if (Files.isDirectory(path, new LinkOption[]{LinkOption.NOFOLLOW_LINKS})) {
+                     this.watchDir(path);
                   }
                }
             } catch (Throwable var6) {
-               if (var2 != null) {
+               if (paths != null) {
                   try {
-                     var2.close();
+                     paths.close();
                   } catch (Throwable var5) {
                      var6.addSuppressed(var5);
                   }
@@ -397,48 +390,48 @@ public class PackSelectionScreen extends Screen {
                throw var6;
             }
 
-            if (var2 != null) {
-               var2.close();
+            if (paths != null) {
+               paths.close();
             }
 
-         } catch (Exception var7) {
+         } catch (Exception e) {
             this.watcher.close();
-            throw var7;
+            throw e;
          }
       }
 
-      public static @Nullable Watcher create(Path var0) {
+      public static @Nullable Watcher create(final Path packDir) {
          try {
-            return new Watcher(var0);
-         } catch (IOException var2) {
-            PackSelectionScreen.LOGGER.warn("Failed to initialize pack directory {} monitoring", var0, var2);
+            return new Watcher(packDir);
+         } catch (IOException e) {
+            PackSelectionScreen.LOGGER.warn("Failed to initialize pack directory {} monitoring", packDir, e);
             return null;
          }
       }
 
-      private void watchDir(Path var1) throws IOException {
-         var1.register(this.watcher, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
+      private void watchDir(final Path packPath) throws IOException {
+         packPath.register(this.watcher, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
       }
 
       public boolean pollForChanges() throws IOException {
-         boolean var1 = false;
+         boolean hasChanges = false;
 
-         WatchKey var2;
-         while((var2 = this.watcher.poll()) != null) {
-            for(WatchEvent var5 : var2.pollEvents()) {
-               var1 = true;
-               if (var2.watchable() == this.packPath && var5.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                  Path var6 = this.packPath.resolve((Path)var5.context());
-                  if (Files.isDirectory(var6, new LinkOption[]{LinkOption.NOFOLLOW_LINKS})) {
-                     this.watchDir(var6);
+         WatchKey key;
+         while((key = this.watcher.poll()) != null) {
+            for(WatchEvent<?> watchEvent : key.pollEvents()) {
+               hasChanges = true;
+               if (key.watchable() == this.packPath && watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+                  Path newPath = this.packPath.resolve((Path)watchEvent.context());
+                  if (Files.isDirectory(newPath, new LinkOption[]{LinkOption.NOFOLLOW_LINKS})) {
+                     this.watchDir(newPath);
                   }
                }
             }
 
-            var2.reset();
+            key.reset();
          }
 
-         return var1;
+         return hasChanges;
       }
 
       public void close() throws IOException {

@@ -13,12 +13,13 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
 
 public class BrewingStandMenu extends AbstractContainerMenu {
-   static final Identifier EMPTY_SLOT_FUEL = Identifier.withDefaultNamespace("container/slot/brewing_fuel");
-   static final Identifier EMPTY_SLOT_POTION = Identifier.withDefaultNamespace("container/slot/potion");
+   private static final Identifier EMPTY_SLOT_FUEL = Identifier.withDefaultNamespace("container/slot/brewing_fuel");
+   private static final Identifier EMPTY_SLOT_POTION = Identifier.withDefaultNamespace("container/slot/potion");
    private static final int BOTTLE_SLOT_START = 0;
    private static final int BOTTLE_SLOT_END = 2;
    private static final int INGREDIENT_SLOT = 3;
@@ -33,82 +34,82 @@ public class BrewingStandMenu extends AbstractContainerMenu {
    private final ContainerData brewingStandData;
    private final Slot ingredientSlot;
 
-   public BrewingStandMenu(int var1, Inventory var2) {
-      this(var1, var2, new SimpleContainer(5), new SimpleContainerData(2));
+   public BrewingStandMenu(final int containerId, final Inventory inventory) {
+      this(containerId, inventory, new SimpleContainer(5), new SimpleContainerData(2));
    }
 
-   public BrewingStandMenu(int var1, Inventory var2, Container var3, ContainerData var4) {
-      super(MenuType.BREWING_STAND, var1);
-      checkContainerSize(var3, 5);
-      checkContainerDataCount(var4, 2);
-      this.brewingStand = var3;
-      this.brewingStandData = var4;
-      PotionBrewing var5 = var2.player.level().potionBrewing();
-      this.addSlot(new PotionSlot(var3, 0, 56, 51));
-      this.addSlot(new PotionSlot(var3, 1, 79, 58));
-      this.addSlot(new PotionSlot(var3, 2, 102, 51));
-      this.ingredientSlot = this.addSlot(new IngredientsSlot(var5, var3, 3, 79, 17));
-      this.addSlot(new FuelSlot(var3, 4, 17, 17));
-      this.addDataSlots(var4);
-      this.addStandardInventorySlots(var2, 8, 84);
+   public BrewingStandMenu(final int containerId, final Inventory inventory, final Container brewingStand, final ContainerData brewingStandData) {
+      super(MenuType.BREWING_STAND, containerId);
+      checkContainerSize(brewingStand, 5);
+      checkContainerDataCount(brewingStandData, 2);
+      this.brewingStand = brewingStand;
+      this.brewingStandData = brewingStandData;
+      PotionBrewing potionBrewing = inventory.player.level().potionBrewing();
+      this.addSlot(new PotionSlot(brewingStand, 0, 56, 51));
+      this.addSlot(new PotionSlot(brewingStand, 1, 79, 58));
+      this.addSlot(new PotionSlot(brewingStand, 2, 102, 51));
+      this.ingredientSlot = this.addSlot(new IngredientsSlot(potionBrewing, brewingStand, 3, 79, 17));
+      this.addSlot(new FuelSlot(brewingStand, 4, 17, 17));
+      this.addDataSlots(brewingStandData);
+      this.addStandardInventorySlots(inventory, 8, 84);
    }
 
-   public boolean stillValid(Player var1) {
-      return this.brewingStand.stillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.brewingStand.stillValid(player);
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4 != null && var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         var3 = var5.copy();
-         if ((var2 < 0 || var2 > 2) && var2 != 3 && var2 != 4) {
-            if (BrewingStandMenu.FuelSlot.mayPlaceItem(var3)) {
-               if (this.moveItemStackTo(var5, 4, 5, false) || this.ingredientSlot.mayPlace(var5) && !this.moveItemStackTo(var5, 3, 4, false)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot != null && slot.hasItem()) {
+         ItemStack stack = slot.getItem();
+         clicked = stack.copy();
+         if ((slotIndex < 0 || slotIndex > 2) && slotIndex != 3 && slotIndex != 4) {
+            if (BrewingStandMenu.FuelSlot.mayPlaceItem(clicked)) {
+               if (this.moveItemStackTo(stack, 4, 5, false) || this.ingredientSlot.mayPlace(stack) && !this.moveItemStackTo(stack, 3, 4, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (this.ingredientSlot.mayPlace(var5)) {
-               if (!this.moveItemStackTo(var5, 3, 4, false)) {
+            } else if (this.ingredientSlot.mayPlace(stack)) {
+               if (!this.moveItemStackTo(stack, 3, 4, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (BrewingStandMenu.PotionSlot.mayPlaceItem(var3)) {
-               if (!this.moveItemStackTo(var5, 0, 3, false)) {
+            } else if (BrewingStandMenu.PotionSlot.mayPlaceItem(clicked)) {
+               if (!this.moveItemStackTo(stack, 0, 3, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (var2 >= 5 && var2 < 32) {
-               if (!this.moveItemStackTo(var5, 32, 41, false)) {
+            } else if (slotIndex >= 5 && slotIndex < 32) {
+               if (!this.moveItemStackTo(stack, 32, 41, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (var2 >= 32 && var2 < 41) {
-               if (!this.moveItemStackTo(var5, 5, 32, false)) {
+            } else if (slotIndex >= 32 && slotIndex < 41) {
+               if (!this.moveItemStackTo(stack, 5, 32, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (!this.moveItemStackTo(var5, 5, 41, false)) {
+            } else if (!this.moveItemStackTo(stack, 5, 41, false)) {
                return ItemStack.EMPTY;
             }
          } else {
-            if (!this.moveItemStackTo(var5, 5, 41, true)) {
+            if (!this.moveItemStackTo(stack, 5, 41, true)) {
                return ItemStack.EMPTY;
             }
 
-            var4.onQuickCraft(var5, var3);
+            slot.onQuickCraft(stack, clicked);
          }
 
-         if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY);
+         if (stack.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY);
          } else {
-            var4.setChanged();
+            slot.setChanged();
          }
 
-         if (var5.getCount() == var3.getCount()) {
+         if (stack.getCount() == clicked.getCount()) {
             return ItemStack.EMPTY;
          }
 
-         var4.onTake(var1, var3);
+         slot.onTake(player, clicked);
       }
 
-      return var3;
+      return clicked;
    }
 
    public int getFuel() {
@@ -119,30 +120,30 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       return this.brewingStandData.get(0);
    }
 
-   static class PotionSlot extends Slot {
-      public PotionSlot(Container var1, int var2, int var3, int var4) {
-         super(var1, var2, var3, var4);
+   private static class PotionSlot extends Slot {
+      public PotionSlot(final Container container, final int slot, final int x, final int y) {
+         super(container, slot, x, y);
       }
 
-      public boolean mayPlace(ItemStack var1) {
-         return mayPlaceItem(var1);
+      public boolean mayPlace(final ItemStack itemStack) {
+         return mayPlaceItem(itemStack);
       }
 
       public int getMaxStackSize() {
          return 1;
       }
 
-      public void onTake(Player var1, ItemStack var2) {
-         Optional var3 = ((PotionContents)var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
-         if (var3.isPresent() && var1 instanceof ServerPlayer var4) {
-            CriteriaTriggers.BREWED_POTION.trigger(var4, (Holder)var3.get());
+      public void onTake(final Player player, final ItemStack carried) {
+         Optional<Holder<Potion>> potion = ((PotionContents)carried.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
+         if (potion.isPresent() && player instanceof ServerPlayer serverPlayer) {
+            CriteriaTriggers.BREWED_POTION.trigger(serverPlayer, (Holder)potion.get());
          }
 
-         super.onTake(var1, var2);
+         super.onTake(player, carried);
       }
 
-      public static boolean mayPlaceItem(ItemStack var0) {
-         return var0.is(Items.POTION) || var0.is(Items.SPLASH_POTION) || var0.is(Items.LINGERING_POTION) || var0.is(Items.GLASS_BOTTLE);
+      public static boolean mayPlaceItem(final ItemStack itemStack) {
+         return itemStack.is(Items.POTION) || itemStack.is(Items.SPLASH_POTION) || itemStack.is(Items.LINGERING_POTION) || itemStack.is(Items.GLASS_BOTTLE);
       }
 
       public Identifier getNoItemIcon() {
@@ -150,30 +151,30 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       }
    }
 
-   static class IngredientsSlot extends Slot {
+   private static class IngredientsSlot extends Slot {
       private final PotionBrewing potionBrewing;
 
-      public IngredientsSlot(PotionBrewing var1, Container var2, int var3, int var4, int var5) {
-         super(var2, var3, var4, var5);
-         this.potionBrewing = var1;
+      public IngredientsSlot(final PotionBrewing potionBrewing, final Container container, final int slot, final int x, final int y) {
+         super(container, slot, x, y);
+         this.potionBrewing = potionBrewing;
       }
 
-      public boolean mayPlace(ItemStack var1) {
-         return this.potionBrewing.isIngredient(var1);
+      public boolean mayPlace(final ItemStack itemStack) {
+         return this.potionBrewing.isIngredient(itemStack);
       }
    }
 
-   static class FuelSlot extends Slot {
-      public FuelSlot(Container var1, int var2, int var3, int var4) {
-         super(var1, var2, var3, var4);
+   private static class FuelSlot extends Slot {
+      public FuelSlot(final Container container, final int slot, final int x, final int y) {
+         super(container, slot, x, y);
       }
 
-      public boolean mayPlace(ItemStack var1) {
-         return mayPlaceItem(var1);
+      public boolean mayPlace(final ItemStack itemStack) {
+         return mayPlaceItem(itemStack);
       }
 
-      public static boolean mayPlaceItem(ItemStack var0) {
-         return var0.is(ItemTags.BREWING_FUEL);
+      public static boolean mayPlaceItem(final ItemStack itemStack) {
+         return itemStack.is(ItemTags.BREWING_FUEL);
       }
 
       public Identifier getNoItemIcon() {

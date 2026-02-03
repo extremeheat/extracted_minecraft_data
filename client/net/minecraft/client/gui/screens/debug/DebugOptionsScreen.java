@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -40,68 +41,66 @@ import net.minecraft.resources.Identifier;
 public class DebugOptionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("debug.options.title");
    private static final Component SUBTITLE = Component.translatable("debug.options.warning").withColor(-2142128);
-   static final Component ENABLED_TEXT = Component.translatable("debug.entry.always");
-   static final Component IN_OVERLAY_TEXT = Component.translatable("debug.entry.overlay");
-   static final Component DISABLED_TEXT;
-   static final Component NOT_ALLOWED_TOOLTIP;
+   private static final Component ENABLED_TEXT = Component.translatable("debug.entry.always");
+   private static final Component IN_OVERLAY_TEXT = Component.translatable("debug.entry.overlay");
+   private static final Component DISABLED_TEXT;
+   private static final Component NOT_ALLOWED_TOOLTIP;
    private static final Component SEARCH;
-   final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 61, 33);
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 61, 33);
    private OptionList optionList;
    private EditBox searchBox;
-   final List<Button> profileButtons = new ArrayList();
+   private final List<Button> profileButtons = new ArrayList();
 
    public DebugOptionsScreen() {
       super(TITLE);
    }
 
    protected void init() {
-      LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(8));
+      LinearLayout header = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(8));
       this.optionList = new OptionList();
-      int var2 = this.optionList.getRowWidth();
-      LinearLayout var3 = LinearLayout.horizontal().spacing(8);
-      var3.addChild(new SpacerElement(var2 / 3, 1));
-      var3.addChild(new StringWidget(TITLE, this.font), var3.newCellSettings().alignVerticallyMiddle());
-      this.searchBox = new EditBox(this.font, 0, 0, var2 / 3, 20, this.searchBox, SEARCH);
-      this.searchBox.setResponder((var1x) -> this.optionList.updateSearch(var1x));
+      int optionListWidth = this.optionList.getRowWidth();
+      LinearLayout title = LinearLayout.horizontal().spacing(8);
+      title.addChild(new SpacerElement(optionListWidth / 3, 1));
+      title.addChild(new StringWidget(TITLE, this.font), title.newCellSettings().alignVerticallyMiddle());
+      this.searchBox = new EditBox(this.font, 0, 0, optionListWidth / 3, 20, this.searchBox, SEARCH);
+      this.searchBox.setResponder((value) -> this.optionList.updateSearch(value));
       this.searchBox.setHint(SEARCH);
-      var3.addChild(this.searchBox);
-      var1.addChild(var3, (Consumer)(LayoutSettings::alignHorizontallyCenter));
-      var1.addChild((new MultiLineTextWidget(SUBTITLE, this.font)).setMaxWidth(var2).setCentered(true), (Consumer)(LayoutSettings::alignHorizontallyCenter));
+      title.addChild(this.searchBox);
+      header.addChild(title, (Consumer)(LayoutSettings::alignHorizontallyCenter));
+      header.addChild((new MultiLineTextWidget(SUBTITLE, this.font)).setMaxWidth(optionListWidth).setCentered(true), (Consumer)(LayoutSettings::alignHorizontallyCenter));
       this.layout.addToContents(this.optionList);
-      LinearLayout var4 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      this.addProfileButton(DebugScreenProfile.DEFAULT, var4);
-      this.addProfileButton(DebugScreenProfile.PERFORMANCE, var4);
-      var4.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).width(60).build());
-      this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-      });
+      LinearLayout bottomButtons = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      this.addProfileButton(DebugScreenProfile.DEFAULT, bottomButtons);
+      this.addProfileButton(DebugScreenProfile.PERFORMANCE, bottomButtons);
+      bottomButtons.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(60).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
-   public void renderBlurredBackground(GuiGraphics var1) {
-      this.minecraft.gui.renderDebugOverlay(var1);
-      super.renderBlurredBackground(var1);
+   public void renderBlurredBackground(final GuiGraphics graphics) {
+      this.minecraft.gui.renderDebugOverlay(graphics);
+      super.renderBlurredBackground(graphics);
    }
 
    protected void setInitialFocus() {
       this.setInitialFocus(this.searchBox);
    }
 
-   private void addProfileButton(DebugScreenProfile var1, LinearLayout var2) {
-      Button var3 = Button.builder(Component.translatable(var1.translationKey()), (var2x) -> {
-         this.minecraft.debugEntries.loadProfile(var1);
+   private void addProfileButton(final DebugScreenProfile profile, final LinearLayout bottomButtons) {
+      Button profileButton = Button.builder(Component.translatable(profile.translationKey()), (button) -> {
+         this.minecraft.debugEntries.loadProfile(profile);
          this.minecraft.debugEntries.save();
          this.optionList.refreshEntries();
 
-         for(Button var4 : this.profileButtons) {
-            var4.active = true;
+         for(Button listButton : this.profileButtons) {
+            listButton.active = true;
          }
 
-         var2x.active = false;
+         button.active = false;
       }).width(120).build();
-      var3.active = !this.minecraft.debugEntries.isUsingProfile(var1);
-      this.profileButtons.add(var3);
-      var2.addChild(var3);
+      profileButton.active = !this.minecraft.debugEntries.isUsingProfile(profile);
+      this.profileButtons.add(profileButton);
+      bottomButtons.addChild(profileButton);
    }
 
    protected void repositionElements() {
@@ -123,19 +122,20 @@ public class DebugOptionsScreen extends Screen {
    }
 
    public class OptionList extends ContainerObjectSelectionList<AbstractOptionEntry> {
-      private static final Comparator<Map.Entry<Identifier, DebugScreenEntry>> COMPARATOR = (var0, var1) -> {
-         int var2 = FloatComparators.NATURAL_COMPARATOR.compare(((DebugScreenEntry)var0.getValue()).category().sortKey(), ((DebugScreenEntry)var1.getValue()).category().sortKey());
-         return var2 != 0 ? var2 : ((Identifier)var0.getKey()).compareTo((Identifier)var1.getKey());
+      private static final Comparator<Map.Entry<Identifier, DebugScreenEntry>> COMPARATOR = (o1, o2) -> {
+         int byCategory = FloatComparators.NATURAL_COMPARATOR.compare(((DebugScreenEntry)o1.getValue()).category().sortKey(), ((DebugScreenEntry)o2.getValue()).category().sortKey());
+         return byCategory != 0 ? byCategory : ((Identifier)o1.getKey()).compareTo((Identifier)o2.getKey());
       };
       private static final int ITEM_HEIGHT = 20;
 
       public OptionList() {
+         Objects.requireNonNull(DebugOptionsScreen.this);
          super(Minecraft.getInstance(), DebugOptionsScreen.this.width, DebugOptionsScreen.this.layout.getContentHeight(), DebugOptionsScreen.this.layout.getHeaderHeight(), 20);
          this.updateSearch("");
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         super.renderWidget(var1, var2, var3, var4);
+      public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+         super.renderWidget(graphics, mouseX, mouseY, a);
       }
 
       public int getRowWidth() {
@@ -146,21 +146,21 @@ public class DebugOptionsScreen extends Screen {
          this.children().forEach(AbstractOptionEntry::refreshEntry);
       }
 
-      public void updateSearch(String var1) {
+      public void updateSearch(final String value) {
          this.clearEntries();
-         ArrayList var2 = new ArrayList(DebugScreenEntries.allEntries().entrySet());
-         var2.sort(COMPARATOR);
-         DebugEntryCategory var3 = null;
+         List<Map.Entry<Identifier, DebugScreenEntry>> all = new ArrayList(DebugScreenEntries.allEntries().entrySet());
+         all.sort(COMPARATOR);
+         DebugEntryCategory currentCategory = null;
 
-         for(Map.Entry var5 : var2) {
-            if (((Identifier)var5.getKey()).getPath().contains(var1)) {
-               DebugEntryCategory var6 = ((DebugScreenEntry)var5.getValue()).category();
-               if (!var6.equals(var3)) {
-                  this.addEntry(DebugOptionsScreen.this.new CategoryEntry(var6.label()));
-                  var3 = var6;
+         for(Map.Entry<Identifier, DebugScreenEntry> entry : all) {
+            if (((Identifier)entry.getKey()).getPath().contains(value)) {
+               DebugEntryCategory newCategory = ((DebugScreenEntry)entry.getValue()).category();
+               if (!newCategory.equals(currentCategory)) {
+                  this.addEntry(DebugOptionsScreen.this.new CategoryEntry(newCategory.label()));
+                  currentCategory = newCategory;
                }
 
-               this.addEntry(DebugOptionsScreen.this.new OptionEntry((Identifier)var5.getKey()));
+               this.addEntry(DebugOptionsScreen.this.new OptionEntry((Identifier)entry.getKey()));
             }
          }
 
@@ -181,16 +181,17 @@ public class DebugOptionsScreen extends Screen {
       public abstract void refreshEntry();
    }
 
-   class CategoryEntry extends AbstractOptionEntry {
-      final Component category;
+   private class CategoryEntry extends AbstractOptionEntry {
+      private final Component category;
 
-      public CategoryEntry(final Component var2) {
+      public CategoryEntry(final Component category) {
+         Objects.requireNonNull(DebugOptionsScreen.this);
          super();
-         this.category = var2;
+         this.category = category;
       }
 
-      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-         var1.drawCenteredString(DebugOptionsScreen.this.minecraft.font, (Component)this.category, this.getContentX() + this.getContentWidth() / 2, this.getContentY() + 5, -1);
+      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         graphics.drawCenteredString(DebugOptionsScreen.this.minecraft.font, (Component)this.category, this.getContentX() + this.getContentWidth() / 2, this.getContentY() + 5, -1);
       }
 
       public List<? extends GuiEventListener> children() {
@@ -199,12 +200,16 @@ public class DebugOptionsScreen extends Screen {
 
       public List<? extends NarratableEntry> narratables() {
          return ImmutableList.of(new NarratableEntry() {
+            {
+               Objects.requireNonNull(CategoryEntry.this);
+            }
+
             public NarratableEntry.NarrationPriority narrationPriority() {
                return NarratableEntry.NarrationPriority.HOVERED;
             }
 
-            public void updateNarration(NarrationElementOutput var1) {
-               var1.add(NarratedElementType.TITLE, CategoryEntry.this.category);
+            public void updateNarration(final NarrationElementOutput output) {
+               output.add(NarratedElementType.TITLE, CategoryEntry.this.category);
             }
          });
       }
@@ -213,49 +218,51 @@ public class DebugOptionsScreen extends Screen {
       }
    }
 
-   class OptionEntry extends AbstractOptionEntry {
+   private class OptionEntry extends AbstractOptionEntry {
       private static final int BUTTON_WIDTH = 60;
       private final Identifier location;
-      protected final List<AbstractWidget> children = Lists.newArrayList();
+      protected final List<AbstractWidget> children;
       private final CycleButton<Boolean> always;
       private final CycleButton<Boolean> overlay;
       private final CycleButton<Boolean> never;
       private final String name;
       private final boolean isAllowed;
 
-      public OptionEntry(final Identifier var2) {
+      public OptionEntry(final Identifier location) {
+         Objects.requireNonNull(DebugOptionsScreen.this);
          super();
-         this.location = var2;
-         DebugScreenEntry var3 = DebugScreenEntries.getEntry(var2);
-         this.isAllowed = var3 != null && var3.isAllowed(DebugOptionsScreen.this.minecraft.showOnlyReducedInfo());
-         String var4 = var2.getPath();
+         this.children = Lists.newArrayList();
+         this.location = location;
+         DebugScreenEntry entry = DebugScreenEntries.getEntry(location);
+         this.isAllowed = entry != null && entry.isAllowed(DebugOptionsScreen.this.minecraft.showOnlyReducedInfo());
+         String name = location.getPath();
          if (this.isAllowed) {
-            this.name = var4;
+            this.name = name;
          } else {
             String var10001 = String.valueOf(ChatFormatting.ITALIC);
-            this.name = var10001 + var4;
+            this.name = var10001 + name;
          }
 
-         this.always = CycleButton.booleanBuilder(DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-2142128), DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(var4), (var2x, var3x) -> this.setValue(var2, DebugScreenEntryStatus.ALWAYS_ON));
-         this.overlay = CycleButton.booleanBuilder(DebugOptionsScreen.IN_OVERLAY_TEXT.copy().withColor(-171), DebugOptionsScreen.IN_OVERLAY_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(var4), (var2x, var3x) -> this.setValue(var2, DebugScreenEntryStatus.IN_OVERLAY));
-         this.never = CycleButton.booleanBuilder(DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-1), DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(var4), (var2x, var3x) -> this.setValue(var2, DebugScreenEntryStatus.NEVER));
+         this.always = CycleButton.booleanBuilder(DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-2142128), DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(name), (button, newValue) -> this.setValue(location, DebugScreenEntryStatus.ALWAYS_ON));
+         this.overlay = CycleButton.booleanBuilder(DebugOptionsScreen.IN_OVERLAY_TEXT.copy().withColor(-171), DebugOptionsScreen.IN_OVERLAY_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(name), (button, newValue) -> this.setValue(location, DebugScreenEntryStatus.IN_OVERLAY));
+         this.never = CycleButton.booleanBuilder(DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-1), DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(name), (button, newValue) -> this.setValue(location, DebugScreenEntryStatus.NEVER));
          this.children.add(this.never);
          this.children.add(this.overlay);
          this.children.add(this.always);
          this.refreshEntry();
       }
 
-      private MutableComponent narrateButton(CycleButton<Boolean> var1) {
-         DebugScreenEntryStatus var2 = DebugOptionsScreen.this.minecraft.debugEntries.getStatus(this.location);
-         MutableComponent var3 = Component.translatable("debug.entry.currently." + var2.getSerializedName(), this.name);
-         return CommonComponents.optionNameValue(var3, var1.getMessage());
+      private MutableComponent narrateButton(final CycleButton<Boolean> booleanCycleButton) {
+         DebugScreenEntryStatus status = DebugOptionsScreen.this.minecraft.debugEntries.getStatus(this.location);
+         MutableComponent current = Component.translatable("debug.entry.currently." + status.getSerializedName(), this.name);
+         return CommonComponents.optionNameValue(current, booleanCycleButton.getMessage());
       }
 
-      private void setValue(Identifier var1, DebugScreenEntryStatus var2) {
-         DebugOptionsScreen.this.minecraft.debugEntries.setStatus(var1, var2);
+      private void setValue(final Identifier location, final DebugScreenEntryStatus never) {
+         DebugOptionsScreen.this.minecraft.debugEntries.setStatus(location, never);
 
-         for(Button var4 : DebugOptionsScreen.this.profileButtons) {
-            var4.active = true;
+         for(Button profileButton : DebugOptionsScreen.this.profileButtons) {
+            profileButton.active = true;
          }
 
          this.refreshEntry();
@@ -269,31 +276,31 @@ public class DebugOptionsScreen extends Screen {
          return this.children;
       }
 
-      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-         int var6 = this.getContentX();
-         int var7 = this.getContentY();
-         var1.drawString(DebugOptionsScreen.this.minecraft.font, this.name, var6, var7 + 5, this.isAllowed ? -1 : -8355712);
-         int var8 = var6 + this.getContentWidth() - this.never.getWidth() - this.overlay.getWidth() - this.always.getWidth();
-         if (!this.isAllowed && var4 && var2 < var8) {
-            var1.setTooltipForNextFrame(DebugOptionsScreen.NOT_ALLOWED_TOOLTIP, var2, var3);
+      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         int x = this.getContentX();
+         int y = this.getContentY();
+         graphics.drawString(DebugOptionsScreen.this.minecraft.font, this.name, x, y + 5, this.isAllowed ? -1 : -8355712);
+         int buttonsStartX = x + this.getContentWidth() - this.never.getWidth() - this.overlay.getWidth() - this.always.getWidth();
+         if (!this.isAllowed && hovered && mouseX < buttonsStartX) {
+            graphics.setTooltipForNextFrame(DebugOptionsScreen.NOT_ALLOWED_TOOLTIP, mouseX, mouseY);
          }
 
-         this.never.setX(var8);
+         this.never.setX(buttonsStartX);
          this.overlay.setX(this.never.getX() + this.never.getWidth());
          this.always.setX(this.overlay.getX() + this.overlay.getWidth());
-         this.always.setY(var7);
-         this.overlay.setY(var7);
-         this.never.setY(var7);
-         this.always.render(var1, var2, var3, var5);
-         this.overlay.render(var1, var2, var3, var5);
-         this.never.render(var1, var2, var3, var5);
+         this.always.setY(y);
+         this.overlay.setY(y);
+         this.never.setY(y);
+         this.always.render(graphics, mouseX, mouseY, a);
+         this.overlay.render(graphics, mouseX, mouseY, a);
+         this.never.render(graphics, mouseX, mouseY, a);
       }
 
       public void refreshEntry() {
-         DebugScreenEntryStatus var1 = DebugOptionsScreen.this.minecraft.debugEntries.getStatus(this.location);
-         this.always.setValue(var1 == DebugScreenEntryStatus.ALWAYS_ON);
-         this.overlay.setValue(var1 == DebugScreenEntryStatus.IN_OVERLAY);
-         this.never.setValue(var1 == DebugScreenEntryStatus.NEVER);
+         DebugScreenEntryStatus status = DebugOptionsScreen.this.minecraft.debugEntries.getStatus(this.location);
+         this.always.setValue(status == DebugScreenEntryStatus.ALWAYS_ON);
+         this.overlay.setValue(status == DebugScreenEntryStatus.IN_OVERLAY);
+         this.never.setValue(status == DebugScreenEntryStatus.NEVER);
          this.always.active = !(Boolean)this.always.getValue();
          this.overlay.active = !(Boolean)this.overlay.getValue();
          this.never.active = !(Boolean)this.never.getValue();

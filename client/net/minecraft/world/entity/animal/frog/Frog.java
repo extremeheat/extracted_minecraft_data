@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.frog;
 
-import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.Dynamic;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -49,7 +48,6 @@ import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Slime;
@@ -71,8 +69,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class Frog extends Animal {
-   protected static final ImmutableList<SensorType<? extends Sensor<? super Frog>>> SENSOR_TYPES;
-   protected static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
+   private static final Brain.Provider<Frog> BRAIN_PROVIDER;
    private static final EntityDataAccessor<Holder<FrogVariant>> DATA_VARIANT_ID;
    private static final EntityDataAccessor<OptionalInt> DATA_TONGUE_TARGET_ID;
    private static final int FROG_FALL_DAMAGE_REDUCTION = 5;
@@ -82,31 +79,27 @@ public class Frog extends Animal {
    public final AnimationState tongueAnimationState = new AnimationState();
    public final AnimationState swimIdleAnimationState = new AnimationState();
 
-   public Frog(EntityType<? extends Animal> var1, Level var2) {
-      super(var1, var2);
+   public Frog(final EntityType<? extends Animal> type, final Level level) {
+      super(type, level);
       this.lookControl = new FrogLookControl(this);
       this.setPathfindingMalus(PathType.WATER, 4.0F);
       this.setPathfindingMalus(PathType.TRAPDOOR, -1.0F);
       this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.02F, 0.1F, true);
    }
 
-   protected Brain.Provider<Frog> brainProvider() {
-      return Brain.<Frog>provider(MEMORY_TYPES, SENSOR_TYPES);
-   }
-
-   protected Brain<?> makeBrain(Dynamic<?> var1) {
-      return FrogAi.makeBrain(this.brainProvider().makeBrain(var1));
+   protected Brain<Frog> makeBrain(final Brain.Packed packedBrain) {
+      return BRAIN_PROVIDER.makeBrain(this, packedBrain);
    }
 
    public Brain<Frog> getBrain() {
       return super.getBrain();
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      Registry var2 = this.registryAccess().lookupOrThrow(Registries.FROG_VARIANT);
-      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), DEFAULT_VARIANT));
-      var1.define(DATA_TONGUE_TARGET_ID, OptionalInt.empty());
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      Registry<FrogVariant> variants = this.registryAccess().lookupOrThrow(Registries.FROG_VARIANT);
+      entityData.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), DEFAULT_VARIANT));
+      entityData.define(DATA_TONGUE_TARGET_ID, OptionalInt.empty());
    }
 
    public void eraseTongueTarget() {
@@ -120,8 +113,8 @@ public class Frog extends Animal {
       return var10000.mapToObj(var10001::getEntity).filter(Objects::nonNull).findFirst();
    }
 
-   public void setTongueTarget(Entity var1) {
-      this.entityData.set(DATA_TONGUE_TARGET_ID, OptionalInt.of(var1.getId()));
+   public void setTongueTarget(final Entity target) {
+      this.entityData.set(DATA_TONGUE_TARGET_ID, OptionalInt.of(target.getId()));
    }
 
    public int getHeadRotSpeed() {
@@ -136,47 +129,47 @@ public class Frog extends Animal {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   private void setVariant(Holder<FrogVariant> var1) {
-      this.entityData.set(DATA_VARIANT_ID, var1);
+   private void setVariant(final Holder<FrogVariant> variant) {
+      this.entityData.set(DATA_VARIANT_ID, variant);
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.FROG_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)(type == DataComponents.FROG_VARIANT ? castComponentValue(type, this.getVariant()) : super.get(type));
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.FROG_VARIANT);
-      super.applyImplicitComponents(var1);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.FROG_VARIANT);
+      super.applyImplicitComponents(components);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.FROG_VARIANT) {
-         this.setVariant((Holder)castComponentValue(DataComponents.FROG_VARIANT, var2));
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.FROG_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.FROG_VARIANT, value));
          return true;
       } else {
-         return super.applyImplicitComponent(var1, var2);
+         return super.applyImplicitComponent(type, value);
       }
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      VariantUtils.writeVariant(var1, this.getVariant());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      VariantUtils.writeVariant(output, this.getVariant());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      VariantUtils.readVariant(var1, Registries.FROG_VARIANT).ifPresent(this::setVariant);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      VariantUtils.readVariant(input, Registries.FROG_VARIANT).ifPresent(this::setVariant);
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
-      ProfilerFiller var2 = Profiler.get();
-      var2.push("frogBrain");
-      this.getBrain().tick(var1, this);
-      var2.pop();
-      var2.push("frogActivityUpdate");
+   protected void customServerAiStep(final ServerLevel level) {
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("frogBrain");
+      this.getBrain().tick(level, this);
+      profiler.pop();
+      profiler.push("frogActivityUpdate");
       FrogAi.updateActivity(this);
-      var2.pop();
-      super.customServerAiStep(var1);
+      profiler.pop();
+      super.customServerAiStep(level);
    }
 
    public void tick() {
@@ -187,71 +180,71 @@ public class Frog extends Animal {
       super.tick();
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (DATA_POSE.equals(var1)) {
-         Pose var2 = this.getPose();
-         if (var2 == Pose.LONG_JUMPING) {
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      if (DATA_POSE.equals(accessor)) {
+         Pose pose = this.getPose();
+         if (pose == Pose.LONG_JUMPING) {
             this.jumpAnimationState.start(this.tickCount);
          } else {
             this.jumpAnimationState.stop();
          }
 
-         if (var2 == Pose.CROAKING) {
+         if (pose == Pose.CROAKING) {
             this.croakAnimationState.start(this.tickCount);
          } else {
             this.croakAnimationState.stop();
          }
 
-         if (var2 == Pose.USING_TONGUE) {
+         if (pose == Pose.USING_TONGUE) {
             this.tongueAnimationState.start(this.tickCount);
          } else {
             this.tongueAnimationState.stop();
          }
       }
 
-      super.onSyncedDataUpdated(var1);
+      super.onSyncedDataUpdated(accessor);
    }
 
-   protected void updateWalkAnimation(float var1) {
-      float var2;
+   protected void updateWalkAnimation(final float distance) {
+      float targetSpeed;
       if (this.jumpAnimationState.isStarted()) {
-         var2 = 0.0F;
+         targetSpeed = 0.0F;
       } else {
-         var2 = Math.min(var1 * 25.0F, 1.0F);
+         targetSpeed = Math.min(distance * 25.0F, 1.0F);
       }
 
-      this.walkAnimation.update(var2, 0.4F, this.isBaby() ? 3.0F : 1.0F);
+      this.walkAnimation.update(targetSpeed, 0.4F, this.isBaby() ? 3.0F : 1.0F);
    }
 
    public void playEatingSound() {
       this.level().playSound((Entity)null, (Entity)this, SoundEvents.FROG_EAT, SoundSource.NEUTRAL, 2.0F, 1.0F);
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Frog var3 = EntityType.FROG.create(var1, EntitySpawnReason.BREEDING);
-      if (var3 != null) {
-         FrogAi.initMemories(var3, var1.getRandom());
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      Frog frog = EntityType.FROG.create(level, EntitySpawnReason.BREEDING);
+      if (frog != null) {
+         FrogAi.initMemories(frog, level.getRandom());
       }
 
-      return var3;
+      return frog;
    }
 
    public boolean isBaby() {
       return false;
    }
 
-   public void setBaby(boolean var1) {
+   public void setBaby(final boolean baby) {
    }
 
-   public void spawnChildFromBreeding(ServerLevel var1, Animal var2) {
-      this.finalizeSpawnChildFromBreeding(var1, var2, (AgeableMob)null);
+   public void spawnChildFromBreeding(final ServerLevel level, final Animal partner) {
+      this.finalizeSpawnChildFromBreeding(level, partner, (AgeableMob)null);
       this.getBrain().setMemory(MemoryModuleType.IS_PREGNANT, Unit.INSTANCE);
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.FROG_VARIANT).ifPresent(this::setVariant);
-      FrogAi.initMemories(this, var1.getRandom());
-      return super.finalizeSpawn(var1, var2, var3, var4);
+   public SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      VariantUtils.selectVariantToSpawn(SpawnContext.create(level, this.blockPosition()), Registries.FROG_VARIANT).ifPresent(this::setVariant);
+      FrogAi.initMemories(this, level.getRandom());
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -262,7 +255,7 @@ public class Frog extends Animal {
       return SoundEvents.FROG_AMBIENT;
    }
 
-   protected @Nullable SoundEvent getHurtSound(DamageSource var1) {
+   protected @Nullable SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.FROG_HURT;
    }
 
@@ -270,7 +263,7 @@ public class Frog extends Animal {
       return SoundEvents.FROG_DEATH;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(SoundEvents.FROG_STEP, 0.15F, 1.0F);
    }
 
@@ -278,53 +271,53 @@ public class Frog extends Animal {
       return false;
    }
 
-   protected int calculateFallDamage(double var1, float var3) {
-      return super.calculateFallDamage(var1, var3) - 5;
+   protected int calculateFallDamage(final double fallDistance, final float damageModifier) {
+      return super.calculateFallDamage(fallDistance, damageModifier) - 5;
    }
 
-   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
-      this.moveRelative(this.getSpeed(), var1);
+   protected void travelInWater(final Vec3 input, final double baseGravity, final boolean isFalling, final double oldY) {
+      this.moveRelative(this.getSpeed(), input);
       this.move(MoverType.SELF, this.getDeltaMovement());
       this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
    }
 
-   public static boolean canEat(LivingEntity var0) {
-      if (var0 instanceof Slime var1) {
-         if (var1.getSize() != 1) {
+   public static boolean canEat(final LivingEntity entity) {
+      if (entity instanceof Slime slime) {
+         if (slime.getSize() != 1) {
             return false;
          }
       }
 
-      return var0.getType().is(EntityTypeTags.FROG_FOOD);
+      return entity.is(EntityTypeTags.FROG_FOOD);
    }
 
-   protected PathNavigation createNavigation(Level var1) {
-      return new FrogPathNavigation(this, var1);
+   protected PathNavigation createNavigation(final Level level) {
+      return new FrogPathNavigation(this, level);
    }
 
    public @Nullable LivingEntity getTarget() {
       return this.getTargetFromBrain();
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.FROG_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.FROG_FOOD);
    }
 
-   public static boolean checkFrogSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      return var1.getBlockState(var3.below()).is(BlockTags.FROGS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
+   public static boolean checkFrogSpawnRules(final EntityType<? extends Animal> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      return level.getBlockState(pos.below()).is(BlockTags.FROGS_SPAWNABLE_ON) && isBrightEnoughToSpawn(level, pos);
    }
 
    static {
-      SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.FROG_ATTACKABLES, SensorType.FROG_TEMPTATIONS, SensorType.IS_IN_WATER);
-      MEMORY_TYPES = ImmutableList.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.BREED_TARGET, MemoryModuleType.LONG_JUMP_COOLDOWN_TICKS, MemoryModuleType.LONG_JUMP_MID_JUMP, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.TEMPTING_PLAYER, MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, new MemoryModuleType[]{MemoryModuleType.IS_TEMPTED, MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.NEAREST_ATTACKABLE, MemoryModuleType.IS_IN_WATER, MemoryModuleType.IS_PREGNANT, MemoryModuleType.IS_PANICKING, MemoryModuleType.UNREACHABLE_TONGUE_TARGETS});
+      BRAIN_PROVIDER = Brain.<Frog>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.FROG_ATTACKABLES, SensorType.FROG_TEMPTATIONS, SensorType.IS_IN_WATER), (var0) -> FrogAi.getActivities());
       DATA_VARIANT_ID = SynchedEntityData.<Holder<FrogVariant>>defineId(Frog.class, EntityDataSerializers.FROG_VARIANT);
       DATA_TONGUE_TARGET_ID = SynchedEntityData.<OptionalInt>defineId(Frog.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
       DEFAULT_VARIANT = FrogVariants.TEMPERATE;
    }
 
-   class FrogLookControl extends LookControl {
-      FrogLookControl(final Mob var2) {
-         super(var2);
+   private class FrogLookControl extends LookControl {
+      FrogLookControl(final Mob mob) {
+         Objects.requireNonNull(Frog.this);
+         super(mob);
       }
 
       protected boolean resetXRotOnTick() {
@@ -332,36 +325,36 @@ public class Frog extends Animal {
       }
    }
 
-   static class FrogPathNavigation extends AmphibiousPathNavigation {
-      FrogPathNavigation(Frog var1, Level var2) {
-         super(var1, var2);
+   private static class FrogPathNavigation extends AmphibiousPathNavigation {
+      FrogPathNavigation(final Frog mob, final Level level) {
+         super(mob, level);
       }
 
-      public boolean canCutCorner(PathType var1) {
-         return var1 != PathType.WATER_BORDER && super.canCutCorner(var1);
+      public boolean canCutCorner(final PathType pathType) {
+         return pathType != PathType.WATER_BORDER && super.canCutCorner(pathType);
       }
 
-      protected PathFinder createPathFinder(int var1) {
+      protected PathFinder createPathFinder(final int maxVisitedNodes) {
          this.nodeEvaluator = new FrogNodeEvaluator(true);
-         return new PathFinder(this.nodeEvaluator, var1);
+         return new PathFinder(this.nodeEvaluator, maxVisitedNodes);
       }
    }
 
-   static class FrogNodeEvaluator extends AmphibiousNodeEvaluator {
+   private static class FrogNodeEvaluator extends AmphibiousNodeEvaluator {
       private final BlockPos.MutableBlockPos belowPos = new BlockPos.MutableBlockPos();
 
-      public FrogNodeEvaluator(boolean var1) {
-         super(var1);
+      public FrogNodeEvaluator(final boolean prefersShallowSwimming) {
+         super(prefersShallowSwimming);
       }
 
       public Node getStart() {
          return !this.mob.isInWater() ? super.getStart() : this.getStartNode(new BlockPos(Mth.floor(this.mob.getBoundingBox().minX), Mth.floor(this.mob.getBoundingBox().minY), Mth.floor(this.mob.getBoundingBox().minZ)));
       }
 
-      public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {
-         this.belowPos.set(var2, var3 - 1, var4);
-         BlockState var5 = var1.getBlockState(this.belowPos);
-         return var5.is(BlockTags.FROG_PREFER_JUMP_TO) ? PathType.OPEN : super.getPathType(var1, var2, var3, var4);
+      public PathType getPathType(final PathfindingContext context, final int x, final int y, final int z) {
+         this.belowPos.set(x, y - 1, z);
+         BlockState belowState = context.getBlockState(this.belowPos);
+         return belowState.is(BlockTags.FROG_PREFER_JUMP_TO) ? PathType.OPEN : super.getPathType(context, x, y, z);
       }
    }
 }

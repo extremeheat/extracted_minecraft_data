@@ -1,9 +1,9 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -20,67 +20,66 @@ import org.jspecify.annotations.Nullable;
 
 public class SpawnerBlockEntity extends BlockEntity implements Spawner {
    private final BaseSpawner spawner = new BaseSpawner() {
-      public void broadcastEvent(Level var1, BlockPos var2, int var3) {
-         var1.blockEvent(var2, Blocks.SPAWNER, var3, 0);
+      {
+         Objects.requireNonNull(SpawnerBlockEntity.this);
       }
 
-      public void setNextSpawnData(@Nullable Level var1, BlockPos var2, SpawnData var3) {
-         super.setNextSpawnData(var1, var2, var3);
-         if (var1 != null) {
-            BlockState var4 = var1.getBlockState(var2);
-            var1.sendBlockUpdated(var2, var4, var4, 260);
+      public void broadcastEvent(final Level level, final BlockPos pos, final int id) {
+         level.blockEvent(pos, Blocks.SPAWNER, id, 0);
+      }
+
+      public void setNextSpawnData(final @Nullable Level level, final BlockPos pos, final SpawnData nextSpawnData) {
+         super.setNextSpawnData(level, pos, nextSpawnData);
+         if (level != null) {
+            BlockState state = level.getBlockState(pos);
+            level.sendBlockUpdated(pos, state, state, 260);
          }
 
       }
    };
 
-   public SpawnerBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.MOB_SPAWNER, var1, var2);
+   public SpawnerBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.MOB_SPAWNER, worldPosition, blockState);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.spawner.load(this.level, this.worldPosition, var1);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.spawner.load(this.level, this.worldPosition, input);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      this.spawner.save(var1);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      this.spawner.save(output);
    }
 
-   public static void clientTick(Level var0, BlockPos var1, BlockState var2, SpawnerBlockEntity var3) {
-      var3.spawner.clientTick(var0, var1);
+   public static void clientTick(final Level level, final BlockPos pos, final BlockState state, final SpawnerBlockEntity entity) {
+      entity.spawner.clientTick(level, pos);
    }
 
-   public static void serverTick(Level var0, BlockPos var1, BlockState var2, SpawnerBlockEntity var3) {
-      var3.spawner.serverTick((ServerLevel)var0, var1);
+   public static void serverTick(final Level level, final BlockPos pos, final BlockState state, final SpawnerBlockEntity entity) {
+      entity.spawner.serverTick((ServerLevel)level, pos);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      CompoundTag var2 = this.saveCustomOnly(var1);
-      var2.remove("SpawnPotentials");
-      return var2;
+   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+      CompoundTag tag = this.saveCustomOnly(registries);
+      tag.remove("SpawnPotentials");
+      return tag;
    }
 
-   public boolean triggerEvent(int var1, int var2) {
-      return this.spawner.onEventTriggered(this.level, var1) ? true : super.triggerEvent(var1, var2);
+   public boolean triggerEvent(final int b0, final int b1) {
+      return this.spawner.onEventTriggered(this.level, b0) ? true : super.triggerEvent(b0, b1);
    }
 
-   public void setEntityId(EntityType<?> var1, RandomSource var2) {
-      this.spawner.setEntityId(var1, this.level, var2, this.worldPosition);
+   public void setEntityId(final EntityType<?> type, final RandomSource random) {
+      this.spawner.setEntityId(type, this.level, random, this.worldPosition);
       this.setChanged();
    }
 
    public BaseSpawner getSpawner() {
       return this.spawner;
-   }
-
-   // $FF: synthetic method
-   public Packet getUpdatePacket() {
-      return this.getUpdatePacket();
    }
 }

@@ -11,11 +11,11 @@ public class FoliageColor {
       super();
    }
 
-   public static void init(int[] var0) {
-      pixels = var0;
+   public static void init(final int[] pixels) {
+      FoliageColor.pixels = pixels;
    }
 
-   public static int get(double var0, double var2) {
-      return ColorMapColorUtil.get(var0, var2, pixels, -12012264);
+   public static int get(final double temp, final double rain) {
+      return ColorMapColorUtil.get(temp, rain, pixels, -12012264);
    }
 }

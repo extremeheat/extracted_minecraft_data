@@ -34,158 +34,153 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class HashCache {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final String HEADER_MARKER = "// ";
    private final Path rootDir;
    private final Path cacheDir;
    private final String versionId;
    private final Map<String, ProviderCache> caches;
    private final Set<String> cachesToWrite = new HashSet();
-   final Set<Path> cachePaths = new HashSet();
+   private final Set<Path> cachePaths = new HashSet();
    private final int initialCount;
    private int writes;
 
-   private Path getProviderCachePath(String var1) {
-      return this.cacheDir.resolve(Hashing.sha1().hashString(var1, StandardCharsets.UTF_8).toString());
+   private Path getProviderCachePath(final String provider) {
+      return this.cacheDir.resolve(Hashing.sha1().hashString(provider, StandardCharsets.UTF_8).toString());
    }
 
-   public HashCache(Path var1, Collection<String> var2, WorldVersion var3) throws IOException {
+   public HashCache(final Path rootDir, final Collection<String> providerIds, final WorldVersion version) throws IOException {
       super();
-      this.versionId = var3.id();
-      this.rootDir = var1;
-      this.cacheDir = var1.resolve(".cache");
+      this.versionId = version.id();
+      this.rootDir = rootDir;
+      this.cacheDir = rootDir.resolve(".cache");
       Files.createDirectories(this.cacheDir);
-      HashMap var4 = new HashMap();
-      int var5 = 0;
+      Map<String, ProviderCache> loadedCaches = new HashMap();
+      int initialCount = 0;
 
-      for(String var7 : var2) {
-         Path var8 = this.getProviderCachePath(var7);
-         this.cachePaths.add(var8);
-         ProviderCache var9 = readCache(var1, var8);
-         var4.put(var7, var9);
-         var5 += var9.count();
+      for(String providerId : providerIds) {
+         Path providerCachePath = this.getProviderCachePath(providerId);
+         this.cachePaths.add(providerCachePath);
+         ProviderCache providerCache = readCache(rootDir, providerCachePath);
+         loadedCaches.put(providerId, providerCache);
+         initialCount += providerCache.count();
       }
 
-      this.caches = var4;
-      this.initialCount = var5;
+      this.caches = loadedCaches;
+      this.initialCount = initialCount;
    }
 
-   private static ProviderCache readCache(Path var0, Path var1) {
-      if (Files.isReadable(var1)) {
+   private static ProviderCache readCache(final Path rootDir, final Path providerCachePath) {
+      if (Files.isReadable(providerCachePath)) {
          try {
-            return HashCache.ProviderCache.load(var0, var1);
-         } catch (Exception var3) {
-            LOGGER.warn("Failed to parse cache {}, discarding", var1, var3);
+            return HashCache.ProviderCache.load(rootDir, providerCachePath);
+         } catch (Exception e) {
+            LOGGER.warn("Failed to parse cache {}, discarding", providerCachePath, e);
          }
       }
 
       return new ProviderCache("unknown", ImmutableMap.of());
    }
 
-   public boolean shouldRunInThisVersion(String var1) {
-      ProviderCache var2 = (ProviderCache)this.caches.get(var1);
-      return var2 == null || !var2.version.equals(this.versionId);
+   public boolean shouldRunInThisVersion(final String providerId) {
+      ProviderCache result = (ProviderCache)this.caches.get(providerId);
+      return result == null || !result.version.equals(this.versionId);
    }
 
-   public CompletableFuture<UpdateResult> generateUpdate(String var1, UpdateFunction var2) {
-      ProviderCache var3 = (ProviderCache)this.caches.get(var1);
-      if (var3 == null) {
-         throw new IllegalStateException("Provider not registered: " + var1);
+   public CompletableFuture<UpdateResult> generateUpdate(final String providerId, final UpdateFunction function) {
+      ProviderCache existingCache = (ProviderCache)this.caches.get(providerId);
+      if (existingCache == null) {
+         throw new IllegalStateException("Provider not registered: " + providerId);
       } else {
-         CacheUpdater var4 = new CacheUpdater(var1, this.versionId, var3);
-         return var2.update(var4).thenApply((var1x) -> var4.close());
+         CacheUpdater output = new CacheUpdater(providerId, this.versionId, existingCache);
+         return function.update(output).thenApply((unused) -> output.close());
       }
    }
 
-   public void applyUpdate(UpdateResult var1) {
-      this.caches.put(var1.providerId(), var1.cache());
-      this.cachesToWrite.add(var1.providerId());
-      this.writes += var1.writes();
+   public void applyUpdate(final UpdateResult result) {
+      this.caches.put(result.providerId(), result.cache());
+      this.cachesToWrite.add(result.providerId());
+      this.writes += result.writes();
    }
 
    public void purgeStaleAndWrite() throws IOException {
-      final HashSet var1 = new HashSet();
-      this.caches.forEach((var2x, var3x) -> {
-         if (this.cachesToWrite.contains(var2x)) {
-            Path var4 = this.getProviderCachePath(var2x);
+      final Set<Path> allowedFiles = new HashSet();
+      this.caches.forEach((providerId, cache) -> {
+         if (this.cachesToWrite.contains(providerId)) {
+            Path cachePath = this.getProviderCachePath(providerId);
             Path var10001 = this.rootDir;
             String var10003 = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.now());
-            var3x.save(var10001, var4, var10003 + "\t" + var2x);
+            cache.save(var10001, cachePath, var10003 + "\t" + providerId);
          }
 
-         var1.addAll(var3x.data().keySet());
+         allowedFiles.addAll(cache.data().keySet());
       });
-      var1.add(this.rootDir.resolve("version.json"));
-      final MutableInt var2 = new MutableInt();
-      final MutableInt var3 = new MutableInt();
+      allowedFiles.add(this.rootDir.resolve("version.json"));
+      final MutableInt found = new MutableInt();
+      final MutableInt removed = new MutableInt();
       Files.walkFileTree(this.rootDir, new SimpleFileVisitor<Path>() {
-         public FileVisitResult visitFile(Path var1x, BasicFileAttributes var2x) {
-            if (HashCache.this.cachePaths.contains(var1x)) {
+         {
+            Objects.requireNonNull(HashCache.this);
+         }
+
+         public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) {
+            if (HashCache.this.cachePaths.contains(file)) {
                return FileVisitResult.CONTINUE;
             } else {
-               var2.increment();
-               if (var1.contains(var1x)) {
+               found.increment();
+               if (allowedFiles.contains(file)) {
                   return FileVisitResult.CONTINUE;
                } else {
                   try {
-                     Files.delete(var1x);
-                  } catch (IOException var4) {
-                     HashCache.LOGGER.warn("Failed to delete file {}", var1x, var4);
+                     Files.delete(file);
+                  } catch (IOException e) {
+                     HashCache.LOGGER.warn("Failed to delete file {}", file, e);
                   }
 
-                  var3.increment();
+                  removed.increment();
                   return FileVisitResult.CONTINUE;
                }
             }
          }
-
-         // $FF: synthetic method
-         public FileVisitResult visitFile(final Object var1x, final BasicFileAttributes var2x) throws IOException {
-            return this.visitFile((Path)var1x, var2x);
-         }
       });
-      LOGGER.info("Caching: total files: {}, old count: {}, new count: {}, removed stale: {}, written: {}", new Object[]{var2, this.initialCount, var1.size(), var3, this.writes});
+      LOGGER.info("Caching: total files: {}, old count: {}, new count: {}, removed stale: {}, written: {}", new Object[]{found, this.initialCount, allowedFiles.size(), removed, this.writes});
    }
 
-   static record ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
-      final String version;
-
-      ProviderCache(String var1, ImmutableMap<Path, HashCode> var2) {
+   private static record ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
+      private ProviderCache {
          super();
-         this.version = var1;
-         this.data = var2;
       }
 
-      public @Nullable HashCode get(Path var1) {
-         return (HashCode)this.data.get(var1);
+      public @Nullable HashCode get(final Path path) {
+         return (HashCode)this.data.get(path);
       }
 
       public int count() {
          return this.data.size();
       }
 
-      public static ProviderCache load(Path var0, Path var1) throws IOException {
-         BufferedReader var2 = Files.newBufferedReader(var1, StandardCharsets.UTF_8);
+      public static ProviderCache load(final Path rootDir, final Path cacheFile) throws IOException {
+         BufferedReader reader = Files.newBufferedReader(cacheFile, StandardCharsets.UTF_8);
 
          ProviderCache var7;
          try {
-            String var3 = var2.readLine();
-            if (!var3.startsWith("// ")) {
+            String header = reader.readLine();
+            if (!header.startsWith("// ")) {
                throw new IllegalStateException("Missing cache file header");
             }
 
-            String[] var4 = var3.substring("// ".length()).split("\t", 2);
-            String var5 = var4[0];
-            ImmutableMap.Builder var6 = ImmutableMap.builder();
-            var2.lines().forEach((var2x) -> {
-               int var3 = var2x.indexOf(32);
-               var6.put(var0.resolve(var2x.substring(var3 + 1)), HashCode.fromString(var2x.substring(0, var3)));
+            String[] headerFields = header.substring("// ".length()).split("\t", 2);
+            String savedVersionId = headerFields[0];
+            ImmutableMap.Builder<Path, HashCode> result = ImmutableMap.builder();
+            reader.lines().forEach((s) -> {
+               int i = s.indexOf(32);
+               result.put(rootDir.resolve(s.substring(i + 1)), HashCode.fromString(s.substring(0, i)));
             });
-            var7 = new ProviderCache(var5, var6.build());
+            var7 = new ProviderCache(savedVersionId, result.build());
          } catch (Throwable var9) {
-            if (var2 != null) {
+            if (reader != null) {
                try {
-                  var2.close();
+                  reader.close();
                } catch (Throwable var8) {
                   var9.addSuppressed(var8);
                }
@@ -194,36 +189,36 @@ public class HashCache {
             throw var9;
          }
 
-         if (var2 != null) {
-            var2.close();
+         if (reader != null) {
+            reader.close();
          }
 
          return var7;
       }
 
-      public void save(Path var1, Path var2, String var3) {
+      public void save(final Path rootDir, final Path cacheFile, final String extraHeaderInfo) {
          try {
-            BufferedWriter var4 = Files.newBufferedWriter(var2, StandardCharsets.UTF_8);
+            BufferedWriter output = Files.newBufferedWriter(cacheFile, StandardCharsets.UTF_8);
 
             try {
-               var4.write("// ");
-               var4.write(this.version);
-               var4.write(9);
-               var4.write(var3);
-               var4.newLine();
+               output.write("// ");
+               output.write(this.version);
+               output.write(9);
+               output.write(extraHeaderInfo);
+               output.newLine();
                UnmodifiableIterator var5 = this.data.entrySet().iterator();
 
                while(var5.hasNext()) {
-                  Map.Entry var6 = (Map.Entry)var5.next();
-                  var4.write(((HashCode)var6.getValue()).toString());
-                  var4.write(32);
-                  var4.write(var1.relativize((Path)var6.getKey()).toString());
-                  var4.newLine();
+                  Map.Entry<Path, HashCode> e = (Map.Entry)var5.next();
+                  output.write(((HashCode)e.getValue()).toString());
+                  output.write(32);
+                  output.write(rootDir.relativize((Path)e.getKey()).toString());
+                  output.newLine();
                }
             } catch (Throwable var8) {
-               if (var4 != null) {
+               if (output != null) {
                   try {
-                     var4.close();
+                     output.close();
                   } catch (Throwable var7) {
                      var8.addSuppressed(var7);
                   }
@@ -232,29 +227,27 @@ public class HashCache {
                throw var8;
             }
 
-            if (var4 != null) {
-               var4.close();
+            if (output != null) {
+               output.close();
             }
-         } catch (IOException var9) {
-            HashCache.LOGGER.warn("Unable write cachefile {}: {}", var2, var9);
+         } catch (IOException e) {
+            HashCache.LOGGER.warn("Unable write cachefile {}: {}", cacheFile, e);
          }
 
       }
    }
 
-   static record ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
-      ProviderCacheBuilder(String var1) {
-         this(var1, new ConcurrentHashMap());
+   private static record ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
+      ProviderCacheBuilder(final String version) {
+         this(version, new ConcurrentHashMap());
       }
 
-      private ProviderCacheBuilder(String var1, ConcurrentMap<Path, HashCode> var2) {
+      private ProviderCacheBuilder {
          super();
-         this.version = var1;
-         this.data = var2;
       }
 
-      public void put(Path var1, HashCode var2) {
-         this.data.put(var1, var2);
+      public void put(final Path path, final HashCode hash) {
+         this.data.put(path, hash);
       }
 
       public ProviderCache build() {
@@ -262,35 +255,35 @@ public class HashCache {
       }
    }
 
-   static class CacheUpdater implements CachedOutput {
+   private static class CacheUpdater implements CachedOutput {
       private final String provider;
       private final ProviderCache oldCache;
       private final ProviderCacheBuilder newCache;
       private final AtomicInteger writes = new AtomicInteger();
       private volatile boolean closed;
 
-      CacheUpdater(String var1, String var2, ProviderCache var3) {
+      private CacheUpdater(final String provider, final String newVersionId, final ProviderCache oldCache) {
          super();
-         this.provider = var1;
-         this.oldCache = var3;
-         this.newCache = new ProviderCacheBuilder(var2);
+         this.provider = provider;
+         this.oldCache = oldCache;
+         this.newCache = new ProviderCacheBuilder(newVersionId);
       }
 
-      private boolean shouldWrite(Path var1, HashCode var2) {
-         return !Objects.equals(this.oldCache.get(var1), var2) || !Files.exists(var1, new LinkOption[0]);
+      private boolean shouldWrite(final Path path, final HashCode hash) {
+         return !Objects.equals(this.oldCache.get(path), hash) || !Files.exists(path, new LinkOption[0]);
       }
 
-      public void writeIfNeeded(Path var1, byte[] var2, HashCode var3) throws IOException {
+      public void writeIfNeeded(final Path path, final byte[] input, final HashCode hash) throws IOException {
          if (this.closed) {
             throw new IllegalStateException("Cannot write to cache as it has already been closed");
          } else {
-            if (this.shouldWrite(var1, var3)) {
+            if (this.shouldWrite(path, hash)) {
                this.writes.incrementAndGet();
-               Files.createDirectories(var1.getParent());
-               Files.write(var1, var2, new OpenOption[0]);
+               Files.createDirectories(path.getParent());
+               Files.write(path, input, new OpenOption[0]);
             }
 
-            this.newCache.put(var1, var3);
+            this.newCache.put(path, hash);
          }
       }
 
@@ -301,16 +294,13 @@ public class HashCache {
    }
 
    public static record UpdateResult(String providerId, ProviderCache cache, int writes) {
-      public UpdateResult(String var1, ProviderCache var2, int var3) {
+      public UpdateResult {
          super();
-         this.providerId = var1;
-         this.cache = var2;
-         this.writes = var3;
       }
    }
 
    @FunctionalInterface
    public interface UpdateFunction {
-      CompletableFuture<?> update(CachedOutput var1);
+      CompletableFuture<?> update(CachedOutput output);
    }
 }

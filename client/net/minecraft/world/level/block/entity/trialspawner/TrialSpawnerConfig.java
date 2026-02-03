@@ -17,28 +17,19 @@ import net.minecraft.world.level.storage.loot.LootTable;
 
 public record TrialSpawnerConfig(int spawnRange, float totalMobs, float simultaneousMobs, float totalMobsAddedPerPlayer, float simultaneousMobsAddedPerPlayer, int ticksBetweenSpawn, WeightedList<SpawnData> spawnPotentialsDefinition, WeightedList<ResourceKey<LootTable>> lootTablesToEject, ResourceKey<LootTable> itemsToDropWhenOminous) {
    public static final TrialSpawnerConfig DEFAULT = builder().build();
-   public static final Codec<TrialSpawnerConfig> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.intRange(1, 128).optionalFieldOf("spawn_range", DEFAULT.spawnRange).forGetter(TrialSpawnerConfig::spawnRange), Codec.floatRange(0.0F, 3.4028235E38F).optionalFieldOf("total_mobs", DEFAULT.totalMobs).forGetter(TrialSpawnerConfig::totalMobs), Codec.floatRange(0.0F, 3.4028235E38F).optionalFieldOf("simultaneous_mobs", DEFAULT.simultaneousMobs).forGetter(TrialSpawnerConfig::simultaneousMobs), Codec.floatRange(0.0F, 3.4028235E38F).optionalFieldOf("total_mobs_added_per_player", DEFAULT.totalMobsAddedPerPlayer).forGetter(TrialSpawnerConfig::totalMobsAddedPerPlayer), Codec.floatRange(0.0F, 3.4028235E38F).optionalFieldOf("simultaneous_mobs_added_per_player", DEFAULT.simultaneousMobsAddedPerPlayer).forGetter(TrialSpawnerConfig::simultaneousMobsAddedPerPlayer), Codec.intRange(0, 2147483647).optionalFieldOf("ticks_between_spawn", DEFAULT.ticksBetweenSpawn).forGetter(TrialSpawnerConfig::ticksBetweenSpawn), SpawnData.LIST_CODEC.optionalFieldOf("spawn_potentials", WeightedList.of()).forGetter(TrialSpawnerConfig::spawnPotentialsDefinition), WeightedList.codec(LootTable.KEY_CODEC).optionalFieldOf("loot_tables_to_eject", DEFAULT.lootTablesToEject).forGetter(TrialSpawnerConfig::lootTablesToEject), LootTable.KEY_CODEC.optionalFieldOf("items_to_drop_when_ominous", DEFAULT.itemsToDropWhenOminous).forGetter(TrialSpawnerConfig::itemsToDropWhenOminous)).apply(var0, TrialSpawnerConfig::new));
+   public static final Codec<TrialSpawnerConfig> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.intRange(1, 128).optionalFieldOf("spawn_range", DEFAULT.spawnRange).forGetter(TrialSpawnerConfig::spawnRange), Codec.floatRange(0.0F, 3.4028235E38F).optionalFieldOf("total_mobs", DEFAULT.totalMobs).forGetter(TrialSpawnerConfig::totalMobs), Codec.floatRange(0.0F, 3.4028235E38F).optionalFieldOf("simultaneous_mobs", DEFAULT.simultaneousMobs).forGetter(TrialSpawnerConfig::simultaneousMobs), Codec.floatRange(0.0F, 3.4028235E38F).optionalFieldOf("total_mobs_added_per_player", DEFAULT.totalMobsAddedPerPlayer).forGetter(TrialSpawnerConfig::totalMobsAddedPerPlayer), Codec.floatRange(0.0F, 3.4028235E38F).optionalFieldOf("simultaneous_mobs_added_per_player", DEFAULT.simultaneousMobsAddedPerPlayer).forGetter(TrialSpawnerConfig::simultaneousMobsAddedPerPlayer), Codec.intRange(0, 2147483647).optionalFieldOf("ticks_between_spawn", DEFAULT.ticksBetweenSpawn).forGetter(TrialSpawnerConfig::ticksBetweenSpawn), SpawnData.LIST_CODEC.optionalFieldOf("spawn_potentials", WeightedList.of()).forGetter(TrialSpawnerConfig::spawnPotentialsDefinition), WeightedList.codec(LootTable.KEY_CODEC).optionalFieldOf("loot_tables_to_eject", DEFAULT.lootTablesToEject).forGetter(TrialSpawnerConfig::lootTablesToEject), LootTable.KEY_CODEC.optionalFieldOf("items_to_drop_when_ominous", DEFAULT.itemsToDropWhenOminous).forGetter(TrialSpawnerConfig::itemsToDropWhenOminous)).apply(i, TrialSpawnerConfig::new));
    public static final Codec<Holder<TrialSpawnerConfig>> CODEC;
 
-   public TrialSpawnerConfig(int var1, float var2, float var3, float var4, float var5, int var6, WeightedList<SpawnData> var7, WeightedList<ResourceKey<LootTable>> var8, ResourceKey<LootTable> var9) {
+   public TrialSpawnerConfig {
       super();
-      this.spawnRange = var1;
-      this.totalMobs = var2;
-      this.simultaneousMobs = var3;
-      this.totalMobsAddedPerPlayer = var4;
-      this.simultaneousMobsAddedPerPlayer = var5;
-      this.ticksBetweenSpawn = var6;
-      this.spawnPotentialsDefinition = var7;
-      this.lootTablesToEject = var8;
-      this.itemsToDropWhenOminous = var9;
    }
 
-   public int calculateTargetTotalMobs(int var1) {
-      return (int)Math.floor((double)(this.totalMobs + this.totalMobsAddedPerPlayer * (float)var1));
+   public int calculateTargetTotalMobs(final int additionalPlayers) {
+      return (int)Math.floor((double)(this.totalMobs + this.totalMobsAddedPerPlayer * (float)additionalPlayers));
    }
 
-   public int calculateTargetSimultaneousMobs(int var1) {
-      return (int)Math.floor((double)(this.simultaneousMobs + this.simultaneousMobsAddedPerPlayer * (float)var1));
+   public int calculateTargetSimultaneousMobs(final int additionalPlayers) {
+      return (int)Math.floor((double)(this.simultaneousMobs + this.simultaneousMobsAddedPerPlayer * (float)additionalPlayers));
    }
 
    public long ticksBetweenItemSpawners() {
@@ -49,11 +40,11 @@ public record TrialSpawnerConfig(int spawnRange, float totalMobs, float simultan
       return new Builder();
    }
 
-   public TrialSpawnerConfig withSpawning(EntityType<?> var1) {
-      CompoundTag var2 = new CompoundTag();
-      var2.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(var1).toString());
-      SpawnData var3 = new SpawnData(var2, Optional.empty(), Optional.empty());
-      return new TrialSpawnerConfig(this.spawnRange, this.totalMobs, this.simultaneousMobs, this.totalMobsAddedPerPlayer, this.simultaneousMobsAddedPerPlayer, this.ticksBetweenSpawn, WeightedList.of(var3), this.lootTablesToEject, this.itemsToDropWhenOminous);
+   public TrialSpawnerConfig withSpawning(final EntityType<?> type) {
+      CompoundTag tag = new CompoundTag();
+      tag.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
+      SpawnData spawnData = new SpawnData(tag, Optional.empty(), Optional.empty());
+      return new TrialSpawnerConfig(this.spawnRange, this.totalMobs, this.simultaneousMobs, this.totalMobsAddedPerPlayer, this.simultaneousMobsAddedPerPlayer, this.ticksBetweenSpawn, WeightedList.of(spawnData), this.lootTablesToEject, this.itemsToDropWhenOminous);
    }
 
    static {
@@ -77,48 +68,48 @@ public record TrialSpawnerConfig(int spawnRange, float totalMobs, float simultan
          this.itemsToDropWhenOminous = BuiltInLootTables.SPAWNER_TRIAL_ITEMS_TO_DROP_WHEN_OMINOUS;
       }
 
-      public Builder spawnRange(int var1) {
-         this.spawnRange = var1;
+      public Builder spawnRange(final int spawnRange) {
+         this.spawnRange = spawnRange;
          return this;
       }
 
-      public Builder totalMobs(float var1) {
-         this.totalMobs = var1;
+      public Builder totalMobs(final float totalMobs) {
+         this.totalMobs = totalMobs;
          return this;
       }
 
-      public Builder simultaneousMobs(float var1) {
-         this.simultaneousMobs = var1;
+      public Builder simultaneousMobs(final float simultaneousMobs) {
+         this.simultaneousMobs = simultaneousMobs;
          return this;
       }
 
-      public Builder totalMobsAddedPerPlayer(float var1) {
-         this.totalMobsAddedPerPlayer = var1;
+      public Builder totalMobsAddedPerPlayer(final float totalMobsAddedPerPlayer) {
+         this.totalMobsAddedPerPlayer = totalMobsAddedPerPlayer;
          return this;
       }
 
-      public Builder simultaneousMobsAddedPerPlayer(float var1) {
-         this.simultaneousMobsAddedPerPlayer = var1;
+      public Builder simultaneousMobsAddedPerPlayer(final float simultaneousMobsAddedPerPlayer) {
+         this.simultaneousMobsAddedPerPlayer = simultaneousMobsAddedPerPlayer;
          return this;
       }
 
-      public Builder ticksBetweenSpawn(int var1) {
-         this.ticksBetweenSpawn = var1;
+      public Builder ticksBetweenSpawn(final int ticksBetweenSpawn) {
+         this.ticksBetweenSpawn = ticksBetweenSpawn;
          return this;
       }
 
-      public Builder spawnPotentialsDefinition(WeightedList<SpawnData> var1) {
-         this.spawnPotentialsDefinition = var1;
+      public Builder spawnPotentialsDefinition(final WeightedList<SpawnData> spawnPotentialsDefinition) {
+         this.spawnPotentialsDefinition = spawnPotentialsDefinition;
          return this;
       }
 
-      public Builder lootTablesToEject(WeightedList<ResourceKey<LootTable>> var1) {
-         this.lootTablesToEject = var1;
+      public Builder lootTablesToEject(final WeightedList<ResourceKey<LootTable>> lootTablesToEject) {
+         this.lootTablesToEject = lootTablesToEject;
          return this;
       }
 
-      public Builder itemsToDropWhenOminous(ResourceKey<LootTable> var1) {
-         this.itemsToDropWhenOminous = var1;
+      public Builder itemsToDropWhenOminous(final ResourceKey<LootTable> itemsToDropWhenOminous) {
+         this.itemsToDropWhenOminous = itemsToDropWhenOminous;
          return this;
       }
 

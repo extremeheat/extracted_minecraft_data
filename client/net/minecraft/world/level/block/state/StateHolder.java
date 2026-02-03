@@ -19,23 +19,18 @@ public abstract class StateHolder<O, S> {
    public static final String NAME_TAG = "Name";
    public static final String PROPERTIES_TAG = "Properties";
    private static final Function<Map.Entry<Property<?>, Comparable<?>>, String> PROPERTY_ENTRY_TO_STRING_FUNCTION = new Function<Map.Entry<Property<?>, Comparable<?>>, String>() {
-      public String apply(Map.@Nullable Entry<Property<?>, Comparable<?>> var1) {
-         if (var1 == null) {
+      public String apply(final Map.@Nullable Entry<Property<?>, Comparable<?>> entry) {
+         if (entry == null) {
             return "<NULL>";
          } else {
-            Property var2 = (Property)var1.getKey();
-            String var10000 = var2.getName();
-            return var10000 + "=" + this.getName(var2, (Comparable)var1.getValue());
+            Property<?> property = (Property)entry.getKey();
+            String var10000 = property.getName();
+            return var10000 + "=" + this.getName(property, (Comparable)entry.getValue());
          }
       }
 
-      private <T extends Comparable<T>> String getName(Property<T> var1, Comparable<?> var2) {
-         return var1.getName(var2);
-      }
-
-      // $FF: synthetic method
-      public Object apply(final @Nullable Object var1) {
-         return this.apply((Map.Entry)var1);
+      private <T extends Comparable<T>> String getName(final Property<T> property, final Comparable<?> value) {
+         return property.getName(value);
       }
    };
    protected final O owner;
@@ -43,36 +38,36 @@ public abstract class StateHolder<O, S> {
    private Map<Property<?>, S[]> neighbours;
    protected final MapCodec<S> propertiesCodec;
 
-   protected StateHolder(O var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<S> var3) {
+   protected StateHolder(final O owner, final Reference2ObjectArrayMap<Property<?>, Comparable<?>> values, final MapCodec<S> propertiesCodec) {
       super();
-      this.owner = var1;
-      this.values = var2;
-      this.propertiesCodec = var3;
+      this.owner = owner;
+      this.values = values;
+      this.propertiesCodec = propertiesCodec;
    }
 
-   public <T extends Comparable<T>> S cycle(Property<T> var1) {
-      return (S)this.setValue(var1, (Comparable)findNextInCollection(var1.getPossibleValues(), this.getValue(var1)));
+   public <T extends Comparable<T>> S cycle(final Property<T> property) {
+      return (S)this.setValue(property, (Comparable)findNextInCollection(property.getPossibleValues(), this.getValue(property)));
    }
 
-   protected static <T> T findNextInCollection(List<T> var0, T var1) {
-      int var2 = var0.indexOf(var1) + 1;
-      return (T)(var2 == var0.size() ? var0.getFirst() : var0.get(var2));
+   protected static <T> T findNextInCollection(final List<T> values, final T current) {
+      int nextIndex = values.indexOf(current) + 1;
+      return (T)(nextIndex == values.size() ? values.getFirst() : values.get(nextIndex));
    }
 
    public String toString() {
-      StringBuilder var1 = new StringBuilder();
-      var1.append(this.owner);
+      StringBuilder builder = new StringBuilder();
+      builder.append(this.owner);
       if (!this.getValues().isEmpty()) {
-         var1.append('[');
-         var1.append((String)this.getValues().entrySet().stream().map(PROPERTY_ENTRY_TO_STRING_FUNCTION).collect(Collectors.joining(",")));
-         var1.append(']');
+         builder.append('[');
+         builder.append((String)this.getValues().entrySet().stream().map(PROPERTY_ENTRY_TO_STRING_FUNCTION).collect(Collectors.joining(",")));
+         builder.append(']');
       }
 
-      return var1.toString();
+      return builder.toString();
    }
 
-   public final boolean equals(Object var1) {
-      return super.equals(var1);
+   public final boolean equals(final Object obj) {
+      return super.equals(obj);
    }
 
    public int hashCode() {
@@ -83,93 +78,93 @@ public abstract class StateHolder<O, S> {
       return Collections.unmodifiableCollection(this.values.keySet());
    }
 
-   public boolean hasProperty(Property<?> var1) {
-      return this.values.containsKey(var1);
+   public boolean hasProperty(final Property<?> property) {
+      return this.values.containsKey(property);
    }
 
-   public <T extends Comparable<T>> T getValue(Property<T> var1) {
-      Comparable var2 = (Comparable)this.values.get(var1);
-      if (var2 == null) {
-         String var10002 = String.valueOf(var1);
+   public <T extends Comparable<T>> T getValue(final Property<T> property) {
+      Comparable<?> value = (Comparable)this.values.get(property);
+      if (value == null) {
+         String var10002 = String.valueOf(property);
          throw new IllegalArgumentException("Cannot get property " + var10002 + " as it does not exist in " + String.valueOf(this.owner));
       } else {
-         return (T)(var1.getValueClass().cast(var2));
+         return (T)(property.getValueClass().cast(value));
       }
    }
 
-   public <T extends Comparable<T>> Optional<T> getOptionalValue(Property<T> var1) {
-      return Optional.ofNullable(this.getNullableValue(var1));
+   public <T extends Comparable<T>> Optional<T> getOptionalValue(final Property<T> property) {
+      return Optional.ofNullable(this.getNullableValue(property));
    }
 
-   public <T extends Comparable<T>> T getValueOrElse(Property<T> var1, T var2) {
-      return (T)(Objects.requireNonNullElse(this.getNullableValue(var1), var2));
+   public <T extends Comparable<T>> T getValueOrElse(final Property<T> property, final T defaultValue) {
+      return (T)(Objects.requireNonNullElse(this.getNullableValue(property), defaultValue));
    }
 
-   private <T extends Comparable<T>> @Nullable T getNullableValue(Property<T> var1) {
-      Comparable var2 = (Comparable)this.values.get(var1);
-      return (T)(var2 == null ? null : (Comparable)var1.getValueClass().cast(var2));
+   private <T extends Comparable<T>> @Nullable T getNullableValue(final Property<T> property) {
+      Comparable<?> value = (Comparable)this.values.get(property);
+      return (T)(value == null ? null : (Comparable)property.getValueClass().cast(value));
    }
 
-   public <T extends Comparable<T>, V extends T> S setValue(Property<T> var1, V var2) {
-      Comparable var3 = (Comparable)this.values.get(var1);
-      if (var3 == null) {
-         String var10002 = String.valueOf(var1);
+   public <T extends Comparable<T>, V extends T> S setValue(final Property<T> property, final V value) {
+      Comparable<?> oldValue = (Comparable)this.values.get(property);
+      if (oldValue == null) {
+         String var10002 = String.valueOf(property);
          throw new IllegalArgumentException("Cannot set property " + var10002 + " as it does not exist in " + String.valueOf(this.owner));
       } else {
-         return (S)this.setValueInternal(var1, var2, var3);
+         return (S)this.setValueInternal(property, value, oldValue);
       }
    }
 
-   public <T extends Comparable<T>, V extends T> S trySetValue(Property<T> var1, V var2) {
-      Comparable var3 = (Comparable)this.values.get(var1);
-      return (S)(var3 == null ? this : this.setValueInternal(var1, var2, var3));
+   public <T extends Comparable<T>, V extends T> S trySetValue(final Property<T> property, final V value) {
+      Comparable<?> oldValue = (Comparable)this.values.get(property);
+      return (S)(oldValue == null ? this : this.setValueInternal(property, value, oldValue));
    }
 
-   private <T extends Comparable<T>, V extends T> S setValueInternal(Property<T> var1, V var2, Comparable<?> var3) {
-      if (var3.equals(var2)) {
+   private <T extends Comparable<T>, V extends T> S setValueInternal(final Property<T> property, final V value, final Comparable<?> oldValue) {
+      if (oldValue.equals(value)) {
          return (S)this;
       } else {
-         int var4 = var1.getInternalIndex(var2);
-         if (var4 < 0) {
-            String var10002 = String.valueOf(var1);
-            throw new IllegalArgumentException("Cannot set property " + var10002 + " to " + String.valueOf(var2) + " on " + String.valueOf(this.owner) + ", it is not an allowed value");
+         int internalIndex = property.getInternalIndex(value);
+         if (internalIndex < 0) {
+            String var10002 = String.valueOf(property);
+            throw new IllegalArgumentException("Cannot set property " + var10002 + " to " + String.valueOf(value) + " on " + String.valueOf(this.owner) + ", it is not an allowed value");
          } else {
-            return (S)((Object[])this.neighbours.get(var1))[var4];
+            return (S)((Object[])this.neighbours.get(property))[internalIndex];
          }
       }
    }
 
-   public void populateNeighbours(Map<Map<Property<?>, Comparable<?>>, S> var1) {
+   public void populateNeighbours(final Map<Map<Property<?>, Comparable<?>>, S> statesByValues) {
       if (this.neighbours != null) {
          throw new IllegalStateException();
       } else {
-         Reference2ObjectArrayMap var2 = new Reference2ObjectArrayMap(this.values.size());
+         Map<Property<?>, S[]> neighbours = new Reference2ObjectArrayMap(this.values.size());
          ObjectIterator var3 = this.values.entrySet().iterator();
 
          while(var3.hasNext()) {
-            Map.Entry var4 = (Map.Entry)var3.next();
-            Property var5 = (Property)var4.getKey();
-            var2.put(var5, var5.getPossibleValues().stream().map((var3x) -> var1.get(this.makeNeighbourValues(var5, var3x))).toArray());
+            Map.Entry<Property<?>, Comparable<?>> entry = (Map.Entry)var3.next();
+            Property<?> property = (Property)entry.getKey();
+            neighbours.put(property, property.getPossibleValues().stream().map((value) -> statesByValues.get(this.makeNeighbourValues(property, value))).toArray());
          }
 
-         this.neighbours = var2;
+         this.neighbours = neighbours;
       }
    }
 
-   private Map<Property<?>, Comparable<?>> makeNeighbourValues(Property<?> var1, Comparable<?> var2) {
-      Reference2ObjectArrayMap var3 = new Reference2ObjectArrayMap(this.values);
-      var3.put(var1, var2);
-      return var3;
+   private Map<Property<?>, Comparable<?>> makeNeighbourValues(final Property<?> property, final Comparable<?> value) {
+      Map<Property<?>, Comparable<?>> neighbour = new Reference2ObjectArrayMap(this.values);
+      neighbour.put(property, value);
+      return neighbour;
    }
 
    public Map<Property<?>, Comparable<?>> getValues() {
       return this.values;
    }
 
-   protected static <O, S extends StateHolder<O, S>> Codec<S> codec(Codec<O> var0, Function<O, S> var1) {
-      return var0.dispatch("Name", (var0x) -> var0x.owner, (var1x) -> {
-         StateHolder var2 = (StateHolder)var1.apply(var1x);
-         return var2.getValues().isEmpty() ? MapCodec.unit(var2) : var2.propertiesCodec.codec().lenientOptionalFieldOf("Properties").xmap((var1xx) -> (StateHolder)var1xx.orElse(var2), Optional::of);
+   protected static <O, S extends StateHolder<O, S>> Codec<S> codec(final Codec<O> ownerCodec, final Function<O, S> defaultState) {
+      return ownerCodec.dispatch("Name", (s) -> s.owner, (o) -> {
+         S defaultValue = (StateHolder)defaultState.apply(o);
+         return defaultValue.getValues().isEmpty() ? MapCodec.unit(defaultValue) : defaultValue.propertiesCodec.codec().lenientOptionalFieldOf("Properties").xmap((oo) -> (StateHolder)oo.orElse(defaultValue), Optional::of);
       });
    }
 }

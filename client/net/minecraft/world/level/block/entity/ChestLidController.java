@@ -13,7 +13,7 @@ public class ChestLidController {
 
    public void tickLid() {
       this.oOpenness = this.openness;
-      float var1 = 0.1F;
+      float speed = 0.1F;
       if (!this.shouldBeOpen && this.openness > 0.0F) {
          this.openness = Math.max(this.openness - 0.1F, 0.0F);
       } else if (this.shouldBeOpen && this.openness < 1.0F) {
@@ -22,11 +22,11 @@ public class ChestLidController {
 
    }
 
-   public float getOpenness(float var1) {
-      return Mth.lerp(var1, this.oOpenness, this.openness);
+   public float getOpenness(final float a) {
+      return Mth.lerp(a, this.oOpenness, this.openness);
    }
 
-   public void shouldBeOpen(boolean var1) {
-      this.shouldBeOpen = var1;
+   public void shouldBeOpen(final boolean shouldBeOpen) {
+      this.shouldBeOpen = shouldBeOpen;
    }
 }

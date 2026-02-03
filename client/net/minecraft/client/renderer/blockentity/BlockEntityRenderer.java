@@ -12,11 +12,11 @@ import org.jspecify.annotations.Nullable;
 public interface BlockEntityRenderer<T extends BlockEntity, S extends BlockEntityRenderState> {
    S createRenderState();
 
-   default void extractRenderState(T var1, S var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
-      BlockEntityRenderState.extractBase(var1, var2, var5);
+   default void extractRenderState(final T blockEntity, final S state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      BlockEntityRenderState.extractBase(blockEntity, state, breakProgress);
    }
 
-   void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4);
+   void submit(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera);
 
    default boolean shouldRenderOffScreen() {
       return false;
@@ -26,7 +26,7 @@ public interface BlockEntityRenderer<T extends BlockEntity, S extends BlockEntit
       return 64;
    }
 
-   default boolean shouldRender(T var1, Vec3 var2) {
-      return Vec3.atCenterOf(var1.getBlockPos()).closerThan(var2, (double)this.getViewDistance());
+   default boolean shouldRender(final T blockEntity, final Vec3 cameraPosition) {
+      return Vec3.atCenterOf(blockEntity.getBlockPos()).closerThan(cameraPosition, (double)this.getViewDistance());
    }
 }

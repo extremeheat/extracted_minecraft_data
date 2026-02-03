@@ -25,6 +25,6 @@ public class ItemModels {
    }
 
    static {
-      CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatch(ItemModel.Unbaked::type, (var0) -> var0);
+      CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatch(ItemModel.Unbaked::type, (c) -> c);
    }
 }

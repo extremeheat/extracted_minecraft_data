@@ -20,27 +20,27 @@ import org.joml.Quaternionfc;
 public class SnowGolemHeadLayer extends RenderLayer<SnowGolemRenderState, SnowGolemModel> {
    private final BlockRenderDispatcher blockRenderer;
 
-   public SnowGolemHeadLayer(RenderLayerParent<SnowGolemRenderState, SnowGolemModel> var1, BlockRenderDispatcher var2) {
-      super(var1);
-      this.blockRenderer = var2;
+   public SnowGolemHeadLayer(final RenderLayerParent<SnowGolemRenderState, SnowGolemModel> renderer, final BlockRenderDispatcher blockRenderer) {
+      super(renderer);
+      this.blockRenderer = blockRenderer;
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, SnowGolemRenderState var4, float var5, float var6) {
-      if (var4.hasPumpkin) {
-         if (!var4.isInvisible || var4.appearsGlowing()) {
-            var1.pushPose();
-            ((SnowGolemModel)this.getParentModel()).getHead().translateAndRotate(var1);
-            float var7 = 0.625F;
-            var1.translate(0.0F, -0.34375F, 0.0F);
-            var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
-            var1.scale(0.625F, -0.625F, -0.625F);
-            BlockState var8 = Blocks.CARVED_PUMPKIN.defaultBlockState();
-            BlockStateModel var9 = this.blockRenderer.getBlockModel(var8);
-            int var10 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
-            var1.translate(-0.5F, -0.5F, -0.5F);
-            RenderType var11 = var4.appearsGlowing() && var4.isInvisible ? RenderTypes.outline(TextureAtlas.LOCATION_BLOCKS) : ItemBlockRenderTypes.getRenderType(var8);
-            var2.submitBlockModel(var1, var11, var9, 0.0F, 0.0F, 0.0F, var3, var10, var4.outlineColor);
-            var1.popPose();
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final SnowGolemRenderState state, final float yRot, final float xRot) {
+      if (state.hasPumpkin) {
+         if (!state.isInvisible || state.appearsGlowing()) {
+            poseStack.pushPose();
+            ((SnowGolemModel)this.getParentModel()).getHead().translateAndRotate(poseStack);
+            float s = 0.625F;
+            poseStack.translate(0.0F, -0.34375F, 0.0F);
+            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
+            poseStack.scale(0.625F, -0.625F, -0.625F);
+            BlockState pumpkinBlockState = Blocks.CARVED_PUMPKIN.defaultBlockState();
+            BlockStateModel model = this.blockRenderer.getBlockModel(pumpkinBlockState);
+            int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
+            poseStack.translate(-0.5F, -0.5F, -0.5F);
+            RenderType renderType = state.appearsGlowing() && state.isInvisible ? RenderTypes.outline(TextureAtlas.LOCATION_BLOCKS) : ItemBlockRenderTypes.getRenderType(pumpkinBlockState);
+            submitNodeCollector.submitBlockModel(poseStack, renderType, model, 0.0F, 0.0F, 0.0F, lightCoords, overlayCoords, state.outlineColor);
+            poseStack.popPose();
          }
       }
    }

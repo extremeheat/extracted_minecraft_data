@@ -24,46 +24,46 @@ public class TemptingSensor extends Sensor<PathfinderMob> {
    private static final TargetingConditions TEMPT_TARGETING = TargetingConditions.forNonCombat().ignoreLineOfSight();
    private final BiPredicate<PathfinderMob, ItemStack> temptations;
 
-   public TemptingSensor(Predicate<ItemStack> var1) {
-      this((BiPredicate)((var1x, var2) -> var1.test(var2)));
+   public TemptingSensor(final Predicate<ItemStack> tt) {
+      this((BiPredicate)((m, i) -> tt.test(i)));
    }
 
    public static TemptingSensor forAnimal() {
-      return new TemptingSensor((var0, var1) -> {
-         if (var0 instanceof Animal var2) {
-            return var2.isFood(var1);
+      return new TemptingSensor((m, i) -> {
+         if (m instanceof Animal animal) {
+            return animal.isFood(i);
          } else {
             return false;
          }
       });
    }
 
-   private TemptingSensor(BiPredicate<PathfinderMob, ItemStack> var1) {
+   private TemptingSensor(final BiPredicate<PathfinderMob, ItemStack> temptations) {
       super();
-      this.temptations = var1;
+      this.temptations = temptations;
    }
 
-   protected void doTick(ServerLevel var1, PathfinderMob var2) {
-      Brain var3 = var2.getBrain();
-      TargetingConditions var4 = TEMPT_TARGETING.copy().range((double)((float)var2.getAttributeValue(Attributes.TEMPT_RANGE)));
-      Stream var10000 = var1.players().stream().filter(EntitySelector.NO_SPECTATORS).filter((var3x) -> var4.test(var1, var2, var3x)).filter((var2x) -> this.playerHoldingTemptation(var2, var2x)).filter((var1x) -> !var2.hasPassenger(var1x));
-      Objects.requireNonNull(var2);
-      List var5 = (List)var10000.sorted(Comparator.comparingDouble(var2::distanceToSqr)).collect(Collectors.toList());
-      if (!var5.isEmpty()) {
-         Player var6 = (Player)var5.get(0);
-         var3.setMemory(MemoryModuleType.TEMPTING_PLAYER, var6);
+   protected void doTick(final ServerLevel level, final PathfinderMob body) {
+      Brain<?> brain = body.getBrain();
+      TargetingConditions targeting = TEMPT_TARGETING.copy().range((double)((float)body.getAttributeValue(Attributes.TEMPT_RANGE)));
+      Stream var10000 = level.players().stream().filter(EntitySelector.NO_SPECTATORS).filter((playerx) -> targeting.test(level, body, playerx)).filter((p) -> this.playerHoldingTemptation(body, p)).filter((playerx) -> !body.hasPassenger(playerx));
+      Objects.requireNonNull(body);
+      List<Player> players = (List)var10000.sorted(Comparator.comparingDouble(body::distanceToSqr)).collect(Collectors.toList());
+      if (!players.isEmpty()) {
+         Player player = (Player)players.get(0);
+         brain.setMemory(MemoryModuleType.TEMPTING_PLAYER, player);
       } else {
-         var3.eraseMemory(MemoryModuleType.TEMPTING_PLAYER);
+         brain.eraseMemory(MemoryModuleType.TEMPTING_PLAYER);
       }
 
    }
 
-   private boolean playerHoldingTemptation(PathfinderMob var1, Player var2) {
-      return this.isTemptation(var1, var2.getMainHandItem()) || this.isTemptation(var1, var2.getOffhandItem());
+   private boolean playerHoldingTemptation(final PathfinderMob mob, final Player player) {
+      return this.isTemptation(mob, player.getMainHandItem()) || this.isTemptation(mob, player.getOffhandItem());
    }
 
-   private boolean isTemptation(PathfinderMob var1, ItemStack var2) {
-      return this.temptations.test(var1, var2);
+   private boolean isTemptation(final PathfinderMob mob, final ItemStack itemStack) {
+      return this.temptations.test(mob, itemStack);
    }
 
    public Set<MemoryModuleType<?>> requires() {

@@ -11,20 +11,20 @@ public class LoggedPrintStream extends PrintStream {
    private static final Logger LOGGER = LogUtils.getLogger();
    protected final String name;
 
-   public LoggedPrintStream(String var1, OutputStream var2) {
-      super(var2, false, StandardCharsets.UTF_8);
-      this.name = var1;
+   public LoggedPrintStream(final String name, final OutputStream out) {
+      super(out, false, StandardCharsets.UTF_8);
+      this.name = name;
    }
 
-   public void println(@Nullable String var1) {
-      this.logLine(var1);
+   public void println(final @Nullable String string) {
+      this.logLine(string);
    }
 
-   public void println(@Nullable Object var1) {
-      this.logLine(String.valueOf(var1));
+   public void println(final @Nullable Object object) {
+      this.logLine(String.valueOf(object));
    }
 
-   protected void logLine(@Nullable String var1) {
-      LOGGER.info("[{}]: {}", this.name, var1);
+   protected void logLine(final @Nullable String out) {
+      LOGGER.info("[{}]: {}", this.name, out);
    }
 }

@@ -5,11 +5,11 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public interface DefaultedRegistry<T> extends Registry<T> {
-   @NonNull Identifier getKey(T var1);
+   @NonNull Identifier getKey(T thing);
 
-   @NonNull T getValue(@Nullable Identifier var1);
+   @NonNull T getValue(@Nullable Identifier key);
 
-   @NonNull T byId(int var1);
+   @NonNull T byId(int id);
 
    Identifier getDefaultKey();
 }

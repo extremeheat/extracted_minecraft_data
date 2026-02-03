@@ -14,36 +14,36 @@ public class FollowParentGoal extends Goal {
    private final double speedModifier;
    private int timeToRecalcPath;
 
-   public FollowParentGoal(Animal var1, double var2) {
+   public FollowParentGoal(final Animal animal, final double speedModifier) {
       super();
-      this.animal = var1;
-      this.speedModifier = var2;
+      this.animal = animal;
+      this.speedModifier = speedModifier;
    }
 
    public boolean canUse() {
       if (this.animal.getAge() >= 0) {
          return false;
       } else {
-         List var1 = this.animal.level().getEntitiesOfClass(this.animal.getClass(), this.animal.getBoundingBox().inflate(8.0, 4.0, 8.0));
-         Animal var2 = null;
-         double var3 = 1.7976931348623157E308;
+         List<? extends Animal> parents = this.animal.level().getEntitiesOfClass(this.animal.getClass(), this.animal.getBoundingBox().inflate(8.0, 4.0, 8.0));
+         Animal closest = null;
+         double closestDistSqr = 1.7976931348623157E308;
 
-         for(Animal var6 : var1) {
-            if (var6.getAge() >= 0) {
-               double var7 = this.animal.distanceToSqr(var6);
-               if (!(var7 > var3)) {
-                  var3 = var7;
-                  var2 = var6;
+         for(Animal parent : parents) {
+            if (parent.getAge() >= 0) {
+               double distSqr = this.animal.distanceToSqr(parent);
+               if (!(distSqr > closestDistSqr)) {
+                  closestDistSqr = distSqr;
+                  closest = parent;
                }
             }
          }
 
-         if (var2 == null) {
+         if (closest == null) {
             return false;
-         } else if (var3 < 9.0) {
+         } else if (closestDistSqr < 9.0) {
             return false;
          } else {
-            this.parent = var2;
+            this.parent = closest;
             return true;
          }
       }
@@ -55,8 +55,8 @@ public class FollowParentGoal extends Goal {
       } else if (!this.parent.isAlive()) {
          return false;
       } else {
-         double var1 = this.animal.distanceToSqr(this.parent);
-         return !(var1 < 9.0) && !(var1 > 256.0);
+         double distSqr = this.animal.distanceToSqr(this.parent);
+         return !(distSqr < 9.0) && !(distSqr > 256.0);
       }
    }
 

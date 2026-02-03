@@ -18,44 +18,44 @@ public abstract class AbstractButton extends AbstractWidget.WithInactiveMessage 
    private static final WidgetSprites SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/button"), Identifier.withDefaultNamespace("widget/button_disabled"), Identifier.withDefaultNamespace("widget/button_highlighted"));
    private @Nullable Supplier<Boolean> overrideRenderHighlightedSprite;
 
-   public AbstractButton(int var1, int var2, int var3, int var4, Component var5) {
-      super(var1, var2, var3, var4, var5);
+   public AbstractButton(final int x, final int y, final int width, final int height, final Component message) {
+      super(x, y, width, height, message);
    }
 
-   public abstract void onPress(InputWithModifiers var1);
+   public abstract void onPress(InputWithModifiers input);
 
-   protected final void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderContents(var1, var2, var3, var4);
-      this.handleCursor(var1);
+   protected final void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      this.renderContents(graphics, mouseX, mouseY, a);
+      this.handleCursor(graphics);
    }
 
-   protected abstract void renderContents(GuiGraphics var1, int var2, int var3, float var4);
+   protected abstract void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float a);
 
-   protected void renderDefaultLabel(ActiveTextCollector var1) {
-      this.renderScrollingStringOverContents(var1, this.getMessage(), 2);
+   protected void renderDefaultLabel(final ActiveTextCollector output) {
+      this.renderScrollingStringOverContents(output, this.getMessage(), 2);
    }
 
-   protected final void renderDefaultSprite(GuiGraphics var1) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.active, this.overrideRenderHighlightedSprite != null ? (Boolean)this.overrideRenderHighlightedSprite.get() : this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+   protected final void renderDefaultSprite(final GuiGraphics graphics) {
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.active, this.overrideRenderHighlightedSprite != null ? (Boolean)this.overrideRenderHighlightedSprite.get() : this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
    }
 
-   public void onClick(MouseButtonEvent var1, boolean var2) {
-      this.onPress(var1);
+   public void onClick(final MouseButtonEvent event, final boolean doubleClick) {
+      this.onPress(event);
    }
 
-   public boolean keyPressed(KeyEvent var1) {
+   public boolean keyPressed(final KeyEvent event) {
       if (!this.isActive()) {
          return false;
-      } else if (var1.isSelection()) {
+      } else if (event.isSelection()) {
          this.playDownSound(Minecraft.getInstance().getSoundManager());
-         this.onPress(var1);
+         this.onPress(event);
          return true;
       } else {
          return false;
       }
    }
 
-   public void setOverrideRenderHighlightedSprite(Supplier<Boolean> var1) {
-      this.overrideRenderHighlightedSprite = var1;
+   public void setOverrideRenderHighlightedSprite(final Supplier<Boolean> overrideRenderHighlightedSprite) {
+      this.overrideRenderHighlightedSprite = overrideRenderHighlightedSprite;
    }
 }

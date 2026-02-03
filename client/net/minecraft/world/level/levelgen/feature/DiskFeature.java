@@ -8,53 +8,53 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.DiskConfiguration;
 
 public class DiskFeature extends Feature<DiskConfiguration> {
-   public DiskFeature(Codec<DiskConfiguration> var1) {
-      super(var1);
+   public DiskFeature(final Codec<DiskConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<DiskConfiguration> var1) {
-      DiskConfiguration var2 = (DiskConfiguration)var1.config();
-      BlockPos var3 = var1.origin();
-      WorldGenLevel var4 = var1.level();
-      RandomSource var5 = var1.random();
-      boolean var6 = false;
-      int var7 = var3.getY();
-      int var8 = var7 + var2.halfHeight();
-      int var9 = var7 - var2.halfHeight() - 1;
-      int var10 = var2.radius().sample(var5);
-      BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
+   public boolean place(final FeaturePlaceContext<DiskConfiguration> context) {
+      DiskConfiguration config = context.config();
+      BlockPos origin = context.origin();
+      WorldGenLevel level = context.level();
+      RandomSource random = context.random();
+      boolean placedAny = false;
+      int originY = origin.getY();
+      int top = originY + config.halfHeight();
+      int bottom = originY - config.halfHeight() - 1;
+      int r = config.radius().sample(random);
+      BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
-      for(BlockPos var13 : BlockPos.betweenClosed(var3.offset(-var10, 0, -var10), var3.offset(var10, 0, var10))) {
-         int var14 = var13.getX() - var3.getX();
-         int var15 = var13.getZ() - var3.getZ();
-         if (var14 * var14 + var15 * var15 <= var10 * var10) {
-            var6 |= this.placeColumn(var2, var4, var5, var8, var9, var11.set(var13));
+      for(BlockPos columnPos : BlockPos.betweenClosed(origin.offset(-r, 0, -r), origin.offset(r, 0, r))) {
+         int xd = columnPos.getX() - origin.getX();
+         int zd = columnPos.getZ() - origin.getZ();
+         if (xd * xd + zd * zd <= r * r) {
+            placedAny |= this.placeColumn(config, level, random, top, bottom, mutablePos.set(columnPos));
          }
       }
 
-      return var6;
+      return placedAny;
    }
 
-   protected boolean placeColumn(DiskConfiguration var1, WorldGenLevel var2, RandomSource var3, int var4, int var5, BlockPos.MutableBlockPos var6) {
-      boolean var7 = false;
-      boolean var8 = false;
+   protected boolean placeColumn(final DiskConfiguration config, final WorldGenLevel level, final RandomSource random, final int top, final int bottom, final BlockPos.MutableBlockPos pos) {
+      boolean placedAny = false;
+      boolean placedAbove = false;
 
-      for(int var9 = var4; var9 > var5; --var9) {
-         var6.setY(var9);
-         if (var1.target().test(var2, var6)) {
-            BlockState var10 = var1.stateProvider().getState(var2, var3, var6);
-            var2.setBlock(var6, var10, 2);
-            if (!var8) {
-               this.markAboveForPostProcessing(var2, var6);
+      for(int y = top; y > bottom; --y) {
+         pos.setY(y);
+         if (config.target().test(level, pos)) {
+            BlockState state = config.stateProvider().getState(level, random, pos);
+            level.setBlock(pos, state, 2);
+            if (!placedAbove) {
+               this.markAboveForPostProcessing(level, pos);
             }
 
-            var7 = true;
-            var8 = true;
+            placedAny = true;
+            placedAbove = true;
          } else {
-            var8 = false;
+            placedAbove = false;
          }
       }
 
-      return var7;
+      return placedAny;
    }
 }

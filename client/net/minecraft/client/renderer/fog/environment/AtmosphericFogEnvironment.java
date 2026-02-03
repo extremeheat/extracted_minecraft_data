@@ -27,77 +27,77 @@ public class AtmosphericFogEnvironment extends FogEnvironment {
       super();
    }
 
-   public int getBaseColor(ClientLevel var1, Camera var2, int var3, float var4) {
-      int var5 = (Integer)var2.attributeProbe().getValue(EnvironmentAttributes.FOG_COLOR, var4);
-      if (var3 >= 4) {
-         float var6 = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.SUN_ANGLE, var4) * 0.017453292F;
-         float var7 = Mth.sin((double)var6) > 0.0F ? -1.0F : 1.0F;
-         PanoramicScreenshotParameters var8 = Minecraft.getInstance().gameRenderer.getPanoramicScreenshotParameters();
-         Vector3fc var9 = var8 != null ? var8.forwardVector() : var2.forwardVector();
-         float var10 = var9.dot(var7, 0.0F, 0.0F);
-         if (var10 > 0.0F) {
-            int var11 = (Integer)var2.attributeProbe().getValue(EnvironmentAttributes.SUNRISE_SUNSET_COLOR, var4);
-            float var12 = ARGB.alphaFloat(var11);
-            if (var12 > 0.0F) {
-               var5 = ARGB.srgbLerp(var10 * var12, var5, ARGB.opaque(var11));
+   public int getBaseColor(final ClientLevel level, final Camera camera, final int renderDistance, final float partialTicks) {
+      int fogColor = (Integer)camera.attributeProbe().getValue(EnvironmentAttributes.FOG_COLOR, partialTicks);
+      if (renderDistance >= 4) {
+         float sunAngle = (Float)camera.attributeProbe().getValue(EnvironmentAttributes.SUN_ANGLE, partialTicks) * 0.017453292F;
+         float sunX = Mth.sin((double)sunAngle) > 0.0F ? -1.0F : 1.0F;
+         PanoramicScreenshotParameters panoramicScreenshot = Minecraft.getInstance().gameRenderer.getPanoramicScreenshotParameters();
+         Vector3fc forwardVector = panoramicScreenshot != null ? panoramicScreenshot.forwardVector() : camera.forwardVector();
+         float lookingAtTheSunFactor = forwardVector.dot(sunX, 0.0F, 0.0F);
+         if (lookingAtTheSunFactor > 0.0F) {
+            int color = (Integer)camera.attributeProbe().getValue(EnvironmentAttributes.SUNRISE_SUNSET_COLOR, partialTicks);
+            float alpha = ARGB.alphaFloat(color);
+            if (alpha > 0.0F) {
+               fogColor = ARGB.srgbLerp(lookingAtTheSunFactor * alpha, fogColor, ARGB.opaque(color));
             }
          }
       }
 
-      int var14 = (Integer)var2.attributeProbe().getValue(EnvironmentAttributes.SKY_COLOR, var4);
-      var14 = applyWeatherDarken(var14, var1.getRainLevel(var4), var1.getThunderLevel(var4));
-      float var16 = Math.min((Float)var2.attributeProbe().getValue(EnvironmentAttributes.SKY_FOG_END_DISTANCE, var4) / 16.0F, (float)var3);
-      float var17 = Mth.clampedLerp(var16 / 32.0F, 0.25F, 1.0F);
-      var17 = 1.0F - (float)Math.pow((double)var17, 0.25);
-      var5 = ARGB.srgbLerp(var17, var5, var14);
-      return var5;
+      int skyColor = (Integer)camera.attributeProbe().getValue(EnvironmentAttributes.SKY_COLOR, partialTicks);
+      skyColor = applyWeatherDarken(skyColor, level.getRainLevel(partialTicks), level.getThunderLevel(partialTicks));
+      float skyFogEnd = Math.min((Float)camera.attributeProbe().getValue(EnvironmentAttributes.SKY_FOG_END_DISTANCE, partialTicks) / 16.0F, (float)renderDistance);
+      float skyColorMixFactor = Mth.clampedLerp(skyFogEnd / 32.0F, 0.25F, 1.0F);
+      skyColorMixFactor = 1.0F - (float)Math.pow((double)skyColorMixFactor, 0.25);
+      fogColor = ARGB.srgbLerp(skyColorMixFactor, fogColor, skyColor);
+      return fogColor;
    }
 
-   private static int applyWeatherDarken(int var0, float var1, float var2) {
-      if (var1 > 0.0F) {
-         float var3 = 1.0F - var1 * 0.5F;
-         float var4 = 1.0F - var1 * 0.4F;
-         var0 = ARGB.scaleRGB(var0, var3, var3, var4);
+   private static int applyWeatherDarken(int color, final float rainLevel, final float thunderLevel) {
+      if (rainLevel > 0.0F) {
+         float rainColorModifier = 1.0F - rainLevel * 0.5F;
+         float rainBlueColorModifier = 1.0F - rainLevel * 0.4F;
+         color = ARGB.scaleRGB(color, rainColorModifier, rainColorModifier, rainBlueColorModifier);
       }
 
-      if (var2 > 0.0F) {
-         var0 = ARGB.scaleRGB(var0, 1.0F - var2 * 0.5F);
+      if (thunderLevel > 0.0F) {
+         color = ARGB.scaleRGB(color, 1.0F - thunderLevel * 0.5F);
       }
 
-      return var0;
+      return color;
    }
 
-   public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {
-      this.updateRainFogState(var2, var3, var5);
-      float var6 = var5.getGameTimeDeltaPartialTick(false);
-      var1.environmentalStart = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.FOG_START_DISTANCE, var6);
-      var1.environmentalEnd = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.FOG_END_DISTANCE, var6);
-      var1.environmentalStart += -160.0F * this.rainFogMultiplier;
-      float var7 = Math.min(96.0F, var1.environmentalEnd);
-      var1.environmentalEnd = Math.max(var7, var1.environmentalEnd + -256.0F * this.rainFogMultiplier);
-      var1.skyEnd = Math.min(var4, (Float)var2.attributeProbe().getValue(EnvironmentAttributes.SKY_FOG_END_DISTANCE, var6));
-      var1.cloudEnd = Math.min((float)((Integer)Minecraft.getInstance().options.cloudRange().get() * 16), (Float)var2.attributeProbe().getValue(EnvironmentAttributes.CLOUD_FOG_END_DISTANCE, var6));
+   public void setupFog(final FogData fog, final Camera camera, final ClientLevel level, final float renderDistance, final DeltaTracker deltaTracker) {
+      this.updateRainFogState(camera, level, deltaTracker);
+      float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
+      fog.environmentalStart = (Float)camera.attributeProbe().getValue(EnvironmentAttributes.FOG_START_DISTANCE, partialTicks);
+      fog.environmentalEnd = (Float)camera.attributeProbe().getValue(EnvironmentAttributes.FOG_END_DISTANCE, partialTicks);
+      fog.environmentalStart += -160.0F * this.rainFogMultiplier;
+      float minRainFogEnd = Math.min(96.0F, fog.environmentalEnd);
+      fog.environmentalEnd = Math.max(minRainFogEnd, fog.environmentalEnd + -256.0F * this.rainFogMultiplier);
+      fog.skyEnd = Math.min(renderDistance, (Float)camera.attributeProbe().getValue(EnvironmentAttributes.SKY_FOG_END_DISTANCE, partialTicks));
+      fog.cloudEnd = Math.min((float)((Integer)Minecraft.getInstance().options.cloudRange().get() * 16), (Float)camera.attributeProbe().getValue(EnvironmentAttributes.CLOUD_FOG_END_DISTANCE, partialTicks));
       if (Minecraft.getInstance().gui.getBossOverlay().shouldCreateWorldFog()) {
-         var1.environmentalStart = Math.min(var1.environmentalStart, 10.0F);
-         var1.environmentalEnd = Math.min(var1.environmentalEnd, 96.0F);
-         var1.skyEnd = var1.environmentalEnd;
-         var1.cloudEnd = var1.environmentalEnd;
+         fog.environmentalStart = Math.min(fog.environmentalStart, 10.0F);
+         fog.environmentalEnd = Math.min(fog.environmentalEnd, 96.0F);
+         fog.skyEnd = fog.environmentalEnd;
+         fog.cloudEnd = fog.environmentalEnd;
       }
 
    }
 
-   private void updateRainFogState(Camera var1, ClientLevel var2, DeltaTracker var3) {
-      BlockPos var4 = var1.blockPosition();
-      Biome var5 = (Biome)var2.getBiome(var4).value();
-      float var6 = var3.getGameTimeDeltaTicks();
-      float var7 = var3.getGameTimeDeltaPartialTick(false);
-      boolean var8 = var5.hasPrecipitation();
-      float var9 = Mth.clamp(((float)var2.getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(var4) - 8.0F) / 7.0F, 0.0F, 1.0F);
-      float var10 = var2.getRainLevel(var7) * var9 * (var8 ? 1.0F : 0.5F);
-      this.rainFogMultiplier += (var10 - this.rainFogMultiplier) * var6 * 0.2F;
+   private void updateRainFogState(final Camera camera, final ClientLevel level, final DeltaTracker deltaTracker) {
+      BlockPos blockPos = camera.blockPosition();
+      Biome biome = (Biome)level.getBiome(blockPos).value();
+      float deltaTicks = deltaTracker.getGameTimeDeltaTicks();
+      float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
+      boolean rainsInBiome = biome.hasPrecipitation();
+      float skyLightLevelMultiplier = Mth.clamp(((float)level.getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(blockPos) - 8.0F) / 7.0F, 0.0F, 1.0F);
+      float targetRainFogMultiplier = level.getRainLevel(partialTicks) * skyLightLevelMultiplier * (rainsInBiome ? 1.0F : 0.5F);
+      this.rainFogMultiplier += (targetRainFogMultiplier - this.rainFogMultiplier) * deltaTicks * 0.2F;
    }
 
-   public boolean isApplicable(@Nullable FogType var1, Entity var2) {
-      return var1 == FogType.ATMOSPHERIC;
+   public boolean isApplicable(final @Nullable FogType fogType, final Entity entity) {
+      return fogType == FogType.ATMOSPHERIC;
    }
 }

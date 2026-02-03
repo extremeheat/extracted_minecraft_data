@@ -10,15 +10,15 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public record Constant(int value) implements ItemTintSource {
-   public static final MapCodec<Constant> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("value").forGetter(Constant::value)).apply(var0, Constant::new));
+   public static final MapCodec<Constant> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("value").forGetter(Constant::value)).apply(i, Constant::new));
 
-   public Constant(int var1) {
+   public Constant(int value) {
       super();
-      var1 = ARGB.opaque(var1);
-      this.value = var1;
+      value = ARGB.opaque(value);
+      this.value = value;
    }
 
-   public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
+   public int calculate(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner) {
       return this.value;
    }
 

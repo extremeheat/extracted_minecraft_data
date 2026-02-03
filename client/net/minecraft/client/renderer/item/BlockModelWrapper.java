@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.client.color.item.ItemTintSource;
@@ -34,12 +35,12 @@ import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class BlockModelWrapper implements ItemModel {
-   private static final Function<ItemStack, RenderType> ITEM_RENDER_TYPE_GETTER = (var0) -> Sheets.translucentItemSheet();
-   private static final Function<ItemStack, RenderType> BLOCK_RENDER_TYPE_GETTER = (var0) -> {
-      Item var2 = var0.getItem();
-      if (var2 instanceof BlockItem var1) {
-         ChunkSectionLayer var3 = ItemBlockRenderTypes.getChunkRenderType(var1.getBlock().defaultBlockState());
-         if (var3 != ChunkSectionLayer.TRANSLUCENT) {
+   private static final Function<ItemStack, RenderType> ITEM_RENDER_TYPE_GETTER = (stack) -> Sheets.translucentItemSheet();
+   private static final Function<ItemStack, RenderType> BLOCK_RENDER_TYPE_GETTER = (stack) -> {
+      Item patt0$temp = stack.getItem();
+      if (patt0$temp instanceof BlockItem blockItem) {
+         ChunkSectionLayer blockLayer = ItemBlockRenderTypes.getChunkRenderType(blockItem.getBlock().defaultBlockState());
+         if (blockLayer != ChunkSectionLayer.TRANSLUCENT) {
             return Sheets.cutoutBlockSheet();
          }
       }
@@ -53,117 +54,115 @@ public class BlockModelWrapper implements ItemModel {
    private final boolean animated;
    private final Function<ItemStack, RenderType> renderType;
 
-   BlockModelWrapper(List<ItemTintSource> var1, List<BakedQuad> var2, ModelRenderProperties var3, Function<ItemStack, RenderType> var4) {
+   private BlockModelWrapper(final List<ItemTintSource> tints, final List<BakedQuad> quads, final ModelRenderProperties properties, final Function<ItemStack, RenderType> renderType) {
       super();
-      this.tints = var1;
-      this.quads = var2;
-      this.properties = var3;
-      this.renderType = var4;
+      this.tints = tints;
+      this.quads = quads;
+      this.properties = properties;
+      this.renderType = renderType;
       this.extents = Suppliers.memoize(() -> computeExtents(this.quads));
-      boolean var5 = false;
+      boolean animated = false;
 
-      for(BakedQuad var7 : var2) {
-         if (var7.sprite().contents().isAnimated()) {
-            var5 = true;
+      for(BakedQuad quad : quads) {
+         if (quad.sprite().contents().isAnimated()) {
+            animated = true;
             break;
          }
       }
 
-      this.animated = var5;
+      this.animated = animated;
    }
 
-   public static Vector3fc[] computeExtents(List<BakedQuad> var0) {
-      HashSet var1 = new HashSet();
+   public static Vector3fc[] computeExtents(final List<BakedQuad> quads) {
+      Set<Vector3fc> result = new HashSet();
 
-      for(BakedQuad var3 : var0) {
-         for(int var4 = 0; var4 < 4; ++var4) {
-            var1.add(var3.position(var4));
+      for(BakedQuad quad : quads) {
+         for(int vertex = 0; vertex < 4; ++vertex) {
+            result.add(quad.position(vertex));
          }
       }
 
-      return (Vector3fc[])var1.toArray((var0x) -> new Vector3fc[var0x]);
+      return (Vector3fc[])result.toArray((x$0) -> new Vector3fc[x$0]);
    }
 
-   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
-      var1.appendModelIdentityElement(this);
-      ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
-      if (var2.hasFoil()) {
-         ItemStackRenderState.FoilType var9 = hasSpecialAnimatedTexture(var2) ? ItemStackRenderState.FoilType.SPECIAL : ItemStackRenderState.FoilType.STANDARD;
-         var8.setFoilType(var9);
-         var1.setAnimated();
-         var1.appendModelIdentityElement(var9);
+   public void update(final ItemStackRenderState output, final ItemStack item, final ItemModelResolver resolver, final ItemDisplayContext displayContext, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      output.appendModelIdentityElement(this);
+      ItemStackRenderState.LayerRenderState layer = output.newLayer();
+      if (item.hasFoil()) {
+         ItemStackRenderState.FoilType foilType = hasSpecialAnimatedTexture(item) ? ItemStackRenderState.FoilType.SPECIAL : ItemStackRenderState.FoilType.STANDARD;
+         layer.setFoilType(foilType);
+         output.setAnimated();
+         output.appendModelIdentityElement(foilType);
       }
 
-      int var13 = this.tints.size();
-      int[] var10 = var8.prepareTintLayers(var13);
+      int activeTints = this.tints.size();
+      int[] tintLayers = layer.prepareTintLayers(activeTints);
 
-      for(int var11 = 0; var11 < var13; ++var11) {
-         int var12 = ((ItemTintSource)this.tints.get(var11)).calculate(var2, var5, var6 == null ? null : var6.asLivingEntity());
-         var10[var11] = var12;
-         var1.appendModelIdentityElement(var12);
+      for(int i = 0; i < activeTints; ++i) {
+         int tint = ((ItemTintSource)this.tints.get(i)).calculate(item, level, owner == null ? null : owner.asLivingEntity());
+         tintLayers[i] = tint;
+         output.appendModelIdentityElement(tint);
       }
 
-      var8.setExtents(this.extents);
-      var8.setRenderType((RenderType)this.renderType.apply(var2));
-      this.properties.applyToLayer(var8, var4);
-      var8.prepareQuadList().addAll(this.quads);
+      layer.setExtents(this.extents);
+      layer.setRenderType((RenderType)this.renderType.apply(item));
+      this.properties.applyToLayer(layer, displayContext);
+      layer.prepareQuadList().addAll(this.quads);
       if (this.animated) {
-         var1.setAnimated();
+         output.setAnimated();
       }
 
    }
 
-   static Function<ItemStack, RenderType> detectRenderType(List<BakedQuad> var0) {
-      Iterator var1 = var0.iterator();
-      if (!var1.hasNext()) {
+   private static Function<ItemStack, RenderType> detectRenderType(final List<BakedQuad> quads) {
+      Iterator<BakedQuad> quadIterator = quads.iterator();
+      if (!quadIterator.hasNext()) {
          return ITEM_RENDER_TYPE_GETTER;
       } else {
-         Identifier var2 = ((BakedQuad)var1.next()).sprite().atlasLocation();
+         Identifier expectedAtlas = ((BakedQuad)quadIterator.next()).sprite().atlasLocation();
 
-         while(var1.hasNext()) {
-            BakedQuad var3 = (BakedQuad)var1.next();
-            Identifier var4 = var3.sprite().atlasLocation();
-            if (!var4.equals(var2)) {
-               String var10002 = String.valueOf(var2);
-               throw new IllegalStateException("Multiple atlases used in model, expected " + var10002 + ", but also got " + String.valueOf(var4));
+         while(quadIterator.hasNext()) {
+            BakedQuad quad = (BakedQuad)quadIterator.next();
+            Identifier quadAtlas = quad.sprite().atlasLocation();
+            if (!quadAtlas.equals(expectedAtlas)) {
+               String var10002 = String.valueOf(expectedAtlas);
+               throw new IllegalStateException("Multiple atlases used in model, expected " + var10002 + ", but also got " + String.valueOf(quadAtlas));
             }
          }
 
-         if (var2.equals(TextureAtlas.LOCATION_ITEMS)) {
+         if (expectedAtlas.equals(TextureAtlas.LOCATION_ITEMS)) {
             return ITEM_RENDER_TYPE_GETTER;
-         } else if (var2.equals(TextureAtlas.LOCATION_BLOCKS)) {
+         } else if (expectedAtlas.equals(TextureAtlas.LOCATION_BLOCKS)) {
             return BLOCK_RENDER_TYPE_GETTER;
          } else {
-            throw new IllegalArgumentException("Atlas " + String.valueOf(var2) + " can't be usef for item models");
+            throw new IllegalArgumentException("Atlas " + String.valueOf(expectedAtlas) + " can't be usef for item models");
          }
       }
    }
 
-   private static boolean hasSpecialAnimatedTexture(ItemStack var0) {
-      return var0.is(ItemTags.COMPASSES) || var0.is(Items.CLOCK);
+   private static boolean hasSpecialAnimatedTexture(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.COMPASSES) || itemStack.is(Items.CLOCK);
    }
 
    public static record Unbaked(Identifier model, List<ItemTintSource> tints) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("model").forGetter(Unbaked::model), ItemTintSources.CODEC.listOf().optionalFieldOf("tints", List.of()).forGetter(Unbaked::tints)).apply(var0, Unbaked::new));
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("model").forGetter(Unbaked::model), ItemTintSources.CODEC.listOf().optionalFieldOf("tints", List.of()).forGetter(Unbaked::tints)).apply(i, Unbaked::new));
 
-      public Unbaked(Identifier var1, List<ItemTintSource> var2) {
+      public Unbaked {
          super();
-         this.model = var1;
-         this.tints = var2;
       }
 
-      public void resolveDependencies(ResolvableModel.Resolver var1) {
-         var1.markDependency(this.model);
+      public void resolveDependencies(final ResolvableModel.Resolver resolver) {
+         resolver.markDependency(this.model);
       }
 
-      public ItemModel bake(ItemModel.BakingContext var1) {
-         ModelBaker var2 = var1.blockModelBaker();
-         ResolvedModel var3 = var2.getModel(this.model);
-         TextureSlots var4 = var3.getTopTextureSlots();
-         List var5 = var3.bakeTopGeometry(var4, var2, BlockModelRotation.IDENTITY).getAll();
-         ModelRenderProperties var6 = ModelRenderProperties.fromResolvedModel(var2, var3, var4);
-         Function var7 = BlockModelWrapper.detectRenderType(var5);
-         return new BlockModelWrapper(this.tints, var5, var6, var7);
+      public ItemModel bake(final ItemModel.BakingContext context) {
+         ModelBaker baker = context.blockModelBaker();
+         ResolvedModel resolvedModel = baker.getModel(this.model);
+         TextureSlots textureSlots = resolvedModel.getTopTextureSlots();
+         List<BakedQuad> quads = resolvedModel.bakeTopGeometry(textureSlots, baker, BlockModelRotation.IDENTITY).getAll();
+         ModelRenderProperties properties = ModelRenderProperties.fromResolvedModel(baker, resolvedModel, textureSlots);
+         Function<ItemStack, RenderType> renderTypeGetter = BlockModelWrapper.detectRenderType(quads);
+         return new BlockModelWrapper(this.tints, quads, properties, renderTypeGetter);
       }
 
       public MapCodec<Unbaked> type() {

@@ -14,21 +14,21 @@ public abstract class Button extends AbstractButton {
    public static final int BIG_WIDTH = 200;
    public static final int DEFAULT_HEIGHT = 20;
    public static final int DEFAULT_SPACING = 8;
-   protected static final CreateNarration DEFAULT_NARRATION = (var0) -> (MutableComponent)var0.get();
+   protected static final CreateNarration DEFAULT_NARRATION = (defaultNarrationSupplier) -> (MutableComponent)defaultNarrationSupplier.get();
    protected final OnPress onPress;
    protected final CreateNarration createNarration;
 
-   public static Builder builder(Component var0, OnPress var1) {
-      return new Builder(var0, var1);
+   public static Builder builder(final Component message, final OnPress onPress) {
+      return new Builder(message, onPress);
    }
 
-   protected Button(int var1, int var2, int var3, int var4, Component var5, OnPress var6, CreateNarration var7) {
-      super(var1, var2, var3, var4, var5);
-      this.onPress = var6;
-      this.createNarration = var7;
+   protected Button(final int x, final int y, final int width, final int height, final Component message, final OnPress onPress, final CreateNarration createNarration) {
+      super(x, y, width, height, message);
+      this.onPress = onPress;
+      this.createNarration = createNarration;
    }
 
-   public void onPress(InputWithModifiers var1) {
+   public void onPress(final InputWithModifiers input) {
       this.onPress.onPress(this);
    }
 
@@ -36,18 +36,18 @@ public abstract class Button extends AbstractButton {
       return this.createNarration.createNarrationMessage(() -> super.createNarrationMessage());
    }
 
-   public void updateWidgetNarration(NarrationElementOutput var1) {
-      this.defaultButtonNarrationText(var1);
+   public void updateWidgetNarration(final NarrationElementOutput output) {
+      this.defaultButtonNarrationText(output);
    }
 
    public static class Plain extends Button {
-      protected Plain(int var1, int var2, int var3, int var4, Component var5, OnPress var6, CreateNarration var7) {
-         super(var1, var2, var3, var4, var5, var6, var7);
+      protected Plain(final int x, final int y, final int width, final int height, final Component message, final OnPress onPress, final CreateNarration createNarration) {
+         super(x, y, width, height, message, onPress, createNarration);
       }
 
-      protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
-         this.renderDefaultSprite(var1);
-         this.renderDefaultLabel(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
+      protected void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+         this.renderDefaultSprite(graphics);
+         this.renderDefaultLabel(graphics.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
       }
    }
 
@@ -61,56 +61,56 @@ public abstract class Button extends AbstractButton {
       private int height = 20;
       private CreateNarration createNarration;
 
-      public Builder(Component var1, OnPress var2) {
+      public Builder(final Component message, final OnPress onPress) {
          super();
          this.createNarration = Button.DEFAULT_NARRATION;
-         this.message = var1;
-         this.onPress = var2;
+         this.message = message;
+         this.onPress = onPress;
       }
 
-      public Builder pos(int var1, int var2) {
-         this.x = var1;
-         this.y = var2;
+      public Builder pos(final int x, final int y) {
+         this.x = x;
+         this.y = y;
          return this;
       }
 
-      public Builder width(int var1) {
-         this.width = var1;
+      public Builder width(final int width) {
+         this.width = width;
          return this;
       }
 
-      public Builder size(int var1, int var2) {
-         this.width = var1;
-         this.height = var2;
+      public Builder size(final int width, final int height) {
+         this.width = width;
+         this.height = height;
          return this;
       }
 
-      public Builder bounds(int var1, int var2, int var3, int var4) {
-         return this.pos(var1, var2).size(var3, var4);
+      public Builder bounds(final int x, final int y, final int width, final int height) {
+         return this.pos(x, y).size(width, height);
       }
 
-      public Builder tooltip(@Nullable Tooltip var1) {
-         this.tooltip = var1;
+      public Builder tooltip(final @Nullable Tooltip tooltip) {
+         this.tooltip = tooltip;
          return this;
       }
 
-      public Builder createNarration(CreateNarration var1) {
-         this.createNarration = var1;
+      public Builder createNarration(final CreateNarration createNarration) {
+         this.createNarration = createNarration;
          return this;
       }
 
       public Button build() {
-         Plain var1 = new Plain(this.x, this.y, this.width, this.height, this.message, this.onPress, this.createNarration);
-         ((Button)var1).setTooltip(this.tooltip);
-         return var1;
+         Button button = new Plain(this.x, this.y, this.width, this.height, this.message, this.onPress, this.createNarration);
+         button.setTooltip(this.tooltip);
+         return button;
       }
    }
 
    public interface CreateNarration {
-      MutableComponent createNarrationMessage(Supplier<MutableComponent> var1);
+      MutableComponent createNarrationMessage(Supplier<MutableComponent> defaultNarrationSupplier);
    }
 
    public interface OnPress {
-      void onPress(Button var1);
+      void onPress(final Button button);
    }
 }

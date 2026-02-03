@@ -10,17 +10,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundDisconnectPacket(Component reason) implements Packet<ClientCommonPacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundDisconnectPacket> STREAM_CODEC;
 
-   public ClientboundDisconnectPacket(Component var1) {
+   public ClientboundDisconnectPacket {
       super();
-      this.reason = var1;
    }
 
    public PacketType<ClientboundDisconnectPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_DISCONNECT;
    }
 
-   public void handle(ClientCommonPacketListener var1) {
-      var1.handleDisconnect(this);
+   public void handle(final ClientCommonPacketListener listener) {
+      listener.handleDisconnect(this);
    }
 
    static {

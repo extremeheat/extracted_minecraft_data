@@ -3,6 +3,7 @@ package net.minecraft.world.entity.animal.cow;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import net.minecraft.core.ClientAsset;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -16,20 +17,18 @@ import net.minecraft.world.entity.variant.SpawnCondition;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 
-public record CowVariant(ModelAndTexture<ModelType> modelAndTexture, SpawnPrioritySelectors spawnConditions) implements PriorityProvider<SpawnContext, SpawnCondition> {
-   public static final Codec<CowVariant> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ModelAndTexture.codec(CowVariant.ModelType.CODEC, CowVariant.ModelType.NORMAL).forGetter(CowVariant::modelAndTexture), SpawnPrioritySelectors.CODEC.fieldOf("spawn_conditions").forGetter(CowVariant::spawnConditions)).apply(var0, CowVariant::new));
-   public static final Codec<CowVariant> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ModelAndTexture.codec(CowVariant.ModelType.CODEC, CowVariant.ModelType.NORMAL).forGetter(CowVariant::modelAndTexture)).apply(var0, CowVariant::new));
+public record CowVariant(ModelAndTexture<ModelType> modelAndTexture, ClientAsset.ResourceTexture babyTexture, SpawnPrioritySelectors spawnConditions) implements PriorityProvider<SpawnContext, SpawnCondition> {
+   public static final Codec<CowVariant> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(ModelAndTexture.codec(CowVariant.ModelType.CODEC, CowVariant.ModelType.NORMAL).forGetter(CowVariant::modelAndTexture), ClientAsset.ResourceTexture.CODEC.fieldOf("baby_asset_id").forGetter(CowVariant::babyTexture), SpawnPrioritySelectors.CODEC.fieldOf("spawn_conditions").forGetter(CowVariant::spawnConditions)).apply(i, CowVariant::new));
+   public static final Codec<CowVariant> NETWORK_CODEC = RecordCodecBuilder.create((i) -> i.group(ModelAndTexture.codec(CowVariant.ModelType.CODEC, CowVariant.ModelType.NORMAL).forGetter(CowVariant::modelAndTexture), ClientAsset.ResourceTexture.CODEC.fieldOf("baby_asset_id").forGetter(CowVariant::babyTexture)).apply(i, CowVariant::new));
    public static final Codec<Holder<CowVariant>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<CowVariant>> STREAM_CODEC;
 
-   private CowVariant(ModelAndTexture<ModelType> var1) {
-      this(var1, SpawnPrioritySelectors.EMPTY);
+   private CowVariant(final ModelAndTexture<ModelType> assetInfo, final ClientAsset.ResourceTexture babyTexture) {
+      this(assetInfo, babyTexture, SpawnPrioritySelectors.EMPTY);
    }
 
-   public CowVariant(ModelAndTexture<ModelType> var1, SpawnPrioritySelectors var2) {
+   public CowVariant {
       super();
-      this.modelAndTexture = var1;
-      this.spawnConditions = var2;
    }
 
    public List<PriorityProvider.Selector<SpawnContext, SpawnCondition>> selectors() {
@@ -49,8 +48,8 @@ public record CowVariant(ModelAndTexture<ModelType> modelAndTexture, SpawnPriori
       public static final Codec<ModelType> CODEC = StringRepresentable.<ModelType>fromEnum(ModelType::values);
       private final String name;
 
-      private ModelType(final String var3) {
-         this.name = var3;
+      private ModelType(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {

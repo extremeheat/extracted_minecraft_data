@@ -9,26 +9,26 @@ public class ServerboundPongPacket implements Packet<ServerCommonPacketListener>
    public static final StreamCodec<FriendlyByteBuf, ServerboundPongPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundPongPacket>codec(ServerboundPongPacket::write, ServerboundPongPacket::new);
    private final int id;
 
-   public ServerboundPongPacket(int var1) {
+   public ServerboundPongPacket(final int id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
-   private ServerboundPongPacket(FriendlyByteBuf var1) {
+   private ServerboundPongPacket(final FriendlyByteBuf input) {
       super();
-      this.id = var1.readInt();
+      this.id = input.readInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeInt(this.id);
+   private void write(final FriendlyByteBuf output) {
+      output.writeInt(this.id);
    }
 
    public PacketType<ServerboundPongPacket> type() {
       return CommonPacketTypes.SERVERBOUND_PONG;
    }
 
-   public void handle(ServerCommonPacketListener var1) {
-      var1.handlePong(this);
+   public void handle(final ServerCommonPacketListener listener) {
+      listener.handlePong(this);
    }
 
    public int getId() {

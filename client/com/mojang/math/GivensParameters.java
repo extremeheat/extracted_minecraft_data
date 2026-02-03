@@ -5,37 +5,35 @@ import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 
 public record GivensParameters(float sinHalf, float cosHalf) {
-   public GivensParameters(float var1, float var2) {
+   public GivensParameters {
       super();
-      this.sinHalf = var1;
-      this.cosHalf = var2;
    }
 
-   public static GivensParameters fromUnnormalized(float var0, float var1) {
-      float var2 = Math.invsqrt(var0 * var0 + var1 * var1);
-      return new GivensParameters(var2 * var0, var2 * var1);
+   public static GivensParameters fromUnnormalized(final float sinHalf, final float cosHalf) {
+      float w = Math.invsqrt(sinHalf * sinHalf + cosHalf * cosHalf);
+      return new GivensParameters(w * sinHalf, w * cosHalf);
    }
 
-   public static GivensParameters fromPositiveAngle(float var0) {
-      float var1 = Math.sin(var0 / 2.0F);
-      float var2 = Math.cosFromSin(var1, var0 / 2.0F);
-      return new GivensParameters(var1, var2);
+   public static GivensParameters fromPositiveAngle(final float angle) {
+      float sin = Math.sin(angle / 2.0F);
+      float cos = Math.cosFromSin(sin, angle / 2.0F);
+      return new GivensParameters(sin, cos);
    }
 
    public GivensParameters inverse() {
       return new GivensParameters(-this.sinHalf, this.cosHalf);
    }
 
-   public Quaternionf aroundX(Quaternionf var1) {
-      return var1.set(this.sinHalf, 0.0F, 0.0F, this.cosHalf);
+   public Quaternionf aroundX(final Quaternionf input) {
+      return input.set(this.sinHalf, 0.0F, 0.0F, this.cosHalf);
    }
 
-   public Quaternionf aroundY(Quaternionf var1) {
-      return var1.set(0.0F, this.sinHalf, 0.0F, this.cosHalf);
+   public Quaternionf aroundY(final Quaternionf input) {
+      return input.set(0.0F, this.sinHalf, 0.0F, this.cosHalf);
    }
 
-   public Quaternionf aroundZ(Quaternionf var1) {
-      return var1.set(0.0F, 0.0F, this.sinHalf, this.cosHalf);
+   public Quaternionf aroundZ(final Quaternionf input) {
+      return input.set(0.0F, 0.0F, this.sinHalf, this.cosHalf);
    }
 
    public float cos() {
@@ -46,48 +44,48 @@ public record GivensParameters(float sinHalf, float cosHalf) {
       return 2.0F * this.sinHalf * this.cosHalf;
    }
 
-   public Matrix3f aroundX(Matrix3f var1) {
-      var1.m01 = 0.0F;
-      var1.m02 = 0.0F;
-      var1.m10 = 0.0F;
-      var1.m20 = 0.0F;
-      float var2 = this.cos();
-      float var3 = this.sin();
-      var1.m11 = var2;
-      var1.m22 = var2;
-      var1.m12 = var3;
-      var1.m21 = -var3;
-      var1.m00 = 1.0F;
-      return var1;
+   public Matrix3f aroundX(final Matrix3f input) {
+      input.m01 = 0.0F;
+      input.m02 = 0.0F;
+      input.m10 = 0.0F;
+      input.m20 = 0.0F;
+      float c = this.cos();
+      float s = this.sin();
+      input.m11 = c;
+      input.m22 = c;
+      input.m12 = s;
+      input.m21 = -s;
+      input.m00 = 1.0F;
+      return input;
    }
 
-   public Matrix3f aroundY(Matrix3f var1) {
-      var1.m01 = 0.0F;
-      var1.m10 = 0.0F;
-      var1.m12 = 0.0F;
-      var1.m21 = 0.0F;
-      float var2 = this.cos();
-      float var3 = this.sin();
-      var1.m00 = var2;
-      var1.m22 = var2;
-      var1.m02 = -var3;
-      var1.m20 = var3;
-      var1.m11 = 1.0F;
-      return var1;
+   public Matrix3f aroundY(final Matrix3f input) {
+      input.m01 = 0.0F;
+      input.m10 = 0.0F;
+      input.m12 = 0.0F;
+      input.m21 = 0.0F;
+      float c = this.cos();
+      float s = this.sin();
+      input.m00 = c;
+      input.m22 = c;
+      input.m02 = -s;
+      input.m20 = s;
+      input.m11 = 1.0F;
+      return input;
    }
 
-   public Matrix3f aroundZ(Matrix3f var1) {
-      var1.m02 = 0.0F;
-      var1.m12 = 0.0F;
-      var1.m20 = 0.0F;
-      var1.m21 = 0.0F;
-      float var2 = this.cos();
-      float var3 = this.sin();
-      var1.m00 = var2;
-      var1.m11 = var2;
-      var1.m01 = var3;
-      var1.m10 = -var3;
-      var1.m22 = 1.0F;
-      return var1;
+   public Matrix3f aroundZ(final Matrix3f input) {
+      input.m02 = 0.0F;
+      input.m12 = 0.0F;
+      input.m20 = 0.0F;
+      input.m21 = 0.0F;
+      float c = this.cos();
+      float s = this.sin();
+      input.m00 = c;
+      input.m11 = c;
+      input.m01 = s;
+      input.m10 = -s;
+      input.m22 = 1.0F;
+      return input;
    }
 }

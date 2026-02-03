@@ -25,90 +25,80 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public record AttackRange(float minRange, float maxRange, float minCreativeRange, float maxCreativeRange, float hitboxMargin, float mobFactor) {
-   public static final Codec<AttackRange> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("min_reach", 0.0F).forGetter(AttackRange::minRange), ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("max_reach", 3.0F).forGetter(AttackRange::maxRange), ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("min_creative_reach", 0.0F).forGetter(AttackRange::minCreativeRange), ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("max_creative_reach", 5.0F).forGetter(AttackRange::maxCreativeRange), ExtraCodecs.floatRange(0.0F, 1.0F).optionalFieldOf("hitbox_margin", 0.3F).forGetter(AttackRange::hitboxMargin), Codec.floatRange(0.0F, 2.0F).optionalFieldOf("mob_factor", 1.0F).forGetter(AttackRange::mobFactor)).apply(var0, AttackRange::new));
+public record AttackRange(float minReach, float maxReach, float minCreativeReach, float maxCreativeReach, float hitboxMargin, float mobFactor) {
+   public static final Codec<AttackRange> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("min_reach", 0.0F).forGetter(AttackRange::minReach), ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("max_reach", 3.0F).forGetter(AttackRange::maxReach), ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("min_creative_reach", 0.0F).forGetter(AttackRange::minCreativeReach), ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("max_creative_reach", 5.0F).forGetter(AttackRange::maxCreativeReach), ExtraCodecs.floatRange(0.0F, 1.0F).optionalFieldOf("hitbox_margin", 0.3F).forGetter(AttackRange::hitboxMargin), Codec.floatRange(0.0F, 2.0F).optionalFieldOf("mob_factor", 1.0F).forGetter(AttackRange::mobFactor)).apply(i, AttackRange::new));
    public static final StreamCodec<ByteBuf, AttackRange> STREAM_CODEC;
 
-   public AttackRange(float var1, float var2, float var3, float var4, float var5, float var6) {
+   public AttackRange {
       super();
-      this.minRange = var1;
-      this.maxRange = var2;
-      this.minCreativeRange = var3;
-      this.maxCreativeRange = var4;
-      this.hitboxMargin = var5;
-      this.mobFactor = var6;
    }
 
-   public static AttackRange defaultFor(LivingEntity var0) {
-      return new AttackRange(0.0F, (float)var0.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.0F, (float)var0.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.0F, 1.0F);
+   public static AttackRange defaultFor(final LivingEntity livingEntity) {
+      return new AttackRange(0.0F, (float)livingEntity.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.0F, (float)livingEntity.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.0F, 1.0F);
    }
 
-   public HitResult getClosesetHit(Entity var1, float var2, Predicate<Entity> var3) {
-      Either var4 = ProjectileUtil.getHitEntitiesAlong(var1, this, var3, ClipContext.Block.OUTLINE);
-      if (var4.left().isPresent()) {
-         return (HitResult)var4.left().get();
+   public HitResult getClosesetHit(final Entity attacker, final float partial, final Predicate<Entity> matching) {
+      Either<BlockHitResult, Collection<EntityHitResult>> result = ProjectileUtil.getHitEntitiesAlong(attacker, this, matching, ClipContext.Block.OUTLINE);
+      if (result.left().isPresent()) {
+         return (HitResult)result.left().get();
       } else {
-         Collection var5 = (Collection)var4.right().get();
-         EntityHitResult var6 = null;
-         Vec3 var7 = var1.getEyePosition(var2);
-         double var8 = 1.7976931348623157E308;
+         Collection<EntityHitResult> targets = (Collection)result.right().get();
+         EntityHitResult entity = null;
+         Vec3 attackerPos = attacker.getEyePosition(partial);
+         double closestDistance = 1.7976931348623157E308;
 
-         for(EntityHitResult var11 : var5) {
-            double var12 = var7.distanceToSqr(var11.getLocation());
-            if (var12 < var8) {
-               var8 = var12;
-               var6 = var11;
+         for(EntityHitResult target : targets) {
+            double distance = attackerPos.distanceToSqr(target.getLocation());
+            if (distance < closestDistance) {
+               closestDistance = distance;
+               entity = target;
             }
          }
 
-         if (var6 != null) {
-            return var6;
+         if (entity != null) {
+            return entity;
          } else {
-            Vec3 var14 = var1.getHeadLookAngle();
-            Vec3 var15 = var1.getEyePosition(var2).add(var14);
-            return BlockHitResult.miss(var15, Direction.getApproximateNearest(var14), BlockPos.containing(var15));
+            Vec3 eyeGaze = attacker.getHeadLookAngle();
+            Vec3 missPosition = attacker.getEyePosition(partial).add(eyeGaze);
+            return BlockHitResult.miss(missPosition, Direction.getApproximateNearest(eyeGaze), BlockPos.containing(missPosition));
          }
       }
    }
 
-   public float effectiveMinRange(Entity var1) {
-      if (var1 instanceof Player var2) {
-         if (var2.isSpectator()) {
-            return 0.0F;
-         } else {
-            return var2.isCreative() ? this.minCreativeRange : this.minRange;
-         }
+   public float effectiveMinRange(final Entity entity) {
+      if (entity instanceof Player player) {
+         return player.isCreative() ? this.minCreativeReach : this.minReach;
       } else {
-         return this.minRange * this.mobFactor;
+         return this.minReach * this.mobFactor;
       }
    }
 
-   public float effectiveMaxRange(Entity var1) {
-      if (var1 instanceof Player var2) {
-         return var2.isCreative() ? this.maxCreativeRange : this.maxRange;
+   public float effectiveMaxRange(final Entity entity) {
+      if (entity instanceof Player player) {
+         return player.isCreative() ? this.maxCreativeReach : this.maxReach;
       } else {
-         return this.maxRange * this.mobFactor;
+         return this.maxReach * this.mobFactor;
       }
    }
 
-   public boolean isInRange(LivingEntity var1, Vec3 var2) {
-      Objects.requireNonNull(var2);
-      return this.isInRange(var1, var2::distanceToSqr, 0.0);
+   public boolean isInRange(final LivingEntity attacker, final Vec3 location) {
+      Objects.requireNonNull(location);
+      return this.isInRange(attacker, location::distanceToSqr, 0.0);
    }
 
-   public boolean isInRange(LivingEntity var1, AABB var2, double var3) {
-      Objects.requireNonNull(var2);
-      return this.isInRange(var1, var2::distanceToSqr, var3);
+   public boolean isInRange(final LivingEntity attacker, final AABB boundingBox, final double extraBuffer) {
+      Objects.requireNonNull(boundingBox);
+      return this.isInRange(attacker, boundingBox::distanceToSqr, extraBuffer);
    }
 
-   private boolean isInRange(LivingEntity var1, ToDoubleFunction<Vec3> var2, double var3) {
-      double var5 = Math.sqrt(var2.applyAsDouble(var1.getEyePosition()));
-      double var7 = (double)(this.effectiveMinRange(var1) - this.hitboxMargin) - var3;
-      double var9 = (double)(this.effectiveMaxRange(var1) + this.hitboxMargin) + var3;
-      return var5 >= var7 && var5 <= var9;
+   private boolean isInRange(final LivingEntity attacker, final ToDoubleFunction<Vec3> distanceFunction, final double extraBuffer) {
+      double distance = Math.sqrt(distanceFunction.applyAsDouble(attacker.getEyePosition()));
+      double minReach = (double)(this.effectiveMinRange(attacker) - this.hitboxMargin) - extraBuffer;
+      double maxReach = (double)(this.effectiveMaxRange(attacker) + this.hitboxMargin) + extraBuffer;
+      return distance >= minReach && distance <= maxReach;
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, AttackRange::minRange, ByteBufCodecs.FLOAT, AttackRange::maxRange, ByteBufCodecs.FLOAT, AttackRange::minCreativeRange, ByteBufCodecs.FLOAT, AttackRange::maxCreativeRange, ByteBufCodecs.FLOAT, AttackRange::hitboxMargin, ByteBufCodecs.FLOAT, AttackRange::mobFactor, AttackRange::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, AttackRange::minReach, ByteBufCodecs.FLOAT, AttackRange::maxReach, ByteBufCodecs.FLOAT, AttackRange::minCreativeReach, ByteBufCodecs.FLOAT, AttackRange::maxCreativeReach, ByteBufCodecs.FLOAT, AttackRange::hitboxMargin, ByteBufCodecs.FLOAT, AttackRange::mobFactor, AttackRange::new);
    }
 }

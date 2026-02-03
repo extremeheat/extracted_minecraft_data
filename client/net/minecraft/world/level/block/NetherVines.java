@@ -11,18 +11,18 @@ public class NetherVines {
       super();
    }
 
-   public static boolean isValidGrowthState(BlockState var0) {
-      return var0.isAir();
+   public static boolean isValidGrowthState(final BlockState state) {
+      return state.isAir();
    }
 
-   public static int getBlocksToGrowWhenBonemealed(RandomSource var0) {
-      double var1 = 1.0;
+   public static int getBlocksToGrowWhenBonemealed(final RandomSource random) {
+      double growProbabilty = 1.0;
 
-      int var3;
-      for(var3 = 0; var0.nextDouble() < var1; ++var3) {
-         var1 *= 0.826;
+      int count;
+      for(count = 0; random.nextDouble() < growProbabilty; ++count) {
+         growProbabilty *= 0.826;
       }
 
-      return var3;
+      return count;
    }
 }

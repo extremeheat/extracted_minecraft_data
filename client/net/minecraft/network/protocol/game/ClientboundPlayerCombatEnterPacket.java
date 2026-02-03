@@ -17,8 +17,8 @@ public class ClientboundPlayerCombatEnterPacket implements Packet<ClientGamePack
       return GamePacketTypes.CLIENTBOUND_PLAYER_COMBAT_ENTER;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handlePlayerCombatEnter(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handlePlayerCombatEnter(this);
    }
 
    static {

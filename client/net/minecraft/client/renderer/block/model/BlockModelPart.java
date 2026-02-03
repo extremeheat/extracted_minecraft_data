@@ -8,13 +8,13 @@ import net.minecraft.core.Direction;
 import org.jspecify.annotations.Nullable;
 
 public interface BlockModelPart {
-   List<BakedQuad> getQuads(@Nullable Direction var1);
+   List<BakedQuad> getQuads(@Nullable Direction direction);
 
    boolean useAmbientOcclusion();
 
    TextureAtlasSprite particleIcon();
 
    public interface Unbaked extends ResolvableModel {
-      BlockModelPart bake(ModelBaker var1);
+      BlockModelPart bake(ModelBaker modelBakery);
    }
 }

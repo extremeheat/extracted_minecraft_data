@@ -13,7 +13,7 @@ public class TradeRebalanceLootTableProvider {
       super();
    }
 
-   public static LootTableProvider create(PackOutput var0, CompletableFuture<HolderLookup.Provider> var1) {
-      return new LootTableProvider(var0, Set.of(), List.of(new LootTableProvider.SubProviderEntry(TradeRebalanceChestLoot::new, LootContextParamSets.CHEST)), var1);
+   public static LootTableProvider create(final PackOutput output, final CompletableFuture<HolderLookup.Provider> registries) {
+      return new LootTableProvider(output, Set.of(), List.of(new LootTableProvider.SubProviderEntry(TradeRebalanceChestLoot::new, LootContextParamSets.CHEST)), registries);
    }
 }

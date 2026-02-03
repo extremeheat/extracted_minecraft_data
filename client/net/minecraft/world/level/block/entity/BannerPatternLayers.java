@@ -24,24 +24,22 @@ import net.minecraft.world.item.component.TooltipProvider;
 import org.slf4j.Logger;
 
 public record BannerPatternLayers(List<Layer> layers) implements TooltipProvider {
-   final List<Layer> layers;
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final BannerPatternLayers EMPTY = new BannerPatternLayers(List.of());
    public static final Codec<BannerPatternLayers> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, BannerPatternLayers> STREAM_CODEC;
 
-   public BannerPatternLayers(List<Layer> var1) {
+   public BannerPatternLayers {
       super();
-      this.layers = var1;
    }
 
    public BannerPatternLayers removeLast() {
       return new BannerPatternLayers(List.copyOf(this.layers.subList(0, this.layers.size() - 1)));
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      for(int var5 = 0; var5 < Math.min(this.layers().size(), 6); ++var5) {
-         var2.accept(((Layer)this.layers().get(var5)).description().withStyle(ChatFormatting.GRAY));
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      for(int i = 0; i < Math.min(this.layers().size(), 6); ++i) {
+         consumer.accept(((Layer)this.layers().get(i)).description().withStyle(ChatFormatting.GRAY));
       }
 
    }
@@ -52,18 +50,16 @@ public record BannerPatternLayers(List<Layer> layers) implements TooltipProvider
    }
 
    public static record Layer(Holder<BannerPattern> pattern, DyeColor color) {
-      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BannerPattern.CODEC.fieldOf("pattern").forGetter(Layer::pattern), DyeColor.CODEC.fieldOf("color").forGetter(Layer::color)).apply(var0, Layer::new));
+      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((i) -> i.group(BannerPattern.CODEC.fieldOf("pattern").forGetter(Layer::pattern), DyeColor.CODEC.fieldOf("color").forGetter(Layer::color)).apply(i, Layer::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, Layer> STREAM_CODEC;
 
-      public Layer(Holder<BannerPattern> var1, DyeColor var2) {
+      public Layer {
          super();
-         this.pattern = var1;
-         this.color = var2;
       }
 
       public MutableComponent description() {
-         String var1 = ((BannerPattern)this.pattern.value()).translationKey();
-         return Component.translatable(var1 + "." + this.color.getName());
+         String prefix = ((BannerPattern)this.pattern.value()).translationKey();
+         return Component.translatable(prefix + "." + this.color.getName());
       }
 
       static {
@@ -80,27 +76,27 @@ public record BannerPatternLayers(List<Layer> layers) implements TooltipProvider
 
       /** @deprecated */
       @Deprecated
-      public Builder addIfRegistered(HolderGetter<BannerPattern> var1, ResourceKey<BannerPattern> var2, DyeColor var3) {
-         Optional var4 = var1.get(var2);
-         if (var4.isEmpty()) {
-            BannerPatternLayers.LOGGER.warn("Unable to find banner pattern with id: '{}'", var2.identifier());
+      public Builder addIfRegistered(final HolderGetter<BannerPattern> patternGetter, final ResourceKey<BannerPattern> patternKey, final DyeColor color) {
+         Optional<Holder.Reference<BannerPattern>> pattern = patternGetter.get(patternKey);
+         if (pattern.isEmpty()) {
+            BannerPatternLayers.LOGGER.warn("Unable to find banner pattern with id: '{}'", patternKey.identifier());
             return this;
          } else {
-            return this.add((Holder)var4.get(), var3);
+            return this.add((Holder)pattern.get(), color);
          }
       }
 
-      public Builder add(Holder<BannerPattern> var1, DyeColor var2) {
-         return this.add(new Layer(var1, var2));
+      public Builder add(final Holder<BannerPattern> pattern, final DyeColor color) {
+         return this.add(new Layer(pattern, color));
       }
 
-      public Builder add(Layer var1) {
-         this.layers.add(var1);
+      public Builder add(final Layer layer) {
+         this.layers.add(layer);
          return this;
       }
 
-      public Builder addAll(BannerPatternLayers var1) {
-         this.layers.addAll(var1.layers);
+      public Builder addAll(final BannerPatternLayers layers) {
+         this.layers.addAll(layers.layers);
          return this;
       }
 

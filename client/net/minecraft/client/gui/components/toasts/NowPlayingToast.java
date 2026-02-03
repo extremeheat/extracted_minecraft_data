@@ -37,15 +37,15 @@ public class NowPlayingToast implements Toast {
       this.minecraft = Minecraft.getInstance();
    }
 
-   public static void renderToast(GuiGraphics var0, Font var1) {
-      String var2 = getCurrentSongName();
-      if (var2 != null) {
-         var0.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)NOW_PLAYING_BACKGROUND_SPRITE, 0, 0, getWidth(var2, var1), 30);
-         boolean var3 = true;
-         var0.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
-         Component var10002 = getNowPlayingString(var2);
-         Objects.requireNonNull(var1);
-         var0.drawString(var1, (Component)var10002, 30, 15 - 9 / 2, TEXT_COLOR);
+   public static void renderToast(final GuiGraphics graphics, final Font font) {
+      String currentSong = getCurrentSongName();
+      if (currentSong != null) {
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)NOW_PLAYING_BACKGROUND_SPRITE, 0, 0, getWidth(currentSong, font), 30);
+         int notesOffset = 7;
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
+         Component var10002 = getNowPlayingString(currentSong);
+         Objects.requireNonNull(font);
+         graphics.drawString(font, (Component)var10002, 30, 15 - 9 / 2, TEXT_COLOR);
       }
 
    }
@@ -56,36 +56,36 @@ public class NowPlayingToast implements Toast {
 
    public static void tickMusicNotes() {
       if (getCurrentSongName() != null) {
-         long var0 = System.currentTimeMillis();
-         if (var0 > lastMusicNoteColorChange + 25L) {
+         long now = System.currentTimeMillis();
+         if (now > lastMusicNoteColorChange + 25L) {
             ++musicNoteColorTick;
-            lastMusicNoteColorChange = var0;
+            lastMusicNoteColorChange = now;
             musicNoteColor = ColorLerper.getLerpedColor(ColorLerper.Type.MUSIC_NOTE, (float)musicNoteColorTick);
          }
       }
 
    }
 
-   private static Component getNowPlayingString(@Nullable String var0) {
-      return var0 == null ? Component.empty() : Component.translatable(var0.replace("/", "."));
+   private static Component getNowPlayingString(final @Nullable String currentSongKey) {
+      return currentSongKey == null ? Component.empty() : Component.translatable(currentSongKey.replace("/", "."));
    }
 
-   public void showToast(Options var1) {
+   public void showToast(final Options options) {
       this.updateToast = true;
-      this.notificationDisplayTimeMultiplier = (Double)var1.notificationDisplayTime().get();
+      this.notificationDisplayTimeMultiplier = (Double)options.notificationDisplayTime().get();
       this.setWantedVisibility(Toast.Visibility.SHOW);
    }
 
-   public void update(ToastManager var1, long var2) {
+   public void update(final ToastManager manager, final long fullyVisibleForMs) {
       if (this.updateToast) {
-         this.wantedVisibility = (double)var2 < 5000.0 * this.notificationDisplayTimeMultiplier ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
+         this.wantedVisibility = (double)fullyVisibleForMs < 5000.0 * this.notificationDisplayTimeMultiplier ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
          tickMusicNotes();
       }
 
    }
 
-   public void render(GuiGraphics var1, Font var2, long var3) {
-      renderToast(var1, var2);
+   public void render(final GuiGraphics graphics, final Font font, final long fullyVisibleForMs) {
+      renderToast(graphics, font);
    }
 
    public void onFinishedRendering() {
@@ -96,19 +96,19 @@ public class NowPlayingToast implements Toast {
       return getWidth(getCurrentSongName(), this.minecraft.font);
    }
 
-   private static int getWidth(@Nullable String var0, Font var1) {
-      return 30 + var1.width((FormattedText)getNowPlayingString(var0)) + 7;
+   private static int getWidth(final @Nullable String currentSong, final Font font) {
+      return 30 + font.width((FormattedText)getNowPlayingString(currentSong)) + 7;
    }
 
    public int height() {
       return 30;
    }
 
-   public float xPos(int var1, float var2) {
-      return (float)this.width() * var2 - (float)this.width();
+   public float xPos(final int screenWidth, final float visiblePortion) {
+      return (float)this.width() * visiblePortion - (float)this.width();
    }
 
-   public float yPos(int var1) {
+   public float yPos(final int firstSlotIndex) {
       return 0.0F;
    }
 
@@ -116,8 +116,8 @@ public class NowPlayingToast implements Toast {
       return this.wantedVisibility;
    }
 
-   public void setWantedVisibility(Toast.Visibility var1) {
-      this.wantedVisibility = var1;
+   public void setWantedVisibility(final Toast.Visibility visibility) {
+      this.wantedVisibility = visibility;
    }
 
    static {

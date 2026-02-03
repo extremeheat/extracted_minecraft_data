@@ -3,12 +3,12 @@ package com.mojang.blaze3d.resource;
 public interface ResourceDescriptor<T> {
    T allocate();
 
-   default void prepare(T var1) {
+   default void prepare(final T resource) {
    }
 
-   void free(T var1);
+   void free(T resource);
 
-   default boolean canUsePhysicalResource(ResourceDescriptor<?> var1) {
-      return this.equals(var1);
+   default boolean canUsePhysicalResource(final ResourceDescriptor<?> other) {
+      return this.equals(other);
    }
 }

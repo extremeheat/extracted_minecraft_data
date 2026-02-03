@@ -10,7 +10,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
@@ -21,7 +20,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CropBlock;
-import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.level.block.FarmlandBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -39,102 +38,102 @@ public class HarvestFarmland extends Behavior<Villager> {
       super(ImmutableMap.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.SECONDARY_JOB_SITE, MemoryStatus.VALUE_PRESENT));
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      if (!(Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING)) {
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Villager body) {
+      if (!(Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING)) {
          return false;
-      } else if (!var2.getVillagerData().profession().is(VillagerProfession.FARMER)) {
+      } else if (!body.getVillagerData().profession().is(VillagerProfession.FARMER)) {
          return false;
       } else {
-         BlockPos.MutableBlockPos var3 = var2.blockPosition().mutable();
+         BlockPos.MutableBlockPos mutPos = body.blockPosition().mutable();
          this.validFarmlandAroundVillager.clear();
 
-         for(int var4 = -1; var4 <= 1; ++var4) {
-            for(int var5 = -1; var5 <= 1; ++var5) {
-               for(int var6 = -1; var6 <= 1; ++var6) {
-                  var3.set(var2.getX() + (double)var4, var2.getY() + (double)var5, var2.getZ() + (double)var6);
-                  if (this.validPos(var3, var1)) {
-                     this.validFarmlandAroundVillager.add(new BlockPos(var3));
+         for(int x = -1; x <= 1; ++x) {
+            for(int y = -1; y <= 1; ++y) {
+               for(int z = -1; z <= 1; ++z) {
+                  mutPos.set(body.getX() + (double)x, body.getY() + (double)y, body.getZ() + (double)z);
+                  if (this.validPos(mutPos, level)) {
+                     this.validFarmlandAroundVillager.add(new BlockPos(mutPos));
                   }
                }
             }
          }
 
-         this.aboveFarmlandPos = this.getValidFarmland(var1);
+         this.aboveFarmlandPos = this.getValidFarmland(level);
          return this.aboveFarmlandPos != null;
       }
    }
 
-   private @Nullable BlockPos getValidFarmland(ServerLevel var1) {
-      return this.validFarmlandAroundVillager.isEmpty() ? null : (BlockPos)this.validFarmlandAroundVillager.get(var1.getRandom().nextInt(this.validFarmlandAroundVillager.size()));
+   private @Nullable BlockPos getValidFarmland(final ServerLevel level) {
+      return this.validFarmlandAroundVillager.isEmpty() ? null : (BlockPos)this.validFarmlandAroundVillager.get(level.getRandom().nextInt(this.validFarmlandAroundVillager.size()));
    }
 
-   private boolean validPos(BlockPos var1, ServerLevel var2) {
-      BlockState var3 = var2.getBlockState(var1);
-      Block var4 = var3.getBlock();
-      Block var5 = var2.getBlockState(var1.below()).getBlock();
-      return var4 instanceof CropBlock && ((CropBlock)var4).isMaxAge(var3) || var3.isAir() && var5 instanceof FarmBlock;
+   private boolean validPos(final BlockPos blockPos, final ServerLevel level) {
+      BlockState state = level.getBlockState(blockPos);
+      Block block = state.getBlock();
+      Block blockBelow = level.getBlockState(blockPos.below()).getBlock();
+      return block instanceof CropBlock && ((CropBlock)block).isMaxAge(state) || state.isAir() && blockBelow instanceof FarmlandBlock;
    }
 
-   protected void start(ServerLevel var1, Villager var2, long var3) {
-      if (var3 > this.nextOkStartTime && this.aboveFarmlandPos != null) {
-         var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(this.aboveFarmlandPos));
-         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new BlockPosTracker(this.aboveFarmlandPos), 0.5F, 1));
+   protected void start(final ServerLevel level, final Villager body, final long timestamp) {
+      if (timestamp > this.nextOkStartTime && this.aboveFarmlandPos != null) {
+         body.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(this.aboveFarmlandPos));
+         body.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new BlockPosTracker(this.aboveFarmlandPos), 0.5F, 1));
       }
 
    }
 
-   protected void stop(ServerLevel var1, Villager var2, long var3) {
-      var2.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
-      var2.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+   protected void stop(final ServerLevel level, final Villager body, final long timestamp) {
+      body.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+      body.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
       this.timeWorkedSoFar = 0;
-      this.nextOkStartTime = var3 + 40L;
+      this.nextOkStartTime = timestamp + 40L;
    }
 
-   protected void tick(ServerLevel var1, Villager var2, long var3) {
-      if (this.aboveFarmlandPos == null || this.aboveFarmlandPos.closerToCenterThan(var2.position(), 1.0)) {
-         if (this.aboveFarmlandPos != null && var3 > this.nextOkStartTime) {
-            BlockState var5 = var1.getBlockState(this.aboveFarmlandPos);
-            Block var6 = var5.getBlock();
-            Block var7 = var1.getBlockState(this.aboveFarmlandPos.below()).getBlock();
-            if (var6 instanceof CropBlock && ((CropBlock)var6).isMaxAge(var5)) {
-               var1.destroyBlock(this.aboveFarmlandPos, true, var2);
+   protected void tick(final ServerLevel level, final Villager body, final long timestamp) {
+      if (this.aboveFarmlandPos == null || this.aboveFarmlandPos.closerToCenterThan(body.position(), 1.0)) {
+         if (this.aboveFarmlandPos != null && timestamp > this.nextOkStartTime) {
+            BlockState blockState = level.getBlockState(this.aboveFarmlandPos);
+            Block block = blockState.getBlock();
+            Block blockBelow = level.getBlockState(this.aboveFarmlandPos.below()).getBlock();
+            if (block instanceof CropBlock && ((CropBlock)block).isMaxAge(blockState)) {
+               level.destroyBlock(this.aboveFarmlandPos, true, body);
             }
 
-            if (var5.isAir() && var7 instanceof FarmBlock && var2.hasFarmSeeds()) {
-               SimpleContainer var8 = var2.getInventory();
+            if (blockState.isAir() && blockBelow instanceof FarmlandBlock && body.hasFarmSeeds()) {
+               SimpleContainer inventory = body.getInventory();
 
-               for(int var9 = 0; var9 < var8.getContainerSize(); ++var9) {
-                  ItemStack var10 = var8.getItem(var9);
-                  boolean var11 = false;
-                  if (!var10.isEmpty() && var10.is(ItemTags.VILLAGER_PLANTABLE_SEEDS)) {
-                     Item var13 = var10.getItem();
+               for(int i = 0; i < inventory.getContainerSize(); ++i) {
+                  ItemStack itemStack = inventory.getItem(i);
+                  boolean ok = false;
+                  if (!itemStack.isEmpty() && itemStack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS)) {
+                     Item var13 = itemStack.getItem();
                      if (var13 instanceof BlockItem) {
-                        BlockItem var12 = (BlockItem)var13;
-                        BlockState var14 = var12.getBlock().defaultBlockState();
-                        var1.setBlockAndUpdate(this.aboveFarmlandPos, var14);
-                        var1.gameEvent(GameEvent.BLOCK_PLACE, this.aboveFarmlandPos, GameEvent.Context.of(var2, var14));
-                        var11 = true;
+                        BlockItem blockItem = (BlockItem)var13;
+                        BlockState place = blockItem.getBlock().defaultBlockState();
+                        level.setBlockAndUpdate(this.aboveFarmlandPos, place);
+                        level.gameEvent(GameEvent.BLOCK_PLACE, this.aboveFarmlandPos, GameEvent.Context.of(body, place));
+                        ok = true;
                      }
                   }
 
-                  if (var11) {
-                     var1.playSound((Entity)null, (double)this.aboveFarmlandPos.getX(), (double)this.aboveFarmlandPos.getY(), (double)this.aboveFarmlandPos.getZ(), SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0F, 1.0F);
-                     var10.shrink(1);
-                     if (var10.isEmpty()) {
-                        var8.setItem(var9, ItemStack.EMPTY);
+                  if (ok) {
+                     level.playSound((Entity)null, (double)this.aboveFarmlandPos.getX(), (double)this.aboveFarmlandPos.getY(), (double)this.aboveFarmlandPos.getZ(), SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0F, 1.0F);
+                     itemStack.shrink(1);
+                     if (itemStack.isEmpty()) {
+                        inventory.setItem(i, ItemStack.EMPTY);
                      }
                      break;
                   }
                }
             }
 
-            if (var6 instanceof CropBlock && !((CropBlock)var6).isMaxAge(var5)) {
+            if (block instanceof CropBlock && !((CropBlock)block).isMaxAge(blockState)) {
                this.validFarmlandAroundVillager.remove(this.aboveFarmlandPos);
-               this.aboveFarmlandPos = this.getValidFarmland(var1);
+               this.aboveFarmlandPos = this.getValidFarmland(level);
                if (this.aboveFarmlandPos != null) {
-                  this.nextOkStartTime = var3 + 20L;
-                  var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new BlockPosTracker(this.aboveFarmlandPos), 0.5F, 1));
-                  var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(this.aboveFarmlandPos));
+                  this.nextOkStartTime = timestamp + 20L;
+                  body.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new BlockPosTracker(this.aboveFarmlandPos), 0.5F, 1));
+                  body.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(this.aboveFarmlandPos));
                }
             }
          }
@@ -143,17 +142,7 @@ public class HarvestFarmland extends Behavior<Villager> {
       }
    }
 
-   protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
+   protected boolean canStillUse(final ServerLevel level, final Villager body, final long timestamp) {
       return this.timeWorkedSoFar < 200;
-   }
-
-   // $FF: synthetic method
-   protected boolean canStillUse(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      return this.canStillUse(var1, (Villager)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Villager)var2, var3);
    }
 }

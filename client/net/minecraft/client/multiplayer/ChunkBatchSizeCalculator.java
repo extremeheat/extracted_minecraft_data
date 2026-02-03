@@ -18,12 +18,12 @@ public class ChunkBatchSizeCalculator {
       this.chunkBatchStartTime = Util.getNanos();
    }
 
-   public void onBatchFinished(int var1) {
-      if (var1 > 0) {
-         double var2 = (double)(Util.getNanos() - this.chunkBatchStartTime);
-         double var4 = var2 / (double)var1;
-         double var6 = Mth.clamp(var4, this.aggregatedNanosPerChunk / 3.0, this.aggregatedNanosPerChunk * 3.0);
-         this.aggregatedNanosPerChunk = (this.aggregatedNanosPerChunk * (double)this.oldSamplesWeight + var6) / (double)(this.oldSamplesWeight + 1);
+   public void onBatchFinished(final int batchSize) {
+      if (batchSize > 0) {
+         double batchDuration = (double)(Util.getNanos() - this.chunkBatchStartTime);
+         double nanosPerChunk = batchDuration / (double)batchSize;
+         double clampedNanosPerChunk = Mth.clamp(nanosPerChunk, this.aggregatedNanosPerChunk / 3.0, this.aggregatedNanosPerChunk * 3.0);
+         this.aggregatedNanosPerChunk = (this.aggregatedNanosPerChunk * (double)this.oldSamplesWeight + clampedNanosPerChunk) / (double)(this.oldSamplesWeight + 1);
          this.oldSamplesWeight = Math.min(49, this.oldSamplesWeight + 1);
       }
 

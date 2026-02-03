@@ -10,21 +10,21 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public interface Merchant {
-   void setTradingPlayer(@Nullable Player var1);
+   void setTradingPlayer(@Nullable Player player);
 
    @Nullable Player getTradingPlayer();
 
    MerchantOffers getOffers();
 
-   void overrideOffers(MerchantOffers var1);
+   void overrideOffers(MerchantOffers offers);
 
-   void notifyTrade(MerchantOffer var1);
+   void notifyTrade(MerchantOffer offer);
 
-   void notifyTradeUpdated(ItemStack var1);
+   void notifyTradeUpdated(ItemStack itemStack);
 
    int getVillagerXp();
 
-   void overrideXp(int var1);
+   void overrideXp(final int xp);
 
    boolean showProgressBar();
 
@@ -34,12 +34,12 @@ public interface Merchant {
       return false;
    }
 
-   default void openTradingScreen(Player var1, Component var2, int var3) {
-      OptionalInt var4 = var1.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> new MerchantMenu(var1x, var2x, this), var2));
-      if (var4.isPresent()) {
-         MerchantOffers var5 = this.getOffers();
-         if (!var5.isEmpty()) {
-            var1.sendMerchantOffers(var4.getAsInt(), var5, var3, this.getVillagerXp(), this.showProgressBar(), this.canRestock());
+   default void openTradingScreen(final Player player, final Component title, final int level) {
+      OptionalInt containerId = player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new MerchantMenu(id, inventory, this), title));
+      if (containerId.isPresent()) {
+         MerchantOffers offers = this.getOffers();
+         if (!offers.isEmpty()) {
+            player.sendMerchantOffers(containerId.getAsInt(), offers, level, this.getVillagerXp(), this.showProgressBar(), this.canRestock());
          }
       }
 
@@ -47,5 +47,5 @@ public interface Merchant {
 
    boolean isClientSide();
 
-   boolean stillValid(Player var1);
+   boolean stillValid(Player player);
 }

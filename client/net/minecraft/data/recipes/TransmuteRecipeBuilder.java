@@ -1,79 +1,68 @@
 package net.minecraft.data.recipes;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRequirements;
-import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
-import net.minecraft.core.Holder;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.TransmuteRecipe;
-import net.minecraft.world.item.crafting.TransmuteResult;
 import org.jspecify.annotations.Nullable;
 
 public class TransmuteRecipeBuilder implements RecipeBuilder {
    private final RecipeCategory category;
-   private final Holder<Item> result;
+   private final ItemStackTemplate result;
    private final Ingredient input;
    private final Ingredient material;
-   private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
+   private final RecipeUnlockAdvancementBuilder advancementBuilder = new RecipeUnlockAdvancementBuilder();
    private @Nullable String group;
+   private MinMaxBounds.Ints materialCount;
+   private boolean addMaterialCountToOutput;
 
-   private TransmuteRecipeBuilder(RecipeCategory var1, Holder<Item> var2, Ingredient var3, Ingredient var4) {
+   private TransmuteRecipeBuilder(final RecipeCategory category, final ItemStackTemplate result, final Ingredient input, final Ingredient material) {
       super();
-      this.category = var1;
-      this.result = var2;
-      this.input = var3;
-      this.material = var4;
+      this.materialCount = TransmuteRecipe.DEFAULT_MATERIAL_COUNT;
+      this.category = category;
+      this.result = result;
+      this.input = input;
+      this.material = material;
    }
 
-   public static TransmuteRecipeBuilder transmute(RecipeCategory var0, Ingredient var1, Ingredient var2, Item var3) {
-      return new TransmuteRecipeBuilder(var0, var3.builtInRegistryHolder(), var1, var2);
+   public static TransmuteRecipeBuilder transmute(final RecipeCategory category, final Ingredient input, final Ingredient material, final Item result) {
+      return transmute(category, input, material, new ItemStackTemplate(result));
    }
 
-   public TransmuteRecipeBuilder unlockedBy(String var1, Criterion<?> var2) {
-      this.criteria.put(var1, var2);
+   public static TransmuteRecipeBuilder transmute(final RecipeCategory category, final Ingredient input, final Ingredient material, final ItemStackTemplate result) {
+      return new TransmuteRecipeBuilder(category, result, input, material);
+   }
+
+   public TransmuteRecipeBuilder unlockedBy(final String name, final Criterion<?> criterion) {
+      this.advancementBuilder.unlockedBy(name, criterion);
       return this;
    }
 
-   public TransmuteRecipeBuilder group(@Nullable String var1) {
-      this.group = var1;
+   public TransmuteRecipeBuilder group(final @Nullable String group) {
+      this.group = group;
       return this;
    }
 
-   public Item getResult() {
-      return this.result.value();
+   public TransmuteRecipeBuilder addMaterialCountToOutput() {
+      this.addMaterialCountToOutput = true;
+      return this;
    }
 
-   public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
-      this.ensureValid(var2);
-      Advancement.Builder var3 = var1.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(AdvancementRequirements.Strategy.OR);
-      Map var10000 = this.criteria;
-      Objects.requireNonNull(var3);
-      var10000.forEach(var3::addCriterion);
-      TransmuteRecipe var4 = new TransmuteRecipe((String)Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), this.input, this.material, new TransmuteResult(this.result.value()));
-      var1.accept(var2, var4, var3.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
+   public TransmuteRecipeBuilder setMaterialCount(final MinMaxBounds.Ints materialCount) {
+      this.materialCount = materialCount;
+      return this;
    }
 
-   private void ensureValid(ResourceKey<Recipe<?>> var1) {
-      if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
-      }
+   public ResourceKey<Recipe<?>> defaultId() {
+      return RecipeBuilder.getDefaultRecipeId(this.result);
    }
 
-   // $FF: synthetic method
-   public RecipeBuilder group(final @Nullable String var1) {
-      return this.group(var1);
-   }
-
-   // $FF: synthetic method
-   public RecipeBuilder unlockedBy(final String var1, final Criterion var2) {
-      return this.unlockedBy(var1, var2);
+   public void save(final RecipeOutput output, final ResourceKey<Recipe<?>> id) {
+      TransmuteRecipe recipe = new TransmuteRecipe(RecipeBuilder.createCraftingCommonInfo(true), RecipeBuilder.createCraftingBookInfo(this.category, this.group), this.input, this.material, this.materialCount, this.result, this.addMaterialCountToOutput);
+      output.accept(id, recipe, this.advancementBuilder.build(output, id, this.category));
    }
 }

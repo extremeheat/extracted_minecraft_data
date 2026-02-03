@@ -11,24 +11,23 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundResourcePackPopPacket(Optional<UUID> id) implements Packet<ClientCommonPacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundResourcePackPopPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundResourcePackPopPacket>codec(ClientboundResourcePackPopPacket::write, ClientboundResourcePackPopPacket::new);
 
-   private ClientboundResourcePackPopPacket(FriendlyByteBuf var1) {
-      this(var1.readOptional(UUIDUtil.STREAM_CODEC));
+   private ClientboundResourcePackPopPacket(final FriendlyByteBuf input) {
+      this(input.readOptional(UUIDUtil.STREAM_CODEC));
    }
 
-   public ClientboundResourcePackPopPacket(Optional<UUID> var1) {
+   public ClientboundResourcePackPopPacket {
       super();
-      this.id = var1;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeOptional(this.id, UUIDUtil.STREAM_CODEC);
+   private void write(final FriendlyByteBuf output) {
+      output.writeOptional(this.id, UUIDUtil.STREAM_CODEC);
    }
 
    public PacketType<ClientboundResourcePackPopPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_RESOURCE_PACK_POP;
    }
 
-   public void handle(ClientCommonPacketListener var1) {
-      var1.handleResourcePackPop(this);
+   public void handle(final ClientCommonPacketListener listener) {
+      listener.handleResourcePackPop(this);
    }
 }

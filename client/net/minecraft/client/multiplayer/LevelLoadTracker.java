@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LevelLoadTracker implements LevelLoadListener {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final long CLIENT_WAIT_TIMEOUT_MS;
    public static final long LEVEL_LOAD_CLOSE_DELAY_MS = 500L;
    private final LevelLoadProgressTracker serverProgressTracker;
@@ -29,18 +29,18 @@ public class LevelLoadTracker implements LevelLoadListener {
       this(0L);
    }
 
-   public LevelLoadTracker(long var1) {
+   public LevelLoadTracker(final long closeDelayMs) {
       super();
       this.serverProgressTracker = new LevelLoadProgressTracker(true);
-      this.closeDelayMs = var1;
+      this.closeDelayMs = closeDelayMs;
    }
 
-   public void setServerChunkStatusView(ChunkLoadStatusView var1) {
-      this.serverChunkStatusView = var1;
+   public void setServerChunkStatusView(final ChunkLoadStatusView serverChunkStatusView) {
+      this.serverChunkStatusView = serverChunkStatusView;
    }
 
-   public void startClientLoad(LocalPlayer var1, ClientLevel var2, LevelRenderer var3) {
-      this.clientState = new WaitingForServer(var1, var2, var3, Util.getMillis() + CLIENT_WAIT_TIMEOUT_MS);
+   public void startClientLoad(final LocalPlayer player, final ClientLevel level, final LevelRenderer levelRenderer) {
+      this.clientState = new WaitingForServer(player, level, levelRenderer, Util.getMillis() + CLIENT_WAIT_TIMEOUT_MS);
    }
 
    public void tickClientLoad() {
@@ -52,25 +52,25 @@ public class LevelLoadTracker implements LevelLoadListener {
 
    public boolean isLevelReady() {
       ClientState var4 = this.clientState;
-      boolean var9;
+      boolean var11;
       if (var4 instanceof ClientLevelReady var3) {
          ClientLevelReady var10000 = var3;
 
          try {
-            var8 = var10000.readyAt();
-         } catch (Throwable var7) {
-            throw new MatchException(var7.toString(), var7);
+            var10 = var10000.readyAt();
+         } catch (Throwable var9) {
+            throw new MatchException(var9.toString(), var9);
          }
 
-         long var5 = var8;
-         if (Util.getMillis() >= var5 + this.closeDelayMs) {
-            var9 = true;
-            return var9;
+         long readyAt = var10;
+         if (true && Util.getMillis() >= readyAt + this.closeDelayMs) {
+            var11 = true;
+            return var11;
          }
       }
 
-      var9 = false;
-      return var9;
+      var11 = false;
+      return var11;
    }
 
    public void loadingPacketsReceived() {
@@ -80,22 +80,22 @@ public class LevelLoadTracker implements LevelLoadListener {
 
    }
 
-   public void start(LevelLoadListener.Stage var1, int var2) {
-      this.serverProgressTracker.start(var1, var2);
-      this.serverStage = var1;
+   public void start(final LevelLoadListener.Stage stage, final int totalChunks) {
+      this.serverProgressTracker.start(stage, totalChunks);
+      this.serverStage = stage;
    }
 
-   public void update(LevelLoadListener.Stage var1, int var2, int var3) {
-      this.serverProgressTracker.update(var1, var2, var3);
+   public void update(final LevelLoadListener.Stage stage, final int currentChunks, final int totalChunks) {
+      this.serverProgressTracker.update(stage, currentChunks, totalChunks);
    }
 
-   public void finish(LevelLoadListener.Stage var1) {
-      this.serverProgressTracker.finish(var1);
+   public void finish(final LevelLoadListener.Stage stage) {
+      this.serverProgressTracker.finish(stage);
    }
 
-   public void updateFocus(ResourceKey<Level> var1, ChunkPos var2) {
+   public void updateFocus(final ResourceKey<Level> dimension, final ChunkPos chunkPos) {
       if (this.serverChunkStatusView != null) {
-         this.serverChunkStatusView.moveTo(var1, var2);
+         this.serverChunkStatusView.moveTo(dimension, chunkPos);
       }
 
    }
@@ -116,7 +116,7 @@ public class LevelLoadTracker implements LevelLoadListener {
       CLIENT_WAIT_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(30L);
    }
 
-   sealed interface ClientState permits LevelLoadTracker.WaitingForServer, LevelLoadTracker.WaitingForPlayerChunk, LevelLoadTracker.ClientLevelReady {
+   private sealed interface ClientState permits LevelLoadTracker.WaitingForServer, LevelLoadTracker.WaitingForPlayerChunk, LevelLoadTracker.ClientLevelReady {
       default ClientState tick() {
          return this;
       }
@@ -126,13 +126,9 @@ public class LevelLoadTracker implements LevelLoadListener {
       }
    }
 
-   static record WaitingForServer(LocalPlayer player, ClientLevel level, LevelRenderer levelRenderer, long timeoutAfter) implements ClientState {
-      WaitingForServer(LocalPlayer var1, ClientLevel var2, LevelRenderer var3, long var4) {
+   private static record WaitingForServer(LocalPlayer player, ClientLevel level, LevelRenderer levelRenderer, long timeoutAfter) implements ClientState {
+      private WaitingForServer {
          super();
-         this.player = var1;
-         this.level = var2;
-         this.levelRenderer = var3;
-         this.timeoutAfter = var4;
       }
 
       public ClientState loadingPacketsReceived() {
@@ -140,13 +136,9 @@ public class LevelLoadTracker implements LevelLoadListener {
       }
    }
 
-   static record WaitingForPlayerChunk(LocalPlayer player, ClientLevel level, LevelRenderer levelRenderer, long timeoutAfter) implements ClientState {
-      WaitingForPlayerChunk(LocalPlayer var1, ClientLevel var2, LevelRenderer var3, long var4) {
+   private static record WaitingForPlayerChunk(LocalPlayer player, ClientLevel level, LevelRenderer levelRenderer, long timeoutAfter) implements ClientState {
+      private WaitingForPlayerChunk {
          super();
-         this.player = var1;
-         this.level = var2;
-         this.levelRenderer = var3;
-         this.timeoutAfter = var4;
       }
 
       public ClientState tick() {
@@ -158,16 +150,15 @@ public class LevelLoadTracker implements LevelLoadListener {
             LevelLoadTracker.LOGGER.warn("Timed out while waiting for the client to load chunks, letting the player into the world anyway");
             return true;
          } else {
-            BlockPos var1 = this.player.blockPosition();
-            return !this.level.isOutsideBuildHeight(var1.getY()) && !this.player.isSpectator() && this.player.isAlive() ? this.levelRenderer.isSectionCompiledAndVisible(var1) : true;
+            BlockPos playerPos = this.player.blockPosition();
+            return !this.level.isOutsideBuildHeight(playerPos.getY()) && !this.player.isSpectator() && this.player.isAlive() ? this.levelRenderer.isSectionCompiledAndVisible(playerPos) : true;
          }
       }
    }
 
-   static record ClientLevelReady(long readyAt) implements ClientState {
-      ClientLevelReady(long var1) {
+   private static record ClientLevelReady(long readyAt) implements ClientState {
+      private ClientLevelReady {
          super();
-         this.readyAt = var1;
       }
    }
 }

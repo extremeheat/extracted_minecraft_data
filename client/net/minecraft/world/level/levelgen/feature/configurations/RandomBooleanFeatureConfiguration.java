@@ -8,14 +8,14 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class RandomBooleanFeatureConfiguration implements FeatureConfiguration {
-   public static final Codec<RandomBooleanFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(PlacedFeature.CODEC.fieldOf("feature_true").forGetter((var0x) -> var0x.featureTrue), PlacedFeature.CODEC.fieldOf("feature_false").forGetter((var0x) -> var0x.featureFalse)).apply(var0, RandomBooleanFeatureConfiguration::new));
+   public static final Codec<RandomBooleanFeatureConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(PlacedFeature.CODEC.fieldOf("feature_true").forGetter((c) -> c.featureTrue), PlacedFeature.CODEC.fieldOf("feature_false").forGetter((c) -> c.featureFalse)).apply(i, RandomBooleanFeatureConfiguration::new));
    public final Holder<PlacedFeature> featureTrue;
    public final Holder<PlacedFeature> featureFalse;
 
-   public RandomBooleanFeatureConfiguration(Holder<PlacedFeature> var1, Holder<PlacedFeature> var2) {
+   public RandomBooleanFeatureConfiguration(final Holder<PlacedFeature> featureTrue, final Holder<PlacedFeature> featureFalse) {
       super();
-      this.featureTrue = var1;
-      this.featureFalse = var2;
+      this.featureTrue = featureTrue;
+      this.featureFalse = featureFalse;
    }
 
    public Stream<ConfiguredFeature<?, ?>> getFeatures() {

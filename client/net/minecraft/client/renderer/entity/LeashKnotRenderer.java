@@ -12,20 +12,20 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 
 public class LeashKnotRenderer extends EntityRenderer<LeashFenceKnotEntity, EntityRenderState> {
-   private static final Identifier KNOT_LOCATION = Identifier.withDefaultNamespace("textures/entity/lead_knot.png");
+   private static final Identifier KNOT_LOCATION = Identifier.withDefaultNamespace("textures/entity/lead_knot/lead_knot.png");
    private final LeashKnotModel model;
 
-   public LeashKnotRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
-      this.model = new LeashKnotModel(var1.bakeLayer(ModelLayers.LEASH_KNOT));
+   public LeashKnotRenderer(final EntityRendererProvider.Context context) {
+      super(context);
+      this.model = new LeashKnotModel(context.bakeLayer(ModelLayers.LEASH_KNOT));
    }
 
-   public void submit(EntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      var2.pushPose();
-      var2.scale(-1.0F, -1.0F, 1.0F);
-      var3.submitModel(this.model, var1, var2, this.model.renderType(KNOT_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
-      var2.popPose();
-      super.submit(var1, var2, var3, var4);
+   public void submit(final EntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      poseStack.pushPose();
+      poseStack.scale(-1.0F, -1.0F, 1.0F);
+      submitNodeCollector.submitModel(this.model, state, poseStack, this.model.renderType(KNOT_LOCATION), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      poseStack.popPose();
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
    public EntityRenderState createRenderState() {

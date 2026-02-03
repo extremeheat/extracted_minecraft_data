@@ -10,23 +10,18 @@ import net.minecraft.network.protocol.Packet;
 public class PacketBundleUnpacker extends MessageToMessageEncoder<Packet<?>> {
    private final BundlerInfo bundlerInfo;
 
-   public PacketBundleUnpacker(BundlerInfo var1) {
+   public PacketBundleUnpacker(final BundlerInfo bundlerInfo) {
       super();
-      this.bundlerInfo = var1;
+      this.bundlerInfo = bundlerInfo;
    }
 
-   protected void encode(ChannelHandlerContext var1, Packet<?> var2, List<Object> var3) throws Exception {
+   protected void encode(final ChannelHandlerContext ctx, final Packet<?> msg, final List<Object> out) throws Exception {
       BundlerInfo var10000 = this.bundlerInfo;
-      Objects.requireNonNull(var3);
-      var10000.unbundlePacket(var2, var3::add);
-      if (var2.isTerminal()) {
-         var1.pipeline().remove(var1.name());
+      Objects.requireNonNull(out);
+      var10000.unbundlePacket(msg, out::add);
+      if (msg.isTerminal()) {
+         ctx.pipeline().remove(ctx.name());
       }
 
-   }
-
-   // $FF: synthetic method
-   protected void encode(final ChannelHandlerContext var1, final Object var2, final List var3) throws Exception {
-      this.encode(var1, (Packet)var2, var3);
    }
 }

@@ -7,10 +7,10 @@ import net.minecraft.util.RandomSource;
 public class GustParticle extends SingleQuadParticle {
    private final SpriteSet sprites;
 
-   protected GustParticle(ClientLevel var1, double var2, double var4, double var6, SpriteSet var8) {
-      super(var1, var2, var4, var6, var8.first());
-      this.sprites = var8;
-      this.setSpriteFromAge(var8);
+   protected GustParticle(final ClientLevel level, final double x, final double y, final double z, final SpriteSet sprites) {
+      super(level, x, y, z, sprites.first());
+      this.sprites = sprites;
+      this.setSpriteFromAge(sprites);
       this.lifetime = 12 + this.random.nextInt(4);
       this.quadSize = 1.0F;
       this.setSize(1.0F, 1.0F);
@@ -20,7 +20,7 @@ public class GustParticle extends SingleQuadParticle {
       return SingleQuadParticle.Layer.OPAQUE;
    }
 
-   public int getLightColor(float var1) {
+   public int getLightCoords(final float a) {
       return 15728880;
    }
 
@@ -35,28 +35,28 @@ public class GustParticle extends SingleQuadParticle {
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new GustParticle(var2, var3, var5, var7, this.sprites);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new GustParticle(level, x, y, z, this.sprites);
       }
    }
 
    public static class SmallProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public SmallProvider(SpriteSet var1) {
+      public SmallProvider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         GustParticle var16 = new GustParticle(var2, var3, var5, var7, this.sprites);
-         ((Particle)var16).scale(0.15F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         Particle particle = new GustParticle(level, x, y, z, this.sprites);
+         particle.scale(0.15F);
+         return particle;
       }
    }
 }

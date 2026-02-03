@@ -11,41 +11,41 @@ public interface ContainerComponentManipulator<T> {
 
    T empty();
 
-   T setContents(T var1, Stream<ItemStack> var2);
+   T setContents(T component, Stream<ItemStack> newContents);
 
-   Stream<ItemStack> getContents(T var1);
+   Stream<ItemStack> getContents(T component);
 
-   default void setContents(ItemStack var1, T var2, Stream<ItemStack> var3) {
-      Object var4 = var1.getOrDefault(this.type(), var2);
-      Object var5 = this.setContents(var4, var3);
-      var1.set(this.type(), var5);
+   default void setContents(final ItemStack itemStack, final T defaultValue, final Stream<ItemStack> newContents) {
+      T currentValue = (T)itemStack.getOrDefault(this.type(), defaultValue);
+      T newValue = (T)this.setContents(currentValue, newContents);
+      itemStack.set(this.type(), newValue);
    }
 
-   default void setContents(ItemStack var1, Stream<ItemStack> var2) {
-      this.setContents(var1, this.empty(), var2);
+   default void setContents(final ItemStack itemStack, final Stream<ItemStack> newContents) {
+      this.setContents(itemStack, this.empty(), newContents);
    }
 
-   default void modifyItems(ItemStack var1, UnaryOperator<ItemStack> var2) {
-      Object var3 = var1.get(this.type());
-      if (var3 != null) {
-         UnaryOperator var4 = (var1x) -> {
-            if (var1x.isEmpty()) {
-               return var1x;
+   default void modifyItems(final ItemStack itemStack, final UnaryOperator<ItemStack> modifier) {
+      T contents = (T)itemStack.get(this.type());
+      if (contents != null) {
+         UnaryOperator<ItemStack> nonEmptyModifier = (currentItemStack) -> {
+            if (currentItemStack.isEmpty()) {
+               return currentItemStack;
             } else {
-               ItemStack var2x = (ItemStack)var2.apply(var1x);
-               var2x.limitSize(var2x.getMaxStackSize());
-               return var2x;
+               ItemStack newItemStack = (ItemStack)modifier.apply(currentItemStack);
+               newItemStack.limitSize(newItemStack.getMaxStackSize());
+               return newItemStack;
             }
          };
-         this.setContents(var1, this.getContents(var3).map(var4));
+         this.setContents(itemStack, this.getContents(contents).map(nonEmptyModifier));
       }
 
    }
 
-   default SlotCollection getSlots(ItemStack var1) {
+   default SlotCollection getSlots(final ItemStack itemStack) {
       return () -> {
-         Object var2 = var1.get(this.type());
-         return var2 != null ? this.getContents(var2).filter((var0) -> !var0.isEmpty()) : Stream.empty();
+         T contents = (T)itemStack.get(this.type());
+         return contents != null ? this.getContents(contents).filter((stack) -> !stack.isEmpty()) : Stream.empty();
       };
    }
 }

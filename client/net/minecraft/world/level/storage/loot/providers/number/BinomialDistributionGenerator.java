@@ -1,50 +1,49 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
-import com.google.common.collect.Sets;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Set;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public record BinomialDistributionGenerator(NumberProvider n, NumberProvider p) implements NumberProvider {
-   public static final MapCodec<BinomialDistributionGenerator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(NumberProviders.CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n), NumberProviders.CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)).apply(var0, BinomialDistributionGenerator::new));
+   public static final MapCodec<BinomialDistributionGenerator> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n), NumberProviders.CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)).apply(i, BinomialDistributionGenerator::new));
 
-   public BinomialDistributionGenerator(NumberProvider var1, NumberProvider var2) {
+   public BinomialDistributionGenerator {
       super();
-      this.n = var1;
-      this.p = var2;
    }
 
-   public LootNumberProviderType getType() {
-      return NumberProviders.BINOMIAL;
+   public MapCodec<BinomialDistributionGenerator> codec() {
+      return MAP_CODEC;
    }
 
-   public int getInt(LootContext var1) {
-      int var2 = this.n.getInt(var1);
-      float var3 = this.p.getFloat(var1);
-      RandomSource var4 = var1.getRandom();
-      int var5 = 0;
+   public int getInt(final LootContext context) {
+      int n = this.n.getInt(context);
+      float p = this.p.getFloat(context);
+      RandomSource random = context.getRandom();
+      int result = 0;
 
-      for(int var6 = 0; var6 < var2; ++var6) {
-         if (var4.nextFloat() < var3) {
-            ++var5;
+      for(int i = 0; i < n; ++i) {
+         if (random.nextFloat() < p) {
+            ++result;
          }
       }
 
-      return var5;
+      return result;
    }
 
-   public float getFloat(LootContext var1) {
-      return (float)this.getInt(var1);
+   public float getFloat(final LootContext context) {
+      return (float)this.getInt(context);
    }
 
-   public static BinomialDistributionGenerator binomial(int var0, float var1) {
-      return new BinomialDistributionGenerator(ConstantValue.exactly((float)var0), ConstantValue.exactly(var1));
+   public static BinomialDistributionGenerator binomial(final int n, final float p) {
+      return new BinomialDistributionGenerator(ConstantValue.exactly((float)n), ConstantValue.exactly(p));
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return Sets.union(this.n.getReferencedContextParams(), this.p.getReferencedContextParams());
+   public void validate(final ValidationContext context) {
+      NumberProvider.super.validate(context);
+      Validatable.validate(context, "n", this.n);
+      Validatable.validate(context, "p", this.p);
    }
 }

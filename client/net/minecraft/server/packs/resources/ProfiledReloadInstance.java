@@ -17,78 +17,67 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<State> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Stopwatch total = Stopwatch.createUnstarted();
 
-   public static ReloadInstance of(ResourceManager var0, List<PreparableReloadListener> var1, Executor var2, Executor var3, CompletableFuture<Unit> var4) {
-      ProfiledReloadInstance var5 = new ProfiledReloadInstance(var1);
-      var5.startTasks(var2, var3, var0, var1, (var1x, var2x, var3x, var4x, var5x) -> {
-         AtomicLong var6 = new AtomicLong();
-         AtomicLong var7 = new AtomicLong();
-         AtomicLong var8 = new AtomicLong();
-         AtomicLong var9 = new AtomicLong();
-         CompletableFuture var10 = var3x.reload(var1x, profiledExecutor(var4x, var6, var7, var3x.getName()), var2x, profiledExecutor(var5x, var8, var9, var3x.getName()));
-         return var10.thenApplyAsync((var5) -> {
-            LOGGER.debug("Finished reloading {}", var3x.getName());
-            return new State(var3x.getName(), var6, var7, var8, var9);
-         }, var3);
-      }, var4);
-      return var5;
+   public static ReloadInstance of(final ResourceManager resourceManager, final List<PreparableReloadListener> listeners, final Executor taskExecutor, final Executor mainThreadExecutor, final CompletableFuture<Unit> initialTask) {
+      ProfiledReloadInstance result = new ProfiledReloadInstance(listeners);
+      result.startTasks(taskExecutor, mainThreadExecutor, resourceManager, listeners, (currentReload, previousStep, listener, parentTaskExecutor, parentReloadExecutor) -> {
+         AtomicLong preparationNanos = new AtomicLong();
+         AtomicLong preparationCount = new AtomicLong();
+         AtomicLong reloadNanos = new AtomicLong();
+         AtomicLong reloadCount = new AtomicLong();
+         CompletableFuture<Void> reload = listener.reload(currentReload, profiledExecutor(parentTaskExecutor, preparationNanos, preparationCount, listener.getName()), previousStep, profiledExecutor(parentReloadExecutor, reloadNanos, reloadCount, listener.getName()));
+         return reload.thenApplyAsync((v) -> {
+            LOGGER.debug("Finished reloading {}", listener.getName());
+            return new State(listener.getName(), preparationNanos, preparationCount, reloadNanos, reloadCount);
+         }, mainThreadExecutor);
+      }, initialTask);
+      return result;
    }
 
-   private ProfiledReloadInstance(List<PreparableReloadListener> var1) {
-      super(var1);
+   private ProfiledReloadInstance(final List<PreparableReloadListener> listeners) {
+      super(listeners);
       this.total.start();
    }
 
-   protected CompletableFuture<List<State>> prepareTasks(Executor var1, Executor var2, ResourceManager var3, List<PreparableReloadListener> var4, SimpleReloadInstance.StateFactory<State> var5, CompletableFuture<?> var6) {
-      return super.prepareTasks(var1, var2, var3, var4, var5, var6).thenApplyAsync(this::finish, var2);
+   protected CompletableFuture<List<State>> prepareTasks(final Executor taskExecutor, final Executor mainThreadExecutor, final ResourceManager resourceManager, final List<PreparableReloadListener> listeners, final SimpleReloadInstance.StateFactory<State> stateFactory, final CompletableFuture<?> initialTask) {
+      return super.prepareTasks(taskExecutor, mainThreadExecutor, resourceManager, listeners, stateFactory, initialTask).thenApplyAsync(this::finish, mainThreadExecutor);
    }
 
-   private static Executor profiledExecutor(Executor var0, AtomicLong var1, AtomicLong var2, String var3) {
-      return (var4) -> var0.execute(() -> {
-            ProfilerFiller var4x = Profiler.get();
-            var4x.push(var3);
-            long var5 = Util.getNanos();
-            var4.run();
-            var1.addAndGet(Util.getNanos() - var5);
-            var2.incrementAndGet();
-            var4x.pop();
+   private static Executor profiledExecutor(final Executor executor, final AtomicLong accumulatedNanos, final AtomicLong taskCount, final String name) {
+      return (r) -> executor.execute(() -> {
+            ProfilerFiller profiler = Profiler.get();
+            profiler.push(name);
+            long nanos = Util.getNanos();
+            r.run();
+            accumulatedNanos.addAndGet(Util.getNanos() - nanos);
+            taskCount.incrementAndGet();
+            profiler.pop();
          });
    }
 
-   private List<State> finish(List<State> var1) {
+   private List<State> finish(final List<State> result) {
       this.total.stop();
-      long var2 = 0L;
+      long blockingTime = 0L;
       LOGGER.info("Resource reload finished after {} ms", this.total.elapsed(TimeUnit.MILLISECONDS));
 
-      for(State var5 : var1) {
-         long var6 = TimeUnit.NANOSECONDS.toMillis(var5.preparationNanos.get());
-         long var8 = var5.preparationCount.get();
-         long var10 = TimeUnit.NANOSECONDS.toMillis(var5.reloadNanos.get());
-         long var12 = var5.reloadCount.get();
-         long var14 = var6 + var10;
-         long var16 = var8 + var12;
-         String var18 = var5.name;
-         LOGGER.info("{} took approximately {} tasks/{} ms ({} tasks/{} ms preparing, {} tasks/{} ms applying)", new Object[]{var18, var16, var14, var8, var6, var12, var10});
-         var2 += var10;
+      for(State state : result) {
+         long prepTime = TimeUnit.NANOSECONDS.toMillis(state.preparationNanos.get());
+         long prepCount = state.preparationCount.get();
+         long reloadTime = TimeUnit.NANOSECONDS.toMillis(state.reloadNanos.get());
+         long reloadCount = state.reloadCount.get();
+         long totalTime = prepTime + reloadTime;
+         long totalCount = prepCount + reloadCount;
+         String name = state.name;
+         LOGGER.info("{} took approximately {} tasks/{} ms ({} tasks/{} ms preparing, {} tasks/{} ms applying)", new Object[]{name, totalCount, totalTime, prepCount, prepTime, reloadCount, reloadTime});
+         blockingTime += reloadTime;
       }
 
-      LOGGER.info("Total blocking time: {} ms", var2);
-      return var1;
+      LOGGER.info("Total blocking time: {} ms", blockingTime);
+      return result;
    }
 
    public static record State(String name, AtomicLong preparationNanos, AtomicLong preparationCount, AtomicLong reloadNanos, AtomicLong reloadCount) {
-      final String name;
-      final AtomicLong preparationNanos;
-      final AtomicLong preparationCount;
-      final AtomicLong reloadNanos;
-      final AtomicLong reloadCount;
-
-      public State(String var1, AtomicLong var2, AtomicLong var3, AtomicLong var4, AtomicLong var5) {
+      public State {
          super();
-         this.name = var1;
-         this.preparationNanos = var2;
-         this.preparationCount = var3;
-         this.reloadNanos = var4;
-         this.reloadCount = var5;
       }
    }
 }

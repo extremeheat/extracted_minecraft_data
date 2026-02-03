@@ -9,14 +9,13 @@ public record GuiMetadataSection(GuiSpriteScaling scaling) {
    public static final Codec<GuiMetadataSection> CODEC;
    public static final MetadataSectionType<GuiMetadataSection> TYPE;
 
-   public GuiMetadataSection(GuiSpriteScaling var1) {
+   public GuiMetadataSection {
       super();
-      this.scaling = var1;
    }
 
    static {
       DEFAULT = new GuiMetadataSection(GuiSpriteScaling.DEFAULT);
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(GuiSpriteScaling.CODEC.optionalFieldOf("scaling", GuiSpriteScaling.DEFAULT).forGetter(GuiMetadataSection::scaling)).apply(var0, GuiMetadataSection::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(GuiSpriteScaling.CODEC.optionalFieldOf("scaling", GuiSpriteScaling.DEFAULT).forGetter(GuiMetadataSection::scaling)).apply(i, GuiMetadataSection::new));
       TYPE = new MetadataSectionType<GuiMetadataSection>("gui", CODEC);
    }
 }

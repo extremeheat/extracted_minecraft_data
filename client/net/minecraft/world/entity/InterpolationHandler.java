@@ -16,24 +16,24 @@ public class InterpolationHandler {
    private @Nullable Vec2 previousTickRot;
    private final @Nullable Consumer<InterpolationHandler> onInterpolationStart;
 
-   public InterpolationHandler(Entity var1) {
-      this(var1, 3, (Consumer)null);
+   public InterpolationHandler(final Entity entity) {
+      this(entity, 3, (Consumer)null);
    }
 
-   public InterpolationHandler(Entity var1, int var2) {
-      this(var1, var2, (Consumer)null);
+   public InterpolationHandler(final Entity entity, final int interpolationSteps) {
+      this(entity, interpolationSteps, (Consumer)null);
    }
 
-   public InterpolationHandler(Entity var1, @Nullable Consumer<InterpolationHandler> var2) {
-      this(var1, 3, var2);
+   public InterpolationHandler(final Entity entity, final @Nullable Consumer<InterpolationHandler> onInterpolationStart) {
+      this(entity, 3, onInterpolationStart);
    }
 
-   public InterpolationHandler(Entity var1, int var2, @Nullable Consumer<InterpolationHandler> var3) {
+   public InterpolationHandler(final Entity entity, final int interpolationSteps, final @Nullable Consumer<InterpolationHandler> onInterpolationStart) {
       super();
       this.interpolationData = new InterpolationData(0, Vec3.ZERO, 0.0F, 0.0F);
-      this.interpolationSteps = var2;
-      this.entity = var1;
-      this.onInterpolationStart = var3;
+      this.interpolationSteps = interpolationSteps;
+      this.entity = entity;
+      this.onInterpolationStart = onInterpolationStart;
    }
 
    public Vec3 position() {
@@ -48,15 +48,15 @@ public class InterpolationHandler {
       return this.interpolationData.steps > 0 ? this.interpolationData.xRot : this.entity.getXRot();
    }
 
-   public void interpolateTo(Vec3 var1, float var2, float var3) {
+   public void interpolateTo(final Vec3 position, final float yRot, final float xRot) {
       if (this.interpolationSteps == 0) {
-         this.entity.snapTo(var1, var2, var3);
+         this.entity.snapTo(position, yRot, xRot);
          this.cancel();
-      } else if (!this.hasActiveInterpolation() || !Objects.equals(this.yRot(), var2) || !Objects.equals(this.xRot(), var3) || !Objects.equals(this.position(), var1)) {
+      } else if (!this.hasActiveInterpolation() || !Objects.equals(this.yRot(), yRot) || !Objects.equals(this.xRot(), xRot) || !Objects.equals(this.position(), position)) {
          this.interpolationData.steps = this.interpolationSteps;
-         this.interpolationData.position = var1;
-         this.interpolationData.yRot = var2;
-         this.interpolationData.xRot = var3;
+         this.interpolationData.position = position;
+         this.interpolationData.yRot = yRot;
+         this.interpolationData.xRot = xRot;
          this.previousTickPosition = this.entity.position();
          this.previousTickRot = new Vec2(this.entity.getXRot(), this.entity.getYRot());
          if (this.onInterpolationStart != null) {
@@ -70,38 +70,38 @@ public class InterpolationHandler {
       return this.interpolationData.steps > 0;
    }
 
-   public void setInterpolationLength(int var1) {
-      this.interpolationSteps = var1;
+   public void setInterpolationLength(final int steps) {
+      this.interpolationSteps = steps;
    }
 
    public void interpolate() {
       if (!this.hasActiveInterpolation()) {
          this.cancel();
       } else {
-         double var1 = 1.0 / (double)this.interpolationData.steps;
+         double alpha = 1.0 / (double)this.interpolationData.steps;
          if (this.previousTickPosition != null) {
-            Vec3 var3 = this.entity.position().subtract(this.previousTickPosition);
-            if (this.entity.level().noCollision(this.entity, this.entity.makeBoundingBox(this.interpolationData.position.add(var3)))) {
-               this.interpolationData.addDelta(var3);
+            Vec3 deltaSinceLastInterpolation = this.entity.position().subtract(this.previousTickPosition);
+            if (this.entity.level().noCollision(this.entity, this.entity.makeBoundingBox(this.interpolationData.position.add(deltaSinceLastInterpolation)))) {
+               this.interpolationData.addDelta(deltaSinceLastInterpolation);
             }
          }
 
          if (this.previousTickRot != null) {
-            float var12 = this.entity.getYRot() - this.previousTickRot.y;
-            float var4 = this.entity.getXRot() - this.previousTickRot.x;
-            this.interpolationData.addRotation(var12, var4);
+            float deltaYRotSinceLastInterpolation = this.entity.getYRot() - this.previousTickRot.y;
+            float deltaXRotSinceLastInterpolation = this.entity.getXRot() - this.previousTickRot.x;
+            this.interpolationData.addRotation(deltaYRotSinceLastInterpolation, deltaXRotSinceLastInterpolation);
          }
 
-         double var13 = Mth.lerp(var1, this.entity.getX(), this.interpolationData.position.x);
-         double var5 = Mth.lerp(var1, this.entity.getY(), this.interpolationData.position.y);
-         double var7 = Mth.lerp(var1, this.entity.getZ(), this.interpolationData.position.z);
-         Vec3 var9 = new Vec3(var13, var5, var7);
-         float var10 = (float)Mth.rotLerp(var1, (double)this.entity.getYRot(), (double)this.interpolationData.yRot);
-         float var11 = (float)Mth.lerp(var1, (double)this.entity.getXRot(), (double)this.interpolationData.xRot);
-         this.entity.setPos(var9);
-         this.entity.setRot(var10, var11);
+         double x = Mth.lerp(alpha, this.entity.getX(), this.interpolationData.position.x);
+         double y = Mth.lerp(alpha, this.entity.getY(), this.interpolationData.position.y);
+         double z = Mth.lerp(alpha, this.entity.getZ(), this.interpolationData.position.z);
+         Vec3 newPosition = new Vec3(x, y, z);
+         float newYRot = (float)Mth.rotLerp(alpha, (double)this.entity.getYRot(), (double)this.interpolationData.yRot);
+         float newXRot = (float)Mth.lerp(alpha, (double)this.entity.getXRot(), (double)this.interpolationData.xRot);
+         this.entity.setPos(newPosition);
+         this.entity.setRot(newYRot, newXRot);
          this.interpolationData.decrease();
-         this.previousTickPosition = var9;
+         this.previousTickPosition = newPosition;
          this.previousTickRot = new Vec2(this.entity.getXRot(), this.entity.getYRot());
       }
    }
@@ -112,31 +112,31 @@ public class InterpolationHandler {
       this.previousTickRot = null;
    }
 
-   static class InterpolationData {
+   private static class InterpolationData {
       protected int steps;
       Vec3 position;
       float yRot;
       float xRot;
 
-      InterpolationData(int var1, Vec3 var2, float var3, float var4) {
+      private InterpolationData(final int steps, final Vec3 position, final float yRot, final float xRot) {
          super();
-         this.steps = var1;
-         this.position = var2;
-         this.yRot = var3;
-         this.xRot = var4;
+         this.steps = steps;
+         this.position = position;
+         this.yRot = yRot;
+         this.xRot = xRot;
       }
 
       public void decrease() {
          --this.steps;
       }
 
-      public void addDelta(Vec3 var1) {
-         this.position = this.position.add(var1);
+      public void addDelta(final Vec3 delta) {
+         this.position = this.position.add(delta);
       }
 
-      public void addRotation(float var1, float var2) {
-         this.yRot += var1;
-         this.xRot += var2;
+      public void addRotation(final float yRot, final float xRot) {
+         this.yRot += yRot;
+         this.xRot += xRot;
       }
    }
 }

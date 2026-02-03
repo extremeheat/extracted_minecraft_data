@@ -10,30 +10,30 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 public class CountDownCooldownTicks extends Behavior<LivingEntity> {
    private final MemoryModuleType<Integer> cooldownTicks;
 
-   public CountDownCooldownTicks(MemoryModuleType<Integer> var1) {
-      super(ImmutableMap.of(var1, MemoryStatus.VALUE_PRESENT));
-      this.cooldownTicks = var1;
+   public CountDownCooldownTicks(final MemoryModuleType<Integer> cooldownTicks) {
+      super(ImmutableMap.of(cooldownTicks, MemoryStatus.VALUE_PRESENT));
+      this.cooldownTicks = cooldownTicks;
    }
 
-   private Optional<Integer> getCooldownTickMemory(LivingEntity var1) {
-      return var1.getBrain().<Integer>getMemory(this.cooldownTicks);
+   private Optional<Integer> getCooldownTickMemory(final LivingEntity body) {
+      return body.getBrain().<Integer>getMemory(this.cooldownTicks);
    }
 
-   protected boolean timedOut(long var1) {
+   protected boolean timedOut(final long timestamp) {
       return false;
    }
 
-   protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
-      Optional var5 = this.getCooldownTickMemory(var2);
-      return var5.isPresent() && (Integer)var5.get() > 0;
+   protected boolean canStillUse(final ServerLevel level, final LivingEntity body, final long timestamp) {
+      Optional<Integer> calmDownTicks = this.getCooldownTickMemory(body);
+      return calmDownTicks.isPresent() && (Integer)calmDownTicks.get() > 0;
    }
 
-   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
-      Optional var5 = this.getCooldownTickMemory(var2);
-      var2.getBrain().setMemory(this.cooldownTicks, (Integer)var5.get() - 1);
+   protected void tick(final ServerLevel level, final LivingEntity body, final long timestamp) {
+      Optional<Integer> calmDownTicks = this.getCooldownTickMemory(body);
+      body.getBrain().setMemory(this.cooldownTicks, (Integer)calmDownTicks.get() - 1);
    }
 
-   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
-      var2.getBrain().eraseMemory(this.cooldownTicks);
+   protected void stop(final ServerLevel level, final LivingEntity body, final long timestamp) {
+      body.getBrain().eraseMemory(this.cooldownTicks);
    }
 }

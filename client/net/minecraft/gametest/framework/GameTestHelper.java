@@ -1,6 +1,7 @@
 package net.minecraft.gametest.framework;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Either;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -17,8 +18,10 @@ import java.util.stream.LongStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceKey;
@@ -73,43 +76,43 @@ public class GameTestHelper {
    private final GameTestInfo testInfo;
    private boolean finalCheckAdded;
 
-   public GameTestHelper(GameTestInfo var1) {
+   public GameTestHelper(final GameTestInfo testInfo) {
       super();
-      this.testInfo = var1;
+      this.testInfo = testInfo;
    }
 
-   public GameTestAssertException assertionException(Component var1) {
-      return new GameTestAssertException(var1, this.testInfo.getTick());
+   public GameTestAssertException assertionException(final Component description) {
+      return new GameTestAssertException(description, this.testInfo.getTick());
    }
 
-   public GameTestAssertException assertionException(String var1, Object... var2) {
-      return this.assertionException(Component.translatableEscape(var1, var2));
+   public GameTestAssertException assertionException(final String descriptionId, final Object... arguments) {
+      return this.assertionException(Component.translatableEscape(descriptionId, arguments));
    }
 
-   public GameTestAssertPosException assertionException(BlockPos var1, Component var2) {
-      return new GameTestAssertPosException(var2, this.absolutePos(var1), var1, this.testInfo.getTick());
+   public GameTestAssertPosException assertionException(final BlockPos pos, final Component description) {
+      return new GameTestAssertPosException(description, this.absolutePos(pos), pos, this.testInfo.getTick());
    }
 
-   public GameTestAssertPosException assertionException(BlockPos var1, String var2, Object... var3) {
-      return this.assertionException((BlockPos)var1, (Component)Component.translatableEscape(var2, var3));
+   public GameTestAssertPosException assertionException(final BlockPos pos, final String descriptionId, final Object... arguments) {
+      return this.assertionException((BlockPos)pos, (Component)Component.translatableEscape(descriptionId, arguments));
    }
 
    public ServerLevel getLevel() {
       return this.testInfo.getLevel();
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      return this.getLevel().getBlockState(this.absolutePos(var1));
+   public BlockState getBlockState(final BlockPos pos) {
+      return this.getLevel().getBlockState(this.absolutePos(pos));
    }
 
-   public <T extends BlockEntity> T getBlockEntity(BlockPos var1, Class<T> var2) {
-      BlockEntity var3 = this.getLevel().getBlockEntity(this.absolutePos(var1));
-      if (var3 == null) {
-         throw this.assertionException(var1, "test.error.missing_block_entity");
-      } else if (var2.isInstance(var3)) {
-         return (T)(var2.cast(var3));
+   public <T extends BlockEntity> T getBlockEntity(final BlockPos pos, final Class<T> type) {
+      BlockEntity blockEntity = this.getLevel().getBlockEntity(this.absolutePos(pos));
+      if (blockEntity == null) {
+         throw this.assertionException(pos, "test.error.missing_block_entity");
+      } else if (type.isInstance(blockEntity)) {
+         return (T)(type.cast(blockEntity));
       } else {
-         throw this.assertionException(var1, "test.error.wrong_block_entity", var3.getType().builtInRegistryHolder().getRegisteredName());
+         throw this.assertionException(pos, "test.error.wrong_block_entity", blockEntity.typeHolder().getRegisteredName());
       }
    }
 
@@ -117,211 +120,215 @@ public class GameTestHelper {
       this.killAllEntitiesOfClass(Entity.class);
    }
 
-   public void killAllEntitiesOfClass(Class<? extends Entity> var1) {
-      AABB var2 = this.getBounds();
-      List var3 = this.getLevel().getEntitiesOfClass(var1, var2.inflate(1.0), (var0) -> !(var0 instanceof Player));
-      var3.forEach((var1x) -> var1x.kill(this.getLevel()));
+   public void killAllEntitiesOfClass(final Class<? extends Entity> baseClass) {
+      AABB bounds = this.getBounds();
+      List<? extends Entity> entities = this.getLevel().getEntitiesOfClass(baseClass, bounds.inflate(1.0), (mob) -> !(mob instanceof Player));
+      entities.forEach((entity) -> entity.kill(this.getLevel()));
    }
 
-   public ItemEntity spawnItem(Item var1, Vec3 var2) {
-      ServerLevel var3 = this.getLevel();
-      Vec3 var4 = this.absoluteVec(var2);
-      ItemEntity var5 = new ItemEntity(var3, var4.x, var4.y, var4.z, new ItemStack(var1, 1));
-      var5.setDeltaMovement(0.0, 0.0, 0.0);
-      var3.addFreshEntity(var5);
-      return var5;
+   public ItemEntity spawnItem(final Item item, final Vec3 pos) {
+      ServerLevel level = this.getLevel();
+      Vec3 absoluteVec = this.absoluteVec(pos);
+      ItemEntity itemEntity = new ItemEntity(level, absoluteVec.x, absoluteVec.y, absoluteVec.z, new ItemStack(item, 1));
+      itemEntity.setDeltaMovement(0.0, 0.0, 0.0);
+      level.addFreshEntity(itemEntity);
+      return itemEntity;
    }
 
-   public ItemEntity spawnItem(Item var1, float var2, float var3, float var4) {
-      return this.spawnItem(var1, new Vec3((double)var2, (double)var3, (double)var4));
+   public ItemEntity spawnItem(final Item item, final float x, final float y, final float z) {
+      return this.spawnItem(item, new Vec3((double)x, (double)y, (double)z));
    }
 
-   public ItemEntity spawnItem(Item var1, BlockPos var2) {
-      return this.spawnItem(var1, (float)var2.getX(), (float)var2.getY(), (float)var2.getZ());
+   public ItemEntity spawnItem(final Item item, final BlockPos pos) {
+      return this.spawnItem(item, (float)pos.getX(), (float)pos.getY(), (float)pos.getZ());
    }
 
-   public <E extends Entity> E spawn(EntityType<E> var1, BlockPos var2) {
-      return (E)this.spawn(var1, Vec3.atBottomCenterOf(var2));
+   public <E extends Entity> E spawn(final EntityType<E> entityType, final BlockPos pos) {
+      return (E)this.spawn(entityType, Vec3.atBottomCenterOf(pos));
    }
 
-   public <E extends Entity> List<E> spawn(EntityType<E> var1, BlockPos var2, int var3) {
-      return this.spawn(var1, Vec3.atBottomCenterOf(var2), var3);
+   public <E extends Entity> List<E> spawn(final EntityType<E> entityType, final BlockPos pos, final int amount) {
+      return this.spawn(entityType, Vec3.atBottomCenterOf(pos), amount);
    }
 
-   public <E extends Entity> List<E> spawn(EntityType<E> var1, Vec3 var2, int var3) {
-      ArrayList var4 = new ArrayList();
+   public <E extends Entity> List<E> spawn(final EntityType<E> entityType, final Vec3 pos, final int amount) {
+      List<E> entities = new ArrayList();
 
-      for(int var5 = 0; var5 < var3; ++var5) {
-         var4.add(this.spawn(var1, var2));
+      for(int i = 0; i < amount; ++i) {
+         entities.add(this.spawn(entityType, pos));
       }
 
-      return var4;
+      return entities;
    }
 
-   public <E extends Entity> E spawn(EntityType<E> var1, Vec3 var2) {
-      return (E)this.spawn(var1, var2, (EntitySpawnReason)null);
+   public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos) {
+      return (E)this.spawn(entityType, pos, (EntitySpawnReason)null);
    }
 
-   public <E extends Entity> E spawn(EntityType<E> var1, Vec3 var2, @Nullable EntitySpawnReason var3) {
-      ServerLevel var4 = this.getLevel();
-      Entity var5 = var1.create(var4, EntitySpawnReason.STRUCTURE);
-      if (var5 == null) {
-         throw this.assertionException(BlockPos.containing(var2), "test.error.spawn_failure", var1.builtInRegistryHolder().getRegisteredName());
+   public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos, final @Nullable EntitySpawnReason spawnReason) {
+      ServerLevel level = this.getLevel();
+      E entity = entityType.create(level, EntitySpawnReason.STRUCTURE);
+      if (entity == null) {
+         throw this.assertionException(BlockPos.containing(pos), "test.error.spawn_failure", entityType.builtInRegistryHolder().getRegisteredName());
       } else {
-         if (var5 instanceof Mob) {
-            Mob var6 = (Mob)var5;
-            var6.setPersistenceRequired();
+         if (entity instanceof Mob) {
+            Mob mob = (Mob)entity;
+            mob.setPersistenceRequired();
          }
 
-         Vec3 var9 = this.absoluteVec(var2);
-         float var7 = var5.rotate(this.getTestRotation());
-         var5.snapTo(var9.x, var9.y, var9.z, var7, var5.getXRot());
-         var5.setYBodyRot(var7);
-         var5.setYHeadRot(var7);
-         if (var3 != null && var5 instanceof Mob) {
-            Mob var8 = (Mob)var5;
-            var8.finalizeSpawn(this.getLevel(), this.getLevel().getCurrentDifficultyAt(var8.blockPosition()), var3, (SpawnGroupData)null);
+         Vec3 absoluteVec = this.absoluteVec(pos);
+         float yRot = entity.rotate(this.getTestRotation());
+         entity.snapTo(absoluteVec.x, absoluteVec.y, absoluteVec.z, yRot, entity.getXRot());
+         entity.setYBodyRot(yRot);
+         entity.setYHeadRot(yRot);
+         if (spawnReason != null && entity instanceof Mob) {
+            Mob mob = (Mob)entity;
+            mob.finalizeSpawn(this.getLevel(), this.getLevel().getCurrentDifficultyAt(mob.blockPosition()), spawnReason, (SpawnGroupData)null);
          }
 
-         var4.addFreshEntityWithPassengers(var5);
-         return (E)var5;
+         level.addFreshEntityWithPassengers(entity);
+         return entity;
       }
    }
 
-   public <E extends Mob> E spawn(EntityType<E> var1, int var2, int var3, int var4, EntitySpawnReason var5) {
-      return (E)(this.spawn(var1, new Vec3((double)var2, (double)var3, (double)var4), var5));
+   public <E extends Mob> E spawn(final EntityType<E> entityType, final int x, final int y, final int z, final EntitySpawnReason entitySpawnReason) {
+      return (E)(this.spawn(entityType, new Vec3((double)x, (double)y, (double)z), entitySpawnReason));
    }
 
-   public void hurt(Entity var1, DamageSource var2, float var3) {
-      var1.hurtServer(this.getLevel(), var2, var3);
+   public void hurt(final Entity entity, final DamageSource source, final float damage) {
+      entity.hurtServer(this.getLevel(), source, damage);
    }
 
-   public void kill(Entity var1) {
-      var1.kill(this.getLevel());
+   public void kill(final Entity entity) {
+      entity.kill(this.getLevel());
    }
 
-   public <E extends Entity> E findOneEntity(EntityType<E> var1) {
-      return (E)this.findClosestEntity(var1, 0, 0, 0, 2.147483647E9);
+   public <E extends Entity> E findOneEntity(final EntityType<E> entityType) {
+      return (E)this.findClosestEntity(entityType, 0, 0, 0, 2.147483647E9);
    }
 
-   public <E extends Entity> E findClosestEntity(EntityType<E> var1, int var2, int var3, int var4, double var5) {
-      List var7 = this.findEntities(var1, var2, var3, var4, var5);
-      if (var7.isEmpty()) {
-         throw this.assertionException("test.error.expected_entity_around", var1.getDescription(), var2, var3, var4);
-      } else if (var7.size() > 1) {
-         throw this.assertionException("test.error.too_many_entities", var1.toShortString(), var2, var3, var4, var7.size());
+   public <E extends Entity> E findClosestEntity(final EntityType<E> entityType, final int x, final int y, final int z, final double distance) {
+      List<E> entities = this.<E>findEntities(entityType, x, y, z, distance);
+      if (entities.isEmpty()) {
+         throw this.assertionException("test.error.expected_entity_around", entityType.getDescription(), x, y, z);
+      } else if (entities.size() > 1) {
+         throw this.assertionException("test.error.too_many_entities", entityType.toShortString(), x, y, z, entities.size());
       } else {
-         Vec3 var8 = this.absoluteVec(new Vec3((double)var2, (double)var3, (double)var4));
-         var7.sort((var1x, var2x) -> {
-            double var3 = var1x.position().distanceTo(var8);
-            double var5 = var2x.position().distanceTo(var8);
-            return Double.compare(var3, var5);
+         Vec3 center = this.absoluteVec(new Vec3((double)x, (double)y, (double)z));
+         entities.sort((e1, e2) -> {
+            double d1 = e1.position().distanceTo(center);
+            double d2 = e2.position().distanceTo(center);
+            return Double.compare(d1, d2);
          });
-         return (E)(var7.get(0));
+         return (E)(entities.get(0));
       }
    }
 
-   public <E extends Entity> List<E> findEntities(EntityType<E> var1, int var2, int var3, int var4, double var5) {
-      return this.<E>findEntities(var1, Vec3.atBottomCenterOf(new BlockPos(var2, var3, var4)), var5);
+   public <E extends Entity> List<E> findEntities(final EntityType<E> entityType, final int x, final int y, final int z, final double distance) {
+      return this.<E>findEntities(entityType, Vec3.atBottomCenterOf(new BlockPos(x, y, z)), distance);
    }
 
-   public <E extends Entity> List<E> findEntities(EntityType<E> var1, Vec3 var2, double var3) {
-      ServerLevel var5 = this.getLevel();
-      Vec3 var6 = this.absoluteVec(var2);
-      AABB var7 = this.testInfo.getStructureBounds();
-      AABB var8 = new AABB(var6.add(-var3, -var3, -var3), var6.add(var3, var3, var3));
-      return var5.getEntities(var1, var7, (var1x) -> var1x.getBoundingBox().intersects(var8) && var1x.isAlive());
+   public <E extends Entity> List<E> findEntities(final EntityType<E> entityType, final Vec3 pos, final double distance) {
+      ServerLevel level = this.getLevel();
+      Vec3 absoluteVec = this.absoluteVec(pos);
+      AABB structureBounds = this.testInfo.getStructureBounds();
+      AABB containedBounds = new AABB(absoluteVec.add(-distance, -distance, -distance), absoluteVec.add(distance, distance, distance));
+      return level.getEntities(entityType, structureBounds, (e) -> e.getBoundingBox().intersects(containedBounds) && e.isAlive());
    }
 
-   public <E extends Entity> E spawn(EntityType<E> var1, int var2, int var3, int var4) {
-      return (E)this.spawn(var1, new BlockPos(var2, var3, var4));
+   public <E extends Entity> E spawn(final EntityType<E> entityType, final int x, final int y, final int z) {
+      return (E)this.spawn(entityType, new BlockPos(x, y, z));
    }
 
-   public <E extends Entity> E spawn(EntityType<E> var1, float var2, float var3, float var4) {
-      return (E)this.spawn(var1, new Vec3((double)var2, (double)var3, (double)var4));
+   public <E extends Entity> E spawn(final EntityType<E> entityType, final float x, final float y, final float z) {
+      return (E)this.spawn(entityType, new Vec3((double)x, (double)y, (double)z));
    }
 
-   public <E extends Mob> E spawnWithNoFreeWill(EntityType<E> var1, BlockPos var2) {
-      Mob var3 = (Mob)this.spawn(var1, var2);
-      var3.removeFreeWill();
-      return (E)var3;
+   public <E extends Mob> E spawnWithNoFreeWill(final EntityType<E> entityType, final BlockPos pos) {
+      E entity = (E)(this.spawn(entityType, pos));
+      entity.removeFreeWill();
+      return entity;
    }
 
-   public <E extends Mob> E spawnWithNoFreeWill(EntityType<E> var1, int var2, int var3, int var4) {
-      return (E)this.spawnWithNoFreeWill(var1, new BlockPos(var2, var3, var4));
+   public <E extends Mob> E spawnWithNoFreeWill(final EntityType<E> entityType, final int x, final int y, final int z) {
+      return (E)this.spawnWithNoFreeWill(entityType, new BlockPos(x, y, z));
    }
 
-   public <E extends Mob> E spawnWithNoFreeWill(EntityType<E> var1, Vec3 var2) {
-      Mob var3 = (Mob)this.spawn(var1, var2);
-      var3.removeFreeWill();
-      return (E)var3;
+   public <E extends Mob> E spawnWithNoFreeWill(final EntityType<E> entityType, final Vec3 pos) {
+      E entity = (E)(this.spawn(entityType, pos));
+      entity.removeFreeWill();
+      return entity;
    }
 
-   public <E extends Mob> E spawnWithNoFreeWill(EntityType<E> var1, float var2, float var3, float var4) {
-      return (E)this.spawnWithNoFreeWill(var1, new Vec3((double)var2, (double)var3, (double)var4));
+   public <E extends Mob> E spawnWithNoFreeWill(final EntityType<E> entityType, final float x, final float y, final float z) {
+      return (E)this.spawnWithNoFreeWill(entityType, new Vec3((double)x, (double)y, (double)z));
    }
 
-   public void moveTo(Mob var1, float var2, float var3, float var4) {
-      Vec3 var5 = this.absoluteVec(new Vec3((double)var2, (double)var3, (double)var4));
-      var1.snapTo(var5.x, var5.y, var5.z, var1.getYRot(), var1.getXRot());
+   public void moveTo(final Mob mob, final float x, final float y, final float z) {
+      Vec3 absoluteVec = this.absoluteVec(new Vec3((double)x, (double)y, (double)z));
+      mob.snapTo(absoluteVec.x, absoluteVec.y, absoluteVec.z, mob.getYRot(), mob.getXRot());
    }
 
-   public GameTestSequence walkTo(Mob var1, BlockPos var2, float var3) {
+   public GameTestSequence walkTo(final Mob mob, final BlockPos targetPos, final float speedModifier) {
       return this.startSequence().thenExecuteAfter(2, () -> {
-         Path var4 = var1.getNavigation().createPath(this.absolutePos(var2), 0);
-         var1.getNavigation().moveTo(var4, (double)var3);
+         Path path = mob.getNavigation().createPath(this.absolutePos(targetPos), 0);
+         mob.getNavigation().moveTo(path, (double)speedModifier);
       });
    }
 
-   public void pressButton(int var1, int var2, int var3) {
-      this.pressButton(new BlockPos(var1, var2, var3));
+   public void pressButton(final int x, final int y, final int z) {
+      this.pressButton(new BlockPos(x, y, z));
    }
 
-   public void pressButton(BlockPos var1) {
-      this.assertBlockTag(BlockTags.BUTTONS, var1);
-      BlockPos var2 = this.absolutePos(var1);
-      BlockState var3 = this.getLevel().getBlockState(var2);
-      ButtonBlock var4 = (ButtonBlock)var3.getBlock();
-      var4.press(var3, this.getLevel(), var2, (Player)null);
+   public void pressButton(final BlockPos buttonPos) {
+      this.assertBlockTag(BlockTags.BUTTONS, buttonPos);
+      BlockPos absolutePos = this.absolutePos(buttonPos);
+      BlockState blockState = this.getLevel().getBlockState(absolutePos);
+      ButtonBlock buttonBlock = (ButtonBlock)blockState.getBlock();
+      buttonBlock.press(blockState, this.getLevel(), absolutePos, (Player)null);
    }
 
-   public void useBlock(BlockPos var1) {
-      this.useBlock(var1, this.makeMockPlayer(GameType.CREATIVE));
+   public void useBlock(final BlockPos relativePos) {
+      this.useBlock(relativePos, this.makeMockPlayer(GameType.CREATIVE));
    }
 
-   public void useBlock(BlockPos var1, Player var2) {
-      BlockPos var3 = this.absolutePos(var1);
-      this.useBlock(var1, var2, new BlockHitResult(Vec3.atCenterOf(var3), Direction.NORTH, var3, true));
+   public void useBlock(final BlockPos relativePos, final Player player) {
+      BlockPos absolutePos = this.absolutePos(relativePos);
+      this.useBlock(relativePos, player, new BlockHitResult(Vec3.atCenterOf(absolutePos), Direction.NORTH, absolutePos, true));
    }
 
-   public void useBlock(BlockPos var1, Player var2, BlockHitResult var3) {
-      BlockPos var4 = this.absolutePos(var1);
-      BlockState var5 = this.getLevel().getBlockState(var4);
-      InteractionHand var6 = InteractionHand.MAIN_HAND;
-      InteractionResult var7 = var5.useItemOn(var2.getItemInHand(var6), this.getLevel(), var2, var6, var3);
-      if (!var7.consumesAction()) {
-         if (!(var7 instanceof InteractionResult.TryEmptyHandInteraction) || !var5.useWithoutItem(this.getLevel(), var2, var3).consumesAction()) {
-            UseOnContext var8 = new UseOnContext(var2, var6, var3);
-            var2.getItemInHand(var6).useOn(var8);
+   public void useBlock(final BlockPos relativePos, final Player player, final BlockHitResult hitResult) {
+      BlockPos absolutePos = this.absolutePos(relativePos);
+      BlockState blockState = this.getLevel().getBlockState(absolutePos);
+      InteractionHand hand = InteractionHand.MAIN_HAND;
+      InteractionResult itemInteractionResult = blockState.useItemOn(player.getItemInHand(hand), this.getLevel(), player, hand, hitResult);
+      if (!itemInteractionResult.consumesAction()) {
+         if (!(itemInteractionResult instanceof InteractionResult.TryEmptyHandInteraction) || !blockState.useWithoutItem(this.getLevel(), player, hitResult).consumesAction()) {
+            UseOnContext context = new UseOnContext(player, hand, hitResult);
+            player.getItemInHand(hand).useOn(context);
          }
       }
    }
 
-   public LivingEntity makeAboutToDrown(LivingEntity var1) {
-      var1.setAirSupply(0);
-      var1.setHealth(0.25F);
-      return var1;
+   public LivingEntity makeAboutToDrown(final LivingEntity entity) {
+      entity.setAirSupply(0);
+      entity.setHealth(0.25F);
+      return entity;
    }
 
-   public LivingEntity withLowHealth(LivingEntity var1) {
-      var1.setHealth(0.25F);
-      return var1;
+   public LivingEntity withLowHealth(final LivingEntity entity) {
+      entity.setHealth(0.25F);
+      return entity;
    }
 
-   public Player makeMockPlayer(final GameType var1) {
+   public Player makeMockPlayer(final GameType gameType) {
       return new Player(this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+         {
+            Objects.requireNonNull(GameTestHelper.this);
+         }
+
          public GameType gameMode() {
-            return var1;
+            return gameType;
          }
 
          public boolean isClientAuthoritative() {
@@ -335,469 +342,481 @@ public class GameTestHelper {
       forRemoval = true
    )
    public ServerPlayer makeMockServerPlayerInLevel() {
-      CommonListenerCookie var1 = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-mock-player"), false);
-      ServerPlayer var2 = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), var1.gameProfile(), var1.clientInformation()) {
+      CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-mock-player"), false);
+      ServerPlayer player = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), cookie.gameProfile(), cookie.clientInformation()) {
+         {
+            Objects.requireNonNull(GameTestHelper.this);
+         }
+
          public GameType gameMode() {
             return GameType.CREATIVE;
          }
       };
-      Connection var3 = new Connection(PacketFlow.SERVERBOUND);
-      new EmbeddedChannel(new ChannelHandler[]{var3});
-      this.getLevel().getServer().getPlayerList().placeNewPlayer(var3, var2, var1);
-      return var2;
+      Connection connection = new Connection(PacketFlow.SERVERBOUND);
+      new EmbeddedChannel(new ChannelHandler[]{connection});
+      this.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
+      return player;
    }
 
-   public void pullLever(int var1, int var2, int var3) {
-      this.pullLever(new BlockPos(var1, var2, var3));
+   public void pullLever(final int x, final int y, final int z) {
+      this.pullLever(new BlockPos(x, y, z));
    }
 
-   public void pullLever(BlockPos var1) {
-      this.assertBlockPresent(Blocks.LEVER, var1);
-      BlockPos var2 = this.absolutePos(var1);
-      BlockState var3 = this.getLevel().getBlockState(var2);
-      LeverBlock var4 = (LeverBlock)var3.getBlock();
-      var4.pull(var3, this.getLevel(), var2, (Player)null);
+   public void pullLever(final BlockPos leverPos) {
+      this.assertBlockPresent(Blocks.LEVER, leverPos);
+      BlockPos absolutePos = this.absolutePos(leverPos);
+      BlockState blockState = this.getLevel().getBlockState(absolutePos);
+      LeverBlock leverBlock = (LeverBlock)blockState.getBlock();
+      leverBlock.pull(blockState, this.getLevel(), absolutePos, (Player)null);
    }
 
-   public void pulseRedstone(BlockPos var1, long var2) {
-      this.setBlock(var1, Blocks.REDSTONE_BLOCK);
-      this.runAfterDelay(var2, () -> this.setBlock(var1, Blocks.AIR));
+   public void pulseRedstone(final BlockPos pos, final long duration) {
+      this.setBlock(pos, Blocks.REDSTONE_BLOCK);
+      this.runAfterDelay(duration, () -> this.setBlock(pos, Blocks.AIR));
    }
 
-   public void destroyBlock(BlockPos var1) {
-      this.getLevel().destroyBlock(this.absolutePos(var1), false, (Entity)null);
+   public void destroyBlock(final BlockPos pos) {
+      this.getLevel().destroyBlock(this.absolutePos(pos), false, (Entity)null);
    }
 
-   public void setBlock(int var1, int var2, int var3, Block var4) {
-      this.setBlock(new BlockPos(var1, var2, var3), var4);
+   public void setBlock(final int x, final int y, final int z, final Block block) {
+      this.setBlock(new BlockPos(x, y, z), block);
    }
 
-   public void setBlock(int var1, int var2, int var3, BlockState var4) {
-      this.setBlock(new BlockPos(var1, var2, var3), var4);
+   public void setBlock(final int x, final int y, final int z, final BlockState state) {
+      this.setBlock(new BlockPos(x, y, z), state);
    }
 
-   public void setBlock(BlockPos var1, Block var2) {
-      this.setBlock(var1, var2.defaultBlockState());
+   public void setBlock(final BlockPos blockPos, final Block block) {
+      this.setBlock(blockPos, block.defaultBlockState());
    }
 
-   public void setBlock(BlockPos var1, BlockState var2) {
-      this.getLevel().setBlock(this.absolutePos(var1), var2, 3);
+   public void setBlock(final BlockPos blockPos, final BlockState state) {
+      this.getLevel().setBlock(this.absolutePos(blockPos), state, 3);
    }
 
-   public void setBlock(BlockPos var1, Block var2, Direction var3) {
-      this.setBlock(var1, var2.defaultBlockState(), var3);
+   public void setBlock(final BlockPos blockPos, final Block block, final Direction direction) {
+      this.setBlock(blockPos, block.defaultBlockState(), direction);
    }
 
-   public void setBlock(BlockPos var1, BlockState var2, Direction var3) {
-      BlockState var4 = var2;
-      if (var2.hasProperty(HorizontalDirectionalBlock.FACING)) {
-         var4 = (BlockState)var2.setValue(HorizontalDirectionalBlock.FACING, var3);
+   public void setBlock(final BlockPos blockPos, final BlockState blockState, final Direction direction) {
+      BlockState state = blockState;
+      if (blockState.hasProperty(HorizontalDirectionalBlock.FACING)) {
+         state = (BlockState)blockState.setValue(HorizontalDirectionalBlock.FACING, direction);
       }
 
-      if (var2.hasProperty(BlockStateProperties.FACING)) {
-         var4 = (BlockState)var2.setValue(BlockStateProperties.FACING, var3);
+      if (blockState.hasProperty(BlockStateProperties.FACING)) {
+         state = (BlockState)blockState.setValue(BlockStateProperties.FACING, direction);
       }
 
-      this.getLevel().setBlock(this.absolutePos(var1), var4, 3);
+      this.getLevel().setBlock(this.absolutePos(blockPos), state, 3);
    }
 
-   public void assertBlockPresent(Block var1, int var2, int var3, int var4) {
-      this.assertBlockPresent(var1, new BlockPos(var2, var3, var4));
+   public void assertBlockPresent(final Block blockType, final int x, final int y, final int z) {
+      this.assertBlockPresent(blockType, new BlockPos(x, y, z));
    }
 
-   public void assertBlockPresent(Block var1, BlockPos var2) {
-      BlockState var3 = this.getBlockState(var2);
-      this.assertBlock(var2, (var2x) -> var3.is(var1), (var1x) -> Component.translatable("test.error.expected_block", var1.getName(), var1x.getName()));
+   public void assertBlockPresent(final Block blockType, final BlockPos pos) {
+      BlockState state = this.getBlockState(pos);
+      this.assertBlock(pos, (block) -> state.is(blockType), (block) -> Component.translatable("test.error.expected_block", blockType.getName(), block.getName()));
    }
 
-   public void assertBlockNotPresent(Block var1, int var2, int var3, int var4) {
-      this.assertBlockNotPresent(var1, new BlockPos(var2, var3, var4));
-   }
-
-   public void assertBlockNotPresent(Block var1, BlockPos var2) {
-      this.assertBlock(var2, (var3) -> !this.getBlockState(var2).is(var1), (var1x) -> Component.translatable("test.error.unexpected_block", var1.getName()));
-   }
-
-   public void assertBlockTag(TagKey<Block> var1, BlockPos var2) {
-      this.assertBlockState(var2, (var1x) -> var1x.is(var1), (var1x) -> Component.translatable("test.error.expected_block_tag", Component.translationArg(var1.location()), var1x.getBlock().getName()));
-   }
-
-   public void succeedWhenBlockPresent(Block var1, int var2, int var3, int var4) {
-      this.succeedWhenBlockPresent(var1, new BlockPos(var2, var3, var4));
-   }
-
-   public void succeedWhenBlockPresent(Block var1, BlockPos var2) {
-      this.succeedWhen(() -> this.assertBlockPresent(var1, var2));
-   }
-
-   public void assertBlock(BlockPos var1, Predicate<Block> var2, Function<Block, Component> var3) {
-      this.assertBlockState(var1, (var1x) -> var2.test(var1x.getBlock()), (var1x) -> (Component)var3.apply(var1x.getBlock()));
-   }
-
-   public <T extends Comparable<T>> void assertBlockProperty(BlockPos var1, Property<T> var2, T var3) {
-      BlockState var4 = this.getBlockState(var1);
-      boolean var5 = var4.hasProperty(var2);
-      if (!var5) {
-         throw this.assertionException(var1, "test.error.block_property_missing", var2.getName(), var3);
-      } else if (!var4.getValue(var2).equals(var3)) {
-         throw this.assertionException(var1, "test.error.block_property_mismatch", var2.getName(), var3, var4.getValue(var2));
+   public void assertBlockPresent(final Block blockType) {
+      AABB aabb = this.getRelativeBounds().contract(1.0, 1.0, 1.0);
+      boolean foundBlock = BlockPos.MutableBlockPos.betweenClosedStream(aabb).anyMatch((blockPos) -> this.getBlockState(blockPos).is(blockType));
+      if (!foundBlock) {
+         throw this.assertionException(Component.translatable("test.error.expected_block_present", blockType.getName()));
       }
    }
 
-   public <T extends Comparable<T>> void assertBlockProperty(BlockPos var1, Property<T> var2, Predicate<T> var3, Component var4) {
-      this.assertBlockState(var1, (var2x) -> {
-         if (!var2x.hasProperty(var2)) {
+   public void assertBlockNotPresent(final Block blockType, final int x, final int y, final int z) {
+      this.assertBlockNotPresent(blockType, new BlockPos(x, y, z));
+   }
+
+   public void assertBlockNotPresent(final Block blockType, final BlockPos pos) {
+      this.assertBlock(pos, (block) -> !this.getBlockState(pos).is(blockType), (block) -> Component.translatable("test.error.unexpected_block", blockType.getName()));
+   }
+
+   public void assertBlockTag(final TagKey<Block> tag, final BlockPos pos) {
+      this.assertBlockState(pos, (state) -> state.is(tag), (state) -> Component.translatable("test.error.expected_block_tag", Component.translationArg(tag.location()), state.getBlock().getName()));
+   }
+
+   public void succeedWhenBlockPresent(final Block block, final int x, final int y, final int z) {
+      this.succeedWhenBlockPresent(block, new BlockPos(x, y, z));
+   }
+
+   public void succeedWhenBlockPresent(final Block block, final BlockPos pos) {
+      this.succeedWhen(() -> this.assertBlockPresent(block, pos));
+   }
+
+   public void assertBlock(final BlockPos pos, final Predicate<Block> predicate, final Function<Block, Component> errorMessage) {
+      this.assertBlockState(pos, (blockState) -> predicate.test(blockState.getBlock()), (state) -> (Component)errorMessage.apply(state.getBlock()));
+   }
+
+   public <T extends Comparable<T>> void assertBlockProperty(final BlockPos pos, final Property<T> property, final T value) {
+      BlockState blockState = this.getBlockState(pos);
+      boolean hasProperty = blockState.hasProperty(property);
+      if (!hasProperty) {
+         throw this.assertionException(pos, "test.error.block_property_missing", property.getName(), value);
+      } else if (!blockState.getValue(property).equals(value)) {
+         throw this.assertionException(pos, "test.error.block_property_mismatch", property.getName(), value, blockState.getValue(property));
+      }
+   }
+
+   public <T extends Comparable<T>> void assertBlockProperty(final BlockPos pos, final Property<T> property, final Predicate<T> predicate, final Component errorMessage) {
+      this.assertBlockState(pos, (blockState) -> {
+         if (!blockState.hasProperty(property)) {
             return false;
          } else {
-            Comparable var3x = var2x.getValue(var2);
-            return var3.test(var3x);
+            T value = (T)blockState.getValue(property);
+            return predicate.test(value);
          }
-      }, (var1x) -> var4);
+      }, (state) -> errorMessage);
    }
 
-   public void assertBlockState(BlockPos var1, BlockState var2) {
-      BlockState var3 = this.getBlockState(var1);
-      if (!var3.equals(var2)) {
-         throw this.assertionException(var1, "test.error.state_not_equal", var2, var3);
+   public void assertBlockState(final BlockPos pos, final BlockState expected) {
+      BlockState blockState = this.getBlockState(pos);
+      if (!blockState.equals(expected)) {
+         throw this.assertionException(pos, "test.error.state_not_equal", expected, blockState);
       }
    }
 
-   public void assertBlockState(BlockPos var1, Predicate<BlockState> var2, Function<BlockState, Component> var3) {
-      BlockState var4 = this.getBlockState(var1);
-      if (!var2.test(var4)) {
-         throw this.assertionException(var1, (Component)var3.apply(var4));
+   public void assertBlockState(final BlockPos pos, final Predicate<BlockState> predicate, final Function<BlockState, Component> errorMessage) {
+      BlockState blockState = this.getBlockState(pos);
+      if (!predicate.test(blockState)) {
+         throw this.assertionException(pos, (Component)errorMessage.apply(blockState));
       }
    }
 
-   public <T extends BlockEntity> void assertBlockEntityData(BlockPos var1, Class<T> var2, Predicate<T> var3, Supplier<Component> var4) {
-      BlockEntity var5 = this.getBlockEntity(var1, var2);
-      if (!var3.test(var5)) {
-         throw this.assertionException(var1, (Component)var4.get());
+   public <T extends BlockEntity> void assertBlockEntityData(final BlockPos pos, final Class<T> type, final Predicate<T> predicate, final Supplier<Component> errorMessage) {
+      T blockEntity = this.getBlockEntity(pos, type);
+      if (!predicate.test(blockEntity)) {
+         throw this.assertionException(pos, (Component)errorMessage.get());
       }
    }
 
-   public void assertRedstoneSignal(BlockPos var1, Direction var2, IntPredicate var3, Supplier<Component> var4) {
-      BlockPos var5 = this.absolutePos(var1);
-      ServerLevel var6 = this.getLevel();
-      BlockState var7 = var6.getBlockState(var5);
-      int var8 = var7.getSignal(var6, var5, var2);
-      if (!var3.test(var8)) {
-         throw this.assertionException(var1, (Component)var4.get());
+   public void assertRedstoneSignal(final BlockPos pos, final Direction direction, final IntPredicate levelPredicate, final Supplier<Component> errorMessage) {
+      BlockPos blockPos = this.absolutePos(pos);
+      ServerLevel level = this.getLevel();
+      BlockState blockState = level.getBlockState(blockPos);
+      int signal = blockState.getSignal(level, blockPos, direction);
+      if (!levelPredicate.test(signal)) {
+         throw this.assertionException(pos, (Component)errorMessage.get());
       }
    }
 
-   public void assertEntityPresent(EntityType<?> var1) {
-      if (!this.getLevel().hasEntities(var1, this.getBounds(), Entity::isAlive)) {
-         throw this.assertionException("test.error.expected_entity_in_test", var1.getDescription());
+   public void assertEntityPresent(final EntityType<?> entityType) {
+      if (!this.getLevel().hasEntities(entityType, this.getBounds(), Entity::isAlive)) {
+         throw this.assertionException("test.error.expected_entity_in_test", entityType.getDescription());
       }
    }
 
-   public void assertEntityPresent(EntityType<?> var1, int var2, int var3, int var4) {
-      this.assertEntityPresent(var1, new BlockPos(var2, var3, var4));
+   public void assertEntityPresent(final EntityType<?> entityType, final int x, final int y, final int z) {
+      this.assertEntityPresent(entityType, new BlockPos(x, y, z));
    }
 
-   public void assertEntityPresent(EntityType<?> var1, BlockPos var2) {
-      BlockPos var3 = this.absolutePos(var2);
-      if (!this.getLevel().hasEntities(var1, new AABB(var3), Entity::isAlive)) {
-         throw this.assertionException(var2, "test.error.expected_entity", var1.getDescription());
+   public void assertEntityPresent(final EntityType<?> entityType, final BlockPos pos) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      if (!this.getLevel().hasEntities(entityType, new AABB(absolutePos), Entity::isAlive)) {
+         throw this.assertionException(pos, "test.error.expected_entity", entityType.getDescription());
       }
    }
 
-   public void assertEntityPresent(EntityType<?> var1, AABB var2) {
-      AABB var3 = this.absoluteAABB(var2);
-      if (!this.getLevel().hasEntities(var1, var3, Entity::isAlive)) {
-         throw this.assertionException(BlockPos.containing(var2.getCenter()), "test.error.expected_entity", var1.getDescription());
+   public void assertEntityPresent(final EntityType<?> entityType, final AABB relativeAABB) {
+      AABB absoluteAABB = this.absoluteAABB(relativeAABB);
+      if (!this.getLevel().hasEntities(entityType, absoluteAABB, Entity::isAlive)) {
+         throw this.assertionException(BlockPos.containing(relativeAABB.getCenter()), "test.error.expected_entity", entityType.getDescription());
       }
    }
 
-   public void assertEntityPresent(EntityType<?> var1, AABB var2, Component var3) {
-      AABB var4 = this.absoluteAABB(var2);
-      if (!this.getLevel().hasEntities(var1, var4, Entity::isAlive)) {
-         throw this.assertionException(BlockPos.containing(var2.getCenter()), var3);
+   public void assertEntityPresent(final EntityType<?> entityType, final AABB relativeAABB, final Component message) {
+      AABB absoluteAABB = this.absoluteAABB(relativeAABB);
+      if (!this.getLevel().hasEntities(entityType, absoluteAABB, Entity::isAlive)) {
+         throw this.assertionException(BlockPos.containing(relativeAABB.getCenter()), message);
       }
    }
 
-   public void assertEntitiesPresent(EntityType<?> var1, int var2) {
-      List var3 = this.getLevel().getEntities(var1, this.getBounds(), Entity::isAlive);
-      if (var3.size() != var2) {
-         throw this.assertionException("test.error.expected_entity_count", var2, var1.getDescription(), var3.size());
+   public void assertEntitiesPresent(final EntityType<?> entityType, final int expectedEntities) {
+      List<? extends Entity> entities = this.getLevel().getEntities(entityType, this.getBounds(), Entity::isAlive);
+      if (entities.size() != expectedEntities) {
+         throw this.assertionException("test.error.expected_entity_count", expectedEntities, entityType.getDescription(), entities.size());
       }
    }
 
-   public void assertEntitiesPresent(EntityType<?> var1, BlockPos var2, int var3, double var4) {
-      this.absolutePos(var2);
-      List var7 = this.getEntities(var1, var2, var4);
-      if (var7.size() != var3) {
-         throw this.assertionException(var2, "test.error.expected_entity_count", var3, var1.getDescription(), var7.size());
+   public void assertEntitiesPresent(final EntityType<?> entityType, final BlockPos pos, final int numOfExpectedEntities, final double distance) {
+      this.absolutePos(pos);
+      List<? extends Entity> entities = this.<Entity>getEntities(entityType, pos, distance);
+      if (entities.size() != numOfExpectedEntities) {
+         throw this.assertionException(pos, "test.error.expected_entity_count", numOfExpectedEntities, entityType.getDescription(), entities.size());
       }
    }
 
-   public void assertEntityPresent(EntityType<?> var1, BlockPos var2, double var3) {
-      List var5 = this.getEntities(var1, var2, var3);
-      if (var5.isEmpty()) {
-         this.absolutePos(var2);
-         throw this.assertionException(var2, "test.error.expected_entity", var1.getDescription());
+   public void assertEntityPresent(final EntityType<?> entityType, final BlockPos pos, final double distance) {
+      List<? extends Entity> entities = this.<Entity>getEntities(entityType, pos, distance);
+      if (entities.isEmpty()) {
+         this.absolutePos(pos);
+         throw this.assertionException(pos, "test.error.expected_entity", entityType.getDescription());
       }
    }
 
-   public <T extends Entity> List<T> getEntities(EntityType<T> var1, BlockPos var2, double var3) {
-      BlockPos var5 = this.absolutePos(var2);
-      return this.getLevel().getEntities(var1, (new AABB(var5)).inflate(var3), Entity::isAlive);
+   public <T extends Entity> List<T> getEntities(final EntityType<T> entityType, final BlockPos pos, final double distance) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      return this.getLevel().getEntities(entityType, (new AABB(absolutePos)).inflate(distance), Entity::isAlive);
    }
 
-   public <T extends Entity> List<T> getEntities(EntityType<T> var1) {
-      return this.getLevel().getEntities(var1, this.getBounds(), Entity::isAlive);
+   public <T extends Entity> List<T> getEntities(final EntityType<T> entityType) {
+      return this.getLevel().getEntities(entityType, this.getBounds(), Entity::isAlive);
    }
 
-   public void assertEntityInstancePresent(Entity var1, int var2, int var3, int var4) {
-      this.assertEntityInstancePresent(var1, new BlockPos(var2, var3, var4));
+   public void assertEntityInstancePresent(final Entity entity, final int x, final int y, final int z) {
+      this.assertEntityInstancePresent(entity, new BlockPos(x, y, z));
    }
 
-   public void assertEntityInstancePresent(Entity var1, BlockPos var2) {
-      BlockPos var3 = this.absolutePos(var2);
-      List var4 = this.getLevel().getEntities(var1.getType(), new AABB(var3), Entity::isAlive);
-      var4.stream().filter((var1x) -> var1x == var1).findFirst().orElseThrow(() -> this.assertionException(var2, "test.error.expected_entity", var1.getType().getDescription()));
+   public void assertEntityInstancePresent(final Entity entity, final BlockPos pos) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      List<? extends Entity> entities = this.getLevel().getEntities(entity.getType(), new AABB(absolutePos), Entity::isAlive);
+      entities.stream().filter((it) -> it == entity).findFirst().orElseThrow(() -> this.assertionException(pos, "test.error.expected_entity", entity.getType().getDescription()));
    }
 
-   public void assertItemEntityCountIs(Item var1, BlockPos var2, double var3, int var5) {
-      BlockPos var6 = this.absolutePos(var2);
-      List var7 = this.getLevel().getEntities(EntityType.ITEM, (new AABB(var6)).inflate(var3), Entity::isAlive);
-      int var8 = 0;
+   public void assertItemEntityCountIs(final Item itemType, final BlockPos pos, final double distance, final int count) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      List<ItemEntity> entities = this.getLevel().getEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), Entity::isAlive);
+      int num = 0;
 
-      for(ItemEntity var10 : var7) {
-         ItemStack var11 = var10.getItem();
-         if (var11.is(var1)) {
-            var8 += var11.getCount();
+      for(ItemEntity entity : entities) {
+         ItemStack itemStack = entity.getItem();
+         if (itemStack.is(itemType)) {
+            num += itemStack.getCount();
          }
       }
 
-      if (var8 != var5) {
-         throw this.assertionException(var2, "test.error.expected_items_count", var5, var1.getName(), var8);
+      if (num != count) {
+         throw this.assertionException(pos, "test.error.expected_items_count", count, getItemName(itemType), num);
       }
    }
 
-   public void assertItemEntityPresent(Item var1, BlockPos var2, double var3) {
-      BlockPos var5 = this.absolutePos(var2);
-      Predicate var6 = (var1x) -> var1x.isAlive() && var1x.getItem().is(var1);
-      if (!this.getLevel().hasEntities(EntityType.ITEM, (new AABB(var5)).inflate(var3), var6)) {
-         throw this.assertionException(var2, "test.error.expected_item", var1.getName());
+   public void assertItemEntityPresent(final Item itemType, final BlockPos pos, final double distance) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
+      if (!this.getLevel().hasEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), isSameItem)) {
+         throw this.assertionException(pos, "test.error.expected_item", getItemName(itemType));
       }
    }
 
-   public void assertItemEntityNotPresent(Item var1, BlockPos var2, double var3) {
-      BlockPos var5 = this.absolutePos(var2);
-      Predicate var6 = (var1x) -> var1x.isAlive() && var1x.getItem().is(var1);
-      if (this.getLevel().hasEntities(EntityType.ITEM, (new AABB(var5)).inflate(var3), var6)) {
-         throw this.assertionException(var2, "test.error.unexpected_item", var1.getName());
+   public void assertItemEntityNotPresent(final Item itemType, final BlockPos pos, final double distance) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
+      if (this.getLevel().hasEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), isSameItem)) {
+         throw this.assertionException(pos, "test.error.unexpected_item", getItemName(itemType));
       }
    }
 
-   public void assertItemEntityPresent(Item var1) {
-      Predicate var2 = (var1x) -> var1x.isAlive() && var1x.getItem().is(var1);
-      if (!this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), var2)) {
-         throw this.assertionException("test.error.expected_item", var1.getName());
+   public void assertItemEntityPresent(final Item itemType) {
+      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
+      if (!this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), isSameItem)) {
+         throw this.assertionException("test.error.expected_item", getItemName(itemType));
       }
    }
 
-   public void assertItemEntityNotPresent(Item var1) {
-      Predicate var2 = (var1x) -> var1x.isAlive() && var1x.getItem().is(var1);
-      if (this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), var2)) {
-         throw this.assertionException("test.error.unexpected_item", var1.getName());
+   public void assertItemEntityNotPresent(final Item itemType) {
+      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
+      if (this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), isSameItem)) {
+         throw this.assertionException("test.error.unexpected_item", getItemName(itemType));
       }
    }
 
-   public void assertEntityNotPresent(EntityType<?> var1) {
-      List var2 = this.getLevel().getEntities(var1, this.getBounds(), Entity::isAlive);
-      if (!var2.isEmpty()) {
-         throw this.assertionException(((Entity)var2.getFirst()).blockPosition(), "test.error.unexpected_entity", var1.getDescription());
+   public void assertEntityNotPresent(final EntityType<?> entityType) {
+      List<? extends Entity> entities = this.getLevel().getEntities(entityType, this.getBounds(), Entity::isAlive);
+      if (!entities.isEmpty()) {
+         throw this.assertionException(((Entity)entities.getFirst()).blockPosition(), "test.error.unexpected_entity", entityType.getDescription());
       }
    }
 
-   public void assertEntityNotPresent(EntityType<?> var1, int var2, int var3, int var4) {
-      this.assertEntityNotPresent(var1, new BlockPos(var2, var3, var4));
+   public void assertEntityNotPresent(final EntityType<?> entityType, final int x, final int y, final int z) {
+      this.assertEntityNotPresent(entityType, new BlockPos(x, y, z));
    }
 
-   public void assertEntityNotPresent(EntityType<?> var1, BlockPos var2) {
-      BlockPos var3 = this.absolutePos(var2);
-      if (this.getLevel().hasEntities(var1, new AABB(var3), Entity::isAlive)) {
-         throw this.assertionException(var2, "test.error.unexpected_entity", var1.getDescription());
+   public void assertEntityNotPresent(final EntityType<?> entityType, final BlockPos pos) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      if (this.getLevel().hasEntities(entityType, new AABB(absolutePos), Entity::isAlive)) {
+         throw this.assertionException(pos, "test.error.unexpected_entity", entityType.getDescription());
       }
    }
 
-   public void assertEntityNotPresent(EntityType<?> var1, AABB var2) {
-      AABB var3 = this.absoluteAABB(var2);
-      List var4 = this.getLevel().getEntities(var1, var3, Entity::isAlive);
-      if (!var4.isEmpty()) {
-         throw this.assertionException(((Entity)var4.getFirst()).blockPosition(), "test.error.unexpected_entity", var1.getDescription());
+   public void assertEntityNotPresent(final EntityType<?> entityType, final AABB relativeAABB) {
+      AABB absoluteAABB = this.absoluteAABB(relativeAABB);
+      List<? extends Entity> entities = this.getLevel().getEntities(entityType, absoluteAABB, Entity::isAlive);
+      if (!entities.isEmpty()) {
+         throw this.assertionException(((Entity)entities.getFirst()).blockPosition(), "test.error.unexpected_entity", entityType.getDescription());
       }
    }
 
-   public void assertEntityTouching(EntityType<?> var1, double var2, double var4, double var6) {
-      Vec3 var8 = new Vec3(var2, var4, var6);
-      Vec3 var9 = this.absoluteVec(var8);
-      Predicate var10 = (var1x) -> var1x.getBoundingBox().intersects(var9, var9);
-      if (!this.getLevel().hasEntities(var1, this.getBounds(), var10)) {
-         throw this.assertionException("test.error.expected_entity_touching", var1.getDescription(), var9.x(), var9.y(), var9.z(), var2, var4, var6);
+   public void assertEntityTouching(final EntityType<?> entityType, final double x, final double y, final double z) {
+      Vec3 vec = new Vec3(x, y, z);
+      Vec3 absoluteVec = this.absoluteVec(vec);
+      Predicate<? super Entity> predicate = (e) -> e.getBoundingBox().intersects(absoluteVec, absoluteVec);
+      if (!this.getLevel().hasEntities(entityType, this.getBounds(), predicate)) {
+         throw this.assertionException("test.error.expected_entity_touching", entityType.getDescription(), absoluteVec.x(), absoluteVec.y(), absoluteVec.z(), x, y, z);
       }
    }
 
-   public void assertEntityNotTouching(EntityType<?> var1, double var2, double var4, double var6) {
-      Vec3 var8 = new Vec3(var2, var4, var6);
-      Vec3 var9 = this.absoluteVec(var8);
-      Predicate var10 = (var1x) -> !var1x.getBoundingBox().intersects(var9, var9);
-      if (!this.getLevel().hasEntities(var1, this.getBounds(), var10)) {
-         throw this.assertionException("test.error.expected_entity_not_touching", var1.getDescription(), var9.x(), var9.y(), var9.z(), var2, var4, var6);
+   public void assertEntityNotTouching(final EntityType<?> entityType, final double x, final double y, final double z) {
+      Vec3 vec = new Vec3(x, y, z);
+      Vec3 absoluteVec = this.absoluteVec(vec);
+      Predicate<? super Entity> predicate = (e) -> !e.getBoundingBox().intersects(absoluteVec, absoluteVec);
+      if (!this.getLevel().hasEntities(entityType, this.getBounds(), predicate)) {
+         throw this.assertionException("test.error.expected_entity_not_touching", entityType.getDescription(), absoluteVec.x(), absoluteVec.y(), absoluteVec.z(), x, y, z);
       }
    }
 
-   public <E extends Entity, T> void assertEntityData(BlockPos var1, EntityType<E> var2, Predicate<E> var3) {
-      BlockPos var4 = this.absolutePos(var1);
-      List var5 = this.getLevel().getEntities(var2, new AABB(var4), Entity::isAlive);
-      if (var5.isEmpty()) {
-         throw this.assertionException(var1, "test.error.expected_entity", var2.getDescription());
+   public <E extends Entity, T> void assertEntityData(final BlockPos pos, final EntityType<E> entityType, final Predicate<E> test) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      List<E> entities = this.getLevel().getEntities(entityType, new AABB(absolutePos), Entity::isAlive);
+      if (entities.isEmpty()) {
+         throw this.assertionException(pos, "test.error.expected_entity", entityType.getDescription());
       } else {
-         for(Entity var7 : var5) {
-            if (!var3.test(var7)) {
-               throw this.assertionException(var7.blockPosition(), "test.error.expected_entity_data_predicate", var7.getName());
+         for(E entity : entities) {
+            if (!test.test(entity)) {
+               throw this.assertionException(entity.blockPosition(), "test.error.expected_entity_data_predicate", entity.getName());
             }
          }
 
       }
    }
 
-   public <E extends Entity, T> void assertEntityData(BlockPos var1, EntityType<E> var2, Function<? super E, T> var3, @Nullable T var4) {
-      this.assertEntityData((AABB)(new AABB(var1)), var2, var3, var4);
+   public <E extends Entity, T> void assertEntityData(final BlockPos pos, final EntityType<E> entityType, final Function<? super E, T> dataAccessor, final @Nullable T data) {
+      this.assertEntityData(new AABB(pos), entityType, dataAccessor, data);
    }
 
-   public <E extends Entity, T> void assertEntityData(AABB var1, EntityType<E> var2, Function<? super E, T> var3, @Nullable T var4) {
-      List var5 = this.getLevel().getEntities(var2, this.absoluteAABB(var1), Entity::isAlive);
-      if (var5.isEmpty()) {
-         throw this.assertionException(BlockPos.containing(var1.getBottomCenter()), "test.error.expected_entity", var2.getDescription());
+   public <E extends Entity, T> void assertEntityData(final AABB box, final EntityType<E> entityType, final Function<? super E, T> dataAccessor, final @Nullable T data) {
+      List<E> entities = this.getLevel().getEntities(entityType, this.absoluteAABB(box), Entity::isAlive);
+      if (entities.isEmpty()) {
+         throw this.assertionException(BlockPos.containing(box.getBottomCenter()), "test.error.expected_entity", entityType.getDescription());
       } else {
-         for(Entity var7 : var5) {
-            Object var8 = var3.apply(var7);
-            if (!Objects.equals(var8, var4)) {
-               throw this.assertionException(BlockPos.containing(var1.getBottomCenter()), "test.error.expected_entity_data", var4, var8);
+         for(E entity : entities) {
+            T actual = (T)dataAccessor.apply(entity);
+            if (!Objects.equals(actual, data)) {
+               throw this.assertionException(BlockPos.containing(box.getBottomCenter()), "test.error.expected_entity_data", data, actual);
             }
          }
 
       }
    }
 
-   public <E extends LivingEntity> void assertEntityIsHolding(BlockPos var1, EntityType<E> var2, Item var3) {
-      BlockPos var4 = this.absolutePos(var1);
-      List var5 = this.getLevel().getEntities(var2, new AABB(var4), Entity::isAlive);
-      if (var5.isEmpty()) {
-         throw this.assertionException(var1, "test.error.expected_entity", var2.getDescription());
+   public <E extends LivingEntity> void assertEntityIsHolding(final BlockPos pos, final EntityType<E> entityType, final Item item) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      List<E> entities = this.getLevel().getEntities(entityType, new AABB(absolutePos), Entity::isAlive);
+      if (entities.isEmpty()) {
+         throw this.assertionException(pos, "test.error.expected_entity", entityType.getDescription());
       } else {
-         for(LivingEntity var7 : var5) {
-            if (var7.isHolding(var3)) {
+         for(E entity : entities) {
+            if (entity.isHolding(item)) {
                return;
             }
          }
 
-         throw this.assertionException(var1, "test.error.expected_entity_holding", var3.getName());
+         throw this.assertionException(pos, "test.error.expected_entity_holding", getItemName(item));
       }
    }
 
-   public <E extends Entity & InventoryCarrier> void assertEntityInventoryContains(BlockPos var1, EntityType<E> var2, Item var3) {
-      BlockPos var4 = this.absolutePos(var1);
-      List var5 = this.getLevel().getEntities(var2, new AABB(var4), (var0) -> ((Entity)var0).isAlive());
-      if (var5.isEmpty()) {
-         throw this.assertionException(var1, "test.error.expected_entity", var2.getDescription());
+   public <E extends Entity & InventoryCarrier> void assertEntityInventoryContains(final BlockPos pos, final EntityType<E> entityType, final Item item) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      List<E> entities = this.getLevel().getEntities(entityType, new AABB(absolutePos), (rec$) -> rec$.isAlive());
+      if (entities.isEmpty()) {
+         throw this.assertionException(pos, "test.error.expected_entity", entityType.getDescription());
       } else {
-         for(Entity var7 : var5) {
-            if (((InventoryCarrier)var7).getInventory().hasAnyMatching((var1x) -> var1x.is(var3))) {
+         for(E entity : entities) {
+            if (((InventoryCarrier)entity).getInventory().hasAnyMatching((itemStack) -> itemStack.is(item))) {
                return;
             }
          }
 
-         throw this.assertionException(var1, "test.error.expected_entity_having", var3.getName());
+         throw this.assertionException(pos, "test.error.expected_entity_having", getItemName(item));
       }
    }
 
-   public void assertContainerEmpty(BlockPos var1) {
-      BaseContainerBlockEntity var2 = (BaseContainerBlockEntity)this.getBlockEntity(var1, BaseContainerBlockEntity.class);
-      if (!var2.isEmpty()) {
-         throw this.assertionException(var1, "test.error.expected_empty_container");
+   public void assertContainerEmpty(final BlockPos pos) {
+      BaseContainerBlockEntity container = (BaseContainerBlockEntity)this.getBlockEntity(pos, BaseContainerBlockEntity.class);
+      if (!container.isEmpty()) {
+         throw this.assertionException(pos, "test.error.expected_empty_container");
       }
    }
 
-   public void assertContainerContainsSingle(BlockPos var1, Item var2) {
-      BaseContainerBlockEntity var3 = (BaseContainerBlockEntity)this.getBlockEntity(var1, BaseContainerBlockEntity.class);
-      if (var3.countItem(var2) != 1) {
-         throw this.assertionException(var1, "test.error.expected_container_contents_single", var2.getName());
+   public void assertContainerContainsSingle(final BlockPos pos, final Item item) {
+      BaseContainerBlockEntity container = (BaseContainerBlockEntity)this.getBlockEntity(pos, BaseContainerBlockEntity.class);
+      if (container.countItem(item) != 1) {
+         throw this.assertionException(pos, "test.error.expected_container_contents_single", getItemName(item));
       }
    }
 
-   public void assertContainerContains(BlockPos var1, Item var2) {
-      BaseContainerBlockEntity var3 = (BaseContainerBlockEntity)this.getBlockEntity(var1, BaseContainerBlockEntity.class);
-      if (var3.countItem(var2) == 0) {
-         throw this.assertionException(var1, "test.error.expected_container_contents", var2.getName());
+   public void assertContainerContains(final BlockPos pos, final Item item) {
+      BaseContainerBlockEntity container = (BaseContainerBlockEntity)this.getBlockEntity(pos, BaseContainerBlockEntity.class);
+      if (container.countItem(item) == 0) {
+         throw this.assertionException(pos, "test.error.expected_container_contents", getItemName(item));
       }
    }
 
-   public void assertSameBlockStates(BoundingBox var1, BlockPos var2) {
-      BlockPos.betweenClosedStream(var1).forEach((var3) -> {
-         BlockPos var4 = var2.offset(var3.getX() - var1.minX(), var3.getY() - var1.minY(), var3.getZ() - var1.minZ());
-         this.assertSameBlockState(var3, var4);
+   public void assertSameBlockStates(final BoundingBox sourceBoundingBox, final BlockPos targetBoundingBoxCorner) {
+      BlockPos.betweenClosedStream(sourceBoundingBox).forEach((sourcePos) -> {
+         BlockPos targetPos = targetBoundingBoxCorner.offset(sourcePos.getX() - sourceBoundingBox.minX(), sourcePos.getY() - sourceBoundingBox.minY(), sourcePos.getZ() - sourceBoundingBox.minZ());
+         this.assertSameBlockState(sourcePos, targetPos);
       });
    }
 
-   public void assertSameBlockState(BlockPos var1, BlockPos var2) {
-      BlockState var3 = this.getBlockState(var1);
-      BlockState var4 = this.getBlockState(var2);
-      if (var3 != var4) {
-         throw this.assertionException(var1, "test.error.state_not_equal", var4, var3);
+   public void assertSameBlockState(final BlockPos sourcePos, final BlockPos targetPos) {
+      BlockState sourceState = this.getBlockState(sourcePos);
+      BlockState targetState = this.getBlockState(targetPos);
+      if (sourceState != targetState) {
+         throw this.assertionException(sourcePos, "test.error.state_not_equal", targetState, sourceState);
       }
    }
 
-   public void assertAtTickTimeContainerContains(long var1, BlockPos var3, Item var4) {
-      this.runAtTickTime(var1, () -> this.assertContainerContainsSingle(var3, var4));
+   public void assertAtTickTimeContainerContains(final long time, final BlockPos pos, final Item item) {
+      this.runAtTickTime(time, () -> this.assertContainerContainsSingle(pos, item));
    }
 
-   public void assertAtTickTimeContainerEmpty(long var1, BlockPos var3) {
-      this.runAtTickTime(var1, () -> this.assertContainerEmpty(var3));
+   public void assertAtTickTimeContainerEmpty(final long time, final BlockPos pos) {
+      this.runAtTickTime(time, () -> this.assertContainerEmpty(pos));
    }
 
-   public <E extends Entity, T> void succeedWhenEntityData(BlockPos var1, EntityType<E> var2, Function<E, T> var3, T var4) {
-      this.succeedWhen(() -> this.assertEntityData(var1, var2, var3, var4));
+   public <E extends Entity, T> void succeedWhenEntityData(final BlockPos pos, final EntityType<E> entityType, final Function<E, T> dataAccessor, final T data) {
+      this.succeedWhen(() -> this.assertEntityData(pos, entityType, dataAccessor, data));
    }
 
-   public <E extends Entity> void assertEntityProperty(E var1, Predicate<E> var2, Component var3) {
-      if (!var2.test(var1)) {
-         throw this.assertionException(var1.blockPosition(), "test.error.entity_property", var1.getName(), var3);
+   public <E extends Entity> void assertEntityProperty(final E entity, final Predicate<E> test, final Component description) {
+      if (!test.test(entity)) {
+         throw this.assertionException(entity.blockPosition(), "test.error.entity_property", entity.getName(), description);
       }
    }
 
-   public <E extends Entity, T> void assertEntityProperty(E var1, Function<E, T> var2, T var3, Component var4) {
-      Object var5 = var2.apply(var1);
-      if (!var5.equals(var3)) {
-         throw this.assertionException(var1.blockPosition(), "test.error.entity_property_details", var1.getName(), var4, var5, var3);
+   public <E extends Entity, T> void assertEntityProperty(final E entity, final Function<E, T> test, final T expected, final Component description) {
+      T actual = (T)test.apply(entity);
+      if (!actual.equals(expected)) {
+         throw this.assertionException(entity.blockPosition(), "test.error.entity_property_details", entity.getName(), description, actual, expected);
       }
    }
 
-   public void assertLivingEntityHasMobEffect(LivingEntity var1, Holder<MobEffect> var2, int var3) {
-      MobEffectInstance var4 = var1.getEffect(var2);
-      if (var4 == null || var4.getAmplifier() != var3) {
-         throw this.assertionException("test.error.expected_entity_effect", var1.getName(), PotionContents.getPotionDescription(var2, var3));
+   public void assertLivingEntityHasMobEffect(final LivingEntity entity, final Holder<MobEffect> mobEffect, final int amplifier) {
+      MobEffectInstance mobEffectInstance = entity.getEffect(mobEffect);
+      if (mobEffectInstance == null || mobEffectInstance.getAmplifier() != amplifier) {
+         throw this.assertionException("test.error.expected_entity_effect", entity.getName(), PotionContents.getPotionDescription(mobEffect, amplifier));
       }
    }
 
-   public void succeedWhenEntityPresent(EntityType<?> var1, int var2, int var3, int var4) {
-      this.succeedWhenEntityPresent(var1, new BlockPos(var2, var3, var4));
+   public void succeedWhenEntityPresent(final EntityType<?> entityType, final int x, final int y, final int z) {
+      this.succeedWhenEntityPresent(entityType, new BlockPos(x, y, z));
    }
 
-   public void succeedWhenEntityPresent(EntityType<?> var1, BlockPos var2) {
-      this.succeedWhen(() -> this.assertEntityPresent(var1, var2));
+   public void succeedWhenEntityPresent(final EntityType<?> entityType, final BlockPos pos) {
+      this.succeedWhen(() -> this.assertEntityPresent(entityType, pos));
    }
 
-   public void succeedWhenEntityNotPresent(EntityType<?> var1, int var2, int var3, int var4) {
-      this.succeedWhenEntityNotPresent(var1, new BlockPos(var2, var3, var4));
+   public void succeedWhenEntityNotPresent(final EntityType<?> entityType, final int x, final int y, final int z) {
+      this.succeedWhenEntityNotPresent(entityType, new BlockPos(x, y, z));
    }
 
-   public void succeedWhenEntityNotPresent(EntityType<?> var1, BlockPos var2) {
-      this.succeedWhen(() -> this.assertEntityNotPresent(var1, var2));
+   public void succeedWhenEntityNotPresent(final EntityType<?> entityType, final BlockPos pos) {
+      this.succeedWhen(() -> this.assertEntityNotPresent(entityType, pos));
    }
 
    public void succeed() {
@@ -812,91 +831,95 @@ public class GameTestHelper {
       }
    }
 
-   public void succeedIf(Runnable var1) {
+   public void succeedIf(final Runnable asserter) {
       this.ensureSingleFinalCheck();
-      this.testInfo.createSequence().thenWaitUntil(0L, var1).thenSucceed();
+      this.testInfo.createSequence().thenWaitUntil(0L, asserter).thenSucceed();
    }
 
-   public void succeedWhen(Runnable var1) {
+   public void succeedWhen(final Runnable asserter) {
       this.ensureSingleFinalCheck();
-      this.testInfo.createSequence().thenWaitUntil(var1).thenSucceed();
+      this.testInfo.createSequence().thenWaitUntil(asserter).thenSucceed();
    }
 
-   public void succeedOnTickWhen(int var1, Runnable var2) {
+   public void succeedOnTickWhen(final int tick, final Runnable asserter) {
       this.ensureSingleFinalCheck();
-      this.testInfo.createSequence().thenWaitUntil((long)var1, var2).thenSucceed();
+      this.testInfo.createSequence().thenWaitUntil((long)tick, asserter).thenSucceed();
    }
 
-   public void runAtTickTime(long var1, Runnable var3) {
-      this.testInfo.setRunAtTickTime(var1, var3);
+   public void runAtTickTime(final long time, final Runnable asserter) {
+      this.testInfo.setRunAtTickTime(time, asserter);
    }
 
-   public void runAfterDelay(long var1, Runnable var3) {
-      this.runAtTickTime((long)this.testInfo.getTick() + var1, var3);
+   public void runBeforeTestEnd(final Runnable asserter) {
+      this.runAtTickTime((long)(this.testInfo.getTimeoutTicks() - 1), asserter);
    }
 
-   public void randomTick(BlockPos var1) {
-      BlockPos var2 = this.absolutePos(var1);
-      ServerLevel var3 = this.getLevel();
-      var3.getBlockState(var2).randomTick(var3, var2, var3.random);
+   public void runAfterDelay(final long ticksToDelay, final Runnable whatToRun) {
+      this.runAtTickTime((long)this.testInfo.getTick() + ticksToDelay, whatToRun);
    }
 
-   public void tickBlock(BlockPos var1) {
-      BlockPos var2 = this.absolutePos(var1);
-      ServerLevel var3 = this.getLevel();
-      var3.getBlockState(var2).tick(var3, var2, var3.random);
+   public void randomTick(final BlockPos pos) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      ServerLevel level = this.getLevel();
+      level.getBlockState(absolutePos).randomTick(level, absolutePos, level.getRandom());
    }
 
-   public void tickPrecipitation(BlockPos var1) {
-      BlockPos var2 = this.absolutePos(var1);
-      ServerLevel var3 = this.getLevel();
-      var3.tickPrecipitation(var2);
+   public void tickBlock(final BlockPos pos) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      ServerLevel level = this.getLevel();
+      level.getBlockState(absolutePos).tick(level, absolutePos, level.getRandom());
+   }
+
+   public void tickPrecipitation(final BlockPos pos) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      ServerLevel level = this.getLevel();
+      level.tickPrecipitation(absolutePos);
    }
 
    public void tickPrecipitation() {
-      AABB var1 = this.getRelativeBounds();
-      int var2 = (int)Math.floor(var1.maxX);
-      int var3 = (int)Math.floor(var1.maxZ);
-      int var4 = (int)Math.floor(var1.maxY);
+      AABB aabb = this.getRelativeBounds();
+      int maxX = (int)Math.floor(aabb.maxX);
+      int maxZ = (int)Math.floor(aabb.maxZ);
+      int maxY = (int)Math.floor(aabb.maxY);
 
-      for(int var5 = (int)Math.floor(var1.minX); var5 < var2; ++var5) {
-         for(int var6 = (int)Math.floor(var1.minZ); var6 < var3; ++var6) {
-            this.tickPrecipitation(new BlockPos(var5, var4, var6));
+      for(int x = (int)Math.floor(aabb.minX); x < maxX; ++x) {
+         for(int z = (int)Math.floor(aabb.minZ); z < maxZ; ++z) {
+            this.tickPrecipitation(new BlockPos(x, maxY, z));
          }
       }
 
    }
 
-   public int getHeight(Heightmap.Types var1, int var2, int var3) {
-      BlockPos var4 = this.absolutePos(new BlockPos(var2, 0, var3));
-      return this.relativePos(this.getLevel().getHeightmapPos(var1, var4)).getY();
+   public int getHeight(final Heightmap.Types heightmap, final int x, final int z) {
+      BlockPos absolutePos = this.absolutePos(new BlockPos(x, 0, z));
+      return this.relativePos(this.getLevel().getHeightmapPos(heightmap, absolutePos)).getY();
    }
 
-   public void fail(Component var1, BlockPos var2) {
-      throw this.assertionException(var2, var1);
+   public void fail(final Component message, final BlockPos pos) {
+      throw this.assertionException(pos, message);
    }
 
-   public void fail(Component var1, Entity var2) {
-      throw this.assertionException(var2.blockPosition(), var1);
+   public void fail(final Component message, final Entity entity) {
+      throw this.assertionException(entity.blockPosition(), message);
    }
 
-   public void fail(Component var1) {
-      throw this.assertionException(var1);
+   public void fail(final Component message) {
+      throw this.assertionException(message);
    }
 
-   public void fail(String var1) {
-      throw this.assertionException(Component.literal(var1));
+   public void fail(final String message) {
+      throw this.assertionException(Component.literal(message));
    }
 
-   public void failIf(Runnable var1) {
-      this.testInfo.createSequence().thenWaitUntil(var1).thenFail(() -> this.assertionException("test.error.fail"));
+   public void failIf(final Runnable asserter) {
+      this.testInfo.createSequence().thenWaitUntil(asserter).thenFail(() -> this.assertionException("test.error.fail"));
    }
 
-   public void failIfEver(Runnable var1) {
-      LongStream.range((long)this.testInfo.getTick(), (long)this.testInfo.getTimeoutTicks()).forEach((var2) -> {
+   public void failIfEver(final Runnable asserter) {
+      LongStream.range((long)this.testInfo.getTick(), (long)this.testInfo.getTimeoutTicks()).forEach((i) -> {
          GameTestInfo var10000 = this.testInfo;
-         Objects.requireNonNull(var1);
-         var10000.setRunAtTickTime(var2, var1::run);
+         Objects.requireNonNull(asserter);
+         var10000.setRunAtTickTime(i, asserter::run);
       });
    }
 
@@ -904,39 +927,39 @@ public class GameTestHelper {
       return this.testInfo.createSequence();
    }
 
-   public BlockPos absolutePos(BlockPos var1) {
-      BlockPos var2 = this.testInfo.getTestOrigin();
-      BlockPos var3 = var2.offset(var1);
-      return StructureTemplate.transform(var3, Mirror.NONE, this.testInfo.getRotation(), var2);
+   public BlockPos absolutePos(final BlockPos relativePos) {
+      BlockPos testPos = this.testInfo.getTestOrigin();
+      BlockPos absolutePosBeforeTranform = testPos.offset(relativePos);
+      return StructureTemplate.transform(absolutePosBeforeTranform, Mirror.NONE, this.testInfo.getRotation(), testPos);
    }
 
-   public BlockPos relativePos(BlockPos var1) {
-      BlockPos var2 = this.testInfo.getTestOrigin();
-      Rotation var3 = this.testInfo.getRotation().getRotated(Rotation.CLOCKWISE_180);
-      BlockPos var4 = StructureTemplate.transform(var1, Mirror.NONE, var3, var2);
-      return var4.subtract(var2);
+   public BlockPos relativePos(final BlockPos absolutePos) {
+      BlockPos testPos = this.testInfo.getTestOrigin();
+      Rotation inverseRotation = this.testInfo.getRotation().getRotated(Rotation.CLOCKWISE_180);
+      BlockPos absolutePosBeforeTransform = StructureTemplate.transform(absolutePos, Mirror.NONE, inverseRotation, testPos);
+      return absolutePosBeforeTransform.subtract(testPos);
    }
 
-   public AABB absoluteAABB(AABB var1) {
-      Vec3 var2 = this.absoluteVec(var1.getMinPosition());
-      Vec3 var3 = this.absoluteVec(var1.getMaxPosition());
-      return new AABB(var2, var3);
+   public AABB absoluteAABB(final AABB relativeAABB) {
+      Vec3 min = this.absoluteVec(relativeAABB.getMinPosition());
+      Vec3 max = this.absoluteVec(relativeAABB.getMaxPosition());
+      return new AABB(min, max);
    }
 
-   public AABB relativeAABB(AABB var1) {
-      Vec3 var2 = this.relativeVec(var1.getMinPosition());
-      Vec3 var3 = this.relativeVec(var1.getMaxPosition());
-      return new AABB(var2, var3);
+   public AABB relativeAABB(final AABB absoluteAABB) {
+      Vec3 min = this.relativeVec(absoluteAABB.getMinPosition());
+      Vec3 max = this.relativeVec(absoluteAABB.getMaxPosition());
+      return new AABB(min, max);
    }
 
-   public Vec3 absoluteVec(Vec3 var1) {
-      Vec3 var2 = Vec3.atLowerCornerOf(this.testInfo.getTestOrigin());
-      return StructureTemplate.transform(var2.add(var1), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getTestOrigin());
+   public Vec3 absoluteVec(final Vec3 relativeVec) {
+      Vec3 testPosVec = Vec3.atLowerCornerOf(this.testInfo.getTestOrigin());
+      return StructureTemplate.transform(testPosVec.add(relativeVec), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getTestOrigin());
    }
 
-   public Vec3 relativeVec(Vec3 var1) {
-      Vec3 var2 = Vec3.atLowerCornerOf(this.testInfo.getTestOrigin());
-      return StructureTemplate.transform(var1.subtract(var2), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getTestOrigin());
+   public Vec3 relativeVec(final Vec3 absoluteVec) {
+      Vec3 testPosVec = Vec3.atLowerCornerOf(this.testInfo.getTestOrigin());
+      return StructureTemplate.transform(absoluteVec.subtract(testPosVec), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getTestOrigin());
    }
 
    public Rotation getTestRotation() {
@@ -947,36 +970,36 @@ public class GameTestHelper {
       return this.testInfo.getRotation().rotate(Direction.SOUTH);
    }
 
-   public Direction getAbsoluteDirection(Direction var1) {
-      return this.getTestRotation().rotate(var1);
+   public Direction getAbsoluteDirection(final Direction direction) {
+      return this.getTestRotation().rotate(direction);
    }
 
-   public void assertTrue(boolean var1, Component var2) {
-      if (!var1) {
-         throw this.assertionException(var2);
+   public void assertTrue(final boolean condition, final Component errorMessage) {
+      if (!condition) {
+         throw this.assertionException(errorMessage);
       }
    }
 
-   public void assertTrue(boolean var1, String var2) {
-      this.assertTrue(var1, (Component)Component.literal(var2));
+   public void assertTrue(final boolean condition, final String errorMessage) {
+      this.assertTrue(condition, (Component)Component.literal(errorMessage));
    }
 
-   public <N> void assertValueEqual(N var1, N var2, String var3) {
-      this.assertValueEqual(var1, var2, (Component)Component.literal(var3));
+   public <N> void assertValueEqual(final N value, final N expected, final String valueName) {
+      this.assertValueEqual(value, expected, (Component)Component.literal(valueName));
    }
 
-   public <N> void assertValueEqual(N var1, N var2, Component var3) {
-      if (!var1.equals(var2)) {
-         throw this.assertionException("test.error.value_not_equal", var3, var1, var2);
+   public <N> void assertValueEqual(final N value, final N expected, final Component valueName) {
+      if (!value.equals(expected)) {
+         throw this.assertionException("test.error.value_not_equal", valueName, value, expected);
       }
    }
 
-   public void assertFalse(boolean var1, Component var2) {
-      this.assertTrue(!var1, var2);
+   public void assertFalse(final boolean condition, final Component errorMessage) {
+      this.assertTrue(!condition, errorMessage);
    }
 
-   public void assertFalse(boolean var1, String var2) {
-      this.assertFalse(var1, (Component)Component.literal(var2));
+   public void assertFalse(final boolean condition, final String errorMessage) {
+      this.assertFalse(condition, (Component)Component.literal(errorMessage));
    }
 
    public long getTick() {
@@ -987,45 +1010,53 @@ public class GameTestHelper {
       return this.testInfo.getStructureBounds();
    }
 
+   public AABB getBoundsWithPadding() {
+      return this.getBounds().inflate((double)this.testInfo.getTest().padding());
+   }
+
    public AABB getRelativeBounds() {
-      AABB var1 = this.testInfo.getStructureBounds();
-      Rotation var2 = this.testInfo.getRotation();
-      switch (var2) {
+      AABB absolute = this.testInfo.getStructureBounds();
+      Rotation rotation = this.testInfo.getRotation();
+      switch (rotation) {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:
-            return new AABB(0.0, 0.0, 0.0, var1.getZsize(), var1.getYsize(), var1.getXsize());
+            return new AABB(0.0, 0.0, 0.0, absolute.getZsize(), absolute.getYsize(), absolute.getXsize());
          default:
-            return new AABB(0.0, 0.0, 0.0, var1.getXsize(), var1.getYsize(), var1.getZsize());
+            return new AABB(0.0, 0.0, 0.0, absolute.getXsize(), absolute.getYsize(), absolute.getZsize());
       }
    }
 
-   public void forEveryBlockInStructure(Consumer<BlockPos> var1) {
-      AABB var2 = this.getRelativeBounds().contract(1.0, 1.0, 1.0);
-      BlockPos.MutableBlockPos.betweenClosedStream(var2).forEach(var1);
+   public void forEveryBlockInStructure(final Consumer<BlockPos> forBlock) {
+      AABB aabb = this.getRelativeBounds().contract(1.0, 1.0, 1.0);
+      BlockPos.MutableBlockPos.betweenClosedStream(aabb).forEach(forBlock);
    }
 
-   public void onEachTick(Runnable var1) {
-      LongStream.range((long)this.testInfo.getTick(), (long)this.testInfo.getTimeoutTicks()).forEach((var2) -> {
+   public void onEachTick(final Runnable action) {
+      LongStream.range((long)this.testInfo.getTick(), (long)this.testInfo.getTimeoutTicks()).forEach((i) -> {
          GameTestInfo var10000 = this.testInfo;
-         Objects.requireNonNull(var1);
-         var10000.setRunAtTickTime(var2, var1::run);
+         Objects.requireNonNull(action);
+         var10000.setRunAtTickTime(i, action::run);
       });
    }
 
-   public void placeAt(Player var1, ItemStack var2, BlockPos var3, Direction var4) {
-      BlockPos var5 = this.absolutePos(var3.relative(var4));
-      BlockHitResult var6 = new BlockHitResult(Vec3.atCenterOf(var5), var4, var5, false);
-      UseOnContext var7 = new UseOnContext(var1, InteractionHand.MAIN_HAND, var6);
-      var2.useOn(var7);
+   public void placeAt(final Player player, final ItemStack blockStack, final BlockPos pos, final Direction face) {
+      BlockPos absolute = this.absolutePos(pos.relative(face));
+      BlockHitResult hitResult = new BlockHitResult(Vec3.atCenterOf(absolute), face, absolute, false);
+      UseOnContext context = new UseOnContext(player, InteractionHand.MAIN_HAND, hitResult);
+      blockStack.useOn(context);
    }
 
-   public void setBiome(ResourceKey<Biome> var1) {
-      AABB var2 = this.getBounds();
-      BlockPos var3 = BlockPos.containing(var2.minX, var2.minY, var2.minZ);
-      BlockPos var4 = BlockPos.containing(var2.maxX, var2.maxY, var2.maxZ);
-      Either var5 = FillBiomeCommand.fill(this.getLevel(), var3, var4, this.getLevel().registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(var1));
-      if (var5.right().isPresent()) {
+   public void setBiome(final ResourceKey<Biome> biome) {
+      AABB bounds = this.getBoundsWithPadding();
+      BlockPos low = BlockPos.containing(bounds.minX, bounds.minY, bounds.minZ);
+      BlockPos high = BlockPos.containing(bounds.maxX, bounds.maxY, bounds.maxZ);
+      Either<Integer, CommandSyntaxException> result = FillBiomeCommand.fill(this.getLevel(), low, high, this.getLevel().registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(biome));
+      if (result.right().isPresent()) {
          throw this.assertionException("test.error.set_biome");
       }
+   }
+
+   private static Component getItemName(final Item itemType) {
+      return (Component)itemType.components().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
    }
 }

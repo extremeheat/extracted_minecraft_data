@@ -15,26 +15,26 @@ public class ConditionBuilder {
       super();
    }
 
-   private <T extends Comparable<T>> void putValue(Property<T> var1, KeyValueCondition.Terms var2) {
-      this.terms.put(var1.getName(), var2);
+   private <T extends Comparable<T>> void putValue(final Property<T> property, final KeyValueCondition.Terms term) {
+      this.terms.put(property.getName(), term);
    }
 
-   public final <T extends Comparable<T>> ConditionBuilder term(Property<T> var1, T var2) {
-      this.putValue(var1, new KeyValueCondition.Terms(List.of(new KeyValueCondition.Term(var1.getName(var2), false))));
+   public final <T extends Comparable<T>> ConditionBuilder term(final Property<T> property, final T value) {
+      this.putValue(property, new KeyValueCondition.Terms(List.of(new KeyValueCondition.Term(property.getName(value), false))));
       return this;
    }
 
    @SafeVarargs
-   public final <T extends Comparable<T>> ConditionBuilder term(Property<T> var1, T var2, T... var3) {
-      Stream var10000 = Stream.concat(Stream.of(var2), Stream.of(var3));
-      Objects.requireNonNull(var1);
-      List var4 = var10000.map(var1::getName).sorted().distinct().map((var0) -> new KeyValueCondition.Term(var0, false)).toList();
-      this.putValue(var1, new KeyValueCondition.Terms(var4));
+   public final <T extends Comparable<T>> ConditionBuilder term(final Property<T> property, final T value, final T... values) {
+      Stream var10000 = Stream.concat(Stream.of(value), Stream.of(values));
+      Objects.requireNonNull(property);
+      List<KeyValueCondition.Term> terms = var10000.map(property::getName).sorted().distinct().map((v) -> new KeyValueCondition.Term(v, false)).toList();
+      this.putValue(property, new KeyValueCondition.Terms(terms));
       return this;
    }
 
-   public final <T extends Comparable<T>> ConditionBuilder negatedTerm(Property<T> var1, T var2) {
-      this.putValue(var1, new KeyValueCondition.Terms(List.of(new KeyValueCondition.Term(var1.getName(var2), true))));
+   public final <T extends Comparable<T>> ConditionBuilder negatedTerm(final Property<T> property, final T value) {
+      this.putValue(property, new KeyValueCondition.Terms(List.of(new KeyValueCondition.Term(property.getName(value), true))));
       return this;
    }
 

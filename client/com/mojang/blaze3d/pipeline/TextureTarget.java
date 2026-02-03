@@ -4,9 +4,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import org.jspecify.annotations.Nullable;
 
 public class TextureTarget extends RenderTarget {
-   public TextureTarget(@Nullable String var1, int var2, int var3, boolean var4) {
-      super(var1, var4);
+   public TextureTarget(final @Nullable String label, final int width, final int height, final boolean useDepth) {
+      super(label, useDepth);
       RenderSystem.assertOnRenderThread();
-      this.resize(var2, var3);
+      this.resize(width, height);
    }
 }

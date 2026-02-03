@@ -18,9 +18,9 @@ public class GameTestBlockHighlightRenderer {
       super();
    }
 
-   public void highlightPos(BlockPos var1, BlockPos var2) {
-      String var3 = var2.toShortString();
-      this.markers.put(var1, new Marker(1610678016, var3, Util.getMillis() + 10000L));
+   public void highlightPos(final BlockPos absolutePos, final BlockPos relativePos) {
+      String text = relativePos.toShortString();
+      this.markers.put(absolutePos, new Marker(1610678016, text, Util.getMillis() + 10000L));
    }
 
    public void clear() {
@@ -28,28 +28,22 @@ public class GameTestBlockHighlightRenderer {
    }
 
    public void emitGizmos() {
-      long var1 = Util.getMillis();
-      this.markers.entrySet().removeIf((var2) -> var1 > ((Marker)var2.getValue()).removeAtTime);
-      this.markers.forEach((var1x, var2) -> this.renderMarker(var1x, var2));
+      long time = Util.getMillis();
+      this.markers.entrySet().removeIf((entry) -> time > ((Marker)entry.getValue()).removeAtTime);
+      this.markers.forEach((pos, marker) -> this.renderMarker(pos, marker));
    }
 
-   private void renderMarker(BlockPos var1, Marker var2) {
-      Gizmos.cuboid(var1, 0.02F, GizmoStyle.fill(var2.color()));
-      if (!var2.text.isEmpty()) {
-         Gizmos.billboardText(var2.text, Vec3.atLowerCornerWithOffset(var1, 0.5, 1.2, 0.5), TextGizmo.Style.whiteAndCentered().withScale(0.16F)).setAlwaysOnTop();
+   private void renderMarker(final BlockPos pos, final Marker marker) {
+      Gizmos.cuboid(pos, 0.02F, GizmoStyle.fill(marker.color()));
+      if (!marker.text.isEmpty()) {
+         Gizmos.billboardText(marker.text, Vec3.atLowerCornerWithOffset(pos, 0.5, 1.2, 0.5), TextGizmo.Style.whiteAndCentered().withScale(0.16F)).setAlwaysOnTop();
       }
 
    }
 
-   static record Marker(int color, String text, long removeAtTime) {
-      final String text;
-      final long removeAtTime;
-
-      Marker(int var1, String var2, long var3) {
+   private static record Marker(int color, String text, long removeAtTime) {
+      private Marker {
          super();
-         this.color = var1;
-         this.text = var2;
-         this.removeAtTime = var3;
       }
    }
 }

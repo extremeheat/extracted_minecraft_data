@@ -11,10 +11,10 @@ public class ServerActivityMonitor {
    private final AtomicBoolean serverActivity = new AtomicBoolean(false);
    private final NotificationManager notificationManager;
 
-   public ServerActivityMonitor(NotificationManager var1, int var2) {
+   public ServerActivityMonitor(final NotificationManager notificationManager, final int secondsBetweenNotifications) {
       super();
-      this.notificationManager = var1;
-      this.minimumMillisBetweenNotifications = TimeUnit.SECONDS.toMillis((long)var2);
+      this.notificationManager = notificationManager;
+      this.minimumMillisBetweenNotifications = TimeUnit.SECONDS.toMillis((long)secondsBetweenNotifications);
    }
 
    public void tick() {
@@ -27,8 +27,8 @@ public class ServerActivityMonitor {
    }
 
    private void processWithRateLimit() {
-      long var1 = Util.getMillis();
-      if (this.serverActivity.get() && var1 - this.lastNotificationTime.get() >= this.minimumMillisBetweenNotifications) {
+      long now = Util.getMillis();
+      if (this.serverActivity.get() && now - this.lastNotificationTime.get() >= this.minimumMillisBetweenNotifications) {
          this.notificationManager.serverActivityOccured();
          this.lastNotificationTime.set(Util.getMillis());
       }

@@ -10,8 +10,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -41,8 +41,8 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public final class NbtUtils {
-   private static final Comparator<ListTag> YXZ_LISTTAG_INT_COMPARATOR = Comparator.comparingInt((var0) -> var0.getIntOr(1, 0)).thenComparingInt((var0) -> var0.getIntOr(0, 0)).thenComparingInt((var0) -> var0.getIntOr(2, 0));
-   private static final Comparator<ListTag> YXZ_LISTTAG_DOUBLE_COMPARATOR = Comparator.comparingDouble((var0) -> var0.getDoubleOr(1, 0.0)).thenComparingDouble((var0) -> var0.getDoubleOr(0, 0.0)).thenComparingDouble((var0) -> var0.getDoubleOr(2, 0.0));
+   private static final Comparator<ListTag> YXZ_LISTTAG_INT_COMPARATOR = Comparator.comparingInt((list) -> list.getIntOr(1, 0)).thenComparingInt((list) -> list.getIntOr(0, 0)).thenComparingInt((list) -> list.getIntOr(2, 0));
+   private static final Comparator<ListTag> YXZ_LISTTAG_DOUBLE_COMPARATOR = Comparator.comparingDouble((list) -> list.getDoubleOr(1, 0.0)).thenComparingDouble((list) -> list.getDoubleOr(0, 0.0)).thenComparingDouble((list) -> list.getDoubleOr(2, 0.0));
    private static final Codec<ResourceKey<Block>> BLOCK_NAME_CODEC;
    public static final String SNBT_DATA_TAG = "data";
    private static final char PROPERTIES_START = '{';
@@ -60,24 +60,24 @@ public final class NbtUtils {
    }
 
    @VisibleForTesting
-   public static boolean compareNbt(@Nullable Tag var0, @Nullable Tag var1, boolean var2) {
-      if (var0 == var1) {
+   public static boolean compareNbt(final @Nullable Tag expected, final @Nullable Tag actual, final boolean partialListMatches) {
+      if (expected == actual) {
          return true;
-      } else if (var0 == null) {
+      } else if (expected == null) {
          return true;
-      } else if (var1 == null) {
+      } else if (actual == null) {
          return false;
-      } else if (!var0.getClass().equals(var1.getClass())) {
+      } else if (!expected.getClass().equals(actual.getClass())) {
          return false;
-      } else if (var0 instanceof CompoundTag) {
-         CompoundTag var3 = (CompoundTag)var0;
-         CompoundTag var11 = (CompoundTag)var1;
-         if (var11.size() < var3.size()) {
+      } else if (expected instanceof CompoundTag) {
+         CompoundTag expectedCompound = (CompoundTag)expected;
+         CompoundTag actualCompound = (CompoundTag)actual;
+         if (actualCompound.size() < expectedCompound.size()) {
             return false;
          } else {
-            for(Map.Entry var13 : var3.entrySet()) {
-               Tag var14 = (Tag)var13.getValue();
-               if (!compareNbt(var14, var11.get((String)var13.getKey()), var2)) {
+            for(Map.Entry<String, Tag> entry : expectedCompound.entrySet()) {
+               Tag tag = (Tag)entry.getValue();
+               if (!compareNbt(tag, actualCompound.get((String)entry.getKey()), partialListMatches)) {
                   return false;
                }
             }
@@ -85,29 +85,29 @@ public final class NbtUtils {
             return true;
          }
       } else {
-         if (var0 instanceof ListTag) {
-            ListTag var4 = (ListTag)var0;
-            if (var2) {
-               ListTag var5 = (ListTag)var1;
-               if (var4.isEmpty()) {
-                  return var5.isEmpty();
+         if (expected instanceof ListTag) {
+            ListTag expectedList = (ListTag)expected;
+            if (partialListMatches) {
+               ListTag actualList = (ListTag)actual;
+               if (expectedList.isEmpty()) {
+                  return actualList.isEmpty();
                }
 
-               if (var5.size() < var4.size()) {
+               if (actualList.size() < expectedList.size()) {
                   return false;
                }
 
-               for(Tag var7 : var4) {
-                  boolean var8 = false;
+               for(Tag tag : expectedList) {
+                  boolean found = false;
 
-                  for(Tag var10 : var5) {
-                     if (compareNbt(var7, var10, var2)) {
-                        var8 = true;
+                  for(Tag value : actualList) {
+                     if (compareNbt(tag, value, partialListMatches)) {
+                        found = true;
                         break;
                      }
                   }
 
-                  if (!var8) {
+                  if (!found) {
                      return false;
                   }
                }
@@ -116,97 +116,97 @@ public final class NbtUtils {
             }
          }
 
-         return var0.equals(var1);
+         return expected.equals(actual);
       }
    }
 
-   public static BlockState readBlockState(HolderGetter<Block> var0, CompoundTag var1) {
-      Optional var10000 = var1.read("Name", BLOCK_NAME_CODEC);
-      Objects.requireNonNull(var0);
-      Optional var2 = var10000.flatMap(var0::get);
-      if (var2.isEmpty()) {
+   public static BlockState readBlockState(final HolderGetter<Block> blocks, final CompoundTag tag) {
+      Optional var10000 = tag.read("Name", BLOCK_NAME_CODEC);
+      Objects.requireNonNull(blocks);
+      Optional<? extends Holder<Block>> blockHolder = var10000.flatMap(blocks::get);
+      if (blockHolder.isEmpty()) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         Block var3 = (Block)((Holder)var2.get()).value();
-         BlockState var4 = var3.defaultBlockState();
-         Optional var5 = var1.getCompound("Properties");
-         if (var5.isPresent()) {
-            StateDefinition var6 = var3.getStateDefinition();
+         Block block = (Block)((Holder)blockHolder.get()).value();
+         BlockState result = block.defaultBlockState();
+         Optional<CompoundTag> properties = tag.getCompound("Properties");
+         if (properties.isPresent()) {
+            StateDefinition<Block, BlockState> definition = block.getStateDefinition();
 
-            for(String var8 : ((CompoundTag)var5.get()).keySet()) {
-               Property var9 = var6.getProperty(var8);
-               if (var9 != null) {
-                  var4 = (BlockState)setValueHelper(var4, var9, var8, (CompoundTag)var5.get(), var1);
+            for(String key : ((CompoundTag)properties.get()).keySet()) {
+               Property<?> property = definition.getProperty(key);
+               if (property != null) {
+                  result = (BlockState)setValueHelper(result, property, key, (CompoundTag)properties.get(), tag);
                }
             }
          }
 
-         return var4;
+         return result;
       }
    }
 
-   private static <S extends StateHolder<?, S>, T extends Comparable<T>> S setValueHelper(S var0, Property<T> var1, String var2, CompoundTag var3, CompoundTag var4) {
-      Optional var10000 = var3.getString(var2);
-      Objects.requireNonNull(var1);
-      Optional var5 = var10000.flatMap(var1::getValue);
-      if (var5.isPresent()) {
-         return (S)(var0.setValue(var1, (Comparable)var5.get()));
+   private static <S extends StateHolder<?, S>, T extends Comparable<T>> S setValueHelper(final S result, final Property<T> property, final String key, final CompoundTag properties, final CompoundTag tag) {
+      Optional var10000 = properties.getString(key);
+      Objects.requireNonNull(property);
+      Optional<T> value = var10000.flatMap(property::getValue);
+      if (value.isPresent()) {
+         return (S)(((StateHolder)result).setValue(property, (Comparable)value.get()));
       } else {
-         LOGGER.warn("Unable to read property: {} with value: {} for blockstate: {}", new Object[]{var2, var3.get(var2), var4});
-         return (S)var0;
+         LOGGER.warn("Unable to read property: {} with value: {} for blockstate: {}", new Object[]{key, properties.get(key), tag});
+         return result;
       }
    }
 
-   public static CompoundTag writeBlockState(BlockState var0) {
-      CompoundTag var1 = new CompoundTag();
-      var1.putString("Name", BuiltInRegistries.BLOCK.getKey(var0.getBlock()).toString());
-      Map var2 = var0.getValues();
-      if (!var2.isEmpty()) {
-         CompoundTag var3 = new CompoundTag();
+   public static CompoundTag writeBlockState(final BlockState state) {
+      CompoundTag tag = new CompoundTag();
+      tag.putString("Name", BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
+      Map<Property<?>, Comparable<?>> values = state.getValues();
+      if (!values.isEmpty()) {
+         CompoundTag properties = new CompoundTag();
 
-         for(Map.Entry var5 : var2.entrySet()) {
-            Property var6 = (Property)var5.getKey();
-            var3.putString(var6.getName(), getName(var6, (Comparable)var5.getValue()));
+         for(Map.Entry<Property<?>, Comparable<?>> entry : values.entrySet()) {
+            Property<?> key = (Property)entry.getKey();
+            properties.putString(key.getName(), getName(key, (Comparable)entry.getValue()));
          }
 
-         var1.put("Properties", var3);
+         tag.put("Properties", properties);
       }
 
-      return var1;
+      return tag;
    }
 
-   public static CompoundTag writeFluidState(FluidState var0) {
-      CompoundTag var1 = new CompoundTag();
-      var1.putString("Name", BuiltInRegistries.FLUID.getKey(var0.getType()).toString());
-      Map var2 = var0.getValues();
-      if (!var2.isEmpty()) {
-         CompoundTag var3 = new CompoundTag();
+   public static CompoundTag writeFluidState(final FluidState state) {
+      CompoundTag tag = new CompoundTag();
+      tag.putString("Name", BuiltInRegistries.FLUID.getKey(state.getType()).toString());
+      Map<Property<?>, Comparable<?>> values = state.getValues();
+      if (!values.isEmpty()) {
+         CompoundTag properties = new CompoundTag();
 
-         for(Map.Entry var5 : var2.entrySet()) {
-            Property var6 = (Property)var5.getKey();
-            var3.putString(var6.getName(), getName(var6, (Comparable)var5.getValue()));
+         for(Map.Entry<Property<?>, Comparable<?>> entry : values.entrySet()) {
+            Property<?> key = (Property)entry.getKey();
+            properties.putString(key.getName(), getName(key, (Comparable)entry.getValue()));
          }
 
-         var1.put("Properties", var3);
+         tag.put("Properties", properties);
       }
 
-      return var1;
+      return tag;
    }
 
-   private static <T extends Comparable<T>> String getName(Property<T> var0, Comparable<?> var1) {
-      return var0.getName(var1);
+   private static <T extends Comparable<T>> String getName(final Property<T> key, final Comparable<?> value) {
+      return key.getName(value);
    }
 
-   public static String prettyPrint(Tag var0) {
-      return prettyPrint(var0, false);
+   public static String prettyPrint(final Tag tag) {
+      return prettyPrint(tag, false);
    }
 
-   public static String prettyPrint(Tag var0, boolean var1) {
-      return prettyPrint(new StringBuilder(), var0, 0, var1).toString();
+   public static String prettyPrint(final Tag tag, final boolean withBinaryBlobs) {
+      return prettyPrint(new StringBuilder(), tag, 0, withBinaryBlobs).toString();
    }
 
-   public static StringBuilder prettyPrint(StringBuilder var0, Tag var1, int var2, boolean var3) {
-      Objects.requireNonNull(var1);
+   public static StringBuilder prettyPrint(final StringBuilder builder, final Tag input, final int indent, final boolean withBinaryBlobs) {
+      Objects.requireNonNull(input);
       byte var5 = 0;
       StringBuilder var10000;
       //$FF: var5->value
@@ -217,176 +217,176 @@ public final class NbtUtils {
       //4->net/minecraft/nbt/IntArrayTag
       //5->net/minecraft/nbt/CompoundTag
       //6->net/minecraft/nbt/LongArrayTag
-      switch (var1.typeSwitch<invokedynamic>(var1, var5)) {
+      switch (input.typeSwitch<invokedynamic>(input, var5)) {
          case 0:
-            PrimitiveTag var6 = (PrimitiveTag)var1;
-            var10000 = var0.append(var6);
+            PrimitiveTag primitive = (PrimitiveTag)input;
+            var10000 = builder.append(primitive);
             break;
          case 1:
-            EndTag var7 = (EndTag)var1;
-            var10000 = var0;
+            EndTag ignored = (EndTag)input;
+            var10000 = builder;
             break;
          case 2:
-            ByteArrayTag var8 = (ByteArrayTag)var1;
-            byte[] var21 = var8.getAsByteArray();
-            int var23 = var21.length;
-            indent(var2, var0).append("byte[").append(var23).append("] {\n");
-            if (!var3) {
-               indent(var2 + 1, var0).append(" // Skipped, supply withBinaryBlobs true");
+            ByteArrayTag tag = (ByteArrayTag)input;
+            byte[] array = tag.getAsByteArray();
+            int length = array.length;
+            indent(indent, builder).append("byte[").append(length).append("] {\n");
+            if (!withBinaryBlobs) {
+               indent(indent + 1, builder).append(" // Skipped, supply withBinaryBlobs true");
             } else {
-               indent(var2 + 1, var0);
+               indent(indent + 1, builder);
 
-               for(int var26 = 0; var26 < var21.length; ++var26) {
-                  if (var26 != 0) {
-                     var0.append(',');
+               for(int i = 0; i < array.length; ++i) {
+                  if (i != 0) {
+                     builder.append(',');
                   }
 
-                  if (var26 % 16 == 0 && var26 / 16 > 0) {
-                     var0.append('\n');
-                     if (var26 < var21.length) {
-                        indent(var2 + 1, var0);
+                  if (i % 16 == 0 && i / 16 > 0) {
+                     builder.append('\n');
+                     if (i < array.length) {
+                        indent(indent + 1, builder);
                      }
-                  } else if (var26 != 0) {
-                     var0.append(' ');
+                  } else if (i != 0) {
+                     builder.append(' ');
                   }
 
-                  var0.append(String.format(Locale.ROOT, "0x%02X", var21[var26] & 255));
+                  builder.append(String.format(Locale.ROOT, "0x%02X", array[i] & 255));
                }
             }
 
-            var0.append('\n');
-            indent(var2, var0).append('}');
-            var10000 = var0;
+            builder.append('\n');
+            indent(indent, builder).append('}');
+            var10000 = builder;
             break;
          case 3:
-            ListTag var9 = (ListTag)var1;
-            int var22 = var9.size();
-            indent(var2, var0).append("list").append("[").append(var22).append("] [");
-            if (var22 != 0) {
-               var0.append('\n');
+            ListTag tag = (ListTag)input;
+            int size = tag.size();
+            indent(indent, builder).append("list").append("[").append(size).append("] [");
+            if (size != 0) {
+               builder.append('\n');
             }
 
-            for(int var25 = 0; var25 < var22; ++var25) {
-               if (var25 != 0) {
-                  var0.append(",\n");
+            for(int i = 0; i < size; ++i) {
+               if (i != 0) {
+                  builder.append(",\n");
                }
 
-               indent(var2 + 1, var0);
-               prettyPrint(var0, var9.get(var25), var2 + 1, var3);
+               indent(indent + 1, builder);
+               prettyPrint(builder, tag.get(i), indent + 1, withBinaryBlobs);
             }
 
-            if (var22 != 0) {
-               var0.append('\n');
+            if (size != 0) {
+               builder.append('\n');
             }
 
-            indent(var2, var0).append(']');
-            var10000 = var0;
+            indent(indent, builder).append(']');
+            var10000 = builder;
             break;
          case 4:
-            IntArrayTag var10 = (IntArrayTag)var1;
-            int[] var24 = var10.getAsIntArray();
-            int var28 = 0;
+            IntArrayTag tag = (IntArrayTag)input;
+            int[] array = tag.getAsIntArray();
+            int size = 0;
 
-            for(int var38 : var24) {
-               var28 = Math.max(var28, String.format(Locale.ROOT, "%X", var38).length());
+            for(int i : array) {
+               size = Math.max(size, String.format(Locale.ROOT, "%X", i).length());
             }
 
-            int var31 = var24.length;
-            indent(var2, var0).append("int[").append(var31).append("] {\n");
-            if (!var3) {
-               indent(var2 + 1, var0).append(" // Skipped, supply withBinaryBlobs true");
+            int length = array.length;
+            indent(indent, builder).append("int[").append(length).append("] {\n");
+            if (!withBinaryBlobs) {
+               indent(indent + 1, builder).append(" // Skipped, supply withBinaryBlobs true");
             } else {
-               indent(var2 + 1, var0);
+               indent(indent + 1, builder);
 
-               for(int var34 = 0; var34 < var24.length; ++var34) {
-                  if (var34 != 0) {
-                     var0.append(',');
+               for(int i = 0; i < array.length; ++i) {
+                  if (i != 0) {
+                     builder.append(',');
                   }
 
-                  if (var34 % 16 == 0 && var34 / 16 > 0) {
-                     var0.append('\n');
-                     if (var34 < var24.length) {
-                        indent(var2 + 1, var0);
+                  if (i % 16 == 0 && i / 16 > 0) {
+                     builder.append('\n');
+                     if (i < array.length) {
+                        indent(indent + 1, builder);
                      }
-                  } else if (var34 != 0) {
-                     var0.append(' ');
+                  } else if (i != 0) {
+                     builder.append(' ');
                   }
 
-                  var0.append(String.format(Locale.ROOT, "0x%0" + var28 + "X", var24[var34]));
+                  builder.append(String.format(Locale.ROOT, "0x%0" + size + "X", array[i]));
                }
             }
 
-            var0.append('\n');
-            indent(var2, var0).append('}');
-            var10000 = var0;
+            builder.append('\n');
+            indent(indent, builder).append('}');
+            var10000 = builder;
             break;
          case 5:
-            CompoundTag var11 = (CompoundTag)var1;
-            ArrayList var27 = Lists.newArrayList(var11.keySet());
-            Collections.sort(var27);
-            indent(var2, var0).append('{');
-            if (var0.length() - var0.lastIndexOf("\n") > 2 * (var2 + 1)) {
-               var0.append('\n');
-               indent(var2 + 1, var0);
+            CompoundTag tag = (CompoundTag)input;
+            List<String> keys = Lists.newArrayList(tag.keySet());
+            Collections.sort(keys);
+            indent(indent, builder).append('{');
+            if (builder.length() - builder.lastIndexOf("\n") > 2 * (indent + 1)) {
+               builder.append('\n');
+               indent(indent + 1, builder);
             }
 
-            int var29 = var27.stream().mapToInt(String::length).max().orElse(0);
-            String var32 = Strings.repeat(" ", var29);
+            int paddingLength = keys.stream().mapToInt(String::length).max().orElse(0);
+            String padding = Strings.repeat(" ", paddingLength);
 
-            for(int var15 = 0; var15 < var27.size(); ++var15) {
-               if (var15 != 0) {
-                  var0.append(",\n");
+            for(int i = 0; i < keys.size(); ++i) {
+               if (i != 0) {
+                  builder.append(",\n");
                }
 
-               String var37 = (String)var27.get(var15);
-               indent(var2 + 1, var0).append('"').append(var37).append('"').append(var32, 0, var32.length() - var37.length()).append(": ");
-               prettyPrint(var0, var11.get(var37), var2 + 1, var3);
+               String key = (String)keys.get(i);
+               indent(indent + 1, builder).append('"').append(key).append('"').append(padding, 0, padding.length() - key.length()).append(": ");
+               prettyPrint(builder, tag.get(key), indent + 1, withBinaryBlobs);
             }
 
-            if (!var27.isEmpty()) {
-               var0.append('\n');
+            if (!keys.isEmpty()) {
+               builder.append('\n');
             }
 
-            indent(var2, var0).append('}');
-            var10000 = var0;
+            indent(indent, builder).append('}');
+            var10000 = builder;
             break;
          case 6:
-            LongArrayTag var12 = (LongArrayTag)var1;
-            long[] var13 = var12.getAsLongArray();
-            long var14 = 0L;
+            LongArrayTag tag = (LongArrayTag)input;
+            long[] array = tag.getAsLongArray();
+            long size = 0L;
 
-            for(long var19 : var13) {
-               var14 = Math.max(var14, (long)String.format(Locale.ROOT, "%X", var19).length());
+            for(long i : array) {
+               size = Math.max(size, (long)String.format(Locale.ROOT, "%X", i).length());
             }
 
-            long var36 = (long)var13.length;
-            indent(var2, var0).append("long[").append(var36).append("] {\n");
-            if (!var3) {
-               indent(var2 + 1, var0).append(" // Skipped, supply withBinaryBlobs true");
+            long length = (long)array.length;
+            indent(indent, builder).append("long[").append(length).append("] {\n");
+            if (!withBinaryBlobs) {
+               indent(indent + 1, builder).append(" // Skipped, supply withBinaryBlobs true");
             } else {
-               indent(var2 + 1, var0);
+               indent(indent + 1, builder);
 
-               for(int var39 = 0; var39 < var13.length; ++var39) {
-                  if (var39 != 0) {
-                     var0.append(',');
+               for(int i = 0; i < array.length; ++i) {
+                  if (i != 0) {
+                     builder.append(',');
                   }
 
-                  if (var39 % 16 == 0 && var39 / 16 > 0) {
-                     var0.append('\n');
-                     if (var39 < var13.length) {
-                        indent(var2 + 1, var0);
+                  if (i % 16 == 0 && i / 16 > 0) {
+                     builder.append('\n');
+                     if (i < array.length) {
+                        indent(indent + 1, builder);
                      }
-                  } else if (var39 != 0) {
-                     var0.append(' ');
+                  } else if (i != 0) {
+                     builder.append(' ');
                   }
 
-                  var0.append(String.format(Locale.ROOT, "0x%0" + var14 + "X", var13[var39]));
+                  builder.append(String.format(Locale.ROOT, "0x%0" + size + "X", array[i]));
                }
             }
 
-            var0.append('\n');
-            indent(var2, var0).append('}');
-            var10000 = var0;
+            builder.append('\n');
+            indent(indent, builder).append('}');
+            var10000 = builder;
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);
@@ -395,188 +395,188 @@ public final class NbtUtils {
       return var10000;
    }
 
-   private static StringBuilder indent(int var0, StringBuilder var1) {
-      int var2 = var1.lastIndexOf("\n") + 1;
-      int var3 = var1.length() - var2;
+   private static StringBuilder indent(final int indent, final StringBuilder builder) {
+      int index = builder.lastIndexOf("\n") + 1;
+      int len = builder.length() - index;
 
-      for(int var4 = 0; var4 < 2 * var0 - var3; ++var4) {
-         var1.append(' ');
+      for(int i = 0; i < 2 * indent - len; ++i) {
+         builder.append(' ');
       }
 
-      return var1;
+      return builder;
    }
 
-   public static Component toPrettyComponent(Tag var0) {
-      return (new TextComponentTagVisitor("")).visit(var0);
+   public static Component toPrettyComponent(final Tag tag) {
+      return (new TextComponentTagVisitor("")).visit(tag);
    }
 
-   public static String structureToSnbt(CompoundTag var0) {
-      return (new SnbtPrinterTagVisitor()).visit(packStructureTemplate(var0));
+   public static String structureToSnbt(final CompoundTag structure) {
+      return (new SnbtPrinterTagVisitor()).visit(packStructureTemplate(structure));
    }
 
-   public static CompoundTag snbtToStructure(String var0) throws CommandSyntaxException {
-      return unpackStructureTemplate(TagParser.parseCompoundFully(var0));
+   public static CompoundTag snbtToStructure(final String snbt) throws CommandSyntaxException {
+      return unpackStructureTemplate(TagParser.parseCompoundFully(snbt));
    }
 
    @VisibleForTesting
-   static CompoundTag packStructureTemplate(CompoundTag var0) {
-      Optional var2 = var0.getList("palettes");
-      ListTag var1;
-      if (var2.isPresent()) {
-         var1 = ((ListTag)var2.get()).getListOrEmpty(0);
+   static CompoundTag packStructureTemplate(final CompoundTag snbt) {
+      Optional<ListTag> palettes = snbt.getList("palettes");
+      ListTag palette;
+      if (palettes.isPresent()) {
+         palette = ((ListTag)palettes.get()).getListOrEmpty(0);
       } else {
-         var1 = var0.getListOrEmpty("palette");
+         palette = snbt.getListOrEmpty("palette");
       }
 
-      ListTag var3 = (ListTag)var1.compoundStream().map(NbtUtils::packBlockState).map(StringTag::valueOf).collect(Collectors.toCollection(ListTag::new));
-      var0.put("palette", var3);
-      if (var2.isPresent()) {
-         ListTag var4 = new ListTag();
-         ((ListTag)var2.get()).stream().flatMap((var0x) -> var0x.asList().stream()).forEach((var2x) -> {
-            CompoundTag var3x = new CompoundTag();
+      ListTag deflatedPalette = (ListTag)palette.compoundStream().map(NbtUtils::packBlockState).map(StringTag::valueOf).collect(Collectors.toCollection(ListTag::new));
+      snbt.put("palette", deflatedPalette);
+      if (palettes.isPresent()) {
+         ListTag newPalettes = new ListTag();
+         ((ListTag)palettes.get()).stream().flatMap((tag) -> tag.asList().stream()).forEach((oldPalette) -> {
+            CompoundTag newPalette = new CompoundTag();
 
-            for(int var4x = 0; var4x < var2x.size(); ++var4x) {
-               var3x.putString((String)var3.getString(var4x).orElseThrow(), packBlockState((CompoundTag)var2x.getCompound(var4x).orElseThrow()));
+            for(int i = 0; i < oldPalette.size(); ++i) {
+               newPalette.putString((String)deflatedPalette.getString(i).orElseThrow(), packBlockState((CompoundTag)oldPalette.getCompound(i).orElseThrow()));
             }
 
-            var4.add(var3x);
+            newPalettes.add(newPalette);
          });
-         var0.put("palettes", var4);
+         snbt.put("palettes", newPalettes);
       }
 
-      Optional var6 = var0.getList("entities");
-      if (var6.isPresent()) {
-         ListTag var5 = (ListTag)((ListTag)var6.get()).compoundStream().sorted(Comparator.comparing((var0x) -> var0x.getList("pos"), Comparators.emptiesLast(YXZ_LISTTAG_DOUBLE_COMPARATOR))).collect(Collectors.toCollection(ListTag::new));
-         var0.put("entities", var5);
+      Optional<ListTag> oldEntities = snbt.getList("entities");
+      if (oldEntities.isPresent()) {
+         ListTag newEntities = (ListTag)((ListTag)oldEntities.get()).compoundStream().sorted(Comparator.comparing((tag) -> tag.getList("pos"), Comparators.emptiesLast(YXZ_LISTTAG_DOUBLE_COMPARATOR))).collect(Collectors.toCollection(ListTag::new));
+         snbt.put("entities", newEntities);
       }
 
-      ListTag var7 = (ListTag)var0.getList("blocks").stream().flatMap(ListTag::compoundStream).sorted(Comparator.comparing((var0x) -> var0x.getList("pos"), Comparators.emptiesLast(YXZ_LISTTAG_INT_COMPARATOR))).peek((var1x) -> var1x.putString("state", (String)var3.getString(var1x.getIntOr("state", 0)).orElseThrow())).collect(Collectors.toCollection(ListTag::new));
-      var0.put("data", var7);
-      var0.remove("blocks");
-      return var0;
+      ListTag blockData = (ListTag)snbt.getList("blocks").stream().flatMap(ListTag::compoundStream).sorted(Comparator.comparing((tag) -> tag.getList("pos"), Comparators.emptiesLast(YXZ_LISTTAG_INT_COMPARATOR))).peek((block) -> block.putString("state", (String)deflatedPalette.getString(block.getIntOr("state", 0)).orElseThrow())).collect(Collectors.toCollection(ListTag::new));
+      snbt.put("data", blockData);
+      snbt.remove("blocks");
+      return snbt;
    }
 
    @VisibleForTesting
-   static CompoundTag unpackStructureTemplate(CompoundTag var0) {
-      ListTag var1 = var0.getListOrEmpty("palette");
-      Map var2 = (Map)var1.stream().flatMap((var0x) -> var0x.asString().stream()).collect(ImmutableMap.toImmutableMap(Function.identity(), NbtUtils::unpackBlockState));
-      Optional var3 = var0.getList("palettes");
-      if (var3.isPresent()) {
-         var0.put("palettes", (Tag)((ListTag)var3.get()).compoundStream().map((var1x) -> (ListTag)var2.keySet().stream().map((var1) -> (String)var1x.getString(var1).orElseThrow()).map(NbtUtils::unpackBlockState).collect(Collectors.toCollection(ListTag::new))).collect(Collectors.toCollection(ListTag::new)));
-         var0.remove("palette");
+   static CompoundTag unpackStructureTemplate(final CompoundTag template) {
+      ListTag packedPalette = template.getListOrEmpty("palette");
+      Map<String, Tag> palette = (Map)packedPalette.stream().flatMap((tag) -> tag.asString().stream()).collect(ImmutableMap.toImmutableMap(Function.identity(), NbtUtils::unpackBlockState));
+      Optional<ListTag> oldPalettes = template.getList("palettes");
+      if (oldPalettes.isPresent()) {
+         template.put("palettes", (Tag)((ListTag)oldPalettes.get()).compoundStream().map((oldPalette) -> (ListTag)palette.keySet().stream().map((key) -> (String)oldPalette.getString(key).orElseThrow()).map(NbtUtils::unpackBlockState).collect(Collectors.toCollection(ListTag::new))).collect(Collectors.toCollection(ListTag::new)));
+         template.remove("palette");
       } else {
-         var0.put("palette", (Tag)var2.values().stream().collect(Collectors.toCollection(ListTag::new)));
+         template.put("palette", (Tag)palette.values().stream().collect(Collectors.toCollection(ListTag::new)));
       }
 
-      Optional var4 = var0.getList("data");
-      if (var4.isPresent()) {
-         Object2IntOpenHashMap var5 = new Object2IntOpenHashMap();
-         var5.defaultReturnValue(-1);
+      Optional<ListTag> maybeBlocks = template.getList("data");
+      if (maybeBlocks.isPresent()) {
+         Object2IntMap<String> paletteToId = new Object2IntOpenHashMap();
+         paletteToId.defaultReturnValue(-1);
 
-         for(int var6 = 0; var6 < var1.size(); ++var6) {
-            var5.put((String)var1.getString(var6).orElseThrow(), var6);
+         for(int i = 0; i < packedPalette.size(); ++i) {
+            paletteToId.put((String)packedPalette.getString(i).orElseThrow(), i);
          }
 
-         ListTag var11 = (ListTag)var4.get();
+         ListTag blocks = (ListTag)maybeBlocks.get();
 
-         for(int var7 = 0; var7 < var11.size(); ++var7) {
-            CompoundTag var8 = (CompoundTag)var11.getCompound(var7).orElseThrow();
-            String var9 = (String)var8.getString("state").orElseThrow();
-            int var10 = var5.getInt(var9);
-            if (var10 == -1) {
-               throw new IllegalStateException("Entry " + var9 + " missing from palette");
+         for(int i = 0; i < blocks.size(); ++i) {
+            CompoundTag block = (CompoundTag)blocks.getCompound(i).orElseThrow();
+            String stateName = (String)block.getString("state").orElseThrow();
+            int stateId = paletteToId.getInt(stateName);
+            if (stateId == -1) {
+               throw new IllegalStateException("Entry " + stateName + " missing from palette");
             }
 
-            var8.putInt("state", var10);
+            block.putInt("state", stateId);
          }
 
-         var0.put("blocks", var11);
-         var0.remove("data");
+         template.put("blocks", blocks);
+         template.remove("data");
       }
 
-      return var0;
+      return template;
    }
 
    @VisibleForTesting
-   static String packBlockState(CompoundTag var0) {
-      StringBuilder var1 = new StringBuilder((String)var0.getString("Name").orElseThrow());
-      var0.getCompound("Properties").ifPresent((var1x) -> {
-         String var2 = (String)var1x.entrySet().stream().sorted(Entry.comparingByKey()).map((var0) -> {
-            String var10000 = (String)var0.getKey();
-            return var10000 + ":" + (String)((Tag)var0.getValue()).asString().orElseThrow();
+   static String packBlockState(final CompoundTag compound) {
+      StringBuilder builder = new StringBuilder((String)compound.getString("Name").orElseThrow());
+      compound.getCompound("Properties").ifPresent((properties) -> {
+         String keyValues = (String)properties.entrySet().stream().sorted(Entry.comparingByKey()).map((entry) -> {
+            String var10000 = (String)entry.getKey();
+            return var10000 + ":" + (String)((Tag)entry.getValue()).asString().orElseThrow();
          }).collect(Collectors.joining(","));
-         var1.append('{').append(var2).append('}');
+         builder.append('{').append(keyValues).append('}');
       });
-      return var1.toString();
+      return builder.toString();
    }
 
    @VisibleForTesting
-   static CompoundTag unpackBlockState(String var0) {
-      CompoundTag var1 = new CompoundTag();
-      int var2 = var0.indexOf(123);
-      String var3;
-      if (var2 >= 0) {
-         var3 = var0.substring(0, var2);
-         CompoundTag var4 = new CompoundTag();
-         if (var2 + 2 <= var0.length()) {
-            String var5 = var0.substring(var2 + 1, var0.indexOf(125, var2));
-            COMMA_SPLITTER.split(var5).forEach((var2x) -> {
-               List var3 = COLON_SPLITTER.splitToList(var2x);
-               if (var3.size() == 2) {
-                  var4.putString((String)var3.get(0), (String)var3.get(1));
+   static CompoundTag unpackBlockState(final String compound) {
+      CompoundTag tag = new CompoundTag();
+      int openIndex = compound.indexOf(123);
+      String name;
+      if (openIndex >= 0) {
+         name = compound.substring(0, openIndex);
+         CompoundTag properties = new CompoundTag();
+         if (openIndex + 2 <= compound.length()) {
+            String values = compound.substring(openIndex + 1, compound.indexOf(125, openIndex));
+            COMMA_SPLITTER.split(values).forEach((keyValue) -> {
+               List<String> parts = COLON_SPLITTER.splitToList(keyValue);
+               if (parts.size() == 2) {
+                  properties.putString((String)parts.get(0), (String)parts.get(1));
                } else {
-                  LOGGER.error("Something went wrong parsing: '{}' -- incorrect gamedata!", var0);
+                  LOGGER.error("Something went wrong parsing: '{}' -- incorrect gamedata!", compound);
                }
 
             });
-            var1.put("Properties", var4);
+            tag.put("Properties", properties);
          }
       } else {
-         var3 = var0;
+         name = compound;
       }
 
-      var1.putString("Name", var3);
-      return var1;
+      tag.putString("Name", name);
+      return tag;
    }
 
-   public static CompoundTag addCurrentDataVersion(CompoundTag var0) {
-      int var1 = SharedConstants.getCurrentVersion().dataVersion().version();
-      return addDataVersion(var0, var1);
+   public static CompoundTag addCurrentDataVersion(final CompoundTag tag) {
+      int version = SharedConstants.getCurrentVersion().dataVersion().version();
+      return addDataVersion(tag, version);
    }
 
-   public static CompoundTag addDataVersion(CompoundTag var0, int var1) {
-      var0.putInt("DataVersion", var1);
-      return var0;
+   public static CompoundTag addDataVersion(final CompoundTag tag, final int version) {
+      tag.putInt("DataVersion", version);
+      return tag;
    }
 
-   public static Dynamic<Tag> addCurrentDataVersion(Dynamic<Tag> var0) {
-      int var1 = SharedConstants.getCurrentVersion().dataVersion().version();
-      return addDataVersion(var0, var1);
+   public static Dynamic<Tag> addCurrentDataVersion(final Dynamic<Tag> tag) {
+      int version = SharedConstants.getCurrentVersion().dataVersion().version();
+      return addDataVersion(tag, version);
    }
 
-   public static Dynamic<Tag> addDataVersion(Dynamic<Tag> var0, int var1) {
-      return var0.set("DataVersion", var0.createInt(var1));
+   public static Dynamic<Tag> addDataVersion(final Dynamic<Tag> tag, final int version) {
+      return tag.set("DataVersion", tag.createInt(version));
    }
 
-   public static void addCurrentDataVersion(ValueOutput var0) {
-      int var1 = SharedConstants.getCurrentVersion().dataVersion().version();
-      addDataVersion(var0, var1);
+   public static void addCurrentDataVersion(final ValueOutput output) {
+      int version = SharedConstants.getCurrentVersion().dataVersion().version();
+      addDataVersion(output, version);
    }
 
-   public static void addDataVersion(ValueOutput var0, int var1) {
-      var0.putInt("DataVersion", var1);
+   public static void addDataVersion(final ValueOutput output, final int version) {
+      output.putInt("DataVersion", version);
    }
 
-   public static int getDataVersion(CompoundTag var0) {
-      return getDataVersion(var0, -1);
+   public static int getDataVersion(final CompoundTag tag) {
+      return getDataVersion(tag, -1);
    }
 
-   public static int getDataVersion(CompoundTag var0, int var1) {
-      return var0.getIntOr("DataVersion", var1);
+   public static int getDataVersion(final CompoundTag tag, final int _default) {
+      return tag.getIntOr("DataVersion", _default);
    }
 
-   public static int getDataVersion(Dynamic<?> var0, int var1) {
-      return var0.get("DataVersion").asInt(var1);
+   public static int getDataVersion(final Dynamic<?> dynamic, final int _default) {
+      return dynamic.get("DataVersion").asInt(_default);
    }
 
    static {

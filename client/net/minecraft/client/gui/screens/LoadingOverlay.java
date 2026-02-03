@@ -45,78 +45,78 @@ public class LoadingOverlay extends Overlay {
    private long fadeOutStart = -1L;
    private long fadeInStart = -1L;
 
-   public LoadingOverlay(Minecraft var1, ReloadInstance var2, Consumer<Optional<Throwable>> var3, boolean var4) {
+   public LoadingOverlay(final Minecraft minecraft, final ReloadInstance reload, final Consumer<Optional<Throwable>> onFinish, final boolean fadeIn) {
       super();
-      this.minecraft = var1;
-      this.reload = var2;
-      this.onFinish = var3;
-      this.fadeIn = var4;
+      this.minecraft = minecraft;
+      this.reload = reload;
+      this.onFinish = onFinish;
+      this.fadeIn = fadeIn;
    }
 
-   public static void registerTextures(TextureManager var0) {
-      var0.registerAndLoad(MOJANG_STUDIOS_LOGO_LOCATION, new LogoTexture());
+   public static void registerTextures(final TextureManager textureManager) {
+      textureManager.registerAndLoad(MOJANG_STUDIOS_LOGO_LOCATION, new LogoTexture());
    }
 
-   private static int replaceAlpha(int var0, int var1) {
-      return var0 & 16777215 | var1 << 24;
+   private static int replaceAlpha(final int color, final int alpha) {
+      return color & 16777215 | alpha << 24;
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      int var5 = var1.guiWidth();
-      int var6 = var1.guiHeight();
-      long var7 = Util.getMillis();
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      int width = graphics.guiWidth();
+      int height = graphics.guiHeight();
+      long now = Util.getMillis();
       if (this.fadeIn && this.fadeInStart == -1L) {
-         this.fadeInStart = var7;
+         this.fadeInStart = now;
       }
 
-      float var9 = this.fadeOutStart > -1L ? (float)(var7 - this.fadeOutStart) / 1000.0F : -1.0F;
-      float var10 = this.fadeInStart > -1L ? (float)(var7 - this.fadeInStart) / 500.0F : -1.0F;
-      float var11;
-      if (var9 >= 1.0F) {
+      float fadeOutAnim = this.fadeOutStart > -1L ? (float)(now - this.fadeOutStart) / 1000.0F : -1.0F;
+      float fadeInAnim = this.fadeInStart > -1L ? (float)(now - this.fadeInStart) / 500.0F : -1.0F;
+      float logoAlpha;
+      if (fadeOutAnim >= 1.0F) {
          if (this.minecraft.screen != null) {
-            this.minecraft.screen.renderWithTooltipAndSubtitles(var1, 0, 0, var4);
+            this.minecraft.screen.renderWithTooltipAndSubtitles(graphics, 0, 0, a);
          } else {
             this.minecraft.gui.renderDeferredSubtitles();
          }
 
-         int var12 = Mth.ceil((1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F)) * 255.0F);
-         var1.nextStratum();
-         var1.fill(0, 0, var5, var6, replaceAlpha(BRAND_BACKGROUND.getAsInt(), var12));
-         var11 = 1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F);
+         int alpha = Mth.ceil((1.0F - Mth.clamp(fadeOutAnim - 1.0F, 0.0F, 1.0F)) * 255.0F);
+         graphics.nextStratum();
+         graphics.fill(0, 0, width, height, replaceAlpha(BRAND_BACKGROUND.getAsInt(), alpha));
+         logoAlpha = 1.0F - Mth.clamp(fadeOutAnim - 1.0F, 0.0F, 1.0F);
       } else if (this.fadeIn) {
-         if (this.minecraft.screen != null && var10 < 1.0F) {
-            this.minecraft.screen.renderWithTooltipAndSubtitles(var1, var2, var3, var4);
+         if (this.minecraft.screen != null && fadeInAnim < 1.0F) {
+            this.minecraft.screen.renderWithTooltipAndSubtitles(graphics, mouseX, mouseY, a);
          } else {
             this.minecraft.gui.renderDeferredSubtitles();
          }
 
-         int var23 = Mth.ceil(Mth.clamp((double)var10, 0.15, 1.0) * 255.0);
-         var1.nextStratum();
-         var1.fill(0, 0, var5, var6, replaceAlpha(BRAND_BACKGROUND.getAsInt(), var23));
-         var11 = Mth.clamp(var10, 0.0F, 1.0F);
+         int alpha = Mth.ceil(Mth.clamp((double)fadeInAnim, 0.15, 1.0) * 255.0);
+         graphics.nextStratum();
+         graphics.fill(0, 0, width, height, replaceAlpha(BRAND_BACKGROUND.getAsInt(), alpha));
+         logoAlpha = Mth.clamp(fadeInAnim, 0.0F, 1.0F);
       } else {
-         int var24 = BRAND_BACKGROUND.getAsInt();
-         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(this.minecraft.getMainRenderTarget().getColorTexture(), var24);
-         var11 = 1.0F;
+         int col = BRAND_BACKGROUND.getAsInt();
+         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(this.minecraft.getMainRenderTarget().getColorTexture(), col);
+         logoAlpha = 1.0F;
       }
 
-      int var25 = (int)((double)var1.guiWidth() * 0.5);
-      int var13 = (int)((double)var1.guiHeight() * 0.5);
-      double var14 = Math.min((double)var1.guiWidth() * 0.75, (double)var1.guiHeight()) * 0.25;
-      int var16 = (int)(var14 * 0.5);
-      double var17 = var14 * 4.0;
-      int var19 = (int)(var17 * 0.5);
-      int var20 = ARGB.white(var11);
-      var1.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, var25 - var19, var13 - var16, -0.0625F, 0.0F, var19, (int)var14, 120, 60, 120, 120, var20);
-      var1.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, var25, var13 - var16, 0.0625F, 60.0F, var19, (int)var14, 120, 60, 120, 120, var20);
-      int var21 = (int)((double)var1.guiHeight() * 0.8325);
-      float var22 = this.reload.getActualProgress();
-      this.currentProgress = Mth.clamp(this.currentProgress * 0.95F + var22 * 0.050000012F, 0.0F, 1.0F);
-      if (var9 < 1.0F) {
-         this.drawProgressBar(var1, var5 / 2 - var19, var21 - 5, var5 / 2 + var19, var21 + 5, 1.0F - Mth.clamp(var9, 0.0F, 1.0F));
+      int contentX = (int)((double)graphics.guiWidth() * 0.5);
+      int logoY = (int)((double)graphics.guiHeight() * 0.5);
+      double logoHeight = Math.min((double)graphics.guiWidth() * 0.75, (double)graphics.guiHeight()) * 0.25;
+      int logoHeightHalf = (int)(logoHeight * 0.5);
+      double contentWidth = logoHeight * 4.0;
+      int logoWidthHalf = (int)(contentWidth * 0.5);
+      int color = ARGB.white(logoAlpha);
+      graphics.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, contentX - logoWidthHalf, logoY - logoHeightHalf, -0.0625F, 0.0F, logoWidthHalf, (int)logoHeight, 120, 60, 120, 120, color);
+      graphics.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, contentX, logoY - logoHeightHalf, 0.0625F, 60.0F, logoWidthHalf, (int)logoHeight, 120, 60, 120, 120, color);
+      int barY = (int)((double)graphics.guiHeight() * 0.8325);
+      float actualProgress = this.reload.getActualProgress();
+      this.currentProgress = Mth.clamp(this.currentProgress * 0.95F + actualProgress * 0.050000012F, 0.0F, 1.0F);
+      if (fadeOutAnim < 1.0F) {
+         this.drawProgressBar(graphics, width / 2 - logoWidthHalf, barY - 5, width / 2 + logoWidthHalf, barY + 5, 1.0F - Mth.clamp(fadeOutAnim, 0.0F, 1.0F));
       }
 
-      if (var9 >= 2.0F) {
+      if (fadeOutAnim >= 2.0F) {
          this.minecraft.setOverlay((Overlay)null);
       }
 
@@ -127,14 +127,14 @@ public class LoadingOverlay extends Overlay {
          try {
             this.reload.checkExceptions();
             this.onFinish.accept(Optional.empty());
-         } catch (Throwable var2) {
-            this.onFinish.accept(Optional.of(var2));
+         } catch (Throwable t) {
+            this.onFinish.accept(Optional.of(t));
          }
 
          this.fadeOutStart = Util.getMillis();
          if (this.minecraft.screen != null) {
-            Window var1 = this.minecraft.getWindow();
-            this.minecraft.screen.init(var1.getGuiScaledWidth(), var1.getGuiScaledHeight());
+            Window window = this.minecraft.getWindow();
+            this.minecraft.screen.init(window.getGuiScaledWidth(), window.getGuiScaledHeight());
          }
       }
 
@@ -144,37 +144,37 @@ public class LoadingOverlay extends Overlay {
       return !this.fadeIn || this.fadeInStart > -1L && Util.getMillis() - this.fadeInStart >= 1000L;
    }
 
-   private void drawProgressBar(GuiGraphics var1, int var2, int var3, int var4, int var5, float var6) {
-      int var7 = Mth.ceil((float)(var4 - var2 - 2) * this.currentProgress);
-      int var8 = Math.round(var6 * 255.0F);
-      int var9 = ARGB.color(var8, 255, 255, 255);
-      var1.fill(var2 + 2, var3 + 2, var2 + var7, var5 - 2, var9);
-      var1.fill(var2 + 1, var3, var4 - 1, var3 + 1, var9);
-      var1.fill(var2 + 1, var5, var4 - 1, var5 - 1, var9);
-      var1.fill(var2, var3, var2 + 1, var5, var9);
-      var1.fill(var4, var3, var4 - 1, var5, var9);
+   private void drawProgressBar(final GuiGraphics graphics, final int x0, final int y0, final int x1, final int y1, final float fade) {
+      int width = Mth.ceil((float)(x1 - x0 - 2) * this.currentProgress);
+      int alpha = Math.round(fade * 255.0F);
+      int white = ARGB.color(alpha, 255, 255, 255);
+      graphics.fill(x0 + 2, y0 + 2, x0 + width, y1 - 2, white);
+      graphics.fill(x0 + 1, y0, x1 - 1, y0 + 1, white);
+      graphics.fill(x0 + 1, y1, x1 - 1, y1 - 1, white);
+      graphics.fill(x0, y0, x0 + 1, y1, white);
+      graphics.fill(x1, y0, x1 - 1, y1, white);
    }
 
    public boolean isPauseScreen() {
       return true;
    }
 
-   static class LogoTexture extends ReloadableTexture {
+   private static class LogoTexture extends ReloadableTexture {
       public LogoTexture() {
          super(LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION);
       }
 
-      public TextureContents loadContents(ResourceManager var1) throws IOException {
-         ResourceProvider var2 = Minecraft.getInstance().getVanillaPackResources().asProvider();
-         InputStream var3 = var2.open(LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION);
+      public TextureContents loadContents(final ResourceManager resourceManager) throws IOException {
+         ResourceProvider vanillaProvider = Minecraft.getInstance().getVanillaPackResources().asProvider();
+         InputStream resource = vanillaProvider.open(LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION);
 
          TextureContents var4;
          try {
-            var4 = new TextureContents(NativeImage.read(var3), new TextureMetadataSection(true, true, MipmapStrategy.MEAN, 0.0F));
+            var4 = new TextureContents(NativeImage.read(resource), new TextureMetadataSection(true, true, MipmapStrategy.MEAN, 0.0F));
          } catch (Throwable var7) {
-            if (var3 != null) {
+            if (resource != null) {
                try {
-                  var3.close();
+                  resource.close();
                } catch (Throwable var6) {
                   var7.addSuppressed(var6);
                }
@@ -183,8 +183,8 @@ public class LoadingOverlay extends Overlay {
             throw var7;
          }
 
-         if (var3 != null) {
-            var3.close();
+         if (resource != null) {
+            resource.close();
          }
 
          return var4;

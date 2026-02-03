@@ -7,10 +7,10 @@ public class RandomStandGoal extends Goal {
    private final AbstractHorse horse;
    private int nextStand;
 
-   public RandomStandGoal(AbstractHorse var1) {
+   public RandomStandGoal(final AbstractHorse horse) {
       super();
-      this.horse = var1;
-      this.resetStandInterval(var1);
+      this.horse = horse;
+      this.resetStandInterval(horse);
    }
 
    public void start() {
@@ -19,9 +19,9 @@ public class RandomStandGoal extends Goal {
    }
 
    private void playStandSound() {
-      SoundEvent var1 = this.horse.getAmbientStandSound();
-      if (var1 != null) {
-         this.horse.playSound(var1);
+      SoundEvent ambientStandSound = this.horse.getAmbientStandSound();
+      if (ambientStandSound != null) {
+         this.horse.playSound(ambientStandSound);
       }
 
    }
@@ -40,8 +40,8 @@ public class RandomStandGoal extends Goal {
       }
    }
 
-   private void resetStandInterval(AbstractHorse var1) {
-      this.nextStand = -var1.getAmbientStandInterval();
+   private void resetStandInterval(final AbstractHorse horse) {
+      this.nextStand = -horse.getAmbientStandInterval();
    }
 
    public boolean requiresUpdateEveryTick() {

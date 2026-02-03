@@ -14,16 +14,16 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
       super();
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      var7.forEachChunk(DebugSubscriptions.STRUCTURES, (var0, var1x) -> {
-         for(DebugStructureInfo var3 : var1x) {
-            Gizmos.cuboid(AABB.of(var3.boundingBox()), GizmoStyle.stroke(ARGB.colorFromFloat(1.0F, 1.0F, 1.0F, 1.0F)));
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      debugValues.forEachChunk(DebugSubscriptions.STRUCTURES, (chunkPos, structures) -> {
+         for(DebugStructureInfo structure : structures) {
+            Gizmos.cuboid(AABB.of(structure.boundingBox()), GizmoStyle.stroke(ARGB.colorFromFloat(1.0F, 1.0F, 1.0F, 1.0F)));
 
-            for(DebugStructureInfo.Piece var5 : var3.pieces()) {
-               if (var5.isStart()) {
-                  Gizmos.cuboid(AABB.of(var5.boundingBox()), GizmoStyle.stroke(ARGB.colorFromFloat(1.0F, 0.0F, 1.0F, 0.0F)));
+            for(DebugStructureInfo.Piece piece : structure.pieces()) {
+               if (piece.isStart()) {
+                  Gizmos.cuboid(AABB.of(piece.boundingBox()), GizmoStyle.stroke(ARGB.colorFromFloat(1.0F, 0.0F, 1.0F, 0.0F)));
                } else {
-                  Gizmos.cuboid(AABB.of(var5.boundingBox()), GizmoStyle.stroke(ARGB.colorFromFloat(1.0F, 0.0F, 0.0F, 1.0F)));
+                  Gizmos.cuboid(AABB.of(piece.boundingBox()), GizmoStyle.stroke(ARGB.colorFromFloat(1.0F, 0.0F, 0.0F, 1.0F)));
                }
             }
          }

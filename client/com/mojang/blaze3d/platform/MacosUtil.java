@@ -20,47 +20,47 @@ public class MacosUtil {
       super();
    }
 
-   public static void exitNativeFullscreen(Window var0) {
-      getNsWindow(var0).filter(MacosUtil::isInNativeFullscreen).ifPresent(MacosUtil::toggleNativeFullscreen);
+   public static void exitNativeFullscreen(final Window window) {
+      getNsWindow(window).filter(MacosUtil::isInNativeFullscreen).ifPresent(MacosUtil::toggleNativeFullscreen);
    }
 
-   public static void clearResizableBit(Window var0) {
-      getNsWindow(var0).ifPresent((var0x) -> {
-         long var1 = getStyleMask(var0x);
-         var0x.send("setStyleMask:", new Object[]{var1 & -9L});
+   public static void clearResizableBit(final Window window) {
+      getNsWindow(window).ifPresent((nsWindow) -> {
+         long styleMask = getStyleMask(nsWindow);
+         nsWindow.send("setStyleMask:", new Object[]{styleMask & -9L});
       });
    }
 
-   private static Optional<NSObject> getNsWindow(Window var0) {
-      long var1 = GLFWNativeCocoa.glfwGetCocoaWindow(var0.handle());
-      return var1 != 0L ? Optional.of(new NSObject(new Pointer(var1))) : Optional.empty();
+   private static Optional<NSObject> getNsWindow(final Window window) {
+      long nsWindow = GLFWNativeCocoa.glfwGetCocoaWindow(window.handle());
+      return nsWindow != 0L ? Optional.of(new NSObject(new Pointer(nsWindow))) : Optional.empty();
    }
 
-   private static boolean isInNativeFullscreen(NSObject var0) {
-      return (getStyleMask(var0) & 16384L) != 0L;
+   private static boolean isInNativeFullscreen(final NSObject nsWindow) {
+      return (getStyleMask(nsWindow) & 16384L) != 0L;
    }
 
-   private static long getStyleMask(NSObject var0) {
-      return (Long)var0.sendRaw("styleMask", new Object[0]);
+   private static long getStyleMask(final NSObject nsWindow) {
+      return (Long)nsWindow.sendRaw("styleMask", new Object[0]);
    }
 
-   private static void toggleNativeFullscreen(NSObject var0) {
-      var0.send("toggleFullScreen:", new Object[]{Pointer.NULL});
+   private static void toggleNativeFullscreen(final NSObject nsWindow) {
+      nsWindow.send("toggleFullScreen:", new Object[]{Pointer.NULL});
    }
 
-   public static void loadIcon(IoSupplier<InputStream> var0) throws IOException {
-      InputStream var1 = (InputStream)var0.get();
+   public static void loadIcon(final IoSupplier<InputStream> icon) throws IOException {
+      InputStream iconStream = icon.get();
 
       try {
-         String var2 = Base64.getEncoder().encodeToString(var1.readAllBytes());
-         Client var3 = Client.getInstance();
-         Object var4 = var3.sendProxy("NSData", "alloc", new Object[0]).send("initWithBase64Encoding:", new Object[]{var2});
-         Object var5 = var3.sendProxy("NSImage", "alloc", new Object[0]).send("initWithData:", new Object[]{var4});
-         var3.sendProxy("NSApplication", "sharedApplication", new Object[0]).send("setApplicationIconImage:", new Object[]{var5});
+         String base64Icon = Base64.getEncoder().encodeToString(iconStream.readAllBytes());
+         Client objc = Client.getInstance();
+         Object data = objc.sendProxy("NSData", "alloc", new Object[0]).send("initWithBase64Encoding:", new Object[]{base64Icon});
+         Object image = objc.sendProxy("NSImage", "alloc", new Object[0]).send("initWithData:", new Object[]{data});
+         objc.sendProxy("NSApplication", "sharedApplication", new Object[0]).send("setApplicationIconImage:", new Object[]{image});
       } catch (Throwable var7) {
-         if (var1 != null) {
+         if (iconStream != null) {
             try {
-               var1.close();
+               iconStream.close();
             } catch (Throwable var6) {
                var7.addSuppressed(var6);
             }
@@ -69,8 +69,8 @@ public class MacosUtil {
          throw var7;
       }
 
-      if (var1 != null) {
-         var1.close();
+      if (iconStream != null) {
+         iconStream.close();
       }
 
    }

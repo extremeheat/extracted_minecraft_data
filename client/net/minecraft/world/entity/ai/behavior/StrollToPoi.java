@@ -13,16 +13,16 @@ public class StrollToPoi {
       super();
    }
 
-   public static BehaviorControl<PathfinderMob> create(MemoryModuleType<GlobalPos> var0, float var1, int var2, int var3) {
-      MutableLong var4 = new MutableLong(0L);
-      return BehaviorBuilder.create((Function)((var5) -> var5.group(var5.registered(MemoryModuleType.WALK_TARGET), var5.present(var0)).apply(var5, (var5x, var6) -> (var7, var8, var9) -> {
-               GlobalPos var11 = (GlobalPos)var5.get(var6);
-               if (var7.dimension() == var11.dimension() && var11.pos().closerToCenterThan(var8.position(), (double)var3)) {
-                  if (var9 <= var4.longValue()) {
+   public static BehaviorControl<PathfinderMob> create(final MemoryModuleType<GlobalPos> memoryType, final float speedModifier, final int closeEnoughDist, final int maxDistanceFromPoi) {
+      MutableLong nextOkStartTime = new MutableLong(0L);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.WALK_TARGET), i.present(memoryType)).apply(i, (walkTarget, memory) -> (level, body, timestamp) -> {
+               GlobalPos pos = (GlobalPos)i.get(memory);
+               if (level.dimension() == pos.dimension() && pos.pos().closerToCenterThan(body.position(), (double)maxDistanceFromPoi)) {
+                  if (timestamp <= nextOkStartTime.longValue()) {
                      return true;
                   } else {
-                     var5x.set(new WalkTarget(var11.pos(), var1, var2));
-                     var4.setValue(var9 + 80L);
+                     walkTarget.set(new WalkTarget(pos.pos(), speedModifier, closeEnoughDist));
+                     nextOkStartTime.setValue(timestamp + 80L);
                      return true;
                   }
                } else {

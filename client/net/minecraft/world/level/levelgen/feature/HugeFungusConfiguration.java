@@ -7,7 +7,7 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
 public class HugeFungusConfiguration implements FeatureConfiguration {
-   public static final Codec<HugeFungusConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockState.CODEC.fieldOf("valid_base_block").forGetter((var0x) -> var0x.validBaseState), BlockState.CODEC.fieldOf("stem_state").forGetter((var0x) -> var0x.stemState), BlockState.CODEC.fieldOf("hat_state").forGetter((var0x) -> var0x.hatState), BlockState.CODEC.fieldOf("decor_state").forGetter((var0x) -> var0x.decorState), BlockPredicate.CODEC.fieldOf("replaceable_blocks").forGetter((var0x) -> var0x.replaceableBlocks), Codec.BOOL.fieldOf("planted").orElse(false).forGetter((var0x) -> var0x.planted)).apply(var0, HugeFungusConfiguration::new));
+   public static final Codec<HugeFungusConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockState.CODEC.fieldOf("valid_base_block").forGetter((c) -> c.validBaseState), BlockState.CODEC.fieldOf("stem_state").forGetter((c) -> c.stemState), BlockState.CODEC.fieldOf("hat_state").forGetter((c) -> c.hatState), BlockState.CODEC.fieldOf("decor_state").forGetter((c) -> c.decorState), BlockPredicate.CODEC.fieldOf("replaceable_blocks").forGetter((c) -> c.replaceableBlocks), Codec.BOOL.fieldOf("planted").orElse(false).forGetter((c) -> c.planted)).apply(i, HugeFungusConfiguration::new));
    public final BlockState validBaseState;
    public final BlockState stemState;
    public final BlockState hatState;
@@ -15,13 +15,13 @@ public class HugeFungusConfiguration implements FeatureConfiguration {
    public final BlockPredicate replaceableBlocks;
    public final boolean planted;
 
-   public HugeFungusConfiguration(BlockState var1, BlockState var2, BlockState var3, BlockState var4, BlockPredicate var5, boolean var6) {
+   public HugeFungusConfiguration(final BlockState validBaseState, final BlockState stemState, final BlockState hatState, final BlockState decorState, final BlockPredicate replaceableBlocks, final boolean planted) {
       super();
-      this.validBaseState = var1;
-      this.stemState = var2;
-      this.hatState = var3;
-      this.decorState = var4;
-      this.replaceableBlocks = var5;
-      this.planted = var6;
+      this.validBaseState = validBaseState;
+      this.stemState = stemState;
+      this.hatState = hatState;
+      this.decorState = decorState;
+      this.replaceableBlocks = replaceableBlocks;
+      this.planted = planted;
    }
 }

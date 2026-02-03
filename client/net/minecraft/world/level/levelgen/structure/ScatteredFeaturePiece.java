@@ -14,78 +14,78 @@ public abstract class ScatteredFeaturePiece extends StructurePiece {
    protected final int depth;
    protected int heightPosition = -1;
 
-   protected ScatteredFeaturePiece(StructurePieceType var1, int var2, int var3, int var4, int var5, int var6, int var7, Direction var8) {
-      super(var1, 0, StructurePiece.makeBoundingBox(var2, var3, var4, var8, var5, var6, var7));
-      this.width = var5;
-      this.height = var6;
-      this.depth = var7;
-      this.setOrientation(var8);
+   protected ScatteredFeaturePiece(final StructurePieceType type, final int west, final int floor, final int north, final int width, final int height, final int depth, final Direction direction) {
+      super(type, 0, StructurePiece.makeBoundingBox(west, floor, north, direction, width, height, depth));
+      this.width = width;
+      this.height = height;
+      this.depth = depth;
+      this.setOrientation(direction);
    }
 
-   protected ScatteredFeaturePiece(StructurePieceType var1, CompoundTag var2) {
-      super(var1, var2);
-      this.width = var2.getIntOr("Width", 0);
-      this.height = var2.getIntOr("Height", 0);
-      this.depth = var2.getIntOr("Depth", 0);
-      this.heightPosition = var2.getIntOr("HPos", 0);
+   protected ScatteredFeaturePiece(final StructurePieceType type, final CompoundTag tag) {
+      super(type, tag);
+      this.width = tag.getIntOr("Width", 0);
+      this.height = tag.getIntOr("Height", 0);
+      this.depth = tag.getIntOr("Depth", 0);
+      this.heightPosition = tag.getIntOr("HPos", 0);
    }
 
-   protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
-      var2.putInt("Width", this.width);
-      var2.putInt("Height", this.height);
-      var2.putInt("Depth", this.depth);
-      var2.putInt("HPos", this.heightPosition);
+   protected void addAdditionalSaveData(final StructurePieceSerializationContext context, final CompoundTag tag) {
+      tag.putInt("Width", this.width);
+      tag.putInt("Height", this.height);
+      tag.putInt("Depth", this.depth);
+      tag.putInt("HPos", this.heightPosition);
    }
 
-   protected boolean updateAverageGroundHeight(LevelAccessor var1, BoundingBox var2, int var3) {
+   protected boolean updateAverageGroundHeight(final LevelAccessor level, final BoundingBox chunkBB, final int offset) {
       if (this.heightPosition >= 0) {
          return true;
       } else {
-         int var4 = 0;
-         int var5 = 0;
-         BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+         int total = 0;
+         int count = 0;
+         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-         for(int var7 = this.boundingBox.minZ(); var7 <= this.boundingBox.maxZ(); ++var7) {
-            for(int var8 = this.boundingBox.minX(); var8 <= this.boundingBox.maxX(); ++var8) {
-               var6.set(var8, 64, var7);
-               if (var2.isInside(var6)) {
-                  var4 += var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var6).getY();
-                  ++var5;
+         for(int z = this.boundingBox.minZ(); z <= this.boundingBox.maxZ(); ++z) {
+            for(int x = this.boundingBox.minX(); x <= this.boundingBox.maxX(); ++x) {
+               pos.set(x, 64, z);
+               if (chunkBB.isInside(pos)) {
+                  total += level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos).getY();
+                  ++count;
                }
             }
          }
 
-         if (var5 == 0) {
+         if (count == 0) {
             return false;
          } else {
-            this.heightPosition = var4 / var5;
-            this.boundingBox.move(0, this.heightPosition - this.boundingBox.minY() + var3, 0);
+            this.heightPosition = total / count;
+            this.boundingBox.move(0, this.heightPosition - this.boundingBox.minY() + offset, 0);
             return true;
          }
       }
    }
 
-   protected boolean updateHeightPositionToLowestGroundHeight(LevelAccessor var1, int var2) {
+   protected boolean updateHeightPositionToLowestGroundHeight(final LevelAccessor level, final int offset) {
       if (this.heightPosition >= 0) {
          return true;
       } else {
-         int var3 = var1.getMaxY() + 1;
-         boolean var4 = false;
-         BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
+         int lowestGroundHeight = level.getMaxY() + 1;
+         boolean foundPositionWithinBoundingBox = false;
+         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-         for(int var6 = this.boundingBox.minZ(); var6 <= this.boundingBox.maxZ(); ++var6) {
-            for(int var7 = this.boundingBox.minX(); var7 <= this.boundingBox.maxX(); ++var7) {
-               var5.set(var7, 0, var6);
-               var3 = Math.min(var3, var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var5).getY());
-               var4 = true;
+         for(int z = this.boundingBox.minZ(); z <= this.boundingBox.maxZ(); ++z) {
+            for(int x = this.boundingBox.minX(); x <= this.boundingBox.maxX(); ++x) {
+               pos.set(x, 0, z);
+               lowestGroundHeight = Math.min(lowestGroundHeight, level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos).getY());
+               foundPositionWithinBoundingBox = true;
             }
          }
 
-         if (!var4) {
+         if (!foundPositionWithinBoundingBox) {
             return false;
          } else {
-            this.heightPosition = var3;
-            this.boundingBox.move(0, this.heightPosition - this.boundingBox.minY() + var2, 0);
+            this.heightPosition = lowestGroundHeight;
+            this.boundingBox.move(0, this.heightPosition - this.boundingBox.minY() + offset, 0);
             return true;
          }
       }

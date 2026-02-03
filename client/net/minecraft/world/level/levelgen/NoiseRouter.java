@@ -5,32 +5,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Function;
 
 public record NoiseRouter(DensityFunction barrierNoise, DensityFunction fluidLevelFloodednessNoise, DensityFunction fluidLevelSpreadNoise, DensityFunction lavaNoise, DensityFunction temperature, DensityFunction vegetation, DensityFunction continents, DensityFunction erosion, DensityFunction depth, DensityFunction ridges, DensityFunction preliminarySurfaceLevel, DensityFunction finalDensity, DensityFunction veinToggle, DensityFunction veinRidged, DensityFunction veinGap) {
-   public static final Codec<NoiseRouter> CODEC = RecordCodecBuilder.create((var0) -> var0.group(field("barrier", NoiseRouter::barrierNoise), field("fluid_level_floodedness", NoiseRouter::fluidLevelFloodednessNoise), field("fluid_level_spread", NoiseRouter::fluidLevelSpreadNoise), field("lava", NoiseRouter::lavaNoise), field("temperature", NoiseRouter::temperature), field("vegetation", NoiseRouter::vegetation), field("continents", NoiseRouter::continents), field("erosion", NoiseRouter::erosion), field("depth", NoiseRouter::depth), field("ridges", NoiseRouter::ridges), field("preliminary_surface_level", NoiseRouter::preliminarySurfaceLevel), field("final_density", NoiseRouter::finalDensity), field("vein_toggle", NoiseRouter::veinToggle), field("vein_ridged", NoiseRouter::veinRidged), field("vein_gap", NoiseRouter::veinGap)).apply(var0, NoiseRouter::new));
+   public static final Codec<NoiseRouter> CODEC = RecordCodecBuilder.create((i) -> i.group(field("barrier", NoiseRouter::barrierNoise), field("fluid_level_floodedness", NoiseRouter::fluidLevelFloodednessNoise), field("fluid_level_spread", NoiseRouter::fluidLevelSpreadNoise), field("lava", NoiseRouter::lavaNoise), field("temperature", NoiseRouter::temperature), field("vegetation", NoiseRouter::vegetation), field("continents", NoiseRouter::continents), field("erosion", NoiseRouter::erosion), field("depth", NoiseRouter::depth), field("ridges", NoiseRouter::ridges), field("preliminary_surface_level", NoiseRouter::preliminarySurfaceLevel), field("final_density", NoiseRouter::finalDensity), field("vein_toggle", NoiseRouter::veinToggle), field("vein_ridged", NoiseRouter::veinRidged), field("vein_gap", NoiseRouter::veinGap)).apply(i, NoiseRouter::new));
 
-   public NoiseRouter(DensityFunction var1, DensityFunction var2, DensityFunction var3, DensityFunction var4, DensityFunction var5, DensityFunction var6, DensityFunction var7, DensityFunction var8, DensityFunction var9, DensityFunction var10, DensityFunction var11, DensityFunction var12, DensityFunction var13, DensityFunction var14, DensityFunction var15) {
+   public NoiseRouter {
       super();
-      this.barrierNoise = var1;
-      this.fluidLevelFloodednessNoise = var2;
-      this.fluidLevelSpreadNoise = var3;
-      this.lavaNoise = var4;
-      this.temperature = var5;
-      this.vegetation = var6;
-      this.continents = var7;
-      this.erosion = var8;
-      this.depth = var9;
-      this.ridges = var10;
-      this.preliminarySurfaceLevel = var11;
-      this.finalDensity = var12;
-      this.veinToggle = var13;
-      this.veinRidged = var14;
-      this.veinGap = var15;
    }
 
-   private static RecordCodecBuilder<NoiseRouter, DensityFunction> field(String var0, Function<NoiseRouter, DensityFunction> var1) {
-      return DensityFunction.HOLDER_HELPER_CODEC.fieldOf(var0).forGetter(var1);
+   private static RecordCodecBuilder<NoiseRouter, DensityFunction> field(final String name, final Function<NoiseRouter, DensityFunction> getter) {
+      return DensityFunction.HOLDER_HELPER_CODEC.fieldOf(name).forGetter(getter);
    }
 
-   public NoiseRouter mapAll(DensityFunction.Visitor var1) {
-      return new NoiseRouter(this.barrierNoise.mapAll(var1), this.fluidLevelFloodednessNoise.mapAll(var1), this.fluidLevelSpreadNoise.mapAll(var1), this.lavaNoise.mapAll(var1), this.temperature.mapAll(var1), this.vegetation.mapAll(var1), this.continents.mapAll(var1), this.erosion.mapAll(var1), this.depth.mapAll(var1), this.ridges.mapAll(var1), this.preliminarySurfaceLevel.mapAll(var1), this.finalDensity.mapAll(var1), this.veinToggle.mapAll(var1), this.veinRidged.mapAll(var1), this.veinGap.mapAll(var1));
+   public NoiseRouter mapAll(final DensityFunction.Visitor visitor) {
+      return new NoiseRouter(this.barrierNoise.mapAll(visitor), this.fluidLevelFloodednessNoise.mapAll(visitor), this.fluidLevelSpreadNoise.mapAll(visitor), this.lavaNoise.mapAll(visitor), this.temperature.mapAll(visitor), this.vegetation.mapAll(visitor), this.continents.mapAll(visitor), this.erosion.mapAll(visitor), this.depth.mapAll(visitor), this.ridges.mapAll(visitor), this.preliminarySurfaceLevel.mapAll(visitor), this.finalDensity.mapAll(visitor), this.veinToggle.mapAll(visitor), this.veinRidged.mapAll(visitor), this.veinGap.mapAll(visitor));
    }
 }

@@ -24,62 +24,62 @@ public class RandomStroll {
       super();
    }
 
-   public static OneShot<PathfinderMob> stroll(float var0) {
-      return stroll(var0, true);
+   public static OneShot<PathfinderMob> stroll(final float speedModifier) {
+      return stroll(speedModifier, true);
    }
 
-   public static OneShot<PathfinderMob> stroll(float var0, boolean var1) {
-      return strollFlyOrSwim(var0, (var0x) -> LandRandomPos.getPos(var0x, 10, 7), var1 ? (var0x) -> true : (var0x) -> !var0x.isInWater());
+   public static OneShot<PathfinderMob> stroll(final float speedModifier, final boolean mayStrollFromWater) {
+      return strollFlyOrSwim(speedModifier, (body) -> LandRandomPos.getPos(body, 10, 7), mayStrollFromWater ? (b) -> true : (b) -> !b.isInWater());
    }
 
-   public static BehaviorControl<PathfinderMob> stroll(float var0, int var1, int var2) {
-      return strollFlyOrSwim(var0, (var2x) -> LandRandomPos.getPos(var2x, var1, var2), (var0x) -> true);
+   public static BehaviorControl<PathfinderMob> stroll(final float speedModifier, final int maxHorizontalDistance, final int maxVerticalDistance) {
+      return strollFlyOrSwim(speedModifier, (body) -> LandRandomPos.getPos(body, maxHorizontalDistance, maxVerticalDistance), (b) -> true);
    }
 
-   public static BehaviorControl<PathfinderMob> fly(float var0) {
-      return strollFlyOrSwim(var0, (var0x) -> getTargetFlyPos(var0x, 10, 7), (var0x) -> true);
+   public static BehaviorControl<PathfinderMob> fly(final float speedModifier) {
+      return strollFlyOrSwim(speedModifier, (body) -> getTargetFlyPos(body, 10, 7), (b) -> true);
    }
 
-   public static BehaviorControl<PathfinderMob> swim(float var0) {
-      return strollFlyOrSwim(var0, RandomStroll::getTargetSwimPos, Entity::isInWater);
+   public static BehaviorControl<PathfinderMob> swim(final float speedModifier) {
+      return strollFlyOrSwim(speedModifier, RandomStroll::getTargetSwimPos, Entity::isInWater);
    }
 
-   private static OneShot<PathfinderMob> strollFlyOrSwim(float var0, Function<PathfinderMob, Vec3> var1, Predicate<PathfinderMob> var2) {
-      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.absent(MemoryModuleType.WALK_TARGET)).apply(var3, (var3x) -> (var4, var5, var6) -> {
-               if (!var2.test(var5)) {
+   private static OneShot<PathfinderMob> strollFlyOrSwim(final float speedModifier, final Function<PathfinderMob, Vec3> fetchTargetPos, final Predicate<PathfinderMob> canRun) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.WALK_TARGET)).apply(i, (walkTarget) -> (level, body, timestamp) -> {
+               if (!canRun.test(body)) {
                   return false;
                } else {
-                  Optional var8 = Optional.ofNullable((Vec3)var1.apply(var5));
-                  var3x.setOrErase(var8.map((var1x) -> new WalkTarget(var1x, var0, 0)));
+                  Optional<Vec3> pathGoalPos = Optional.ofNullable((Vec3)fetchTargetPos.apply(body));
+                  walkTarget.setOrErase(pathGoalPos.map((pos) -> new WalkTarget(pos, speedModifier, 0)));
                   return true;
                }
             })));
    }
 
-   private static @Nullable Vec3 getTargetSwimPos(PathfinderMob var0) {
-      Vec3 var1 = null;
-      Vec3 var2 = null;
+   private static @Nullable Vec3 getTargetSwimPos(final PathfinderMob body) {
+      Vec3 fallback = null;
+      Vec3 targetPos = null;
 
-      for(int[] var6 : SWIM_XY_DISTANCE_TIERS) {
-         if (var1 == null) {
-            var2 = BehaviorUtils.getRandomSwimmablePos(var0, var6[0], var6[1]);
+      for(int[] distance : SWIM_XY_DISTANCE_TIERS) {
+         if (fallback == null) {
+            targetPos = BehaviorUtils.getRandomSwimmablePos(body, distance[0], distance[1]);
          } else {
-            var2 = var0.position().add(var0.position().vectorTo(var1).normalize().multiply((double)var6[0], (double)var6[1], (double)var6[0]));
+            targetPos = body.position().add(body.position().vectorTo(fallback).normalize().multiply((double)distance[0], (double)distance[1], (double)distance[0]));
          }
 
-         boolean var7 = GoalUtils.mobRestricted(var0, (double)var6[0]);
-         if (var2 == null || var0.level().getFluidState(BlockPos.containing(var2)).isEmpty() || GoalUtils.isRestricted(var7, var0, var2)) {
-            return var1;
+         boolean restrict = GoalUtils.mobRestricted(body, (double)distance[0]);
+         if (targetPos == null || body.level().getFluidState(BlockPos.containing(targetPos)).isEmpty() || GoalUtils.isRestricted(restrict, body, targetPos)) {
+            return fallback;
          }
 
-         var1 = var2;
+         fallback = targetPos;
       }
 
-      return var2;
+      return targetPos;
    }
 
-   private static @Nullable Vec3 getTargetFlyPos(PathfinderMob var0, int var1, int var2) {
-      Vec3 var3 = var0.getViewVector(0.0F);
-      return AirAndWaterRandomPos.getPos(var0, var1, var2, -2, var3.x, var3.z, 1.5707963705062866);
+   private static @Nullable Vec3 getTargetFlyPos(final PathfinderMob body, final int maxHorizontalDistance, final int maxVerticalDistance) {
+      Vec3 wanderDirection = body.getViewVector(0.0F);
+      return AirAndWaterRandomPos.getPos(body, maxHorizontalDistance, maxVerticalDistance, -2, wanderDirection.x, wanderDirection.z, 1.5707963705062866);
    }
 }

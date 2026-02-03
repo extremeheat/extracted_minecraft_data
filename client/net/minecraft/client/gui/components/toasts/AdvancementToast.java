@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public class AdvancementToast implements Toast {
@@ -23,23 +24,25 @@ public class AdvancementToast implements Toast {
    public static final int DISPLAY_TIME = 5000;
    private final AdvancementHolder advancement;
    private Toast.Visibility wantedVisibility;
+   private final ItemStack iconItem;
 
-   public AdvancementToast(AdvancementHolder var1) {
+   public AdvancementToast(final AdvancementHolder advancement) {
       super();
       this.wantedVisibility = Toast.Visibility.HIDE;
-      this.advancement = var1;
+      this.advancement = advancement;
+      this.iconItem = (ItemStack)advancement.value().display().map((d) -> d.getIcon().create()).orElse(ItemStack.EMPTY);
    }
 
    public Toast.Visibility getWantedVisibility() {
       return this.wantedVisibility;
    }
 
-   public void update(ToastManager var1, long var2) {
-      DisplayInfo var4 = (DisplayInfo)this.advancement.value().display().orElse((Object)null);
-      if (var4 == null) {
+   public void update(final ToastManager manager, final long fullyVisibleForMs) {
+      DisplayInfo display = (DisplayInfo)this.advancement.value().display().orElse((Object)null);
+      if (display == null) {
          this.wantedVisibility = Toast.Visibility.HIDE;
       } else {
-         this.wantedVisibility = (double)var2 >= 5000.0 * var1.getNotificationDisplayTimeMultiplier() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
+         this.wantedVisibility = (double)fullyVisibleForMs >= 5000.0 * manager.getNotificationDisplayTimeMultiplier() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
       }
    }
 
@@ -48,41 +51,41 @@ public class AdvancementToast implements Toast {
    }
 
    private boolean isChallengeAdvancement() {
-      Optional var1 = this.advancement.value().display();
-      return var1.isPresent() && ((DisplayInfo)var1.get()).getType().equals(AdvancementType.CHALLENGE);
+      Optional<DisplayInfo> displayInfo = this.advancement.value().display();
+      return displayInfo.isPresent() && ((DisplayInfo)displayInfo.get()).getType().equals(AdvancementType.CHALLENGE);
    }
 
-   public void render(GuiGraphics var1, Font var2, long var3) {
-      DisplayInfo var5 = (DisplayInfo)this.advancement.value().display().orElse((Object)null);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
-      if (var5 != null) {
-         List var6 = var2.split(var5.getTitle(), 125);
-         int var7 = var5.getType() == AdvancementType.CHALLENGE ? -30465 : -256;
-         if (var6.size() == 1) {
-            var1.drawString(var2, (Component)var5.getType().getDisplayName(), 30, 7, var7, false);
-            var1.drawString(var2, (FormattedCharSequence)((FormattedCharSequence)var6.get(0)), 30, 18, -1, false);
+   public void render(final GuiGraphics graphics, final Font font, final long fullyVisibleForMs) {
+      DisplayInfo display = (DisplayInfo)this.advancement.value().display().orElse((Object)null);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+      if (display != null) {
+         List<FormattedCharSequence> lines = font.split(display.getTitle(), 125);
+         int titleColor = display.getType() == AdvancementType.CHALLENGE ? -30465 : -256;
+         if (lines.size() == 1) {
+            graphics.drawString(font, (Component)display.getType().getDisplayName(), 30, 7, titleColor, false);
+            graphics.drawString(font, (FormattedCharSequence)((FormattedCharSequence)lines.get(0)), 30, 18, -1, false);
          } else {
-            boolean var8 = true;
-            float var9 = 300.0F;
-            if (var3 < 1500L) {
-               int var10 = Mth.floor(Mth.clamp((float)(1500L - var3) / 300.0F, 0.0F, 1.0F) * 255.0F);
-               var1.drawString(var2, (Component)var5.getType().getDisplayName(), 30, 11, ARGB.color(var10, var7), false);
+            int unlockTextTime = 1500;
+            float unlockFadeTime = 300.0F;
+            if (fullyVisibleForMs < 1500L) {
+               int alpha = Mth.floor(Mth.clamp((float)(1500L - fullyVisibleForMs) / 300.0F, 0.0F, 1.0F) * 255.0F);
+               graphics.drawString(font, (Component)display.getType().getDisplayName(), 30, 11, ARGB.color(alpha, titleColor), false);
             } else {
-               int var14 = Mth.floor(Mth.clamp((float)(var3 - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F);
+               int alpha = Mth.floor(Mth.clamp((float)(fullyVisibleForMs - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F);
                int var10000 = this.height() / 2;
-               int var10001 = var6.size();
-               Objects.requireNonNull(var2);
-               int var11 = var10000 - var10001 * 9 / 2;
+               int var10001 = lines.size();
+               Objects.requireNonNull(font);
+               int y = var10000 - var10001 * 9 / 2;
 
-               for(FormattedCharSequence var13 : var6) {
-                  var1.drawString(var2, (FormattedCharSequence)var13, 30, var11, ARGB.white(var14), false);
-                  Objects.requireNonNull(var2);
-                  var11 += 9;
+               for(FormattedCharSequence line : lines) {
+                  graphics.drawString(font, (FormattedCharSequence)line, 30, y, ARGB.white(alpha), false);
+                  Objects.requireNonNull(font);
+                  y += 9;
                }
             }
          }
 
-         var1.renderFakeItem(var5.getIcon(), 8, 8);
+         graphics.renderFakeItem(this.iconItem, 8, 8);
       }
    }
 }

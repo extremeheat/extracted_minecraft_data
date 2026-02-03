@@ -11,14 +11,14 @@ import net.minecraft.world.phys.Vec3;
 public class TrailParticle extends SingleQuadParticle {
    private final Vec3 target;
 
-   TrailParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, Vec3 var14, int var15, TextureAtlasSprite var16) {
-      super(var1, var2, var4, var6, var8, var10, var12, var16);
-      var15 = ARGB.scaleRGB(var15, 0.875F + this.random.nextFloat() * 0.25F, 0.875F + this.random.nextFloat() * 0.25F, 0.875F + this.random.nextFloat() * 0.25F);
-      this.rCol = (float)ARGB.red(var15) / 255.0F;
-      this.gCol = (float)ARGB.green(var15) / 255.0F;
-      this.bCol = (float)ARGB.blue(var15) / 255.0F;
+   private TrailParticle(final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final Vec3 target, int color, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, xAux, yAux, zAux, sprite);
+      color = ARGB.scaleRGB(color, 0.875F + this.random.nextFloat() * 0.25F, 0.875F + this.random.nextFloat() * 0.25F, 0.875F + this.random.nextFloat() * 0.25F);
+      this.rCol = (float)ARGB.red(color) / 255.0F;
+      this.gCol = (float)ARGB.green(color) / 255.0F;
+      this.bCol = (float)ARGB.blue(color) / 255.0F;
       this.quadSize = 0.26F;
-      this.target = var14;
+      this.target = target;
    }
 
    public SingleQuadParticle.Layer getLayer() {
@@ -32,30 +32,30 @@ public class TrailParticle extends SingleQuadParticle {
       if (this.age++ >= this.lifetime) {
          this.remove();
       } else {
-         int var1 = this.lifetime - this.age;
-         double var2 = 1.0 / (double)var1;
-         this.x = Mth.lerp(var2, this.x, this.target.x());
-         this.y = Mth.lerp(var2, this.y, this.target.y());
-         this.z = Mth.lerp(var2, this.z, this.target.z());
+         int ticksRemaining = this.lifetime - this.age;
+         double alpha = 1.0 / (double)ticksRemaining;
+         this.x = Mth.lerp(alpha, this.x, this.target.x());
+         this.y = Mth.lerp(alpha, this.y, this.target.y());
+         this.z = Mth.lerp(alpha, this.z, this.target.z());
       }
    }
 
-   public int getLightColor(float var1) {
+   public int getLightCoords(final float a) {
       return 15728880;
    }
 
    public static class Provider implements ParticleProvider<TrailParticleOption> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(TrailParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         TrailParticle var16 = new TrailParticle(var2, var3, var5, var7, var9, var11, var13, var1.target(), var1.color(), this.sprite.get(var15));
-         var16.setLifetime(var1.duration());
-         return var16;
+      public Particle createParticle(final TrailParticleOption options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         TrailParticle particle = new TrailParticle(level, x, y, z, xAux, yAux, zAux, options.target(), options.color(), this.sprite.get(random));
+         particle.setLifetime(options.duration());
+         return particle;
       }
    }
 }

@@ -3,10 +3,8 @@ package net.minecraft.client.input;
 import net.minecraft.util.StringUtil;
 
 public record CharacterEvent(int codepoint, @InputWithModifiers.Modifiers int modifiers) {
-   public CharacterEvent(int var1, @InputWithModifiers.Modifiers int var2) {
+   public CharacterEvent {
       super();
-      this.codepoint = var1;
-      this.modifiers = var2;
    }
 
    public String codepointAsString() {

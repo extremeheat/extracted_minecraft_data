@@ -26,24 +26,24 @@ public class EndCrystal extends Entity {
    private static final boolean DEFAULT_SHOW_BOTTOM = true;
    public int time;
 
-   public EndCrystal(EntityType<? extends EndCrystal> var1, Level var2) {
-      super(var1, var2);
+   public EndCrystal(final EntityType<? extends EndCrystal> type, final Level level) {
+      super(type, level);
       this.blocksBuilding = true;
       this.time = this.random.nextInt(100000);
    }
 
-   public EndCrystal(Level var1, double var2, double var4, double var6) {
-      this(EntityType.END_CRYSTAL, var1);
-      this.setPos(var2, var4, var6);
+   public EndCrystal(final Level level, final double x, final double y, final double z) {
+      this(EntityType.END_CRYSTAL, level);
+      this.setPos(x, y, z);
    }
 
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.NONE;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_BEAM_TARGET, Optional.empty());
-      var1.define(DATA_SHOW_BOTTOM, true);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      entityData.define(DATA_BEAM_TARGET, Optional.empty());
+      entityData.define(DATA_SHOW_BOTTOM, true);
    }
 
    public void tick() {
@@ -51,87 +51,87 @@ public class EndCrystal extends Entity {
       this.applyEffectsFromBlocks();
       this.handlePortal();
       if (this.level() instanceof ServerLevel) {
-         BlockPos var1 = this.blockPosition();
-         if (((ServerLevel)this.level()).getDragonFight() != null && this.level().getBlockState(var1).isAir()) {
-            this.level().setBlockAndUpdate(var1, BaseFireBlock.getState(this.level(), var1));
+         BlockPos pos = this.blockPosition();
+         if (((ServerLevel)this.level()).getDragonFight() != null && this.level().getBlockState(pos).isAir()) {
+            this.level().setBlockAndUpdate(pos, BaseFireBlock.getState(this.level(), pos));
          }
       }
 
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      var1.storeNullable("beam_target", BlockPos.CODEC, this.getBeamTarget());
-      var1.putBoolean("ShowBottom", this.showsBottom());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      output.storeNullable("beam_target", BlockPos.CODEC, this.getBeamTarget());
+      output.putBoolean("ShowBottom", this.showsBottom());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      this.setBeamTarget((BlockPos)var1.read("beam_target", BlockPos.CODEC).orElse((Object)null));
-      this.setShowBottom(var1.getBooleanOr("ShowBottom", true));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      this.setBeamTarget((BlockPos)input.read("beam_target", BlockPos.CODEC).orElse((Object)null));
+      this.setShowBottom(input.getBooleanOr("ShowBottom", true));
    }
 
    public boolean isPickable() {
       return true;
    }
 
-   public final boolean hurtClient(DamageSource var1) {
-      if (this.isInvulnerableToBase(var1)) {
+   public final boolean hurtClient(final DamageSource source) {
+      if (this.isInvulnerableToBase(source)) {
          return false;
       } else {
-         return !(var1.getEntity() instanceof EnderDragon);
+         return !(source.getEntity() instanceof EnderDragon);
       }
    }
 
-   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      if (this.isInvulnerableToBase(var2)) {
+   public final boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      if (this.isInvulnerableToBase(source)) {
          return false;
-      } else if (var2.getEntity() instanceof EnderDragon) {
+      } else if (source.getEntity() instanceof EnderDragon) {
          return false;
       } else {
          if (!this.isRemoved()) {
             this.remove(Entity.RemovalReason.KILLED);
-            if (!var2.is(DamageTypeTags.IS_EXPLOSION)) {
-               DamageSource var4 = var2.getEntity() != null ? this.damageSources().explosion(this, var2.getEntity()) : null;
-               var1.explode(this, var4, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), 6.0F, false, Level.ExplosionInteraction.BLOCK);
+            if (!source.is(DamageTypeTags.IS_EXPLOSION)) {
+               DamageSource damageSource = source.getEntity() != null ? this.damageSources().explosion(this, source.getEntity()) : null;
+               level.explode(this, damageSource, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), 6.0F, false, Level.ExplosionInteraction.BLOCK);
             }
 
-            this.onDestroyedBy(var1, var2);
+            this.onDestroyedBy(level, source);
          }
 
          return true;
       }
    }
 
-   public void kill(ServerLevel var1) {
-      this.onDestroyedBy(var1, this.damageSources().generic());
-      super.kill(var1);
+   public void kill(final ServerLevel level) {
+      this.onDestroyedBy(level, this.damageSources().generic());
+      super.kill(level);
    }
 
-   private void onDestroyedBy(ServerLevel var1, DamageSource var2) {
-      EndDragonFight var3 = var1.getDragonFight();
-      if (var3 != null) {
-         var3.onCrystalDestroyed(this, var2);
+   private void onDestroyedBy(final ServerLevel level, final DamageSource source) {
+      EndDragonFight fight = level.getDragonFight();
+      if (fight != null) {
+         fight.onCrystalDestroyed(this, source);
       }
 
    }
 
-   public void setBeamTarget(@Nullable BlockPos var1) {
-      this.getEntityData().set(DATA_BEAM_TARGET, Optional.ofNullable(var1));
+   public void setBeamTarget(final @Nullable BlockPos target) {
+      this.getEntityData().set(DATA_BEAM_TARGET, Optional.ofNullable(target));
    }
 
    public @Nullable BlockPos getBeamTarget() {
       return (BlockPos)((Optional)this.getEntityData().get(DATA_BEAM_TARGET)).orElse((Object)null);
    }
 
-   public void setShowBottom(boolean var1) {
-      this.getEntityData().set(DATA_SHOW_BOTTOM, var1);
+   public void setShowBottom(final boolean showBottom) {
+      this.getEntityData().set(DATA_SHOW_BOTTOM, showBottom);
    }
 
    public boolean showsBottom() {
       return (Boolean)this.getEntityData().get(DATA_SHOW_BOTTOM);
    }
 
-   public boolean shouldRenderAtSqrDistance(double var1) {
-      return super.shouldRenderAtSqrDistance(var1) || this.getBeamTarget() != null;
+   public boolean shouldRenderAtSqrDistance(final double distance) {
+      return super.shouldRenderAtSqrDistance(distance) || this.getBeamTarget() != null;
    }
 
    public ItemStack getPickResult() {

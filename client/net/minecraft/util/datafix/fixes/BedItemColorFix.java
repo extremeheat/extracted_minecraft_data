@@ -12,22 +12,22 @@ import java.util.Optional;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class BedItemColorFix extends DataFix {
-   public BedItemColorFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public BedItemColorFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    public TypeRewriteRule makeRule() {
-      OpticFinder var1 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      return this.fixTypeEverywhereTyped("BedItemColorFix", this.getInputSchema().getType(References.ITEM_STACK), (var1x) -> {
-         Optional var2 = var1x.getOptional(var1);
-         if (var2.isPresent() && Objects.equals(((Pair)var2.get()).getSecond(), "minecraft:bed")) {
-            Dynamic var3 = (Dynamic)var1x.get(DSL.remainderFinder());
-            if (var3.get("Damage").asInt(0) == 0) {
-               return var1x.set(DSL.remainderFinder(), var3.set("Damage", var3.createShort((short)14)));
+      OpticFinder<Pair<String, String>> idF = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      return this.fixTypeEverywhereTyped("BedItemColorFix", this.getInputSchema().getType(References.ITEM_STACK), (input) -> {
+         Optional<Pair<String, String>> idOpt = input.getOptional(idF);
+         if (idOpt.isPresent() && Objects.equals(((Pair)idOpt.get()).getSecond(), "minecraft:bed")) {
+            Dynamic<?> tag = (Dynamic)input.get(DSL.remainderFinder());
+            if (tag.get("Damage").asInt(0) == 0) {
+               return input.set(DSL.remainderFinder(), tag.set("Damage", tag.createShort((short)14)));
             }
          }
 
-         return var1x;
+         return input;
       });
    }
 }

@@ -20,31 +20,31 @@ public class RangedAttackGoal extends Goal {
    private final float attackRadius;
    private final float attackRadiusSqr;
 
-   public RangedAttackGoal(RangedAttackMob var1, double var2, int var4, float var5) {
-      this(var1, var2, var4, var4, var5);
+   public RangedAttackGoal(final RangedAttackMob mob, final double speedModifier, final int attackInterval, final float attackRadius) {
+      this(mob, speedModifier, attackInterval, attackInterval, attackRadius);
    }
 
-   public RangedAttackGoal(RangedAttackMob var1, double var2, int var4, int var5, float var6) {
+   public RangedAttackGoal(final RangedAttackMob mob, final double speedModifier, final int attackIntervalMin, final int attackIntervalMax, final float attackRadius) {
       super();
       this.attackTime = -1;
-      if (!(var1 instanceof LivingEntity)) {
+      if (!(mob instanceof LivingEntity)) {
          throw new IllegalArgumentException("ArrowAttackGoal requires Mob implements RangedAttackMob");
       } else {
-         this.rangedAttackMob = var1;
-         this.mob = (Mob)var1;
-         this.speedModifier = var2;
-         this.attackIntervalMin = var4;
-         this.attackIntervalMax = var5;
-         this.attackRadius = var6;
-         this.attackRadiusSqr = var6 * var6;
+         this.rangedAttackMob = mob;
+         this.mob = (Mob)mob;
+         this.speedModifier = speedModifier;
+         this.attackIntervalMin = attackIntervalMin;
+         this.attackIntervalMax = attackIntervalMax;
+         this.attackRadius = attackRadius;
+         this.attackRadiusSqr = attackRadius * attackRadius;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
       }
    }
 
    public boolean canUse() {
-      LivingEntity var1 = this.mob.getTarget();
-      if (var1 != null && var1.isAlive()) {
-         this.target = var1;
+      LivingEntity bestTarget = this.mob.getTarget();
+      if (bestTarget != null && bestTarget.isAlive()) {
+         this.target = bestTarget;
          return true;
       } else {
          return false;
@@ -66,15 +66,15 @@ public class RangedAttackGoal extends Goal {
    }
 
    public void tick() {
-      double var1 = this.mob.distanceToSqr(this.target.getX(), this.target.getY(), this.target.getZ());
-      boolean var3 = this.mob.getSensing().hasLineOfSight(this.target);
-      if (var3) {
+      double targetDistSqr = this.mob.distanceToSqr(this.target.getX(), this.target.getY(), this.target.getZ());
+      boolean hasLineOfSight = this.mob.getSensing().hasLineOfSight(this.target);
+      if (hasLineOfSight) {
          ++this.seeTime;
       } else {
          this.seeTime = 0;
       }
 
-      if (!(var1 > (double)this.attackRadiusSqr) && this.seeTime >= 5) {
+      if (!(targetDistSqr > (double)this.attackRadiusSqr) && this.seeTime >= 5) {
          this.mob.getNavigation().stop();
       } else {
          this.mob.getNavigation().moveTo((Entity)this.target, this.speedModifier);
@@ -82,16 +82,16 @@ public class RangedAttackGoal extends Goal {
 
       this.mob.getLookControl().setLookAt(this.target, 30.0F, 30.0F);
       if (--this.attackTime == 0) {
-         if (!var3) {
+         if (!hasLineOfSight) {
             return;
          }
 
-         float var4 = (float)Math.sqrt(var1) / this.attackRadius;
-         float var5 = Mth.clamp(var4, 0.1F, 1.0F);
-         this.rangedAttackMob.performRangedAttack(this.target, var5);
-         this.attackTime = Mth.floor(var4 * (float)(this.attackIntervalMax - this.attackIntervalMin) + (float)this.attackIntervalMin);
+         float dist = (float)Math.sqrt(targetDistSqr) / this.attackRadius;
+         float power = Mth.clamp(dist, 0.1F, 1.0F);
+         this.rangedAttackMob.performRangedAttack(this.target, power);
+         this.attackTime = Mth.floor(dist * (float)(this.attackIntervalMax - this.attackIntervalMin) + (float)this.attackIntervalMin);
       } else if (this.attackTime < 0) {
-         this.attackTime = Mth.floor(Mth.lerp(Math.sqrt(var1) / (double)this.attackRadius, (double)this.attackIntervalMin, (double)this.attackIntervalMax));
+         this.attackTime = Mth.floor(Mth.lerp(Math.sqrt(targetDistSqr) / (double)this.attackRadius, (double)this.attackIntervalMin, (double)this.attackIntervalMax));
       }
 
    }

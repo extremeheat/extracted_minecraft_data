@@ -9,20 +9,20 @@ public class ConstantInt extends IntProvider {
    public static final MapCodec<ConstantInt> CODEC;
    private final int value;
 
-   public static ConstantInt of(int var0) {
-      return var0 == 0 ? ZERO : new ConstantInt(var0);
+   public static ConstantInt of(final int value) {
+      return value == 0 ? ZERO : new ConstantInt(value);
    }
 
-   private ConstantInt(int var1) {
+   private ConstantInt(final int value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
    public int getValue() {
       return this.value;
    }
 
-   public int sample(RandomSource var1) {
+   public int sample(final RandomSource random) {
       return this.value;
    }
 

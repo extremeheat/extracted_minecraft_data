@@ -11,27 +11,27 @@ public class RepeatedNarrator {
    private final float permitsPerSecond;
    private final AtomicReference<@Nullable Params> params = new AtomicReference();
 
-   public RepeatedNarrator(Duration var1) {
+   public RepeatedNarrator(final Duration repeatDelay) {
       super();
-      this.permitsPerSecond = 1000.0F / (float)var1.toMillis();
+      this.permitsPerSecond = 1000.0F / (float)repeatDelay.toMillis();
    }
 
-   public void narrate(GameNarrator var1, Component var2) {
-      Params var3 = (Params)this.params.updateAndGet((var2x) -> var2x != null && var2.equals(var2x.narration) ? var2x : new Params(var2, RateLimiter.create((double)this.permitsPerSecond)));
-      if (var3.rateLimiter.tryAcquire(1)) {
-         var1.saySystemNow(var2);
+   public void narrate(final GameNarrator narrator, final Component narration) {
+      Params params = (Params)this.params.updateAndGet((existing) -> existing != null && narration.equals(existing.narration) ? existing : new Params(narration, RateLimiter.create((double)this.permitsPerSecond)));
+      if (params.rateLimiter.tryAcquire(1)) {
+         narrator.saySystemNow(narration);
       }
 
    }
 
-   static class Params {
-      final Component narration;
-      final RateLimiter rateLimiter;
+   private static class Params {
+      private final Component narration;
+      private final RateLimiter rateLimiter;
 
-      Params(Component var1, RateLimiter var2) {
+      Params(final Component narration, final RateLimiter rateLimiter) {
          super();
-         this.narration = var1;
-         this.rateLimiter = var2;
+         this.narration = narration;
+         this.rateLimiter = rateLimiter;
       }
    }
 }

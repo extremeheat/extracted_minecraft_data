@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import java.util.List;
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -33,44 +34,48 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
    private final ContainerOpenersCounter openersCounter;
    private final ChestLidController chestLidController;
 
-   protected ChestBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
-      super(var1, var2, var3);
+   protected ChestBlockEntity(final BlockEntityType<?> type, final BlockPos worldPosition, final BlockState blockState) {
+      super(type, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
       this.openersCounter = new ContainerOpenersCounter() {
-         protected void onOpen(Level var1, BlockPos var2, BlockState var3) {
-            Block var5 = var3.getBlock();
-            if (var5 instanceof ChestBlock var4) {
-               ChestBlockEntity.playSound(var1, var2, var3, var4.getOpenChestSound());
+         {
+            Objects.requireNonNull(ChestBlockEntity.this);
+         }
+
+         protected void onOpen(final Level level, final BlockPos pos, final BlockState blockState) {
+            Block var5 = blockState.getBlock();
+            if (var5 instanceof ChestBlock chestBlock) {
+               ChestBlockEntity.playSound(level, pos, blockState, chestBlock.getOpenChestSound());
             }
 
          }
 
-         protected void onClose(Level var1, BlockPos var2, BlockState var3) {
-            Block var5 = var3.getBlock();
-            if (var5 instanceof ChestBlock var4) {
-               ChestBlockEntity.playSound(var1, var2, var3, var4.getCloseChestSound());
+         protected void onClose(final Level level, final BlockPos pos, final BlockState blockState) {
+            Block var5 = blockState.getBlock();
+            if (var5 instanceof ChestBlock chestBlock) {
+               ChestBlockEntity.playSound(level, pos, blockState, chestBlock.getCloseChestSound());
             }
 
          }
 
-         protected void openerCountChanged(Level var1, BlockPos var2, BlockState var3, int var4, int var5) {
-            ChestBlockEntity.this.signalOpenCount(var1, var2, var3, var4, var5);
+         protected void openerCountChanged(final Level level, final BlockPos pos, final BlockState blockState, final int previous, final int current) {
+            ChestBlockEntity.this.signalOpenCount(level, pos, blockState, previous, current);
          }
 
-         public boolean isOwnContainer(Player var1) {
-            if (!(var1.containerMenu instanceof ChestMenu)) {
+         public boolean isOwnContainer(final Player player) {
+            if (!(player.containerMenu instanceof ChestMenu)) {
                return false;
             } else {
-               Container var2 = ((ChestMenu)var1.containerMenu).getContainer();
-               return var2 == ChestBlockEntity.this || var2 instanceof CompoundContainer && ((CompoundContainer)var2).contains(ChestBlockEntity.this);
+               Container container = ((ChestMenu)player.containerMenu).getContainer();
+               return container == ChestBlockEntity.this || container instanceof CompoundContainer && ((CompoundContainer)container).contains(ChestBlockEntity.this);
             }
          }
       };
       this.chestLidController = new ChestLidController();
    }
 
-   public ChestBlockEntity(BlockPos var1, BlockState var2) {
-      this(BlockEntityType.CHEST, var1, var2);
+   public ChestBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      this(BlockEntityType.CHEST, worldPosition, blockState);
    }
 
    public int getContainerSize() {
@@ -81,62 +86,62 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
       return DEFAULT_NAME;
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
-      if (!this.tryLoadLootTable(var1)) {
-         ContainerHelper.loadAllItems(var1, this.items);
+      if (!this.tryLoadLootTable(input)) {
+         ContainerHelper.loadAllItems(input, this.items);
       }
 
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      if (!this.trySaveLootTable(var1)) {
-         ContainerHelper.saveAllItems(var1, this.items);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      if (!this.trySaveLootTable(output)) {
+         ContainerHelper.saveAllItems(output, this.items);
       }
 
    }
 
-   public static void lidAnimateTick(Level var0, BlockPos var1, BlockState var2, ChestBlockEntity var3) {
-      var3.chestLidController.tickLid();
+   public static void lidAnimateTick(final Level level, final BlockPos pos, final BlockState state, final ChestBlockEntity entity) {
+      entity.chestLidController.tickLid();
    }
 
-   static void playSound(Level var0, BlockPos var1, BlockState var2, SoundEvent var3) {
-      ChestType var4 = (ChestType)var2.getValue(ChestBlock.TYPE);
-      if (var4 != ChestType.LEFT) {
-         double var5 = (double)var1.getX() + 0.5;
-         double var7 = (double)var1.getY() + 0.5;
-         double var9 = (double)var1.getZ() + 0.5;
-         if (var4 == ChestType.RIGHT) {
-            Direction var11 = ChestBlock.getConnectedDirection(var2);
-            var5 += (double)var11.getStepX() * 0.5;
-            var9 += (double)var11.getStepZ() * 0.5;
+   private static void playSound(final Level level, final BlockPos worldPosition, final BlockState blockState, final SoundEvent event) {
+      ChestType type = (ChestType)blockState.getValue(ChestBlock.TYPE);
+      if (type != ChestType.LEFT) {
+         double x = (double)worldPosition.getX() + 0.5;
+         double y = (double)worldPosition.getY() + 0.5;
+         double z = (double)worldPosition.getZ() + 0.5;
+         if (type == ChestType.RIGHT) {
+            Direction direction = ChestBlock.getConnectedDirection(blockState);
+            x += (double)direction.getStepX() * 0.5;
+            z += (double)direction.getStepZ() * 0.5;
          }
 
-         var0.playSound((Entity)null, var5, var7, var9, var3, SoundSource.BLOCKS, 0.5F, var0.random.nextFloat() * 0.1F + 0.9F);
+         level.playSound((Entity)null, x, y, z, event, SoundSource.BLOCKS, 0.5F, level.getRandom().nextFloat() * 0.1F + 0.9F);
       }
    }
 
-   public boolean triggerEvent(int var1, int var2) {
-      if (var1 == 1) {
-         this.chestLidController.shouldBeOpen(var2 > 0);
+   public boolean triggerEvent(final int b0, final int b1) {
+      if (b0 == 1) {
+         this.chestLidController.shouldBeOpen(b1 > 0);
          return true;
       } else {
-         return super.triggerEvent(var1, var2);
+         return super.triggerEvent(b0, b1);
       }
    }
 
-   public void startOpen(ContainerUser var1) {
-      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
-         this.openersCounter.incrementOpeners(var1.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState(), var1.getContainerInteractionRange());
+   public void startOpen(final ContainerUser containerUser) {
+      if (!this.remove && !containerUser.getLivingEntity().isSpectator()) {
+         this.openersCounter.incrementOpeners(containerUser.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState(), containerUser.getContainerInteractionRange());
       }
 
    }
 
-   public void stopOpen(ContainerUser var1) {
-      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
-         this.openersCounter.decrementOpeners(var1.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState());
+   public void stopOpen(final ContainerUser containerUser) {
+      if (!this.remove && !containerUser.getLivingEntity().isSpectator()) {
+         this.openersCounter.decrementOpeners(containerUser.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState());
       }
 
    }
@@ -149,34 +154,34 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
       return this.items;
    }
 
-   protected void setItems(NonNullList<ItemStack> var1) {
-      this.items = var1;
+   protected void setItems(final NonNullList<ItemStack> items) {
+      this.items = items;
    }
 
-   public float getOpenNess(float var1) {
-      return this.chestLidController.getOpenness(var1);
+   public float getOpenNess(final float a) {
+      return this.chestLidController.getOpenness(a);
    }
 
-   public static int getOpenCount(BlockGetter var0, BlockPos var1) {
-      BlockState var2 = var0.getBlockState(var1);
-      if (var2.hasBlockEntity()) {
-         BlockEntity var3 = var0.getBlockEntity(var1);
-         if (var3 instanceof ChestBlockEntity) {
-            return ((ChestBlockEntity)var3).openersCounter.getOpenerCount();
+   public static int getOpenCount(final BlockGetter level, final BlockPos pos) {
+      BlockState state = level.getBlockState(pos);
+      if (state.hasBlockEntity()) {
+         BlockEntity blockEntity = level.getBlockEntity(pos);
+         if (blockEntity instanceof ChestBlockEntity) {
+            return ((ChestBlockEntity)blockEntity).openersCounter.getOpenerCount();
          }
       }
 
       return 0;
    }
 
-   public static void swapContents(ChestBlockEntity var0, ChestBlockEntity var1) {
-      NonNullList var2 = var0.getItems();
-      var0.setItems(var1.getItems());
-      var1.setItems(var2);
+   public static void swapContents(final ChestBlockEntity one, final ChestBlockEntity two) {
+      NonNullList<ItemStack> items = one.getItems();
+      one.setItems(two.getItems());
+      two.setItems(items);
    }
 
-   protected AbstractContainerMenu createMenu(int var1, Inventory var2) {
-      return ChestMenu.threeRows(var1, var2, this);
+   protected AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
+      return ChestMenu.threeRows(containerId, inventory, this);
    }
 
    public void recheckOpen() {
@@ -186,8 +191,8 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
 
    }
 
-   protected void signalOpenCount(Level var1, BlockPos var2, BlockState var3, int var4, int var5) {
-      Block var6 = var3.getBlock();
-      var1.blockEvent(var2, var6, 1, var5);
+   protected void signalOpenCount(final Level level, final BlockPos pos, final BlockState blockState, final int previous, final int current) {
+      Block block = blockState.getBlock();
+      level.blockEvent(pos, block, 1, current);
    }
 }

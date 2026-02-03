@@ -12,42 +12,37 @@ public class PacketBundlePacker extends MessageToMessageDecoder<Packet<?>> {
    private final BundlerInfo bundlerInfo;
    private BundlerInfo.@Nullable Bundler currentBundler;
 
-   public PacketBundlePacker(BundlerInfo var1) {
+   public PacketBundlePacker(final BundlerInfo bundlerInfo) {
       super();
-      this.bundlerInfo = var1;
+      this.bundlerInfo = bundlerInfo;
    }
 
-   protected void decode(ChannelHandlerContext var1, Packet<?> var2, List<Object> var3) throws Exception {
+   protected void decode(final ChannelHandlerContext ctx, final Packet<?> msg, final List<Object> out) throws Exception {
       if (this.currentBundler != null) {
-         verifyNonTerminalPacket(var2);
-         Packet var4 = this.currentBundler.addPacket(var2);
-         if (var4 != null) {
+         verifyNonTerminalPacket(msg);
+         Packet<?> bundlePacket = this.currentBundler.addPacket(msg);
+         if (bundlePacket != null) {
             this.currentBundler = null;
-            var3.add(var4);
+            out.add(bundlePacket);
          }
       } else {
-         BundlerInfo.Bundler var5 = this.bundlerInfo.startPacketBundling(var2);
-         if (var5 != null) {
-            verifyNonTerminalPacket(var2);
-            this.currentBundler = var5;
+         BundlerInfo.Bundler bundler = this.bundlerInfo.startPacketBundling(msg);
+         if (bundler != null) {
+            verifyNonTerminalPacket(msg);
+            this.currentBundler = bundler;
          } else {
-            var3.add(var2);
-            if (var2.isTerminal()) {
-               var1.pipeline().remove(var1.name());
+            out.add(msg);
+            if (msg.isTerminal()) {
+               ctx.pipeline().remove(ctx.name());
             }
          }
       }
 
    }
 
-   private static void verifyNonTerminalPacket(Packet<?> var0) {
-      if (var0.isTerminal()) {
+   private static void verifyNonTerminalPacket(final Packet<?> msg) {
+      if (msg.isTerminal()) {
          throw new DecoderException("Terminal message received in bundle");
       }
-   }
-
-   // $FF: synthetic method
-   protected void decode(final ChannelHandlerContext var1, final Object var2, final List var3) throws Exception {
-      this.decode(var1, (Packet)var2, var3);
    }
 }

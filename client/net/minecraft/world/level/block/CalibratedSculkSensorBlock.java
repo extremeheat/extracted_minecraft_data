@@ -26,38 +26,38 @@ public class CalibratedSculkSensorBlock extends SculkSensorBlock {
       return CODEC;
    }
 
-   public CalibratedSculkSensorBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public CalibratedSculkSensorBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(FACING, Direction.NORTH));
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new CalibratedSculkSensorBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new CalibratedSculkSensorBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return !var1.isClientSide() ? createTickerHelper(var3, BlockEntityType.CALIBRATED_SCULK_SENSOR, (var0, var1x, var2x, var3x) -> VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser())) : null;
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return !level.isClientSide() ? createTickerHelper(type, BlockEntityType.CALIBRATED_SCULK_SENSOR, (innerLevel, pos, state, entity) -> VibrationSystem.Ticker.tick(innerLevel, entity.getVibrationData(), entity.getVibrationUser())) : null;
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)super.getStateForPlacement(var1).setValue(FACING, var1.getHorizontalDirection());
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection());
    }
 
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return var4 != var1.getValue(FACING) ? super.getSignal(var1, var2, var3, var4) : 0;
+   public int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return direction != state.getValue(FACING) ? super.getSignal(state, level, pos, direction) : 0;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      super.createBlockStateDefinition(var1);
-      var1.add(FACING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      super.createBlockStateDefinition(builder);
+      builder.add(FACING);
    }
 
-   public BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   public BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   public BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   public BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
    public int getActiveTicks() {

@@ -10,17 +10,16 @@ import net.minecraft.server.ServerLinks;
 public record ClientboundServerLinksPacket(List<ServerLinks.UntrustedEntry> links) implements Packet<ClientCommonPacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundServerLinksPacket> STREAM_CODEC;
 
-   public ClientboundServerLinksPacket(List<ServerLinks.UntrustedEntry> var1) {
+   public ClientboundServerLinksPacket {
       super();
-      this.links = var1;
    }
 
    public PacketType<ClientboundServerLinksPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_SERVER_LINKS;
    }
 
-   public void handle(ClientCommonPacketListener var1) {
-      var1.handleServerLinks(this);
+   public void handle(final ClientCommonPacketListener listener) {
+      listener.handleServerLinks(this);
    }
 
    static {

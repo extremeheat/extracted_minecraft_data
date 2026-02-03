@@ -10,26 +10,26 @@ public class EntityEquipment {
    public static final Codec<EntityEquipment> CODEC;
    private final EnumMap<EquipmentSlot, ItemStack> items;
 
-   private EntityEquipment(EnumMap<EquipmentSlot, ItemStack> var1) {
+   private EntityEquipment(final EnumMap<EquipmentSlot, ItemStack> items) {
       super();
-      this.items = var1;
+      this.items = items;
    }
 
    public EntityEquipment() {
       this(new EnumMap(EquipmentSlot.class));
    }
 
-   public ItemStack set(EquipmentSlot var1, ItemStack var2) {
-      return (ItemStack)Objects.requireNonNullElse((ItemStack)this.items.put(var1, var2), ItemStack.EMPTY);
+   public ItemStack set(final EquipmentSlot slot, final ItemStack itemStack) {
+      return (ItemStack)Objects.requireNonNullElse((ItemStack)this.items.put(slot, itemStack), ItemStack.EMPTY);
    }
 
-   public ItemStack get(EquipmentSlot var1) {
-      return (ItemStack)this.items.getOrDefault(var1, ItemStack.EMPTY);
+   public ItemStack get(final EquipmentSlot slot) {
+      return (ItemStack)this.items.getOrDefault(slot, ItemStack.EMPTY);
    }
 
    public boolean isEmpty() {
-      for(ItemStack var2 : this.items.values()) {
-         if (!var2.isEmpty()) {
+      for(ItemStack item : this.items.values()) {
+         if (!item.isEmpty()) {
             return false;
          }
       }
@@ -37,42 +37,42 @@ public class EntityEquipment {
       return true;
    }
 
-   public void tick(Entity var1) {
-      for(Map.Entry var3 : this.items.entrySet()) {
-         ItemStack var4 = (ItemStack)var3.getValue();
-         if (!var4.isEmpty()) {
-            var4.inventoryTick(var1.level(), var1, (EquipmentSlot)var3.getKey());
+   public void tick(final Entity owner) {
+      for(Map.Entry<EquipmentSlot, ItemStack> entry : this.items.entrySet()) {
+         ItemStack item = (ItemStack)entry.getValue();
+         if (!item.isEmpty()) {
+            item.inventoryTick(owner.level(), owner, (EquipmentSlot)entry.getKey());
          }
       }
 
    }
 
-   public void setAll(EntityEquipment var1) {
+   public void setAll(final EntityEquipment equipment) {
       this.items.clear();
-      this.items.putAll(var1.items);
+      this.items.putAll(equipment.items);
    }
 
-   public void dropAll(LivingEntity var1) {
-      for(ItemStack var3 : this.items.values()) {
-         var1.drop(var3, true, false);
+   public void dropAll(final LivingEntity dropper) {
+      for(ItemStack item : this.items.values()) {
+         dropper.drop(item, true, false);
       }
 
       this.clear();
    }
 
    public void clear() {
-      this.items.replaceAll((var0, var1) -> ItemStack.EMPTY);
+      this.items.replaceAll((s, v) -> ItemStack.EMPTY);
    }
 
    static {
-      CODEC = Codec.unboundedMap(EquipmentSlot.CODEC, ItemStack.CODEC).xmap((var0) -> {
-         EnumMap var1 = new EnumMap(EquipmentSlot.class);
-         var1.putAll(var0);
-         return new EntityEquipment(var1);
-      }, (var0) -> {
-         EnumMap var1 = new EnumMap(var0.items);
-         var1.values().removeIf(ItemStack::isEmpty);
-         return var1;
+      CODEC = Codec.unboundedMap(EquipmentSlot.CODEC, ItemStack.CODEC).xmap((items) -> {
+         EnumMap<EquipmentSlot, ItemStack> map = new EnumMap(EquipmentSlot.class);
+         map.putAll(items);
+         return new EntityEquipment(map);
+      }, (equipment) -> {
+         Map<EquipmentSlot, ItemStack> items = new EnumMap(equipment.items);
+         items.values().removeIf(ItemStack::isEmpty);
+         return items;
       });
    }
 }

@@ -10,26 +10,26 @@ import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
 
 public class BlockStatePredicate implements Predicate<BlockState> {
-   public static final Predicate<BlockState> ANY = (var0) -> true;
+   public static final Predicate<BlockState> ANY = (input) -> true;
    private final StateDefinition<Block, BlockState> definition;
    private final Map<Property<?>, Predicate<Object>> properties = Maps.newHashMap();
 
-   private BlockStatePredicate(StateDefinition<Block, BlockState> var1) {
+   private BlockStatePredicate(final StateDefinition<Block, BlockState> definition) {
       super();
-      this.definition = var1;
+      this.definition = definition;
    }
 
-   public static BlockStatePredicate forBlock(Block var0) {
-      return new BlockStatePredicate(var0.getStateDefinition());
+   public static BlockStatePredicate forBlock(final Block block) {
+      return new BlockStatePredicate(block.getStateDefinition());
    }
 
-   public boolean test(@Nullable BlockState var1) {
-      if (var1 != null && var1.getBlock().equals(this.definition.getOwner())) {
+   public boolean test(final @Nullable BlockState input) {
+      if (input != null && input.getBlock().equals(this.definition.getOwner())) {
          if (this.properties.isEmpty()) {
             return true;
          } else {
-            for(Map.Entry var3 : this.properties.entrySet()) {
-               if (!this.applies(var1, (Property)var3.getKey(), (Predicate)var3.getValue())) {
+            for(Map.Entry<Property<?>, Predicate<Object>> entry : this.properties.entrySet()) {
+               if (!this.applies(input, (Property)entry.getKey(), (Predicate)entry.getValue())) {
                   return false;
                }
             }
@@ -41,23 +41,18 @@ public class BlockStatePredicate implements Predicate<BlockState> {
       }
    }
 
-   protected <T extends Comparable<T>> boolean applies(BlockState var1, Property<T> var2, Predicate<Object> var3) {
-      Comparable var4 = var1.getValue(var2);
-      return var3.test(var4);
+   protected <T extends Comparable<T>> boolean applies(final BlockState input, final Property<T> key, final Predicate<Object> predicate) {
+      T value = input.getValue(key);
+      return predicate.test(value);
    }
 
-   public <V extends Comparable<V>> BlockStatePredicate where(Property<V> var1, Predicate<Object> var2) {
-      if (!this.definition.getProperties().contains(var1)) {
+   public <V extends Comparable<V>> BlockStatePredicate where(final Property<V> property, final Predicate<Object> predicate) {
+      if (!this.definition.getProperties().contains(property)) {
          String var10002 = String.valueOf(this.definition);
-         throw new IllegalArgumentException(var10002 + " cannot support property " + String.valueOf(var1));
+         throw new IllegalArgumentException(var10002 + " cannot support property " + String.valueOf(property));
       } else {
-         this.properties.put(var1, var2);
+         this.properties.put(property, predicate);
          return this;
       }
-   }
-
-   // $FF: synthetic method
-   public boolean test(final @Nullable Object var1) {
-      return this.test((BlockState)var1);
    }
 }

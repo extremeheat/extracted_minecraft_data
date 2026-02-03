@@ -10,15 +10,14 @@ import net.minecraft.world.item.component.DyedItemColor;
 import org.jspecify.annotations.Nullable;
 
 public record Dye(int defaultColor) implements ItemTintSource {
-   public static final MapCodec<Dye> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(Dye::defaultColor)).apply(var0, Dye::new));
+   public static final MapCodec<Dye> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(Dye::defaultColor)).apply(i, Dye::new));
 
-   public Dye(int var1) {
+   public Dye {
       super();
-      this.defaultColor = var1;
    }
 
-   public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
-      return DyedItemColor.getOrDefault(var1, this.defaultColor);
+   public int calculate(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner) {
+      return DyedItemColor.getOrDefault(itemStack, this.defaultColor);
    }
 
    public MapCodec<Dye> type() {

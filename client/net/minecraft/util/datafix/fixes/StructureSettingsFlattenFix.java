@@ -11,23 +11,23 @@ import com.mojang.serialization.Dynamic;
 import net.minecraft.util.Util;
 
 public class StructureSettingsFlattenFix extends DataFix {
-   public StructureSettingsFlattenFix(Schema var1) {
-      super(var1, false);
+   public StructureSettingsFlattenFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.WORLD_GEN_SETTINGS);
-      OpticFinder var2 = var1.findField("dimensions");
-      return this.fixTypeEverywhereTyped("StructureSettingsFlatten", var1, (var1x) -> var1x.updateTyped(var2, (var1) -> Util.writeAndReadTypedOrThrow(var1, var2.type(), (var0) -> var0.updateMapValues(StructureSettingsFlattenFix::fixDimension))));
+      Type<?> worldGenSettingsType = this.getInputSchema().getType(References.WORLD_GEN_SETTINGS);
+      OpticFinder<?> dimensions = worldGenSettingsType.findField("dimensions");
+      return this.fixTypeEverywhereTyped("StructureSettingsFlatten", worldGenSettingsType, (input) -> input.updateTyped(dimensions, (typed) -> Util.writeAndReadTypedOrThrow(typed, dimensions.type(), (serialized) -> serialized.updateMapValues(StructureSettingsFlattenFix::fixDimension))));
    }
 
-   private static Pair<Dynamic<?>, Dynamic<?>> fixDimension(Pair<Dynamic<?>, Dynamic<?>> var0) {
-      Dynamic var1 = (Dynamic)var0.getSecond();
-      return Pair.of((Dynamic)var0.getFirst(), var1.update("generator", (var0x) -> var0x.update("settings", (var0) -> var0.update("structures", StructureSettingsFlattenFix::fixStructures))));
+   private static Pair<Dynamic<?>, Dynamic<?>> fixDimension(final Pair<Dynamic<?>, Dynamic<?>> entry) {
+      Dynamic<?> dimension = (Dynamic)entry.getSecond();
+      return Pair.of((Dynamic)entry.getFirst(), dimension.update("generator", (g) -> g.update("settings", (s) -> s.update("structures", StructureSettingsFlattenFix::fixStructures))));
    }
 
-   private static Dynamic<?> fixStructures(Dynamic<?> var0) {
-      Dynamic var1 = var0.get("structures").orElseEmptyMap().updateMapValues((var1x) -> var1x.mapSecond((var1) -> var1.set("type", var0.createString("minecraft:random_spread"))));
-      return (Dynamic)DataFixUtils.orElse(var0.get("stronghold").result().map((var2) -> var1.set("minecraft:stronghold", var2.set("type", var0.createString("minecraft:concentric_rings")))), var1);
+   private static Dynamic<?> fixStructures(final Dynamic<?> input) {
+      Dynamic<?> structures = input.get("structures").orElseEmptyMap().updateMapValues((p) -> p.mapSecond((s) -> s.set("type", input.createString("minecraft:random_spread"))));
+      return (Dynamic)DataFixUtils.orElse(input.get("stronghold").result().map((stronghold) -> structures.set("minecraft:stronghold", stronghold.set("type", input.createString("minecraft:concentric_rings")))), structures);
    }
 }

@@ -12,25 +12,25 @@ public class MinecartCollisionContext extends EntityCollisionContext {
    private @Nullable BlockPos ingoreBelow;
    private @Nullable BlockPos slopeIgnore;
 
-   protected MinecartCollisionContext(AbstractMinecart var1, boolean var2) {
-      super(var1, var2, false);
-      this.setupContext(var1);
+   protected MinecartCollisionContext(final AbstractMinecart entity, final boolean alwaysStandOnFluid) {
+      super(entity, alwaysStandOnFluid, false);
+      this.setupContext(entity);
    }
 
-   private void setupContext(AbstractMinecart var1) {
-      BlockPos var2 = var1.getCurrentBlockPosOrRailBelow();
-      BlockState var3 = var1.level().getBlockState(var2);
-      boolean var4 = BaseRailBlock.isRail(var3);
-      if (var4) {
-         this.ingoreBelow = var2.below();
-         RailShape var5 = (RailShape)var3.getValue(((BaseRailBlock)var3.getBlock()).getShapeProperty());
-         if (var5.isSlope()) {
+   private void setupContext(final AbstractMinecart entity) {
+      BlockPos currentRailPos = entity.getCurrentBlockPosOrRailBelow();
+      BlockState currentState = entity.level().getBlockState(currentRailPos);
+      boolean onRails = BaseRailBlock.isRail(currentState);
+      if (onRails) {
+         this.ingoreBelow = currentRailPos.below();
+         RailShape shape = (RailShape)currentState.getValue(((BaseRailBlock)currentState.getBlock()).getShapeProperty());
+         if (shape.isSlope()) {
             BlockPos var10001;
-            switch (var5) {
-               case ASCENDING_EAST -> var10001 = var2.east();
-               case ASCENDING_WEST -> var10001 = var2.west();
-               case ASCENDING_NORTH -> var10001 = var2.north();
-               case ASCENDING_SOUTH -> var10001 = var2.south();
+            switch (shape) {
+               case ASCENDING_EAST -> var10001 = currentRailPos.east();
+               case ASCENDING_WEST -> var10001 = currentRailPos.west();
+               case ASCENDING_NORTH -> var10001 = currentRailPos.north();
+               case ASCENDING_SOUTH -> var10001 = currentRailPos.south();
                default -> var10001 = null;
             }
 
@@ -40,7 +40,7 @@ public class MinecartCollisionContext extends EntityCollisionContext {
 
    }
 
-   public VoxelShape getCollisionShape(BlockState var1, CollisionGetter var2, BlockPos var3) {
-      return !var3.equals(this.ingoreBelow) && !var3.equals(this.slopeIgnore) ? super.getCollisionShape(var1, var2, var3) : Shapes.empty();
+   public VoxelShape getCollisionShape(final BlockState state, final CollisionGetter collisionGetter, final BlockPos pos) {
+      return !pos.equals(this.ingoreBelow) && !pos.equals(this.slopeIgnore) ? super.getCollisionShape(state, collisionGetter, pos) : Shapes.empty();
    }
 }

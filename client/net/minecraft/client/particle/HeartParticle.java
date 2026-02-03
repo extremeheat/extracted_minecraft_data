@@ -7,8 +7,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class HeartParticle extends SingleQuadParticle {
-   HeartParticle(ClientLevel var1, double var2, double var4, double var6, TextureAtlasSprite var8) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var8);
+   private HeartParticle(final ClientLevel level, final double x, final double y, final double z, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprite);
       this.speedUpWhenYMotionIsBlocked = true;
       this.friction = 0.86F;
       this.xd *= 0.009999999776482582;
@@ -24,36 +24,36 @@ public class HeartParticle extends SingleQuadParticle {
       return SingleQuadParticle.Layer.OPAQUE;
    }
 
-   public float getQuadSize(float var1) {
-      return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
+   public float getQuadSize(final float a) {
+      return this.quadSize * Mth.clamp(((float)this.age + a) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         HeartParticle var16 = new HeartParticle(var2, var3, var5, var7, this.sprite.get(var15));
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         HeartParticle particle = new HeartParticle(level, x, y, z, this.sprite.get(random));
+         return particle;
       }
    }
 
    public static class AngryVillagerProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public AngryVillagerProvider(SpriteSet var1) {
+      public AngryVillagerProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         HeartParticle var16 = new HeartParticle(var2, var3, var5 + 0.5, var7, this.sprite.get(var15));
-         var16.setColor(1.0F, 1.0F, 1.0F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         HeartParticle particle = new HeartParticle(level, x, y + 0.5, z, this.sprite.get(random));
+         particle.setColor(1.0F, 1.0F, 1.0F);
+         return particle;
       }
    }
 }

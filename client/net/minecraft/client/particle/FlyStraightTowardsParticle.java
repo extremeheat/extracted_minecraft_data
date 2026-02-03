@@ -4,6 +4,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
@@ -14,36 +15,36 @@ public class FlyStraightTowardsParticle extends SingleQuadParticle {
    private final int startColor;
    private final int endColor;
 
-   FlyStraightTowardsParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, int var14, int var15, TextureAtlasSprite var16) {
-      super(var1, var2, var4, var6, var16);
-      this.xd = var8;
-      this.yd = var10;
-      this.zd = var12;
-      this.xStart = var2;
-      this.yStart = var4;
-      this.zStart = var6;
-      this.xo = var2 + var8;
-      this.yo = var4 + var10;
-      this.zo = var6 + var12;
+   private FlyStraightTowardsParticle(final ClientLevel level, final double x, final double y, final double z, final double xd, final double yd, final double zd, final int startColor, final int endColor, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, sprite);
+      this.xd = xd;
+      this.yd = yd;
+      this.zd = zd;
+      this.xStart = x;
+      this.yStart = y;
+      this.zStart = z;
+      this.xo = x + xd;
+      this.yo = y + yd;
+      this.zo = z + zd;
       this.x = this.xo;
       this.y = this.yo;
       this.z = this.zo;
       this.quadSize = 0.1F * (this.random.nextFloat() * 0.5F + 0.2F);
       this.hasPhysics = false;
       this.lifetime = (int)(this.random.nextFloat() * 5.0F) + 25;
-      this.startColor = var14;
-      this.endColor = var15;
+      this.startColor = startColor;
+      this.endColor = endColor;
    }
 
    public SingleQuadParticle.Layer getLayer() {
       return SingleQuadParticle.Layer.OPAQUE;
    }
 
-   public void move(double var1, double var3, double var5) {
+   public void move(final double xa, final double ya, final double za) {
    }
 
-   public int getLightColor(float var1) {
-      return 240;
+   public int getLightCoords(final float a) {
+      return LightCoordsUtil.withBlock(super.getLightCoords(a), 15);
    }
 
    public void tick() {
@@ -53,29 +54,29 @@ public class FlyStraightTowardsParticle extends SingleQuadParticle {
       if (this.age++ >= this.lifetime) {
          this.remove();
       } else {
-         float var1 = (float)this.age / (float)this.lifetime;
-         float var2 = 1.0F - var1;
-         this.x = this.xStart + this.xd * (double)var2;
-         this.y = this.yStart + this.yd * (double)var2;
-         this.z = this.zStart + this.zd * (double)var2;
-         int var3 = ARGB.srgbLerp(var1, this.startColor, this.endColor);
-         this.setColor((float)ARGB.red(var3) / 255.0F, (float)ARGB.green(var3) / 255.0F, (float)ARGB.blue(var3) / 255.0F);
-         this.setAlpha((float)ARGB.alpha(var3) / 255.0F);
+         float normalizedAge = (float)this.age / (float)this.lifetime;
+         float posAlpha = 1.0F - normalizedAge;
+         this.x = this.xStart + this.xd * (double)posAlpha;
+         this.y = this.yStart + this.yd * (double)posAlpha;
+         this.z = this.zStart + this.zd * (double)posAlpha;
+         int color = ARGB.srgbLerp(normalizedAge, this.startColor, this.endColor);
+         this.setColor((float)ARGB.red(color) / 255.0F, (float)ARGB.green(color) / 255.0F, (float)ARGB.blue(color) / 255.0F);
+         this.setAlpha((float)ARGB.alpha(color) / 255.0F);
       }
    }
 
    public static class OminousSpawnProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public OminousSpawnProvider(SpriteSet var1) {
+      public OminousSpawnProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         FlyStraightTowardsParticle var16 = new FlyStraightTowardsParticle(var2, var3, var5, var7, var9, var11, var13, -12210434, -1, this.sprite.get(var15));
-         var16.scale(Mth.randomBetween(var2.getRandom(), 3.0F, 5.0F));
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         FlyStraightTowardsParticle particle = new FlyStraightTowardsParticle(level, x, y, z, xAux, yAux, zAux, -12210434, -1, this.sprite.get(random));
+         particle.scale(Mth.randomBetween(level.getRandom(), 3.0F, 5.0F));
+         return particle;
       }
    }
 }

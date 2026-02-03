@@ -13,34 +13,34 @@ public class StringDecomposer {
       super();
    }
 
-   private static boolean feedChar(Style var0, FormattedCharSink var1, int var2, char var3) {
-      return Character.isSurrogate(var3) ? var1.accept(var2, var0, 65533) : var1.accept(var2, var0, var3);
+   private static boolean feedChar(final Style style, final FormattedCharSink output, final int pos, final char ch) {
+      return Character.isSurrogate(ch) ? output.accept(pos, style, 65533) : output.accept(pos, style, ch);
    }
 
-   public static boolean iterate(String var0, Style var1, FormattedCharSink var2) {
-      int var3 = var0.length();
+   public static boolean iterate(final String string, final Style style, final FormattedCharSink output) {
+      int size = string.length();
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         char var5 = var0.charAt(var4);
-         if (Character.isHighSurrogate(var5)) {
-            if (var4 + 1 >= var3) {
-               if (!var2.accept(var4, var1, 65533)) {
+      for(int i = 0; i < size; ++i) {
+         char ch = string.charAt(i);
+         if (Character.isHighSurrogate(ch)) {
+            if (i + 1 >= size) {
+               if (!output.accept(i, style, 65533)) {
                   return false;
                }
                break;
             }
 
-            char var6 = var0.charAt(var4 + 1);
-            if (Character.isLowSurrogate(var6)) {
-               if (!var2.accept(var4, var1, Character.toCodePoint(var5, var6))) {
+            char low = string.charAt(i + 1);
+            if (Character.isLowSurrogate(low)) {
+               if (!output.accept(i, style, Character.toCodePoint(ch, low))) {
                   return false;
                }
 
-               ++var4;
-            } else if (!var2.accept(var4, var1, 65533)) {
+               ++i;
+            } else if (!output.accept(i, style, 65533)) {
                return false;
             }
-         } else if (!feedChar(var1, var2, var4, var5)) {
+         } else if (!feedChar(style, output, i, ch)) {
             return false;
          }
       }
@@ -48,29 +48,29 @@ public class StringDecomposer {
       return true;
    }
 
-   public static boolean iterateBackwards(String var0, Style var1, FormattedCharSink var2) {
-      int var3 = var0.length();
+   public static boolean iterateBackwards(final String string, final Style style, final FormattedCharSink output) {
+      int size = string.length();
 
-      for(int var4 = var3 - 1; var4 >= 0; --var4) {
-         char var5 = var0.charAt(var4);
-         if (Character.isLowSurrogate(var5)) {
-            if (var4 - 1 < 0) {
-               if (!var2.accept(0, var1, 65533)) {
+      for(int i = size - 1; i >= 0; --i) {
+         char ch = string.charAt(i);
+         if (Character.isLowSurrogate(ch)) {
+            if (i - 1 < 0) {
+               if (!output.accept(0, style, 65533)) {
                   return false;
                }
                break;
             }
 
-            char var6 = var0.charAt(var4 - 1);
-            if (Character.isHighSurrogate(var6)) {
-               --var4;
-               if (!var2.accept(var4, var1, Character.toCodePoint(var6, var5))) {
+            char high = string.charAt(i - 1);
+            if (Character.isHighSurrogate(high)) {
+               --i;
+               if (!output.accept(i, style, Character.toCodePoint(high, ch))) {
                   return false;
                }
-            } else if (!var2.accept(var4, var1, 65533)) {
+            } else if (!output.accept(i, style, 65533)) {
                return false;
             }
-         } else if (!feedChar(var1, var2, var4, var5)) {
+         } else if (!feedChar(style, output, i, ch)) {
             return false;
          }
       }
@@ -78,51 +78,51 @@ public class StringDecomposer {
       return true;
    }
 
-   public static boolean iterateFormatted(String var0, Style var1, FormattedCharSink var2) {
-      return iterateFormatted(var0, 0, var1, var2);
+   public static boolean iterateFormatted(final String string, final Style style, final FormattedCharSink output) {
+      return iterateFormatted(string, 0, style, output);
    }
 
-   public static boolean iterateFormatted(String var0, int var1, Style var2, FormattedCharSink var3) {
-      return iterateFormatted(var0, var1, var2, var2, var3);
+   public static boolean iterateFormatted(final String string, final int offset, final Style style, final FormattedCharSink output) {
+      return iterateFormatted(string, offset, style, style, output);
    }
 
-   public static boolean iterateFormatted(String var0, int var1, Style var2, Style var3, FormattedCharSink var4) {
-      int var5 = var0.length();
-      Style var6 = var2;
+   public static boolean iterateFormatted(final String string, final int offset, final Style currentStyle, final Style resetStyle, final FormattedCharSink output) {
+      int size = string.length();
+      Style style = currentStyle;
 
-      for(int var7 = var1; var7 < var5; ++var7) {
-         char var8 = var0.charAt(var7);
-         if (var8 == 167) {
-            if (var7 + 1 >= var5) {
+      for(int i = offset; i < size; ++i) {
+         char ch = string.charAt(i);
+         if (ch == 167) {
+            if (i + 1 >= size) {
                break;
             }
 
-            char var9 = var0.charAt(var7 + 1);
-            ChatFormatting var10 = ChatFormatting.getByCode(var9);
-            if (var10 != null) {
-               var6 = var10 == ChatFormatting.RESET ? var3 : var6.applyLegacyFormat(var10);
+            char code = string.charAt(i + 1);
+            ChatFormatting formatting = ChatFormatting.getByCode(code);
+            if (formatting != null) {
+               style = formatting == ChatFormatting.RESET ? resetStyle : style.applyLegacyFormat(formatting);
             }
 
-            ++var7;
-         } else if (Character.isHighSurrogate(var8)) {
-            if (var7 + 1 >= var5) {
-               if (!var4.accept(var7, var6, 65533)) {
+            ++i;
+         } else if (Character.isHighSurrogate(ch)) {
+            if (i + 1 >= size) {
+               if (!output.accept(i, style, 65533)) {
                   return false;
                }
                break;
             }
 
-            char var11 = var0.charAt(var7 + 1);
-            if (Character.isLowSurrogate(var11)) {
-               if (!var4.accept(var7, var6, Character.toCodePoint(var8, var11))) {
+            char low = string.charAt(i + 1);
+            if (Character.isLowSurrogate(low)) {
+               if (!output.accept(i, style, Character.toCodePoint(ch, low))) {
                   return false;
                }
 
-               ++var7;
-            } else if (!var4.accept(var7, var6, 65533)) {
+               ++i;
+            } else if (!output.accept(i, style, 65533)) {
                return false;
             }
-         } else if (!feedChar(var6, var4, var7, var8)) {
+         } else if (!feedChar(style, output, i, ch)) {
             return false;
          }
       }
@@ -130,26 +130,26 @@ public class StringDecomposer {
       return true;
    }
 
-   public static boolean iterateFormatted(FormattedText var0, Style var1, FormattedCharSink var2) {
-      return var0.visit((var1x, var2x) -> iterateFormatted(var2x, 0, var1x, var2) ? Optional.empty() : STOP_ITERATION, var1).isEmpty();
+   public static boolean iterateFormatted(final FormattedText component, final Style rootStyle, final FormattedCharSink output) {
+      return component.visit((style, contents) -> iterateFormatted(contents, 0, style, output) ? Optional.empty() : STOP_ITERATION, rootStyle).isEmpty();
    }
 
-   public static String filterBrokenSurrogates(String var0) {
-      StringBuilder var1 = new StringBuilder();
-      iterate(var0, Style.EMPTY, (var1x, var2, var3) -> {
-         var1.appendCodePoint(var3);
+   public static String filterBrokenSurrogates(final String input) {
+      StringBuilder builder = new StringBuilder();
+      iterate(input, Style.EMPTY, (position, style, codepoint) -> {
+         builder.appendCodePoint(codepoint);
          return true;
       });
-      return var1.toString();
+      return builder.toString();
    }
 
-   public static String getPlainText(FormattedText var0) {
-      StringBuilder var1 = new StringBuilder();
-      iterateFormatted((FormattedText)var0, Style.EMPTY, (var1x, var2, var3) -> {
-         var1.appendCodePoint(var3);
+   public static String getPlainText(final FormattedText input) {
+      StringBuilder builder = new StringBuilder();
+      iterateFormatted((FormattedText)input, Style.EMPTY, (position, style, codepoint) -> {
+         builder.appendCodePoint(codepoint);
          return true;
       });
-      return var1.toString();
+      return builder.toString();
    }
 
    static {

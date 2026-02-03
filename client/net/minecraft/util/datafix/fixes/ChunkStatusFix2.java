@@ -14,19 +14,19 @@ import java.util.Objects;
 public class ChunkStatusFix2 extends DataFix {
    private static final Map<String, String> RENAMES_AND_DOWNGRADES = ImmutableMap.builder().put("structure_references", "empty").put("biomes", "empty").put("base", "surface").put("carved", "carvers").put("liquid_carved", "liquid_carvers").put("decorated", "features").put("lighted", "light").put("mobs_spawned", "spawn").put("finalized", "heightmaps").put("fullchunk", "full").build();
 
-   public ChunkStatusFix2(Schema var1, boolean var2) {
-      super(var1, var2);
+   public ChunkStatusFix2(final Schema schema, final boolean changesType) {
+      super(schema, changesType);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.CHUNK);
-      Type var2 = var1.findFieldType("Level");
-      OpticFinder var3 = DSL.fieldFinder("Level", var2);
-      return this.fixTypeEverywhereTyped("ChunkStatusFix2", var1, this.getOutputSchema().getType(References.CHUNK), (var1x) -> var1x.updateTyped(var3, (var0) -> {
-            Dynamic var1 = (Dynamic)var0.get(DSL.remainderFinder());
-            String var2 = var1.get("Status").asString("empty");
-            String var3 = (String)RENAMES_AND_DOWNGRADES.getOrDefault(var2, "empty");
-            return Objects.equals(var2, var3) ? var0 : var0.set(DSL.remainderFinder(), var1.set("Status", var1.createString(var3)));
+      Type<?> chunkType = this.getInputSchema().getType(References.CHUNK);
+      Type<?> levelType = chunkType.findFieldType("Level");
+      OpticFinder<?> levelF = DSL.fieldFinder("Level", levelType);
+      return this.fixTypeEverywhereTyped("ChunkStatusFix2", chunkType, this.getOutputSchema().getType(References.CHUNK), (input) -> input.updateTyped(levelF, (level) -> {
+            Dynamic<?> tag = (Dynamic)level.get(DSL.remainderFinder());
+            String status = tag.get("Status").asString("empty");
+            String newStatus = (String)RENAMES_AND_DOWNGRADES.getOrDefault(status, "empty");
+            return Objects.equals(status, newStatus) ? level : level.set(DSL.remainderFinder(), tag.set("Status", tag.createString(newStatus)));
          }));
    }
 }

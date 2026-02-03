@@ -9,18 +9,18 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 
 public class FallenTreeConfiguration implements FeatureConfiguration {
-   public static final Codec<FallenTreeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((var0x) -> var0x.trunkProvider), IntProvider.codec(0, 16).fieldOf("log_length").forGetter((var0x) -> var0x.logLength), TreeDecorator.CODEC.listOf().fieldOf("stump_decorators").forGetter((var0x) -> var0x.stumpDecorators), TreeDecorator.CODEC.listOf().fieldOf("log_decorators").forGetter((var0x) -> var0x.logDecorators)).apply(var0, FallenTreeConfiguration::new));
+   public static final Codec<FallenTreeConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((c) -> c.trunkProvider), IntProvider.codec(0, 16).fieldOf("log_length").forGetter((t) -> t.logLength), TreeDecorator.CODEC.listOf().fieldOf("stump_decorators").forGetter((c) -> c.stumpDecorators), TreeDecorator.CODEC.listOf().fieldOf("log_decorators").forGetter((c) -> c.logDecorators)).apply(i, FallenTreeConfiguration::new));
    public final BlockStateProvider trunkProvider;
    public final IntProvider logLength;
    public final List<TreeDecorator> stumpDecorators;
    public final List<TreeDecorator> logDecorators;
 
-   protected FallenTreeConfiguration(BlockStateProvider var1, IntProvider var2, List<TreeDecorator> var3, List<TreeDecorator> var4) {
+   protected FallenTreeConfiguration(final BlockStateProvider trunkProvider, final IntProvider logLength, final List<TreeDecorator> stumpDecorators, final List<TreeDecorator> logDecorators) {
       super();
-      this.trunkProvider = var1;
-      this.logLength = var2;
-      this.stumpDecorators = var3;
-      this.logDecorators = var4;
+      this.trunkProvider = trunkProvider;
+      this.logLength = logLength;
+      this.stumpDecorators = stumpDecorators;
+      this.logDecorators = logDecorators;
    }
 
    public static class FallenTreeConfigurationBuilder {
@@ -29,19 +29,19 @@ public class FallenTreeConfiguration implements FeatureConfiguration {
       private List<TreeDecorator> stumpDecorators = new ArrayList();
       private List<TreeDecorator> logDecorators = new ArrayList();
 
-      public FallenTreeConfigurationBuilder(BlockStateProvider var1, IntProvider var2) {
+      public FallenTreeConfigurationBuilder(final BlockStateProvider trunkProvider, final IntProvider logLength) {
          super();
-         this.trunkProvider = var1;
-         this.logLength = var2;
+         this.trunkProvider = trunkProvider;
+         this.logLength = logLength;
       }
 
-      public FallenTreeConfigurationBuilder stumpDecorators(List<TreeDecorator> var1) {
-         this.stumpDecorators = var1;
+      public FallenTreeConfigurationBuilder stumpDecorators(final List<TreeDecorator> stumpDecorators) {
+         this.stumpDecorators = stumpDecorators;
          return this;
       }
 
-      public FallenTreeConfigurationBuilder logDecorators(List<TreeDecorator> var1) {
-         this.logDecorators = var1;
+      public FallenTreeConfigurationBuilder logDecorators(final List<TreeDecorator> logDecorators) {
+         this.logDecorators = logDecorators;
          return this;
       }
 

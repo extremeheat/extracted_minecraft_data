@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.EnumSet;
 import java.util.Set;
@@ -26,51 +27,51 @@ import org.slf4j.Logger;
 
 public class Heightmap {
    private static final Logger LOGGER = LogUtils.getLogger();
-   static final Predicate<BlockState> NOT_AIR = (var0) -> !var0.isAir();
-   static final Predicate<BlockState> MATERIAL_MOTION_BLOCKING = BlockBehaviour.BlockStateBase::blocksMotion;
+   private static final Predicate<BlockState> NOT_AIR = (input) -> !input.isAir();
+   private static final Predicate<BlockState> MATERIAL_MOTION_BLOCKING = BlockBehaviour.BlockStateBase::blocksMotion;
    private final BitStorage data;
    private final Predicate<BlockState> isOpaque;
    private final ChunkAccess chunk;
 
-   public Heightmap(ChunkAccess var1, Types var2) {
+   public Heightmap(final ChunkAccess chunk, final Types heightmapType) {
       super();
-      this.isOpaque = var2.isOpaque();
-      this.chunk = var1;
-      int var3 = Mth.ceillog2(var1.getHeight() + 1);
-      this.data = new SimpleBitStorage(var3, 256);
+      this.isOpaque = heightmapType.isOpaque();
+      this.chunk = chunk;
+      int heightBits = Mth.ceillog2(chunk.getHeight() + 1);
+      this.data = new SimpleBitStorage(heightBits, 256);
    }
 
-   public static void primeHeightmaps(ChunkAccess var0, Set<Types> var1) {
-      if (!var1.isEmpty()) {
-         int var2 = var1.size();
-         ObjectArrayList var3 = new ObjectArrayList(var2);
-         ObjectListIterator var4 = var3.iterator();
-         int var5 = var0.getHighestSectionPosition() + 16;
-         BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+   public static void primeHeightmaps(final ChunkAccess chunk, final Set<Types> types) {
+      if (!types.isEmpty()) {
+         int size = types.size();
+         ObjectList<Heightmap> heightmaps = new ObjectArrayList(size);
+         ObjectListIterator<Heightmap> iterator = heightmaps.iterator();
+         int highestSectionPosition = chunk.getHighestSectionPosition() + 16;
+         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-         for(int var7 = 0; var7 < 16; ++var7) {
-            for(int var8 = 0; var8 < 16; ++var8) {
-               for(Types var10 : var1) {
-                  var3.add(var0.getOrCreateHeightmapUnprimed(var10));
+         for(int x = 0; x < 16; ++x) {
+            for(int z = 0; z < 16; ++z) {
+               for(Types type : types) {
+                  heightmaps.add(chunk.getOrCreateHeightmapUnprimed(type));
                }
 
-               for(int var12 = var5 - 1; var12 >= var0.getMinY(); --var12) {
-                  var6.set(var7, var12, var8);
-                  BlockState var13 = var0.getBlockState(var6);
-                  if (!var13.is(Blocks.AIR)) {
-                     while(var4.hasNext()) {
-                        Heightmap var11 = (Heightmap)var4.next();
-                        if (var11.isOpaque.test(var13)) {
-                           var11.setHeight(var7, var8, var12 + 1);
-                           var4.remove();
+               for(int y = highestSectionPosition - 1; y >= chunk.getMinY(); --y) {
+                  pos.set(x, y, z);
+                  BlockState state = chunk.getBlockState(pos);
+                  if (!state.is(Blocks.AIR)) {
+                     while(iterator.hasNext()) {
+                        Heightmap heightmap = (Heightmap)iterator.next();
+                        if (heightmap.isOpaque.test(state)) {
+                           heightmap.setHeight(x, z, y + 1);
+                           iterator.remove();
                         }
                      }
 
-                     if (var3.isEmpty()) {
+                     if (heightmaps.isEmpty()) {
                         break;
                      }
 
-                     var4.back(var2);
+                     iterator.back(size);
                   }
                }
             }
@@ -79,28 +80,28 @@ public class Heightmap {
       }
    }
 
-   public boolean update(int var1, int var2, int var3, BlockState var4) {
-      int var5 = this.getFirstAvailable(var1, var3);
-      if (var2 <= var5 - 2) {
+   public boolean update(final int localX, final int localY, final int localZ, final BlockState state) {
+      int firstAvailable = this.getFirstAvailable(localX, localZ);
+      if (localY <= firstAvailable - 2) {
          return false;
       } else {
-         if (this.isOpaque.test(var4)) {
-            if (var2 >= var5) {
-               this.setHeight(var1, var3, var2 + 1);
+         if (this.isOpaque.test(state)) {
+            if (localY >= firstAvailable) {
+               this.setHeight(localX, localZ, localY + 1);
                return true;
             }
-         } else if (var5 - 1 == var2) {
-            BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+         } else if (firstAvailable - 1 == localY) {
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-            for(int var7 = var2 - 1; var7 >= this.chunk.getMinY(); --var7) {
-               var6.set(var1, var7, var3);
-               if (this.isOpaque.test(this.chunk.getBlockState(var6))) {
-                  this.setHeight(var1, var3, var7 + 1);
+            for(int y = localY - 1; y >= this.chunk.getMinY(); --y) {
+               pos.set(localX, y, localZ);
+               if (this.isOpaque.test(this.chunk.getBlockState(pos))) {
+                  this.setHeight(localX, localZ, y + 1);
                   return true;
                }
             }
 
-            this.setHeight(var1, var3, this.chunk.getMinY());
+            this.setHeight(localX, localZ, this.chunk.getMinY());
             return true;
          }
 
@@ -108,29 +109,29 @@ public class Heightmap {
       }
    }
 
-   public int getFirstAvailable(int var1, int var2) {
-      return this.getFirstAvailable(getIndex(var1, var2));
+   public int getFirstAvailable(final int x, final int z) {
+      return this.getFirstAvailable(getIndex(x, z));
    }
 
-   public int getHighestTaken(int var1, int var2) {
-      return this.getFirstAvailable(getIndex(var1, var2)) - 1;
+   public int getHighestTaken(final int x, final int z) {
+      return this.getFirstAvailable(getIndex(x, z)) - 1;
    }
 
-   private int getFirstAvailable(int var1) {
-      return this.data.get(var1) + this.chunk.getMinY();
+   private int getFirstAvailable(final int index) {
+      return this.data.get(index) + this.chunk.getMinY();
    }
 
-   private void setHeight(int var1, int var2, int var3) {
-      this.data.set(getIndex(var1, var2), var3 - this.chunk.getMinY());
+   private void setHeight(final int x, final int z, final int height) {
+      this.data.set(getIndex(x, z), height - this.chunk.getMinY());
    }
 
-   public void setRawData(ChunkAccess var1, Types var2, long[] var3) {
-      long[] var4 = this.data.getRaw();
-      if (var4.length == var3.length) {
-         System.arraycopy(var3, 0, var4, 0, var3.length);
+   public void setRawData(final ChunkAccess chunk, final Types type, final long[] data) {
+      long[] rawData = this.data.getRaw();
+      if (rawData.length == data.length) {
+         System.arraycopy(data, 0, rawData, 0, data.length);
       } else {
-         LOGGER.warn("Ignoring heightmap data for chunk {}, size does not match; expected: {}, got: {}", new Object[]{var1.getPos(), var4.length, var3.length});
-         primeHeightmaps(var1, EnumSet.of(var2));
+         LOGGER.warn("Ignoring heightmap data for chunk {}, size does not match; expected: {}, got: {}", new Object[]{chunk.getPos(), rawData.length, data.length});
+         primeHeightmaps(chunk, EnumSet.of(type));
       }
    }
 
@@ -138,8 +139,8 @@ public class Heightmap {
       return this.data.getRaw();
    }
 
-   private static int getIndex(int var0, int var1) {
-      return var0 + var1 * 16;
+   private static int getIndex(final int x, final int z) {
+      return x + z * 16;
    }
 
    public static enum Usage {
@@ -161,22 +162,22 @@ public class Heightmap {
       WORLD_SURFACE(1, "WORLD_SURFACE", Heightmap.Usage.CLIENT, Heightmap.NOT_AIR),
       OCEAN_FLOOR_WG(2, "OCEAN_FLOOR_WG", Heightmap.Usage.WORLDGEN, Heightmap.MATERIAL_MOTION_BLOCKING),
       OCEAN_FLOOR(3, "OCEAN_FLOOR", Heightmap.Usage.LIVE_WORLD, Heightmap.MATERIAL_MOTION_BLOCKING),
-      MOTION_BLOCKING(4, "MOTION_BLOCKING", Heightmap.Usage.CLIENT, (var0) -> var0.blocksMotion() || !var0.getFluidState().isEmpty()),
-      MOTION_BLOCKING_NO_LEAVES(5, "MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.CLIENT, (var0) -> (var0.blocksMotion() || !var0.getFluidState().isEmpty()) && !(var0.getBlock() instanceof LeavesBlock));
+      MOTION_BLOCKING(4, "MOTION_BLOCKING", Heightmap.Usage.CLIENT, (input) -> input.blocksMotion() || !input.getFluidState().isEmpty()),
+      MOTION_BLOCKING_NO_LEAVES(5, "MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.CLIENT, (input) -> (input.blocksMotion() || !input.getFluidState().isEmpty()) && !(input.getBlock() instanceof LeavesBlock));
 
       public static final Codec<Types> CODEC = StringRepresentable.<Types>fromEnum(Types::values);
-      private static final IntFunction<Types> BY_ID = ByIdMap.<Types>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Types> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+      private static final IntFunction<Types> BY_ID = ByIdMap.<Types>continuous((t) -> t.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, Types> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (t) -> t.id);
       private final int id;
       private final String serializationKey;
       private final Usage usage;
       private final Predicate<BlockState> isOpaque;
 
-      private Types(final int var3, final String var4, final Usage var5, final Predicate<BlockState> var6) {
-         this.id = var3;
-         this.serializationKey = var4;
-         this.usage = var5;
-         this.isOpaque = var6;
+      private Types(final int id, final String serializationKey, final Usage usage, final Predicate<BlockState> isOpaque) {
+         this.id = id;
+         this.serializationKey = serializationKey;
+         this.usage = usage;
+         this.isOpaque = isOpaque;
       }
 
       public String getSerializationKey() {

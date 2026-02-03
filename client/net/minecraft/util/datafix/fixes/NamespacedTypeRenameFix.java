@@ -5,6 +5,7 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
+import com.mojang.datafixers.util.Pair;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
@@ -14,19 +15,19 @@ public class NamespacedTypeRenameFix extends DataFix {
    private final DSL.TypeReference type;
    private final UnaryOperator<String> renamer;
 
-   public NamespacedTypeRenameFix(Schema var1, String var2, DSL.TypeReference var3, UnaryOperator<String> var4) {
-      super(var1, false);
-      this.name = var2;
-      this.type = var3;
-      this.renamer = var4;
+   public NamespacedTypeRenameFix(final Schema outputSchema, final String name, final DSL.TypeReference type, final UnaryOperator<String> renamer) {
+      super(outputSchema, false);
+      this.name = name;
+      this.type = type;
+      this.renamer = renamer;
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = DSL.named(this.type.typeName(), NamespacedSchema.namespacedString());
-      if (!Objects.equals(var1, this.getInputSchema().getType(this.type))) {
+      Type<Pair<String, String>> fieldType = DSL.named(this.type.typeName(), NamespacedSchema.namespacedString());
+      if (!Objects.equals(fieldType, this.getInputSchema().getType(this.type))) {
          throw new IllegalStateException("\"" + this.type.typeName() + "\" is not what was expected.");
       } else {
-         return this.fixTypeEverywhere(this.name, var1, (var1x) -> (var1) -> var1.mapSecond(this.renamer));
+         return this.fixTypeEverywhere(this.name, fieldType, (ops) -> (input) -> input.mapSecond(this.renamer));
       }
    }
 }

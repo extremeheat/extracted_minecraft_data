@@ -10,8 +10,8 @@ import org.jspecify.annotations.Nullable;
 public class GenericMessageScreen extends Screen {
    private @Nullable FocusableTextWidget textWidget;
 
-   public GenericMessageScreen(Component var1) {
-      super(var1);
+   public GenericMessageScreen(final Component title) {
+      super(title);
    }
 
    protected void init() {
@@ -38,9 +38,9 @@ public class GenericMessageScreen extends Screen {
       return false;
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderPanorama(var1, var4);
-      this.renderBlurredBackground(var1);
-      this.renderMenuBackground(var1);
+   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      this.renderPanorama(graphics, a);
+      this.renderBlurredBackground(graphics);
+      this.renderMenuBackground(graphics);
    }
 }

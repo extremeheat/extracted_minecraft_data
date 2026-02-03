@@ -12,23 +12,23 @@ public class RemotePlayer extends AbstractClientPlayer {
    private Vec3 lerpDeltaMovement;
    private int lerpDeltaMovementSteps;
 
-   public RemotePlayer(ClientLevel var1, GameProfile var2) {
-      super(var1, var2);
+   public RemotePlayer(final ClientLevel level, final GameProfile gameProfile) {
+      super(level, gameProfile);
       this.lerpDeltaMovement = Vec3.ZERO;
       this.noPhysics = true;
    }
 
-   public boolean shouldRenderAtSqrDistance(double var1) {
-      double var3 = this.getBoundingBox().getSize() * 10.0;
-      if (Double.isNaN(var3)) {
-         var3 = 1.0;
+   public boolean shouldRenderAtSqrDistance(final double distance) {
+      double size = this.getBoundingBox().getSize() * 10.0;
+      if (Double.isNaN(size)) {
+         size = 1.0;
       }
 
-      var3 *= 64.0 * getViewScale();
-      return var1 < var3 * var3;
+      size *= 64.0 * getViewScale();
+      return distance < size * size;
    }
 
-   public boolean hurtClient(DamageSource var1) {
+   public boolean hurtClient(final DamageSource source) {
       return true;
    }
 
@@ -55,22 +55,22 @@ public class RemotePlayer extends AbstractClientPlayer {
       this.updateSwingTime();
       this.updateBob();
 
-      try (Zone var1 = Profiler.get().zone("push")) {
+      try (Zone ignored = Profiler.get().zone("push")) {
          this.pushEntities();
       }
 
    }
 
-   public void lerpMotion(Vec3 var1) {
-      this.lerpDeltaMovement = var1;
+   public void lerpMotion(final Vec3 movement) {
+      this.lerpDeltaMovement = movement;
       this.lerpDeltaMovementSteps = this.getType().updateInterval() + 1;
    }
 
    protected void updatePlayerPose() {
    }
 
-   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
-      super.recreateFromPacket(var1);
+   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
+      super.recreateFromPacket(packet);
       this.setOldPosAndRot();
    }
 }

@@ -3,7 +3,7 @@ package net.minecraft.commands;
 @FunctionalInterface
 public interface CommandResultCallback {
    CommandResultCallback EMPTY = new CommandResultCallback() {
-      public void onResult(boolean var1, int var2) {
+      public void onResult(final boolean success, final int result) {
       }
 
       public String toString() {
@@ -11,23 +11,23 @@ public interface CommandResultCallback {
       }
    };
 
-   void onResult(boolean var1, int var2);
+   void onResult(boolean success, int result);
 
-   default void onSuccess(int var1) {
-      this.onResult(true, var1);
+   default void onSuccess(final int result) {
+      this.onResult(true, result);
    }
 
    default void onFailure() {
       this.onResult(false, 0);
    }
 
-   static CommandResultCallback chain(CommandResultCallback var0, CommandResultCallback var1) {
-      if (var0 == EMPTY) {
-         return var1;
+   static CommandResultCallback chain(final CommandResultCallback first, final CommandResultCallback second) {
+      if (first == EMPTY) {
+         return second;
       } else {
-         return var1 == EMPTY ? var0 : (var2, var3) -> {
-            var0.onResult(var2, var3);
-            var1.onResult(var2, var3);
+         return second == EMPTY ? first : (success, result) -> {
+            first.onResult(success, result);
+            second.onResult(success, result);
          };
       }
    }

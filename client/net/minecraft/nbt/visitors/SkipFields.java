@@ -9,30 +9,30 @@ import net.minecraft.nbt.TagType;
 public class SkipFields extends CollectToTag {
    private final Deque<FieldTree> stack = new ArrayDeque();
 
-   public SkipFields(FieldSelector... var1) {
+   public SkipFields(final FieldSelector... wantedFields) {
       super();
-      FieldTree var2 = FieldTree.createRoot();
+      FieldTree rootFrame = FieldTree.createRoot();
 
-      for(FieldSelector var6 : var1) {
-         var2.addEntry(var6);
+      for(FieldSelector wantedField : wantedFields) {
+         rootFrame.addEntry(wantedField);
       }
 
-      this.stack.push(var2);
+      this.stack.push(rootFrame);
    }
 
-   public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1, String var2) {
-      FieldTree var3 = (FieldTree)this.stack.element();
-      if (var3.isSelected(var1, var2)) {
+   public StreamTagVisitor.EntryResult visitEntry(final TagType<?> type, final String id) {
+      FieldTree currentFrame = (FieldTree)this.stack.element();
+      if (currentFrame.isSelected(type, id)) {
          return StreamTagVisitor.EntryResult.SKIP;
       } else {
-         if (var1 == CompoundTag.TYPE) {
-            FieldTree var4 = (FieldTree)var3.fieldsToRecurse().get(var2);
-            if (var4 != null) {
-               this.stack.push(var4);
+         if (type == CompoundTag.TYPE) {
+            FieldTree newFrame = (FieldTree)currentFrame.fieldsToRecurse().get(id);
+            if (newFrame != null) {
+               this.stack.push(newFrame);
             }
          }
 
-         return super.visitEntry(var1, var2);
+         return super.visitEntry(type, id);
       }
    }
 

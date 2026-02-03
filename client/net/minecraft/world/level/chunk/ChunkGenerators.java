@@ -11,9 +11,9 @@ public class ChunkGenerators {
       super();
    }
 
-   public static MapCodec<? extends ChunkGenerator> bootstrap(Registry<MapCodec<? extends ChunkGenerator>> var0) {
-      Registry.register(var0, (String)"noise", NoiseBasedChunkGenerator.CODEC);
-      Registry.register(var0, (String)"flat", FlatLevelSource.CODEC);
-      return (MapCodec)Registry.register(var0, (String)"debug", DebugLevelSource.CODEC);
+   public static MapCodec<? extends ChunkGenerator> bootstrap(final Registry<MapCodec<? extends ChunkGenerator>> registry) {
+      Registry.register(registry, (String)"noise", NoiseBasedChunkGenerator.CODEC);
+      Registry.register(registry, (String)"flat", FlatLevelSource.CODEC);
+      return (MapCodec)Registry.register(registry, (String)"debug", DebugLevelSource.CODEC);
    }
 }

@@ -29,77 +29,77 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements ListBac
    private final NonNullList<ItemStack> items;
    private int lastInteractedSlot;
 
-   public ChiseledBookShelfBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.CHISELED_BOOKSHELF, var1, var2);
+   public ChiseledBookShelfBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.CHISELED_BOOKSHELF, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(6, ItemStack.EMPTY);
       this.lastInteractedSlot = -1;
    }
 
-   private void updateState(int var1) {
-      if (var1 >= 0 && var1 < 6) {
-         this.lastInteractedSlot = var1;
-         BlockState var2 = this.getBlockState();
+   private void updateState(final int interactedSlot) {
+      if (interactedSlot >= 0 && interactedSlot < 6) {
+         this.lastInteractedSlot = interactedSlot;
+         BlockState updatedState = this.getBlockState();
 
-         for(int var3 = 0; var3 < ChiseledBookShelfBlock.SLOT_OCCUPIED_PROPERTIES.size(); ++var3) {
-            boolean var4 = !this.getItem(var3).isEmpty();
-            BooleanProperty var5 = (BooleanProperty)ChiseledBookShelfBlock.SLOT_OCCUPIED_PROPERTIES.get(var3);
-            var2 = (BlockState)var2.setValue(var5, var4);
+         for(int slot = 0; slot < ChiseledBookShelfBlock.SLOT_OCCUPIED_PROPERTIES.size(); ++slot) {
+            boolean slotIsOccupied = !this.getItem(slot).isEmpty();
+            BooleanProperty slotProperty = (BooleanProperty)ChiseledBookShelfBlock.SLOT_OCCUPIED_PROPERTIES.get(slot);
+            updatedState = (BlockState)updatedState.setValue(slotProperty, slotIsOccupied);
          }
 
-         ((Level)Objects.requireNonNull(this.level)).setBlock(this.worldPosition, var2, 3);
-         this.level.gameEvent(GameEvent.BLOCK_CHANGE, this.worldPosition, GameEvent.Context.of(var2));
+         ((Level)Objects.requireNonNull(this.level)).setBlock(this.worldPosition, updatedState, 3);
+         this.level.gameEvent(GameEvent.BLOCK_CHANGE, this.worldPosition, GameEvent.Context.of(updatedState));
       } else {
-         LOGGER.error("Expected slot 0-5, got {}", var1);
+         LOGGER.error("Expected slot 0-5, got {}", interactedSlot);
       }
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
       this.items.clear();
-      ContainerHelper.loadAllItems(var1, this.items);
-      this.lastInteractedSlot = var1.getIntOr("last_interacted_slot", -1);
+      ContainerHelper.loadAllItems(input, this.items);
+      this.lastInteractedSlot = input.getIntOr("last_interacted_slot", -1);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      ContainerHelper.saveAllItems(var1, this.items, true);
-      var1.putInt("last_interacted_slot", this.lastInteractedSlot);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      ContainerHelper.saveAllItems(output, this.items, true);
+      output.putInt("last_interacted_slot", this.lastInteractedSlot);
    }
 
    public int getMaxStackSize() {
       return 1;
    }
 
-   public boolean acceptsItemType(ItemStack var1) {
-      return var1.is(ItemTags.BOOKSHELF_BOOKS);
+   public boolean acceptsItemType(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.BOOKSHELF_BOOKS);
    }
 
-   public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = (ItemStack)Objects.requireNonNullElse((ItemStack)this.getItems().get(var1), ItemStack.EMPTY);
-      this.getItems().set(var1, ItemStack.EMPTY);
-      if (!var3.isEmpty()) {
-         this.updateState(var1);
+   public ItemStack removeItem(final int slot, final int count) {
+      ItemStack retrievedItem = (ItemStack)Objects.requireNonNullElse((ItemStack)this.getItems().get(slot), ItemStack.EMPTY);
+      this.getItems().set(slot, ItemStack.EMPTY);
+      if (!retrievedItem.isEmpty()) {
+         this.updateState(slot);
       }
 
-      return var3;
+      return retrievedItem;
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      if (this.acceptsItemType(var2)) {
-         this.getItems().set(var1, var2);
-         this.updateState(var1);
-      } else if (var2.isEmpty()) {
-         this.removeItem(var1, this.getMaxStackSize());
+   public void setItem(final int slot, final ItemStack itemStack) {
+      if (this.acceptsItemType(itemStack)) {
+         this.getItems().set(slot, itemStack);
+         this.updateState(slot);
+      } else if (itemStack.isEmpty()) {
+         this.removeItem(slot, this.getMaxStackSize());
       }
 
    }
 
-   public boolean canTakeItem(Container var1, int var2, ItemStack var3) {
-      return var1.hasAnyMatching((var2x) -> {
-         if (var2x.isEmpty()) {
+   public boolean canTakeItem(final Container into, final int slot, final ItemStack itemStack) {
+      return into.hasAnyMatching((toItem) -> {
+         if (toItem.isEmpty()) {
             return true;
          } else {
-            return ItemStack.isSameItemSameComponents(var3, var2x) && var2x.getCount() + var3.getCount() <= var1.getMaxStackSize(var2x);
+            return ItemStack.isSameItemSameComponents(itemStack, toItem) && toItem.getCount() + itemStack.getCount() <= into.getMaxStackSize(toItem);
          }
       });
    }
@@ -108,25 +108,25 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements ListBac
       return this.items;
    }
 
-   public boolean stillValid(Player var1) {
-      return Container.stillValidBlockEntity(this, var1);
+   public boolean stillValid(final Player player) {
+      return Container.stillValidBlockEntity(this, player);
    }
 
    public int getLastInteractedSlot() {
       return this.lastInteractedSlot;
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      super.applyImplicitComponents(var1);
-      ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.items);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      super.applyImplicitComponents(components);
+      ((ItemContainerContents)components.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.items);
    }
 
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
-      var1.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.items));
+   protected void collectImplicitComponents(final DataComponentMap.Builder components) {
+      super.collectImplicitComponents(components);
+      components.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.items));
    }
 
-   public void removeComponentsFromTag(ValueOutput var1) {
-      var1.discard("Items");
+   public void removeComponentsFromTag(final ValueOutput output) {
+      output.discard("Items");
    }
 }

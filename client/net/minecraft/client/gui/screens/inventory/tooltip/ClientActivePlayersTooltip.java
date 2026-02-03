@@ -12,46 +12,45 @@ public class ClientActivePlayersTooltip implements ClientTooltipComponent {
    private static final int PADDING = 2;
    private final List<PlayerSkinRenderCache.RenderInfo> activePlayers;
 
-   public ClientActivePlayersTooltip(ActivePlayersTooltip var1) {
+   public ClientActivePlayersTooltip(final ActivePlayersTooltip activePlayersTooltip) {
       super();
-      this.activePlayers = var1.profiles();
+      this.activePlayers = activePlayersTooltip.profiles();
    }
 
-   public int getHeight(Font var1) {
+   public int getHeight(final Font font) {
       return this.activePlayers.size() * 12 + 2;
    }
 
-   private static String getName(PlayerSkinRenderCache.RenderInfo var0) {
-      return var0.gameProfile().name();
+   private static String getName(final PlayerSkinRenderCache.RenderInfo activePlayer) {
+      return activePlayer.gameProfile().name();
    }
 
-   public int getWidth(Font var1) {
-      int var2 = 0;
+   public int getWidth(final Font font) {
+      int widest = 0;
 
-      for(PlayerSkinRenderCache.RenderInfo var4 : this.activePlayers) {
-         int var5 = var1.width(getName(var4));
-         if (var5 > var2) {
-            var2 = var5;
+      for(PlayerSkinRenderCache.RenderInfo activePlayer : this.activePlayers) {
+         int width = font.width(getName(activePlayer));
+         if (width > widest) {
+            widest = width;
          }
       }
 
-      return var2 + 10 + 6;
+      return widest + 10 + 6;
    }
 
-   public void renderImage(Font var1, int var2, int var3, int var4, int var5, GuiGraphics var6) {
-      for(int var7 = 0; var7 < this.activePlayers.size(); ++var7) {
-         PlayerSkinRenderCache.RenderInfo var8 = (PlayerSkinRenderCache.RenderInfo)this.activePlayers.get(var7);
-         int var9 = var3 + 2 + var7 * 12;
-         PlayerFaceRenderer.draw(var6, var8.playerSkin(), var2 + 2, var9, 10);
-         var6.drawString(var1, (String)getName(var8), var2 + 10 + 4, var9 + 2, -1);
+   public void renderImage(final Font font, final int x, final int y, final int w, final int h, final GuiGraphics graphics) {
+      for(int i = 0; i < this.activePlayers.size(); ++i) {
+         PlayerSkinRenderCache.RenderInfo activePlayer = (PlayerSkinRenderCache.RenderInfo)this.activePlayers.get(i);
+         int y1 = y + 2 + i * 12;
+         PlayerFaceRenderer.draw(graphics, activePlayer.playerSkin(), x + 2, y1, 10);
+         graphics.drawString(font, (String)getName(activePlayer), x + 10 + 4, y1 + 2, -1);
       }
 
    }
 
    public static record ActivePlayersTooltip(List<PlayerSkinRenderCache.RenderInfo> profiles) implements TooltipComponent {
-      public ActivePlayersTooltip(List<PlayerSkinRenderCache.RenderInfo> var1) {
+      public ActivePlayersTooltip {
          super();
-         this.profiles = var1;
       }
    }
 }

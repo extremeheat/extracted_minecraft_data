@@ -14,76 +14,74 @@ public class Dictionary<S> {
       super();
    }
 
-   public <T> NamedRule<S, T> put(Atom<T> var1, Rule<S, T> var2) {
-      Entry var3 = (Entry)this.terms.computeIfAbsent(var1, Entry::new);
-      if (var3.value != null) {
-         throw new IllegalArgumentException("Trying to override rule: " + String.valueOf(var1));
+   public <T> NamedRule<S, T> put(final Atom<T> name, final Rule<S, T> entry) {
+      Entry<S, T> holder = (Entry)this.terms.computeIfAbsent(name, Entry::new);
+      if (holder.value != null) {
+         throw new IllegalArgumentException("Trying to override rule: " + String.valueOf(name));
       } else {
-         var3.value = var2;
-         return var3;
+         holder.value = entry;
+         return holder;
       }
    }
 
-   public <T> NamedRule<S, T> putComplex(Atom<T> var1, Term<S> var2, Rule.RuleAction<S, T> var3) {
-      return this.put(var1, Rule.fromTerm(var2, var3));
+   public <T> NamedRule<S, T> putComplex(final Atom<T> name, final Term<S> term, final Rule.RuleAction<S, T> action) {
+      return this.put(name, Rule.fromTerm(term, action));
    }
 
-   public <T> NamedRule<S, T> put(Atom<T> var1, Term<S> var2, Rule.SimpleRuleAction<S, T> var3) {
-      return this.put(var1, Rule.fromTerm(var2, var3));
+   public <T> NamedRule<S, T> put(final Atom<T> name, final Term<S> term, final Rule.SimpleRuleAction<S, T> action) {
+      return this.put(name, Rule.fromTerm(term, action));
    }
 
    public void checkAllBound() {
-      List var1 = this.terms.entrySet().stream().filter((var0) -> ((Entry)var0.getValue()).value == null).map(Map.Entry::getKey).toList();
-      if (!var1.isEmpty()) {
-         throw new IllegalStateException("Unbound names: " + String.valueOf(var1));
+      List<? extends Atom<?>> unboundNames = this.terms.entrySet().stream().filter((e) -> ((Entry)e.getValue()).value == null).map(Map.Entry::getKey).toList();
+      if (!unboundNames.isEmpty()) {
+         throw new IllegalStateException("Unbound names: " + String.valueOf(unboundNames));
       }
    }
 
-   public <T> NamedRule<S, T> getOrThrow(Atom<T> var1) {
-      return (NamedRule)Objects.requireNonNull((Entry)this.terms.get(var1), () -> "No rule called " + String.valueOf(var1));
+   public <T> NamedRule<S, T> getOrThrow(final Atom<T> name) {
+      return (NamedRule)Objects.requireNonNull((Entry)this.terms.get(name), () -> "No rule called " + String.valueOf(name));
    }
 
-   public <T> NamedRule<S, T> forward(Atom<T> var1) {
-      return this.getOrCreateEntry(var1);
+   public <T> NamedRule<S, T> forward(final Atom<T> name) {
+      return this.getOrCreateEntry(name);
    }
 
-   private <T> Entry<S, T> getOrCreateEntry(Atom<T> var1) {
-      return (Entry)this.terms.computeIfAbsent(var1, Entry::new);
+   private <T> Entry<S, T> getOrCreateEntry(final Atom<T> name) {
+      return (Entry)this.terms.computeIfAbsent(name, Entry::new);
    }
 
-   public <T> Term<S> named(Atom<T> var1) {
-      return new Reference(this.getOrCreateEntry(var1), var1);
+   public <T> Term<S> named(final Atom<T> name) {
+      return new Reference(this.getOrCreateEntry(name), name);
    }
 
-   public <T> Term<S> namedWithAlias(Atom<T> var1, Atom<T> var2) {
-      return new Reference(this.getOrCreateEntry(var1), var2);
+   public <T> Term<S> namedWithAlias(final Atom<T> nameToParse, final Atom<T> nameToStore) {
+      return new Reference(this.getOrCreateEntry(nameToParse), nameToStore);
    }
 
-   static record Reference<S, T>(Entry<S, T> ruleToParse, Atom<T> nameToStore) implements Term<S> {
-      Reference(Entry<S, T> var1, Atom<T> var2) {
+   private static record Reference<S, T>(Entry<S, T> ruleToParse, Atom<T> nameToStore) implements Term<S> {
+      private Reference {
          super();
-         this.ruleToParse = var1;
-         this.nameToStore = var2;
       }
 
-      public boolean parse(ParseState<S> var1, Scope var2, Control var3) {
-         Object var4 = var1.parse(this.ruleToParse);
-         if (var4 == null) {
+      public boolean parse(final ParseState<S> state, final Scope scope, final Control control) {
+         T result = (T)state.parse(this.ruleToParse);
+         if (result == null) {
             return false;
          } else {
-            var2.put(this.nameToStore, var4);
+            scope.put(this.nameToStore, result);
             return true;
          }
       }
    }
 
-   static class Entry<S, T> implements NamedRule<S, T>, Supplier<String> {
+   private static class Entry<S, T> implements NamedRule<S, T>, Supplier<String> {
       private final Atom<T> name;
-      @Nullable Rule<S, T> value;
+      private @Nullable Rule<S, T> value;
 
-      private Entry(Atom<T> var1) {
+      private Entry(final Atom<T> name) {
          super();
-         this.name = var1;
+         this.name = name;
       }
 
       public Atom<T> name() {
@@ -96,11 +94,6 @@ public class Dictionary<S> {
 
       public String get() {
          return "Unbound rule " + String.valueOf(this.name);
-      }
-
-      // $FF: synthetic method
-      public Object get() {
-         return this.get();
       }
    }
 }

@@ -12,52 +12,51 @@ import net.minecraft.commands.arguments.SignedArgument;
 import org.jspecify.annotations.Nullable;
 
 public record SignableCommand<S>(List<Argument<S>> arguments) {
-   public SignableCommand(List<Argument<S>> var1) {
+   public SignableCommand {
       super();
-      this.arguments = var1;
    }
 
-   public static <S> boolean hasSignableArguments(ParseResults<S> var0) {
-      return !of(var0).arguments().isEmpty();
+   public static <S> boolean hasSignableArguments(final ParseResults<S> command) {
+      return !of(command).arguments().isEmpty();
    }
 
-   public static <S> SignableCommand<S> of(ParseResults<S> var0) {
-      String var1 = var0.getReader().getString();
-      CommandContextBuilder var2 = var0.getContext();
-      CommandContextBuilder var3 = var2;
+   public static <S> SignableCommand<S> of(final ParseResults<S> command) {
+      String commandString = command.getReader().getString();
+      CommandContextBuilder<S> rootContext = command.getContext();
+      CommandContextBuilder<S> context = rootContext;
 
-      List var4;
-      CommandContextBuilder var5;
-      for(var4 = collectArguments(var1, var2); (var5 = var3.getChild()) != null && var5.getRootNode() != var2.getRootNode(); var3 = var5) {
-         var4.addAll(collectArguments(var1, var5));
+      List<Argument<S>> arguments;
+      CommandContextBuilder<S> child;
+      for(arguments = collectArguments(commandString, rootContext); (child = context.getChild()) != null && child.getRootNode() != rootContext.getRootNode(); context = child) {
+         arguments.addAll(collectArguments(commandString, child));
       }
 
-      return new SignableCommand<S>(var4);
+      return new SignableCommand<S>(arguments);
    }
 
-   private static <S> List<Argument<S>> collectArguments(String var0, CommandContextBuilder<S> var1) {
-      ArrayList var2 = new ArrayList();
+   private static <S> List<Argument<S>> collectArguments(final String commandString, final CommandContextBuilder<S> context) {
+      List<Argument<S>> arguments = new ArrayList();
 
-      for(ParsedCommandNode var4 : var1.getNodes()) {
-         CommandNode var6 = var4.getNode();
-         if (var6 instanceof ArgumentCommandNode var5) {
-            if (var5.getType() instanceof SignedArgument) {
-               ParsedArgument var8 = (ParsedArgument)var1.getArguments().get(var5.getName());
-               if (var8 != null) {
-                  String var7 = var8.getRange().get(var0);
-                  var2.add(new Argument(var5, var7));
+      for(ParsedCommandNode<S> node : context.getNodes()) {
+         CommandNode var6 = node.getNode();
+         if (var6 instanceof ArgumentCommandNode<S, ?> argument) {
+            if (argument.getType() instanceof SignedArgument) {
+               ParsedArgument<S, ?> parsed = (ParsedArgument)context.getArguments().get(argument.getName());
+               if (parsed != null) {
+                  String value = parsed.getRange().get(commandString);
+                  arguments.add(new Argument(argument, value));
                }
             }
          }
       }
 
-      return var2;
+      return arguments;
    }
 
-   public @Nullable Argument<S> getArgument(String var1) {
-      for(Argument var3 : this.arguments) {
-         if (var1.equals(var3.name())) {
-            return var3;
+   public @Nullable Argument<S> getArgument(final String name) {
+      for(Argument<S> argument : this.arguments) {
+         if (name.equals(argument.name())) {
+            return argument;
          }
       }
 
@@ -65,10 +64,8 @@ public record SignableCommand<S>(List<Argument<S>> arguments) {
    }
 
    public static record Argument<S>(ArgumentCommandNode<S, ?> node, String value) {
-      public Argument(ArgumentCommandNode<S, ?> var1, String var2) {
+      public Argument {
          super();
-         this.node = var1;
-         this.value = var2;
       }
 
       public String name() {

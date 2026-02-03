@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
 public class CopperChestBlock extends ChestBlock {
-   public static final MapCodec<CopperChestBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperChestBlock::getState), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(var0, CopperChestBlock::new));
+   public static final MapCodec<CopperChestBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperChestBlock::getState), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(i, CopperChestBlock::new));
    private static final Map<Block, Supplier<Block>> COPPER_TO_COPPER_CHEST_MAPPING;
    private final WeatheringCopper.WeatherState weatherState;
 
@@ -32,81 +32,81 @@ public class CopperChestBlock extends ChestBlock {
       return CODEC;
    }
 
-   public CopperChestBlock(WeatheringCopper.WeatherState var1, SoundEvent var2, SoundEvent var3, BlockBehaviour.Properties var4) {
-      super(() -> BlockEntityType.CHEST, var2, var3, var4);
-      this.weatherState = var1;
+   public CopperChestBlock(final WeatheringCopper.WeatherState weatherState, final SoundEvent openSound, final SoundEvent closeSound, final BlockBehaviour.Properties properties) {
+      super(() -> BlockEntityType.CHEST, openSound, closeSound, properties);
+      this.weatherState = weatherState;
    }
 
-   public boolean chestCanConnectTo(BlockState var1) {
-      return var1.is(BlockTags.COPPER_CHESTS) && var1.hasProperty(ChestBlock.TYPE);
+   public boolean chestCanConnectTo(final BlockState blockState) {
+      return blockState.is(BlockTags.COPPER_CHESTS) && blockState.hasProperty(ChestBlock.TYPE);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = super.getStateForPlacement(var1);
-      return getLeastOxidizedChestOfConnectedBlocks(var2, var1.getLevel(), var1.getClickedPos());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState state = super.getStateForPlacement(context);
+      return getLeastOxidizedChestOfConnectedBlocks(state, context.getLevel(), context.getClickedPos());
    }
 
-   private static BlockState getLeastOxidizedChestOfConnectedBlocks(BlockState var0, Level var1, BlockPos var2) {
-      BlockState var3 = var1.getBlockState(var2.relative(getConnectedDirection(var0)));
-      if (!((ChestType)var0.getValue(ChestBlock.TYPE)).equals(ChestType.SINGLE)) {
-         Block var6 = var0.getBlock();
+   private static BlockState getLeastOxidizedChestOfConnectedBlocks(final BlockState state, final Level level, final BlockPos pos) {
+      BlockState connectedState = level.getBlockState(pos.relative(getConnectedDirection(state)));
+      if (!((ChestType)state.getValue(ChestBlock.TYPE)).equals(ChestType.SINGLE)) {
+         Block var6 = state.getBlock();
          if (var6 instanceof CopperChestBlock) {
-            CopperChestBlock var4 = (CopperChestBlock)var6;
-            var6 = var3.getBlock();
+            CopperChestBlock copperChestBlock = (CopperChestBlock)var6;
+            var6 = connectedState.getBlock();
             if (var6 instanceof CopperChestBlock) {
-               CopperChestBlock var5 = (CopperChestBlock)var6;
-               BlockState var10 = var0;
-               BlockState var7 = var3;
-               if (var4.isWaxed() != var5.isWaxed()) {
-                  var10 = (BlockState)unwaxBlock(var4, var0).orElse(var0);
-                  var7 = (BlockState)unwaxBlock(var5, var3).orElse(var3);
+               CopperChestBlock connectedCopperChestBlock = (CopperChestBlock)var6;
+               BlockState updatedBlockState = state;
+               BlockState connectedPredictedBlockState = connectedState;
+               if (copperChestBlock.isWaxed() != connectedCopperChestBlock.isWaxed()) {
+                  updatedBlockState = (BlockState)unwaxBlock(copperChestBlock, state).orElse(state);
+                  connectedPredictedBlockState = (BlockState)unwaxBlock(connectedCopperChestBlock, connectedState).orElse(connectedState);
                }
 
-               Block var8 = var4.weatherState.ordinal() <= var5.weatherState.ordinal() ? var10.getBlock() : var7.getBlock();
-               return var8.withPropertiesOf(var10);
+               Block leastOxidizedBlock = copperChestBlock.weatherState.ordinal() <= connectedCopperChestBlock.weatherState.ordinal() ? updatedBlockState.getBlock() : connectedPredictedBlockState.getBlock();
+               return leastOxidizedBlock.withPropertiesOf(updatedBlockState);
             }
          }
       }
 
-      return var0;
+      return state;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      BlockState var9 = super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
-      if (this.chestCanConnectTo(var7)) {
-         ChestType var10 = (ChestType)var9.getValue(ChestBlock.TYPE);
-         if (!var10.equals(ChestType.SINGLE) && getConnectedDirection(var9) == var5) {
-            return var7.getBlock().withPropertiesOf(var9);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      BlockState blockState = super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
+      if (this.chestCanConnectTo(neighbourState)) {
+         ChestType chestType = (ChestType)blockState.getValue(ChestBlock.TYPE);
+         if (!chestType.equals(ChestType.SINGLE) && getConnectedDirection(blockState) == directionToNeighbour) {
+            return neighbourState.getBlock().withPropertiesOf(blockState);
          }
       }
 
-      return var9;
+      return blockState;
    }
 
-   private static Optional<BlockState> unwaxBlock(CopperChestBlock var0, BlockState var1) {
-      return !var0.isWaxed() ? Optional.of(var1) : Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var1.getBlock())).map((var1x) -> var1x.withPropertiesOf(var1));
+   private static Optional<BlockState> unwaxBlock(final CopperChestBlock copperChestBlock, final BlockState state) {
+      return !copperChestBlock.isWaxed() ? Optional.of(state) : Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(state.getBlock())).map((b) -> b.withPropertiesOf(state));
    }
 
    public WeatheringCopper.WeatherState getState() {
       return this.weatherState;
    }
 
-   public static BlockState getFromCopperBlock(Block var0, Direction var1, Level var2, BlockPos var3) {
+   public static BlockState getFromCopperBlock(final Block copperBlock, final Direction facing, final Level level, final BlockPos pos) {
       Map var10000 = COPPER_TO_COPPER_CHEST_MAPPING;
       Block var10002 = Blocks.COPPER_CHEST;
       Objects.requireNonNull(var10002);
-      CopperChestBlock var4 = (CopperChestBlock)((Supplier)var10000.getOrDefault(var0, var10002::asBlock)).get();
-      ChestType var5 = var4.getChestType(var2, var3, var1);
-      BlockState var6 = (BlockState)((BlockState)var4.defaultBlockState().setValue(FACING, var1)).setValue(TYPE, var5);
-      return getLeastOxidizedChestOfConnectedBlocks(var6, var2, var3);
+      CopperChestBlock block = (CopperChestBlock)((Supplier)var10000.getOrDefault(copperBlock, var10002::asBlock)).get();
+      ChestType chestType = block.getChestType(level, pos, facing);
+      BlockState state = (BlockState)((BlockState)block.defaultBlockState().setValue(FACING, facing)).setValue(TYPE, chestType);
+      return getLeastOxidizedChestOfConnectedBlocks(state, level, pos);
    }
 
    public boolean isWaxed() {
       return true;
    }
 
-   public boolean shouldChangedStateKeepBlockEntity(BlockState var1) {
-      return var1.is(BlockTags.COPPER_CHESTS);
+   public boolean shouldChangedStateKeepBlockEntity(final BlockState oldState) {
+      return oldState.is(BlockTags.COPPER_CHESTS);
    }
 
    static {

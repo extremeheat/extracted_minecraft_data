@@ -12,53 +12,53 @@ public class PlacementInfo {
    private final List<Ingredient> ingredients;
    private final IntList slotsToIngredientIndex;
 
-   private PlacementInfo(List<Ingredient> var1, IntList var2) {
+   private PlacementInfo(final List<Ingredient> ingredients, final IntList slotsToIngredientIndex) {
       super();
-      this.ingredients = var1;
-      this.slotsToIngredientIndex = var2;
+      this.ingredients = ingredients;
+      this.slotsToIngredientIndex = slotsToIngredientIndex;
    }
 
-   public static PlacementInfo create(Ingredient var0) {
-      return var0.isEmpty() ? NOT_PLACEABLE : new PlacementInfo(List.of(var0), IntList.of(0));
+   public static PlacementInfo create(final Ingredient ingredient) {
+      return ingredient.isEmpty() ? NOT_PLACEABLE : new PlacementInfo(List.of(ingredient), IntList.of(0));
    }
 
-   public static PlacementInfo createFromOptionals(List<Optional<Ingredient>> var0) {
-      int var1 = var0.size();
-      ArrayList var2 = new ArrayList(var1);
-      IntArrayList var3 = new IntArrayList(var1);
-      int var4 = 0;
+   public static PlacementInfo createFromOptionals(final List<Optional<Ingredient>> ingredients) {
+      int ingredientCount = ingredients.size();
+      List<Ingredient> presentIngredients = new ArrayList(ingredientCount);
+      IntList slotsToIngredientIndex = new IntArrayList(ingredientCount);
+      int placementIndex = 0;
 
-      for(Optional var6 : var0) {
-         if (var6.isPresent()) {
-            Ingredient var7 = (Ingredient)var6.get();
-            if (var7.isEmpty()) {
+      for(Optional<Ingredient> maybeIngredient : ingredients) {
+         if (maybeIngredient.isPresent()) {
+            Ingredient ingredient = (Ingredient)maybeIngredient.get();
+            if (ingredient.isEmpty()) {
                return NOT_PLACEABLE;
             }
 
-            var2.add(var7);
-            var3.add(var4++);
+            presentIngredients.add(ingredient);
+            slotsToIngredientIndex.add(placementIndex++);
          } else {
-            var3.add(-1);
+            slotsToIngredientIndex.add(-1);
          }
       }
 
-      return new PlacementInfo(var2, var3);
+      return new PlacementInfo(presentIngredients, slotsToIngredientIndex);
    }
 
-   public static PlacementInfo create(List<Ingredient> var0) {
-      int var1 = var0.size();
-      IntArrayList var2 = new IntArrayList(var1);
+   public static PlacementInfo create(final List<Ingredient> ingredients) {
+      int ingredientCount = ingredients.size();
+      IntList slotsToIngredientIndex = new IntArrayList(ingredientCount);
 
-      for(int var3 = 0; var3 < var1; ++var3) {
-         Ingredient var4 = (Ingredient)var0.get(var3);
-         if (var4.isEmpty()) {
+      for(int i = 0; i < ingredientCount; ++i) {
+         Ingredient ingredient = (Ingredient)ingredients.get(i);
+         if (ingredient.isEmpty()) {
             return NOT_PLACEABLE;
          }
 
-         var2.add(var3);
+         slotsToIngredientIndex.add(i);
       }
 
-      return new PlacementInfo(var0, var2);
+      return new PlacementInfo(ingredients, slotsToIngredientIndex);
    }
 
    public IntList slotsToIngredientIndex() {

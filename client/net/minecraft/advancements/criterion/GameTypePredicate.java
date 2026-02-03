@@ -10,17 +10,16 @@ public record GameTypePredicate(List<GameType> types) {
    public static final GameTypePredicate SURVIVAL_LIKE;
    public static final Codec<GameTypePredicate> CODEC;
 
-   public GameTypePredicate(List<GameType> var1) {
+   public GameTypePredicate {
       super();
-      this.types = var1;
    }
 
-   public static GameTypePredicate of(GameType... var0) {
-      return new GameTypePredicate(Arrays.stream(var0).toList());
+   public static GameTypePredicate of(final GameType... types) {
+      return new GameTypePredicate(Arrays.stream(types).toList());
    }
 
-   public boolean matches(GameType var1) {
-      return this.types.contains(var1);
+   public boolean matches(final GameType type) {
+      return this.types.contains(type);
    }
 
    static {

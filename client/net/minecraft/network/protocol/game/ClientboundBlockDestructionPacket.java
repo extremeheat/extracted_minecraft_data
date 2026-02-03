@@ -12,32 +12,32 @@ public class ClientboundBlockDestructionPacket implements Packet<ClientGamePacke
    private final BlockPos pos;
    private final int progress;
 
-   public ClientboundBlockDestructionPacket(int var1, BlockPos var2, int var3) {
+   public ClientboundBlockDestructionPacket(final int id, final BlockPos pos, final int progress) {
       super();
-      this.id = var1;
-      this.pos = var2;
-      this.progress = var3;
+      this.id = id;
+      this.pos = pos;
+      this.progress = progress;
    }
 
-   private ClientboundBlockDestructionPacket(FriendlyByteBuf var1) {
+   private ClientboundBlockDestructionPacket(final FriendlyByteBuf input) {
       super();
-      this.id = var1.readVarInt();
-      this.pos = var1.readBlockPos();
-      this.progress = var1.readUnsignedByte();
+      this.id = input.readVarInt();
+      this.pos = input.readBlockPos();
+      this.progress = input.readUnsignedByte();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.id);
-      var1.writeBlockPos(this.pos);
-      var1.writeByte(this.progress);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.id);
+      output.writeBlockPos(this.pos);
+      output.writeByte(this.progress);
    }
 
    public PacketType<ClientboundBlockDestructionPacket> type() {
       return GamePacketTypes.CLIENTBOUND_BLOCK_DESTRUCTION;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleBlockDestruction(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleBlockDestruction(this);
    }
 
    public int getId() {

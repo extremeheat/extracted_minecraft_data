@@ -15,18 +15,16 @@ import net.minecraft.world.item.crafting.StonecutterRecipe;
 public record ClientboundUpdateRecipesPacket(Map<ResourceKey<RecipePropertySet>, RecipePropertySet> itemSets, SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateRecipesPacket> STREAM_CODEC;
 
-   public ClientboundUpdateRecipesPacket(Map<ResourceKey<RecipePropertySet>, RecipePropertySet> var1, SelectableRecipe.SingleInputSet<StonecutterRecipe> var2) {
+   public ClientboundUpdateRecipesPacket {
       super();
-      this.itemSets = var1;
-      this.stonecutterRecipes = var2;
    }
 
    public PacketType<ClientboundUpdateRecipesPacket> type() {
       return GamePacketTypes.CLIENTBOUND_UPDATE_RECIPES;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleUpdateRecipes(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleUpdateRecipes(this);
    }
 
    static {

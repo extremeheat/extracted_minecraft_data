@@ -12,16 +12,14 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public record HasComponent(DataComponentType<?> componentType, boolean ignoreDefault) implements ConditionalItemModelProperty {
-   public static final MapCodec<HasComponent> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec().fieldOf("component").forGetter(HasComponent::componentType), Codec.BOOL.optionalFieldOf("ignore_default", false).forGetter(HasComponent::ignoreDefault)).apply(var0, HasComponent::new));
+   public static final MapCodec<HasComponent> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec().fieldOf("component").forGetter(HasComponent::componentType), Codec.BOOL.optionalFieldOf("ignore_default", false).forGetter(HasComponent::ignoreDefault)).apply(i, HasComponent::new));
 
-   public HasComponent(DataComponentType<?> var1, boolean var2) {
+   public HasComponent {
       super();
-      this.componentType = var1;
-      this.ignoreDefault = var2;
    }
 
-   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      return this.ignoreDefault ? var1.hasNonDefault(this.componentType) : var1.has(this.componentType);
+   public boolean get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      return this.ignoreDefault ? itemStack.hasNonDefault(this.componentType) : itemStack.has(this.componentType);
    }
 
    public MapCodec<HasComponent> type() {

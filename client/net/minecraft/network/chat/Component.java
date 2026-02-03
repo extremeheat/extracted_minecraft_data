@@ -34,27 +34,27 @@ public interface Component extends Message, FormattedText {
       return FormattedText.super.getString();
    }
 
-   default String getString(int var1) {
-      StringBuilder var2 = new StringBuilder();
-      this.visit((var2x) -> {
-         int var3 = var1 - var2.length();
-         if (var3 <= 0) {
+   default String getString(final int limit) {
+      StringBuilder builder = new StringBuilder();
+      this.visit((contents) -> {
+         int remaining = limit - builder.length();
+         if (remaining <= 0) {
             return STOP_ITERATION;
          } else {
-            var2.append(var2x.length() <= var3 ? var2x : var2x.substring(0, var3));
+            builder.append(contents.length() <= remaining ? contents : contents.substring(0, remaining));
             return Optional.empty();
          }
       });
-      return var2.toString();
+      return builder.toString();
    }
 
    List<Component> getSiblings();
 
    default @Nullable String tryCollapseToString() {
       ComponentContents var2 = this.getContents();
-      if (var2 instanceof PlainTextContents var1) {
+      if (var2 instanceof PlainTextContents text) {
          if (this.getSiblings().isEmpty() && this.getStyle().isEmpty()) {
-            return var1.text();
+            return text.text();
          }
       }
 
@@ -71,16 +71,16 @@ public interface Component extends Message, FormattedText {
 
    FormattedCharSequence getVisualOrderText();
 
-   default <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
-      Style var3 = this.getStyle().applyTo(var2);
-      Optional var4 = this.getContents().visit(var1, var3);
-      if (var4.isPresent()) {
-         return var4;
+   default <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style parentStyle) {
+      Style selfStyle = this.getStyle().applyTo(parentStyle);
+      Optional<T> selfResult = this.getContents().<T>visit(output, selfStyle);
+      if (selfResult.isPresent()) {
+         return selfResult;
       } else {
-         for(Component var6 : this.getSiblings()) {
-            Optional var7 = var6.visit(var1, var3);
-            if (var7.isPresent()) {
-               return var7;
+         for(Component sibling : this.getSiblings()) {
+            Optional<T> result = sibling.<T>visit(output, selfStyle);
+            if (result.isPresent()) {
+               return result;
             }
          }
 
@@ -88,15 +88,15 @@ public interface Component extends Message, FormattedText {
       }
    }
 
-   default <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
-      Optional var2 = this.getContents().visit(var1);
-      if (var2.isPresent()) {
-         return var2;
+   default <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
+      Optional<T> selfResult = this.getContents().<T>visit(output);
+      if (selfResult.isPresent()) {
+         return selfResult;
       } else {
-         for(Component var4 : this.getSiblings()) {
-            Optional var5 = var4.visit(var1);
-            if (var5.isPresent()) {
-               return var5;
+         for(Component sibling : this.getSiblings()) {
+            Optional<T> result = sibling.<T>visit(output);
+            if (result.isPresent()) {
+               return result;
             }
          }
 
@@ -108,119 +108,119 @@ public interface Component extends Message, FormattedText {
       return this.toFlatList(Style.EMPTY);
    }
 
-   default List<Component> toFlatList(Style var1) {
-      ArrayList var2 = Lists.newArrayList();
-      this.visit((var1x, var2x) -> {
-         if (!var2x.isEmpty()) {
-            var2.add(literal(var2x).withStyle(var1x));
+   default List<Component> toFlatList(final Style rootStyle) {
+      List<Component> result = Lists.newArrayList();
+      this.visit((style, contents) -> {
+         if (!contents.isEmpty()) {
+            result.add(literal(contents).withStyle(style));
          }
 
          return Optional.empty();
-      }, var1);
-      return var2;
+      }, rootStyle);
+      return result;
    }
 
-   default boolean contains(Component var1) {
-      if (this.equals(var1)) {
+   default boolean contains(final Component other) {
+      if (this.equals(other)) {
          return true;
       } else {
-         List var2 = this.toFlatList();
-         List var3 = var1.toFlatList(this.getStyle());
-         return Collections.indexOfSubList(var2, var3) != -1;
+         List<Component> flat = this.toFlatList();
+         List<Component> otherFlat = other.toFlatList(this.getStyle());
+         return Collections.indexOfSubList(flat, otherFlat) != -1;
       }
    }
 
-   static Component nullToEmpty(@Nullable String var0) {
-      return (Component)(var0 != null ? literal(var0) : CommonComponents.EMPTY);
+   static Component nullToEmpty(final @Nullable String text) {
+      return (Component)(text != null ? literal(text) : CommonComponents.EMPTY);
    }
 
-   static MutableComponent literal(String var0) {
-      return MutableComponent.create(PlainTextContents.create(var0));
+   static MutableComponent literal(final String text) {
+      return MutableComponent.create(PlainTextContents.create(text));
    }
 
-   static MutableComponent translatable(String var0) {
-      return MutableComponent.create(new TranslatableContents(var0, (String)null, TranslatableContents.NO_ARGS));
+   static MutableComponent translatable(final String key) {
+      return MutableComponent.create(new TranslatableContents(key, (String)null, TranslatableContents.NO_ARGS));
    }
 
-   static MutableComponent translatable(String var0, Object... var1) {
-      return MutableComponent.create(new TranslatableContents(var0, (String)null, var1));
+   static MutableComponent translatable(final String key, final Object... args) {
+      return MutableComponent.create(new TranslatableContents(key, (String)null, args));
    }
 
-   static MutableComponent translatableEscape(String var0, Object... var1) {
-      for(int var2 = 0; var2 < var1.length; ++var2) {
-         Object var3 = var1[var2];
-         if (!TranslatableContents.isAllowedPrimitiveArgument(var3) && !(var3 instanceof Component)) {
-            var1[var2] = String.valueOf(var3);
+   static MutableComponent translatableEscape(final String key, final Object... args) {
+      for(int i = 0; i < args.length; ++i) {
+         Object arg = args[i];
+         if (!TranslatableContents.isAllowedPrimitiveArgument(arg) && !(arg instanceof Component)) {
+            args[i] = String.valueOf(arg);
          }
       }
 
-      return translatable(var0, var1);
+      return translatable(key, args);
    }
 
-   static MutableComponent translatableWithFallback(String var0, @Nullable String var1) {
-      return MutableComponent.create(new TranslatableContents(var0, var1, TranslatableContents.NO_ARGS));
+   static MutableComponent translatableWithFallback(final String key, final @Nullable String fallback) {
+      return MutableComponent.create(new TranslatableContents(key, fallback, TranslatableContents.NO_ARGS));
    }
 
-   static MutableComponent translatableWithFallback(String var0, @Nullable String var1, Object... var2) {
-      return MutableComponent.create(new TranslatableContents(var0, var1, var2));
+   static MutableComponent translatableWithFallback(final String key, final @Nullable String fallback, final Object... args) {
+      return MutableComponent.create(new TranslatableContents(key, fallback, args));
    }
 
    static MutableComponent empty() {
       return MutableComponent.create(PlainTextContents.EMPTY);
    }
 
-   static MutableComponent keybind(String var0) {
-      return MutableComponent.create(new KeybindContents(var0));
+   static MutableComponent keybind(final String name) {
+      return MutableComponent.create(new KeybindContents(name));
    }
 
-   static MutableComponent nbt(String var0, boolean var1, Optional<Component> var2, DataSource var3) {
-      return MutableComponent.create(new NbtContents(var0, var1, var2, var3));
+   static MutableComponent nbt(final String nbtPath, final boolean interpreting, final Optional<Component> separator, final DataSource dataSource) {
+      return MutableComponent.create(new NbtContents(nbtPath, interpreting, separator, dataSource));
    }
 
-   static MutableComponent score(SelectorPattern var0, String var1) {
-      return MutableComponent.create(new ScoreContents(Either.left(var0), var1));
+   static MutableComponent score(final SelectorPattern pattern, final String objective) {
+      return MutableComponent.create(new ScoreContents(Either.left(pattern), objective));
    }
 
-   static MutableComponent score(String var0, String var1) {
-      return MutableComponent.create(new ScoreContents(Either.right(var0), var1));
+   static MutableComponent score(final String name, final String objective) {
+      return MutableComponent.create(new ScoreContents(Either.right(name), objective));
    }
 
-   static MutableComponent selector(SelectorPattern var0, Optional<Component> var1) {
-      return MutableComponent.create(new SelectorContents(var0, var1));
+   static MutableComponent selector(final SelectorPattern pattern, final Optional<Component> separator) {
+      return MutableComponent.create(new SelectorContents(pattern, separator));
    }
 
-   static MutableComponent object(ObjectInfo var0) {
-      return MutableComponent.create(new ObjectContents(var0));
+   static MutableComponent object(final ObjectInfo info) {
+      return MutableComponent.create(new ObjectContents(info));
    }
 
-   static Component translationArg(Date var0) {
-      return literal(var0.toString());
+   static Component translationArg(final Date date) {
+      return literal(date.toString());
    }
 
-   static Component translationArg(Message var0) {
+   static Component translationArg(final Message message) {
       Object var10000;
-      if (var0 instanceof Component var1) {
-         var10000 = var1;
+      if (message instanceof Component component) {
+         var10000 = component;
       } else {
-         var10000 = literal(var0.getString());
+         var10000 = literal(message.getString());
       }
 
       return (Component)var10000;
    }
 
-   static Component translationArg(UUID var0) {
-      return literal(var0.toString());
+   static Component translationArg(final UUID uuid) {
+      return literal(uuid.toString());
    }
 
-   static Component translationArg(Identifier var0) {
-      return literal(var0.toString());
+   static Component translationArg(final Identifier id) {
+      return literal(id.toString());
    }
 
-   static Component translationArg(ChunkPos var0) {
-      return literal(var0.toString());
+   static Component translationArg(final ChunkPos chunkPos) {
+      return literal(chunkPos.toString());
    }
 
-   static Component translationArg(URI var0) {
-      return literal(var0.toString());
+   static Component translationArg(final URI uri) {
+      return literal(uri.toString());
    }
 }

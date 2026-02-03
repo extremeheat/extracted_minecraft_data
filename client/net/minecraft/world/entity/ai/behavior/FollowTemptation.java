@@ -23,84 +23,69 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
    private final Function<LivingEntity, Double> closeEnoughDistance;
    private final boolean lookInTheEyes;
 
-   public FollowTemptation(Function<LivingEntity, Float> var1) {
-      this(var1, (var0) -> 2.5);
+   public FollowTemptation(final Function<LivingEntity, Float> speedModifier) {
+      this(speedModifier, (entity) -> 2.5);
    }
 
-   public FollowTemptation(Function<LivingEntity, Float> var1, Function<LivingEntity, Double> var2) {
-      this(var1, var2, false);
+   public FollowTemptation(final Function<LivingEntity, Float> speedModifier, final Function<LivingEntity, Double> closeEnoughDistance) {
+      this(speedModifier, closeEnoughDistance, false);
    }
 
-   public FollowTemptation(Function<LivingEntity, Float> var1, Function<LivingEntity, Double> var2, boolean var3) {
+   public FollowTemptation(final Function<LivingEntity, Float> speedModifier, final Function<LivingEntity, Double> closeEnoughDistance, final boolean lookInTheEyes) {
       super((Map)Util.make(() -> {
-         ImmutableMap.Builder var0 = ImmutableMap.builder();
-         var0.put(MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED);
-         var0.put(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED);
-         var0.put(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT);
-         var0.put(MemoryModuleType.IS_TEMPTED, MemoryStatus.VALUE_ABSENT);
-         var0.put(MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_PRESENT);
-         var0.put(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT);
-         var0.put(MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT);
-         return var0.build();
+         ImmutableMap.Builder<MemoryModuleType<?>, MemoryStatus> builder = ImmutableMap.builder();
+         builder.put(MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED);
+         builder.put(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED);
+         builder.put(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT);
+         builder.put(MemoryModuleType.IS_TEMPTED, MemoryStatus.VALUE_ABSENT);
+         builder.put(MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_PRESENT);
+         builder.put(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT);
+         builder.put(MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT);
+         return builder.build();
       }));
-      this.speedModifier = var1;
-      this.closeEnoughDistance = var2;
-      this.lookInTheEyes = var3;
+      this.speedModifier = speedModifier;
+      this.closeEnoughDistance = closeEnoughDistance;
+      this.lookInTheEyes = lookInTheEyes;
    }
 
-   protected float getSpeedModifier(PathfinderMob var1) {
-      return (Float)this.speedModifier.apply(var1);
+   protected float getSpeedModifier(final PathfinderMob body) {
+      return (Float)this.speedModifier.apply(body);
    }
 
-   private Optional<Player> getTemptingPlayer(PathfinderMob var1) {
-      return var1.getBrain().<Player>getMemory(MemoryModuleType.TEMPTING_PLAYER);
+   private Optional<Player> getTemptingPlayer(final PathfinderMob body) {
+      return body.getBrain().<Player>getMemory(MemoryModuleType.TEMPTING_PLAYER);
    }
 
-   protected boolean timedOut(long var1) {
+   protected boolean timedOut(final long timestamp) {
       return false;
    }
 
-   protected boolean canStillUse(ServerLevel var1, PathfinderMob var2, long var3) {
-      return this.getTemptingPlayer(var2).isPresent() && !var2.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET) && !var2.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
+   protected boolean canStillUse(final ServerLevel level, final PathfinderMob body, final long timestamp) {
+      return this.getTemptingPlayer(body).isPresent() && !body.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET) && !body.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
    }
 
-   protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-      var2.getBrain().setMemory(MemoryModuleType.IS_TEMPTED, true);
+   protected void start(final ServerLevel level, final PathfinderMob body, final long timestamp) {
+      body.getBrain().setMemory(MemoryModuleType.IS_TEMPTED, true);
    }
 
-   protected void stop(ServerLevel var1, PathfinderMob var2, long var3) {
-      Brain var5 = var2.getBrain();
-      var5.setMemory(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, 100);
-      var5.eraseMemory(MemoryModuleType.IS_TEMPTED);
-      var5.eraseMemory(MemoryModuleType.WALK_TARGET);
-      var5.eraseMemory(MemoryModuleType.LOOK_TARGET);
+   protected void stop(final ServerLevel level, final PathfinderMob body, final long timestamp) {
+      Brain<?> brain = body.getBrain();
+      brain.setMemory(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, 100);
+      brain.eraseMemory(MemoryModuleType.IS_TEMPTED);
+      brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+      brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
    }
 
-   protected void tick(ServerLevel var1, PathfinderMob var2, long var3) {
-      Player var5 = (Player)this.getTemptingPlayer(var2).get();
-      Brain var6 = var2.getBrain();
-      var6.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var5, true));
-      double var7 = (Double)this.closeEnoughDistance.apply(var2);
-      if (var2.distanceToSqr(var5) < Mth.square(var7)) {
-         var6.eraseMemory(MemoryModuleType.WALK_TARGET);
+   protected void tick(final ServerLevel level, final PathfinderMob body, final long timestamp) {
+      Player player = (Player)this.getTemptingPlayer(body).get();
+      Brain<?> brain = body.getBrain();
+      brain.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(player, true));
+      double closeEnough = (Double)this.closeEnoughDistance.apply(body);
+      if (body.distanceToSqr(player) < Mth.square(closeEnough)) {
+         brain.eraseMemory(MemoryModuleType.WALK_TARGET);
       } else {
-         var6.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(var5, this.lookInTheEyes, this.lookInTheEyes), this.getSpeedModifier(var2), 2));
+         brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(player, this.lookInTheEyes, this.lookInTheEyes), this.getSpeedModifier(body), 2));
       }
 
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (PathfinderMob)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void tick(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.tick(var1, (PathfinderMob)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (PathfinderMob)var2, var3);
    }
 }

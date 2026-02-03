@@ -10,21 +10,21 @@ import org.jspecify.annotations.Nullable;
 public class InstantNeighborUpdater implements NeighborUpdater {
    private final Level level;
 
-   public InstantNeighborUpdater(Level var1) {
+   public InstantNeighborUpdater(final Level level) {
       super();
-      this.level = var1;
+      this.level = level;
    }
 
-   public void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, @Block.UpdateFlags int var5, int var6) {
-      NeighborUpdater.executeShapeUpdate(this.level, var1, var3, var4, var2, var5, var6 - 1);
+   public void shapeUpdate(final Direction direction, final BlockState neighborState, final BlockPos pos, final BlockPos neighborPos, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
+      NeighborUpdater.executeShapeUpdate(this.level, direction, pos, neighborPos, neighborState, updateFlags, updateLimit - 1);
    }
 
-   public void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3) {
-      BlockState var4 = this.level.getBlockState(var1);
-      this.neighborChanged(var4, var1, var2, var3, false);
+   public void neighborChanged(final BlockPos pos, final Block changedBlock, final @Nullable Orientation orientation) {
+      BlockState state = this.level.getBlockState(pos);
+      this.neighborChanged(state, pos, changedBlock, orientation, false);
    }
 
-   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
-      NeighborUpdater.executeUpdate(this.level, var1, var2, var3, var4, var5);
+   public void neighborChanged(final BlockState state, final BlockPos pos, final Block changedBlock, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      NeighborUpdater.executeUpdate(this.level, state, pos, changedBlock, orientation, movedByPiston);
    }
 }

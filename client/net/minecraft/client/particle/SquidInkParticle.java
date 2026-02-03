@@ -7,18 +7,18 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
 
 public class SquidInkParticle extends SimpleAnimatedParticle {
-   SquidInkParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, int var14, SpriteSet var15) {
-      super(var1, var2, var4, var6, var15, 0.0F);
+   private SquidInkParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final int color, final SpriteSet sprites) {
+      super(level, x, y, z, sprites, 0.0F);
       this.friction = 0.92F;
       this.quadSize = 0.5F;
       this.setAlpha(1.0F);
-      this.setColor(ARGB.redFloat(var14), ARGB.greenFloat(var14), ARGB.blueFloat(var14));
+      this.setColor(ARGB.redFloat(color), ARGB.greenFloat(color), ARGB.blueFloat(color));
       this.lifetime = (int)(this.quadSize * 12.0F / (this.random.nextFloat() * 0.8F + 0.2F));
-      this.setSpriteFromAge(var15);
+      this.setSpriteFromAge(sprites);
       this.hasPhysics = false;
-      this.xd = var8;
-      this.yd = var10;
-      this.zd = var12;
+      this.xd = xa;
+      this.yd = ya;
+      this.zd = za;
    }
 
    public void tick() {
@@ -39,26 +39,26 @@ public class SquidInkParticle extends SimpleAnimatedParticle {
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new SquidInkParticle(var2, var3, var5, var7, var9, var11, var13, -16777216, this.sprites);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new SquidInkParticle(level, x, y, z, xAux, yAux, zAux, -16777216, this.sprites);
       }
    }
 
    public static class GlowInkProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public GlowInkProvider(SpriteSet var1) {
+      public GlowInkProvider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new SquidInkParticle(var2, var3, var5, var7, var9, var11, var13, ARGB.colorFromFloat(1.0F, 0.2F, 0.8F, 0.6F), this.sprites);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new SquidInkParticle(level, x, y, z, xAux, yAux, zAux, ARGB.colorFromFloat(1.0F, 0.2F, 0.8F, 0.6F), this.sprites);
       }
    }
 }

@@ -7,11 +7,11 @@ public class RecipeDisplays {
       super();
    }
 
-   public static RecipeDisplay.Type<?> bootstrap(Registry<RecipeDisplay.Type<?>> var0) {
-      Registry.register(var0, (String)"crafting_shapeless", ShapelessCraftingRecipeDisplay.TYPE);
-      Registry.register(var0, (String)"crafting_shaped", ShapedCraftingRecipeDisplay.TYPE);
-      Registry.register(var0, (String)"furnace", FurnaceRecipeDisplay.TYPE);
-      Registry.register(var0, (String)"stonecutter", StonecutterRecipeDisplay.TYPE);
-      return (RecipeDisplay.Type)Registry.register(var0, (String)"smithing", SmithingRecipeDisplay.TYPE);
+   public static RecipeDisplay.Type<?> bootstrap(final Registry<RecipeDisplay.Type<?>> registry) {
+      Registry.register(registry, (String)"crafting_shapeless", ShapelessCraftingRecipeDisplay.TYPE);
+      Registry.register(registry, (String)"crafting_shaped", ShapedCraftingRecipeDisplay.TYPE);
+      Registry.register(registry, (String)"furnace", FurnaceRecipeDisplay.TYPE);
+      Registry.register(registry, (String)"stonecutter", StonecutterRecipeDisplay.TYPE);
+      return (RecipeDisplay.Type)Registry.register(registry, (String)"smithing", SmithingRecipeDisplay.TYPE);
    }
 }

@@ -19,50 +19,39 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 public record AttributeModifiersPredicate(Optional<CollectionPredicate<ItemAttributeModifiers.Entry, EntryPredicate>> modifiers) implements SingleComponentItemPredicate<ItemAttributeModifiers> {
-   public static final Codec<AttributeModifiersPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CollectionPredicate.codec(AttributeModifiersPredicate.EntryPredicate.CODEC).optionalFieldOf("modifiers").forGetter(AttributeModifiersPredicate::modifiers)).apply(var0, AttributeModifiersPredicate::new));
+   public static final Codec<AttributeModifiersPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(CollectionPredicate.codec(AttributeModifiersPredicate.EntryPredicate.CODEC).optionalFieldOf("modifiers").forGetter(AttributeModifiersPredicate::modifiers)).apply(i, AttributeModifiersPredicate::new));
 
-   public AttributeModifiersPredicate(Optional<CollectionPredicate<ItemAttributeModifiers.Entry, EntryPredicate>> var1) {
+   public AttributeModifiersPredicate {
       super();
-      this.modifiers = var1;
    }
 
    public DataComponentType<ItemAttributeModifiers> componentType() {
       return DataComponents.ATTRIBUTE_MODIFIERS;
    }
 
-   public boolean matches(ItemAttributeModifiers var1) {
-      return !this.modifiers.isPresent() || ((CollectionPredicate)this.modifiers.get()).test(var1.modifiers());
+   public boolean matches(final ItemAttributeModifiers value) {
+      return !this.modifiers.isPresent() || ((CollectionPredicate)this.modifiers.get()).test(value.modifiers());
    }
 
    public static record EntryPredicate(Optional<HolderSet<Attribute>> attribute, Optional<Identifier> id, MinMaxBounds.Doubles amount, Optional<AttributeModifier.Operation> operation, Optional<EquipmentSlotGroup> slot) implements Predicate<ItemAttributeModifiers.Entry> {
-      public static final Codec<EntryPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.ATTRIBUTE).optionalFieldOf("attribute").forGetter(EntryPredicate::attribute), Identifier.CODEC.optionalFieldOf("id").forGetter(EntryPredicate::id), MinMaxBounds.Doubles.CODEC.optionalFieldOf("amount", MinMaxBounds.Doubles.ANY).forGetter(EntryPredicate::amount), AttributeModifier.Operation.CODEC.optionalFieldOf("operation").forGetter(EntryPredicate::operation), EquipmentSlotGroup.CODEC.optionalFieldOf("slot").forGetter(EntryPredicate::slot)).apply(var0, EntryPredicate::new));
+      public static final Codec<EntryPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.ATTRIBUTE).optionalFieldOf("attribute").forGetter(EntryPredicate::attribute), Identifier.CODEC.optionalFieldOf("id").forGetter(EntryPredicate::id), MinMaxBounds.Doubles.CODEC.optionalFieldOf("amount", MinMaxBounds.Doubles.ANY).forGetter(EntryPredicate::amount), AttributeModifier.Operation.CODEC.optionalFieldOf("operation").forGetter(EntryPredicate::operation), EquipmentSlotGroup.CODEC.optionalFieldOf("slot").forGetter(EntryPredicate::slot)).apply(i, EntryPredicate::new));
 
-      public EntryPredicate(Optional<HolderSet<Attribute>> var1, Optional<Identifier> var2, MinMaxBounds.Doubles var3, Optional<AttributeModifier.Operation> var4, Optional<EquipmentSlotGroup> var5) {
+      public EntryPredicate {
          super();
-         this.attribute = var1;
-         this.id = var2;
-         this.amount = var3;
-         this.operation = var4;
-         this.slot = var5;
       }
 
-      public boolean test(ItemAttributeModifiers.Entry var1) {
-         if (this.attribute.isPresent() && !((HolderSet)this.attribute.get()).contains(var1.attribute())) {
+      public boolean test(final ItemAttributeModifiers.Entry value) {
+         if (this.attribute.isPresent() && !((HolderSet)this.attribute.get()).contains(value.attribute())) {
             return false;
-         } else if (this.id.isPresent() && !((Identifier)this.id.get()).equals(var1.modifier().id())) {
+         } else if (this.id.isPresent() && !((Identifier)this.id.get()).equals(value.modifier().id())) {
             return false;
-         } else if (!this.amount.matches(var1.modifier().amount())) {
+         } else if (!this.amount.matches(value.modifier().amount())) {
             return false;
-         } else if (this.operation.isPresent() && this.operation.get() != var1.modifier().operation()) {
+         } else if (this.operation.isPresent() && this.operation.get() != value.modifier().operation()) {
             return false;
          } else {
-            return !this.slot.isPresent() || this.slot.get() == var1.slot();
+            return !this.slot.isPresent() || this.slot.get() == value.slot();
          }
-      }
-
-      // $FF: synthetic method
-      public boolean test(final Object var1) {
-         return this.test((ItemAttributeModifiers.Entry)var1);
       }
    }
 }

@@ -9,27 +9,25 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundCustomChatCompletionsPacket(Action action, List<String> entries) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundCustomChatCompletionsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundCustomChatCompletionsPacket>codec(ClientboundCustomChatCompletionsPacket::write, ClientboundCustomChatCompletionsPacket::new);
 
-   private ClientboundCustomChatCompletionsPacket(FriendlyByteBuf var1) {
-      this((Action)var1.readEnum(Action.class), var1.readList(FriendlyByteBuf::readUtf));
+   private ClientboundCustomChatCompletionsPacket(final FriendlyByteBuf input) {
+      this((Action)input.readEnum(Action.class), input.readList(FriendlyByteBuf::readUtf));
    }
 
-   public ClientboundCustomChatCompletionsPacket(Action var1, List<String> var2) {
+   public ClientboundCustomChatCompletionsPacket {
       super();
-      this.action = var1;
-      this.entries = var2;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeEnum(this.action);
-      var1.writeCollection(this.entries, FriendlyByteBuf::writeUtf);
+   private void write(final FriendlyByteBuf output) {
+      output.writeEnum(this.action);
+      output.writeCollection(this.entries, FriendlyByteBuf::writeUtf);
    }
 
    public PacketType<ClientboundCustomChatCompletionsPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CUSTOM_CHAT_COMPLETIONS;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleCustomChatCompletions(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleCustomChatCompletions(this);
    }
 
    public static enum Action {

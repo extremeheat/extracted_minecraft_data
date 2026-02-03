@@ -9,22 +9,23 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public class Snowball extends ThrowableItemProjectile {
-   public Snowball(EntityType<? extends Snowball> var1, Level var2) {
-      super(var1, var2);
+   public Snowball(final EntityType<? extends Snowball> type, final Level level) {
+      super(type, level);
    }
 
-   public Snowball(Level var1, LivingEntity var2, ItemStack var3) {
-      super(EntityType.SNOWBALL, var2, var1, var3);
+   public Snowball(final Level level, final LivingEntity mob, final ItemStack itemStack) {
+      super(EntityType.SNOWBALL, mob, level, itemStack);
    }
 
-   public Snowball(Level var1, double var2, double var4, double var6, ItemStack var8) {
-      super(EntityType.SNOWBALL, var2, var4, var6, var1, var8);
+   public Snowball(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
+      super(EntityType.SNOWBALL, x, y, z, level, itemStack);
    }
 
    protected Item getDefaultItem() {
@@ -32,30 +33,30 @@ public class Snowball extends ThrowableItemProjectile {
    }
 
    private ParticleOptions getParticle() {
-      ItemStack var1 = this.getItem();
-      return (ParticleOptions)(var1.isEmpty() ? ParticleTypes.ITEM_SNOWBALL : new ItemParticleOption(ParticleTypes.ITEM, var1));
+      ItemStack item = this.getItem();
+      return (ParticleOptions)(item.isEmpty() ? ParticleTypes.ITEM_SNOWBALL : new ItemParticleOption(ParticleTypes.ITEM, ItemStackTemplate.fromNonEmptyStack(item)));
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 3) {
-         ParticleOptions var2 = this.getParticle();
+   public void handleEntityEvent(final byte id) {
+      if (id == 3) {
+         ParticleOptions particle = this.getParticle();
 
-         for(int var3 = 0; var3 < 8; ++var3) {
-            this.level().addParticle(var2, this.getX(), this.getY(), this.getZ(), 0.0, 0.0, 0.0);
+         for(int i = 0; i < 8; ++i) {
+            this.level().addParticle(particle, this.getX(), this.getY(), this.getZ(), 0.0, 0.0, 0.0);
          }
       }
 
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
-      Entity var2 = var1.getEntity();
-      int var3 = var2 instanceof Blaze ? 3 : 0;
-      var2.hurt(this.damageSources().thrown(this, this.getOwner()), (float)var3);
+   protected void onHitEntity(final EntityHitResult hitResult) {
+      super.onHitEntity(hitResult);
+      Entity entity = hitResult.getEntity();
+      int damage = entity instanceof Blaze ? 3 : 0;
+      entity.hurt(this.damageSources().thrown(this, this.getOwner()), (float)damage);
    }
 
-   protected void onHit(HitResult var1) {
-      super.onHit(var1);
+   protected void onHit(final HitResult hitResult) {
+      super.onHit(hitResult);
       if (!this.level().isClientSide()) {
          this.level().broadcastEntityEvent(this, (byte)3);
          this.discard();

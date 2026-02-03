@@ -9,17 +9,16 @@ import net.minecraft.world.Difficulty;
 public record ServerboundChangeDifficultyPacket(Difficulty difficulty) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<ByteBuf, ServerboundChangeDifficultyPacket> STREAM_CODEC;
 
-   public ServerboundChangeDifficultyPacket(Difficulty var1) {
+   public ServerboundChangeDifficultyPacket {
       super();
-      this.difficulty = var1;
    }
 
    public PacketType<ServerboundChangeDifficultyPacket> type() {
       return GamePacketTypes.SERVERBOUND_CHANGE_DIFFICULTY;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleChangeDifficulty(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleChangeDifficulty(this);
    }
 
    static {

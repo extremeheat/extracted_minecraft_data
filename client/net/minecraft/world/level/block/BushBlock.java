@@ -20,23 +20,23 @@ public class BushBlock extends VegetationBlock implements BonemealableBlock {
       return CODEC;
    }
 
-   protected BushBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected BushBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return BonemealableBlock.hasSpreadableNeighbourPos(var1, var2, var3);
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return BonemealableBlock.hasSpreadableNeighbourPos(level, pos, state);
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      BonemealableBlock.findSpreadableNeighbourPos(var1, var3, var4).ifPresent((var2x) -> var1.setBlockAndUpdate(var2x, this.defaultBlockState()));
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      BonemealableBlock.findSpreadableNeighbourPos(level, pos, state).ifPresent((blockPos) -> level.setBlockAndUpdate(blockPos, this.defaultBlockState()));
    }
 }

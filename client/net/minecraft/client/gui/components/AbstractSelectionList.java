@@ -39,23 +39,23 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    private @Nullable E selected;
    private @Nullable E hovered;
 
-   public AbstractSelectionList(Minecraft var1, int var2, int var3, int var4, int var5) {
-      super(0, var4, var2, var3, CommonComponents.EMPTY);
-      this.minecraft = var1;
-      this.defaultEntryHeight = var5;
+   public AbstractSelectionList(final Minecraft minecraft, final int width, final int height, final int y, final int defaultEntryHeight) {
+      super(0, y, width, height, CommonComponents.EMPTY, AbstractScrollArea.defaultSettings(defaultEntryHeight / 2));
+      this.minecraft = minecraft;
+      this.defaultEntryHeight = defaultEntryHeight;
    }
 
    public @Nullable E getSelected() {
       return this.selected;
    }
 
-   public void setSelected(@Nullable E var1) {
-      this.selected = var1;
-      if (var1 != null) {
-         boolean var2 = var1.getContentY() < this.getY();
-         boolean var3 = var1.getContentBottom() > this.getBottom();
-         if (this.minecraft.getLastInputType().isKeyboard() || var2 || var3) {
-            this.scrollToEntry(var1);
+   public void setSelected(final @Nullable E selected) {
+      this.selected = selected;
+      if (selected != null) {
+         boolean topClipped = selected.getContentY() < this.getY();
+         boolean bottomClipped = selected.getContentBottom() > this.getBottom();
+         if (this.minecraft.getLastInputType().isKeyboard() || topClipped || bottomClipped) {
+            this.scrollToEntry(selected);
          }
       }
 
@@ -69,15 +69,15 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return Collections.unmodifiableList(this.children);
    }
 
-   protected void sort(Comparator<E> var1) {
-      this.children.sort(var1);
+   protected void sort(final Comparator<E> comparator) {
+      this.children.sort(comparator);
       this.repositionEntries();
    }
 
-   protected void swap(int var1, int var2) {
-      Collections.swap(this.children, var1, var2);
+   protected void swap(final int firstIndex, final int secondIndex) {
+      Collections.swap(this.children, firstIndex, secondIndex);
       this.repositionEntries();
-      this.scrollToEntry((Entry)this.children.get(var2));
+      this.scrollToEntry((Entry)this.children.get(secondIndex));
    }
 
    protected void clearEntries() {
@@ -85,19 +85,19 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       this.selected = null;
    }
 
-   protected void clearEntriesExcept(E var1) {
-      this.children.removeIf((var1x) -> var1x != var1);
-      if (this.selected != var1) {
+   protected void clearEntriesExcept(final E exception) {
+      this.children.removeIf((entry) -> entry != exception);
+      if (this.selected != exception) {
          this.setSelected((Entry)null);
       }
 
    }
 
-   public void replaceEntries(Collection<E> var1) {
+   public void replaceEntries(final Collection<E> newChildren) {
       this.clearEntries();
 
-      for(Entry var3 : var1) {
-         this.addEntry(var3);
+      for(E newChild : newChildren) {
+         this.addEntry(newChild);
       }
 
    }
@@ -107,56 +107,56 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    }
 
    public int getNextY() {
-      int var1 = this.getFirstEntryY() - (int)this.scrollAmount();
+      int y = this.getFirstEntryY() - (int)this.scrollAmount();
 
-      for(Entry var3 : this.children) {
-         var1 += var3.getHeight();
+      for(E child : this.children) {
+         y += child.getHeight();
       }
 
-      return var1;
+      return y;
    }
 
-   protected int addEntry(E var1) {
-      return this.addEntry(var1, this.defaultEntryHeight);
+   protected int addEntry(final E entry) {
+      return this.addEntry(entry, this.defaultEntryHeight);
    }
 
-   protected int addEntry(E var1, int var2) {
-      var1.setX(this.getRowLeft());
-      var1.setWidth(this.getRowWidth());
-      var1.setY(this.getNextY());
-      var1.setHeight(var2);
-      this.children.add(var1);
+   protected int addEntry(final E entry, final int height) {
+      entry.setX(this.getRowLeft());
+      entry.setWidth(this.getRowWidth());
+      entry.setY(this.getNextY());
+      entry.setHeight(height);
+      this.children.add(entry);
       return this.children.size() - 1;
    }
 
-   protected void addEntryToTop(E var1) {
-      this.addEntryToTop(var1, this.defaultEntryHeight);
+   protected void addEntryToTop(final E entry) {
+      this.addEntryToTop(entry, this.defaultEntryHeight);
    }
 
-   protected void addEntryToTop(E var1, int var2) {
-      double var3 = (double)this.maxScrollAmount() - this.scrollAmount();
-      var1.setHeight(var2);
-      this.children.addFirst(var1);
+   protected void addEntryToTop(final E entry, final int height) {
+      double scrollFromBottom = (double)this.maxScrollAmount() - this.scrollAmount();
+      entry.setHeight(height);
+      this.children.addFirst(entry);
       this.repositionEntries();
-      this.setScrollAmount((double)this.maxScrollAmount() - var3);
+      this.setScrollAmount((double)this.maxScrollAmount() - scrollFromBottom);
    }
 
    private void repositionEntries() {
-      int var1 = this.getFirstEntryY() - (int)this.scrollAmount();
+      int y = this.getFirstEntryY() - (int)this.scrollAmount();
 
-      for(Entry var3 : this.children) {
-         var3.setY(var1);
-         var1 += var3.getHeight();
-         var3.setX(this.getRowLeft());
-         var3.setWidth(this.getRowWidth());
+      for(E child : this.children) {
+         child.setY(y);
+         y += child.getHeight();
+         child.setX(this.getRowLeft());
+         child.setWidth(this.getRowWidth());
       }
 
    }
 
-   protected void removeEntryFromTop(E var1) {
-      double var2 = (double)this.maxScrollAmount() - this.scrollAmount();
-      this.removeEntry(var1);
-      this.setScrollAmount((double)this.maxScrollAmount() - var2);
+   protected void removeEntryFromTop(final E entry) {
+      double scrollFromBottom = (double)this.maxScrollAmount() - this.scrollAmount();
+      this.removeEntry(entry);
+      this.setScrollAmount((double)this.maxScrollAmount() - scrollFromBottom);
    }
 
    protected int getItemCount() {
@@ -167,27 +167,27 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return true;
    }
 
-   protected final @Nullable E getEntryAtPosition(double var1, double var3) {
-      for(Entry var6 : this.children) {
-         if (var6.isMouseOver(var1, var3)) {
-            return (E)var6;
+   protected final @Nullable E getEntryAtPosition(final double posX, final double posY) {
+      for(E child : this.children) {
+         if (child.isMouseOver(posX, posY)) {
+            return child;
          }
       }
 
       return null;
    }
 
-   public void updateSize(int var1, HeaderAndFooterLayout var2) {
-      this.updateSizeAndPosition(var1, var2.getContentHeight(), var2.getHeaderHeight());
+   public void updateSize(final int width, final HeaderAndFooterLayout layout) {
+      this.updateSizeAndPosition(width, layout.getContentHeight(), layout.getHeaderHeight());
    }
 
-   public void updateSizeAndPosition(int var1, int var2, int var3) {
-      this.updateSizeAndPosition(var1, var2, 0, var3);
+   public void updateSizeAndPosition(final int width, final int height, final int y) {
+      this.updateSizeAndPosition(width, height, 0, y);
    }
 
-   public void updateSizeAndPosition(int var1, int var2, int var3, int var4) {
-      this.setSize(var1, var2);
-      this.setPosition(var3, var4);
+   public void updateSizeAndPosition(final int width, final int height, final int x, final int y) {
+      this.setSize(width, height);
+      this.setPosition(x, y);
       this.repositionEntries();
       if (this.getSelected() != null) {
          this.scrollToEntry(this.getSelected());
@@ -197,124 +197,112 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    }
 
    protected int contentHeight() {
-      int var1 = 0;
+      int totalHeight = 0;
 
-      for(Entry var3 : this.children) {
-         var1 += var3.getHeight();
+      for(E child : this.children) {
+         totalHeight += child.getHeight();
       }
 
-      return var1 + 4;
+      return totalHeight + 4;
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      this.hovered = this.isMouseOver((double)var2, (double)var3) ? this.getEntryAtPosition((double)var2, (double)var3) : null;
-      this.renderListBackground(var1);
-      this.enableScissor(var1);
-      this.renderListItems(var1, var2, var3, var4);
-      var1.disableScissor();
-      this.renderListSeparators(var1);
-      this.renderScrollbar(var1, var2, var3);
+   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      this.hovered = this.isMouseOver((double)mouseX, (double)mouseY) ? this.getEntryAtPosition((double)mouseX, (double)mouseY) : null;
+      this.renderListBackground(graphics);
+      this.enableScissor(graphics);
+      this.renderListItems(graphics, mouseX, mouseY, a);
+      graphics.disableScissor();
+      this.renderListSeparators(graphics);
+      this.renderScrollbar(graphics, mouseX, mouseY);
    }
 
-   protected void renderListSeparators(GuiGraphics var1) {
-      Identifier var2 = this.minecraft.level == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
-      Identifier var3 = this.minecraft.level == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
-      var1.blit(RenderPipelines.GUI_TEXTURED, var2, this.getX(), this.getY() - 2, 0.0F, 0.0F, this.getWidth(), 2, 32, 2);
-      var1.blit(RenderPipelines.GUI_TEXTURED, var3, this.getX(), this.getBottom(), 0.0F, 0.0F, this.getWidth(), 2, 32, 2);
+   protected void renderListSeparators(final GuiGraphics graphics) {
+      Identifier headerSeparator = this.minecraft.level == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
+      Identifier footerSeparator = this.minecraft.level == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, headerSeparator, this.getX(), this.getY() - 2, 0.0F, 0.0F, this.getWidth(), 2, 32, 2);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, footerSeparator, this.getX(), this.getBottom(), 0.0F, 0.0F, this.getWidth(), 2, 32, 2);
    }
 
-   protected void renderListBackground(GuiGraphics var1) {
-      Identifier var2 = this.minecraft.level == null ? MENU_LIST_BACKGROUND : INWORLD_MENU_LIST_BACKGROUND;
-      var1.blit(RenderPipelines.GUI_TEXTURED, var2, this.getX(), this.getY(), (float)this.getRight(), (float)(this.getBottom() + (int)this.scrollAmount()), this.getWidth(), this.getHeight(), 32, 32);
+   protected void renderListBackground(final GuiGraphics graphics) {
+      Identifier menuListBackground = this.minecraft.level == null ? MENU_LIST_BACKGROUND : INWORLD_MENU_LIST_BACKGROUND;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, menuListBackground, this.getX(), this.getY(), (float)this.getRight(), (float)(this.getBottom() + (int)this.scrollAmount()), this.getWidth(), this.getHeight(), 32, 32);
    }
 
-   protected void enableScissor(GuiGraphics var1) {
-      var1.enableScissor(this.getX(), this.getY(), this.getRight(), this.getBottom());
+   protected void enableScissor(final GuiGraphics graphics) {
+      graphics.enableScissor(this.getX(), this.getY(), this.getRight(), this.getBottom());
    }
 
-   protected void scrollToEntry(E var1) {
-      int var2 = var1.getY() - this.getY() - 2;
-      if (var2 < 0) {
-         this.scroll(var2);
+   protected void scrollToEntry(final E entry) {
+      int topDelta = entry.getY() - this.getY() - 2;
+      if (topDelta < 0) {
+         this.scroll(topDelta);
       }
 
-      int var3 = this.getBottom() - var1.getY() - var1.getHeight() - 2;
-      if (var3 < 0) {
-         this.scroll(-var3);
+      int bottomDelta = this.getBottom() - entry.getY() - entry.getHeight() - 2;
+      if (bottomDelta < 0) {
+         this.scroll(-bottomDelta);
       }
 
    }
 
-   protected void centerScrollOn(E var1) {
-      int var2 = 0;
+   protected void centerScrollOn(final E entry) {
+      int y = 0;
 
-      for(Entry var4 : this.children) {
-         if (var4 == var1) {
-            var2 += var4.getHeight() / 2;
+      for(E child : this.children) {
+         if (child == entry) {
+            y += child.getHeight() / 2;
             break;
          }
 
-         var2 += var4.getHeight();
+         y += child.getHeight();
       }
 
-      this.setScrollAmount((double)var2 - (double)this.height / 2.0);
+      this.setScrollAmount((double)y - (double)this.height / 2.0);
    }
 
-   private void scroll(int var1) {
-      this.setScrollAmount(this.scrollAmount() + (double)var1);
+   private void scroll(final int amount) {
+      this.setScrollAmount(this.scrollAmount() + (double)amount);
    }
 
-   public void setScrollAmount(double var1) {
-      super.setScrollAmount(var1);
+   public void setScrollAmount(final double scrollAmount) {
+      super.setScrollAmount(scrollAmount);
       this.repositionEntries();
    }
 
-   protected double scrollRate() {
-      return (double)this.defaultEntryHeight / 2.0;
-   }
-
    protected int scrollBarX() {
-      return this.getRowRight() + 6 + 2;
+      return this.getRowRight() + this.scrollbarWidth() + 2;
    }
 
-   public Optional<GuiEventListener> getChildAt(double var1, double var3) {
-      return Optional.ofNullable(this.getEntryAtPosition(var1, var3));
+   public Optional<GuiEventListener> getChildAt(final double x, final double y) {
+      return Optional.ofNullable(this.getEntryAtPosition(x, y));
    }
 
-   public void setFocused(boolean var1) {
-      super.setFocused(var1);
-      if (!var1) {
-         this.setFocused((GuiEventListener)null);
+   public void setFocused(final @Nullable GuiEventListener focused) {
+      E oldFocus = this.getFocused();
+      if (oldFocus != focused && oldFocus instanceof ContainerEventHandler oldFocusContainer) {
+         oldFocusContainer.setFocused((GuiEventListener)null);
+      }
+
+      super.setFocused(focused);
+      int index = this.children.indexOf(focused);
+      if (index >= 0) {
+         E magicallyCastEntry = (E)(this.children.get(index));
+         this.setSelected(magicallyCastEntry);
       }
 
    }
 
-   public void setFocused(@Nullable GuiEventListener var1) {
-      Entry var2 = this.getFocused();
-      if (var2 != var1 && var2 instanceof ContainerEventHandler var3) {
-         var3.setFocused((GuiEventListener)null);
-      }
-
-      super.setFocused(var1);
-      int var5 = this.children.indexOf(var1);
-      if (var5 >= 0) {
-         Entry var4 = (Entry)this.children.get(var5);
-         this.setSelected(var4);
-      }
-
+   protected @Nullable E nextEntry(final ScreenDirection dir) {
+      return (E)this.nextEntry(dir, (entry) -> true);
    }
 
-   protected @Nullable E nextEntry(ScreenDirection var1) {
-      return (E)this.nextEntry(var1, (var0) -> true);
+   protected @Nullable E nextEntry(final ScreenDirection dir, final Predicate<E> canSelect) {
+      return (E)this.nextEntry(dir, canSelect, this.getSelected());
    }
 
-   protected @Nullable E nextEntry(ScreenDirection var1, Predicate<E> var2) {
-      return (E)this.nextEntry(var1, var2, this.getSelected());
-   }
-
-   protected @Nullable E nextEntry(ScreenDirection var1, Predicate<E> var2, @Nullable E var3) {
+   protected @Nullable E nextEntry(final ScreenDirection dir, final Predicate<E> canSelect, final @Nullable E startEntry) {
       byte var10000;
-      switch (var1) {
+      switch (dir) {
          case RIGHT:
          case LEFT:
             var10000 = 0;
@@ -329,19 +317,19 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
             throw new MatchException((String)null, (Throwable)null);
       }
 
-      byte var4 = var10000;
-      if (!this.children().isEmpty() && var4 != 0) {
-         int var5;
-         if (var3 == null) {
-            var5 = var4 > 0 ? 0 : this.children().size() - 1;
+      int delta = var10000;
+      if (!this.children().isEmpty() && delta != 0) {
+         int index;
+         if (startEntry == null) {
+            index = delta > 0 ? 0 : this.children().size() - 1;
          } else {
-            var5 = this.children().indexOf(var3) + var4;
+            index = this.children().indexOf(startEntry) + delta;
          }
 
-         for(int var6 = var5; var6 >= 0 && var6 < this.children.size(); var6 += var4) {
-            Entry var7 = (Entry)this.children().get(var6);
-            if (var2.test(var7)) {
-               return (E)var7;
+         for(int i = index; i >= 0 && i < this.children.size(); i += delta) {
+            E selected = (E)(this.children().get(i));
+            if (canSelect.test(selected)) {
+               return selected;
             }
          }
       }
@@ -349,31 +337,31 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return null;
    }
 
-   protected void renderListItems(GuiGraphics var1, int var2, int var3, float var4) {
-      for(Entry var6 : this.children) {
-         if (var6.getY() + var6.getHeight() >= this.getY() && var6.getY() <= this.getBottom()) {
-            this.renderItem(var1, var2, var3, var4, var6);
+   protected void renderListItems(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      for(E child : this.children) {
+         if (child.getY() + child.getHeight() >= this.getY() && child.getY() <= this.getBottom()) {
+            this.renderItem(graphics, mouseX, mouseY, a, child);
          }
       }
 
    }
 
-   protected void renderItem(GuiGraphics var1, int var2, int var3, float var4, E var5) {
-      if (this.entriesCanBeSelected() && this.getSelected() == var5) {
-         int var6 = this.isFocused() ? -1 : -8355712;
-         this.renderSelection(var1, var5, var6);
+   protected void renderItem(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a, final E entry) {
+      if (this.entriesCanBeSelected() && this.getSelected() == entry) {
+         int outlineColor = this.isFocused() ? -1 : -8355712;
+         this.renderSelection(graphics, entry, outlineColor);
       }
 
-      var5.renderContent(var1, var2, var3, Objects.equals(this.hovered, var5), var4);
+      entry.renderContent(graphics, mouseX, mouseY, Objects.equals(this.hovered, entry), a);
    }
 
-   protected void renderSelection(GuiGraphics var1, E var2, int var3) {
-      int var4 = var2.getX();
-      int var5 = var2.getY();
-      int var6 = var4 + var2.getWidth();
-      int var7 = var5 + var2.getHeight();
-      var1.fill(var4, var5, var6, var7, var3);
-      var1.fill(var4 + 1, var5 + 1, var6 - 1, var7 - 1, -16777216);
+   protected void renderSelection(final GuiGraphics graphics, final E entry, final int outlineColor) {
+      int outlineX0 = entry.getX();
+      int outlineY0 = entry.getY();
+      int outlineX1 = outlineX0 + entry.getWidth();
+      int outlineY1 = outlineY0 + entry.getHeight();
+      graphics.fill(outlineX0, outlineY0, outlineX1, outlineY1, outlineColor);
+      graphics.fill(outlineX0 + 1, outlineY0 + 1, outlineX1 - 1, outlineY1 - 1, -16777216);
    }
 
    public int getRowLeft() {
@@ -384,13 +372,13 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return this.getRowLeft() + this.getRowWidth();
    }
 
-   public int getRowTop(int var1) {
-      return ((Entry)this.children.get(var1)).getY();
+   public int getRowTop(final int row) {
+      return ((Entry)this.children.get(row)).getY();
    }
 
-   public int getRowBottom(int var1) {
-      Entry var2 = (Entry)this.children.get(var1);
-      return var2.getY() + var2.getHeight();
+   public int getRowBottom(final int row) {
+      E child = (E)(this.children.get(row));
+      return child.getY() + child.getHeight();
    }
 
    public int getRowWidth() {
@@ -405,15 +393,15 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       }
    }
 
-   protected void removeEntries(List<E> var1) {
-      var1.forEach(this::removeEntry);
+   protected void removeEntries(final List<E> entries) {
+      entries.forEach(this::removeEntry);
    }
 
-   protected void removeEntry(E var1) {
-      boolean var2 = this.children.remove(var1);
-      if (var2) {
+   protected void removeEntry(final E entry) {
+      boolean removed = this.children.remove(entry);
+      if (removed) {
          this.repositionEntries();
-         if (var1 == this.getSelected()) {
+         if (entry == this.getSelected()) {
             this.setSelected((Entry)null);
          }
       }
@@ -424,27 +412,22 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return this.hovered;
    }
 
-   void bindEntryToSelf(Entry<E> var1) {
-      var1.list = this;
+   private void bindEntryToSelf(final Entry<E> entry) {
+      entry.list = this;
    }
 
-   protected void narrateListElementPosition(NarrationElementOutput var1, E var2) {
-      List var3 = this.children();
-      if (var3.size() > 1) {
-         int var4 = var3.indexOf(var2);
-         if (var4 != -1) {
-            var1.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.list", var4 + 1, var3.size()));
+   protected void narrateListElementPosition(final NarrationElementOutput output, final E element) {
+      List<E> children = this.children();
+      if (children.size() > 1) {
+         int index = children.indexOf(element);
+         if (index != -1) {
+            output.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.list", index + 1, children.size()));
          }
       }
 
    }
 
-   // $FF: synthetic method
-   public @Nullable GuiEventListener getFocused() {
-      return this.getFocused();
-   }
-
-   protected abstract static class Entry<E extends Entry<E>> implements GuiEventListener, LayoutElement {
+   protected abstract static class Entry<E extends Entry<E>> implements LayoutElement, GuiEventListener {
       public static final int CONTENT_PADDING = 2;
       private int x = 0;
       private int y = 0;
@@ -452,39 +435,39 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       private int height;
       /** @deprecated */
       @Deprecated
-      AbstractSelectionList<E> list;
+      private AbstractSelectionList<E> list;
 
       protected Entry() {
          super();
       }
 
-      public void setFocused(boolean var1) {
+      public void setFocused(final boolean focused) {
       }
 
       public boolean isFocused() {
          return this.list.getFocused() == this;
       }
 
-      public abstract void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5);
+      public abstract void renderContent(final GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a);
 
-      public boolean isMouseOver(double var1, double var3) {
-         return this.getRectangle().containsPoint((int)var1, (int)var3);
+      public boolean isMouseOver(final double mx, final double my) {
+         return this.getRectangle().containsPoint((int)mx, (int)my);
       }
 
-      public void setX(int var1) {
-         this.x = var1;
+      public void setX(final int x) {
+         this.x = x;
       }
 
-      public void setY(int var1) {
-         this.y = var1;
+      public void setY(final int y) {
+         this.y = y;
       }
 
-      public void setWidth(int var1) {
-         this.width = var1;
+      public void setWidth(final int width) {
+         this.width = width;
       }
 
-      public void setHeight(int var1) {
-         this.height = var1;
+      public void setHeight(final int height) {
+         this.height = height;
       }
 
       public int getContentX() {
@@ -535,7 +518,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
          return this.height;
       }
 
-      public void visitWidgets(Consumer<AbstractWidget> var1) {
+      public void visitWidgets(final Consumer<AbstractWidget> widgetVisitor) {
       }
 
       public ScreenRectangle getRectangle() {
@@ -543,54 +526,36 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       }
    }
 
-   class TrackedList extends AbstractList<E> {
-      private final List<E> delegate = Lists.newArrayList();
+   private class TrackedList extends AbstractList<E> {
+      private final List<E> delegate;
 
-      TrackedList() {
+      private TrackedList() {
+         Objects.requireNonNull(AbstractSelectionList.this);
          super();
+         this.delegate = Lists.newArrayList();
       }
 
-      public E get(int var1) {
-         return (E)((Entry)this.delegate.get(var1));
+      public E get(final int index) {
+         return (E)((Entry)this.delegate.get(index));
       }
 
       public int size() {
          return this.delegate.size();
       }
 
-      public E set(int var1, E var2) {
-         Entry var3 = (Entry)this.delegate.set(var1, var2);
-         AbstractSelectionList.this.bindEntryToSelf(var2);
-         return (E)var3;
+      public E set(final int index, final E element) {
+         E entry = (E)((Entry)this.delegate.set(index, element));
+         AbstractSelectionList.this.bindEntryToSelf(element);
+         return entry;
       }
 
-      public void add(int var1, E var2) {
-         this.delegate.add(var1, var2);
-         AbstractSelectionList.this.bindEntryToSelf(var2);
+      public void add(final int index, final E element) {
+         this.delegate.add(index, element);
+         AbstractSelectionList.this.bindEntryToSelf(element);
       }
 
-      public E remove(int var1) {
-         return (E)((Entry)this.delegate.remove(var1));
-      }
-
-      // $FF: synthetic method
-      public Object remove(final int var1) {
-         return this.remove(var1);
-      }
-
-      // $FF: synthetic method
-      public void add(final int var1, final Object var2) {
-         this.add(var1, (Entry)var2);
-      }
-
-      // $FF: synthetic method
-      public Object set(final int var1, final Object var2) {
-         return this.set(var1, (Entry)var2);
-      }
-
-      // $FF: synthetic method
-      public Object get(final int var1) {
-         return this.get(var1);
+      public E remove(final int index) {
+         return (E)((Entry)this.delegate.remove(index));
       }
    }
 }

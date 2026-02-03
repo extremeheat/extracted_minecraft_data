@@ -11,20 +11,20 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-public interface CommonLevelAccessor extends EntityGetter, LevelReader, LevelSimulatedRW {
-   default <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos var1, BlockEntityType<T> var2) {
-      return LevelReader.super.getBlockEntity(var1, var2);
+public interface CommonLevelAccessor extends LevelReader, LevelSimulatedRW, EntityGetter {
+   default <T extends BlockEntity> Optional<T> getBlockEntity(final BlockPos pos, final BlockEntityType<T> type) {
+      return LevelReader.super.getBlockEntity(pos, type);
    }
 
-   default List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2) {
-      return EntityGetter.super.getEntityCollisions(var1, var2);
+   default List<VoxelShape> getEntityCollisions(final @Nullable Entity source, final AABB testArea) {
+      return EntityGetter.super.getEntityCollisions(source, testArea);
    }
 
-   default boolean isUnobstructed(@Nullable Entity var1, VoxelShape var2) {
-      return EntityGetter.super.isUnobstructed(var1, var2);
+   default boolean isUnobstructed(final @Nullable Entity source, final VoxelShape shape) {
+      return EntityGetter.super.isUnobstructed(source, shape);
    }
 
-   default BlockPos getHeightmapPos(Heightmap.Types var1, BlockPos var2) {
-      return LevelReader.super.getHeightmapPos(var1, var2);
+   default BlockPos getHeightmapPos(final Heightmap.Types type, final BlockPos pos) {
+      return LevelReader.super.getHeightmapPos(type, pos);
    }
 }

@@ -14,86 +14,86 @@ public class JsonUtils {
       super();
    }
 
-   public static <T> T getRequired(String var0, JsonObject var1, Function<JsonObject, T> var2) {
-      JsonElement var3 = var1.get(var0);
-      if (var3 != null && !var3.isJsonNull()) {
-         if (!var3.isJsonObject()) {
-            throw new IllegalStateException("Required property " + var0 + " was not a JsonObject as espected");
+   public static <T> T getRequired(final String key, final JsonObject node, final Function<JsonObject, T> parser) {
+      JsonElement property = node.get(key);
+      if (property != null && !property.isJsonNull()) {
+         if (!property.isJsonObject()) {
+            throw new IllegalStateException("Required property " + key + " was not a JsonObject as espected");
          } else {
-            return (T)var2.apply(var3.getAsJsonObject());
+            return (T)parser.apply(property.getAsJsonObject());
          }
       } else {
-         throw new IllegalStateException("Missing required property: " + var0);
+         throw new IllegalStateException("Missing required property: " + key);
       }
    }
 
-   public static <T> @Nullable T getOptional(String var0, JsonObject var1, Function<JsonObject, T> var2) {
-      JsonElement var3 = var1.get(var0);
-      if (var3 != null && !var3.isJsonNull()) {
-         if (!var3.isJsonObject()) {
-            throw new IllegalStateException("Required property " + var0 + " was not a JsonObject as espected");
+   public static <T> @Nullable T getOptional(final String key, final JsonObject node, final Function<JsonObject, T> parser) {
+      JsonElement property = node.get(key);
+      if (property != null && !property.isJsonNull()) {
+         if (!property.isJsonObject()) {
+            throw new IllegalStateException("Required property " + key + " was not a JsonObject as espected");
          } else {
-            return (T)var2.apply(var3.getAsJsonObject());
+            return (T)parser.apply(property.getAsJsonObject());
          }
       } else {
          return null;
       }
    }
 
-   public static String getRequiredString(String var0, JsonObject var1) {
-      String var2 = getStringOr(var0, var1, (String)null);
-      if (var2 == null) {
-         throw new IllegalStateException("Missing required property: " + var0);
+   public static String getRequiredString(final String key, final JsonObject node) {
+      String result = getStringOr(key, node, (String)null);
+      if (result == null) {
+         throw new IllegalStateException("Missing required property: " + key);
       } else {
-         return var2;
+         return result;
       }
    }
 
    @Contract("_,_,!null->!null;_,_,null->_")
-   public static @Nullable String getStringOr(String var0, JsonObject var1, @Nullable String var2) {
-      JsonElement var3 = var1.get(var0);
-      if (var3 != null) {
-         return var3.isJsonNull() ? var2 : var3.getAsString();
+   public static @Nullable String getStringOr(final String key, final JsonObject node, final @Nullable String defaultValue) {
+      JsonElement element = node.get(key);
+      if (element != null) {
+         return element.isJsonNull() ? defaultValue : element.getAsString();
       } else {
-         return var2;
+         return defaultValue;
       }
    }
 
    @Contract("_,_,!null->!null;_,_,null->_")
-   public static @Nullable UUID getUuidOr(String var0, JsonObject var1, @Nullable UUID var2) {
-      String var3 = getStringOr(var0, var1, (String)null);
-      return var3 == null ? var2 : UndashedUuid.fromStringLenient(var3);
+   public static @Nullable UUID getUuidOr(final String key, final JsonObject node, final @Nullable UUID defaultValue) {
+      String uuidAsString = getStringOr(key, node, (String)null);
+      return uuidAsString == null ? defaultValue : UndashedUuid.fromStringLenient(uuidAsString);
    }
 
-   public static int getIntOr(String var0, JsonObject var1, int var2) {
-      JsonElement var3 = var1.get(var0);
-      if (var3 != null) {
-         return var3.isJsonNull() ? var2 : var3.getAsInt();
+   public static int getIntOr(final String key, final JsonObject node, final int defaultValue) {
+      JsonElement element = node.get(key);
+      if (element != null) {
+         return element.isJsonNull() ? defaultValue : element.getAsInt();
       } else {
-         return var2;
+         return defaultValue;
       }
    }
 
-   public static long getLongOr(String var0, JsonObject var1, long var2) {
-      JsonElement var4 = var1.get(var0);
-      if (var4 != null) {
-         return var4.isJsonNull() ? var2 : var4.getAsLong();
+   public static long getLongOr(final String key, final JsonObject node, final long defaultValue) {
+      JsonElement element = node.get(key);
+      if (element != null) {
+         return element.isJsonNull() ? defaultValue : element.getAsLong();
       } else {
-         return var2;
+         return defaultValue;
       }
    }
 
-   public static boolean getBooleanOr(String var0, JsonObject var1, boolean var2) {
-      JsonElement var3 = var1.get(var0);
-      if (var3 != null) {
-         return var3.isJsonNull() ? var2 : var3.getAsBoolean();
+   public static boolean getBooleanOr(final String key, final JsonObject node, final boolean defaultValue) {
+      JsonElement element = node.get(key);
+      if (element != null) {
+         return element.isJsonNull() ? defaultValue : element.getAsBoolean();
       } else {
-         return var2;
+         return defaultValue;
       }
    }
 
-   public static Instant getDateOr(String var0, JsonObject var1) {
-      JsonElement var2 = var1.get(var0);
-      return var2 != null ? Instant.ofEpochMilli(Long.parseLong(var2.getAsString())) : Instant.EPOCH;
+   public static Instant getDateOr(final String key, final JsonObject node) {
+      JsonElement element = node.get(key);
+      return element != null ? Instant.ofEpochMilli(Long.parseLong(element.getAsString())) : Instant.EPOCH;
    }
 }

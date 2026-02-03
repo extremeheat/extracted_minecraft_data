@@ -10,15 +10,15 @@ public class DebugEntryChunkRenderStats implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      String var5 = Minecraft.getInstance().levelRenderer.getSectionStatistics();
-      if (var5 != null) {
-         var1.addLine(var5);
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      String stats = Minecraft.getInstance().levelRenderer.getSectionStatistics();
+      if (stats != null) {
+         displayer.addLine(stats);
       }
 
    }
 
-   public boolean isAllowed(boolean var1) {
+   public boolean isAllowed(final boolean reducedDebugInfo) {
       return true;
    }
 }

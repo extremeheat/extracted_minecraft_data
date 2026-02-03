@@ -13,23 +13,23 @@ public class PerspectiveProjectionMatrixBuffer implements AutoCloseable {
    private final GpuBuffer buffer;
    private final GpuBufferSlice bufferSlice;
 
-   public PerspectiveProjectionMatrixBuffer(String var1) {
+   public PerspectiveProjectionMatrixBuffer(final String name) {
       super();
-      GpuDevice var2 = RenderSystem.getDevice();
-      this.buffer = var2.createBuffer(() -> "Projection matrix UBO " + var1, 136, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
+      GpuDevice device = RenderSystem.getDevice();
+      this.buffer = device.createBuffer(() -> "Projection matrix UBO " + name, 136, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
       this.bufferSlice = this.buffer.slice(0L, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
    }
 
-   public GpuBufferSlice getBuffer(Matrix4f var1) {
-      MemoryStack var2 = MemoryStack.stackPush();
+   public GpuBufferSlice getBuffer(final Matrix4f projectionMatrix) {
+      MemoryStack stack = MemoryStack.stackPush();
 
       try {
-         ByteBuffer var3 = Std140Builder.onStack(var2, RenderSystem.PROJECTION_MATRIX_UBO_SIZE).putMat4f(var1).get();
-         RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), var3);
+         ByteBuffer byteBuffer = Std140Builder.onStack(stack, RenderSystem.PROJECTION_MATRIX_UBO_SIZE).putMat4f(projectionMatrix).get();
+         RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), byteBuffer);
       } catch (Throwable var6) {
-         if (var2 != null) {
+         if (stack != null) {
             try {
-               var2.close();
+               stack.close();
             } catch (Throwable var5) {
                var6.addSuppressed(var5);
             }
@@ -38,8 +38,8 @@ public class PerspectiveProjectionMatrixBuffer implements AutoCloseable {
          throw var6;
       }
 
-      if (var2 != null) {
-         var2.close();
+      if (stack != null) {
+         stack.close();
       }
 
       return this.bufferSlice;

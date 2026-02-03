@@ -19,107 +19,107 @@ import org.slf4j.Logger;
 
 public class GlProgram implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static Set<String> BUILT_IN_UNIFORMS = Sets.newHashSet(new String[]{"Projection", "Lighting", "Fog", "Globals"});
-   public static GlProgram INVALID_PROGRAM = new GlProgram(-1, "invalid");
+   public static final Set<String> BUILT_IN_UNIFORMS = Sets.newHashSet(new String[]{"Projection", "Lighting", "Fog", "Globals"});
+   public static final GlProgram INVALID_PROGRAM = new GlProgram(-1, "invalid");
    private final Map<String, Uniform> uniformsByName = new HashMap();
    private final int programId;
    private final String debugLabel;
 
-   private GlProgram(int var1, String var2) {
+   private GlProgram(final int programId, final String debugLabel) {
       super();
-      this.programId = var1;
-      this.debugLabel = var2;
+      this.programId = programId;
+      this.debugLabel = debugLabel;
    }
 
-   public static GlProgram link(GlShaderModule var0, GlShaderModule var1, VertexFormat var2, String var3) throws ShaderManager.CompilationException {
-      int var4 = GlStateManager.glCreateProgram();
-      if (var4 <= 0) {
-         throw new ShaderManager.CompilationException("Could not create shader program (returned program ID " + var4 + ")");
+   public static GlProgram link(final GlShaderModule vertexShader, final GlShaderModule fragmentShader, final VertexFormat vertexFormat, final String debugLabel) throws ShaderManager.CompilationException {
+      int programId = GlStateManager.glCreateProgram();
+      if (programId <= 0) {
+         throw new ShaderManager.CompilationException("Could not create shader program (returned program ID " + programId + ")");
       } else {
-         int var5 = 0;
+         int attributeLocation = 0;
 
-         for(String var7 : var2.getElementAttributeNames()) {
-            GlStateManager._glBindAttribLocation(var4, var5, var7);
-            ++var5;
+         for(String attributeName : vertexFormat.getElementAttributeNames()) {
+            GlStateManager._glBindAttribLocation(programId, attributeLocation, attributeName);
+            ++attributeLocation;
          }
 
-         GlStateManager.glAttachShader(var4, var0.getShaderId());
-         GlStateManager.glAttachShader(var4, var1.getShaderId());
-         GlStateManager.glLinkProgram(var4);
-         int var8 = GlStateManager.glGetProgrami(var4, 35714);
-         String var9 = GlStateManager.glGetProgramInfoLog(var4, 32768);
-         if (var8 != 0 && !var9.contains("Failed for unknown reason")) {
-            if (!var9.isEmpty()) {
-               LOGGER.info("Info log when linking program containing VS {} and FS {}. Log output: {}", new Object[]{var0.getId(), var1.getId(), var9});
+         GlStateManager.glAttachShader(programId, vertexShader.getShaderId());
+         GlStateManager.glAttachShader(programId, fragmentShader.getShaderId());
+         GlStateManager.glLinkProgram(programId);
+         int linkStatus = GlStateManager.glGetProgrami(programId, 35714);
+         String linkMessage = GlStateManager.glGetProgramInfoLog(programId, 32768);
+         if (linkStatus != 0 && !linkMessage.contains("Failed for unknown reason")) {
+            if (!linkMessage.isEmpty()) {
+               LOGGER.info("Info log when linking program containing VS {} and FS {}. Log output: {}", new Object[]{vertexShader.getId(), fragmentShader.getId(), linkMessage});
             }
 
-            return new GlProgram(var4, var3);
+            return new GlProgram(programId, debugLabel);
          } else {
-            String var10002 = String.valueOf(var0.getId());
-            throw new ShaderManager.CompilationException("Error encountered when linking program containing VS " + var10002 + " and FS " + String.valueOf(var1.getId()) + ". Log output: " + var9);
+            String var10002 = String.valueOf(vertexShader.getId());
+            throw new ShaderManager.CompilationException("Error encountered when linking program containing VS " + var10002 + " and FS " + String.valueOf(fragmentShader.getId()) + ". Log output: " + linkMessage);
          }
       }
    }
 
-   public void setupUniforms(List<RenderPipeline.UniformDescription> var1, List<String> var2) {
-      int var3 = 0;
-      int var4 = 0;
+   public void setupUniforms(final List<RenderPipeline.UniformDescription> uniforms, final List<String> samplers) {
+      int nextUboBinding = 0;
+      int nextSamplerIndex = 0;
 
-      for(RenderPipeline.UniformDescription var6 : var1) {
-         String var7 = var6.name();
+      for(RenderPipeline.UniformDescription uniformDescription : uniforms) {
+         String uniformName = uniformDescription.name();
          Object var10000;
-         switch (var6.type()) {
+         switch (uniformDescription.type()) {
             case UNIFORM_BUFFER:
-               int var19 = GL31.glGetUniformBlockIndex(this.programId, var7);
-               if (var19 == -1) {
+               int index = GL31.glGetUniformBlockIndex(this.programId, uniformName);
+               if (index == -1) {
                   var10000 = null;
                } else {
-                  int var20 = var3++;
-                  GL31.glUniformBlockBinding(this.programId, var19, var20);
-                  var10000 = new Uniform.Ubo(var20);
+                  int uboBinding = nextUboBinding++;
+                  GL31.glUniformBlockBinding(this.programId, index, uboBinding);
+                  var10000 = new Uniform.Ubo(uboBinding);
                }
                break;
             case TEXEL_BUFFER:
-               int var9 = GlStateManager._glGetUniformLocation(this.programId, var7);
-               if (var9 == -1) {
-                  LOGGER.warn("{} shader program does not use utb {} defined in the pipeline. This might be a bug.", this.debugLabel, var7);
+               int location = GlStateManager._glGetUniformLocation(this.programId, uniformName);
+               if (location == -1) {
+                  LOGGER.warn("{} shader program does not use utb {} defined in the pipeline. This might be a bug.", this.debugLabel, uniformName);
                   var10000 = null;
                } else {
-                  int var10 = var4++;
-                  var10000 = new Uniform.Utb(var9, var10, (TextureFormat)Objects.requireNonNull(var6.textureFormat()));
+                  int samplerIndex = nextSamplerIndex++;
+                  var10000 = new Uniform.Utb(location, samplerIndex, (TextureFormat)Objects.requireNonNull(uniformDescription.textureFormat()));
                }
                break;
             default:
                throw new MatchException((String)null, (Throwable)null);
          }
 
-         Object var8 = var10000;
-         if (var8 != null) {
-            this.uniformsByName.put(var7, var8);
+         Uniform uniform = (Uniform)var10000;
+         if (uniform != null) {
+            this.uniformsByName.put(uniformName, uniform);
          }
       }
 
-      for(String var13 : var2) {
-         int var15 = GlStateManager._glGetUniformLocation(this.programId, var13);
-         if (var15 == -1) {
-            LOGGER.warn("{} shader program does not use sampler {} defined in the pipeline. This might be a bug.", this.debugLabel, var13);
+      for(String sampler : samplers) {
+         int location = GlStateManager._glGetUniformLocation(this.programId, sampler);
+         if (location == -1) {
+            LOGGER.warn("{} shader program does not use sampler {} defined in the pipeline. This might be a bug.", this.debugLabel, sampler);
          } else {
-            int var17 = var4++;
-            this.uniformsByName.put(var13, new Uniform.Sampler(var15, var17));
+            int samplerIndex = nextSamplerIndex++;
+            this.uniformsByName.put(sampler, new Uniform.Sampler(location, samplerIndex));
          }
       }
 
-      int var12 = GlStateManager.glGetProgrami(this.programId, 35382);
+      int totalDefinedBlocks = GlStateManager.glGetProgrami(this.programId, 35382);
 
-      for(int var14 = 0; var14 < var12; ++var14) {
-         String var16 = GL31.glGetActiveUniformBlockName(this.programId, var14);
-         if (!this.uniformsByName.containsKey(var16)) {
-            if (!var2.contains(var16) && BUILT_IN_UNIFORMS.contains(var16)) {
-               int var18 = var3++;
-               GL31.glUniformBlockBinding(this.programId, var14, var18);
-               this.uniformsByName.put(var16, new Uniform.Ubo(var18));
+      for(int i = 0; i < totalDefinedBlocks; ++i) {
+         String name = GL31.glGetActiveUniformBlockName(this.programId, i);
+         if (!this.uniformsByName.containsKey(name)) {
+            if (!samplers.contains(name) && BUILT_IN_UNIFORMS.contains(name)) {
+               int uboBinding = nextUboBinding++;
+               GL31.glUniformBlockBinding(this.programId, i, uboBinding);
+               this.uniformsByName.put(name, new Uniform.Ubo(uboBinding));
             } else {
-               LOGGER.warn("Found unknown and unsupported uniform {} in {}", var16, this.debugLabel);
+               LOGGER.warn("Found unknown and unsupported uniform {} in {}", name, this.debugLabel);
             }
          }
       }
@@ -131,9 +131,9 @@ public class GlProgram implements AutoCloseable {
       GlStateManager.glDeleteProgram(this.programId);
    }
 
-   public @Nullable Uniform getUniform(String var1) {
+   public @Nullable Uniform getUniform(final String name) {
       RenderSystem.assertOnRenderThread();
-      return (Uniform)this.uniformsByName.get(var1);
+      return (Uniform)this.uniformsByName.get(name);
    }
 
    @VisibleForTesting

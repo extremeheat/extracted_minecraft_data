@@ -39,49 +39,49 @@ import org.slf4j.Logger;
 public abstract class ServerTextFilter implements AutoCloseable {
    protected static final Logger LOGGER = LogUtils.getLogger();
    private static final AtomicInteger WORKER_COUNT = new AtomicInteger(1);
-   private static final ThreadFactory THREAD_FACTORY = (var0) -> {
-      Thread var1 = new Thread(var0);
-      var1.setName("Chat-Filter-Worker-" + WORKER_COUNT.getAndIncrement());
-      return var1;
+   private static final ThreadFactory THREAD_FACTORY = (runnable) -> {
+      Thread thread = new Thread(runnable);
+      thread.setName("Chat-Filter-Worker-" + WORKER_COUNT.getAndIncrement());
+      return thread;
    };
    private final URL chatEndpoint;
    private final MessageEncoder chatEncoder;
-   final IgnoreStrategy chatIgnoreStrategy;
-   final ExecutorService workerPool;
+   private final IgnoreStrategy chatIgnoreStrategy;
+   private final ExecutorService workerPool;
 
-   protected static ExecutorService createWorkerPool(int var0) {
-      return Executors.newFixedThreadPool(var0, THREAD_FACTORY);
+   protected static ExecutorService createWorkerPool(final int maxConcurrentRequests) {
+      return Executors.newFixedThreadPool(maxConcurrentRequests, THREAD_FACTORY);
    }
 
-   protected ServerTextFilter(URL var1, MessageEncoder var2, IgnoreStrategy var3, ExecutorService var4) {
+   protected ServerTextFilter(final URL chatEndpoint, final MessageEncoder chatEncoder, final IgnoreStrategy chatIgnoreStrategy, final ExecutorService workerPool) {
       super();
-      this.chatIgnoreStrategy = var3;
-      this.workerPool = var4;
-      this.chatEndpoint = var1;
-      this.chatEncoder = var2;
+      this.chatIgnoreStrategy = chatIgnoreStrategy;
+      this.workerPool = workerPool;
+      this.chatEndpoint = chatEndpoint;
+      this.chatEncoder = chatEncoder;
    }
 
-   protected static URL getEndpoint(URI var0, @Nullable JsonObject var1, String var2, String var3) throws MalformedURLException {
-      String var4 = getEndpointFromConfig(var1, var2, var3);
-      return var0.resolve("/" + var4).toURL();
+   protected static URL getEndpoint(final URI host, final @Nullable JsonObject source, final String id, final String def) throws MalformedURLException {
+      String endpointConfig = getEndpointFromConfig(source, id, def);
+      return host.resolve("/" + endpointConfig).toURL();
    }
 
-   protected static String getEndpointFromConfig(@Nullable JsonObject var0, String var1, String var2) {
-      return var0 != null ? GsonHelper.getAsString(var0, var1, var2) : var2;
+   protected static String getEndpointFromConfig(final @Nullable JsonObject source, final String id, final String def) {
+      return source != null ? GsonHelper.getAsString(source, id, def) : def;
    }
 
-   public static @Nullable ServerTextFilter createFromConfig(DedicatedServerProperties var0) {
-      String var1 = var0.textFilteringConfig;
-      if (StringUtil.isBlank(var1)) {
+   public static @Nullable ServerTextFilter createFromConfig(final DedicatedServerProperties config) {
+      String textFilteringConfig = config.textFilteringConfig;
+      if (StringUtil.isBlank(textFilteringConfig)) {
          return null;
       } else {
          ServerTextFilter var10000;
-         switch (var0.textFilteringVersion) {
+         switch (config.textFilteringVersion) {
             case 0:
-               var10000 = LegacyTextFilter.createTextFilterFromConfig(var1);
+               var10000 = LegacyTextFilter.createTextFilterFromConfig(textFilteringConfig);
                break;
             case 1:
-               var10000 = PlayerSafetyServiceTextFilter.createTextFilterFromConfig(var1);
+               var10000 = PlayerSafetyServiceTextFilter.createTextFilterFromConfig(textFilteringConfig);
                break;
             default:
                LOGGER.warn("Could not create text filter - unsupported text filtering version used");
@@ -92,35 +92,35 @@ public abstract class ServerTextFilter implements AutoCloseable {
       }
    }
 
-   protected CompletableFuture<FilteredText> requestMessageProcessing(GameProfile var1, String var2, IgnoreStrategy var3, Executor var4) {
-      return var2.isEmpty() ? CompletableFuture.completedFuture(FilteredText.EMPTY) : CompletableFuture.supplyAsync(() -> {
-         JsonObject var4 = this.chatEncoder.encode(var1, var2);
+   protected CompletableFuture<FilteredText> requestMessageProcessing(final GameProfile sender, final String message, final IgnoreStrategy ignoreStrategy, final Executor executor) {
+      return message.isEmpty() ? CompletableFuture.completedFuture(FilteredText.EMPTY) : CompletableFuture.supplyAsync(() -> {
+         JsonObject object = this.chatEncoder.encode(sender, message);
 
          try {
-            JsonObject var5 = this.processRequestResponse(var4, this.chatEndpoint);
-            return this.filterText(var2, var3, var5);
-         } catch (Exception var6) {
-            LOGGER.warn("Failed to validate message '{}'", var2, var6);
-            return FilteredText.fullyFiltered(var2);
+            JsonObject result = this.processRequestResponse(object, this.chatEndpoint);
+            return this.filterText(message, ignoreStrategy, result);
+         } catch (Exception e) {
+            LOGGER.warn("Failed to validate message '{}'", message, e);
+            return FilteredText.fullyFiltered(message);
          }
-      }, var4);
+      }, executor);
    }
 
-   protected abstract FilteredText filterText(String var1, IgnoreStrategy var2, JsonObject var3);
+   protected abstract FilteredText filterText(final String message, final IgnoreStrategy ignoreStrategy, final JsonObject result);
 
-   protected FilterMask parseMask(String var1, JsonArray var2, IgnoreStrategy var3) {
-      if (var2.isEmpty()) {
+   protected FilterMask parseMask(final String message, final JsonArray removedChars, final IgnoreStrategy ignoreStrategy) {
+      if (removedChars.isEmpty()) {
          return FilterMask.PASS_THROUGH;
-      } else if (var3.shouldIgnore(var1, var2.size())) {
+      } else if (ignoreStrategy.shouldIgnore(message, removedChars.size())) {
          return FilterMask.FULLY_FILTERED;
       } else {
-         FilterMask var4 = new FilterMask(var1.length());
+         FilterMask mask = new FilterMask(message.length());
 
-         for(int var5 = 0; var5 < var2.size(); ++var5) {
-            var4.setFiltered(var2.get(var5).getAsInt());
+         for(int i = 0; i < removedChars.size(); ++i) {
+            mask.setFiltered(removedChars.get(i).getAsInt());
          }
 
-         return var4;
+         return mask;
       }
    }
 
@@ -128,35 +128,35 @@ public abstract class ServerTextFilter implements AutoCloseable {
       this.workerPool.shutdownNow();
    }
 
-   protected void drainStream(InputStream var1) throws IOException {
-      byte[] var2 = new byte[1024];
+   protected void drainStream(final InputStream input) throws IOException {
+      byte[] trashcan = new byte[1024];
 
-      while(var1.read(var2) != -1) {
+      while(input.read(trashcan) != -1) {
       }
 
    }
 
-   private JsonObject processRequestResponse(JsonObject var1, URL var2) throws IOException {
-      HttpURLConnection var3 = this.makeRequest(var1, var2);
-      InputStream var4 = var3.getInputStream();
+   private JsonObject processRequestResponse(final JsonObject payload, final URL url) throws IOException {
+      HttpURLConnection connection = this.makeRequest(payload, url);
+      InputStream is = connection.getInputStream();
 
       JsonObject var13;
       label89: {
          try {
-            if (var3.getResponseCode() == 204) {
+            if (connection.getResponseCode() == 204) {
                var13 = new JsonObject();
                break label89;
             }
 
             try {
-               var13 = LenientJsonParser.parse((Reader)(new InputStreamReader(var4, StandardCharsets.UTF_8))).getAsJsonObject();
+               var13 = LenientJsonParser.parse((Reader)(new InputStreamReader(is, StandardCharsets.UTF_8))).getAsJsonObject();
             } finally {
-               this.drainStream(var4);
+               this.drainStream(is);
             }
          } catch (Throwable var12) {
-            if (var4 != null) {
+            if (is != null) {
                try {
-                  var4.close();
+                  is.close();
                } catch (Throwable var10) {
                   var12.addSuppressed(var10);
                }
@@ -165,33 +165,33 @@ public abstract class ServerTextFilter implements AutoCloseable {
             throw var12;
          }
 
-         if (var4 != null) {
-            var4.close();
+         if (is != null) {
+            is.close();
          }
 
          return var13;
       }
 
-      if (var4 != null) {
-         var4.close();
+      if (is != null) {
+         is.close();
       }
 
       return var13;
    }
 
-   protected HttpURLConnection makeRequest(JsonObject var1, URL var2) throws IOException {
-      HttpURLConnection var3 = this.getURLConnection(var2);
-      this.setAuthorizationProperty(var3);
-      OutputStreamWriter var4 = new OutputStreamWriter(var3.getOutputStream(), StandardCharsets.UTF_8);
+   protected HttpURLConnection makeRequest(final JsonObject payload, final URL url) throws IOException {
+      HttpURLConnection connection = this.getURLConnection(url);
+      this.setAuthorizationProperty(connection);
+      OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8);
 
       try {
-         JsonWriter var5 = new JsonWriter(var4);
+         JsonWriter jsonWriter = new JsonWriter(writer);
 
          try {
-            Streams.write(var1, var5);
+            Streams.write(payload, jsonWriter);
          } catch (Throwable var10) {
             try {
-               var5.close();
+               jsonWriter.close();
             } catch (Throwable var9) {
                var10.addSuppressed(var9);
             }
@@ -199,10 +199,10 @@ public abstract class ServerTextFilter implements AutoCloseable {
             throw var10;
          }
 
-         var5.close();
+         jsonWriter.close();
       } catch (Throwable var11) {
          try {
-            var4.close();
+            writer.close();
          } catch (Throwable var8) {
             var11.addSuppressed(var8);
          }
@@ -210,42 +210,42 @@ public abstract class ServerTextFilter implements AutoCloseable {
          throw var11;
       }
 
-      var4.close();
-      int var12 = var3.getResponseCode();
-      if (var12 >= 200 && var12 < 300) {
-         return var3;
+      writer.close();
+      int responseCode = connection.getResponseCode();
+      if (responseCode >= 200 && responseCode < 300) {
+         return connection;
       } else {
-         throw new RequestFailedException(var12 + " " + var3.getResponseMessage());
+         throw new RequestFailedException(responseCode + " " + connection.getResponseMessage());
       }
    }
 
-   protected abstract void setAuthorizationProperty(HttpURLConnection var1);
+   protected abstract void setAuthorizationProperty(final HttpURLConnection connection);
 
    protected int connectionReadTimeout() {
       return 2000;
    }
 
-   protected HttpURLConnection getURLConnection(URL var1) throws IOException {
-      HttpURLConnection var2 = (HttpURLConnection)var1.openConnection();
-      var2.setConnectTimeout(15000);
-      var2.setReadTimeout(this.connectionReadTimeout());
-      var2.setUseCaches(false);
-      var2.setDoOutput(true);
-      var2.setDoInput(true);
-      var2.setRequestMethod("POST");
-      var2.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-      var2.setRequestProperty("Accept", "application/json");
-      var2.setRequestProperty("User-Agent", "Minecraft server" + SharedConstants.getCurrentVersion().name());
-      return var2;
+   protected HttpURLConnection getURLConnection(final URL url) throws IOException {
+      HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+      connection.setConnectTimeout(15000);
+      connection.setReadTimeout(this.connectionReadTimeout());
+      connection.setUseCaches(false);
+      connection.setDoOutput(true);
+      connection.setDoInput(true);
+      connection.setRequestMethod("POST");
+      connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+      connection.setRequestProperty("Accept", "application/json");
+      connection.setRequestProperty("User-Agent", "Minecraft server" + SharedConstants.getCurrentVersion().name());
+      return connection;
    }
 
-   public TextFilter createContext(GameProfile var1) {
-      return new PlayerContext(var1);
+   public TextFilter createContext(final GameProfile gameProfile) {
+      return new PlayerContext(gameProfile);
    }
 
    protected static class RequestFailedException extends RuntimeException {
-      protected RequestFailedException(String var1) {
-         super(var1);
+      protected RequestFailedException(final String message) {
+         super(message);
       }
    }
 
@@ -253,49 +253,50 @@ public abstract class ServerTextFilter implements AutoCloseable {
       protected final GameProfile profile;
       protected final Executor streamExecutor;
 
-      protected PlayerContext(final GameProfile var2) {
+      protected PlayerContext(final GameProfile profile) {
+         Objects.requireNonNull(ServerTextFilter.this);
          super();
-         this.profile = var2;
-         ConsecutiveExecutor var3 = new ConsecutiveExecutor(ServerTextFilter.this.workerPool, "chat stream for " + var2.name());
-         Objects.requireNonNull(var3);
-         this.streamExecutor = var3::schedule;
+         this.profile = profile;
+         ConsecutiveExecutor streamProcessor = new ConsecutiveExecutor(ServerTextFilter.this.workerPool, "chat stream for " + profile.name());
+         Objects.requireNonNull(streamProcessor);
+         this.streamExecutor = streamProcessor::schedule;
       }
 
-      public CompletableFuture<List<FilteredText>> processMessageBundle(List<String> var1) {
-         List var2 = (List)var1.stream().map((var1x) -> ServerTextFilter.this.requestMessageProcessing(this.profile, var1x, ServerTextFilter.this.chatIgnoreStrategy, this.streamExecutor)).collect(ImmutableList.toImmutableList());
-         return Util.sequenceFailFast(var2).exceptionally((var0) -> ImmutableList.of());
+      public CompletableFuture<List<FilteredText>> processMessageBundle(final List<String> messages) {
+         List<CompletableFuture<FilteredText>> requests = (List)messages.stream().map((message) -> ServerTextFilter.this.requestMessageProcessing(this.profile, message, ServerTextFilter.this.chatIgnoreStrategy, this.streamExecutor)).collect(ImmutableList.toImmutableList());
+         return Util.sequenceFailFast(requests).exceptionally((e) -> ImmutableList.of());
       }
 
-      public CompletableFuture<FilteredText> processStreamMessage(String var1) {
-         return ServerTextFilter.this.requestMessageProcessing(this.profile, var1, ServerTextFilter.this.chatIgnoreStrategy, this.streamExecutor);
+      public CompletableFuture<FilteredText> processStreamMessage(final String message) {
+         return ServerTextFilter.this.requestMessageProcessing(this.profile, message, ServerTextFilter.this.chatIgnoreStrategy, this.streamExecutor);
       }
    }
 
    @FunctionalInterface
    public interface IgnoreStrategy {
-      IgnoreStrategy NEVER_IGNORE = (var0, var1) -> false;
-      IgnoreStrategy IGNORE_FULLY_FILTERED = (var0, var1) -> var0.length() == var1;
+      IgnoreStrategy NEVER_IGNORE = (message, removedCharCount) -> false;
+      IgnoreStrategy IGNORE_FULLY_FILTERED = (message, removedCharCount) -> message.length() == removedCharCount;
 
-      static IgnoreStrategy ignoreOverThreshold(int var0) {
-         return (var1, var2) -> var2 >= var0;
+      static IgnoreStrategy ignoreOverThreshold(final int threshold) {
+         return (message, removedCharCount) -> removedCharCount >= threshold;
       }
 
-      static IgnoreStrategy select(int var0) {
+      static IgnoreStrategy select(final int hashesToDrop) {
          IgnoreStrategy var10000;
-         switch (var0) {
+         switch (hashesToDrop) {
             case -1 -> var10000 = NEVER_IGNORE;
             case 0 -> var10000 = IGNORE_FULLY_FILTERED;
-            default -> var10000 = ignoreOverThreshold(var0);
+            default -> var10000 = ignoreOverThreshold(hashesToDrop);
          }
 
          return var10000;
       }
 
-      boolean shouldIgnore(String var1, int var2);
+      boolean shouldIgnore(final String message, final int removedCharCount);
    }
 
    @FunctionalInterface
    protected interface MessageEncoder {
-      JsonObject encode(GameProfile var1, String var2);
+      JsonObject encode(GameProfile profile, String message);
    }
 }

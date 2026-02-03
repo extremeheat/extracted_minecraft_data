@@ -12,7 +12,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.chat.report.NameReport;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import org.jspecify.annotations.Nullable;
 
 public class NameReportScreen extends AbstractReportScreen<NameReport.Builder> {
@@ -20,34 +19,34 @@ public class NameReportScreen extends AbstractReportScreen<NameReport.Builder> {
    private static final Component COMMENT_BOX_LABEL = Component.translatable("gui.abuseReport.name.comment_box_label");
    private @Nullable MultiLineEditBox commentBox;
 
-   private NameReportScreen(Screen var1, ReportingContext var2, NameReport.Builder var3) {
-      super(TITLE, var1, var2, var3);
+   private NameReportScreen(final Screen lastScreen, final ReportingContext reportingContext, final NameReport.Builder reportBuilder) {
+      super(TITLE, lastScreen, reportingContext, reportBuilder);
    }
 
-   public NameReportScreen(Screen var1, ReportingContext var2, UUID var3, String var4) {
-      this(var1, var2, new NameReport.Builder(var3, var4, var2.sender().reportLimits()));
+   public NameReportScreen(final Screen lastScreen, final ReportingContext reportingContext, final UUID playerId, final String reportedName) {
+      this(lastScreen, reportingContext, new NameReport.Builder(playerId, reportedName, reportingContext.sender().reportLimits()));
    }
 
-   public NameReportScreen(Screen var1, ReportingContext var2, NameReport var3) {
-      this(var1, var2, new NameReport.Builder(var3, var2.sender().reportLimits()));
+   public NameReportScreen(final Screen lastScreen, final ReportingContext reportingContext, final NameReport draft) {
+      this(lastScreen, reportingContext, new NameReport.Builder(draft, reportingContext.sender().reportLimits()));
    }
 
    protected void addContent() {
-      MutableComponent var1 = Component.literal(((NameReport)((NameReport.Builder)this.reportBuilder).report()).getReportedName()).withStyle(ChatFormatting.YELLOW);
-      this.layout.addChild(new StringWidget(Component.translatable("gui.abuseReport.name.reporting", var1), this.font), (Consumer)((var0) -> var0.alignHorizontallyCenter().padding(0, 8)));
+      Component reportedName = Component.literal(((NameReport)((NameReport.Builder)this.reportBuilder).report()).getReportedName()).withStyle(ChatFormatting.YELLOW);
+      this.layout.addChild(new StringWidget(Component.translatable("gui.abuseReport.name.reporting", reportedName), this.font), (Consumer)((s) -> s.alignHorizontallyCenter().padding(0, 8)));
       Objects.requireNonNull(this.font);
-      this.commentBox = this.createCommentBox(280, 9 * 8, (var1x) -> {
-         ((NameReport.Builder)this.reportBuilder).setComments(var1x);
+      this.commentBox = this.createCommentBox(280, 9 * 8, (comments) -> {
+         ((NameReport.Builder)this.reportBuilder).setComments(comments);
          this.onReportChanged();
       });
-      this.layout.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, COMMENT_BOX_LABEL, (var0) -> var0.paddingBottom(12)));
+      this.layout.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, COMMENT_BOX_LABEL, (s) -> s.paddingBottom(12)));
    }
 
-   public boolean mouseReleased(MouseButtonEvent var1) {
-      if (super.mouseReleased(var1)) {
+   public boolean mouseReleased(final MouseButtonEvent event) {
+      if (super.mouseReleased(event)) {
          return true;
       } else {
-         return this.commentBox != null ? this.commentBox.mouseReleased(var1) : false;
+         return this.commentBox != null ? this.commentBox.mouseReleased(event) : false;
       }
    }
 }

@@ -28,68 +28,68 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
    private final byte yHeadRot;
    private final int data;
 
-   public ClientboundAddEntityPacket(Entity var1, ServerEntity var2) {
-      this(var1, var2, 0);
+   public ClientboundAddEntityPacket(final Entity entity, final ServerEntity serverEntity) {
+      this(entity, serverEntity, 0);
    }
 
-   public ClientboundAddEntityPacket(Entity var1, ServerEntity var2, int var3) {
-      this(var1.getId(), var1.getUUID(), var2.getPositionBase().x(), var2.getPositionBase().y(), var2.getPositionBase().z(), var2.getLastSentXRot(), var2.getLastSentYRot(), var1.getType(), var3, var2.getLastSentMovement(), (double)var2.getLastSentYHeadRot());
+   public ClientboundAddEntityPacket(final Entity entity, final ServerEntity serverEntity, final int data) {
+      this(entity.getId(), entity.getUUID(), serverEntity.getPositionBase().x(), serverEntity.getPositionBase().y(), serverEntity.getPositionBase().z(), serverEntity.getLastSentXRot(), serverEntity.getLastSentYRot(), entity.getType(), data, serverEntity.getLastSentMovement(), (double)serverEntity.getLastSentYHeadRot());
    }
 
-   public ClientboundAddEntityPacket(Entity var1, int var2, BlockPos var3) {
-      this(var1.getId(), var1.getUUID(), (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), var1.getXRot(), var1.getYRot(), var1.getType(), var2, var1.getDeltaMovement(), (double)var1.getYHeadRot());
+   public ClientboundAddEntityPacket(final Entity entity, final int data, final BlockPos pos) {
+      this(entity.getId(), entity.getUUID(), (double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), entity.getXRot(), entity.getYRot(), entity.getType(), data, entity.getDeltaMovement(), (double)entity.getYHeadRot());
    }
 
-   public ClientboundAddEntityPacket(int var1, UUID var2, double var3, double var5, double var7, float var9, float var10, EntityType<?> var11, int var12, Vec3 var13, double var14) {
+   public ClientboundAddEntityPacket(final int id, final UUID uuid, final double x, final double y, final double z, final float xRot, final float yRot, final EntityType<?> type, final int data, final Vec3 movement, final double yHeadRot) {
       super();
-      this.id = var1;
-      this.uuid = var2;
-      this.x = var3;
-      this.y = var5;
-      this.z = var7;
-      this.movement = var13;
-      this.xRot = Mth.packDegrees(var9);
-      this.yRot = Mth.packDegrees(var10);
-      this.yHeadRot = Mth.packDegrees((float)var14);
-      this.type = var11;
-      this.data = var12;
+      this.id = id;
+      this.uuid = uuid;
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.movement = movement;
+      this.xRot = Mth.packDegrees(xRot);
+      this.yRot = Mth.packDegrees(yRot);
+      this.yHeadRot = Mth.packDegrees((float)yHeadRot);
+      this.type = type;
+      this.data = data;
    }
 
-   private ClientboundAddEntityPacket(RegistryFriendlyByteBuf var1) {
+   private ClientboundAddEntityPacket(final RegistryFriendlyByteBuf input) {
       super();
-      this.id = var1.readVarInt();
-      this.uuid = var1.readUUID();
-      this.type = (EntityType)ByteBufCodecs.registry(Registries.ENTITY_TYPE).decode(var1);
-      this.x = var1.readDouble();
-      this.y = var1.readDouble();
-      this.z = var1.readDouble();
-      this.movement = var1.readLpVec3();
-      this.xRot = var1.readByte();
-      this.yRot = var1.readByte();
-      this.yHeadRot = var1.readByte();
-      this.data = var1.readVarInt();
+      this.id = input.readVarInt();
+      this.uuid = input.readUUID();
+      this.type = (EntityType)ByteBufCodecs.registry(Registries.ENTITY_TYPE).decode(input);
+      this.x = input.readDouble();
+      this.y = input.readDouble();
+      this.z = input.readDouble();
+      this.movement = (Vec3)Vec3.LP_STREAM_CODEC.decode(input);
+      this.xRot = input.readByte();
+      this.yRot = input.readByte();
+      this.yHeadRot = input.readByte();
+      this.data = input.readVarInt();
    }
 
-   private void write(RegistryFriendlyByteBuf var1) {
-      var1.writeVarInt(this.id);
-      var1.writeUUID(this.uuid);
-      ByteBufCodecs.registry(Registries.ENTITY_TYPE).encode(var1, this.type);
-      var1.writeDouble(this.x);
-      var1.writeDouble(this.y);
-      var1.writeDouble(this.z);
-      var1.writeLpVec3(this.movement);
-      var1.writeByte(this.xRot);
-      var1.writeByte(this.yRot);
-      var1.writeByte(this.yHeadRot);
-      var1.writeVarInt(this.data);
+   private void write(final RegistryFriendlyByteBuf output) {
+      output.writeVarInt(this.id);
+      output.writeUUID(this.uuid);
+      ByteBufCodecs.registry(Registries.ENTITY_TYPE).encode(output, this.type);
+      output.writeDouble(this.x);
+      output.writeDouble(this.y);
+      output.writeDouble(this.z);
+      Vec3.LP_STREAM_CODEC.encode(output, this.movement);
+      output.writeByte(this.xRot);
+      output.writeByte(this.yRot);
+      output.writeByte(this.yHeadRot);
+      output.writeVarInt(this.data);
    }
 
    public PacketType<ClientboundAddEntityPacket> type() {
       return GamePacketTypes.CLIENTBOUND_ADD_ENTITY;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleAddEntity(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleAddEntity(this);
    }
 
    public int getId() {

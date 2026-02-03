@@ -23,7 +23,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 
-public class QuadParticleRenderState implements SubmitNodeCollector.ParticleGroupRenderer, ParticleGroupRenderState {
+public class QuadParticleRenderState implements ParticleGroupRenderState, SubmitNodeCollector.ParticleGroupRenderer {
    private static final int INITIAL_PARTICLE_CAPACITY = 1024;
    private static final int FLOATS_PER_PARTICLE = 12;
    private static final int INTS_PER_PARTICLE = 2;
@@ -34,8 +34,8 @@ public class QuadParticleRenderState implements SubmitNodeCollector.ParticleGrou
       super();
    }
 
-   public void add(SingleQuadParticle.Layer var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12, float var13, int var14, int var15) {
-      ((Storage)this.particles.computeIfAbsent(var1, (var0) -> new Storage())).add(var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15);
+   public void add(final SingleQuadParticle.Layer layer, final float x, final float y, final float z, final float xRot, final float yRot, final float zRot, final float wRot, final float scale, final float u0, final float u1, final float v0, final float v1, final int color, final int lightCoords) {
+      ((Storage)this.particles.computeIfAbsent(layer, (ignored) -> new Storage())).add(x, y, z, xRot, yRot, zRot, wRot, scale, u0, u1, v0, v1, color, lightCoords);
       ++this.particleCount;
    }
 
@@ -44,135 +44,131 @@ public class QuadParticleRenderState implements SubmitNodeCollector.ParticleGrou
       this.particleCount = 0;
    }
 
-   public @Nullable PreparedBuffers prepare(ParticleFeatureRenderer.ParticleBufferCache var1) {
-      int var2 = this.particleCount * 4;
+   public boolean isEmpty() {
+      return this.particleCount == 0;
+   }
 
-      try (ByteBufferBuilder var3 = ByteBufferBuilder.exactlySized(var2 * DefaultVertexFormat.PARTICLE.getVertexSize())) {
-         BufferBuilder var4 = new BufferBuilder(var3, VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
-         HashMap var5 = new HashMap();
-         int var6 = 0;
+   public @Nullable PreparedBuffers prepare(final ParticleFeatureRenderer.ParticleBufferCache cachedBuffer, final boolean translucent) {
+      if (this.isEmpty()) {
+         return null;
+      } else {
+         int vertexCount = this.particleCount * 4;
 
-         for(Map.Entry var8 : this.particles.entrySet()) {
-            ((Storage)var8.getValue()).forEachParticle((var2x, var3x, var4x, var5x, var6x, var7, var8x, var9, var10, var11x, var12x, var13, var14x, var15) -> this.renderRotatedQuad(var4, var2x, var3x, var4x, var5x, var6x, var7, var8x, var9, var10, var11x, var12x, var13, var14x, var15));
-            if (((Storage)var8.getValue()).count() > 0) {
-               var5.put((SingleQuadParticle.Layer)var8.getKey(), new PreparedLayer(var6, ((Storage)var8.getValue()).count() * 6));
+         try (ByteBufferBuilder builder = ByteBufferBuilder.exactlySized(vertexCount * DefaultVertexFormat.PARTICLE.getVertexSize())) {
+            BufferBuilder bufferBuilder = new BufferBuilder(builder, VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
+            Map<SingleQuadParticle.Layer, PreparedLayer> preparedLayers = new HashMap();
+            int offset = 0;
+
+            for(Map.Entry<SingleQuadParticle.Layer, Storage> entry : this.particles.entrySet()) {
+               if (((SingleQuadParticle.Layer)entry.getKey()).translucent() == translucent) {
+                  ((Storage)entry.getValue()).forEachParticle((x, y, z, xRot, yRot, zRot, wRot, scale, u0, u1, v0, v1, color, lightCoords) -> this.renderRotatedQuad(bufferBuilder, x, y, z, xRot, yRot, zRot, wRot, scale, u0, u1, v0, v1, color, lightCoords));
+                  if (((Storage)entry.getValue()).count() > 0) {
+                     preparedLayers.put((SingleQuadParticle.Layer)entry.getKey(), new PreparedLayer(offset, ((Storage)entry.getValue()).count() * 6));
+                  }
+
+                  offset += ((Storage)entry.getValue()).count() * 4;
+               }
             }
 
-            var6 += ((Storage)var8.getValue()).count() * 4;
-         }
-
-         MeshData var12 = var4.build();
-         if (var12 != null) {
-            var1.write(var12.vertexBuffer());
-            RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS).getBuffer(var12.drawState().indexCount());
-            GpuBufferSlice var14 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
-            return new PreparedBuffers(var12.drawState().indexCount(), var14, var5);
-         } else {
-            return null;
+            MeshData mesh = bufferBuilder.build();
+            if (mesh != null) {
+               cachedBuffer.write(mesh.vertexBuffer());
+               RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS).getBuffer(mesh.drawState().indexCount());
+               GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
+               return new PreparedBuffers(mesh.drawState().indexCount(), dynamicTransforms, preparedLayers);
+            } else {
+               return null;
+            }
          }
       }
    }
 
-   public void render(PreparedBuffers var1, ParticleFeatureRenderer.ParticleBufferCache var2, RenderPass var3, TextureManager var4, boolean var5) {
-      RenderSystem.AutoStorageIndexBuffer var6 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-      var3.setVertexBuffer(0, var2.get());
-      var3.setIndexBuffer(var6.getBuffer(var1.indexCount), var6.type());
-      var3.setUniform("DynamicTransforms", var1.dynamicTransforms);
+   public void render(final PreparedBuffers preparedBuffers, final ParticleFeatureRenderer.ParticleBufferCache bufferCache, final RenderPass renderPass, final TextureManager textureManager) {
+      RenderSystem.AutoStorageIndexBuffer indexBuffer = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      renderPass.setVertexBuffer(0, bufferCache.get());
+      renderPass.setIndexBuffer(indexBuffer.getBuffer(preparedBuffers.indexCount), indexBuffer.type());
+      renderPass.setUniform("DynamicTransforms", preparedBuffers.dynamicTransforms);
 
-      for(Map.Entry var8 : var1.layers.entrySet()) {
-         if (var5 == ((SingleQuadParticle.Layer)var8.getKey()).translucent()) {
-            var3.setPipeline(((SingleQuadParticle.Layer)var8.getKey()).pipeline());
-            AbstractTexture var9 = var4.getTexture(((SingleQuadParticle.Layer)var8.getKey()).textureAtlasLocation());
-            var3.bindTexture("Sampler0", var9.getTextureView(), var9.getSampler());
-            var3.drawIndexed(((PreparedLayer)var8.getValue()).vertexOffset, 0, ((PreparedLayer)var8.getValue()).indexCount, 1);
-         }
+      for(Map.Entry<SingleQuadParticle.Layer, PreparedLayer> entry : preparedBuffers.layers.entrySet()) {
+         renderPass.setPipeline(((SingleQuadParticle.Layer)entry.getKey()).pipeline());
+         AbstractTexture texture = textureManager.getTexture(((SingleQuadParticle.Layer)entry.getKey()).textureAtlasLocation());
+         renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
+         renderPass.drawIndexed(((PreparedLayer)entry.getValue()).vertexOffset, 0, ((PreparedLayer)entry.getValue()).indexCount, 1);
       }
 
    }
 
-   protected void renderRotatedQuad(VertexConsumer var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12, float var13, int var14, int var15) {
-      Quaternionf var16 = new Quaternionf(var5, var6, var7, var8);
-      this.renderVertex(var1, var16, var2, var3, var4, 1.0F, -1.0F, var9, var11, var13, var14, var15);
-      this.renderVertex(var1, var16, var2, var3, var4, 1.0F, 1.0F, var9, var11, var12, var14, var15);
-      this.renderVertex(var1, var16, var2, var3, var4, -1.0F, 1.0F, var9, var10, var12, var14, var15);
-      this.renderVertex(var1, var16, var2, var3, var4, -1.0F, -1.0F, var9, var10, var13, var14, var15);
+   protected void renderRotatedQuad(final VertexConsumer builder, final float x, final float y, final float z, final float xRot, final float yRot, final float zRot, final float wRot, final float scale, final float u0, final float u1, final float v0, final float v1, final int color, final int lightCoords) {
+      Quaternionf rotation = new Quaternionf(xRot, yRot, zRot, wRot);
+      this.renderVertex(builder, rotation, x, y, z, 1.0F, -1.0F, scale, u1, v1, color, lightCoords);
+      this.renderVertex(builder, rotation, x, y, z, 1.0F, 1.0F, scale, u1, v0, color, lightCoords);
+      this.renderVertex(builder, rotation, x, y, z, -1.0F, 1.0F, scale, u0, v0, color, lightCoords);
+      this.renderVertex(builder, rotation, x, y, z, -1.0F, -1.0F, scale, u0, v1, color, lightCoords);
    }
 
-   private void renderVertex(VertexConsumer var1, Quaternionf var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, int var11, int var12) {
-      Vector3f var13 = (new Vector3f(var6, var7, 0.0F)).rotate(var2).mul(var8).add(var3, var4, var5);
-      var1.addVertex(var13.x(), var13.y(), var13.z()).setUv(var9, var10).setColor(var11).setLight(var12);
+   private void renderVertex(final VertexConsumer builder, final Quaternionf rotation, final float x, final float y, final float z, final float nx, final float ny, final float scale, final float u, final float v, final int color, final int lightCoords) {
+      Vector3f scratch = (new Vector3f(nx, ny, 0.0F)).rotate(rotation).mul(scale).add(x, y, z);
+      builder.addVertex(scratch.x(), scratch.y(), scratch.z()).setUv(u, v).setColor(color).setLight(lightCoords);
    }
 
-   public void submit(SubmitNodeCollector var1, CameraRenderState var2) {
+   public void submit(final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       if (this.particleCount > 0) {
-         var1.submitParticleGroup(this);
+         submitNodeCollector.submitParticleGroup(this);
       }
 
    }
 
    public static record PreparedBuffers(int indexCount, GpuBufferSlice dynamicTransforms, Map<SingleQuadParticle.Layer, PreparedLayer> layers) {
-      final int indexCount;
-      final GpuBufferSlice dynamicTransforms;
-      final Map<SingleQuadParticle.Layer, PreparedLayer> layers;
-
-      public PreparedBuffers(int var1, GpuBufferSlice var2, Map<SingleQuadParticle.Layer, PreparedLayer> var3) {
+      public PreparedBuffers {
          super();
-         this.indexCount = var1;
-         this.dynamicTransforms = var2;
-         this.layers = var3;
       }
    }
 
    public static record PreparedLayer(int vertexOffset, int indexCount) {
-      final int vertexOffset;
-      final int indexCount;
-
-      public PreparedLayer(int var1, int var2) {
+      public PreparedLayer {
          super();
-         this.vertexOffset = var1;
-         this.indexCount = var2;
       }
    }
 
-   static class Storage {
+   private static class Storage {
       private int capacity = 1024;
       private float[] floatValues = new float[12288];
       private int[] intValues = new int[2048];
       private int currentParticleIndex;
 
-      Storage() {
+      private Storage() {
          super();
       }
 
-      public void add(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12, int var13, int var14) {
+      public void add(final float x, final float y, final float z, final float xRot, final float yRot, final float zRot, final float wRot, final float scale, final float u0, final float u1, final float v0, final float v1, final int color, final int lightCoords) {
          if (this.currentParticleIndex >= this.capacity) {
             this.grow();
          }
 
-         int var15 = this.currentParticleIndex * 12;
-         this.floatValues[var15++] = var1;
-         this.floatValues[var15++] = var2;
-         this.floatValues[var15++] = var3;
-         this.floatValues[var15++] = var4;
-         this.floatValues[var15++] = var5;
-         this.floatValues[var15++] = var6;
-         this.floatValues[var15++] = var7;
-         this.floatValues[var15++] = var8;
-         this.floatValues[var15++] = var9;
-         this.floatValues[var15++] = var10;
-         this.floatValues[var15++] = var11;
-         this.floatValues[var15] = var12;
-         var15 = this.currentParticleIndex * 2;
-         this.intValues[var15++] = var13;
-         this.intValues[var15] = var14;
+         int index = this.currentParticleIndex * 12;
+         this.floatValues[index++] = x;
+         this.floatValues[index++] = y;
+         this.floatValues[index++] = z;
+         this.floatValues[index++] = xRot;
+         this.floatValues[index++] = yRot;
+         this.floatValues[index++] = zRot;
+         this.floatValues[index++] = wRot;
+         this.floatValues[index++] = scale;
+         this.floatValues[index++] = u0;
+         this.floatValues[index++] = u1;
+         this.floatValues[index++] = v0;
+         this.floatValues[index] = v1;
+         index = this.currentParticleIndex * 2;
+         this.intValues[index++] = color;
+         this.intValues[index] = lightCoords;
          ++this.currentParticleIndex;
       }
 
-      public void forEachParticle(ParticleConsumer var1) {
-         for(int var2 = 0; var2 < this.currentParticleIndex; ++var2) {
-            int var3 = var2 * 12;
-            int var4 = var2 * 2;
-            var1.consume(this.floatValues[var3++], this.floatValues[var3++], this.floatValues[var3++], this.floatValues[var3++], this.floatValues[var3++], this.floatValues[var3++], this.floatValues[var3++], this.floatValues[var3++], this.floatValues[var3++], this.floatValues[var3++], this.floatValues[var3++], this.floatValues[var3], this.intValues[var4++], this.intValues[var4]);
+      public void forEachParticle(final ParticleConsumer consumer) {
+         for(int particleIndex = 0; particleIndex < this.currentParticleIndex; ++particleIndex) {
+            int floatIndex = particleIndex * 12;
+            int intIndex = particleIndex * 2;
+            consumer.consume(this.floatValues[floatIndex++], this.floatValues[floatIndex++], this.floatValues[floatIndex++], this.floatValues[floatIndex++], this.floatValues[floatIndex++], this.floatValues[floatIndex++], this.floatValues[floatIndex++], this.floatValues[floatIndex++], this.floatValues[floatIndex++], this.floatValues[floatIndex++], this.floatValues[floatIndex++], this.floatValues[floatIndex], this.intValues[intIndex++], this.intValues[intIndex]);
          }
 
       }
@@ -194,6 +190,6 @@ public class QuadParticleRenderState implements SubmitNodeCollector.ParticleGrou
 
    @FunctionalInterface
    public interface ParticleConsumer {
-      void consume(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12, int var13, int var14);
+      void consume(final float x, final float y, final float z, final float xRot, final float yRot, final float zRot, final float wRot, final float scale, final float u0, final float u1, final float v0, final float v1, final int color, final int lightCoords);
    }
 }

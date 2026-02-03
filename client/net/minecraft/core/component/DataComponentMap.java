@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -21,7 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 public interface DataComponentMap extends Iterable<TypedDataComponent<?>>, DataComponentGetter {
    DataComponentMap EMPTY = new DataComponentMap() {
-      public <T> @Nullable T get(DataComponentType<? extends T> var1) {
+      public <T> @Nullable T get(final DataComponentType<? extends T> type) {
          return null;
       }
 
@@ -35,38 +36,38 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>>, DataC
    };
    Codec<DataComponentMap> CODEC = makeCodecFromMap(DataComponentType.VALUE_MAP_CODEC);
 
-   static Codec<DataComponentMap> makeCodec(Codec<DataComponentType<?>> var0) {
-      return makeCodecFromMap(Codec.dispatchedMap(var0, DataComponentType::codecOrThrow));
+   static Codec<DataComponentMap> makeCodec(final Codec<DataComponentType<?>> componentTypeCodec) {
+      return makeCodecFromMap(Codec.dispatchedMap(componentTypeCodec, DataComponentType::codecOrThrow));
    }
 
-   static Codec<DataComponentMap> makeCodecFromMap(Codec<Map<DataComponentType<?>, Object>> var0) {
-      return var0.flatComapMap(Builder::buildFromMapTrusted, (var0x) -> {
-         int var1 = var0x.size();
-         if (var1 == 0) {
+   static Codec<DataComponentMap> makeCodecFromMap(final Codec<Map<DataComponentType<?>, Object>> mapCodec) {
+      return mapCodec.flatComapMap(Builder::buildFromMapTrusted, (components) -> {
+         int size = components.size();
+         if (size == 0) {
             return DataResult.success(Reference2ObjectMaps.emptyMap());
          } else {
-            Reference2ObjectArrayMap var2 = new Reference2ObjectArrayMap(var1);
+            Reference2ObjectMap<DataComponentType<?>, Object> map = new Reference2ObjectArrayMap(size);
 
-            for(TypedDataComponent var4 : var0x) {
-               if (!var4.type().isTransient()) {
-                  var2.put(var4.type(), var4.value());
+            for(TypedDataComponent<?> entry : components) {
+               if (!entry.type().isTransient()) {
+                  map.put(entry.type(), entry.value());
                }
             }
 
-            return DataResult.success(var2);
+            return DataResult.success(map);
          }
       });
    }
 
-   static DataComponentMap composite(final DataComponentMap var0, final DataComponentMap var1) {
+   static DataComponentMap composite(final DataComponentMap prototype, final DataComponentMap overrides) {
       return new DataComponentMap() {
-         public <T> @Nullable T get(DataComponentType<? extends T> var1x) {
-            Object var2 = var1.get(var1x);
-            return (T)(var2 != null ? var2 : var0.get(var1x));
+         public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+            T value = (T)overrides.get(type);
+            return (T)(value != null ? value : prototype.get(type));
          }
 
          public Set<DataComponentType<?>> keySet() {
-            return Sets.union(var0.keySet(), var1.keySet());
+            return Sets.union(prototype.keySet(), overrides.keySet());
          }
       };
    }
@@ -77,12 +78,12 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>>, DataC
 
    Set<DataComponentType<?>> keySet();
 
-   default boolean has(DataComponentType<?> var1) {
-      return this.get(var1) != null;
+   default boolean has(final DataComponentType<?> type) {
+      return this.get(type) != null;
    }
 
    default Iterator<TypedDataComponent<?>> iterator() {
-      return Iterators.transform(this.keySet().iterator(), (var1) -> (TypedDataComponent)Objects.requireNonNull(this.getTyped(var1)));
+      return Iterators.transform(this.keySet().iterator(), (type) -> (TypedDataComponent)Objects.requireNonNull(this.getTyped(type)));
    }
 
    default Stream<TypedDataComponent<?>> stream() {
@@ -97,15 +98,19 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>>, DataC
       return this.size() == 0;
    }
 
-   default DataComponentMap filter(final Predicate<DataComponentType<?>> var1) {
+   default DataComponentMap filter(final Predicate<DataComponentType<?>> predicate) {
       return new DataComponentMap() {
-         public <T> @Nullable T get(DataComponentType<? extends T> var1x) {
-            return (T)(var1.test(var1x) ? DataComponentMap.this.get(var1x) : null);
+         {
+            Objects.requireNonNull(DataComponentMap.this);
+         }
+
+         public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+            return (T)(predicate.test(type) ? DataComponentMap.this.get(type) : null);
          }
 
          public Set<DataComponentType<?>> keySet() {
             Set var10000 = DataComponentMap.this.keySet();
-            Predicate var10001 = var1;
+            Predicate var10001 = predicate;
             Objects.requireNonNull(var10001);
             return Sets.filter(var10000, var10001::test);
          }
@@ -114,57 +119,65 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>>, DataC
 
    public static class Builder {
       private final Reference2ObjectMap<DataComponentType<?>, Object> map = new Reference2ObjectArrayMap();
+      private Consumer<DataComponentMap> validator = (components) -> {
+      };
 
-      Builder() {
+      private Builder() {
          super();
       }
 
-      public <T> Builder set(DataComponentType<T> var1, @Nullable T var2) {
-         this.setUnchecked(var1, var2);
+      public <T> Builder set(final DataComponentType<T> type, final @Nullable T value) {
+         this.setUnchecked(type, value);
          return this;
       }
 
-      <T> void setUnchecked(DataComponentType<T> var1, @Nullable Object var2) {
-         if (var2 != null) {
-            this.map.put(var1, var2);
+      <T> void setUnchecked(final DataComponentType<T> type, final @Nullable Object value) {
+         if (value != null) {
+            this.map.put(type, value);
          } else {
-            this.map.remove(var1);
+            this.map.remove(type);
          }
 
       }
 
-      public Builder addAll(DataComponentMap var1) {
-         for(TypedDataComponent var3 : var1) {
-            this.map.put(var3.type(), var3.value());
+      public Builder addAll(final DataComponentMap map) {
+         for(TypedDataComponent<?> entry : map) {
+            this.map.put(entry.type(), entry.value());
          }
 
+         return this;
+      }
+
+      public Builder addValidator(final Consumer<DataComponentMap> newValidator) {
+         this.validator = this.validator.andThen(newValidator);
          return this;
       }
 
       public DataComponentMap build() {
-         return buildFromMapTrusted(this.map);
+         DataComponentMap result = buildFromMapTrusted(this.map);
+         this.validator.accept(result);
+         return result;
       }
 
-      private static DataComponentMap buildFromMapTrusted(Map<DataComponentType<?>, Object> var0) {
-         if (var0.isEmpty()) {
+      private static DataComponentMap buildFromMapTrusted(final Map<DataComponentType<?>, Object> map) {
+         if (map.isEmpty()) {
             return DataComponentMap.EMPTY;
          } else {
-            return var0.size() < 8 ? new SimpleMap(new Reference2ObjectArrayMap(var0)) : new SimpleMap(new Reference2ObjectOpenHashMap(var0));
+            return map.size() < 8 ? new SimpleMap(new Reference2ObjectArrayMap(map)) : new SimpleMap(new Reference2ObjectOpenHashMap(map));
          }
       }
 
-      static record SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) implements DataComponentMap {
-         SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> var1) {
+      private static record SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) implements DataComponentMap {
+         private SimpleMap {
             super();
-            this.map = var1;
          }
 
-         public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-            return (T)this.map.get(var1);
+         public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+            return (T)this.map.get(type);
          }
 
-         public boolean has(DataComponentType<?> var1) {
-            return this.map.containsKey(var1);
+         public boolean has(final DataComponentType<?> type) {
+            return this.map.containsKey(type);
          }
 
          public Set<DataComponentType<?>> keySet() {

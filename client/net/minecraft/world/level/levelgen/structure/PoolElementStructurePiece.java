@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.structure;
 
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.core.BlockPos;
@@ -9,7 +10,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
@@ -33,63 +33,63 @@ public class PoolElementStructurePiece extends StructurePiece {
    private final StructureTemplateManager structureTemplateManager;
    private final LiquidSettings liquidSettings;
 
-   public PoolElementStructurePiece(StructureTemplateManager var1, StructurePoolElement var2, BlockPos var3, int var4, Rotation var5, BoundingBox var6, LiquidSettings var7) {
-      super(StructurePieceType.JIGSAW, 0, var6);
-      this.structureTemplateManager = var1;
-      this.element = var2;
-      this.position = var3;
-      this.groundLevelDelta = var4;
-      this.rotation = var5;
-      this.liquidSettings = var7;
+   public PoolElementStructurePiece(final StructureTemplateManager structureTemplateManager, final StructurePoolElement element, final BlockPos position, final int groundLevelDelta, final Rotation rotation, final BoundingBox boundingBox, final LiquidSettings liquidSettings) {
+      super(StructurePieceType.JIGSAW, 0, boundingBox);
+      this.structureTemplateManager = structureTemplateManager;
+      this.element = element;
+      this.position = position;
+      this.groundLevelDelta = groundLevelDelta;
+      this.rotation = rotation;
+      this.liquidSettings = liquidSettings;
    }
 
-   public PoolElementStructurePiece(StructurePieceSerializationContext var1, CompoundTag var2) {
-      super(StructurePieceType.JIGSAW, var2);
-      this.structureTemplateManager = var1.structureTemplateManager();
-      this.position = new BlockPos(var2.getIntOr("PosX", 0), var2.getIntOr("PosY", 0), var2.getIntOr("PosZ", 0));
-      this.groundLevelDelta = var2.getIntOr("ground_level_delta", 0);
-      RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.element = (StructurePoolElement)var2.read("pool_element", StructurePoolElement.CODEC, var3).orElseThrow(() -> new IllegalStateException("Invalid pool element found"));
-      this.rotation = (Rotation)var2.read("rotation", Rotation.LEGACY_CODEC).orElseThrow();
+   public PoolElementStructurePiece(final StructurePieceSerializationContext context, final CompoundTag tag) {
+      super(StructurePieceType.JIGSAW, tag);
+      this.structureTemplateManager = context.structureTemplateManager();
+      this.position = new BlockPos(tag.getIntOr("PosX", 0), tag.getIntOr("PosY", 0), tag.getIntOr("PosZ", 0));
+      this.groundLevelDelta = tag.getIntOr("ground_level_delta", 0);
+      DynamicOps<Tag> ops = context.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.element = (StructurePoolElement)tag.read("pool_element", StructurePoolElement.CODEC, ops).orElseThrow(() -> new IllegalStateException("Invalid pool element found"));
+      this.rotation = (Rotation)tag.read("rotation", Rotation.LEGACY_CODEC).orElseThrow();
       this.boundingBox = this.element.getBoundingBox(this.structureTemplateManager, this.position, this.rotation);
-      ListTag var4 = var2.getListOrEmpty("junctions");
+      ListTag junctionsTag = tag.getListOrEmpty("junctions");
       this.junctions.clear();
-      var4.forEach((var2x) -> this.junctions.add(JigsawJunction.deserialize(new Dynamic(var3, var2x))));
-      this.liquidSettings = (LiquidSettings)var2.read("liquid_settings", LiquidSettings.CODEC).orElse(JigsawStructure.DEFAULT_LIQUID_SETTINGS);
+      junctionsTag.forEach((junctionTag) -> this.junctions.add(JigsawJunction.deserialize(new Dynamic(ops, junctionTag))));
+      this.liquidSettings = (LiquidSettings)tag.read("liquid_settings", LiquidSettings.CODEC).orElse(JigsawStructure.DEFAULT_LIQUID_SETTINGS);
    }
 
-   protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
-      var2.putInt("PosX", this.position.getX());
-      var2.putInt("PosY", this.position.getY());
-      var2.putInt("PosZ", this.position.getZ());
-      var2.putInt("ground_level_delta", this.groundLevelDelta);
-      RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      var2.store("pool_element", StructurePoolElement.CODEC, var3, this.element);
-      var2.store("rotation", Rotation.LEGACY_CODEC, this.rotation);
-      ListTag var4 = new ListTag();
+   protected void addAdditionalSaveData(final StructurePieceSerializationContext context, final CompoundTag tag) {
+      tag.putInt("PosX", this.position.getX());
+      tag.putInt("PosY", this.position.getY());
+      tag.putInt("PosZ", this.position.getZ());
+      tag.putInt("ground_level_delta", this.groundLevelDelta);
+      DynamicOps<Tag> ops = context.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      tag.store("pool_element", StructurePoolElement.CODEC, ops, this.element);
+      tag.store("rotation", Rotation.LEGACY_CODEC, this.rotation);
+      ListTag junctionsTag = new ListTag();
 
-      for(JigsawJunction var6 : this.junctions) {
-         var4.add((Tag)var6.serialize(var3).getValue());
+      for(JigsawJunction junction : this.junctions) {
+         junctionsTag.add((Tag)junction.serialize(ops).getValue());
       }
 
-      var2.put("junctions", var4);
+      tag.put("junctions", junctionsTag);
       if (this.liquidSettings != JigsawStructure.DEFAULT_LIQUID_SETTINGS) {
-         var2.store("liquid_settings", LiquidSettings.CODEC, var3, this.liquidSettings);
+         tag.store("liquid_settings", LiquidSettings.CODEC, ops, this.liquidSettings);
       }
 
    }
 
-   public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-      this.place(var1, var2, var3, var4, var5, var7, false);
+   public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
+      this.place(level, structureManager, generator, random, chunkBB, referencePos, false);
    }
 
-   public void place(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, BlockPos var6, boolean var7) {
-      this.element.place(this.structureTemplateManager, var1, var2, var3, this.position, var6, this.rotation, var5, var4, this.liquidSettings, var7);
+   public void place(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final BlockPos referencePos, final boolean keepJigsaws) {
+      this.element.place(this.structureTemplateManager, level, structureManager, generator, this.position, referencePos, this.rotation, chunkBB, random, this.liquidSettings, keepJigsaws);
    }
 
-   public void move(int var1, int var2, int var3) {
-      super.move(var1, var2, var3);
-      this.position = this.position.offset(var1, var2, var3);
+   public void move(final int dx, final int dy, final int dz) {
+      super.move(dx, dy, dz);
+      this.position = this.position.offset(dx, dy, dz);
    }
 
    public Rotation getRotation() {
@@ -112,8 +112,8 @@ public class PoolElementStructurePiece extends StructurePiece {
       return this.groundLevelDelta;
    }
 
-   public void addJunction(JigsawJunction var1) {
-      this.junctions.add(var1);
+   public void addJunction(final JigsawJunction junction) {
+      this.junctions.add(junction);
    }
 
    public List<JigsawJunction> getJunctions() {

@@ -17,11 +17,11 @@ public class Attribute {
    private final String descriptionId;
    private Sentiment sentiment;
 
-   protected Attribute(String var1, double var2) {
+   protected Attribute(final String descriptionId, final double defaultValue) {
       super();
       this.sentiment = Attribute.Sentiment.POSITIVE;
-      this.defaultValue = var2;
-      this.descriptionId = var1;
+      this.defaultValue = defaultValue;
+      this.descriptionId = descriptionId;
    }
 
    public double getDefaultValue() {
@@ -32,26 +32,26 @@ public class Attribute {
       return this.syncable;
    }
 
-   public Attribute setSyncable(boolean var1) {
-      this.syncable = var1;
+   public Attribute setSyncable(final boolean syncable) {
+      this.syncable = syncable;
       return this;
    }
 
-   public Attribute setSentiment(Sentiment var1) {
-      this.sentiment = var1;
+   public Attribute setSentiment(final Sentiment sentiment) {
+      this.sentiment = sentiment;
       return this;
    }
 
-   public double sanitizeValue(double var1) {
-      return var1;
+   public double sanitizeValue(final double value) {
+      return value;
    }
 
    public String getDescriptionId() {
       return this.descriptionId;
    }
 
-   public ChatFormatting getStyle(boolean var1) {
-      return this.sentiment.getStyle(var1);
+   public ChatFormatting getStyle(final boolean valueIncrease) {
+      return this.sentiment.getStyle(valueIncrease);
    }
 
    static {
@@ -67,12 +67,12 @@ public class Attribute {
       private Sentiment() {
       }
 
-      public ChatFormatting getStyle(boolean var1) {
+      public ChatFormatting getStyle(final boolean valueIncrease) {
          ChatFormatting var10000;
          switch (this.ordinal()) {
-            case 0 -> var10000 = var1 ? ChatFormatting.BLUE : ChatFormatting.RED;
+            case 0 -> var10000 = valueIncrease ? ChatFormatting.BLUE : ChatFormatting.RED;
             case 1 -> var10000 = ChatFormatting.GRAY;
-            case 2 -> var10000 = var1 ? ChatFormatting.RED : ChatFormatting.BLUE;
+            case 2 -> var10000 = valueIncrease ? ChatFormatting.RED : ChatFormatting.BLUE;
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 

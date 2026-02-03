@@ -13,35 +13,35 @@ public class ServerboundUseItemPacket implements Packet<ServerGamePacketListener
    private final float yRot;
    private final float xRot;
 
-   public ServerboundUseItemPacket(InteractionHand var1, int var2, float var3, float var4) {
+   public ServerboundUseItemPacket(final InteractionHand hand, final int sequence, final float yRot, final float xRot) {
       super();
-      this.hand = var1;
-      this.sequence = var2;
-      this.yRot = var3;
-      this.xRot = var4;
+      this.hand = hand;
+      this.sequence = sequence;
+      this.yRot = yRot;
+      this.xRot = xRot;
    }
 
-   private ServerboundUseItemPacket(FriendlyByteBuf var1) {
+   private ServerboundUseItemPacket(final FriendlyByteBuf input) {
       super();
-      this.hand = (InteractionHand)var1.readEnum(InteractionHand.class);
-      this.sequence = var1.readVarInt();
-      this.yRot = var1.readFloat();
-      this.xRot = var1.readFloat();
+      this.hand = (InteractionHand)input.readEnum(InteractionHand.class);
+      this.sequence = input.readVarInt();
+      this.yRot = input.readFloat();
+      this.xRot = input.readFloat();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeEnum(this.hand);
-      var1.writeVarInt(this.sequence);
-      var1.writeFloat(this.yRot);
-      var1.writeFloat(this.xRot);
+   private void write(final FriendlyByteBuf output) {
+      output.writeEnum(this.hand);
+      output.writeVarInt(this.sequence);
+      output.writeFloat(this.yRot);
+      output.writeFloat(this.xRot);
    }
 
    public PacketType<ServerboundUseItemPacket> type() {
       return GamePacketTypes.SERVERBOUND_USE_ITEM;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleUseItem(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleUseItem(this);
    }
 
    public InteractionHand getHand() {

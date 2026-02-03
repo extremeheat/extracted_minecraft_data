@@ -18,35 +18,35 @@ public class Tutorial {
    private final Minecraft minecraft;
    private @Nullable TutorialStepInstance instance;
 
-   public Tutorial(Minecraft var1, Options var2) {
+   public Tutorial(final Minecraft minecraft, final Options options) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void onInput(ClientInput var1) {
+   public void onInput(final ClientInput input) {
       if (this.instance != null) {
-         this.instance.onInput(var1);
+         this.instance.onInput(input);
       }
 
    }
 
-   public void onMouse(double var1, double var3) {
+   public void onMouse(final double xd, final double yd) {
       if (this.instance != null) {
-         this.instance.onMouse(var1, var3);
+         this.instance.onMouse(xd, yd);
       }
 
    }
 
-   public void onLookAt(@Nullable ClientLevel var1, @Nullable HitResult var2) {
-      if (this.instance != null && var2 != null && var1 != null) {
-         this.instance.onLookAt(var1, var2);
+   public void onLookAt(final @Nullable ClientLevel level, final @Nullable HitResult hit) {
+      if (this.instance != null && hit != null && level != null) {
+         this.instance.onLookAt(level, hit);
       }
 
    }
 
-   public void onDestroyBlock(ClientLevel var1, BlockPos var2, BlockState var3, float var4) {
+   public void onDestroyBlock(final ClientLevel level, final BlockPos pos, final BlockState state, final float percent) {
       if (this.instance != null) {
-         this.instance.onDestroyBlock(var1, var2, var3, var4);
+         this.instance.onDestroyBlock(level, pos, state, percent);
       }
 
    }
@@ -58,9 +58,9 @@ public class Tutorial {
 
    }
 
-   public void onGetItem(ItemStack var1) {
+   public void onGetItem(final ItemStack itemStack) {
       if (this.instance != null) {
-         this.instance.onGetItem(var1);
+         this.instance.onGetItem(itemStack);
       }
 
    }
@@ -93,12 +93,12 @@ public class Tutorial {
 
    }
 
-   public void setStep(TutorialSteps var1) {
-      this.minecraft.options.tutorialStep = var1;
+   public void setStep(final TutorialSteps step) {
+      this.minecraft.options.tutorialStep = step;
       this.minecraft.options.save();
       if (this.instance != null) {
          this.instance.clear();
-         this.instance = var1.create(this);
+         this.instance = step.create(this);
       }
 
    }
@@ -115,10 +115,10 @@ public class Tutorial {
       }
    }
 
-   public static Component key(String var0) {
-      return Component.keybind("key." + var0).withStyle(ChatFormatting.BOLD);
+   public static Component key(final String name) {
+      return Component.keybind("key." + name).withStyle(ChatFormatting.BOLD);
    }
 
-   public void onInventoryAction(ItemStack var1, ItemStack var2, ClickAction var3) {
+   public void onInventoryAction(final ItemStack itemCarried, final ItemStack itemInSlot, final ClickAction clickAction) {
    }
 }

@@ -13,29 +13,21 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 public record ArmorMaterial(int durability, Map<ArmorType, Integer> defense, int enchantmentValue, Holder<SoundEvent> equipSound, float toughness, float knockbackResistance, TagKey<Item> repairIngredient, ResourceKey<EquipmentAsset> assetId) {
-   public ArmorMaterial(int var1, Map<ArmorType, Integer> var2, int var3, Holder<SoundEvent> var4, float var5, float var6, TagKey<Item> var7, ResourceKey<EquipmentAsset> var8) {
+   public ArmorMaterial {
       super();
-      this.durability = var1;
-      this.defense = var2;
-      this.enchantmentValue = var3;
-      this.equipSound = var4;
-      this.toughness = var5;
-      this.knockbackResistance = var6;
-      this.repairIngredient = var7;
-      this.assetId = var8;
    }
 
-   public ItemAttributeModifiers createAttributes(ArmorType var1) {
-      int var2 = (Integer)this.defense.getOrDefault(var1, 0);
-      ItemAttributeModifiers.Builder var3 = ItemAttributeModifiers.builder();
-      EquipmentSlotGroup var4 = EquipmentSlotGroup.bySlot(var1.getSlot());
-      Identifier var5 = Identifier.withDefaultNamespace("armor." + var1.getName());
-      var3.add(Attributes.ARMOR, new AttributeModifier(var5, (double)var2, AttributeModifier.Operation.ADD_VALUE), var4);
-      var3.add(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(var5, (double)this.toughness, AttributeModifier.Operation.ADD_VALUE), var4);
+   public ItemAttributeModifiers createAttributes(final ArmorType type) {
+      int defense = (Integer)this.defense.getOrDefault(type, 0);
+      ItemAttributeModifiers.Builder modifiers = ItemAttributeModifiers.builder();
+      EquipmentSlotGroup slotGroup = EquipmentSlotGroup.bySlot(type.getSlot());
+      Identifier modifierId = Identifier.withDefaultNamespace("armor." + type.getName());
+      modifiers.add(Attributes.ARMOR, new AttributeModifier(modifierId, (double)defense, AttributeModifier.Operation.ADD_VALUE), slotGroup);
+      modifiers.add(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(modifierId, (double)this.toughness, AttributeModifier.Operation.ADD_VALUE), slotGroup);
       if (this.knockbackResistance > 0.0F) {
-         var3.add(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(var5, (double)this.knockbackResistance, AttributeModifier.Operation.ADD_VALUE), var4);
+         modifiers.add(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(modifierId, (double)this.knockbackResistance, AttributeModifier.Operation.ADD_VALUE), slotGroup);
       }
 
-      return var3.build();
+      return modifiers.build();
    }
 }

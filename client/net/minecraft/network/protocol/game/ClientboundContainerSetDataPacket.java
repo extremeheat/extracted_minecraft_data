@@ -11,32 +11,32 @@ public class ClientboundContainerSetDataPacket implements Packet<ClientGamePacke
    private final int id;
    private final int value;
 
-   public ClientboundContainerSetDataPacket(int var1, int var2, int var3) {
+   public ClientboundContainerSetDataPacket(final int containerId, final int id, final int value) {
       super();
-      this.containerId = var1;
-      this.id = var2;
-      this.value = var3;
+      this.containerId = containerId;
+      this.id = id;
+      this.value = value;
    }
 
-   private ClientboundContainerSetDataPacket(FriendlyByteBuf var1) {
+   private ClientboundContainerSetDataPacket(final FriendlyByteBuf input) {
       super();
-      this.containerId = var1.readContainerId();
-      this.id = var1.readShort();
-      this.value = var1.readShort();
+      this.containerId = input.readContainerId();
+      this.id = input.readShort();
+      this.value = input.readShort();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeContainerId(this.containerId);
-      var1.writeShort(this.id);
-      var1.writeShort(this.value);
+   private void write(final FriendlyByteBuf output) {
+      output.writeContainerId(this.containerId);
+      output.writeShort(this.id);
+      output.writeShort(this.value);
    }
 
    public PacketType<ClientboundContainerSetDataPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CONTAINER_SET_DATA;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleContainerSetData(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleContainerSetData(this);
    }
 
    public int getContainerId() {

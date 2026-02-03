@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import net.minecraft.client.gui.components.TabOrderedElement;
 
-public interface NarratableEntry extends TabOrderedElement, NarrationSupplier {
+public interface NarratableEntry extends NarrationSupplier, TabOrderedElement {
    NarrationPriority narrationPriority();
 
    default boolean isActive() {

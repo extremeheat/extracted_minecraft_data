@@ -15,32 +15,31 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public record RemoveStatusEffectsConsumeEffect(HolderSet<MobEffect> effects) implements ConsumeEffect {
-   public static final MapCodec<RemoveStatusEffectsConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("effects").forGetter(RemoveStatusEffectsConsumeEffect::effects)).apply(var0, RemoveStatusEffectsConsumeEffect::new));
+   public static final MapCodec<RemoveStatusEffectsConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("effects").forGetter(RemoveStatusEffectsConsumeEffect::effects)).apply(i, RemoveStatusEffectsConsumeEffect::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, RemoveStatusEffectsConsumeEffect> STREAM_CODEC;
 
-   public RemoveStatusEffectsConsumeEffect(Holder<MobEffect> var1) {
-      this(HolderSet.direct(var1));
+   public RemoveStatusEffectsConsumeEffect(final Holder<MobEffect> only) {
+      this(HolderSet.direct(only));
    }
 
-   public RemoveStatusEffectsConsumeEffect(HolderSet<MobEffect> var1) {
+   public RemoveStatusEffectsConsumeEffect {
       super();
-      this.effects = var1;
    }
 
    public ConsumeEffect.Type<RemoveStatusEffectsConsumeEffect> getType() {
       return ConsumeEffect.Type.REMOVE_EFFECTS;
    }
 
-   public boolean apply(Level var1, ItemStack var2, LivingEntity var3) {
-      boolean var4 = false;
+   public boolean apply(final Level level, final ItemStack stack, final LivingEntity user) {
+      boolean hasRemovedAny = false;
 
-      for(Holder var6 : this.effects) {
-         if (var3.removeEffect(var6)) {
-            var4 = true;
+      for(Holder<MobEffect> effect : this.effects) {
+         if (user.removeEffect(effect)) {
+            hasRemovedAny = true;
          }
       }
 
-      return var4;
+      return hasRemovedAny;
    }
 
    static {

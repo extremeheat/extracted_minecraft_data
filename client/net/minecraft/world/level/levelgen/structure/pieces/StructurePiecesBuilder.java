@@ -15,51 +15,50 @@ public class StructurePiecesBuilder implements StructurePieceAccessor {
       super();
    }
 
-   public void addPiece(StructurePiece var1) {
-      this.pieces.add(var1);
+   public void addPiece(final StructurePiece piece) {
+      this.pieces.add(piece);
    }
 
-   public @Nullable StructurePiece findCollisionPiece(BoundingBox var1) {
-      return StructurePiece.findCollisionPiece(this.pieces, var1);
+   public @Nullable StructurePiece findCollisionPiece(final BoundingBox box) {
+      return StructurePiece.findCollisionPiece(this.pieces, box);
    }
 
    /** @deprecated */
    @Deprecated
-   public void offsetPiecesVertically(int var1) {
-      for(StructurePiece var3 : this.pieces) {
-         var3.move(0, var1, 0);
+   public void offsetPiecesVertically(final int dy) {
+      for(StructurePiece piece : this.pieces) {
+         piece.move(0, dy, 0);
       }
 
    }
 
    /** @deprecated */
    @Deprecated
-   public int moveBelowSeaLevel(int var1, int var2, RandomSource var3, int var4) {
-      int var5 = var1 - var4;
-      BoundingBox var6 = this.getBoundingBox();
-      int var7 = var6.getYSpan() + var2 + 1;
-      if (var7 < var5) {
-         var7 += var3.nextInt(var5 - var7);
+   public int moveBelowSeaLevel(final int seaLevel, final int minY, final RandomSource random, final int offset) {
+      int maxY = seaLevel - offset;
+      BoundingBox boundingBox = this.getBoundingBox();
+      int y1Pos = boundingBox.getYSpan() + minY + 1;
+      if (y1Pos < maxY) {
+         y1Pos += random.nextInt(maxY - y1Pos);
       }
 
-      int var8 = var7 - var6.maxY();
-      this.offsetPiecesVertically(var8);
-      return var8;
+      int dy = y1Pos - boundingBox.maxY();
+      this.offsetPiecesVertically(dy);
+      return dy;
    }
 
-   /** @deprecated */
-   public void moveInsideHeights(RandomSource var1, int var2, int var3) {
-      BoundingBox var4 = this.getBoundingBox();
-      int var5 = var3 - var2 + 1 - var4.getYSpan();
-      int var6;
-      if (var5 > 1) {
-         var6 = var2 + var1.nextInt(var5);
+   public void moveInsideHeights(final RandomSource random, final int lowestAllowed, final int highestAllowed) {
+      BoundingBox boundingBox = this.getBoundingBox();
+      int heightSpan = highestAllowed - lowestAllowed + 1 - boundingBox.getYSpan();
+      int y0Pos;
+      if (heightSpan > 1) {
+         y0Pos = lowestAllowed + random.nextInt(heightSpan);
       } else {
-         var6 = var2;
+         y0Pos = lowestAllowed;
       }
 
-      int var7 = var6 - var4.minY();
-      this.offsetPiecesVertically(var7);
+      int dy = y0Pos - boundingBox.minY();
+      this.offsetPiecesVertically(dy);
    }
 
    public PiecesContainer build() {

@@ -23,27 +23,27 @@ public class TrappedChestBlock extends ChestBlock {
       return CODEC;
    }
 
-   public TrappedChestBlock(BlockBehaviour.Properties var1) {
-      super(() -> BlockEntityType.TRAPPED_CHEST, SoundEvents.CHEST_OPEN, SoundEvents.CHEST_CLOSE, var1);
+   public TrappedChestBlock(final BlockBehaviour.Properties properties) {
+      super(() -> BlockEntityType.TRAPPED_CHEST, SoundEvents.CHEST_OPEN, SoundEvents.CHEST_CLOSE, properties);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new TrappedChestBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new TrappedChestBlockEntity(worldPosition, blockState);
    }
 
    protected Stat<Identifier> getOpenChestStat() {
       return Stats.CUSTOM.get(Stats.TRIGGER_TRAPPED_CHEST);
    }
 
-   protected boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(final BlockState state) {
       return true;
    }
 
-   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return Mth.clamp(ChestBlockEntity.getOpenCount(var2, var3), 0, 15);
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return Mth.clamp(ChestBlockEntity.getOpenCount(level, pos), 0, 15);
    }
 
-   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return var4 == Direction.UP ? var1.getSignal(var2, var3, var4) : 0;
+   protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return direction == Direction.UP ? state.getSignal(level, pos, direction) : 0;
    }
 }

@@ -1,8 +1,12 @@
 package net.minecraft.world.item.crafting;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 
 public interface CraftingRecipe extends Recipe<CraftingInput> {
    default RecipeType<CraftingRecipe> getType() {
@@ -13,19 +17,20 @@ public interface CraftingRecipe extends Recipe<CraftingInput> {
 
    CraftingBookCategory category();
 
-   default NonNullList<ItemStack> getRemainingItems(CraftingInput var1) {
-      return defaultCraftingReminder(var1);
+   default NonNullList<ItemStack> getRemainingItems(final CraftingInput input) {
+      return defaultCraftingReminder(input);
    }
 
-   static NonNullList<ItemStack> defaultCraftingReminder(CraftingInput var0) {
-      NonNullList var1 = NonNullList.withSize(var0.size(), ItemStack.EMPTY);
+   static NonNullList<ItemStack> defaultCraftingReminder(final CraftingInput input) {
+      NonNullList<ItemStack> result = NonNullList.<ItemStack>withSize(input.size(), ItemStack.EMPTY);
 
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         Item var3 = var0.getItem(var2).getItem();
-         var1.set(var2, var3.getCraftingRemainder());
+      for(int slot = 0; slot < result.size(); ++slot) {
+         Item item = input.getItem(slot).getItem();
+         ItemStackTemplate remainder = item.getCraftingRemainder();
+         result.set(slot, remainder != null ? remainder.create() : ItemStack.EMPTY);
       }
 
-      return var1;
+      return result;
    }
 
    default RecipeBookCategory recipeBookCategory() {
@@ -39,5 +44,19 @@ public interface CraftingRecipe extends Recipe<CraftingInput> {
       }
 
       return var10000;
+   }
+
+   public static record CraftingBookInfo(CraftingBookCategory category, String group) implements Recipe.BookInfo<CraftingBookCategory> {
+      public static final MapCodec<CraftingBookInfo> MAP_CODEC;
+      public static final StreamCodec<RegistryFriendlyByteBuf, CraftingBookInfo> STREAM_CODEC;
+
+      public CraftingBookInfo {
+         super();
+      }
+
+      static {
+         MAP_CODEC = Recipe.BookInfo.mapCodec(CraftingBookCategory.CODEC, CraftingBookCategory.MISC, CraftingBookInfo::new);
+         STREAM_CODEC = Recipe.BookInfo.streamCodec(CraftingBookCategory.STREAM_CODEC, CraftingBookInfo::new);
+      }
    }
 }

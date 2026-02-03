@@ -23,13 +23,13 @@ public class RegionFileVersion {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Int2ObjectMap<RegionFileVersion> VERSIONS = new Int2ObjectOpenHashMap();
    private static final Object2ObjectMap<String, RegionFileVersion> VERSIONS_BY_NAME = new Object2ObjectOpenHashMap();
-   public static final RegionFileVersion VERSION_GZIP = register(new RegionFileVersion(1, (String)null, (var0) -> new FastBufferedInputStream(new GZIPInputStream(var0)), (var0) -> new BufferedOutputStream(new GZIPOutputStream(var0))));
-   public static final RegionFileVersion VERSION_DEFLATE = register(new RegionFileVersion(2, "deflate", (var0) -> new FastBufferedInputStream(new InflaterInputStream(var0)), (var0) -> new BufferedOutputStream(new DeflaterOutputStream(var0))));
+   public static final RegionFileVersion VERSION_GZIP = register(new RegionFileVersion(1, (String)null, (in) -> new FastBufferedInputStream(new GZIPInputStream(in)), (out) -> new BufferedOutputStream(new GZIPOutputStream(out))));
+   public static final RegionFileVersion VERSION_DEFLATE = register(new RegionFileVersion(2, "deflate", (in) -> new FastBufferedInputStream(new InflaterInputStream(in)), (out) -> new BufferedOutputStream(new DeflaterOutputStream(out))));
    public static final RegionFileVersion VERSION_NONE = register(new RegionFileVersion(3, "none", FastBufferedInputStream::new, BufferedOutputStream::new));
-   public static final RegionFileVersion VERSION_LZ4 = register(new RegionFileVersion(4, "lz4", (var0) -> new FastBufferedInputStream(new LZ4BlockInputStream(var0)), (var0) -> new BufferedOutputStream(new LZ4BlockOutputStream(var0))));
-   public static final RegionFileVersion VERSION_CUSTOM = register(new RegionFileVersion(127, (String)null, (var0) -> {
+   public static final RegionFileVersion VERSION_LZ4 = register(new RegionFileVersion(4, "lz4", (in) -> new FastBufferedInputStream(new LZ4BlockInputStream(in)), (out) -> new BufferedOutputStream(new LZ4BlockOutputStream(out))));
+   public static final RegionFileVersion VERSION_CUSTOM = register(new RegionFileVersion(127, (String)null, (in) -> {
       throw new UnsupportedOperationException();
-   }, (var0) -> {
+   }, (out) -> {
       throw new UnsupportedOperationException();
    }));
    public static final RegionFileVersion DEFAULT;
@@ -39,33 +39,33 @@ public class RegionFileVersion {
    private final StreamWrapper<InputStream> inputWrapper;
    private final StreamWrapper<OutputStream> outputWrapper;
 
-   private RegionFileVersion(int var1, @Nullable String var2, StreamWrapper<InputStream> var3, StreamWrapper<OutputStream> var4) {
+   private RegionFileVersion(final int id, final @Nullable String optionName, final StreamWrapper<InputStream> inputWrapper, final StreamWrapper<OutputStream> outputWrapper) {
       super();
-      this.id = var1;
-      this.optionName = var2;
-      this.inputWrapper = var3;
-      this.outputWrapper = var4;
+      this.id = id;
+      this.optionName = optionName;
+      this.inputWrapper = inputWrapper;
+      this.outputWrapper = outputWrapper;
    }
 
-   private static RegionFileVersion register(RegionFileVersion var0) {
-      VERSIONS.put(var0.id, var0);
-      if (var0.optionName != null) {
-         VERSIONS_BY_NAME.put(var0.optionName, var0);
+   private static RegionFileVersion register(final RegionFileVersion version) {
+      VERSIONS.put(version.id, version);
+      if (version.optionName != null) {
+         VERSIONS_BY_NAME.put(version.optionName, version);
       }
 
-      return var0;
+      return version;
    }
 
-   public static @Nullable RegionFileVersion fromId(int var0) {
-      return (RegionFileVersion)VERSIONS.get(var0);
+   public static @Nullable RegionFileVersion fromId(final int id) {
+      return (RegionFileVersion)VERSIONS.get(id);
    }
 
-   public static void configure(String var0) {
-      RegionFileVersion var1 = (RegionFileVersion)VERSIONS_BY_NAME.get(var0);
-      if (var1 != null) {
-         selected = var1;
+   public static void configure(final String optionName) {
+      RegionFileVersion version = (RegionFileVersion)VERSIONS_BY_NAME.get(optionName);
+      if (version != null) {
+         selected = version;
       } else {
-         LOGGER.error("Invalid `region-file-compression` value `{}` in server.properties. Please use one of: {}", var0, String.join(", ", VERSIONS_BY_NAME.keySet()));
+         LOGGER.error("Invalid `region-file-compression` value `{}` in server.properties. Please use one of: {}", optionName, String.join(", ", VERSIONS_BY_NAME.keySet()));
       }
 
    }
@@ -74,20 +74,20 @@ public class RegionFileVersion {
       return selected;
    }
 
-   public static boolean isValidVersion(int var0) {
-      return VERSIONS.containsKey(var0);
+   public static boolean isValidVersion(final int version) {
+      return VERSIONS.containsKey(version);
    }
 
    public int getId() {
       return this.id;
    }
 
-   public OutputStream wrap(OutputStream var1) throws IOException {
-      return this.outputWrapper.wrap(var1);
+   public OutputStream wrap(final OutputStream is) throws IOException {
+      return this.outputWrapper.wrap(is);
    }
 
-   public InputStream wrap(InputStream var1) throws IOException {
-      return this.inputWrapper.wrap(var1);
+   public InputStream wrap(final InputStream is) throws IOException {
+      return this.inputWrapper.wrap(is);
    }
 
    static {
@@ -96,7 +96,7 @@ public class RegionFileVersion {
    }
 
    @FunctionalInterface
-   interface StreamWrapper<O> {
-      O wrap(O var1) throws IOException;
+   private interface StreamWrapper<O> {
+      O wrap(O stream) throws IOException;
    }
 }

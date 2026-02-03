@@ -17,25 +17,25 @@ public class MinecraftApi {
    private final MinecraftServerStateService minecraftServerStateService;
    private final MinecraftExecutorService executorService;
 
-   public MinecraftApi(NotificationManager var1, MinecraftAllowListService var2, MinecraftBanListService var3, MinecraftPlayerListService var4, MinecraftGameRuleService var5, MinecraftOperatorListService var6, MinecraftServerSettingsService var7, MinecraftServerStateService var8, MinecraftExecutorService var9) {
+   public MinecraftApi(final NotificationManager notificationManager, final MinecraftAllowListService allowListService, final MinecraftBanListService banListService, final MinecraftPlayerListService minecraftPlayerListService, final MinecraftGameRuleService gameRuleService, final MinecraftOperatorListService minecraftOperatorListService, final MinecraftServerSettingsService minecraftServerSettingsService, final MinecraftServerStateService minecraftServerStateService, final MinecraftExecutorService executorService) {
       super();
-      this.notificationManager = var1;
-      this.allowListService = var2;
-      this.banListService = var3;
-      this.minecraftPlayerListService = var4;
-      this.gameRuleService = var5;
-      this.minecraftOperatorListService = var6;
-      this.minecraftServerSettingsService = var7;
-      this.minecraftServerStateService = var8;
-      this.executorService = var9;
+      this.notificationManager = notificationManager;
+      this.allowListService = allowListService;
+      this.banListService = banListService;
+      this.minecraftPlayerListService = minecraftPlayerListService;
+      this.gameRuleService = gameRuleService;
+      this.minecraftOperatorListService = minecraftOperatorListService;
+      this.minecraftServerSettingsService = minecraftServerSettingsService;
+      this.minecraftServerStateService = minecraftServerStateService;
+      this.executorService = executorService;
    }
 
-   public <V> CompletableFuture<V> submit(Supplier<V> var1) {
-      return this.executorService.submit(var1);
+   public <V> CompletableFuture<V> submit(final Supplier<V> supplier) {
+      return this.executorService.submit(supplier);
    }
 
-   public CompletableFuture<Void> submit(Runnable var1) {
-      return this.executorService.submit(var1);
+   public CompletableFuture<Void> submit(final Runnable runnable) {
+      return this.executorService.submit(runnable);
    }
 
    public MinecraftAllowListService allowListService() {
@@ -70,16 +70,16 @@ public class MinecraftApi {
       return this.notificationManager;
    }
 
-   public static MinecraftApi of(DedicatedServer var0) {
-      JsonRpcLogger var1 = new JsonRpcLogger();
-      MinecraftAllowListServiceImpl var2 = new MinecraftAllowListServiceImpl(var0, var1);
-      MinecraftBanListServiceImpl var3 = new MinecraftBanListServiceImpl(var0, var1);
-      MinecraftPlayerListServiceImpl var4 = new MinecraftPlayerListServiceImpl(var0, var1);
-      MinecraftGameRuleServiceImpl var5 = new MinecraftGameRuleServiceImpl(var0, var1);
-      MinecraftOperatorListServiceImpl var6 = new MinecraftOperatorListServiceImpl(var0, var1);
-      MinecraftServerSettingsServiceImpl var7 = new MinecraftServerSettingsServiceImpl(var0, var1);
-      MinecraftServerStateServiceImpl var8 = new MinecraftServerStateServiceImpl(var0, var1);
-      MinecraftExecutorServiceImpl var9 = new MinecraftExecutorServiceImpl(var0);
-      return new MinecraftApi(var0.notificationManager(), var2, var3, var4, var5, var6, var7, var8, var9);
+   public static MinecraftApi of(final DedicatedServer server) {
+      JsonRpcLogger jsonrpcLogger = new JsonRpcLogger();
+      MinecraftAllowListServiceImpl allowListService = new MinecraftAllowListServiceImpl(server, jsonrpcLogger);
+      MinecraftBanListServiceImpl banListService = new MinecraftBanListServiceImpl(server, jsonrpcLogger);
+      MinecraftPlayerListServiceImpl playerListService = new MinecraftPlayerListServiceImpl(server, jsonrpcLogger);
+      MinecraftGameRuleServiceImpl gameRuleService = new MinecraftGameRuleServiceImpl(server, jsonrpcLogger);
+      MinecraftOperatorListServiceImpl operatorListService = new MinecraftOperatorListServiceImpl(server, jsonrpcLogger);
+      MinecraftServerSettingsServiceImpl serverSettingsService = new MinecraftServerSettingsServiceImpl(server, jsonrpcLogger);
+      MinecraftServerStateServiceImpl serverStateService = new MinecraftServerStateServiceImpl(server, jsonrpcLogger);
+      MinecraftExecutorService executorService = new MinecraftExecutorServiceImpl(server);
+      return new MinecraftApi(server.notificationManager(), allowListService, banListService, playerListService, gameRuleService, operatorListService, serverSettingsService, serverStateService, executorService);
    }
 }

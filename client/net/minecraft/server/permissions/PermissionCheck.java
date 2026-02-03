@@ -6,9 +6,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 public interface PermissionCheck {
-   Codec<PermissionCheck> CODEC = BuiltInRegistries.PERMISSION_CHECK_TYPE.byNameCodec().dispatch(PermissionCheck::codec, (var0) -> var0);
+   Codec<PermissionCheck> CODEC = BuiltInRegistries.PERMISSION_CHECK_TYPE.byNameCodec().dispatch(PermissionCheck::codec, (c) -> c);
 
-   boolean check(PermissionSet var1);
+   boolean check(PermissionSet source);
 
    MapCodec<? extends PermissionCheck> codec();
 
@@ -20,7 +20,7 @@ public interface PermissionCheck {
          super();
       }
 
-      public boolean check(PermissionSet var1) {
+      public boolean check(final PermissionSet source) {
          return true;
       }
 
@@ -34,19 +34,18 @@ public interface PermissionCheck {
    }
 
    public static record Require(Permission permission) implements PermissionCheck {
-      public static final MapCodec<Require> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Permission.CODEC.fieldOf("permission").forGetter(Require::permission)).apply(var0, Require::new));
+      public static final MapCodec<Require> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Permission.CODEC.fieldOf("permission").forGetter(Require::permission)).apply(i, Require::new));
 
-      public Require(Permission var1) {
+      public Require {
          super();
-         this.permission = var1;
       }
 
       public MapCodec<Require> codec() {
          return MAP_CODEC;
       }
 
-      public boolean check(PermissionSet var1) {
-         return var1.hasPermission(this.permission);
+      public boolean check(final PermissionSet source) {
+         return source.hasPermission(this.permission);
       }
    }
 }

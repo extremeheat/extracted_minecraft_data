@@ -21,38 +21,38 @@ public class RedstoneLampBlock extends Block {
       return CODEC;
    }
 
-   public RedstoneLampBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public RedstoneLampBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(LIT, false));
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(LIT, var1.getLevel().hasNeighborSignal(var1.getClickedPos()));
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(LIT, context.getLevel().hasNeighborSignal(context.getClickedPos()));
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide()) {
-         boolean var7 = (Boolean)var1.getValue(LIT);
-         if (var7 != var2.hasNeighborSignal(var3)) {
-            if (var7) {
-               var2.scheduleTick(var3, this, 4);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (!level.isClientSide()) {
+         boolean isLit = (Boolean)state.getValue(LIT);
+         if (isLit != level.hasNeighborSignal(pos)) {
+            if (isLit) {
+               level.scheduleTick(pos, this, 4);
             } else {
-               var2.setBlock(var3, (BlockState)var1.cycle(LIT), 2);
+               level.setBlock(pos, (BlockState)state.cycle(LIT), 2);
             }
          }
 
       }
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((Boolean)var1.getValue(LIT) && !var2.hasNeighborSignal(var3)) {
-         var2.setBlock(var3, (BlockState)var1.cycle(LIT), 2);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if ((Boolean)state.getValue(LIT) && !level.hasNeighborSignal(pos)) {
+         level.setBlock(pos, (BlockState)state.cycle(LIT), 2);
       }
 
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(LIT);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(LIT);
    }
 
    static {

@@ -3,119 +3,180 @@ package net.minecraft.world.item.crafting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.Level;
-import org.jspecify.annotations.Nullable;
 
-public class TransmuteRecipe implements CraftingRecipe {
-   final String group;
-   final CraftingBookCategory category;
-   final Ingredient input;
-   final Ingredient material;
-   final TransmuteResult result;
-   private @Nullable PlacementInfo placementInfo;
+public class TransmuteRecipe extends NormalCraftingRecipe {
+   private static final int MIN_MATERIAL_COUNT = 1;
+   private static final int MAX_MATERIAL_COUNT = 8;
+   public static final MinMaxBounds.Ints DEFAULT_MATERIAL_COUNT = MinMaxBounds.Ints.exactly(1);
+   public static final MinMaxBounds.Ints FULL_RANGE_MATERIAL_COUNT = MinMaxBounds.Ints.between(1, 8);
+   public static final Codec<MinMaxBounds.Ints> MATERIAL_COUNT_BOUNDS;
+   public static final MapCodec<TransmuteRecipe> MAP_CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, TransmuteRecipe> STREAM_CODEC;
+   public static final RecipeSerializer<TransmuteRecipe> SERIALIZER;
+   private final Ingredient input;
+   private final Ingredient material;
+   private final MinMaxBounds.Ints materialCount;
+   private final ItemStackTemplate result;
+   private final boolean addMaterialCountToResult;
 
-   public TransmuteRecipe(String var1, CraftingBookCategory var2, Ingredient var3, Ingredient var4, TransmuteResult var5) {
-      super();
-      this.group = var1;
-      this.category = var2;
-      this.input = var3;
-      this.material = var4;
-      this.result = var5;
+   public TransmuteRecipe(final Recipe.CommonInfo commonInfo, final CraftingRecipe.CraftingBookInfo bookInfo, final Ingredient input, final Ingredient material, final MinMaxBounds.Ints materialCount, final ItemStackTemplate result, final boolean addMaterialCountToResult) {
+      super(commonInfo, bookInfo);
+      this.input = input;
+      this.material = material;
+      this.materialCount = materialCount;
+      this.result = result;
+      this.addMaterialCountToResult = addMaterialCountToResult;
    }
 
-   public boolean matches(CraftingInput var1, Level var2) {
-      if (var1.ingredientCount() != 2) {
-         return false;
-      } else {
-         boolean var3 = false;
-         boolean var4 = false;
+   public static ItemStack createWithOriginalComponents(final ItemStackTemplate target, final ItemStack input) {
+      return createWithOriginalComponents(target, input, 0);
+   }
 
-         for(int var5 = 0; var5 < var1.size(); ++var5) {
-            ItemStack var6 = var1.getItem(var5);
-            if (!var6.isEmpty()) {
-               if (!var3 && this.input.test(var6)) {
-                  if (this.result.isResultUnchanged(var6)) {
+   public static ItemStack createWithOriginalComponents(final ItemStackTemplate target, final ItemStack input, final int extraCount) {
+      return target.apply(target.count() + extraCount, input.getComponentsPatch());
+   }
+
+   private int computeResultSize(final int materialCount) {
+      return this.addMaterialCountToResult ? materialCount + this.result.count() : this.result.count();
+   }
+
+   private ItemStack computeResult(final ItemStack inputIngredient, final int materialCount) {
+      return createWithOriginalComponents(this.result, inputIngredient, materialCount);
+   }
+
+   public boolean matches(final CraftingInput input, final Level level) {
+      int minMaterialCount = this.minMaterialCount();
+      int maxMaterialCount = this.maxMaterialCount();
+      if (input.ingredientCount() >= minMaterialCount + 1 && input.ingredientCount() <= maxMaterialCount + 1) {
+         ItemStack foundInput = null;
+         int materialCount = 0;
+
+         for(int slot = 0; slot < input.size(); ++slot) {
+            ItemStack stack = input.getItem(slot);
+            if (!stack.isEmpty()) {
+               if (this.input.test(stack)) {
+                  if (foundInput != null) {
                      return false;
                   }
 
-                  var3 = true;
+                  foundInput = stack;
                } else {
-                  if (var4 || !this.material.test(var6)) {
+                  if (!this.material.test(stack)) {
                      return false;
                   }
 
-                  var4 = true;
+                  ++materialCount;
+                  if (materialCount > maxMaterialCount) {
+                     return false;
+                  }
                }
             }
          }
 
-         return var3 && var4;
+         if (foundInput != null && !foundInput.isEmpty() && this.materialCount.matches(materialCount)) {
+            int resultCount = this.computeResultSize(materialCount);
+            if (resultCount != 1) {
+               return true;
+            } else {
+               ItemStack result = this.computeResult(foundInput, 0);
+               if (result.isEmpty()) {
+                  return false;
+               } else {
+                  return !ItemStack.isSameItemSameComponents(foundInput, result);
+               }
+            }
+         } else {
+            return false;
+         }
+      } else {
+         return false;
       }
    }
 
-   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      for(int var3 = 0; var3 < var1.size(); ++var3) {
-         ItemStack var4 = var1.getItem(var3);
-         if (!var4.isEmpty() && this.input.test(var4)) {
-            return this.result.apply(var4);
-         }
-      }
+   public ItemStack assemble(final CraftingInput input) {
+      if (this.addMaterialCountToResult) {
+         int materialCount = 0;
+         ItemStack inputIngredient = ItemStack.EMPTY;
 
-      return ItemStack.EMPTY;
+         for(int slot = 0; slot < input.size(); ++slot) {
+            ItemStack itemStack = input.getItem(slot);
+            if (!itemStack.isEmpty()) {
+               if (this.input.test(itemStack)) {
+                  inputIngredient = itemStack;
+               } else if (this.material.test(itemStack)) {
+                  ++materialCount;
+               }
+            }
+         }
+
+         return this.computeResult(inputIngredient, materialCount);
+      } else {
+         for(int slot = 0; slot < input.size(); ++slot) {
+            ItemStack itemStack = input.getItem(slot);
+            if (!itemStack.isEmpty() && this.input.test(itemStack)) {
+               return this.computeResult(itemStack, 0);
+            }
+         }
+
+         return ItemStack.EMPTY;
+      }
    }
 
    public List<RecipeDisplay> display() {
-      return List.of(new ShapelessCraftingRecipeDisplay(List.of(this.input.display(), this.material.display()), this.result.display(), new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
+      List<RecipeDisplay> displays = new ArrayList();
+      List<SlotDisplay> ingredientSlots = new ArrayList();
+      ingredientSlots.add(this.input.display());
+      SlotDisplay materialDisplay = this.material.display();
+      int maxMaterialCount = this.maxMaterialCount();
+      int minMaterialCount = this.minMaterialCount();
+
+      for(int materialCount = minMaterialCount; materialCount <= maxMaterialCount; ++materialCount) {
+         ingredientSlots.add(materialDisplay);
+         int resultCount = this.computeResultSize(materialCount);
+         displays.add(new ShapelessCraftingRecipeDisplay(List.copyOf(ingredientSlots), new SlotDisplay.ItemStackSlotDisplay(this.result.withCount(resultCount)), new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
+      }
+
+      return displays;
+   }
+
+   private int minMaterialCount() {
+      return (Integer)this.materialCount.min().orElse(1);
+   }
+
+   private int maxMaterialCount() {
+      return (Integer)this.materialCount.max().orElse(8);
    }
 
    public RecipeSerializer<TransmuteRecipe> getSerializer() {
-      return RecipeSerializer.TRANSMUTE;
+      return SERIALIZER;
    }
 
-   public String group() {
-      return this.group;
+   protected PlacementInfo createPlacementInfo() {
+      int maxMaterialCount = this.maxMaterialCount();
+      List<Ingredient> ingredients = new ArrayList(1 + maxMaterialCount);
+      ingredients.add(this.input);
+      ingredients.addAll(Collections.nCopies(maxMaterialCount, this.material));
+      return PlacementInfo.create(ingredients);
    }
 
-   public PlacementInfo placementInfo() {
-      if (this.placementInfo == null) {
-         this.placementInfo = PlacementInfo.create(List.of(this.input, this.material));
-      }
-
-      return this.placementInfo;
-   }
-
-   public CraftingBookCategory category() {
-      return this.category;
-   }
-
-   public static class Serializer implements RecipeSerializer<TransmuteRecipe> {
-      private static final MapCodec<TransmuteRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.optionalFieldOf("group", "").forGetter((var0x) -> var0x.group), CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter((var0x) -> var0x.category), Ingredient.CODEC.fieldOf("input").forGetter((var0x) -> var0x.input), Ingredient.CODEC.fieldOf("material").forGetter((var0x) -> var0x.material), TransmuteResult.CODEC.fieldOf("result").forGetter((var0x) -> var0x.result)).apply(var0, TransmuteRecipe::new));
-      public static final StreamCodec<RegistryFriendlyByteBuf, TransmuteRecipe> STREAM_CODEC;
-
-      public Serializer() {
-         super();
-      }
-
-      public MapCodec<TransmuteRecipe> codec() {
-         return CODEC;
-      }
-
-      public StreamCodec<RegistryFriendlyByteBuf, TransmuteRecipe> streamCodec() {
-         return STREAM_CODEC;
-      }
-
-      static {
-         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, (var0) -> var0.group, CraftingBookCategory.STREAM_CODEC, (var0) -> var0.category, Ingredient.CONTENTS_STREAM_CODEC, (var0) -> var0.input, Ingredient.CONTENTS_STREAM_CODEC, (var0) -> var0.material, TransmuteResult.STREAM_CODEC, (var0) -> var0.result, TransmuteRecipe::new);
-      }
+   static {
+      MATERIAL_COUNT_BOUNDS = MinMaxBounds.Ints.CODEC.validate(MinMaxBounds.validateContainedInRange(FULL_RANGE_MATERIAL_COUNT));
+      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Recipe.CommonInfo.MAP_CODEC.forGetter((o) -> o.commonInfo), CraftingRecipe.CraftingBookInfo.MAP_CODEC.forGetter((o) -> o.bookInfo), Ingredient.CODEC.fieldOf("input").forGetter((o) -> o.input), Ingredient.CODEC.fieldOf("material").forGetter((o) -> o.material), MATERIAL_COUNT_BOUNDS.optionalFieldOf("material_count", DEFAULT_MATERIAL_COUNT).forGetter((o) -> o.materialCount), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result), Codec.BOOL.optionalFieldOf("add_material_count_to_result", false).forGetter((o) -> o.addMaterialCountToResult)).apply(i, TransmuteRecipe::new));
+      STREAM_CODEC = StreamCodec.composite(Recipe.CommonInfo.STREAM_CODEC, (o) -> o.commonInfo, CraftingRecipe.CraftingBookInfo.STREAM_CODEC, (o) -> o.bookInfo, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.input, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.material, MinMaxBounds.Ints.STREAM_CODEC, (o) -> o.materialCount, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, ByteBufCodecs.BOOL, (o) -> o.addMaterialCountToResult, TransmuteRecipe::new);
+      SERIALIZER = new RecipeSerializer<TransmuteRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

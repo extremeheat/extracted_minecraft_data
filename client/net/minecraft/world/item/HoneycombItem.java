@@ -39,49 +39,49 @@ public class HoneycombItem extends Item implements SignApplicator {
    private static final String WAXED_COPPER_BLOCK = "waxed_copper_block";
    public static final ImmutableMap<Block, Pair<RecipeCategory, String>> WAXED_RECIPES;
 
-   public HoneycombItem(Item.Properties var1) {
-      super(var1);
+   public HoneycombItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      BlockState var4 = var2.getBlockState(var3);
-      return (InteractionResult)getWaxed(var4).map((var4x) -> {
-         Player var5 = var1.getPlayer();
-         ItemStack var6 = var1.getItemInHand();
-         if (var5 instanceof ServerPlayer var7) {
-            CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(var7, var3, var6);
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      BlockState oldState = level.getBlockState(pos);
+      return (InteractionResult)getWaxed(oldState).map((waxedState) -> {
+         Player player = context.getPlayer();
+         ItemStack itemInHand = context.getItemInHand();
+         if (player instanceof ServerPlayer serverPlayer) {
+            CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, itemInHand);
          }
 
-         var6.shrink(1);
-         var2.setBlock(var3, var4x, 11);
-         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5, var4x));
-         var2.levelEvent(var5, 3003, var3, 0);
-         if (var4.getBlock() instanceof ChestBlock && var4.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
-            BlockPos var8 = ChestBlock.getConnectedBlockPos(var3, var4);
-            var2.gameEvent(GameEvent.BLOCK_CHANGE, var8, GameEvent.Context.of(var5, var2.getBlockState(var8)));
-            var2.levelEvent(var5, 3003, var8, 0);
+         itemInHand.shrink(1);
+         level.setBlock(pos, waxedState, 11);
+         level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, waxedState));
+         level.levelEvent(player, 3003, pos, 0);
+         if (oldState.getBlock() instanceof ChestBlock && oldState.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+            BlockPos neighborPos = ChestBlock.getConnectedBlockPos(pos, oldState);
+            level.gameEvent(GameEvent.BLOCK_CHANGE, neighborPos, GameEvent.Context.of(player, level.getBlockState(neighborPos)));
+            level.levelEvent(player, 3003, neighborPos, 0);
          }
 
          return InteractionResult.SUCCESS;
       }).orElse(InteractionResult.PASS);
    }
 
-   public static Optional<BlockState> getWaxed(BlockState var0) {
-      return Optional.ofNullable((Block)((BiMap)WAXABLES.get()).get(var0.getBlock())).map((var1) -> var1.withPropertiesOf(var0));
+   public static Optional<BlockState> getWaxed(final BlockState oldState) {
+      return Optional.ofNullable((Block)((BiMap)WAXABLES.get()).get(oldState.getBlock())).map((b) -> b.withPropertiesOf(oldState));
    }
 
-   public boolean tryApplyToSign(Level var1, SignBlockEntity var2, boolean var3, Player var4) {
-      if (var2.setWaxed(true)) {
-         var1.levelEvent((Entity)null, 3003, var2.getBlockPos(), 0);
+   public boolean tryApplyToSign(final Level level, final SignBlockEntity sign, final boolean isFrontText, final ItemStack item, final Player player) {
+      if (sign.setWaxed(true)) {
+         level.levelEvent((Entity)null, 3003, sign.getBlockPos(), 0);
          return true;
       } else {
          return false;
       }
    }
 
-   public boolean canApplyToSign(SignText var1, Player var2) {
+   public boolean canApplyToSign(final SignText text, final ItemStack item, final Player player) {
       return true;
    }
 

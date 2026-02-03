@@ -12,10 +12,10 @@ public class RaftRenderer extends AbstractBoatRenderer {
    private final EntityModel<BoatRenderState> model;
    private final Identifier texture;
 
-   public RaftRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2) {
-      super(var1);
-      this.texture = var2.model().withPath((UnaryOperator)((var0) -> "textures/entity/" + var0 + ".png"));
-      this.model = new RaftModel(var1.bakeLayer(var2));
+   public RaftRenderer(final EntityRendererProvider.Context context, final ModelLayerLocation modelId) {
+      super(context);
+      this.texture = modelId.model().withPath((UnaryOperator)((p) -> "textures/entity/" + p + ".png"));
+      this.model = new RaftModel(context.bakeLayer(modelId));
    }
 
    protected EntityModel<BoatRenderState> model() {

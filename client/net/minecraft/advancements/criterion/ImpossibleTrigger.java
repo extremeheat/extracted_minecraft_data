@@ -5,19 +5,20 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 
 public class ImpossibleTrigger implements CriterionTrigger<TriggerInstance> {
    public ImpossibleTrigger() {
       super();
    }
 
-   public void addPlayerListener(PlayerAdvancements var1, CriterionTrigger.Listener<TriggerInstance> var2) {
+   public void addPlayerListener(final PlayerAdvancements player, final CriterionTrigger.Listener<TriggerInstance> listener) {
    }
 
-   public void removePlayerListener(PlayerAdvancements var1, CriterionTrigger.Listener<TriggerInstance> var2) {
+   public void removePlayerListener(final PlayerAdvancements player, final CriterionTrigger.Listener<TriggerInstance> listener) {
    }
 
-   public void removePlayerListeners(PlayerAdvancements var1) {
+   public void removePlayerListeners(final PlayerAdvancements player) {
    }
 
    public Codec<TriggerInstance> codec() {
@@ -31,7 +32,7 @@ public class ImpossibleTrigger implements CriterionTrigger<TriggerInstance> {
          super();
       }
 
-      public void validate(CriterionValidator var1) {
+      public void validate(final ValidationContextSource validator) {
       }
    }
 }

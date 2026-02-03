@@ -12,65 +12,64 @@ import net.minecraft.core.Direction;
 import org.joml.Vector3fc;
 
 public record SimpleUnbakedGeometry(List<BlockElement> elements) implements UnbakedGeometry {
-   public SimpleUnbakedGeometry(List<BlockElement> var1) {
+   public SimpleUnbakedGeometry {
       super();
-      this.elements = var1;
    }
 
-   public QuadCollection bake(TextureSlots var1, ModelBaker var2, ModelState var3, ModelDebugName var4) {
-      return bake(this.elements, var1, var2, var3, var4);
+   public QuadCollection bake(final TextureSlots textures, final ModelBaker modelBaker, final ModelState modelState, final ModelDebugName name) {
+      return bake(this.elements, textures, modelBaker, modelState, name);
    }
 
-   public static QuadCollection bake(List<BlockElement> var0, TextureSlots var1, ModelBaker var2, ModelState var3, ModelDebugName var4) {
-      QuadCollection.Builder var5 = new QuadCollection.Builder();
+   public static QuadCollection bake(final List<BlockElement> elements, final TextureSlots textures, final ModelBaker modelBaker, final ModelState modelState, final ModelDebugName name) {
+      QuadCollection.Builder builder = new QuadCollection.Builder();
 
-      for(BlockElement var7 : var0) {
-         boolean var8 = true;
-         boolean var9 = true;
-         boolean var10 = true;
-         Vector3fc var11 = var7.from();
-         Vector3fc var12 = var7.to();
-         if (var11.x() == var12.x()) {
-            var9 = false;
-            var10 = false;
+      for(BlockElement element : elements) {
+         boolean drawXFaces = true;
+         boolean drawYFaces = true;
+         boolean drawZFaces = true;
+         Vector3fc from = element.from();
+         Vector3fc to = element.to();
+         if (from.x() == to.x()) {
+            drawYFaces = false;
+            drawZFaces = false;
          }
 
-         if (var11.y() == var12.y()) {
-            var8 = false;
-            var10 = false;
+         if (from.y() == to.y()) {
+            drawXFaces = false;
+            drawZFaces = false;
          }
 
-         if (var11.z() == var12.z()) {
-            var8 = false;
-            var9 = false;
+         if (from.z() == to.z()) {
+            drawXFaces = false;
+            drawYFaces = false;
          }
 
-         if (var8 || var9 || var10) {
-            for(Map.Entry var14 : var7.faces().entrySet()) {
-               Direction var15 = (Direction)var14.getKey();
-               BlockElementFace var16 = (BlockElementFace)var14.getValue();
+         if (drawXFaces || drawYFaces || drawZFaces) {
+            for(Map.Entry<Direction, BlockElementFace> entry : element.faces().entrySet()) {
+               Direction facing = (Direction)entry.getKey();
+               BlockElementFace face = (BlockElementFace)entry.getValue();
                boolean var10000;
-               switch (var15.getAxis()) {
-                  case X -> var10000 = var8;
-                  case Y -> var10000 = var9;
-                  case Z -> var10000 = var10;
+               switch (facing.getAxis()) {
+                  case X -> var10000 = drawXFaces;
+                  case Y -> var10000 = drawYFaces;
+                  case Z -> var10000 = drawZFaces;
                   default -> throw new MatchException((String)null, (Throwable)null);
                }
 
-               boolean var17 = var10000;
-               if (var17) {
-                  TextureAtlasSprite var18 = var2.sprites().resolveSlot(var1, var16.texture(), var4);
-                  BakedQuad var19 = FaceBakery.bakeQuad(var2.parts(), var11, var12, var16, var18, var15, var3, var7.rotation(), var7.shade(), var7.lightEmission());
-                  if (var16.cullForDirection() == null) {
-                     var5.addUnculledFace(var19);
+               boolean shouldDrawFace = var10000;
+               if (shouldDrawFace) {
+                  TextureAtlasSprite icon = modelBaker.sprites().resolveSlot(textures, face.texture(), name);
+                  BakedQuad quad = FaceBakery.bakeQuad(modelBaker.parts(), from, to, face, icon, facing, modelState, element.rotation(), element.shade(), element.lightEmission());
+                  if (face.cullForDirection() == null) {
+                     builder.addUnculledFace(quad);
                   } else {
-                     var5.addCulledFace(Direction.rotate(var3.transformation().getMatrix(), var16.cullForDirection()), var19);
+                     builder.addCulledFace(Direction.rotate(modelState.transformation().getMatrix(), face.cullForDirection()), quad);
                   }
                }
             }
          }
       }
 
-      return var5.build();
+      return builder.build();
    }
 }

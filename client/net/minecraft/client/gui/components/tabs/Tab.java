@@ -10,7 +10,7 @@ public interface Tab {
 
    Component getTabExtraNarration();
 
-   void visitChildren(Consumer<AbstractWidget> var1);
+   void visitChildren(final Consumer<AbstractWidget> childrenConsumer);
 
-   void doLayout(ScreenRectangle var1);
+   void doLayout(final ScreenRectangle screenRectangle);
 }

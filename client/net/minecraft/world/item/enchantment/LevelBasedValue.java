@@ -11,44 +11,44 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 
 public interface LevelBasedValue {
-   Codec<LevelBasedValue> DISPATCH_CODEC = BuiltInRegistries.ENCHANTMENT_LEVEL_BASED_VALUE_TYPE.byNameCodec().dispatch(LevelBasedValue::codec, (var0) -> var0);
-   Codec<LevelBasedValue> CODEC = Codec.either(LevelBasedValue.Constant.CODEC, DISPATCH_CODEC).xmap((var0) -> (LevelBasedValue)var0.map((var0x) -> var0x, (var0x) -> var0x), (var0) -> {
+   Codec<LevelBasedValue> DISPATCH_CODEC = BuiltInRegistries.ENCHANTMENT_LEVEL_BASED_VALUE_TYPE.byNameCodec().dispatch(LevelBasedValue::codec, (c) -> c);
+   Codec<LevelBasedValue> CODEC = Codec.either(LevelBasedValue.Constant.CODEC, DISPATCH_CODEC).xmap((either) -> (LevelBasedValue)either.map((l) -> l, (r) -> r), (levelBasedValue) -> {
       Either var10000;
-      if (var0 instanceof Constant var1) {
-         var10000 = Either.left(var1);
+      if (levelBasedValue instanceof Constant constant) {
+         var10000 = Either.left(constant);
       } else {
-         var10000 = Either.right(var0);
+         var10000 = Either.right(levelBasedValue);
       }
 
       return var10000;
    });
 
-   static MapCodec<? extends LevelBasedValue> bootstrap(Registry<MapCodec<? extends LevelBasedValue>> var0) {
-      Registry.register(var0, (String)"clamped", LevelBasedValue.Clamped.CODEC);
-      Registry.register(var0, (String)"fraction", LevelBasedValue.Fraction.CODEC);
-      Registry.register(var0, (String)"levels_squared", LevelBasedValue.LevelsSquared.CODEC);
-      Registry.register(var0, (String)"linear", LevelBasedValue.Linear.CODEC);
-      Registry.register(var0, (String)"exponent", LevelBasedValue.Exponent.CODEC);
-      return (MapCodec)Registry.register(var0, (String)"lookup", LevelBasedValue.Lookup.CODEC);
+   static MapCodec<? extends LevelBasedValue> bootstrap(final Registry<MapCodec<? extends LevelBasedValue>> registry) {
+      Registry.register(registry, (String)"clamped", LevelBasedValue.Clamped.CODEC);
+      Registry.register(registry, (String)"fraction", LevelBasedValue.Fraction.CODEC);
+      Registry.register(registry, (String)"levels_squared", LevelBasedValue.LevelsSquared.CODEC);
+      Registry.register(registry, (String)"linear", LevelBasedValue.Linear.CODEC);
+      Registry.register(registry, (String)"exponent", LevelBasedValue.Exponent.CODEC);
+      return (MapCodec)Registry.register(registry, (String)"lookup", LevelBasedValue.Lookup.CODEC);
    }
 
-   static Constant constant(float var0) {
-      return new Constant(var0);
+   static Constant constant(final float value) {
+      return new Constant(value);
    }
 
-   static Linear perLevel(float var0, float var1) {
-      return new Linear(var0, var1);
+   static Linear perLevel(final float base, final float perLevelAboveFirst) {
+      return new Linear(base, perLevelAboveFirst);
    }
 
-   static Linear perLevel(float var0) {
-      return perLevel(var0, var0);
+   static Linear perLevel(final float perLevel) {
+      return perLevel(perLevel, perLevel);
    }
 
-   static Lookup lookup(List<Float> var0, LevelBasedValue var1) {
-      return new Lookup(var0, var1);
+   static Lookup lookup(final List<Float> values, final LevelBasedValue fallback) {
+      return new Lookup(values, fallback);
    }
 
-   float calculate(int var1);
+   float calculate(int level);
 
    MapCodec<? extends LevelBasedValue> codec();
 
@@ -56,12 +56,11 @@ public interface LevelBasedValue {
       public static final Codec<Constant> CODEC;
       public static final MapCodec<Constant> TYPED_CODEC;
 
-      public Constant(float var1) {
+      public Constant {
          super();
-         this.value = var1;
       }
 
-      public float calculate(int var1) {
+      public float calculate(final int level) {
          return this.value;
       }
 
@@ -71,21 +70,19 @@ public interface LevelBasedValue {
 
       static {
          CODEC = Codec.FLOAT.xmap(Constant::new, Constant::value);
-         TYPED_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("value").forGetter(Constant::value)).apply(var0, Constant::new));
+         TYPED_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("value").forGetter(Constant::value)).apply(i, Constant::new));
       }
    }
 
    public static record Lookup(List<Float> values, LevelBasedValue fallback) implements LevelBasedValue {
-      public static final MapCodec<Lookup> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.listOf().fieldOf("values").forGetter(Lookup::values), LevelBasedValue.CODEC.fieldOf("fallback").forGetter(Lookup::fallback)).apply(var0, Lookup::new));
+      public static final MapCodec<Lookup> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.listOf().fieldOf("values").forGetter(Lookup::values), LevelBasedValue.CODEC.fieldOf("fallback").forGetter(Lookup::fallback)).apply(i, Lookup::new));
 
-      public Lookup(List<Float> var1, LevelBasedValue var2) {
+      public Lookup {
          super();
-         this.values = var1;
-         this.fallback = var2;
       }
 
-      public float calculate(int var1) {
-         return var1 <= this.values.size() ? (Float)this.values.get(var1 - 1) : this.fallback.calculate(var1);
+      public float calculate(final int level) {
+         return level <= this.values.size() ? (Float)this.values.get(level - 1) : this.fallback.calculate(level);
       }
 
       public MapCodec<Lookup> codec() {
@@ -94,16 +91,14 @@ public interface LevelBasedValue {
    }
 
    public static record Linear(float base, float perLevelAboveFirst) implements LevelBasedValue {
-      public static final MapCodec<Linear> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("base").forGetter(Linear::base), Codec.FLOAT.fieldOf("per_level_above_first").forGetter(Linear::perLevelAboveFirst)).apply(var0, Linear::new));
+      public static final MapCodec<Linear> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("base").forGetter(Linear::base), Codec.FLOAT.fieldOf("per_level_above_first").forGetter(Linear::perLevelAboveFirst)).apply(i, Linear::new));
 
-      public Linear(float var1, float var2) {
+      public Linear {
          super();
-         this.base = var1;
-         this.perLevelAboveFirst = var2;
       }
 
-      public float calculate(int var1) {
-         return this.base + this.perLevelAboveFirst * (float)(var1 - 1);
+      public float calculate(final int level) {
+         return this.base + this.perLevelAboveFirst * (float)(level - 1);
       }
 
       public MapCodec<Linear> codec() {
@@ -112,17 +107,14 @@ public interface LevelBasedValue {
    }
 
    public static record Clamped(LevelBasedValue value, float min, float max) implements LevelBasedValue {
-      public static final MapCodec<Clamped> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LevelBasedValue.CODEC.fieldOf("value").forGetter(Clamped::value), Codec.FLOAT.fieldOf("min").forGetter(Clamped::min), Codec.FLOAT.fieldOf("max").forGetter(Clamped::max)).apply(var0, Clamped::new)).validate((var0) -> var0.max <= var0.min ? DataResult.error(() -> "Max must be larger than min, min: " + var0.min + ", max: " + var0.max) : DataResult.success(var0));
+      public static final MapCodec<Clamped> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LevelBasedValue.CODEC.fieldOf("value").forGetter(Clamped::value), Codec.FLOAT.fieldOf("min").forGetter(Clamped::min), Codec.FLOAT.fieldOf("max").forGetter(Clamped::max)).apply(i, Clamped::new)).validate((u) -> u.max <= u.min ? DataResult.error(() -> "Max must be larger than min, min: " + u.min + ", max: " + u.max) : DataResult.success(u));
 
-      public Clamped(LevelBasedValue var1, float var2, float var3) {
+      public Clamped {
          super();
-         this.value = var1;
-         this.min = var2;
-         this.max = var3;
       }
 
-      public float calculate(int var1) {
-         return Mth.clamp(this.value.calculate(var1), this.min, this.max);
+      public float calculate(final int level) {
+         return Mth.clamp(this.value.calculate(level), this.min, this.max);
       }
 
       public MapCodec<Clamped> codec() {
@@ -131,17 +123,15 @@ public interface LevelBasedValue {
    }
 
    public static record Fraction(LevelBasedValue numerator, LevelBasedValue denominator) implements LevelBasedValue {
-      public static final MapCodec<Fraction> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LevelBasedValue.CODEC.fieldOf("numerator").forGetter(Fraction::numerator), LevelBasedValue.CODEC.fieldOf("denominator").forGetter(Fraction::denominator)).apply(var0, Fraction::new));
+      public static final MapCodec<Fraction> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LevelBasedValue.CODEC.fieldOf("numerator").forGetter(Fraction::numerator), LevelBasedValue.CODEC.fieldOf("denominator").forGetter(Fraction::denominator)).apply(i, Fraction::new));
 
-      public Fraction(LevelBasedValue var1, LevelBasedValue var2) {
+      public Fraction {
          super();
-         this.numerator = var1;
-         this.denominator = var2;
       }
 
-      public float calculate(int var1) {
-         float var2 = this.denominator.calculate(var1);
-         return var2 == 0.0F ? 0.0F : this.numerator.calculate(var1) / var2;
+      public float calculate(final int level) {
+         float denominator = this.denominator.calculate(level);
+         return denominator == 0.0F ? 0.0F : this.numerator.calculate(level) / denominator;
       }
 
       public MapCodec<Fraction> codec() {
@@ -150,16 +140,14 @@ public interface LevelBasedValue {
    }
 
    public static record Exponent(LevelBasedValue base, LevelBasedValue power) implements LevelBasedValue {
-      public static final MapCodec<Exponent> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LevelBasedValue.CODEC.fieldOf("base").forGetter(Exponent::base), LevelBasedValue.CODEC.fieldOf("power").forGetter(Exponent::power)).apply(var0, Exponent::new));
+      public static final MapCodec<Exponent> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LevelBasedValue.CODEC.fieldOf("base").forGetter(Exponent::base), LevelBasedValue.CODEC.fieldOf("power").forGetter(Exponent::power)).apply(i, Exponent::new));
 
-      public Exponent(LevelBasedValue var1, LevelBasedValue var2) {
+      public Exponent {
          super();
-         this.base = var1;
-         this.power = var2;
       }
 
-      public float calculate(int var1) {
-         return (float)Math.pow((double)this.base.calculate(var1), (double)this.power.calculate(var1));
+      public float calculate(final int level) {
+         return (float)Math.pow((double)this.base.calculate(level), (double)this.power.calculate(level));
       }
 
       public MapCodec<Exponent> codec() {
@@ -168,15 +156,14 @@ public interface LevelBasedValue {
    }
 
    public static record LevelsSquared(float added) implements LevelBasedValue {
-      public static final MapCodec<LevelsSquared> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("added").forGetter(LevelsSquared::added)).apply(var0, LevelsSquared::new));
+      public static final MapCodec<LevelsSquared> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("added").forGetter(LevelsSquared::added)).apply(i, LevelsSquared::new));
 
-      public LevelsSquared(float var1) {
+      public LevelsSquared {
          super();
-         this.added = var1;
       }
 
-      public float calculate(int var1) {
-         return (float)Mth.square(var1) + this.added;
+      public float calculate(final int level) {
+         return (float)Mth.square(level) + this.added;
       }
 
       public MapCodec<LevelsSquared> codec() {

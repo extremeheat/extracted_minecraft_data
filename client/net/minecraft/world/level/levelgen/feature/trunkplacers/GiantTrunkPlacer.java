@@ -13,38 +13,38 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class GiantTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<GiantTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> trunkPlacerParts(var0).apply(var0, GiantTrunkPlacer::new));
+   public static final MapCodec<GiantTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> trunkPlacerParts(i).apply(i, GiantTrunkPlacer::new));
 
-   public GiantTrunkPlacer(int var1, int var2, int var3) {
-      super(var1, var2, var3);
+   public GiantTrunkPlacer(final int baseHeight, final int heightRandA, final int heightRandB) {
+      super(baseHeight, heightRandA, heightRandB);
    }
 
    protected TrunkPlacerType<?> type() {
       return TrunkPlacerType.GIANT_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6) {
-      BlockPos var7 = var5.below();
-      setDirtAt(var1, var2, var3, var7, var6);
-      setDirtAt(var1, var2, var3, var7.east(), var6);
-      setDirtAt(var1, var2, var3, var7.south(), var6);
-      setDirtAt(var1, var2, var3, var7.south().east(), var6);
-      BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+      BlockPos below = origin.below();
+      setDirtAt(level, trunkSetter, random, below, config);
+      setDirtAt(level, trunkSetter, random, below.east(), config);
+      setDirtAt(level, trunkSetter, random, below.south(), config);
+      setDirtAt(level, trunkSetter, random, below.south().east(), config);
+      BlockPos.MutableBlockPos trunkPos = new BlockPos.MutableBlockPos();
 
-      for(int var9 = 0; var9 < var4; ++var9) {
-         this.placeLogIfFreeWithOffset(var1, var2, var3, var8, var6, var5, 0, var9, 0);
-         if (var9 < var4 - 1) {
-            this.placeLogIfFreeWithOffset(var1, var2, var3, var8, var6, var5, 1, var9, 0);
-            this.placeLogIfFreeWithOffset(var1, var2, var3, var8, var6, var5, 1, var9, 1);
-            this.placeLogIfFreeWithOffset(var1, var2, var3, var8, var6, var5, 0, var9, 1);
+      for(int hh = 0; hh < treeHeight; ++hh) {
+         this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, config, origin, 0, hh, 0);
+         if (hh < treeHeight - 1) {
+            this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, config, origin, 1, hh, 0);
+            this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, config, origin, 1, hh, 1);
+            this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, config, origin, 0, hh, 1);
          }
       }
 
-      return ImmutableList.of(new FoliagePlacer.FoliageAttachment(var5.above(var4), 0, true));
+      return ImmutableList.of(new FoliagePlacer.FoliageAttachment(origin.above(treeHeight), 0, true));
    }
 
-   private void placeLogIfFreeWithOffset(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, BlockPos.MutableBlockPos var4, TreeConfiguration var5, BlockPos var6, int var7, int var8, int var9) {
-      var4.setWithOffset(var6, var7, var8, var9);
-      this.placeLogIfFree(var1, var2, var3, var4, var5);
+   private void placeLogIfFreeWithOffset(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos.MutableBlockPos trunkPos, final TreeConfiguration config, final BlockPos treePos, final int x, final int y, final int z) {
+      trunkPos.setWithOffset(treePos, x, y, z);
+      this.placeLogIfFree(level, trunkSetter, random, trunkPos, config);
    }
 }

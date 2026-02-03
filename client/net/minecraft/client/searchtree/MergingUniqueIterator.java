@@ -11,29 +11,29 @@ public class MergingUniqueIterator<T> extends AbstractIterator<T> {
    private final PeekingIterator<T> secondIterator;
    private final Comparator<T> comparator;
 
-   public MergingUniqueIterator(Iterator<T> var1, Iterator<T> var2, Comparator<T> var3) {
+   public MergingUniqueIterator(final Iterator<T> firstIterator, final Iterator<T> secondIterator, final Comparator<T> comparator) {
       super();
-      this.firstIterator = Iterators.peekingIterator(var1);
-      this.secondIterator = Iterators.peekingIterator(var2);
-      this.comparator = var3;
+      this.firstIterator = Iterators.peekingIterator(firstIterator);
+      this.secondIterator = Iterators.peekingIterator(secondIterator);
+      this.comparator = comparator;
    }
 
    protected T computeNext() {
-      boolean var1 = !this.firstIterator.hasNext();
-      boolean var2 = !this.secondIterator.hasNext();
-      if (var1 && var2) {
+      boolean firstEmpty = !this.firstIterator.hasNext();
+      boolean secondEmpty = !this.secondIterator.hasNext();
+      if (firstEmpty && secondEmpty) {
          return (T)this.endOfData();
-      } else if (var1) {
+      } else if (firstEmpty) {
          return (T)this.secondIterator.next();
-      } else if (var2) {
+      } else if (secondEmpty) {
          return (T)this.firstIterator.next();
       } else {
-         int var3 = this.comparator.compare(this.firstIterator.peek(), this.secondIterator.peek());
-         if (var3 == 0) {
+         int compare = this.comparator.compare(this.firstIterator.peek(), this.secondIterator.peek());
+         if (compare == 0) {
             this.secondIterator.next();
          }
 
-         return (T)(var3 <= 0 ? this.firstIterator.next() : this.secondIterator.next());
+         return (T)(compare <= 0 ? this.firstIterator.next() : this.secondIterator.next());
       }
    }
 }

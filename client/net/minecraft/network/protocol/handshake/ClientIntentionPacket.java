@@ -11,31 +11,31 @@ public record ClientIntentionPacket(int protocolVersion, String hostName, int po
 
    /** @deprecated */
    @Deprecated
-   public ClientIntentionPacket(int var1, String var2, int var3, ClientIntent var4) {
+   public ClientIntentionPacket(int protocolVersion, String hostName, int port, ClientIntent intention) {
       super();
-      this.protocolVersion = var1;
-      this.hostName = var2;
-      this.port = var3;
-      this.intention = var4;
+      this.protocolVersion = protocolVersion;
+      this.hostName = hostName;
+      this.port = port;
+      this.intention = intention;
    }
 
-   private ClientIntentionPacket(FriendlyByteBuf var1) {
-      this(var1.readVarInt(), var1.readUtf(255), var1.readUnsignedShort(), ClientIntent.byId(var1.readVarInt()));
+   private ClientIntentionPacket(final FriendlyByteBuf input) {
+      this(input.readVarInt(), input.readUtf(255), input.readUnsignedShort(), ClientIntent.byId(input.readVarInt()));
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.protocolVersion);
-      var1.writeUtf(this.hostName);
-      var1.writeShort(this.port);
-      var1.writeVarInt(this.intention.id());
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.protocolVersion);
+      output.writeUtf(this.hostName);
+      output.writeShort(this.port);
+      output.writeVarInt(this.intention.id());
    }
 
    public PacketType<ClientIntentionPacket> type() {
       return HandshakePacketTypes.CLIENT_INTENTION;
    }
 
-   public void handle(ServerHandshakePacketListener var1) {
-      var1.handleIntention(this);
+   public void handle(final ServerHandshakePacketListener listener) {
+      listener.handleIntention(this);
    }
 
    public boolean isTerminal() {

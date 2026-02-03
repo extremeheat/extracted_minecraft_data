@@ -8,17 +8,17 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class OptionsAmbientOcclusionFix extends DataFix {
-   public OptionsAmbientOcclusionFix(Schema var1) {
-      super(var1, false);
+   public OptionsAmbientOcclusionFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("OptionsAmbientOcclusionFix", this.getInputSchema().getType(References.OPTIONS), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> (Dynamic)DataFixUtils.orElse(var0x.get("ao").asString().map((var1) -> var0x.set("ao", var0x.createString(updateValue(var1)))).result(), var0x)));
+      return this.fixTypeEverywhereTyped("OptionsAmbientOcclusionFix", this.getInputSchema().getType(References.OPTIONS), (input) -> input.update(DSL.remainderFinder(), (tag) -> (Dynamic)DataFixUtils.orElse(tag.get("ao").asString().map((value) -> tag.set("ao", tag.createString(updateValue(value)))).result(), tag)));
    }
 
-   private static String updateValue(String var0) {
+   private static String updateValue(final String value) {
       String var10000;
-      switch (var0) {
+      switch (value) {
          case "0":
             var10000 = "false";
             break;
@@ -27,7 +27,7 @@ public class OptionsAmbientOcclusionFix extends DataFix {
             var10000 = "true";
             break;
          default:
-            var10000 = var0;
+            var10000 = value;
       }
 
       return var10000;

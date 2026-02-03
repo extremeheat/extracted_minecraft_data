@@ -4,9 +4,9 @@ public class FeatureFlag {
    final FeatureFlagUniverse universe;
    final long mask;
 
-   FeatureFlag(FeatureFlagUniverse var1, int var2) {
+   FeatureFlag(final FeatureFlagUniverse universe, final int bit) {
       super();
-      this.universe = var1;
-      this.mask = 1L << var2;
+      this.universe = universe;
+      this.mask = 1L << bit;
    }
 }

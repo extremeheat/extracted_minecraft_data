@@ -22,169 +22,169 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public interface BlockGetter extends LevelHeightAccessor {
-   @Nullable BlockEntity getBlockEntity(BlockPos var1);
+   @Nullable BlockEntity getBlockEntity(BlockPos pos);
 
-   default <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos var1, BlockEntityType<T> var2) {
-      BlockEntity var3 = this.getBlockEntity(var1);
-      return var3 != null && var3.getType() == var2 ? Optional.of(var3) : Optional.empty();
+   default <T extends BlockEntity> Optional<T> getBlockEntity(final BlockPos pos, final BlockEntityType<T> type) {
+      BlockEntity blockEntity = this.getBlockEntity(pos);
+      return blockEntity != null && blockEntity.getType() == type ? Optional.of(blockEntity) : Optional.empty();
    }
 
-   BlockState getBlockState(BlockPos var1);
+   BlockState getBlockState(final BlockPos pos);
 
-   FluidState getFluidState(BlockPos var1);
+   FluidState getFluidState(BlockPos pos);
 
-   default int getLightEmission(BlockPos var1) {
-      return this.getBlockState(var1).getLightEmission();
+   default int getLightEmission(final BlockPos pos) {
+      return this.getBlockState(pos).getLightEmission();
    }
 
-   default Stream<BlockState> getBlockStates(AABB var1) {
-      return BlockPos.betweenClosedStream(var1).map(this::getBlockState);
+   default Stream<BlockState> getBlockStates(final AABB box) {
+      return BlockPos.betweenClosedStream(box).map(this::getBlockState);
    }
 
-   default BlockHitResult isBlockInLine(ClipBlockStateContext var1) {
-      return (BlockHitResult)traverseBlocks(var1.getFrom(), var1.getTo(), var1, (var1x, var2) -> {
-         BlockState var3 = this.getBlockState(var2);
-         Vec3 var4 = var1x.getFrom().subtract(var1x.getTo());
-         return var1x.isTargetBlock().test(var3) ? new BlockHitResult(var1x.getTo(), Direction.getApproximateNearest(var4.x, var4.y, var4.z), BlockPos.containing(var1x.getTo()), false) : null;
-      }, (var0) -> {
-         Vec3 var1 = var0.getFrom().subtract(var0.getTo());
-         return BlockHitResult.miss(var0.getTo(), Direction.getApproximateNearest(var1.x, var1.y, var1.z), BlockPos.containing(var0.getTo()));
+   default BlockHitResult isBlockInLine(final ClipBlockStateContext c) {
+      return (BlockHitResult)traverseBlocks(c.getFrom(), c.getTo(), c, (context, pos) -> {
+         BlockState blockState = this.getBlockState(pos);
+         Vec3 delta = context.getFrom().subtract(context.getTo());
+         return context.isTargetBlock().test(blockState) ? new BlockHitResult(context.getTo(), Direction.getApproximateNearest(delta.x, delta.y, delta.z), BlockPos.containing(context.getTo()), false) : null;
+      }, (context) -> {
+         Vec3 delta = context.getFrom().subtract(context.getTo());
+         return BlockHitResult.miss(context.getTo(), Direction.getApproximateNearest(delta.x, delta.y, delta.z), BlockPos.containing(context.getTo()));
       });
    }
 
-   default BlockHitResult clip(ClipContext var1) {
-      return (BlockHitResult)traverseBlocks(var1.getFrom(), var1.getTo(), var1, (var1x, var2) -> {
-         BlockState var3 = this.getBlockState(var2);
-         FluidState var4 = this.getFluidState(var2);
-         Vec3 var5 = var1x.getFrom();
-         Vec3 var6 = var1x.getTo();
-         VoxelShape var7 = var1x.getBlockShape(var3, this, var2);
-         BlockHitResult var8 = this.clipWithInteractionOverride(var5, var6, var2, var7, var3);
-         VoxelShape var9 = var1x.getFluidShape(var4, this, var2);
-         BlockHitResult var10 = var9.clip(var5, var6, var2);
-         double var11 = var8 == null ? 1.7976931348623157E308 : var1x.getFrom().distanceToSqr(var8.getLocation());
-         double var13 = var10 == null ? 1.7976931348623157E308 : var1x.getFrom().distanceToSqr(var10.getLocation());
-         return var11 <= var13 ? var8 : var10;
-      }, (var0) -> {
-         Vec3 var1 = var0.getFrom().subtract(var0.getTo());
-         return BlockHitResult.miss(var0.getTo(), Direction.getApproximateNearest(var1.x, var1.y, var1.z), BlockPos.containing(var0.getTo()));
+   default BlockHitResult clip(final ClipContext c) {
+      return (BlockHitResult)traverseBlocks(c.getFrom(), c.getTo(), c, (context, pos) -> {
+         BlockState blockState = this.getBlockState(pos);
+         FluidState fluidState = this.getFluidState(pos);
+         Vec3 from = context.getFrom();
+         Vec3 to = context.getTo();
+         VoxelShape blockShape = context.getBlockShape(blockState, this, pos);
+         BlockHitResult blockResult = this.clipWithInteractionOverride(from, to, pos, blockShape, blockState);
+         VoxelShape fluidShape = context.getFluidShape(fluidState, this, pos);
+         BlockHitResult liquidResult = fluidShape.clip(from, to, pos);
+         double blockDistanceSquared = blockResult == null ? 1.7976931348623157E308 : context.getFrom().distanceToSqr(blockResult.getLocation());
+         double liquidDistanceSquared = liquidResult == null ? 1.7976931348623157E308 : context.getFrom().distanceToSqr(liquidResult.getLocation());
+         return blockDistanceSquared <= liquidDistanceSquared ? blockResult : liquidResult;
+      }, (context) -> {
+         Vec3 delta = context.getFrom().subtract(context.getTo());
+         return BlockHitResult.miss(context.getTo(), Direction.getApproximateNearest(delta.x, delta.y, delta.z), BlockPos.containing(context.getTo()));
       });
    }
 
-   default @Nullable BlockHitResult clipWithInteractionOverride(Vec3 var1, Vec3 var2, BlockPos var3, VoxelShape var4, BlockState var5) {
-      BlockHitResult var6 = var4.clip(var1, var2, var3);
-      if (var6 != null) {
-         BlockHitResult var7 = var5.getInteractionShape(this, var3).clip(var1, var2, var3);
-         if (var7 != null && var7.getLocation().subtract(var1).lengthSqr() < var6.getLocation().subtract(var1).lengthSqr()) {
-            return var6.withDirection(var7.getDirection());
+   default @Nullable BlockHitResult clipWithInteractionOverride(final Vec3 from, final Vec3 to, final BlockPos pos, final VoxelShape blockShape, final BlockState blockState) {
+      BlockHitResult result = blockShape.clip(from, to, pos);
+      if (result != null) {
+         BlockHitResult hitOverride = blockState.getInteractionShape(this, pos).clip(from, to, pos);
+         if (hitOverride != null && hitOverride.getLocation().subtract(from).lengthSqr() < result.getLocation().subtract(from).lengthSqr()) {
+            return result.withDirection(hitOverride.getDirection());
          }
       }
 
-      return var6;
+      return result;
    }
 
-   default double getBlockFloorHeight(VoxelShape var1, Supplier<VoxelShape> var2) {
-      if (!var1.isEmpty()) {
-         return var1.max(Direction.Axis.Y);
+   default double getBlockFloorHeight(final VoxelShape blockShape, final Supplier<VoxelShape> belowBlockShape) {
+      if (!blockShape.isEmpty()) {
+         return blockShape.max(Direction.Axis.Y);
       } else {
-         double var3 = ((VoxelShape)var2.get()).max(Direction.Axis.Y);
-         return var3 >= 1.0 ? var3 - 1.0 : -1.0 / 0.0;
+         double belowFloor = ((VoxelShape)belowBlockShape.get()).max(Direction.Axis.Y);
+         return belowFloor >= 1.0 ? belowFloor - 1.0 : -1.0 / 0.0;
       }
    }
 
-   default double getBlockFloorHeight(BlockPos var1) {
-      return this.getBlockFloorHeight(this.getBlockState(var1).getCollisionShape(this, var1), () -> {
-         BlockPos var2 = var1.below();
-         return this.getBlockState(var2).getCollisionShape(this, var2);
+   default double getBlockFloorHeight(final BlockPos pos) {
+      return this.getBlockFloorHeight(this.getBlockState(pos).getCollisionShape(this, pos), () -> {
+         BlockPos below = pos.below();
+         return this.getBlockState(below).getCollisionShape(this, below);
       });
    }
 
-   static <T, C> T traverseBlocks(Vec3 var0, Vec3 var1, C var2, BiFunction<C, BlockPos, @Nullable T> var3, Function<C, T> var4) {
-      if (var0.equals(var1)) {
-         return (T)var4.apply(var2);
+   static <T, C> T traverseBlocks(final Vec3 from, final Vec3 to, final C context, final BiFunction<C, BlockPos, @Nullable T> consumer, final Function<C, T> missFactory) {
+      if (from.equals(to)) {
+         return (T)missFactory.apply(context);
       } else {
-         double var5 = Mth.lerp(-1.0E-7, var1.x, var0.x);
-         double var7 = Mth.lerp(-1.0E-7, var1.y, var0.y);
-         double var9 = Mth.lerp(-1.0E-7, var1.z, var0.z);
-         double var11 = Mth.lerp(-1.0E-7, var0.x, var1.x);
-         double var13 = Mth.lerp(-1.0E-7, var0.y, var1.y);
-         double var15 = Mth.lerp(-1.0E-7, var0.z, var1.z);
-         int var17 = Mth.floor(var11);
-         int var18 = Mth.floor(var13);
-         int var19 = Mth.floor(var15);
-         BlockPos.MutableBlockPos var20 = new BlockPos.MutableBlockPos(var17, var18, var19);
-         Object var21 = var3.apply(var2, var20);
-         if (var21 != null) {
-            return (T)var21;
+         double toX = Mth.lerp(-1.0E-7, to.x, from.x);
+         double toY = Mth.lerp(-1.0E-7, to.y, from.y);
+         double toZ = Mth.lerp(-1.0E-7, to.z, from.z);
+         double fromX = Mth.lerp(-1.0E-7, from.x, to.x);
+         double fromY = Mth.lerp(-1.0E-7, from.y, to.y);
+         double fromZ = Mth.lerp(-1.0E-7, from.z, to.z);
+         int currentBlockX = Mth.floor(fromX);
+         int currentBlockY = Mth.floor(fromY);
+         int currentBlockZ = Mth.floor(fromZ);
+         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(currentBlockX, currentBlockY, currentBlockZ);
+         T first = (T)consumer.apply(context, pos);
+         if (first != null) {
+            return first;
          } else {
-            double var22 = var5 - var11;
-            double var24 = var7 - var13;
-            double var26 = var9 - var15;
-            int var28 = Mth.sign(var22);
-            int var29 = Mth.sign(var24);
-            int var30 = Mth.sign(var26);
-            double var31 = var28 == 0 ? 1.7976931348623157E308 : (double)var28 / var22;
-            double var33 = var29 == 0 ? 1.7976931348623157E308 : (double)var29 / var24;
-            double var35 = var30 == 0 ? 1.7976931348623157E308 : (double)var30 / var26;
-            double var37 = var31 * (var28 > 0 ? 1.0 - Mth.frac(var11) : Mth.frac(var11));
-            double var39 = var33 * (var29 > 0 ? 1.0 - Mth.frac(var13) : Mth.frac(var13));
-            double var41 = var35 * (var30 > 0 ? 1.0 - Mth.frac(var15) : Mth.frac(var15));
+            double dx = toX - fromX;
+            double dy = toY - fromY;
+            double dz = toZ - fromZ;
+            int signX = Mth.sign(dx);
+            int signY = Mth.sign(dy);
+            int signZ = Mth.sign(dz);
+            double tDeltaX = signX == 0 ? 1.7976931348623157E308 : (double)signX / dx;
+            double tDeltaY = signY == 0 ? 1.7976931348623157E308 : (double)signY / dy;
+            double tDeltaZ = signZ == 0 ? 1.7976931348623157E308 : (double)signZ / dz;
+            double tX = tDeltaX * (signX > 0 ? 1.0 - Mth.frac(fromX) : Mth.frac(fromX));
+            double tY = tDeltaY * (signY > 0 ? 1.0 - Mth.frac(fromY) : Mth.frac(fromY));
+            double tZ = tDeltaZ * (signZ > 0 ? 1.0 - Mth.frac(fromZ) : Mth.frac(fromZ));
 
-            while(var37 <= 1.0 || var39 <= 1.0 || var41 <= 1.0) {
-               if (var37 < var39) {
-                  if (var37 < var41) {
-                     var17 += var28;
-                     var37 += var31;
+            while(tX <= 1.0 || tY <= 1.0 || tZ <= 1.0) {
+               if (tX < tY) {
+                  if (tX < tZ) {
+                     currentBlockX += signX;
+                     tX += tDeltaX;
                   } else {
-                     var19 += var30;
-                     var41 += var35;
+                     currentBlockZ += signZ;
+                     tZ += tDeltaZ;
                   }
-               } else if (var39 < var41) {
-                  var18 += var29;
-                  var39 += var33;
+               } else if (tY < tZ) {
+                  currentBlockY += signY;
+                  tY += tDeltaY;
                } else {
-                  var19 += var30;
-                  var41 += var35;
+                  currentBlockZ += signZ;
+                  tZ += tDeltaZ;
                }
 
-               Object var43 = var3.apply(var2, var20.set(var17, var18, var19));
-               if (var43 != null) {
-                  return (T)var43;
+               T result = (T)consumer.apply(context, pos.set(currentBlockX, currentBlockY, currentBlockZ));
+               if (result != null) {
+                  return result;
                }
             }
 
-            return (T)var4.apply(var2);
+            return (T)missFactory.apply(context);
          }
       }
    }
 
-   static boolean forEachBlockIntersectedBetween(Vec3 var0, Vec3 var1, AABB var2, BlockStepVisitor var3) {
-      Vec3 var4 = var1.subtract(var0);
-      if (var4.lengthSqr() < (double)Mth.square(1.0E-5F)) {
-         for(BlockPos var11 : BlockPos.betweenClosed(var2)) {
-            if (!var3.visit(var11, 0)) {
+   static boolean forEachBlockIntersectedBetween(final Vec3 from, final Vec3 to, final AABB aabbAtTarget, final BlockStepVisitor visitor) {
+      Vec3 travel = to.subtract(from);
+      if (travel.lengthSqr() < (double)Mth.square(1.0E-5F)) {
+         for(BlockPos blockPos : BlockPos.betweenClosed(aabbAtTarget)) {
+            if (!visitor.visit(blockPos, 0)) {
                return false;
             }
          }
 
          return true;
       } else {
-         LongOpenHashSet var5 = new LongOpenHashSet();
+         LongSet visitedBlocks = new LongOpenHashSet();
 
-         for(BlockPos var7 : BlockPos.betweenCornersInDirection(var2.move(var4.scale(-1.0)), var4)) {
-            if (!var3.visit(var7, 0)) {
+         for(BlockPos blockPos : BlockPos.betweenCornersInDirection(aabbAtTarget.move(travel.scale(-1.0)), travel)) {
+            if (!visitor.visit(blockPos, 0)) {
                return false;
             }
 
-            var5.add(var7.asLong());
+            visitedBlocks.add(blockPos.asLong());
          }
 
-         int var10 = addCollisionsAlongTravel(var5, var4, var2, var3);
-         if (var10 < 0) {
+         int iterations = addCollisionsAlongTravel(visitedBlocks, travel, aabbAtTarget, visitor);
+         if (iterations < 0) {
             return false;
          } else {
-            for(BlockPos var8 : BlockPos.betweenCornersInDirection(var2, var4)) {
-               if (var5.add(var8.asLong()) && !var3.visit(var8, var10 + 1)) {
+            for(BlockPos blockPos : BlockPos.betweenCornersInDirection(aabbAtTarget, travel)) {
+               if (visitedBlocks.add(blockPos.asLong()) && !visitor.visit(blockPos, iterations + 1)) {
                   return false;
                }
             }
@@ -194,84 +194,84 @@ public interface BlockGetter extends LevelHeightAccessor {
       }
    }
 
-   private static int addCollisionsAlongTravel(LongSet var0, Vec3 var1, AABB var2, BlockStepVisitor var3) {
-      double var4 = var2.getXsize();
-      double var6 = var2.getYsize();
-      double var8 = var2.getZsize();
-      Vec3i var10 = getFurthestCorner(var1);
-      Vec3 var11 = var2.getCenter();
-      Vec3 var12 = new Vec3(var11.x() + var4 * 0.5 * (double)var10.getX(), var11.y() + var6 * 0.5 * (double)var10.getY(), var11.z() + var8 * 0.5 * (double)var10.getZ());
-      Vec3 var13 = var12.subtract(var1);
-      int var14 = Mth.floor(var13.x);
-      int var15 = Mth.floor(var13.y);
-      int var16 = Mth.floor(var13.z);
-      int var17 = Mth.sign(var1.x);
-      int var18 = Mth.sign(var1.y);
-      int var19 = Mth.sign(var1.z);
-      double var20 = var17 == 0 ? 1.7976931348623157E308 : (double)var17 / var1.x;
-      double var22 = var18 == 0 ? 1.7976931348623157E308 : (double)var18 / var1.y;
-      double var24 = var19 == 0 ? 1.7976931348623157E308 : (double)var19 / var1.z;
-      double var26 = var20 * (var17 > 0 ? 1.0 - Mth.frac(var13.x) : Mth.frac(var13.x));
-      double var28 = var22 * (var18 > 0 ? 1.0 - Mth.frac(var13.y) : Mth.frac(var13.y));
-      double var30 = var24 * (var19 > 0 ? 1.0 - Mth.frac(var13.z) : Mth.frac(var13.z));
-      int var32 = 0;
+   private static int addCollisionsAlongTravel(final LongSet visitedBlocks, final Vec3 deltaMove, final AABB aabbAtTarget, final BlockStepVisitor visitor) {
+      double boxSizeX = aabbAtTarget.getXsize();
+      double boxSizeY = aabbAtTarget.getYsize();
+      double boxSizeZ = aabbAtTarget.getZsize();
+      Vec3i cornerDir = getFurthestCorner(deltaMove);
+      Vec3 toCenter = aabbAtTarget.getCenter();
+      Vec3 toCorner = new Vec3(toCenter.x() + boxSizeX * 0.5 * (double)cornerDir.getX(), toCenter.y() + boxSizeY * 0.5 * (double)cornerDir.getY(), toCenter.z() + boxSizeZ * 0.5 * (double)cornerDir.getZ());
+      Vec3 fromCorner = toCorner.subtract(deltaMove);
+      int cornerVisitedBlockX = Mth.floor(fromCorner.x);
+      int cornerVisitedBlockY = Mth.floor(fromCorner.y);
+      int cornerVisitedBlockZ = Mth.floor(fromCorner.z);
+      int signX = Mth.sign(deltaMove.x);
+      int signY = Mth.sign(deltaMove.y);
+      int signZ = Mth.sign(deltaMove.z);
+      double tDeltaX = signX == 0 ? 1.7976931348623157E308 : (double)signX / deltaMove.x;
+      double tDeltaY = signY == 0 ? 1.7976931348623157E308 : (double)signY / deltaMove.y;
+      double tDeltaZ = signZ == 0 ? 1.7976931348623157E308 : (double)signZ / deltaMove.z;
+      double tX = tDeltaX * (signX > 0 ? 1.0 - Mth.frac(fromCorner.x) : Mth.frac(fromCorner.x));
+      double tY = tDeltaY * (signY > 0 ? 1.0 - Mth.frac(fromCorner.y) : Mth.frac(fromCorner.y));
+      double tZ = tDeltaZ * (signZ > 0 ? 1.0 - Mth.frac(fromCorner.z) : Mth.frac(fromCorner.z));
+      int iterations = 0;
 
-      while(var26 <= 1.0 || var28 <= 1.0 || var30 <= 1.0) {
-         if (var26 < var28) {
-            if (var26 < var30) {
-               var14 += var17;
-               var26 += var20;
+      while(tX <= 1.0 || tY <= 1.0 || tZ <= 1.0) {
+         if (tX < tY) {
+            if (tX < tZ) {
+               cornerVisitedBlockX += signX;
+               tX += tDeltaX;
             } else {
-               var16 += var19;
-               var30 += var24;
+               cornerVisitedBlockZ += signZ;
+               tZ += tDeltaZ;
             }
-         } else if (var28 < var30) {
-            var15 += var18;
-            var28 += var22;
+         } else if (tY < tZ) {
+            cornerVisitedBlockY += signY;
+            tY += tDeltaY;
          } else {
-            var16 += var19;
-            var30 += var24;
+            cornerVisitedBlockZ += signZ;
+            tZ += tDeltaZ;
          }
 
-         Optional var33 = AABB.clip((double)var14, (double)var15, (double)var16, (double)(var14 + 1), (double)(var15 + 1), (double)(var16 + 1), var13, var12);
-         if (!var33.isEmpty()) {
-            ++var32;
-            Vec3 var34 = (Vec3)var33.get();
-            double var35 = Mth.clamp(var34.x, (double)var14 + 9.999999747378752E-6, (double)var14 + 1.0 - 9.999999747378752E-6);
-            double var37 = Mth.clamp(var34.y, (double)var15 + 9.999999747378752E-6, (double)var15 + 1.0 - 9.999999747378752E-6);
-            double var39 = Mth.clamp(var34.z, (double)var16 + 9.999999747378752E-6, (double)var16 + 1.0 - 9.999999747378752E-6);
-            int var41 = Mth.floor(var35 - var4 * (double)var10.getX());
-            int var42 = Mth.floor(var37 - var6 * (double)var10.getY());
-            int var43 = Mth.floor(var39 - var8 * (double)var10.getZ());
-            int var44 = var32;
+         Optional<Vec3> hitPointOpt = AABB.clip((double)cornerVisitedBlockX, (double)cornerVisitedBlockY, (double)cornerVisitedBlockZ, (double)(cornerVisitedBlockX + 1), (double)(cornerVisitedBlockY + 1), (double)(cornerVisitedBlockZ + 1), fromCorner, toCorner);
+         if (!hitPointOpt.isEmpty()) {
+            ++iterations;
+            Vec3 hitPoint = (Vec3)hitPointOpt.get();
+            double cornerHitX = Mth.clamp(hitPoint.x, (double)cornerVisitedBlockX + 9.999999747378752E-6, (double)cornerVisitedBlockX + 1.0 - 9.999999747378752E-6);
+            double cornerHitY = Mth.clamp(hitPoint.y, (double)cornerVisitedBlockY + 9.999999747378752E-6, (double)cornerVisitedBlockY + 1.0 - 9.999999747378752E-6);
+            double cornerHitZ = Mth.clamp(hitPoint.z, (double)cornerVisitedBlockZ + 9.999999747378752E-6, (double)cornerVisitedBlockZ + 1.0 - 9.999999747378752E-6);
+            int oppositeCornerX = Mth.floor(cornerHitX - boxSizeX * (double)cornerDir.getX());
+            int oppositeCornerY = Mth.floor(cornerHitY - boxSizeY * (double)cornerDir.getY());
+            int oppositeCornerZ = Mth.floor(cornerHitZ - boxSizeZ * (double)cornerDir.getZ());
+            int currentIteration = iterations;
 
-            for(BlockPos var46 : BlockPos.betweenCornersInDirection(var14, var15, var16, var41, var42, var43, var1)) {
-               if (var0.add(var46.asLong()) && !var3.visit(var46, var44)) {
+            for(BlockPos pos : BlockPos.betweenCornersInDirection(cornerVisitedBlockX, cornerVisitedBlockY, cornerVisitedBlockZ, oppositeCornerX, oppositeCornerY, oppositeCornerZ, deltaMove)) {
+               if (visitedBlocks.add(pos.asLong()) && !visitor.visit(pos, currentIteration)) {
                   return -1;
                }
             }
          }
       }
 
-      return var32;
+      return iterations;
    }
 
-   private static Vec3i getFurthestCorner(Vec3 var0) {
-      double var1 = Math.abs(Vec3.X_AXIS.dot(var0));
-      double var3 = Math.abs(Vec3.Y_AXIS.dot(var0));
-      double var5 = Math.abs(Vec3.Z_AXIS.dot(var0));
-      int var7 = var0.x >= 0.0 ? 1 : -1;
-      int var8 = var0.y >= 0.0 ? 1 : -1;
-      int var9 = var0.z >= 0.0 ? 1 : -1;
-      if (var1 <= var3 && var1 <= var5) {
-         return new Vec3i(-var7, -var9, var8);
+   private static Vec3i getFurthestCorner(final Vec3 direction) {
+      double xDot = Math.abs(Vec3.X_AXIS.dot(direction));
+      double yDot = Math.abs(Vec3.Y_AXIS.dot(direction));
+      double zDot = Math.abs(Vec3.Z_AXIS.dot(direction));
+      int xSign = direction.x >= 0.0 ? 1 : -1;
+      int ySign = direction.y >= 0.0 ? 1 : -1;
+      int zSign = direction.z >= 0.0 ? 1 : -1;
+      if (xDot <= yDot && xDot <= zDot) {
+         return new Vec3i(-xSign, -zSign, ySign);
       } else {
-         return var3 <= var5 ? new Vec3i(var9, -var8, -var7) : new Vec3i(-var8, var7, -var9);
+         return yDot <= zDot ? new Vec3i(zSign, -ySign, -xSign) : new Vec3i(-ySign, xSign, -zSign);
       }
    }
 
    @FunctionalInterface
    public interface BlockStepVisitor {
-      boolean visit(BlockPos var1, int var2);
+      boolean visit(BlockPos pos, int iteration);
    }
 }

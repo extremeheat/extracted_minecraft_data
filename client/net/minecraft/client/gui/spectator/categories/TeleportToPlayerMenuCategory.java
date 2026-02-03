@@ -19,7 +19,7 @@ import net.minecraft.world.level.GameType;
 
 public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, SpectatorMenuItem {
    private static final Identifier TELEPORT_TO_PLAYER_SPRITE = Identifier.withDefaultNamespace("spectator/teleport_to_player");
-   private static final Comparator<PlayerInfo> PROFILE_ORDER = Comparator.comparing((var0) -> var0.getProfile().id());
+   private static final Comparator<PlayerInfo> PROFILE_ORDER = Comparator.comparing((p) -> p.getProfile().id());
    private static final Component TELEPORT_TEXT = Component.translatable("spectatorMenu.teleport");
    private static final Component TELEPORT_PROMPT = Component.translatable("spectatorMenu.teleport.prompt");
    private final List<SpectatorMenuItem> items;
@@ -28,9 +28,9 @@ public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, Spec
       this(Minecraft.getInstance().getConnection().getListedOnlinePlayers());
    }
 
-   public TeleportToPlayerMenuCategory(Collection<PlayerInfo> var1) {
+   public TeleportToPlayerMenuCategory(final Collection<PlayerInfo> profiles) {
       super();
-      this.items = (List)var1.stream().filter((var0) -> var0.getGameMode() != GameType.SPECTATOR).sorted(PROFILE_ORDER).map(PlayerMenuItem::new).collect(Collectors.toUnmodifiableList());
+      this.items = (List)profiles.stream().filter((p) -> p.getGameMode() != GameType.SPECTATOR).sorted(PROFILE_ORDER).map(PlayerMenuItem::new).collect(Collectors.toUnmodifiableList());
    }
 
    public List<SpectatorMenuItem> getItems() {
@@ -41,16 +41,16 @@ public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, Spec
       return TELEPORT_PROMPT;
    }
 
-   public void selectItem(SpectatorMenu var1) {
-      var1.selectCategory(this);
+   public void selectItem(final SpectatorMenu menu) {
+      menu.selectCategory(this);
    }
 
    public Component getName() {
       return TELEPORT_TEXT;
    }
 
-   public void renderIcon(GuiGraphics var1, float var2, float var3) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TELEPORT_TO_PLAYER_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
+   public void renderIcon(final GuiGraphics graphics, final float brightness, final float alpha) {
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TELEPORT_TO_PLAYER_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(alpha, brightness, brightness, brightness));
    }
 
    public boolean isEnabled() {

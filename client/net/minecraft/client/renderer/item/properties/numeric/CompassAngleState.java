@@ -19,68 +19,68 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class CompassAngleState extends NeedleDirectionHelper {
-   public static final MapCodec<CompassAngleState> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("wobble", true).forGetter(NeedleDirectionHelper::wobble), CompassAngleState.CompassTarget.CODEC.fieldOf("target").forGetter(CompassAngleState::target)).apply(var0, CompassAngleState::new));
+   public static final MapCodec<CompassAngleState> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.optionalFieldOf("wobble", true).forGetter(NeedleDirectionHelper::wobble), CompassAngleState.CompassTarget.CODEC.fieldOf("target").forGetter(CompassAngleState::target)).apply(i, CompassAngleState::new));
    private final NeedleDirectionHelper.Wobbler wobbler = this.newWobbler(0.8F);
    private final NeedleDirectionHelper.Wobbler noTargetWobbler = this.newWobbler(0.8F);
    private final CompassTarget compassTarget;
    private final RandomSource random = RandomSource.create();
 
-   public CompassAngleState(boolean var1, CompassTarget var2) {
-      super(var1);
-      this.compassTarget = var2;
+   public CompassAngleState(final boolean wobble, final CompassTarget compassTarget) {
+      super(wobble);
+      this.compassTarget = compassTarget;
    }
 
-   protected float calculate(ItemStack var1, ClientLevel var2, int var3, ItemOwner var4) {
-      GlobalPos var5 = this.compassTarget.get(var2, var1, var4);
-      long var6 = var2.getGameTime();
-      return !isValidCompassTargetPos(var4, var5) ? this.getRandomlySpinningRotation(var3, var6) : this.getRotationTowardsCompassTarget(var4, var6, var5.pos());
+   protected float calculate(final ItemStack itemStack, final ClientLevel level, final int seed, final ItemOwner owner) {
+      GlobalPos compassTargetPos = this.compassTarget.get(level, itemStack, owner);
+      long gameTime = level.getGameTime();
+      return !isValidCompassTargetPos(owner, compassTargetPos) ? this.getRandomlySpinningRotation(seed, gameTime) : this.getRotationTowardsCompassTarget(owner, gameTime, compassTargetPos.pos());
    }
 
-   private float getRandomlySpinningRotation(int var1, long var2) {
-      if (this.noTargetWobbler.shouldUpdate(var2)) {
-         this.noTargetWobbler.update(var2, this.random.nextFloat());
+   private float getRandomlySpinningRotation(final int seed, final long gameTime) {
+      if (this.noTargetWobbler.shouldUpdate(gameTime)) {
+         this.noTargetWobbler.update(gameTime, this.random.nextFloat());
       }
 
-      float var4 = this.noTargetWobbler.rotation() + (float)hash(var1) / 2.1474836E9F;
-      return Mth.positiveModulo(var4, 1.0F);
+      float targetRotation = this.noTargetWobbler.rotation() + (float)hash(seed) / 2.1474836E9F;
+      return Mth.positiveModulo(targetRotation, 1.0F);
    }
 
-   private float getRotationTowardsCompassTarget(ItemOwner var1, long var2, BlockPos var4) {
-      float var5 = (float)getAngleFromEntityToPos(var1, var4);
-      float var6 = getWrappedVisualRotationY(var1);
-      LivingEntity var8 = var1.asLivingEntity();
-      float var7;
-      if (var8 instanceof Player var9) {
-         if (var9.isLocalPlayer() && var9.level().tickRateManager().runsNormally()) {
-            if (this.wobbler.shouldUpdate(var2)) {
-               this.wobbler.update(var2, 0.5F - (var6 - 0.25F));
+   private float getRotationTowardsCompassTarget(final ItemOwner owner, final long gameTime, final BlockPos compassTargetPos) {
+      float angleToTarget = (float)getAngleFromEntityToPos(owner, compassTargetPos);
+      float ownerYRotation = getWrappedVisualRotationY(owner);
+      LivingEntity entity = owner.asLivingEntity();
+      float targetRotation;
+      if (entity instanceof Player player) {
+         if (player.isLocalPlayer() && player.level().tickRateManager().runsNormally()) {
+            if (this.wobbler.shouldUpdate(gameTime)) {
+               this.wobbler.update(gameTime, 0.5F - (ownerYRotation - 0.25F));
             }
 
-            var7 = var5 + this.wobbler.rotation();
-            return Mth.positiveModulo(var7, 1.0F);
+            targetRotation = angleToTarget + this.wobbler.rotation();
+            return Mth.positiveModulo(targetRotation, 1.0F);
          }
       }
 
-      var7 = 0.5F - (var6 - 0.25F - var5);
-      return Mth.positiveModulo(var7, 1.0F);
+      targetRotation = 0.5F - (ownerYRotation - 0.25F - angleToTarget);
+      return Mth.positiveModulo(targetRotation, 1.0F);
    }
 
-   private static boolean isValidCompassTargetPos(ItemOwner var0, @Nullable GlobalPos var1) {
-      return var1 != null && var1.dimension() == var0.level().dimension() && !(var1.pos().distToCenterSqr(var0.position()) < 9.999999747378752E-6);
+   private static boolean isValidCompassTargetPos(final ItemOwner owner, final @Nullable GlobalPos positionToPointTo) {
+      return positionToPointTo != null && positionToPointTo.dimension() == owner.level().dimension() && !(positionToPointTo.pos().distToCenterSqr(owner.position()) < 9.999999747378752E-6);
    }
 
-   private static double getAngleFromEntityToPos(ItemOwner var0, BlockPos var1) {
-      Vec3 var2 = Vec3.atCenterOf(var1);
-      Vec3 var3 = var0.position();
-      return Math.atan2(var2.z() - var3.z(), var2.x() - var3.x()) / 6.2831854820251465;
+   private static double getAngleFromEntityToPos(final ItemOwner owner, final BlockPos position) {
+      Vec3 target = Vec3.atCenterOf(position);
+      Vec3 ownerPosition = owner.position();
+      return Math.atan2(target.z() - ownerPosition.z(), target.x() - ownerPosition.x()) / 6.2831854820251465;
    }
 
-   private static float getWrappedVisualRotationY(ItemOwner var0) {
-      return Mth.positiveModulo(var0.getVisualRotationYInDegrees() / 360.0F, 1.0F);
+   private static float getWrappedVisualRotationY(final ItemOwner owner) {
+      return Mth.positiveModulo(owner.getVisualRotationYInDegrees() / 360.0F, 1.0F);
    }
 
-   private static int hash(int var0) {
-      return var0 * 1327217883;
+   private static int hash(final int input) {
+      return input * 1327217883;
    }
 
    protected CompassTarget target() {
@@ -89,27 +89,27 @@ public class CompassAngleState extends NeedleDirectionHelper {
 
    public static enum CompassTarget implements StringRepresentable {
       NONE("none") {
-         public @Nullable GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
+         public @Nullable GlobalPos get(final ClientLevel level, final ItemStack itemStack, final @Nullable ItemOwner owner) {
             return null;
          }
       },
       LODESTONE("lodestone") {
-         public @Nullable GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
-            LodestoneTracker var4 = (LodestoneTracker)var2.get(DataComponents.LODESTONE_TRACKER);
-            return var4 != null ? (GlobalPos)var4.target().orElse((Object)null) : null;
+         public @Nullable GlobalPos get(final ClientLevel level, final ItemStack itemStack, final @Nullable ItemOwner owner) {
+            LodestoneTracker tracker = (LodestoneTracker)itemStack.get(DataComponents.LODESTONE_TRACKER);
+            return tracker != null ? (GlobalPos)tracker.target().orElse((Object)null) : null;
          }
       },
       SPAWN("spawn") {
-         public GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
-            return var1.getRespawnData().globalPos();
+         public GlobalPos get(final ClientLevel level, final ItemStack itemStack, final @Nullable ItemOwner owner) {
+            return level.getRespawnData().globalPos();
          }
       },
       RECOVERY("recovery") {
-         public @Nullable GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
-            LivingEntity var4 = var3 == null ? null : var3.asLivingEntity();
+         public @Nullable GlobalPos get(final ClientLevel level, final ItemStack itemStack, final @Nullable ItemOwner owner) {
+            LivingEntity entity = owner == null ? null : owner.asLivingEntity();
             GlobalPos var10000;
-            if (var4 instanceof Player var5) {
-               var10000 = (GlobalPos)var5.getLastDeathLocation().orElse((Object)null);
+            if (entity instanceof Player player) {
+               var10000 = (GlobalPos)player.getLastDeathLocation().orElse((Object)null);
             } else {
                var10000 = null;
             }
@@ -121,15 +121,15 @@ public class CompassAngleState extends NeedleDirectionHelper {
       public static final Codec<CompassTarget> CODEC = StringRepresentable.<CompassTarget>fromEnum(CompassTarget::values);
       private final String name;
 
-      CompassTarget(final String var3) {
-         this.name = var3;
+      private CompassTarget(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {
          return this.name;
       }
 
-      abstract @Nullable GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3);
+      abstract @Nullable GlobalPos get(final ClientLevel level, final ItemStack itemStack, final @Nullable ItemOwner entity);
 
       // $FF: synthetic method
       private static CompassTarget[] $values() {

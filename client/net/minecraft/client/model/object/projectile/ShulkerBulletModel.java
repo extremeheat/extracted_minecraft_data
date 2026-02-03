@@ -13,21 +13,21 @@ public class ShulkerBulletModel extends EntityModel<ShulkerBulletRenderState> {
    private static final String MAIN = "main";
    private final ModelPart main;
 
-   public ShulkerBulletModel(ModelPart var1) {
-      super(var1);
-      this.main = var1.getChild("main");
+   public ShulkerBulletModel(final ModelPart root) {
+      super(root);
+      this.main = root.getChild("main");
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("main", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -1.0F, 8.0F, 8.0F, 2.0F).texOffs(0, 10).addBox(-1.0F, -4.0F, -4.0F, 2.0F, 8.0F, 8.0F).texOffs(20, 0).addBox(-4.0F, -1.0F, -4.0F, 8.0F, 2.0F, 8.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 64, 32);
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      root.addOrReplaceChild("main", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -1.0F, 8.0F, 8.0F, 2.0F).texOffs(0, 10).addBox(-1.0F, -4.0F, -4.0F, 2.0F, 8.0F, 8.0F).texOffs(20, 0).addBox(-4.0F, -1.0F, -4.0F, 8.0F, 2.0F, 8.0F), PartPose.ZERO);
+      return LayerDefinition.create(mesh, 64, 32);
    }
 
-   public void setupAnim(ShulkerBulletRenderState var1) {
-      super.setupAnim(var1);
-      this.main.yRot = var1.yRot * 0.017453292F;
-      this.main.xRot = var1.xRot * 0.017453292F;
+   public void setupAnim(final ShulkerBulletRenderState state) {
+      super.setupAnim(state);
+      this.main.yRot = state.yRot * 0.017453292F;
+      this.main.xRot = state.xRot * 0.017453292F;
    }
 }

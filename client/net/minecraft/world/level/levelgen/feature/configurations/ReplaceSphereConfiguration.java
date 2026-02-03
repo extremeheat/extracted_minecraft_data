@@ -6,16 +6,16 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ReplaceSphereConfiguration implements FeatureConfiguration {
-   public static final Codec<ReplaceSphereConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockState.CODEC.fieldOf("target").forGetter((var0x) -> var0x.targetState), BlockState.CODEC.fieldOf("state").forGetter((var0x) -> var0x.replaceState), IntProvider.codec(0, 12).fieldOf("radius").forGetter((var0x) -> var0x.radius)).apply(var0, ReplaceSphereConfiguration::new));
+   public static final Codec<ReplaceSphereConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockState.CODEC.fieldOf("target").forGetter((c) -> c.targetState), BlockState.CODEC.fieldOf("state").forGetter((c) -> c.replaceState), IntProvider.codec(0, 12).fieldOf("radius").forGetter((c) -> c.radius)).apply(i, ReplaceSphereConfiguration::new));
    public final BlockState targetState;
    public final BlockState replaceState;
    private final IntProvider radius;
 
-   public ReplaceSphereConfiguration(BlockState var1, BlockState var2, IntProvider var3) {
+   public ReplaceSphereConfiguration(final BlockState targetState, final BlockState replaceState, final IntProvider radius) {
       super();
-      this.targetState = var1;
-      this.replaceState = var2;
-      this.radius = var3;
+      this.targetState = targetState;
+      this.replaceState = replaceState;
+      this.radius = radius;
    }
 
    public IntProvider radius() {

@@ -34,125 +34,125 @@ public class BlockItem extends Item {
    @Deprecated
    private final Block block;
 
-   public BlockItem(Block var1, Item.Properties var2) {
-      super(var2);
-      this.block = var1;
+   public BlockItem(final Block block, final Item.Properties properties) {
+      super(properties);
+      this.block = block;
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      InteractionResult var2 = this.place(new BlockPlaceContext(var1));
-      return !var2.consumesAction() && var1.getItemInHand().has(DataComponents.CONSUMABLE) ? super.use(var1.getLevel(), var1.getPlayer(), var1.getHand()) : var2;
+   public InteractionResult useOn(final UseOnContext context) {
+      InteractionResult placeResult = this.place(new BlockPlaceContext(context));
+      return !placeResult.consumesAction() && context.getItemInHand().has(DataComponents.CONSUMABLE) ? super.use(context.getLevel(), context.getPlayer(), context.getHand()) : placeResult;
    }
 
-   public InteractionResult place(BlockPlaceContext var1) {
-      if (!this.getBlock().isEnabled(var1.getLevel().enabledFeatures())) {
+   public InteractionResult place(final BlockPlaceContext placeContext) {
+      if (!this.getBlock().isEnabled(placeContext.getLevel().enabledFeatures())) {
          return InteractionResult.FAIL;
-      } else if (!var1.canPlace()) {
+      } else if (!placeContext.canPlace()) {
          return InteractionResult.FAIL;
       } else {
-         BlockPlaceContext var2 = this.updatePlacementContext(var1);
-         if (var2 == null) {
+         BlockPlaceContext updatedPlaceContext = this.updatePlacementContext(placeContext);
+         if (updatedPlaceContext == null) {
             return InteractionResult.FAIL;
          } else {
-            BlockState var3 = this.getPlacementState(var2);
-            if (var3 == null) {
+            BlockState placementState = this.getPlacementState(updatedPlaceContext);
+            if (placementState == null) {
                return InteractionResult.FAIL;
-            } else if (!this.placeBlock(var2, var3)) {
+            } else if (!this.placeBlock(updatedPlaceContext, placementState)) {
                return InteractionResult.FAIL;
             } else {
-               BlockPos var4 = var2.getClickedPos();
-               Level var5 = var2.getLevel();
-               Player var6 = var2.getPlayer();
-               ItemStack var7 = var2.getItemInHand();
-               BlockState var8 = var5.getBlockState(var4);
-               if (var8.is(var3.getBlock())) {
-                  var8 = this.updateBlockStateFromTag(var4, var5, var7, var8);
-                  this.updateCustomBlockEntityTag(var4, var5, var6, var7, var8);
-                  updateBlockEntityComponents(var5, var4, var7);
-                  var8.getBlock().setPlacedBy(var5, var4, var8, var6, var7);
-                  if (var6 instanceof ServerPlayer) {
-                     CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)var6, var4, var7);
+               BlockPos pos = updatedPlaceContext.getClickedPos();
+               Level level = updatedPlaceContext.getLevel();
+               Player player = updatedPlaceContext.getPlayer();
+               ItemStack itemStack = updatedPlaceContext.getItemInHand();
+               BlockState placedState = level.getBlockState(pos);
+               if (placedState.is(placementState.getBlock())) {
+                  placedState = this.updateBlockStateFromTag(pos, level, itemStack, placedState);
+                  this.updateCustomBlockEntityTag(pos, level, player, itemStack, placedState);
+                  updateBlockEntityComponents(level, pos, itemStack);
+                  placedState.getBlock().setPlacedBy(level, pos, placedState, player, itemStack);
+                  if (player instanceof ServerPlayer) {
+                     CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)player, pos, itemStack);
                   }
                }
 
-               SoundType var9 = var8.getSoundType();
-               var5.playSound(var6, (BlockPos)var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var9.getVolume() + 1.0F) / 2.0F, var9.getPitch() * 0.8F);
-               var5.gameEvent(GameEvent.BLOCK_PLACE, var4, GameEvent.Context.of(var6, var8));
-               var7.consume(1, var6);
+               SoundType soundType = placedState.getSoundType();
+               level.playSound(player, (BlockPos)pos, this.getPlaceSound(placedState), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
+               level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, placedState));
+               itemStack.consume(1, player);
                return InteractionResult.SUCCESS;
             }
          }
       }
    }
 
-   protected SoundEvent getPlaceSound(BlockState var1) {
-      return var1.getSoundType().getPlaceSound();
+   protected SoundEvent getPlaceSound(final BlockState blockState) {
+      return blockState.getSoundType().getPlaceSound();
    }
 
-   public @Nullable BlockPlaceContext updatePlacementContext(BlockPlaceContext var1) {
-      return var1;
+   public @Nullable BlockPlaceContext updatePlacementContext(final BlockPlaceContext context) {
+      return context;
    }
 
-   private static void updateBlockEntityComponents(Level var0, BlockPos var1, ItemStack var2) {
-      BlockEntity var3 = var0.getBlockEntity(var1);
-      if (var3 != null) {
-         var3.applyComponentsFromItemStack(var2);
-         var3.setChanged();
+   private static void updateBlockEntityComponents(final Level level, final BlockPos pos, final ItemStack itemStack) {
+      BlockEntity entity = level.getBlockEntity(pos);
+      if (entity != null) {
+         entity.applyComponentsFromItemStack(itemStack);
+         entity.setChanged();
       }
 
    }
 
-   protected boolean updateCustomBlockEntityTag(BlockPos var1, Level var2, @Nullable Player var3, ItemStack var4, BlockState var5) {
-      return updateCustomBlockEntityTag(var2, var3, var1, var4);
+   protected boolean updateCustomBlockEntityTag(final BlockPos pos, final Level level, final @Nullable Player player, final ItemStack itemStack, final BlockState placedState) {
+      return updateCustomBlockEntityTag(level, player, pos, itemStack);
    }
 
-   protected @Nullable BlockState getPlacementState(BlockPlaceContext var1) {
-      BlockState var2 = this.getBlock().getStateForPlacement(var1);
-      return var2 != null && this.canPlace(var1, var2) ? var2 : null;
+   protected @Nullable BlockState getPlacementState(final BlockPlaceContext context) {
+      BlockState stateForPlacement = this.getBlock().getStateForPlacement(context);
+      return stateForPlacement != null && this.canPlace(context, stateForPlacement) ? stateForPlacement : null;
    }
 
-   private BlockState updateBlockStateFromTag(BlockPos var1, Level var2, ItemStack var3, BlockState var4) {
-      BlockItemStateProperties var5 = (BlockItemStateProperties)var3.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
-      if (var5.isEmpty()) {
-         return var4;
+   private BlockState updateBlockStateFromTag(final BlockPos pos, final Level level, final ItemStack itemStack, final BlockState placedState) {
+      BlockItemStateProperties blockState = (BlockItemStateProperties)itemStack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+      if (blockState.isEmpty()) {
+         return placedState;
       } else {
-         BlockState var6 = var5.apply(var4);
-         if (var6 != var4) {
-            var2.setBlock(var1, var6, 2);
+         BlockState modifiedState = blockState.apply(placedState);
+         if (modifiedState != placedState) {
+            level.setBlock(pos, modifiedState, 2);
          }
 
-         return var6;
+         return modifiedState;
       }
    }
 
-   protected boolean canPlace(BlockPlaceContext var1, BlockState var2) {
-      Player var3 = var1.getPlayer();
-      return (!this.mustSurvive() || var2.canSurvive(var1.getLevel(), var1.getClickedPos())) && var1.getLevel().isUnobstructed(var2, var1.getClickedPos(), CollisionContext.placementContext(var3));
+   protected boolean canPlace(final BlockPlaceContext context, final BlockState stateForPlacement) {
+      Player player = context.getPlayer();
+      return (!this.mustSurvive() || stateForPlacement.canSurvive(context.getLevel(), context.getClickedPos())) && context.getLevel().isUnobstructed(stateForPlacement, context.getClickedPos(), CollisionContext.placementContext(player));
    }
 
    protected boolean mustSurvive() {
       return true;
    }
 
-   protected boolean placeBlock(BlockPlaceContext var1, BlockState var2) {
-      return var1.getLevel().setBlock(var1.getClickedPos(), var2, 11);
+   protected boolean placeBlock(final BlockPlaceContext context, final BlockState placementState) {
+      return context.getLevel().setBlock(context.getClickedPos(), placementState, 11);
    }
 
-   public static boolean updateCustomBlockEntityTag(Level var0, @Nullable Player var1, BlockPos var2, ItemStack var3) {
-      if (var0.isClientSide()) {
+   public static boolean updateCustomBlockEntityTag(final Level level, final @Nullable Player player, final BlockPos pos, final ItemStack itemStack) {
+      if (level.isClientSide()) {
          return false;
       } else {
-         TypedEntityData var4 = (TypedEntityData)var3.get(DataComponents.BLOCK_ENTITY_DATA);
-         if (var4 != null) {
-            BlockEntity var5 = var0.getBlockEntity(var2);
-            if (var5 != null) {
-               BlockEntityType var6 = var5.getType();
-               if (var6 != var4.type()) {
+         TypedEntityData<BlockEntityType<?>> customData = (TypedEntityData)itemStack.get(DataComponents.BLOCK_ENTITY_DATA);
+         if (customData != null) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity != null) {
+               BlockEntityType<?> type = blockEntity.getType();
+               if (type != customData.type()) {
                   return false;
                }
 
-               if (!var6.onlyOpCanSetNbt() || var1 != null && var1.canUseGameMasterBlocks()) {
-                  return var4.loadInto(var5, var0.registryAccess());
+               if (!type.onlyOpCanSetNbt() || player != null && player.canUseGameMasterBlocks()) {
+                  return customData.loadInto(blockEntity, level.registryAccess());
                }
 
                return false;
@@ -163,11 +163,11 @@ public class BlockItem extends Item {
       }
    }
 
-   public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
-      if (var2 != null && var2.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
-         TypedEntityData var3 = (TypedEntityData)var1.get(DataComponents.BLOCK_ENTITY_DATA);
-         if (var3 != null) {
-            return ((BlockEntityType)var3.type()).onlyOpCanSetNbt();
+   public boolean shouldPrintOpWarning(final ItemStack stack, final @Nullable Player player) {
+      if (player != null && player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
+         TypedEntityData<BlockEntityType<?>> blockEntityData = (TypedEntityData)stack.get(DataComponents.BLOCK_ENTITY_DATA);
+         if (blockEntityData != null) {
+            return ((BlockEntityType)blockEntityData.type()).onlyOpCanSetNbt();
          }
       }
 
@@ -178,29 +178,29 @@ public class BlockItem extends Item {
       return this.block;
    }
 
-   public void registerBlocks(Map<Block, Item> var1, Item var2) {
-      var1.put(this.getBlock(), var2);
+   public void registerBlocks(final Map<Block, Item> map, final Item item) {
+      map.put(this.getBlock(), item);
    }
 
    public boolean canFitInsideContainerItems() {
       return !(this.getBlock() instanceof ShulkerBoxBlock);
    }
 
-   public void onDestroyed(ItemEntity var1) {
-      ItemContainerContents var2 = (ItemContainerContents)var1.getItem().set(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
-      if (var2 != null) {
-         ItemUtils.onContainerDestroyed(var1, var2.nonEmptyItemsCopy());
+   public void onDestroyed(final ItemEntity entity) {
+      ItemContainerContents container = (ItemContainerContents)entity.getItem().set(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+      if (container != null) {
+         ItemUtils.onContainerDestroyed(entity, container.nonEmptyItemCopyStream());
       }
 
    }
 
-   public static void setBlockEntityData(ItemStack var0, BlockEntityType<?> var1, TagValueOutput var2) {
-      var2.discard("id");
-      if (var2.isEmpty()) {
-         var0.remove(DataComponents.BLOCK_ENTITY_DATA);
+   public static void setBlockEntityData(final ItemStack stack, final BlockEntityType<?> type, final TagValueOutput output) {
+      output.discard("id");
+      if (output.isEmpty()) {
+         stack.remove(DataComponents.BLOCK_ENTITY_DATA);
       } else {
-         BlockEntity.addEntityType(var2, var1);
-         var0.set(DataComponents.BLOCK_ENTITY_DATA, TypedEntityData.of(var1, var2.buildResult()));
+         BlockEntity.addEntityType(output, type);
+         stack.set(DataComponents.BLOCK_ENTITY_DATA, TypedEntityData.of(type, output.buildResult()));
       }
 
    }

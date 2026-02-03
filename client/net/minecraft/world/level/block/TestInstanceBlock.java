@@ -15,22 +15,22 @@ import org.jspecify.annotations.Nullable;
 public class TestInstanceBlock extends BaseEntityBlock implements GameMasterBlock {
    public static final MapCodec<TestInstanceBlock> CODEC = simpleCodec(TestInstanceBlock::new);
 
-   public TestInstanceBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public TestInstanceBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new TestInstanceBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new TestInstanceBlockEntity(worldPosition, blockState);
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof TestInstanceBlockEntity var7) {
-         if (!var4.canUseGameMasterBlocks()) {
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof TestInstanceBlockEntity testInstance) {
+         if (!player.canUseGameMasterBlocks()) {
             return InteractionResult.PASS;
          } else {
-            if (var4.level().isClientSide()) {
-               var4.openTestInstanceBlock(var7);
+            if (player.level().isClientSide()) {
+               player.openTestInstanceBlock(testInstance);
             }
 
             return InteractionResult.SUCCESS;

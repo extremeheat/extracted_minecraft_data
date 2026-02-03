@@ -15,25 +15,22 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public record SetBlockProperties(BlockItemStateProperties properties, Vec3i offset, Optional<Holder<GameEvent>> triggerGameEvent) implements EnchantmentEntityEffect {
-   public static final MapCodec<SetBlockProperties> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockItemStateProperties.CODEC.fieldOf("properties").forGetter(SetBlockProperties::properties), Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(SetBlockProperties::offset), GameEvent.CODEC.optionalFieldOf("trigger_game_event").forGetter(SetBlockProperties::triggerGameEvent)).apply(var0, SetBlockProperties::new));
+   public static final MapCodec<SetBlockProperties> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockItemStateProperties.CODEC.fieldOf("properties").forGetter(SetBlockProperties::properties), Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(SetBlockProperties::offset), GameEvent.CODEC.optionalFieldOf("trigger_game_event").forGetter(SetBlockProperties::triggerGameEvent)).apply(i, SetBlockProperties::new));
 
-   public SetBlockProperties(BlockItemStateProperties var1) {
-      this(var1, Vec3i.ZERO, Optional.of(GameEvent.BLOCK_CHANGE));
+   public SetBlockProperties(final BlockItemStateProperties properties) {
+      this(properties, Vec3i.ZERO, Optional.of(GameEvent.BLOCK_CHANGE));
    }
 
-   public SetBlockProperties(BlockItemStateProperties var1, Vec3i var2, Optional<Holder<GameEvent>> var3) {
+   public SetBlockProperties {
       super();
-      this.properties = var1;
-      this.offset = var2;
-      this.triggerGameEvent = var3;
    }
 
-   public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-      BlockPos var6 = BlockPos.containing(var5).offset(this.offset);
-      BlockState var7 = var4.level().getBlockState(var6);
-      BlockState var8 = this.properties.apply(var7);
-      if (var7 != var8 && var4.level().setBlock(var6, var8, 3)) {
-         this.triggerGameEvent.ifPresent((var3x) -> var1.gameEvent(var4, var3x, var6));
+   public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
+      BlockPos blockPos = BlockPos.containing(position).offset(this.offset);
+      BlockState state = entity.level().getBlockState(blockPos);
+      BlockState modified = this.properties.apply(state);
+      if (state != modified && entity.level().setBlock(blockPos, modified, 3)) {
+         this.triggerGameEvent.ifPresent((event) -> serverLevel.gameEvent(entity, event, blockPos));
       }
 
    }

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -53,23 +52,22 @@ public class EditBox extends AbstractWidget {
    private int textColorUneditable;
    private @Nullable String suggestion;
    private @Nullable Consumer<String> responder;
-   private Predicate<String> filter;
    private final List<TextFormatter> formatters;
    private @Nullable Component hint;
    private long focusedTime;
    private int textX;
    private int textY;
 
-   public EditBox(Font var1, int var2, int var3, Component var4) {
-      this(var1, 0, 0, var2, var3, var4);
+   public EditBox(final Font font, final int width, final int height, final Component narration) {
+      this(font, 0, 0, width, height, narration);
    }
 
-   public EditBox(Font var1, int var2, int var3, int var4, int var5, Component var6) {
-      this(var1, var2, var3, var4, var5, (EditBox)null, var6);
+   public EditBox(final Font font, final int x, final int y, final int width, final int height, final Component narration) {
+      this(font, x, y, width, height, (EditBox)null, narration);
    }
 
-   public EditBox(Font var1, int var2, int var3, int var4, int var5, @Nullable EditBox var6, Component var7) {
-      super(var2, var3, var4, var5, var7);
+   public EditBox(final Font font, final int x, final int y, final int width, final int height, final @Nullable EditBox oldBox, final Component narration) {
+      super(x, y, width, height, narration);
       this.value = "";
       this.maxLength = 32;
       this.bordered = true;
@@ -80,42 +78,39 @@ public class EditBox extends AbstractWidget {
       this.invertHighlightedTextColor = true;
       this.textColor = -2039584;
       this.textColorUneditable = -9408400;
-      this.filter = Objects::nonNull;
       this.formatters = new ArrayList();
       this.focusedTime = Util.getMillis();
-      this.font = var1;
-      if (var6 != null) {
-         this.setValue(var6.getValue());
+      this.font = font;
+      if (oldBox != null) {
+         this.setValue(oldBox.getValue());
       }
 
       this.updateTextPosition();
    }
 
-   public void setResponder(Consumer<String> var1) {
-      this.responder = var1;
+   public void setResponder(final Consumer<String> responder) {
+      this.responder = responder;
    }
 
-   public void addFormatter(TextFormatter var1) {
-      this.formatters.add(var1);
+   public void addFormatter(final TextFormatter formatter) {
+      this.formatters.add(formatter);
    }
 
    protected MutableComponent createNarrationMessage() {
-      Component var1 = this.getMessage();
-      return Component.translatable("gui.narrate.editBox", var1, this.value);
+      Component message = this.getMessage();
+      return Component.translatable("gui.narrate.editBox", message, this.value);
    }
 
-   public void setValue(String var1) {
-      if (this.filter.test(var1)) {
-         if (var1.length() > this.maxLength) {
-            this.value = var1.substring(0, this.maxLength);
-         } else {
-            this.value = var1;
-         }
-
-         this.moveCursorToEnd(false);
-         this.setHighlightPos(this.cursorPos);
-         this.onValueChange(var1);
+   public void setValue(final String value) {
+      if (value.length() > this.maxLength) {
+         this.value = value.substring(0, this.maxLength);
+      } else {
+         this.value = value;
       }
+
+      this.moveCursorToEnd(false);
+      this.setHighlightPos(this.cursorPos);
+      this.onValueChange(value);
    }
 
    public String getValue() {
@@ -123,174 +118,166 @@ public class EditBox extends AbstractWidget {
    }
 
    public String getHighlighted() {
-      int var1 = Math.min(this.cursorPos, this.highlightPos);
-      int var2 = Math.max(this.cursorPos, this.highlightPos);
-      return this.value.substring(var1, var2);
+      int start = Math.min(this.cursorPos, this.highlightPos);
+      int end = Math.max(this.cursorPos, this.highlightPos);
+      return this.value.substring(start, end);
    }
 
-   public void setX(int var1) {
-      super.setX(var1);
+   public void setX(final int x) {
+      super.setX(x);
       this.updateTextPosition();
    }
 
-   public void setY(int var1) {
-      super.setY(var1);
+   public void setY(final int y) {
+      super.setY(y);
       this.updateTextPosition();
    }
 
-   public void setFilter(Predicate<String> var1) {
-      this.filter = var1;
-   }
-
-   public void insertText(String var1) {
-      int var2 = Math.min(this.cursorPos, this.highlightPos);
-      int var3 = Math.max(this.cursorPos, this.highlightPos);
-      int var4 = this.maxLength - this.value.length() - (var2 - var3);
-      if (var4 > 0) {
-         String var5 = StringUtil.filterText(var1);
-         int var6 = var5.length();
-         if (var4 < var6) {
-            if (Character.isHighSurrogate(var5.charAt(var4 - 1))) {
-               --var4;
+   public void insertText(final String input) {
+      int start = Math.min(this.cursorPos, this.highlightPos);
+      int end = Math.max(this.cursorPos, this.highlightPos);
+      int maxInsertionLength = this.maxLength - this.value.length() - (start - end);
+      if (maxInsertionLength > 0) {
+         String text = StringUtil.filterText(input);
+         int insertionLength = text.length();
+         if (maxInsertionLength < insertionLength) {
+            if (Character.isHighSurrogate(text.charAt(maxInsertionLength - 1))) {
+               --maxInsertionLength;
             }
 
-            var5 = var5.substring(0, var4);
-            var6 = var4;
+            text = text.substring(0, maxInsertionLength);
+            insertionLength = maxInsertionLength;
          }
 
-         String var7 = (new StringBuilder(this.value)).replace(var2, var3, var5).toString();
-         if (this.filter.test(var7)) {
-            this.value = var7;
-            this.setCursorPosition(var2 + var6);
-            this.setHighlightPos(this.cursorPos);
-            this.onValueChange(this.value);
-         }
+         this.value = (new StringBuilder(this.value)).replace(start, end, text).toString();
+         this.setCursorPosition(start + insertionLength);
+         this.setHighlightPos(this.cursorPos);
+         this.onValueChange(this.value);
       }
    }
 
-   private void onValueChange(String var1) {
+   private void onValueChange(final String value) {
       if (this.responder != null) {
-         this.responder.accept(var1);
+         this.responder.accept(value);
       }
 
       this.updateTextPosition();
    }
 
-   private void deleteText(int var1, boolean var2) {
-      if (var2) {
-         this.deleteWords(var1);
+   private void deleteText(final int dir, final boolean wholeWord) {
+      if (wholeWord) {
+         this.deleteWords(dir);
       } else {
-         this.deleteChars(var1);
+         this.deleteChars(dir);
       }
 
    }
 
-   public void deleteWords(int var1) {
+   public void deleteWords(final int dir) {
       if (!this.value.isEmpty()) {
          if (this.highlightPos != this.cursorPos) {
             this.insertText("");
          } else {
-            this.deleteCharsToPos(this.getWordPosition(var1));
+            this.deleteCharsToPos(this.getWordPosition(dir));
          }
       }
    }
 
-   public void deleteChars(int var1) {
-      this.deleteCharsToPos(this.getCursorPos(var1));
+   public void deleteChars(final int dir) {
+      this.deleteCharsToPos(this.getCursorPos(dir));
    }
 
-   public void deleteCharsToPos(int var1) {
+   public void deleteCharsToPos(final int pos) {
       if (!this.value.isEmpty()) {
          if (this.highlightPos != this.cursorPos) {
             this.insertText("");
          } else {
-            int var2 = Math.min(var1, this.cursorPos);
-            int var3 = Math.max(var1, this.cursorPos);
-            if (var2 != var3) {
-               String var4 = (new StringBuilder(this.value)).delete(var2, var3).toString();
-               if (this.filter.test(var4)) {
-                  this.value = var4;
-                  this.moveCursorTo(var2, false);
-               }
+            int start = Math.min(pos, this.cursorPos);
+            int end = Math.max(pos, this.cursorPos);
+            if (start != end) {
+               this.value = (new StringBuilder(this.value)).delete(start, end).toString();
+               this.setCursorPosition(start);
+               this.onValueChange(this.value);
+               this.moveCursorTo(start, false);
             }
          }
       }
    }
 
-   public int getWordPosition(int var1) {
-      return this.getWordPosition(var1, this.getCursorPosition());
+   public int getWordPosition(final int dir) {
+      return this.getWordPosition(dir, this.getCursorPosition());
    }
 
-   private int getWordPosition(int var1, int var2) {
-      return this.getWordPosition(var1, var2, true);
+   private int getWordPosition(final int dir, final int from) {
+      return this.getWordPosition(dir, from, true);
    }
 
-   private int getWordPosition(int var1, int var2, boolean var3) {
-      int var4 = var2;
-      boolean var5 = var1 < 0;
-      int var6 = Math.abs(var1);
+   private int getWordPosition(final int dir, final int from, final boolean stripSpaces) {
+      int result = from;
+      boolean reverse = dir < 0;
+      int abs = Math.abs(dir);
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         if (!var5) {
-            int var8 = this.value.length();
-            var4 = this.value.indexOf(32, var4);
-            if (var4 == -1) {
-               var4 = var8;
+      for(int i = 0; i < abs; ++i) {
+         if (!reverse) {
+            int length = this.value.length();
+            result = this.value.indexOf(32, result);
+            if (result == -1) {
+               result = length;
             } else {
-               while(var3 && var4 < var8 && this.value.charAt(var4) == ' ') {
-                  ++var4;
+               while(stripSpaces && result < length && this.value.charAt(result) == ' ') {
+                  ++result;
                }
             }
          } else {
-            while(var3 && var4 > 0 && this.value.charAt(var4 - 1) == ' ') {
-               --var4;
+            while(stripSpaces && result > 0 && this.value.charAt(result - 1) == ' ') {
+               --result;
             }
 
-            while(var4 > 0 && this.value.charAt(var4 - 1) != ' ') {
-               --var4;
+            while(result > 0 && this.value.charAt(result - 1) != ' ') {
+               --result;
             }
          }
       }
 
-      return var4;
+      return result;
    }
 
-   public void moveCursor(int var1, boolean var2) {
-      this.moveCursorTo(this.getCursorPos(var1), var2);
+   public void moveCursor(final int dir, final boolean hasShiftDown) {
+      this.moveCursorTo(this.getCursorPos(dir), hasShiftDown);
    }
 
-   private int getCursorPos(int var1) {
-      return Util.offsetByCodepoints(this.value, this.cursorPos, var1);
+   private int getCursorPos(final int dir) {
+      return Util.offsetByCodepoints(this.value, this.cursorPos, dir);
    }
 
-   public void moveCursorTo(int var1, boolean var2) {
-      this.setCursorPosition(var1);
-      if (!var2) {
+   public void moveCursorTo(final int dir, final boolean extendSelection) {
+      this.setCursorPosition(dir);
+      if (!extendSelection) {
          this.setHighlightPos(this.cursorPos);
       }
 
-      this.onValueChange(this.value);
+      this.updateTextPosition();
    }
 
-   public void setCursorPosition(int var1) {
-      this.cursorPos = Mth.clamp(var1, 0, this.value.length());
+   public void setCursorPosition(final int pos) {
+      this.cursorPos = Mth.clamp(pos, 0, this.value.length());
       this.scrollTo(this.cursorPos);
    }
 
-   public void moveCursorToStart(boolean var1) {
-      this.moveCursorTo(0, var1);
+   public void moveCursorToStart(final boolean hasShiftDown) {
+      this.moveCursorTo(0, hasShiftDown);
    }
 
-   public void moveCursorToEnd(boolean var1) {
-      this.moveCursorTo(this.value.length(), var1);
+   public void moveCursorToEnd(final boolean hasShiftDown) {
+      this.moveCursorTo(this.value.length(), hasShiftDown);
    }
 
-   public boolean keyPressed(KeyEvent var1) {
+   public boolean keyPressed(final KeyEvent event) {
       if (this.isActive() && this.isFocused()) {
-         switch (var1.key()) {
+         switch (event.key()) {
             case 259:
                if (this.isEditable) {
-                  this.deleteText(-1, var1.hasControlDownWithQuirk());
+                  this.deleteText(-1, event.hasControlDownWithQuirk());
                }
 
                return true;
@@ -300,21 +287,21 @@ public class EditBox extends AbstractWidget {
             case 266:
             case 267:
             default:
-               if (var1.isSelectAll()) {
+               if (event.isSelectAll()) {
                   this.moveCursorToEnd(false);
                   this.setHighlightPos(0);
                   return true;
-               } else if (var1.isCopy()) {
+               } else if (event.isCopy()) {
                   Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
                   return true;
-               } else if (var1.isPaste()) {
+               } else if (event.isPaste()) {
                   if (this.isEditable()) {
                      this.insertText(Minecraft.getInstance().keyboardHandler.getClipboard());
                   }
 
                   return true;
                } else {
-                  if (var1.isCut()) {
+                  if (event.isCut()) {
                      Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
                      if (this.isEditable()) {
                         this.insertText("");
@@ -327,31 +314,31 @@ public class EditBox extends AbstractWidget {
                }
             case 261:
                if (this.isEditable) {
-                  this.deleteText(1, var1.hasControlDownWithQuirk());
+                  this.deleteText(1, event.hasControlDownWithQuirk());
                }
 
                return true;
             case 262:
-               if (var1.hasControlDownWithQuirk()) {
-                  this.moveCursorTo(this.getWordPosition(1), var1.hasShiftDown());
+               if (event.hasControlDownWithQuirk()) {
+                  this.moveCursorTo(this.getWordPosition(1), event.hasShiftDown());
                } else {
-                  this.moveCursor(1, var1.hasShiftDown());
+                  this.moveCursor(1, event.hasShiftDown());
                }
 
                return true;
             case 263:
-               if (var1.hasControlDownWithQuirk()) {
-                  this.moveCursorTo(this.getWordPosition(-1), var1.hasShiftDown());
+               if (event.hasControlDownWithQuirk()) {
+                  this.moveCursorTo(this.getWordPosition(-1), event.hasShiftDown());
                } else {
-                  this.moveCursor(-1, var1.hasShiftDown());
+                  this.moveCursor(-1, event.hasShiftDown());
                }
 
                return true;
             case 268:
-               this.moveCursorToStart(var1.hasShiftDown());
+               this.moveCursorToStart(event.hasShiftDown());
                return true;
             case 269:
-               this.moveCursorToEnd(var1.hasShiftDown());
+               this.moveCursorToEnd(event.hasShiftDown());
                return true;
          }
       } else {
@@ -363,12 +350,12 @@ public class EditBox extends AbstractWidget {
       return this.isActive() && this.isFocused() && this.isEditable();
    }
 
-   public boolean charTyped(CharacterEvent var1) {
+   public boolean charTyped(final CharacterEvent event) {
       if (!this.canConsumeInput()) {
          return false;
-      } else if (var1.isAllowedChatCharacter()) {
+      } else if (event.isAllowedChatCharacter()) {
          if (this.isEditable) {
-            this.insertText(var1.codepointAsString());
+            this.insertText(event.codepointAsString());
          }
 
          return true;
@@ -377,130 +364,130 @@ public class EditBox extends AbstractWidget {
       }
    }
 
-   private int findClickedPositionInText(MouseButtonEvent var1) {
-      int var2 = Math.min(Mth.floor(var1.x()) - this.textX, this.getInnerWidth());
-      String var3 = this.value.substring(this.displayPos);
-      return this.displayPos + this.font.plainSubstrByWidth(var3, var2).length();
+   private int findClickedPositionInText(final MouseButtonEvent event) {
+      int positionInText = Math.min(Mth.floor(event.x()) - this.textX, this.getInnerWidth());
+      String displayed = this.value.substring(this.displayPos);
+      return this.displayPos + this.font.plainSubstrByWidth(displayed, positionInText).length();
    }
 
-   private void selectWord(MouseButtonEvent var1) {
-      int var2 = this.findClickedPositionInText(var1);
-      int var3 = this.getWordPosition(-1, var2);
-      int var4 = this.getWordPosition(1, var2);
-      this.moveCursorTo(var3, false);
-      this.moveCursorTo(var4, true);
+   private void selectWord(final MouseButtonEvent event) {
+      int clickedPosition = this.findClickedPositionInText(event);
+      int wordStart = this.getWordPosition(-1, clickedPosition);
+      int wordEnd = this.getWordPosition(1, clickedPosition);
+      this.moveCursorTo(wordStart, false);
+      this.moveCursorTo(wordEnd, true);
    }
 
-   public void onClick(MouseButtonEvent var1, boolean var2) {
-      if (var2) {
-         this.selectWord(var1);
+   public void onClick(final MouseButtonEvent event, final boolean doubleClick) {
+      if (doubleClick) {
+         this.selectWord(event);
       } else {
-         this.moveCursorTo(this.findClickedPositionInText(var1), var1.hasShiftDown());
+         this.moveCursorTo(this.findClickedPositionInText(event), event.hasShiftDown());
       }
 
    }
 
-   protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
-      this.moveCursorTo(this.findClickedPositionInText(var1), true);
+   protected void onDrag(final MouseButtonEvent event, final double dx, final double dy) {
+      this.moveCursorTo(this.findClickedPositionInText(event), true);
    }
 
-   public void playDownSound(SoundManager var1) {
+   public void playDownSound(final SoundManager soundManager) {
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
       if (this.isVisible()) {
          if (this.isBordered()) {
-            Identifier var5 = SPRITES.get(this.isActive(), this.isFocused());
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+            Identifier sprite = SPRITES.get(this.isActive(), this.isFocused());
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
          }
 
-         int var15 = this.isEditable ? this.textColor : this.textColorUneditable;
-         int var6 = this.cursorPos - this.displayPos;
-         String var7 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
-         boolean var8 = var6 >= 0 && var6 <= var7.length();
-         boolean var9 = this.isFocused() && (Util.getMillis() - this.focusedTime) / 300L % 2L == 0L && var8;
-         int var10 = this.textX;
-         int var11 = Mth.clamp(this.highlightPos - this.displayPos, 0, var7.length());
-         if (!var7.isEmpty()) {
-            String var12 = var8 ? var7.substring(0, var6) : var7;
-            FormattedCharSequence var13 = this.applyFormat(var12, this.displayPos);
-            var1.drawString(this.font, var13, var10, this.textY, var15, this.textShadow);
-            var10 += this.font.width(var13) + 1;
+         int color = this.isEditable ? this.textColor : this.textColorUneditable;
+         int relCursorPos = this.cursorPos - this.displayPos;
+         String displayed = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
+         boolean cursorOnScreen = relCursorPos >= 0 && relCursorPos <= displayed.length();
+         boolean showCursor = this.isFocused() && (Util.getMillis() - this.focusedTime) / 300L % 2L == 0L && cursorOnScreen;
+         int drawX = this.textX;
+         int relHighlightPos = Mth.clamp(this.highlightPos - this.displayPos, 0, displayed.length());
+         if (!displayed.isEmpty()) {
+            String half = cursorOnScreen ? displayed.substring(0, relCursorPos) : displayed;
+            FormattedCharSequence charSequence = this.applyFormat(half, this.displayPos);
+            graphics.drawString(this.font, charSequence, drawX, this.textY, color, this.textShadow);
+            drawX += this.font.width(charSequence) + 1;
          }
 
-         boolean var16 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
-         int var17 = var10;
-         if (!var8) {
-            var17 = var6 > 0 ? this.textX + this.width : this.textX;
-         } else if (var16) {
-            var17 = var10 - 1;
-            --var10;
+         boolean insert = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
+         int cursorX = drawX;
+         if (!cursorOnScreen) {
+            cursorX = relCursorPos > 0 ? this.textX + this.width : this.textX;
+         } else if (insert) {
+            cursorX = drawX - 1;
+            --drawX;
          }
 
-         if (!var7.isEmpty() && var8 && var6 < var7.length()) {
-            var1.drawString(this.font, this.applyFormat(var7.substring(var6), this.cursorPos), var10, this.textY, var15, this.textShadow);
+         if (!displayed.isEmpty() && cursorOnScreen && relCursorPos < displayed.length()) {
+            graphics.drawString(this.font, this.applyFormat(displayed.substring(relCursorPos), this.cursorPos), drawX, this.textY, color, this.textShadow);
          }
 
-         if (this.hint != null && var7.isEmpty() && !this.isFocused()) {
-            var1.drawString(this.font, this.hint, var10, this.textY, var15);
+         if (this.hint != null && displayed.isEmpty() && !this.isFocused()) {
+            graphics.drawString(this.font, this.hint, drawX, this.textY, color);
          }
 
-         if (!var16 && this.suggestion != null) {
-            var1.drawString(this.font, this.suggestion, var17 - 1, this.textY, -8355712, this.textShadow);
+         if (!insert && this.suggestion != null) {
+            graphics.drawString(this.font, this.suggestion, cursorX - 1, this.textY, -8355712, this.textShadow);
          }
 
-         if (var11 != var6) {
-            int var14 = this.textX + this.font.width(var7.substring(0, var11));
-            int var10001 = Math.min(var17, this.getX() + this.width);
+         if (relHighlightPos != relCursorPos) {
+            int highlightX = this.textX + this.font.width(displayed.substring(0, relHighlightPos));
+            int var10001 = Math.min(cursorX, this.getX() + this.width);
             int var10002 = this.textY - 1;
-            int var10003 = Math.min(var14 - 1, this.getX() + this.width);
+            int var10003 = Math.min(highlightX - 1, this.getX() + this.width);
             int var10004 = this.textY + 1;
             Objects.requireNonNull(this.font);
-            var1.textHighlight(var10001, var10002, var10003, var10004 + 9, this.invertHighlightedTextColor);
+            graphics.textHighlight(var10001, var10002, var10003, var10004 + 9, this.invertHighlightedTextColor);
          }
 
-         if (var9) {
-            if (var16) {
+         if (showCursor) {
+            if (insert) {
                int var18 = this.textY - 1;
-               int var19 = var17 + 1;
+               int var19 = cursorX + 1;
                int var20 = this.textY + 1;
                Objects.requireNonNull(this.font);
-               var1.fill(var17, var18, var19, var20 + 9, var15);
+               graphics.fill(cursorX, var18, var19, var20 + 9, color);
             } else {
-               var1.drawString(this.font, "_", var17, this.textY, var15, this.textShadow);
+               graphics.drawString(this.font, "_", cursorX, this.textY, color, this.textShadow);
             }
          }
 
          if (this.isHovered()) {
-            var1.requestCursor(this.isEditable() ? CursorTypes.IBEAM : CursorTypes.NOT_ALLOWED);
+            graphics.requestCursor(this.isEditable() ? CursorTypes.IBEAM : CursorTypes.NOT_ALLOWED);
          }
 
       }
    }
 
-   private FormattedCharSequence applyFormat(String var1, int var2) {
-      for(TextFormatter var4 : this.formatters) {
-         FormattedCharSequence var5 = var4.format(var1, var2);
-         if (var5 != null) {
-            return var5;
+   private FormattedCharSequence applyFormat(final String text, final int offset) {
+      for(TextFormatter formatter : this.formatters) {
+         FormattedCharSequence formattedCharSequence = formatter.format(text, offset);
+         if (formattedCharSequence != null) {
+            return formattedCharSequence;
          }
       }
 
-      return FormattedCharSequence.forward(var1, Style.EMPTY);
+      return FormattedCharSequence.forward(text, Style.EMPTY);
    }
 
    private void updateTextPosition() {
       if (this.font != null) {
-         String var1 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
-         this.textX = this.getX() + (this.isCentered() ? (this.getWidth() - this.font.width(var1)) / 2 : (this.bordered ? 4 : 0));
+         String displayed = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
+         this.textX = this.getX() + (this.isCentered() ? (this.getWidth() - this.font.width(displayed)) / 2 : (this.bordered ? 4 : 0));
          this.textY = this.bordered ? this.getY() + (this.height - 8) / 2 : this.getY();
       }
    }
 
-   public void setMaxLength(int var1) {
-      this.maxLength = var1;
-      if (this.value.length() > var1) {
-         this.value = this.value.substring(0, var1);
+   public void setMaxLength(final int maxLength) {
+      this.maxLength = maxLength;
+      if (this.value.length() > maxLength) {
+         this.value = this.value.substring(0, maxLength);
          this.onValueChange(this.value);
       }
 
@@ -518,23 +505,23 @@ public class EditBox extends AbstractWidget {
       return this.bordered;
    }
 
-   public void setBordered(boolean var1) {
-      this.bordered = var1;
+   public void setBordered(final boolean bordered) {
+      this.bordered = bordered;
       this.updateTextPosition();
    }
 
-   public void setTextColor(int var1) {
-      this.textColor = var1;
+   public void setTextColor(final int textColor) {
+      this.textColor = textColor;
    }
 
-   public void setTextColorUneditable(int var1) {
-      this.textColorUneditable = var1;
+   public void setTextColorUneditable(final int textColorUneditable) {
+      this.textColorUneditable = textColorUneditable;
    }
 
-   public void setFocused(boolean var1) {
-      if (this.canLoseFocus || var1) {
-         super.setFocused(var1);
-         if (var1) {
+   public void setFocused(final boolean focused) {
+      if (this.canLoseFocus || focused) {
+         super.setFocused(focused);
+         if (focused) {
             this.focusedTime = Util.getMillis();
          }
 
@@ -545,83 +532,83 @@ public class EditBox extends AbstractWidget {
       return this.isEditable;
    }
 
-   public void setEditable(boolean var1) {
-      this.isEditable = var1;
+   public void setEditable(final boolean isEditable) {
+      this.isEditable = isEditable;
    }
 
    private boolean isCentered() {
       return this.centered;
    }
 
-   public void setCentered(boolean var1) {
-      this.centered = var1;
+   public void setCentered(final boolean centered) {
+      this.centered = centered;
       this.updateTextPosition();
    }
 
-   public void setTextShadow(boolean var1) {
-      this.textShadow = var1;
+   public void setTextShadow(final boolean textShadow) {
+      this.textShadow = textShadow;
    }
 
-   public void setInvertHighlightedTextColor(boolean var1) {
-      this.invertHighlightedTextColor = var1;
+   public void setInvertHighlightedTextColor(final boolean invertHighlightedTextColor) {
+      this.invertHighlightedTextColor = invertHighlightedTextColor;
    }
 
    public int getInnerWidth() {
       return this.isBordered() ? this.width - 8 : this.width;
    }
 
-   public void setHighlightPos(int var1) {
-      this.highlightPos = Mth.clamp(var1, 0, this.value.length());
+   public void setHighlightPos(final int pos) {
+      this.highlightPos = Mth.clamp(pos, 0, this.value.length());
       this.scrollTo(this.highlightPos);
    }
 
-   private void scrollTo(int var1) {
+   private void scrollTo(final int pos) {
       if (this.font != null) {
          this.displayPos = Math.min(this.displayPos, this.value.length());
-         int var2 = this.getInnerWidth();
-         String var3 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), var2);
-         int var4 = var3.length() + this.displayPos;
-         if (var1 == this.displayPos) {
-            this.displayPos -= this.font.plainSubstrByWidth(this.value, var2, true).length();
+         int innerWidth = this.getInnerWidth();
+         String displayed = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), innerWidth);
+         int lastPos = displayed.length() + this.displayPos;
+         if (pos == this.displayPos) {
+            this.displayPos -= this.font.plainSubstrByWidth(this.value, innerWidth, true).length();
          }
 
-         if (var1 > var4) {
-            this.displayPos += var1 - var4;
-         } else if (var1 <= this.displayPos) {
-            this.displayPos -= this.displayPos - var1;
+         if (pos > lastPos) {
+            this.displayPos += pos - lastPos;
+         } else if (pos <= this.displayPos) {
+            this.displayPos -= this.displayPos - pos;
          }
 
          this.displayPos = Mth.clamp(this.displayPos, 0, this.value.length());
       }
    }
 
-   public void setCanLoseFocus(boolean var1) {
-      this.canLoseFocus = var1;
+   public void setCanLoseFocus(final boolean canLoseFocus) {
+      this.canLoseFocus = canLoseFocus;
    }
 
    public boolean isVisible() {
       return this.visible;
    }
 
-   public void setVisible(boolean var1) {
-      this.visible = var1;
+   public void setVisible(final boolean visible) {
+      this.visible = visible;
    }
 
-   public void setSuggestion(@Nullable String var1) {
-      this.suggestion = var1;
+   public void setSuggestion(final @Nullable String suggestion) {
+      this.suggestion = suggestion;
    }
 
-   public int getScreenX(int var1) {
-      return var1 > this.value.length() ? this.getX() : this.getX() + this.font.width(this.value.substring(0, var1));
+   public int getScreenX(final int charIndex) {
+      return charIndex > this.value.length() ? this.getX() : this.getX() + this.font.width(this.value.substring(0, charIndex));
    }
 
-   public void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
+   public void updateWidgetNarration(final NarrationElementOutput output) {
+      output.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
    }
 
-   public void setHint(Component var1) {
-      boolean var2 = var1.getStyle().equals(Style.EMPTY);
-      this.hint = (Component)(var2 ? var1.copy().withStyle(DEFAULT_HINT_STYLE) : var1);
+   public void setHint(final Component hint) {
+      boolean hasNoStyle = hint.getStyle().equals(Style.EMPTY);
+      this.hint = (Component)(hasNoStyle ? hint.copy().withStyle(DEFAULT_HINT_STYLE) : hint);
    }
 
    static {
@@ -631,6 +618,6 @@ public class EditBox extends AbstractWidget {
 
    @FunctionalInterface
    public interface TextFormatter {
-      @Nullable FormattedCharSequence format(String var1, int var2);
+      @Nullable FormattedCharSequence format(final String text, final int offset);
    }
 }

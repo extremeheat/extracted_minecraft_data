@@ -2,22 +2,23 @@ package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SculkChargeParticleOptions;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.RandomSource;
 
 public class SculkChargeParticle extends SingleQuadParticle {
    private final SpriteSet sprites;
 
-   SculkChargeParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
-      super(var1, var2, var4, var6, var8, var10, var12, var14.first());
+   private SculkChargeParticle(final ClientLevel level, final double x, final double y, final double z, final double xd, final double yd, final double zd, final SpriteSet sprites) {
+      super(level, x, y, z, xd, yd, zd, sprites.first());
       this.friction = 0.96F;
-      this.sprites = var14;
+      this.sprites = sprites;
       this.scale(1.5F);
       this.hasPhysics = false;
-      this.setSpriteFromAge(var14);
+      this.setSpriteFromAge(sprites);
    }
 
-   public int getLightColor(float var1) {
-      return 240;
+   public int getLightCoords(final float a) {
+      return LightCoordsUtil.withBlock(super.getLightCoords(a), 15);
    }
 
    public SingleQuadParticle.Layer getLayer() {
@@ -30,19 +31,18 @@ public class SculkChargeParticle extends SingleQuadParticle {
    }
 
    public static record Provider(SpriteSet sprite) implements ParticleProvider<SculkChargeParticleOptions> {
-      public Provider(SpriteSet var1) {
+      public Provider {
          super();
-         this.sprite = var1;
       }
 
-      public Particle createParticle(SculkChargeParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         SculkChargeParticle var16 = new SculkChargeParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         var16.setAlpha(1.0F);
-         var16.setParticleSpeed(var9, var11, var13);
-         var16.oRoll = var1.roll();
-         var16.roll = var1.roll();
-         var16.setLifetime(var15.nextInt(12) + 8);
-         return var16;
+      public Particle createParticle(final SculkChargeParticleOptions options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         SculkChargeParticle particle = new SculkChargeParticle(level, x, y, z, xAux, yAux, zAux, this.sprite);
+         particle.setAlpha(1.0F);
+         particle.setParticleSpeed(xAux, yAux, zAux);
+         particle.oRoll = options.roll();
+         particle.roll = options.roll();
+         particle.setLifetime(random.nextInt(12) + 8);
+         return particle;
       }
    }
 }

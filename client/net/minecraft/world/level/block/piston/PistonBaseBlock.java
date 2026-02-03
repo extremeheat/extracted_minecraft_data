@@ -5,8 +5,6 @@ import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
@@ -15,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -45,7 +44,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class PistonBaseBlock extends DirectionalBlock {
-   public static final MapCodec<PistonBaseBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("sticky").forGetter((var0x) -> var0x.isSticky), propertiesCodec()).apply(var0, PistonBaseBlock::new));
+   public static final MapCodec<PistonBaseBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("sticky").forGetter((b) -> b.isSticky), propertiesCodec()).apply(i, PistonBaseBlock::new));
    public static final BooleanProperty EXTENDED;
    public static final int TRIGGER_EXTEND = 0;
    public static final int TRIGGER_CONTRACT = 1;
@@ -58,83 +57,83 @@ public class PistonBaseBlock extends DirectionalBlock {
       return CODEC;
    }
 
-   public PistonBaseBlock(boolean var1, BlockBehaviour.Properties var2) {
-      super(var2);
+   public PistonBaseBlock(final boolean isSticky, final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(EXTENDED, false));
-      this.isSticky = var1;
+      this.isSticky = isSticky;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(EXTENDED) ? (VoxelShape)SHAPES.get(var1.getValue(FACING)) : Shapes.block();
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (Boolean)state.getValue(EXTENDED) ? (VoxelShape)SHAPES.get(state.getValue(FACING)) : Shapes.block();
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      if (!var1.isClientSide()) {
-         this.checkIfExtend(var1, var2, var3);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      if (!level.isClientSide()) {
+         this.checkIfExtend(level, pos, state);
       }
 
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide()) {
-         this.checkIfExtend(var2, var3, var1);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (!level.isClientSide()) {
+         this.checkIfExtend(level, pos, state);
       }
 
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
-         if (!var2.isClientSide() && var2.getBlockEntity(var3) == null) {
-            this.checkIfExtend(var2, var3, var1);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!oldState.is(state.getBlock())) {
+         if (!level.isClientSide() && level.getBlockEntity(pos) == null) {
+            this.checkIfExtend(level, pos, state);
          }
 
       }
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite())).setValue(EXTENDED, false);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite())).setValue(EXTENDED, false);
    }
 
-   private void checkIfExtend(Level var1, BlockPos var2, BlockState var3) {
-      Direction var4 = (Direction)var3.getValue(FACING);
-      boolean var5 = this.getNeighborSignal(var1, var2, var4);
-      if (var5 && !(Boolean)var3.getValue(EXTENDED)) {
-         if ((new PistonStructureResolver(var1, var2, var4, true)).resolve()) {
-            var1.blockEvent(var2, this, 0, var4.get3DDataValue());
+   private void checkIfExtend(final Level level, final BlockPos pos, final BlockState state) {
+      Direction direction = (Direction)state.getValue(FACING);
+      boolean extend = this.getNeighborSignal(level, pos, direction);
+      if (extend && !(Boolean)state.getValue(EXTENDED)) {
+         if ((new PistonStructureResolver(level, pos, direction, true)).resolve()) {
+            level.blockEvent(pos, this, 0, direction.get3DDataValue());
          }
-      } else if (!var5 && (Boolean)var3.getValue(EXTENDED)) {
-         BlockPos var6 = var2.relative((Direction)var4, 2);
-         BlockState var7 = var1.getBlockState(var6);
-         byte var8 = 1;
-         if (var7.is(Blocks.MOVING_PISTON) && var7.getValue(FACING) == var4) {
-            BlockEntity var9 = var1.getBlockEntity(var6);
-            if (var9 instanceof PistonMovingBlockEntity) {
-               PistonMovingBlockEntity var10 = (PistonMovingBlockEntity)var9;
-               if (var10.isExtending() && (var10.getProgress(0.0F) < 0.5F || var1.getGameTime() == var10.getLastTicked() || ((ServerLevel)var1).isHandlingTick())) {
-                  var8 = 2;
+      } else if (!extend && (Boolean)state.getValue(EXTENDED)) {
+         BlockPos pushedPos = pos.relative((Direction)direction, 2);
+         BlockState pushedState = level.getBlockState(pushedPos);
+         int event = 1;
+         if (pushedState.is(Blocks.MOVING_PISTON) && pushedState.getValue(FACING) == direction) {
+            BlockEntity entity = level.getBlockEntity(pushedPos);
+            if (entity instanceof PistonMovingBlockEntity) {
+               PistonMovingBlockEntity pistonEntity = (PistonMovingBlockEntity)entity;
+               if (pistonEntity.isExtending() && (pistonEntity.getProgress(0.0F) < 0.5F || level.getGameTime() == pistonEntity.getLastTicked() || ((ServerLevel)level).isHandlingTick())) {
+                  event = 2;
                }
             }
          }
 
-         var1.blockEvent(var2, this, var8, var4.get3DDataValue());
+         level.blockEvent(pos, this, event, direction.get3DDataValue());
       }
 
    }
 
-   private boolean getNeighborSignal(SignalGetter var1, BlockPos var2, Direction var3) {
-      for(Direction var7 : Direction.values()) {
-         if (var7 != var3 && var1.hasSignal(var2.relative(var7), var7)) {
+   private boolean getNeighborSignal(final SignalGetter level, final BlockPos pos, final Direction pushDirection) {
+      for(Direction direction : Direction.values()) {
+         if (direction != pushDirection && level.hasSignal(pos.relative(direction), direction)) {
             return true;
          }
       }
 
-      if (var1.hasSignal(var2, Direction.DOWN)) {
+      if (level.hasSignal(pos, Direction.DOWN)) {
          return true;
       } else {
-         BlockPos var9 = var2.above();
+         BlockPos above = pos.above();
 
-         for(Direction var8 : Direction.values()) {
-            if (var8 != Direction.DOWN && var1.hasSignal(var9.relative(var8), var8)) {
+         for(Direction direction : Direction.values()) {
+            if (direction != Direction.DOWN && level.hasSignal(above.relative(direction), direction)) {
                return true;
             }
          }
@@ -143,104 +142,105 @@ public class PistonBaseBlock extends DirectionalBlock {
       }
    }
 
-   protected boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
-      Direction var6 = (Direction)var1.getValue(FACING);
-      BlockState var7 = (BlockState)var1.setValue(EXTENDED, true);
-      if (!var2.isClientSide()) {
-         boolean var8 = this.getNeighborSignal(var2, var3, var6);
-         if (var8 && (var4 == 1 || var4 == 2)) {
-            var2.setBlock(var3, var7, 2);
+   protected boolean triggerEvent(final BlockState state, final Level level, final BlockPos pos, final int b0, final int b1) {
+      Direction direction = (Direction)state.getValue(FACING);
+      BlockState extendedState = (BlockState)state.setValue(EXTENDED, true);
+      if (!level.isClientSide()) {
+         boolean extend = this.getNeighborSignal(level, pos, direction);
+         if (extend && (b0 == 1 || b0 == 2)) {
+            level.setBlock(pos, extendedState, 2);
             return false;
          }
 
-         if (!var8 && var4 == 0) {
+         if (!extend && b0 == 0) {
             return false;
          }
       }
 
-      if (var4 == 0) {
-         if (!this.moveBlocks(var2, var3, var6, true)) {
+      RandomSource random = level.getRandom();
+      if (b0 == 0) {
+         if (!this.moveBlocks(level, pos, direction, true)) {
             return false;
          }
 
-         var2.setBlock(var3, var7, 67);
-         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.5F, var2.random.nextFloat() * 0.25F + 0.6F);
-         var2.gameEvent(GameEvent.BLOCK_ACTIVATE, var3, GameEvent.Context.of(var7));
-      } else if (var4 == 1 || var4 == 2) {
-         BlockEntity var15 = var2.getBlockEntity(var3.relative(var6));
-         if (var15 instanceof PistonMovingBlockEntity) {
-            ((PistonMovingBlockEntity)var15).finalTick();
+         level.setBlock(pos, extendedState, 67);
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.5F, random.nextFloat() * 0.25F + 0.6F);
+         level.gameEvent(GameEvent.BLOCK_ACTIVATE, pos, GameEvent.Context.of(extendedState));
+      } else if (b0 == 1 || b0 == 2) {
+         BlockEntity prevBlockEntity = level.getBlockEntity(pos.relative(direction));
+         if (prevBlockEntity instanceof PistonMovingBlockEntity) {
+            ((PistonMovingBlockEntity)prevBlockEntity).finalTick();
          }
 
-         BlockState var9 = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, var6)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
-         var2.setBlock(var3, var9, 276);
-         var2.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var3, var9, (BlockState)this.defaultBlockState().setValue(FACING, Direction.from3DDataValue(var5 & 7)), var6, false, true));
-         var2.updateNeighborsAt(var3, var9.getBlock());
-         var9.updateNeighbourShapes(var2, var3, 2);
+         BlockState movingPistonState = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, direction)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
+         level.setBlock(pos, movingPistonState, 276);
+         level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(pos, movingPistonState, (BlockState)this.defaultBlockState().setValue(FACING, Direction.from3DDataValue(b1 & 7)), direction, false, true));
+         level.updateNeighborsAt(pos, movingPistonState.getBlock());
+         movingPistonState.updateNeighbourShapes(level, pos, 2);
          if (this.isSticky) {
-            BlockPos var10 = var3.offset(var6.getStepX() * 2, var6.getStepY() * 2, var6.getStepZ() * 2);
-            BlockState var11 = var2.getBlockState(var10);
-            boolean var12 = false;
-            if (var11.is(Blocks.MOVING_PISTON)) {
-               BlockEntity var13 = var2.getBlockEntity(var10);
-               if (var13 instanceof PistonMovingBlockEntity) {
-                  PistonMovingBlockEntity var14 = (PistonMovingBlockEntity)var13;
-                  if (var14.getDirection() == var6 && var14.isExtending()) {
-                     var14.finalTick();
-                     var12 = true;
+            BlockPos twoPos = pos.offset(direction.getStepX() * 2, direction.getStepY() * 2, direction.getStepZ() * 2);
+            BlockState movingState = level.getBlockState(twoPos);
+            boolean pistonPiece = false;
+            if (movingState.is(Blocks.MOVING_PISTON)) {
+               BlockEntity blockEntity = level.getBlockEntity(twoPos);
+               if (blockEntity instanceof PistonMovingBlockEntity) {
+                  PistonMovingBlockEntity entity = (PistonMovingBlockEntity)blockEntity;
+                  if (entity.getDirection() == direction && entity.isExtending()) {
+                     entity.finalTick();
+                     pistonPiece = true;
                   }
                }
             }
 
-            if (!var12) {
-               if (var4 != 1 || var11.isAir() || !isPushable(var11, var2, var10, var6.getOpposite(), false, var6) || var11.getPistonPushReaction() != PushReaction.NORMAL && !var11.is(Blocks.PISTON) && !var11.is(Blocks.STICKY_PISTON)) {
-                  var2.removeBlock(var3.relative(var6), false);
+            if (!pistonPiece) {
+               if (b0 != 1 || movingState.isAir() || !isPushable(movingState, level, twoPos, direction.getOpposite(), false, direction) || movingState.getPistonPushReaction() != PushReaction.NORMAL && !movingState.is(Blocks.PISTON) && !movingState.is(Blocks.STICKY_PISTON)) {
+                  level.removeBlock(pos.relative(direction), false);
                } else {
-                  this.moveBlocks(var2, var3, var6, false);
+                  this.moveBlocks(level, pos, direction, false);
                }
             }
          } else {
-            var2.removeBlock(var3.relative(var6), false);
+            level.removeBlock(pos.relative(direction), false);
          }
 
-         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 0.5F, var2.random.nextFloat() * 0.15F + 0.6F);
-         var2.gameEvent(GameEvent.BLOCK_DEACTIVATE, var3, GameEvent.Context.of(var9));
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 0.5F, random.nextFloat() * 0.15F + 0.6F);
+         level.gameEvent(GameEvent.BLOCK_DEACTIVATE, pos, GameEvent.Context.of(movingPistonState));
       }
 
       return true;
    }
 
-   public static boolean isPushable(BlockState var0, Level var1, BlockPos var2, Direction var3, boolean var4, Direction var5) {
-      if (var2.getY() >= var1.getMinY() && var2.getY() <= var1.getMaxY() && var1.getWorldBorder().isWithinBounds(var2)) {
-         if (var0.isAir()) {
+   public static boolean isPushable(final BlockState state, final Level level, final BlockPos pos, final Direction direction, final boolean allowDestroyable, final Direction connectionDirection) {
+      if (pos.getY() >= level.getMinY() && pos.getY() <= level.getMaxY() && level.getWorldBorder().isWithinBounds(pos)) {
+         if (state.isAir()) {
             return true;
-         } else if (!var0.is(Blocks.OBSIDIAN) && !var0.is(Blocks.CRYING_OBSIDIAN) && !var0.is(Blocks.RESPAWN_ANCHOR) && !var0.is(Blocks.REINFORCED_DEEPSLATE)) {
-            if (var3 == Direction.DOWN && var2.getY() == var1.getMinY()) {
+         } else if (!state.is(Blocks.OBSIDIAN) && !state.is(Blocks.CRYING_OBSIDIAN) && !state.is(Blocks.RESPAWN_ANCHOR) && !state.is(Blocks.REINFORCED_DEEPSLATE)) {
+            if (direction == Direction.DOWN && pos.getY() == level.getMinY()) {
                return false;
-            } else if (var3 == Direction.UP && var2.getY() == var1.getMaxY()) {
+            } else if (direction == Direction.UP && pos.getY() == level.getMaxY()) {
                return false;
             } else {
-               if (!var0.is(Blocks.PISTON) && !var0.is(Blocks.STICKY_PISTON)) {
-                  if (var0.getDestroySpeed(var1, var2) == -1.0F) {
+               if (!state.is(Blocks.PISTON) && !state.is(Blocks.STICKY_PISTON)) {
+                  if (state.getDestroySpeed(level, pos) == -1.0F) {
                      return false;
                   }
 
-                  switch (var0.getPistonPushReaction()) {
+                  switch (state.getPistonPushReaction()) {
                      case BLOCK -> {
                         return false;
                      }
                      case DESTROY -> {
-                        return var4;
+                        return allowDestroyable;
                      }
                      case PUSH_ONLY -> {
-                        return var3 == var5;
+                        return direction == connectionDirection;
                      }
                   }
-               } else if ((Boolean)var0.getValue(EXTENDED)) {
+               } else if ((Boolean)state.getValue(EXTENDED)) {
                   return false;
                }
 
-               return !var0.hasBlockEntity();
+               return !state.hasBlockEntity();
             }
          } else {
             return false;
@@ -250,123 +250,123 @@ public class PistonBaseBlock extends DirectionalBlock {
       }
    }
 
-   private boolean moveBlocks(Level var1, BlockPos var2, Direction var3, boolean var4) {
-      BlockPos var5 = var2.relative(var3);
-      if (!var4 && var1.getBlockState(var5).is(Blocks.PISTON_HEAD)) {
-         var1.setBlock(var5, Blocks.AIR.defaultBlockState(), 276);
+   private boolean moveBlocks(final Level level, final BlockPos pistonPos, final Direction direction, final boolean extending) {
+      BlockPos armPos = pistonPos.relative(direction);
+      if (!extending && level.getBlockState(armPos).is(Blocks.PISTON_HEAD)) {
+         level.setBlock(armPos, Blocks.AIR.defaultBlockState(), 276);
       }
 
-      PistonStructureResolver var6 = new PistonStructureResolver(var1, var2, var3, var4);
-      if (!var6.resolve()) {
+      PistonStructureResolver resolver = new PistonStructureResolver(level, pistonPos, direction, extending);
+      if (!resolver.resolve()) {
          return false;
       } else {
-         HashMap var7 = Maps.newHashMap();
-         List var8 = var6.getToPush();
-         ArrayList var9 = Lists.newArrayList();
+         Map<BlockPos, BlockState> deleteAfterMove = Maps.newHashMap();
+         List<BlockPos> toPush = resolver.getToPush();
+         List<BlockState> toPushShapes = Lists.newArrayList();
 
-         for(BlockPos var11 : var8) {
-            BlockState var12 = var1.getBlockState(var11);
-            var9.add(var12);
-            var7.put(var11, var12);
+         for(BlockPos pos : toPush) {
+            BlockState state = level.getBlockState(pos);
+            toPushShapes.add(state);
+            deleteAfterMove.put(pos, state);
          }
 
-         List var20 = var6.getToDestroy();
-         BlockState[] var21 = new BlockState[var8.size() + var20.size()];
-         Direction var22 = var4 ? var3 : var3.getOpposite();
-         int var13 = 0;
+         List<BlockPos> toDestroy = resolver.getToDestroy();
+         BlockState[] toUpdate = new BlockState[toPush.size() + toDestroy.size()];
+         Direction pushDirection = extending ? direction : direction.getOpposite();
+         int updateIndex = 0;
 
-         for(int var14 = var20.size() - 1; var14 >= 0; --var14) {
-            BlockPos var15 = (BlockPos)var20.get(var14);
-            BlockState var16 = var1.getBlockState(var15);
-            BlockEntity var17 = var16.hasBlockEntity() ? var1.getBlockEntity(var15) : null;
-            dropResources(var16, var1, var15, var17);
-            if (!var16.is(BlockTags.FIRE) && var1.isClientSide()) {
-               var1.levelEvent(2001, var15, getId(var16));
+         for(int i = toDestroy.size() - 1; i >= 0; --i) {
+            BlockPos pos = (BlockPos)toDestroy.get(i);
+            BlockState state = level.getBlockState(pos);
+            BlockEntity blockEntity = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
+            dropResources(state, level, pos, blockEntity);
+            if (!state.is(BlockTags.FIRE) && level.isClientSide()) {
+               level.levelEvent(2001, pos, getId(state));
             }
 
-            var1.setBlock(var15, Blocks.AIR.defaultBlockState(), 18);
-            var1.gameEvent(GameEvent.BLOCK_DESTROY, var15, GameEvent.Context.of(var16));
-            var21[var13++] = var16;
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 18);
+            level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(state));
+            toUpdate[updateIndex++] = state;
          }
 
-         for(int var24 = var8.size() - 1; var24 >= 0; --var24) {
-            BlockPos var27 = (BlockPos)var8.get(var24);
-            BlockState var33 = var1.getBlockState(var27);
-            var27 = var27.relative(var22);
-            var7.remove(var27);
-            BlockState var39 = (BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, var3);
-            var1.setBlock(var27, var39, 324);
-            var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var27, var39, (BlockState)var9.get(var24), var3, var4, false));
-            var21[var13++] = var33;
+         for(int i = toPush.size() - 1; i >= 0; --i) {
+            BlockPos pos = (BlockPos)toPush.get(i);
+            BlockState blockState = level.getBlockState(pos);
+            pos = pos.relative(pushDirection);
+            deleteAfterMove.remove(pos);
+            BlockState actualState = (BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, direction);
+            level.setBlock(pos, actualState, 324);
+            level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(pos, actualState, (BlockState)toPushShapes.get(i), direction, extending, false));
+            toUpdate[updateIndex++] = blockState;
          }
 
-         if (var4) {
-            PistonType var25 = this.isSticky ? PistonType.STICKY : PistonType.DEFAULT;
-            BlockState var29 = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, var3)).setValue(PistonHeadBlock.TYPE, var25);
-            BlockState var34 = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, var3)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
-            var7.remove(var5);
-            var1.setBlock(var5, var34, 324);
-            var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var5, var34, var29, var3, true, true));
+         if (extending) {
+            PistonType type = this.isSticky ? PistonType.STICKY : PistonType.DEFAULT;
+            BlockState state = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, direction)).setValue(PistonHeadBlock.TYPE, type);
+            BlockState blockState = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, direction)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
+            deleteAfterMove.remove(armPos);
+            level.setBlock(armPos, blockState, 324);
+            level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(armPos, blockState, state, direction, true, true));
          }
 
-         BlockState var26 = Blocks.AIR.defaultBlockState();
+         BlockState air = Blocks.AIR.defaultBlockState();
 
-         for(BlockPos var35 : var7.keySet()) {
-            var1.setBlock(var35, var26, 82);
+         for(BlockPos pos : deleteAfterMove.keySet()) {
+            level.setBlock(pos, air, 82);
          }
 
-         for(Map.Entry var36 : var7.entrySet()) {
-            BlockPos var40 = (BlockPos)var36.getKey();
-            BlockState var18 = (BlockState)var36.getValue();
-            var18.updateIndirectNeighbourShapes(var1, var40, 2);
-            var26.updateNeighbourShapes(var1, var40, 2);
-            var26.updateIndirectNeighbourShapes(var1, var40, 2);
+         for(Map.Entry<BlockPos, BlockState> entry : deleteAfterMove.entrySet()) {
+            BlockPos pos = (BlockPos)entry.getKey();
+            BlockState oldState = (BlockState)entry.getValue();
+            oldState.updateIndirectNeighbourShapes(level, pos, 2);
+            air.updateNeighbourShapes(level, pos, 2);
+            air.updateIndirectNeighbourShapes(level, pos, 2);
          }
 
-         Orientation var32 = ExperimentalRedstoneUtils.initialOrientation(var1, var6.getPushDirection(), (Direction)null);
-         var13 = 0;
+         Orientation orientation = ExperimentalRedstoneUtils.initialOrientation(level, resolver.getPushDirection(), (Direction)null);
+         updateIndex = 0;
 
-         for(int var37 = var20.size() - 1; var37 >= 0; --var37) {
-            BlockState var41 = var21[var13++];
-            BlockPos var42 = (BlockPos)var20.get(var37);
-            if (var1 instanceof ServerLevel) {
-               ServerLevel var19 = (ServerLevel)var1;
-               var41.affectNeighborsAfterRemoval(var19, var42, false);
+         for(int i = toDestroy.size() - 1; i >= 0; --i) {
+            BlockState state = toUpdate[updateIndex++];
+            BlockPos pos = (BlockPos)toDestroy.get(i);
+            if (level instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)level;
+               state.affectNeighborsAfterRemoval(serverLevel, pos, false);
             }
 
-            var41.updateIndirectNeighbourShapes(var1, var42, 2);
-            var1.updateNeighborsAt(var42, var41.getBlock(), var32);
+            state.updateIndirectNeighbourShapes(level, pos, 2);
+            level.updateNeighborsAt(pos, state.getBlock(), orientation);
          }
 
-         for(int var38 = var8.size() - 1; var38 >= 0; --var38) {
-            var1.updateNeighborsAt((BlockPos)var8.get(var38), var21[var13++].getBlock(), var32);
+         for(int i = toPush.size() - 1; i >= 0; --i) {
+            level.updateNeighborsAt((BlockPos)toPush.get(i), toUpdate[updateIndex++].getBlock(), orientation);
          }
 
-         if (var4) {
-            var1.updateNeighborsAt(var5, Blocks.PISTON_HEAD, var32);
+         if (extending) {
+            level.updateNeighborsAt(armPos, Blocks.PISTON_HEAD, orientation);
          }
 
          return true;
       }
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, EXTENDED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, EXTENDED);
    }
 
-   protected boolean useShapeForLightOcclusion(BlockState var1) {
-      return (Boolean)var1.getValue(EXTENDED);
+   protected boolean useShapeForLightOcclusion(final BlockState state) {
+      return (Boolean)state.getValue(EXTENDED);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 

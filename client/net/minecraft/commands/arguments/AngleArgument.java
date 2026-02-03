@@ -25,20 +25,20 @@ public class AngleArgument implements ArgumentType<SingleAngle> {
       return new AngleArgument();
    }
 
-   public static float getAngle(CommandContext<CommandSourceStack> var0, String var1) {
-      return ((SingleAngle)var0.getArgument(var1, SingleAngle.class)).getAngle((CommandSourceStack)var0.getSource());
+   public static float getAngle(final CommandContext<CommandSourceStack> context, final String name) {
+      return ((SingleAngle)context.getArgument(name, SingleAngle.class)).getAngle((CommandSourceStack)context.getSource());
    }
 
-   public SingleAngle parse(StringReader var1) throws CommandSyntaxException {
-      if (!var1.canRead()) {
-         throw ERROR_NOT_COMPLETE.createWithContext(var1);
+   public SingleAngle parse(final StringReader reader) throws CommandSyntaxException {
+      if (!reader.canRead()) {
+         throw ERROR_NOT_COMPLETE.createWithContext(reader);
       } else {
-         boolean var2 = WorldCoordinate.isRelative(var1);
-         float var3 = var1.canRead() && var1.peek() != ' ' ? var1.readFloat() : 0.0F;
-         if (!Float.isNaN(var3) && !Float.isInfinite(var3)) {
-            return new SingleAngle(var3, var2);
+         boolean isRelative = WorldCoordinate.isRelative(reader);
+         float value = reader.canRead() && reader.peek() != ' ' ? reader.readFloat() : 0.0F;
+         if (!Float.isNaN(value) && !Float.isInfinite(value)) {
+            return new SingleAngle(value, isRelative);
          } else {
-            throw ERROR_INVALID_ANGLE.createWithContext(var1);
+            throw ERROR_INVALID_ANGLE.createWithContext(reader);
          }
       }
    }
@@ -47,23 +47,18 @@ public class AngleArgument implements ArgumentType<SingleAngle> {
       return EXAMPLES;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
    public static final class SingleAngle {
       private final float angle;
       private final boolean isRelative;
 
-      SingleAngle(float var1, boolean var2) {
+      private SingleAngle(final float angle, final boolean isRelative) {
          super();
-         this.angle = var1;
-         this.isRelative = var2;
+         this.angle = angle;
+         this.isRelative = isRelative;
       }
 
-      public float getAngle(CommandSourceStack var1) {
-         return Mth.wrapDegrees(this.isRelative ? this.angle + var1.getRotation().y : this.angle);
+      public float getAngle(final CommandSourceStack sender) {
+         return Mth.wrapDegrees(this.isRelative ? this.angle + sender.getRotation().y : this.angle);
       }
    }
 }

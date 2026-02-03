@@ -12,21 +12,21 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PotatoBlock extends CropBlock {
    public static final MapCodec<PotatoBlock> CODEC = simpleCodec(PotatoBlock::new);
-   private static final VoxelShape[] SHAPES = Block.boxes(7, (var0) -> Block.column(16.0, 0.0, (double)(2 + var0)));
+   private static final VoxelShape[] SHAPES = Block.boxes(7, (age) -> Block.column(16.0, 0.0, (double)(2 + age)));
 
    public MapCodec<PotatoBlock> codec() {
       return CODEC;
    }
 
-   public PotatoBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public PotatoBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    protected ItemLike getBaseSeedId() {
       return Items.POTATO;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPES[this.getAge(var1)];
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPES[this.getAge(state)];
    }
 }

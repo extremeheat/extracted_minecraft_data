@@ -8,39 +8,36 @@ import org.jspecify.annotations.Nullable;
 public record ScreenRectangle(ScreenPosition position, int width, int height) {
    private static final ScreenRectangle EMPTY = new ScreenRectangle(0, 0, 0, 0);
 
-   public ScreenRectangle(int var1, int var2, int var3, int var4) {
-      this(new ScreenPosition(var1, var2), var3, var4);
+   public ScreenRectangle(final int x, final int y, final int width, final int height) {
+      this(new ScreenPosition(x, y), width, height);
    }
 
-   public ScreenRectangle(ScreenPosition var1, int var2, int var3) {
+   public ScreenRectangle {
       super();
-      this.position = var1;
-      this.width = var2;
-      this.height = var3;
    }
 
    public static ScreenRectangle empty() {
       return EMPTY;
    }
 
-   public static ScreenRectangle of(ScreenAxis var0, int var1, int var2, int var3, int var4) {
+   public static ScreenRectangle of(final ScreenAxis primaryAxis, final int primaryIndex, final int secondaryIndex, final int primaryLength, final int secondaryLength) {
       ScreenRectangle var10000;
-      switch (var0) {
-         case HORIZONTAL -> var10000 = new ScreenRectangle(var1, var2, var3, var4);
-         case VERTICAL -> var10000 = new ScreenRectangle(var2, var1, var4, var3);
+      switch (primaryAxis) {
+         case HORIZONTAL -> var10000 = new ScreenRectangle(primaryIndex, secondaryIndex, primaryLength, secondaryLength);
+         case VERTICAL -> var10000 = new ScreenRectangle(secondaryIndex, primaryIndex, secondaryLength, primaryLength);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   public ScreenRectangle step(ScreenDirection var1) {
-      return new ScreenRectangle(this.position.step(var1), this.width, this.height);
+   public ScreenRectangle step(final ScreenDirection direction) {
+      return new ScreenRectangle(this.position.step(direction), this.width, this.height);
    }
 
-   public int getLength(ScreenAxis var1) {
+   public int getLength(final ScreenAxis axis) {
       int var10000;
-      switch (var1) {
+      switch (axis) {
          case HORIZONTAL -> var10000 = this.width;
          case VERTICAL -> var10000 = this.height;
          default -> throw new MatchException((String)null, (Throwable)null);
@@ -49,49 +46,49 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       return var10000;
    }
 
-   public int getBoundInDirection(ScreenDirection var1) {
-      ScreenAxis var2 = var1.getAxis();
-      return var1.isPositive() ? this.position.getCoordinate(var2) + this.getLength(var2) - 1 : this.position.getCoordinate(var2);
+   public int getBoundInDirection(final ScreenDirection direction) {
+      ScreenAxis axis = direction.getAxis();
+      return direction.isPositive() ? this.position.getCoordinate(axis) + this.getLength(axis) - 1 : this.position.getCoordinate(axis);
    }
 
-   public ScreenRectangle getBorder(ScreenDirection var1) {
-      int var2 = this.getBoundInDirection(var1);
-      ScreenAxis var3 = var1.getAxis().orthogonal();
-      int var4 = this.getBoundInDirection(var3.getNegative());
-      int var5 = this.getLength(var3);
-      return of(var1.getAxis(), var2, var4, 1, var5).step(var1);
+   public ScreenRectangle getBorder(final ScreenDirection direction) {
+      int startFirst = this.getBoundInDirection(direction);
+      ScreenAxis orthogonalAxis = direction.getAxis().orthogonal();
+      int startSecond = this.getBoundInDirection(orthogonalAxis.getNegative());
+      int length = this.getLength(orthogonalAxis);
+      return of(direction.getAxis(), startFirst, startSecond, 1, length).step(direction);
    }
 
-   public boolean overlaps(ScreenRectangle var1) {
-      return this.overlapsInAxis(var1, ScreenAxis.HORIZONTAL) && this.overlapsInAxis(var1, ScreenAxis.VERTICAL);
+   public boolean overlaps(final ScreenRectangle other) {
+      return this.overlapsInAxis(other, ScreenAxis.HORIZONTAL) && this.overlapsInAxis(other, ScreenAxis.VERTICAL);
    }
 
-   public boolean overlapsInAxis(ScreenRectangle var1, ScreenAxis var2) {
-      int var3 = this.getBoundInDirection(var2.getNegative());
-      int var4 = var1.getBoundInDirection(var2.getNegative());
-      int var5 = this.getBoundInDirection(var2.getPositive());
-      int var6 = var1.getBoundInDirection(var2.getPositive());
-      return Math.max(var3, var4) <= Math.min(var5, var6);
+   public boolean overlapsInAxis(final ScreenRectangle other, final ScreenAxis axis) {
+      int thisLower = this.getBoundInDirection(axis.getNegative());
+      int otherLower = other.getBoundInDirection(axis.getNegative());
+      int thisHigher = this.getBoundInDirection(axis.getPositive());
+      int otherHigher = other.getBoundInDirection(axis.getPositive());
+      return Math.max(thisLower, otherLower) <= Math.min(thisHigher, otherHigher);
    }
 
-   public int getCenterInAxis(ScreenAxis var1) {
-      return (this.getBoundInDirection(var1.getPositive()) + this.getBoundInDirection(var1.getNegative())) / 2;
+   public int getCenterInAxis(final ScreenAxis axis) {
+      return (this.getBoundInDirection(axis.getPositive()) + this.getBoundInDirection(axis.getNegative())) / 2;
    }
 
-   public @Nullable ScreenRectangle intersection(ScreenRectangle var1) {
-      int var2 = Math.max(this.left(), var1.left());
-      int var3 = Math.max(this.top(), var1.top());
-      int var4 = Math.min(this.right(), var1.right());
-      int var5 = Math.min(this.bottom(), var1.bottom());
-      return var2 < var4 && var3 < var5 ? new ScreenRectangle(var2, var3, var4 - var2, var5 - var3) : null;
+   public @Nullable ScreenRectangle intersection(final ScreenRectangle other) {
+      int left = Math.max(this.left(), other.left());
+      int top = Math.max(this.top(), other.top());
+      int right = Math.min(this.right(), other.right());
+      int bottom = Math.min(this.bottom(), other.bottom());
+      return left < right && top < bottom ? new ScreenRectangle(left, top, right - left, bottom - top) : null;
    }
 
-   public boolean intersects(ScreenRectangle var1) {
-      return this.left() < var1.right() && this.right() > var1.left() && this.top() < var1.bottom() && this.bottom() > var1.top();
+   public boolean intersects(final ScreenRectangle other) {
+      return this.left() < other.right() && this.right() > other.left() && this.top() < other.bottom() && this.bottom() > other.top();
    }
 
-   public boolean encompasses(ScreenRectangle var1) {
-      return var1.left() >= this.left() && var1.top() >= this.top() && var1.right() <= this.right() && var1.bottom() <= this.bottom();
+   public boolean encompasses(final ScreenRectangle other) {
+      return other.left() >= this.left() && other.top() >= this.top() && other.right() <= this.right() && other.bottom() <= this.bottom();
    }
 
    public int top() {
@@ -110,25 +107,25 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       return this.position.x() + this.width;
    }
 
-   public boolean containsPoint(int var1, int var2) {
-      return var1 >= this.left() && var1 < this.right() && var2 >= this.top() && var2 < this.bottom();
+   public boolean containsPoint(final int x, final int y) {
+      return x >= this.left() && x < this.right() && y >= this.top() && y < this.bottom();
    }
 
-   public ScreenRectangle transformAxisAligned(Matrix3x2fc var1) {
-      Vector2f var2 = var1.transformPosition((float)this.left(), (float)this.top(), new Vector2f());
-      Vector2f var3 = var1.transformPosition((float)this.right(), (float)this.bottom(), new Vector2f());
-      return new ScreenRectangle(Mth.floor(var2.x), Mth.floor(var2.y), Mth.floor(var3.x - var2.x), Mth.floor(var3.y - var2.y));
+   public ScreenRectangle transformAxisAligned(final Matrix3x2fc matrix) {
+      Vector2f topLeft = matrix.transformPosition((float)this.left(), (float)this.top(), new Vector2f());
+      Vector2f bottomRight = matrix.transformPosition((float)this.right(), (float)this.bottom(), new Vector2f());
+      return new ScreenRectangle(Mth.floor(topLeft.x), Mth.floor(topLeft.y), Mth.floor(bottomRight.x - topLeft.x), Mth.floor(bottomRight.y - topLeft.y));
    }
 
-   public ScreenRectangle transformMaxBounds(Matrix3x2fc var1) {
-      Vector2f var2 = var1.transformPosition((float)this.left(), (float)this.top(), new Vector2f());
-      Vector2f var3 = var1.transformPosition((float)this.right(), (float)this.top(), new Vector2f());
-      Vector2f var4 = var1.transformPosition((float)this.left(), (float)this.bottom(), new Vector2f());
-      Vector2f var5 = var1.transformPosition((float)this.right(), (float)this.bottom(), new Vector2f());
-      float var6 = Math.min(Math.min(var2.x(), var4.x()), Math.min(var3.x(), var5.x()));
-      float var7 = Math.max(Math.max(var2.x(), var4.x()), Math.max(var3.x(), var5.x()));
-      float var8 = Math.min(Math.min(var2.y(), var4.y()), Math.min(var3.y(), var5.y()));
-      float var9 = Math.max(Math.max(var2.y(), var4.y()), Math.max(var3.y(), var5.y()));
-      return new ScreenRectangle(Mth.floor(var6), Mth.floor(var8), Mth.ceil(var7 - var6), Mth.ceil(var9 - var8));
+   public ScreenRectangle transformMaxBounds(final Matrix3x2fc matrix) {
+      Vector2f topLeft = matrix.transformPosition((float)this.left(), (float)this.top(), new Vector2f());
+      Vector2f topRight = matrix.transformPosition((float)this.right(), (float)this.top(), new Vector2f());
+      Vector2f bottomLeft = matrix.transformPosition((float)this.left(), (float)this.bottom(), new Vector2f());
+      Vector2f bottomRight = matrix.transformPosition((float)this.right(), (float)this.bottom(), new Vector2f());
+      float minX = Math.min(Math.min(topLeft.x(), bottomLeft.x()), Math.min(topRight.x(), bottomRight.x()));
+      float maxX = Math.max(Math.max(topLeft.x(), bottomLeft.x()), Math.max(topRight.x(), bottomRight.x()));
+      float minY = Math.min(Math.min(topLeft.y(), bottomLeft.y()), Math.min(topRight.y(), bottomRight.y()));
+      float maxY = Math.max(Math.max(topLeft.y(), bottomLeft.y()), Math.max(topRight.y(), bottomRight.y()));
+      return new ScreenRectangle(Mth.floor(minX), Mth.floor(minY), Mth.ceil(maxX - minX), Mth.ceil(maxY - minY));
    }
 }

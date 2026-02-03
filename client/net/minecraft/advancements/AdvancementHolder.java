@@ -10,20 +10,18 @@ public record AdvancementHolder(Identifier id, Advancement value) {
    public static final StreamCodec<RegistryFriendlyByteBuf, AdvancementHolder> STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, List<AdvancementHolder>> LIST_STREAM_CODEC;
 
-   public AdvancementHolder(Identifier var1, Advancement var2) {
+   public AdvancementHolder {
       super();
-      this.id = var1;
-      this.value = var2;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object obj) {
+      if (this == obj) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof AdvancementHolder) {
-            AdvancementHolder var2 = (AdvancementHolder)var1;
-            if (this.id.equals(var2.id)) {
+         if (obj instanceof AdvancementHolder) {
+            AdvancementHolder holder = (AdvancementHolder)obj;
+            if (this.id.equals(holder.id)) {
                var10000 = true;
                return var10000;
             }

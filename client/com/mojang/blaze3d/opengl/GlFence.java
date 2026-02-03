@@ -17,14 +17,14 @@ public class GlFence implements GpuFence {
 
    }
 
-   public boolean awaitCompletion(long var1) {
+   public boolean awaitCompletion(final long timeoutMs) {
       if (this.handle == 0L) {
          return true;
       } else {
-         int var3 = GlStateManager._glClientWaitSync(this.handle, 0, var1);
-         if (var3 == 37147) {
+         int result = GlStateManager._glClientWaitSync(this.handle, 0, timeoutMs);
+         if (result == 37147) {
             return false;
-         } else if (var3 == 37149) {
+         } else if (result == 37149) {
             throw new IllegalStateException("Failed to complete GPU fence: " + GlStateManager._getError());
          } else {
             return true;

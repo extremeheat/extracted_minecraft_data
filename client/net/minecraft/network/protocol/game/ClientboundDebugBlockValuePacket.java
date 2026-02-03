@@ -10,18 +10,16 @@ import net.minecraft.util.debug.DebugSubscription;
 public record ClientboundDebugBlockValuePacket(BlockPos blockPos, DebugSubscription.Update<?> update) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDebugBlockValuePacket> STREAM_CODEC;
 
-   public ClientboundDebugBlockValuePacket(BlockPos var1, DebugSubscription.Update<?> var2) {
+   public ClientboundDebugBlockValuePacket {
       super();
-      this.blockPos = var1;
-      this.update = var2;
    }
 
    public PacketType<ClientboundDebugBlockValuePacket> type() {
       return GamePacketTypes.CLIENTBOUND_DEBUG_BLOCK_VALUE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleDebugBlockValue(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleDebugBlockValue(this);
    }
 
    static {

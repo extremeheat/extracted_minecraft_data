@@ -15,8 +15,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
@@ -45,112 +48,147 @@ public class LiquidBlock extends Block implements BucketPickup {
    public static final IntegerProperty LEVEL;
    protected final FlowingFluid fluid;
    private final List<FluidState> stateCache;
-   public static final VoxelShape SHAPE_STABLE;
    public static final ImmutableList<Direction> POSSIBLE_FLOW_DIRECTIONS;
+   private static final int BUBBLE_COLUMN_CHECK_DELAY = 20;
 
    public MapCodec<LiquidBlock> codec() {
       return CODEC;
    }
 
-   protected LiquidBlock(FlowingFluid var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.fluid = var1;
+   protected LiquidBlock(final FlowingFluid fluid, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.fluid = fluid;
       this.stateCache = Lists.newArrayList();
-      this.stateCache.add(var1.getSource(false));
+      this.stateCache.add(fluid.getSource(false));
 
-      for(int var3 = 1; var3 < 8; ++var3) {
-         this.stateCache.add(var1.getFlowing(8 - var3, false));
+      for(int level = 1; level < 8; ++level) {
+         this.stateCache.add(fluid.getFlowing(8 - level, false));
       }
 
-      this.stateCache.add(var1.getFlowing(8, true));
+      this.stateCache.add(fluid.getFlowing(8, true));
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(LEVEL, 0));
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (var4.alwaysCollideWithFluid()) {
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      if (context.alwaysCollideWithFluid()) {
          return Shapes.block();
       } else {
-         return var4.isAbove(SHAPE_STABLE, var3, true) && (Integer)var1.getValue(LEVEL) == 0 && var4.canStandOnFluid(var2.getFluidState(var3.above()), var1.getFluidState()) ? SHAPE_STABLE : Shapes.empty();
+         return (Integer)state.getValue(LEVEL) != 0 ? Shapes.empty() : (VoxelShape)this.ifMobIsColliding(context).map(LivingEntity::getLiquidCollisionShape).filter((liquidStableShape) -> context.isAbove(liquidStableShape, pos, true) && context.canStandOnFluid(level.getFluidState(pos.above()), state.getFluidState())).orElse(Shapes.empty());
       }
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return var1.getFluidState().isRandomlyTicking();
+   private Optional<LivingEntity> ifMobIsColliding(final CollisionContext context) {
+      if (context instanceof EntityCollisionContext entityCollisionContext) {
+         Entity var4 = entityCollisionContext.getEntity();
+         if (var4 instanceof LivingEntity mob) {
+            return Optional.of(mob);
+         }
+      }
+
+      return Optional.empty();
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      var1.getFluidState().randomTick(var2, var3, var4);
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return state.getFluidState().isRandomlyTicking();
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      state.getFluidState().randomTick(level, pos, random);
+   }
+
+   protected boolean propagatesSkylightDown(final BlockState state) {
       return false;
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return !this.fluid.is(FluidTags.LAVA);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      int var2 = (Integer)var1.getValue(LEVEL);
-      return (FluidState)this.stateCache.get(Math.min(var2, 8));
+   protected FluidState getFluidState(final BlockState state) {
+      int level = (Integer)state.getValue(LEVEL);
+      return (FluidState)this.stateCache.get(Math.min(level, 8));
    }
 
-   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
-      return var2.getFluidState().getType().isSame(this.fluid);
+   protected boolean skipRendering(final BlockState state, final BlockState neighborState, final Direction direction) {
+      return neighborState.getFluidState().getType().isSame(this.fluid);
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(final BlockState state) {
       return RenderShape.INVISIBLE;
    }
 
-   protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
+   protected List<ItemStack> getDrops(final BlockState state, final LootParams.Builder params) {
       return Collections.emptyList();
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return Shapes.empty();
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (this.shouldSpreadLiquid(var2, var3, var1)) {
-         var2.scheduleTick(var3, var1.getFluidState().getType(), this.fluid.getTickDelay(var2));
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (this.shouldSpreadLiquid(level, pos, state)) {
+         level.scheduleTick(pos, state.getFluidState().getType(), this.fluid.getTickDelay(level));
+      }
+
+      this.tryScheduleBubbleColumn(level, state, pos, level.getBlockState(pos.below()));
+   }
+
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (shouldBubbleColumnOccupy(state)) {
+         BubbleColumnBlock.updateColumn(Blocks.BUBBLE_COLUMN, level, pos, level.getBlockState(pos.below()));
       }
 
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (var1.getFluidState().isSource() || var7.getFluidState().isSource()) {
-         var3.scheduleTick(var4, var1.getFluidState().getType(), this.fluid.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (state.getFluidState().isSource() || neighbourState.getFluidState().isSource()) {
+         ticks.scheduleTick(pos, state.getFluidState().getType(), this.fluid.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      if (directionToNeighbour == Direction.DOWN) {
+         this.tryScheduleBubbleColumn(ticks, state, pos, neighbourState);
+      }
+
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (this.shouldSpreadLiquid(var2, var3, var1)) {
-         var2.scheduleTick(var3, var1.getFluidState().getType(), this.fluid.getTickDelay(var2));
+   private static boolean shouldBubbleColumnOccupy(final BlockState state) {
+      return state.getFluidState().is(FluidTags.BUBBLE_COLUMN_CAN_OCCUPY) && state.getFluidState().isSource() && state.getFluidState().isFull();
+   }
+
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (this.shouldSpreadLiquid(level, pos, state)) {
+         level.scheduleTick(pos, state.getFluidState().getType(), this.fluid.getTickDelay(level));
+      }
+
+      this.tryScheduleBubbleColumn(level, state, pos, level.getBlockState(pos.below()));
+   }
+
+   private void tryScheduleBubbleColumn(final ScheduledTickAccess ticks, final BlockState state, final BlockPos pos, final BlockState stateBelow) {
+      if (shouldBubbleColumnOccupy(state) && (stateBelow.is(BlockTags.ENABLES_BUBBLE_COLUMN_DRAG_DOWN) || stateBelow.is(BlockTags.ENABLES_BUBBLE_COLUMN_PUSH_UP))) {
+         ticks.scheduleTick(pos, (Block)this, 20);
       }
 
    }
 
-   private boolean shouldSpreadLiquid(Level var1, BlockPos var2, BlockState var3) {
+   private boolean shouldSpreadLiquid(final Level level, final BlockPos pos, final BlockState state) {
       if (this.fluid.is(FluidTags.LAVA)) {
-         boolean var4 = var1.getBlockState(var2.below()).is(Blocks.SOUL_SOIL);
+         boolean isOverSoulSoil = level.getBlockState(pos.below()).is(Blocks.SOUL_SOIL);
          UnmodifiableIterator var5 = POSSIBLE_FLOW_DIRECTIONS.iterator();
 
          while(var5.hasNext()) {
-            Direction var6 = (Direction)var5.next();
-            BlockPos var7 = var2.relative(var6.getOpposite());
-            if (var1.getFluidState(var7).is(FluidTags.WATER)) {
-               Block var8 = var1.getFluidState(var2).isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE;
-               var1.setBlockAndUpdate(var2, var8.defaultBlockState());
-               this.fizz(var1, var2);
+            Direction direction = (Direction)var5.next();
+            BlockPos neighbourPos = pos.relative(direction.getOpposite());
+            if (level.getFluidState(neighbourPos).is(FluidTags.WATER)) {
+               Block convertToBlock = level.getFluidState(pos).isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE;
+               level.setBlockAndUpdate(pos, convertToBlock.defaultBlockState());
+               this.fizz(level, pos);
                return false;
             }
 
-            if (var4 && var1.getBlockState(var7).is(Blocks.BLUE_ICE)) {
-               var1.setBlockAndUpdate(var2, Blocks.BASALT.defaultBlockState());
-               this.fizz(var1, var2);
+            if (isOverSoulSoil && level.getBlockState(neighbourPos).is(Blocks.BLUE_ICE)) {
+               level.setBlockAndUpdate(pos, Blocks.BASALT.defaultBlockState());
+               this.fizz(level, pos);
                return false;
             }
          }
@@ -159,17 +197,17 @@ public class LiquidBlock extends Block implements BucketPickup {
       return true;
    }
 
-   private void fizz(LevelAccessor var1, BlockPos var2) {
-      var1.levelEvent(1501, var2, 0);
+   private void fizz(final LevelAccessor level, final BlockPos pos) {
+      level.levelEvent(1501, pos, 0);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(LEVEL);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(LEVEL);
    }
 
-   public ItemStack pickupBlock(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
-      if ((Integer)var4.getValue(LEVEL) == 0) {
-         var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 11);
+   public ItemStack pickupBlock(final @Nullable LivingEntity user, final LevelAccessor level, final BlockPos pos, final BlockState state) {
+      if ((Integer)state.getValue(LEVEL) == 0) {
+         level.setBlock(pos, Blocks.AIR.defaultBlockState(), 11);
          return new ItemStack(this.fluid.getBucket());
       } else {
          return ItemStack.EMPTY;
@@ -181,19 +219,18 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    static {
-      FLOWING_FLUID = BuiltInRegistries.FLUID.byNameCodec().comapFlatMap((var0) -> {
+      FLOWING_FLUID = BuiltInRegistries.FLUID.byNameCodec().comapFlatMap((fluid) -> {
          DataResult var10000;
-         if (var0 instanceof FlowingFluid var1) {
-            var10000 = DataResult.success(var1);
+         if (fluid instanceof FlowingFluid flowing) {
+            var10000 = DataResult.success(flowing);
          } else {
-            var10000 = DataResult.error(() -> "Not a flowing fluid: " + String.valueOf(var0));
+            var10000 = DataResult.error(() -> "Not a flowing fluid: " + String.valueOf(fluid));
          }
 
          return var10000;
-      }, (var0) -> var0);
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(FLOWING_FLUID.fieldOf("fluid").forGetter((var0x) -> var0x.fluid), propertiesCodec()).apply(var0, LiquidBlock::new));
+      }, (fluid) -> fluid);
+      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(FLOWING_FLUID.fieldOf("fluid").forGetter((b) -> b.fluid), propertiesCodec()).apply(i, LiquidBlock::new));
       LEVEL = BlockStateProperties.LEVEL;
-      SHAPE_STABLE = Block.column(16.0, 0.0, 8.0);
       POSSIBLE_FLOW_DIRECTIONS = ImmutableList.of(Direction.DOWN, Direction.SOUTH, Direction.NORTH, Direction.EAST, Direction.WEST);
    }
 }

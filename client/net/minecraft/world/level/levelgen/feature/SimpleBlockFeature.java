@@ -9,30 +9,30 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 
 public class SimpleBlockFeature extends Feature<SimpleBlockConfiguration> {
-   public SimpleBlockFeature(Codec<SimpleBlockConfiguration> var1) {
-      super(var1);
+   public SimpleBlockFeature(final Codec<SimpleBlockConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<SimpleBlockConfiguration> var1) {
-      SimpleBlockConfiguration var2 = (SimpleBlockConfiguration)var1.config();
-      WorldGenLevel var3 = var1.level();
-      BlockPos var4 = var1.origin();
-      BlockState var5 = var2.toPlace().getState(var1.random(), var4);
-      if (var5.canSurvive(var3, var4)) {
-         if (var5.getBlock() instanceof DoublePlantBlock) {
-            if (!var3.isEmptyBlock(var4.above())) {
+   public boolean place(final FeaturePlaceContext<SimpleBlockConfiguration> context) {
+      SimpleBlockConfiguration config = context.config();
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
+      BlockState stateToPlace = config.toPlace().getState(context.random(), origin);
+      if (stateToPlace.canSurvive(level, origin)) {
+         if (stateToPlace.getBlock() instanceof DoublePlantBlock) {
+            if (!level.isEmptyBlock(origin.above())) {
                return false;
             }
 
-            DoublePlantBlock.placeAt(var3, var5, var4, 2);
-         } else if (var5.getBlock() instanceof MossyCarpetBlock) {
-            MossyCarpetBlock.placeAt(var3, var4, var3.getRandom(), 2);
+            DoublePlantBlock.placeAt(level, stateToPlace, origin, 2);
+         } else if (stateToPlace.getBlock() instanceof MossyCarpetBlock) {
+            MossyCarpetBlock.placeAt(level, origin, level.getRandom(), 2);
          } else {
-            var3.setBlock(var4, var5, 2);
+            level.setBlock(origin, stateToPlace, 2);
          }
 
-         if (var2.scheduleTick()) {
-            var3.scheduleTick(var4, var3.getBlockState(var4).getBlock(), 1);
+         if (config.scheduleTick()) {
+            level.scheduleTick(origin, level.getBlockState(origin).getBlock(), 1);
          }
 
          return true;

@@ -15,18 +15,18 @@ public class FurnaceRecipeBookComponent extends RecipeBookComponent<AbstractFurn
    private static final WidgetSprites FILTER_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/furnace_filter_enabled"), Identifier.withDefaultNamespace("recipe_book/furnace_filter_disabled"), Identifier.withDefaultNamespace("recipe_book/furnace_filter_enabled_highlighted"), Identifier.withDefaultNamespace("recipe_book/furnace_filter_disabled_highlighted"));
    private final Component recipeFilterName;
 
-   public FurnaceRecipeBookComponent(AbstractFurnaceMenu var1, Component var2, List<RecipeBookComponent.TabInfo> var3) {
-      super(var1, var3);
-      this.recipeFilterName = var2;
+   public FurnaceRecipeBookComponent(final AbstractFurnaceMenu menu, final Component recipeFilterName, final List<RecipeBookComponent.TabInfo> tabInfos) {
+      super(menu, tabInfos);
+      this.recipeFilterName = recipeFilterName;
    }
 
    protected WidgetSprites getFilterButtonTextures() {
       return FILTER_SPRITES;
    }
 
-   protected boolean isCraftingSlot(Slot var1) {
+   protected boolean isCraftingSlot(final Slot slot) {
       boolean var10000;
-      switch (var1.index) {
+      switch (slot.index) {
          case 0:
          case 1:
          case 2:
@@ -39,13 +39,13 @@ public class FurnaceRecipeBookComponent extends RecipeBookComponent<AbstractFurn
       return var10000;
    }
 
-   protected void fillGhostRecipe(GhostSlots var1, RecipeDisplay var2, ContextMap var3) {
-      var1.setResult(((AbstractFurnaceMenu)this.menu).getResultSlot(), var3, var2.result());
-      if (var2 instanceof FurnaceRecipeDisplay var4) {
-         var1.setInput((this.menu).slots.get(0), var3, var4.ingredient());
-         Slot var5 = (this.menu).slots.get(1);
-         if (var5.getItem().isEmpty()) {
-            var1.setInput(var5, var3, var4.fuel());
+   protected void fillGhostRecipe(final GhostSlots ghostSlots, final RecipeDisplay recipe, final ContextMap context) {
+      ghostSlots.setResult(((AbstractFurnaceMenu)this.menu).getResultSlot(), context, recipe.result());
+      if (recipe instanceof FurnaceRecipeDisplay furnaceRecipe) {
+         ghostSlots.setInput((this.menu).slots.get(0), context, furnaceRecipe.ingredient());
+         Slot fuelSlot = (this.menu).slots.get(1);
+         if (fuelSlot.getItem().isEmpty()) {
+            ghostSlots.setInput(fuelSlot, context, furnaceRecipe.fuel());
          }
       }
 
@@ -55,7 +55,7 @@ public class FurnaceRecipeBookComponent extends RecipeBookComponent<AbstractFurn
       return this.recipeFilterName;
    }
 
-   protected void selectMatchingRecipes(RecipeCollection var1, StackedItemContents var2) {
-      var1.selectRecipes(var2, (var0) -> var0 instanceof FurnaceRecipeDisplay);
+   protected void selectMatchingRecipes(final RecipeCollection collection, final StackedItemContents stackedContents) {
+      collection.selectRecipes(stackedContents, (display) -> display instanceof FurnaceRecipeDisplay);
    }
 }

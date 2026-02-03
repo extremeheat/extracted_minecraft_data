@@ -9,8 +9,8 @@ public class HangingSignBlockEntity extends SignBlockEntity {
    private static final int MAX_TEXT_LINE_WIDTH = 60;
    private static final int TEXT_LINE_HEIGHT = 9;
 
-   public HangingSignBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.HANGING_SIGN, var1, var2);
+   public HangingSignBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.HANGING_SIGN, worldPosition, blockState);
    }
 
    public int getTextLineHeight() {

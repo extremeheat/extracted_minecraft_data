@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.Objects;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -15,49 +16,53 @@ public class LecternMenu extends AbstractContainerMenu {
    private final Container lectern;
    private final ContainerData lecternData;
 
-   public LecternMenu(int var1) {
-      this(var1, new SimpleContainer(1), new SimpleContainerData(1));
+   public LecternMenu(final int containerId) {
+      this(containerId, new SimpleContainer(1), new SimpleContainerData(1));
    }
 
-   public LecternMenu(int var1, Container var2, ContainerData var3) {
-      super(MenuType.LECTERN, var1);
-      checkContainerSize(var2, 1);
-      checkContainerDataCount(var3, 1);
-      this.lectern = var2;
-      this.lecternData = var3;
-      this.addSlot(new Slot(var2, 0, 0, 0) {
+   public LecternMenu(final int containerId, final Container lectern, final ContainerData lecternData) {
+      super(MenuType.LECTERN, containerId);
+      checkContainerSize(lectern, 1);
+      checkContainerDataCount(lecternData, 1);
+      this.lectern = lectern;
+      this.lecternData = lecternData;
+      this.addSlot(new Slot(lectern, 0, 0, 0) {
+         {
+            Objects.requireNonNull(LecternMenu.this);
+         }
+
          public void setChanged() {
             super.setChanged();
             LecternMenu.this.slotsChanged(this.container);
          }
       });
-      this.addDataSlots(var3);
+      this.addDataSlots(lecternData);
    }
 
-   public boolean clickMenuButton(Player var1, int var2) {
-      if (var2 >= 100) {
-         int var6 = var2 - 100;
-         this.setData(0, var6);
+   public boolean clickMenuButton(final Player player, final int buttonId) {
+      if (buttonId >= 100) {
+         int pageToSet = buttonId - 100;
+         this.setData(0, pageToSet);
          return true;
       } else {
-         switch (var2) {
+         switch (buttonId) {
             case 1:
-               int var5 = this.lecternData.get(0);
-               this.setData(0, var5 - 1);
+               int currentPage = this.lecternData.get(0);
+               this.setData(0, currentPage - 1);
                return true;
             case 2:
-               int var4 = this.lecternData.get(0);
-               this.setData(0, var4 + 1);
+               int currentPage = this.lecternData.get(0);
+               this.setData(0, currentPage + 1);
                return true;
             case 3:
-               if (!var1.mayBuild()) {
+               if (!player.mayBuild()) {
                   return false;
                }
 
-               ItemStack var3 = this.lectern.removeItemNoUpdate(0);
+               ItemStack book = this.lectern.removeItemNoUpdate(0);
                this.lectern.setChanged();
-               if (!var1.getInventory().add(var3)) {
-                  var1.drop(var3, false);
+               if (!player.getInventory().add(book)) {
+                  player.drop(book, false);
                }
 
                return true;
@@ -67,17 +72,17 @@ public class LecternMenu extends AbstractContainerMenu {
       }
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
       return ItemStack.EMPTY;
    }
 
-   public void setData(int var1, int var2) {
-      super.setData(var1, var2);
+   public void setData(final int id, final int value) {
+      super.setData(id, value);
       this.broadcastChanges();
    }
 
-   public boolean stillValid(Player var1) {
-      return this.lectern.stillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.lectern.stillValid(player);
    }
 
    public ItemStack getBook() {

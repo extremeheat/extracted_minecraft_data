@@ -31,45 +31,43 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
    private final Material material;
    private final float openness;
 
-   public ChestSpecialRenderer(MaterialSet var1, ChestModel var2, Material var3, float var4) {
+   public ChestSpecialRenderer(final MaterialSet materials, final ChestModel model, final Material material, final float openness) {
       super();
-      this.materials = var1;
-      this.model = var2;
-      this.material = var3;
-      this.openness = var4;
+      this.materials = materials;
+      this.model = model;
+      this.material = material;
+      this.openness = openness;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      var3.submitModel(this.model, this.openness, var2, this.material.renderType(RenderTypes::entitySolid), var4, var5, -1, this.materials.get(this.material), var7, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      submitNodeCollector.submitModel(this.model, this.openness, poseStack, this.material.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, -1, this.materials.get(this.material), outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      PoseStack var2 = new PoseStack();
+   public void getExtents(final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
       this.model.setupAnim(this.openness);
-      this.model.root().getExtentsForGui(var2, var1);
+      this.model.root().getExtentsForGui(poseStack, output);
    }
 
    public static record Unbaked(Identifier texture, float openness) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness)).apply(var0, Unbaked::new));
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness)).apply(i, Unbaked::new));
 
-      public Unbaked(Identifier var1) {
-         this(var1, 0.0F);
+      public Unbaked(final Identifier texture) {
+         this(texture, 0.0F);
       }
 
-      public Unbaked(Identifier var1, float var2) {
+      public Unbaked {
          super();
-         this.texture = var1;
-         this.openness = var2;
       }
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         ChestModel var2 = new ChestModel(var1.entityModelSet().bakeLayer(ModelLayers.CHEST));
-         Material var3 = Sheets.CHEST_MAPPER.apply(this.texture);
-         return new ChestSpecialRenderer(var1.materials(), var2, var3, this.openness);
+      public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+         ChestModel model = new ChestModel(context.entityModelSet().bakeLayer(ModelLayers.CHEST));
+         Material fullTexture = Sheets.CHEST_MAPPER.apply(this.texture);
+         return new ChestSpecialRenderer(context.materials(), model, fullTexture, this.openness);
       }
    }
 }

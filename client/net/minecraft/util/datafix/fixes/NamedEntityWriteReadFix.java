@@ -16,32 +16,32 @@ public abstract class NamedEntityWriteReadFix extends DataFix {
    private final String entityName;
    private final DSL.TypeReference type;
 
-   public NamedEntityWriteReadFix(Schema var1, boolean var2, String var3, DSL.TypeReference var4, String var5) {
-      super(var1, var2);
-      this.name = var3;
-      this.type = var4;
-      this.entityName = var5;
+   public NamedEntityWriteReadFix(final Schema outputSchema, final boolean changesType, final String name, final DSL.TypeReference type, final String entityName) {
+      super(outputSchema, changesType);
+      this.name = name;
+      this.type = type;
+      this.entityName = entityName;
    }
 
    public TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(this.type);
-      Type var2 = this.getInputSchema().getChoiceType(this.type, this.entityName);
-      Type var3 = this.getOutputSchema().getType(this.type);
-      OpticFinder var4 = DSL.namedChoice(this.entityName, var2);
-      Type var5 = ExtraDataFixUtils.patchSubType(var1, var1, var3);
-      return this.fix(var1, var3, var5, var4);
+      Type<?> inputEntityType = this.getInputSchema().getType(this.type);
+      Type<?> inputEntityChoiceType = this.getInputSchema().getChoiceType(this.type, this.entityName);
+      Type<?> outputEntityType = this.getOutputSchema().getType(this.type);
+      OpticFinder<?> entityF = DSL.namedChoice(this.entityName, inputEntityChoiceType);
+      Type<?> patchedEntityType = ExtraDataFixUtils.patchSubType(inputEntityType, inputEntityType, outputEntityType);
+      return this.fix(inputEntityType, outputEntityType, patchedEntityType, entityF);
    }
 
-   private <S, T, A> TypeRewriteRule fix(Type<S> var1, Type<T> var2, Type<?> var3, OpticFinder<A> var4) {
-      return this.fixTypeEverywhereTyped(this.name, var1, var2, (var4x) -> {
-         if (var4x.getOptional(var4).isEmpty()) {
-            return ExtraDataFixUtils.cast(var2, var4x);
+   private <S, T, A> TypeRewriteRule fix(final Type<S> inputEntityType, final Type<T> outputEntityType, final Type<?> patchedEntityType, final OpticFinder<A> choiceFinder) {
+      return this.fixTypeEverywhereTyped(this.name, inputEntityType, outputEntityType, (typed) -> {
+         if (typed.getOptional(choiceFinder).isEmpty()) {
+            return ExtraDataFixUtils.cast(outputEntityType, typed);
          } else {
-            Typed var5 = ExtraDataFixUtils.cast(var3, var4x);
-            return Util.writeAndReadTypedOrThrow(var5, var2, this::fix);
+            Typed<?> fakeTyped = ExtraDataFixUtils.cast(patchedEntityType, typed);
+            return Util.writeAndReadTypedOrThrow(fakeTyped, outputEntityType, this::fix);
          }
       });
    }
 
-   protected abstract <T> Dynamic<T> fix(Dynamic<T> var1);
+   protected abstract <T> Dynamic<T> fix(final Dynamic<T> input);
 }

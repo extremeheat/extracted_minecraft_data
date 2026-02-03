@@ -3,9 +3,9 @@ package net.minecraft;
 public class ReportedException extends RuntimeException {
    private final CrashReport report;
 
-   public ReportedException(CrashReport var1) {
+   public ReportedException(final CrashReport report) {
       super();
-      this.report = var1;
+      this.report = report;
    }
 
    public CrashReport getReport() {

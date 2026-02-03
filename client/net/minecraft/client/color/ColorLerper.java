@@ -15,24 +15,24 @@ public class ColorLerper {
       super();
    }
 
-   public static int getLerpedColor(Type var0, float var1) {
-      int var2 = Mth.floor(var1);
-      int var3 = var2 / var0.colorDuration;
-      int var4 = var0.colors.length;
-      int var5 = var3 % var4;
-      int var6 = (var3 + 1) % var4;
-      float var7 = ((float)(var2 % var0.colorDuration) + Mth.frac(var1)) / (float)var0.colorDuration;
-      int var8 = var0.getColor(var0.colors[var5]);
-      int var9 = var0.getColor(var0.colors[var6]);
-      return ARGB.srgbLerp(var7, var8, var9);
+   public static int getLerpedColor(final Type type, final float tick) {
+      int tickCount = Mth.floor(tick);
+      int value = tickCount / type.colorDuration;
+      int colorCount = type.colors.length;
+      int c1 = value % colorCount;
+      int c2 = (value + 1) % colorCount;
+      float subStep = ((float)(tickCount % type.colorDuration) + Mth.frac(tick)) / (float)type.colorDuration;
+      int color1 = type.getColor(type.colors[c1]);
+      int color2 = type.getColor(type.colors[c2]);
+      return ARGB.srgbLerp(subStep, color1, color2);
    }
 
-   static int getModifiedColor(DyeColor var0, float var1) {
-      if (var0 == DyeColor.WHITE) {
+   private static int getModifiedColor(final DyeColor color, final float brightness) {
+      if (color == DyeColor.WHITE) {
          return -1644826;
       } else {
-         int var2 = var0.getTextureDiffuseColor();
-         return ARGB.color(255, Mth.floor((float)ARGB.red(var2) * var1), Mth.floor((float)ARGB.green(var2) * var1), Mth.floor((float)ARGB.blue(var2) * var1));
+         int src = color.getTextureDiffuseColor();
+         return ARGB.color(255, Mth.floor((float)ARGB.red(src) * brightness), Mth.floor((float)ARGB.green(src) * brightness), Mth.floor((float)ARGB.blue(src) * brightness));
       }
    }
 
@@ -44,18 +44,18 @@ public class ColorLerper {
       SHEEP(25, DyeColor.values(), 0.75F),
       MUSIC_NOTE(30, ColorLerper.MUSIC_NOTE_COLORS, 1.25F);
 
-      final int colorDuration;
+      private final int colorDuration;
       private final Map<DyeColor, Integer> colorByDye;
-      final DyeColor[] colors;
+      private final DyeColor[] colors;
 
-      private Type(final int var3, final DyeColor[] var4, final float var5) {
-         this.colorDuration = var3;
-         this.colorByDye = Maps.newHashMap((Map)Arrays.stream(var4).collect(Collectors.toMap((var0) -> var0, (var1x) -> ColorLerper.getModifiedColor(var1x, var5))));
-         this.colors = var4;
+      private Type(final int colorDuration, final DyeColor[] colors, final float brightness) {
+         this.colorDuration = colorDuration;
+         this.colorByDye = Maps.newHashMap((Map)Arrays.stream(colors).collect(Collectors.toMap((d) -> d, (color) -> ColorLerper.getModifiedColor(color, brightness))));
+         this.colors = colors;
       }
 
-      public final int getColor(DyeColor var1) {
-         return (Integer)this.colorByDye.get(var1);
+      public final int getColor(final DyeColor dyeColor) {
+         return (Integer)this.colorByDye.get(dyeColor);
       }
 
       // $FF: synthetic method

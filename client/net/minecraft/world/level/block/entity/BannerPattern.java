@@ -11,15 +11,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFileCodec;
 
 public record BannerPattern(Identifier assetId, String translationKey) {
-   public static final Codec<BannerPattern> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Identifier.CODEC.fieldOf("asset_id").forGetter(BannerPattern::assetId), Codec.STRING.fieldOf("translation_key").forGetter(BannerPattern::translationKey)).apply(var0, BannerPattern::new));
+   public static final Codec<BannerPattern> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Identifier.CODEC.fieldOf("asset_id").forGetter(BannerPattern::assetId), Codec.STRING.fieldOf("translation_key").forGetter(BannerPattern::translationKey)).apply(i, BannerPattern::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, BannerPattern> DIRECT_STREAM_CODEC;
    public static final Codec<Holder<BannerPattern>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<BannerPattern>> STREAM_CODEC;
 
-   public BannerPattern(Identifier var1, String var2) {
+   public BannerPattern {
       super();
-      this.assetId = var1;
-      this.translationKey = var2;
    }
 
    static {

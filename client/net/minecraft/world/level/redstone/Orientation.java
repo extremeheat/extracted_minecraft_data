@@ -16,9 +16,9 @@ import net.minecraft.util.Util;
 public class Orientation {
    public static final StreamCodec<ByteBuf, Orientation> STREAM_CODEC = ByteBufCodecs.idMapper(Orientation::fromIndex, Orientation::getIndex);
    private static final Orientation[] ORIENTATIONS = (Orientation[])Util.make(() -> {
-      Orientation[] var0 = new Orientation[48];
-      generateContext(new Orientation(Direction.UP, Direction.NORTH, Orientation.SideBias.LEFT), var0);
-      return var0;
+      Orientation[] orientations = new Orientation[48];
+      generateContext(new Orientation(Direction.UP, Direction.NORTH, Orientation.SideBias.LEFT), orientations);
+      return orientations;
    });
    private final Direction up;
    private final Direction front;
@@ -32,49 +32,49 @@ public class Orientation {
    private final Map<Direction, Orientation> withUp = new EnumMap(Direction.class);
    private final Map<SideBias, Orientation> withSideBias = new EnumMap(SideBias.class);
 
-   private Orientation(Direction var1, Direction var2, SideBias var3) {
+   private Orientation(final Direction up, final Direction front, final SideBias sideBias) {
       super();
-      this.up = var1;
-      this.front = var2;
-      this.sideBias = var3;
-      this.index = generateIndex(var1, var2, var3);
-      Vec3i var4 = var2.getUnitVec3i().cross(var1.getUnitVec3i());
-      Direction var5 = Direction.getNearest(var4, (Direction)null);
-      Objects.requireNonNull(var5);
+      this.up = up;
+      this.front = front;
+      this.sideBias = sideBias;
+      this.index = generateIndex(up, front, sideBias);
+      Vec3i rightVector = front.getUnitVec3i().cross(up.getUnitVec3i());
+      Direction side = Direction.getNearest(rightVector, (Direction)null);
+      Objects.requireNonNull(side);
       if (this.sideBias == Orientation.SideBias.RIGHT) {
-         this.side = var5;
+         this.side = side;
       } else {
-         this.side = var5.getOpposite();
+         this.side = side.getOpposite();
       }
 
       this.neighbors = List.of(this.front.getOpposite(), this.front, this.side, this.side.getOpposite(), this.up.getOpposite(), this.up);
-      this.horizontalNeighbors = this.neighbors.stream().filter((var1x) -> var1x.getAxis() != this.up.getAxis()).toList();
-      this.verticalNeighbors = this.neighbors.stream().filter((var1x) -> var1x.getAxis() == this.up.getAxis()).toList();
+      this.horizontalNeighbors = this.neighbors.stream().filter((d) -> d.getAxis() != this.up.getAxis()).toList();
+      this.verticalNeighbors = this.neighbors.stream().filter((d) -> d.getAxis() == this.up.getAxis()).toList();
    }
 
-   public static Orientation of(Direction var0, Direction var1, SideBias var2) {
-      return ORIENTATIONS[generateIndex(var0, var1, var2)];
+   public static Orientation of(final Direction up, final Direction front, final SideBias sideBias) {
+      return ORIENTATIONS[generateIndex(up, front, sideBias)];
    }
 
-   public Orientation withUp(Direction var1) {
-      return (Orientation)this.withUp.get(var1);
+   public Orientation withUp(final Direction up) {
+      return (Orientation)this.withUp.get(up);
    }
 
-   public Orientation withFront(Direction var1) {
-      return (Orientation)this.withFront.get(var1);
+   public Orientation withFront(final Direction front) {
+      return (Orientation)this.withFront.get(front);
    }
 
-   public Orientation withFrontPreserveUp(Direction var1) {
-      return var1.getAxis() == this.up.getAxis() ? this : (Orientation)this.withFront.get(var1);
+   public Orientation withFrontPreserveUp(final Direction front) {
+      return front.getAxis() == this.up.getAxis() ? this : (Orientation)this.withFront.get(front);
    }
 
-   public Orientation withFrontAdjustSideBias(Direction var1) {
-      Orientation var2 = this.withFront(var1);
-      return this.front == var2.side ? var2.withMirror() : var2;
+   public Orientation withFrontAdjustSideBias(final Direction front) {
+      Orientation withFront = this.withFront(front);
+      return this.front == withFront.side ? withFront.withMirror() : withFront;
    }
 
-   public Orientation withSideBias(SideBias var1) {
-      return (Orientation)this.withSideBias.get(var1);
+   public Orientation withSideBias(final SideBias sideBias) {
+      return (Orientation)this.withSideBias.get(sideBias);
    }
 
    public Orientation withMirror() {
@@ -118,68 +118,68 @@ public class Orientation {
       return this.index;
    }
 
-   public static Orientation fromIndex(int var0) {
-      return ORIENTATIONS[var0];
+   public static Orientation fromIndex(final int index) {
+      return ORIENTATIONS[index];
    }
 
-   public static Orientation random(RandomSource var0) {
-      return (Orientation)Util.getRandom(ORIENTATIONS, var0);
+   public static Orientation random(final RandomSource rand) {
+      return (Orientation)Util.getRandom(ORIENTATIONS, rand);
    }
 
-   private static Orientation generateContext(Orientation var0, Orientation[] var1) {
-      if (var1[var0.getIndex()] != null) {
-         return var1[var0.getIndex()];
+   private static Orientation generateContext(final Orientation self, final Orientation[] lookup) {
+      if (lookup[self.getIndex()] != null) {
+         return lookup[self.getIndex()];
       } else {
-         var1[var0.getIndex()] = var0;
+         lookup[self.getIndex()] = self;
 
-         for(SideBias var5 : Orientation.SideBias.values()) {
-            var0.withSideBias.put(var5, generateContext(new Orientation(var0.up, var0.front, var5), var1));
+         for(SideBias sideBias : Orientation.SideBias.values()) {
+            self.withSideBias.put(sideBias, generateContext(new Orientation(self.up, self.front, sideBias), lookup));
          }
 
-         for(Direction var13 : Direction.values()) {
-            Direction var6 = var0.up;
-            if (var13 == var0.up) {
-               var6 = var0.front.getOpposite();
+         for(Direction facing : Direction.values()) {
+            Direction up = self.up;
+            if (facing == self.up) {
+               up = self.front.getOpposite();
             }
 
-            if (var13 == var0.up.getOpposite()) {
-               var6 = var0.front;
+            if (facing == self.up.getOpposite()) {
+               up = self.front;
             }
 
-            var0.withFront.put(var13, generateContext(new Orientation(var6, var13, var0.sideBias), var1));
+            self.withFront.put(facing, generateContext(new Orientation(up, facing, self.sideBias), lookup));
          }
 
-         for(Direction var14 : Direction.values()) {
-            Direction var15 = var0.front;
-            if (var14 == var0.front) {
-               var15 = var0.up.getOpposite();
+         for(Direction facing : Direction.values()) {
+            Direction front = self.front;
+            if (facing == self.front) {
+               front = self.up.getOpposite();
             }
 
-            if (var14 == var0.front.getOpposite()) {
-               var15 = var0.up;
+            if (facing == self.front.getOpposite()) {
+               front = self.up;
             }
 
-            var0.withUp.put(var14, generateContext(new Orientation(var14, var15, var0.sideBias), var1));
+            self.withUp.put(facing, generateContext(new Orientation(facing, front, self.sideBias), lookup));
          }
 
-         return var0;
+         return self;
       }
    }
 
    @VisibleForTesting
-   protected static int generateIndex(Direction var0, Direction var1, SideBias var2) {
-      if (var0.getAxis() == var1.getAxis()) {
+   protected static int generateIndex(final Direction up, final Direction front, final SideBias sideBias) {
+      if (up.getAxis() == front.getAxis()) {
          throw new IllegalStateException("Up-vector and front-vector can not be on the same axis");
       } else {
-         int var3;
-         if (var0.getAxis() == Direction.Axis.Y) {
-            var3 = var1.getAxis() == Direction.Axis.X ? 1 : 0;
+         int frontAxisKey;
+         if (up.getAxis() == Direction.Axis.Y) {
+            frontAxisKey = front.getAxis() == Direction.Axis.X ? 1 : 0;
          } else {
-            var3 = var1.getAxis() == Direction.Axis.Y ? 1 : 0;
+            frontAxisKey = front.getAxis() == Direction.Axis.Y ? 1 : 0;
          }
 
-         int var4 = var3 << 1 | var1.getAxisDirection().ordinal();
-         return ((var0.ordinal() << 2) + var4 << 1) + var2.ordinal();
+         int frontKey = frontAxisKey << 1 | front.getAxisDirection().ordinal();
+         return ((up.ordinal() << 2) + frontKey << 1) + sideBias.ordinal();
       }
    }
 
@@ -189,8 +189,8 @@ public class Orientation {
 
       private final String name;
 
-      private SideBias(final String var3) {
-         this.name = var3;
+      private SideBias(final String name) {
+         this.name = name;
       }
 
       public SideBias getOpposite() {

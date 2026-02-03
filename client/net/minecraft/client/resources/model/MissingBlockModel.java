@@ -25,9 +25,9 @@ public class MissingBlockModel {
    }
 
    public static UnbakedModel missingModel() {
-      BlockElementFace.UVs var0 = new BlockElementFace.UVs(0.0F, 0.0F, 16.0F, 16.0F);
-      Map var1 = Util.makeEnumMap(Direction.class, (var1x) -> new BlockElementFace(var1x, -1, "missingno", var0, Quadrant.R0));
-      BlockElement var2 = new BlockElement(new Vector3f(0.0F, 0.0F, 0.0F), new Vector3f(16.0F, 16.0F, 16.0F), var1);
-      return new BlockModel(new SimpleUnbakedGeometry(List.of(var2)), (UnbakedModel.GuiLight)null, (Boolean)null, ItemTransforms.NO_TRANSFORMS, (new TextureSlots.Data.Builder()).addReference("particle", "missingno").addTexture("missingno", new Material(TextureAtlas.LOCATION_BLOCKS, MissingTextureAtlasSprite.getLocation())).build(), (Identifier)null);
+      BlockElementFace.UVs fullFaceUv = new BlockElementFace.UVs(0.0F, 0.0F, 16.0F, 16.0F);
+      Map<Direction, BlockElementFace> faces = Util.<Direction, BlockElementFace>makeEnumMap(Direction.class, (direction) -> new BlockElementFace(direction, -1, "missingno", fullFaceUv, Quadrant.R0));
+      BlockElement cube = new BlockElement(new Vector3f(0.0F, 0.0F, 0.0F), new Vector3f(16.0F, 16.0F, 16.0F), faces);
+      return new BlockModel(new SimpleUnbakedGeometry(List.of(cube)), (UnbakedModel.GuiLight)null, (Boolean)null, ItemTransforms.NO_TRANSFORMS, (new TextureSlots.Data.Builder()).addReference("particle", "missingno").addTexture("missingno", new Material(TextureAtlas.LOCATION_BLOCKS, MissingTextureAtlasSprite.getLocation())).build(), (Identifier)null);
    }
 }

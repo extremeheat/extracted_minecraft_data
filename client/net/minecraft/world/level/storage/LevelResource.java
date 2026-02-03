@@ -15,9 +15,9 @@ public class LevelResource {
    public static final LevelResource ROOT = new LevelResource(".");
    private final String id;
 
-   private LevelResource(String var1) {
+   private LevelResource(final String id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    public String getId() {

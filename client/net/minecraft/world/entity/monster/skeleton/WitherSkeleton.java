@@ -29,8 +29,8 @@ import net.minecraft.world.level.pathfinder.PathType;
 import org.jspecify.annotations.Nullable;
 
 public class WitherSkeleton extends AbstractSkeleton {
-   public WitherSkeleton(EntityType<? extends WitherSkeleton> var1, Level var2) {
-      super(var1, var2);
+   public WitherSkeleton(final EntityType<? extends WitherSkeleton> type, final Level level) {
+      super(type, level);
       this.setPathfindingMalus(PathType.LAVA, 8.0F);
    }
 
@@ -43,7 +43,7 @@ public class WitherSkeleton extends AbstractSkeleton {
       return SoundEvents.WITHER_SKELETON_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.WITHER_SKELETON_HURT;
    }
 
@@ -59,43 +59,43 @@ public class WitherSkeleton extends AbstractSkeleton {
       return null;
    }
 
-   public boolean canHoldItem(ItemStack var1) {
-      return !var1.is(ItemTags.WITHER_SKELETON_DISLIKED_WEAPONS) && super.canHoldItem(var1);
+   public boolean canHoldItem(final ItemStack itemStack) {
+      return !itemStack.is(ItemTags.WITHER_SKELETON_DISLIKED_WEAPONS) && super.canHoldItem(itemStack);
    }
 
-   protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
+   protected void populateDefaultEquipmentSlots(final RandomSource random, final DifficultyInstance difficulty) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STONE_SWORD));
    }
 
-   protected void populateDefaultEquipmentEnchantments(ServerLevelAccessor var1, RandomSource var2, DifficultyInstance var3) {
+   protected void populateDefaultEquipmentEnchantments(final ServerLevelAccessor level, final RandomSource random, final DifficultyInstance localDifficulty) {
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      SpawnGroupData spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, groupData);
       this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4.0);
       this.reassessWeaponGoal();
-      return var5;
+      return spawnGroupData;
    }
 
-   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
-      if (!super.doHurtTarget(var1, var2)) {
+   public boolean doHurtTarget(final ServerLevel level, final Entity target) {
+      if (!super.doHurtTarget(level, target)) {
          return false;
       } else {
-         if (var2 instanceof LivingEntity) {
-            ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.WITHER, 200), this);
+         if (target instanceof LivingEntity) {
+            ((LivingEntity)target).addEffect(new MobEffectInstance(MobEffects.WITHER, 200), this);
          }
 
          return true;
       }
    }
 
-   protected AbstractArrow getArrow(ItemStack var1, float var2, @Nullable ItemStack var3) {
-      AbstractArrow var4 = super.getArrow(var1, var2, var3);
-      var4.igniteForSeconds(100.0F);
-      return var4;
+   protected AbstractArrow getArrow(final ItemStack projectile, final float power, final @Nullable ItemStack firingWeapon) {
+      AbstractArrow arrow = super.getArrow(projectile, power, firingWeapon);
+      arrow.igniteForSeconds(100.0F);
+      return arrow;
    }
 
-   public boolean canBeAffected(MobEffectInstance var1) {
-      return var1.is(MobEffects.WITHER) ? false : super.canBeAffected(var1);
+   public boolean canBeAffected(final MobEffectInstance newEffect) {
+      return newEffect.is(MobEffects.WITHER) ? false : super.canBeAffected(newEffect);
    }
 }

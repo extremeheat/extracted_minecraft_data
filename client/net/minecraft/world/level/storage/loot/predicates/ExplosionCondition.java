@@ -9,26 +9,26 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public class ExplosionCondition implements LootItemCondition {
    private static final ExplosionCondition INSTANCE = new ExplosionCondition();
-   public static final MapCodec<ExplosionCondition> CODEC;
+   public static final MapCodec<ExplosionCondition> MAP_CODEC;
 
    private ExplosionCondition() {
       super();
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.SURVIVES_EXPLOSION;
+   public MapCodec<ExplosionCondition> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Set.of(LootContextParams.EXPLOSION_RADIUS);
    }
 
-   public boolean test(LootContext var1) {
-      Float var2 = (Float)var1.getOptionalParameter(LootContextParams.EXPLOSION_RADIUS);
-      if (var2 != null) {
-         RandomSource var3 = var1.getRandom();
-         float var4 = 1.0F / var2;
-         return var3.nextFloat() <= var4;
+   public boolean test(final LootContext context) {
+      Float explosionRadius = (Float)context.getOptionalParameter(LootContextParams.EXPLOSION_RADIUS);
+      if (explosionRadius != null) {
+         RandomSource random = context.getRandom();
+         float probability = 1.0F / explosionRadius;
+         return random.nextFloat() <= probability;
       } else {
          return true;
       }
@@ -38,12 +38,7 @@ public class ExplosionCondition implements LootItemCondition {
       return () -> INSTANCE;
    }
 
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((LootContext)var1);
-   }
-
    static {
-      CODEC = MapCodec.unit(INSTANCE);
+      MAP_CODEC = MapCodec.unit(INSTANCE);
    }
 }

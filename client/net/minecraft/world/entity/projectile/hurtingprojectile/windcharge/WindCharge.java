@@ -26,16 +26,16 @@ public class WindCharge extends AbstractWindCharge {
    private static final float MIN_CAMERA_DISTANCE_SQUARED;
    private int noDeflectTicks = 5;
 
-   public WindCharge(EntityType<? extends AbstractWindCharge> var1, Level var2) {
-      super(var1, var2);
+   public WindCharge(final EntityType<? extends AbstractWindCharge> type, final Level level) {
+      super(type, level);
    }
 
-   public WindCharge(Player var1, Level var2, double var3, double var5, double var7) {
-      super(EntityType.WIND_CHARGE, var2, var1, var3, var5, var7);
+   public WindCharge(final Player player, final Level level, final double x, final double y, final double z) {
+      super(EntityType.WIND_CHARGE, level, player, x, y, z);
    }
 
-   public WindCharge(Level var1, double var2, double var4, double var6, Vec3 var8) {
-      super(EntityType.WIND_CHARGE, var2, var4, var6, var8, var1);
+   public WindCharge(final Level level, final double x, final double y, final double z, final Vec3 direction) {
+      super(EntityType.WIND_CHARGE, x, y, z, direction, level);
    }
 
    public void tick() {
@@ -46,16 +46,16 @@ public class WindCharge extends AbstractWindCharge {
 
    }
 
-   public boolean deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable EntityReference<Entity> var3, boolean var4) {
-      return this.noDeflectTicks > 0 ? false : super.deflect(var1, var2, var3, var4);
+   public boolean deflect(final ProjectileDeflection deflection, final @Nullable Entity deflectingEntity, final @Nullable EntityReference<Entity> newOwner, final boolean byAttack) {
+      return this.noDeflectTicks > 0 ? false : super.deflect(deflection, deflectingEntity, newOwner, byAttack);
    }
 
-   protected void explode(Vec3 var1) {
-      this.level().explode(this, (DamageSource)null, EXPLOSION_DAMAGE_CALCULATOR, var1.x(), var1.y(), var1.z(), 1.2F, false, Level.ExplosionInteraction.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, WeightedList.of(), SoundEvents.WIND_CHARGE_BURST);
+   protected void explode(final Vec3 position) {
+      this.level().explode(this, (DamageSource)null, EXPLOSION_DAMAGE_CALCULATOR, position.x(), position.y(), position.z(), 1.2F, false, Level.ExplosionInteraction.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, WeightedList.of(), SoundEvents.WIND_CHARGE_BURST);
    }
 
-   public boolean shouldRenderAtSqrDistance(double var1) {
-      return this.tickCount < 2 && var1 < (double)MIN_CAMERA_DISTANCE_SQUARED ? false : super.shouldRenderAtSqrDistance(var1);
+   public boolean shouldRenderAtSqrDistance(final double distance) {
+      return this.tickCount < 2 && distance < (double)MIN_CAMERA_DISTANCE_SQUARED ? false : super.shouldRenderAtSqrDistance(distance);
    }
 
    static {

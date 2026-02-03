@@ -27,9 +27,9 @@ public class ChatListener {
    private long messageDelay;
    private long previousMessageTime;
 
-   public ChatListener(Minecraft var1) {
+   public ChatListener(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
    public void tick() {
@@ -44,24 +44,24 @@ public class ChatListener {
                this.flushQueue();
             }
          } else {
-            Message var1;
+            Message message;
             if (Util.getMillis() >= this.previousMessageTime + this.messageDelay) {
                do {
-                  var1 = (Message)this.delayedMessageQueue.poll();
-               } while(var1 != null && !var1.accept());
+                  message = (Message)this.delayedMessageQueue.poll();
+               } while(message != null && !message.accept());
             }
          }
 
       }
    }
 
-   public void setMessageDelay(double var1) {
-      long var3 = (long)(var1 * 1000.0);
-      if (var3 == 0L && this.messageDelay > 0L && !this.minecraft.isPaused()) {
+   public void setMessageDelay(final double messageDelaySeconds) {
+      long messageDelay = (long)(messageDelaySeconds * 1000.0);
+      if (messageDelay == 0L && this.messageDelay > 0L && !this.minecraft.isPaused()) {
          this.flushQueue();
       }
 
-      this.messageDelay = var3;
+      this.messageDelay = messageDelay;
    }
 
    public void acceptNextDelayedMessage() {
@@ -78,90 +78,90 @@ public class ChatListener {
       this.previousMessageTime = 0L;
    }
 
-   public boolean removeFromDelayedMessageQueue(MessageSignature var1) {
-      return this.delayedMessageQueue.removeIf((var1x) -> var1.equals(var1x.signature()));
+   public boolean removeFromDelayedMessageQueue(final MessageSignature signature) {
+      return this.delayedMessageQueue.removeIf((message) -> signature.equals(message.signature()));
    }
 
    private boolean willDelayMessages() {
       return this.messageDelay > 0L && Util.getMillis() < this.previousMessageTime + this.messageDelay;
    }
 
-   private void handleMessage(@Nullable MessageSignature var1, BooleanSupplier var2) {
+   private void handleMessage(final @Nullable MessageSignature signature, final BooleanSupplier handler) {
       if (this.willDelayMessages()) {
-         this.delayedMessageQueue.add(new Message(var1, var2));
+         this.delayedMessageQueue.add(new Message(signature, handler));
       } else {
-         var2.getAsBoolean();
+         handler.getAsBoolean();
       }
 
    }
 
-   public void handlePlayerChatMessage(PlayerChatMessage var1, GameProfile var2, ChatType.Bound var3) {
-      boolean var4 = (Boolean)this.minecraft.options.onlyShowSecureChat().get();
-      PlayerChatMessage var5 = var4 ? var1.removeUnsignedContent() : var1;
-      Component var6 = var3.decorate(var5.decoratedContent());
-      Instant var7 = Instant.now();
-      this.handleMessage(var1.signature(), () -> {
-         boolean var7x = this.showMessageToPlayer(var3, var1, var6, var2, var4, var7);
-         ClientPacketListener var8 = this.minecraft.getConnection();
-         if (var8 != null && var1.signature() != null) {
-            var8.markMessageAsProcessed(var1.signature(), var7x);
+   public void handlePlayerChatMessage(final PlayerChatMessage message, final GameProfile sender, final ChatType.Bound boundChatType) {
+      boolean onlyShowSecure = (Boolean)this.minecraft.options.onlyShowSecureChat().get();
+      PlayerChatMessage displayedMessage = onlyShowSecure ? message.removeUnsignedContent() : message;
+      Component decoratedMessage = boundChatType.decorate(displayedMessage.decoratedContent());
+      Instant received = Instant.now();
+      this.handleMessage(message.signature(), () -> {
+         boolean wasShown = this.showMessageToPlayer(boundChatType, message, decoratedMessage, sender, onlyShowSecure, received);
+         ClientPacketListener connection = this.minecraft.getConnection();
+         if (connection != null && message.signature() != null) {
+            connection.markMessageAsProcessed(message.signature(), wasShown);
          }
 
-         return var7x;
+         return wasShown;
       });
    }
 
-   public void handleChatMessageError(UUID var1, @Nullable MessageSignature var2, ChatType.Bound var3) {
+   public void handleChatMessageError(final UUID senderId, final @Nullable MessageSignature invalidSignature, final ChatType.Bound boundChatType) {
       this.handleMessage((MessageSignature)null, () -> {
-         ClientPacketListener var4 = this.minecraft.getConnection();
-         if (var4 != null && var2 != null) {
-            var4.markMessageAsProcessed(var2, false);
+         ClientPacketListener connection = this.minecraft.getConnection();
+         if (connection != null && invalidSignature != null) {
+            connection.markMessageAsProcessed(invalidSignature, false);
          }
 
-         if (this.minecraft.isBlocked(var1)) {
+         if (this.minecraft.isBlocked(senderId)) {
             return false;
          } else {
-            Component var5 = var3.decorate(CHAT_VALIDATION_ERROR);
-            this.minecraft.gui.getChat().addMessage(var5, (MessageSignature)null, GuiMessageTag.chatError());
-            this.minecraft.getNarrator().saySystemChatQueued(var3.decorateNarration(CHAT_VALIDATION_ERROR));
+            Component decoratedMessage = boundChatType.decorate(CHAT_VALIDATION_ERROR);
+            this.minecraft.gui.getChat().addMessage(decoratedMessage, (MessageSignature)null, GuiMessageTag.chatError());
+            this.minecraft.getNarrator().saySystemChatQueued(boundChatType.decorateNarration(CHAT_VALIDATION_ERROR));
             this.previousMessageTime = Util.getMillis();
             return true;
          }
       });
    }
 
-   public void handleDisguisedChatMessage(Component var1, ChatType.Bound var2) {
-      Instant var3 = Instant.now();
+   public void handleDisguisedChatMessage(final Component message, final ChatType.Bound boundChatType) {
+      Instant received = Instant.now();
       this.handleMessage((MessageSignature)null, () -> {
-         Component var4 = var2.decorate(var1);
-         this.minecraft.gui.getChat().addMessage(var4);
-         this.narrateChatMessage(var2, var1);
-         this.logSystemMessage(var4, var3);
+         Component decoratedMessage = boundChatType.decorate(message);
+         this.minecraft.gui.getChat().addMessage(decoratedMessage);
+         this.narrateChatMessage(boundChatType, message);
+         this.logSystemMessage(decoratedMessage, received);
          this.previousMessageTime = Util.getMillis();
          return true;
       });
    }
 
-   private boolean showMessageToPlayer(ChatType.Bound var1, PlayerChatMessage var2, Component var3, GameProfile var4, boolean var5, Instant var6) {
-      ChatTrustLevel var7 = this.evaluateTrustLevel(var2, var3, var6);
-      if (var5 && var7.isNotSecure()) {
+   private boolean showMessageToPlayer(final ChatType.Bound boundChatType, final PlayerChatMessage message, final Component decoratedMessage, final GameProfile sender, final boolean onlyShowSecure, final Instant received) {
+      ChatTrustLevel trustLevel = this.evaluateTrustLevel(message, decoratedMessage, received);
+      if (onlyShowSecure && trustLevel.isNotSecure()) {
          return false;
-      } else if (!this.minecraft.isBlocked(var2.sender()) && !var2.isFullyFiltered()) {
-         GuiMessageTag var8 = var7.createTag(var2);
-         MessageSignature var9 = var2.signature();
-         FilterMask var10 = var2.filterMask();
-         if (var10.isEmpty()) {
-            this.minecraft.gui.getChat().addMessage(var3, var9, var8);
-            this.narrateChatMessage(var1, var2.decoratedContent());
+      } else if (!this.minecraft.isBlocked(message.sender()) && !message.isFullyFiltered()) {
+         GuiMessageTag tag = trustLevel.createTag(message);
+         MessageSignature signature = message.signature();
+         FilterMask filterMask = message.filterMask();
+         if (filterMask.isEmpty()) {
+            this.minecraft.gui.getChat().addMessage(decoratedMessage, signature, tag);
+            this.narrateChatMessage(boundChatType, message.decoratedContent());
          } else {
-            Component var11 = var10.applyWithFormatting(var2.signedContent());
-            if (var11 != null) {
-               this.minecraft.gui.getChat().addMessage(var1.decorate(var11), var9, var8);
-               this.narrateChatMessage(var1, var11);
+            Component filteredContent = filterMask.applyWithFormatting(message.signedContent());
+            if (filteredContent != null) {
+               this.minecraft.gui.getChat().addMessage(boundChatType.decorate(filteredContent), signature, tag);
+               this.narrateChatMessage(boundChatType, filteredContent);
             }
          }
 
-         this.logPlayerMessage(var2, var4, var7);
+         this.logPlayerMessage(message, sender, trustLevel);
          this.previousMessageTime = Util.getMillis();
          return true;
       } else {
@@ -169,48 +169,48 @@ public class ChatListener {
       }
    }
 
-   private void narrateChatMessage(ChatType.Bound var1, Component var2) {
-      this.minecraft.getNarrator().sayChatQueued(var1.decorateNarration(var2));
+   private void narrateChatMessage(final ChatType.Bound boundChatType, final Component content) {
+      this.minecraft.getNarrator().sayChatQueued(boundChatType.decorateNarration(content));
    }
 
-   private ChatTrustLevel evaluateTrustLevel(PlayerChatMessage var1, Component var2, Instant var3) {
-      return this.isSenderLocalPlayer(var1.sender()) ? ChatTrustLevel.SECURE : ChatTrustLevel.evaluate(var1, var2, var3);
+   private ChatTrustLevel evaluateTrustLevel(final PlayerChatMessage message, final Component decoratedMessage, final Instant received) {
+      return this.isSenderLocalPlayer(message.sender()) ? ChatTrustLevel.SECURE : ChatTrustLevel.evaluate(message, decoratedMessage, received);
    }
 
-   private void logPlayerMessage(PlayerChatMessage var1, GameProfile var2, ChatTrustLevel var3) {
-      ChatLog var4 = this.minecraft.getReportingContext().chatLog();
-      var4.push(LoggedChatMessage.player(var2, var1, var3));
+   private void logPlayerMessage(final PlayerChatMessage message, final GameProfile sender, final ChatTrustLevel trustLevel) {
+      ChatLog chatLog = this.minecraft.getReportingContext().chatLog();
+      chatLog.push(LoggedChatMessage.player(sender, message, trustLevel));
    }
 
-   private void logSystemMessage(Component var1, Instant var2) {
-      ChatLog var3 = this.minecraft.getReportingContext().chatLog();
-      var3.push(LoggedChatMessage.system(var1, var2));
+   private void logSystemMessage(final Component message, final Instant timeStamp) {
+      ChatLog chatLog = this.minecraft.getReportingContext().chatLog();
+      chatLog.push(LoggedChatMessage.system(message, timeStamp));
    }
 
-   public void handleSystemMessage(Component var1, boolean var2) {
-      if (!(Boolean)this.minecraft.options.hideMatchedNames().get() || !this.minecraft.isBlocked(this.guessChatUUID(var1))) {
-         if (var2) {
-            this.minecraft.gui.setOverlayMessage(var1, false);
-            this.minecraft.getNarrator().saySystemQueued(var1);
+   public void handleSystemMessage(final Component message, final boolean overlay) {
+      if (!(Boolean)this.minecraft.options.hideMatchedNames().get() || !this.minecraft.isBlocked(this.guessChatUUID(message))) {
+         if (overlay) {
+            this.minecraft.gui.setOverlayMessage(message, false);
+            this.minecraft.getNarrator().saySystemQueued(message);
          } else {
-            this.minecraft.gui.getChat().addMessage(var1);
-            this.logSystemMessage(var1, Instant.now());
-            this.minecraft.getNarrator().saySystemChatQueued(var1);
+            this.minecraft.gui.getChat().addMessage(message);
+            this.logSystemMessage(message, Instant.now());
+            this.minecraft.getNarrator().saySystemChatQueued(message);
          }
 
       }
    }
 
-   private UUID guessChatUUID(Component var1) {
-      String var2 = StringDecomposer.getPlainText(var1);
-      String var3 = StringUtils.substringBetween(var2, "<", ">");
-      return var3 == null ? Util.NIL_UUID : this.minecraft.getPlayerSocialManager().getDiscoveredUUID(var3);
+   private UUID guessChatUUID(final Component message) {
+      String noFormatMessage = StringDecomposer.getPlainText(message);
+      String possibleMention = StringUtils.substringBetween(noFormatMessage, "<", ">");
+      return possibleMention == null ? Util.NIL_UUID : this.minecraft.getPlayerSocialManager().getDiscoveredUUID(possibleMention);
    }
 
-   private boolean isSenderLocalPlayer(UUID var1) {
+   private boolean isSenderLocalPlayer(final UUID senderProfileId) {
       if (this.minecraft.isLocalServer() && this.minecraft.player != null) {
-         UUID var2 = this.minecraft.player.getGameProfile().id();
-         return var2.equals(var1);
+         UUID localProfileId = this.minecraft.player.getGameProfile().id();
+         return localProfileId.equals(senderProfileId);
       } else {
          return false;
       }
@@ -220,11 +220,9 @@ public class ChatListener {
       CHAT_VALIDATION_ERROR = Component.translatable("chat.validation_error").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC);
    }
 
-   static record Message(@Nullable MessageSignature signature, BooleanSupplier handler) {
-      Message(@Nullable MessageSignature var1, BooleanSupplier var2) {
+   private static record Message(@Nullable MessageSignature signature, BooleanSupplier handler) {
+      private Message {
          super();
-         this.signature = var1;
-         this.handler = var2;
       }
 
       public boolean accept() {

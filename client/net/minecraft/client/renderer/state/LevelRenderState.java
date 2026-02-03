@@ -17,6 +17,7 @@ public class LevelRenderState {
    public final WorldBorderRenderState worldBorderRenderState = new WorldBorderRenderState();
    public final SkyRenderState skyRenderState = new SkyRenderState();
    public long gameTime;
+   public int lastEntityRenderStateCount;
 
    public LevelRenderState() {
       super();

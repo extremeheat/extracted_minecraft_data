@@ -21,17 +21,17 @@ public class RecipeBookTabButton extends ImageButton {
    private float animationTime;
    private boolean selected = false;
 
-   public RecipeBookTabButton(int var1, int var2, RecipeBookComponent.TabInfo var3, Button.OnPress var4) {
-      super(var1, var2, 35, 27, SPRITES, var4);
-      this.tabInfo = var3;
+   public RecipeBookTabButton(final int x, final int y, final RecipeBookComponent.TabInfo tabInfo, final Button.OnPress onPress) {
+      super(x, y, 35, 27, SPRITES, onPress);
+      this.tabInfo = tabInfo;
    }
 
-   public void startAnimation(ClientRecipeBook var1, boolean var2) {
-      RecipeCollection.CraftableStatus var3 = var2 ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY;
+   public void startAnimation(final ClientRecipeBook recipeBook, final boolean isFiltering) {
+      RecipeCollection.CraftableStatus recipesToShow = isFiltering ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY;
 
-      for(RecipeCollection var6 : var1.getCollection(this.tabInfo.category())) {
-         for(RecipeDisplayEntry var8 : var6.getSelectedRecipes(var3)) {
-            if (var1.willHighlight(var8.id())) {
+      for(RecipeCollection recipeCollection : recipeBook.getCollection(this.tabInfo.category())) {
+         for(RecipeDisplayEntry recipe : recipeCollection.getSelectedRecipes(recipesToShow)) {
+            if (recipeBook.willHighlight(recipe.id())) {
                this.animationTime = 15.0F;
                return;
             }
@@ -40,44 +40,44 @@ public class RecipeBookTabButton extends ImageButton {
 
    }
 
-   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
       if (this.animationTime > 0.0F) {
-         float var5 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
-         var1.pose().pushMatrix();
-         var1.pose().translate((float)(this.getX() + 8), (float)(this.getY() + 12));
-         var1.pose().scale(1.0F, var5);
-         var1.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)));
+         float squeeze = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
+         graphics.pose().pushMatrix();
+         graphics.pose().translate((float)(this.getX() + 8), (float)(this.getY() + 12));
+         graphics.pose().scale(1.0F, squeeze);
+         graphics.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)));
       }
 
-      Identifier var7 = this.sprites.get(true, this.selected);
-      int var6 = this.getX();
+      Identifier sprite = this.sprites.get(true, this.selected);
+      int xPos = this.getX();
       if (this.selected) {
-         var6 -= 2;
+         xPos -= 2;
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7, var6, this.getY(), this.width, this.height);
-      this.renderIcon(var1);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, xPos, this.getY(), this.width, this.height);
+      this.renderIcon(graphics);
       if (this.animationTime > 0.0F) {
-         var1.pose().popMatrix();
-         this.animationTime -= var4;
+         graphics.pose().popMatrix();
+         this.animationTime -= a;
       }
 
    }
 
-   protected void handleCursor(GuiGraphics var1) {
+   protected void handleCursor(final GuiGraphics graphics) {
       if (!this.selected) {
-         super.handleCursor(var1);
+         super.handleCursor(graphics);
       }
 
    }
 
-   private void renderIcon(GuiGraphics var1) {
-      int var2 = this.selected ? -2 : 0;
+   private void renderIcon(final GuiGraphics graphics) {
+      int moveLeft = this.selected ? -2 : 0;
       if (this.tabInfo.secondaryIcon().isPresent()) {
-         var1.renderFakeItem(this.tabInfo.primaryIcon(), this.getX() + 3 + var2, this.getY() + 5);
-         var1.renderFakeItem((ItemStack)this.tabInfo.secondaryIcon().get(), this.getX() + 14 + var2, this.getY() + 5);
+         graphics.renderFakeItem(this.tabInfo.primaryIcon(), this.getX() + 3 + moveLeft, this.getY() + 5);
+         graphics.renderFakeItem((ItemStack)this.tabInfo.secondaryIcon().get(), this.getX() + 14 + moveLeft, this.getY() + 5);
       } else {
-         var1.renderFakeItem(this.tabInfo.primaryIcon(), this.getX() + 9 + var2, this.getY() + 5);
+         graphics.renderFakeItem(this.tabInfo.primaryIcon(), this.getX() + 9 + moveLeft, this.getY() + 5);
       }
 
    }
@@ -86,12 +86,12 @@ public class RecipeBookTabButton extends ImageButton {
       return this.tabInfo.category();
    }
 
-   public boolean updateVisibility(ClientRecipeBook var1) {
-      List var2 = var1.getCollection(this.tabInfo.category());
+   public boolean updateVisibility(final ClientRecipeBook book) {
+      List<RecipeCollection> collections = book.getCollection(this.tabInfo.category());
       this.visible = false;
 
-      for(RecipeCollection var4 : var2) {
-         if (var4.hasAnySelected()) {
+      for(RecipeCollection collection : collections) {
+         if (collection.hasAnySelected()) {
             this.visible = true;
             break;
          }

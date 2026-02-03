@@ -5,10 +5,10 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 
 public interface DebugScreenEntry {
-   void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4);
+   void display(DebugScreenDisplayer displayer, @Nullable Level serverOrClientLevel, @Nullable LevelChunk clientChunk, @Nullable LevelChunk serverChunk);
 
-   default boolean isAllowed(boolean var1) {
-      return !var1;
+   default boolean isAllowed(final boolean reducedDebugInfo) {
+      return !reducedDebugInfo;
    }
 
    default DebugEntryCategory category() {

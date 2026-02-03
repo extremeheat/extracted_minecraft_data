@@ -35,22 +35,22 @@ public class VaultBlock extends BaseEntityBlock {
       return CODEC;
    }
 
-   public VaultBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public VaultBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(STATE, VaultState.INACTIVE)).setValue(OMINOUS, false));
    }
 
-   public InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      if (!var1.isEmpty() && var2.getValue(STATE) == VaultState.ACTIVE) {
-         if (var3 instanceof ServerLevel) {
-            ServerLevel var8 = (ServerLevel)var3;
-            BlockEntity var10 = var8.getBlockEntity(var4);
+   public InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      if (!itemStack.isEmpty() && state.getValue(STATE) == VaultState.ACTIVE) {
+         if (level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
+            BlockEntity var10 = serverLevel.getBlockEntity(pos);
             if (!(var10 instanceof VaultBlockEntity)) {
                return InteractionResult.TRY_WITH_EMPTY_HAND;
             }
 
-            VaultBlockEntity var9 = (VaultBlockEntity)var10;
-            VaultBlockEntity.Server.tryInsertKey(var8, var4, var2, var9.getConfig(), var9.getServerData(), var9.getSharedData(), var5, var1);
+            VaultBlockEntity vault = (VaultBlockEntity)var10;
+            VaultBlockEntity.Server.tryInsertKey(serverLevel, pos, state, vault.getConfig(), vault.getServerData(), vault.getSharedData(), player, itemStack);
          }
 
          return InteractionResult.SUCCESS_SERVER;
@@ -59,35 +59,35 @@ public class VaultBlock extends BaseEntityBlock {
       }
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new VaultBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos pos, final BlockState state) {
+      return new VaultBlockEntity(pos, state);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, STATE, OMINOUS);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, STATE, OMINOUS);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
       BlockEntityTicker var10000;
-      if (var1 instanceof ServerLevel var4) {
-         var10000 = createTickerHelper(var3, BlockEntityType.VAULT, (var1x, var2x, var3x, var4x) -> VaultBlockEntity.Server.tick(var4, var2x, var3x, var4x.getConfig(), var4x.getServerData(), var4x.getSharedData()));
+      if (level instanceof ServerLevel serverLevel) {
+         var10000 = createTickerHelper(type, BlockEntityType.VAULT, (innerLevel, pos, state, entity) -> VaultBlockEntity.Server.tick(serverLevel, pos, state, entity.getConfig(), entity.getServerData(), entity.getSharedData()));
       } else {
-         var10000 = createTickerHelper(var3, BlockEntityType.VAULT, (var0, var1x, var2x, var3x) -> VaultBlockEntity.Client.tick(var0, var1x, var2x, var3x.getClientData(), var3x.getSharedData()));
+         var10000 = createTickerHelper(type, BlockEntityType.VAULT, (innerLevel, pos, state, entity) -> VaultBlockEntity.Client.tick(innerLevel, pos, state, entity.getClientData(), entity.getSharedData()));
       }
 
       return var10000;
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
    }
 
-   public BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   public BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   public BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   public BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
    static {

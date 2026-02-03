@@ -18,18 +18,18 @@ public class WebBlock extends Block {
       return CODEC;
    }
 
-   public WebBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public WebBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      Vec3 var7 = new Vec3(0.25, 0.05000000074505806, 0.25);
-      if (var4 instanceof LivingEntity var8) {
-         if (var8.hasEffect(MobEffects.WEAVING)) {
-            var7 = new Vec3(0.5, 0.25, 0.5);
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      Vec3 speedMultiplier = new Vec3(0.25, 0.05000000074505806, 0.25);
+      if (entity instanceof LivingEntity livingEntity) {
+         if (livingEntity.hasEffect(MobEffects.WEAVING)) {
+            speedMultiplier = new Vec3(0.5, 0.25, 0.5);
          }
       }
 
-      var4.makeStuckInBlock(var1, var7);
+      entity.makeStuckInBlock(state, speedMultiplier);
    }
 }

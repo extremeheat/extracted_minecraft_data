@@ -11,36 +11,36 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
 public interface BonemealableBlock {
-   boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3);
+   boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state);
 
-   boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4);
+   boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state);
 
-   void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4);
+   void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state);
 
-   static boolean hasSpreadableNeighbourPos(LevelReader var0, BlockPos var1, BlockState var2) {
-      return getSpreadableNeighbourPos(Direction.Plane.HORIZONTAL.stream().toList(), var0, var1, var2).isPresent();
+   static boolean hasSpreadableNeighbourPos(final LevelReader level, final BlockPos pos, final BlockState blockToPlace) {
+      return getSpreadableNeighbourPos(Direction.Plane.HORIZONTAL.stream().toList(), level, pos, blockToPlace).isPresent();
    }
 
-   static Optional<BlockPos> findSpreadableNeighbourPos(Level var0, BlockPos var1, BlockState var2) {
-      return getSpreadableNeighbourPos(Direction.Plane.HORIZONTAL.shuffledCopy(var0.random), var0, var1, var2);
+   static Optional<BlockPos> findSpreadableNeighbourPos(final Level level, final BlockPos pos, final BlockState blockToPlace) {
+      return getSpreadableNeighbourPos(Direction.Plane.HORIZONTAL.shuffledCopy(level.getRandom()), level, pos, blockToPlace);
    }
 
-   private static Optional<BlockPos> getSpreadableNeighbourPos(List<Direction> var0, LevelReader var1, BlockPos var2, BlockState var3) {
-      for(Direction var5 : var0) {
-         BlockPos var6 = var2.relative(var5);
-         if (var1.isEmptyBlock(var6) && var3.canSurvive(var1, var6)) {
-            return Optional.of(var6);
+   private static Optional<BlockPos> getSpreadableNeighbourPos(final List<Direction> directions, final LevelReader level, final BlockPos pos, final BlockState blockToPlace) {
+      for(Direction direction : directions) {
+         BlockPos neighbourPos = pos.relative(direction);
+         if (level.isEmptyBlock(neighbourPos) && blockToPlace.canSurvive(level, neighbourPos)) {
+            return Optional.of(neighbourPos);
          }
       }
 
       return Optional.empty();
    }
 
-   default BlockPos getParticlePos(BlockPos var1) {
+   default BlockPos getParticlePos(final BlockPos blockPos) {
       BlockPos var10000;
       switch (this.getType().ordinal()) {
-         case 0 -> var10000 = var1.above();
-         case 1 -> var10000 = var1;
+         case 0 -> var10000 = blockPos.above();
+         case 1 -> var10000 = blockPos;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 

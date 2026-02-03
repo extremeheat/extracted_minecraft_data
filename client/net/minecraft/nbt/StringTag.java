@@ -8,23 +8,23 @@ import java.util.Optional;
 public record StringTag(String value) implements PrimitiveTag {
    private static final int SELF_SIZE_IN_BYTES = 36;
    public static final TagType<StringTag> TYPE = new TagType.VariableSize<StringTag>() {
-      public StringTag load(DataInput var1, NbtAccounter var2) throws IOException {
-         return StringTag.valueOf(readAccounted(var1, var2));
+      public StringTag load(final DataInput input, final NbtAccounter accounter) throws IOException {
+         return StringTag.valueOf(readAccounted(input, accounter));
       }
 
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
-         return var2.visit(readAccounted(var1, var3));
+      public StreamTagVisitor.ValueResult parse(final DataInput input, final StreamTagVisitor output, final NbtAccounter accounter) throws IOException {
+         return output.visit(readAccounted(input, accounter));
       }
 
-      private static String readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
-         var1.accountBytes(36L);
-         String var2 = var0.readUTF();
-         var1.accountBytes(2L, (long)var2.length());
-         return var2;
+      private static String readAccounted(final DataInput input, final NbtAccounter accounter) throws IOException {
+         accounter.accountBytes(36L);
+         String data = input.readUTF();
+         accounter.accountBytes(2L, (long)data.length());
+         return data;
       }
 
-      public void skip(DataInput var1, NbtAccounter var2) throws IOException {
-         StringTag.skipString(var1);
+      public void skip(final DataInput input, final NbtAccounter accounter) throws IOException {
+         StringTag.skipString(input);
       }
 
       public String getName() {
@@ -33,11 +33,6 @@ public record StringTag(String value) implements PrimitiveTag {
 
       public String getPrettyName() {
          return "TAG_String";
-      }
-
-      // $FF: synthetic method
-      public Tag load(final DataInput var1, final NbtAccounter var2) throws IOException {
-         return this.load(var1, var2);
       }
    };
    private static final StringTag EMPTY = new StringTag("");
@@ -50,21 +45,21 @@ public record StringTag(String value) implements PrimitiveTag {
    @Deprecated(
       forRemoval = true
    )
-   public StringTag(String var1) {
+   public StringTag(String value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
-   public static void skipString(DataInput var0) throws IOException {
-      var0.skipBytes(var0.readUnsignedShort());
+   public static void skipString(final DataInput input) throws IOException {
+      input.skipBytes(input.readUnsignedShort());
    }
 
-   public static StringTag valueOf(String var0) {
-      return var0.isEmpty() ? EMPTY : new StringTag(var0);
+   public static StringTag valueOf(final String data) {
+      return data.isEmpty() ? EMPTY : new StringTag(data);
    }
 
-   public void write(DataOutput var1) throws IOException {
-      var1.writeUTF(this.value);
+   public void write(final DataOutput output) throws IOException {
+      output.writeUTF(this.value);
    }
 
    public int sizeInBytes() {
@@ -80,9 +75,9 @@ public record StringTag(String value) implements PrimitiveTag {
    }
 
    public String toString() {
-      StringTagVisitor var1 = new StringTagVisitor();
-      var1.visitString(this);
-      return var1.build();
+      StringTagVisitor visitor = new StringTagVisitor();
+      visitor.visitString(this);
+      return visitor.build();
    }
 
    public StringTag copy() {
@@ -93,89 +88,84 @@ public record StringTag(String value) implements PrimitiveTag {
       return Optional.of(this.value);
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitString(this);
+   public void accept(final TagVisitor visitor) {
+      visitor.visitString(this);
    }
 
-   public static String quoteAndEscape(String var0) {
-      StringBuilder var1 = new StringBuilder();
-      quoteAndEscape(var0, var1);
-      return var1.toString();
+   public static String quoteAndEscape(final String input) {
+      StringBuilder result = new StringBuilder();
+      quoteAndEscape(input, result);
+      return result.toString();
    }
 
-   public static void quoteAndEscape(String var0, StringBuilder var1) {
-      int var2 = var1.length();
-      var1.append(' ');
-      int var3 = 0;
+   public static void quoteAndEscape(final String input, final StringBuilder result) {
+      int quoteMarkIndex = result.length();
+      result.append(' ');
+      char quote = 0;
 
-      for(int var4 = 0; var4 < var0.length(); ++var4) {
-         char var5 = var0.charAt(var4);
-         if (var5 == '\\') {
-            var1.append("\\\\");
-         } else if (var5 != '"' && var5 != '\'') {
-            String var6 = SnbtGrammar.escapeControlCharacters(var5);
-            if (var6 != null) {
-               var1.append('\\');
-               var1.append(var6);
+      for(int i = 0; i < input.length(); ++i) {
+         char c = input.charAt(i);
+         if (c == '\\') {
+            result.append("\\\\");
+         } else if (c != '"' && c != '\'') {
+            String escaped = SnbtGrammar.escapeControlCharacters(c);
+            if (escaped != null) {
+               result.append('\\');
+               result.append(escaped);
             } else {
-               var1.append(var5);
+               result.append(c);
             }
          } else {
-            if (var3 == 0) {
-               var3 = var5 == '"' ? 39 : 34;
+            if (quote == 0) {
+               quote = (char)(c == '"' ? 39 : 34);
             }
 
-            if (var3 == var5) {
-               var1.append('\\');
+            if (quote == c) {
+               result.append('\\');
             }
 
-            var1.append(var5);
+            result.append(c);
          }
       }
 
-      if (var3 == 0) {
-         var3 = 34;
+      if (quote == 0) {
+         quote = '"';
       }
 
-      var1.setCharAt(var2, (char)var3);
-      var1.append((char)var3);
+      result.setCharAt(quoteMarkIndex, quote);
+      result.append(quote);
    }
 
-   public static String escapeWithoutQuotes(String var0) {
-      StringBuilder var1 = new StringBuilder();
-      escapeWithoutQuotes(var0, var1);
-      return var1.toString();
+   public static String escapeWithoutQuotes(final String input) {
+      StringBuilder result = new StringBuilder();
+      escapeWithoutQuotes(input, result);
+      return result.toString();
    }
 
-   public static void escapeWithoutQuotes(String var0, StringBuilder var1) {
-      for(int var2 = 0; var2 < var0.length(); ++var2) {
-         char var3 = var0.charAt(var2);
-         switch (var3) {
+   public static void escapeWithoutQuotes(final String input, final StringBuilder result) {
+      for(int i = 0; i < input.length(); ++i) {
+         char c = input.charAt(i);
+         switch (c) {
             case '"':
             case '\'':
             case '\\':
-               var1.append('\\');
-               var1.append(var3);
+               result.append('\\');
+               result.append(c);
                break;
             default:
-               String var4 = SnbtGrammar.escapeControlCharacters(var3);
-               if (var4 != null) {
-                  var1.append('\\');
-                  var1.append(var4);
+               String escaped = SnbtGrammar.escapeControlCharacters(c);
+               if (escaped != null) {
+                  result.append('\\');
+                  result.append(escaped);
                } else {
-                  var1.append(var3);
+                  result.append(c);
                }
          }
       }
 
    }
 
-   public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      return var1.visit(this.value);
-   }
-
-   // $FF: synthetic method
-   public Tag copy() {
-      return this.copy();
+   public StreamTagVisitor.ValueResult accept(final StreamTagVisitor visitor) {
+      return visitor.visit(this.value);
    }
 }

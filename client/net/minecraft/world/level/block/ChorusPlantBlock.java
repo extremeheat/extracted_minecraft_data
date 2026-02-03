@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -22,70 +23,70 @@ public class ChorusPlantBlock extends PipeBlock {
       return CODEC;
    }
 
-   protected ChorusPlantBlock(BlockBehaviour.Properties var1) {
-      super(10.0F, var1);
+   protected ChorusPlantBlock(final BlockBehaviour.Properties properties) {
+      super(10.0F, properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(UP, false)).setValue(DOWN, false));
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return getStateWithConnections(var1.getLevel(), var1.getClickedPos(), this.defaultBlockState());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return getStateWithConnections(context.getLevel(), context.getClickedPos(), this.defaultBlockState());
    }
 
-   public static BlockState getStateWithConnections(BlockGetter var0, BlockPos var1, BlockState var2) {
-      BlockState var3 = var0.getBlockState(var1.below());
-      BlockState var4 = var0.getBlockState(var1.above());
-      BlockState var5 = var0.getBlockState(var1.north());
-      BlockState var6 = var0.getBlockState(var1.east());
-      BlockState var7 = var0.getBlockState(var1.south());
-      BlockState var8 = var0.getBlockState(var1.west());
-      Block var9 = var2.getBlock();
-      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)var2.trySetValue(DOWN, var3.is(var9) || var3.is(Blocks.CHORUS_FLOWER) || var3.is(Blocks.END_STONE))).trySetValue(UP, var4.is(var9) || var4.is(Blocks.CHORUS_FLOWER))).trySetValue(NORTH, var5.is(var9) || var5.is(Blocks.CHORUS_FLOWER))).trySetValue(EAST, var6.is(var9) || var6.is(Blocks.CHORUS_FLOWER))).trySetValue(SOUTH, var7.is(var9) || var7.is(Blocks.CHORUS_FLOWER))).trySetValue(WEST, var8.is(var9) || var8.is(Blocks.CHORUS_FLOWER));
+   public static BlockState getStateWithConnections(final BlockGetter level, final BlockPos pos, final BlockState defaultState) {
+      BlockState down = level.getBlockState(pos.below());
+      BlockState up = level.getBlockState(pos.above());
+      BlockState north = level.getBlockState(pos.north());
+      BlockState east = level.getBlockState(pos.east());
+      BlockState south = level.getBlockState(pos.south());
+      BlockState west = level.getBlockState(pos.west());
+      Block block = defaultState.getBlock();
+      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)defaultState.trySetValue(DOWN, down.is(block) || down.is(Blocks.CHORUS_FLOWER) || down.is(BlockTags.SUPPORTS_CHORUS_PLANT))).trySetValue(UP, up.is(block) || up.is(Blocks.CHORUS_FLOWER))).trySetValue(NORTH, north.is(block) || north.is(Blocks.CHORUS_FLOWER))).trySetValue(EAST, east.is(block) || east.is(Blocks.CHORUS_FLOWER))).trySetValue(SOUTH, south.is(block) || south.is(Blocks.CHORUS_FLOWER))).trySetValue(WEST, west.is(block) || west.is(Blocks.CHORUS_FLOWER));
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (!var1.canSurvive(var2, var4)) {
-         var3.scheduleTick(var4, (Block)this, 1);
-         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (!state.canSurvive(level, pos)) {
+         ticks.scheduleTick(pos, (Block)this, 1);
+         return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
       } else {
-         boolean var9 = var7.is(this) || var7.is(Blocks.CHORUS_FLOWER) || var5 == Direction.DOWN && var7.is(Blocks.END_STONE);
-         return (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var5), var9);
+         boolean connect = neighbourState.is(this) || neighbourState.is(Blocks.CHORUS_FLOWER) || directionToNeighbour == Direction.DOWN && neighbourState.is(BlockTags.SUPPORTS_CHORUS_PLANT);
+         return (BlockState)state.setValue((Property)PROPERTY_BY_DIRECTION.get(directionToNeighbour), connect);
       }
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!var1.canSurvive(var2, var3)) {
-         var2.destroyBlock(var3, true);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!state.canSurvive(level, pos)) {
+         level.destroyBlock(pos, true);
       }
 
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3.below());
-      boolean var5 = !var2.getBlockState(var3.above()).isAir() && !var4.isAir();
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockState belowState = level.getBlockState(pos.below());
+      boolean blockAboveOrBelow = !level.getBlockState(pos.above()).isAir() && !belowState.isAir();
 
-      for(Direction var7 : Direction.Plane.HORIZONTAL) {
-         BlockPos var8 = var3.relative(var7);
-         BlockState var9 = var2.getBlockState(var8);
-         if (var9.is(this)) {
-            if (var5) {
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         BlockPos neighborPos = pos.relative(direction);
+         BlockState neighborState = level.getBlockState(neighborPos);
+         if (neighborState.is(this)) {
+            if (blockAboveOrBelow) {
                return false;
             }
 
-            BlockState var10 = var2.getBlockState(var8.below());
-            if (var10.is(this) || var10.is(Blocks.END_STONE)) {
+            BlockState below = level.getBlockState(neighborPos.below());
+            if (below.is(this) || below.is(BlockTags.SUPPORTS_CHORUS_PLANT)) {
                return true;
             }
          }
       }
 
-      return var4.is(this) || var4.is(Blocks.END_STONE);
+      return belowState.is(this) || belowState.is(BlockTags.SUPPORTS_CHORUS_PLANT);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(NORTH, EAST, SOUTH, WEST, UP, DOWN);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(NORTH, EAST, SOUTH, WEST, UP, DOWN);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 }

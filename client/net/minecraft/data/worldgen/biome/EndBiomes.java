@@ -16,34 +16,34 @@ public class EndBiomes {
       super();
    }
 
-   private static Biome baseEndBiome(BiomeGenerationSettings.Builder var0) {
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.endSpawns(var1);
-      return (new Biome.BiomeBuilder()).hasPrecipitation(false).temperature(0.5F).downfall(0.5F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4159204).build()).mobSpawnSettings(var1.build()).generationSettings(var0.build()).build();
+   private static Biome baseEndBiome(final BiomeGenerationSettings.Builder generation) {
+      MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.endSpawns(mobs);
+      return (new Biome.BiomeBuilder()).hasPrecipitation(false).temperature(0.5F).downfall(0.5F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4159204).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome endBarrens(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
-      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
-      return baseEndBiome(var2);
+   public static Biome endBarrens(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+      BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
+      return baseEndBiome(generation);
    }
 
-   public static Biome theEnd(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
-      BiomeGenerationSettings.Builder var2 = (new BiomeGenerationSettings.Builder(var0, var1)).addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, EndPlacements.END_SPIKE).addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, EndPlacements.END_PLATFORM);
-      return baseEndBiome(var2);
+   public static Biome theEnd(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+      BiomeGenerationSettings.Builder generation = (new BiomeGenerationSettings.Builder(placedFeatures, carvers)).addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, EndPlacements.END_SPIKE).addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, EndPlacements.END_PLATFORM);
+      return baseEndBiome(generation);
    }
 
-   public static Biome endMidlands(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
-      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
-      return baseEndBiome(var2);
+   public static Biome endMidlands(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+      BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
+      return baseEndBiome(generation);
    }
 
-   public static Biome endHighlands(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
-      BiomeGenerationSettings.Builder var2 = (new BiomeGenerationSettings.Builder(var0, var1)).addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, EndPlacements.END_GATEWAY_RETURN).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, EndPlacements.CHORUS_PLANT);
-      return baseEndBiome(var2);
+   public static Biome endHighlands(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+      BiomeGenerationSettings.Builder generation = (new BiomeGenerationSettings.Builder(placedFeatures, carvers)).addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, EndPlacements.END_GATEWAY_RETURN).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, EndPlacements.CHORUS_PLANT);
+      return baseEndBiome(generation);
    }
 
-   public static Biome smallEndIslands(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
-      BiomeGenerationSettings.Builder var2 = (new BiomeGenerationSettings.Builder(var0, var1)).addFeature(GenerationStep.Decoration.RAW_GENERATION, EndPlacements.END_ISLAND_DECORATED);
-      return baseEndBiome(var2);
+   public static Biome smallEndIslands(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+      BiomeGenerationSettings.Builder generation = (new BiomeGenerationSettings.Builder(placedFeatures, carvers)).addFeature(GenerationStep.Decoration.RAW_GENERATION, EndPlacements.END_ISLAND_DECORATED);
+      return baseEndBiome(generation);
    }
 }

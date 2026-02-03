@@ -13,11 +13,11 @@ public class PingPacketTypes {
       super();
    }
 
-   private static <T extends Packet<ClientPongPacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(var0));
+   private static <T extends Packet<ClientPongPacketListener>> PacketType<T> createClientbound(final String id) {
+      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(id));
    }
 
-   private static <T extends Packet<ServerPingPacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(var0));
+   private static <T extends Packet<ServerPingPacketListener>> PacketType<T> createServerbound(final String id) {
+      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(id));
    }
 }

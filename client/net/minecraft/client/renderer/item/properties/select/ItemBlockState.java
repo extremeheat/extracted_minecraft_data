@@ -15,14 +15,13 @@ public record ItemBlockState(String property) implements SelectItemModelProperty
    public static final PrimitiveCodec<String> VALUE_CODEC;
    public static final SelectItemModelProperty.Type<ItemBlockState, String> TYPE;
 
-   public ItemBlockState(String var1) {
+   public ItemBlockState {
       super();
-      this.property = var1;
    }
 
-   public @Nullable String get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      BlockItemStateProperties var6 = (BlockItemStateProperties)var1.get(DataComponents.BLOCK_STATE);
-      return var6 == null ? null : (String)var6.properties().get(this.property);
+   public @Nullable String get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      BlockItemStateProperties blockItemStateProperties = (BlockItemStateProperties)itemStack.get(DataComponents.BLOCK_STATE);
+      return blockItemStateProperties == null ? null : (String)blockItemStateProperties.properties().get(this.property);
    }
 
    public SelectItemModelProperty.Type<ItemBlockState, String> type() {
@@ -33,13 +32,8 @@ public record ItemBlockState(String property) implements SelectItemModelProperty
       return VALUE_CODEC;
    }
 
-   // $FF: synthetic method
-   public @Nullable Object get(final ItemStack var1, final @Nullable ClientLevel var2, final @Nullable LivingEntity var3, final int var4, final ItemDisplayContext var5) {
-      return this.get(var1, var2, var3, var4, var5);
-   }
-
    static {
       VALUE_CODEC = Codec.STRING;
-      TYPE = SelectItemModelProperty.Type.<ItemBlockState, String>create(RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("block_state_property").forGetter(ItemBlockState::property)).apply(var0, ItemBlockState::new)), VALUE_CODEC);
+      TYPE = SelectItemModelProperty.Type.<ItemBlockState, String>create(RecordCodecBuilder.mapCodec((i) -> i.group(Codec.STRING.fieldOf("block_state_property").forGetter(ItemBlockState::property)).apply(i, ItemBlockState::new)), VALUE_CODEC);
    }
 }

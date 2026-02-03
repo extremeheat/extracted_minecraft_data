@@ -16,19 +16,19 @@ public interface SegmentableBlock {
    int MAX_SEGMENT = 4;
    IntegerProperty AMOUNT = BlockStateProperties.SEGMENT_AMOUNT;
 
-   default Function<BlockState, VoxelShape> getShapeCalculator(EnumProperty<Direction> var1, IntegerProperty var2) {
-      Map var3 = Shapes.rotateHorizontal(Block.box(0.0, 0.0, 0.0, 8.0, this.getShapeHeight(), 8.0));
-      return (var3x) -> {
-         VoxelShape var4 = Shapes.empty();
-         Direction var5 = (Direction)var3x.getValue(var1);
-         int var6 = (Integer)var3x.getValue(var2);
+   default Function<BlockState, VoxelShape> getShapeCalculator(final EnumProperty<Direction> facing, final IntegerProperty amount) {
+      Map<Direction, VoxelShape> shapes = Shapes.rotateHorizontal(Block.box(0.0, 0.0, 0.0, 8.0, this.getShapeHeight(), 8.0));
+      return (state) -> {
+         VoxelShape shape = Shapes.empty();
+         Direction direction = (Direction)state.getValue(facing);
+         int count = (Integer)state.getValue(amount);
 
-         for(int var7 = 0; var7 < var6; ++var7) {
-            var4 = Shapes.or(var4, (VoxelShape)var3.get(var5));
-            var5 = var5.getCounterClockWise();
+         for(int i = 0; i < count; ++i) {
+            shape = Shapes.or(shape, (VoxelShape)shapes.get(direction));
+            direction = direction.getCounterClockWise();
          }
 
-         return var4.singleEncompassing();
+         return shape.singleEncompassing();
       };
    }
 
@@ -40,12 +40,12 @@ public interface SegmentableBlock {
       return 1.0;
    }
 
-   default boolean canBeReplaced(BlockState var1, BlockPlaceContext var2, IntegerProperty var3) {
-      return !var2.isSecondaryUseActive() && var2.getItemInHand().is(var1.getBlock().asItem()) && (Integer)var1.getValue(var3) < 4;
+   default boolean canBeReplaced(final BlockState state, final BlockPlaceContext context, final IntegerProperty segment) {
+      return !context.isSecondaryUseActive() && context.getItemInHand().is(state.getBlock().asItem()) && (Integer)state.getValue(segment) < 4;
    }
 
-   default BlockState getStateForPlacement(BlockPlaceContext var1, Block var2, IntegerProperty var3, EnumProperty<Direction> var4) {
-      BlockState var5 = var1.getLevel().getBlockState(var1.getClickedPos());
-      return var5.is(var2) ? (BlockState)var5.setValue(var3, Math.min(4, (Integer)var5.getValue(var3) + 1)) : (BlockState)var2.defaultBlockState().setValue(var4, var1.getHorizontalDirection().getOpposite());
+   default BlockState getStateForPlacement(final BlockPlaceContext context, final Block block, final IntegerProperty segment, final EnumProperty<Direction> facing) {
+      BlockState state = context.getLevel().getBlockState(context.getClickedPos());
+      return state.is(block) ? (BlockState)state.setValue(segment, Math.min(4, (Integer)state.getValue(segment) + 1)) : (BlockState)block.defaultBlockState().setValue(facing, context.getHorizontalDirection().getOpposite());
    }
 }

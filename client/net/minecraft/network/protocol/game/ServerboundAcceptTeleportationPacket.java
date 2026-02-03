@@ -9,26 +9,26 @@ public class ServerboundAcceptTeleportationPacket implements Packet<ServerGamePa
    public static final StreamCodec<FriendlyByteBuf, ServerboundAcceptTeleportationPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundAcceptTeleportationPacket>codec(ServerboundAcceptTeleportationPacket::write, ServerboundAcceptTeleportationPacket::new);
    private final int id;
 
-   public ServerboundAcceptTeleportationPacket(int var1) {
+   public ServerboundAcceptTeleportationPacket(final int id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
-   private ServerboundAcceptTeleportationPacket(FriendlyByteBuf var1) {
+   private ServerboundAcceptTeleportationPacket(final FriendlyByteBuf input) {
       super();
-      this.id = var1.readVarInt();
+      this.id = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.id);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.id);
    }
 
    public PacketType<ServerboundAcceptTeleportationPacket> type() {
       return GamePacketTypes.SERVERBOUND_ACCEPT_TELEPORTATION;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleAcceptTeleportPacket(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleAcceptTeleportPacket(this);
    }
 
    public int getId() {

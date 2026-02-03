@@ -16,40 +16,36 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
 public record ItemCost(Holder<Item> item, int count, DataComponentExactPredicate components, ItemStack itemStack) {
-   public static final Codec<ItemCost> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemCost::item), ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemCost::count), DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(ItemCost::components)).apply(var0, ItemCost::new));
+   public static final Codec<ItemCost> CODEC = RecordCodecBuilder.create((i) -> i.group(Item.CODEC.fieldOf("id").forGetter(ItemCost::item), ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemCost::count), DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(ItemCost::components)).apply(i, ItemCost::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemCost> STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Optional<ItemCost>> OPTIONAL_STREAM_CODEC;
 
-   public ItemCost(ItemLike var1) {
-      this(var1, 1);
+   public ItemCost(final ItemLike item) {
+      this(item, 1);
    }
 
-   public ItemCost(ItemLike var1, int var2) {
-      this(var1.asItem().builtInRegistryHolder(), var2, DataComponentExactPredicate.EMPTY);
+   public ItemCost(final ItemLike item, final int count) {
+      this(item.asItem().builtInRegistryHolder(), count, DataComponentExactPredicate.EMPTY);
    }
 
-   public ItemCost(Holder<Item> var1, int var2, DataComponentExactPredicate var3) {
-      this(var1, var2, var3, createStack(var1, var2, var3));
+   public ItemCost(final Holder<Item> item, final int count, final DataComponentExactPredicate components) {
+      this(item, count, components, createStack(item, count, components));
    }
 
-   public ItemCost(Holder<Item> var1, int var2, DataComponentExactPredicate var3, ItemStack var4) {
+   public ItemCost {
       super();
-      this.item = var1;
-      this.count = var2;
-      this.components = var3;
-      this.itemStack = var4;
    }
 
-   public ItemCost withComponents(UnaryOperator<DataComponentExactPredicate.Builder> var1) {
-      return new ItemCost(this.item, this.count, ((DataComponentExactPredicate.Builder)var1.apply(DataComponentExactPredicate.builder())).build());
+   public ItemCost withComponents(final UnaryOperator<DataComponentExactPredicate.Builder> components) {
+      return new ItemCost(this.item, this.count, ((DataComponentExactPredicate.Builder)components.apply(DataComponentExactPredicate.builder())).build());
    }
 
-   private static ItemStack createStack(Holder<Item> var0, int var1, DataComponentExactPredicate var2) {
-      return new ItemStack(var0, var1, var2.asPatch());
+   private static ItemStack createStack(final Holder<Item> item, final int count, final DataComponentExactPredicate components) {
+      return new ItemStack(item, count, components.asPatch());
    }
 
-   public boolean test(ItemStack var1) {
-      return var1.is(this.item) && this.components.test((DataComponentGetter)var1);
+   public boolean test(final ItemStack itemStack) {
+      return itemStack.is(this.item) && this.components.test((DataComponentGetter)itemStack);
    }
 
    static {

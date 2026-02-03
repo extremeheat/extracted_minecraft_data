@@ -15,19 +15,19 @@ public enum TestBlockMode implements StringRepresentable {
    FAIL(2, "fail"),
    ACCEPT(3, "accept");
 
-   private static final IntFunction<TestBlockMode> BY_ID = ByIdMap.<TestBlockMode>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   private static final IntFunction<TestBlockMode> BY_ID = ByIdMap.<TestBlockMode>continuous((mode) -> mode.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final Codec<TestBlockMode> CODEC = StringRepresentable.<TestBlockMode>fromEnum(TestBlockMode::values);
-   public static final StreamCodec<ByteBuf, TestBlockMode> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+   public static final StreamCodec<ByteBuf, TestBlockMode> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (mode) -> mode.id);
    private final int id;
    private final String name;
    private final Component displayName;
    private final Component detailedMessage;
 
-   private TestBlockMode(final int var3, final String var4) {
-      this.id = var3;
-      this.name = var4;
-      this.displayName = Component.translatable("test_block.mode." + var4);
-      this.detailedMessage = Component.translatable("test_block.mode_info." + var4);
+   private TestBlockMode(final int id, final String name) {
+      this.id = id;
+      this.name = name;
+      this.displayName = Component.translatable("test_block.mode." + name);
+      this.detailedMessage = Component.translatable("test_block.mode_info." + name);
    }
 
    public String getSerializedName() {

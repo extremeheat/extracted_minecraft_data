@@ -9,32 +9,32 @@ public class RecipeBook {
       super();
    }
 
-   public boolean isOpen(RecipeBookType var1) {
-      return this.bookSettings.isOpen(var1);
+   public boolean isOpen(final RecipeBookType recipeBookType) {
+      return this.bookSettings.isOpen(recipeBookType);
    }
 
-   public void setOpen(RecipeBookType var1, boolean var2) {
-      this.bookSettings.setOpen(var1, var2);
+   public void setOpen(final RecipeBookType recipeBookType, final boolean open) {
+      this.bookSettings.setOpen(recipeBookType, open);
    }
 
-   public boolean isFiltering(RecipeBookType var1) {
-      return this.bookSettings.isFiltering(var1);
+   public boolean isFiltering(final RecipeBookType type) {
+      return this.bookSettings.isFiltering(type);
    }
 
-   public void setFiltering(RecipeBookType var1, boolean var2) {
-      this.bookSettings.setFiltering(var1, var2);
+   public void setFiltering(final RecipeBookType type, final boolean filtering) {
+      this.bookSettings.setFiltering(type, filtering);
    }
 
-   public void setBookSettings(RecipeBookSettings var1) {
-      this.bookSettings.replaceFrom(var1);
+   public void setBookSettings(final RecipeBookSettings settings) {
+      this.bookSettings.replaceFrom(settings);
    }
 
    public RecipeBookSettings getBookSettings() {
       return this.bookSettings;
    }
 
-   public void setBookSetting(RecipeBookType var1, boolean var2, boolean var3) {
-      this.bookSettings.setOpen(var1, var2);
-      this.bookSettings.setFiltering(var1, var3);
+   public void setBookSetting(final RecipeBookType bookType, final boolean open, final boolean filtering) {
+      this.bookSettings.setOpen(bookType, open);
+      this.bookSettings.setFiltering(bookType, filtering);
    }
 }

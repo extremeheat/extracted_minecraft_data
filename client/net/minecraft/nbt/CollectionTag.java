@@ -2,19 +2,20 @@ package net.minecraft.nbt;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public sealed interface CollectionTag extends Iterable<Tag>, Tag permits ListTag, ByteArrayTag, IntArrayTag, LongArrayTag {
+public sealed interface CollectionTag extends Tag, Iterable<Tag> permits ListTag, ByteArrayTag, IntArrayTag, LongArrayTag {
    void clear();
 
-   boolean setTag(int var1, Tag var2);
+   boolean setTag(int index, Tag tag);
 
-   boolean addTag(int var1, Tag var2);
+   boolean addTag(int index, Tag tag);
 
-   Tag remove(int var1);
+   Tag remove(int index);
 
-   Tag get(int var1);
+   Tag get(int index);
 
    int size();
 
@@ -26,6 +27,10 @@ public sealed interface CollectionTag extends Iterable<Tag>, Tag permits ListTag
       return new Iterator<Tag>() {
          private int index;
 
+         {
+            Objects.requireNonNull(CollectionTag.this);
+         }
+
          public boolean hasNext() {
             return this.index < CollectionTag.this.size();
          }
@@ -36,11 +41,6 @@ public sealed interface CollectionTag extends Iterable<Tag>, Tag permits ListTag
             } else {
                return CollectionTag.this.get(this.index++);
             }
-         }
-
-         // $FF: synthetic method
-         public Object next() {
-            return this.next();
          }
       };
    }

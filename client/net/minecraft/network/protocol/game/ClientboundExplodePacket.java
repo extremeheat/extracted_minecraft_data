@@ -17,23 +17,16 @@ import net.minecraft.world.phys.Vec3;
 public record ClientboundExplodePacket(Vec3 center, float radius, int blockCount, Optional<Vec3> playerKnockback, ParticleOptions explosionParticle, Holder<SoundEvent> explosionSound, WeightedList<ExplosionParticleInfo> blockParticles) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundExplodePacket> STREAM_CODEC;
 
-   public ClientboundExplodePacket(Vec3 var1, float var2, int var3, Optional<Vec3> var4, ParticleOptions var5, Holder<SoundEvent> var6, WeightedList<ExplosionParticleInfo> var7) {
+   public ClientboundExplodePacket {
       super();
-      this.center = var1;
-      this.radius = var2;
-      this.blockCount = var3;
-      this.playerKnockback = var4;
-      this.explosionParticle = var5;
-      this.explosionSound = var6;
-      this.blockParticles = var7;
    }
 
    public PacketType<ClientboundExplodePacket> type() {
       return GamePacketTypes.CLIENTBOUND_EXPLODE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleExplosion(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleExplosion(this);
    }
 
    static {

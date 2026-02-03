@@ -10,39 +10,39 @@ public class ScrollWheelHandler {
       super();
    }
 
-   public Vector2i onMouseScroll(double var1, double var3) {
-      if (this.accumulatedScrollX != 0.0 && Math.signum(var1) != Math.signum(this.accumulatedScrollX)) {
+   public Vector2i onMouseScroll(final double scaledXScrollOffset, final double scaledYScrollOffset) {
+      if (this.accumulatedScrollX != 0.0 && Math.signum(scaledXScrollOffset) != Math.signum(this.accumulatedScrollX)) {
          this.accumulatedScrollX = 0.0;
       }
 
-      if (this.accumulatedScrollY != 0.0 && Math.signum(var3) != Math.signum(this.accumulatedScrollY)) {
+      if (this.accumulatedScrollY != 0.0 && Math.signum(scaledYScrollOffset) != Math.signum(this.accumulatedScrollY)) {
          this.accumulatedScrollY = 0.0;
       }
 
-      this.accumulatedScrollX += var1;
-      this.accumulatedScrollY += var3;
-      int var5 = (int)this.accumulatedScrollX;
-      int var6 = (int)this.accumulatedScrollY;
-      if (var5 == 0 && var6 == 0) {
+      this.accumulatedScrollX += scaledXScrollOffset;
+      this.accumulatedScrollY += scaledYScrollOffset;
+      int wheelX = (int)this.accumulatedScrollX;
+      int wheelY = (int)this.accumulatedScrollY;
+      if (wheelX == 0 && wheelY == 0) {
          return new Vector2i(0, 0);
       } else {
-         this.accumulatedScrollX -= (double)var5;
-         this.accumulatedScrollY -= (double)var6;
-         return new Vector2i(var5, var6);
+         this.accumulatedScrollX -= (double)wheelX;
+         this.accumulatedScrollY -= (double)wheelY;
+         return new Vector2i(wheelX, wheelY);
       }
    }
 
-   public static int getNextScrollWheelSelection(double var0, int var2, int var3) {
-      int var4 = (int)Math.signum(var0);
-      var2 -= var4;
+   public static int getNextScrollWheelSelection(final double wheel, int currentSelected, final int limit) {
+      int step = (int)Math.signum(wheel);
+      currentSelected -= step;
 
-      for(var2 = Math.max(-1, var2); var2 < 0; var2 += var3) {
+      for(currentSelected = Math.max(-1, currentSelected); currentSelected < 0; currentSelected += limit) {
       }
 
-      while(var2 >= var3) {
-         var2 -= var3;
+      while(currentSelected >= limit) {
+         currentSelected -= limit;
       }
 
-      return var2;
+      return currentSelected;
    }
 }

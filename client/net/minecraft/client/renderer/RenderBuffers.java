@@ -16,34 +16,34 @@ public class RenderBuffers {
    private final MultiBufferSource.BufferSource crumblingBufferSource;
    private final OutlineBufferSource outlineBufferSource;
 
-   public RenderBuffers(int var1) {
+   public RenderBuffers(final int maxSectionBuilders) {
       super();
-      this.sectionBufferPool = SectionBufferBuilderPool.allocate(var1);
-      SequencedMap var2 = (SequencedMap)Util.make(new Object2ObjectLinkedOpenHashMap(), (var1x) -> {
-         var1x.put(Sheets.solidBlockSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.SOLID));
-         var1x.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.CUTOUT));
-         var1x.put(Sheets.translucentItemSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.TRANSLUCENT));
-         put(var1x, Sheets.translucentBlockItemSheet());
-         put(var1x, Sheets.shieldSheet());
-         put(var1x, Sheets.bedSheet());
-         put(var1x, Sheets.shulkerBoxSheet());
-         put(var1x, Sheets.signSheet());
-         put(var1x, Sheets.hangingSignSheet());
-         var1x.put(Sheets.chestSheet(), new ByteBufferBuilder(786432));
-         put(var1x, RenderTypes.armorEntityGlint());
-         put(var1x, RenderTypes.glint());
-         put(var1x, RenderTypes.glintTranslucent());
-         put(var1x, RenderTypes.entityGlint());
-         put(var1x, RenderTypes.waterMask());
+      this.sectionBufferPool = SectionBufferBuilderPool.allocate(maxSectionBuilders);
+      SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers = (SequencedMap)Util.make(new Object2ObjectLinkedOpenHashMap(), (map) -> {
+         map.put(Sheets.solidBlockSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.SOLID));
+         map.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.CUTOUT));
+         map.put(Sheets.translucentItemSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.TRANSLUCENT));
+         put(map, Sheets.translucentBlockItemSheet());
+         put(map, Sheets.shieldSheet());
+         put(map, Sheets.bedSheet());
+         put(map, Sheets.shulkerBoxSheet());
+         put(map, Sheets.signSheet());
+         put(map, Sheets.hangingSignSheet());
+         map.put(Sheets.chestSheet(), new ByteBufferBuilder(786432));
+         put(map, RenderTypes.armorEntityGlint());
+         put(map, RenderTypes.glint());
+         put(map, RenderTypes.glintTranslucent());
+         put(map, RenderTypes.entityGlint());
+         put(map, RenderTypes.waterMask());
       });
-      this.bufferSource = MultiBufferSource.immediateWithBuffers(var2, new ByteBufferBuilder(786432));
+      this.bufferSource = MultiBufferSource.immediateWithBuffers(fixedBuffers, new ByteBufferBuilder(786432));
       this.outlineBufferSource = new OutlineBufferSource();
-      SequencedMap var3 = (SequencedMap)Util.make(new Object2ObjectLinkedOpenHashMap(), (var0) -> ModelBakery.DESTROY_TYPES.forEach((var1) -> put(var0, var1)));
-      this.crumblingBufferSource = MultiBufferSource.immediateWithBuffers(var3, new ByteBufferBuilder(0));
+      SequencedMap<RenderType, ByteBufferBuilder> crumblingBuffers = (SequencedMap)Util.make(new Object2ObjectLinkedOpenHashMap(), (map) -> ModelBakery.DESTROY_TYPES.forEach((type) -> put(map, type)));
+      this.crumblingBufferSource = MultiBufferSource.immediateWithBuffers(crumblingBuffers, new ByteBufferBuilder(0));
    }
 
-   private static void put(Object2ObjectLinkedOpenHashMap<RenderType, ByteBufferBuilder> var0, RenderType var1) {
-      var0.put(var1, new ByteBufferBuilder(var1.bufferSize()));
+   private static void put(final Object2ObjectLinkedOpenHashMap<RenderType, ByteBufferBuilder> map, final RenderType type) {
+      map.put(type, new ByteBufferBuilder(type.bufferSize()));
    }
 
    public SectionBufferBuilderPack fixedBufferPack() {

@@ -30,18 +30,16 @@ public sealed interface InteractionResult {
    }
 
    public static record Success(SwingSource swingSource, ItemContext itemContext) implements InteractionResult {
-      public Success(SwingSource var1, ItemContext var2) {
+      public Success {
          super();
-         this.swingSource = var1;
-         this.itemContext = var2;
       }
 
       public boolean consumesAction() {
          return true;
       }
 
-      public Success heldItemTransformedTo(ItemStack var1) {
-         return new Success(this.swingSource, new ItemContext(true, var1));
+      public Success heldItemTransformedTo(final ItemStack itemStack) {
+         return new Success(this.swingSource, new ItemContext(true, itemStack));
       }
 
       public Success withoutItem() {
@@ -58,15 +56,11 @@ public sealed interface InteractionResult {
    }
 
    public static record ItemContext(boolean wasItemInteraction, @Nullable ItemStack heldItemTransformedTo) {
-      final boolean wasItemInteraction;
-      final @Nullable ItemStack heldItemTransformedTo;
-      static ItemContext NONE = new ItemContext(false, (ItemStack)null);
-      static ItemContext DEFAULT = new ItemContext(true, (ItemStack)null);
+      static final ItemContext NONE = new ItemContext(false, (ItemStack)null);
+      static final ItemContext DEFAULT = new ItemContext(true, (ItemStack)null);
 
-      public ItemContext(boolean var1, @Nullable ItemStack var2) {
+      public ItemContext {
          super();
-         this.wasItemInteraction = var1;
-         this.heldItemTransformedTo = var2;
       }
    }
 

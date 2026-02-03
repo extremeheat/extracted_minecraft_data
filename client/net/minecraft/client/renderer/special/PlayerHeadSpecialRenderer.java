@@ -22,32 +22,27 @@ public class PlayerHeadSpecialRenderer implements SpecialModelRenderer<PlayerSki
    private final PlayerSkinRenderCache playerSkinRenderCache;
    private final SkullModelBase modelBase;
 
-   PlayerHeadSpecialRenderer(PlayerSkinRenderCache var1, SkullModelBase var2) {
+   private PlayerHeadSpecialRenderer(final PlayerSkinRenderCache playerSkinRenderCache, final SkullModelBase modelBase) {
       super();
-      this.playerSkinRenderCache = var1;
-      this.modelBase = var2;
+      this.playerSkinRenderCache = playerSkinRenderCache;
+      this.modelBase = modelBase;
    }
 
-   public void submit(PlayerSkinRenderCache.RenderInfo var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8) {
-      RenderType var9 = var1 != null ? var1.renderType() : PlayerSkinRenderCache.DEFAULT_PLAYER_SKIN_RENDER_TYPE;
-      SkullBlockRenderer.submitSkull((Direction)null, 180.0F, 0.0F, var3, var4, var5, this.modelBase, var9, var8, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final PlayerSkinRenderCache.RenderInfo argument, final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      RenderType renderType = argument != null ? argument.renderType() : PlayerSkinRenderCache.DEFAULT_PLAYER_SKIN_RENDER_TYPE;
+      SkullBlockRenderer.submitSkull((Direction)null, 180.0F, 0.0F, poseStack, submitNodeCollector, lightCoords, this.modelBase, renderType, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      PoseStack var2 = new PoseStack();
-      var2.translate(0.5F, 0.0F, 0.5F);
-      var2.scale(-1.0F, -1.0F, 1.0F);
-      this.modelBase.root().getExtentsForGui(var2, var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
+      poseStack.translate(0.5F, 0.0F, 0.5F);
+      poseStack.scale(-1.0F, -1.0F, 1.0F);
+      this.modelBase.root().getExtentsForGui(poseStack, output);
    }
 
-   public PlayerSkinRenderCache.RenderInfo extractArgument(ItemStack var1) {
-      ResolvableProfile var2 = (ResolvableProfile)var1.get(DataComponents.PROFILE);
-      return var2 == null ? null : this.playerSkinRenderCache.getOrDefault(var2);
-   }
-
-   // $FF: synthetic method
-   public Object extractArgument(final ItemStack var1) {
-      return this.extractArgument(var1);
+   public PlayerSkinRenderCache.RenderInfo extractArgument(final ItemStack stack) {
+      ResolvableProfile profile = (ResolvableProfile)stack.get(DataComponents.PROFILE);
+      return profile == null ? null : this.playerSkinRenderCache.getOrDefault(profile);
    }
 
    public static record Unbaked() implements SpecialModelRenderer.Unbaked {
@@ -61,9 +56,9 @@ public class PlayerHeadSpecialRenderer implements SpecialModelRenderer<PlayerSki
          return MAP_CODEC;
       }
 
-      public @Nullable SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         SkullModelBase var2 = SkullBlockRenderer.createModel(var1.entityModelSet(), SkullBlock.Types.PLAYER);
-         return var2 == null ? null : new PlayerHeadSpecialRenderer(var1.playerSkinRenderCache(), var2);
+      public @Nullable SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+         SkullModelBase model = SkullBlockRenderer.createModel(context.entityModelSet(), SkullBlock.Types.PLAYER);
+         return model == null ? null : new PlayerHeadSpecialRenderer(context.playerSkinRenderCache(), model);
       }
    }
 }

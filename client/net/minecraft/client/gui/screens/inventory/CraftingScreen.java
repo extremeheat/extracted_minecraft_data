@@ -12,8 +12,8 @@ import net.minecraft.world.inventory.CraftingMenu;
 public class CraftingScreen extends AbstractRecipeBookScreen<CraftingMenu> {
    private static final Identifier CRAFTING_TABLE_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/crafting_table.png");
 
-   public CraftingScreen(CraftingMenu var1, Inventory var2, Component var3) {
-      super(var1, new CraftingRecipeBookComponent(var1), var2, var3);
+   public CraftingScreen(final CraftingMenu menu, final Inventory inventory, final Component title) {
+      super(menu, new CraftingRecipeBookComponent(menu), inventory, title);
    }
 
    protected void init() {
@@ -25,9 +25,9 @@ public class CraftingScreen extends AbstractRecipeBookScreen<CraftingMenu> {
       return new ScreenPosition(this.leftPos + 5, this.height / 2 - 49);
    }
 
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      int var5 = this.leftPos;
-      int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(RenderPipelines.GUI_TEXTURED, CRAFTING_TABLE_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+      int xo = this.leftPos;
+      int yo = (this.height - this.imageHeight) / 2;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, CRAFTING_TABLE_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
    }
 }

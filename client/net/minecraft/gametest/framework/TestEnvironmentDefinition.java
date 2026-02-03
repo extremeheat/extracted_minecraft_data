@@ -21,44 +21,76 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Unit;
+import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRuleMap;
 import net.minecraft.world.level.gamerules.GameRules;
 import org.slf4j.Logger;
 
-public interface TestEnvironmentDefinition {
-   Codec<TestEnvironmentDefinition> DIRECT_CODEC = BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE.byNameCodec().dispatch(TestEnvironmentDefinition::codec, (var0) -> var0);
-   Codec<Holder<TestEnvironmentDefinition>> CODEC = RegistryFileCodec.<Holder<TestEnvironmentDefinition>>create(Registries.TEST_ENVIRONMENT, DIRECT_CODEC);
+public interface TestEnvironmentDefinition<SavedDataType> {
+   Codec<TestEnvironmentDefinition<?>> DIRECT_CODEC = BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE.byNameCodec().dispatch(TestEnvironmentDefinition::codec, (c) -> c);
+   Codec<Holder<TestEnvironmentDefinition<?>>> CODEC = RegistryFileCodec.<Holder<TestEnvironmentDefinition<?>>>create(Registries.TEST_ENVIRONMENT, DIRECT_CODEC);
 
-   static MapCodec<? extends TestEnvironmentDefinition> bootstrap(Registry<MapCodec<? extends TestEnvironmentDefinition>> var0) {
-      Registry.register(var0, (String)"all_of", TestEnvironmentDefinition.AllOf.CODEC);
-      Registry.register(var0, (String)"game_rules", TestEnvironmentDefinition.SetGameRules.CODEC);
-      Registry.register(var0, (String)"time_of_day", TestEnvironmentDefinition.TimeOfDay.CODEC);
-      Registry.register(var0, (String)"weather", TestEnvironmentDefinition.Weather.CODEC);
-      return (MapCodec)Registry.register(var0, (String)"function", TestEnvironmentDefinition.Functions.CODEC);
+   static MapCodec<? extends TestEnvironmentDefinition<?>> bootstrap(final Registry<MapCodec<? extends TestEnvironmentDefinition<?>>> registry) {
+      Registry.register(registry, (String)"all_of", TestEnvironmentDefinition.AllOf.CODEC);
+      Registry.register(registry, (String)"game_rules", TestEnvironmentDefinition.SetGameRules.CODEC);
+      Registry.register(registry, (String)"clock_time", TestEnvironmentDefinition.ClockTime.CODEC);
+      Registry.register(registry, (String)"weather", TestEnvironmentDefinition.Weather.CODEC);
+      return (MapCodec)Registry.register(registry, (String)"function", TestEnvironmentDefinition.Functions.CODEC);
    }
 
-   void setup(ServerLevel var1);
+   SavedDataType setup(ServerLevel level);
 
-   default void teardown(ServerLevel var1) {
+   void teardown(final ServerLevel level, final SavedDataType saveData);
+
+   MapCodec<? extends TestEnvironmentDefinition<SavedDataType>> codec();
+
+   static <T> Activation<T> activate(final TestEnvironmentDefinition<T> environment, final ServerLevel level) {
+      return new Activation<T>(environment.setup(level), environment, level);
    }
 
-   MapCodec<? extends TestEnvironmentDefinition> codec();
+   public static class Activation<T> {
+      private final T value;
+      private final TestEnvironmentDefinition<T> definition;
+      private final ServerLevel level;
 
-   public static record Weather(Type weather) implements TestEnvironmentDefinition {
-      public static final MapCodec<Weather> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TestEnvironmentDefinition.Weather.Type.CODEC.fieldOf("weather").forGetter(Weather::weather)).apply(var0, Weather::new));
-
-      public Weather(Type var1) {
+      private Activation(final T value, final TestEnvironmentDefinition<T> definition, final ServerLevel level) {
          super();
-         this.weather = var1;
+         this.value = value;
+         this.definition = definition;
+         this.level = level;
       }
 
-      public void setup(ServerLevel var1) {
-         this.weather.apply(var1);
+      public void teardown() {
+         this.definition.teardown(this.level, this.value);
+      }
+   }
+
+   public static record Weather(Type weather) implements TestEnvironmentDefinition<Type> {
+      public static final MapCodec<Weather> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TestEnvironmentDefinition.Weather.Type.CODEC.fieldOf("weather").forGetter(Weather::weather)).apply(i, Weather::new));
+
+      public Weather {
+         super();
       }
 
-      public void teardown(ServerLevel var1) {
-         var1.resetWeatherCycle();
+      public Type setup(final ServerLevel level) {
+         Type previous;
+         if (level.isThundering()) {
+            previous = TestEnvironmentDefinition.Weather.Type.THUNDER;
+         } else if (level.isRaining()) {
+            previous = TestEnvironmentDefinition.Weather.Type.RAIN;
+         } else {
+            previous = TestEnvironmentDefinition.Weather.Type.CLEAR;
+         }
+
+         this.weather.apply(level);
+         return previous;
+      }
+
+      public void teardown(final ServerLevel level, final Type saveData) {
+         level.resetWeatherCycle();
+         saveData.apply(level);
       }
 
       public MapCodec<Weather> codec() {
@@ -77,16 +109,16 @@ public interface TestEnvironmentDefinition {
          private final boolean raining;
          private final boolean thundering;
 
-         private Type(final String var3, final int var4, final int var5, final boolean var6, final boolean var7) {
-            this.id = var3;
-            this.clearTime = var4;
-            this.rainTime = var5;
-            this.raining = var6;
-            this.thundering = var7;
+         private Type(final String id, final int clearTime, final int rainTime, final boolean raining, final boolean thundering) {
+            this.id = id;
+            this.clearTime = clearTime;
+            this.rainTime = rainTime;
+            this.raining = raining;
+            this.thundering = thundering;
          }
 
-         void apply(ServerLevel var1) {
-            var1.setWeatherParameters(this.clearTime, this.rainTime, this.raining, this.thundering);
+         void apply(final ServerLevel level) {
+            level.setWeatherParameters(this.clearTime, this.rainTime, this.raining, this.thundering);
          }
 
          public String getSerializedName() {
@@ -100,43 +132,51 @@ public interface TestEnvironmentDefinition {
       }
    }
 
-   public static record TimeOfDay(int time) implements TestEnvironmentDefinition {
-      public static final MapCodec<TimeOfDay> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("time").forGetter(TimeOfDay::time)).apply(var0, TimeOfDay::new));
+   public static record ClockTime(Holder<WorldClock> clock, int time) implements TestEnvironmentDefinition<Long> {
+      public static final MapCodec<ClockTime> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WorldClock.CODEC.fieldOf("clock").forGetter(ClockTime::clock), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("time").forGetter(ClockTime::time)).apply(i, ClockTime::new));
 
-      public TimeOfDay(int var1) {
+      public ClockTime {
          super();
-         this.time = var1;
       }
 
-      public void setup(ServerLevel var1) {
-         var1.setDayTime((long)this.time);
+      public Long setup(final ServerLevel level) {
+         MinecraftServer server = level.getServer();
+         long previous = server.clockManager().getTotalTicks(this.clock);
+         server.clockManager().setTotalTicks(this.clock, (long)this.time);
+         return previous;
       }
 
-      public MapCodec<TimeOfDay> codec() {
+      public void teardown(final ServerLevel level, final Long saveData) {
+         MinecraftServer server = level.getServer();
+         server.clockManager().setTotalTicks(this.clock, saveData);
+      }
+
+      public MapCodec<ClockTime> codec() {
          return CODEC;
       }
    }
 
-   public static record SetGameRules(GameRuleMap gameRulesMap) implements TestEnvironmentDefinition {
-      public static final MapCodec<SetGameRules> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(GameRuleMap.CODEC.fieldOf("rules").forGetter(SetGameRules::gameRulesMap)).apply(var0, SetGameRules::new));
+   public static record SetGameRules(GameRuleMap gameRulesMap) implements TestEnvironmentDefinition<GameRuleMap> {
+      public static final MapCodec<SetGameRules> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(GameRuleMap.CODEC.fieldOf("rules").forGetter(SetGameRules::gameRulesMap)).apply(i, SetGameRules::new));
 
-      public SetGameRules(GameRuleMap var1) {
+      public SetGameRules {
          super();
-         this.gameRulesMap = var1;
       }
 
-      public void setup(ServerLevel var1) {
-         GameRules var2 = var1.getGameRules();
-         MinecraftServer var3 = var1.getServer();
-         var2.setAll(this.gameRulesMap, var3);
+      public GameRuleMap setup(final ServerLevel level) {
+         GameRuleMap originalState = GameRuleMap.of();
+         GameRules gameRules = level.getGameRules();
+         this.gameRulesMap.keySet().forEach((rule) -> setFromActive(originalState, rule, gameRules));
+         gameRules.setAll(this.gameRulesMap, level.getServer());
+         return originalState;
       }
 
-      public void teardown(ServerLevel var1) {
-         this.gameRulesMap.keySet().forEach((var2) -> this.resetRule(var1, var2));
+      private static <T> void setFromActive(final GameRuleMap map, final GameRule<T> rule, final GameRules rules) {
+         map.set(rule, rules.get(rule));
       }
 
-      private <T> void resetRule(ServerLevel var1, GameRule<T> var2) {
-         var1.getGameRules().set(var2, var2.defaultValue(), var1.getServer());
+      public void teardown(final ServerLevel level, final GameRuleMap saveData) {
+         level.getGameRules().setAll(saveData, level.getServer());
       }
 
       public MapCodec<SetGameRules> codec() {
@@ -144,33 +184,32 @@ public interface TestEnvironmentDefinition {
       }
    }
 
-   public static record Functions(Optional<Identifier> setupFunction, Optional<Identifier> teardownFunction) implements TestEnvironmentDefinition {
+   public static record Functions(Optional<Identifier> setupFunction, Optional<Identifier> teardownFunction) implements TestEnvironmentDefinition<Unit> {
       private static final Logger LOGGER = LogUtils.getLogger();
-      public static final MapCodec<Functions> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.optionalFieldOf("setup").forGetter(Functions::setupFunction), Identifier.CODEC.optionalFieldOf("teardown").forGetter(Functions::teardownFunction)).apply(var0, Functions::new));
+      public static final MapCodec<Functions> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.optionalFieldOf("setup").forGetter(Functions::setupFunction), Identifier.CODEC.optionalFieldOf("teardown").forGetter(Functions::teardownFunction)).apply(i, Functions::new));
 
-      public Functions(Optional<Identifier> var1, Optional<Identifier> var2) {
+      public Functions {
          super();
-         this.setupFunction = var1;
-         this.teardownFunction = var2;
       }
 
-      public void setup(ServerLevel var1) {
-         this.setupFunction.ifPresent((var1x) -> run(var1, var1x));
+      public Unit setup(final ServerLevel level) {
+         this.setupFunction.ifPresent((p) -> run(level, p));
+         return Unit.INSTANCE;
       }
 
-      public void teardown(ServerLevel var1) {
-         this.teardownFunction.ifPresent((var1x) -> run(var1, var1x));
+      public void teardown(final ServerLevel level, final Unit saveData) {
+         this.teardownFunction.ifPresent((p) -> run(level, p));
       }
 
-      private static void run(ServerLevel var0, Identifier var1) {
-         MinecraftServer var2 = var0.getServer();
-         ServerFunctionManager var3 = var2.getFunctions();
-         Optional var4 = var3.get(var1);
-         if (var4.isPresent()) {
-            CommandSourceStack var5 = var2.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput().withLevel(var0);
-            var3.execute((CommandFunction)var4.get(), var5);
+      private static void run(final ServerLevel level, final Identifier functionId) {
+         MinecraftServer server = level.getServer();
+         ServerFunctionManager functions = server.getFunctions();
+         Optional<CommandFunction<CommandSourceStack>> function = functions.get(functionId);
+         if (function.isPresent()) {
+            CommandSourceStack source = server.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput().withLevel(level);
+            functions.execute((CommandFunction)function.get(), source);
          } else {
-            LOGGER.error("Test Batch failed for non-existent function {}", var1);
+            LOGGER.error("Test Batch failed for non-existent function {}", functionId);
          }
 
       }
@@ -180,24 +219,27 @@ public interface TestEnvironmentDefinition {
       }
    }
 
-   public static record AllOf(List<Holder<TestEnvironmentDefinition>> definitions) implements TestEnvironmentDefinition {
-      public static final MapCodec<AllOf> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TestEnvironmentDefinition.CODEC.listOf().fieldOf("definitions").forGetter(AllOf::definitions)).apply(var0, AllOf::new));
+   public static record AllOf(List<Holder<TestEnvironmentDefinition<?>>> definitions) implements TestEnvironmentDefinition<List<? extends Activation<?>>> {
+      public static final MapCodec<AllOf> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TestEnvironmentDefinition.CODEC.listOf().fieldOf("definitions").forGetter(AllOf::definitions)).apply(i, AllOf::new));
 
-      public AllOf(TestEnvironmentDefinition... var1) {
-         this(Arrays.stream(var1).map(Holder::direct).toList());
+      public AllOf(final TestEnvironmentDefinition<?>... defs) {
+         this(Arrays.stream(defs).map(AllOf::holder).toList());
       }
 
-      public AllOf(List<Holder<TestEnvironmentDefinition>> var1) {
+      public AllOf {
          super();
-         this.definitions = var1;
       }
 
-      public void setup(ServerLevel var1) {
-         this.definitions.forEach((var1x) -> ((TestEnvironmentDefinition)var1x.value()).setup(var1));
+      private static Holder<TestEnvironmentDefinition<?>> holder(final TestEnvironmentDefinition<?> holder) {
+         return Holder.<TestEnvironmentDefinition<?>>direct(holder);
       }
 
-      public void teardown(ServerLevel var1) {
-         this.definitions.forEach((var1x) -> ((TestEnvironmentDefinition)var1x.value()).teardown(var1));
+      public List<? extends Activation<?>> setup(final ServerLevel level) {
+         return this.definitions.stream().map((b) -> TestEnvironmentDefinition.activate((TestEnvironmentDefinition)b.value(), level)).toList();
+      }
+
+      public void teardown(final ServerLevel level, final List<? extends Activation<?>> activations) {
+         activations.reversed().forEach(Activation::teardown);
       }
 
       public MapCodec<AllOf> codec() {

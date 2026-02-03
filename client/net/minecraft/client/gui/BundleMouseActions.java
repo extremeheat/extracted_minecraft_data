@@ -5,7 +5,7 @@ import net.minecraft.client.ScrollWheelHandler;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ServerboundSelectBundleItemPacket;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
@@ -15,28 +15,28 @@ public class BundleMouseActions implements ItemSlotMouseAction {
    private final Minecraft minecraft;
    private final ScrollWheelHandler scrollWheelHandler;
 
-   public BundleMouseActions(Minecraft var1) {
+   public BundleMouseActions(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
       this.scrollWheelHandler = new ScrollWheelHandler();
    }
 
-   public boolean matches(Slot var1) {
-      return var1.getItem().is(ItemTags.BUNDLES);
+   public boolean matches(final Slot slot) {
+      return slot.getItem().is(ItemTags.BUNDLES);
    }
 
-   public boolean onMouseScrolled(double var1, double var3, int var5, ItemStack var6) {
-      int var7 = BundleItem.getNumberOfItemsToShow(var6);
-      if (var7 == 0) {
+   public boolean onMouseScrolled(final double scrollX, final double scrollY, final int slotIndex, final ItemStack itemStack) {
+      int amountOfShownItems = BundleItem.getNumberOfItemsToShow(itemStack);
+      if (amountOfShownItems == 0) {
          return false;
       } else {
-         Vector2i var8 = this.scrollWheelHandler.onMouseScroll(var1, var3);
-         int var9 = var8.y == 0 ? -var8.x : var8.y;
-         if (var9 != 0) {
-            int var10 = BundleItem.getSelectedItem(var6);
-            int var11 = ScrollWheelHandler.getNextScrollWheelSelection((double)var9, var10, var7);
-            if (var10 != var11) {
-               this.toggleSelectedBundleItem(var6, var5, var11);
+         Vector2i wheelXY = this.scrollWheelHandler.onMouseScroll(scrollX, scrollY);
+         int wheel = wheelXY.y == 0 ? -wheelXY.x : wheelXY.y;
+         if (wheel != 0) {
+            int selectedItem = BundleItem.getSelectedItemIndex(itemStack);
+            int updatedSelectedItem = ScrollWheelHandler.getNextScrollWheelSelection((double)wheel, selectedItem, amountOfShownItems);
+            if (selectedItem != updatedSelectedItem) {
+               this.toggleSelectedBundleItem(itemStack, slotIndex, updatedSelectedItem);
             }
          }
 
@@ -44,27 +44,27 @@ public class BundleMouseActions implements ItemSlotMouseAction {
       }
    }
 
-   public void onStopHovering(Slot var1) {
-      this.unselectedBundleItem(var1.getItem(), var1.index);
+   public void onStopHovering(final Slot hoveredSlot) {
+      this.unselectedBundleItem(hoveredSlot.getItem(), hoveredSlot.index);
    }
 
-   public void onSlotClicked(Slot var1, ClickType var2) {
-      if (var2 == ClickType.QUICK_MOVE || var2 == ClickType.SWAP) {
-         this.unselectedBundleItem(var1.getItem(), var1.index);
+   public void onSlotClicked(final Slot slot, final ContainerInput containerInput) {
+      if (containerInput == ContainerInput.QUICK_MOVE || containerInput == ContainerInput.SWAP) {
+         this.unselectedBundleItem(slot.getItem(), slot.index);
       }
 
    }
 
-   private void toggleSelectedBundleItem(ItemStack var1, int var2, int var3) {
-      if (this.minecraft.getConnection() != null && var3 < BundleItem.getNumberOfItemsToShow(var1)) {
-         ClientPacketListener var4 = this.minecraft.getConnection();
-         BundleItem.toggleSelectedItem(var1, var3);
-         var4.send(new ServerboundSelectBundleItemPacket(var2, var3));
+   private void toggleSelectedBundleItem(final ItemStack bundleItem, final int slotIndex, final int selectedItem) {
+      if (this.minecraft.getConnection() != null && selectedItem < BundleItem.getNumberOfItemsToShow(bundleItem)) {
+         ClientPacketListener connection = this.minecraft.getConnection();
+         BundleItem.toggleSelectedItem(bundleItem, selectedItem);
+         connection.send(new ServerboundSelectBundleItemPacket(slotIndex, selectedItem));
       }
 
    }
 
-   public void unselectedBundleItem(ItemStack var1, int var2) {
-      this.toggleSelectedBundleItem(var1, var2, -1);
+   public void unselectedBundleItem(final ItemStack bundleItem, final int slotIndex) {
+      this.toggleSelectedBundleItem(bundleItem, slotIndex, -1);
    }
 }

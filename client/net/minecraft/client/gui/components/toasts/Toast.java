@@ -16,24 +16,24 @@ public interface Toast {
 
    Visibility getWantedVisibility();
 
-   void update(ToastManager var1, long var2);
+   void update(final ToastManager manager, final long fullyVisibleForMs);
 
    default @Nullable SoundEvent getSoundEvent() {
       return null;
    }
 
-   void render(GuiGraphics var1, Font var2, long var3);
+   void render(final GuiGraphics graphics, final Font font, final long fullyVisibleForMs);
 
    default Object getToken() {
       return NO_TOKEN;
    }
 
-   default float xPos(int var1, float var2) {
-      return (float)var1 - (float)this.width() * var2;
+   default float xPos(final int screenWidth, final float visiblePortion) {
+      return (float)screenWidth - (float)this.width() * visiblePortion;
    }
 
-   default float yPos(int var1) {
-      return (float)(var1 * this.height());
+   default float yPos(final int firstSlotIndex) {
+      return (float)(firstSlotIndex * this.height());
    }
 
    default int width() {
@@ -57,12 +57,12 @@ public interface Toast {
 
       private final SoundEvent soundEvent;
 
-      private Visibility(final SoundEvent var3) {
-         this.soundEvent = var3;
+      private Visibility(final SoundEvent soundEvent) {
+         this.soundEvent = soundEvent;
       }
 
-      public void playSound(SoundManager var1) {
-         var1.play(SimpleSoundInstance.forUI(this.soundEvent, 1.0F, 1.0F));
+      public void playSound(final SoundManager manager) {
+         manager.play(SimpleSoundInstance.forUI(this.soundEvent, 1.0F, 1.0F));
       }
 
       // $FF: synthetic method

@@ -1,47 +1,75 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.tags.ItemTags;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.PotDecorations;
 
 public class DecoratedPotRecipe extends CustomRecipe {
-   public DecoratedPotRecipe(CraftingBookCategory var1) {
-      super(var1);
+   public static final MapCodec<DecoratedPotRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Ingredient.CODEC.fieldOf("back").forGetter((o) -> o.backPattern), Ingredient.CODEC.fieldOf("left").forGetter((o) -> o.leftPattern), Ingredient.CODEC.fieldOf("right").forGetter((o) -> o.rightPattern), Ingredient.CODEC.fieldOf("front").forGetter((o) -> o.frontPattern), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result)).apply(i, DecoratedPotRecipe::new));
+   public static final StreamCodec<RegistryFriendlyByteBuf, DecoratedPotRecipe> STREAM_CODEC;
+   public static final RecipeSerializer<DecoratedPotRecipe> SERIALIZER;
+   private final Ingredient backPattern;
+   private final Ingredient leftPattern;
+   private final Ingredient rightPattern;
+   private final Ingredient frontPattern;
+   private final ItemStackTemplate result;
+
+   public DecoratedPotRecipe(final Ingredient wallPattern, final ItemStackTemplate result) {
+      this(wallPattern, wallPattern, wallPattern, wallPattern, result);
    }
 
-   private static ItemStack back(CraftingInput var0) {
-      return var0.getItem(1, 0);
+   public DecoratedPotRecipe(final Ingredient backPattern, final Ingredient leftPattern, final Ingredient rightPattern, final Ingredient frontPattern, final ItemStackTemplate result) {
+      super();
+      this.backPattern = backPattern;
+      this.leftPattern = leftPattern;
+      this.rightPattern = rightPattern;
+      this.frontPattern = frontPattern;
+      this.result = result;
    }
 
-   private static ItemStack left(CraftingInput var0) {
-      return var0.getItem(0, 1);
+   private static ItemStack back(final CraftingInput input) {
+      return input.getItem(1, 0);
    }
 
-   private static ItemStack right(CraftingInput var0) {
-      return var0.getItem(2, 1);
+   private static ItemStack left(final CraftingInput input) {
+      return input.getItem(0, 1);
    }
 
-   private static ItemStack front(CraftingInput var0) {
-      return var0.getItem(1, 2);
+   private static ItemStack right(final CraftingInput input) {
+      return input.getItem(2, 1);
    }
 
-   public boolean matches(CraftingInput var1, Level var2) {
-      if (var1.width() == 3 && var1.height() == 3 && var1.ingredientCount() == 4) {
-         return back(var1).is(ItemTags.DECORATED_POT_INGREDIENTS) && left(var1).is(ItemTags.DECORATED_POT_INGREDIENTS) && right(var1).is(ItemTags.DECORATED_POT_INGREDIENTS) && front(var1).is(ItemTags.DECORATED_POT_INGREDIENTS);
+   private static ItemStack front(final CraftingInput input) {
+      return input.getItem(1, 2);
+   }
+
+   public boolean matches(final CraftingInput input, final Level level) {
+      if (input.width() == 3 && input.height() == 3 && input.ingredientCount() == 4) {
+         return this.backPattern.test(back(input)) && this.leftPattern.test(left(input)) && this.rightPattern.test(right(input)) && this.frontPattern.test(front(input));
       } else {
          return false;
       }
    }
 
-   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      PotDecorations var3 = new PotDecorations(back(var1).getItem(), left(var1).getItem(), right(var1).getItem(), front(var1).getItem());
-      return DecoratedPotBlockEntity.createDecoratedPotItem(var3);
+   public ItemStack assemble(final CraftingInput input) {
+      PotDecorations decorations = new PotDecorations(back(input).getItem(), left(input).getItem(), right(input).getItem(), front(input).getItem());
+      DataComponentPatch components = DataComponentPatch.builder().set(DataComponents.POT_DECORATIONS, decorations).build();
+      return this.result.apply(components);
    }
 
    public RecipeSerializer<DecoratedPotRecipe> getSerializer() {
-      return RecipeSerializer.DECORATED_POT_RECIPE;
+      return SERIALIZER;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.backPattern, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.leftPattern, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.rightPattern, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.frontPattern, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, DecoratedPotRecipe::new);
+      SERIALIZER = new RecipeSerializer<DecoratedPotRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

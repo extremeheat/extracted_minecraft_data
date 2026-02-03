@@ -38,128 +38,128 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
 
    public abstract MapCodec<? extends LeavesBlock> codec();
 
-   public LeavesBlock(float var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.leafParticleChance = var1;
+   public LeavesBlock(final float leafParticleChance, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.leafParticleChance = leafParticleChance;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(DISTANCE, 7)).setValue(PERSISTENT, false)).setValue(WATERLOGGED, false));
    }
 
-   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
-      return !cutoutLeaves && var2.getBlock() instanceof LeavesBlock ? true : super.skipRendering(var1, var2, var3);
+   protected boolean skipRendering(final BlockState state, final BlockState neighborState, final Direction direction) {
+      return !cutoutLeaves && neighborState.getBlock() instanceof LeavesBlock ? true : super.skipRendering(state, neighborState, direction);
    }
 
-   public static void setCutoutLeaves(boolean var0) {
-      cutoutLeaves = var0;
+   public static void setCutoutLeaves(final boolean cutoutLeaves) {
+      LeavesBlock.cutoutLeaves = cutoutLeaves;
    }
 
-   protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getBlockSupportShape(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return Shapes.empty();
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return (Integer)var1.getValue(DISTANCE) == 7 && !(Boolean)var1.getValue(PERSISTENT);
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return (Integer)state.getValue(DISTANCE) == 7 && !(Boolean)state.getValue(PERSISTENT);
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (this.decaying(var1)) {
-         dropResources(var1, var2, var3);
-         var2.removeBlock(var3, false);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (this.decaying(state)) {
+         dropResources(state, level, pos);
+         level.removeBlock(pos, false);
       }
 
    }
 
-   protected boolean decaying(BlockState var1) {
-      return !(Boolean)var1.getValue(PERSISTENT) && (Integer)var1.getValue(DISTANCE) == 7;
+   protected boolean decaying(final BlockState state) {
+      return !(Boolean)state.getValue(PERSISTENT) && (Integer)state.getValue(DISTANCE) == 7;
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      var2.setBlock(var3, updateDistance(var1, var2, var3), 3);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      level.setBlock(pos, updateDistance(state, level, pos), 3);
    }
 
-   protected int getLightBlock(BlockState var1) {
+   protected int getLightBlock(final BlockState state) {
       return 1;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      int var9 = getDistanceAt(var7) + 1;
-      if (var9 != 1 || (Integer)var1.getValue(DISTANCE) != var9) {
-         var3.scheduleTick(var4, (Block)this, 1);
+      int distanceFromNeighbor = getDistanceAt(neighbourState) + 1;
+      if (distanceFromNeighbor != 1 || (Integer)state.getValue(DISTANCE) != distanceFromNeighbor) {
+         ticks.scheduleTick(pos, (Block)this, 1);
       }
 
-      return var1;
+      return state;
    }
 
-   private static BlockState updateDistance(BlockState var0, LevelAccessor var1, BlockPos var2) {
-      int var3 = 7;
-      BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
+   private static BlockState updateDistance(final BlockState state, final LevelAccessor level, final BlockPos pos) {
+      int newDistance = 7;
+      BlockPos.MutableBlockPos neighborPos = new BlockPos.MutableBlockPos();
 
-      for(Direction var8 : Direction.values()) {
-         var4.setWithOffset(var2, (Direction)var8);
-         var3 = Math.min(var3, getDistanceAt(var1.getBlockState(var4)) + 1);
-         if (var3 == 1) {
+      for(Direction direction : Direction.values()) {
+         neighborPos.setWithOffset(pos, (Direction)direction);
+         newDistance = Math.min(newDistance, getDistanceAt(level.getBlockState(neighborPos)) + 1);
+         if (newDistance == 1) {
             break;
          }
       }
 
-      return (BlockState)var0.setValue(DISTANCE, var3);
+      return (BlockState)state.setValue(DISTANCE, newDistance);
    }
 
-   private static int getDistanceAt(BlockState var0) {
-      return getOptionalDistanceAt(var0).orElse(7);
+   private static int getDistanceAt(final BlockState state) {
+      return getOptionalDistanceAt(state).orElse(7);
    }
 
-   public static OptionalInt getOptionalDistanceAt(BlockState var0) {
-      if (var0.is(BlockTags.LOGS)) {
+   public static OptionalInt getOptionalDistanceAt(final BlockState state) {
+      if (state.is(BlockTags.LOGS)) {
          return OptionalInt.of(0);
       } else {
-         return var0.hasProperty(DISTANCE) ? OptionalInt.of((Integer)var0.getValue(DISTANCE)) : OptionalInt.empty();
+         return state.hasProperty(DISTANCE) ? OptionalInt.of((Integer)state.getValue(DISTANCE)) : OptionalInt.empty();
       }
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      super.animateTick(var1, var2, var3, var4);
-      BlockPos var5 = var3.below();
-      BlockState var6 = var2.getBlockState(var5);
-      makeDrippingWaterParticles(var2, var3, var4, var6, var5);
-      this.makeFallingLeavesParticles(var2, var3, var4, var6, var5);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      super.animateTick(state, level, pos, random);
+      BlockPos below = pos.below();
+      BlockState belowState = level.getBlockState(below);
+      makeDrippingWaterParticles(level, pos, random, belowState, below);
+      this.makeFallingLeavesParticles(level, pos, random, belowState, below);
    }
 
-   private static void makeDrippingWaterParticles(Level var0, BlockPos var1, RandomSource var2, BlockState var3, BlockPos var4) {
-      if (var0.isRainingAt(var1.above())) {
-         if (var2.nextInt(15) == 1) {
-            if (!var3.canOcclude() || !var3.isFaceSturdy(var0, var4, Direction.UP)) {
-               ParticleUtils.spawnParticleBelow(var0, var1, var2, ParticleTypes.DRIPPING_WATER);
+   private static void makeDrippingWaterParticles(final Level level, final BlockPos pos, final RandomSource random, final BlockState belowState, final BlockPos below) {
+      if (level.isRainingAt(pos.above())) {
+         if (random.nextInt(15) == 1) {
+            if (!belowState.canOcclude() || !belowState.isFaceSturdy(level, below, Direction.UP)) {
+               ParticleUtils.spawnParticleBelow(level, pos, random, ParticleTypes.DRIPPING_WATER);
             }
          }
       }
    }
 
-   private void makeFallingLeavesParticles(Level var1, BlockPos var2, RandomSource var3, BlockState var4, BlockPos var5) {
-      if (!(var3.nextFloat() >= this.leafParticleChance)) {
-         if (!isFaceFull(var4.getCollisionShape(var1, var5), Direction.UP)) {
-            this.spawnFallingLeavesParticle(var1, var2, var3);
+   private void makeFallingLeavesParticles(final Level level, final BlockPos pos, final RandomSource random, final BlockState belowState, final BlockPos below) {
+      if (!(random.nextFloat() >= this.leafParticleChance)) {
+         if (!isFaceFull(belowState.getCollisionShape(level, below), Direction.UP)) {
+            this.spawnFallingLeavesParticle(level, pos, random);
          }
       }
    }
 
-   protected abstract void spawnFallingLeavesParticle(Level var1, BlockPos var2, RandomSource var3);
+   protected abstract void spawnFallingLeavesParticle(Level level, BlockPos pos, RandomSource random);
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(DISTANCE, PERSISTENT, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(DISTANCE, PERSISTENT, WATERLOGGED);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      BlockState var3 = (BlockState)((BlockState)this.defaultBlockState().setValue(PERSISTENT, true)).setValue(WATERLOGGED, var2.getType() == Fluids.WATER);
-      return updateDistance(var3, var1.getLevel(), var1.getClickedPos());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      BlockState state = (BlockState)((BlockState)this.defaultBlockState().setValue(PERSISTENT, true)).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+      return updateDistance(state, context.getLevel(), context.getClickedPos());
    }
 
    static {

@@ -22,16 +22,15 @@ public record ProfilePublicKey(Data data) {
    public static final Duration EXPIRY_GRACE_PERIOD = Duration.ofHours(8L);
    public static final Codec<ProfilePublicKey> TRUSTED_CODEC;
 
-   public ProfilePublicKey(Data var1) {
+   public ProfilePublicKey {
       super();
-      this.data = var1;
    }
 
-   public static ProfilePublicKey createValidated(SignatureValidator var0, UUID var1, Data var2) throws ValidationException {
-      if (!var2.validateSignature(var0, var1)) {
+   public static ProfilePublicKey createValidated(final SignatureValidator validator, final UUID profileId, final Data data) throws ValidationException {
+      if (!data.validateSignature(validator, profileId)) {
          throw new ValidationException(INVALID_SIGNATURE);
       } else {
-         return new ProfilePublicKey(var2);
+         return new ProfilePublicKey(data);
       }
    }
 
@@ -44,59 +43,55 @@ public record ProfilePublicKey(Data data) {
    }
 
    public static record Data(Instant expiresAt, PublicKey key, byte[] keySignature) {
-      final PublicKey key;
       private static final int MAX_KEY_SIGNATURE_SIZE = 4096;
-      public static final Codec<Data> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.INSTANT_ISO8601.fieldOf("expires_at").forGetter(Data::expiresAt), Crypt.PUBLIC_KEY_CODEC.fieldOf("key").forGetter(Data::key), ExtraCodecs.BASE64_STRING.fieldOf("signature_v2").forGetter(Data::keySignature)).apply(var0, Data::new));
+      public static final Codec<Data> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.INSTANT_ISO8601.fieldOf("expires_at").forGetter(Data::expiresAt), Crypt.PUBLIC_KEY_CODEC.fieldOf("key").forGetter(Data::key), ExtraCodecs.BASE64_STRING.fieldOf("signature_v2").forGetter(Data::keySignature)).apply(i, Data::new));
 
-      public Data(FriendlyByteBuf var1) {
-         this(var1.readInstant(), var1.readPublicKey(), var1.readByteArray(4096));
+      public Data(final FriendlyByteBuf input) {
+         this(input.readInstant(), input.readPublicKey(), input.readByteArray(4096));
       }
 
-      public Data(Instant var1, PublicKey var2, byte[] var3) {
+      public Data {
          super();
-         this.expiresAt = var1;
-         this.key = var2;
-         this.keySignature = var3;
       }
 
-      public void write(FriendlyByteBuf var1) {
-         var1.writeInstant(this.expiresAt);
-         var1.writePublicKey(this.key);
-         var1.writeByteArray(this.keySignature);
+      public void write(final FriendlyByteBuf output) {
+         output.writeInstant(this.expiresAt);
+         output.writePublicKey(this.key);
+         output.writeByteArray(this.keySignature);
       }
 
-      boolean validateSignature(SignatureValidator var1, UUID var2) {
-         return var1.validate(this.signedPayload(var2), this.keySignature);
+      private boolean validateSignature(final SignatureValidator validator, final UUID profileId) {
+         return validator.validate(this.signedPayload(profileId), this.keySignature);
       }
 
-      private byte[] signedPayload(UUID var1) {
-         byte[] var2 = this.key.getEncoded();
-         byte[] var3 = new byte[24 + var2.length];
-         ByteBuffer var4 = ByteBuffer.wrap(var3).order(ByteOrder.BIG_ENDIAN);
-         var4.putLong(var1.getMostSignificantBits()).putLong(var1.getLeastSignificantBits()).putLong(this.expiresAt.toEpochMilli()).put(var2);
-         return var3;
+      private byte[] signedPayload(final UUID profileId) {
+         byte[] keyBytes = this.key.getEncoded();
+         byte[] signedPayload = new byte[24 + keyBytes.length];
+         ByteBuffer buffer = ByteBuffer.wrap(signedPayload).order(ByteOrder.BIG_ENDIAN);
+         buffer.putLong(profileId.getMostSignificantBits()).putLong(profileId.getLeastSignificantBits()).putLong(this.expiresAt.toEpochMilli()).put(keyBytes);
+         return signedPayload;
       }
 
       public boolean hasExpired() {
          return this.expiresAt.isBefore(Instant.now());
       }
 
-      public boolean hasExpired(Duration var1) {
-         return this.expiresAt.plus(var1).isBefore(Instant.now());
+      public boolean hasExpired(final Duration gracePeriod) {
+         return this.expiresAt.plus(gracePeriod).isBefore(Instant.now());
       }
 
-      public boolean equals(Object var1) {
-         if (!(var1 instanceof Data var2)) {
+      public boolean equals(final Object o) {
+         if (!(o instanceof Data data)) {
             return false;
          } else {
-            return this.expiresAt.equals(var2.expiresAt) && this.key.equals(var2.key) && Arrays.equals(this.keySignature, var2.keySignature);
+            return this.expiresAt.equals(data.expiresAt) && this.key.equals(data.key) && Arrays.equals(this.keySignature, data.keySignature);
          }
       }
    }
 
    public static class ValidationException extends ThrowingComponent {
-      public ValidationException(Component var1) {
-         super(var1);
+      public ValidationException(final Component component) {
+         super(component);
       }
    }
 }

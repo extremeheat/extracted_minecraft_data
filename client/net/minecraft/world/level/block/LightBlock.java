@@ -40,64 +40,64 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
       return CODEC;
    }
 
-   public LightBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public LightBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(LEVEL, 15)).setValue(WATERLOGGED, false));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(LEVEL, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(LEVEL, WATERLOGGED);
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide() && var4.canUseGameMasterBlocks()) {
-         var2.setBlock(var3, (BlockState)var1.cycle(LEVEL), 2);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide() && player.canUseGameMasterBlocks()) {
+         level.setBlock(pos, (BlockState)state.cycle(LEVEL), 2);
          return InteractionResult.SUCCESS_SERVER;
       } else {
          return InteractionResult.CONSUME;
       }
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return var4.isHoldingItem(Items.LIGHT) ? Shapes.block() : Shapes.empty();
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return context.isHoldingItem(Items.LIGHT) ? Shapes.block() : Shapes.empty();
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
-      return var1.getFluidState().isEmpty();
+   protected boolean propagatesSkylightDown(final BlockState state) {
+      return state.getFluidState().isEmpty();
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(final BlockState state) {
       return RenderShape.INVISIBLE;
    }
 
-   protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected float getShadeBrightness(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return 1.0F;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction direction, final BlockPos neighbourPos, final BlockState neighbour, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, direction, neighbourPos, neighbour, random);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      return setLightOnStack(super.getCloneItemStack(var1, var2, var3, var4), (Integer)var3.getValue(LEVEL));
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
+      return setLightOnStack(super.getCloneItemStack(level, pos, state, includeData), (Integer)state.getValue(LEVEL));
    }
 
-   public static ItemStack setLightOnStack(ItemStack var0, int var1) {
-      var0.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LEVEL, var1));
-      return var0;
+   public static ItemStack setLightOnStack(final ItemStack result, final int lightLevel) {
+      result.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LEVEL, lightLevel));
+      return result;
    }
 
    static {
       LEVEL = BlockStateProperties.LEVEL;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      LIGHT_EMISSION = (var0) -> (Integer)var0.getValue(LEVEL);
+      LIGHT_EMISSION = (state) -> (Integer)state.getValue(LEVEL);
    }
 }

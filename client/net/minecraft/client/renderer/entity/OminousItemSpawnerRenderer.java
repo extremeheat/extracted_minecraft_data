@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemClusterRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -19,38 +18,33 @@ public class OminousItemSpawnerRenderer extends EntityRenderer<OminousItemSpawne
    private final ItemModelResolver itemModelResolver;
    private final RandomSource random = RandomSource.create();
 
-   protected OminousItemSpawnerRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
-      this.itemModelResolver = var1.getItemModelResolver();
+   protected OminousItemSpawnerRenderer(final EntityRendererProvider.Context context) {
+      super(context);
+      this.itemModelResolver = context.getItemModelResolver();
    }
 
    public ItemClusterRenderState createRenderState() {
       return new ItemClusterRenderState();
    }
 
-   public void extractRenderState(OminousItemSpawner var1, ItemClusterRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      ItemStack var4 = var1.getItem();
-      var2.extractItemGroupRenderState(var1, var4, this.itemModelResolver);
+   public void extractRenderState(final OminousItemSpawner entity, final ItemClusterRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      ItemStack item = entity.getItem();
+      state.extractItemGroupRenderState(entity, item, this.itemModelResolver);
    }
 
-   public void submit(ItemClusterRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      if (!var1.item.isEmpty()) {
-         var2.pushPose();
-         if (var1.ageInTicks <= 50.0F) {
-            float var5 = Math.min(var1.ageInTicks, 50.0F) / 50.0F;
-            var2.scale(var5, var5, var5);
+   public void submit(final ItemClusterRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      if (!state.item.isEmpty()) {
+         poseStack.pushPose();
+         if (state.ageInTicks <= 50.0F) {
+            float scale = Math.min(state.ageInTicks, 50.0F) / 50.0F;
+            poseStack.scale(scale, scale, scale);
          }
 
-         float var6 = Mth.wrapDegrees(var1.ageInTicks * 40.0F);
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var6));
-         ItemEntityRenderer.submitMultipleFromCount(var2, var3, 15728880, var1, this.random);
-         var2.popPose();
+         float currentSpin = Mth.wrapDegrees(state.ageInTicks * 40.0F);
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(currentSpin));
+         ItemEntityRenderer.submitMultipleFromCount(poseStack, submitNodeCollector, 15728880, state, this.random);
+         poseStack.popPose();
       }
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

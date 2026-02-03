@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 public interface StrictQueue<T extends Runnable> {
    @Nullable Runnable pop();
 
-   boolean push(T var1);
+   boolean push(final T t);
 
    boolean isEmpty();
 
@@ -18,17 +18,17 @@ public interface StrictQueue<T extends Runnable> {
    public static final class QueueStrictQueue implements StrictQueue<Runnable> {
       private final Queue<Runnable> queue;
 
-      public QueueStrictQueue(Queue<Runnable> var1) {
+      public QueueStrictQueue(final Queue<Runnable> queue) {
          super();
-         this.queue = var1;
+         this.queue = queue;
       }
 
       public @Nullable Runnable pop() {
          return (Runnable)this.queue.poll();
       }
 
-      public boolean push(Runnable var1) {
-         return this.queue.add(var1);
+      public boolean push(final Runnable t) {
+         return this.queue.add(t);
       }
 
       public boolean isEmpty() {
@@ -41,12 +41,8 @@ public interface StrictQueue<T extends Runnable> {
    }
 
    public static record RunnableWithPriority(int priority, Runnable task) implements Runnable {
-      final int priority;
-
-      public RunnableWithPriority(int var1, Runnable var2) {
+      public RunnableWithPriority {
          super();
-         this.priority = var1;
-         this.task = var2;
       }
 
       public void run() {
@@ -58,36 +54,36 @@ public interface StrictQueue<T extends Runnable> {
       private final Queue<Runnable>[] queues;
       private final AtomicInteger size = new AtomicInteger();
 
-      public FixedPriorityQueue(int var1) {
+      public FixedPriorityQueue(final int size) {
          super();
-         this.queues = new Queue[var1];
+         this.queues = new Queue[size];
 
-         for(int var2 = 0; var2 < var1; ++var2) {
-            this.queues[var2] = Queues.newConcurrentLinkedQueue();
+         for(int i = 0; i < size; ++i) {
+            this.queues[i] = Queues.newConcurrentLinkedQueue();
          }
 
       }
 
       public @Nullable Runnable pop() {
-         for(Queue var4 : this.queues) {
-            Runnable var5 = (Runnable)var4.poll();
-            if (var5 != null) {
+         for(Queue<Runnable> queue : this.queues) {
+            Runnable task = (Runnable)queue.poll();
+            if (task != null) {
                this.size.decrementAndGet();
-               return var5;
+               return task;
             }
          }
 
          return null;
       }
 
-      public boolean push(RunnableWithPriority var1) {
-         int var2 = var1.priority;
-         if (var2 < this.queues.length && var2 >= 0) {
-            this.queues[var2].add(var1);
+      public boolean push(final RunnableWithPriority task) {
+         int priority = task.priority;
+         if (priority < this.queues.length && priority >= 0) {
+            this.queues[priority].add(task);
             this.size.incrementAndGet();
             return true;
          } else {
-            throw new IndexOutOfBoundsException(String.format(Locale.ROOT, "Priority %d not supported. Expected range [0-%d]", var2, this.queues.length - 1));
+            throw new IndexOutOfBoundsException(String.format(Locale.ROOT, "Priority %d not supported. Expected range [0-%d]", priority, this.queues.length - 1));
          }
       }
 

@@ -13,21 +13,21 @@ public class VillagerHostilesSensor extends NearestVisibleLivingEntitySensor {
       super();
    }
 
-   protected boolean isMatchingEntity(ServerLevel var1, LivingEntity var2, LivingEntity var3) {
-      return this.isHostile(var3) && this.isClose(var2, var3);
+   protected boolean isMatchingEntity(final ServerLevel level, final LivingEntity body, final LivingEntity mob) {
+      return this.isHostile(mob) && this.isClose(body, mob);
    }
 
-   private boolean isClose(LivingEntity var1, LivingEntity var2) {
-      float var3 = (Float)ACCEPTABLE_DISTANCE_FROM_HOSTILES.get(var2.getType());
-      return var2.distanceToSqr(var1) <= (double)(var3 * var3);
+   private boolean isClose(final LivingEntity body, final LivingEntity mob) {
+      float distThreshold = (Float)ACCEPTABLE_DISTANCE_FROM_HOSTILES.get(mob.getType());
+      return mob.distanceToSqr(body) <= (double)(distThreshold * distThreshold);
    }
 
-   protected MemoryModuleType<LivingEntity> getMemory() {
+   protected MemoryModuleType<LivingEntity> getMemoryToSet() {
       return MemoryModuleType.NEAREST_HOSTILE;
    }
 
-   private boolean isHostile(LivingEntity var1) {
-      return ACCEPTABLE_DISTANCE_FROM_HOSTILES.containsKey(var1.getType());
+   private boolean isHostile(final LivingEntity entity) {
+      return ACCEPTABLE_DISTANCE_FROM_HOSTILES.containsKey(entity.getType());
    }
 
    static {

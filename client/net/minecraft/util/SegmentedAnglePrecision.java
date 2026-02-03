@@ -8,54 +8,54 @@ public class SegmentedAnglePrecision {
    private final float degreeToAngle;
    private final float angleToDegree;
 
-   public SegmentedAnglePrecision(int var1) {
+   public SegmentedAnglePrecision(final int bitPrecision) {
       super();
-      if (var1 < 2) {
+      if (bitPrecision < 2) {
          throw new IllegalArgumentException("Precision cannot be less than 2 bits");
-      } else if (var1 > 30) {
+      } else if (bitPrecision > 30) {
          throw new IllegalArgumentException("Precision cannot be greater than 30 bits");
       } else {
-         int var2 = 1 << var1;
-         this.mask = var2 - 1;
-         this.precision = var1;
-         this.degreeToAngle = (float)var2 / 360.0F;
-         this.angleToDegree = 360.0F / (float)var2;
+         int twoPi = 1 << bitPrecision;
+         this.mask = twoPi - 1;
+         this.precision = bitPrecision;
+         this.degreeToAngle = (float)twoPi / 360.0F;
+         this.angleToDegree = 360.0F / (float)twoPi;
       }
    }
 
-   public boolean isSameAxis(int var1, int var2) {
-      int var3 = this.getMask() >> 1;
-      return (var1 & var3) == (var2 & var3);
+   public boolean isSameAxis(final int binaryAngleA, final int binaryAngleB) {
+      int semicircleMask = this.getMask() >> 1;
+      return (binaryAngleA & semicircleMask) == (binaryAngleB & semicircleMask);
    }
 
-   public int fromDirection(Direction var1) {
-      if (var1.getAxis().isVertical()) {
+   public int fromDirection(final Direction direction) {
+      if (direction.getAxis().isVertical()) {
          return 0;
       } else {
-         int var2 = var1.get2DDataValue();
-         return var2 << this.precision - 2;
+         int segmentedAngle2bit = direction.get2DDataValue();
+         return segmentedAngle2bit << this.precision - 2;
       }
    }
 
-   public int fromDegreesWithTurns(float var1) {
-      return Math.round(var1 * this.degreeToAngle);
+   public int fromDegreesWithTurns(final float degrees) {
+      return Math.round(degrees * this.degreeToAngle);
    }
 
-   public int fromDegrees(float var1) {
-      return this.normalize(this.fromDegreesWithTurns(var1));
+   public int fromDegrees(final float degrees) {
+      return this.normalize(this.fromDegreesWithTurns(degrees));
    }
 
-   public float toDegreesWithTurns(int var1) {
-      return (float)var1 * this.angleToDegree;
+   public float toDegreesWithTurns(final int binaryAngle) {
+      return (float)binaryAngle * this.angleToDegree;
    }
 
-   public float toDegrees(int var1) {
-      float var2 = this.toDegreesWithTurns(this.normalize(var1));
-      return var2 >= 180.0F ? var2 - 360.0F : var2;
+   public float toDegrees(final int binaryAngle) {
+      float degrees = this.toDegreesWithTurns(this.normalize(binaryAngle));
+      return degrees >= 180.0F ? degrees - 360.0F : degrees;
    }
 
-   public int normalize(int var1) {
-      return var1 & this.mask;
+   public int normalize(final int binaryAngle) {
+      return binaryAngle & this.mask;
    }
 
    public int getMask() {

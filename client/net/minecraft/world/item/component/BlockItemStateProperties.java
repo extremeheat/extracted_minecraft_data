@@ -14,6 +14,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.BeehiveBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -25,49 +26,48 @@ public record BlockItemStateProperties(Map<String, String> properties) implement
    private static final StreamCodec<ByteBuf, Map<String, String>> PROPERTIES_STREAM_CODEC;
    public static final StreamCodec<ByteBuf, BlockItemStateProperties> STREAM_CODEC;
 
-   public BlockItemStateProperties(Map<String, String> var1) {
+   public BlockItemStateProperties {
       super();
-      this.properties = var1;
    }
 
-   public <T extends Comparable<T>> BlockItemStateProperties with(Property<T> var1, T var2) {
-      return new BlockItemStateProperties(Util.copyAndPut(this.properties, var1.getName(), var1.getName(var2)));
+   public <T extends Comparable<T>> BlockItemStateProperties with(final Property<T> property, final T value) {
+      return new BlockItemStateProperties(Util.copyAndPut(this.properties, property.getName(), property.getName(value)));
    }
 
-   public <T extends Comparable<T>> BlockItemStateProperties with(Property<T> var1, BlockState var2) {
-      return this.with(var1, var2.getValue(var1));
+   public <T extends Comparable<T>> BlockItemStateProperties with(final Property<T> property, final BlockState state) {
+      return this.with(property, state.getValue(property));
    }
 
-   public <T extends Comparable<T>> @Nullable T get(Property<T> var1) {
-      String var2 = (String)this.properties.get(var1.getName());
-      return (T)(var2 == null ? null : (Comparable)var1.getValue(var2).orElse((Object)null));
+   public <T extends Comparable<T>> @Nullable T get(final Property<T> property) {
+      String value = (String)this.properties.get(property.getName());
+      return (T)(value == null ? null : (Comparable)property.getValue(value).orElse((Object)null));
    }
 
-   public BlockState apply(BlockState var1) {
-      StateDefinition var2 = var1.getBlock().getStateDefinition();
+   public BlockState apply(BlockState state) {
+      StateDefinition<Block, BlockState> stateDefinition = state.getBlock().getStateDefinition();
 
-      for(Map.Entry var4 : this.properties.entrySet()) {
-         Property var5 = var2.getProperty((String)var4.getKey());
-         if (var5 != null) {
-            var1 = updateState(var1, var5, (String)var4.getValue());
+      for(Map.Entry<String, String> entry : this.properties.entrySet()) {
+         Property<?> property = stateDefinition.getProperty((String)entry.getKey());
+         if (property != null) {
+            state = updateState(state, property, (String)entry.getValue());
          }
       }
 
-      return var1;
+      return state;
    }
 
-   private static <T extends Comparable<T>> BlockState updateState(BlockState var0, Property<T> var1, String var2) {
-      return (BlockState)var1.getValue(var2).map((var2x) -> (BlockState)var0.setValue(var1, var2x)).orElse(var0);
+   private static <T extends Comparable<T>> BlockState updateState(final BlockState state, final Property<T> property, final String value) {
+      return (BlockState)property.getValue(value).map((v) -> (BlockState)state.setValue(property, v)).orElse(state);
    }
 
    public boolean isEmpty() {
       return this.properties.isEmpty();
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      Integer var5 = (Integer)this.get(BeehiveBlock.HONEY_LEVEL);
-      if (var5 != null) {
-         var2.accept(Component.translatable("container.beehive.honey", var5, 5).withStyle(ChatFormatting.GRAY));
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      Integer honeyLevel = (Integer)this.get(BeehiveBlock.HONEY_LEVEL);
+      if (honeyLevel != null) {
+         consumer.accept(Component.translatable("container.beehive.honey", honeyLevel, 5).withStyle(ChatFormatting.GRAY));
       }
 
    }

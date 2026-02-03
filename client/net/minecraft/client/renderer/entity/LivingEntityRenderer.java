@@ -10,7 +10,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -38,7 +37,6 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.AbstractSkullBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
@@ -49,100 +47,100 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
    protected final ItemModelResolver itemModelResolver;
    protected final List<RenderLayer<S, M>> layers = Lists.newArrayList();
 
-   public LivingEntityRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
-      super(var1);
-      this.itemModelResolver = var1.getItemModelResolver();
-      this.model = var2;
-      this.shadowRadius = var3;
+   public LivingEntityRenderer(final EntityRendererProvider.Context context, final M model, final float shadow) {
+      super(context);
+      this.itemModelResolver = context.getItemModelResolver();
+      this.model = model;
+      this.shadowRadius = shadow;
    }
 
-   protected final boolean addLayer(RenderLayer<S, M> var1) {
-      return this.layers.add(var1);
+   protected final boolean addLayer(final RenderLayer<S, M> layer) {
+      return this.layers.add(layer);
    }
 
    public M getModel() {
       return this.model;
    }
 
-   protected AABB getBoundingBoxForCulling(T var1) {
-      AABB var2 = super.getBoundingBoxForCulling(var1);
-      if (var1.getItemBySlot(EquipmentSlot.HEAD).is(Items.DRAGON_HEAD)) {
-         float var3 = 0.5F;
-         return var2.inflate(0.5, 0.5, 0.5);
+   protected AABB getBoundingBoxForCulling(final T entity) {
+      AABB aabb = super.getBoundingBoxForCulling(entity);
+      if (entity.getItemBySlot(EquipmentSlot.HEAD).is(Items.DRAGON_HEAD)) {
+         float extraSize = 0.5F;
+         return aabb.inflate(0.5, 0.5, 0.5);
       } else {
-         return var2;
+         return aabb;
       }
    }
 
-   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      var2.pushPose();
-      if (var1.hasPose(Pose.SLEEPING)) {
-         Direction var5 = var1.bedOrientation;
-         if (var5 != null) {
-            float var6 = var1.eyeHeight - 0.1F;
-            var2.translate((float)(-var5.getStepX()) * var6, 0.0F, (float)(-var5.getStepZ()) * var6);
+   public void submit(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      poseStack.pushPose();
+      if (state.hasPose(Pose.SLEEPING)) {
+         Direction bedOrientation = state.bedOrientation;
+         if (bedOrientation != null) {
+            float headOffset = state.eyeHeight - 0.1F;
+            poseStack.translate((float)(-bedOrientation.getStepX()) * headOffset, 0.0F, (float)(-bedOrientation.getStepZ()) * headOffset);
          }
       }
 
-      float var12 = var1.scale;
-      var2.scale(var12, var12, var12);
-      this.setupRotations(var1, var2, var1.bodyRot, var12);
-      var2.scale(-1.0F, -1.0F, 1.0F);
-      this.scale(var1, var2);
-      var2.translate(0.0F, -1.501F, 0.0F);
-      boolean var13 = this.isBodyVisible(var1);
-      boolean var7 = !var13 && !var1.isInvisibleToPlayer;
-      RenderType var8 = this.getRenderType(var1, var13, var7, var1.appearsGlowing());
-      if (var8 != null) {
-         int var9 = getOverlayCoords(var1, this.getWhiteOverlayProgress(var1));
-         int var10 = var7 ? 654311423 : -1;
-         int var11 = ARGB.multiply(var10, this.getModelTint(var1));
-         var3.submitModel(this.model, var1, var2, var8, var1.lightCoords, var9, var11, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      float scale = state.scale;
+      poseStack.scale(scale, scale, scale);
+      this.setupRotations(state, poseStack, state.bodyRot, scale);
+      poseStack.scale(-1.0F, -1.0F, 1.0F);
+      this.scale(state, poseStack);
+      poseStack.translate(0.0F, -1.501F, 0.0F);
+      boolean isBodyVisible = this.isBodyVisible(state);
+      boolean forceTransparent = !isBodyVisible && !state.isInvisibleToPlayer;
+      RenderType renderType = this.getRenderType(state, isBodyVisible, forceTransparent, state.appearsGlowing());
+      if (renderType != null) {
+         int overlayCoords = getOverlayCoords(state, this.getWhiteOverlayProgress(state));
+         int baseColor = forceTransparent ? 654311423 : -1;
+         int tintedColor = ARGB.multiply(baseColor, this.getModelTint(state));
+         submitNodeCollector.submitModel(this.model, state, poseStack, renderType, state.lightCoords, overlayCoords, tintedColor, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
-      if (this.shouldRenderLayers(var1) && !this.layers.isEmpty()) {
-         this.model.setupAnim(var1);
+      if (this.shouldRenderLayers(state) && !this.layers.isEmpty()) {
+         this.model.setupAnim(state);
 
-         for(RenderLayer var15 : this.layers) {
-            var15.submit(var2, var3, var1.lightCoords, var1, var1.yRot, var1.xRot);
+         for(RenderLayer<S, M> layer : this.layers) {
+            layer.submit(poseStack, submitNodeCollector, state.lightCoords, state, state.yRot, state.xRot);
          }
       }
 
-      var2.popPose();
-      super.submit(var1, var2, var3, var4);
+      poseStack.popPose();
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
-   protected boolean shouldRenderLayers(S var1) {
+   protected boolean shouldRenderLayers(final S state) {
       return true;
    }
 
-   protected int getModelTint(S var1) {
+   protected int getModelTint(final S state) {
       return -1;
    }
 
-   public abstract Identifier getTextureLocation(S var1);
+   public abstract Identifier getTextureLocation(final S state);
 
-   protected @Nullable RenderType getRenderType(S var1, boolean var2, boolean var3, boolean var4) {
-      Identifier var5 = this.getTextureLocation(var1);
-      if (var3) {
-         return RenderTypes.itemEntityTranslucentCull(var5);
-      } else if (var2) {
-         return this.model.renderType(var5);
+   protected @Nullable RenderType getRenderType(final S state, final boolean isBodyVisible, final boolean forceTransparent, final boolean appearGlowing) {
+      Identifier texture = this.getTextureLocation(state);
+      if (forceTransparent) {
+         return RenderTypes.itemEntityTranslucentCull(texture);
+      } else if (isBodyVisible) {
+         return this.model.renderType(texture);
       } else {
-         return var4 ? RenderTypes.outline(var5) : null;
+         return appearGlowing ? RenderTypes.outline(texture) : null;
       }
    }
 
-   public static int getOverlayCoords(LivingEntityRenderState var0, float var1) {
-      return OverlayTexture.pack(OverlayTexture.u(var1), OverlayTexture.v(var0.hasRedOverlay));
+   public static int getOverlayCoords(final LivingEntityRenderState state, final float whiteOverlayProgress) {
+      return OverlayTexture.pack(OverlayTexture.u(whiteOverlayProgress), OverlayTexture.v(state.hasRedOverlay));
    }
 
-   protected boolean isBodyVisible(S var1) {
-      return !var1.isInvisible;
+   protected boolean isBodyVisible(final S state) {
+      return !state.isInvisible;
    }
 
-   private static float sleepDirectionToRotation(Direction var0) {
-      switch (var0) {
+   private static float sleepDirectionToRotation(final Direction direction) {
+      switch (direction) {
          case SOUTH -> {
             return 90.0F;
          }
@@ -161,39 +159,39 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       }
    }
 
-   protected boolean isShaking(S var1) {
-      return var1.isFullyFrozen;
+   protected boolean isShaking(final S state) {
+      return state.isFullyFrozen;
    }
 
-   protected void setupRotations(S var1, PoseStack var2, float var3, float var4) {
-      if (this.isShaking(var1)) {
-         var3 += (float)(Math.cos((double)((float)Mth.floor(var1.ageInTicks) * 3.25F)) * 3.141592653589793 * 0.4000000059604645);
+   protected void setupRotations(final S state, final PoseStack poseStack, float bodyRot, final float entityScale) {
+      if (this.isShaking(state)) {
+         bodyRot += (float)(Math.cos((double)((float)Mth.floor(state.ageInTicks) * 3.25F)) * 3.141592653589793 * 0.4000000059604645);
       }
 
-      if (!var1.hasPose(Pose.SLEEPING)) {
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var3));
+      if (!state.hasPose(Pose.SLEEPING)) {
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - bodyRot));
       }
 
-      if (var1.deathTime > 0.0F) {
-         float var5 = (var1.deathTime - 1.0F) / 20.0F * 1.6F;
-         var5 = Mth.sqrt(var5);
-         if (var5 > 1.0F) {
-            var5 = 1.0F;
+      if (state.deathTime > 0.0F) {
+         float fall = (state.deathTime - 1.0F) / 20.0F * 1.6F;
+         fall = Mth.sqrt(fall);
+         if (fall > 1.0F) {
+            fall = 1.0F;
          }
 
-         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var5 * this.getFlipDegrees()));
-      } else if (var1.isAutoSpinAttack) {
-         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F - var1.xRot));
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.ageInTicks * -75.0F));
-      } else if (var1.hasPose(Pose.SLEEPING)) {
-         Direction var8 = var1.bedOrientation;
-         float var6 = var8 != null ? sleepDirectionToRotation(var8) : var3;
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var6));
-         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(this.getFlipDegrees()));
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(270.0F));
-      } else if (var1.isUpsideDown) {
-         var2.translate(0.0F, (var1.boundingBoxHeight + 0.1F) / var4, 0.0F);
-         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
+         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(fall * this.getFlipDegrees()));
+      } else if (state.isAutoSpinAttack) {
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F - state.xRot));
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.ageInTicks * -75.0F));
+      } else if (state.hasPose(Pose.SLEEPING)) {
+         Direction bedOrientation = state.bedOrientation;
+         float angle = bedOrientation != null ? sleepDirectionToRotation(bedOrientation) : bodyRot;
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(angle));
+         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(this.getFlipDegrees()));
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(270.0F));
+      } else if (state.isUpsideDown) {
+         poseStack.translate(0.0F, (state.boundingBoxHeight + 0.1F) / entityScale, 0.0F);
+         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
       }
 
    }
@@ -202,41 +200,41 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       return 90.0F;
    }
 
-   protected float getWhiteOverlayProgress(S var1) {
+   protected float getWhiteOverlayProgress(final S state) {
       return 0.0F;
    }
 
-   protected void scale(S var1, PoseStack var2) {
+   protected void scale(final S state, final PoseStack poseStack) {
    }
 
-   protected boolean shouldShowName(T var1, double var2) {
-      if (var1.isDiscrete()) {
-         float var4 = 32.0F;
-         if (var2 >= 1024.0) {
+   protected boolean shouldShowName(final T entity, final double distanceToCameraSq) {
+      if (entity.isDiscrete()) {
+         float maxDist = 32.0F;
+         if (distanceToCameraSq >= 1024.0) {
             return false;
          }
       }
 
-      Minecraft var10 = Minecraft.getInstance();
-      LocalPlayer var5 = var10.player;
-      boolean var6 = !var1.isInvisibleTo(var5);
-      if (var1 != var5) {
-         PlayerTeam var7 = var1.getTeam();
-         PlayerTeam var8 = var5.getTeam();
-         if (var7 != null) {
-            Team.Visibility var9 = ((Team)var7).getNameTagVisibility();
-            switch (var9) {
+      Minecraft minecraft = Minecraft.getInstance();
+      LocalPlayer player = minecraft.player;
+      boolean isVisibleToPlayer = !entity.isInvisibleTo(player);
+      if (entity != player) {
+         Team team = entity.getTeam();
+         Team myTeam = player.getTeam();
+         if (team != null) {
+            Team.Visibility visibility = team.getNameTagVisibility();
+            switch (visibility) {
                case ALWAYS -> {
-                  return var6;
+                  return isVisibleToPlayer;
                }
                case NEVER -> {
                   return false;
                }
                case HIDE_FOR_OTHER_TEAMS -> {
-                  return var8 == null ? var6 : ((Team)var7).isAlliedTo(var8) && (((Team)var7).canSeeFriendlyInvisibles() || var6);
+                  return myTeam == null ? isVisibleToPlayer : team.isAlliedTo(myTeam) && (team.canSeeFriendlyInvisibles() || isVisibleToPlayer);
                }
                case HIDE_FOR_OWN_TEAM -> {
-                  return var8 == null ? var6 : !((Team)var7).isAlliedTo(var8) && var6;
+                  return myTeam == null ? isVisibleToPlayer : !team.isAlliedTo(myTeam) && isVisibleToPlayer;
                }
                default -> {
                   return true;
@@ -245,109 +243,104 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          }
       }
 
-      return Minecraft.renderNames() && var1 != var10.getCameraEntity() && var6 && !var1.isVehicle();
+      return Minecraft.renderNames() && entity != minecraft.getCameraEntity() && isVisibleToPlayer && !entity.isVehicle();
    }
 
-   public boolean isEntityUpsideDown(T var1) {
-      Component var2 = var1.getCustomName();
-      return var2 != null && isUpsideDownName(var2.getString());
+   public boolean isEntityUpsideDown(final T mob) {
+      Component customName = mob.getCustomName();
+      return customName != null && isUpsideDownName(customName.getString());
    }
 
-   protected static boolean isUpsideDownName(String var0) {
-      return "Dinnerbone".equals(var0) || "Grumm".equals(var0);
+   protected static boolean isUpsideDownName(final String name) {
+      return "Dinnerbone".equals(name) || "Grumm".equals(name);
    }
 
-   protected float getShadowRadius(S var1) {
-      return super.getShadowRadius(var1) * var1.scale;
+   protected float getShadowRadius(final S state) {
+      return super.getShadowRadius(state) * state.scale;
    }
 
-   public void extractRenderState(T var1, S var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      float var4 = Mth.rotLerp(var3, var1.yHeadRotO, var1.yHeadRot);
-      var2.bodyRot = solveBodyRot(var1, var4, var3);
-      var2.yRot = Mth.wrapDegrees(var4 - var2.bodyRot);
-      var2.xRot = var1.getXRot(var3);
-      var2.isUpsideDown = this.isEntityUpsideDown(var1);
-      if (var2.isUpsideDown) {
-         var2.xRot *= -1.0F;
-         var2.yRot *= -1.0F;
+   public void extractRenderState(final T entity, final S state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      float headRot = Mth.rotLerp(partialTicks, entity.yHeadRotO, entity.yHeadRot);
+      state.bodyRot = solveBodyRot(entity, headRot, partialTicks);
+      state.yRot = Mth.wrapDegrees(headRot - state.bodyRot);
+      state.xRot = entity.getXRot(partialTicks);
+      state.isUpsideDown = this.isEntityUpsideDown(entity);
+      if (state.isUpsideDown) {
+         state.xRot *= -1.0F;
+         state.yRot *= -1.0F;
       }
 
-      if (!var1.isPassenger() && var1.isAlive()) {
-         var2.walkAnimationPos = var1.walkAnimation.position(var3);
-         var2.walkAnimationSpeed = var1.walkAnimation.speed(var3);
+      if (!entity.isPassenger() && entity.isAlive()) {
+         state.walkAnimationPos = entity.walkAnimation.position(partialTicks);
+         state.walkAnimationSpeed = entity.walkAnimation.speed(partialTicks);
       } else {
-         var2.walkAnimationPos = 0.0F;
-         var2.walkAnimationSpeed = 0.0F;
+         state.walkAnimationPos = 0.0F;
+         state.walkAnimationSpeed = 0.0F;
       }
 
-      Entity var6 = var1.getVehicle();
-      if (var6 instanceof LivingEntity var5) {
-         var2.wornHeadAnimationPos = var5.walkAnimation.position(var3);
+      Entity var6 = entity.getVehicle();
+      if (var6 instanceof LivingEntity vehicle) {
+         state.wornHeadAnimationPos = vehicle.walkAnimation.position(partialTicks);
       } else {
-         var2.wornHeadAnimationPos = var2.walkAnimationPos;
+         state.wornHeadAnimationPos = state.walkAnimationPos;
       }
 
-      var2.scale = var1.getScale();
-      var2.ageScale = var1.getAgeScale();
-      var2.pose = var1.getPose();
-      var2.bedOrientation = var1.getBedOrientation();
-      if (var2.bedOrientation != null) {
-         var2.eyeHeight = var1.getEyeHeight(Pose.STANDING);
+      state.scale = entity.getScale();
+      state.ageScale = entity.getAgeScale();
+      state.pose = entity.getPose();
+      state.bedOrientation = entity.getBedOrientation();
+      if (state.bedOrientation != null) {
+         state.eyeHeight = entity.getEyeHeight(Pose.STANDING);
       }
 
       label48: {
-         var2.isFullyFrozen = var1.isFullyFrozen();
-         var2.isBaby = var1.isBaby();
-         var2.isInWater = var1.isInWater();
-         var2.isAutoSpinAttack = var1.isAutoSpinAttack();
-         var2.ticksSinceKineticHitFeedback = var1.getTicksSinceLastKineticHitFeedback(var3);
-         var2.hasRedOverlay = var1.hurtTime > 0 || var1.deathTime > 0;
-         ItemStack var9 = var1.getItemBySlot(EquipmentSlot.HEAD);
-         Item var8 = var9.getItem();
-         if (var8 instanceof BlockItem var10) {
-            Block var12 = var10.getBlock();
-            if (var12 instanceof AbstractSkullBlock var7) {
-               var2.wornHeadType = var7.getType();
-               var2.wornHeadProfile = (ResolvableProfile)var9.get(DataComponents.PROFILE);
-               var2.headItem.clear();
+         state.isFullyFrozen = entity.isFullyFrozen();
+         state.isBaby = entity.isBaby();
+         state.isInWater = entity.isInWater();
+         state.isAutoSpinAttack = entity.isAutoSpinAttack();
+         state.ticksSinceKineticHitFeedback = entity.getTicksSinceLastKineticHitFeedback(partialTicks);
+         state.hasRedOverlay = entity.hurtTime > 0 || entity.deathTime > 0;
+         ItemStack headItem = entity.getItemBySlot(EquipmentSlot.HEAD);
+         Item var8 = headItem.getItem();
+         if (var8 instanceof BlockItem blockItem) {
+            Block var12 = blockItem.getBlock();
+            if (var12 instanceof AbstractSkullBlock skullBlock) {
+               state.wornHeadType = skullBlock.getType();
+               state.wornHeadProfile = (ResolvableProfile)headItem.get(DataComponents.PROFILE);
+               state.headItem.clear();
                break label48;
             }
          }
 
-         var2.wornHeadType = null;
-         var2.wornHeadProfile = null;
-         if (!HumanoidArmorLayer.shouldRender(var9, EquipmentSlot.HEAD)) {
-            this.itemModelResolver.updateForLiving(var2.headItem, var9, ItemDisplayContext.HEAD, var1);
+         state.wornHeadType = null;
+         state.wornHeadProfile = null;
+         if (!HumanoidArmorLayer.shouldRender(headItem, EquipmentSlot.HEAD)) {
+            this.itemModelResolver.updateForLiving(state.headItem, headItem, ItemDisplayContext.HEAD, entity);
          } else {
-            var2.headItem.clear();
+            state.headItem.clear();
          }
       }
 
-      var2.deathTime = var1.deathTime > 0 ? (float)var1.deathTime + var3 : 0.0F;
-      Minecraft var11 = Minecraft.getInstance();
-      var2.isInvisibleToPlayer = var2.isInvisible && var1.isInvisibleTo(var11.player);
+      state.deathTime = entity.deathTime > 0 ? (float)entity.deathTime + partialTicks : 0.0F;
+      Minecraft minecraft = Minecraft.getInstance();
+      state.isInvisibleToPlayer = state.isInvisible && entity.isInvisibleTo(minecraft.player);
    }
 
-   private static float solveBodyRot(LivingEntity var0, float var1, float var2) {
-      Entity var4 = var0.getVehicle();
-      if (var4 instanceof LivingEntity var3) {
-         float var7 = Mth.rotLerp(var2, var3.yBodyRotO, var3.yBodyRot);
-         float var5 = 85.0F;
-         float var6 = Mth.clamp(Mth.wrapDegrees(var1 - var7), -85.0F, 85.0F);
-         var7 = var1 - var6;
-         if (Math.abs(var6) > 50.0F) {
-            var7 += var6 * 0.2F;
+   private static float solveBodyRot(final LivingEntity entity, final float headRot, final float partialTicks) {
+      Entity var4 = entity.getVehicle();
+      if (var4 instanceof LivingEntity riding) {
+         float bodyRot = Mth.rotLerp(partialTicks, riding.yBodyRotO, riding.yBodyRot);
+         float maxHeadDiff = 85.0F;
+         float headDiff = Mth.clamp(Mth.wrapDegrees(headRot - bodyRot), -85.0F, 85.0F);
+         bodyRot = headRot - headDiff;
+         if (Math.abs(headDiff) > 50.0F) {
+            bodyRot += headDiff * 0.2F;
          }
 
-         return var7;
+         return bodyRot;
       } else {
-         return Mth.rotLerp(var2, var0.yBodyRotO, var0.yBodyRot);
+         return Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);
       }
-   }
-
-   // $FF: synthetic method
-   protected float getShadowRadius(final EntityRenderState var1) {
-      return this.getShadowRadius((LivingEntityRenderState)var1);
    }
 }

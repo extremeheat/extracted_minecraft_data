@@ -10,7 +10,7 @@ public interface FeatureElement {
 
    FeatureFlagSet requiredFeatures();
 
-   default boolean isEnabled(FeatureFlagSet var1) {
-      return this.requiredFeatures().isSubsetOf(var1);
+   default boolean isEnabled(final FeatureFlagSet enabledFeatures) {
+      return this.requiredFeatures().isSubsetOf(enabledFeatures);
    }
 }

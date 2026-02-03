@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.monster.illager;
 
+import java.util.Objects;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -48,14 +49,14 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
    private int clientSideIllusionTicks;
    private final Vec3[][] clientSideIllusionOffsets;
 
-   public Illusioner(EntityType<? extends Illusioner> var1, Level var2) {
-      super(var1, var2);
+   public Illusioner(final EntityType<? extends Illusioner> type, final Level level) {
+      super(type, level);
       this.xpReward = 5;
       this.clientSideIllusionOffsets = new Vec3[2][4];
 
-      for(int var3 = 0; var3 < 4; ++var3) {
-         this.clientSideIllusionOffsets[0][var3] = Vec3.ZERO;
-         this.clientSideIllusionOffsets[1][var3] = Vec3.ZERO;
+      for(int i = 0; i < 4; ++i) {
+         this.clientSideIllusionOffsets[0][i] = Vec3.ZERO;
+         this.clientSideIllusionOffsets[1][i] = Vec3.ZERO;
       }
 
    }
@@ -81,9 +82,9 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.5).add(Attributes.FOLLOW_RANGE, 18.0).add(Attributes.MAX_HEALTH, 32.0);
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
-      return super.finalizeSpawn(var1, var2, var3, var4);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
    public void aiStep() {
@@ -98,22 +99,22 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
             if (this.hurtTime == this.hurtDuration - 1) {
                this.clientSideIllusionTicks = 3;
 
-               for(int var4 = 0; var4 < 4; ++var4) {
-                  this.clientSideIllusionOffsets[0][var4] = this.clientSideIllusionOffsets[1][var4];
-                  this.clientSideIllusionOffsets[1][var4] = new Vec3(0.0, 0.0, 0.0);
+               for(int i = 0; i < 4; ++i) {
+                  this.clientSideIllusionOffsets[0][i] = this.clientSideIllusionOffsets[1][i];
+                  this.clientSideIllusionOffsets[1][i] = new Vec3(0.0, 0.0, 0.0);
                }
             }
          } else {
             this.clientSideIllusionTicks = 3;
-            float var1 = -6.0F;
-            boolean var2 = true;
+            float minSpread = -6.0F;
+            int spreadSpan = 13;
 
-            for(int var3 = 0; var3 < 4; ++var3) {
-               this.clientSideIllusionOffsets[0][var3] = this.clientSideIllusionOffsets[1][var3];
-               this.clientSideIllusionOffsets[1][var3] = new Vec3((double)(-6.0F + (float)this.random.nextInt(13)) * 0.5, (double)Math.max(0, this.random.nextInt(6) - 4), (double)(-6.0F + (float)this.random.nextInt(13)) * 0.5);
+            for(int i = 0; i < 4; ++i) {
+               this.clientSideIllusionOffsets[0][i] = this.clientSideIllusionOffsets[1][i];
+               this.clientSideIllusionOffsets[1][i] = new Vec3((double)(-6.0F + (float)this.random.nextInt(13)) * 0.5, (double)Math.max(0, this.random.nextInt(6) - 4), (double)(-6.0F + (float)this.random.nextInt(13)) * 0.5);
             }
 
-            for(int var5 = 0; var5 < 16; ++var5) {
+            for(int i = 0; i < 16; ++i) {
                this.level().addParticle(ParticleTypes.CLOUD, this.getRandomX(0.5), this.getRandomY(), this.getZ(0.5), 0.0, 0.0, 0.0);
             }
 
@@ -127,19 +128,19 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       return SoundEvents.ILLUSIONER_AMBIENT;
    }
 
-   public Vec3[] getIllusionOffsets(float var1) {
+   public Vec3[] getIllusionOffsets(final float a) {
       if (this.clientSideIllusionTicks <= 0) {
          return this.clientSideIllusionOffsets[1];
       } else {
-         double var2 = (double)(((float)this.clientSideIllusionTicks - var1) / 3.0F);
-         var2 = Math.pow(var2, 0.25);
-         Vec3[] var4 = new Vec3[4];
+         double scale = (double)(((float)this.clientSideIllusionTicks - a) / 3.0F);
+         scale = Math.pow(scale, 0.25);
+         Vec3[] offsets = new Vec3[4];
 
-         for(int var5 = 0; var5 < 4; ++var5) {
-            var4[var5] = this.clientSideIllusionOffsets[1][var5].scale(1.0 - var2).add(this.clientSideIllusionOffsets[0][var5].scale(var2));
+         for(int i = 0; i < 4; ++i) {
+            offsets[i] = this.clientSideIllusionOffsets[1][i].scale(1.0 - scale).add(this.clientSideIllusionOffsets[0][i].scale(scale));
          }
 
-         return var4;
+         return offsets;
       }
    }
 
@@ -151,7 +152,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       return SoundEvents.ILLUSIONER_DEATH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.ILLUSIONER_HURT;
    }
 
@@ -159,20 +160,20 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       return SoundEvents.ILLUSIONER_CAST_SPELL;
    }
 
-   public void applyRaidBuffs(ServerLevel var1, int var2, boolean var3) {
+   public void applyRaidBuffs(final ServerLevel level, final int wave, final boolean isCaptain) {
    }
 
-   public void performRangedAttack(LivingEntity var1, float var2) {
-      ItemStack var3 = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
-      ItemStack var4 = this.getProjectile(var3);
-      AbstractArrow var5 = ProjectileUtil.getMobArrow(this, var4, var2, var3);
-      double var6 = var1.getX() - this.getX();
-      double var8 = var1.getY(0.3333333333333333) - var5.getY();
-      double var10 = var1.getZ() - this.getZ();
-      double var12 = Math.sqrt(var6 * var6 + var10 * var10);
+   public void performRangedAttack(final LivingEntity target, final float power) {
+      ItemStack bowItem = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
+      ItemStack projectile = this.getProjectile(bowItem);
+      AbstractArrow arrow = ProjectileUtil.getMobArrow(this, projectile, power, bowItem);
+      double xd = target.getX() - this.getX();
+      double yd = target.getY(0.3333333333333333) - arrow.getY();
+      double zd = target.getZ() - this.getZ();
+      double distanceToTarget = Math.sqrt(xd * xd + zd * zd);
       Level var15 = this.level();
-      if (var15 instanceof ServerLevel var14) {
-         Projectile.spawnProjectileUsingShoot(var5, var14, var4, var6, var8 + var12 * 0.20000000298023224, var10, 1.6F, (float)(14 - var14.getDifficulty().getId() * 4));
+      if (var15 instanceof ServerLevel serverLevel) {
+         Projectile.spawnProjectileUsingShoot(arrow, serverLevel, projectile, xd, yd + distanceToTarget * 0.20000000298023224, zd, 1.6F, (float)(14 - serverLevel.getDifficulty().getId() * 4));
       }
 
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
@@ -186,8 +187,9 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       }
    }
 
-   class IllusionerMirrorSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
-      IllusionerMirrorSpellGoal() {
+   private class IllusionerMirrorSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
+      private IllusionerMirrorSpellGoal() {
+         Objects.requireNonNull(Illusioner.this);
          super();
       }
 
@@ -220,10 +222,11 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       }
    }
 
-   class IllusionerBlindnessSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
+   private class IllusionerBlindnessSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
       private int lastTargetId;
 
-      IllusionerBlindnessSpellGoal() {
+      private IllusionerBlindnessSpellGoal() {
+         Objects.requireNonNull(Illusioner.this);
          super();
       }
 
@@ -241,9 +244,9 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
 
       public void start() {
          super.start();
-         LivingEntity var1 = Illusioner.this.getTarget();
-         if (var1 != null) {
-            this.lastTargetId = var1.getId();
+         LivingEntity target = Illusioner.this.getTarget();
+         if (target != null) {
+            this.lastTargetId = target.getId();
          }
 
       }

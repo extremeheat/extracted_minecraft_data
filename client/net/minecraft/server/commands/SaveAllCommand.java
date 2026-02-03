@@ -16,18 +16,18 @@ public class SaveAllCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-all").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((var0x) -> saveAll((CommandSourceStack)var0x.getSource(), false))).then(Commands.literal("flush").executes((var0x) -> saveAll((CommandSourceStack)var0x.getSource(), true))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-all").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((c) -> saveAll((CommandSourceStack)c.getSource(), false))).then(Commands.literal("flush").executes((c) -> saveAll((CommandSourceStack)c.getSource(), true))));
    }
 
-   private static int saveAll(CommandSourceStack var0, boolean var1) throws CommandSyntaxException {
-      var0.sendSuccess(() -> Component.translatable("commands.save.saving"), false);
-      MinecraftServer var2 = var0.getServer();
-      boolean var3 = var2.saveEverything(true, var1, true);
-      if (!var3) {
+   private static int saveAll(final CommandSourceStack source, final boolean flush) throws CommandSyntaxException {
+      source.sendSuccess(() -> Component.translatable("commands.save.saving"), false);
+      MinecraftServer server = source.getServer();
+      boolean success = server.saveEverything(true, flush, true);
+      if (!success) {
          throw ERROR_FAILED.create();
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.save.success"), true);
+         source.sendSuccess(() -> Component.translatable("commands.save.success"), true);
          return 1;
       }
    }

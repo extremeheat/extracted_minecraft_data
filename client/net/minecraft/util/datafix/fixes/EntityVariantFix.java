@@ -13,21 +13,21 @@ public class EntityVariantFix extends NamedEntityFix {
    private final String fieldName;
    private final IntFunction<String> idConversions;
 
-   public EntityVariantFix(Schema var1, String var2, DSL.TypeReference var3, String var4, String var5, IntFunction<String> var6) {
-      super(var1, false, var2, var3, var4);
-      this.fieldName = var5;
-      this.idConversions = var6;
+   public EntityVariantFix(final Schema outputSchema, final String name, final DSL.TypeReference type, final String entityName, final String fieldName, final IntFunction<String> idConversions) {
+      super(outputSchema, false, name, type, entityName);
+      this.fieldName = fieldName;
+      this.idConversions = idConversions;
    }
 
-   private static <T> Dynamic<T> updateAndRename(Dynamic<T> var0, String var1, String var2, Function<Dynamic<T>, Dynamic<T>> var3) {
-      return var0.map((var4) -> {
-         DynamicOps var5 = var0.getOps();
-         Function var6 = (var2x) -> ((Dynamic)var3.apply(new Dynamic(var5, var2x))).getValue();
-         return var5.get(var4, var1).map((var4x) -> var5.set(var4, var2, var6.apply(var4x))).result().orElse(var4);
+   private static <T> Dynamic<T> updateAndRename(final Dynamic<T> input, final String oldKey, final String newKey, final Function<Dynamic<T>, Dynamic<T>> function) {
+      return input.map((v) -> {
+         DynamicOps<T> ops = input.getOps();
+         Function<T, T> liftedFunction = (value) -> ((Dynamic)function.apply(new Dynamic(ops, value))).getValue();
+         return ops.get(v, oldKey).map((fieldValue) -> ops.set(v, newKey, liftedFunction.apply(fieldValue))).result().orElse(v);
       });
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var1x) -> updateAndRename(var1x, this.fieldName, "variant", (var1) -> (Dynamic)DataFixUtils.orElse(var1.asNumber().map((var2) -> var1.createString((String)this.idConversions.apply(var2.intValue()))).result(), var1)));
+   protected Typed<?> fix(final Typed<?> typed) {
+      return typed.update(DSL.remainderFinder(), (remainder) -> updateAndRename(remainder, this.fieldName, "variant", (catType) -> (Dynamic)DataFixUtils.orElse(catType.asNumber().map((e) -> catType.createString((String)this.idConversions.apply(e.intValue()))).result(), catType)));
    }
 }

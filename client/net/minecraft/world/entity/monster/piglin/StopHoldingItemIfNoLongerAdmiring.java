@@ -12,9 +12,9 @@ public class StopHoldingItemIfNoLongerAdmiring {
    }
 
    public static BehaviorControl<Piglin> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.absent(MemoryModuleType.ADMIRING_ITEM)).apply(var0, (var0x) -> (var0, var1, var2) -> {
-               if (!var1.getOffhandItem().isEmpty() && !var1.getOffhandItem().has(DataComponents.BLOCKS_ATTACKS)) {
-                  PiglinAi.stopHoldingOffHandItem(var0, var1, true);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.ADMIRING_ITEM)).apply(i, (admiring) -> (level, body, timestamp) -> {
+               if (!body.getOffhandItem().isEmpty() && !body.getOffhandItem().has(DataComponents.BLOCKS_ATTACKS)) {
+                  PiglinAi.stopHoldingOffHandItem(level, body, true);
                   return true;
                } else {
                   return false;

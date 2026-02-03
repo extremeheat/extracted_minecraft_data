@@ -8,9 +8,9 @@ import java.util.concurrent.Executor;
 
 @FunctionalInterface
 public interface PreparableReloadListener {
-   CompletableFuture<Void> reload(SharedState var1, Executor var2, PreparationBarrier var3, Executor var4);
+   CompletableFuture<Void> reload(SharedState currentReload, Executor taskExecutor, PreparationBarrier preparationBarrier, Executor reloadExecutor);
 
-   default void prepareSharedState(SharedState var1) {
+   default void prepareSharedState(final SharedState currentReload) {
    }
 
    default String getName() {
@@ -27,26 +27,26 @@ public interface PreparableReloadListener {
       private final ResourceManager manager;
       private final Map<StateKey<?>, Object> state = new IdentityHashMap();
 
-      public SharedState(ResourceManager var1) {
+      public SharedState(final ResourceManager manager) {
          super();
-         this.manager = var1;
+         this.manager = manager;
       }
 
       public ResourceManager resourceManager() {
          return this.manager;
       }
 
-      public <T> void set(StateKey<T> var1, T var2) {
-         this.state.put(var1, var2);
+      public <T> void set(final StateKey<T> key, final T value) {
+         this.state.put(key, value);
       }
 
-      public <T> T get(StateKey<T> var1) {
-         return (T)Objects.requireNonNull(this.state.get(var1));
+      public <T> T get(final StateKey<T> key) {
+         return (T)Objects.requireNonNull(this.state.get(key));
       }
    }
 
    @FunctionalInterface
    public interface PreparationBarrier {
-      <T> CompletableFuture<T> wait(T var1);
+      <T> CompletableFuture<T> wait(T t);
    }
 }

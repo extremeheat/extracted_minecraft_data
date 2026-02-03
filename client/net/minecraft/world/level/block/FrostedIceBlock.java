@@ -30,26 +30,26 @@ public class FrostedIceBlock extends IceBlock {
       return CODEC;
    }
 
-   public FrostedIceBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public FrostedIceBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
 
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      var2.scheduleTick(var3, this, Mth.nextInt(var2.getRandom(), 60, 120));
+   public void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      level.scheduleTick(pos, this, Mth.nextInt(level.getRandom(), 60, 120));
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var4.nextInt(3) == 0 || this.fewerNeigboursThan(var2, var3, 4)) {
-         int var5 = var2.dimension() == Level.END ? var2.getBrightness(LightLayer.BLOCK, var3) : var2.getMaxLocalRawBrightness(var3);
-         if (var5 > 11 - (Integer)var1.getValue(AGE) - var1.getLightBlock() && this.slightlyMelt(var1, var2, var3)) {
-            BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (random.nextInt(3) == 0 || this.fewerNeigboursThan(level, pos, 4)) {
+         int brightness = level.dimension() == Level.END ? level.getBrightness(LightLayer.BLOCK, pos) : level.getMaxLocalRawBrightness(pos);
+         if (brightness > 11 - (Integer)state.getValue(AGE) - state.getLightBlock() && this.slightlyMelt(state, level, pos)) {
+            BlockPos.MutableBlockPos neighborPos = new BlockPos.MutableBlockPos();
 
-            for(Direction var10 : Direction.values()) {
-               var6.setWithOffset(var3, (Direction)var10);
-               BlockState var11 = var2.getBlockState(var6);
-               if (var11.is(this) && !this.slightlyMelt(var11, var2, var6)) {
-                  var2.scheduleTick(var6, this, Mth.nextInt(var4, 20, 40));
+            for(Direction direction : Direction.values()) {
+               neighborPos.setWithOffset(pos, (Direction)direction);
+               BlockState neighbour = level.getBlockState(neighborPos);
+               if (neighbour.is(this) && !this.slightlyMelt(neighbour, level, neighborPos)) {
+                  level.scheduleTick(neighborPos, this, Mth.nextInt(random, 20, 40));
                }
             }
 
@@ -57,37 +57,37 @@ public class FrostedIceBlock extends IceBlock {
          }
       }
 
-      var2.scheduleTick(var3, this, Mth.nextInt(var4, 20, 40));
+      level.scheduleTick(pos, this, Mth.nextInt(random, 20, 40));
    }
 
-   private boolean slightlyMelt(BlockState var1, Level var2, BlockPos var3) {
-      int var4 = (Integer)var1.getValue(AGE);
-      if (var4 < 3) {
-         var2.setBlock(var3, (BlockState)var1.setValue(AGE, var4 + 1), 2);
+   private boolean slightlyMelt(final BlockState state, final Level level, final BlockPos pos) {
+      int age = (Integer)state.getValue(AGE);
+      if (age < 3) {
+         level.setBlock(pos, (BlockState)state.setValue(AGE, age + 1), 2);
          return false;
       } else {
-         this.melt(var1, var2, var3);
+         this.melt(state, level, pos);
          return true;
       }
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (var4.defaultBlockState().is(this) && this.fewerNeigboursThan(var2, var3, 2)) {
-         this.melt(var1, var2, var3);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (block.defaultBlockState().is(this) && this.fewerNeigboursThan(level, pos, 2)) {
+         this.melt(state, level, pos);
       }
 
-      super.neighborChanged(var1, var2, var3, var4, var5, var6);
+      super.neighborChanged(state, level, pos, block, orientation, movedByPiston);
    }
 
-   private boolean fewerNeigboursThan(BlockGetter var1, BlockPos var2, int var3) {
-      int var4 = 0;
-      BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
+   private boolean fewerNeigboursThan(final BlockGetter level, final BlockPos pos, final int limit) {
+      int result = 0;
+      BlockPos.MutableBlockPos neighborPos = new BlockPos.MutableBlockPos();
 
-      for(Direction var9 : Direction.values()) {
-         var5.setWithOffset(var2, (Direction)var9);
-         if (var1.getBlockState(var5).is(this)) {
-            ++var4;
-            if (var4 >= var3) {
+      for(Direction direction : Direction.values()) {
+         neighborPos.setWithOffset(pos, (Direction)direction);
+         if (level.getBlockState(neighborPos).is(this)) {
+            ++result;
+            if (result >= limit) {
                return false;
             }
          }
@@ -96,11 +96,11 @@ public class FrostedIceBlock extends IceBlock {
       return true;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE);
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
       return ItemStack.EMPTY;
    }
 

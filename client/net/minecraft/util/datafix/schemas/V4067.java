@@ -8,36 +8,36 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V4067 extends NamespacedSchema {
-   public V4067(int var1, Schema var2) {
-      super(var1, var2);
+   public V4067(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
-      Map var2 = super.registerEntities(var1);
-      var2.remove("minecraft:boat");
-      var2.remove("minecraft:chest_boat");
-      this.registerSimple(var2, "minecraft:oak_boat");
-      this.registerSimple(var2, "minecraft:spruce_boat");
-      this.registerSimple(var2, "minecraft:birch_boat");
-      this.registerSimple(var2, "minecraft:jungle_boat");
-      this.registerSimple(var2, "minecraft:acacia_boat");
-      this.registerSimple(var2, "minecraft:cherry_boat");
-      this.registerSimple(var2, "minecraft:dark_oak_boat");
-      this.registerSimple(var2, "minecraft:mangrove_boat");
-      this.registerSimple(var2, "minecraft:bamboo_raft");
-      this.registerChestBoat(var2, "minecraft:oak_chest_boat");
-      this.registerChestBoat(var2, "minecraft:spruce_chest_boat");
-      this.registerChestBoat(var2, "minecraft:birch_chest_boat");
-      this.registerChestBoat(var2, "minecraft:jungle_chest_boat");
-      this.registerChestBoat(var2, "minecraft:acacia_chest_boat");
-      this.registerChestBoat(var2, "minecraft:cherry_chest_boat");
-      this.registerChestBoat(var2, "minecraft:dark_oak_chest_boat");
-      this.registerChestBoat(var2, "minecraft:mangrove_chest_boat");
-      this.registerChestBoat(var2, "minecraft:bamboo_chest_raft");
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerEntities(schema);
+      map.remove("minecraft:boat");
+      map.remove("minecraft:chest_boat");
+      this.registerSimple(map, "minecraft:oak_boat");
+      this.registerSimple(map, "minecraft:spruce_boat");
+      this.registerSimple(map, "minecraft:birch_boat");
+      this.registerSimple(map, "minecraft:jungle_boat");
+      this.registerSimple(map, "minecraft:acacia_boat");
+      this.registerSimple(map, "minecraft:cherry_boat");
+      this.registerSimple(map, "minecraft:dark_oak_boat");
+      this.registerSimple(map, "minecraft:mangrove_boat");
+      this.registerSimple(map, "minecraft:bamboo_raft");
+      this.registerChestBoat(map, "minecraft:oak_chest_boat");
+      this.registerChestBoat(map, "minecraft:spruce_chest_boat");
+      this.registerChestBoat(map, "minecraft:birch_chest_boat");
+      this.registerChestBoat(map, "minecraft:jungle_chest_boat");
+      this.registerChestBoat(map, "minecraft:acacia_chest_boat");
+      this.registerChestBoat(map, "minecraft:cherry_chest_boat");
+      this.registerChestBoat(map, "minecraft:dark_oak_chest_boat");
+      this.registerChestBoat(map, "minecraft:mangrove_chest_boat");
+      this.registerChestBoat(map, "minecraft:bamboo_chest_raft");
+      return map;
    }
 
-   private void registerChestBoat(Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      this.register(var1, var2, (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(this))));
+   private void registerChestBoat(final Map<String, Supplier<TypeTemplate>> map, final String id) {
+      this.register(map, id, (name) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(this))));
    }
 }

@@ -25,15 +25,15 @@ public class LevelSummary implements Comparable<LevelSummary> {
    private final Path icon;
    private @Nullable Component info;
 
-   public LevelSummary(LevelSettings var1, LevelVersion var2, String var3, boolean var4, boolean var5, boolean var6, Path var7) {
+   public LevelSummary(final LevelSettings settings, final LevelVersion levelVersion, final String levelId, final boolean requiresManualConversion, final boolean locked, final boolean experimental, final Path icon) {
       super();
-      this.settings = var1;
-      this.levelVersion = var2;
-      this.levelId = var3;
-      this.locked = var5;
-      this.experimental = var6;
-      this.icon = var7;
-      this.requiresManualConversion = var4;
+      this.settings = settings;
+      this.levelVersion = levelVersion;
+      this.levelId = levelId;
+      this.locked = locked;
+      this.experimental = experimental;
+      this.icon = icon;
+      this.requiresManualConversion = requiresManualConversion;
    }
 
    public String getLevelId() {
@@ -60,11 +60,11 @@ public class LevelSummary implements Comparable<LevelSummary> {
       return this.levelVersion.lastPlayed();
    }
 
-   public int compareTo(LevelSummary var1) {
-      if (this.getLastPlayed() < var1.getLastPlayed()) {
+   public int compareTo(final LevelSummary rhs) {
+      if (this.getLastPlayed() < rhs.getLastPlayed()) {
          return 1;
       } else {
-         return this.getLastPlayed() > var1.getLastPlayed() ? -1 : this.levelId.compareTo(var1.levelId);
+         return this.getLastPlayed() > rhs.getLastPlayed() ? -1 : this.levelId.compareTo(rhs.levelId);
       }
    }
 
@@ -101,13 +101,13 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public BackupStatus backupStatus() {
-      WorldVersion var1 = SharedConstants.getCurrentVersion();
-      int var2 = var1.dataVersion().version();
-      int var3 = this.levelVersion.minecraftVersion().version();
-      if (!var1.stable() && var3 < var2) {
+      WorldVersion currentVersion = SharedConstants.getCurrentVersion();
+      int currentVersionNumber = currentVersion.dataVersion().version();
+      int levelVersionNumber = this.levelVersion.minecraftVersion().version();
+      if (!currentVersion.stable() && levelVersionNumber < currentVersionNumber) {
          return LevelSummary.BackupStatus.UPGRADE_TO_SNAPSHOT;
       } else {
-         return var3 > var2 ? LevelSummary.BackupStatus.DOWNGRADE : LevelSummary.BackupStatus.NONE;
+         return levelVersionNumber > currentVersionNumber ? LevelSummary.BackupStatus.DOWNGRADE : LevelSummary.BackupStatus.NONE;
       }
    }
 
@@ -143,25 +143,25 @@ public class LevelSummary implements Comparable<LevelSummary> {
       } else if (!this.isCompatible()) {
          return Component.translatable("selectWorld.incompatible.info", this.getWorldVersionName()).withStyle(ChatFormatting.RED);
       } else {
-         MutableComponent var1 = this.isHardcore() ? Component.empty().append((Component)Component.translatable("gameMode.hardcore").withColor(-65536)) : Component.translatable("gameMode." + this.getGameMode().getName());
+         MutableComponent result = this.isHardcore() ? Component.empty().append((Component)Component.translatable("gameMode.hardcore").withColor(-65536)) : Component.translatable("gameMode." + this.getGameMode().getName());
          if (this.hasCommands()) {
-            var1.append(", ").append((Component)Component.translatable("selectWorld.commands"));
+            result.append(", ").append((Component)Component.translatable("selectWorld.commands"));
          }
 
          if (this.isExperimental()) {
-            var1.append(", ").append((Component)Component.translatable("selectWorld.experimental").withStyle(ChatFormatting.YELLOW));
+            result.append(", ").append((Component)Component.translatable("selectWorld.experimental").withStyle(ChatFormatting.YELLOW));
          }
 
-         MutableComponent var2 = this.getWorldVersionName();
-         MutableComponent var3 = Component.literal(", ").append((Component)Component.translatable("selectWorld.version")).append(CommonComponents.SPACE);
+         MutableComponent worldVersionName = this.getWorldVersionName();
+         MutableComponent decoratedVersionName = Component.literal(", ").append((Component)Component.translatable("selectWorld.version")).append(CommonComponents.SPACE);
          if (this.shouldBackup()) {
-            var3.append((Component)var2.withStyle(this.isDowngrade() ? ChatFormatting.RED : ChatFormatting.ITALIC));
+            decoratedVersionName.append((Component)worldVersionName.withStyle(this.isDowngrade() ? ChatFormatting.RED : ChatFormatting.ITALIC));
          } else {
-            var3.append((Component)var2);
+            decoratedVersionName.append((Component)worldVersionName);
          }
 
-         var1.append((Component)var3);
-         return var1;
+         result.append((Component)decoratedVersionName);
+         return result;
       }
    }
 
@@ -189,11 +189,6 @@ public class LevelSummary implements Comparable<LevelSummary> {
       return true;
    }
 
-   // $FF: synthetic method
-   public int compareTo(final Object var1) {
-      return this.compareTo((LevelSummary)var1);
-   }
-
    public static enum BackupStatus {
       NONE(false, false, ""),
       DOWNGRADE(true, true, "downgrade"),
@@ -203,10 +198,10 @@ public class LevelSummary implements Comparable<LevelSummary> {
       private final boolean severe;
       private final String translationKey;
 
-      private BackupStatus(final boolean var3, final boolean var4, final String var5) {
-         this.shouldBackup = var3;
-         this.severe = var4;
-         this.translationKey = var5;
+      private BackupStatus(final boolean shouldBackup, final boolean severe, final String translationKey) {
+         this.shouldBackup = shouldBackup;
+         this.severe = severe;
+         this.translationKey = translationKey;
       }
 
       public boolean shouldBackup() {
@@ -231,8 +226,8 @@ public class LevelSummary implements Comparable<LevelSummary> {
       private static final Component MORE_INFO_BUTTON = Component.translatable("symlink_warning.more_info");
       private static final Component INFO = Component.translatable("symlink_warning.title").withColor(-65536);
 
-      public SymlinkLevelSummary(String var1, Path var2) {
-         super((LevelSettings)null, (LevelVersion)null, var1, false, false, false, var2);
+      public SymlinkLevelSummary(final String levelId, final Path icon) {
+         super((LevelSettings)null, (LevelVersion)null, levelId, false, false, false, icon);
       }
 
       public String getLevelName() {
@@ -270,21 +265,16 @@ public class LevelSummary implements Comparable<LevelSummary> {
       public boolean canRecreate() {
          return false;
       }
-
-      // $FF: synthetic method
-      public int compareTo(final Object var1) {
-         return super.compareTo((LevelSummary)var1);
-      }
    }
 
    public static class CorruptedLevelSummary extends LevelSummary {
-      private static final Component INFO = Component.translatable("recover_world.warning").withStyle((UnaryOperator)((var0) -> var0.withColor(-65536)));
+      private static final Component INFO = Component.translatable("recover_world.warning").withStyle((UnaryOperator)((style) -> style.withColor(-65536)));
       private static final Component RECOVER = Component.translatable("recover_world.button");
       private final long lastPlayed;
 
-      public CorruptedLevelSummary(String var1, Path var2, long var3) {
-         super((LevelSettings)null, (LevelVersion)null, var1, false, false, false, var2);
-         this.lastPlayed = var3;
+      public CorruptedLevelSummary(final String levelId, final Path icon, final long lastPlayed) {
+         super((LevelSettings)null, (LevelVersion)null, levelId, false, false, false, icon);
+         this.lastPlayed = lastPlayed;
       }
 
       public String getLevelName() {
@@ -321,11 +311,6 @@ public class LevelSummary implements Comparable<LevelSummary> {
 
       public boolean canRecreate() {
          return false;
-      }
-
-      // $FF: synthetic method
-      public int compareTo(final Object var1) {
-         return super.compareTo((LevelSummary)var1);
       }
    }
 }

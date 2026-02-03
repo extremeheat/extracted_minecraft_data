@@ -34,10 +34,10 @@ public enum NoteBlockInstrument implements StringRepresentable {
    private final Holder<SoundEvent> soundEvent;
    private final Type type;
 
-   private NoteBlockInstrument(final String var3, final Holder<SoundEvent> var4, final Type var5) {
-      this.name = var3;
-      this.soundEvent = var4;
-      this.type = var5;
+   private NoteBlockInstrument(final String name, final Holder<SoundEvent> soundEvent, final Type type) {
+      this.name = name;
+      this.soundEvent = soundEvent;
+      this.type = type;
    }
 
    public String getSerializedName() {
@@ -65,7 +65,7 @@ public enum NoteBlockInstrument implements StringRepresentable {
       return new NoteBlockInstrument[]{HARP, BASEDRUM, SNARE, HAT, BASS, FLUTE, BELL, GUITAR, CHIME, XYLOPHONE, IRON_XYLOPHONE, COW_BELL, DIDGERIDOO, BIT, BANJO, PLING, ZOMBIE, SKELETON, CREEPER, DRAGON, WITHER_SKELETON, PIGLIN, CUSTOM_HEAD};
    }
 
-   static enum Type {
+   private static enum Type {
       BASE_BLOCK,
       MOB_HEAD,
       CUSTOM;

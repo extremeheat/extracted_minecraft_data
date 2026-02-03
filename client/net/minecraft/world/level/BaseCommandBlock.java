@@ -28,7 +28,7 @@ public abstract class BaseCommandBlock {
    private boolean updateLastExecution = true;
    private int successCount;
    private boolean trackOutput = true;
-   @Nullable Component lastOutput;
+   private @Nullable Component lastOutput;
    private String command = "";
    private @Nullable Component customName;
 
@@ -40,52 +40,52 @@ public abstract class BaseCommandBlock {
       return this.successCount;
    }
 
-   public void setSuccessCount(int var1) {
-      this.successCount = var1;
+   public void setSuccessCount(final int successCount) {
+      this.successCount = successCount;
    }
 
    public Component getLastOutput() {
       return this.lastOutput == null ? CommonComponents.EMPTY : this.lastOutput;
    }
 
-   public void save(ValueOutput var1) {
-      var1.putString("Command", this.command);
-      var1.putInt("SuccessCount", this.successCount);
-      var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.customName);
-      var1.putBoolean("TrackOutput", this.trackOutput);
+   public void save(final ValueOutput output) {
+      output.putString("Command", this.command);
+      output.putInt("SuccessCount", this.successCount);
+      output.storeNullable("CustomName", ComponentSerialization.CODEC, this.customName);
+      output.putBoolean("TrackOutput", this.trackOutput);
       if (this.trackOutput) {
-         var1.storeNullable("LastOutput", ComponentSerialization.CODEC, this.lastOutput);
+         output.storeNullable("LastOutput", ComponentSerialization.CODEC, this.lastOutput);
       }
 
-      var1.putBoolean("UpdateLastExecution", this.updateLastExecution);
+      output.putBoolean("UpdateLastExecution", this.updateLastExecution);
       if (this.updateLastExecution && this.lastExecution != -1L) {
-         var1.putLong("LastExecution", this.lastExecution);
+         output.putLong("LastExecution", this.lastExecution);
       }
 
    }
 
-   public void load(ValueInput var1) {
-      this.command = var1.getStringOr("Command", "");
-      this.successCount = var1.getIntOr("SuccessCount", 0);
-      this.setCustomName(BlockEntity.parseCustomNameSafe(var1, "CustomName"));
-      this.trackOutput = var1.getBooleanOr("TrackOutput", true);
+   public void load(final ValueInput input) {
+      this.command = input.getStringOr("Command", "");
+      this.successCount = input.getIntOr("SuccessCount", 0);
+      this.setCustomName(BlockEntity.parseCustomNameSafe(input, "CustomName"));
+      this.trackOutput = input.getBooleanOr("TrackOutput", true);
       if (this.trackOutput) {
-         this.lastOutput = BlockEntity.parseCustomNameSafe(var1, "LastOutput");
+         this.lastOutput = BlockEntity.parseCustomNameSafe(input, "LastOutput");
       } else {
          this.lastOutput = null;
       }
 
-      this.updateLastExecution = var1.getBooleanOr("UpdateLastExecution", true);
+      this.updateLastExecution = input.getBooleanOr("UpdateLastExecution", true);
       if (this.updateLastExecution) {
-         this.lastExecution = var1.getLongOr("LastExecution", -1L);
+         this.lastExecution = input.getLongOr("LastExecution", -1L);
       } else {
          this.lastExecution = -1L;
       }
 
    }
 
-   public void setCommand(String var1) {
-      this.command = var1;
+   public void setCommand(final String command) {
+      this.command = command;
       this.successCount = 0;
    }
 
@@ -93,8 +93,8 @@ public abstract class BaseCommandBlock {
       return this.command;
    }
 
-   public boolean performCommand(ServerLevel var1) {
-      if (var1.getGameTime() == this.lastExecution) {
+   public boolean performCommand(final ServerLevel level) {
+      if (level.getGameTime() == this.lastExecution) {
          return false;
       } else if ("Searge".equalsIgnoreCase(this.command)) {
          this.lastOutput = Component.literal("#itzlipofutzli");
@@ -102,31 +102,31 @@ public abstract class BaseCommandBlock {
          return true;
       } else {
          this.successCount = 0;
-         if (var1.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
+         if (level.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
             try {
                this.lastOutput = null;
 
-               try (CloseableCommandBlockSource var2 = this.createSource(var1)) {
-                  CommandSource var8 = (CommandSource)Objects.requireNonNullElse(var2, CommandSource.NULL);
-                  CommandSourceStack var9 = this.createCommandSourceStack(var1, var8).withCallback((var1x, var2x) -> {
-                     if (var1x) {
+               try (CloseableCommandBlockSource commandSource = this.createSource(level)) {
+                  CommandSource effectiveCommandSource = (CommandSource)Objects.requireNonNullElse(commandSource, CommandSource.NULL);
+                  CommandSourceStack commandSourceStack = this.createCommandSourceStack(level, effectiveCommandSource).withCallback((success, result) -> {
+                     if (success) {
                         ++this.successCount;
                      }
 
                   });
-                  var1.getServer().getCommands().performPrefixedCommand(var9, this.command);
+                  level.getServer().getCommands().performPrefixedCommand(commandSourceStack, this.command);
                }
-            } catch (Throwable var7) {
-               CrashReport var3 = CrashReport.forThrowable(var7, "Executing command block");
-               CrashReportCategory var4 = var3.addCategory("Command to be executed");
-               var4.setDetail("Command", this::getCommand);
-               var4.setDetail("Name", (CrashReportDetail)(() -> this.getName().getString()));
-               throw new ReportedException(var3);
+            } catch (Throwable t) {
+               CrashReport report = CrashReport.forThrowable(t, "Executing command block");
+               CrashReportCategory category = report.addCategory("Command to be executed");
+               category.setDetail("Command", this::getCommand);
+               category.setDetail("Name", (CrashReportDetail)(() -> this.getName().getString()));
+               throw new ReportedException(report);
             }
          }
 
          if (this.updateLastExecution) {
-            this.lastExecution = var1.getGameTime();
+            this.lastExecution = level.getGameTime();
          } else {
             this.lastExecution = -1L;
          }
@@ -135,8 +135,8 @@ public abstract class BaseCommandBlock {
       }
    }
 
-   private @Nullable CloseableCommandBlockSource createSource(ServerLevel var1) {
-      return this.trackOutput ? new CloseableCommandBlockSource(var1) : null;
+   private @Nullable CloseableCommandBlockSource createSource(final ServerLevel level) {
+      return this.trackOutput ? new CloseableCommandBlockSource(level) : null;
    }
 
    public Component getName() {
@@ -147,25 +147,25 @@ public abstract class BaseCommandBlock {
       return this.customName;
    }
 
-   public void setCustomName(@Nullable Component var1) {
-      this.customName = var1;
+   public void setCustomName(final @Nullable Component name) {
+      this.customName = name;
    }
 
-   public abstract void onUpdated(ServerLevel var1);
+   public abstract void onUpdated(ServerLevel level);
 
-   public void setLastOutput(@Nullable Component var1) {
-      this.lastOutput = var1;
+   public void setLastOutput(final @Nullable Component lastOutput) {
+      this.lastOutput = lastOutput;
    }
 
-   public void setTrackOutput(boolean var1) {
-      this.trackOutput = var1;
+   public void setTrackOutput(final boolean trackOutput) {
+      this.trackOutput = trackOutput;
    }
 
    public boolean isTrackOutput() {
       return this.trackOutput;
    }
 
-   public abstract CommandSourceStack createCommandSourceStack(ServerLevel var1, CommandSource var2);
+   public abstract CommandSourceStack createCommandSourceStack(ServerLevel level, CommandSource source);
 
    public abstract boolean isValid();
 
@@ -174,9 +174,10 @@ public abstract class BaseCommandBlock {
       private static final DateTimeFormatter TIME_FORMAT;
       private boolean closed;
 
-      protected CloseableCommandBlockSource(final ServerLevel var2) {
+      protected CloseableCommandBlockSource(final ServerLevel level) {
+         Objects.requireNonNull(BaseCommandBlock.this);
          super();
-         this.level = var2;
+         this.level = level;
       }
 
       public boolean acceptsSuccess() {
@@ -191,10 +192,10 @@ public abstract class BaseCommandBlock {
          return !this.closed && (Boolean)this.level.getGameRules().get(GameRules.COMMAND_BLOCK_OUTPUT);
       }
 
-      public void sendSystemMessage(Component var1) {
+      public void sendSystemMessage(final Component message) {
          if (!this.closed) {
             DateTimeFormatter var10001 = TIME_FORMAT;
-            BaseCommandBlock.this.lastOutput = Component.literal("[" + var10001.format(ZonedDateTime.now()) + "] ").append(var1);
+            BaseCommandBlock.this.lastOutput = Component.literal("[" + var10001.format(ZonedDateTime.now()) + "] ").append(message);
             BaseCommandBlock.this.onUpdated(this.level);
          }
 

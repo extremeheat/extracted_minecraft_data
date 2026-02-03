@@ -7,16 +7,16 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 
 public class WeightedListHeight extends HeightProvider {
-   public static final MapCodec<WeightedListHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeightedList.nonEmptyCodec(HeightProvider.CODEC).fieldOf("distribution").forGetter((var0x) -> var0x.distribution)).apply(var0, WeightedListHeight::new));
+   public static final MapCodec<WeightedListHeight> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeightedList.nonEmptyCodec(HeightProvider.CODEC).fieldOf("distribution").forGetter((c) -> c.distribution)).apply(i, WeightedListHeight::new));
    private final WeightedList<HeightProvider> distribution;
 
-   public WeightedListHeight(WeightedList<HeightProvider> var1) {
+   public WeightedListHeight(final WeightedList<HeightProvider> distribution) {
       super();
-      this.distribution = var1;
+      this.distribution = distribution;
    }
 
-   public int sample(RandomSource var1, WorldGenerationContext var2) {
-      return ((HeightProvider)this.distribution.getRandomOrThrow(var1)).sample(var1, var2);
+   public int sample(final RandomSource random, final WorldGenerationContext heightAccessor) {
+      return ((HeightProvider)this.distribution.getRandomOrThrow(random)).sample(random, heightAccessor);
    }
 
    public HeightProviderType<?> getType() {

@@ -1,16 +1,12 @@
 package com.mojang.blaze3d.systems;
 
-import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.TracyFrameCapture;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
-import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.platform.GLX;
-import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -36,30 +32,29 @@ import org.lwjgl.glfw.GLFWErrorCallbackI;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
-@DontObfuscate
 public class RenderSystem {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final int MINIMUM_ATLAS_TEXTURE_SIZE = 1024;
    public static final int PROJECTION_MATRIX_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().get();
    private static @Nullable Thread renderThread;
    private static @Nullable GpuDevice DEVICE;
    private static double lastDrawTime = 4.9E-324;
    private static final AutoStorageIndexBuffer sharedSequential = new AutoStorageIndexBuffer(1, 1, IntConsumer::accept);
-   private static final AutoStorageIndexBuffer sharedSequentialQuad = new AutoStorageIndexBuffer(4, 6, (var0, var1) -> {
-      var0.accept(var1);
-      var0.accept(var1 + 1);
-      var0.accept(var1 + 2);
-      var0.accept(var1 + 2);
-      var0.accept(var1 + 3);
-      var0.accept(var1);
+   private static final AutoStorageIndexBuffer sharedSequentialQuad = new AutoStorageIndexBuffer(4, 6, (c, i) -> {
+      c.accept(i);
+      c.accept(i + 1);
+      c.accept(i + 2);
+      c.accept(i + 2);
+      c.accept(i + 3);
+      c.accept(i);
    });
-   private static final AutoStorageIndexBuffer sharedSequentialLines = new AutoStorageIndexBuffer(4, 6, (var0, var1) -> {
-      var0.accept(var1);
-      var0.accept(var1 + 1);
-      var0.accept(var1 + 2);
-      var0.accept(var1 + 3);
-      var0.accept(var1 + 2);
-      var0.accept(var1 + 1);
+   private static final AutoStorageIndexBuffer sharedSequentialLines = new AutoStorageIndexBuffer(4, 6, (c, i) -> {
+      c.accept(i);
+      c.accept(i + 1);
+      c.accept(i + 2);
+      c.accept(i + 3);
+      c.accept(i + 2);
+      c.accept(i + 1);
    });
    private static ProjectionType projectionType;
    private static ProjectionType savedProjectionType;
@@ -77,7 +72,7 @@ public class RenderSystem {
    private static @Nullable GpuBuffer globalSettingsUniform;
    private static @Nullable DynamicUniforms dynamicUniforms;
    private static final ScissorState scissorStateForRenderTypeDraws;
-   private static SamplerCache samplerCache;
+   private static final SamplerCache samplerCache;
 
    public RenderSystem() {
       super();
@@ -109,7 +104,7 @@ public class RenderSystem {
       return new IllegalStateException("Rendersystem called from wrong thread");
    }
 
-   private static void pollEvents() {
+   public static void pollEvents() {
       pollEventsWaitStart.set(Util.getMillis());
       pollingEvents.set(true);
       GLFW.glfwPollEvents();
@@ -120,48 +115,46 @@ public class RenderSystem {
       return pollingEvents.get() && Util.getMillis() - pollEventsWaitStart.get() > 200L;
    }
 
-   public static void flipFrame(Window var0, @Nullable TracyFrameCapture var1) {
-      pollEvents();
+   public static void flipFrame(final @Nullable TracyFrameCapture tracyFrameCapture) {
       Tesselator.getInstance().clear();
-      GLFW.glfwSwapBuffers(var0.handle());
-      if (var1 != null) {
-         var1.endFrame();
+      getDevice().presentFrame();
+      if (tracyFrameCapture != null) {
+         tracyFrameCapture.endFrame();
       }
 
       dynamicUniforms.reset();
       Minecraft.getInstance().levelRenderer.endFrame();
-      pollEvents();
    }
 
-   public static void limitDisplayFPS(int var0) {
-      double var1 = lastDrawTime + 1.0 / (double)var0;
+   public static void limitDisplayFPS(final int framerateLimit) {
+      double targetTime = lastDrawTime + 1.0 / (double)framerateLimit;
 
-      double var3;
-      for(var3 = GLFW.glfwGetTime(); var3 < var1; var3 = GLFW.glfwGetTime()) {
-         GLFW.glfwWaitEventsTimeout(var1 - var3);
+      double drawTime;
+      for(drawTime = GLFW.glfwGetTime(); drawTime < targetTime; drawTime = GLFW.glfwGetTime()) {
+         GLFW.glfwWaitEventsTimeout(targetTime - drawTime);
       }
 
-      lastDrawTime = var3;
+      lastDrawTime = drawTime;
    }
 
-   public static void setShaderFog(GpuBufferSlice var0) {
-      shaderFog = var0;
+   public static void setShaderFog(final GpuBufferSlice fog) {
+      shaderFog = fog;
    }
 
    public static @Nullable GpuBufferSlice getShaderFog() {
       return shaderFog;
    }
 
-   public static void setShaderLights(GpuBufferSlice var0) {
-      shaderLightDirections = var0;
+   public static void setShaderLights(final GpuBufferSlice buffer) {
+      shaderLightDirections = buffer;
    }
 
    public static @Nullable GpuBufferSlice getShaderLights() {
       return shaderLightDirections;
    }
 
-   public static void enableScissorForRenderTypeDraws(int var0, int var1, int var2, int var3) {
-      scissorStateForRenderTypeDraws.enable(var0, var1, var2, var3);
+   public static void enableScissorForRenderTypeDraws(final int x, final int y, final int width, final int height) {
+      scissorStateForRenderTypeDraws.enable(x, y, width, height);
    }
 
    public static void disableScissorForRenderTypeDraws() {
@@ -186,25 +179,29 @@ public class RenderSystem {
       return var10000::getAsLong;
    }
 
-   public static void initRenderer(long var0, int var2, boolean var3, ShaderSource var4, boolean var5) {
-      DEVICE = new GlDevice(var0, var2, var3, var4, var5);
-      apiDescription = getDevice().getImplementationInformation();
-      dynamicUniforms = new DynamicUniforms();
-      samplerCache.initialize();
+   public static void initRenderer(final GpuDevice device) {
+      if (DEVICE != null) {
+         throw new IllegalStateException("RenderSystem.DEVICE already initialized");
+      } else {
+         DEVICE = device;
+         apiDescription = getDevice().getImplementationInformation();
+         dynamicUniforms = new DynamicUniforms();
+         samplerCache.initialize();
+      }
    }
 
-   public static void setErrorCallback(GLFWErrorCallbackI var0) {
-      GLX._setGlfwErrorCallback(var0);
+   public static void setErrorCallback(final GLFWErrorCallbackI onFullscreenError) {
+      GLX._setGlfwErrorCallback(onFullscreenError);
    }
 
    public static void setupDefaultState() {
       modelViewStack.clear();
    }
 
-   public static void setProjectionMatrix(GpuBufferSlice var0, ProjectionType var1) {
+   public static void setProjectionMatrix(final GpuBufferSlice projectionMatrixBuffer, final ProjectionType type) {
       assertOnRenderThread();
-      projectionMatrixBuffer = var0;
-      projectionType = var1;
+      RenderSystem.projectionMatrixBuffer = projectionMatrixBuffer;
+      projectionType = type;
    }
 
    public static void backupProjectionMatrix() {
@@ -234,10 +231,10 @@ public class RenderSystem {
       return modelViewStack;
    }
 
-   public static AutoStorageIndexBuffer getSequentialBuffer(VertexFormat.Mode var0) {
+   public static AutoStorageIndexBuffer getSequentialBuffer(final VertexFormat.Mode primitiveMode) {
       assertOnRenderThread();
       AutoStorageIndexBuffer var10000;
-      switch (var0) {
+      switch (primitiveMode) {
          case QUADS -> var10000 = sharedSequentialQuad;
          case LINES -> var10000 = sharedSequentialLines;
          default -> var10000 = sharedSequential;
@@ -246,8 +243,8 @@ public class RenderSystem {
       return var10000;
    }
 
-   public static void setGlobalSettingsUniform(GpuBuffer var0) {
-      globalSettingsUniform = var0;
+   public static void setGlobalSettingsUniform(final GpuBuffer buffer) {
+      globalSettingsUniform = buffer;
    }
 
    public static @Nullable GpuBuffer getGlobalSettingsUniform() {
@@ -259,20 +256,20 @@ public class RenderSystem {
       return projectionType;
    }
 
-   public static void queueFencedTask(Runnable var0) {
-      PENDING_FENCES.addLast(new GpuAsyncTask(var0, getDevice().createCommandEncoder().createFence()));
+   public static void queueFencedTask(final Runnable task) {
+      PENDING_FENCES.addLast(new GpuAsyncTask(task, getDevice().createCommandEncoder().createFence()));
    }
 
    public static void executePendingTasks() {
-      for(GpuAsyncTask var0 = PENDING_FENCES.peekFirst(); var0 != null; var0 = PENDING_FENCES.peekFirst()) {
-         if (!var0.fence.awaitCompletion(0L)) {
+      for(GpuAsyncTask task = PENDING_FENCES.peekFirst(); task != null; task = PENDING_FENCES.peekFirst()) {
+         if (!task.fence.awaitCompletion(0L)) {
             return;
          }
 
          try {
-            var0.callback.run();
+            task.callback.run();
          } finally {
-            var0.fence.close();
+            task.fence.close();
          }
 
          PENDING_FENCES.removeFirst();
@@ -300,25 +297,25 @@ public class RenderSystem {
       }
    }
 
-   public static void bindDefaultUniforms(RenderPass var0) {
-      GpuBufferSlice var1 = getProjectionMatrixBuffer();
-      if (var1 != null) {
-         var0.setUniform("Projection", var1);
+   public static void bindDefaultUniforms(final RenderPass renderPass) {
+      GpuBufferSlice projectionMatrix = getProjectionMatrixBuffer();
+      if (projectionMatrix != null) {
+         renderPass.setUniform("Projection", projectionMatrix);
       }
 
-      GpuBufferSlice var2 = getShaderFog();
-      if (var2 != null) {
-         var0.setUniform("Fog", var2);
+      GpuBufferSlice fog = getShaderFog();
+      if (fog != null) {
+         renderPass.setUniform("Fog", fog);
       }
 
-      GpuBuffer var3 = getGlobalSettingsUniform();
-      if (var3 != null) {
-         var0.setUniform("Globals", var3);
+      GpuBuffer globalUniform = getGlobalSettingsUniform();
+      if (globalUniform != null) {
+         renderPass.setUniform("Globals", globalUniform);
       }
 
-      GpuBufferSlice var4 = getShaderLights();
-      if (var4 != null) {
-         var0.setUniform("Lighting", var4);
+      GpuBufferSlice shaderLights = getShaderLights();
+      if (shaderLights != null) {
+         renderPass.setUniform("Lighting", shaderLights);
       }
 
    }
@@ -344,63 +341,63 @@ public class RenderSystem {
       private VertexFormat.IndexType type;
       private int indexCount;
 
-      AutoStorageIndexBuffer(int var1, int var2, IndexGenerator var3) {
+      private AutoStorageIndexBuffer(final int vertexStride, final int indexStride, final IndexGenerator generator) {
          super();
          this.type = VertexFormat.IndexType.SHORT;
-         this.vertexStride = var1;
-         this.indexStride = var2;
-         this.generator = var3;
+         this.vertexStride = vertexStride;
+         this.indexStride = indexStride;
+         this.generator = generator;
       }
 
-      public boolean hasStorage(int var1) {
-         return var1 <= this.indexCount;
+      public boolean hasStorage(final int indexCount) {
+         return indexCount <= this.indexCount;
       }
 
-      public GpuBuffer getBuffer(int var1) {
-         this.ensureStorage(var1);
+      public GpuBuffer getBuffer(final int indexCount) {
+         this.ensureStorage(indexCount);
          return this.buffer;
       }
 
-      private void ensureStorage(int var1) {
-         if (!this.hasStorage(var1)) {
-            var1 = Mth.roundToward(var1 * 2, this.indexStride);
-            RenderSystem.LOGGER.debug("Growing IndexBuffer: Old limit {}, new limit {}.", this.indexCount, var1);
-            int var2 = var1 / this.indexStride;
-            int var3 = var2 * this.vertexStride;
-            VertexFormat.IndexType var4 = VertexFormat.IndexType.least(var3);
-            int var5 = Mth.roundToward(var1 * var4.bytes, 4);
-            ByteBuffer var6 = MemoryUtil.memAlloc(var5);
+      private void ensureStorage(int indexCount) {
+         if (!this.hasStorage(indexCount)) {
+            indexCount = Mth.roundToward(indexCount * 2, this.indexStride);
+            RenderSystem.LOGGER.debug("Growing IndexBuffer: Old limit {}, new limit {}.", this.indexCount, indexCount);
+            int primitiveCount = indexCount / this.indexStride;
+            int vertexCount = primitiveCount * this.vertexStride;
+            VertexFormat.IndexType type = VertexFormat.IndexType.least(vertexCount);
+            int bufferSize = Mth.roundToward(indexCount * type.bytes, 4);
+            ByteBuffer data = MemoryUtil.memAlloc(bufferSize);
 
             try {
-               this.type = var4;
-               it.unimi.dsi.fastutil.ints.IntConsumer var7 = this.intConsumer(var6);
+               this.type = type;
+               it.unimi.dsi.fastutil.ints.IntConsumer intConsumer = this.intConsumer(data);
 
-               for(int var8 = 0; var8 < var1; var8 += this.indexStride) {
-                  this.generator.accept(var7, var8 * this.vertexStride / this.indexStride);
+               for(int ii = 0; ii < indexCount; ii += this.indexStride) {
+                  this.generator.accept(intConsumer, ii * this.vertexStride / this.indexStride);
                }
 
-               var6.flip();
+               data.flip();
                if (this.buffer != null) {
                   this.buffer.close();
                }
 
-               this.buffer = RenderSystem.getDevice().createBuffer(() -> "Auto Storage index buffer", 64, var6);
+               this.buffer = RenderSystem.getDevice().createBuffer(() -> "Auto Storage index buffer", 64, data);
             } finally {
-               MemoryUtil.memFree(var6);
+               MemoryUtil.memFree(data);
             }
 
-            this.indexCount = var1;
+            this.indexCount = indexCount;
          }
       }
 
-      private it.unimi.dsi.fastutil.ints.IntConsumer intConsumer(ByteBuffer var1) {
+      private it.unimi.dsi.fastutil.ints.IntConsumer intConsumer(final ByteBuffer buffer) {
          switch (this.type) {
             case SHORT:
-               return (var1x) -> var1.putShort((short)var1x);
+               return (value) -> buffer.putShort((short)value);
             case INT:
             default:
-               Objects.requireNonNull(var1);
-               return var1::putInt;
+               Objects.requireNonNull(buffer);
+               return buffer::putInt;
          }
       }
 
@@ -408,19 +405,14 @@ public class RenderSystem {
          return this.type;
       }
 
-      interface IndexGenerator {
-         void accept(it.unimi.dsi.fastutil.ints.IntConsumer var1, int var2);
+      private interface IndexGenerator {
+         void accept(final it.unimi.dsi.fastutil.ints.IntConsumer consumer, final int start);
       }
    }
 
    static record GpuAsyncTask(Runnable callback, GpuFence fence) {
-      final Runnable callback;
-      final GpuFence fence;
-
-      GpuAsyncTask(Runnable var1, GpuFence var2) {
+      GpuAsyncTask {
          super();
-         this.callback = var1;
-         this.fence = var2;
       }
    }
 }

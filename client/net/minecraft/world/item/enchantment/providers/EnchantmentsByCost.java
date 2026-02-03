@@ -15,17 +15,15 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 public record EnchantmentsByCost(HolderSet<Enchantment> enchantments, IntProvider cost) implements EnchantmentProvider {
-   public static final MapCodec<EnchantmentsByCost> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).fieldOf("enchantments").forGetter(EnchantmentsByCost::enchantments), IntProvider.CODEC.fieldOf("cost").forGetter(EnchantmentsByCost::cost)).apply(var0, EnchantmentsByCost::new));
+   public static final MapCodec<EnchantmentsByCost> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).fieldOf("enchantments").forGetter(EnchantmentsByCost::enchantments), IntProvider.CODEC.fieldOf("cost").forGetter(EnchantmentsByCost::cost)).apply(i, EnchantmentsByCost::new));
 
-   public EnchantmentsByCost(HolderSet<Enchantment> var1, IntProvider var2) {
+   public EnchantmentsByCost {
       super();
-      this.enchantments = var1;
-      this.cost = var2;
    }
 
-   public void enchant(ItemStack var1, ItemEnchantments.Mutable var2, RandomSource var3, DifficultyInstance var4) {
-      for(EnchantmentInstance var7 : EnchantmentHelper.selectEnchantment(var3, var1, this.cost.sample(var3), this.enchantments.stream())) {
-         var2.upgrade(var7.enchantment(), var7.level());
+   public void enchant(final ItemStack item, final ItemEnchantments.Mutable itemEnchantments, final RandomSource random, final DifficultyInstance difficulty) {
+      for(EnchantmentInstance instance : EnchantmentHelper.selectEnchantment(random, item, this.cost.sample(random), this.enchantments.stream())) {
+         itemEnchantments.upgrade(instance.enchantment(), instance.level());
       }
 
    }

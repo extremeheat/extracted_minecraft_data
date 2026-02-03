@@ -1,20 +1,17 @@
 package net.minecraft.world.entity.npc.villager;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Dynamic;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
@@ -57,6 +54,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ReputationEventHandler;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -67,7 +65,6 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.sensing.GolemSensor;
-import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.ai.village.ReputationEventType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -79,26 +76,28 @@ import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.item.trading.TradeSet;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.timeline.Timeline;
+import net.minecraft.world.timeline.Timelines;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class Villager extends AbstractVillager implements ReputationEventHandler, VillagerDataHolder {
+public class Villager extends AbstractVillager implements VillagerDataHolder, ReputationEventHandler {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final EntityDataAccessor<VillagerData> DATA_VILLAGER_DATA;
+   private static final EntityDataAccessor<Boolean> DATA_VILLAGER_DATA_FINALIZED;
    public static final int BREEDING_FOOD_THRESHOLD = 12;
    public static final Map<Item, Integer> FOOD_POINTS;
-   private static final int TRADES_PER_LEVEL = 2;
    private static final int MAX_GOSSIP_TOPICS = 10;
    private static final int GOSSIP_COOLDOWN = 1200;
    private static final int GOSSIP_DECAY_INTERVAL = 24000;
@@ -126,20 +125,19 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private int numberOfRestocksToday;
    private long lastRestockCheckDay;
    private boolean assignProfessionWhenSpawned;
-   private static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
-   private static final ImmutableList<SensorType<? extends Sensor<? super Villager>>> SENSOR_TYPES;
+   private static final Brain.Provider<Villager> BRAIN_PROVIDER;
    public static final Map<MemoryModuleType<GlobalPos>, BiPredicate<Villager, Holder<PoiType>>> POI_MEMORIES;
 
-   public Villager(EntityType<? extends Villager> var1, Level var2) {
-      this(var1, var2, VillagerType.PLAINS);
+   public Villager(final EntityType<? extends Villager> type, final Level level) {
+      this(type, level, VillagerType.PLAINS);
    }
 
-   public Villager(EntityType<? extends Villager> var1, Level var2, ResourceKey<VillagerType> var3) {
-      this(var1, var2, var2.registryAccess().getOrThrow(var3));
+   public Villager(final EntityType<? extends Villager> entityType, final Level level, final ResourceKey<VillagerType> type) {
+      this(entityType, level, level.registryAccess().getOrThrow(type));
    }
 
-   public Villager(EntityType<? extends Villager> var1, Level var2, Holder<VillagerType> var3) {
-      super(var1, var2);
+   public Villager(final EntityType<? extends Villager> entityType, final Level level, final Holder<VillagerType> type) {
+      super(entityType, level);
       this.foodLevel = 0;
       this.gossips = new GossipContainer();
       this.lastGossipDecayTime = 0L;
@@ -151,52 +149,34 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       this.getNavigation().setCanFloat(true);
       this.getNavigation().setRequiredPathLength(48.0F);
       this.setCanPickUpLoot(true);
-      this.setVillagerData(this.getVillagerData().withType(var3).withProfession(var2.registryAccess(), VillagerProfession.NONE));
+      this.setVillagerData(this.getVillagerData().withType(type).withProfession(level.registryAccess(), VillagerProfession.NONE));
    }
 
    public Brain<Villager> getBrain() {
       return super.getBrain();
    }
 
-   protected Brain.Provider<Villager> brainProvider() {
-      return Brain.<Villager>provider(MEMORY_TYPES, SENSOR_TYPES);
+   protected Brain<Villager> makeBrain(final Brain.Packed packedBrain) {
+      Brain<Villager> brain = BRAIN_PROVIDER.makeBrain(this, packedBrain);
+      this.registerBrainGoals(brain);
+      return brain;
    }
 
-   protected Brain<?> makeBrain(Dynamic<?> var1) {
-      Brain var2 = this.brainProvider().makeBrain(var1);
-      this.registerBrainGoals(var2);
-      return var2;
-   }
-
-   public void refreshBrain(ServerLevel var1) {
-      Brain var2 = this.getBrain();
-      var2.stopAll(var1, this);
-      this.brain = var2.copyWithoutBehaviors();
+   public void refreshBrain(final ServerLevel level) {
+      Brain<Villager> oldBrain = this.getBrain();
+      oldBrain.stopAll(level, this);
+      this.brain = BRAIN_PROVIDER.makeBrain(this, oldBrain.pack());
       this.registerBrainGoals(this.getBrain());
    }
 
-   private void registerBrainGoals(Brain<Villager> var1) {
-      Holder var2 = this.getVillagerData().profession();
+   private void registerBrainGoals(final Brain<Villager> brain) {
       if (this.isBaby()) {
-         var1.setSchedule(EnvironmentAttributes.BABY_VILLAGER_ACTIVITY);
-         var1.addActivity(Activity.PLAY, VillagerGoalPackages.getPlayPackage(0.5F));
+         brain.setSchedule(EnvironmentAttributes.BABY_VILLAGER_ACTIVITY);
       } else {
-         var1.setSchedule(EnvironmentAttributes.VILLAGER_ACTIVITY);
-         var1.addActivityWithConditions(Activity.WORK, VillagerGoalPackages.getWorkPackage(var2, 0.5F), ImmutableSet.of(Pair.of(MemoryModuleType.JOB_SITE, MemoryStatus.VALUE_PRESENT)));
+         brain.setSchedule(EnvironmentAttributes.VILLAGER_ACTIVITY);
       }
 
-      var1.addActivity(Activity.CORE, VillagerGoalPackages.getCorePackage(var2, 0.5F));
-      var1.addActivityWithConditions(Activity.MEET, VillagerGoalPackages.getMeetPackage(var2, 0.5F), ImmutableSet.of(Pair.of(MemoryModuleType.MEETING_POINT, MemoryStatus.VALUE_PRESENT)));
-      var1.addActivity(Activity.REST, VillagerGoalPackages.getRestPackage(var2, 0.5F));
-      var1.addActivity(Activity.IDLE, VillagerGoalPackages.getIdlePackage(var2, 0.5F));
-      var1.addActivity(Activity.PANIC, VillagerGoalPackages.getPanicPackage(var2, 0.5F));
-      var1.addActivity(Activity.PRE_RAID, VillagerGoalPackages.getPreRaidPackage(var2, 0.5F));
-      var1.addActivity(Activity.RAID, VillagerGoalPackages.getRaidPackage(var2, 0.5F));
-      var1.addActivity(Activity.HIDE, VillagerGoalPackages.getHidePackage(var2, 0.5F));
-      var1.setCoreActivities(ImmutableSet.of(Activity.CORE));
-      var1.setDefaultActivity(Activity.IDLE);
-      var1.setActiveActivityIfPossible(Activity.IDLE);
-      var1.updateActivityFromSchedule(this.level().environmentAttributes(), this.level().getGameTime(), this.position());
+      brain.updateActivityFromSchedule(this.level().environmentAttributes(), this.level().getGameTime(), this.position());
    }
 
    protected void ageBoundaryReached() {
@@ -215,11 +195,11 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return this.assignProfessionWhenSpawned;
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
-      ProfilerFiller var2 = Profiler.get();
-      var2.push("villagerBrain");
-      this.getBrain().tick(var1, this);
-      var2.pop();
+   protected void customServerAiStep(final ServerLevel level) {
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("villagerBrain");
+      this.getBrain().tick(level, this);
+      profiler.pop();
       if (this.assignProfessionWhenSpawned) {
          this.assignProfessionWhenSpawned = false;
       }
@@ -228,7 +208,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          --this.updateMerchantTimer;
          if (this.updateMerchantTimer <= 0) {
             if (this.increaseProfessionLevelOnUpdate) {
-               this.increaseMerchantCareer(var1);
+               this.increaseMerchantCareer(level);
                this.increaseProfessionLevelOnUpdate = false;
             }
 
@@ -237,15 +217,15 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       }
 
       if (this.lastTradedPlayer != null) {
-         var1.onReputationEvent(ReputationEventType.TRADE, this.lastTradedPlayer, this);
-         var1.broadcastEntityEvent(this, (byte)14);
+         level.onReputationEvent(ReputationEventType.TRADE, this.lastTradedPlayer, this);
+         level.broadcastEntityEvent(this, (byte)14);
          this.lastTradedPlayer = null;
       }
 
       if (!this.isNoAi() && this.random.nextInt(100) == 0) {
-         Raid var3 = var1.getRaidAt(this.blockPosition());
-         if (var3 != null && var3.isActive() && !var3.isOver()) {
-            var1.broadcastEntityEvent(this, (byte)42);
+         Raid raid = level.getRaidAt(this.blockPosition());
+         if (raid != null && raid.isActive() && !raid.isOver()) {
+            level.broadcastEntityEvent(this, (byte)42);
          }
       }
 
@@ -253,7 +233,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          this.stopTrading();
       }
 
-      super.customServerAiStep(var1);
+      super.customServerAiStep(level);
    }
 
    public void tick() {
@@ -265,34 +245,34 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       this.maybeDecayGossip();
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (!var3.is(Items.VILLAGER_SPAWN_EGG) && this.isAlive() && !this.isTrading() && !this.isSleeping()) {
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (!itemStack.is(Items.VILLAGER_SPAWN_EGG) && this.isAlive() && !this.isTrading() && !this.isSleeping()) {
          if (this.isBaby()) {
             this.setUnhappy();
             return InteractionResult.SUCCESS;
          } else {
             if (!this.level().isClientSide()) {
-               boolean var4 = this.getOffers().isEmpty();
-               if (var2 == InteractionHand.MAIN_HAND) {
-                  if (var4) {
+               boolean noOffers = this.getOffers().isEmpty();
+               if (hand == InteractionHand.MAIN_HAND) {
+                  if (noOffers) {
                      this.setUnhappy();
                   }
 
-                  var1.awardStat(Stats.TALKED_TO_VILLAGER);
+                  player.awardStat(Stats.TALKED_TO_VILLAGER);
                }
 
-               if (var4) {
+               if (noOffers) {
                   return InteractionResult.CONSUME;
                }
 
-               this.startTrading(var1);
+               this.startTrading(player);
             }
 
             return InteractionResult.SUCCESS;
          }
       } else {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
@@ -304,16 +284,16 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    }
 
-   private void startTrading(Player var1) {
-      this.updateSpecialPrices(var1);
-      this.setTradingPlayer(var1);
-      this.openTradingScreen(var1, this.getDisplayName(), this.getVillagerData().level());
+   private void startTrading(final Player player) {
+      this.updateSpecialPrices(player);
+      this.setTradingPlayer(player);
+      this.openTradingScreen(player, this.getDisplayName(), this.getVillagerData().level());
    }
 
-   public void setTradingPlayer(@Nullable Player var1) {
-      boolean var2 = this.getTradingPlayer() != null && var1 == null;
-      super.setTradingPlayer(var1);
-      if (var2) {
+   public void setTradingPlayer(final @Nullable Player player) {
+      boolean shouldStop = this.getTradingPlayer() != null && player == null;
+      super.setTradingPlayer(player);
+      if (shouldStop) {
          this.stopTrading();
       }
 
@@ -326,8 +306,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    private void resetSpecialPrices() {
       if (!this.level().isClientSide()) {
-         for(MerchantOffer var2 : this.getOffers()) {
-            var2.resetSpecialPriceDiff();
+         for(MerchantOffer offer : this.getOffers()) {
+            offer.resetSpecialPriceDiff();
          }
 
       }
@@ -340,8 +320,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    public void restock() {
       this.updateDemand();
 
-      for(MerchantOffer var2 : this.getOffers()) {
-         var2.resetUses();
+      for(MerchantOffer offer : this.getOffers()) {
+         offer.resetUses();
       }
 
       this.resendOffersToTradingPlayer();
@@ -350,17 +330,17 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void resendOffersToTradingPlayer() {
-      MerchantOffers var1 = this.getOffers();
-      Player var2 = this.getTradingPlayer();
-      if (var2 != null && !var1.isEmpty()) {
-         var2.sendMerchantOffers(var2.containerMenu.containerId, var1, this.getVillagerData().level(), this.getVillagerXp(), this.showProgressBar(), this.canRestock());
+      MerchantOffers offers = this.getOffers();
+      Player tradingPlayer = this.getTradingPlayer();
+      if (tradingPlayer != null && !offers.isEmpty()) {
+         tradingPlayer.sendMerchantOffers(tradingPlayer.containerMenu.containerId, offers, this.getVillagerData().level(), this.getVillagerXp(), this.showProgressBar(), this.canRestock());
       }
 
    }
 
    private boolean needsToRestock() {
-      for(MerchantOffer var2 : this.getOffers()) {
-         if (var2.needsRestock()) {
+      for(MerchantOffer offer : this.getOffers()) {
+         if (offer.needsRestock()) {
             return true;
          }
       }
@@ -372,15 +352,15 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return this.numberOfRestocksToday == 0 || this.numberOfRestocksToday < 2 && this.level().getGameTime() > this.lastRestockGameTime + 2400L;
    }
 
-   public boolean shouldRestock(ServerLevel var1) {
-      long var2 = this.lastRestockGameTime + 12000L;
-      long var4 = this.level().getGameTime();
-      boolean var6 = var4 > var2;
-      long var7 = var1.getDayCount();
-      var6 |= this.lastRestockCheckDay > 0L && var7 > this.lastRestockCheckDay;
-      this.lastRestockCheckDay = var7;
-      if (var6) {
-         this.lastRestockGameTime = var4;
+   public boolean shouldRestock(final ServerLevel level) {
+      long halfDayPassedTime = this.lastRestockGameTime + 12000L;
+      long gameTime = this.level().getGameTime();
+      boolean isNewDay = gameTime > halfDayPassedTime;
+      long currentDay = (long)(Integer)this.level().registryAccess().get(Timelines.OVERWORLD_DAY).map((timeline) -> ((Timeline)timeline.value()).getPeriodCount(level.clockManager())).orElse(0);
+      isNewDay |= this.lastRestockCheckDay > 0L && currentDay > this.lastRestockCheckDay;
+      this.lastRestockCheckDay = currentDay;
+      if (isNewDay) {
+         this.lastRestockGameTime = gameTime;
          this.resetNumberOfRestocks();
       }
 
@@ -388,14 +368,14 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void catchUpDemand() {
-      int var1 = 2 - this.numberOfRestocksToday;
-      if (var1 > 0) {
-         for(MerchantOffer var3 : this.getOffers()) {
-            var3.resetUses();
+      int missedUpdates = 2 - this.numberOfRestocksToday;
+      if (missedUpdates > 0) {
+         for(MerchantOffer offer : this.getOffers()) {
+            offer.resetUses();
          }
       }
 
-      for(int var4 = 0; var4 < var1; ++var4) {
+      for(int i = 0; i < missedUpdates; ++i) {
          this.updateDemand();
       }
 
@@ -403,78 +383,86 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void updateDemand() {
-      for(MerchantOffer var2 : this.getOffers()) {
-         var2.updateDemand();
+      for(MerchantOffer offer : this.getOffers()) {
+         offer.updateDemand();
       }
 
    }
 
-   private void updateSpecialPrices(Player var1) {
-      int var2 = this.getPlayerReputation(var1);
-      if (var2 != 0) {
-         for(MerchantOffer var4 : this.getOffers()) {
-            var4.addToSpecialPriceDiff(-Mth.floor((float)var2 * var4.getPriceMultiplier()));
+   private void updateSpecialPrices(final Player player) {
+      int reputation = this.getPlayerReputation(player);
+      if (reputation != 0) {
+         for(MerchantOffer offer : this.getOffers()) {
+            offer.addToSpecialPriceDiff(-Mth.floor((float)reputation * offer.getPriceMultiplier()));
          }
       }
 
-      if (var1.hasEffect(MobEffects.HERO_OF_THE_VILLAGE)) {
-         MobEffectInstance var10 = var1.getEffect(MobEffects.HERO_OF_THE_VILLAGE);
-         int var11 = var10.getAmplifier();
+      if (player.hasEffect(MobEffects.HERO_OF_THE_VILLAGE)) {
+         MobEffectInstance effect = player.getEffect(MobEffects.HERO_OF_THE_VILLAGE);
+         int amplifier = effect.getAmplifier();
 
-         for(MerchantOffer var6 : this.getOffers()) {
-            double var7 = 0.3 + 0.0625 * (double)var11;
-            int var9 = (int)Math.floor(var7 * (double)var6.getBaseCostA().getCount());
-            var6.addToSpecialPriceDiff(-Math.max(var9, 1));
+         for(MerchantOffer offer : this.getOffers()) {
+            double modifier = 0.3 + 0.0625 * (double)amplifier;
+            int costReduction = (int)Math.floor(modifier * (double)offer.getBaseCostA().getCount());
+            offer.addToSpecialPriceDiff(-Math.max(costReduction, 1));
          }
       }
 
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_VILLAGER_DATA, createDefaultVillagerData());
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_VILLAGER_DATA, createDefaultVillagerData());
+      entityData.define(DATA_VILLAGER_DATA_FINALIZED, false);
    }
 
    public static VillagerData createDefaultVillagerData() {
       return new VillagerData(BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS), BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE), 1);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.store("VillagerData", VillagerData.CODEC, this.getVillagerData());
-      var1.putByte("FoodLevel", (byte)this.foodLevel);
-      var1.store("Gossips", GossipContainer.CODEC, this.gossips);
-      var1.putInt("Xp", this.villagerXp);
-      var1.putLong("LastRestock", this.lastRestockGameTime);
-      var1.putLong("LastGossipDecay", this.lastGossipDecayTime);
-      var1.putInt("RestocksToday", this.numberOfRestocksToday);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.store("VillagerData", VillagerData.CODEC, this.getVillagerData());
+      output.putBoolean("VillagerDataFinalized", (Boolean)this.entityData.get(DATA_VILLAGER_DATA_FINALIZED));
+      output.putByte("FoodLevel", (byte)this.foodLevel);
+      output.store("Gossips", GossipContainer.CODEC, this.gossips);
+      output.putInt("Xp", this.villagerXp);
+      output.putLong("LastRestock", this.lastRestockGameTime);
+      output.putLong("LastGossipDecay", this.lastGossipDecayTime);
+      output.putInt("RestocksToday", this.numberOfRestocksToday);
       if (this.assignProfessionWhenSpawned) {
-         var1.putBoolean("AssignProfessionWhenSpawned", true);
+         output.putBoolean("AssignProfessionWhenSpawned", true);
       }
 
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.entityData.set(DATA_VILLAGER_DATA, (VillagerData)var1.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
-      this.foodLevel = var1.getByteOr("FoodLevel", (byte)0);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      Optional<VillagerData> villagerDataOptional = input.<VillagerData>read("VillagerData", VillagerData.CODEC);
+      if (input.getBooleanOr("VillagerDataFinalized", false) || villagerDataOptional.isPresent()) {
+         this.entityData.set(DATA_VILLAGER_DATA_FINALIZED, true);
+         VillagerData villagerData = (VillagerData)villagerDataOptional.orElseGet(Villager::createDefaultVillagerData);
+         this.entityData.set(DATA_VILLAGER_DATA, villagerData);
+      }
+
+      this.foodLevel = input.getByteOr("FoodLevel", (byte)0);
       this.gossips.clear();
-      Optional var10000 = var1.read("Gossips", GossipContainer.CODEC);
+      Optional var10000 = input.read("Gossips", GossipContainer.CODEC);
       GossipContainer var10001 = this.gossips;
       Objects.requireNonNull(var10001);
       var10000.ifPresent(var10001::putAll);
-      this.villagerXp = var1.getIntOr("Xp", 0);
-      this.lastRestockGameTime = var1.getLongOr("LastRestock", 0L);
-      this.lastGossipDecayTime = var1.getLongOr("LastGossipDecay", 0L);
+      this.villagerXp = input.getIntOr("Xp", 0);
+      this.lastRestockGameTime = input.getLongOr("LastRestock", 0L);
+      this.lastGossipDecayTime = input.getLongOr("LastGossipDecay", 0L);
       if (this.level() instanceof ServerLevel) {
          this.refreshBrain((ServerLevel)this.level());
       }
 
-      this.numberOfRestocksToday = var1.getIntOr("RestocksToday", 0);
-      this.assignProfessionWhenSpawned = var1.getBooleanOr("AssignProfessionWhenSpawned", false);
+      this.numberOfRestocksToday = input.getIntOr("RestocksToday", 0);
+      this.assignProfessionWhenSpawned = input.getBooleanOr("AssignProfessionWhenSpawned", false);
    }
 
-   public boolean removeWhenFarAway(double var1) {
+   public boolean removeWhenFarAway(final double distSqr) {
       return false;
    }
 
@@ -486,7 +474,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       }
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.VILLAGER_HURT;
    }
 
@@ -498,55 +486,55 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       this.makeSound(((VillagerProfession)this.getVillagerData().profession().value()).workSound());
    }
 
-   public void setVillagerData(VillagerData var1) {
-      VillagerData var2 = this.getVillagerData();
-      if (!var2.profession().equals(var1.profession())) {
+   public void setVillagerData(final VillagerData data) {
+      VillagerData currentData = this.getVillagerData();
+      if (!currentData.profession().equals(data.profession())) {
          this.offers = null;
       }
 
-      this.entityData.set(DATA_VILLAGER_DATA, var1);
+      this.entityData.set(DATA_VILLAGER_DATA, data);
    }
 
    public VillagerData getVillagerData() {
       return (VillagerData)this.entityData.get(DATA_VILLAGER_DATA);
    }
 
-   protected void rewardTradeXp(MerchantOffer var1) {
-      int var2 = 3 + this.random.nextInt(4);
-      this.villagerXp += var1.getXp();
+   protected void rewardTradeXp(final MerchantOffer offer) {
+      int popXp = 3 + this.random.nextInt(4);
+      this.villagerXp += offer.getXp();
       this.lastTradedPlayer = this.getTradingPlayer();
       if (this.shouldIncreaseLevel()) {
          this.updateMerchantTimer = 40;
          this.increaseProfessionLevelOnUpdate = true;
-         var2 += 5;
+         popXp += 5;
       }
 
-      if (var1.shouldRewardExp()) {
-         this.level().addFreshEntity(new ExperienceOrb(this.level(), this.getX(), this.getY() + 0.5, this.getZ(), var2));
+      if (offer.shouldRewardExp()) {
+         this.level().addFreshEntity(new ExperienceOrb(this.level(), this.getX(), this.getY() + 0.5, this.getZ(), popXp));
       }
 
    }
 
-   public void setLastHurtByMob(@Nullable LivingEntity var1) {
-      if (var1 != null && this.level() instanceof ServerLevel) {
-         ((ServerLevel)this.level()).onReputationEvent(ReputationEventType.VILLAGER_HURT, var1, this);
-         if (this.isAlive() && var1 instanceof Player) {
+   public void setLastHurtByMob(final @Nullable LivingEntity hurtBy) {
+      if (hurtBy != null && this.level() instanceof ServerLevel) {
+         ((ServerLevel)this.level()).onReputationEvent(ReputationEventType.VILLAGER_HURT, hurtBy, this);
+         if (this.isAlive() && hurtBy instanceof Player) {
             this.level().broadcastEntityEvent(this, (byte)13);
          }
       }
 
-      super.setLastHurtByMob(var1);
+      super.setLastHurtByMob(hurtBy);
    }
 
-   public void die(DamageSource var1) {
-      LOGGER.info("Villager {} died, message: '{}'", this, var1.getLocalizedDeathMessage(this).getString());
-      Entity var2 = var1.getEntity();
-      if (var2 != null) {
-         this.tellWitnessesThatIWasMurdered(var2);
+   public void die(final DamageSource source) {
+      LOGGER.info("Villager {} died, message: '{}'", this, source.getLocalizedDeathMessage(this).getString());
+      Entity murderer = source.getEntity();
+      if (murderer != null) {
+         this.tellWitnessesThatIWasMurdered(murderer);
       }
 
       this.releaseAllPois();
-      super.die(var1);
+      super.die(source);
    }
 
    private void releaseAllPois() {
@@ -556,30 +544,30 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       this.releasePoi(MemoryModuleType.MEETING_POINT);
    }
 
-   private void tellWitnessesThatIWasMurdered(Entity var1) {
+   private void tellWitnessesThatIWasMurdered(final Entity murderer) {
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         Optional var4 = this.brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
-         if (!var4.isEmpty()) {
-            NearestVisibleLivingEntities var10000 = (NearestVisibleLivingEntities)var4.get();
+      if (var3 instanceof ServerLevel serverLevel) {
+         Optional<NearestVisibleLivingEntities> witnesses = this.brain.<NearestVisibleLivingEntities>getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
+         if (!witnesses.isEmpty()) {
+            NearestVisibleLivingEntities var10000 = (NearestVisibleLivingEntities)witnesses.get();
             Objects.requireNonNull(ReputationEventHandler.class);
-            var10000.findAll(ReputationEventHandler.class::isInstance).forEach((var2x) -> var2.onReputationEvent(ReputationEventType.VILLAGER_KILLED, var1, (ReputationEventHandler)var2x));
+            var10000.findAll(ReputationEventHandler.class::isInstance).forEach((witness) -> serverLevel.onReputationEvent(ReputationEventType.VILLAGER_KILLED, murderer, (ReputationEventHandler)witness));
          }
       }
    }
 
-   public void releasePoi(MemoryModuleType<GlobalPos> var1) {
+   public void releasePoi(final MemoryModuleType<GlobalPos> memoryType) {
       if (this.level() instanceof ServerLevel) {
-         MinecraftServer var2 = ((ServerLevel)this.level()).getServer();
-         this.brain.getMemory(var1).ifPresent((var3) -> {
-            ServerLevel var4 = var2.getLevel(var3.dimension());
-            if (var4 != null) {
-               PoiManager var5 = var4.getPoiManager();
-               Optional var6 = var5.getType(var3.pos());
-               BiPredicate var7 = (BiPredicate)POI_MEMORIES.get(var1);
-               if (var6.isPresent() && var7.test(this, (Holder)var6.get())) {
-                  var5.release(var3.pos());
-                  var4.debugSynchronizers().updatePoi(var3.pos());
+         MinecraftServer server = ((ServerLevel)this.level()).getServer();
+         this.brain.getMemory(memoryType).ifPresent((memory) -> {
+            ServerLevel poiLevel = server.getLevel(memory.dimension());
+            if (poiLevel != null) {
+               PoiManager poiManager = poiLevel.getPoiManager();
+               Optional<Holder<PoiType>> type = poiManager.getType(memory.pos());
+               BiPredicate<Villager, Holder<PoiType>> poiTypePredicate = (BiPredicate)POI_MEMORIES.get(memoryType);
+               if (type.isPresent() && poiTypePredicate.test(this, (Holder)type.get())) {
+                  poiManager.release(memory.pos());
+                  poiLevel.debugSynchronizers().updatePoi(memory.pos());
                }
 
             }
@@ -597,16 +585,16 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    private void eatUntilFull() {
       if (this.hungry() && this.countFoodPointsInInventory() != 0) {
-         for(int var1 = 0; var1 < this.getInventory().getContainerSize(); ++var1) {
-            ItemStack var2 = this.getInventory().getItem(var1);
-            if (!var2.isEmpty()) {
-               Integer var3 = (Integer)FOOD_POINTS.get(var2.getItem());
-               if (var3 != null) {
-                  int var4 = var2.getCount();
+         for(int slot = 0; slot < this.getInventory().getContainerSize(); ++slot) {
+            ItemStack itemStack = this.getInventory().getItem(slot);
+            if (!itemStack.isEmpty()) {
+               Integer value = (Integer)FOOD_POINTS.get(itemStack.getItem());
+               if (value != null) {
+                  int itemCount = itemStack.getCount();
 
-                  for(int var5 = var4; var5 > 0; --var5) {
-                     this.foodLevel += var3;
-                     this.getInventory().removeItem(var1, 1);
+                  for(int count = itemCount; count > 0; --count) {
+                     this.foodLevel += value;
+                     this.getInventory().removeItem(slot, 1);
                      if (!this.hungry()) {
                         return;
                      }
@@ -618,12 +606,12 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       }
    }
 
-   public int getPlayerReputation(Player var1) {
-      return this.gossips.getReputation(var1.getUUID(), (var0) -> true);
+   public int getPlayerReputation(final Player player) {
+      return this.gossips.getReputation(player.getUUID(), (t) -> true);
    }
 
-   private void digestFood(int var1) {
-      this.foodLevel -= var1;
+   private void digestFood(final int amount) {
+      this.foodLevel -= amount;
    }
 
    public void eatAndDigestFood() {
@@ -631,95 +619,94 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       this.digestFood(12);
    }
 
-   public void setOffers(MerchantOffers var1) {
-      this.offers = var1;
+   public void setOffers(final MerchantOffers offers) {
+      this.offers = offers;
    }
 
    private boolean shouldIncreaseLevel() {
-      int var1 = this.getVillagerData().level();
-      return VillagerData.canLevelUp(var1) && this.villagerXp >= VillagerData.getMaxXpPerLevel(var1);
+      int currentLevel = this.getVillagerData().level();
+      return VillagerData.canLevelUp(currentLevel) && this.villagerXp >= VillagerData.getMaxXpPerLevel(currentLevel);
    }
 
-   private void increaseMerchantCareer(ServerLevel var1) {
+   private void increaseMerchantCareer(final ServerLevel level) {
       this.setVillagerData(this.getVillagerData().withLevel(this.getVillagerData().level() + 1));
-      this.updateTrades(var1);
+      this.updateTrades(level);
    }
 
    protected Component getTypeName() {
       return ((VillagerProfession)this.getVillagerData().profession().value()).name();
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 12) {
+   public void handleEntityEvent(final byte id) {
+      if (id == 12) {
          this.addParticlesAroundSelf(ParticleTypes.HEART);
-      } else if (var1 == 13) {
+      } else if (id == 13) {
          this.addParticlesAroundSelf(ParticleTypes.ANGRY_VILLAGER);
-      } else if (var1 == 14) {
+      } else if (id == 14) {
          this.addParticlesAroundSelf(ParticleTypes.HAPPY_VILLAGER);
-      } else if (var1 == 42) {
+      } else if (id == 42) {
          this.addParticlesAroundSelf(ParticleTypes.SPLASH);
       } else {
-         super.handleEntityEvent(var1);
+         super.handleEntityEvent(id);
       }
 
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      if (var3 == EntitySpawnReason.BREEDING) {
-         this.setVillagerData(this.getVillagerData().withProfession(var1.registryAccess(), VillagerProfession.NONE));
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      if (spawnReason == EntitySpawnReason.BREEDING) {
+         this.setVillagerData(this.getVillagerData().withProfession(level.registryAccess(), VillagerProfession.NONE));
       }
 
-      if (var3 == EntitySpawnReason.COMMAND || var3 == EntitySpawnReason.SPAWN_ITEM_USE || EntitySpawnReason.isSpawner(var3) || var3 == EntitySpawnReason.DISPENSER) {
-         this.setVillagerData(this.getVillagerData().withType(var1.registryAccess(), VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
+      if (!(Boolean)this.entityData.get(DATA_VILLAGER_DATA_FINALIZED)) {
+         this.setVillagerData(this.getVillagerData().withType(level.registryAccess(), VillagerType.byBiome(level.getBiome(this.blockPosition()))));
+         this.entityData.set(DATA_VILLAGER_DATA_FINALIZED, true);
       }
 
-      if (var3 == EntitySpawnReason.STRUCTURE) {
+      if (spawnReason == EntitySpawnReason.STRUCTURE) {
          this.assignProfessionWhenSpawned = true;
       }
 
-      return super.finalizeSpawn(var1, var2, var3, var4);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   public @Nullable Villager getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      double var4 = this.random.nextDouble();
-      Object var3;
-      if (var4 < 0.5) {
-         var3 = var1.registryAccess().getOrThrow(VillagerType.byBiome(var1.getBiome(this.blockPosition())));
-      } else if (var4 < 0.75) {
-         var3 = this.getVillagerData().type();
+   public @Nullable Villager getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      double biomeRoll = this.random.nextDouble();
+      Holder<VillagerType> type;
+      if (biomeRoll < 0.5) {
+         type = level.registryAccess().getOrThrow(VillagerType.byBiome(level.getBiome(this.blockPosition())));
+      } else if (biomeRoll < 0.75) {
+         type = this.getVillagerData().type();
       } else {
-         var3 = ((Villager)var2).getVillagerData().type();
+         type = ((Villager)partner).getVillagerData().type();
       }
 
-      Villager var6 = new Villager(EntityType.VILLAGER, var1, (Holder)var3);
-      var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var6.blockPosition()), EntitySpawnReason.BREEDING, (SpawnGroupData)null);
-      return var6;
+      return new Villager(EntityType.VILLAGER, level, type);
    }
 
-   public void thunderHit(ServerLevel var1, LightningBolt var2) {
-      if (var1.getDifficulty() != Difficulty.PEACEFUL) {
-         LOGGER.info("Villager {} was struck by lightning {}.", this, var2);
-         Witch var3 = (Witch)this.convertTo(EntityType.WITCH, ConversionParams.single(this, false, false), (var2x) -> {
-            var2x.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2x.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData)null);
-            var2x.setPersistenceRequired();
+   public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
+      if (level.getDifficulty() != Difficulty.PEACEFUL) {
+         LOGGER.info("Villager {} was struck by lightning {}.", this, lightningBolt);
+         Witch witch = (Witch)this.convertTo(EntityType.WITCH, ConversionParams.single(this, false, false), (w) -> {
+            w.finalizeSpawn(level, level.getCurrentDifficultyAt(w.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData)null);
+            w.setPersistenceRequired();
             this.releaseAllPois();
          });
-         if (var3 == null) {
-            super.thunderHit(var1, var2);
+         if (witch == null) {
+            super.thunderHit(level, lightningBolt);
          }
       } else {
-         super.thunderHit(var1, var2);
+         super.thunderHit(level, lightningBolt);
       }
 
    }
 
-   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
-      InventoryCarrier.pickUpItem(var1, this, this, var2);
+   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
+      InventoryCarrier.pickUpItem(level, this, this, entity);
    }
 
-   public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
-      Item var3 = var2.getItem();
-      return (var2.is(ItemTags.VILLAGER_PICKS_UP) || ((VillagerProfession)this.getVillagerData().profession().value()).requestedItems().contains(var3)) && this.getInventory().canAddItem(var2);
+   public boolean wantsToPickUp(final ServerLevel level, final ItemStack itemStack) {
+      Item item = itemStack.getItem();
+      return (itemStack.is(ItemTags.VILLAGER_PICKS_UP) || ((VillagerProfession)this.getVillagerData().profession().value()).requestedItems().contains(item)) && this.getInventory().canAddItem(itemStack);
    }
 
    public boolean hasExcessFood() {
@@ -731,73 +718,60 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private int countFoodPointsInInventory() {
-      SimpleContainer var1 = this.getInventory();
-      return FOOD_POINTS.entrySet().stream().mapToInt((var1x) -> var1.countItem((Item)var1x.getKey()) * (Integer)var1x.getValue()).sum();
+      SimpleContainer inventory = this.getInventory();
+      return FOOD_POINTS.entrySet().stream().mapToInt((entry) -> inventory.countItem((Item)entry.getKey()) * (Integer)entry.getValue()).sum();
    }
 
    public boolean hasFarmSeeds() {
-      return this.getInventory().hasAnyMatching((var0) -> var0.is(ItemTags.VILLAGER_PLANTABLE_SEEDS));
+      return this.getInventory().hasAnyMatching((item) -> item.is(ItemTags.VILLAGER_PLANTABLE_SEEDS));
    }
 
-   protected void updateTrades(ServerLevel var1) {
-      VillagerData var2 = this.getVillagerData();
-      ResourceKey var3 = (ResourceKey)var2.profession().unwrapKey().orElse((Object)null);
-      if (var3 != null) {
-         Int2ObjectMap var4;
-         if (this.level().enabledFeatures().contains(FeatureFlags.TRADE_REBALANCE)) {
-            Int2ObjectMap var5 = (Int2ObjectMap)VillagerTrades.EXPERIMENTAL_TRADES.get(var3);
-            var4 = var5 != null ? var5 : (Int2ObjectMap)VillagerTrades.TRADES.get(var3);
-         } else {
-            var4 = (Int2ObjectMap)VillagerTrades.TRADES.get(var3);
+   protected void updateTrades(final ServerLevel level) {
+      VillagerData data = this.getVillagerData();
+      VillagerProfession profession = (VillagerProfession)data.profession().value();
+      ResourceKey<TradeSet> trades = profession.getTrades(data.level());
+      if (trades != null) {
+         this.addOffersFromTradeSet(level, this.getOffers(), trades);
+         if (SharedConstants.DEBUG_UNLOCK_ALL_TRADES && data.level() < 5) {
+            this.increaseMerchantCareer(level);
          }
 
-         if (var4 != null && !var4.isEmpty()) {
-            VillagerTrades.ItemListing[] var7 = (VillagerTrades.ItemListing[])var4.get(var2.level());
-            if (var7 != null) {
-               MerchantOffers var6 = this.getOffers();
-               this.addOffersFromItemListings(var1, var6, var7, 2);
-               if (SharedConstants.DEBUG_UNLOCK_ALL_TRADES && var2.level() < var4.size()) {
-                  this.increaseMerchantCareer(var1);
-               }
-
-            }
-         }
       }
    }
 
-   public void gossip(ServerLevel var1, Villager var2, long var3) {
-      if ((var3 < this.lastGossipTime || var3 >= this.lastGossipTime + 1200L) && (var3 < var2.lastGossipTime || var3 >= var2.lastGossipTime + 1200L)) {
-         this.gossips.transferFrom(var2.gossips, this.random, 10);
-         this.lastGossipTime = var3;
-         var2.lastGossipTime = var3;
-         this.spawnGolemIfNeeded(var1, var3, 5);
+   public void gossip(final ServerLevel level, final Villager target, final long timestamp) {
+      if ((timestamp < this.lastGossipTime || timestamp >= this.lastGossipTime + 1200L) && (timestamp < target.lastGossipTime || timestamp >= target.lastGossipTime + 1200L)) {
+         this.gossips.transferFrom(target.gossips, this.random, 10);
+         this.lastGossipTime = timestamp;
+         target.lastGossipTime = timestamp;
+         this.spawnGolemIfNeeded(level, timestamp, 5);
       }
    }
 
    private void maybeDecayGossip() {
-      long var1 = this.level().getGameTime();
+      long timestamp = this.level().getGameTime();
       if (this.lastGossipDecayTime == 0L) {
-         this.lastGossipDecayTime = var1;
-      } else if (var1 >= this.lastGossipDecayTime + 24000L) {
+         this.lastGossipDecayTime = timestamp;
+      } else if (timestamp >= this.lastGossipDecayTime + 24000L) {
          this.gossips.decay();
-         this.lastGossipDecayTime = var1;
+         this.lastGossipDecayTime = timestamp;
       }
    }
 
-   public void spawnGolemIfNeeded(ServerLevel var1, long var2, int var4) {
-      if (this.wantsToSpawnGolem(var2)) {
-         AABB var5 = this.getBoundingBox().inflate(10.0, 10.0, 10.0);
-         List var6 = var1.getEntitiesOfClass(Villager.class, var5);
-         List var7 = var6.stream().filter((var2x) -> var2x.wantsToSpawnGolem(var2)).limit(5L).toList();
-         if (var7.size() >= var4) {
-            if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, var1, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM, false).isEmpty()) {
-               var6.forEach(GolemSensor::golemDetected);
+   public void spawnGolemIfNeeded(final ServerLevel level, final long timestamp, final int villagersNeededToAgree) {
+      if (this.wantsToSpawnGolem(timestamp)) {
+         AABB villagerSearchBox = this.getBoundingBox().inflate(10.0, 10.0, 10.0);
+         List<Villager> nearbyVillagers = level.getEntitiesOfClass(Villager.class, villagerSearchBox);
+         List<Villager> nearbyVillagersThatWantAGolem = nearbyVillagers.stream().filter((villager) -> villager.wantsToSpawnGolem(timestamp)).limit(5L).toList();
+         if (nearbyVillagersThatWantAGolem.size() >= villagersNeededToAgree) {
+            if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, level, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM, false).isEmpty()) {
+               nearbyVillagers.forEach(GolemSensor::golemDetected);
             }
          }
       }
    }
 
-   public boolean wantsToSpawnGolem(long var1) {
+   public boolean wantsToSpawnGolem(final long timestamp) {
       if (!this.golemSpawnConditionsMet(this.level().getGameTime())) {
          return false;
       } else {
@@ -805,16 +779,16 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       }
    }
 
-   public void onReputationEventFrom(ReputationEventType var1, Entity var2) {
-      if (var1 == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
-         this.gossips.add(var2.getUUID(), GossipType.MAJOR_POSITIVE, 20);
-         this.gossips.add(var2.getUUID(), GossipType.MINOR_POSITIVE, 25);
-      } else if (var1 == ReputationEventType.TRADE) {
-         this.gossips.add(var2.getUUID(), GossipType.TRADING, 2);
-      } else if (var1 == ReputationEventType.VILLAGER_HURT) {
-         this.gossips.add(var2.getUUID(), GossipType.MINOR_NEGATIVE, 25);
-      } else if (var1 == ReputationEventType.VILLAGER_KILLED) {
-         this.gossips.add(var2.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
+   public void onReputationEventFrom(final ReputationEventType type, final Entity source) {
+      if (type == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
+         this.gossips.add(source.getUUID(), GossipType.MAJOR_POSITIVE, 20);
+         this.gossips.add(source.getUUID(), GossipType.MINOR_POSITIVE, 25);
+      } else if (type == ReputationEventType.TRADE) {
+         this.gossips.add(source.getUUID(), GossipType.TRADING, 2);
+      } else if (type == ReputationEventType.VILLAGER_HURT) {
+         this.gossips.add(source.getUUID(), GossipType.MINOR_NEGATIVE, 25);
+      } else if (type == ReputationEventType.VILLAGER_KILLED) {
+         this.gossips.add(source.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
       }
 
    }
@@ -823,8 +797,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return this.villagerXp;
    }
 
-   public void setVillagerXp(int var1) {
-      this.villagerXp = var1;
+   public void setVillagerXp(final int value) {
+      this.villagerXp = value;
    }
 
    private void resetNumberOfRestocks() {
@@ -836,15 +810,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return this.gossips;
    }
 
-   public void setGossips(GossipContainer var1) {
-      this.gossips.putAll(var1);
-   }
-
-   public void startSleeping(BlockPos var1) {
-      super.startSleeping(var1);
-      this.brain.setMemory(MemoryModuleType.LAST_SLEPT, this.level().getGameTime());
-      this.brain.eraseMemory(MemoryModuleType.WALK_TARGET);
-      this.brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+   public void setGossips(final GossipContainer gossips) {
+      this.gossips.putAll(gossips);
    }
 
    public void stopSleeping() {
@@ -852,40 +819,53 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       this.brain.setMemory(MemoryModuleType.LAST_WOKEN, this.level().getGameTime());
    }
 
-   private boolean golemSpawnConditionsMet(long var1) {
-      Optional var3 = this.brain.getMemory(MemoryModuleType.LAST_SLEPT);
-      return var3.filter((var2) -> var1 - var2 < 24000L).isPresent();
+   private boolean golemSpawnConditionsMet(final long gameTime) {
+      Optional<Long> sleepMemory = this.brain.<Long>getMemory(MemoryModuleType.LAST_SLEPT);
+      return sleepMemory.filter((aLong) -> gameTime - aLong < 24000L).isPresent();
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.VILLAGER_VARIANT ? castComponentValue(var1, this.getVillagerData().type()) : super.get(var1));
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)(type == DataComponents.VILLAGER_VARIANT ? castComponentValue(type, this.getVillagerData().type()) : super.get(type));
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.VILLAGER_VARIANT);
-      super.applyImplicitComponents(var1);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.VILLAGER_VARIANT);
+      super.applyImplicitComponents(components);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.VILLAGER_VARIANT) {
-         Holder var3 = (Holder)castComponentValue(DataComponents.VILLAGER_VARIANT, var2);
-         this.setVillagerData(this.getVillagerData().withType(var3));
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.VILLAGER_VARIANT) {
+         Holder<VillagerType> variant = (Holder)castComponentValue(DataComponents.VILLAGER_VARIANT, value);
+         this.setVillagerData(this.getVillagerData().withType(variant));
          return true;
       } else {
-         return super.applyImplicitComponent(var1, var2);
+         return super.applyImplicitComponent(type, value);
       }
-   }
-
-   // $FF: synthetic method
-   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
    }
 
    static {
       DATA_VILLAGER_DATA = SynchedEntityData.<VillagerData>defineId(Villager.class, EntityDataSerializers.VILLAGER_DATA);
+      DATA_VILLAGER_DATA_FINALIZED = SynchedEntityData.<Boolean>defineId(Villager.class, EntityDataSerializers.BOOLEAN);
       FOOD_POINTS = ImmutableMap.of(Items.BREAD, 4, Items.POTATO, 1, Items.CARROT, 1, Items.BEETROOT, 1);
-      MEMORY_TYPES = ImmutableList.of(MemoryModuleType.HOME, MemoryModuleType.JOB_SITE, MemoryModuleType.POTENTIAL_JOB_SITE, MemoryModuleType.MEETING_POINT, MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.VISIBLE_VILLAGER_BABIES, MemoryModuleType.NEAREST_PLAYERS, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM, MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS, new MemoryModuleType[]{MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.INTERACTION_TARGET, MemoryModuleType.BREED_TARGET, MemoryModuleType.PATH, MemoryModuleType.DOORS_TO_CLOSE, MemoryModuleType.NEAREST_BED, MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.NEAREST_HOSTILE, MemoryModuleType.SECONDARY_JOB_SITE, MemoryModuleType.HIDING_PLACE, MemoryModuleType.HEARD_BELL_TIME, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.LAST_SLEPT, MemoryModuleType.LAST_WOKEN, MemoryModuleType.LAST_WORKED_AT_POI, MemoryModuleType.GOLEM_DETECTED_RECENTLY});
-      SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.NEAREST_BED, SensorType.HURT_BY, SensorType.VILLAGER_HOSTILES, SensorType.VILLAGER_BABIES, SensorType.SECONDARY_POIS, SensorType.GOLEM_DETECTED);
-      POI_MEMORIES = ImmutableMap.of(MemoryModuleType.HOME, (BiPredicate)(var0, var1) -> var1.is(PoiTypes.HOME), MemoryModuleType.JOB_SITE, (BiPredicate)(var0, var1) -> ((VillagerProfession)var0.getVillagerData().profession().value()).heldJobSite().test(var1), MemoryModuleType.POTENTIAL_JOB_SITE, (BiPredicate)(var0, var1) -> VillagerProfession.ALL_ACQUIRABLE_JOBS.test(var1), MemoryModuleType.MEETING_POINT, (BiPredicate)(var0, var1) -> var1.is(PoiTypes.MEETING));
+      BRAIN_PROVIDER = Brain.<Villager>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.NEAREST_BED, SensorType.HURT_BY, SensorType.VILLAGER_HOSTILES, SensorType.VILLAGER_BABIES, SensorType.SECONDARY_POIS, SensorType.GOLEM_DETECTED), (body) -> {
+         Holder<VillagerProfession> profession = body.getVillagerData().profession();
+         List<ActivityData<Villager>> activities = new ArrayList();
+         if (body.isBaby()) {
+            activities.add(ActivityData.create(Activity.PLAY, VillagerGoalPackages.getPlayPackage(0.5F)));
+         } else {
+            activities.add(ActivityData.create(Activity.WORK, VillagerGoalPackages.getWorkPackage(profession, 0.5F), ImmutableSet.of(Pair.of(MemoryModuleType.JOB_SITE, MemoryStatus.VALUE_PRESENT))));
+         }
+
+         activities.add(ActivityData.create(Activity.CORE, VillagerGoalPackages.getCorePackage(profession, 0.5F)));
+         activities.add(ActivityData.create(Activity.MEET, VillagerGoalPackages.getMeetPackage(0.5F), ImmutableSet.of(Pair.of(MemoryModuleType.MEETING_POINT, MemoryStatus.VALUE_PRESENT))));
+         activities.add(ActivityData.create(Activity.REST, VillagerGoalPackages.getRestPackage(0.5F)));
+         activities.add(ActivityData.create(Activity.IDLE, VillagerGoalPackages.getIdlePackage(0.5F)));
+         activities.add(ActivityData.create(Activity.PANIC, VillagerGoalPackages.getPanicPackage(0.5F)));
+         activities.add(ActivityData.create(Activity.PRE_RAID, VillagerGoalPackages.getPreRaidPackage(0.5F)));
+         activities.add(ActivityData.create(Activity.RAID, VillagerGoalPackages.getRaidPackage(0.5F)));
+         activities.add(ActivityData.create(Activity.HIDE, VillagerGoalPackages.getHidePackage(0.5F)));
+         return activities;
+      });
+      POI_MEMORIES = ImmutableMap.of(MemoryModuleType.HOME, (BiPredicate)(villager, poiType) -> poiType.is(PoiTypes.HOME), MemoryModuleType.JOB_SITE, (BiPredicate)(villager, poiType) -> ((VillagerProfession)villager.getVillagerData().profession().value()).heldJobSite().test(poiType), MemoryModuleType.POTENTIAL_JOB_SITE, (BiPredicate)(villager, poiType) -> VillagerProfession.ALL_ACQUIRABLE_JOBS.test(poiType), MemoryModuleType.MEETING_POINT, (BiPredicate)(villager, poiType) -> poiType.is(PoiTypes.MEETING));
    }
 }

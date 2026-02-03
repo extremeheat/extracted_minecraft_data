@@ -21,20 +21,20 @@ import net.minecraft.util.profiling.metrics.MetricsRegistry;
 import net.minecraft.util.profiling.metrics.ProfilerMeasured;
 import org.slf4j.Logger;
 
-public abstract class BlockableEventLoop<R extends Runnable> implements ProfilerMeasured, TaskScheduler<R>, Executor {
+public abstract class BlockableEventLoop<R extends Runnable> implements Executor, TaskScheduler<R>, ProfilerMeasured {
    public static final long BLOCK_TIME_NANOS = 100000L;
    private final String name;
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Queue<R> pendingRunnables = Queues.newConcurrentLinkedQueue();
    private int blockingCount;
 
-   protected BlockableEventLoop(String var1) {
+   protected BlockableEventLoop(final String name) {
       super();
-      this.name = var1;
+      this.name = name;
       MetricsRegistry.INSTANCE.add(this);
    }
 
-   protected abstract boolean shouldRun(R var1);
+   protected abstract boolean shouldRun(final R task);
 
    public boolean isSameThread() {
       return Thread.currentThread() == this.getRunningThread();
@@ -54,53 +54,53 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       return this.name;
    }
 
-   public <V> CompletableFuture<V> submit(Supplier<V> var1) {
-      return this.scheduleExecutables() ? CompletableFuture.supplyAsync(var1, this) : CompletableFuture.completedFuture(var1.get());
+   public <V> CompletableFuture<V> submit(final Supplier<V> supplier) {
+      return this.scheduleExecutables() ? CompletableFuture.supplyAsync(supplier, this) : CompletableFuture.completedFuture(supplier.get());
    }
 
-   private CompletableFuture<Void> submitAsync(Runnable var1) {
+   private CompletableFuture<Void> submitAsync(final Runnable runnable) {
       return CompletableFuture.supplyAsync(() -> {
-         var1.run();
+         runnable.run();
          return null;
       }, this);
    }
 
    @CheckReturnValue
-   public CompletableFuture<Void> submit(Runnable var1) {
+   public CompletableFuture<Void> submit(final Runnable runnable) {
       if (this.scheduleExecutables()) {
-         return this.submitAsync(var1);
+         return this.submitAsync(runnable);
       } else {
-         var1.run();
+         runnable.run();
          return CompletableFuture.completedFuture((Object)null);
       }
    }
 
-   public void executeBlocking(Runnable var1) {
+   public void executeBlocking(final Runnable runnable) {
       if (!this.isSameThread()) {
-         this.submitAsync(var1).join();
+         this.submitAsync(runnable).join();
       } else {
-         var1.run();
+         runnable.run();
       }
 
    }
 
-   public void schedule(R var1) {
-      this.pendingRunnables.add(var1);
+   public void schedule(final R r) {
+      this.pendingRunnables.add(r);
       LockSupport.unpark(this.getRunningThread());
    }
 
-   public void execute(Runnable var1) {
-      Runnable var2 = this.wrapRunnable(var1);
+   public void execute(final Runnable command) {
+      R task = this.wrapRunnable(command);
       if (this.scheduleExecutables()) {
-         this.schedule(var2);
+         this.schedule(task);
       } else {
-         this.doRunTask(var2);
+         this.doRunTask(task);
       }
 
    }
 
-   public void executeIfPossible(Runnable var1) {
-      this.execute(var1);
+   public void executeIfPossible(final Runnable command) {
+      this.execute(command);
    }
 
    protected void dropAllTasks() {
@@ -117,11 +117,11 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       return this.blockingCount > 0;
    }
 
-   public boolean pollTask() {
-      Runnable var1 = (Runnable)this.pendingRunnables.peek();
-      if (var1 == null) {
+   protected boolean pollTask() {
+      R task = (R)(this.pendingRunnables.peek());
+      if (task == null) {
          return false;
-      } else if (!this.shouldRunAllTasks() && !this.shouldRun(var1)) {
+      } else if (!this.shouldRunAllTasks() && !this.shouldRun(task)) {
          return false;
       } else {
          this.doRunTask((Runnable)this.pendingRunnables.remove());
@@ -129,11 +129,11 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       }
    }
 
-   public void managedBlock(BooleanSupplier var1) {
+   public void managedBlock(final BooleanSupplier condition) {
       ++this.blockingCount;
 
       try {
-         while(!var1.getAsBoolean()) {
+         while(!condition.getAsBoolean()) {
             if (!this.pollTask()) {
                this.waitForTasks();
             }
@@ -149,16 +149,16 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       LockSupport.parkNanos("waiting for tasks", 100000L);
    }
 
-   protected void doRunTask(R var1) {
+   protected void doRunTask(final R task) {
       try {
-         Zone var2 = TracyClient.beginZone("Task", SharedConstants.IS_RUNNING_IN_IDE);
+         Zone ignored = TracyClient.beginZone("Task", SharedConstants.IS_RUNNING_IN_IDE);
 
          try {
-            var1.run();
+            task.run();
          } catch (Throwable var6) {
-            if (var2 != null) {
+            if (ignored != null) {
                try {
-                  var2.close();
+                  ignored.close();
                } catch (Throwable var5) {
                   var6.addSuppressed(var5);
                }
@@ -167,27 +167,25 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
             throw var6;
          }
 
-         if (var2 != null) {
-            var2.close();
+         if (ignored != null) {
+            ignored.close();
          }
-      } catch (Exception var7) {
-         LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), var7);
-         if (isNonRecoverable(var7)) {
-            throw var7;
-         }
-      }
 
+      } catch (Exception e) {
+         LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), e);
+         throw e;
+      }
    }
 
    public List<MetricSampler> profiledMetrics() {
       return ImmutableList.of(MetricSampler.create(this.name + "-pending-tasks", MetricCategory.EVENT_LOOPS, this::getPendingTasksCount));
    }
 
-   public static boolean isNonRecoverable(Throwable var0) {
-      if (var0 instanceof ReportedException var1) {
-         return isNonRecoverable(var1.getCause());
+   public static boolean isNonRecoverable(final Throwable t) {
+      if (t instanceof ReportedException r) {
+         return isNonRecoverable(r.getCause());
       } else {
-         return var0 instanceof OutOfMemoryError || var0 instanceof StackOverflowError;
+         return t instanceof OutOfMemoryError || t instanceof StackOverflowError;
       }
    }
 }

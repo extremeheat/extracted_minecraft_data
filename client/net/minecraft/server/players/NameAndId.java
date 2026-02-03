@@ -9,46 +9,44 @@ import net.minecraft.core.UUIDUtil;
 import org.jspecify.annotations.Nullable;
 
 public record NameAndId(UUID id, String name) {
-   public static final Codec<NameAndId> CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(NameAndId::id), Codec.STRING.fieldOf("name").forGetter(NameAndId::name)).apply(var0, NameAndId::new));
+   public static final Codec<NameAndId> CODEC = RecordCodecBuilder.create((i) -> i.group(UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(NameAndId::id), Codec.STRING.fieldOf("name").forGetter(NameAndId::name)).apply(i, NameAndId::new));
 
-   public NameAndId(GameProfile var1) {
-      this(var1.id(), var1.name());
+   public NameAndId(final GameProfile profile) {
+      this(profile.id(), profile.name());
    }
 
-   public NameAndId(com.mojang.authlib.yggdrasil.response.NameAndId var1) {
-      this(var1.id(), var1.name());
+   public NameAndId(final com.mojang.authlib.yggdrasil.response.NameAndId profile) {
+      this(profile.id(), profile.name());
    }
 
-   public NameAndId(UUID var1, String var2) {
+   public NameAndId {
       super();
-      this.id = var1;
-      this.name = var2;
    }
 
-   public static @Nullable NameAndId fromJson(JsonObject var0) {
-      if (var0.has("uuid") && var0.has("name")) {
-         String var1 = var0.get("uuid").getAsString();
+   public static @Nullable NameAndId fromJson(final JsonObject object) {
+      if (object.has("uuid") && object.has("name")) {
+         String uuidString = object.get("uuid").getAsString();
 
-         UUID var2;
+         UUID uuid;
          try {
-            var2 = UUID.fromString(var1);
+            uuid = UUID.fromString(uuidString);
          } catch (Throwable var4) {
             return null;
          }
 
-         return new NameAndId(var2, var0.get("name").getAsString());
+         return new NameAndId(uuid, object.get("name").getAsString());
       } else {
          return null;
       }
    }
 
-   public void appendTo(JsonObject var1) {
-      var1.addProperty("uuid", this.id().toString());
-      var1.addProperty("name", this.name());
+   public void appendTo(final JsonObject output) {
+      output.addProperty("uuid", this.id().toString());
+      output.addProperty("name", this.name());
    }
 
-   public static NameAndId createOffline(String var0) {
-      UUID var1 = UUIDUtil.createOfflinePlayerUUID(var0);
-      return new NameAndId(var1, var0);
+   public static NameAndId createOffline(final String name) {
+      UUID id = UUIDUtil.createOfflinePlayerUUID(name);
+      return new NameAndId(id, name);
    }
 }

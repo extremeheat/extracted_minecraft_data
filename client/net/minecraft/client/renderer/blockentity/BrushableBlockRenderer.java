@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.BrushableBlockRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -22,58 +21,53 @@ import org.jspecify.annotations.Nullable;
 public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBlockEntity, BrushableBlockRenderState> {
    private final ItemModelResolver itemModelResolver;
 
-   public BrushableBlockRenderer(BlockEntityRendererProvider.Context var1) {
+   public BrushableBlockRenderer(final BlockEntityRendererProvider.Context context) {
       super();
-      this.itemModelResolver = var1.itemModelResolver();
+      this.itemModelResolver = context.itemModelResolver();
    }
 
    public BrushableBlockRenderState createRenderState() {
       return new BrushableBlockRenderState();
    }
 
-   public void extractRenderState(BrushableBlockEntity var1, BrushableBlockRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
-      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
-      var2.hitDirection = var1.getHitDirection();
-      var2.dustProgress = (Integer)var1.getBlockState().getValue(BlockStateProperties.DUSTED);
-      if (var1.getLevel() != null && var1.getHitDirection() != null) {
-         var2.lightCoords = LevelRenderer.getLightColor(LevelRenderer.BrightnessGetter.DEFAULT, var1.getLevel(), var1.getBlockState(), var1.getBlockPos().relative(var1.getHitDirection()));
+   public void extractRenderState(final BrushableBlockEntity blockEntity, final BrushableBlockRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+      state.hitDirection = blockEntity.getHitDirection();
+      state.dustProgress = (Integer)blockEntity.getBlockState().getValue(BlockStateProperties.DUSTED);
+      if (blockEntity.getLevel() != null && blockEntity.getHitDirection() != null) {
+         state.lightCoords = LevelRenderer.getLightCoords(LevelRenderer.BrightnessGetter.DEFAULT, blockEntity.getLevel(), blockEntity.getBlockState(), blockEntity.getBlockPos().relative(blockEntity.getHitDirection()));
       }
 
-      this.itemModelResolver.updateForTopItem(var2.itemState, var1.getItem(), ItemDisplayContext.FIXED, var1.getLevel(), (ItemOwner)null, 0);
+      this.itemModelResolver.updateForTopItem(state.itemState, blockEntity.getItem(), ItemDisplayContext.FIXED, blockEntity.getLevel(), (ItemOwner)null, 0);
    }
 
-   public void submit(BrushableBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      if (var1.dustProgress > 0 && var1.hitDirection != null && !var1.itemState.isEmpty()) {
-         var2.pushPose();
-         var2.translate(0.0F, 0.5F, 0.0F);
-         float[] var5 = this.translations(var1.hitDirection, var1.dustProgress);
-         var2.translate(var5[0], var5[1], var5[2]);
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(75.0F));
-         boolean var6 = var1.hitDirection == Direction.EAST || var1.hitDirection == Direction.WEST;
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)((var6 ? 90 : 0) + 11)));
-         var2.scale(0.5F, 0.5F, 0.5F);
-         var1.itemState.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, 0);
-         var2.popPose();
+   public void submit(final BrushableBlockRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      if (state.dustProgress > 0 && state.hitDirection != null && !state.itemState.isEmpty()) {
+         poseStack.pushPose();
+         poseStack.translate(0.0F, 0.5F, 0.0F);
+         float[] translations = this.translations(state.hitDirection, state.dustProgress);
+         poseStack.translate(translations[0], translations[1], translations[2]);
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(75.0F));
+         boolean eastWest = state.hitDirection == Direction.EAST || state.hitDirection == Direction.WEST;
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)((eastWest ? 90 : 0) + 11)));
+         poseStack.scale(0.5F, 0.5F, 0.5F);
+         state.itemState.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+         poseStack.popPose();
       }
    }
 
-   private float[] translations(Direction var1, int var2) {
-      float[] var3 = new float[]{0.5F, 0.0F, 0.5F};
-      float var4 = (float)var2 / 10.0F * 0.75F;
-      switch (var1) {
-         case EAST -> var3[0] = 0.73F + var4;
-         case WEST -> var3[0] = 0.25F - var4;
-         case UP -> var3[1] = 0.25F + var4;
-         case DOWN -> var3[1] = -0.23F - var4;
-         case NORTH -> var3[2] = 0.25F - var4;
-         case SOUTH -> var3[2] = 0.73F + var4;
+   private float[] translations(final Direction direction, final int completionState) {
+      float[] xyzTranslations = new float[]{0.5F, 0.0F, 0.5F};
+      float completionOffset = (float)completionState / 10.0F * 0.75F;
+      switch (direction) {
+         case EAST -> xyzTranslations[0] = 0.73F + completionOffset;
+         case WEST -> xyzTranslations[0] = 0.25F - completionOffset;
+         case UP -> xyzTranslations[1] = 0.25F + completionOffset;
+         case DOWN -> xyzTranslations[1] = -0.23F - completionOffset;
+         case NORTH -> xyzTranslations[2] = 0.25F - completionOffset;
+         case SOUTH -> xyzTranslations[2] = 0.73F + completionOffset;
       }
 
-      return var3;
-   }
-
-   // $FF: synthetic method
-   public BlockEntityRenderState createRenderState() {
-      return this.createRenderState();
+      return xyzTranslations;
    }
 }

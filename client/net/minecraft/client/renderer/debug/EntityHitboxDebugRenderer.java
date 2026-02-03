@@ -22,22 +22,22 @@ import org.jspecify.annotations.Nullable;
 public class EntityHitboxDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    final Minecraft minecraft;
 
-   public EntityHitboxDebugRenderer(Minecraft var1) {
+   public EntityHitboxDebugRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
       if (this.minecraft.level != null) {
-         for(Entity var11 : this.minecraft.level.entitiesForRendering()) {
-            if (!var11.isInvisible() && var8.isVisible(var11.getBoundingBox()) && (var11 != this.minecraft.getCameraEntity() || this.minecraft.options.getCameraType() != CameraType.FIRST_PERSON)) {
-               this.showHitboxes(var11, var9, false);
+         for(Entity entity : this.minecraft.level.entitiesForRendering()) {
+            if (!entity.isInvisible() && frustum.isVisible(entity.getBoundingBox()) && (entity != this.minecraft.getCameraEntity() || this.minecraft.options.getCameraType() != CameraType.FIRST_PERSON)) {
+               this.showHitboxes(entity, partialTicks, false);
                if (SharedConstants.DEBUG_SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES) {
-                  Entity var12 = this.getServerEntity(var11);
-                  if (var12 != null) {
-                     this.showHitboxes(var11, var9, true);
+                  Entity serverEntity = this.getServerEntity(entity);
+                  if (serverEntity != null) {
+                     this.showHitboxes(entity, partialTicks, true);
                   } else {
-                     Gizmos.billboardText("Missing Server Entity", var11.getPosition(var9).add(0.0, var11.getBoundingBox().getYsize() + 1.5, 0.0), TextGizmo.Style.forColorAndCentered(-65536));
+                     Gizmos.billboardText("Missing Server Entity", entity.getPosition(partialTicks).add(0.0, entity.getBoundingBox().getYsize() + 1.5, 0.0), TextGizmo.Style.forColorAndCentered(-65536));
                   }
                }
             }
@@ -46,54 +46,54 @@ public class EntityHitboxDebugRenderer implements DebugRenderer.SimpleDebugRende
       }
    }
 
-   private @Nullable Entity getServerEntity(Entity var1) {
-      IntegratedServer var2 = this.minecraft.getSingleplayerServer();
-      if (var2 != null) {
-         ServerLevel var3 = var2.getLevel(var1.level().dimension());
-         if (var3 != null) {
-            return var3.getEntity(var1.getId());
+   private @Nullable Entity getServerEntity(final Entity entity) {
+      IntegratedServer server = this.minecraft.getSingleplayerServer();
+      if (server != null) {
+         ServerLevel level = server.getLevel(entity.level().dimension());
+         if (level != null) {
+            return level.getEntity(entity.getId());
          }
       }
 
       return null;
    }
 
-   private void showHitboxes(Entity var1, float var2, boolean var3) {
-      Vec3 var4 = var1.position();
-      Vec3 var5 = var1.getPosition(var2);
-      Vec3 var6 = var5.subtract(var4);
-      int var7 = var3 ? -16711936 : -1;
-      Gizmos.cuboid(var1.getBoundingBox().move(var6), GizmoStyle.stroke(var7));
-      Gizmos.point(var5, var7, 2.0F);
-      Entity var8 = var1.getVehicle();
-      if (var8 != null) {
-         float var9 = Math.min(var8.getBbWidth(), var1.getBbWidth()) / 2.0F;
-         float var10 = 0.0625F;
-         Vec3 var11 = var8.getPassengerRidingPosition(var1).add(var6);
-         Gizmos.cuboid(new AABB(var11.x - (double)var9, var11.y, var11.z - (double)var9, var11.x + (double)var9, var11.y + 0.0625, var11.z + (double)var9), GizmoStyle.stroke(-256));
+   private void showHitboxes(final Entity entity, final float partialTicks, final boolean isServerEntity) {
+      Vec3 latestPosition = entity.position();
+      Vec3 currentPosition = entity.getPosition(partialTicks);
+      Vec3 offset = currentPosition.subtract(latestPosition);
+      int mainColor = isServerEntity ? -16711936 : -1;
+      Gizmos.cuboid(entity.getBoundingBox().move(offset), GizmoStyle.stroke(mainColor));
+      Gizmos.point(currentPosition, mainColor, 2.0F);
+      Entity vehicle = entity.getVehicle();
+      if (vehicle != null) {
+         float width = Math.min(vehicle.getBbWidth(), entity.getBbWidth()) / 2.0F;
+         float height = 0.0625F;
+         Vec3 position = vehicle.getPassengerRidingPosition(entity).add(offset);
+         Gizmos.cuboid(new AABB(position.x - (double)width, position.y, position.z - (double)width, position.x + (double)width, position.y + 0.0625, position.z + (double)width), GizmoStyle.stroke(-256));
       }
 
-      if (var1 instanceof LivingEntity) {
-         AABB var17 = var1.getBoundingBox().move(var6);
-         float var20 = 0.01F;
-         Gizmos.cuboid(new AABB(var17.minX, var17.minY + (double)var1.getEyeHeight() - 0.009999999776482582, var17.minZ, var17.maxX, var17.minY + (double)var1.getEyeHeight() + 0.009999999776482582, var17.maxZ), GizmoStyle.stroke(-65536));
+      if (entity instanceof LivingEntity) {
+         AABB bb = entity.getBoundingBox().move(offset);
+         float padding = 0.01F;
+         Gizmos.cuboid(new AABB(bb.minX, bb.minY + (double)entity.getEyeHeight() - 0.009999999776482582, bb.minZ, bb.maxX, bb.minY + (double)entity.getEyeHeight() + 0.009999999776482582, bb.maxZ), GizmoStyle.stroke(-65536));
       }
 
-      if (var1 instanceof EnderDragon var18) {
-         for(EnderDragonPart var13 : var18.getSubEntities()) {
-            Vec3 var14 = var13.position();
-            Vec3 var15 = var13.getPosition(var2);
-            Vec3 var16 = var15.subtract(var14);
-            Gizmos.cuboid(var13.getBoundingBox().move(var16), GizmoStyle.stroke(ARGB.colorFromFloat(1.0F, 0.25F, 1.0F, 0.0F)));
+      if (entity instanceof EnderDragon dragon) {
+         for(EnderDragonPart subEntity : dragon.getSubEntities()) {
+            Vec3 latestSubPosition = subEntity.position();
+            Vec3 currentSubPosition = subEntity.getPosition(partialTicks);
+            Vec3 subOffset = currentSubPosition.subtract(latestSubPosition);
+            Gizmos.cuboid(subEntity.getBoundingBox().move(subOffset), GizmoStyle.stroke(ARGB.colorFromFloat(1.0F, 0.25F, 1.0F, 0.0F)));
          }
       }
 
-      Vec3 var19 = var5.add(0.0, (double)var1.getEyeHeight(), 0.0);
-      Vec3 var22 = var1.getViewVector(var2);
-      Gizmos.arrow(var19, var19.add(var22.scale(2.0)), -16776961);
-      if (var3) {
-         Vec3 var24 = var1.getDeltaMovement();
-         Gizmos.arrow(var5, var5.add(var24), -256);
+      Vec3 eyePosition = currentPosition.add(0.0, (double)entity.getEyeHeight(), 0.0);
+      Vec3 viewVector = entity.getViewVector(partialTicks);
+      Gizmos.arrow(eyePosition, eyePosition.add(viewVector.scale(2.0)), -16776961);
+      if (isServerEntity) {
+         Vec3 deltaMovement = entity.getDeltaMovement();
+         Gizmos.arrow(currentPosition, currentPosition.add(deltaMovement), -256);
       }
 
    }

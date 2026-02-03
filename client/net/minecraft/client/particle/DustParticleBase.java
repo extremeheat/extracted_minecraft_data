@@ -7,30 +7,30 @@ import net.minecraft.util.Mth;
 public class DustParticleBase<T extends ScalableParticleOptionsBase> extends SingleQuadParticle {
    private final SpriteSet sprites;
 
-   protected DustParticleBase(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, T var14, SpriteSet var15) {
-      super(var1, var2, var4, var6, var8, var10, var12, var15.first());
+   protected DustParticleBase(final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final T options, final SpriteSet sprites) {
+      super(level, x, y, z, xAux, yAux, zAux, sprites.first());
       this.friction = 0.96F;
       this.speedUpWhenYMotionIsBlocked = true;
-      this.sprites = var15;
+      this.sprites = sprites;
       this.xd *= 0.10000000149011612;
       this.yd *= 0.10000000149011612;
       this.zd *= 0.10000000149011612;
-      this.quadSize *= 0.75F * var14.getScale();
-      int var16 = (int)(8.0 / (this.random.nextDouble() * 0.8 + 0.2));
-      this.lifetime = (int)Math.max((float)var16 * var14.getScale(), 1.0F);
-      this.setSpriteFromAge(var15);
+      this.quadSize *= 0.75F * options.getScale();
+      int baseLifetime = (int)(8.0 / (this.random.nextDouble() * 0.8 + 0.2));
+      this.lifetime = (int)Math.max((float)baseLifetime * options.getScale(), 1.0F);
+      this.setSpriteFromAge(sprites);
    }
 
-   protected float randomizeColor(float var1, float var2) {
-      return (this.random.nextFloat() * 0.2F + 0.8F) * var1 * var2;
+   protected float randomizeColor(final float color, final float baseFactor) {
+      return (this.random.nextFloat() * 0.2F + 0.8F) * color * baseFactor;
    }
 
    public SingleQuadParticle.Layer getLayer() {
       return SingleQuadParticle.Layer.OPAQUE;
    }
 
-   public float getQuadSize(float var1) {
-      return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
+   public float getQuadSize(final float a) {
+      return this.quadSize * Mth.clamp(((float)this.age + a) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
    }
 
    public void tick() {

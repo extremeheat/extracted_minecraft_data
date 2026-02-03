@@ -9,14 +9,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 
 public class FlatLayerInfo {
-   public static final Codec<FlatLayerInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.intRange(0, DimensionType.Y_SIZE).fieldOf("height").forGetter(FlatLayerInfo::getHeight), BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").orElse(Blocks.AIR).forGetter((var0x) -> var0x.getBlockState().getBlock())).apply(var0, FlatLayerInfo::new));
+   public static final Codec<FlatLayerInfo> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.intRange(0, DimensionType.Y_SIZE).fieldOf("height").forGetter(FlatLayerInfo::getHeight), BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").orElse(Blocks.AIR).forGetter((l) -> l.getBlockState().getBlock())).apply(i, FlatLayerInfo::new));
    private final Block block;
    private final int height;
 
-   public FlatLayerInfo(int var1, Block var2) {
+   public FlatLayerInfo(final int height, final Block block) {
       super();
-      this.height = var1;
-      this.block = var2;
+      this.height = height;
+      this.block = block;
    }
 
    public int getHeight() {
@@ -27,8 +27,8 @@ public class FlatLayerInfo {
       return this.block.defaultBlockState();
    }
 
-   public FlatLayerInfo heightLimited(int var1) {
-      return this.height > var1 ? new FlatLayerInfo(var1, this.block) : this;
+   public FlatLayerInfo heightLimited(final int maxHeight) {
+      return this.height > maxHeight ? new FlatLayerInfo(maxHeight, this.block) : this;
    }
 
    public String toString() {

@@ -20,19 +20,19 @@ public class DryVegetationBlock extends VegetationBlock {
       return CODEC;
    }
 
-   protected DryVegetationBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected DryVegetationBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(BlockTags.DRY_VEGETATION_MAY_PLACE_ON);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.is(BlockTags.SUPPORTS_DRY_VEGETATION);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      AmbientDesertBlockSoundsPlayer.playAmbientDeadBushSounds(var2, var3, var4);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      AmbientDesertBlockSoundsPlayer.playAmbientDeadBushSounds(level, pos, random);
    }
 }

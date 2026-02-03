@@ -15,10 +15,10 @@ public class LavaSubmergedBlockProcessor extends StructureProcessor {
       super();
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      BlockPos var7 = var5.pos();
-      boolean var8 = var1.getBlockState(var7).is(Blocks.LAVA);
-      return var8 && !Block.isShapeFullBlock(var5.state().getShape(var1, var7)) ? new StructureTemplate.StructureBlockInfo(var7, Blocks.LAVA.defaultBlockState(), var5.nbt()) : var5;
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+      BlockPos pos = processedBlockInfo.pos();
+      boolean wasLavaBefore = level.getBlockState(pos).is(Blocks.LAVA);
+      return wasLavaBefore && !Block.isShapeFullBlock(processedBlockInfo.state().getShape(level, pos)) ? new StructureTemplate.StructureBlockInfo(pos, Blocks.LAVA.defaultBlockState(), processedBlockInfo.nbt()) : processedBlockInfo;
    }
 
    protected StructureProcessorType<?> getType() {

@@ -2,6 +2,7 @@ package net.minecraft.world.entity.projectile.throwableitemprojectile;
 
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -10,9 +11,9 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.chicken.Chicken;
-import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -21,56 +22,59 @@ import net.minecraft.world.phys.HitResult;
 public class ThrownEgg extends ThrowableItemProjectile {
    private static final EntityDimensions ZERO_SIZED_DIMENSIONS = EntityDimensions.fixed(0.0F, 0.0F);
 
-   public ThrownEgg(EntityType<? extends ThrownEgg> var1, Level var2) {
-      super(var1, var2);
+   public ThrownEgg(final EntityType<? extends ThrownEgg> type, final Level level) {
+      super(type, level);
    }
 
-   public ThrownEgg(Level var1, LivingEntity var2, ItemStack var3) {
-      super(EntityType.EGG, var2, var1, var3);
+   public ThrownEgg(final Level level, final LivingEntity mob, final ItemStack itemStack) {
+      super(EntityType.EGG, mob, level, itemStack);
    }
 
-   public ThrownEgg(Level var1, double var2, double var4, double var6, ItemStack var8) {
-      super(EntityType.EGG, var2, var4, var6, var1, var8);
+   public ThrownEgg(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
+      super(EntityType.EGG, x, y, z, level, itemStack);
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 3) {
-         double var2 = 0.08;
+   public void handleEntityEvent(final byte id) {
+      if (id == 3) {
+         ItemStack item = this.getItem();
+         if (!item.isEmpty()) {
+            ItemParticleOption breakParticle = new ItemParticleOption(ParticleTypes.ITEM, ItemStackTemplate.fromNonEmptyStack(item));
 
-         for(int var4 = 0; var4 < 8; ++var4) {
-            this.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, this.getItem()), this.getX(), this.getY(), this.getZ(), ((double)this.random.nextFloat() - 0.5) * 0.08, ((double)this.random.nextFloat() - 0.5) * 0.08, ((double)this.random.nextFloat() - 0.5) * 0.08);
+            for(int i = 0; i < 8; ++i) {
+               this.level().addParticle(breakParticle, this.getX(), this.getY(), this.getZ(), ((double)this.random.nextFloat() - 0.5) * 0.08, ((double)this.random.nextFloat() - 0.5) * 0.08, ((double)this.random.nextFloat() - 0.5) * 0.08);
+            }
          }
       }
 
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
-      var1.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), 0.0F);
+   protected void onHitEntity(final EntityHitResult hitResult) {
+      super.onHitEntity(hitResult);
+      hitResult.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), 0.0F);
    }
 
-   protected void onHit(HitResult var1) {
-      super.onHit(var1);
+   protected void onHit(final HitResult hitResult) {
+      super.onHit(hitResult);
       if (!this.level().isClientSide()) {
          if (this.random.nextInt(8) == 0) {
-            byte var2 = 1;
+            int count = 1;
             if (this.random.nextInt(32) == 0) {
-               var2 = 4;
+               count = 4;
             }
 
-            for(int var3 = 0; var3 < var2; ++var3) {
-               Chicken var4 = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.TRIGGERED);
-               if (var4 != null) {
-                  var4.setAge(-24000);
-                  var4.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-                  Optional var10000 = Optional.ofNullable((EitherHolder)this.getItem().get(DataComponents.CHICKEN_VARIANT)).flatMap((var1x) -> var1x.unwrap(this.registryAccess()));
-                  Objects.requireNonNull(var4);
-                  var10000.ifPresent(var4::setVariant);
-                  if (!var4.fudgePositionAfterSizeChange(ZERO_SIZED_DIMENSIONS)) {
+            for(int i = 0; i < count; ++i) {
+               Chicken chicken = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.TRIGGERED);
+               if (chicken != null) {
+                  chicken.setAge(-24000);
+                  chicken.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                  Optional var10000 = Optional.ofNullable((Holder)this.getItem().get(DataComponents.CHICKEN_VARIANT));
+                  Objects.requireNonNull(chicken);
+                  var10000.ifPresent(chicken::setVariant);
+                  if (!chicken.fudgePositionAfterSizeChange(ZERO_SIZED_DIMENSIONS)) {
                      break;
                   }
 
-                  this.level().addFreshEntity(var4);
+                  this.level().addFreshEntity(chicken);
                }
             }
          }

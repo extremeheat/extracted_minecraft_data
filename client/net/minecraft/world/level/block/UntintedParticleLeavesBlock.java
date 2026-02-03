@@ -12,16 +12,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public class UntintedParticleLeavesBlock extends LeavesBlock {
-   public static final MapCodec<UntintedParticleLeavesBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.floatRange(0.0F, 1.0F).fieldOf("leaf_particle_chance").forGetter((var0x) -> var0x.leafParticleChance), ParticleTypes.CODEC.fieldOf("leaf_particle").forGetter((var0x) -> var0x.leafParticle), propertiesCodec()).apply(var0, UntintedParticleLeavesBlock::new));
+   public static final MapCodec<UntintedParticleLeavesBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.floatRange(0.0F, 1.0F).fieldOf("leaf_particle_chance").forGetter((e) -> e.leafParticleChance), ParticleTypes.CODEC.fieldOf("leaf_particle").forGetter((e) -> e.leafParticle), propertiesCodec()).apply(i, UntintedParticleLeavesBlock::new));
    protected final ParticleOptions leafParticle;
 
-   public UntintedParticleLeavesBlock(float var1, ParticleOptions var2, BlockBehaviour.Properties var3) {
-      super(var1, var3);
-      this.leafParticle = var2;
+   public UntintedParticleLeavesBlock(final float leafParticleChance, final ParticleOptions leafParticle, final BlockBehaviour.Properties properties) {
+      super(leafParticleChance, properties);
+      this.leafParticle = leafParticle;
    }
 
-   protected void spawnFallingLeavesParticle(Level var1, BlockPos var2, RandomSource var3) {
-      ParticleUtils.spawnParticleBelow(var1, var2, var3, this.leafParticle);
+   protected void spawnFallingLeavesParticle(final Level level, final BlockPos pos, final RandomSource random) {
+      ParticleUtils.spawnParticleBelow(level, pos, random, this.leafParticle);
    }
 
    public MapCodec<UntintedParticleLeavesBlock> codec() {

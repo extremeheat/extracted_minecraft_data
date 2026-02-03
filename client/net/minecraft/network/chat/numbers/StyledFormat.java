@@ -30,13 +30,12 @@ public record StyledFormat(Style style) implements NumberFormat {
    public static final StyledFormat SIDEBAR_DEFAULT;
    public static final StyledFormat PLAYER_LIST_DEFAULT;
 
-   public StyledFormat(Style var1) {
+   public StyledFormat {
       super();
-      this.style = var1;
    }
 
-   public MutableComponent format(int var1) {
-      return Component.literal(Integer.toString(var1)).withStyle(this.style);
+   public MutableComponent format(final int value) {
+      return Component.literal(Integer.toString(value)).withStyle(this.style);
    }
 
    public NumberFormatType<StyledFormat> type() {

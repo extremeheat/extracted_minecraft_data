@@ -12,40 +12,40 @@ import java.util.UUID;
 import java.util.function.Function;
 
 public abstract class AbstractUUIDFix extends DataFix {
-   protected DSL.TypeReference typeReference;
+   protected final DSL.TypeReference typeReference;
 
-   public AbstractUUIDFix(Schema var1, DSL.TypeReference var2) {
-      super(var1, false);
-      this.typeReference = var2;
+   public AbstractUUIDFix(final Schema outputSchema, final DSL.TypeReference typeReference) {
+      super(outputSchema, false);
+      this.typeReference = typeReference;
    }
 
-   protected Typed<?> updateNamedChoice(Typed<?> var1, String var2, Function<Dynamic<?>, Dynamic<?>> var3) {
-      Type var4 = this.getInputSchema().getChoiceType(this.typeReference, var2);
-      Type var5 = this.getOutputSchema().getChoiceType(this.typeReference, var2);
-      return var1.updateTyped(DSL.namedChoice(var2, var4), var5, (var1x) -> var1x.update(DSL.remainderFinder(), var3));
+   protected Typed<?> updateNamedChoice(final Typed<?> input, final String name, final Function<Dynamic<?>, Dynamic<?>> function) {
+      Type<?> oldType = this.getInputSchema().getChoiceType(this.typeReference, name);
+      Type<?> newType = this.getOutputSchema().getChoiceType(this.typeReference, name);
+      return input.updateTyped(DSL.namedChoice(name, oldType), newType, (typedTag) -> typedTag.update(DSL.remainderFinder(), function));
    }
 
-   protected static Optional<Dynamic<?>> replaceUUIDString(Dynamic<?> var0, String var1, String var2) {
-      return createUUIDFromString(var0, var1).map((var3) -> var0.remove(var1).set(var2, var3));
+   protected static Optional<Dynamic<?>> replaceUUIDString(final Dynamic<?> tag, final String oldKey, final String newKey) {
+      return createUUIDFromString(tag, oldKey).map((uuidTag) -> tag.remove(oldKey).set(newKey, uuidTag));
    }
 
-   protected static Optional<Dynamic<?>> replaceUUIDMLTag(Dynamic<?> var0, String var1, String var2) {
-      return var0.get(var1).result().flatMap(AbstractUUIDFix::createUUIDFromML).map((var3) -> var0.remove(var1).set(var2, var3));
+   protected static Optional<Dynamic<?>> replaceUUIDMLTag(final Dynamic<?> tag, final String oldKey, final String newKey) {
+      return tag.get(oldKey).result().flatMap(AbstractUUIDFix::createUUIDFromML).map((uuidTag) -> tag.remove(oldKey).set(newKey, uuidTag));
    }
 
-   protected static Optional<Dynamic<?>> replaceUUIDLeastMost(Dynamic<?> var0, String var1, String var2) {
-      String var3 = var1 + "Most";
-      String var4 = var1 + "Least";
-      return createUUIDFromLongs(var0, var3, var4).map((var4x) -> var0.remove(var3).remove(var4).set(var2, var4x));
+   protected static Optional<Dynamic<?>> replaceUUIDLeastMost(final Dynamic<?> tag, final String oldKey, final String newKey) {
+      String mostKey = oldKey + "Most";
+      String leastKey = oldKey + "Least";
+      return createUUIDFromLongs(tag, mostKey, leastKey).map((uuidTag) -> tag.remove(mostKey).remove(leastKey).set(newKey, uuidTag));
    }
 
-   protected static Optional<Dynamic<?>> createUUIDFromString(Dynamic<?> var0, String var1) {
-      return var0.get(var1).result().flatMap((var1x) -> {
-         String var2 = var1x.asString((String)null);
-         if (var2 != null) {
+   protected static Optional<Dynamic<?>> createUUIDFromString(final Dynamic<?> tag, final String oldKey) {
+      return tag.get(oldKey).result().flatMap((uuidStringTag) -> {
+         String uuidString = uuidStringTag.asString((String)null);
+         if (uuidString != null) {
             try {
-               UUID var3 = UUID.fromString(var2);
-               return createUUIDTag(var0, var3.getMostSignificantBits(), var3.getLeastSignificantBits());
+               UUID uuid = UUID.fromString(uuidString);
+               return createUUIDTag(tag, uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
             } catch (IllegalArgumentException var4) {
             }
          }
@@ -54,17 +54,17 @@ public abstract class AbstractUUIDFix extends DataFix {
       });
    }
 
-   protected static Optional<Dynamic<?>> createUUIDFromML(Dynamic<?> var0) {
-      return createUUIDFromLongs(var0, "M", "L");
+   protected static Optional<Dynamic<?>> createUUIDFromML(final Dynamic<?> tag) {
+      return createUUIDFromLongs(tag, "M", "L");
    }
 
-   protected static Optional<Dynamic<?>> createUUIDFromLongs(Dynamic<?> var0, String var1, String var2) {
-      long var3 = var0.get(var1).asLong(0L);
-      long var5 = var0.get(var2).asLong(0L);
-      return var3 != 0L && var5 != 0L ? createUUIDTag(var0, var3, var5) : Optional.empty();
+   protected static Optional<Dynamic<?>> createUUIDFromLongs(final Dynamic<?> tag, final String mostKey, final String leastKey) {
+      long mostSignificantBits = tag.get(mostKey).asLong(0L);
+      long leastSignificantBits = tag.get(leastKey).asLong(0L);
+      return mostSignificantBits != 0L && leastSignificantBits != 0L ? createUUIDTag(tag, mostSignificantBits, leastSignificantBits) : Optional.empty();
    }
 
-   protected static Optional<Dynamic<?>> createUUIDTag(Dynamic<?> var0, long var1, long var3) {
-      return Optional.of(var0.createIntList(Arrays.stream(new int[]{(int)(var1 >> 32), (int)var1, (int)(var3 >> 32), (int)var3})));
+   protected static Optional<Dynamic<?>> createUUIDTag(final Dynamic<?> tag, final long mostSignificantBits, final long leastSignificantBits) {
+      return Optional.of(tag.createIntList(Arrays.stream(new int[]{(int)(mostSignificantBits >> 32), (int)mostSignificantBits, (int)(leastSignificantBits >> 32), (int)leastSignificantBits})));
    }
 }

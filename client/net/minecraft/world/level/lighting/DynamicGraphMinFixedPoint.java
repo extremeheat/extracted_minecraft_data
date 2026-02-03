@@ -3,6 +3,8 @@ package net.minecraft.world.level.lighting;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
+import java.util.Objects;
 import java.util.function.LongPredicate;
 import net.minecraft.util.Mth;
 
@@ -14,17 +16,21 @@ public abstract class DynamicGraphMinFixedPoint {
    private final Long2ByteMap computedLevels;
    private volatile boolean hasWork;
 
-   protected DynamicGraphMinFixedPoint(int var1, int var2, final int var3) {
+   protected DynamicGraphMinFixedPoint(final int levelCount, final int minQueueSize, final int minMapSize) {
       super();
-      if (var1 >= 254) {
+      if (levelCount >= 254) {
          throw new IllegalArgumentException("Level count must be < 254.");
       } else {
-         this.levelCount = var1;
-         this.priorityQueue = new LeveledPriorityQueue(var1, var2);
-         this.computedLevels = new Long2ByteOpenHashMap(var3, 0.5F) {
-            protected void rehash(int var1) {
-               if (var1 > var3) {
-                  super.rehash(var1);
+         this.levelCount = levelCount;
+         this.priorityQueue = new LeveledPriorityQueue(levelCount, minQueueSize);
+         this.computedLevels = new Long2ByteOpenHashMap(minMapSize, 0.5F) {
+            {
+               Objects.requireNonNull(DynamicGraphMinFixedPoint.this);
+            }
+
+            protected void rehash(final int newN) {
+               if (newN > minMapSize) {
+                  super.rehash(newN);
                }
 
             }
@@ -33,89 +39,89 @@ public abstract class DynamicGraphMinFixedPoint {
       }
    }
 
-   protected void removeFromQueue(long var1) {
-      int var3 = this.computedLevels.remove(var1) & 255;
-      if (var3 != 255) {
-         int var4 = this.getLevel(var1);
-         int var5 = this.calculatePriority(var4, var3);
-         this.priorityQueue.dequeue(var1, var5, this.levelCount);
+   protected void removeFromQueue(final long node) {
+      int computedLevel = this.computedLevels.remove(node) & 255;
+      if (computedLevel != 255) {
+         int level = this.getLevel(node);
+         int priority = this.calculatePriority(level, computedLevel);
+         this.priorityQueue.dequeue(node, priority, this.levelCount);
          this.hasWork = !this.priorityQueue.isEmpty();
       }
    }
 
-   public void removeIf(LongPredicate var1) {
-      LongArrayList var2 = new LongArrayList();
-      this.computedLevels.keySet().forEach((var2x) -> {
-         if (var1.test(var2x)) {
-            var2.add(var2x);
+   public void removeIf(final LongPredicate pred) {
+      LongList nodesToRemove = new LongArrayList();
+      this.computedLevels.keySet().forEach((node) -> {
+         if (pred.test(node)) {
+            nodesToRemove.add(node);
          }
 
       });
-      var2.forEach(this::removeFromQueue);
+      nodesToRemove.forEach(this::removeFromQueue);
    }
 
-   private int calculatePriority(int var1, int var2) {
-      return Math.min(Math.min(var1, var2), this.levelCount - 1);
+   private int calculatePriority(final int level, final int computedLevel) {
+      return Math.min(Math.min(level, computedLevel), this.levelCount - 1);
    }
 
-   protected void checkNode(long var1) {
-      this.checkEdge(var1, var1, this.levelCount - 1, false);
+   protected void checkNode(final long node) {
+      this.checkEdge(node, node, this.levelCount - 1, false);
    }
 
-   protected void checkEdge(long var1, long var3, int var5, boolean var6) {
-      this.checkEdge(var1, var3, var5, this.getLevel(var3), this.computedLevels.get(var3) & 255, var6);
+   protected void checkEdge(final long from, final long to, final int newLevelFrom, final boolean onlyDecreased) {
+      this.checkEdge(from, to, newLevelFrom, this.getLevel(to), this.computedLevels.get(to) & 255, onlyDecreased);
       this.hasWork = !this.priorityQueue.isEmpty();
    }
 
-   private void checkEdge(long var1, long var3, int var5, int var6, int var7, boolean var8) {
-      if (!this.isSource(var3)) {
-         var5 = Mth.clamp(var5, 0, this.levelCount - 1);
-         var6 = Mth.clamp(var6, 0, this.levelCount - 1);
-         boolean var9 = var7 == 255;
-         if (var9) {
-            var7 = var6;
+   private void checkEdge(final long from, final long to, int newLevelFrom, int levelTo, int oldComputedLevel, final boolean onlyDecreased) {
+      if (!this.isSource(to)) {
+         newLevelFrom = Mth.clamp(newLevelFrom, 0, this.levelCount - 1);
+         levelTo = Mth.clamp(levelTo, 0, this.levelCount - 1);
+         boolean wasConsistent = oldComputedLevel == 255;
+         if (wasConsistent) {
+            oldComputedLevel = levelTo;
          }
 
-         int var10;
-         if (var8) {
-            var10 = Math.min(var7, var5);
+         int newComputedLevel;
+         if (onlyDecreased) {
+            newComputedLevel = Math.min(oldComputedLevel, newLevelFrom);
          } else {
-            var10 = Mth.clamp(this.getComputedLevel(var3, var1, var5), 0, this.levelCount - 1);
+            newComputedLevel = Mth.clamp(this.getComputedLevel(to, from, newLevelFrom), 0, this.levelCount - 1);
          }
 
-         int var11 = this.calculatePriority(var6, var7);
-         if (var6 != var10) {
-            int var12 = this.calculatePriority(var6, var10);
-            if (var11 != var12 && !var9) {
-               this.priorityQueue.dequeue(var3, var11, var12);
+         int oldPriority = this.calculatePriority(levelTo, oldComputedLevel);
+         if (levelTo != newComputedLevel) {
+            int newPriority = this.calculatePriority(levelTo, newComputedLevel);
+            if (oldPriority != newPriority && !wasConsistent) {
+               this.priorityQueue.dequeue(to, oldPriority, newPriority);
             }
 
-            this.priorityQueue.enqueue(var3, var12);
-            this.computedLevels.put(var3, (byte)var10);
-         } else if (!var9) {
-            this.priorityQueue.dequeue(var3, var11, this.levelCount);
-            this.computedLevels.remove(var3);
+            this.priorityQueue.enqueue(to, newPriority);
+            this.computedLevels.put(to, (byte)newComputedLevel);
+         } else if (!wasConsistent) {
+            this.priorityQueue.dequeue(to, oldPriority, this.levelCount);
+            this.computedLevels.remove(to);
          }
 
       }
    }
 
-   protected final void checkNeighbor(long var1, long var3, int var5, boolean var6) {
-      int var7 = this.computedLevels.get(var3) & 255;
-      int var8 = Mth.clamp(this.computeLevelFromNeighbor(var1, var3, var5), 0, this.levelCount - 1);
-      if (var6) {
-         this.checkEdge(var1, var3, var8, this.getLevel(var3), var7, var6);
+   protected final void checkNeighbor(final long from, final long to, final int level, final boolean onlyDecreased) {
+      int storedOldComputedLevel = this.computedLevels.get(to) & 255;
+      int levelFrom = Mth.clamp(this.computeLevelFromNeighbor(from, to, level), 0, this.levelCount - 1);
+      if (onlyDecreased) {
+         this.checkEdge(from, to, levelFrom, this.getLevel(to), storedOldComputedLevel, onlyDecreased);
       } else {
-         boolean var10 = var7 == 255;
-         int var9;
-         if (var10) {
-            var9 = Mth.clamp(this.getLevel(var3), 0, this.levelCount - 1);
+         boolean wasConsistent = storedOldComputedLevel == 255;
+         int oldComputedLevel;
+         if (wasConsistent) {
+            oldComputedLevel = Mth.clamp(this.getLevel(to), 0, this.levelCount - 1);
          } else {
-            var9 = var7;
+            oldComputedLevel = storedOldComputedLevel;
          }
 
-         if (var8 == var9) {
-            this.checkEdge(var1, var3, this.levelCount - 1, var10 ? var9 : this.getLevel(var3), var7, var6);
+         if (levelFrom == oldComputedLevel) {
+            this.checkEdge(from, to, this.levelCount - 1, wasConsistent ? oldComputedLevel : this.getLevel(to), storedOldComputedLevel, onlyDecreased);
          }
       }
 
@@ -125,31 +131,31 @@ public abstract class DynamicGraphMinFixedPoint {
       return this.hasWork;
    }
 
-   protected final int runUpdates(int var1) {
+   protected final int runUpdates(int count) {
       if (this.priorityQueue.isEmpty()) {
-         return var1;
+         return count;
       } else {
-         while(!this.priorityQueue.isEmpty() && var1 > 0) {
-            --var1;
-            long var2 = this.priorityQueue.removeFirstLong();
-            int var4 = Mth.clamp(this.getLevel(var2), 0, this.levelCount - 1);
-            int var5 = this.computedLevels.remove(var2) & 255;
-            if (var5 < var4) {
-               this.setLevel(var2, var5);
-               this.checkNeighborsAfterUpdate(var2, var5, true);
-            } else if (var5 > var4) {
-               this.setLevel(var2, this.levelCount - 1);
-               if (var5 != this.levelCount - 1) {
-                  this.priorityQueue.enqueue(var2, this.calculatePriority(this.levelCount - 1, var5));
-                  this.computedLevels.put(var2, (byte)var5);
+         while(!this.priorityQueue.isEmpty() && count > 0) {
+            --count;
+            long node = this.priorityQueue.removeFirstLong();
+            int level = Mth.clamp(this.getLevel(node), 0, this.levelCount - 1);
+            int computedLevel = this.computedLevels.remove(node) & 255;
+            if (computedLevel < level) {
+               this.setLevel(node, computedLevel);
+               this.checkNeighborsAfterUpdate(node, computedLevel, true);
+            } else if (computedLevel > level) {
+               this.setLevel(node, this.levelCount - 1);
+               if (computedLevel != this.levelCount - 1) {
+                  this.priorityQueue.enqueue(node, this.calculatePriority(this.levelCount - 1, computedLevel));
+                  this.computedLevels.put(node, (byte)computedLevel);
                }
 
-               this.checkNeighborsAfterUpdate(var2, var4, false);
+               this.checkNeighborsAfterUpdate(node, level, false);
             }
          }
 
          this.hasWork = !this.priorityQueue.isEmpty();
-         return var1;
+         return count;
       }
    }
 
@@ -157,17 +163,17 @@ public abstract class DynamicGraphMinFixedPoint {
       return this.computedLevels.size();
    }
 
-   protected boolean isSource(long var1) {
-      return var1 == 9223372036854775807L;
+   protected boolean isSource(final long node) {
+      return node == 9223372036854775807L;
    }
 
-   protected abstract int getComputedLevel(long var1, long var3, int var5);
+   protected abstract int getComputedLevel(final long node, final long knownParent, final int knownLevelFromParent);
 
-   protected abstract void checkNeighborsAfterUpdate(long var1, int var3, boolean var4);
+   protected abstract void checkNeighborsAfterUpdate(final long node, final int level, final boolean onlyDecrease);
 
-   protected abstract int getLevel(long var1);
+   protected abstract int getLevel(long node);
 
-   protected abstract void setLevel(long var1, int var3);
+   protected abstract void setLevel(long node, int level);
 
-   protected abstract int computeLevelFromNeighbor(long var1, long var3, int var5);
+   protected abstract int computeLevelFromNeighbor(long from, long to, final int fromLevel);
 }

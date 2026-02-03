@@ -22,31 +22,31 @@ public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCra
    private static final Component ONLY_CRAFTABLES_TOOLTIP = Component.translatable("gui.recipebook.toggleRecipes.craftable");
    private static final List<RecipeBookComponent.TabInfo> TABS;
 
-   public CraftingRecipeBookComponent(AbstractCraftingMenu var1) {
-      super(var1, TABS);
+   public CraftingRecipeBookComponent(final AbstractCraftingMenu menu) {
+      super(menu, TABS);
    }
 
-   protected boolean isCraftingSlot(Slot var1) {
-      return ((AbstractCraftingMenu)this.menu).getResultSlot() == var1 || ((AbstractCraftingMenu)this.menu).getInputGridSlots().contains(var1);
+   protected boolean isCraftingSlot(final Slot slot) {
+      return ((AbstractCraftingMenu)this.menu).getResultSlot() == slot || ((AbstractCraftingMenu)this.menu).getInputGridSlots().contains(slot);
    }
 
-   private boolean canDisplay(RecipeDisplay var1) {
-      int var2 = ((AbstractCraftingMenu)this.menu).getGridWidth();
-      int var3 = ((AbstractCraftingMenu)this.menu).getGridHeight();
-      Objects.requireNonNull(var1);
+   private boolean canDisplay(final RecipeDisplay display) {
+      int gridWidth = ((AbstractCraftingMenu)this.menu).getGridWidth();
+      int gridHeight = ((AbstractCraftingMenu)this.menu).getGridHeight();
+      Objects.requireNonNull(display);
       byte var5 = 0;
       boolean var10000;
       //$FF: var5->value
       //0->net/minecraft/world/item/crafting/display/ShapedCraftingRecipeDisplay
       //1->net/minecraft/world/item/crafting/display/ShapelessCraftingRecipeDisplay
-      switch (var1.typeSwitch<invokedynamic>(var1, var5)) {
+      switch (display.typeSwitch<invokedynamic>(display, var5)) {
          case 0:
-            ShapedCraftingRecipeDisplay var6 = (ShapedCraftingRecipeDisplay)var1;
-            var10000 = var2 >= var6.width() && var3 >= var6.height();
+            ShapedCraftingRecipeDisplay shaped = (ShapedCraftingRecipeDisplay)display;
+            var10000 = gridWidth >= shaped.width() && gridHeight >= shaped.height();
             break;
          case 1:
-            ShapelessCraftingRecipeDisplay var7 = (ShapelessCraftingRecipeDisplay)var1;
-            var10000 = var2 * var3 >= var7.ingredients().size();
+            ShapelessCraftingRecipeDisplay shapeless = (ShapelessCraftingRecipeDisplay)display;
+            var10000 = gridWidth * gridHeight >= shapeless.ingredients().size();
             break;
          default:
             var10000 = false;
@@ -55,29 +55,29 @@ public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCra
       return var10000;
    }
 
-   protected void fillGhostRecipe(GhostSlots var1, RecipeDisplay var2, ContextMap var3) {
-      var1.setResult(((AbstractCraftingMenu)this.menu).getResultSlot(), var3, var2.result());
-      Objects.requireNonNull(var2);
+   protected void fillGhostRecipe(final GhostSlots ghostSlots, final RecipeDisplay recipe, final ContextMap context) {
+      ghostSlots.setResult(((AbstractCraftingMenu)this.menu).getResultSlot(), context, recipe.result());
+      Objects.requireNonNull(recipe);
       byte var5 = 0;
       //$FF: var5->value
       //0->net/minecraft/world/item/crafting/display/ShapedCraftingRecipeDisplay
       //1->net/minecraft/world/item/crafting/display/ShapelessCraftingRecipeDisplay
-      switch (var2.typeSwitch<invokedynamic>(var2, var5)) {
+      switch (recipe.typeSwitch<invokedynamic>(recipe, var5)) {
          case 0:
-            ShapedCraftingRecipeDisplay var6 = (ShapedCraftingRecipeDisplay)var2;
-            List var11 = (this.menu).getInputGridSlots();
-            PlaceRecipeHelper.placeRecipe(((AbstractCraftingMenu)this.menu).getGridWidth(), ((AbstractCraftingMenu)this.menu).getGridHeight(), var6.width(), var6.height(), var6.ingredients(), (var3x, var4, var5x, var6x) -> {
-               Slot var7 = (Slot)var11.get(var4);
-               var1.setInput(var7, var3, var3x);
+            ShapedCraftingRecipeDisplay shaped = (ShapedCraftingRecipeDisplay)recipe;
+            List<Slot> inputSlots = ((AbstractCraftingMenu)this.menu).getInputGridSlots();
+            PlaceRecipeHelper.placeRecipe(((AbstractCraftingMenu)this.menu).getGridWidth(), ((AbstractCraftingMenu)this.menu).getGridHeight(), shaped.width(), shaped.height(), shaped.ingredients(), (ingredient, gridIndex, gridXPos, gridYPos) -> {
+               Slot slot = (Slot)inputSlots.get(gridIndex);
+               ghostSlots.setInput(slot, context, ingredient);
             });
             break;
          case 1:
-            ShapelessCraftingRecipeDisplay var7 = (ShapelessCraftingRecipeDisplay)var2;
-            List var8 = (this.menu).getInputGridSlots();
-            int var9 = Math.min(var7.ingredients().size(), var8.size());
+            ShapelessCraftingRecipeDisplay shapeless = (ShapelessCraftingRecipeDisplay)recipe;
+            List<Slot> inputSlots = ((AbstractCraftingMenu)this.menu).getInputGridSlots();
+            int slotCount = Math.min(shapeless.ingredients().size(), inputSlots.size());
 
-            for(int var10 = 0; var10 < var9; ++var10) {
-               var1.setInput((Slot)var8.get(var10), var3, (SlotDisplay)var7.ingredients().get(var10));
+            for(int i = 0; i < slotCount; ++i) {
+               ghostSlots.setInput((Slot)inputSlots.get(i), context, (SlotDisplay)shapeless.ingredients().get(i));
             }
       }
 
@@ -91,8 +91,8 @@ public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCra
       return ONLY_CRAFTABLES_TOOLTIP;
    }
 
-   protected void selectMatchingRecipes(RecipeCollection var1, StackedItemContents var2) {
-      var1.selectRecipes(var2, this::canDisplay);
+   protected void selectMatchingRecipes(final RecipeCollection collection, final StackedItemContents stackedContents) {
+      collection.selectRecipes(stackedContents, this::canDisplay);
    }
 
    static {

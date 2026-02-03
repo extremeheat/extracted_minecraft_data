@@ -170,16 +170,22 @@ public final class ItemTags {
    public static final TagKey<Item> BREAKS_DECORATED_POTS = bind("breaks_decorated_pots");
    public static final TagKey<Item> VILLAGER_PLANTABLE_SEEDS = bind("villager_plantable_seeds");
    public static final TagKey<Item> VILLAGER_PICKS_UP = bind("villager_picks_up");
-   public static final TagKey<Item> DYEABLE = bind("dyeable");
    public static final TagKey<Item> FURNACE_MINECART_FUEL = bind("furnace_minecart_fuel");
    public static final TagKey<Item> BUNDLES = bind("bundles");
    public static final TagKey<Item> BOOK_CLONING_TARGET = bind("book_cloning_target");
+   public static final TagKey<Item> DYES = bind("dyes");
+   public static final TagKey<Item> LOOM_DYES = bind("loom_dyes");
+   public static final TagKey<Item> LOOM_PATTERNS = bind("loom_patterns");
+   public static final TagKey<Item> CAULDRON_CAN_REMOVE_DYE = bind("cauldron_can_remove_dye");
+   public static final TagKey<Item> CAT_COLLAR_DYES = bind("cat_collar_dyes");
+   public static final TagKey<Item> WOLF_COLLAR_DYES = bind("wolf_collar_dyes");
    public static final TagKey<Item> SKELETON_PREFERRED_WEAPONS = bind("skeleton_preferred_weapons");
    public static final TagKey<Item> DROWNED_PREFERRED_WEAPONS = bind("drowned_preferred_weapons");
    public static final TagKey<Item> PIGLIN_PREFERRED_WEAPONS = bind("piglin_preferred_weapons");
    public static final TagKey<Item> PILLAGER_PREFERRED_WEAPONS = bind("pillager_preferred_weapons");
    public static final TagKey<Item> WITHER_SKELETON_DISLIKED_WEAPONS = bind("wither_skeleton_disliked_weapons");
    public static final TagKey<Item> SHEARABLE_FROM_COPPER_GOLEM = bind("shearable_from_copper_golem");
+   public static final TagKey<Item> METAL_NUGGETS = bind("metal_nuggets");
    public static final TagKey<Item> FOOT_ARMOR_ENCHANTABLE = bind("enchantable/foot_armor");
    public static final TagKey<Item> LEG_ARMOR_ENCHANTABLE = bind("enchantable/leg_armor");
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");
@@ -208,7 +214,7 @@ public final class ItemTags {
       super();
    }
 
-   private static TagKey<Item> bind(String var0) {
-      return TagKey.<Item>create(Registries.ITEM, Identifier.withDefaultNamespace(var0));
+   private static TagKey<Item> bind(final String name) {
+      return TagKey.<Item>create(Registries.ITEM, Identifier.withDefaultNamespace(name));
    }
 }

@@ -111,7 +111,7 @@ public class PartNames {
       super();
    }
 
-   public static String tentacle(int var0) {
-      return "tentacle" + var0;
+   public static String tentacle(final int i) {
+      return "tentacle" + i;
    }
 }

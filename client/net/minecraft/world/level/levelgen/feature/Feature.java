@@ -122,58 +122,58 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<SculkPatchConfiguration> SCULK_PATCH;
    private final MapCodec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec;
 
-   private static <C extends FeatureConfiguration, F extends Feature<C>> F register(String var0, F var1) {
-      return (F)(Registry.register(BuiltInRegistries.FEATURE, (String)var0, var1));
+   private static <C extends FeatureConfiguration, F extends Feature<C>> F register(final String name, final F feature) {
+      return (F)(Registry.register(BuiltInRegistries.FEATURE, (String)name, feature));
    }
 
-   public Feature(Codec<FC> var1) {
+   public Feature(final Codec<FC> codec) {
       super();
-      this.configuredCodec = var1.fieldOf("config").xmap((var1x) -> new ConfiguredFeature(this, var1x), ConfiguredFeature::config);
+      this.configuredCodec = codec.fieldOf("config").xmap((c) -> new ConfiguredFeature(this, c), ConfiguredFeature::config);
    }
 
    public MapCodec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec() {
       return this.configuredCodec;
    }
 
-   protected void setBlock(LevelWriter var1, BlockPos var2, BlockState var3) {
-      var1.setBlock(var2, var3, 3);
+   protected void setBlock(final LevelWriter level, final BlockPos pos, final BlockState blockState) {
+      level.setBlock(pos, blockState, 3);
    }
 
-   public static Predicate<BlockState> isReplaceable(TagKey<Block> var0) {
-      return (var1) -> !var1.is(var0);
+   public static Predicate<BlockState> isReplaceable(final TagKey<Block> cannotReplaceTag) {
+      return (s) -> !s.is(cannotReplaceTag);
    }
 
-   protected void safeSetBlock(WorldGenLevel var1, BlockPos var2, BlockState var3, Predicate<BlockState> var4) {
-      if (var4.test(var1.getBlockState(var2))) {
-         var1.setBlock(var2, var3, 2);
+   protected void safeSetBlock(final WorldGenLevel level, final BlockPos pos, final BlockState state, final Predicate<BlockState> canReplace) {
+      if (canReplace.test(level.getBlockState(pos))) {
+         level.setBlock(pos, state, 2);
       }
 
    }
 
-   public abstract boolean place(FeaturePlaceContext<FC> var1);
+   public abstract boolean place(final FeaturePlaceContext<FC> context);
 
-   public boolean place(FC var1, WorldGenLevel var2, ChunkGenerator var3, RandomSource var4, BlockPos var5) {
-      return var2.ensureCanWrite(var5) ? this.place(new FeaturePlaceContext(Optional.empty(), var2, var3, var4, var5, var1)) : false;
+   public boolean place(final FC config, final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      return level.ensureCanWrite(origin) ? this.place(new FeaturePlaceContext(Optional.empty(), level, chunkGenerator, random, origin, config)) : false;
    }
 
-   protected static boolean isStone(BlockState var0) {
-      return var0.is(BlockTags.BASE_STONE_OVERWORLD);
+   protected static boolean isStone(final BlockState state) {
+      return state.is(BlockTags.BASE_STONE_OVERWORLD);
    }
 
-   public static boolean isDirt(BlockState var0) {
-      return var0.is(BlockTags.DIRT);
+   public static boolean isDirt(final BlockState state) {
+      return state.is(BlockTags.DIRT);
    }
 
-   public static boolean isGrassOrDirt(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, Feature::isDirt);
+   public static boolean isGrassOrDirt(final LevelSimulatedReader level, final BlockPos pos) {
+      return level.isStateAtPosition(pos, Feature::isDirt);
    }
 
-   public static boolean checkNeighbors(Function<BlockPos, BlockState> var0, BlockPos var1, Predicate<BlockState> var2) {
-      BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
+   public static boolean checkNeighbors(final Function<BlockPos, BlockState> blockGetter, final BlockPos pos, final Predicate<BlockState> predicate) {
+      BlockPos.MutableBlockPos neighborPos = new BlockPos.MutableBlockPos();
 
-      for(Direction var7 : Direction.values()) {
-         var3.setWithOffset(var1, (Direction)var7);
-         if (var2.test((BlockState)var0.apply(var3))) {
+      for(Direction direction : Direction.values()) {
+         neighborPos.setWithOffset(pos, (Direction)direction);
+         if (predicate.test((BlockState)blockGetter.apply(neighborPos))) {
             return true;
          }
       }
@@ -181,20 +181,20 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       return false;
    }
 
-   public static boolean isAdjacentToAir(Function<BlockPos, BlockState> var0, BlockPos var1) {
-      return checkNeighbors(var0, var1, BlockBehaviour.BlockStateBase::isAir);
+   public static boolean isAdjacentToAir(final Function<BlockPos, BlockState> blockGetter, final BlockPos pos) {
+      return checkNeighbors(blockGetter, pos, BlockBehaviour.BlockStateBase::isAir);
    }
 
-   protected void markAboveForPostProcessing(WorldGenLevel var1, BlockPos var2) {
-      BlockPos.MutableBlockPos var3 = var2.mutable();
+   protected void markAboveForPostProcessing(final WorldGenLevel level, final BlockPos placePos) {
+      BlockPos.MutableBlockPos pos = placePos.mutable();
 
-      for(int var4 = 0; var4 < 2; ++var4) {
-         var3.move(Direction.UP);
-         if (var1.getBlockState(var3).isAir()) {
+      for(int i = 0; i < 2; ++i) {
+         pos.move(Direction.UP);
+         if (level.getBlockState(pos).isAir()) {
             return;
          }
 
-         var1.getChunk(var3).markPosForPostprocessing(var3);
+         level.getChunk(pos).markPosForPostprocessing(pos);
       }
 
    }

@@ -18,7 +18,7 @@ public interface ConsumeEffect {
 
    Type<? extends ConsumeEffect> getType();
 
-   boolean apply(Level var1, ItemStack var2, LivingEntity var3);
+   boolean apply(final Level level, final ItemStack stack, final LivingEntity user);
 
    public static record Type<T extends ConsumeEffect>(MapCodec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
       public static final Type<ApplyStatusEffectsConsumeEffect> APPLY_EFFECTS;
@@ -27,14 +27,12 @@ public interface ConsumeEffect {
       public static final Type<TeleportRandomlyConsumeEffect> TELEPORT_RANDOMLY;
       public static final Type<PlaySoundConsumeEffect> PLAY_SOUND;
 
-      public Type(MapCodec<T> var1, StreamCodec<RegistryFriendlyByteBuf, T> var2) {
+      public Type {
          super();
-         this.codec = var1;
-         this.streamCodec = var2;
       }
 
-      private static <T extends ConsumeEffect> Type<T> register(String var0, MapCodec<T> var1, StreamCodec<RegistryFriendlyByteBuf, T> var2) {
-         return (Type)Registry.register(BuiltInRegistries.CONSUME_EFFECT_TYPE, (String)var0, new Type(var1, var2));
+      private static <T extends ConsumeEffect> Type<T> register(final String name, final MapCodec<T> codec, final StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
+         return (Type)Registry.register(BuiltInRegistries.CONSUME_EFFECT_TYPE, (String)name, new Type(codec, streamCodec));
       }
 
       static {

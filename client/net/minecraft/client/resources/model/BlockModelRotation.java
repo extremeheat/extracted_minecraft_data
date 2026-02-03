@@ -13,25 +13,25 @@ import org.joml.Matrix4fc;
 public class BlockModelRotation implements ModelState {
    private static final Map<OctahedralGroup, BlockModelRotation> BY_GROUP_ORDINAL = Util.<OctahedralGroup, BlockModelRotation>makeEnumMap(OctahedralGroup.class, BlockModelRotation::new);
    public static final BlockModelRotation IDENTITY;
-   final OctahedralGroup orientation;
-   final Transformation transformation;
-   final Map<Direction, Matrix4fc> faceMapping = new EnumMap(Direction.class);
-   final Map<Direction, Matrix4fc> inverseFaceMapping = new EnumMap(Direction.class);
+   private final OctahedralGroup orientation;
+   private final Transformation transformation;
+   private final Map<Direction, Matrix4fc> faceMapping = new EnumMap(Direction.class);
+   private final Map<Direction, Matrix4fc> inverseFaceMapping = new EnumMap(Direction.class);
    private final WithUvLock withUvLock = new WithUvLock(this);
 
-   private BlockModelRotation(OctahedralGroup var1) {
+   private BlockModelRotation(final OctahedralGroup orientation) {
       super();
-      this.orientation = var1;
-      if (var1 != OctahedralGroup.IDENTITY) {
-         this.transformation = new Transformation(new Matrix4f(var1.transformation()));
+      this.orientation = orientation;
+      if (orientation != OctahedralGroup.IDENTITY) {
+         this.transformation = new Transformation(new Matrix4f(orientation.transformation()));
       } else {
          this.transformation = Transformation.identity();
       }
 
-      for(Direction var5 : Direction.values()) {
-         Matrix4fc var6 = BlockMath.getFaceTransformation(this.transformation, var5).getMatrix();
-         this.faceMapping.put(var5, var6);
-         this.inverseFaceMapping.put(var5, var6.invertAffine(new Matrix4f()));
+      for(Direction face : Direction.values()) {
+         Matrix4fc faceTransform = BlockMath.getFaceTransformation(this.transformation, face).getMatrix();
+         this.faceMapping.put(face, faceTransform);
+         this.inverseFaceMapping.put(face, faceTransform.invertAffine(new Matrix4f()));
       }
 
    }
@@ -40,8 +40,8 @@ public class BlockModelRotation implements ModelState {
       return this.transformation;
    }
 
-   public static BlockModelRotation get(OctahedralGroup var0) {
-      return (BlockModelRotation)BY_GROUP_ORDINAL.get(var0);
+   public static BlockModelRotation get(final OctahedralGroup group) {
+      return (BlockModelRotation)BY_GROUP_ORDINAL.get(group);
    }
 
    public ModelState withUvLock() {
@@ -56,22 +56,21 @@ public class BlockModelRotation implements ModelState {
       IDENTITY = get(OctahedralGroup.IDENTITY);
    }
 
-   static record WithUvLock(BlockModelRotation parent) implements ModelState {
-      WithUvLock(BlockModelRotation var1) {
+   private static record WithUvLock(BlockModelRotation parent) implements ModelState {
+      private WithUvLock {
          super();
-         this.parent = var1;
       }
 
       public Transformation transformation() {
          return this.parent.transformation;
       }
 
-      public Matrix4fc faceTransformation(Direction var1) {
-         return (Matrix4fc)this.parent.faceMapping.getOrDefault(var1, NO_TRANSFORM);
+      public Matrix4fc faceTransformation(final Direction face) {
+         return (Matrix4fc)this.parent.faceMapping.getOrDefault(face, NO_TRANSFORM);
       }
 
-      public Matrix4fc inverseFaceTransformation(Direction var1) {
-         return (Matrix4fc)this.parent.inverseFaceMapping.getOrDefault(var1, NO_TRANSFORM);
+      public Matrix4fc inverseFaceTransformation(final Direction face) {
+         return (Matrix4fc)this.parent.inverseFaceMapping.getOrDefault(face, NO_TRANSFORM);
       }
 
       public String toString() {

@@ -5,6 +5,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.state.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.ShriekParticleOption;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.joml.Quaternionf;
@@ -13,10 +14,10 @@ public class ShriekParticle extends SingleQuadParticle {
    private static final float MAGICAL_X_ROT = 1.0472F;
    private int delay;
 
-   ShriekParticle(ClientLevel var1, double var2, double var4, double var6, int var8, TextureAtlasSprite var9) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var9);
+   private ShriekParticle(final ClientLevel level, final double x, final double y, final double z, final int delay, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprite);
       this.quadSize = 0.85F;
-      this.delay = var8;
+      this.delay = delay;
       this.lifetime = 30;
       this.gravity = 0.0F;
       this.xd = 0.0;
@@ -24,23 +25,23 @@ public class ShriekParticle extends SingleQuadParticle {
       this.zd = 0.0;
    }
 
-   public float getQuadSize(float var1) {
-      return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 0.75F, 0.0F, 1.0F);
+   public float getQuadSize(final float a) {
+      return this.quadSize * Mth.clamp(((float)this.age + a) / (float)this.lifetime * 0.75F, 0.0F, 1.0F);
    }
 
-   public void extract(QuadParticleRenderState var1, Camera var2, float var3) {
+   public void extract(final QuadParticleRenderState particleTypeRenderState, final Camera camera, final float partialTickTime) {
       if (this.delay <= 0) {
-         this.alpha = 1.0F - Mth.clamp(((float)this.age + var3) / (float)this.lifetime, 0.0F, 1.0F);
-         Quaternionf var4 = new Quaternionf();
-         var4.rotationX(-1.0472F);
-         this.extractRotatedQuad(var1, var2, var4, var3);
-         var4.rotationYXZ(-3.1415927F, 1.0472F, 0.0F);
-         this.extractRotatedQuad(var1, var2, var4, var3);
+         this.alpha = 1.0F - Mth.clamp(((float)this.age + partialTickTime) / (float)this.lifetime, 0.0F, 1.0F);
+         Quaternionf rotation = new Quaternionf();
+         rotation.rotationX(-1.0472F);
+         this.extractRotatedQuad(particleTypeRenderState, camera, rotation, partialTickTime);
+         rotation.rotationYXZ(-3.1415927F, 1.0472F, 0.0F);
+         this.extractRotatedQuad(particleTypeRenderState, camera, rotation, partialTickTime);
       }
    }
 
-   public int getLightColor(float var1) {
-      return 240;
+   public int getLightCoords(final float a) {
+      return LightCoordsUtil.withBlock(super.getLightCoords(a), 15);
    }
 
    public SingleQuadParticle.Layer getLayer() {
@@ -58,15 +59,15 @@ public class ShriekParticle extends SingleQuadParticle {
    public static class Provider implements ParticleProvider<ShriekParticleOption> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(ShriekParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         ShriekParticle var16 = new ShriekParticle(var2, var3, var5, var7, var1.getDelay(), this.sprite.get(var15));
-         var16.setAlpha(1.0F);
-         return var16;
+      public Particle createParticle(final ShriekParticleOption options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         ShriekParticle particle = new ShriekParticle(level, x, y, z, options.getDelay(), this.sprite.get(random));
+         particle.setAlpha(1.0F);
+         return particle;
       }
    }
 }

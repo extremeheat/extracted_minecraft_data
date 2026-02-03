@@ -26,14 +26,14 @@ public class NearestItemSensor extends Sensor<Mob> {
       return ImmutableSet.of(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM);
    }
 
-   protected void doTick(ServerLevel var1, Mob var2) {
-      Brain var3 = var2.getBrain();
-      List var4 = var1.getEntitiesOfClass(ItemEntity.class, var2.getBoundingBox().inflate(32.0, 16.0, 32.0), (var0) -> true);
-      Objects.requireNonNull(var2);
-      var4.sort(Comparator.comparingDouble(var2::distanceToSqr));
-      Stream var10000 = var4.stream().filter((var2x) -> var2.wantsToPickUp(var1, var2x.getItem())).filter((var1x) -> var1x.closerThan(var2, 32.0));
-      Objects.requireNonNull(var2);
-      Optional var5 = var10000.filter(var2::hasLineOfSight).findFirst();
-      var3.setMemory(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM, var5);
+   protected void doTick(final ServerLevel level, final Mob body) {
+      Brain<?> brain = body.getBrain();
+      List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, body.getBoundingBox().inflate(32.0, 16.0, 32.0), (item) -> true);
+      Objects.requireNonNull(body);
+      items.sort(Comparator.comparingDouble(body::distanceToSqr));
+      Stream var10000 = items.stream().filter((itemEntity) -> body.wantsToPickUp(level, itemEntity.getItem())).filter((itemEntity) -> itemEntity.closerThan(body, 32.0));
+      Objects.requireNonNull(body);
+      Optional<ItemEntity> nearestVisibleLovedItem = var10000.filter(body::hasLineOfSight).findFirst();
+      brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM, nearestVisibleLovedItem);
    }
 }

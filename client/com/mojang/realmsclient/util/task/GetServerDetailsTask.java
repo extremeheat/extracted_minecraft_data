@@ -26,7 +26,6 @@ import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import org.slf4j.Logger;
 
 public class GetServerDetailsTask extends LongRunningTask {
@@ -36,53 +35,53 @@ public class GetServerDetailsTask extends LongRunningTask {
    private final RealmsServer server;
    private final Screen lastScreen;
 
-   public GetServerDetailsTask(Screen var1, RealmsServer var2) {
+   public GetServerDetailsTask(final Screen lastScreen, final RealmsServer server) {
       super();
-      this.lastScreen = var1;
-      this.server = var2;
+      this.lastScreen = lastScreen;
+      this.server = server;
    }
 
    public void run() {
-      RealmsJoinInformation var1;
+      RealmsJoinInformation address;
       try {
-         var1 = this.fetchServerAddress();
+         address = this.fetchServerAddress();
       } catch (CancellationException var4) {
          LOGGER.info("User aborted connecting to realms");
          return;
-      } catch (RealmsServiceException var5) {
-         switch (var5.realmsError.errorCode()) {
+      } catch (RealmsServiceException e) {
+         switch (e.realmsError.errorCode()) {
             case 6002:
                setScreen(new RealmsTermsScreen(this.lastScreen, this.server));
                return;
             case 6006:
-               boolean var3 = Minecraft.getInstance().isLocalPlayer(this.server.ownerUUID);
-               setScreen((Screen)(var3 ? new RealmsBrokenWorldScreen(this.lastScreen, this.server.id, this.server.isMinigameActive()) : new RealmsGenericErrorScreen(Component.translatable("mco.brokenworld.nonowner.title"), Component.translatable("mco.brokenworld.nonowner.error"), this.lastScreen)));
+               boolean isOwner = Minecraft.getInstance().isLocalPlayer(this.server.ownerUUID);
+               setScreen((Screen)(isOwner ? new RealmsBrokenWorldScreen(this.lastScreen, this.server.id, this.server.isMinigameActive()) : new RealmsGenericErrorScreen(Component.translatable("mco.brokenworld.nonowner.title"), Component.translatable("mco.brokenworld.nonowner.error"), this.lastScreen)));
                return;
             default:
-               this.error(var5);
-               LOGGER.error("Couldn't connect to world", var5);
+               this.error(e);
+               LOGGER.error("Couldn't connect to world", e);
                return;
          }
       } catch (TimeoutException var6) {
          this.error(Component.translatable("mco.errorMessage.connectionFailure"));
          return;
-      } catch (Exception var7) {
-         LOGGER.error("Couldn't connect to world", var7);
-         this.error(var7);
+      } catch (Exception e) {
+         LOGGER.error("Couldn't connect to world", e);
+         this.error(e);
          return;
       }
 
-      if (var1.address() == null) {
+      if (address.address() == null) {
          this.error(Component.translatable("mco.errorMessage.connectionFailure"));
       } else {
-         boolean var2 = var1.resourcePackUrl() != null && var1.resourcePackHash() != null;
-         Object var8 = var2 ? this.resourcePackDownloadConfirmationScreen(var1, generatePackId(this.server), this::connectScreen) : this.connectScreen(var1);
-         setScreen((Screen)var8);
+         boolean requiresResourcePack = address.resourcePackUrl() != null && address.resourcePackHash() != null;
+         Screen nextScreen = (Screen)(requiresResourcePack ? this.resourcePackDownloadConfirmationScreen(address, generatePackId(this.server), this::connectScreen) : this.connectScreen(address));
+         setScreen(nextScreen);
       }
    }
 
-   private static UUID generatePackId(RealmsServer var0) {
-      return var0.minigameName != null ? UUID.nameUUIDFromBytes(("minigame:" + var0.minigameName).getBytes(StandardCharsets.UTF_8)) : UUID.nameUUIDFromBytes(("realms:" + (String)Objects.requireNonNullElse(var0.name, "") + ":" + var0.activeSlot).getBytes(StandardCharsets.UTF_8));
+   private static UUID generatePackId(final RealmsServer serverData) {
+      return serverData.minigameName != null ? UUID.nameUUIDFromBytes(("minigame:" + serverData.minigameName).getBytes(StandardCharsets.UTF_8)) : UUID.nameUUIDFromBytes(("realms:" + (String)Objects.requireNonNullElse(serverData.name, "") + ":" + serverData.activeSlot).getBytes(StandardCharsets.UTF_8));
    }
 
    public Component getTitle() {
@@ -90,55 +89,55 @@ public class GetServerDetailsTask extends LongRunningTask {
    }
 
    private RealmsJoinInformation fetchServerAddress() throws RealmsServiceException, TimeoutException, CancellationException {
-      RealmsClient var1 = RealmsClient.getOrCreate();
+      RealmsClient client = RealmsClient.getOrCreate();
 
-      for(int var2 = 0; var2 < 40; ++var2) {
+      for(int i = 0; i < 40; ++i) {
          if (this.aborted()) {
             throw new CancellationException();
          }
 
          try {
-            return var1.join(this.server.id);
-         } catch (RetryCallException var4) {
-            pause((long)var4.delaySeconds);
+            return client.join(this.server.id);
+         } catch (RetryCallException e) {
+            pause((long)e.delaySeconds);
          }
       }
 
       throw new TimeoutException();
    }
 
-   public RealmsLongRunningMcoTaskScreen connectScreen(RealmsJoinInformation var1) {
-      return new RealmsLongRunningMcoConnectTaskScreen(this.lastScreen, var1, new ConnectTask(this.lastScreen, this.server, var1));
+   public RealmsLongRunningMcoTaskScreen connectScreen(final RealmsJoinInformation address) {
+      return new RealmsLongRunningMcoConnectTaskScreen(this.lastScreen, address, new ConnectTask(this.lastScreen, this.server, address));
    }
 
-   private PopupScreen resourcePackDownloadConfirmationScreen(RealmsJoinInformation var1, UUID var2, Function<RealmsJoinInformation, Screen> var3) {
-      MutableComponent var4 = Component.translatable("mco.configure.world.resourcepack.question");
-      return RealmsPopups.infoPopupScreen(this.lastScreen, var4, (var4x) -> {
+   private PopupScreen resourcePackDownloadConfirmationScreen(final RealmsJoinInformation address, final UUID packId, final Function<RealmsJoinInformation, Screen> onCompletionScreen) {
+      Component popupMessage = Component.translatable("mco.configure.world.resourcepack.question");
+      return RealmsPopups.infoPopupScreen(this.lastScreen, popupMessage, (popupScreen) -> {
          setScreen(new GenericMessageScreen(APPLYING_PACK_TEXT));
-         this.scheduleResourcePackDownload(var1, var2).thenRun(() -> setScreen((Screen)var3.apply(var1))).exceptionally((var2x) -> {
+         this.scheduleResourcePackDownload(address, packId).thenRun(() -> setScreen((Screen)onCompletionScreen.apply(address))).exceptionally((e) -> {
             Minecraft.getInstance().getDownloadedPackSource().cleanupAfterDisconnect();
-            LOGGER.error("Failed to download resource pack from {}", var1, var2x);
+            LOGGER.error("Failed to download resource pack from {}", address, e);
             setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.download.resourcePack.fail"), this.lastScreen));
             return null;
          });
       });
    }
 
-   private CompletableFuture<?> scheduleResourcePackDownload(RealmsJoinInformation var1, UUID var2) {
+   private CompletableFuture<?> scheduleResourcePackDownload(final RealmsJoinInformation address, final UUID packId) {
       try {
-         if (var1.resourcePackUrl() == null) {
+         if (address.resourcePackUrl() == null) {
             return CompletableFuture.failedFuture(new IllegalStateException("resourcePackUrl was null"));
-         } else if (var1.resourcePackHash() == null) {
+         } else if (address.resourcePackHash() == null) {
             return CompletableFuture.failedFuture(new IllegalStateException("resourcePackHash was null"));
          } else {
-            DownloadedPackSource var3 = Minecraft.getInstance().getDownloadedPackSource();
-            CompletableFuture var4 = var3.waitForPackFeedback(var2);
-            var3.allowServerPacks();
-            var3.pushPack(var2, new URL(var1.resourcePackUrl()), var1.resourcePackHash());
-            return var4;
+            DownloadedPackSource packSource = Minecraft.getInstance().getDownloadedPackSource();
+            CompletableFuture<Void> result = packSource.waitForPackFeedback(packId);
+            packSource.allowServerPacks();
+            packSource.pushPack(packId, new URL(address.resourcePackUrl()), address.resourcePackHash());
+            return result;
          }
-      } catch (Exception var5) {
-         return CompletableFuture.failedFuture(var5);
+      } catch (Exception e) {
+         return CompletableFuture.failedFuture(e);
       }
    }
 }

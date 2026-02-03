@@ -12,24 +12,24 @@ public class EnderDragonPhaseManager {
    private final @Nullable DragonPhaseInstance[] phases = new DragonPhaseInstance[EnderDragonPhase.getCount()];
    private @Nullable DragonPhaseInstance currentPhase;
 
-   public EnderDragonPhaseManager(EnderDragon var1) {
+   public EnderDragonPhaseManager(final EnderDragon dragon) {
       super();
-      this.dragon = var1;
+      this.dragon = dragon;
       this.setPhase(EnderDragonPhase.HOVERING);
    }
 
-   public void setPhase(EnderDragonPhase<?> var1) {
-      if (this.currentPhase == null || var1 != this.currentPhase.getPhase()) {
+   public void setPhase(final EnderDragonPhase<?> target) {
+      if (this.currentPhase == null || target != this.currentPhase.getPhase()) {
          if (this.currentPhase != null) {
             this.currentPhase.end();
          }
 
-         this.currentPhase = this.getPhase(var1);
+         this.currentPhase = this.getPhase(target);
          if (!this.dragon.level().isClientSide()) {
-            this.dragon.getEntityData().set(EnderDragon.DATA_PHASE, var1.getId());
+            this.dragon.getEntityData().set(EnderDragon.DATA_PHASE, target.getId());
          }
 
-         LOGGER.debug("Dragon is now in phase {} on the {}", var1, this.dragon.level().isClientSide() ? "client" : "server");
+         LOGGER.debug("Dragon is now in phase {} on the {}", target, this.dragon.level().isClientSide() ? "client" : "server");
          this.currentPhase.begin();
       }
    }
@@ -38,14 +38,14 @@ public class EnderDragonPhaseManager {
       return (DragonPhaseInstance)Objects.requireNonNull(this.currentPhase);
    }
 
-   public <T extends DragonPhaseInstance> T getPhase(EnderDragonPhase<T> var1) {
-      int var2 = var1.getId();
-      DragonPhaseInstance var3 = this.phases[var2];
-      if (var3 == null) {
-         var3 = var1.createInstance(this.dragon);
-         this.phases[var2] = var3;
+   public <T extends DragonPhaseInstance> T getPhase(final EnderDragonPhase<T> phase) {
+      int id = phase.getId();
+      DragonPhaseInstance phaseInstance = this.phases[id];
+      if (phaseInstance == null) {
+         phaseInstance = phase.createInstance(this.dragon);
+         this.phases[id] = phaseInstance;
       }
 
-      return (T)var3;
+      return (T)phaseInstance;
    }
 }

@@ -18,30 +18,30 @@ public class BlockStatePredictionHandler implements AutoCloseable {
       super();
    }
 
-   public void retainKnownServerState(BlockPos var1, BlockState var2, LocalPlayer var3) {
-      this.serverVerifiedStates.compute(var1.asLong(), (var3x, var4) -> var4 != null ? var4.setSequence(this.currentSequenceNr) : new ServerVerifiedState(this.currentSequenceNr, var2, var3.position()));
+   public void retainKnownServerState(final BlockPos pos, final BlockState state, final LocalPlayer player) {
+      this.serverVerifiedStates.compute(pos.asLong(), (key, serverVerifiedState) -> serverVerifiedState != null ? serverVerifiedState.setSequence(this.currentSequenceNr) : new ServerVerifiedState(this.currentSequenceNr, state, player.position()));
    }
 
-   public boolean updateKnownServerState(BlockPos var1, BlockState var2) {
-      ServerVerifiedState var3 = (ServerVerifiedState)this.serverVerifiedStates.get(var1.asLong());
-      if (var3 == null) {
+   public boolean updateKnownServerState(final BlockPos pos, final BlockState blockState) {
+      ServerVerifiedState serverVerifiedState = (ServerVerifiedState)this.serverVerifiedStates.get(pos.asLong());
+      if (serverVerifiedState == null) {
          return false;
       } else {
-         var3.setBlockState(var2);
+         serverVerifiedState.setBlockState(blockState);
          return true;
       }
    }
 
-   public void endPredictionsUpTo(int var1, ClientLevel var2) {
-      ObjectIterator var3 = this.serverVerifiedStates.long2ObjectEntrySet().iterator();
+   public void endPredictionsUpTo(final int sequence, final ClientLevel clientLevel) {
+      ObjectIterator<Long2ObjectMap.Entry<ServerVerifiedState>> stateIterator = this.serverVerifiedStates.long2ObjectEntrySet().iterator();
 
-      while(var3.hasNext()) {
-         Long2ObjectMap.Entry var4 = (Long2ObjectMap.Entry)var3.next();
-         ServerVerifiedState var5 = (ServerVerifiedState)var4.getValue();
-         if (var5.sequence <= var1) {
-            BlockPos var6 = BlockPos.of(var4.getLongKey());
-            var3.remove();
-            var2.syncBlockState(var6, var5.blockState, var5.playerPos);
+      while(stateIterator.hasNext()) {
+         Long2ObjectMap.Entry<ServerVerifiedState> next = (Long2ObjectMap.Entry)stateIterator.next();
+         ServerVerifiedState serverVerifiedState = (ServerVerifiedState)next.getValue();
+         if (serverVerifiedState.sequence <= sequence) {
+            BlockPos pos = BlockPos.of(next.getLongKey());
+            stateIterator.remove();
+            clientLevel.syncBlockState(pos, serverVerifiedState.blockState, serverVerifiedState.playerPos);
          }
       }
 
@@ -65,25 +65,25 @@ public class BlockStatePredictionHandler implements AutoCloseable {
       return this.isPredicting;
    }
 
-   static class ServerVerifiedState {
-      final Vec3 playerPos;
-      int sequence;
-      BlockState blockState;
+   private static class ServerVerifiedState {
+      private final Vec3 playerPos;
+      private int sequence;
+      private BlockState blockState;
 
-      ServerVerifiedState(int var1, BlockState var2, Vec3 var3) {
+      private ServerVerifiedState(final int sequence, final BlockState blockState, final Vec3 playerPos) {
          super();
-         this.sequence = var1;
-         this.blockState = var2;
-         this.playerPos = var3;
+         this.sequence = sequence;
+         this.blockState = blockState;
+         this.playerPos = playerPos;
       }
 
-      ServerVerifiedState setSequence(int var1) {
-         this.sequence = var1;
+      private ServerVerifiedState setSequence(final int sequence) {
+         this.sequence = sequence;
          return this;
       }
 
-      void setBlockState(BlockState var1) {
-         this.blockState = var1;
+      private void setBlockState(final BlockState blockState) {
+         this.blockState = blockState;
       }
    }
 }

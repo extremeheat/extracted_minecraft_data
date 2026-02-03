@@ -25,37 +25,37 @@ public class PhantomSpawner implements CustomSpawner {
       super();
    }
 
-   public void tick(ServerLevel var1, boolean var2) {
-      if (var2) {
-         if ((Boolean)var1.getGameRules().get(GameRules.SPAWN_PHANTOMS)) {
-            RandomSource var3 = var1.random;
+   public void tick(final ServerLevel level, final boolean spawnEnemies) {
+      if (spawnEnemies) {
+         if ((Boolean)level.getGameRules().get(GameRules.SPAWN_PHANTOMS)) {
+            RandomSource random = level.getRandom();
             --this.nextTick;
             if (this.nextTick <= 0) {
-               this.nextTick += (60 + var3.nextInt(60)) * 20;
-               if (var1.getSkyDarken() >= 5 || !var1.dimensionType().hasSkyLight()) {
-                  for(ServerPlayer var5 : var1.players()) {
-                     if (!var5.isSpectator()) {
-                        BlockPos var6 = var5.blockPosition();
-                        if (!var1.dimensionType().hasSkyLight() || var6.getY() >= var1.getSeaLevel() && var1.canSeeSky(var6)) {
-                           DifficultyInstance var7 = var1.getCurrentDifficultyAt(var6);
-                           if (var7.isHarderThan(var3.nextFloat() * 3.0F)) {
-                              ServerStatsCounter var8 = var5.getStats();
-                              int var9 = Mth.clamp(var8.getValue(Stats.CUSTOM.get(Stats.TIME_SINCE_REST)), 1, 2147483647);
-                              boolean var10 = true;
-                              if (var3.nextInt(var9) >= 72000) {
-                                 BlockPos var11 = var6.above(20 + var3.nextInt(15)).east(-10 + var3.nextInt(21)).south(-10 + var3.nextInt(21));
-                                 BlockState var12 = var1.getBlockState(var11);
-                                 FluidState var13 = var1.getFluidState(var11);
-                                 if (NaturalSpawner.isValidEmptySpawnBlock(var1, var11, var12, var13, EntityType.PHANTOM)) {
-                                    SpawnGroupData var14 = null;
-                                    int var15 = 1 + var3.nextInt(var7.getDifficulty().getId() + 1);
+               this.nextTick += (60 + random.nextInt(60)) * 20;
+               if (level.getSkyDarken() >= 5 || !level.dimensionType().hasSkyLight()) {
+                  for(ServerPlayer player : level.players()) {
+                     if (!player.isSpectator()) {
+                        BlockPos playerPos = player.blockPosition();
+                        if (!level.dimensionType().hasSkyLight() || playerPos.getY() >= level.getSeaLevel() && level.canSeeSky(playerPos)) {
+                           DifficultyInstance difficulty = level.getCurrentDifficultyAt(playerPos);
+                           if (difficulty.isHarderThan(random.nextFloat() * 3.0F)) {
+                              ServerStatsCounter stats = player.getStats();
+                              int value = Mth.clamp(stats.getValue(Stats.CUSTOM.get(Stats.TIME_SINCE_REST)), 1, 2147483647);
+                              int dayLength = 24000;
+                              if (random.nextInt(value) >= 72000) {
+                                 BlockPos spawnPos = playerPos.above(20 + random.nextInt(15)).east(-10 + random.nextInt(21)).south(-10 + random.nextInt(21));
+                                 BlockState blockState = level.getBlockState(spawnPos);
+                                 FluidState fluidState = level.getFluidState(spawnPos);
+                                 if (NaturalSpawner.isValidEmptySpawnBlock(level, spawnPos, blockState, fluidState, EntityType.PHANTOM)) {
+                                    SpawnGroupData groupData = null;
+                                    int groupSize = 1 + random.nextInt(difficulty.getDifficulty().getId() + 1);
 
-                                    for(int var16 = 0; var16 < var15; ++var16) {
-                                       Phantom var17 = EntityType.PHANTOM.create(var1, EntitySpawnReason.NATURAL);
-                                       if (var17 != null) {
-                                          var17.snapTo(var11, 0.0F, 0.0F);
-                                          var14 = var17.finalizeSpawn(var1, var7, EntitySpawnReason.NATURAL, var14);
-                                          var1.addFreshEntityWithPassengers(var17);
+                                    for(int i = 0; i < groupSize; ++i) {
+                                       Phantom phantom = EntityType.PHANTOM.create(level, EntitySpawnReason.NATURAL);
+                                       if (phantom != null) {
+                                          phantom.snapTo(spawnPos, 0.0F, 0.0F);
+                                          groupData = phantom.finalizeSpawn(level, difficulty, EntitySpawnReason.NATURAL, groupData);
+                                          level.addFreshEntityWithPassengers(phantom);
                                        }
                                     }
                                  }

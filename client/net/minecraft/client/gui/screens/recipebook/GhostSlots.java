@@ -18,74 +18,70 @@ public class GhostSlots {
    private final Reference2ObjectMap<Slot, GhostSlot> ingredients = new Reference2ObjectArrayMap();
    private final SlotSelectTime slotSelectTime;
 
-   public GhostSlots(SlotSelectTime var1) {
+   public GhostSlots(final SlotSelectTime slotSelectTime) {
       super();
-      this.slotSelectTime = var1;
+      this.slotSelectTime = slotSelectTime;
    }
 
    public void clear() {
       this.ingredients.clear();
    }
 
-   private void setSlot(Slot var1, ContextMap var2, SlotDisplay var3, boolean var4) {
-      List var5 = var3.resolveForStacks(var2);
-      if (!var5.isEmpty()) {
-         this.ingredients.put(var1, new GhostSlot(var5, var4));
+   private void setSlot(final Slot slot, final ContextMap context, final SlotDisplay contents, final boolean isResult) {
+      List<ItemStack> entries = contents.resolveForStacks(context);
+      if (!entries.isEmpty()) {
+         this.ingredients.put(slot, new GhostSlot(entries, isResult));
       }
 
    }
 
-   protected void setInput(Slot var1, ContextMap var2, SlotDisplay var3) {
-      this.setSlot(var1, var2, var3, false);
+   protected void setInput(final Slot slot, final ContextMap context, final SlotDisplay contents) {
+      this.setSlot(slot, context, contents, false);
    }
 
-   protected void setResult(Slot var1, ContextMap var2, SlotDisplay var3) {
-      this.setSlot(var1, var2, var3, true);
+   protected void setResult(final Slot slot, final ContextMap context, final SlotDisplay contents) {
+      this.setSlot(slot, context, contents, true);
    }
 
-   public void render(GuiGraphics var1, Minecraft var2, boolean var3) {
-      this.ingredients.forEach((var4, var5) -> {
-         int var6 = var4.x;
-         int var7 = var4.y;
-         if (var5.isResultSlot && var3) {
-            var1.fill(var6 - 4, var7 - 4, var6 + 20, var7 + 20, 822018048);
+   public void render(final GuiGraphics graphics, final Minecraft minecraft, final boolean isResultSlotBig) {
+      this.ingredients.forEach((slot, ingredient) -> {
+         int x = slot.x;
+         int y = slot.y;
+         if (ingredient.isResultSlot && isResultSlotBig) {
+            graphics.fill(x - 4, y - 4, x + 20, y + 20, 822018048);
          } else {
-            var1.fill(var6, var7, var6 + 16, var7 + 16, 822018048);
+            graphics.fill(x, y, x + 16, y + 16, 822018048);
          }
 
-         ItemStack var8 = var5.getItem(this.slotSelectTime.currentIndex());
-         var1.renderFakeItem(var8, var6, var7);
-         var1.fill(var6, var7, var6 + 16, var7 + 16, 822083583);
-         if (var5.isResultSlot) {
-            var1.renderItemDecorations(var2.font, var8, var6, var7);
+         ItemStack itemStack = ingredient.getItem(this.slotSelectTime.currentIndex());
+         graphics.renderFakeItem(itemStack, x, y);
+         graphics.fill(x, y, x + 16, y + 16, 822083583);
+         if (ingredient.isResultSlot) {
+            graphics.renderItemDecorations(minecraft.font, itemStack, x, y);
          }
 
       });
    }
 
-   public void renderTooltip(GuiGraphics var1, Minecraft var2, int var3, int var4, @Nullable Slot var5) {
-      if (var5 != null) {
-         GhostSlot var6 = (GhostSlot)this.ingredients.get(var5);
-         if (var6 != null) {
-            ItemStack var7 = var6.getItem(this.slotSelectTime.currentIndex());
-            var1.setComponentTooltipForNextFrame(var2.font, Screen.getTooltipFromItem(var2, var7), var3, var4, (Identifier)var7.get(DataComponents.TOOLTIP_STYLE));
+   public void renderTooltip(final GuiGraphics graphics, final Minecraft minecraft, final int mouseX, final int mouseY, final @Nullable Slot hoveredSlot) {
+      if (hoveredSlot != null) {
+         GhostSlot hoveredGhostSlot = (GhostSlot)this.ingredients.get(hoveredSlot);
+         if (hoveredGhostSlot != null) {
+            ItemStack hoveredItem = hoveredGhostSlot.getItem(this.slotSelectTime.currentIndex());
+            graphics.setComponentTooltipForNextFrame(minecraft.font, Screen.getTooltipFromItem(minecraft, hoveredItem), mouseX, mouseY, (Identifier)hoveredItem.get(DataComponents.TOOLTIP_STYLE));
          }
 
       }
    }
 
-   static record GhostSlot(List<ItemStack> items, boolean isResultSlot) {
-      final boolean isResultSlot;
-
-      GhostSlot(List<ItemStack> var1, boolean var2) {
+   private static record GhostSlot(List<ItemStack> items, boolean isResultSlot) {
+      private GhostSlot {
          super();
-         this.items = var1;
-         this.isResultSlot = var2;
       }
 
-      public ItemStack getItem(int var1) {
-         int var2 = this.items.size();
-         return var2 == 0 ? ItemStack.EMPTY : (ItemStack)this.items.get(var1 % var2);
+      public ItemStack getItem(final int itemIndex) {
+         int size = this.items.size();
+         return size == 0 ? ItemStack.EMPTY : (ItemStack)this.items.get(itemIndex % size);
       }
    }
 }

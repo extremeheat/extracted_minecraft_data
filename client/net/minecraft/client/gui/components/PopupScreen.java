@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
@@ -22,75 +23,87 @@ public class PopupScreen extends Screen {
    private static final int IMAGE_SIZE_X = 130;
    private static final int IMAGE_SIZE_Y = 64;
    private static final int POPUP_DEFAULT_WIDTH = 250;
-   private final Screen backgroundScreen;
+   private final @Nullable Screen backgroundScreen;
    private final @Nullable Identifier image;
-   private final Component message;
+   private final List<Component> messages;
    private final List<ButtonOption> buttons;
    private final @Nullable Runnable onClose;
    private final int contentWidth;
    private final LinearLayout layout = LinearLayout.vertical();
 
-   PopupScreen(Screen var1, int var2, @Nullable Identifier var3, Component var4, Component var5, List<ButtonOption> var6, @Nullable Runnable var7) {
-      super(var4);
-      this.backgroundScreen = var1;
-      this.image = var3;
-      this.message = var5;
-      this.buttons = var6;
-      this.onClose = var7;
-      this.contentWidth = var2 - 36;
+   private PopupScreen(final @Nullable Screen backgroundScreen, final int backgroundWidth, final @Nullable Identifier image, final Component title, final List<Component> messages, final List<ButtonOption> buttons, final @Nullable Runnable onClose) {
+      super(title);
+      this.backgroundScreen = backgroundScreen;
+      this.image = image;
+      this.messages = messages;
+      this.buttons = buttons;
+      this.onClose = onClose;
+      this.contentWidth = backgroundWidth - 36;
    }
 
    public void added() {
       super.added();
-      this.backgroundScreen.clearFocus();
+      if (this.backgroundScreen != null) {
+         this.backgroundScreen.clearFocus();
+      }
+
    }
 
    protected void init() {
-      this.backgroundScreen.init(this.width, this.height);
+      if (this.backgroundScreen != null) {
+         this.backgroundScreen.init(this.width, this.height);
+      }
+
       this.layout.spacing(12).defaultCellSetting().alignHorizontallyCenter();
       this.layout.addChild((new MultiLineTextWidget(this.title.copy().withStyle(ChatFormatting.BOLD), this.font)).setMaxWidth(this.contentWidth).setCentered(true));
       if (this.image != null) {
          this.layout.addChild(ImageWidget.texture(130, 64, this.image, 130, 64));
       }
 
-      this.layout.addChild((new MultiLineTextWidget(this.message, this.font)).setMaxWidth(this.contentWidth).setCentered(true));
+      this.messages.forEach((message) -> this.layout.addChild((new MultiLineTextWidget(message, this.font)).setMaxWidth(this.contentWidth).setCentered(true)));
       this.layout.addChild(this.buildButtonRow());
-      this.layout.visitWidgets((var1) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
-      });
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
    private LinearLayout buildButtonRow() {
-      int var1 = 6 * (this.buttons.size() - 1);
-      int var2 = Math.min((this.contentWidth - var1) / this.buttons.size(), 150);
-      LinearLayout var3 = LinearLayout.horizontal();
-      var3.spacing(6);
+      int totalSpacing = 6 * (this.buttons.size() - 1);
+      int buttonWidth = Math.min((this.contentWidth - totalSpacing) / this.buttons.size(), 150);
+      LinearLayout row = LinearLayout.horizontal();
+      row.spacing(6);
 
-      for(ButtonOption var5 : this.buttons) {
-         var3.addChild(Button.builder(var5.message(), (var2x) -> var5.action().accept(this)).width(var2).build());
+      for(ButtonOption button : this.buttons) {
+         row.addChild(Button.builder(button.message(), (b) -> button.action().accept(this)).width(buttonWidth).build());
       }
 
-      return var3;
+      return row;
    }
 
    protected void repositionElements() {
-      this.backgroundScreen.resize(this.width, this.height);
+      if (this.backgroundScreen != null) {
+         this.backgroundScreen.resize(this.width, this.height);
+      }
+
       this.layout.arrangeElements();
       FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.backgroundScreen.renderBackground(var1, var2, var3, var4);
-      var1.nextStratum();
-      this.backgroundScreen.render(var1, -1, -1, var4);
-      var1.nextStratum();
-      this.renderTransparentBackground(var1);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, this.layout.getX() - 18, this.layout.getY() - 18, this.layout.getWidth() + 36, this.layout.getHeight() + 36);
+   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      if (this.backgroundScreen != null) {
+         this.backgroundScreen.renderBackground(graphics, mouseX, mouseY, a);
+         graphics.nextStratum();
+         this.backgroundScreen.render(graphics, -1, -1, a);
+         graphics.nextStratum();
+         this.renderTransparentBackground(graphics);
+      } else {
+         super.renderBackground(graphics, mouseX, mouseY, a);
+      }
+
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, this.layout.getX() - 18, this.layout.getY() - 18, this.layout.getWidth() + 36, this.layout.getHeight() + 36);
    }
 
    public Component getNarrationMessage() {
-      return CommonComponents.joinForNarration(this.title, this.message);
+      return CommonComponents.joinForNarration(this.title, CommonComponents.joinLines((Collection)this.messages));
    }
 
    public void onClose() {
@@ -102,46 +115,42 @@ public class PopupScreen extends Screen {
    }
 
    public static class Builder {
-      private final Screen backgroundScreen;
+      private final @Nullable Screen backgroundScreen;
       private final Component title;
-      private Component message;
-      private int width;
+      private final List<Component> messages = new ArrayList();
+      private int width = 250;
       private @Nullable Identifier image;
-      private final List<ButtonOption> buttons;
-      private @Nullable Runnable onClose;
+      private final List<ButtonOption> buttons = new ArrayList();
+      private @Nullable Runnable onClose = null;
 
-      public Builder(Screen var1, Component var2) {
+      public Builder(final @Nullable Screen backgroundScreen, final Component title) {
          super();
-         this.message = CommonComponents.EMPTY;
-         this.width = 250;
-         this.buttons = new ArrayList();
-         this.onClose = null;
-         this.backgroundScreen = var1;
-         this.title = var2;
+         this.backgroundScreen = backgroundScreen;
+         this.title = title;
       }
 
-      public Builder setWidth(int var1) {
-         this.width = var1;
+      public Builder setWidth(final int width) {
+         this.width = width;
          return this;
       }
 
-      public Builder setImage(Identifier var1) {
-         this.image = var1;
+      public Builder setImage(final Identifier image) {
+         this.image = image;
          return this;
       }
 
-      public Builder setMessage(Component var1) {
-         this.message = var1;
+      public Builder addMessage(final Component message) {
+         this.messages.add(message);
          return this;
       }
 
-      public Builder addButton(Component var1, Consumer<PopupScreen> var2) {
-         this.buttons.add(new ButtonOption(var1, var2));
+      public Builder addButton(final Component message, final Consumer<PopupScreen> action) {
+         this.buttons.add(new ButtonOption(message, action));
          return this;
       }
 
-      public Builder onClose(Runnable var1) {
-         this.onClose = var1;
+      public Builder onClose(final Runnable onClose) {
+         this.onClose = onClose;
          return this;
       }
 
@@ -149,16 +158,14 @@ public class PopupScreen extends Screen {
          if (this.buttons.isEmpty()) {
             throw new IllegalStateException("Popup must have at least one button");
          } else {
-            return new PopupScreen(this.backgroundScreen, this.width, this.image, this.title, this.message, List.copyOf(this.buttons), this.onClose);
+            return new PopupScreen(this.backgroundScreen, this.width, this.image, this.title, this.messages, List.copyOf(this.buttons), this.onClose);
          }
       }
    }
 
-   static record ButtonOption(Component message, Consumer<PopupScreen> action) {
-      ButtonOption(Component var1, Consumer<PopupScreen> var2) {
+   private static record ButtonOption(Component message, Consumer<PopupScreen> action) {
+      private ButtonOption {
          super();
-         this.message = var1;
-         this.action = var2;
       }
    }
 }

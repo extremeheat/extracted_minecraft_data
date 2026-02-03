@@ -20,134 +20,124 @@ public class SpearAnimations {
       super();
    }
 
-   static float progress(float var0, float var1, float var2) {
-      return Mth.clamp(Mth.inverseLerp(var0, var1, var2), 0.0F, 1.0F);
+   private static float progress(final float time, final float start, final float end) {
+      return Mth.clamp(Mth.inverseLerp(time, start, end), 0.0F, 1.0F);
    }
 
-   public static <T extends HumanoidRenderState> void thirdPersonHandUse(ModelPart var0, ModelPart var1, boolean var2, ItemStack var3, T var4) {
-      int var5 = var2 ? 1 : -1;
-      var0.yRot = -0.1F * (float)var5 + var1.yRot;
-      var0.xRot = -1.5707964F + var1.xRot + 0.8F;
-      if (var4.isFallFlying || var4.swimAmount > 0.0F) {
-         var0.xRot -= 0.9599311F;
+   public static <T extends HumanoidRenderState> void thirdPersonHandUse(final ModelPart arm, final ModelPart head, final boolean holdingInRightArm, final ItemStack item, final T state) {
+      int invert = holdingInRightArm ? 1 : -1;
+      arm.yRot = -0.1F * (float)invert + head.yRot;
+      arm.xRot = -1.5707964F + head.xRot + 0.8F;
+      if (state.isFallFlying || state.swimAmount > 0.0F) {
+         arm.xRot -= 0.9599311F;
       }
 
-      var0.yRot = 0.017453292F * Math.clamp(57.295776F * var0.yRot, -60.0F, 60.0F);
-      var0.xRot = 0.017453292F * Math.clamp(57.295776F * var0.xRot, -120.0F, 30.0F);
-      if (!(var4.ticksUsingItem <= 0.0F) && (!var4.isUsingItem || var4.useItemHand == (var2 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND))) {
-         KineticWeapon var6 = (KineticWeapon)var3.get(DataComponents.KINETIC_WEAPON);
-         if (var6 != null) {
-            UseParams var7 = SpearAnimations.UseParams.fromKineticWeapon(var6, var4.ticksUsingItem);
-            var0.yRot += (float)(-var5) * var7.swayScaleFast() * 0.017453292F * var7.swayIntensity() * 1.0F;
-            var0.zRot += (float)(-var5) * var7.swayScaleSlow() * 0.017453292F * var7.swayIntensity() * 0.5F;
-            var0.xRot += 0.017453292F * (-40.0F * var7.raiseProgressStart() + 30.0F * var7.raiseProgressMiddle() + -20.0F * var7.raiseProgressEnd() + 20.0F * var7.lowerProgress() + 10.0F * var7.raiseBackProgress() + 0.6F * var7.swayScaleSlow() * var7.swayIntensity());
+      arm.yRot = 0.017453292F * Math.clamp(57.295776F * arm.yRot, -60.0F, 60.0F);
+      arm.xRot = 0.017453292F * Math.clamp(57.295776F * arm.xRot, -120.0F, 30.0F);
+      if (!(state.ticksUsingItem <= 0.0F) && (!state.isUsingItem || state.useItemHand == (holdingInRightArm ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND))) {
+         KineticWeapon kineticWeapon = (KineticWeapon)item.get(DataComponents.KINETIC_WEAPON);
+         if (kineticWeapon != null) {
+            UseParams params = SpearAnimations.UseParams.fromKineticWeapon(kineticWeapon, state.ticksUsingItem);
+            arm.yRot += (float)(-invert) * params.swayScaleFast() * 0.017453292F * params.swayIntensity() * 1.0F;
+            arm.zRot += (float)(-invert) * params.swayScaleSlow() * 0.017453292F * params.swayIntensity() * 0.5F;
+            arm.xRot += 0.017453292F * (-40.0F * params.raiseProgressStart() + 30.0F * params.raiseProgressMiddle() + -20.0F * params.raiseProgressEnd() + 20.0F * params.lowerProgress() + 10.0F * params.raiseBackProgress() + 0.6F * params.swayScaleSlow() * params.swayIntensity());
          }
       }
    }
 
-   public static <S extends ArmedEntityRenderState> void thirdPersonUseItem(S var0, PoseStack var1, float var2, HumanoidArm var3, ItemStack var4) {
-      KineticWeapon var5 = (KineticWeapon)var4.get(DataComponents.KINETIC_WEAPON);
-      if (var5 != null && var2 != 0.0F) {
-         float var6 = Ease.inQuad(progress(var0.attackTime, 0.05F, 0.2F));
-         float var7 = Ease.inOutExpo(progress(var0.attackTime, 0.4F, 1.0F));
-         UseParams var8 = SpearAnimations.UseParams.fromKineticWeapon(var5, var2);
-         int var9 = var3 == HumanoidArm.RIGHT ? 1 : -1;
-         float var10 = 1.0F - Ease.outBack(1.0F - var8.raiseProgress());
-         float var11 = 0.125F;
-         float var12 = hitFeedbackAmount(var0.ticksSinceKineticHitFeedback);
-         var1.translate(0.0, (double)(-var12) * 0.4, (double)(-var5.forwardMovement() * (var10 - var8.raiseBackProgress()) + var12));
-         var1.rotateAround(Axis.XN.rotationDegrees(70.0F * (var8.raiseProgress() - var8.raiseBackProgress()) - 40.0F * (var6 - var7)), 0.0F, -0.03125F, 0.125F);
-         var1.rotateAround(Axis.YP.rotationDegrees((float)(var9 * 90) * (var8.raiseProgress() - var8.swayProgress() + 3.0F * var7 + var6)), 0.0F, 0.0F, 0.125F);
+   public static <S extends ArmedEntityRenderState> void thirdPersonUseItem(final S state, final PoseStack poseStack, final float timeHeld, final HumanoidArm arm, final ItemStack actualItem) {
+      KineticWeapon kineticWeapon = (KineticWeapon)actualItem.get(DataComponents.KINETIC_WEAPON);
+      if (kineticWeapon != null && timeHeld != 0.0F) {
+         float attack = Ease.inQuad(progress(state.attackTime, 0.05F, 0.2F));
+         float retract = Ease.inOutExpo(progress(state.attackTime, 0.4F, 1.0F));
+         UseParams params = SpearAnimations.UseParams.fromKineticWeapon(kineticWeapon, timeHeld);
+         int invert = arm == HumanoidArm.RIGHT ? 1 : -1;
+         float raiseProgressModified = 1.0F - Ease.outBack(1.0F - params.raiseProgress());
+         float itemInHandDepth = 0.125F;
+         float hitFeedback = hitFeedbackAmount(state.ticksSinceKineticHitFeedback);
+         poseStack.translate(0.0, (double)(-hitFeedback) * 0.4, (double)(-kineticWeapon.forwardMovement() * (raiseProgressModified - params.raiseBackProgress()) + hitFeedback));
+         poseStack.rotateAround(Axis.XN.rotationDegrees(70.0F * (params.raiseProgress() - params.raiseBackProgress()) - 40.0F * (attack - retract)), 0.0F, -0.03125F, 0.125F);
+         poseStack.rotateAround(Axis.YP.rotationDegrees((float)(invert * 90) * (params.raiseProgress() - params.swayProgress() + 3.0F * retract + attack)), 0.0F, 0.0F, 0.125F);
       }
    }
 
-   public static <T extends HumanoidRenderState> void thirdPersonAttackHand(HumanoidModel<T> var0, T var1) {
-      float var2 = var1.attackTime;
-      HumanoidArm var3 = var1.attackArm;
-      ModelPart var10000 = var0.rightArm;
-      var10000.yRot -= var0.body.yRot;
-      var10000 = var0.leftArm;
-      var10000.yRot -= var0.body.yRot;
-      var10000 = var0.leftArm;
-      var10000.xRot -= var0.body.yRot;
-      float var4 = Ease.inOutSine(progress(var2, 0.0F, 0.05F));
-      float var5 = Ease.inQuad(progress(var2, 0.05F, 0.2F));
-      float var6 = Ease.inOutExpo(progress(var2, 0.4F, 1.0F));
-      var10000 = var0.getArm(var3);
-      var10000.xRot += (90.0F * var4 - 120.0F * var5 + 30.0F * var6) * 0.017453292F;
+   public static <T extends HumanoidRenderState> void thirdPersonAttackHand(final HumanoidModel<T> model, final T state) {
+      float attackTime = state.attackTime;
+      HumanoidArm arm = state.attackArm;
+      ModelPart var10000 = model.rightArm;
+      var10000.yRot -= model.body.yRot;
+      var10000 = model.leftArm;
+      var10000.yRot -= model.body.yRot;
+      var10000 = model.leftArm;
+      var10000.xRot -= model.body.yRot;
+      float prepare = Ease.inOutSine(progress(attackTime, 0.0F, 0.05F));
+      float attack = Ease.inQuad(progress(attackTime, 0.05F, 0.2F));
+      float retract = Ease.inOutExpo(progress(attackTime, 0.4F, 1.0F));
+      var10000 = model.getArm(arm);
+      var10000.xRot += (90.0F * prepare - 120.0F * attack + 30.0F * retract) * 0.017453292F;
    }
 
-   public static <S extends ArmedEntityRenderState> void thirdPersonAttackItem(S var0, PoseStack var1) {
-      if (!(var0.attackTime <= 0.0F)) {
-         KineticWeapon var2 = (KineticWeapon)var0.getMainHandItemStack().get(DataComponents.KINETIC_WEAPON);
-         float var3 = var2 != null ? var2.forwardMovement() : 0.0F;
-         float var4 = 0.125F;
-         float var5 = var0.attackTime;
-         float var6 = Ease.inQuad(progress(var5, 0.05F, 0.2F));
-         float var7 = Ease.inOutExpo(progress(var5, 0.4F, 1.0F));
-         var1.rotateAround(Axis.XN.rotationDegrees(70.0F * (var6 - var7)), 0.0F, -0.125F, 0.125F);
-         var1.translate(0.0F, var3 * (var6 - var7), 0.0F);
+   public static <S extends ArmedEntityRenderState> void thirdPersonAttackItem(final S state, final PoseStack poseStack) {
+      if (!(state.attackTime <= 0.0F)) {
+         KineticWeapon kineticWeapon = (KineticWeapon)state.getMainHandItemStack().get(DataComponents.KINETIC_WEAPON);
+         float jetForward = kineticWeapon != null ? kineticWeapon.forwardMovement() : 0.0F;
+         float itemInHandDepth = 0.125F;
+         float attackTime = state.attackTime;
+         float attack = Ease.inQuad(progress(attackTime, 0.05F, 0.2F));
+         float retract = Ease.inOutExpo(progress(attackTime, 0.4F, 1.0F));
+         poseStack.rotateAround(Axis.XN.rotationDegrees(70.0F * (attack - retract)), 0.0F, -0.125F, 0.125F);
+         poseStack.translate(0.0F, jetForward * (attack - retract), 0.0F);
       }
    }
 
-   private static float hitFeedbackAmount(float var0) {
-      return 0.4F * (Ease.outQuart(progress(var0, 1.0F, 3.0F)) - Ease.inOutSine(progress(var0, 3.0F, 10.0F)));
+   private static float hitFeedbackAmount(final float ticksSinceFeedbackStart) {
+      return 0.4F * (Ease.outQuart(progress(ticksSinceFeedbackStart, 1.0F, 3.0F)) - Ease.inOutSine(progress(ticksSinceFeedbackStart, 3.0F, 10.0F)));
    }
 
-   public static void firstPersonUse(float var0, PoseStack var1, float var2, HumanoidArm var3, ItemStack var4) {
-      KineticWeapon var5 = (KineticWeapon)var4.get(DataComponents.KINETIC_WEAPON);
-      if (var5 != null) {
-         UseParams var6 = SpearAnimations.UseParams.fromKineticWeapon(var5, var2);
-         int var7 = var3 == HumanoidArm.RIGHT ? 1 : -1;
-         var1.translate((double)((float)var7 * (var6.raiseProgress() * 0.15F + var6.raiseProgressEnd() * -0.05F + var6.swayProgress() * -0.1F + var6.swayScaleSlow() * 0.005F)), (double)(var6.raiseProgress() * -0.075F + var6.raiseProgressMiddle() * 0.075F + var6.swayScaleFast() * 0.01F), (double)var6.raiseProgressStart() * 0.05 + (double)var6.raiseProgressEnd() * -0.05 + (double)(var6.swayScaleSlow() * 0.005F));
-         var1.rotateAround(Axis.XP.rotationDegrees(-65.0F * Ease.inOutBack(var6.raiseProgress()) - 35.0F * var6.lowerProgress() + 100.0F * var6.raiseBackProgress() + -0.5F * var6.swayScaleFast()), 0.0F, 0.1F, 0.0F);
-         var1.rotateAround(Axis.YN.rotationDegrees((float)var7 * (-90.0F * progress(var6.raiseProgress(), 0.5F, 0.55F) + 90.0F * var6.swayProgress() + 2.0F * var6.swayScaleSlow())), (float)var7 * 0.15F, 0.0F, 0.0F);
-         var1.translate(0.0F, -hitFeedbackAmount(var0), 0.0F);
+   public static void firstPersonUse(final float ticksSinceKineticHitFeedback, final PoseStack poseStack, final float timeHeld, final HumanoidArm arm, final ItemStack itemStack) {
+      KineticWeapon kineticWeapon = (KineticWeapon)itemStack.get(DataComponents.KINETIC_WEAPON);
+      if (kineticWeapon != null) {
+         UseParams params = SpearAnimations.UseParams.fromKineticWeapon(kineticWeapon, timeHeld);
+         int invert = arm == HumanoidArm.RIGHT ? 1 : -1;
+         poseStack.translate((double)((float)invert * (params.raiseProgress() * 0.15F + params.raiseProgressEnd() * -0.05F + params.swayProgress() * -0.1F + params.swayScaleSlow() * 0.005F)), (double)(params.raiseProgress() * -0.075F + params.raiseProgressMiddle() * 0.075F + params.swayScaleFast() * 0.01F), (double)params.raiseProgressStart() * 0.05 + (double)params.raiseProgressEnd() * -0.05 + (double)(params.swayScaleSlow() * 0.005F));
+         poseStack.rotateAround(Axis.XP.rotationDegrees(-65.0F * Ease.inOutBack(params.raiseProgress()) - 35.0F * params.lowerProgress() + 100.0F * params.raiseBackProgress() + -0.5F * params.swayScaleFast()), 0.0F, 0.1F, 0.0F);
+         poseStack.rotateAround(Axis.YN.rotationDegrees((float)invert * (-90.0F * progress(params.raiseProgress(), 0.5F, 0.55F) + 90.0F * params.swayProgress() + 2.0F * params.swayScaleSlow())), (float)invert * 0.15F, 0.0F, 0.0F);
+         poseStack.translate(0.0F, -hitFeedbackAmount(ticksSinceKineticHitFeedback), 0.0F);
       }
    }
 
-   public static void firstPersonAttack(float var0, PoseStack var1, int var2, HumanoidArm var3) {
-      float var4 = Ease.inOutSine(progress(var0, 0.0F, 0.05F));
-      float var5 = Ease.outBack(progress(var0, 0.05F, 0.2F));
-      float var6 = Ease.inOutExpo(progress(var0, 0.4F, 1.0F));
-      var1.translate((float)var2 * 0.1F * (var4 - var5), -0.075F * (var4 - var6), 0.65F * (var4 - var5));
-      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-70.0F * (var4 - var6)));
-      var1.translate(0.0, 0.0, -0.25 * (double)(var6 - var5));
+   public static void firstPersonAttack(final float attack, final PoseStack poseStack, final int invert, final HumanoidArm arm) {
+      float startingAmount = Ease.inOutSine(progress(attack, 0.0F, 0.05F));
+      float middleAmount = Ease.outBack(progress(attack, 0.05F, 0.2F));
+      float endingAmount = Ease.inOutExpo(progress(attack, 0.4F, 1.0F));
+      poseStack.translate((float)invert * 0.1F * (startingAmount - middleAmount), -0.075F * (startingAmount - endingAmount), 0.65F * (startingAmount - middleAmount));
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-70.0F * (startingAmount - endingAmount)));
+      poseStack.translate(0.0, 0.0, -0.25 * (double)(endingAmount - middleAmount));
    }
 
    static record UseParams(float raiseProgress, float raiseProgressStart, float raiseProgressMiddle, float raiseProgressEnd, float swayProgress, float lowerProgress, float raiseBackProgress, float swayIntensity, float swayScaleSlow, float swayScaleFast) {
-      UseParams(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10) {
+      UseParams {
          super();
-         this.raiseProgress = var1;
-         this.raiseProgressStart = var2;
-         this.raiseProgressMiddle = var3;
-         this.raiseProgressEnd = var4;
-         this.swayProgress = var5;
-         this.lowerProgress = var6;
-         this.raiseBackProgress = var7;
-         this.swayIntensity = var8;
-         this.swayScaleSlow = var9;
-         this.swayScaleFast = var10;
       }
 
-      public static UseParams fromKineticWeapon(KineticWeapon var0, float var1) {
-         int var2 = var0.delayTicks();
-         int var3 = (Integer)var0.dismountConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + var2;
-         int var4 = var3 - 20;
-         int var5 = (Integer)var0.knockbackConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + var2;
-         int var6 = var5 - 40;
-         int var7 = (Integer)var0.damageConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + var2;
-         float var8 = SpearAnimations.progress(var1, 0.0F, (float)var2);
-         float var9 = SpearAnimations.progress(var8, 0.0F, 0.5F);
-         float var10 = SpearAnimations.progress(var8, 0.5F, 0.8F);
-         float var11 = SpearAnimations.progress(var8, 0.8F, 1.0F);
-         float var12 = SpearAnimations.progress(var1, (float)var4, (float)var6);
-         float var13 = Ease.outCubic(Ease.inOutElastic(SpearAnimations.progress(var1 - 20.0F, (float)var6, (float)var5)));
-         float var14 = SpearAnimations.progress(var1, (float)(var7 - 5), (float)var7);
-         float var15 = 2.0F * Ease.outCirc(var12) - 2.0F * Ease.inCirc(var14);
-         float var16 = Mth.sin((double)(var1 * 19.0F * 0.017453292F)) * var15;
-         float var17 = Mth.sin((double)(var1 * 30.0F * 0.017453292F)) * var15;
-         return new UseParams(var8, var9, var10, var11, var12, var13, var14, var15, var16, var17);
+      public static UseParams fromKineticWeapon(final KineticWeapon kineticWeapon, final float time) {
+         int finishRaisingTick = kineticWeapon.delayTicks();
+         int finishSwayingTick = (Integer)kineticWeapon.dismountConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + finishRaisingTick;
+         int startSwayingTick = finishSwayingTick - 20;
+         int finishLoweringTick = (Integer)kineticWeapon.knockbackConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + finishRaisingTick;
+         int startLoweringTick = finishLoweringTick - 40;
+         int finishRaisingBackTick = (Integer)kineticWeapon.damageConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + finishRaisingTick;
+         float raiseProgress = SpearAnimations.progress(time, 0.0F, (float)finishRaisingTick);
+         float raiseProgressStart = SpearAnimations.progress(raiseProgress, 0.0F, 0.5F);
+         float raiseProgressMiddle = SpearAnimations.progress(raiseProgress, 0.5F, 0.8F);
+         float raiseProgressEnd = SpearAnimations.progress(raiseProgress, 0.8F, 1.0F);
+         float swayProgress = SpearAnimations.progress(time, (float)startSwayingTick, (float)finishSwayingTick);
+         float lowerProgress = Ease.outCubic(Ease.inOutElastic(SpearAnimations.progress(time - 20.0F, (float)startLoweringTick, (float)finishLoweringTick)));
+         float raiseBackProgress = SpearAnimations.progress(time, (float)(finishRaisingBackTick - 5), (float)finishRaisingBackTick);
+         float swayIntensity = 2.0F * Ease.outCirc(swayProgress) - 2.0F * Ease.inCirc(raiseBackProgress);
+         float swayScaleSlow = Mth.sin((double)(time * 19.0F * 0.017453292F)) * swayIntensity;
+         float swayScaleFast = Mth.sin((double)(time * 30.0F * 0.017453292F)) * swayIntensity;
+         return new UseParams(raiseProgress, raiseProgressStart, raiseProgressMiddle, raiseProgressEnd, swayProgress, lowerProgress, raiseBackProgress, swayIntensity, swayScaleSlow, swayScaleFast);
       }
    }
 }

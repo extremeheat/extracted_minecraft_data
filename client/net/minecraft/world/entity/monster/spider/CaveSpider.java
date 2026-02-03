@@ -18,26 +18,26 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class CaveSpider extends Spider {
-   public CaveSpider(EntityType<? extends CaveSpider> var1, Level var2) {
-      super(var1, var2);
+   public CaveSpider(final EntityType<? extends CaveSpider> type, final Level level) {
+      super(type, level);
    }
 
    public static AttributeSupplier.Builder createCaveSpider() {
       return Spider.createAttributes().add(Attributes.MAX_HEALTH, 12.0);
    }
 
-   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
-      if (super.doHurtTarget(var1, var2)) {
-         if (var2 instanceof LivingEntity) {
-            byte var3 = 0;
+   public boolean doHurtTarget(final ServerLevel level, final Entity target) {
+      if (super.doHurtTarget(level, target)) {
+         if (target instanceof LivingEntity) {
+            int poisonTime = 0;
             if (this.level().getDifficulty() == Difficulty.NORMAL) {
-               var3 = 7;
+               poisonTime = 7;
             } else if (this.level().getDifficulty() == Difficulty.HARD) {
-               var3 = 15;
+               poisonTime = 15;
             }
 
-            if (var3 > 0) {
-               ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.POISON, var3 * 20, 0), this);
+            if (poisonTime > 0) {
+               ((LivingEntity)target).addEffect(new MobEffectInstance(MobEffects.POISON, poisonTime * 20, 0), this);
             }
          }
 
@@ -47,11 +47,11 @@ public class CaveSpider extends Spider {
       }
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      return var4;
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      return groupData;
    }
 
-   public Vec3 getVehicleAttachmentPoint(Entity var1) {
-      return var1.getBbWidth() <= this.getBbWidth() ? new Vec3(0.0, 0.21875 * (double)this.getScale(), 0.0) : super.getVehicleAttachmentPoint(var1);
+   public Vec3 getVehicleAttachmentPoint(final Entity vehicle) {
+      return vehicle.getBbWidth() <= this.getBbWidth() ? new Vec3(0.0, 0.21875 * (double)this.getScale(), 0.0) : super.getVehicleAttachmentPoint(vehicle);
    }
 }

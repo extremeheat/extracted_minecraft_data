@@ -14,20 +14,15 @@ public class FoliageColorReloadListener extends SimplePreparableReloadListener<i
       super();
    }
 
-   protected int[] prepare(ResourceManager var1, ProfilerFiller var2) {
+   protected int[] prepare(final ResourceManager manager, final ProfilerFiller profiler) {
       try {
-         return LegacyStuffWrapper.getPixels(var1, LOCATION);
-      } catch (IOException var4) {
-         throw new IllegalStateException("Failed to load foliage color texture", var4);
+         return LegacyStuffWrapper.getPixels(manager, LOCATION);
+      } catch (IOException e) {
+         throw new IllegalStateException("Failed to load foliage color texture", e);
       }
    }
 
-   protected void apply(int[] var1, ResourceManager var2, ProfilerFiller var3) {
-      FoliageColor.init(var1);
-   }
-
-   // $FF: synthetic method
-   protected Object prepare(final ResourceManager var1, final ProfilerFiller var2) {
-      return this.prepare(var1, var2);
+   protected void apply(final int[] pixels, final ResourceManager manager, final ProfilerFiller profiler) {
+      FoliageColor.init(pixels);
    }
 }

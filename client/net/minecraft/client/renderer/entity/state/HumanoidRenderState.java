@@ -9,7 +9,6 @@ public class HumanoidRenderState extends ArmedEntityRenderState {
    public float speedValue = 1.0F;
    public float maxCrossbowChargeDuration;
    public float ticksUsingItem;
-   public HumanoidArm attackArm;
    public InteractionHand useItemHand;
    public boolean isCrouching;
    public boolean isFallFlying;
@@ -26,7 +25,6 @@ public class HumanoidRenderState extends ArmedEntityRenderState {
 
    public HumanoidRenderState() {
       super();
-      this.attackArm = HumanoidArm.RIGHT;
       this.useItemHand = InteractionHand.MAIN_HAND;
       this.headEquipment = ItemStack.EMPTY;
       this.chestEquipment = ItemStack.EMPTY;
@@ -34,7 +32,7 @@ public class HumanoidRenderState extends ArmedEntityRenderState {
       this.feetEquipment = ItemStack.EMPTY;
    }
 
-   public float ticksUsingItem(HumanoidArm var1) {
-      return this.isUsingItem && this.useItemHand == InteractionHand.MAIN_HAND == (var1 == this.mainArm) ? this.ticksUsingItem : 0.0F;
+   public float ticksUsingItem(final HumanoidArm arm) {
+      return this.isUsingItem && this.useItemHand == InteractionHand.MAIN_HAND == (arm == this.mainArm) ? this.ticksUsingItem : 0.0F;
    }
 }

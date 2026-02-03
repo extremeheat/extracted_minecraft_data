@@ -8,22 +8,21 @@ import org.slf4j.Logger;
 public record RealmsServerList(List<RealmsServer> servers) implements ReflectionBasedSerialization {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public RealmsServerList(List<RealmsServer> var1) {
+   public RealmsServerList {
       super();
-      this.servers = var1;
    }
 
-   public static RealmsServerList parse(GuardedSerializer var0, String var1) {
+   public static RealmsServerList parse(final GuardedSerializer gson, final String json) {
       try {
-         RealmsServerList var2 = (RealmsServerList)var0.fromJson(var1, RealmsServerList.class);
-         if (var2 != null) {
-            var2.servers.forEach(RealmsServer::finalize);
-            return var2;
+         RealmsServerList realmsServerList = (RealmsServerList)gson.fromJson(json, RealmsServerList.class);
+         if (realmsServerList != null) {
+            realmsServerList.servers.forEach(RealmsServer::finalize);
+            return realmsServerList;
          }
 
-         LOGGER.error("Could not parse McoServerList: {}", var1);
-      } catch (Exception var3) {
-         LOGGER.error("Could not parse McoServerList", var3);
+         LOGGER.error("Could not parse McoServerList: {}", json);
+      } catch (Exception e) {
+         LOGGER.error("Could not parse McoServerList", e);
       }
 
       return new RealmsServerList(List.of());

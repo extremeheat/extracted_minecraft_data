@@ -14,78 +14,78 @@ import org.jspecify.annotations.Nullable;
 public interface ServerEntityGetter extends EntityGetter {
    ServerLevel getLevel();
 
-   default @Nullable Player getNearestPlayer(TargetingConditions var1, LivingEntity var2) {
-      return (Player)this.getNearestEntity(this.players(), var1, var2, var2.getX(), var2.getY(), var2.getZ());
+   default @Nullable Player getNearestPlayer(final TargetingConditions targetConditions, final LivingEntity source) {
+      return (Player)this.getNearestEntity(this.players(), targetConditions, source, source.getX(), source.getY(), source.getZ());
    }
 
-   default @Nullable Player getNearestPlayer(TargetingConditions var1, LivingEntity var2, double var3, double var5, double var7) {
-      return (Player)this.getNearestEntity(this.players(), var1, var2, var3, var5, var7);
+   default @Nullable Player getNearestPlayer(final TargetingConditions targetConditions, final LivingEntity source, final double x, final double y, final double z) {
+      return (Player)this.getNearestEntity(this.players(), targetConditions, source, x, y, z);
    }
 
-   default @Nullable Player getNearestPlayer(TargetingConditions var1, double var2, double var4, double var6) {
-      return (Player)this.getNearestEntity(this.players(), var1, (LivingEntity)null, var2, var4, var6);
+   default @Nullable Player getNearestPlayer(final TargetingConditions targetConditions, final double x, final double y, final double z) {
+      return (Player)this.getNearestEntity(this.players(), targetConditions, (LivingEntity)null, x, y, z);
    }
 
-   default <T extends LivingEntity> @Nullable T getNearestEntity(Class<? extends T> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8, AABB var10) {
-      return (T)this.getNearestEntity(this.getEntitiesOfClass(var1, var10, (var0) -> true), var2, var3, var4, var6, var8);
+   default <T extends LivingEntity> @Nullable T getNearestEntity(final Class<? extends T> type, final TargetingConditions targetConditions, final @Nullable LivingEntity source, final double x, final double y, final double z, final AABB bb) {
+      return (T)this.getNearestEntity(this.getEntitiesOfClass(type, bb, (entity) -> true), targetConditions, source, x, y, z);
    }
 
-   default @Nullable LivingEntity getNearestEntity(TagKey<EntityType<?>> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8, AABB var10) {
-      double var11 = 1.7976931348623157E308;
-      LivingEntity var13 = null;
+   default @Nullable LivingEntity getNearestEntity(final TagKey<EntityType<?>> tag, final TargetingConditions targetConditions, final @Nullable LivingEntity source, final double x, final double y, final double z, final AABB bb) {
+      double bestDistance = 1.7976931348623157E308;
+      LivingEntity nearestEntity = null;
 
-      for(LivingEntity var15 : this.getEntitiesOfClass(LivingEntity.class, var10, (var1x) -> var1x.getType().is(var1))) {
-         if (var2.test(this.getLevel(), var3, var15)) {
-            double var16 = var15.distanceToSqr(var4, var6, var8);
-            if (var16 < var11) {
-               var11 = var16;
-               var13 = var15;
+      for(LivingEntity entity : this.getEntitiesOfClass(LivingEntity.class, bb, (e) -> e.is(tag))) {
+         if (targetConditions.test(this.getLevel(), source, entity)) {
+            double distance = entity.distanceToSqr(x, y, z);
+            if (distance < bestDistance) {
+               bestDistance = distance;
+               nearestEntity = entity;
             }
          }
       }
 
-      return var13;
+      return nearestEntity;
    }
 
-   default <T extends LivingEntity> @Nullable T getNearestEntity(List<? extends T> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8) {
-      double var10 = -1.0;
-      LivingEntity var12 = null;
+   default <T extends LivingEntity> @Nullable T getNearestEntity(final List<? extends T> entities, final TargetingConditions targetConditions, final @Nullable LivingEntity source, final double x, final double y, final double z) {
+      double best = -1.0;
+      T result = null;
 
-      for(LivingEntity var14 : var1) {
-         if (var2.test(this.getLevel(), var3, var14)) {
-            double var15 = var14.distanceToSqr(var4, var6, var8);
-            if (var10 == -1.0 || var15 < var10) {
-               var10 = var15;
-               var12 = var14;
+      for(T entity : entities) {
+         if (targetConditions.test(this.getLevel(), source, entity)) {
+            double dist = entity.distanceToSqr(x, y, z);
+            if (best == -1.0 || dist < best) {
+               best = dist;
+               result = entity;
             }
          }
       }
 
-      return (T)var12;
+      return result;
    }
 
-   default List<Player> getNearbyPlayers(TargetingConditions var1, LivingEntity var2, AABB var3) {
-      ArrayList var4 = new ArrayList();
+   default List<Player> getNearbyPlayers(final TargetingConditions targetConditions, final LivingEntity source, final AABB bb) {
+      List<Player> foundPlayers = new ArrayList();
 
-      for(Player var6 : this.players()) {
-         if (var3.contains(var6.getX(), var6.getY(), var6.getZ()) && var1.test(this.getLevel(), var2, var6)) {
-            var4.add(var6);
+      for(Player player : this.players()) {
+         if (bb.contains(player.getX(), player.getY(), player.getZ()) && targetConditions.test(this.getLevel(), source, player)) {
+            foundPlayers.add(player);
          }
       }
 
-      return var4;
+      return foundPlayers;
    }
 
-   default <T extends LivingEntity> List<T> getNearbyEntities(Class<T> var1, TargetingConditions var2, LivingEntity var3, AABB var4) {
-      List var5 = this.getEntitiesOfClass(var1, var4, (var0) -> true);
-      ArrayList var6 = new ArrayList();
+   default <T extends LivingEntity> List<T> getNearbyEntities(final Class<T> type, final TargetingConditions targetConditions, final LivingEntity source, final AABB bb) {
+      List<T> nearby = this.getEntitiesOfClass(type, bb, (entityx) -> true);
+      List<T> entities = new ArrayList();
 
-      for(LivingEntity var8 : var5) {
-         if (var2.test(this.getLevel(), var3, var8)) {
-            var6.add(var8);
+      for(T entity : nearby) {
+         if (targetConditions.test(this.getLevel(), source, entity)) {
+            entities.add(entity);
          }
       }
 
-      return var6;
+      return entities;
    }
 }

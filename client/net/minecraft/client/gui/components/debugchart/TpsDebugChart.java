@@ -14,46 +14,46 @@ public class TpsDebugChart extends AbstractDebugChart {
    private static final int OTHER_COLOR = -10547572;
    private final Supplier<Float> msptSupplier;
 
-   public TpsDebugChart(Font var1, SampleStorage var2, Supplier<Float> var3) {
-      super(var1, var2);
-      this.msptSupplier = var3;
+   public TpsDebugChart(final Font font, final SampleStorage sampleStorage, final Supplier<Float> msptSupplier) {
+      super(font, sampleStorage);
+      this.msptSupplier = msptSupplier;
    }
 
-   protected void renderAdditionalLinesAndLabels(GuiGraphics var1, int var2, int var3, int var4) {
-      float var5 = (float)TimeUtil.MILLISECONDS_PER_SECOND / (Float)this.msptSupplier.get();
-      this.drawStringWithShade(var1, String.format(Locale.ROOT, "%.1f TPS", var5), var2 + 1, var4 - 60 + 1);
+   protected void renderAdditionalLinesAndLabels(final GuiGraphics graphics, final int left, final int width, final int bottom) {
+      float tps = (float)TimeUtil.MILLISECONDS_PER_SECOND / (Float)this.msptSupplier.get();
+      this.drawStringWithShade(graphics, String.format(Locale.ROOT, "%.1f TPS", tps), left + 1, bottom - 60 + 1);
    }
 
-   protected void drawAdditionalDimensions(GuiGraphics var1, int var2, int var3, int var4) {
-      long var5 = this.sampleStorage.get(var4, TpsDebugDimensions.TICK_SERVER_METHOD.ordinal());
-      int var7 = this.getSampleHeight((double)var5);
-      var1.fill(var3, var2 - var7, var3 + 1, var2, -6745839);
-      long var8 = this.sampleStorage.get(var4, TpsDebugDimensions.SCHEDULED_TASKS.ordinal());
-      int var10 = this.getSampleHeight((double)var8);
-      var1.fill(var3, var2 - var7 - var10, var3 + 1, var2 - var7, -4548257);
-      long var11 = this.sampleStorage.get(var4) - this.sampleStorage.get(var4, TpsDebugDimensions.IDLE.ordinal()) - var5 - var8;
-      int var13 = this.getSampleHeight((double)var11);
-      var1.fill(var3, var2 - var13 - var10 - var7, var3 + 1, var2 - var10 - var7, -10547572);
+   protected void drawAdditionalDimensions(final GuiGraphics graphics, final int bottom, final int currentX, final int sampleIndex) {
+      long tickMethodTime = this.sampleStorage.get(sampleIndex, TpsDebugDimensions.TICK_SERVER_METHOD.ordinal());
+      int tickMethodHeight = this.getSampleHeight((double)tickMethodTime);
+      graphics.fill(currentX, bottom - tickMethodHeight, currentX + 1, bottom, -6745839);
+      long tasksTime = this.sampleStorage.get(sampleIndex, TpsDebugDimensions.SCHEDULED_TASKS.ordinal());
+      int tasksHeight = this.getSampleHeight((double)tasksTime);
+      graphics.fill(currentX, bottom - tickMethodHeight - tasksHeight, currentX + 1, bottom - tickMethodHeight, -4548257);
+      long otherTime = this.sampleStorage.get(sampleIndex) - this.sampleStorage.get(sampleIndex, TpsDebugDimensions.IDLE.ordinal()) - tickMethodTime - tasksTime;
+      int otherHeight = this.getSampleHeight((double)otherTime);
+      graphics.fill(currentX, bottom - otherHeight - tasksHeight - tickMethodHeight, currentX + 1, bottom - tasksHeight - tickMethodHeight, -10547572);
    }
 
-   protected long getValueForAggregation(int var1) {
-      return this.sampleStorage.get(var1) - this.sampleStorage.get(var1, TpsDebugDimensions.IDLE.ordinal());
+   protected long getValueForAggregation(final int sampleIndex) {
+      return this.sampleStorage.get(sampleIndex) - this.sampleStorage.get(sampleIndex, TpsDebugDimensions.IDLE.ordinal());
    }
 
-   protected String toDisplayString(double var1) {
-      return String.format(Locale.ROOT, "%d ms", (int)Math.round(toMilliseconds(var1)));
+   protected String toDisplayString(final double nanos) {
+      return String.format(Locale.ROOT, "%d ms", (int)Math.round(toMilliseconds(nanos)));
    }
 
-   protected int getSampleHeight(double var1) {
-      return (int)Math.round(toMilliseconds(var1) * 60.0 / (double)(Float)this.msptSupplier.get());
+   protected int getSampleHeight(final double nanos) {
+      return (int)Math.round(toMilliseconds(nanos) * 60.0 / (double)(Float)this.msptSupplier.get());
    }
 
-   protected int getSampleColor(long var1) {
-      float var3 = (Float)this.msptSupplier.get();
-      return this.getSampleColor(toMilliseconds((double)var1), (double)var3, -16711936, (double)var3 * 1.125, -256, (double)var3 * 1.25, -65536);
+   protected int getSampleColor(final long nanos) {
+      float mspt = (Float)this.msptSupplier.get();
+      return this.getSampleColor(toMilliseconds((double)nanos), (double)mspt, -16711936, (double)mspt * 1.125, -256, (double)mspt * 1.25, -65536);
    }
 
-   private static double toMilliseconds(double var0) {
-      return var0 / 1000000.0;
+   private static double toMilliseconds(final double nanos) {
+      return nanos / 1000000.0;
    }
 }

@@ -9,11 +9,11 @@ import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
 public class StructureTagsProvider extends KeyTagProvider<Structure> {
-   public StructureTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
-      super(var1, Registries.STRUCTURE, var2);
+   public StructureTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
+      super(output, Registries.STRUCTURE, lookupProvider);
    }
 
-   protected void addTags(HolderLookup.Provider var1) {
+   protected void addTags(final HolderLookup.Provider registries) {
       this.tag(StructureTags.VILLAGE).add(BuiltinStructures.VILLAGE_PLAINS).add(BuiltinStructures.VILLAGE_DESERT).add(BuiltinStructures.VILLAGE_SAVANNA).add(BuiltinStructures.VILLAGE_SNOWY).add(BuiltinStructures.VILLAGE_TAIGA);
       this.tag(StructureTags.MINESHAFT).add(BuiltinStructures.MINESHAFT).add(BuiltinStructures.MINESHAFT_MESA);
       this.tag(StructureTags.OCEAN_RUIN).add(BuiltinStructures.OCEAN_RUIN_COLD).add(BuiltinStructures.OCEAN_RUIN_WARM);

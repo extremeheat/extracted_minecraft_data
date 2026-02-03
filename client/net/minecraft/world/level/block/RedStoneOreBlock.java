@@ -29,87 +29,87 @@ public class RedStoneOreBlock extends Block {
       return CODEC;
    }
 
-   public RedStoneOreBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public RedStoneOreBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(LIT, false));
    }
 
-   protected void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      interact(var1, var2, var3);
-      super.attack(var1, var2, var3, var4);
+   protected void attack(final BlockState state, final Level level, final BlockPos pos, final Player player) {
+      interact(state, level, pos);
+      super.attack(state, level, pos, player);
    }
 
-   public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
-      if (!var4.isSteppingCarefully()) {
-         interact(var3, var1, var2);
+   public void stepOn(final Level level, final BlockPos pos, final BlockState onState, final Entity entity) {
+      if (!entity.isSteppingCarefully()) {
+         interact(onState, level, pos);
       }
 
-      super.stepOn(var1, var2, var3, var4);
+      super.stepOn(level, pos, onState, entity);
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      if (var3.isClientSide()) {
-         spawnParticles(var3, var4);
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      if (level.isClientSide()) {
+         spawnParticles(level, pos);
       } else {
-         interact(var2, var3, var4);
+         interact(state, level, pos);
       }
 
-      return (InteractionResult)(var1.getItem() instanceof BlockItem && (new BlockPlaceContext(var5, var6, var1, var7)).canPlace() ? InteractionResult.PASS : InteractionResult.SUCCESS);
+      return (InteractionResult)(itemStack.getItem() instanceof BlockItem && (new BlockPlaceContext(player, hand, itemStack, hitResult)).canPlace() ? InteractionResult.PASS : InteractionResult.SUCCESS);
    }
 
-   private static void interact(BlockState var0, Level var1, BlockPos var2) {
-      spawnParticles(var1, var2);
-      if (!(Boolean)var0.getValue(LIT)) {
-         var1.setBlock(var2, (BlockState)var0.setValue(LIT, true), 3);
-      }
-
-   }
-
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return (Boolean)var1.getValue(LIT);
-   }
-
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((Boolean)var1.getValue(LIT)) {
-         var2.setBlock(var3, (BlockState)var1.setValue(LIT, false), 3);
+   private static void interact(final BlockState state, final Level level, final BlockPos pos) {
+      spawnParticles(level, pos);
+      if (!(Boolean)state.getValue(LIT)) {
+         level.setBlock(pos, (BlockState)state.setValue(LIT, true), 3);
       }
 
    }
 
-   protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
-      super.spawnAfterBreak(var1, var2, var3, var4, var5);
-      if (var5) {
-         this.tryDropExperience(var2, var3, var4, UniformInt.of(1, 5));
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return (Boolean)state.getValue(LIT);
+   }
+
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if ((Boolean)state.getValue(LIT)) {
+         level.setBlock(pos, (BlockState)state.setValue(LIT, false), 3);
       }
 
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if ((Boolean)var1.getValue(LIT)) {
-         spawnParticles(var2, var3);
+   protected void spawnAfterBreak(final BlockState state, final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience) {
+      super.spawnAfterBreak(state, level, pos, tool, dropExperience);
+      if (dropExperience) {
+         this.tryDropExperience(level, pos, tool, UniformInt.of(1, 5));
       }
 
    }
 
-   private static void spawnParticles(Level var0, BlockPos var1) {
-      double var2 = 0.5625;
-      RandomSource var4 = var0.random;
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if ((Boolean)state.getValue(LIT)) {
+         spawnParticles(level, pos);
+      }
 
-      for(Direction var8 : Direction.values()) {
-         BlockPos var9 = var1.relative(var8);
-         if (!var0.getBlockState(var9).isSolidRender()) {
-            Direction.Axis var10 = var8.getAxis();
-            double var11 = var10 == Direction.Axis.X ? 0.5 + 0.5625 * (double)var8.getStepX() : (double)var4.nextFloat();
-            double var13 = var10 == Direction.Axis.Y ? 0.5 + 0.5625 * (double)var8.getStepY() : (double)var4.nextFloat();
-            double var15 = var10 == Direction.Axis.Z ? 0.5 + 0.5625 * (double)var8.getStepZ() : (double)var4.nextFloat();
-            var0.addParticle(DustParticleOptions.REDSTONE, (double)var1.getX() + var11, (double)var1.getY() + var13, (double)var1.getZ() + var15, 0.0, 0.0, 0.0);
+   }
+
+   private static void spawnParticles(final Level level, final BlockPos pos) {
+      double offset = 0.5625;
+      RandomSource random = level.getRandom();
+
+      for(Direction direction : Direction.values()) {
+         BlockPos relative = pos.relative(direction);
+         if (!level.getBlockState(relative).isSolidRender()) {
+            Direction.Axis axis = direction.getAxis();
+            double dx = axis == Direction.Axis.X ? 0.5 + 0.5625 * (double)direction.getStepX() : (double)random.nextFloat();
+            double dy = axis == Direction.Axis.Y ? 0.5 + 0.5625 * (double)direction.getStepY() : (double)random.nextFloat();
+            double dz = axis == Direction.Axis.Z ? 0.5 + 0.5625 * (double)direction.getStepZ() : (double)random.nextFloat();
+            level.addParticle(DustParticleOptions.REDSTONE, (double)pos.getX() + dx, (double)pos.getY() + dy, (double)pos.getZ() + dz, 0.0, 0.0, 0.0);
          }
       }
 
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(LIT);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(LIT);
    }
 
    static {

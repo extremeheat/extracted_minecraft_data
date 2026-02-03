@@ -10,9 +10,9 @@ public abstract class ScalableParticleOptionsBase implements ParticleOptions {
    protected static final Codec<Float> SCALE;
    private final float scale;
 
-   public ScalableParticleOptionsBase(float var1) {
+   public ScalableParticleOptionsBase(final float scale) {
       super();
-      this.scale = Mth.clamp(var1, 0.01F, 4.0F);
+      this.scale = Mth.clamp(scale, 0.01F, 4.0F);
    }
 
    public float getScale() {
@@ -20,6 +20,6 @@ public abstract class ScalableParticleOptionsBase implements ParticleOptions {
    }
 
    static {
-      SCALE = Codec.FLOAT.validate((var0) -> var0 >= 0.01F && var0 <= 4.0F ? DataResult.success(var0) : DataResult.error(() -> "Value must be within range [0.01;4.0]: " + var0));
+      SCALE = Codec.FLOAT.validate((v) -> v >= 0.01F && v <= 4.0F ? DataResult.success(v) : DataResult.error(() -> "Value must be within range [0.01;4.0]: " + v));
    }
 }

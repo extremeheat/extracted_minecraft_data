@@ -15,17 +15,36 @@ public class ItemFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2, OutlineBufferSource var3) {
-      for(SubmitNodeStorage.ItemSubmit var5 : var1.getItemSubmits()) {
-         this.poseStack.pushPose();
-         this.poseStack.last().set(var5.pose());
-         ItemRenderer.renderItem(var5.displayContext(), this.poseStack, var2, var5.lightCoords(), var5.overlayCoords(), var5.tintLayers(), var5.quads(), var5.renderType(), var5.foilType());
-         if (var5.outlineColor() != 0) {
-            var3.setColor(var5.outlineColor());
-            ItemRenderer.renderItem(var5.displayContext(), this.poseStack, var3, var5.lightCoords(), var5.overlayCoords(), var5.tintLayers(), var5.quads(), var5.renderType(), ItemStackRenderState.FoilType.NONE);
-         }
+   public void renderSolid(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final OutlineBufferSource outlineBufferSource) {
+      for(SubmitNodeStorage.ItemSubmit submit : nodeCollection.getItemSubmits()) {
+         if (!submit.renderType().hasBlending()) {
+            this.poseStack.pushPose();
+            this.poseStack.last().set(submit.pose());
+            ItemRenderer.renderItem(submit.displayContext(), this.poseStack, bufferSource, submit.lightCoords(), submit.overlayCoords(), submit.tintLayers(), submit.quads(), submit.renderType(), submit.foilType());
+            if (submit.outlineColor() != 0) {
+               outlineBufferSource.setColor(submit.outlineColor());
+               ItemRenderer.renderItem(submit.displayContext(), this.poseStack, outlineBufferSource, submit.lightCoords(), submit.overlayCoords(), submit.tintLayers(), submit.quads(), submit.renderType(), ItemStackRenderState.FoilType.NONE);
+            }
 
-         this.poseStack.popPose();
+            this.poseStack.popPose();
+         }
+      }
+
+   }
+
+   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final OutlineBufferSource outlineBufferSource) {
+      for(SubmitNodeStorage.ItemSubmit submit : nodeCollection.getItemSubmits()) {
+         if (submit.renderType().hasBlending()) {
+            this.poseStack.pushPose();
+            this.poseStack.last().set(submit.pose());
+            ItemRenderer.renderItem(submit.displayContext(), this.poseStack, bufferSource, submit.lightCoords(), submit.overlayCoords(), submit.tintLayers(), submit.quads(), submit.renderType(), submit.foilType());
+            if (submit.outlineColor() != 0) {
+               outlineBufferSource.setColor(submit.outlineColor());
+               ItemRenderer.renderItem(submit.displayContext(), this.poseStack, outlineBufferSource, submit.lightCoords(), submit.overlayCoords(), submit.tintLayers(), submit.quads(), submit.renderType(), ItemStackRenderState.FoilType.NONE);
+            }
+
+            this.poseStack.popPose();
+         }
       }
 
    }

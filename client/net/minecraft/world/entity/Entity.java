@@ -10,15 +10,21 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
 import it.unimi.dsi.fastutil.floats.FloatArraySet;
 import it.unimi.dsi.fastutil.floats.FloatArrays;
+import it.unimi.dsi.fastutil.floats.FloatSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -43,6 +49,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.TypedInstance;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponentGetter;
@@ -64,7 +71,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SyncedDataHolder;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
@@ -157,7 +163,7 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public abstract class Entity implements SyncedDataHolder, DebugValueSource, Nameable, ItemOwner, SlotProvider, EntityAccess, ScoreHolder, DataComponentGetter {
+public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, SyncedDataHolder, DataComponentGetter, ItemOwner, SlotProvider, DebugValueSource, TypedInstance<EntityType<?>> {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String TAG_ID = "id";
    public static final String TAG_UUID = "UUID";
@@ -237,7 +243,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    public int tickCount;
    private int remainingFireTicks;
    protected boolean wasTouchingWater;
-   protected Object2DoubleMap<TagKey<Fluid>> fluidHeight;
+   protected final Object2DoubleMap<TagKey<Fluid>> fluidHeight;
    protected boolean wasEyeInWater;
    private final Set<TagKey<Fluid>> fluidOnEyes;
    public int invulnerableTime;
@@ -289,7 +295,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector;
    private CustomData customData;
 
-   public Entity(EntityType<?> var1, Level var2) {
+   public Entity(final EntityType<?> type, final Level level) {
       super();
       this.id = ENTITY_COUNTER.incrementAndGet();
       this.passengers = ImmutableList.of();
@@ -316,35 +322,35 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.visitedBlocks = new LongOpenHashSet();
       this.insideEffectCollector = new InsideBlockEffectApplier.StepBasedCollector();
       this.customData = CustomData.EMPTY;
-      this.type = var1;
-      this.level = var2;
-      this.dimensions = var1.getDimensions();
+      this.type = type;
+      this.level = level;
+      this.dimensions = type.getDimensions();
       this.position = Vec3.ZERO;
       this.blockPosition = BlockPos.ZERO;
       this.chunkPosition = ChunkPos.ZERO;
-      SynchedEntityData.Builder var3 = new SynchedEntityData.Builder(this);
-      var3.define(DATA_SHARED_FLAGS_ID, (byte)0);
-      var3.define(DATA_AIR_SUPPLY_ID, this.getMaxAirSupply());
-      var3.define(DATA_CUSTOM_NAME_VISIBLE, false);
-      var3.define(DATA_CUSTOM_NAME, Optional.empty());
-      var3.define(DATA_SILENT, false);
-      var3.define(DATA_NO_GRAVITY, false);
-      var3.define(DATA_POSE, Pose.STANDING);
-      var3.define(DATA_TICKS_FROZEN, 0);
-      this.defineSynchedData(var3);
-      this.entityData = var3.build();
+      SynchedEntityData.Builder entityDataBuilder = new SynchedEntityData.Builder(this);
+      entityDataBuilder.define(DATA_SHARED_FLAGS_ID, (byte)0);
+      entityDataBuilder.define(DATA_AIR_SUPPLY_ID, this.getMaxAirSupply());
+      entityDataBuilder.define(DATA_CUSTOM_NAME_VISIBLE, false);
+      entityDataBuilder.define(DATA_CUSTOM_NAME, Optional.empty());
+      entityDataBuilder.define(DATA_SILENT, false);
+      entityDataBuilder.define(DATA_NO_GRAVITY, false);
+      entityDataBuilder.define(DATA_POSE, Pose.STANDING);
+      entityDataBuilder.define(DATA_TICKS_FROZEN, 0);
+      this.defineSynchedData(entityDataBuilder);
+      this.entityData = entityDataBuilder.build();
       this.setPos(0.0, 0.0, 0.0);
       this.eyeHeight = this.dimensions.eyeHeight();
    }
 
-   public boolean isColliding(BlockPos var1, BlockState var2) {
-      VoxelShape var3 = var2.getCollisionShape(this.level(), var1, CollisionContext.of(this)).move((Vec3i)var1);
-      return Shapes.joinIsNotEmpty(var3, Shapes.create(this.getBoundingBox()), BooleanOp.AND);
+   public boolean isColliding(final BlockPos pos, final BlockState state) {
+      VoxelShape movedBlockShape = state.getCollisionShape(this.level(), pos, CollisionContext.of(this)).move((Vec3i)pos);
+      return Shapes.joinIsNotEmpty(movedBlockShape, Shapes.create(this.getBoundingBox()), BooleanOp.AND);
    }
 
    public int getTeamColor() {
-      PlayerTeam var1 = this.getTeam();
-      return var1 != null && ((Team)var1).getColor().getColor() != null ? ((Team)var1).getColor().getColor() : 16777215;
+      Team team = this.getTeam();
+      return team != null && team.getColor().getColor() != null ? team.getColor().getColor() : 16777215;
    }
 
    public boolean isSpectator() {
@@ -366,8 +372,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    }
 
-   public void syncPacketPositionCodec(double var1, double var3, double var5) {
-      this.packetPositionCodec.setBase(new Vec3(var1, var3, var5));
+   public void syncPacketPositionCodec(final double x, final double y, final double z) {
+      this.packetPositionCodec.setBase(new Vec3(x, y, z));
    }
 
    public VecDeltaCodec getPositionCodec() {
@@ -378,35 +384,39 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.type;
    }
 
+   public Holder<EntityType<?>> typeHolder() {
+      return this.type.builtInRegistryHolder();
+   }
+
    public boolean getRequiresPrecisePosition() {
       return this.requiresPrecisePosition;
    }
 
-   public void setRequiresPrecisePosition(boolean var1) {
-      this.requiresPrecisePosition = var1;
+   public void setRequiresPrecisePosition(final boolean requiresPrecisePosition) {
+      this.requiresPrecisePosition = requiresPrecisePosition;
    }
 
    public int getId() {
       return this.id;
    }
 
-   public void setId(int var1) {
-      this.id = var1;
+   public void setId(final int id) {
+      this.id = id;
    }
 
-   public Set<String> getTags() {
+   public Set<String> entityTags() {
       return this.tags;
    }
 
-   public boolean addTag(String var1) {
-      return this.tags.size() >= 1024 ? false : this.tags.add(var1);
+   public boolean addTag(final String tag) {
+      return this.tags.size() >= 1024 ? false : this.tags.add(tag);
    }
 
-   public boolean removeTag(String var1) {
-      return this.tags.remove(var1);
+   public boolean removeTag(final String tag) {
+      return this.tags.remove(tag);
    }
 
-   public void kill(ServerLevel var1) {
+   public void kill(final ServerLevel level) {
       this.remove(Entity.RemovalReason.KILLED);
       this.gameEvent(GameEvent.ENTITY_DIE);
    }
@@ -415,15 +425,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.remove(Entity.RemovalReason.DISCARDED);
    }
 
-   protected abstract void defineSynchedData(SynchedEntityData.Builder var1);
+   protected abstract void defineSynchedData(SynchedEntityData.Builder entityData);
 
    public SynchedEntityData getEntityData() {
       return this.entityData;
    }
 
-   public boolean equals(Object var1) {
-      if (var1 instanceof Entity) {
-         return ((Entity)var1).id == this.id;
+   public boolean equals(final Object obj) {
+      if (obj instanceof Entity) {
+         return ((Entity)obj).id == this.id;
       } else {
          return false;
       }
@@ -433,50 +443,50 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.id;
    }
 
-   public void remove(RemovalReason var1) {
-      this.setRemoved(var1);
+   public void remove(final RemovalReason reason) {
+      this.setRemoved(reason);
    }
 
    public void onClientRemoval() {
    }
 
-   public void onRemoval(RemovalReason var1) {
+   public void onRemoval(final RemovalReason reason) {
    }
 
-   public void setPose(Pose var1) {
-      this.entityData.set(DATA_POSE, var1);
+   public void setPose(final Pose pose) {
+      this.entityData.set(DATA_POSE, pose);
    }
 
    public Pose getPose() {
       return (Pose)this.entityData.get(DATA_POSE);
    }
 
-   public boolean hasPose(Pose var1) {
-      return this.getPose() == var1;
+   public boolean hasPose(final Pose pose) {
+      return this.getPose() == pose;
    }
 
-   public boolean closerThan(Entity var1, double var2) {
-      return this.position().closerThan(var1.position(), var2);
+   public boolean closerThan(final Entity other, final double distance) {
+      return this.position().closerThan(other.position(), distance);
    }
 
-   public boolean closerThan(Entity var1, double var2, double var4) {
-      double var6 = var1.getX() - this.getX();
-      double var8 = var1.getY() - this.getY();
-      double var10 = var1.getZ() - this.getZ();
-      return Mth.lengthSquared(var6, var10) < Mth.square(var2) && Mth.square(var8) < Mth.square(var4);
+   public boolean closerThan(final Entity other, final double distanceXZ, final double distanceY) {
+      double dx = other.getX() - this.getX();
+      double dy = other.getY() - this.getY();
+      double dz = other.getZ() - this.getZ();
+      return Mth.lengthSquared(dx, dz) < Mth.square(distanceXZ) && Mth.square(dy) < Mth.square(distanceY);
    }
 
-   protected void setRot(float var1, float var2) {
-      this.setYRot(var1 % 360.0F);
-      this.setXRot(var2 % 360.0F);
+   protected void setRot(final float yRot, final float xRot) {
+      this.setYRot(yRot % 360.0F);
+      this.setXRot(xRot % 360.0F);
    }
 
-   public final void setPos(Vec3 var1) {
-      this.setPos(var1.x(), var1.y(), var1.z());
+   public final void setPos(final Vec3 pos) {
+      this.setPos(pos.x(), pos.y(), pos.z());
    }
 
-   public void setPos(double var1, double var3, double var5) {
-      this.setPosRaw(var1, var3, var5);
+   public void setPos(final double x, final double y, final double z) {
+      this.setPosRaw(x, y, z);
       this.setBoundingBox(this.makeBoundingBox());
    }
 
@@ -484,8 +494,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.makeBoundingBox(this.position);
    }
 
-   protected AABB makeBoundingBox(Vec3 var1) {
-      return this.dimensions.makeBoundingBox(var1);
+   protected AABB makeBoundingBox(final Vec3 position) {
+      return this.dimensions.makeBoundingBox(position);
    }
 
    protected void reapplyPosition() {
@@ -493,14 +503,14 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.setPos(this.position.x, this.position.y, this.position.z);
    }
 
-   public void turn(double var1, double var3) {
-      float var5 = (float)var3 * 0.15F;
-      float var6 = (float)var1 * 0.15F;
-      this.setXRot(this.getXRot() + var5);
-      this.setYRot(this.getYRot() + var6);
+   public void turn(final double xo, final double yo) {
+      float xDelta = (float)yo * 0.15F;
+      float yDelta = (float)xo * 0.15F;
+      this.setXRot(this.getXRot() + xDelta);
+      this.setYRot(this.getYRot() + yDelta);
       this.setXRot(Mth.clamp(this.getXRot(), -90.0F, 90.0F));
-      this.xRotO += var5;
-      this.yRotO += var6;
+      this.xRotO += xDelta;
+      this.yRotO += yDelta;
       this.xRotO = Mth.clamp(this.xRotO, -90.0F, 90.0F);
       if (this.vehicle != null) {
          this.vehicle.onPassengerTurned(this);
@@ -516,8 +526,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public void baseTick() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("entityBaseTick");
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("entityBaseTick");
       this.computeSpeed();
       this.inBlockState = null;
       if (this.isPassenger() && this.getVehicle().isRemoved()) {
@@ -539,13 +549,13 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.updateFluidOnEyes();
       this.updateSwimming();
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
+      if (var3 instanceof ServerLevel serverLevel) {
          if (this.remainingFireTicks > 0) {
             if (this.fireImmune()) {
                this.clearFire();
             } else {
                if (this.remainingFireTicks % 20 == 0 && !this.isInLava()) {
-                  this.hurtServer(var2, this.damageSources().onFire(), 1.0F);
+                  this.hurtServer(serverLevel, this.damageSources().onFire(), 1.0F);
                }
 
                this.setRemainingFireTicks(this.remainingFireTicks - 1);
@@ -566,13 +576,13 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
       this.firstTick = false;
       var3 = this.level();
-      if (var3 instanceof ServerLevel var4) {
+      if (var3 instanceof ServerLevel serverLevel) {
          if (this instanceof Leashable) {
-            Leashable.tickLeash(var4, (Entity)((Leashable)this));
+            Leashable.tickLeash(serverLevel, (Entity)((Leashable)this));
          }
       }
 
-      var1.pop();
+      profiler.pop();
    }
 
    protected void computeSpeed() {
@@ -584,8 +594,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.lastKnownPosition = this.position();
    }
 
-   public void setSharedFlagOnFire(boolean var1) {
-      this.setSharedFlag(0, var1 || this.hasVisualFire);
+   public void setSharedFlagOnFire(final boolean value) {
+      this.setSharedFlag(0, value || this.hasVisualFire);
    }
 
    public void checkBelowWorld() {
@@ -599,8 +609,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.portalCooldown = this.getDimensionChangingDelay();
    }
 
-   public void setPortalCooldown(int var1) {
-      this.portalCooldown = var1;
+   public void setPortalCooldown(final int portalCooldown) {
+      this.portalCooldown = portalCooldown;
    }
 
    public int getPortalCooldown() {
@@ -628,9 +638,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       if (!this.fireImmune()) {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
-            ServerLevel var1 = (ServerLevel)var2;
-            if (this.hurtServer(var1, this.damageSources().lava(), 4.0F) && this.shouldPlayLavaHurtSound() && !this.isSilent()) {
-               var1.playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_BURN, this.getSoundSource(), 0.4F, 2.0F + this.random.nextFloat() * 0.4F);
+            ServerLevel serverLevel = (ServerLevel)var2;
+            if (this.hurtServer(serverLevel, this.damageSources().lava(), 4.0F) && this.shouldPlayLavaHurtSound() && !this.isSilent()) {
+               serverLevel.playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_BURN, this.getSoundSource(), 0.4F, 2.0F + this.random.nextFloat() * 0.4F);
             }
          }
 
@@ -641,20 +651,20 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return true;
    }
 
-   public final void igniteForSeconds(float var1) {
-      this.igniteForTicks(Mth.floor(var1 * 20.0F));
+   public final void igniteForSeconds(final float numberOfSeconds) {
+      this.igniteForTicks(Mth.floor(numberOfSeconds * 20.0F));
    }
 
-   public void igniteForTicks(int var1) {
-      if (this.remainingFireTicks < var1) {
-         this.setRemainingFireTicks(var1);
+   public void igniteForTicks(final int numberOfTicks) {
+      if (this.remainingFireTicks < numberOfTicks) {
+         this.setRemainingFireTicks(numberOfTicks);
       }
 
       this.clearFreeze();
    }
 
-   public void setRemainingFireTicks(int var1) {
-      this.remainingFireTicks = var1;
+   public void setRemainingFireTicks(final int remainingTicks) {
+      this.remainingFireTicks = remainingTicks;
    }
 
    public int getRemainingFireTicks() {
@@ -669,49 +679,49 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.discard();
    }
 
-   public boolean isFree(double var1, double var3, double var5) {
-      return this.isFree(this.getBoundingBox().move(var1, var3, var5));
+   public boolean isFree(final double xa, final double ya, final double za) {
+      return this.isFree(this.getBoundingBox().move(xa, ya, za));
    }
 
-   private boolean isFree(AABB var1) {
-      return this.level().noCollision(this, var1) && !this.level().containsAnyLiquid(var1);
+   private boolean isFree(final AABB box) {
+      return this.level().noCollision(this, box) && !this.level().containsAnyLiquid(box);
    }
 
-   public void setOnGround(boolean var1) {
-      this.onGround = var1;
-      this.checkSupportingBlock(var1, (Vec3)null);
+   public void setOnGround(final boolean onGround) {
+      this.onGround = onGround;
+      this.checkSupportingBlock(onGround, (Vec3)null);
    }
 
-   public void setOnGroundWithMovement(boolean var1, Vec3 var2) {
-      this.setOnGroundWithMovement(var1, this.horizontalCollision, var2);
+   public void setOnGroundWithMovement(final boolean onGround, final Vec3 movement) {
+      this.setOnGroundWithMovement(onGround, this.horizontalCollision, movement);
    }
 
-   public void setOnGroundWithMovement(boolean var1, boolean var2, Vec3 var3) {
-      this.onGround = var1;
-      this.horizontalCollision = var2;
-      this.checkSupportingBlock(var1, var3);
+   public void setOnGroundWithMovement(final boolean onGround, final boolean horizontalCollision, final Vec3 movement) {
+      this.onGround = onGround;
+      this.horizontalCollision = horizontalCollision;
+      this.checkSupportingBlock(onGround, movement);
    }
 
-   public boolean isSupportedBy(BlockPos var1) {
-      return this.mainSupportingBlockPos.isPresent() && ((BlockPos)this.mainSupportingBlockPos.get()).equals(var1);
+   public boolean isSupportedBy(final BlockPos pos) {
+      return this.mainSupportingBlockPos.isPresent() && ((BlockPos)this.mainSupportingBlockPos.get()).equals(pos);
    }
 
-   protected void checkSupportingBlock(boolean var1, @Nullable Vec3 var2) {
-      if (var1) {
-         AABB var3 = this.getBoundingBox();
-         AABB var4 = new AABB(var3.minX, var3.minY - 1.0E-6, var3.minZ, var3.maxX, var3.minY, var3.maxZ);
-         Optional var5 = this.level.findSupportingBlock(this, var4);
-         if (!var5.isPresent() && !this.onGroundNoBlocks) {
-            if (var2 != null) {
-               AABB var6 = var4.move(-var2.x, 0.0, -var2.z);
-               var5 = this.level.findSupportingBlock(this, var6);
-               this.mainSupportingBlockPos = var5;
+   protected void checkSupportingBlock(final boolean onGround, final @Nullable Vec3 movement) {
+      if (onGround) {
+         AABB boundingBox = this.getBoundingBox();
+         AABB testArea = new AABB(boundingBox.minX, boundingBox.minY - 1.0E-6, boundingBox.minZ, boundingBox.maxX, boundingBox.minY, boundingBox.maxZ);
+         Optional<BlockPos> supportingBlock = this.level.findSupportingBlock(this, testArea);
+         if (!supportingBlock.isPresent() && !this.onGroundNoBlocks) {
+            if (movement != null) {
+               AABB onGroundCollisionTestArea = testArea.move(-movement.x, 0.0, -movement.z);
+               supportingBlock = this.level.findSupportingBlock(this, onGroundCollisionTestArea);
+               this.mainSupportingBlockPos = supportingBlock;
             }
          } else {
-            this.mainSupportingBlockPos = var5;
+            this.mainSupportingBlockPos = supportingBlock;
          }
 
-         this.onGroundNoBlocks = var5.isEmpty();
+         this.onGroundNoBlocks = supportingBlock.isEmpty();
       } else {
          this.onGroundNoBlocks = false;
          if (this.mainSupportingBlockPos.isPresent()) {
@@ -725,132 +735,132 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.onGround;
    }
 
-   public void move(MoverType var1, Vec3 var2) {
+   public void move(final MoverType moverType, Vec3 delta) {
       if (this.noPhysics) {
-         this.setPos(this.getX() + var2.x, this.getY() + var2.y, this.getZ() + var2.z);
+         this.setPos(this.getX() + delta.x, this.getY() + delta.y, this.getZ() + delta.z);
          this.horizontalCollision = false;
          this.verticalCollision = false;
          this.verticalCollisionBelow = false;
          this.minorHorizontalCollision = false;
       } else {
-         if (var1 == MoverType.PISTON) {
-            var2 = this.limitPistonMovement(var2);
-            if (var2.equals(Vec3.ZERO)) {
+         if (moverType == MoverType.PISTON) {
+            delta = this.limitPistonMovement(delta);
+            if (delta.equals(Vec3.ZERO)) {
                return;
             }
          }
 
-         ProfilerFiller var3 = Profiler.get();
-         var3.push("move");
+         ProfilerFiller profiler = Profiler.get();
+         profiler.push("move");
          if (this.stuckSpeedMultiplier.lengthSqr() > 1.0E-7) {
-            if (var1 != MoverType.PISTON) {
-               var2 = var2.multiply(this.stuckSpeedMultiplier);
+            if (moverType != MoverType.PISTON) {
+               delta = delta.multiply(this.stuckSpeedMultiplier);
             }
 
             this.stuckSpeedMultiplier = Vec3.ZERO;
             this.setDeltaMovement(Vec3.ZERO);
          }
 
-         var2 = this.maybeBackOffFromEdge(var2, var1);
-         Vec3 var4 = this.collide(var2);
-         double var5 = var4.lengthSqr();
-         if (var5 > 1.0E-7 || var2.lengthSqr() - var5 < 1.0E-7) {
-            if (this.fallDistance != 0.0 && var5 >= 1.0) {
-               double var7 = Math.min(var4.length(), 8.0);
-               Vec3 var9 = this.position().add(var4.normalize().scale(var7));
-               BlockHitResult var10 = this.level().clip(new ClipContext(this.position(), var9, ClipContext.Block.FALLDAMAGE_RESETTING, ClipContext.Fluid.WATER, this));
-               if (var10.getType() != HitResult.Type.MISS) {
+         delta = this.maybeBackOffFromEdge(delta, moverType);
+         Vec3 movement = this.collide(delta);
+         double movementLength = movement.lengthSqr();
+         if (movementLength > 1.0E-7 || delta.lengthSqr() - movementLength < 1.0E-7) {
+            if (this.fallDistance != 0.0 && movementLength >= 1.0) {
+               double checkDistance = Math.min(movement.length(), 8.0);
+               Vec3 checkTo = this.position().add(movement.normalize().scale(checkDistance));
+               BlockHitResult hitResult = this.level().clip(new ClipContext(this.position(), checkTo, ClipContext.Block.FALLDAMAGE_RESETTING, ClipContext.Fluid.WATER, this));
+               if (hitResult.getType() != HitResult.Type.MISS) {
                   this.resetFallDistance();
                }
             }
 
-            Vec3 var13 = this.position();
-            Vec3 var8 = var13.add(var4);
-            this.addMovementThisTick(new Movement(var13, var8, var2));
-            this.setPos(var8);
+            Vec3 pos = this.position();
+            Vec3 newPosition = pos.add(movement);
+            this.addMovementThisTick(new Movement(pos, newPosition, delta));
+            this.setPos(newPosition);
          }
 
-         var3.pop();
-         var3.push("rest");
-         boolean var14 = !Mth.equal(var2.x, var4.x);
-         boolean var15 = !Mth.equal(var2.z, var4.z);
-         this.horizontalCollision = var14 || var15;
-         if (Math.abs(var2.y) > 0.0 || this.isLocalInstanceAuthoritative()) {
-            this.verticalCollision = var2.y != var4.y;
-            this.verticalCollisionBelow = this.verticalCollision && var2.y < 0.0;
-            this.setOnGroundWithMovement(this.verticalCollisionBelow, this.horizontalCollision, var4);
+         profiler.pop();
+         profiler.push("rest");
+         boolean xCollision = !Mth.equal(delta.x, movement.x);
+         boolean zCollision = !Mth.equal(delta.z, movement.z);
+         this.horizontalCollision = xCollision || zCollision;
+         if (Math.abs(delta.y) > 0.0 || this.isLocalInstanceAuthoritative()) {
+            this.verticalCollision = delta.y != movement.y;
+            this.verticalCollisionBelow = this.verticalCollision && delta.y < 0.0;
+            this.setOnGroundWithMovement(this.verticalCollisionBelow, this.horizontalCollision, movement);
          }
 
          if (this.horizontalCollision) {
-            this.minorHorizontalCollision = this.isHorizontalCollisionMinor(var4);
+            this.minorHorizontalCollision = this.isHorizontalCollisionMinor(movement);
          } else {
             this.minorHorizontalCollision = false;
          }
 
-         BlockPos var16 = this.getOnPosLegacy();
-         BlockState var17 = this.level().getBlockState(var16);
+         BlockPos effectPos = this.getOnPosLegacy();
+         BlockState effectState = this.level().getBlockState(effectPos);
          if (this.isLocalInstanceAuthoritative()) {
-            this.checkFallDamage(var4.y, this.onGround(), var17, var16);
+            this.checkFallDamage(movement.y, this.onGround(), effectState, effectPos);
          }
 
          if (this.isRemoved()) {
-            var3.pop();
+            profiler.pop();
          } else {
             if (this.horizontalCollision) {
-               Vec3 var11 = this.getDeltaMovement();
-               this.setDeltaMovement(var14 ? 0.0 : var11.x, var11.y, var15 ? 0.0 : var11.z);
+               Vec3 vec3 = this.getDeltaMovement();
+               this.setDeltaMovement(xCollision ? 0.0 : vec3.x, vec3.y, zCollision ? 0.0 : vec3.z);
             }
 
             if (this.canSimulateMovement()) {
-               Block var18 = var17.getBlock();
-               if (var2.y != var4.y) {
-                  var18.updateEntityMovementAfterFallOn(this.level(), this);
+               Block onBlock = effectState.getBlock();
+               if (delta.y != movement.y) {
+                  onBlock.updateEntityMovementAfterFallOn(this.level(), this);
                }
             }
 
             if (!this.level().isClientSide() || this.isLocalInstanceAuthoritative()) {
-               MovementEmission var19 = this.getMovementEmission();
-               if (var19.emitsAnything() && !this.isPassenger()) {
-                  this.applyMovementEmissionAndPlaySound(var19, var4, var16, var17);
+               MovementEmission emission = this.getMovementEmission();
+               if (emission.emitsAnything() && !this.isPassenger()) {
+                  this.applyMovementEmissionAndPlaySound(emission, movement, effectPos, effectState);
                }
             }
 
-            float var20 = this.getBlockSpeedFactor();
-            this.setDeltaMovement(this.getDeltaMovement().multiply((double)var20, 1.0, (double)var20));
-            var3.pop();
+            float blockSpeedFactor = this.getBlockSpeedFactor();
+            this.setDeltaMovement(this.getDeltaMovement().multiply((double)blockSpeedFactor, 1.0, (double)blockSpeedFactor));
+            profiler.pop();
          }
       }
    }
 
-   private void applyMovementEmissionAndPlaySound(MovementEmission var1, Vec3 var2, BlockPos var3, BlockState var4) {
-      float var5 = 0.6F;
-      float var6 = (float)(var2.length() * 0.6000000238418579);
-      float var7 = (float)(var2.horizontalDistance() * 0.6000000238418579);
-      BlockPos var8 = this.getOnPos();
-      BlockState var9 = this.level().getBlockState(var8);
-      boolean var10 = this.isStateClimbable(var9);
-      this.moveDist += var10 ? var6 : var7;
-      this.flyDist += var6;
-      if (this.moveDist > this.nextStep && !var9.isAir()) {
-         boolean var11 = var8.equals(var3);
-         boolean var12 = this.vibrationAndSoundEffectsFromBlock(var3, var4, var1.emitsSounds(), var11, var2);
-         if (!var11) {
-            var12 |= this.vibrationAndSoundEffectsFromBlock(var8, var9, false, var1.emitsEvents(), var2);
+   private void applyMovementEmissionAndPlaySound(final MovementEmission emission, final Vec3 clippedMovement, final BlockPos effectPos, final BlockState effectState) {
+      float moveDistScale = 0.6F;
+      float movedDistance = (float)(clippedMovement.length() * 0.6000000238418579);
+      float horizontalMovedDistance = (float)(clippedMovement.horizontalDistance() * 0.6000000238418579);
+      BlockPos supportingPos = this.getOnPos();
+      BlockState supportingState = this.level().getBlockState(supportingPos);
+      boolean climbing = this.isStateClimbable(supportingState);
+      this.moveDist += climbing ? movedDistance : horizontalMovedDistance;
+      this.flyDist += movedDistance;
+      if (this.moveDist > this.nextStep && !supportingState.isAir()) {
+         boolean onlyEffectStateEmittions = supportingPos.equals(effectPos);
+         boolean producedSideEffects = this.vibrationAndSoundEffectsFromBlock(effectPos, effectState, emission.emitsSounds(), onlyEffectStateEmittions, clippedMovement);
+         if (!onlyEffectStateEmittions) {
+            producedSideEffects |= this.vibrationAndSoundEffectsFromBlock(supportingPos, supportingState, false, emission.emitsEvents(), clippedMovement);
          }
 
-         if (var12) {
+         if (producedSideEffects) {
             this.nextStep = this.nextStep();
          } else if (this.isInWater()) {
             this.nextStep = this.nextStep();
-            if (var1.emitsSounds()) {
+            if (emission.emitsSounds()) {
                this.waterSwimSound();
             }
 
-            if (var1.emitsEvents()) {
+            if (emission.emitsEvents()) {
                this.gameEvent(GameEvent.SWIM);
             }
          }
-      } else if (var9.isAir()) {
+      } else if (supportingState.isAir()) {
          this.processFlappingMovement();
       }
 
@@ -869,15 +879,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.applyEffectsFromBlocks(this.finalMovementsThisTick);
    }
 
-   private void addMovementThisTick(Movement var1) {
+   private void addMovementThisTick(final Movement movement) {
       if (this.movementThisTick.size() >= 100) {
-         Movement var2 = (Movement)this.movementThisTick.removeFirst();
-         Movement var3 = (Movement)this.movementThisTick.removeFirst();
-         Movement var4 = new Movement(var2.from(), var3.to());
-         this.movementThisTick.addFirst(var4);
+         Movement first = (Movement)this.movementThisTick.removeFirst();
+         Movement second = (Movement)this.movementThisTick.removeFirst();
+         Movement combined = new Movement(first.from(), second.to());
+         this.movementThisTick.addFirst(combined);
       }
 
-      this.movementThisTick.add(var1);
+      this.movementThisTick.add(movement);
    }
 
    public void removeLatestMovementRecording() {
@@ -895,33 +905,33 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return Math.abs(this.lastKnownSpeed.horizontalDistance()) > 9.999999747378752E-6;
    }
 
-   public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
-      this.applyEffectsFromBlocks(List.of(new Movement(var1, var2)));
+   public void applyEffectsFromBlocks(final Vec3 from, final Vec3 to) {
+      this.applyEffectsFromBlocks(List.of(new Movement(from, to)));
    }
 
-   private void applyEffectsFromBlocks(List<Movement> var1) {
+   private void applyEffectsFromBlocks(final List<Movement> movements) {
       if (this.isAffectedByBlocks()) {
          if (this.onGround()) {
-            BlockPos var2 = this.getOnPosLegacy();
-            BlockState var3 = this.level().getBlockState(var2);
-            var3.getBlock().stepOn(this.level(), var2, var3, this);
+            BlockPos effectPos = this.getOnPosLegacy();
+            BlockState effectState = this.level().getBlockState(effectPos);
+            effectState.getBlock().stepOn(this.level(), effectPos, effectState, this);
          }
 
-         boolean var6 = this.isOnFire();
-         boolean var7 = this.isFreezing();
-         int var4 = this.getRemainingFireTicks();
-         this.checkInsideBlocks(var1, this.insideEffectCollector);
+         boolean wasOnFire = this.isOnFire();
+         boolean wasFreezing = this.isFreezing();
+         int previousRemainingFireTicks = this.getRemainingFireTicks();
+         this.checkInsideBlocks(movements, this.insideEffectCollector);
          this.insideEffectCollector.applyAndClear(this);
          if (this.isInRain()) {
             this.clearFire();
          }
 
-         if (var6 && !this.isOnFire() || var7 && !this.isFreezing()) {
+         if (wasOnFire && !this.isOnFire() || wasFreezing && !this.isFreezing()) {
             this.playEntityOnFireExtinguishedSound();
          }
 
-         boolean var5 = this.getRemainingFireTicks() > var4;
-         if (!this.level().isClientSide() && !this.isOnFire() && !var5) {
+         boolean wasIgnitedThisTick = this.getRemainingFireTicks() > previousRemainingFireTicks;
+         if (!this.level().isClientSide() && !this.isOnFire() && !wasIgnitedThisTick) {
             this.setRemainingFireTicks(-this.getFireImmuneTicks());
          }
 
@@ -932,22 +942,22 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return !this.isRemoved() && !this.noPhysics;
    }
 
-   private boolean isStateClimbable(BlockState var1) {
-      return var1.is(BlockTags.CLIMBABLE) || var1.is(Blocks.POWDER_SNOW);
+   private boolean isStateClimbable(final BlockState state) {
+      return state.is(BlockTags.CLIMBABLE) || state.is(Blocks.POWDER_SNOW);
    }
 
-   private boolean vibrationAndSoundEffectsFromBlock(BlockPos var1, BlockState var2, boolean var3, boolean var4, Vec3 var5) {
-      if (var2.isAir()) {
+   private boolean vibrationAndSoundEffectsFromBlock(final BlockPos pos, final BlockState blockState, final boolean shouldSound, final boolean shouldVibrate, final Vec3 clippedMovement) {
+      if (blockState.isAir()) {
          return false;
       } else {
-         boolean var6 = this.isStateClimbable(var2);
-         if ((this.onGround() || var6 || this.isCrouching() && var5.y == 0.0 || this.isOnRails()) && !this.isSwimming()) {
-            if (var3) {
-               this.walkingStepSound(var1, var2);
+         boolean isClimbable = this.isStateClimbable(blockState);
+         if ((this.onGround() || isClimbable || this.isCrouching() && clippedMovement.y == 0.0 || this.isOnRails()) && !this.isSwimming()) {
+            if (shouldSound) {
+               this.walkingStepSound(pos, blockState);
             }
 
-            if (var4) {
-               this.level().gameEvent(GameEvent.STEP, this.position(), GameEvent.Context.of(this, var2));
+            if (shouldVibrate) {
+               this.level().gameEvent(GameEvent.STEP, this.position(), GameEvent.Context.of(this, blockState));
             }
 
             return true;
@@ -957,7 +967,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
    }
 
-   protected boolean isHorizontalCollisionMinor(Vec3 var1) {
+   protected boolean isHorizontalCollisionMinor(final Vec3 movement) {
       return false;
    }
 
@@ -1000,182 +1010,182 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.getOnPos(1.0E-5F);
    }
 
-   protected BlockPos getOnPos(float var1) {
+   protected BlockPos getOnPos(final float offset) {
       if (this.mainSupportingBlockPos.isPresent()) {
-         BlockPos var5 = (BlockPos)this.mainSupportingBlockPos.get();
-         if (!(var1 > 1.0E-5F)) {
-            return var5;
+         BlockPos getOnPos = (BlockPos)this.mainSupportingBlockPos.get();
+         if (!(offset > 1.0E-5F)) {
+            return getOnPos;
          } else {
-            BlockState var6 = this.level().getBlockState(var5);
-            return (!((double)var1 <= 0.5) || !var6.is(BlockTags.FENCES)) && !var6.is(BlockTags.WALLS) && !(var6.getBlock() instanceof FenceGateBlock) ? var5.atY(Mth.floor(this.position.y - (double)var1)) : var5;
+            BlockState belowState = this.level().getBlockState(getOnPos);
+            return (!((double)offset <= 0.5) || !belowState.is(BlockTags.FENCES)) && !belowState.is(BlockTags.WALLS) && !(belowState.getBlock() instanceof FenceGateBlock) ? getOnPos.atY(Mth.floor(this.position.y - (double)offset)) : getOnPos;
          }
       } else {
-         int var2 = Mth.floor(this.position.x);
-         int var3 = Mth.floor(this.position.y - (double)var1);
-         int var4 = Mth.floor(this.position.z);
-         return new BlockPos(var2, var3, var4);
+         int xTruncated = Mth.floor(this.position.x);
+         int yTruncatedBelow = Mth.floor(this.position.y - (double)offset);
+         int zTruncated = Mth.floor(this.position.z);
+         return new BlockPos(xTruncated, yTruncatedBelow, zTruncated);
       }
    }
 
    protected float getBlockJumpFactor() {
-      float var1 = this.level().getBlockState(this.blockPosition()).getBlock().getJumpFactor();
-      float var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getJumpFactor();
-      return (double)var1 == 1.0 ? var2 : var1;
+      float jumpFactorHere = this.level().getBlockState(this.blockPosition()).getBlock().getJumpFactor();
+      float jumpFactorBelow = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getJumpFactor();
+      return (double)jumpFactorHere == 1.0 ? jumpFactorBelow : jumpFactorHere;
    }
 
    protected float getBlockSpeedFactor() {
-      BlockState var1 = this.level().getBlockState(this.blockPosition());
-      float var2 = var1.getBlock().getSpeedFactor();
-      if (!var1.is(Blocks.WATER) && !var1.is(Blocks.BUBBLE_COLUMN)) {
-         return (double)var2 == 1.0 ? this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getSpeedFactor() : var2;
+      BlockState state = this.level().getBlockState(this.blockPosition());
+      float speedFactorHere = state.getBlock().getSpeedFactor();
+      if (!state.is(Blocks.WATER) && !state.is(Blocks.BUBBLE_COLUMN)) {
+         return (double)speedFactorHere == 1.0 ? this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getSpeedFactor() : speedFactorHere;
       } else {
-         return var2;
+         return speedFactorHere;
       }
    }
 
-   protected Vec3 maybeBackOffFromEdge(Vec3 var1, MoverType var2) {
-      return var1;
+   protected Vec3 maybeBackOffFromEdge(final Vec3 delta, final MoverType moverType) {
+      return delta;
    }
 
-   protected Vec3 limitPistonMovement(Vec3 var1) {
-      if (var1.lengthSqr() <= 1.0E-7) {
-         return var1;
+   protected Vec3 limitPistonMovement(final Vec3 vec) {
+      if (vec.lengthSqr() <= 1.0E-7) {
+         return vec;
       } else {
-         long var2 = this.level().getGameTime();
-         if (var2 != this.pistonDeltasGameTime) {
+         long currentGameTime = this.level().getGameTime();
+         if (currentGameTime != this.pistonDeltasGameTime) {
             Arrays.fill(this.pistonDeltas, 0.0);
-            this.pistonDeltasGameTime = var2;
+            this.pistonDeltasGameTime = currentGameTime;
          }
 
-         if (var1.x != 0.0) {
-            double var7 = this.applyPistonMovementRestriction(Direction.Axis.X, var1.x);
-            return Math.abs(var7) <= 9.999999747378752E-6 ? Vec3.ZERO : new Vec3(var7, 0.0, 0.0);
-         } else if (var1.y != 0.0) {
-            double var6 = this.applyPistonMovementRestriction(Direction.Axis.Y, var1.y);
-            return Math.abs(var6) <= 9.999999747378752E-6 ? Vec3.ZERO : new Vec3(0.0, var6, 0.0);
-         } else if (var1.z != 0.0) {
-            double var4 = this.applyPistonMovementRestriction(Direction.Axis.Z, var1.z);
-            return Math.abs(var4) <= 9.999999747378752E-6 ? Vec3.ZERO : new Vec3(0.0, 0.0, var4);
+         if (vec.x != 0.0) {
+            double xa = this.applyPistonMovementRestriction(Direction.Axis.X, vec.x);
+            return Math.abs(xa) <= 9.999999747378752E-6 ? Vec3.ZERO : new Vec3(xa, 0.0, 0.0);
+         } else if (vec.y != 0.0) {
+            double ya = this.applyPistonMovementRestriction(Direction.Axis.Y, vec.y);
+            return Math.abs(ya) <= 9.999999747378752E-6 ? Vec3.ZERO : new Vec3(0.0, ya, 0.0);
+         } else if (vec.z != 0.0) {
+            double za = this.applyPistonMovementRestriction(Direction.Axis.Z, vec.z);
+            return Math.abs(za) <= 9.999999747378752E-6 ? Vec3.ZERO : new Vec3(0.0, 0.0, za);
          } else {
             return Vec3.ZERO;
          }
       }
    }
 
-   private double applyPistonMovementRestriction(Direction.Axis var1, double var2) {
-      int var4 = var1.ordinal();
-      double var5 = Mth.clamp(var2 + this.pistonDeltas[var4], -0.51, 0.51);
-      var2 = var5 - this.pistonDeltas[var4];
-      this.pistonDeltas[var4] = var5;
-      return var2;
+   private double applyPistonMovementRestriction(final Direction.Axis axis, double amount) {
+      int ordinal = axis.ordinal();
+      double min = Mth.clamp(amount + this.pistonDeltas[ordinal], -0.51, 0.51);
+      amount = min - this.pistonDeltas[ordinal];
+      this.pistonDeltas[ordinal] = min;
+      return amount;
    }
 
-   public double getAvailableSpaceBelow(double var1) {
-      AABB var3 = this.getBoundingBox();
-      AABB var4 = var3.setMinY(var3.minY - var1).setMaxY(var3.minY);
-      List var5 = collectAllColliders(this, this.level, var4);
-      return var5.isEmpty() ? var1 : -Shapes.collide(Direction.Axis.Y, var3, var5, -var1);
+   public double getAvailableSpaceBelow(final double maxDistance) {
+      AABB aabb = this.getBoundingBox();
+      AABB below = aabb.setMinY(aabb.minY - maxDistance).setMaxY(aabb.minY);
+      List<VoxelShape> colliders = collectAllColliders(this, this.level, below);
+      return colliders.isEmpty() ? maxDistance : -Shapes.collide(Direction.Axis.Y, aabb, colliders, -maxDistance);
    }
 
-   private Vec3 collide(Vec3 var1) {
-      AABB var2 = this.getBoundingBox();
-      List var3 = this.level().getEntityCollisions(this, var2.expandTowards(var1));
-      Vec3 var4 = var1.lengthSqr() == 0.0 ? var1 : collideBoundingBox(this, var1, var2, this.level(), var3);
-      boolean var5 = var1.x != var4.x;
-      boolean var6 = var1.y != var4.y;
-      boolean var7 = var1.z != var4.z;
-      boolean var8 = var6 && var1.y < 0.0;
-      if (this.maxUpStep() > 0.0F && (var8 || this.onGround()) && (var5 || var7)) {
-         AABB var9 = var8 ? var2.move(0.0, var4.y, 0.0) : var2;
-         AABB var10 = var9.expandTowards(var1.x, (double)this.maxUpStep(), var1.z);
-         if (!var8) {
-            var10 = var10.expandTowards(0.0, -9.999999747378752E-6, 0.0);
+   private Vec3 collide(final Vec3 movement) {
+      AABB aabb = this.getBoundingBox();
+      List<VoxelShape> entityColliders = this.level().getEntityCollisions(this, aabb.expandTowards(movement));
+      Vec3 movementStep = movement.lengthSqr() == 0.0 ? movement : collideBoundingBox(this, movement, aabb, this.level(), entityColliders);
+      boolean xCollision = movement.x != movementStep.x;
+      boolean yCollision = movement.y != movementStep.y;
+      boolean zCollision = movement.z != movementStep.z;
+      boolean onGroundAfterCollision = yCollision && movement.y < 0.0;
+      if (this.maxUpStep() > 0.0F && (onGroundAfterCollision || this.onGround()) && (xCollision || zCollision)) {
+         AABB groundedAABB = onGroundAfterCollision ? aabb.move(0.0, movementStep.y, 0.0) : aabb;
+         AABB stepUpAABB = groundedAABB.expandTowards(movement.x, (double)this.maxUpStep(), movement.z);
+         if (!onGroundAfterCollision) {
+            stepUpAABB = stepUpAABB.expandTowards(0.0, -9.999999747378752E-6, 0.0);
          }
 
-         List var11 = collectColliders(this, this.level, var3, var10);
-         float var12 = (float)var4.y;
-         float[] var13 = collectCandidateStepUpHeights(var9, var11, this.maxUpStep(), var12);
+         List<VoxelShape> colliders = collectColliders(this, this.level, entityColliders, stepUpAABB);
+         float stepHeightToSkip = (float)movementStep.y;
+         float[] candidateStepUpHeights = collectCandidateStepUpHeights(groundedAABB, colliders, this.maxUpStep(), stepHeightToSkip);
 
-         for(float var17 : var13) {
-            Vec3 var18 = collideWithShapes(new Vec3(var1.x, (double)var17, var1.z), var9, var11);
-            if (var18.horizontalDistanceSqr() > var4.horizontalDistanceSqr()) {
-               double var19 = var2.minY - var9.minY;
-               return var18.subtract(0.0, var19, 0.0);
+         for(float candidateStepUpHeight : candidateStepUpHeights) {
+            Vec3 stepFromGround = collideWithShapes(new Vec3(movement.x, (double)candidateStepUpHeight, movement.z), groundedAABB, colliders);
+            if (stepFromGround.horizontalDistanceSqr() > movementStep.horizontalDistanceSqr()) {
+               double distanceToGround = aabb.minY - groundedAABB.minY;
+               return stepFromGround.subtract(0.0, distanceToGround, 0.0);
             }
          }
       }
 
-      return var4;
+      return movementStep;
    }
 
-   private static float[] collectCandidateStepUpHeights(AABB var0, List<VoxelShape> var1, float var2, float var3) {
-      FloatArraySet var4 = new FloatArraySet(4);
+   private static float[] collectCandidateStepUpHeights(final AABB boundingBox, final List<VoxelShape> colliders, final float maxStepHeight, final float stepHeightToSkip) {
+      FloatSet candidates = new FloatArraySet(4);
 
-      for(VoxelShape var6 : var1) {
-         DoubleList var7 = var6.getCoords(Direction.Axis.Y);
-         DoubleListIterator var8 = var7.iterator();
+      for(VoxelShape collider : colliders) {
+         DoubleList coords = collider.getCoords(Direction.Axis.Y);
+         DoubleListIterator var8 = coords.iterator();
 
          while(var8.hasNext()) {
-            double var9 = (Double)var8.next();
-            float var11 = (float)(var9 - var0.minY);
-            if (!(var11 < 0.0F) && var11 != var3) {
-               if (var11 > var2) {
+            double coord = (Double)var8.next();
+            float relativeCoord = (float)(coord - boundingBox.minY);
+            if (!(relativeCoord < 0.0F) && relativeCoord != stepHeightToSkip) {
+               if (relativeCoord > maxStepHeight) {
                   break;
                }
 
-               var4.add(var11);
+               candidates.add(relativeCoord);
             }
          }
       }
 
-      float[] var12 = var4.toFloatArray();
-      FloatArrays.unstableSort(var12);
-      return var12;
+      float[] sortedCandidates = candidates.toFloatArray();
+      FloatArrays.unstableSort(sortedCandidates);
+      return sortedCandidates;
    }
 
-   public static Vec3 collideBoundingBox(@Nullable Entity var0, Vec3 var1, AABB var2, Level var3, List<VoxelShape> var4) {
-      List var5 = collectColliders(var0, var3, var4, var2.expandTowards(var1));
-      return collideWithShapes(var1, var2, var5);
+   public static Vec3 collideBoundingBox(final @Nullable Entity source, final Vec3 movement, final AABB boundingBox, final Level level, final List<VoxelShape> entityColliders) {
+      List<VoxelShape> colliders = collectColliders(source, level, entityColliders, boundingBox.expandTowards(movement));
+      return collideWithShapes(movement, boundingBox, colliders);
    }
 
-   public static List<VoxelShape> collectAllColliders(@Nullable Entity var0, Level var1, AABB var2) {
-      List var3 = var1.getEntityCollisions(var0, var2);
-      return collectColliders(var0, var1, var3, var2);
+   public static List<VoxelShape> collectAllColliders(final @Nullable Entity source, final Level level, final AABB boundingBox) {
+      List<VoxelShape> entityColliders = level.getEntityCollisions(source, boundingBox);
+      return collectColliders(source, level, entityColliders, boundingBox);
    }
 
-   private static List<VoxelShape> collectColliders(@Nullable Entity var0, Level var1, List<VoxelShape> var2, AABB var3) {
-      ImmutableList.Builder var4 = ImmutableList.builderWithExpectedSize(var2.size() + 1);
-      if (!var2.isEmpty()) {
-         var4.addAll(var2);
+   private static List<VoxelShape> collectColliders(final @Nullable Entity source, final Level level, final List<VoxelShape> entityColliders, final AABB boundingBox) {
+      ImmutableList.Builder<VoxelShape> colliders = ImmutableList.builderWithExpectedSize(entityColliders.size() + 1);
+      if (!entityColliders.isEmpty()) {
+         colliders.addAll(entityColliders);
       }
 
-      WorldBorder var5 = var1.getWorldBorder();
-      boolean var6 = var0 != null && var5.isInsideCloseToBorder(var0, var3);
-      if (var6) {
-         var4.add(var5.getCollisionShape());
+      WorldBorder worldBorder = level.getWorldBorder();
+      boolean isEntityInsideCloseToBorder = source != null && worldBorder.isInsideCloseToBorder(source, boundingBox);
+      if (isEntityInsideCloseToBorder) {
+         colliders.add(worldBorder.getCollisionShape());
       }
 
-      var4.addAll(var1.getBlockCollisions(var0, var3));
-      return var4.build();
+      colliders.addAll(level.getBlockCollisions(source, boundingBox));
+      return colliders.build();
    }
 
-   private static Vec3 collideWithShapes(Vec3 var0, AABB var1, List<VoxelShape> var2) {
-      if (var2.isEmpty()) {
-         return var0;
+   private static Vec3 collideWithShapes(final Vec3 movement, final AABB boundingBox, final List<VoxelShape> shapes) {
+      if (shapes.isEmpty()) {
+         return movement;
       } else {
-         Vec3 var3 = Vec3.ZERO;
-         UnmodifiableIterator var4 = Direction.axisStepOrder(var0).iterator();
+         Vec3 resolvedMovement = Vec3.ZERO;
+         UnmodifiableIterator var4 = Direction.axisStepOrder(movement).iterator();
 
          while(var4.hasNext()) {
-            Direction.Axis var5 = (Direction.Axis)var4.next();
-            double var6 = var0.get(var5);
-            if (var6 != 0.0) {
-               double var8 = Shapes.collide(var5, var1.move(var3), var2, var6);
-               var3 = var3.with(var5, var8);
+            Direction.Axis axis = (Direction.Axis)var4.next();
+            double axisMovement = movement.get(axis);
+            if (axisMovement != 0.0) {
+               double collision = Shapes.collide(axis, boundingBox.move(resolvedMovement), shapes, axisMovement);
+               resolvedMovement = resolvedMovement.with(axis, collision);
             }
          }
 
-         return var3;
+         return resolvedMovement;
       }
    }
 
@@ -1195,49 +1205,49 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return SoundEvents.GENERIC_SPLASH;
    }
 
-   private void checkInsideBlocks(List<Movement> var1, InsideBlockEffectApplier.StepBasedCollector var2) {
+   private void checkInsideBlocks(final List<Movement> movements, final InsideBlockEffectApplier.StepBasedCollector effectCollector) {
       if (this.isAffectedByBlocks()) {
-         LongSet var3 = this.visitedBlocks;
+         LongSet visitedBlocks = this.visitedBlocks;
 
-         for(Movement var5 : var1) {
-            Vec3 var6 = var5.from;
-            Vec3 var7 = var5.to().subtract(var5.from());
-            int var8 = 16;
-            if (var5.axisDependentOriginalMovement().isPresent() && var7.lengthSqr() > 0.0) {
-               UnmodifiableIterator var9 = Direction.axisStepOrder((Vec3)var5.axisDependentOriginalMovement().get()).iterator();
+         for(Movement movement : movements) {
+            Vec3 pos = movement.from;
+            Vec3 delta = movement.to().subtract(movement.from());
+            int maxMovementIterations = 16;
+            if (movement.axisDependentOriginalMovement().isPresent() && delta.lengthSqr() > 0.0) {
+               UnmodifiableIterator var9 = Direction.axisStepOrder((Vec3)movement.axisDependentOriginalMovement().get()).iterator();
 
                while(var9.hasNext()) {
-                  Direction.Axis var10 = (Direction.Axis)var9.next();
-                  double var11 = var7.get(var10);
-                  if (var11 != 0.0) {
-                     Vec3 var13 = var6.relative(var10.getPositive(), var11);
-                     var8 -= this.checkInsideBlocks(var6, var13, var2, var3, var8);
-                     var6 = var13;
+                  Direction.Axis axis = (Direction.Axis)var9.next();
+                  double axisMove = delta.get(axis);
+                  if (axisMove != 0.0) {
+                     Vec3 to = pos.relative(axis.getPositive(), axisMove);
+                     maxMovementIterations -= this.checkInsideBlocks(pos, to, effectCollector, visitedBlocks, maxMovementIterations);
+                     pos = to;
                   }
                }
             } else {
-               var8 -= this.checkInsideBlocks(var5.from(), var5.to(), var2, var3, 16);
+               maxMovementIterations -= this.checkInsideBlocks(movement.from(), movement.to(), effectCollector, visitedBlocks, 16);
             }
 
-            if (var8 <= 0) {
-               this.checkInsideBlocks(var5.to(), var5.to(), var2, var3, 1);
+            if (maxMovementIterations <= 0) {
+               this.checkInsideBlocks(movement.to(), movement.to(), effectCollector, visitedBlocks, 1);
             }
          }
 
-         var3.clear();
+         visitedBlocks.clear();
       }
    }
 
-   private int checkInsideBlocks(Vec3 var1, Vec3 var2, InsideBlockEffectApplier.StepBasedCollector var3, LongSet var4, int var5) {
-      AABB var6;
-      boolean var7;
+   private int checkInsideBlocks(final Vec3 from, final Vec3 to, final InsideBlockEffectApplier.StepBasedCollector effectCollector, final LongSet visitedBlocks, final int maxMovementIterations) {
+      AABB deflatedBoundingBoxAtTarget;
+      boolean movedFar;
       boolean var10000;
       label16: {
-         var6 = this.makeBoundingBox(var2).deflate(9.999999747378752E-6);
-         var7 = var1.distanceToSqr(var2) > Mth.square(0.9999900000002526);
+         deflatedBoundingBoxAtTarget = this.makeBoundingBox(to).deflate(9.999999747378752E-6);
+         movedFar = from.distanceToSqr(to) > Mth.square(0.9999900000002526);
          Level var10 = this.level;
-         if (var10 instanceof ServerLevel var9) {
-            if (var9.getServer().debugSubscribers().hasAnySubscriberFor(DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS)) {
+         if (var10 instanceof ServerLevel serverLevel) {
+            if (serverLevel.getServer().debugSubscribers().hasAnySubscriberFor(DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS)) {
                var10000 = true;
                break label16;
             }
@@ -1246,50 +1256,50 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          var10000 = false;
       }
 
-      boolean var8 = var10000;
-      AtomicInteger var11 = new AtomicInteger();
-      BlockGetter.forEachBlockIntersectedBetween(var1, var2, var6, (var10x, var11x) -> {
+      boolean debugEntityBlockIntersections = var10000;
+      AtomicInteger iterations = new AtomicInteger();
+      BlockGetter.forEachBlockIntersectedBetween(from, to, deflatedBoundingBoxAtTarget, (blockIntersection, iteration) -> {
          if (!this.isAlive()) {
             return false;
-         } else if (var11x >= var5) {
+         } else if (iteration >= maxMovementIterations) {
             return false;
          } else {
-            var11.set(var11x);
-            BlockState var12 = this.level().getBlockState(var10x);
-            if (var12.isAir()) {
-               if (var8) {
-                  this.debugBlockIntersection((ServerLevel)this.level(), var10x.immutable(), false, false);
+            iterations.set(iteration);
+            BlockState state = this.level().getBlockState(blockIntersection);
+            if (state.isAir()) {
+               if (debugEntityBlockIntersections) {
+                  this.debugBlockIntersection((ServerLevel)this.level(), blockIntersection.immutable(), false, false);
                }
 
                return true;
             } else {
-               VoxelShape var13 = var12.getEntityInsideCollisionShape(this.level(), var10x, this);
-               boolean var14 = var13 == Shapes.block() || this.collidedWithShapeMovingFrom(var1, var2, var13.move(new Vec3(var10x)).toAabbs());
-               boolean var15 = this.collidedWithFluid(var12.getFluidState(), var10x, var1, var2);
-               if ((var14 || var15) && var4.add(var10x.asLong())) {
-                  if (var14) {
+               VoxelShape intersectShape = state.getEntityInsideCollisionShape(this.level(), blockIntersection, this);
+               boolean insideBlock = intersectShape == Shapes.block() || this.collidedWithShapeMovingFrom(from, to, intersectShape.move(new Vec3(blockIntersection)).toAabbs());
+               boolean insideFluid = this.collidedWithFluid(state.getFluidState(), blockIntersection, from, to);
+               if ((insideBlock || insideFluid) && visitedBlocks.add(blockIntersection.asLong())) {
+                  if (insideBlock) {
                      try {
-                        boolean var16 = var7 || var6.intersects(var10x);
-                        var3.advanceStep(var11x);
-                        var12.entityInside(this.level(), var10x, this, var3, var16);
-                        this.onInsideBlock(var12);
-                     } catch (Throwable var20) {
-                        CrashReport var17 = CrashReport.forThrowable(var20, "Colliding entity with block");
-                        CrashReportCategory var18 = var17.addCategory("Block being collided with");
-                        CrashReportCategory.populateBlockDetails(var18, this.level(), var10x, var12);
-                        CrashReportCategory var19 = var17.addCategory("Entity being checked for collision");
-                        this.fillCrashReportCategory(var19);
-                        throw new ReportedException(var17);
+                        boolean isPrecise = movedFar || deflatedBoundingBoxAtTarget.intersects(blockIntersection);
+                        effectCollector.advanceStep(iteration);
+                        state.entityInside(this.level(), blockIntersection, this, effectCollector, isPrecise);
+                        this.onInsideBlock(state);
+                     } catch (Throwable t) {
+                        CrashReport report = CrashReport.forThrowable(t, "Colliding entity with block");
+                        CrashReportCategory category = report.addCategory("Block being collided with");
+                        CrashReportCategory.populateBlockDetails(category, this.level(), blockIntersection, state);
+                        CrashReportCategory entityCategory = report.addCategory("Entity being checked for collision");
+                        this.fillCrashReportCategory(entityCategory);
+                        throw new ReportedException(report);
                      }
                   }
 
-                  if (var15) {
-                     var3.advanceStep(var11x);
-                     var12.getFluidState().entityInside(this.level(), var10x, this, var3);
+                  if (insideFluid) {
+                     effectCollector.advanceStep(iteration);
+                     state.getFluidState().entityInside(this.level(), blockIntersection, this, effectCollector);
                   }
 
-                  if (var8) {
-                     this.debugBlockIntersection((ServerLevel)this.level(), var10x.immutable(), var14, var15);
+                  if (debugEntityBlockIntersections) {
+                     this.debugBlockIntersection((ServerLevel)this.level(), blockIntersection.immutable(), insideBlock, insideFluid);
                   }
 
                   return true;
@@ -1299,104 +1309,104 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
             }
          }
       });
-      return var11.get() + 1;
+      return iterations.get() + 1;
    }
 
-   private void debugBlockIntersection(ServerLevel var1, BlockPos var2, boolean var3, boolean var4) {
-      DebugEntityBlockIntersection var5;
-      if (var4) {
-         var5 = DebugEntityBlockIntersection.IN_FLUID;
-      } else if (var3) {
-         var5 = DebugEntityBlockIntersection.IN_BLOCK;
+   private void debugBlockIntersection(final ServerLevel level, final BlockPos pos, final boolean insideBlock, final boolean insideFluid) {
+      DebugEntityBlockIntersection type;
+      if (insideFluid) {
+         type = DebugEntityBlockIntersection.IN_FLUID;
+      } else if (insideBlock) {
+         type = DebugEntityBlockIntersection.IN_BLOCK;
       } else {
-         var5 = DebugEntityBlockIntersection.IN_AIR;
+         type = DebugEntityBlockIntersection.IN_AIR;
       }
 
-      var1.debugSynchronizers().sendBlockValue(var2, DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS, var5);
+      level.debugSynchronizers().sendBlockValue(pos, DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS, type);
    }
 
-   public boolean collidedWithFluid(FluidState var1, BlockPos var2, Vec3 var3, Vec3 var4) {
-      AABB var5 = var1.getAABB(this.level(), var2);
-      return var5 != null && this.collidedWithShapeMovingFrom(var3, var4, List.of(var5));
+   public boolean collidedWithFluid(final FluidState fluidState, final BlockPos blockPos, final Vec3 from, final Vec3 to) {
+      AABB fluidAABB = fluidState.getAABB(this.level(), blockPos);
+      return fluidAABB != null && this.collidedWithShapeMovingFrom(from, to, List.of(fluidAABB));
    }
 
-   public boolean collidedWithShapeMovingFrom(Vec3 var1, Vec3 var2, List<AABB> var3) {
-      AABB var4 = this.makeBoundingBox(var1);
-      Vec3 var5 = var2.subtract(var1);
-      return var4.collidedAlongVector(var5, var3);
+   public boolean collidedWithShapeMovingFrom(final Vec3 from, final Vec3 to, final List<AABB> aabbs) {
+      AABB boundingBoxAtFrom = this.makeBoundingBox(from);
+      Vec3 travelVector = to.subtract(from);
+      return boundingBoxAtFrom.collidedAlongVector(travelVector, aabbs);
    }
 
-   protected void onInsideBlock(BlockState var1) {
+   protected void onInsideBlock(final BlockState state) {
    }
 
-   public BlockPos adjustSpawnLocation(ServerLevel var1, BlockPos var2) {
-      BlockPos var3 = var1.getRespawnData().pos();
-      Vec3 var4 = var3.getCenter();
-      int var5 = var1.getChunkAt(var3).getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var3.getX(), var3.getZ()) + 1;
-      return BlockPos.containing(var4.x, (double)var5, var4.z);
+   public BlockPos adjustSpawnLocation(final ServerLevel level, final BlockPos spawnSuggestion) {
+      BlockPos spawnBlockPos = level.getRespawnData().pos();
+      Vec3 spawnPos = spawnBlockPos.getCenter();
+      int spawnHeight = level.getChunkAt(spawnBlockPos).getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawnBlockPos.getX(), spawnBlockPos.getZ()) + 1;
+      return BlockPos.containing(spawnPos.x, (double)spawnHeight, spawnPos.z);
    }
 
-   public void gameEvent(Holder<GameEvent> var1, @Nullable Entity var2) {
-      this.level().gameEvent(var2, var1, this.position);
+   public void gameEvent(final Holder<GameEvent> event, final @Nullable Entity sourceEntity) {
+      this.level().gameEvent(sourceEntity, event, this.position);
    }
 
-   public void gameEvent(Holder<GameEvent> var1) {
-      this.gameEvent(var1, this);
+   public void gameEvent(final Holder<GameEvent> event) {
+      this.gameEvent(event, this);
    }
 
-   private void walkingStepSound(BlockPos var1, BlockState var2) {
-      this.playStepSound(var1, var2);
-      if (this.shouldPlayAmethystStepSound(var2)) {
+   private void walkingStepSound(final BlockPos onPos, final BlockState onState) {
+      this.playStepSound(onPos, onState);
+      if (this.shouldPlayAmethystStepSound(onState)) {
          this.playAmethystStepSound();
       }
 
    }
 
    protected void waterSwimSound() {
-      Entity var1 = (Entity)Objects.requireNonNullElse(this.getControllingPassenger(), this);
-      float var2 = var1 == this ? 0.35F : 0.4F;
-      Vec3 var3 = var1.getDeltaMovement();
-      float var4 = Math.min(1.0F, (float)Math.sqrt(var3.x * var3.x * 0.20000000298023224 + var3.y * var3.y + var3.z * var3.z * 0.20000000298023224) * var2);
-      this.playSwimSound(var4);
+      Entity entity = (Entity)Objects.requireNonNullElse(this.getControllingPassenger(), this);
+      float volumeModifier = entity == this ? 0.35F : 0.4F;
+      Vec3 deltaMovement = entity.getDeltaMovement();
+      float speed = Math.min(1.0F, (float)Math.sqrt(deltaMovement.x * deltaMovement.x * 0.20000000298023224 + deltaMovement.y * deltaMovement.y + deltaMovement.z * deltaMovement.z * 0.20000000298023224) * volumeModifier);
+      this.playSwimSound(speed);
    }
 
-   protected BlockPos getPrimaryStepSoundBlockPos(BlockPos var1) {
-      BlockPos var2 = var1.above();
-      BlockState var3 = this.level().getBlockState(var2);
-      return !var3.is(BlockTags.INSIDE_STEP_SOUND_BLOCKS) && !var3.is(BlockTags.COMBINATION_STEP_SOUND_BLOCKS) ? var1 : var2;
+   protected BlockPos getPrimaryStepSoundBlockPos(final BlockPos affectingPos) {
+      BlockPos abovePos = affectingPos.above();
+      BlockState aboveState = this.level().getBlockState(abovePos);
+      return !aboveState.is(BlockTags.INSIDE_STEP_SOUND_BLOCKS) && !aboveState.is(BlockTags.COMBINATION_STEP_SOUND_BLOCKS) ? affectingPos : abovePos;
    }
 
-   protected void playCombinationStepSounds(BlockState var1, BlockState var2) {
-      SoundType var3 = var1.getSoundType();
-      this.playSound(var3.getStepSound(), var3.getVolume() * 0.15F, var3.getPitch());
-      this.playMuffledStepSound(var2);
+   protected void playCombinationStepSounds(final BlockState primaryStepSound, final BlockState secondaryStepSound) {
+      SoundType primaryStepSoundType = primaryStepSound.getSoundType();
+      this.playSound(primaryStepSoundType.getStepSound(), primaryStepSoundType.getVolume() * 0.15F, primaryStepSoundType.getPitch());
+      this.playMuffledStepSound(secondaryStepSound);
    }
 
-   protected void playMuffledStepSound(BlockState var1) {
-      SoundType var2 = var1.getSoundType();
-      this.playSound(var2.getStepSound(), var2.getVolume() * 0.05F, var2.getPitch() * 0.8F);
+   protected void playMuffledStepSound(final BlockState blockState) {
+      SoundType secondaryStepSoundType = blockState.getSoundType();
+      this.playSound(secondaryStepSoundType.getStepSound(), secondaryStepSoundType.getVolume() * 0.05F, secondaryStepSoundType.getPitch() * 0.8F);
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
-      SoundType var3 = var2.getSoundType();
-      this.playSound(var3.getStepSound(), var3.getVolume() * 0.15F, var3.getPitch());
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
+      SoundType soundType = blockState.getSoundType();
+      this.playSound(soundType.getStepSound(), soundType.getVolume() * 0.15F, soundType.getPitch());
    }
 
-   private boolean shouldPlayAmethystStepSound(BlockState var1) {
-      return var1.is(BlockTags.CRYSTAL_SOUND_BLOCKS) && this.tickCount >= this.lastCrystalSoundPlayTick + 20;
+   private boolean shouldPlayAmethystStepSound(final BlockState affectingState) {
+      return affectingState.is(BlockTags.CRYSTAL_SOUND_BLOCKS) && this.tickCount >= this.lastCrystalSoundPlayTick + 20;
    }
 
    private void playAmethystStepSound() {
       this.crystalSoundIntensity *= (float)Math.pow(0.997, (double)(this.tickCount - this.lastCrystalSoundPlayTick));
       this.crystalSoundIntensity = Math.min(1.0F, this.crystalSoundIntensity + 0.07F);
-      float var1 = 0.5F + this.crystalSoundIntensity * this.random.nextFloat() * 1.2F;
-      float var2 = 0.1F + this.crystalSoundIntensity * 1.2F;
-      this.playSound(SoundEvents.AMETHYST_BLOCK_CHIME, var2, var1);
+      float pitch = 0.5F + this.crystalSoundIntensity * this.random.nextFloat() * 1.2F;
+      float volume = 0.1F + this.crystalSoundIntensity * 1.2F;
+      this.playSound(SoundEvents.AMETHYST_BLOCK_CHIME, volume, pitch);
       this.lastCrystalSoundPlayTick = this.tickCount;
    }
 
-   protected void playSwimSound(float var1) {
-      this.playSound(this.getSwimSound(), var1, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
+   protected void playSwimSound(final float volume) {
+      this.playSound(this.getSwimSound(), volume, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
    }
 
    protected void onFlap() {
@@ -1406,16 +1416,16 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return false;
    }
 
-   public void playSound(SoundEvent var1, float var2, float var3) {
+   public void playSound(final SoundEvent sound, final float volume, final float pitch) {
       if (!this.isSilent()) {
-         this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), var2, var3);
+         this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), volume, pitch);
       }
 
    }
 
-   public void playSound(SoundEvent var1) {
+   public void playSound(final SoundEvent sound) {
       if (!this.isSilent()) {
-         this.playSound(var1, 1.0F, 1.0F);
+         this.playSound(sound, 1.0F, 1.0F);
       }
 
    }
@@ -1424,16 +1434,16 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return (Boolean)this.entityData.get(DATA_SILENT);
    }
 
-   public void setSilent(boolean var1) {
-      this.entityData.set(DATA_SILENT, var1);
+   public void setSilent(final boolean silent) {
+      this.entityData.set(DATA_SILENT, silent);
    }
 
    public boolean isNoGravity() {
       return (Boolean)this.entityData.get(DATA_NO_GRAVITY);
    }
 
-   public void setNoGravity(boolean var1) {
-      this.entityData.set(DATA_NO_GRAVITY, var1);
+   public void setNoGravity(final boolean noGravity) {
+      this.entityData.set(DATA_NO_GRAVITY, noGravity);
    }
 
    protected double getDefaultGravity() {
@@ -1445,9 +1455,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    protected void applyGravity() {
-      double var1 = this.getGravity();
-      if (var1 != 0.0) {
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -var1, 0.0));
+      double gravity = this.getGravity();
+      if (gravity != 0.0) {
+         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -gravity, 0.0));
       }
 
    }
@@ -1460,24 +1470,24 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return false;
    }
 
-   public final void doCheckFallDamage(double var1, double var3, double var5, boolean var7) {
+   public final void doCheckFallDamage(final double xa, final double ya, final double za, final boolean onGround) {
       if (!this.touchingUnloadedChunk()) {
-         this.checkSupportingBlock(var7, new Vec3(var1, var3, var5));
-         BlockPos var8 = this.getOnPosLegacy();
-         BlockState var9 = this.level().getBlockState(var8);
-         this.checkFallDamage(var3, var7, var9, var8);
+         this.checkSupportingBlock(onGround, new Vec3(xa, ya, za));
+         BlockPos pos = this.getOnPosLegacy();
+         BlockState state = this.level().getBlockState(pos);
+         this.checkFallDamage(ya, onGround, state, pos);
       }
    }
 
-   protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
-      if (!this.isInWater() && var1 < 0.0) {
-         this.fallDistance -= (double)((float)var1);
+   protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
+      if (!this.isInWater() && ya < 0.0) {
+         this.fallDistance -= (double)((float)ya);
       }
 
-      if (var3) {
+      if (onGround) {
          if (this.fallDistance > 0.0) {
-            var4.getBlock().fallOn(this.level(), var4, var5, this, this.fallDistance);
-            this.level().gameEvent(GameEvent.HIT_GROUND, this.position, GameEvent.Context.of(this, (BlockState)this.mainSupportingBlockPos.map((var1x) -> this.level().getBlockState(var1x)).orElse(var4)));
+            onState.getBlock().fallOn(this.level(), onState, pos, this, this.fallDistance);
+            this.level().gameEvent(GameEvent.HIT_GROUND, this.position, GameEvent.Context.of(this, (BlockState)this.mainSupportingBlockPos.map((blockPos) -> this.level().getBlockState(blockPos)).orElse(onState)));
          }
 
          this.resetFallDistance();
@@ -1489,19 +1499,19 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.getType().fireImmune();
    }
 
-   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
-      if (this.type.is(EntityTypeTags.FALL_DAMAGE_IMMUNE)) {
+   public boolean causeFallDamage(final double fallDistance, final float damageModifier, final DamageSource damageSource) {
+      if (this.is(EntityTypeTags.FALL_DAMAGE_IMMUNE)) {
          return false;
       } else {
-         this.propagateFallToPassengers(var1, var3, var4);
+         this.propagateFallToPassengers(fallDistance, damageModifier, damageSource);
          return false;
       }
    }
 
-   protected void propagateFallToPassengers(double var1, float var3, DamageSource var4) {
+   protected void propagateFallToPassengers(final double fallDistance, final float damageModifier, final DamageSource damageSource) {
       if (this.isVehicle()) {
-         for(Entity var6 : this.getPassengers()) {
-            var6.causeFallDamage(var1, var3, var4);
+         for(Entity passenger : this.getPassengers()) {
+            passenger.causeFallDamage(fallDistance, damageModifier, damageSource);
          }
       }
 
@@ -1512,8 +1522,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    boolean isInRain() {
-      BlockPos var1 = this.blockPosition();
-      return this.level().isRainingAt(var1) || this.level().isRainingAt(BlockPos.containing((double)var1.getX(), this.getBoundingBox().maxY, (double)var1.getZ()));
+      BlockPos pos = this.blockPosition();
+      return this.level().isRainingAt(pos) || this.level().isRainingAt(BlockPos.containing((double)pos.getX(), this.getBoundingBox().maxY, (double)pos.getZ()));
    }
 
    public boolean isInWaterOrRain() {
@@ -1536,12 +1546,12 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       if (ARGB.alpha((Integer)this.level.environmentAttributes().getValue(EnvironmentAttributes.CLOUD_COLOR, this.position())) == 0) {
          return false;
       } else {
-         float var1 = (Float)this.level.environmentAttributes().getValue(EnvironmentAttributes.CLOUD_HEIGHT, this.position());
-         if (this.getY() + (double)this.getBbHeight() < (double)var1) {
+         float cloudBottom = (Float)this.level.environmentAttributes().getValue(EnvironmentAttributes.CLOUD_HEIGHT, this.position());
+         if (this.getY() + (double)this.getBbHeight() < (double)cloudBottom) {
             return false;
          } else {
-            float var2 = var1 + 4.0F;
-            return this.getY() <= (double)var2;
+            float cloudTop = cloudBottom + 4.0F;
+            return this.getY() <= (double)cloudTop;
          }
       }
    }
@@ -1558,15 +1568,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    protected boolean updateInWaterStateAndDoFluidPushing() {
       this.fluidHeight.clear();
       this.updateInWaterStateAndDoWaterCurrentPushing();
-      double var1 = (Boolean)this.level.environmentAttributes().getDimensionValue(EnvironmentAttributes.FAST_LAVA) ? 0.007 : 0.0023333333333333335;
-      boolean var3 = this.updateFluidHeightAndDoFluidPushing(FluidTags.LAVA, var1);
-      return this.isInWater() || var3;
+      double lavaFlowScale = (Boolean)this.level.environmentAttributes().getDimensionValue(EnvironmentAttributes.FAST_LAVA) ? 0.007 : 0.0023333333333333335;
+      boolean isInLava = this.updateFluidHeightAndDoFluidPushing(FluidTags.LAVA, lavaFlowScale);
+      return this.isInWater() || isInLava;
    }
 
    void updateInWaterStateAndDoWaterCurrentPushing() {
       Entity var2 = this.getVehicle();
-      if (var2 instanceof AbstractBoat var1) {
-         if (!var1.isUnderWater()) {
+      if (var2 instanceof AbstractBoat boat) {
+         if (!boat.isUnderWater()) {
             this.wasTouchingWater = false;
             return;
          }
@@ -1588,19 +1598,19 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    private void updateFluidOnEyes() {
       this.wasEyeInWater = this.isEyeInFluid(FluidTags.WATER);
       this.fluidOnEyes.clear();
-      double var1 = this.getEyeY();
-      Entity var3 = this.getVehicle();
-      if (var3 instanceof AbstractBoat var4) {
-         if (!var4.isUnderWater() && var4.getBoundingBox().maxY >= var1 && var4.getBoundingBox().minY <= var1) {
+      double eyeY = this.getEyeY();
+      Entity vehicle = this.getVehicle();
+      if (vehicle instanceof AbstractBoat boat) {
+         if (!boat.isUnderWater() && boat.getBoundingBox().maxY >= eyeY && boat.getBoundingBox().minY <= eyeY) {
             return;
          }
       }
 
-      BlockPos var8 = BlockPos.containing(this.getX(), var1, this.getZ());
-      FluidState var5 = this.level().getFluidState(var8);
-      double var6 = (double)((float)var8.getY() + var5.getHeight(this.level(), var8));
-      if (var6 > var1) {
-         Stream var10000 = var5.getTags();
+      BlockPos pos = BlockPos.containing(this.getX(), eyeY, this.getZ());
+      FluidState fluidState = this.level().getFluidState(pos);
+      double blockFluidHeight = (double)((float)pos.getY() + fluidState.getHeight(this.level(), pos));
+      if (blockFluidHeight > eyeY) {
+         Stream var10000 = fluidState.tags();
          Set var10001 = this.fluidOnEyes;
          Objects.requireNonNull(var10001);
          var10000.forEach(var10001::add);
@@ -1609,28 +1619,28 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    protected void doWaterSplashEffect() {
-      Entity var1 = (Entity)Objects.requireNonNullElse(this.getControllingPassenger(), this);
-      float var2 = var1 == this ? 0.2F : 0.9F;
-      Vec3 var3 = var1.getDeltaMovement();
-      float var4 = Math.min(1.0F, (float)Math.sqrt(var3.x * var3.x * 0.20000000298023224 + var3.y * var3.y + var3.z * var3.z * 0.20000000298023224) * var2);
-      if (var4 < 0.25F) {
-         this.playSound(this.getSwimSplashSound(), var4, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
+      Entity entity = (Entity)Objects.requireNonNullElse(this.getControllingPassenger(), this);
+      float volumeModifier = entity == this ? 0.2F : 0.9F;
+      Vec3 movement = entity.getDeltaMovement();
+      float speed = Math.min(1.0F, (float)Math.sqrt(movement.x * movement.x * 0.20000000298023224 + movement.y * movement.y + movement.z * movement.z * 0.20000000298023224) * volumeModifier);
+      if (speed < 0.25F) {
+         this.playSound(this.getSwimSplashSound(), speed, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
       } else {
-         this.playSound(this.getSwimHighSpeedSplashSound(), var4, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
+         this.playSound(this.getSwimHighSpeedSplashSound(), speed, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
       }
 
-      float var5 = (float)Mth.floor(this.getY());
+      float yt = (float)Mth.floor(this.getY());
 
-      for(int var6 = 0; (float)var6 < 1.0F + this.dimensions.width() * 20.0F; ++var6) {
-         double var7 = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
-         double var9 = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
-         this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + var7, (double)(var5 + 1.0F), this.getZ() + var9, var3.x, var3.y - this.random.nextDouble() * 0.20000000298023224, var3.z);
+      for(int i = 0; (float)i < 1.0F + this.dimensions.width() * 20.0F; ++i) {
+         double xo = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
+         double zo = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
+         this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + xo, (double)(yt + 1.0F), this.getZ() + zo, movement.x, movement.y - this.random.nextDouble() * 0.20000000298023224, movement.z);
       }
 
-      for(int var11 = 0; (float)var11 < 1.0F + this.dimensions.width() * 20.0F; ++var11) {
-         double var12 = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
-         double var13 = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
-         this.level().addParticle(ParticleTypes.SPLASH, this.getX() + var12, (double)(var5 + 1.0F), this.getZ() + var13, var3.x, var3.y, var3.z);
+      for(int i = 0; (float)i < 1.0F + this.dimensions.width() * 20.0F; ++i) {
+         double xo = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
+         double zo = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
+         this.level().addParticle(ParticleTypes.SPLASH, this.getX() + xo, (double)(yt + 1.0F), this.getZ() + zo, movement.x, movement.y, movement.z);
       }
 
       this.gameEvent(GameEvent.SPLASH);
@@ -1651,48 +1661,48 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    protected void spawnSprintParticle() {
-      BlockPos var1 = this.getOnPosLegacy();
-      BlockState var2 = this.level().getBlockState(var1);
-      if (var2.getRenderShape() != RenderShape.INVISIBLE) {
-         Vec3 var3 = this.getDeltaMovement();
-         BlockPos var4 = this.blockPosition();
-         double var5 = this.getX() + (this.random.nextDouble() - 0.5) * (double)this.dimensions.width();
-         double var7 = this.getZ() + (this.random.nextDouble() - 0.5) * (double)this.dimensions.width();
-         if (var4.getX() != var1.getX()) {
-            var5 = Mth.clamp(var5, (double)var1.getX(), (double)var1.getX() + 1.0);
+      BlockPos pos = this.getOnPosLegacy();
+      BlockState blockState = this.level().getBlockState(pos);
+      if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
+         Vec3 movement = this.getDeltaMovement();
+         BlockPos entityPosition = this.blockPosition();
+         double x = this.getX() + (this.random.nextDouble() - 0.5) * (double)this.dimensions.width();
+         double z = this.getZ() + (this.random.nextDouble() - 0.5) * (double)this.dimensions.width();
+         if (entityPosition.getX() != pos.getX()) {
+            x = Mth.clamp(x, (double)pos.getX(), (double)pos.getX() + 1.0);
          }
 
-         if (var4.getZ() != var1.getZ()) {
-            var7 = Mth.clamp(var7, (double)var1.getZ(), (double)var1.getZ() + 1.0);
+         if (entityPosition.getZ() != pos.getZ()) {
+            z = Mth.clamp(z, (double)pos.getZ(), (double)pos.getZ() + 1.0);
          }
 
-         this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, var2), var5, this.getY() + 0.1, var7, var3.x * -4.0, 1.5, var3.z * -4.0);
+         this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, blockState), x, this.getY() + 0.1, z, movement.x * -4.0, 1.5, movement.z * -4.0);
       }
 
    }
 
-   public boolean isEyeInFluid(TagKey<Fluid> var1) {
-      return this.fluidOnEyes.contains(var1);
+   public boolean isEyeInFluid(final TagKey<Fluid> type) {
+      return this.fluidOnEyes.contains(type);
    }
 
    public boolean isInLava() {
       return !this.firstTick && this.fluidHeight.getDouble(FluidTags.LAVA) > 0.0;
    }
 
-   public void moveRelative(float var1, Vec3 var2) {
-      Vec3 var3 = getInputVector(var2, var1, this.getYRot());
-      this.setDeltaMovement(this.getDeltaMovement().add(var3));
+   public void moveRelative(final float speed, final Vec3 input) {
+      Vec3 delta = getInputVector(input, speed, this.getYRot());
+      this.setDeltaMovement(this.getDeltaMovement().add(delta));
    }
 
-   protected static Vec3 getInputVector(Vec3 var0, float var1, float var2) {
-      double var3 = var0.lengthSqr();
-      if (var3 < 1.0E-7) {
+   protected static Vec3 getInputVector(final Vec3 input, final float speed, final float yRot) {
+      double length = input.lengthSqr();
+      if (length < 1.0E-7) {
          return Vec3.ZERO;
       } else {
-         Vec3 var5 = (var3 > 1.0 ? var0.normalize() : var0).scale((double)var1);
-         float var6 = Mth.sin((double)(var2 * 0.017453292F));
-         float var7 = Mth.cos((double)(var2 * 0.017453292F));
-         return new Vec3(var5.x * (double)var7 - var5.z * (double)var6, var5.y, var5.z * (double)var7 + var5.x * (double)var6);
+         Vec3 movement = (length > 1.0 ? input.normalize() : input).scale((double)speed);
+         float sin = Mth.sin((double)(yRot * 0.017453292F));
+         float cos = Mth.cos((double)(yRot * 0.017453292F));
+         return new Vec3(movement.x * (double)cos - movement.z * (double)sin, movement.y, movement.z * (double)cos + movement.x * (double)sin);
       }
    }
 
@@ -1702,47 +1712,47 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.level().hasChunkAt(this.getBlockX(), this.getBlockZ()) ? this.level().getLightLevelDependentMagicValue(BlockPos.containing(this.getX(), this.getEyeY(), this.getZ())) : 0.0F;
    }
 
-   public void absSnapTo(double var1, double var3, double var5, float var7, float var8) {
-      this.absSnapTo(var1, var3, var5);
-      this.absSnapRotationTo(var7, var8);
+   public void absSnapTo(final double x, final double y, final double z, final float yRot, final float xRot) {
+      this.absSnapTo(x, y, z);
+      this.absSnapRotationTo(yRot, xRot);
    }
 
-   public void absSnapRotationTo(float var1, float var2) {
-      this.setYRot(var1 % 360.0F);
-      this.setXRot(Mth.clamp(var2, -90.0F, 90.0F) % 360.0F);
+   public void absSnapRotationTo(final float yRot, final float xRot) {
+      this.setYRot(yRot % 360.0F);
+      this.setXRot(Mth.clamp(xRot, -90.0F, 90.0F) % 360.0F);
       this.yRotO = this.getYRot();
       this.xRotO = this.getXRot();
    }
 
-   public void absSnapTo(double var1, double var3, double var5) {
-      double var7 = Mth.clamp(var1, -3.0E7, 3.0E7);
-      double var9 = Mth.clamp(var5, -3.0E7, 3.0E7);
-      this.xo = var7;
-      this.yo = var3;
-      this.zo = var9;
-      this.setPos(var7, var3, var9);
+   public void absSnapTo(final double x, final double y, final double z) {
+      double cx = Mth.clamp(x, -3.0E7, 3.0E7);
+      double cz = Mth.clamp(z, -3.0E7, 3.0E7);
+      this.xo = cx;
+      this.yo = y;
+      this.zo = cz;
+      this.setPos(cx, y, cz);
    }
 
-   public void snapTo(Vec3 var1) {
-      this.snapTo(var1.x, var1.y, var1.z);
+   public void snapTo(final Vec3 pos) {
+      this.snapTo(pos.x, pos.y, pos.z);
    }
 
-   public void snapTo(double var1, double var3, double var5) {
-      this.snapTo(var1, var3, var5, this.getYRot(), this.getXRot());
+   public void snapTo(final double x, final double y, final double z) {
+      this.snapTo(x, y, z, this.getYRot(), this.getXRot());
    }
 
-   public void snapTo(BlockPos var1, float var2, float var3) {
-      this.snapTo(var1.getBottomCenter(), var2, var3);
+   public void snapTo(final BlockPos spawnPos, final float yRot, final float xRot) {
+      this.snapTo(spawnPos.getBottomCenter(), yRot, xRot);
    }
 
-   public void snapTo(Vec3 var1, float var2, float var3) {
-      this.snapTo(var1.x, var1.y, var1.z, var2, var3);
+   public void snapTo(final Vec3 spawnPos, final float yRot, final float xRot) {
+      this.snapTo(spawnPos.x, spawnPos.y, spawnPos.z, yRot, xRot);
    }
 
-   public void snapTo(double var1, double var3, double var5, float var7, float var8) {
-      this.setPosRaw(var1, var3, var5);
-      this.setYRot(var7);
-      this.setXRot(var8);
+   public void snapTo(final double x, final double y, final double z, final float yRot, final float xRot) {
+      this.setPosRaw(x, y, z);
+      this.setYRot(yRot);
+      this.setXRot(xRot);
       this.setOldPosAndRot();
       this.reapplyPosition();
    }
@@ -1752,9 +1762,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.setOldRot();
    }
 
-   public final void setOldPosAndRot(Vec3 var1, float var2, float var3) {
-      this.setOldPos(var1);
-      this.setOldRot(var2, var3);
+   public final void setOldPosAndRot(final Vec3 position, final float yRot, final float xRot) {
+      this.setOldPos(position);
+      this.setOldRot(yRot, xRot);
    }
 
    protected void setOldPos() {
@@ -1765,74 +1775,74 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.setOldRot(this.getYRot(), this.getXRot());
    }
 
-   private void setOldPos(Vec3 var1) {
-      this.xo = this.xOld = var1.x;
-      this.yo = this.yOld = var1.y;
-      this.zo = this.zOld = var1.z;
+   private void setOldPos(final Vec3 position) {
+      this.xo = this.xOld = position.x;
+      this.yo = this.yOld = position.y;
+      this.zo = this.zOld = position.z;
    }
 
-   private void setOldRot(float var1, float var2) {
-      this.yRotO = var1;
-      this.xRotO = var2;
+   private void setOldRot(final float yRot, final float xRot) {
+      this.yRotO = yRot;
+      this.xRotO = xRot;
    }
 
    public final Vec3 oldPosition() {
       return new Vec3(this.xOld, this.yOld, this.zOld);
    }
 
-   public float distanceTo(Entity var1) {
-      float var2 = (float)(this.getX() - var1.getX());
-      float var3 = (float)(this.getY() - var1.getY());
-      float var4 = (float)(this.getZ() - var1.getZ());
-      return Mth.sqrt(var2 * var2 + var3 * var3 + var4 * var4);
+   public float distanceTo(final Entity entity) {
+      float xd = (float)(this.getX() - entity.getX());
+      float yd = (float)(this.getY() - entity.getY());
+      float zd = (float)(this.getZ() - entity.getZ());
+      return Mth.sqrt(xd * xd + yd * yd + zd * zd);
    }
 
-   public double distanceToSqr(double var1, double var3, double var5) {
-      double var7 = this.getX() - var1;
-      double var9 = this.getY() - var3;
-      double var11 = this.getZ() - var5;
-      return var7 * var7 + var9 * var9 + var11 * var11;
+   public double distanceToSqr(final double x2, final double y2, final double z2) {
+      double xd = this.getX() - x2;
+      double yd = this.getY() - y2;
+      double zd = this.getZ() - z2;
+      return xd * xd + yd * yd + zd * zd;
    }
 
-   public double distanceToSqr(Entity var1) {
-      return this.distanceToSqr(var1.position());
+   public double distanceToSqr(final Entity entity) {
+      return this.distanceToSqr(entity.position());
    }
 
-   public double distanceToSqr(Vec3 var1) {
-      double var2 = this.getX() - var1.x;
-      double var4 = this.getY() - var1.y;
-      double var6 = this.getZ() - var1.z;
-      return var2 * var2 + var4 * var4 + var6 * var6;
+   public double distanceToSqr(final Vec3 pos) {
+      double xd = this.getX() - pos.x;
+      double yd = this.getY() - pos.y;
+      double zd = this.getZ() - pos.z;
+      return xd * xd + yd * yd + zd * zd;
    }
 
-   public void playerTouch(Player var1) {
+   public void playerTouch(final Player player) {
    }
 
-   public void push(Entity var1) {
-      if (!this.isPassengerOfSameVehicle(var1)) {
-         if (!var1.noPhysics && !this.noPhysics) {
-            double var2 = var1.getX() - this.getX();
-            double var4 = var1.getZ() - this.getZ();
-            double var6 = Mth.absMax(var2, var4);
-            if (var6 >= 0.009999999776482582) {
-               var6 = Math.sqrt(var6);
-               var2 /= var6;
-               var4 /= var6;
-               double var8 = 1.0 / var6;
-               if (var8 > 1.0) {
-                  var8 = 1.0;
+   public void push(final Entity entity) {
+      if (!this.isPassengerOfSameVehicle(entity)) {
+         if (!entity.noPhysics && !this.noPhysics) {
+            double xa = entity.getX() - this.getX();
+            double za = entity.getZ() - this.getZ();
+            double dd = Mth.absMax(xa, za);
+            if (dd >= 0.009999999776482582) {
+               dd = Math.sqrt(dd);
+               xa /= dd;
+               za /= dd;
+               double pow = 1.0 / dd;
+               if (pow > 1.0) {
+                  pow = 1.0;
                }
 
-               var2 *= var8;
-               var4 *= var8;
-               var2 *= 0.05000000074505806;
-               var4 *= 0.05000000074505806;
+               xa *= pow;
+               za *= pow;
+               xa *= 0.05000000074505806;
+               za *= 0.05000000074505806;
                if (!this.isVehicle() && this.isPushable()) {
-                  this.push(-var2, 0.0, -var4);
+                  this.push(-xa, 0.0, -za);
                }
 
-               if (!var1.isVehicle() && var1.isPushable()) {
-                  var1.push(var2, 0.0, var4);
+               if (!entity.isVehicle() && entity.isPushable()) {
+                  entity.push(xa, 0.0, za);
                }
             }
 
@@ -1840,16 +1850,16 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
    }
 
-   public void push(Vec3 var1) {
-      if (var1.isFinite()) {
-         this.push(var1.x, var1.y, var1.z);
+   public void push(final Vec3 impulse) {
+      if (impulse.isFinite()) {
+         this.push(impulse.x, impulse.y, impulse.z);
       }
 
    }
 
-   public void push(double var1, double var3, double var5) {
-      if (Double.isFinite(var1) && Double.isFinite(var3) && Double.isFinite(var5)) {
-         this.setDeltaMovement(this.getDeltaMovement().add(var1, var3, var5));
+   public void push(final double xa, final double ya, final double za) {
+      if (Double.isFinite(xa) && Double.isFinite(ya) && Double.isFinite(za)) {
+         this.setDeltaMovement(this.getDeltaMovement().add(xa, ya, za));
          this.needsSync = true;
       }
 
@@ -1861,100 +1871,100 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    /** @deprecated */
    @Deprecated
-   public final void hurt(DamageSource var1, float var2) {
+   public final void hurt(final DamageSource source, final float damage) {
       Level var4 = this.level;
-      if (var4 instanceof ServerLevel var3) {
-         this.hurtServer(var3, var1, var2);
+      if (var4 instanceof ServerLevel serverLevel) {
+         this.hurtServer(serverLevel, source, damage);
       }
 
    }
 
    /** @deprecated */
    @Deprecated
-   public final boolean hurtOrSimulate(DamageSource var1, float var2) {
+   public final boolean hurtOrSimulate(final DamageSource source, final float damage) {
       Level var4 = this.level;
-      if (var4 instanceof ServerLevel var3) {
-         return this.hurtServer(var3, var1, var2);
+      if (var4 instanceof ServerLevel serverLevel) {
+         return this.hurtServer(serverLevel, source, damage);
       } else {
-         return this.hurtClient(var1);
+         return this.hurtClient(source);
       }
    }
 
-   public abstract boolean hurtServer(ServerLevel var1, DamageSource var2, float var3);
+   public abstract boolean hurtServer(ServerLevel level, DamageSource source, float damage);
 
-   public boolean hurtClient(DamageSource var1) {
+   public boolean hurtClient(final DamageSource source) {
       return false;
    }
 
-   public final Vec3 getViewVector(float var1) {
-      return this.calculateViewVector(this.getViewXRot(var1), this.getViewYRot(var1));
+   public final Vec3 getViewVector(final float a) {
+      return this.calculateViewVector(this.getViewXRot(a), this.getViewYRot(a));
    }
 
    public Direction getNearestViewDirection() {
       return Direction.getApproximateNearest(this.getViewVector(1.0F));
    }
 
-   public float getViewXRot(float var1) {
-      return this.getXRot(var1);
+   public float getViewXRot(final float a) {
+      return this.getXRot(a);
    }
 
-   public float getViewYRot(float var1) {
-      return this.getYRot(var1);
+   public float getViewYRot(final float a) {
+      return this.getYRot(a);
    }
 
-   public float getXRot(float var1) {
-      return var1 == 1.0F ? this.getXRot() : Mth.lerp(var1, this.xRotO, this.getXRot());
+   public float getXRot(final float partialTicks) {
+      return partialTicks == 1.0F ? this.getXRot() : Mth.lerp(partialTicks, this.xRotO, this.getXRot());
    }
 
-   public float getYRot(float var1) {
-      return var1 == 1.0F ? this.getYRot() : Mth.rotLerp(var1, this.yRotO, this.getYRot());
+   public float getYRot(final float partialTicks) {
+      return partialTicks == 1.0F ? this.getYRot() : Mth.rotLerp(partialTicks, this.yRotO, this.getYRot());
    }
 
-   public final Vec3 calculateViewVector(float var1, float var2) {
-      float var3 = var1 * 0.017453292F;
-      float var4 = -var2 * 0.017453292F;
-      float var5 = Mth.cos((double)var4);
-      float var6 = Mth.sin((double)var4);
-      float var7 = Mth.cos((double)var3);
-      float var8 = Mth.sin((double)var3);
-      return new Vec3((double)(var6 * var7), (double)(-var8), (double)(var5 * var7));
+   public final Vec3 calculateViewVector(final float xRot, final float yRot) {
+      float realXRot = xRot * 0.017453292F;
+      float realYRot = -yRot * 0.017453292F;
+      float yCos = Mth.cos((double)realYRot);
+      float ySin = Mth.sin((double)realYRot);
+      float xCos = Mth.cos((double)realXRot);
+      float xSin = Mth.sin((double)realXRot);
+      return new Vec3((double)(ySin * xCos), (double)(-xSin), (double)(yCos * xCos));
    }
 
-   public final Vec3 getUpVector(float var1) {
-      return this.calculateUpVector(this.getViewXRot(var1), this.getViewYRot(var1));
+   public final Vec3 getUpVector(final float a) {
+      return this.calculateUpVector(this.getViewXRot(a), this.getViewYRot(a));
    }
 
-   protected final Vec3 calculateUpVector(float var1, float var2) {
-      return this.calculateViewVector(var1 - 90.0F, var2);
+   protected final Vec3 calculateUpVector(final float xRot, final float yRot) {
+      return this.calculateViewVector(xRot - 90.0F, yRot);
    }
 
    public final Vec3 getEyePosition() {
       return new Vec3(this.getX(), this.getEyeY(), this.getZ());
    }
 
-   public final Vec3 getEyePosition(float var1) {
-      double var2 = Mth.lerp((double)var1, this.xo, this.getX());
-      double var4 = Mth.lerp((double)var1, this.yo, this.getY()) + (double)this.getEyeHeight();
-      double var6 = Mth.lerp((double)var1, this.zo, this.getZ());
-      return new Vec3(var2, var4, var6);
+   public final Vec3 getEyePosition(final float partialTickTime) {
+      double x = Mth.lerp((double)partialTickTime, this.xo, this.getX());
+      double y = Mth.lerp((double)partialTickTime, this.yo, this.getY()) + (double)this.getEyeHeight();
+      double z = Mth.lerp((double)partialTickTime, this.zo, this.getZ());
+      return new Vec3(x, y, z);
    }
 
-   public Vec3 getLightProbePosition(float var1) {
-      return this.getEyePosition(var1);
+   public Vec3 getLightProbePosition(final float partialTickTime) {
+      return this.getEyePosition(partialTickTime);
    }
 
-   public final Vec3 getPosition(float var1) {
-      double var2 = Mth.lerp((double)var1, this.xo, this.getX());
-      double var4 = Mth.lerp((double)var1, this.yo, this.getY());
-      double var6 = Mth.lerp((double)var1, this.zo, this.getZ());
-      return new Vec3(var2, var4, var6);
+   public final Vec3 getPosition(final float partialTickTime) {
+      double endX = Mth.lerp((double)partialTickTime, this.xo, this.getX());
+      double endY = Mth.lerp((double)partialTickTime, this.yo, this.getY());
+      double endZ = Mth.lerp((double)partialTickTime, this.zo, this.getZ());
+      return new Vec3(endX, endY, endZ);
    }
 
-   public HitResult pick(double var1, float var3, boolean var4) {
-      Vec3 var5 = this.getEyePosition(var3);
-      Vec3 var6 = this.getViewVector(var3);
-      Vec3 var7 = var5.add(var6.x * var1, var6.y * var1, var6.z * var1);
-      return this.level().clip(new ClipContext(var5, var7, ClipContext.Block.OUTLINE, var4 ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE, this));
+   public HitResult pick(final double range, final float a, final boolean withLiquids) {
+      Vec3 from = this.getEyePosition(a);
+      Vec3 viewVector = this.getViewVector(a);
+      Vec3 to = from.add(viewVector.x * range, viewVector.y * range, viewVector.z * range);
+      return this.level().clip(new ClipContext(from, to, ClipContext.Block.OUTLINE, withLiquids ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE, this));
    }
 
    public boolean canBeHitByProjectile() {
@@ -1969,167 +1979,167 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return false;
    }
 
-   public void awardKillScore(Entity var1, DamageSource var2) {
-      if (var1 instanceof ServerPlayer) {
-         CriteriaTriggers.ENTITY_KILLED_PLAYER.trigger((ServerPlayer)var1, this, var2);
+   public void awardKillScore(final Entity victim, final DamageSource killingBlow) {
+      if (victim instanceof ServerPlayer) {
+         CriteriaTriggers.ENTITY_KILLED_PLAYER.trigger((ServerPlayer)victim, this, killingBlow);
       }
 
    }
 
-   public boolean shouldRender(double var1, double var3, double var5) {
-      double var7 = this.getX() - var1;
-      double var9 = this.getY() - var3;
-      double var11 = this.getZ() - var5;
-      double var13 = var7 * var7 + var9 * var9 + var11 * var11;
-      return this.shouldRenderAtSqrDistance(var13);
+   public boolean shouldRender(final double camX, final double camY, final double camZ) {
+      double xd = this.getX() - camX;
+      double yd = this.getY() - camY;
+      double zd = this.getZ() - camZ;
+      double distance = xd * xd + yd * yd + zd * zd;
+      return this.shouldRenderAtSqrDistance(distance);
    }
 
-   public boolean shouldRenderAtSqrDistance(double var1) {
-      double var3 = this.getBoundingBox().getSize();
-      if (Double.isNaN(var3)) {
-         var3 = 1.0;
+   public boolean shouldRenderAtSqrDistance(final double distance) {
+      double size = this.getBoundingBox().getSize();
+      if (Double.isNaN(size)) {
+         size = 1.0;
       }
 
-      var3 *= 64.0 * viewScale;
-      return var1 < var3 * var3;
+      size *= 64.0 * viewScale;
+      return distance < size * size;
    }
 
-   public boolean saveAsPassenger(ValueOutput var1) {
+   public boolean saveAsPassenger(final ValueOutput output) {
       if (this.removalReason != null && !this.removalReason.shouldSave()) {
          return false;
       } else {
-         String var2 = this.getEncodeId();
-         if (var2 == null) {
+         String id = this.getEncodeId();
+         if (id == null) {
             return false;
          } else {
-            var1.putString("id", var2);
-            this.saveWithoutId(var1);
+            output.putString("id", id);
+            this.saveWithoutId(output);
             return true;
          }
       }
    }
 
-   public boolean save(ValueOutput var1) {
-      return this.isPassenger() ? false : this.saveAsPassenger(var1);
+   public boolean save(final ValueOutput output) {
+      return this.isPassenger() ? false : this.saveAsPassenger(output);
    }
 
-   public void saveWithoutId(ValueOutput var1) {
+   public void saveWithoutId(final ValueOutput output) {
       try {
          if (this.vehicle != null) {
-            var1.store("Pos", Vec3.CODEC, new Vec3(this.vehicle.getX(), this.getY(), this.vehicle.getZ()));
+            output.store("Pos", Vec3.CODEC, new Vec3(this.vehicle.getX(), this.getY(), this.vehicle.getZ()));
          } else {
-            var1.store("Pos", Vec3.CODEC, this.position());
+            output.store("Pos", Vec3.CODEC, this.position());
          }
 
-         var1.store("Motion", Vec3.CODEC, this.getDeltaMovement());
-         var1.store("Rotation", Vec2.CODEC, new Vec2(this.getYRot(), this.getXRot()));
-         var1.putDouble("fall_distance", this.fallDistance);
-         var1.putShort("Fire", (short)this.remainingFireTicks);
-         var1.putShort("Air", (short)this.getAirSupply());
-         var1.putBoolean("OnGround", this.onGround());
-         var1.putBoolean("Invulnerable", this.invulnerable);
-         var1.putInt("PortalCooldown", this.portalCooldown);
-         var1.store("UUID", UUIDUtil.CODEC, this.getUUID());
-         var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.getCustomName());
+         output.store("Motion", Vec3.CODEC, this.getDeltaMovement());
+         output.store("Rotation", Vec2.CODEC, new Vec2(this.getYRot(), this.getXRot()));
+         output.putDouble("fall_distance", this.fallDistance);
+         output.putShort("Fire", (short)this.remainingFireTicks);
+         output.putShort("Air", (short)this.getAirSupply());
+         output.putBoolean("OnGround", this.onGround());
+         output.putBoolean("Invulnerable", this.invulnerable);
+         output.putInt("PortalCooldown", this.portalCooldown);
+         output.store("UUID", UUIDUtil.CODEC, this.getUUID());
+         output.storeNullable("CustomName", ComponentSerialization.CODEC, this.getCustomName());
          if (this.isCustomNameVisible()) {
-            var1.putBoolean("CustomNameVisible", this.isCustomNameVisible());
+            output.putBoolean("CustomNameVisible", this.isCustomNameVisible());
          }
 
          if (this.isSilent()) {
-            var1.putBoolean("Silent", this.isSilent());
+            output.putBoolean("Silent", this.isSilent());
          }
 
          if (this.isNoGravity()) {
-            var1.putBoolean("NoGravity", this.isNoGravity());
+            output.putBoolean("NoGravity", this.isNoGravity());
          }
 
          if (this.hasGlowingTag) {
-            var1.putBoolean("Glowing", true);
+            output.putBoolean("Glowing", true);
          }
 
-         int var2 = this.getTicksFrozen();
-         if (var2 > 0) {
-            var1.putInt("TicksFrozen", this.getTicksFrozen());
+         int ticksFrozen = this.getTicksFrozen();
+         if (ticksFrozen > 0) {
+            output.putInt("TicksFrozen", this.getTicksFrozen());
          }
 
          if (this.hasVisualFire) {
-            var1.putBoolean("HasVisualFire", this.hasVisualFire);
+            output.putBoolean("HasVisualFire", this.hasVisualFire);
          }
 
          if (!this.tags.isEmpty()) {
-            var1.store("Tags", TAG_LIST_CODEC, List.copyOf(this.tags));
+            output.store("Tags", TAG_LIST_CODEC, List.copyOf(this.tags));
          }
 
          if (!this.customData.isEmpty()) {
-            var1.store("data", CustomData.CODEC, this.customData);
+            output.store("data", CustomData.CODEC, this.customData);
          }
 
-         this.addAdditionalSaveData(var1);
+         this.addAdditionalSaveData(output);
          if (this.isVehicle()) {
-            ValueOutput.ValueOutputList var8 = var1.childrenList("Passengers");
+            ValueOutput.ValueOutputList passengersList = output.childrenList("Passengers");
 
-            for(Entity var5 : this.getPassengers()) {
-               ValueOutput var6 = var8.addChild();
-               if (!var5.saveAsPassenger(var6)) {
-                  var8.discardLast();
+            for(Entity passenger : this.getPassengers()) {
+               ValueOutput passengerOutput = passengersList.addChild();
+               if (!passenger.saveAsPassenger(passengerOutput)) {
+                  passengersList.discardLast();
                }
             }
 
-            if (var8.isEmpty()) {
-               var1.discard("Passengers");
+            if (passengersList.isEmpty()) {
+               output.discard("Passengers");
             }
          }
 
-      } catch (Throwable var7) {
-         CrashReport var3 = CrashReport.forThrowable(var7, "Saving entity NBT");
-         CrashReportCategory var4 = var3.addCategory("Entity being saved");
-         this.fillCrashReportCategory(var4);
-         throw new ReportedException(var3);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Saving entity NBT");
+         CrashReportCategory category = report.addCategory("Entity being saved");
+         this.fillCrashReportCategory(category);
+         throw new ReportedException(report);
       }
    }
 
-   public void load(ValueInput var1) {
+   public void load(final ValueInput input) {
       try {
-         Vec3 var2 = (Vec3)var1.read("Pos", Vec3.CODEC).orElse(Vec3.ZERO);
-         Vec3 var8 = (Vec3)var1.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
-         Vec2 var9 = (Vec2)var1.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
-         this.setDeltaMovement(Math.abs(var8.x) > 10.0 ? 0.0 : var8.x, Math.abs(var8.y) > 10.0 ? 0.0 : var8.y, Math.abs(var8.z) > 10.0 ? 0.0 : var8.z);
+         Vec3 pos = (Vec3)input.read("Pos", Vec3.CODEC).orElse(Vec3.ZERO);
+         Vec3 motion = (Vec3)input.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
+         Vec2 rotation = (Vec2)input.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
+         this.setDeltaMovement(Math.abs(motion.x) > 10.0 ? 0.0 : motion.x, Math.abs(motion.y) > 10.0 ? 0.0 : motion.y, Math.abs(motion.z) > 10.0 ? 0.0 : motion.z);
          this.needsSync = true;
-         double var5 = 3.0000512E7;
-         this.setPosRaw(Mth.clamp(var2.x, -3.0000512E7, 3.0000512E7), Mth.clamp(var2.y, -2.0E7, 2.0E7), Mth.clamp(var2.z, -3.0000512E7, 3.0000512E7));
-         this.setYRot(var9.x);
-         this.setXRot(var9.y);
+         double maxHorizontalPosition = 3.0000512E7;
+         this.setPosRaw(Mth.clamp(pos.x, -3.0000512E7, 3.0000512E7), Mth.clamp(pos.y, -2.0E7, 2.0E7), Mth.clamp(pos.z, -3.0000512E7, 3.0000512E7));
+         this.setYRot(rotation.x);
+         this.setXRot(rotation.y);
          this.setOldPosAndRot();
          this.setYHeadRot(this.getYRot());
          this.setYBodyRot(this.getYRot());
-         this.fallDistance = var1.getDoubleOr("fall_distance", 0.0);
-         this.remainingFireTicks = var1.getShortOr("Fire", (short)0);
-         this.setAirSupply(var1.getIntOr("Air", this.getMaxAirSupply()));
-         this.onGround = var1.getBooleanOr("OnGround", false);
-         this.invulnerable = var1.getBooleanOr("Invulnerable", false);
-         this.portalCooldown = var1.getIntOr("PortalCooldown", 0);
-         var1.read("UUID", UUIDUtil.CODEC).ifPresent((var1x) -> {
-            this.uuid = var1x;
+         this.fallDistance = input.getDoubleOr("fall_distance", 0.0);
+         this.remainingFireTicks = input.getShortOr("Fire", (short)0);
+         this.setAirSupply(input.getIntOr("Air", this.getMaxAirSupply()));
+         this.onGround = input.getBooleanOr("OnGround", false);
+         this.invulnerable = input.getBooleanOr("Invulnerable", false);
+         this.portalCooldown = input.getIntOr("PortalCooldown", 0);
+         input.read("UUID", UUIDUtil.CODEC).ifPresent((id) -> {
+            this.uuid = id;
             this.stringUUID = this.uuid.toString();
          });
          if (Double.isFinite(this.getX()) && Double.isFinite(this.getY()) && Double.isFinite(this.getZ())) {
             if (Double.isFinite((double)this.getYRot()) && Double.isFinite((double)this.getXRot())) {
                this.reapplyPosition();
                this.setRot(this.getYRot(), this.getXRot());
-               this.setCustomName((Component)var1.read("CustomName", ComponentSerialization.CODEC).orElse((Object)null));
-               this.setCustomNameVisible(var1.getBooleanOr("CustomNameVisible", false));
-               this.setSilent(var1.getBooleanOr("Silent", false));
-               this.setNoGravity(var1.getBooleanOr("NoGravity", false));
-               this.setGlowingTag(var1.getBooleanOr("Glowing", false));
-               this.setTicksFrozen(var1.getIntOr("TicksFrozen", 0));
-               this.hasVisualFire = var1.getBooleanOr("HasVisualFire", false);
-               this.customData = (CustomData)var1.read("data", CustomData.CODEC).orElse(CustomData.EMPTY);
+               this.setCustomName((Component)input.read("CustomName", ComponentSerialization.CODEC).orElse((Object)null));
+               this.setCustomNameVisible(input.getBooleanOr("CustomNameVisible", false));
+               this.setSilent(input.getBooleanOr("Silent", false));
+               this.setNoGravity(input.getBooleanOr("NoGravity", false));
+               this.setGlowingTag(input.getBooleanOr("Glowing", false));
+               this.setTicksFrozen(input.getIntOr("TicksFrozen", 0));
+               this.hasVisualFire = input.getBooleanOr("HasVisualFire", false);
+               this.customData = (CustomData)input.read("data", CustomData.CODEC).orElse(CustomData.EMPTY);
                this.tags.clear();
-               Optional var10000 = var1.read("Tags", TAG_LIST_CODEC);
+               Optional var10000 = input.read("Tags", TAG_LIST_CODEC);
                Set var10001 = this.tags;
                Objects.requireNonNull(var10001);
                var10000.ifPresent(var10001::addAll);
-               this.readAdditionalSaveData(var1);
+               this.readAdditionalSaveData(input);
                if (this.repositionEntityAfterLoad()) {
                   this.reapplyPosition();
                }
@@ -2140,11 +2150,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          } else {
             throw new IllegalStateException("Entity has invalid position");
          }
-      } catch (Throwable var7) {
-         CrashReport var3 = CrashReport.forThrowable(var7, "Loading entity NBT");
-         CrashReportCategory var4 = var3.addCategory("Entity being loaded");
-         this.fillCrashReportCategory(var4);
-         throw new ReportedException(var3);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Loading entity NBT");
+         CrashReportCategory category = report.addCategory("Entity being loaded");
+         this.fillCrashReportCategory(category);
+         throw new ReportedException(report);
       }
    }
 
@@ -2153,36 +2163,39 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    protected final @Nullable String getEncodeId() {
-      EntityType var1 = this.getType();
-      Identifier var2 = EntityType.getKey(var1);
-      return !var1.canSerialize() ? null : var2.toString();
-   }
-
-   protected abstract void readAdditionalSaveData(ValueInput var1);
-
-   protected abstract void addAdditionalSaveData(ValueOutput var1);
-
-   public @Nullable ItemEntity spawnAtLocation(ServerLevel var1, ItemLike var2) {
-      return this.spawnAtLocation(var1, new ItemStack(var2), 0.0F);
-   }
-
-   public @Nullable ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2) {
-      return this.spawnAtLocation(var1, var2, 0.0F);
-   }
-
-   public @Nullable ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, Vec3 var3) {
-      if (var2.isEmpty()) {
+      if (!this.getType().canSerialize()) {
          return null;
       } else {
-         ItemEntity var4 = new ItemEntity(var1, this.getX() + var3.x, this.getY() + var3.y, this.getZ() + var3.z, var2);
-         var4.setDefaultPickUpDelay();
-         var1.addFreshEntity(var4);
-         return var4;
+         ResourceKey<EntityType<?>> typeId = (ResourceKey)this.typeHolder().unwrapKey().orElseThrow(() -> new IllegalStateException("Unregistered entity"));
+         return typeId.identifier().toString();
       }
    }
 
-   public @Nullable ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, float var3) {
-      return this.spawnAtLocation(var1, var2, new Vec3(0.0, (double)var3, 0.0));
+   protected abstract void readAdditionalSaveData(ValueInput input);
+
+   protected abstract void addAdditionalSaveData(ValueOutput output);
+
+   public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemLike resource) {
+      return this.spawnAtLocation(level, new ItemStack(resource), 0.0F);
+   }
+
+   public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack) {
+      return this.spawnAtLocation(level, itemStack, 0.0F);
+   }
+
+   public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final Vec3 offset) {
+      if (itemStack.isEmpty()) {
+         return null;
+      } else {
+         ItemEntity entity = new ItemEntity(level, this.getX() + offset.x, this.getY() + offset.y, this.getZ() + offset.z, itemStack);
+         entity.setDefaultPickUpDelay();
+         level.addFreshEntity(entity);
+         return entity;
+      }
+   }
+
+   public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final float offset) {
+      return this.spawnAtLocation(level, itemStack, new Vec3(0.0, (double)offset, 0.0));
    }
 
    public boolean isAlive() {
@@ -2193,39 +2206,39 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       if (this.noPhysics) {
          return false;
       } else {
-         float var1 = this.dimensions.width() * 0.8F;
-         AABB var2 = AABB.ofSize(this.getEyePosition(), (double)var1, 1.0E-6, (double)var1);
-         return BlockPos.betweenClosedStream(var2).anyMatch((var2x) -> {
-            BlockState var3 = this.level().getBlockState(var2x);
-            return !var3.isAir() && var3.isSuffocating(this.level(), var2x) && Shapes.joinIsNotEmpty(var3.getCollisionShape(this.level(), var2x).move((Vec3i)var2x), Shapes.create(var2), BooleanOp.AND);
+         float checkWidth = this.dimensions.width() * 0.8F;
+         AABB eyeBb = AABB.ofSize(this.getEyePosition(), (double)checkWidth, 1.0E-6, (double)checkWidth);
+         return BlockPos.betweenClosedStream(eyeBb).anyMatch((pos) -> {
+            BlockState state = this.level().getBlockState(pos);
+            return !state.isAir() && state.isSuffocating(this.level(), pos) && Shapes.joinIsNotEmpty(state.getCollisionShape(this.level(), pos).move((Vec3i)pos), Shapes.create(eyeBb), BooleanOp.AND);
          });
       }
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (!this.level().isClientSide() && var1.isSecondaryUseActive() && this instanceof Leashable var3) {
-         if (var3.canBeLeashed() && this.isAlive()) {
+   public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
+      if (!this.level().isClientSide() && player.isSecondaryUseActive() && this instanceof Leashable leashable) {
+         if (leashable.canBeLeashed() && this.isAlive()) {
             label83: {
                if (this instanceof LivingEntity) {
-                  LivingEntity var4 = (LivingEntity)this;
-                  if (var4.isBaby()) {
+                  LivingEntity le = (LivingEntity)this;
+                  if (le.isBaby()) {
                      break label83;
                   }
                }
 
-               List var5 = Leashable.leashableInArea(this, (var1x) -> var1x.getLeashHolder() == var1);
-               if (!var5.isEmpty()) {
-                  boolean var6 = false;
+               List<Leashable> mobsToLeash = Leashable.leashableInArea(this, (l) -> l.getLeashHolder() == player);
+               if (!mobsToLeash.isEmpty()) {
+                  boolean anyLeashed = false;
 
-                  for(Leashable var8 : var5) {
-                     if (var8.canHaveALeashAttachedTo(this)) {
-                        var8.setLeashedTo(this, true);
-                        var6 = true;
+                  for(Leashable mob : mobsToLeash) {
+                     if (mob.canHaveALeashAttachedTo(this)) {
+                        mob.setLeashedTo(this, true);
+                        anyLeashed = true;
                      }
                   }
 
-                  if (var6) {
-                     this.level().gameEvent(GameEvent.ENTITY_ACTION, this.blockPosition(), GameEvent.Context.of((Entity)var1));
+                  if (anyLeashed) {
+                     this.level().gameEvent(GameEvent.ENTITY_ACTION, this.blockPosition(), GameEvent.Context.of((Entity)player));
                      this.playSound(SoundEvents.LEAD_TIED);
                      return InteractionResult.SUCCESS_SERVER.withoutItem();
                   }
@@ -2234,49 +2247,49 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          }
       }
 
-      ItemStack var9 = var1.getItemInHand(var2);
-      if (var9.is(Items.SHEARS) && this.shearOffAllLeashConnections(var1)) {
-         var9.hurtAndBreak(1, var1, (InteractionHand)var2);
+      ItemStack heldItem = player.getItemInHand(hand);
+      if (heldItem.is(Items.SHEARS) && this.shearOffAllLeashConnections(player)) {
+         heldItem.hurtAndBreak(1, player, (InteractionHand)hand);
          return InteractionResult.SUCCESS;
       } else {
          if (this instanceof Mob) {
-            Mob var10 = (Mob)this;
-            if (var9.is(Items.SHEARS) && var10.canShearEquipment(var1) && !var1.isSecondaryUseActive() && this.attemptToShearEquipment(var1, var2, var9, var10)) {
+            Mob target = (Mob)this;
+            if (heldItem.is(Items.SHEARS) && target.canShearEquipment(player) && !player.isSecondaryUseActive() && this.attemptToShearEquipment(player, hand, heldItem, target)) {
                return InteractionResult.SUCCESS;
             }
          }
 
          if (this.isAlive() && this instanceof Leashable) {
-            Leashable var11 = (Leashable)this;
-            if (var11.getLeashHolder() == var1) {
+            Leashable leashable = (Leashable)this;
+            if (leashable.getLeashHolder() == player) {
                if (!this.level().isClientSide()) {
-                  if (var1.hasInfiniteMaterials()) {
-                     var11.removeLeash();
+                  if (player.hasInfiniteMaterials()) {
+                     leashable.removeLeash();
                   } else {
-                     var11.dropLeash();
+                     leashable.dropLeash();
                   }
 
-                  this.gameEvent(GameEvent.ENTITY_INTERACT, var1);
+                  this.gameEvent(GameEvent.ENTITY_INTERACT, player);
                   this.playSound(SoundEvents.LEAD_UNTIED);
                }
 
                return InteractionResult.SUCCESS.withoutItem();
             }
 
-            ItemStack var12 = var1.getItemInHand(var2);
-            if (var12.is(Items.LEAD) && !(var11.getLeashHolder() instanceof Player)) {
+            ItemStack itemStack = player.getItemInHand(hand);
+            if (itemStack.is(Items.LEAD) && !(leashable.getLeashHolder() instanceof Player)) {
                if (this.level().isClientSide()) {
                   return InteractionResult.CONSUME;
                }
 
-               if (var11.canHaveALeashAttachedTo(var1)) {
-                  if (var11.isLeashed()) {
-                     var11.dropLeash();
+               if (leashable.canHaveALeashAttachedTo(player)) {
+                  if (leashable.isLeashed()) {
+                     leashable.dropLeash();
                   }
 
-                  var11.setLeashedTo(var1, true);
+                  leashable.setLeashedTo(player, true);
                   this.playSound(SoundEvents.LEAD_TIED);
-                  var12.shrink(1);
+                  itemStack.shrink(1);
                   return InteractionResult.SUCCESS_SERVER;
                }
             }
@@ -2286,56 +2299,56 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
    }
 
-   public boolean shearOffAllLeashConnections(@Nullable Player var1) {
-      boolean var2 = this.dropAllLeashConnections(var1);
-      if (var2) {
+   public boolean shearOffAllLeashConnections(final @Nullable Player player) {
+      boolean dropped = this.dropAllLeashConnections(player);
+      if (dropped) {
          Level var4 = this.level();
          if (var4 instanceof ServerLevel) {
-            ServerLevel var3 = (ServerLevel)var4;
-            var3.playSound((Entity)null, this.blockPosition(), SoundEvents.SHEARS_SNIP, var1 != null ? var1.getSoundSource() : this.getSoundSource());
+            ServerLevel serverLevel = (ServerLevel)var4;
+            serverLevel.playSound((Entity)null, this.blockPosition(), SoundEvents.SHEARS_SNIP, player != null ? player.getSoundSource() : this.getSoundSource());
          }
       }
 
-      return var2;
+      return dropped;
    }
 
-   public boolean dropAllLeashConnections(@Nullable Player var1) {
-      List var2 = Leashable.leashableLeashedTo(this);
-      boolean var3 = !var2.isEmpty();
-      if (this instanceof Leashable var4) {
-         if (var4.isLeashed()) {
-            var4.dropLeash();
-            var3 = true;
+   public boolean dropAllLeashConnections(final @Nullable Player player) {
+      List<Leashable> leashables = Leashable.leashableLeashedTo(this);
+      boolean dropped = !leashables.isEmpty();
+      if (this instanceof Leashable leashableThis) {
+         if (leashableThis.isLeashed()) {
+            leashableThis.dropLeash();
+            dropped = true;
          }
       }
 
-      for(Leashable var5 : var2) {
-         var5.dropLeash();
+      for(Leashable leashable : leashables) {
+         leashable.dropLeash();
       }
 
-      if (var3) {
-         this.gameEvent(GameEvent.SHEAR, var1);
+      if (dropped) {
+         this.gameEvent(GameEvent.SHEAR, player);
          return true;
       } else {
          return false;
       }
    }
 
-   private boolean attemptToShearEquipment(Player var1, InteractionHand var2, ItemStack var3, Mob var4) {
-      for(EquipmentSlot var6 : EquipmentSlot.VALUES) {
-         ItemStack var7 = var4.getItemBySlot(var6);
-         Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
-         if (var8 != null && var8.canBeSheared() && (!EnchantmentHelper.has(var7, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || var1.isCreative())) {
-            var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
-            Vec3 var9 = this.dimensions.attachments().getAverage(EntityAttachment.PASSENGER);
-            var4.setItemSlotAndDropWhenKilled(var6, ItemStack.EMPTY);
-            this.gameEvent(GameEvent.SHEAR, var1);
-            this.playSound((SoundEvent)var8.shearingSound().value());
+   private boolean attemptToShearEquipment(final Player player, final InteractionHand hand, final ItemStack heldItem, final Mob target) {
+      for(EquipmentSlot slot : EquipmentSlot.VALUES) {
+         ItemStack itemStack = target.getItemBySlot(slot);
+         Equippable equippable = (Equippable)itemStack.get(DataComponents.EQUIPPABLE);
+         if (equippable != null && equippable.canBeSheared() && (!EnchantmentHelper.has(itemStack, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || player.isCreative())) {
+            heldItem.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
+            Vec3 equipmentSpawnOffset = this.dimensions.attachments().getAverage(EntityAttachment.PASSENGER);
+            target.setItemSlotAndDropWhenKilled(slot, ItemStack.EMPTY);
+            this.gameEvent(GameEvent.SHEAR, player);
+            this.playSound((SoundEvent)equippable.shearingSound().value());
             Level var11 = this.level();
             if (var11 instanceof ServerLevel) {
-               ServerLevel var10 = (ServerLevel)var11;
-               this.spawnAtLocation(var10, var7, var9);
-               CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.trigger((ServerPlayer)var1, var7, var4);
+               ServerLevel serverLevel = (ServerLevel)var11;
+               this.spawnAtLocation(serverLevel, itemStack, equipmentSpawnOffset);
+               CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.trigger((ServerPlayer)player, itemStack, target);
             }
 
             return true;
@@ -2345,11 +2358,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return false;
    }
 
-   public boolean canCollideWith(Entity var1) {
-      return var1.canBeCollidedWith(this) && !this.isPassengerOfSameVehicle(var1);
+   public boolean canCollideWith(final Entity entity) {
+      return entity.canBeCollidedWith(this) && !this.isPassengerOfSameVehicle(entity);
    }
 
-   public boolean canBeCollidedWith(@Nullable Entity var1) {
+   public boolean canBeCollidedWith(final @Nullable Entity other) {
       return false;
    }
 
@@ -2361,71 +2374,71 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
    }
 
-   public final void positionRider(Entity var1) {
-      if (this.hasPassenger(var1)) {
-         this.positionRider(var1, Entity::setPos);
+   public final void positionRider(final Entity passenger) {
+      if (this.hasPassenger(passenger)) {
+         this.positionRider(passenger, Entity::setPos);
       }
    }
 
-   protected void positionRider(Entity var1, MoveFunction var2) {
-      Vec3 var3 = this.getPassengerRidingPosition(var1);
-      Vec3 var4 = var1.getVehicleAttachmentPoint(this);
-      var2.accept(var1, var3.x - var4.x, var3.y - var4.y, var3.z - var4.z);
+   protected void positionRider(final Entity passenger, final MoveFunction moveFunction) {
+      Vec3 position = this.getPassengerRidingPosition(passenger);
+      Vec3 offset = passenger.getVehicleAttachmentPoint(this);
+      moveFunction.accept(passenger, position.x - offset.x, position.y - offset.y, position.z - offset.z);
    }
 
-   public void onPassengerTurned(Entity var1) {
+   public void onPassengerTurned(final Entity passenger) {
    }
 
-   public Vec3 getVehicleAttachmentPoint(Entity var1) {
+   public Vec3 getVehicleAttachmentPoint(final Entity vehicle) {
       return this.getAttachments().get(EntityAttachment.VEHICLE, 0, this.yRot);
    }
 
-   public Vec3 getPassengerRidingPosition(Entity var1) {
-      return this.position().add(this.getPassengerAttachmentPoint(var1, this.dimensions, 1.0F));
+   public Vec3 getPassengerRidingPosition(final Entity passenger) {
+      return this.position().add(this.getPassengerAttachmentPoint(passenger, this.dimensions, 1.0F));
    }
 
-   protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return getDefaultPassengerAttachmentPoint(this, var1, var2.attachments());
+   protected Vec3 getPassengerAttachmentPoint(final Entity passenger, final EntityDimensions dimensions, final float scale) {
+      return getDefaultPassengerAttachmentPoint(this, passenger, dimensions.attachments());
    }
 
-   protected static Vec3 getDefaultPassengerAttachmentPoint(Entity var0, Entity var1, EntityAttachments var2) {
-      int var3 = var0.getPassengers().indexOf(var1);
-      return var2.getClamped(EntityAttachment.PASSENGER, var3, var0.yRot);
+   protected static Vec3 getDefaultPassengerAttachmentPoint(final Entity vehicle, final Entity passenger, final EntityAttachments attachments) {
+      int passengerIndex = vehicle.getPassengers().indexOf(passenger);
+      return attachments.getClamped(EntityAttachment.PASSENGER, passengerIndex, vehicle.yRot);
    }
 
-   public final boolean startRiding(Entity var1) {
-      return this.startRiding(var1, false, true);
+   public final boolean startRiding(final Entity entity) {
+      return this.startRiding(entity, false, true);
    }
 
    public boolean showVehicleHealth() {
       return this instanceof LivingEntity;
    }
 
-   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
-      if (var1 == this.vehicle) {
+   public boolean startRiding(final Entity entityToRide, final boolean force, final boolean sendEventAndTriggers) {
+      if (entityToRide == this.vehicle) {
          return false;
-      } else if (!var1.couldAcceptPassenger()) {
+      } else if (!entityToRide.couldAcceptPassenger()) {
          return false;
-      } else if (!this.level().isClientSide() && !var1.type.canSerialize()) {
+      } else if (!this.level().isClientSide() && !entityToRide.type.canSerialize()) {
          return false;
       } else {
-         for(Entity var4 = var1; var4.vehicle != null; var4 = var4.vehicle) {
-            if (var4.vehicle == this) {
+         for(Entity vehicleEntity = entityToRide; vehicleEntity.vehicle != null; vehicleEntity = vehicleEntity.vehicle) {
+            if (vehicleEntity.vehicle == this) {
                return false;
             }
          }
 
-         if (var2 || this.canRide(var1) && var1.canAddPassenger(this)) {
+         if (force || this.canRide(entityToRide) && entityToRide.canAddPassenger(this)) {
             if (this.isPassenger()) {
                this.stopRiding();
             }
 
             this.setPose(Pose.STANDING);
-            this.vehicle = var1;
+            this.vehicle = entityToRide;
             this.vehicle.addPassenger(this);
-            if (var3) {
+            if (sendEventAndTriggers) {
                this.level().gameEvent(this, GameEvent.ENTITY_MOUNT, this.vehicle.position);
-               var1.getIndirectPassengersStream().filter((var0) -> var0 instanceof ServerPlayer).forEach((var0) -> CriteriaTriggers.START_RIDING_TRIGGER.trigger((ServerPlayer)var0));
+               entityToRide.getIndirectPassengersStream().filter((e) -> e instanceof ServerPlayer).forEach((player) -> CriteriaTriggers.START_RIDING_TRIGGER.trigger((ServerPlayer)player));
             }
 
             return true;
@@ -2435,25 +2448,25 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
    }
 
-   protected boolean canRide(Entity var1) {
+   protected boolean canRide(final Entity vehicle) {
       return !this.isShiftKeyDown() && this.boardingCooldown <= 0;
    }
 
    public void ejectPassengers() {
-      for(int var1 = this.passengers.size() - 1; var1 >= 0; --var1) {
-         ((Entity)this.passengers.get(var1)).stopRiding();
+      for(int i = this.passengers.size() - 1; i >= 0; --i) {
+         ((Entity)this.passengers.get(i)).stopRiding();
       }
 
    }
 
    public void removeVehicle() {
       if (this.vehicle != null) {
-         Entity var1 = this.vehicle;
+         Entity oldVehicle = this.vehicle;
          this.vehicle = null;
-         var1.removePassenger(this);
-         RemovalReason var2 = this.getRemovalReason();
-         if (var2 == null || var2.shouldDestroy()) {
-            this.level().gameEvent(this, GameEvent.ENTITY_DISMOUNT, var1.position);
+         oldVehicle.removePassenger(this);
+         RemovalReason removalReason = this.getRemovalReason();
+         if (removalReason == null || removalReason.shouldDestroy()) {
+            this.level().gameEvent(this, GameEvent.ENTITY_DISMOUNT, oldVehicle.position);
          }
       }
 
@@ -2463,41 +2476,41 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.removeVehicle();
    }
 
-   protected void addPassenger(Entity var1) {
-      if (var1.getVehicle() != this) {
+   protected void addPassenger(final Entity passenger) {
+      if (passenger.getVehicle() != this) {
          throw new IllegalStateException("Use x.startRiding(y), not y.addPassenger(x)");
       } else {
          if (this.passengers.isEmpty()) {
-            this.passengers = ImmutableList.of(var1);
+            this.passengers = ImmutableList.of(passenger);
          } else {
-            ArrayList var2 = Lists.newArrayList(this.passengers);
-            if (!this.level().isClientSide() && var1 instanceof Player && !(this.getFirstPassenger() instanceof Player)) {
-               var2.add(0, var1);
+            List<Entity> newPassengers = Lists.newArrayList(this.passengers);
+            if (!this.level().isClientSide() && passenger instanceof Player && !(this.getFirstPassenger() instanceof Player)) {
+               newPassengers.add(0, passenger);
             } else {
-               var2.add(var1);
+               newPassengers.add(passenger);
             }
 
-            this.passengers = ImmutableList.copyOf(var2);
+            this.passengers = ImmutableList.copyOf(newPassengers);
          }
 
       }
    }
 
-   protected void removePassenger(Entity var1) {
-      if (var1.getVehicle() == this) {
+   protected void removePassenger(final Entity passenger) {
+      if (passenger.getVehicle() == this) {
          throw new IllegalStateException("Use x.stopRiding(y), not y.removePassenger(x)");
       } else {
-         if (this.passengers.size() == 1 && this.passengers.get(0) == var1) {
+         if (this.passengers.size() == 1 && this.passengers.get(0) == passenger) {
             this.passengers = ImmutableList.of();
          } else {
-            this.passengers = (ImmutableList)this.passengers.stream().filter((var1x) -> var1x != var1).collect(ImmutableList.toImmutableList());
+            this.passengers = (ImmutableList)this.passengers.stream().filter((p) -> p != passenger).collect(ImmutableList.toImmutableList());
          }
 
-         var1.boardingCooldown = 60;
+         passenger.boardingCooldown = 60;
       }
    }
 
-   protected boolean canAddPassenger(Entity var1) {
+   protected boolean canAddPassenger(final Entity passenger) {
       return this.passengers.isEmpty();
    }
 
@@ -2509,26 +2522,26 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.getInterpolation() != null && this.getInterpolation().hasActiveInterpolation();
    }
 
-   public final void moveOrInterpolateTo(Vec3 var1, float var2, float var3) {
-      this.moveOrInterpolateTo(Optional.of(var1), Optional.of(var2), Optional.of(var3));
+   public final void moveOrInterpolateTo(final Vec3 position, final float yRot, final float xRot) {
+      this.moveOrInterpolateTo(Optional.of(position), Optional.of(yRot), Optional.of(xRot));
    }
 
-   public final void moveOrInterpolateTo(float var1, float var2) {
-      this.moveOrInterpolateTo(Optional.empty(), Optional.of(var1), Optional.of(var2));
+   public final void moveOrInterpolateTo(final float yRot, final float xRot) {
+      this.moveOrInterpolateTo(Optional.empty(), Optional.of(yRot), Optional.of(xRot));
    }
 
-   public final void moveOrInterpolateTo(Vec3 var1) {
-      this.moveOrInterpolateTo(Optional.of(var1), Optional.empty(), Optional.empty());
+   public final void moveOrInterpolateTo(final Vec3 position) {
+      this.moveOrInterpolateTo(Optional.of(position), Optional.empty(), Optional.empty());
    }
 
-   public final void moveOrInterpolateTo(Optional<Vec3> var1, Optional<Float> var2, Optional<Float> var3) {
-      InterpolationHandler var4 = this.getInterpolation();
-      if (var4 != null) {
-         var4.interpolateTo((Vec3)var1.orElse(var4.position()), (Float)var2.orElse(var4.yRot()), (Float)var3.orElse(var4.xRot()));
+   public final void moveOrInterpolateTo(final Optional<Vec3> position, final Optional<Float> yRot, final Optional<Float> xRot) {
+      InterpolationHandler interpolationHandler = this.getInterpolation();
+      if (interpolationHandler != null) {
+         interpolationHandler.interpolateTo((Vec3)position.orElse(interpolationHandler.position()), (Float)yRot.orElse(interpolationHandler.yRot()), (Float)xRot.orElse(interpolationHandler.xRot()));
       } else {
-         var1.ifPresent(this::setPos);
-         var2.ifPresent((var1x) -> this.setYRot(var1x % 360.0F));
-         var3.ifPresent((var1x) -> this.setXRot(var1x % 360.0F));
+         position.ifPresent(this::setPos);
+         yRot.ifPresent((y) -> this.setYRot(y % 360.0F));
+         xRot.ifPresent((x) -> this.setXRot(x % 360.0F));
       }
 
    }
@@ -2537,8 +2550,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return null;
    }
 
-   public void lerpHeadTo(float var1, int var2) {
-      this.setYHeadRot(var1);
+   public void lerpHeadTo(final float yRot, final int steps) {
+      this.setYHeadRot(yRot);
    }
 
    public float getPickRadius() {
@@ -2553,13 +2566,13 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.calculateViewVector(this.getXRot(), this.getYHeadRot());
    }
 
-   public Vec3 getHandHoldingItemAngle(Item var1) {
-      if (!(this instanceof Player var2)) {
+   public Vec3 getHandHoldingItemAngle(final Item item) {
+      if (!(this instanceof Player player)) {
          return Vec3.ZERO;
       } else {
-         boolean var3 = var2.getOffhandItem().is(var1) && !var2.getMainHandItem().is(var1);
-         HumanoidArm var4 = var3 ? var2.getMainArm().getOpposite() : var2.getMainArm();
-         return this.calculateViewVector(0.0F, this.getYRot() + (float)(var4 == HumanoidArm.RIGHT ? 80 : -80)).scale(0.5);
+         boolean itemOnlyInOffhand = player.getOffhandItem().is(item) && !player.getMainHandItem().is(item);
+         HumanoidArm itemArm = itemOnlyInOffhand ? player.getMainArm().getOpposite() : player.getMainArm();
+         return this.calculateViewVector(0.0F, this.getYRot() + (float)(itemArm == HumanoidArm.RIGHT ? 80 : -80)).scale(0.5);
       }
    }
 
@@ -2571,17 +2584,17 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return Vec3.directionFromRotation(this.getRotationVector());
    }
 
-   public void setAsInsidePortal(Portal var1, BlockPos var2) {
+   public void setAsInsidePortal(final Portal portal, final BlockPos pos) {
       if (this.isOnPortalCooldown()) {
          this.setPortalCooldown();
       } else {
-         if (this.portalProcess != null && this.portalProcess.isSamePortal(var1)) {
+         if (this.portalProcess != null && this.portalProcess.isSamePortal(portal)) {
             if (!this.portalProcess.isInsidePortalThisTick()) {
-               this.portalProcess.updateEntryPosition(var2.immutable());
+               this.portalProcess.updateEntryPosition(pos.immutable());
                this.portalProcess.setAsInsidePortalThisTick(true);
             }
          } else {
-            this.portalProcess = new PortalProcessor(var1, var2.immutable());
+            this.portalProcess = new PortalProcessor(portal, pos.immutable());
          }
 
       }
@@ -2589,22 +2602,22 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    protected void handlePortal() {
       Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
+      if (var2 instanceof ServerLevel level) {
          this.processPortalCooldown();
          if (this.portalProcess != null) {
-            if (this.portalProcess.processPortalTeleportation(var1, this, this.canUsePortal(false))) {
-               ProfilerFiller var5 = Profiler.get();
-               var5.push("portal");
+            if (this.portalProcess.processPortalTeleportation(level, this, this.canUsePortal(false))) {
+               ProfilerFiller profiler = Profiler.get();
+               profiler.push("portal");
                this.setPortalCooldown();
-               TeleportTransition var3 = this.portalProcess.getPortalDestination(var1, this);
-               if (var3 != null) {
-                  ServerLevel var4 = var3.newLevel();
-                  if (var1.isAllowedToEnterPortal(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
-                     this.teleport(var3);
+               TeleportTransition teleportTransition = this.portalProcess.getPortalDestination(level, this);
+               if (teleportTransition != null) {
+                  ServerLevel newLevel = teleportTransition.newLevel();
+                  if (level.isAllowedToEnterPortal(newLevel) && (newLevel.dimension() == level.dimension() || this.canTeleport(level, newLevel))) {
+                     this.teleport(teleportTransition);
                   }
                }
 
-               var5.pop();
+               profiler.pop();
             } else if (this.portalProcess.hasExpired()) {
                this.portalProcess = null;
             }
@@ -2614,31 +2627,31 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public int getDimensionChangingDelay() {
-      Entity var1 = this.getFirstPassenger();
-      return var1 instanceof ServerPlayer ? var1.getDimensionChangingDelay() : 300;
+      Entity firstPassenger = this.getFirstPassenger();
+      return firstPassenger instanceof ServerPlayer ? firstPassenger.getDimensionChangingDelay() : 300;
    }
 
-   public void lerpMotion(Vec3 var1) {
-      this.setDeltaMovement(var1);
+   public void lerpMotion(final Vec3 movement) {
+      this.setDeltaMovement(movement);
    }
 
-   public void handleDamageEvent(DamageSource var1) {
+   public void handleDamageEvent(final DamageSource source) {
    }
 
-   public void handleEntityEvent(byte var1) {
-      switch (var1) {
+   public void handleEntityEvent(final byte id) {
+      switch (id) {
          case 53:
             HoneyBlock.showSlideParticles(this);
          default:
       }
    }
 
-   public void animateHurt(float var1) {
+   public void animateHurt(final float direction) {
    }
 
    public boolean isOnFire() {
-      boolean var1 = this.level() != null && this.level().isClientSide();
-      return !this.fireImmune() && (this.remainingFireTicks > 0 || var1 && this.getSharedFlag(0));
+      boolean isClientSide = this.level() != null && this.level().isClientSide();
+      return !this.fireImmune() && (this.remainingFireTicks > 0 || isClientSide && this.getSharedFlag(0));
    }
 
    public boolean isPassenger() {
@@ -2650,15 +2663,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public boolean dismountsUnderwater() {
-      return this.getType().is(EntityTypeTags.DISMOUNTS_UNDERWATER);
+      return this.is(EntityTypeTags.DISMOUNTS_UNDERWATER);
    }
 
    public boolean canControlVehicle() {
-      return !this.getType().is(EntityTypeTags.NON_CONTROLLING_RIDER);
+      return !this.is(EntityTypeTags.NON_CONTROLLING_RIDER);
    }
 
-   public void setShiftKeyDown(boolean var1) {
-      this.setSharedFlag(1, var1);
+   public void setShiftKeyDown(final boolean shiftKeyDown) {
+      this.setSharedFlag(1, shiftKeyDown);
    }
 
    public boolean isShiftKeyDown() {
@@ -2689,8 +2702,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.getSharedFlag(3);
    }
 
-   public void setSprinting(boolean var1) {
-      this.setSharedFlag(3, var1);
+   public void setSprinting(final boolean isSprinting) {
+      this.setSharedFlag(3, isSprinting);
    }
 
    public boolean isSwimming() {
@@ -2705,16 +2718,16 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.isVisuallySwimming() && !this.isInWater();
    }
 
-   public void setSwimming(boolean var1) {
-      this.setSharedFlag(4, var1);
+   public void setSwimming(final boolean swimming) {
+      this.setSharedFlag(4, swimming);
    }
 
    public final boolean hasGlowingTag() {
       return this.hasGlowingTag;
    }
 
-   public final void setGlowingTag(boolean var1) {
-      this.hasGlowingTag = var1;
+   public final void setGlowingTag(final boolean value) {
+      this.hasGlowingTag = value;
       this.setSharedFlag(6, this.isCurrentlyGlowing());
    }
 
@@ -2726,12 +2739,12 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.getSharedFlag(5);
    }
 
-   public boolean isInvisibleTo(Player var1) {
-      if (var1.isSpectator()) {
+   public boolean isInvisibleTo(final Player player) {
+      if (player.isSpectator()) {
          return false;
       } else {
-         PlayerTeam var2 = this.getTeam();
-         return var2 != null && var1 != null && var1.getTeam() == var2 && ((Team)var2).canSeeFriendlyInvisibles() ? false : this.isInvisible();
+         Team team = this.getTeam();
+         return team != null && player != null && player.getTeam() == team && team.canSeeFriendlyInvisibles() ? false : this.isInvisible();
       }
    }
 
@@ -2739,43 +2752,43 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return false;
    }
 
-   public void updateDynamicGameEventListener(BiConsumer<DynamicGameEventListener<?>, ServerLevel> var1) {
+   public void updateDynamicGameEventListener(final BiConsumer<DynamicGameEventListener<?>, ServerLevel> action) {
    }
 
    public @Nullable PlayerTeam getTeam() {
       return this.level().getScoreboard().getPlayersTeam(this.getScoreboardName());
    }
 
-   public final boolean isAlliedTo(@Nullable Entity var1) {
-      if (var1 == null) {
+   public final boolean isAlliedTo(final @Nullable Entity other) {
+      if (other == null) {
          return false;
       } else {
-         return this == var1 || this.considersEntityAsAlly(var1) || var1.considersEntityAsAlly(this);
+         return this == other || this.considersEntityAsAlly(other) || other.considersEntityAsAlly(this);
       }
    }
 
-   protected boolean considersEntityAsAlly(Entity var1) {
-      return this.isAlliedTo((Team)var1.getTeam());
+   protected boolean considersEntityAsAlly(final Entity other) {
+      return this.isAlliedTo((Team)other.getTeam());
    }
 
-   public boolean isAlliedTo(@Nullable Team var1) {
-      return this.getTeam() != null ? this.getTeam().isAlliedTo(var1) : false;
+   public boolean isAlliedTo(final @Nullable Team other) {
+      return this.getTeam() != null ? this.getTeam().isAlliedTo(other) : false;
    }
 
-   public void setInvisible(boolean var1) {
-      this.setSharedFlag(5, var1);
+   public void setInvisible(final boolean invisible) {
+      this.setSharedFlag(5, invisible);
    }
 
-   protected boolean getSharedFlag(int var1) {
-      return ((Byte)this.entityData.get(DATA_SHARED_FLAGS_ID) & 1 << var1) != 0;
+   protected boolean getSharedFlag(final @Entity.Flags int flag) {
+      return ((Byte)this.entityData.get(DATA_SHARED_FLAGS_ID) & 1 << flag) != 0;
    }
 
-   protected void setSharedFlag(int var1, boolean var2) {
-      byte var3 = (Byte)this.entityData.get(DATA_SHARED_FLAGS_ID);
-      if (var2) {
-         this.entityData.set(DATA_SHARED_FLAGS_ID, (byte)(var3 | 1 << var1));
+   protected void setSharedFlag(final @Entity.Flags int flag, final boolean value) {
+      byte currentValue = (Byte)this.entityData.get(DATA_SHARED_FLAGS_ID);
+      if (value) {
+         this.entityData.set(DATA_SHARED_FLAGS_ID, (byte)(currentValue | 1 << flag));
       } else {
-         this.entityData.set(DATA_SHARED_FLAGS_ID, (byte)(var3 & ~(1 << var1)));
+         this.entityData.set(DATA_SHARED_FLAGS_ID, (byte)(currentValue & ~(1 << flag)));
       }
 
    }
@@ -2788,8 +2801,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return (Integer)this.entityData.get(DATA_AIR_SUPPLY_ID);
    }
 
-   public void setAirSupply(int var1) {
-      this.entityData.set(DATA_AIR_SUPPLY_ID, var1);
+   public void setAirSupply(final int supply) {
+      this.entityData.set(DATA_AIR_SUPPLY_ID, supply);
    }
 
    public void clearFreeze() {
@@ -2800,13 +2813,13 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return (Integer)this.entityData.get(DATA_TICKS_FROZEN);
    }
 
-   public void setTicksFrozen(int var1) {
-      this.entityData.set(DATA_TICKS_FROZEN, var1);
+   public void setTicksFrozen(final int ticks) {
+      this.entityData.set(DATA_TICKS_FROZEN, ticks);
    }
 
    public float getPercentFrozen() {
-      int var1 = this.getTicksRequiredToFreeze();
-      return (float)Math.min(this.getTicksFrozen(), var1) / (float)var1;
+      int ticksToFreeze = this.getTicksRequiredToFreeze();
+      return (float)Math.min(this.getTicksFrozen(), ticksToFreeze) / (float)ticksToFreeze;
    }
 
    public boolean isFullyFrozen() {
@@ -2817,60 +2830,62 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return 140;
    }
 
-   public void thunderHit(ServerLevel var1, LightningBolt var2) {
+   public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
       this.setRemainingFireTicks(this.remainingFireTicks + 1);
       if (this.remainingFireTicks == 0) {
          this.igniteForSeconds(8.0F);
       }
 
-      this.hurtServer(var1, this.damageSources().lightningBolt(), 5.0F);
+      this.hurtServer(level, this.damageSources().lightningBolt(), 5.0F);
    }
 
-   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
-      handleOnAboveBubbleColumn(this, var1, var2);
+   public void onAboveBubbleColumn(final boolean dragDown, final BlockPos pos) {
+      handleOnAboveBubbleColumn(this, dragDown, pos);
    }
 
-   protected static void handleOnAboveBubbleColumn(Entity var0, boolean var1, BlockPos var2) {
-      Vec3 var3 = var0.getDeltaMovement();
-      double var4;
-      if (var1) {
-         var4 = Math.max(-0.9, var3.y - 0.03);
+   protected static void handleOnAboveBubbleColumn(final Entity entity, final boolean dragDown, final BlockPos pos) {
+      Vec3 movement = entity.getDeltaMovement();
+      double yd;
+      if (dragDown) {
+         yd = Math.max(-0.9, movement.y - 0.03);
       } else {
-         var4 = Math.min(1.8, var3.y + 0.1);
+         yd = Math.min(1.8, movement.y + 0.1);
       }
 
-      var0.setDeltaMovement(var3.x, var4, var3.z);
-      sendBubbleColumnParticles(var0.level, var2);
+      entity.setDeltaMovement(movement.x, yd, movement.z);
+      sendBubbleColumnParticles(entity.level, pos);
    }
 
-   protected static void sendBubbleColumnParticles(Level var0, BlockPos var1) {
-      if (var0 instanceof ServerLevel var2) {
-         for(int var3 = 0; var3 < 2; ++var3) {
-            var2.sendParticles(ParticleTypes.SPLASH, (double)var1.getX() + var0.random.nextDouble(), (double)(var1.getY() + 1), (double)var1.getZ() + var0.random.nextDouble(), 1, 0.0, 0.0, 0.0, 1.0);
-            var2.sendParticles(ParticleTypes.BUBBLE, (double)var1.getX() + var0.random.nextDouble(), (double)(var1.getY() + 1), (double)var1.getZ() + var0.random.nextDouble(), 1, 0.0, 0.01, 0.0, 0.2);
+   protected static void sendBubbleColumnParticles(final Level level, final BlockPos pos) {
+      if (level instanceof ServerLevel serverLevel) {
+         RandomSource random = level.getRandom();
+
+         for(int i = 0; i < 2; ++i) {
+            serverLevel.sendParticles(ParticleTypes.SPLASH, (double)pos.getX() + random.nextDouble(), (double)(pos.getY() + 1), (double)pos.getZ() + random.nextDouble(), 1, 0.0, 0.0, 0.0, 1.0);
+            serverLevel.sendParticles(ParticleTypes.BUBBLE, (double)pos.getX() + random.nextDouble(), (double)(pos.getY() + 1), (double)pos.getZ() + random.nextDouble(), 1, 0.0, 0.01, 0.0, 0.2);
          }
       }
 
    }
 
-   public void onInsideBubbleColumn(boolean var1) {
-      handleOnInsideBubbleColumn(this, var1);
+   public void onInsideBubbleColumn(final boolean dragDown) {
+      handleOnInsideBubbleColumn(this, dragDown);
    }
 
-   protected static void handleOnInsideBubbleColumn(Entity var0, boolean var1) {
-      Vec3 var2 = var0.getDeltaMovement();
-      double var3;
-      if (var1) {
-         var3 = Math.max(-0.3, var2.y - 0.03);
+   protected static void handleOnInsideBubbleColumn(final Entity entity, final boolean dragDown) {
+      Vec3 movement = entity.getDeltaMovement();
+      double yd;
+      if (dragDown) {
+         yd = Math.max(-0.3, movement.y - 0.03);
       } else {
-         var3 = Math.min(0.7, var2.y + 0.06);
+         yd = Math.min(0.7, movement.y + 0.06);
       }
 
-      var0.setDeltaMovement(var2.x, var3, var2.z);
-      var0.resetFallDistance();
+      entity.setDeltaMovement(movement.x, yd, movement.z);
+      entity.resetFallDistance();
    }
 
-   public boolean killedEntity(ServerLevel var1, LivingEntity var2, DamageSource var3) {
+   public boolean killedEntity(final ServerLevel level, final LivingEntity entity, final DamageSource source) {
       return true;
    }
 
@@ -2885,287 +2900,287 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.fallDistance = 0.0;
    }
 
-   protected void moveTowardsClosestSpace(double var1, double var3, double var5) {
-      BlockPos var7 = BlockPos.containing(var1, var3, var5);
-      Vec3 var8 = new Vec3(var1 - (double)var7.getX(), var3 - (double)var7.getY(), var5 - (double)var7.getZ());
-      BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
-      Direction var10 = Direction.UP;
-      double var11 = 1.7976931348623157E308;
+   protected void moveTowardsClosestSpace(final double x, final double y, final double z) {
+      BlockPos pos = BlockPos.containing(x, y, z);
+      Vec3 delta = new Vec3(x - (double)pos.getX(), y - (double)pos.getY(), z - (double)pos.getZ());
+      BlockPos.MutableBlockPos neighborPos = new BlockPos.MutableBlockPos();
+      Direction closestDirection = Direction.UP;
+      double closest = 1.7976931348623157E308;
 
-      for(Direction var16 : new Direction[]{Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST, Direction.UP}) {
-         var9.setWithOffset(var7, (Direction)var16);
-         if (!this.level().getBlockState(var9).isCollisionShapeFullBlock(this.level(), var9)) {
-            double var17 = var8.get(var16.getAxis());
-            double var19 = var16.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1.0 - var17 : var17;
-            if (var19 < var11) {
-               var11 = var19;
-               var10 = var16;
+      for(Direction direction : new Direction[]{Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST, Direction.UP}) {
+         neighborPos.setWithOffset(pos, (Direction)direction);
+         if (!this.level().getBlockState(neighborPos).isCollisionShapeFullBlock(this.level(), neighborPos)) {
+            double d = delta.get(direction.getAxis());
+            double orientedDelta = direction.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1.0 - d : d;
+            if (orientedDelta < closest) {
+               closest = orientedDelta;
+               closestDirection = direction;
             }
          }
       }
 
-      float var21 = this.random.nextFloat() * 0.2F + 0.1F;
-      float var22 = (float)var10.getAxisDirection().getStep();
-      Vec3 var23 = this.getDeltaMovement().scale(0.75);
-      if (var10.getAxis() == Direction.Axis.X) {
-         this.setDeltaMovement((double)(var22 * var21), var23.y, var23.z);
-      } else if (var10.getAxis() == Direction.Axis.Y) {
-         this.setDeltaMovement(var23.x, (double)(var22 * var21), var23.z);
-      } else if (var10.getAxis() == Direction.Axis.Z) {
-         this.setDeltaMovement(var23.x, var23.y, (double)(var22 * var21));
+      float speed = this.random.nextFloat() * 0.2F + 0.1F;
+      float step = (float)closestDirection.getAxisDirection().getStep();
+      Vec3 scaledMovement = this.getDeltaMovement().scale(0.75);
+      if (closestDirection.getAxis() == Direction.Axis.X) {
+         this.setDeltaMovement((double)(step * speed), scaledMovement.y, scaledMovement.z);
+      } else if (closestDirection.getAxis() == Direction.Axis.Y) {
+         this.setDeltaMovement(scaledMovement.x, (double)(step * speed), scaledMovement.z);
+      } else if (closestDirection.getAxis() == Direction.Axis.Z) {
+         this.setDeltaMovement(scaledMovement.x, scaledMovement.y, (double)(step * speed));
       }
 
    }
 
-   public void makeStuckInBlock(BlockState var1, Vec3 var2) {
+   public void makeStuckInBlock(final BlockState blockState, final Vec3 speedMultiplier) {
       this.resetFallDistance();
-      this.stuckSpeedMultiplier = var2;
+      this.stuckSpeedMultiplier = speedMultiplier;
    }
 
-   private static Component removeAction(Component var0) {
-      MutableComponent var1 = var0.plainCopy().setStyle(var0.getStyle().withClickEvent((ClickEvent)null));
+   private static Component removeAction(final Component component) {
+      MutableComponent result = component.plainCopy().setStyle(component.getStyle().withClickEvent((ClickEvent)null));
 
-      for(Component var3 : var0.getSiblings()) {
-         var1.append(removeAction(var3));
+      for(Component s : component.getSiblings()) {
+         result.append(removeAction(s));
       }
 
-      return var1;
+      return result;
    }
 
    public Component getName() {
-      Component var1 = this.getCustomName();
-      return var1 != null ? removeAction(var1) : this.getTypeName();
+      Component customName = this.getCustomName();
+      return customName != null ? removeAction(customName) : this.getTypeName();
    }
 
    protected Component getTypeName() {
       return this.type.getDescription();
    }
 
-   public boolean is(Entity var1) {
-      return this == var1;
+   public boolean is(final Entity other) {
+      return this == other;
    }
 
    public float getYHeadRot() {
       return 0.0F;
    }
 
-   public void setYHeadRot(float var1) {
+   public void setYHeadRot(final float yHeadRot) {
    }
 
-   public void setYBodyRot(float var1) {
+   public void setYBodyRot(final float yBodyRot) {
    }
 
    public boolean isAttackable() {
       return true;
    }
 
-   public boolean skipAttackInteraction(Entity var1) {
+   public boolean skipAttackInteraction(final Entity source) {
       return false;
    }
 
    public String toString() {
-      String var1 = this.level() == null ? "~NULL~" : this.level().toString();
-      return this.removalReason != null ? String.format(Locale.ROOT, "%s['%s'/%d, l='%s', x=%.2f, y=%.2f, z=%.2f, removed=%s]", this.getClass().getSimpleName(), this.getPlainTextName(), this.id, var1, this.getX(), this.getY(), this.getZ(), this.removalReason) : String.format(Locale.ROOT, "%s['%s'/%d, l='%s', x=%.2f, y=%.2f, z=%.2f]", this.getClass().getSimpleName(), this.getPlainTextName(), this.id, var1, this.getX(), this.getY(), this.getZ());
+      String levelId = this.level() == null ? "~NULL~" : this.level().toString();
+      return this.removalReason != null ? String.format(Locale.ROOT, "%s['%s'/%d, l='%s', x=%.2f, y=%.2f, z=%.2f, removed=%s]", this.getClass().getSimpleName(), this.getPlainTextName(), this.id, levelId, this.getX(), this.getY(), this.getZ(), this.removalReason) : String.format(Locale.ROOT, "%s['%s'/%d, l='%s', x=%.2f, y=%.2f, z=%.2f]", this.getClass().getSimpleName(), this.getPlainTextName(), this.id, levelId, this.getX(), this.getY(), this.getZ());
    }
 
-   protected final boolean isInvulnerableToBase(DamageSource var1) {
-      return this.isRemoved() || this.invulnerable && !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !var1.isCreativePlayer() || var1.is(DamageTypeTags.IS_FIRE) && this.fireImmune() || var1.is(DamageTypeTags.IS_FALL) && this.getType().is(EntityTypeTags.FALL_DAMAGE_IMMUNE);
+   protected final boolean isInvulnerableToBase(final DamageSource source) {
+      return this.isRemoved() || this.invulnerable && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !source.isCreativePlayer() || source.is(DamageTypeTags.IS_FIRE) && this.fireImmune() || source.is(DamageTypeTags.IS_FALL) && this.is(EntityTypeTags.FALL_DAMAGE_IMMUNE);
    }
 
    public boolean isInvulnerable() {
       return this.invulnerable;
    }
 
-   public void setInvulnerable(boolean var1) {
-      this.invulnerable = var1;
+   public void setInvulnerable(final boolean invulnerable) {
+      this.invulnerable = invulnerable;
    }
 
-   public void copyPosition(Entity var1) {
-      this.snapTo(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot());
+   public void copyPosition(final Entity target) {
+      this.snapTo(target.getX(), target.getY(), target.getZ(), target.getYRot(), target.getXRot());
    }
 
-   public void restoreFrom(Entity var1) {
-      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
-         var1.saveWithoutId(var3);
-         this.load(TagValueInput.create(var2, this.registryAccess(), var3.buildResult()));
+   public void restoreFrom(final Entity oldEntity) {
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput entityData = TagValueOutput.createWithContext(reporter, oldEntity.registryAccess());
+         oldEntity.saveWithoutId(entityData);
+         this.load(TagValueInput.create(reporter, this.registryAccess(), entityData.buildResult()));
       }
 
-      this.portalCooldown = var1.portalCooldown;
-      this.portalProcess = var1.portalProcess;
+      this.portalCooldown = oldEntity.portalCooldown;
+      this.portalProcess = oldEntity.portalProcess;
    }
 
-   public @Nullable Entity teleport(TeleportTransition var1) {
-      ServerLevel var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
+   public @Nullable Entity teleport(final TeleportTransition transition) {
+      ServerLevel newLevel = this.level();
+      if (newLevel instanceof ServerLevel serverLevel) {
          if (!this.isRemoved()) {
-            var3 = var1.newLevel();
-            boolean var4 = var3.dimension() != var2.dimension();
-            if (!var1.asPassenger()) {
+            newLevel = transition.newLevel();
+            boolean otherDimension = newLevel.dimension() != serverLevel.dimension();
+            if (!transition.asPassenger()) {
                this.stopRiding();
             }
 
-            if (var4) {
-               return this.teleportCrossDimension(var2, var3, var1);
+            if (otherDimension) {
+               return this.teleportCrossDimension(serverLevel, newLevel, transition);
             }
 
-            return this.teleportSameDimension(var2, var1);
+            return this.teleportSameDimension(serverLevel, transition);
          }
       }
 
       return null;
    }
 
-   private Entity teleportSameDimension(ServerLevel var1, TeleportTransition var2) {
-      for(Entity var4 : this.getPassengers()) {
-         var4.teleport(this.calculatePassengerTransition(var2, var4));
+   private Entity teleportSameDimension(final ServerLevel level, final TeleportTransition transition) {
+      for(Entity passenger : this.getPassengers()) {
+         passenger.teleport(this.calculatePassengerTransition(transition, passenger));
       }
 
-      ProfilerFiller var5 = Profiler.get();
-      var5.push("teleportSameDimension");
-      this.teleportSetPosition(PositionMoveRotation.of(var2), var2.relatives());
-      if (!var2.asPassenger()) {
-         this.sendTeleportTransitionToRidingPlayers(var2);
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("teleportSameDimension");
+      this.teleportSetPosition(PositionMoveRotation.of(transition), transition.relatives());
+      if (!transition.asPassenger()) {
+         this.sendTeleportTransitionToRidingPlayers(transition);
       }
 
-      var2.postTeleportTransition().onTransition(this);
-      var5.pop();
+      transition.postTeleportTransition().onTransition(this);
+      profiler.pop();
       return this;
    }
 
-   private @Nullable Entity teleportCrossDimension(ServerLevel var1, ServerLevel var2, TeleportTransition var3) {
-      List var4 = this.getPassengers();
-      ArrayList var5 = new ArrayList(var4.size());
+   private @Nullable Entity teleportCrossDimension(final ServerLevel oldLevel, final ServerLevel newLevel, final TeleportTransition transition) {
+      List<Entity> oldPassengers = this.getPassengers();
+      List<Entity> newPassengers = new ArrayList(oldPassengers.size());
       this.ejectPassengers();
 
-      for(Entity var7 : var4) {
-         Entity var8 = var7.teleport(this.calculatePassengerTransition(var3, var7));
-         if (var8 != null) {
-            var5.add(var8);
+      for(Entity passenger : oldPassengers) {
+         Entity newPassenger = passenger.teleport(this.calculatePassengerTransition(transition, passenger));
+         if (newPassenger != null) {
+            newPassengers.add(newPassenger);
          }
       }
 
-      ProfilerFiller var10 = Profiler.get();
-      var10.push("teleportCrossDimension");
-      Entity var11 = this.getType().create(var2, EntitySpawnReason.DIMENSION_TRAVEL);
-      if (var11 == null) {
-         var10.pop();
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("teleportCrossDimension");
+      Entity newEntity = this.getType().create(newLevel, EntitySpawnReason.DIMENSION_TRAVEL);
+      if (newEntity == null) {
+         profiler.pop();
          return null;
       } else {
-         var11.restoreFrom(this);
+         newEntity.restoreFrom(this);
          this.removeAfterChangingDimensions();
-         var11.teleportSetPosition(PositionMoveRotation.of(this), PositionMoveRotation.of(var3), var3.relatives());
-         var2.addDuringTeleport(var11);
+         newEntity.teleportSetPosition(PositionMoveRotation.of(this), PositionMoveRotation.of(transition), transition.relatives());
+         newLevel.addDuringTeleport(newEntity);
 
-         for(Entity var9 : var5) {
-            var9.startRiding(var11, true, false);
+         for(Entity newPassenger : newPassengers) {
+            newPassenger.startRiding(newEntity, true, false);
          }
 
-         var2.resetEmptyTime();
-         var3.postTeleportTransition().onTransition(var11);
-         this.teleportSpectators(var3, var1);
-         var10.pop();
-         return var11;
+         newLevel.resetEmptyTime();
+         transition.postTeleportTransition().onTransition(newEntity);
+         this.teleportSpectators(transition, oldLevel);
+         profiler.pop();
+         return newEntity;
       }
    }
 
-   protected void teleportSpectators(TeleportTransition var1, ServerLevel var2) {
-      for(ServerPlayer var5 : List.copyOf(var2.players())) {
-         if (var5.getCamera() == this) {
-            var5.teleport(var1);
-            var5.setCamera((Entity)null);
+   protected void teleportSpectators(final TeleportTransition transition, final ServerLevel oldLevel) {
+      for(ServerPlayer serverPlayer : List.copyOf(oldLevel.players())) {
+         if (serverPlayer.getCamera() == this) {
+            serverPlayer.teleport(transition);
+            serverPlayer.setCamera((Entity)null);
          }
       }
 
    }
 
-   private TeleportTransition calculatePassengerTransition(TeleportTransition var1, Entity var2) {
-      float var3 = var1.yRot() + (var1.relatives().contains(Relative.Y_ROT) ? 0.0F : var2.getYRot() - this.getYRot());
-      float var4 = var1.xRot() + (var1.relatives().contains(Relative.X_ROT) ? 0.0F : var2.getXRot() - this.getXRot());
-      Vec3 var5 = var2.position().subtract(this.position());
-      Vec3 var6 = var1.position().add(var1.relatives().contains(Relative.X) ? 0.0 : var5.x(), var1.relatives().contains(Relative.Y) ? 0.0 : var5.y(), var1.relatives().contains(Relative.Z) ? 0.0 : var5.z());
-      return var1.withPosition(var6).withRotation(var3, var4).transitionAsPassenger();
+   private TeleportTransition calculatePassengerTransition(final TeleportTransition transition, final Entity passenger) {
+      float passengerYRot = transition.yRot() + (transition.relatives().contains(Relative.Y_ROT) ? 0.0F : passenger.getYRot() - this.getYRot());
+      float passengerXRot = transition.xRot() + (transition.relatives().contains(Relative.X_ROT) ? 0.0F : passenger.getXRot() - this.getXRot());
+      Vec3 passengerOffset = passenger.position().subtract(this.position());
+      Vec3 passengerPos = transition.position().add(transition.relatives().contains(Relative.X) ? 0.0 : passengerOffset.x(), transition.relatives().contains(Relative.Y) ? 0.0 : passengerOffset.y(), transition.relatives().contains(Relative.Z) ? 0.0 : passengerOffset.z());
+      return transition.withPosition(passengerPos).withRotation(passengerYRot, passengerXRot).transitionAsPassenger();
    }
 
-   private void sendTeleportTransitionToRidingPlayers(TeleportTransition var1) {
-      LivingEntity var2 = this.getControllingPassenger();
+   private void sendTeleportTransitionToRidingPlayers(final TeleportTransition transition) {
+      Entity controller = this.getControllingPassenger();
 
-      for(Entity var4 : this.getIndirectPassengers()) {
-         if (var4 instanceof ServerPlayer var5) {
-            if (var2 != null && var5.getId() == ((Entity)var2).getId()) {
-               var5.connection.send(ClientboundTeleportEntityPacket.teleport(this.getId(), PositionMoveRotation.of(var1), var1.relatives(), this.onGround));
+      for(Entity passenger : this.getIndirectPassengers()) {
+         if (passenger instanceof ServerPlayer player) {
+            if (controller != null && player.getId() == controller.getId()) {
+               player.connection.send(ClientboundTeleportEntityPacket.teleport(this.getId(), PositionMoveRotation.of(transition), transition.relatives(), this.onGround));
             } else {
-               var5.connection.send(ClientboundTeleportEntityPacket.teleport(this.getId(), PositionMoveRotation.of(this), Set.of(), this.onGround));
+               player.connection.send(ClientboundTeleportEntityPacket.teleport(this.getId(), PositionMoveRotation.of(this), Set.of(), this.onGround));
             }
          }
       }
 
    }
 
-   public void teleportSetPosition(PositionMoveRotation var1, Set<Relative> var2) {
-      this.teleportSetPosition(PositionMoveRotation.of(this), var1, var2);
+   public void teleportSetPosition(final PositionMoveRotation destination, final Set<Relative> relatives) {
+      this.teleportSetPosition(PositionMoveRotation.of(this), destination, relatives);
    }
 
-   public void teleportSetPosition(PositionMoveRotation var1, PositionMoveRotation var2, Set<Relative> var3) {
-      PositionMoveRotation var4 = PositionMoveRotation.calculateAbsolute(var1, var2, var3);
-      this.setPosRaw(var4.position().x, var4.position().y, var4.position().z);
-      this.setYRot(var4.yRot());
-      this.setYHeadRot(var4.yRot());
-      this.setXRot(var4.xRot());
+   public void teleportSetPosition(final PositionMoveRotation currentValues, final PositionMoveRotation destination, final Set<Relative> relatives) {
+      PositionMoveRotation absoluteDestination = PositionMoveRotation.calculateAbsolute(currentValues, destination, relatives);
+      this.setPosRaw(absoluteDestination.position().x, absoluteDestination.position().y, absoluteDestination.position().z);
+      this.setYRot(absoluteDestination.yRot());
+      this.setYHeadRot(absoluteDestination.yRot());
+      this.setXRot(absoluteDestination.xRot());
       this.reapplyPosition();
       this.setOldPosAndRot();
-      this.setDeltaMovement(var4.deltaMovement());
+      this.setDeltaMovement(absoluteDestination.deltaMovement());
       this.clearMovementThisTick();
    }
 
-   public void forceSetRotation(float var1, boolean var2, float var3, boolean var4) {
-      Set var5 = Relative.rotation(var2, var4);
-      PositionMoveRotation var6 = PositionMoveRotation.of(this);
-      PositionMoveRotation var7 = var6.withRotation(var1, var3);
-      PositionMoveRotation var8 = PositionMoveRotation.calculateAbsolute(var6, var7, var5);
-      this.setYRot(var8.yRot());
-      this.setYHeadRot(var8.yRot());
-      this.setXRot(var8.xRot());
+   public void forceSetRotation(final float yRot, final boolean relativeY, final float xRot, final boolean relativeX) {
+      Set<Relative> relatives = Relative.rotation(relativeY, relativeX);
+      PositionMoveRotation currentValues = PositionMoveRotation.of(this);
+      PositionMoveRotation destination = currentValues.withRotation(yRot, xRot);
+      PositionMoveRotation absoluteDestination = PositionMoveRotation.calculateAbsolute(currentValues, destination, relatives);
+      this.setYRot(absoluteDestination.yRot());
+      this.setYHeadRot(absoluteDestination.yRot());
+      this.setXRot(absoluteDestination.xRot());
       this.setOldRot();
    }
 
-   public void placePortalTicket(BlockPos var1) {
+   public void placePortalTicket(final BlockPos ticketPosition) {
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         var2.getChunkSource().addTicketWithRadius(TicketType.PORTAL, new ChunkPos(var1), 3);
+      if (var3 instanceof ServerLevel serverLevel) {
+         serverLevel.getChunkSource().addTicketWithRadius(TicketType.PORTAL, ChunkPos.containing(ticketPosition), 3);
       }
 
    }
 
    protected void removeAfterChangingDimensions() {
       this.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
-      if (this instanceof Leashable var1) {
-         var1.removeLeash();
+      if (this instanceof Leashable leashable) {
+         leashable.removeLeash();
       }
 
-      if (this instanceof WaypointTransmitter var4) {
+      if (this instanceof WaypointTransmitter waypoint) {
          Level var3 = this.level;
-         if (var3 instanceof ServerLevel var2) {
-            var2.getWaypointManager().untrackWaypoint(var4);
+         if (var3 instanceof ServerLevel serverLevel) {
+            serverLevel.getWaypointManager().untrackWaypoint(waypoint);
          }
       }
 
    }
 
-   public Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
-      return PortalShape.getRelativePosition(var2, var1, this.position(), this.getDimensions(this.getPose()));
+   public Vec3 getRelativePortalPosition(final Direction.Axis axis, final BlockUtil.FoundRectangle portalArea) {
+      return PortalShape.getRelativePosition(portalArea, axis, this.position(), this.getDimensions(this.getPose()));
    }
 
-   public boolean canUsePortal(boolean var1) {
-      return (var1 || !this.isPassenger()) && this.isAlive();
+   public boolean canUsePortal(final boolean ignorePassenger) {
+      return (ignorePassenger || !this.isPassenger()) && this.isAlive();
    }
 
-   public boolean canTeleport(Level var1, Level var2) {
-      if (var1.dimension() == Level.END && var2.dimension() == Level.OVERWORLD) {
-         for(Entity var4 : this.getPassengers()) {
-            if (var4 instanceof ServerPlayer) {
-               ServerPlayer var5 = (ServerPlayer)var4;
-               if (!var5.seenCredits) {
+   public boolean canTeleport(final Level from, final Level to) {
+      if (from.dimension() == Level.END && to.dimension() == Level.OVERWORLD) {
+         for(Entity passenger : this.getPassengers()) {
+            if (passenger instanceof ServerPlayer) {
+               ServerPlayer player = (ServerPlayer)passenger;
+               if (!player.seenCredits) {
                   return false;
                }
             }
@@ -3175,11 +3190,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return true;
    }
 
-   public float getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5, float var6) {
-      return var6;
+   public float getBlockExplosionResistance(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState block, final FluidState fluid, final float resistance) {
+      return resistance;
    }
 
-   public boolean shouldBlockExplode(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, float var5) {
+   public boolean shouldBlockExplode(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState state, final float power) {
       return true;
    }
 
@@ -3191,27 +3206,27 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return false;
    }
 
-   public void fillCrashReportCategory(CrashReportCategory var1) {
-      var1.setDetail("Entity Type", (CrashReportDetail)(() -> {
-         String var10000 = String.valueOf(EntityType.getKey(this.getType()));
+   public void fillCrashReportCategory(final CrashReportCategory category) {
+      category.setDetail("Entity Type", (CrashReportDetail)(() -> {
+         String var10000 = this.typeHolder().getRegisteredName();
          return var10000 + " (" + this.getClass().getCanonicalName() + ")";
       }));
-      var1.setDetail("Entity ID", this.id);
-      var1.setDetail("Entity Name", (CrashReportDetail)(() -> this.getPlainTextName()));
-      var1.setDetail("Entity's Exact location", String.format(Locale.ROOT, "%.2f, %.2f, %.2f", this.getX(), this.getY(), this.getZ()));
-      var1.setDetail("Entity's Block location", CrashReportCategory.formatLocation(this.level(), Mth.floor(this.getX()), Mth.floor(this.getY()), Mth.floor(this.getZ())));
-      Vec3 var2 = this.getDeltaMovement();
-      var1.setDetail("Entity's Momentum", String.format(Locale.ROOT, "%.2f, %.2f, %.2f", var2.x, var2.y, var2.z));
-      var1.setDetail("Entity's Passengers", (CrashReportDetail)(() -> this.getPassengers().toString()));
-      var1.setDetail("Entity's Vehicle", (CrashReportDetail)(() -> String.valueOf(this.getVehicle())));
+      category.setDetail("Entity ID", this.id);
+      category.setDetail("Entity Name", (CrashReportDetail)(() -> this.getPlainTextName()));
+      category.setDetail("Entity's Exact location", String.format(Locale.ROOT, "%.2f, %.2f, %.2f", this.getX(), this.getY(), this.getZ()));
+      category.setDetail("Entity's Block location", CrashReportCategory.formatLocation(this.level(), Mth.floor(this.getX()), Mth.floor(this.getY()), Mth.floor(this.getZ())));
+      Vec3 movement = this.getDeltaMovement();
+      category.setDetail("Entity's Momentum", String.format(Locale.ROOT, "%.2f, %.2f, %.2f", movement.x, movement.y, movement.z));
+      category.setDetail("Entity's Passengers", (CrashReportDetail)(() -> this.getPassengers().toString()));
+      category.setDetail("Entity's Vehicle", (CrashReportDetail)(() -> String.valueOf(this.getVehicle())));
    }
 
    public boolean displayFireAnimation() {
       return this.isOnFire() && !this.isSpectator();
    }
 
-   public void setUUID(UUID var1) {
-      this.uuid = var1;
+   public void setUUID(final UUID uuid) {
+      this.uuid = uuid;
       this.stringUUID = this.uuid.toString();
    }
 
@@ -3235,16 +3250,16 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return viewScale;
    }
 
-   public static void setViewScale(double var0) {
-      viewScale = var0;
+   public static void setViewScale(final double viewScale) {
+      Entity.viewScale = viewScale;
    }
 
    public Component getDisplayName() {
-      return PlayerTeam.formatNameForTeam(this.getTeam(), this.getName()).withStyle((UnaryOperator)((var1) -> var1.withHoverEvent(this.createHoverEvent()).withInsertion(this.getStringUUID())));
+      return PlayerTeam.formatNameForTeam(this.getTeam(), this.getName()).withStyle((UnaryOperator)((s) -> s.withHoverEvent(this.createHoverEvent()).withInsertion(this.getStringUUID())));
    }
 
-   public void setCustomName(@Nullable Component var1) {
-      this.entityData.set(DATA_CUSTOM_NAME, Optional.ofNullable(var1));
+   public void setCustomName(final @Nullable Component name) {
+      this.entityData.set(DATA_CUSTOM_NAME, Optional.ofNullable(name));
    }
 
    public @Nullable Component getCustomName() {
@@ -3255,55 +3270,55 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return ((Optional)this.entityData.get(DATA_CUSTOM_NAME)).isPresent();
    }
 
-   public void setCustomNameVisible(boolean var1) {
-      this.entityData.set(DATA_CUSTOM_NAME_VISIBLE, var1);
+   public void setCustomNameVisible(final boolean visible) {
+      this.entityData.set(DATA_CUSTOM_NAME_VISIBLE, visible);
    }
 
    public boolean isCustomNameVisible() {
       return (Boolean)this.entityData.get(DATA_CUSTOM_NAME_VISIBLE);
    }
 
-   public boolean teleportTo(ServerLevel var1, double var2, double var4, double var6, Set<Relative> var8, float var9, float var10, boolean var11) {
-      Entity var12 = this.teleport(new TeleportTransition(var1, new Vec3(var2, var4, var6), Vec3.ZERO, var9, var10, var8, TeleportTransition.DO_NOTHING));
-      return var12 != null;
+   public boolean teleportTo(final ServerLevel level, final double x, final double y, final double z, final Set<Relative> relatives, final float newYRot, final float newXRot, final boolean resetCamera) {
+      Entity newEntity = this.teleport(new TeleportTransition(level, new Vec3(x, y, z), Vec3.ZERO, newYRot, newXRot, relatives, TeleportTransition.DO_NOTHING));
+      return newEntity != null;
    }
 
-   public void dismountTo(double var1, double var3, double var5) {
-      this.teleportTo(var1, var3, var5);
+   public void dismountTo(final double x, final double y, final double z) {
+      this.teleportTo(x, y, z);
    }
 
-   public void teleportTo(double var1, double var3, double var5) {
+   public void teleportTo(final double x, final double y, final double z) {
       if (this.level() instanceof ServerLevel) {
-         this.snapTo(var1, var3, var5, this.getYRot(), this.getXRot());
+         this.snapTo(x, y, z, this.getYRot(), this.getXRot());
          this.teleportPassengers();
       }
    }
 
    private void teleportPassengers() {
-      this.getSelfAndPassengers().forEach((var0) -> {
-         UnmodifiableIterator var1 = var0.passengers.iterator();
+      this.getSelfAndPassengers().forEach((entity) -> {
+         Iterator i$ = entity.passengers.iterator();
 
-         while(var1.hasNext()) {
-            Entity var2 = (Entity)var1.next();
-            var0.positionRider(var2, Entity::snapTo);
+         while(i$.hasNext()) {
+            Entity passenger = (Entity)i$.next();
+            entity.positionRider(passenger, Entity::snapTo);
          }
 
       });
    }
 
-   public void teleportRelative(double var1, double var3, double var5) {
-      this.teleportTo(this.getX() + var1, this.getY() + var3, this.getZ() + var5);
+   public void teleportRelative(final double dx, final double dy, final double dz) {
+      this.teleportTo(this.getX() + dx, this.getY() + dy, this.getZ() + dz);
    }
 
    public boolean shouldShowName() {
       return this.isCustomNameVisible();
    }
 
-   public void onSyncedDataUpdated(List<SynchedEntityData.DataValue<?>> var1) {
+   public void onSyncedDataUpdated(final List<SynchedEntityData.DataValue<?>> updatedItems) {
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (DATA_POSE.equals(var1)) {
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      if (DATA_POSE.equals(accessor)) {
          this.refreshDimensions();
       }
 
@@ -3312,42 +3327,42 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    /** @deprecated */
    @Deprecated
    protected void fixupDimensions() {
-      Pose var1 = this.getPose();
-      EntityDimensions var2 = this.getDimensions(var1);
-      this.dimensions = var2;
-      this.eyeHeight = var2.eyeHeight();
+      Pose pose = this.getPose();
+      EntityDimensions newDim = this.getDimensions(pose);
+      this.dimensions = newDim;
+      this.eyeHeight = newDim.eyeHeight();
    }
 
    public void refreshDimensions() {
-      EntityDimensions var1 = this.dimensions;
-      Pose var2 = this.getPose();
-      EntityDimensions var3 = this.getDimensions(var2);
-      this.dimensions = var3;
-      this.eyeHeight = var3.eyeHeight();
+      EntityDimensions oldDim = this.dimensions;
+      Pose pose = this.getPose();
+      EntityDimensions newDim = this.getDimensions(pose);
+      this.dimensions = newDim;
+      this.eyeHeight = newDim.eyeHeight();
       this.reapplyPosition();
-      boolean var4 = var3.width() <= 4.0F && var3.height() <= 4.0F;
-      if (!this.level.isClientSide() && !this.firstTick && !this.noPhysics && var4 && (var3.width() > var1.width() || var3.height() > var1.height()) && !(this instanceof Player)) {
-         this.fudgePositionAfterSizeChange(var1);
+      boolean isSmall = newDim.width() <= 4.0F && newDim.height() <= 4.0F;
+      if (!this.level.isClientSide() && !this.firstTick && !this.noPhysics && isSmall && (newDim.width() > oldDim.width() || newDim.height() > oldDim.height()) && !(this instanceof Player)) {
+         this.fudgePositionAfterSizeChange(oldDim);
       }
 
    }
 
-   public boolean fudgePositionAfterSizeChange(EntityDimensions var1) {
-      EntityDimensions var2 = this.getDimensions(this.getPose());
-      Vec3 var3 = this.position().add(0.0, (double)var1.height() / 2.0, 0.0);
-      double var4 = (double)Math.max(0.0F, var2.width() - var1.width()) + 1.0E-6;
-      double var6 = (double)Math.max(0.0F, var2.height() - var1.height()) + 1.0E-6;
-      VoxelShape var8 = Shapes.create(AABB.ofSize(var3, var4, var6, var4));
-      Optional var9 = this.level.findFreePosition(this, var8, var3, (double)var2.width(), (double)var2.height(), (double)var2.width());
-      if (var9.isPresent()) {
-         this.setPos(((Vec3)var9.get()).add(0.0, (double)(-var2.height()) / 2.0, 0.0));
+   public boolean fudgePositionAfterSizeChange(final EntityDimensions previousDimensions) {
+      EntityDimensions newDimensions = this.getDimensions(this.getPose());
+      Vec3 oldCenter = this.position().add(0.0, (double)previousDimensions.height() / 2.0, 0.0);
+      double widthDelta = (double)Math.max(0.0F, newDimensions.width() - previousDimensions.width()) + 1.0E-6;
+      double heightDelta = (double)Math.max(0.0F, newDimensions.height() - previousDimensions.height()) + 1.0E-6;
+      VoxelShape allowedCenters = Shapes.create(AABB.ofSize(oldCenter, widthDelta, heightDelta, widthDelta));
+      Optional<Vec3> freePosition = this.level.findFreePosition(this, allowedCenters, oldCenter, (double)newDimensions.width(), (double)newDimensions.height(), (double)newDimensions.width());
+      if (freePosition.isPresent()) {
+         this.setPos(((Vec3)freePosition.get()).add(0.0, (double)(-newDimensions.height()) / 2.0, 0.0));
          return true;
       } else {
-         if (var2.width() > var1.width() && var2.height() > var1.height()) {
-            VoxelShape var10 = Shapes.create(AABB.ofSize(var3, var4, 1.0E-6, var4));
-            Optional var11 = this.level.findFreePosition(this, var10, var3, (double)var2.width(), (double)var1.height(), (double)var2.width());
-            if (var11.isPresent()) {
-               this.setPos(((Vec3)var11.get()).add(0.0, (double)(-var1.height()) / 2.0 + 1.0E-6, 0.0));
+         if (newDimensions.width() > previousDimensions.width() && newDimensions.height() > previousDimensions.height()) {
+            VoxelShape allowedCentersIgnoringY = Shapes.create(AABB.ofSize(oldCenter, widthDelta, 1.0E-6, widthDelta));
+            Optional<Vec3> freePositionIgnoreVertical = this.level.findFreePosition(this, allowedCentersIgnoringY, oldCenter, (double)newDimensions.width(), (double)previousDimensions.height(), (double)newDimensions.width());
+            if (freePositionIgnoreVertical.isPresent()) {
+               this.setPos(((Vec3)freePositionIgnoreVertical.get()).add(0.0, (double)(-previousDimensions.height()) / 2.0 + 1.0E-6, 0.0));
                return true;
             }
          }
@@ -3368,7 +3383,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return new HoverEvent.ShowEntity(new HoverEvent.EntityTooltipInfo(this.getType(), this.getUUID(), this.getName()));
    }
 
-   public boolean broadcastToPlayer(ServerPlayer var1) {
+   public boolean broadcastToPlayer(final ServerPlayer player) {
       return true;
    }
 
@@ -3376,63 +3391,59 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.bb;
    }
 
-   public final void setBoundingBox(AABB var1) {
-      this.bb = var1;
+   public final void setBoundingBox(final AABB bb) {
+      this.bb = bb;
    }
 
-   public final float getEyeHeight(Pose var1) {
-      return this.getDimensions(var1).eyeHeight();
+   public final float getEyeHeight(final Pose pose) {
+      return this.getDimensions(pose).eyeHeight();
    }
 
    public final float getEyeHeight() {
       return this.eyeHeight;
    }
 
-   public @Nullable SlotAccess getSlot(int var1) {
+   public @Nullable SlotAccess getSlot(final int slot) {
       return null;
    }
 
-   public InteractionResult interactAt(Player var1, Vec3 var2, InteractionHand var3) {
-      return InteractionResult.PASS;
-   }
-
-   public boolean ignoreExplosion(Explosion var1) {
+   public boolean ignoreExplosion(final Explosion explosion) {
       return false;
    }
 
-   public void startSeenByPlayer(ServerPlayer var1) {
+   public void startSeenByPlayer(final ServerPlayer player) {
    }
 
-   public void stopSeenByPlayer(ServerPlayer var1) {
+   public void stopSeenByPlayer(final ServerPlayer player) {
    }
 
-   public float rotate(Rotation var1) {
-      float var2 = Mth.wrapDegrees(this.getYRot());
+   public float rotate(final Rotation rotation) {
+      float angle = Mth.wrapDegrees(this.getYRot());
       float var10000;
-      switch (var1) {
-         case CLOCKWISE_180 -> var10000 = var2 + 180.0F;
-         case COUNTERCLOCKWISE_90 -> var10000 = var2 + 270.0F;
-         case CLOCKWISE_90 -> var10000 = var2 + 90.0F;
-         default -> var10000 = var2;
+      switch (rotation) {
+         case CLOCKWISE_180 -> var10000 = angle + 180.0F;
+         case COUNTERCLOCKWISE_90 -> var10000 = angle + 270.0F;
+         case CLOCKWISE_90 -> var10000 = angle + 90.0F;
+         default -> var10000 = angle;
       }
 
       return var10000;
    }
 
-   public float mirror(Mirror var1) {
-      float var2 = Mth.wrapDegrees(this.getYRot());
+   public float mirror(final Mirror mirror) {
+      float angle = Mth.wrapDegrees(this.getYRot());
       float var10000;
-      switch (var1) {
-         case FRONT_BACK -> var10000 = -var2;
-         case LEFT_RIGHT -> var10000 = 180.0F - var2;
-         default -> var10000 = var2;
+      switch (mirror) {
+         case FRONT_BACK -> var10000 = -angle;
+         case LEFT_RIGHT -> var10000 = 180.0F - angle;
+         default -> var10000 = angle;
       }
 
       return var10000;
    }
 
-   public ProjectileDeflection deflection(Projectile var1) {
-      return this.getType().is(EntityTypeTags.DEFLECTS_PROJECTILES) ? ProjectileDeflection.REVERSE : ProjectileDeflection.NONE;
+   public ProjectileDeflection deflection(final Projectile projectile) {
+      return this.is(EntityTypeTags.DEFLECTS_PROJECTILES) ? ProjectileDeflection.REVERSE : ProjectileDeflection.NONE;
    }
 
    public @Nullable LivingEntity getControllingPassenger() {
@@ -3451,16 +3462,16 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.passengers.isEmpty() ? null : (Entity)this.passengers.get(0);
    }
 
-   public boolean hasPassenger(Entity var1) {
-      return this.passengers.contains(var1);
+   public boolean hasPassenger(final Entity entity) {
+      return this.passengers.contains(entity);
    }
 
-   public boolean hasPassenger(Predicate<Entity> var1) {
+   public boolean hasPassenger(final Predicate<Entity> test) {
       UnmodifiableIterator var2 = this.passengers.iterator();
 
       while(var2.hasNext()) {
-         Entity var3 = (Entity)var2.next();
-         if (var1.test(var3)) {
+         Entity passenger = (Entity)var2.next();
+         if (test.test(passenger)) {
             return true;
          }
       }
@@ -3485,7 +3496,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public int countPlayerPassengers() {
-      return (int)this.getIndirectPassengersStream().filter((var0) -> var0 instanceof Player).count();
+      return (int)this.getIndirectPassengersStream().filter((e) -> e instanceof Player).count();
    }
 
    public boolean hasExactlyOnePlayerPassenger() {
@@ -3493,23 +3504,23 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public Entity getRootVehicle() {
-      Entity var1;
-      for(var1 = this; var1.isPassenger(); var1 = var1.getVehicle()) {
+      Entity result;
+      for(result = this; result.isPassenger(); result = result.getVehicle()) {
       }
 
-      return var1;
+      return result;
    }
 
-   public boolean isPassengerOfSameVehicle(Entity var1) {
-      return this.getRootVehicle() == var1.getRootVehicle();
+   public boolean isPassengerOfSameVehicle(final Entity other) {
+      return this.getRootVehicle() == other.getRootVehicle();
    }
 
-   public boolean hasIndirectPassenger(Entity var1) {
-      if (!var1.isPassenger()) {
+   public boolean hasIndirectPassenger(final Entity entity) {
+      if (!entity.isPassenger()) {
          return false;
       } else {
-         Entity var2 = var1.getVehicle();
-         return var2 == this ? true : this.hasIndirectPassenger(var2);
+         Entity ridden = entity.getVehicle();
+         return ridden == this ? true : this.hasIndirectPassenger(ridden);
       }
    }
 
@@ -3522,13 +3533,13 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    protected boolean isLocalClientAuthoritative() {
-      LivingEntity var1 = this.getControllingPassenger();
-      return var1 != null && var1.isLocalClientAuthoritative();
+      LivingEntity passenger = this.getControllingPassenger();
+      return passenger != null && passenger.isLocalClientAuthoritative();
    }
 
    public boolean isClientAuthoritative() {
-      LivingEntity var1 = this.getControllingPassenger();
-      return var1 != null && var1.isClientAuthoritative();
+      LivingEntity passenger = this.getControllingPassenger();
+      return passenger != null && passenger.isClientAuthoritative();
    }
 
    public boolean canSimulateMovement() {
@@ -3539,15 +3550,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.isLocalInstanceAuthoritative();
    }
 
-   protected static Vec3 getCollisionHorizontalEscapeVector(double var0, double var2, float var4) {
-      double var5 = (var0 + var2 + 9.999999747378752E-6) / 2.0;
-      float var7 = -Mth.sin((double)(var4 * 0.017453292F));
-      float var8 = Mth.cos((double)(var4 * 0.017453292F));
-      float var9 = Math.max(Math.abs(var7), Math.abs(var8));
-      return new Vec3((double)var7 * var5 / (double)var9, 0.0, (double)var8 * var5 / (double)var9);
+   protected static Vec3 getCollisionHorizontalEscapeVector(final double colliderWidth, final double collidingWidth, final float directionDegrees) {
+      double distance = (colliderWidth + collidingWidth + 9.999999747378752E-6) / 2.0;
+      float directionX = -Mth.sin((double)(directionDegrees * 0.017453292F));
+      float directionZ = Mth.cos((double)(directionDegrees * 0.017453292F));
+      float scale = Math.max(Math.abs(directionX), Math.abs(directionZ));
+      return new Vec3((double)directionX * distance / (double)scale, 0.0, (double)directionZ * distance / (double)scale);
    }
 
-   public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
+   public Vec3 getDismountLocationForPassenger(final LivingEntity passenger) {
       return new Vec3(this.getX(), this.getBoundingBox().maxY, this.getZ());
    }
 
@@ -3571,63 +3582,63 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return 0;
    }
 
-   public CommandSourceStack createCommandSourceStackForNameResolution(ServerLevel var1) {
-      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, PermissionSet.NO_PERMISSIONS, this.getPlainTextName(), this.getDisplayName(), var1.getServer(), this);
+   public CommandSourceStack createCommandSourceStackForNameResolution(final ServerLevel level) {
+      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), level, PermissionSet.NO_PERMISSIONS, this.getPlainTextName(), this.getDisplayName(), level.getServer(), this);
    }
 
-   public void lookAt(EntityAnchorArgument.Anchor var1, Vec3 var2) {
-      Vec3 var3 = var1.apply(this);
-      double var4 = var2.x - var3.x;
-      double var6 = var2.y - var3.y;
-      double var8 = var2.z - var3.z;
-      double var10 = Math.sqrt(var4 * var4 + var8 * var8);
-      this.setXRot(Mth.wrapDegrees((float)(-(Mth.atan2(var6, var10) * 57.2957763671875))));
-      this.setYRot(Mth.wrapDegrees((float)(Mth.atan2(var8, var4) * 57.2957763671875) - 90.0F));
+   public void lookAt(final EntityAnchorArgument.Anchor anchor, final Vec3 pos) {
+      Vec3 from = anchor.apply(this);
+      double xd = pos.x - from.x;
+      double yd = pos.y - from.y;
+      double zd = pos.z - from.z;
+      double sd = Math.sqrt(xd * xd + zd * zd);
+      this.setXRot(Mth.wrapDegrees((float)(-(Mth.atan2(yd, sd) * 57.2957763671875))));
+      this.setYRot(Mth.wrapDegrees((float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F));
       this.setYHeadRot(this.getYRot());
       this.xRotO = this.getXRot();
       this.yRotO = this.getYRot();
    }
 
-   public float getPreciseBodyRotation(float var1) {
-      return Mth.lerp(var1, this.yRotO, this.yRot);
+   public float getPreciseBodyRotation(final float partial) {
+      return Mth.lerp(partial, this.yRotO, this.yRot);
    }
 
-   public boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> var1, double var2) {
+   public boolean updateFluidHeightAndDoFluidPushing(final TagKey<Fluid> type, final double flowScale) {
       if (this.touchingUnloadedChunk()) {
          return false;
       } else {
-         AABB var4 = this.getBoundingBox().deflate(0.001);
-         int var5 = Mth.floor(var4.minX);
-         int var6 = Mth.ceil(var4.maxX);
-         int var7 = Mth.floor(var4.minY);
-         int var8 = Mth.ceil(var4.maxY);
-         int var9 = Mth.floor(var4.minZ);
-         int var10 = Mth.ceil(var4.maxZ);
-         double var11 = 0.0;
-         boolean var13 = this.isPushedByFluid();
-         boolean var14 = false;
-         Vec3 var15 = Vec3.ZERO;
-         int var16 = 0;
-         BlockPos.MutableBlockPos var17 = new BlockPos.MutableBlockPos();
+         AABB box = this.getBoundingBox().deflate(0.001);
+         int x0 = Mth.floor(box.minX);
+         int x1 = Mth.ceil(box.maxX);
+         int y0 = Mth.floor(box.minY);
+         int y1 = Mth.ceil(box.maxY);
+         int z0 = Mth.floor(box.minZ);
+         int z1 = Mth.ceil(box.maxZ);
+         double fluidHeight = 0.0;
+         boolean pushedByFluid = this.isPushedByFluid();
+         boolean inFluid = false;
+         Vec3 current = Vec3.ZERO;
+         int numberOfCurrents = 0;
+         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-         for(int var18 = var5; var18 < var6; ++var18) {
-            for(int var19 = var7; var19 < var8; ++var19) {
-               for(int var20 = var9; var20 < var10; ++var20) {
-                  var17.set(var18, var19, var20);
-                  FluidState var21 = this.level().getFluidState(var17);
-                  if (var21.is(var1)) {
-                     double var22 = (double)((float)var19 + var21.getHeight(this.level(), var17));
-                     if (var22 >= var4.minY) {
-                        var14 = true;
-                        var11 = Math.max(var22 - var4.minY, var11);
-                        if (var13) {
-                           Vec3 var24 = var21.getFlow(this.level(), var17);
-                           if (var11 < 0.4) {
-                              var24 = var24.scale(var11);
+         for(int x = x0; x < x1; ++x) {
+            for(int y = y0; y < y1; ++y) {
+               for(int z = z0; z < z1; ++z) {
+                  pos.set(x, y, z);
+                  FluidState fluidState = this.level().getFluidState(pos);
+                  if (fluidState.is(type)) {
+                     double blockFluidHeight = (double)((float)y + fluidState.getHeight(this.level(), pos));
+                     if (blockFluidHeight >= box.minY) {
+                        inFluid = true;
+                        fluidHeight = Math.max(blockFluidHeight - box.minY, fluidHeight);
+                        if (pushedByFluid) {
+                           Vec3 flow = fluidState.getFlow(this.level(), pos);
+                           if (fluidHeight < 0.4) {
+                              flow = flow.scale(fluidHeight);
                            }
 
-                           var15 = var15.add(var24);
-                           ++var16;
+                           current = current.add(flow);
+                           ++numberOfCurrents;
                         }
                      }
                   }
@@ -3635,41 +3646,41 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
             }
          }
 
-         if (var15.length() > 0.0) {
-            if (var16 > 0) {
-               var15 = var15.scale(1.0 / (double)var16);
+         if (current.length() > 0.0) {
+            if (numberOfCurrents > 0) {
+               current = current.scale(1.0 / (double)numberOfCurrents);
             }
 
             if (!(this instanceof Player)) {
-               var15 = var15.normalize();
+               current = current.normalize();
             }
 
-            Vec3 var26 = this.getDeltaMovement();
-            var15 = var15.scale(var2);
-            double var27 = 0.003;
-            if (Math.abs(var26.x) < 0.003 && Math.abs(var26.z) < 0.003 && var15.length() < 0.0045000000000000005) {
-               var15 = var15.normalize().scale(0.0045000000000000005);
+            Vec3 oldMovement = this.getDeltaMovement();
+            current = current.scale(flowScale);
+            double min = 0.003;
+            if (Math.abs(oldMovement.x) < 0.003 && Math.abs(oldMovement.z) < 0.003 && current.length() < 0.0045000000000000005) {
+               current = current.normalize().scale(0.0045000000000000005);
             }
 
-            this.setDeltaMovement(this.getDeltaMovement().add(var15));
+            this.setDeltaMovement(this.getDeltaMovement().add(current));
          }
 
-         this.fluidHeight.put(var1, var11);
-         return var14;
+         this.fluidHeight.put(type, fluidHeight);
+         return inFluid;
       }
    }
 
    public boolean touchingUnloadedChunk() {
-      AABB var1 = this.getBoundingBox().inflate(1.0);
-      int var2 = Mth.floor(var1.minX);
-      int var3 = Mth.ceil(var1.maxX);
-      int var4 = Mth.floor(var1.minZ);
-      int var5 = Mth.ceil(var1.maxZ);
-      return !this.level().hasChunksAt(var2, var4, var3, var5);
+      AABB box = this.getBoundingBox().inflate(1.0);
+      int x0 = Mth.floor(box.minX);
+      int x1 = Mth.ceil(box.maxX);
+      int z0 = Mth.floor(box.minZ);
+      int z1 = Mth.ceil(box.maxZ);
+      return !this.level().hasChunksAt(x0, z0, x1, z1);
    }
 
-   public double getFluidHeight(TagKey<Fluid> var1) {
-      return this.fluidHeight.getDouble(var1);
+   public double getFluidHeight(final TagKey<Fluid> type) {
+      return this.fluidHeight.getDouble(type);
    }
 
    public double getFluidJumpThreshold() {
@@ -3684,11 +3695,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.dimensions.height();
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
-      return new ClientboundAddEntityPacket(this, var1);
+   public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {
+      return new ClientboundAddEntityPacket(this, serverEntity);
    }
 
-   public EntityDimensions getDimensions(Pose var1) {
+   public EntityDimensions getDimensions(final Pose pose) {
       return this.type.getDimensions();
    }
 
@@ -3724,22 +3735,22 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.deltaMovement;
    }
 
-   public void setDeltaMovement(Vec3 var1) {
-      if (var1.isFinite()) {
-         this.deltaMovement = var1;
+   public void setDeltaMovement(final Vec3 deltaMovement) {
+      if (deltaMovement.isFinite()) {
+         this.deltaMovement = deltaMovement;
       }
 
    }
 
-   public void addDeltaMovement(Vec3 var1) {
-      if (var1.isFinite()) {
-         this.setDeltaMovement(this.getDeltaMovement().add(var1));
+   public void addDeltaMovement(final Vec3 momentum) {
+      if (momentum.isFinite()) {
+         this.setDeltaMovement(this.getDeltaMovement().add(momentum));
       }
 
    }
 
-   public void setDeltaMovement(double var1, double var3, double var5) {
-      this.setDeltaMovement(new Vec3(var1, var3, var5));
+   public void setDeltaMovement(final double xd, final double yd, final double zd) {
+      this.setDeltaMovement(new Vec3(xd, yd, zd));
    }
 
    public final int getBlockX() {
@@ -3750,12 +3761,12 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.position.x;
    }
 
-   public double getX(double var1) {
-      return this.position.x + (double)this.getBbWidth() * var1;
+   public double getX(final double progress) {
+      return this.position.x + (double)this.getBbWidth() * progress;
    }
 
-   public double getRandomX(double var1) {
-      return this.getX((2.0 * this.random.nextDouble() - 1.0) * var1);
+   public double getRandomX(final double spread) {
+      return this.getX((2.0 * this.random.nextDouble() - 1.0) * spread);
    }
 
    public final int getBlockY() {
@@ -3766,8 +3777,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.position.y;
    }
 
-   public double getY(double var1) {
-      return this.position.y + (double)this.getBbHeight() * var1;
+   public double getY(final double progress) {
+      return this.position.y + (double)this.getBbHeight() * progress;
    }
 
    public double getRandomY() {
@@ -3786,25 +3797,25 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.position.z;
    }
 
-   public double getZ(double var1) {
-      return this.position.z + (double)this.getBbWidth() * var1;
+   public double getZ(final double progress) {
+      return this.position.z + (double)this.getBbWidth() * progress;
    }
 
-   public double getRandomZ(double var1) {
-      return this.getZ((2.0 * this.random.nextDouble() - 1.0) * var1);
+   public double getRandomZ(final double spread) {
+      return this.getZ((2.0 * this.random.nextDouble() - 1.0) * spread);
    }
 
-   public final void setPosRaw(double var1, double var3, double var5) {
-      if (this.position.x != var1 || this.position.y != var3 || this.position.z != var5) {
-         this.position = new Vec3(var1, var3, var5);
-         int var7 = Mth.floor(var1);
-         int var8 = Mth.floor(var3);
-         int var9 = Mth.floor(var5);
-         if (var7 != this.blockPosition.getX() || var8 != this.blockPosition.getY() || var9 != this.blockPosition.getZ()) {
-            this.blockPosition = new BlockPos(var7, var8, var9);
+   public final void setPosRaw(final double x, final double y, final double z) {
+      if (this.position.x != x || this.position.y != y || this.position.z != z) {
+         this.position = new Vec3(x, y, z);
+         int fx = Mth.floor(x);
+         int fy = Mth.floor(y);
+         int fz = Mth.floor(z);
+         if (fx != this.blockPosition.getX() || fy != this.blockPosition.getY() || fz != this.blockPosition.getZ()) {
+            this.blockPosition = new BlockPos(fx, fy, fz);
             this.inBlockState = null;
-            if (SectionPos.blockToSectionCoord(var7) != this.chunkPosition.x || SectionPos.blockToSectionCoord(var9) != this.chunkPosition.z) {
-               this.chunkPosition = new ChunkPos(this.blockPosition);
+            if (SectionPos.blockToSectionCoord(fx) != this.chunkPosition.x() || SectionPos.blockToSectionCoord(fz) != this.chunkPosition.z()) {
+               this.chunkPosition = ChunkPos.containing(this.blockPosition);
             }
          }
 
@@ -3812,19 +3823,19 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          if (!this.firstTick) {
             Level var11 = this.level;
             if (var11 instanceof ServerLevel) {
-               ServerLevel var10 = (ServerLevel)var11;
+               ServerLevel serverLevel = (ServerLevel)var11;
                if (!this.isRemoved()) {
                   if (this instanceof WaypointTransmitter) {
-                     WaypointTransmitter var13 = (WaypointTransmitter)this;
-                     if (var13.isTransmittingWaypoint()) {
-                        var10.getWaypointManager().updateWaypoint(var13);
+                     WaypointTransmitter waypoint = (WaypointTransmitter)this;
+                     if (waypoint.isTransmittingWaypoint()) {
+                        serverLevel.getWaypointManager().updateWaypoint(waypoint);
                      }
                   }
 
                   if (this instanceof ServerPlayer) {
-                     ServerPlayer var14 = (ServerPlayer)this;
-                     if (var14.isReceivingWaypoints() && var14.connection != null) {
-                        var10.getWaypointManager().updatePlayer(var14);
+                     ServerPlayer player = (ServerPlayer)this;
+                     if (player.isReceivingWaypoints() && player.connection != null) {
+                        serverLevel.getWaypointManager().updatePlayer(player);
                      }
                   }
                }
@@ -3845,38 +3856,38 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return false;
    }
 
-   public void notifyLeashHolder(Leashable var1) {
+   public void notifyLeashHolder(final Leashable entity) {
    }
 
-   public void notifyLeasheeRemoved(Leashable var1) {
+   public void notifyLeasheeRemoved(final Leashable entity) {
    }
 
-   public Vec3 getRopeHoldPosition(float var1) {
-      return this.getPosition(var1).add(0.0, (double)this.eyeHeight * 0.7, 0.0);
+   public Vec3 getRopeHoldPosition(final float partialTickTime) {
+      return this.getPosition(partialTickTime).add(0.0, (double)this.eyeHeight * 0.7, 0.0);
    }
 
-   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
-      int var2 = var1.getId();
-      double var3 = var1.getX();
-      double var5 = var1.getY();
-      double var7 = var1.getZ();
-      this.syncPacketPositionCodec(var3, var5, var7);
-      this.snapTo(var3, var5, var7, var1.getYRot(), var1.getXRot());
-      this.setId(var2);
-      this.setUUID(var1.getUUID());
-      this.setDeltaMovement(var1.getMovement());
+   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
+      int entityId = packet.getId();
+      double x = packet.getX();
+      double y = packet.getY();
+      double z = packet.getZ();
+      this.syncPacketPositionCodec(x, y, z);
+      this.snapTo(x, y, z, packet.getYRot(), packet.getXRot());
+      this.setId(entityId);
+      this.setUUID(packet.getUUID());
+      this.setDeltaMovement(packet.getMovement());
    }
 
    public @Nullable ItemStack getPickResult() {
       return null;
    }
 
-   public void setIsInPowderSnow(boolean var1) {
-      this.isInPowderSnow = var1;
+   public void setIsInPowderSnow(final boolean isInPowderSnow) {
+      this.isInPowderSnow = isInPowderSnow;
    }
 
    public boolean canFreeze() {
-      return !this.getType().is(EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES);
+      return !this.is(EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES);
    }
 
    public boolean isFreezing() {
@@ -3891,11 +3902,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.getYRot();
    }
 
-   public void setYRot(float var1) {
-      if (!Float.isFinite(var1)) {
-         Util.logAndPauseIfInIde("Invalid entity rotation: " + var1 + ", discarding.");
+   public void setYRot(final float yRot) {
+      if (!Float.isFinite(yRot)) {
+         Util.logAndPauseIfInIde("Invalid entity rotation: " + yRot + ", discarding.");
       } else {
-         this.yRot = var1;
+         this.yRot = yRot;
       }
    }
 
@@ -3903,11 +3914,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.xRot;
    }
 
-   public void setXRot(float var1) {
-      if (!Float.isFinite(var1)) {
-         Util.logAndPauseIfInIde("Invalid entity rotation: " + var1 + ", discarding.");
+   public void setXRot(final float xRot) {
+      if (!Float.isFinite(xRot)) {
+         Util.logAndPauseIfInIde("Invalid entity rotation: " + xRot + ", discarding.");
       } else {
-         this.xRot = Math.clamp(var1 % 360.0F, -90.0F, 90.0F);
+         this.xRot = Math.clamp(xRot % 360.0F, -90.0F, 90.0F);
       }
    }
 
@@ -3919,7 +3930,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return 0.0F;
    }
 
-   public void onExplosionHit(@Nullable Entity var1) {
+   public void onExplosionHit(final @Nullable Entity explosionCausedBy) {
    }
 
    public final boolean isRemoved() {
@@ -3930,9 +3941,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.removalReason;
    }
 
-   public final void setRemoved(RemovalReason var1) {
+   public final void setRemoved(final RemovalReason reason) {
       if (this.removalReason == null) {
-         this.removalReason = var1;
+         this.removalReason = reason;
       }
 
       if (this.removalReason.shouldDestroy()) {
@@ -3940,16 +3951,16 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
 
       this.getPassengers().forEach(Entity::stopRiding);
-      this.levelCallback.onRemove(var1);
-      this.onRemoval(var1);
+      this.levelCallback.onRemove(reason);
+      this.onRemoval(reason);
    }
 
    protected void unsetRemoved() {
       this.removalReason = null;
    }
 
-   public void setLevelCallback(EntityInLevelCallback var1) {
-      this.levelCallback = var1;
+   public void setLevelCallback(final EntityInLevelCallback levelCallback) {
+      this.levelCallback = levelCallback;
    }
 
    public boolean shouldBeSaved() {
@@ -3966,7 +3977,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return false;
    }
 
-   public boolean mayInteract(ServerLevel var1, BlockPos var2) {
+   public boolean mayInteract(final ServerLevel level, final BlockPos pos) {
       return true;
    }
 
@@ -3978,8 +3989,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.level;
    }
 
-   protected void setLevel(Level var1) {
-      this.level = var1;
+   protected void setLevel(final Level level) {
+      this.level = level;
    }
 
    public DamageSources damageSources() {
@@ -3990,15 +4001,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.level().registryAccess();
    }
 
-   protected void lerpPositionAndRotationStep(int var1, double var2, double var4, double var6, double var8, double var10) {
-      double var12 = 1.0 / (double)var1;
-      double var14 = Mth.lerp(var12, this.getX(), var2);
-      double var16 = Mth.lerp(var12, this.getY(), var4);
-      double var18 = Mth.lerp(var12, this.getZ(), var6);
-      float var20 = (float)Mth.rotLerp(var12, (double)this.getYRot(), var8);
-      float var21 = (float)Mth.lerp(var12, (double)this.getXRot(), var10);
-      this.setPos(var14, var16, var18);
-      this.setRot(var20, var21);
+   protected void lerpPositionAndRotationStep(final int stepsToTarget, final double targetX, final double targetY, final double targetZ, final double targetYRot, final double targetXRot) {
+      double alpha = 1.0 / (double)stepsToTarget;
+      double x = Mth.lerp(alpha, this.getX(), targetX);
+      double y = Mth.lerp(alpha, this.getY(), targetY);
+      double z = Mth.lerp(alpha, this.getZ(), targetZ);
+      float yRot = (float)Mth.rotLerp(alpha, (double)this.getYRot(), targetYRot);
+      float xRot = (float)Mth.lerp(alpha, (double)this.getXRot(), targetXRot);
+      this.setPos(x, y, z);
+      this.setRot(yRot, xRot);
    }
 
    public RandomSource getRandom() {
@@ -4007,9 +4018,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    public Vec3 getKnownMovement() {
       LivingEntity var2 = this.getControllingPassenger();
-      if (var2 instanceof Player var1) {
+      if (var2 instanceof Player controller) {
          if (this.isAlive()) {
-            return var1.getKnownMovement();
+            return controller.getKnownMovement();
          }
       }
 
@@ -4018,9 +4029,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    public Vec3 getKnownSpeed() {
       LivingEntity var2 = this.getControllingPassenger();
-      if (var2 instanceof Player var1) {
+      if (var2 instanceof Player controller) {
          if (this.isAlive()) {
-            return var1.getKnownSpeed();
+            return controller.getKnownSpeed();
          }
       }
 
@@ -4035,54 +4046,54 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.type.getDefaultLootTable();
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.CUSTOM_NAME);
-      this.applyImplicitComponentIfPresent(var1, DataComponents.CUSTOM_DATA);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.CUSTOM_NAME);
+      this.applyImplicitComponentIfPresent(components, DataComponents.CUSTOM_DATA);
    }
 
-   public final void applyComponentsFromItemStack(ItemStack var1) {
-      this.applyImplicitComponents(var1.getComponents());
+   public final void applyComponentsFromItemStack(final ItemStack stack) {
+      this.applyImplicitComponents(stack.getComponents());
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      if (var1 == DataComponents.CUSTOM_NAME) {
-         return (T)castComponentValue(var1, this.getCustomName());
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      if (type == DataComponents.CUSTOM_NAME) {
+         return (T)castComponentValue(type, this.getCustomName());
       } else {
-         return (T)(var1 == DataComponents.CUSTOM_DATA ? castComponentValue(var1, this.customData) : null);
+         return (T)(type == DataComponents.CUSTOM_DATA ? castComponentValue(type, this.customData) : this.typeHolder().components().get(type));
       }
    }
 
    @Contract("_,!null->!null;_,_->_")
-   protected static <T> @Nullable T castComponentValue(DataComponentType<T> var0, @Nullable Object var1) {
-      return (T)var1;
+   protected static <T> @Nullable T castComponentValue(final DataComponentType<T> type, final @Nullable Object value) {
+      return (T)value;
    }
 
-   public <T> void setComponent(DataComponentType<T> var1, T var2) {
-      this.applyImplicitComponent(var1, var2);
+   public <T> void setComponent(final DataComponentType<T> type, final T value) {
+      this.applyImplicitComponent(type, value);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.CUSTOM_NAME) {
-         this.setCustomName((Component)castComponentValue(DataComponents.CUSTOM_NAME, var2));
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.CUSTOM_NAME) {
+         this.setCustomName((Component)castComponentValue(DataComponents.CUSTOM_NAME, value));
          return true;
-      } else if (var1 == DataComponents.CUSTOM_DATA) {
-         this.customData = (CustomData)castComponentValue(DataComponents.CUSTOM_DATA, var2);
+      } else if (type == DataComponents.CUSTOM_DATA) {
+         this.customData = (CustomData)castComponentValue(DataComponents.CUSTOM_DATA, value);
          return true;
       } else {
          return false;
       }
    }
 
-   protected <T> boolean applyImplicitComponentIfPresent(DataComponentGetter var1, DataComponentType<T> var2) {
-      Object var3 = var1.get(var2);
-      return var3 != null ? this.applyImplicitComponent(var2, var3) : false;
+   protected <T> boolean applyImplicitComponentIfPresent(final DataComponentGetter components, final DataComponentType<T> type) {
+      T value = (T)components.get(type);
+      return value != null ? this.applyImplicitComponent(type, value) : false;
    }
 
    public ProblemReporter.PathElement problemPath() {
       return new EntityPathElement(this);
    }
 
-   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
+   public void registerDebugValues(final ServerLevel level, final DebugValueSource.Registration registration) {
    }
 
    static {
@@ -4099,23 +4110,17 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       DATA_TICKS_FROZEN = SynchedEntityData.<Integer>defineId(Entity.class, EntityDataSerializers.INT);
    }
 
-   static record Movement(Vec3 from, Vec3 to, Optional<Vec3> axisDependentOriginalMovement) {
-      final Vec3 from;
-      final Vec3 to;
-
-      public Movement(Vec3 var1, Vec3 var2, Vec3 var3) {
-         this(var1, var2, Optional.of(var3));
+   private static record Movement(Vec3 from, Vec3 to, Optional<Vec3> axisDependentOriginalMovement) {
+      public Movement(final Vec3 from, final Vec3 to, final Vec3 axisDependentOriginalMovement) {
+         this(from, to, Optional.of(axisDependentOriginalMovement));
       }
 
-      public Movement(Vec3 var1, Vec3 var2) {
-         this(var1, var2, Optional.empty());
+      public Movement(final Vec3 from, final Vec3 to) {
+         this(from, to, Optional.empty());
       }
 
-      private Movement(Vec3 var1, Vec3 var2, Optional<Vec3> var3) {
+      private Movement {
          super();
-         this.from = var1;
-         this.to = var2;
-         this.axisDependentOriginalMovement = var3;
       }
    }
 
@@ -4128,9 +4133,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       final boolean sounds;
       final boolean events;
 
-      private MovementEmission(final boolean var3, final boolean var4) {
-         this.sounds = var3;
-         this.events = var4;
+      private MovementEmission(final boolean sounds, final boolean events) {
+         this.sounds = sounds;
+         this.events = events;
       }
 
       public boolean emitsAnything() {
@@ -4161,9 +4166,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       private final boolean destroy;
       private final boolean save;
 
-      private RemovalReason(final boolean var3, final boolean var4) {
-         this.destroy = var3;
-         this.save = var4;
+      private RemovalReason(final boolean destroy, final boolean save) {
+         this.destroy = destroy;
+         this.save = save;
       }
 
       public boolean shouldDestroy() {
@@ -4180,10 +4185,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
    }
 
-   static record EntityPathElement(Entity entity) implements ProblemReporter.PathElement {
-      EntityPathElement(Entity var1) {
+   private static record EntityPathElement(Entity entity) implements ProblemReporter.PathElement {
+      private EntityPathElement {
          super();
-         this.entity = var1;
       }
 
       public String get() {
@@ -4191,8 +4195,13 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
    }
 
+   @Retention(RetentionPolicy.CLASS)
+   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   public @interface Flags {
+   }
+
    @FunctionalInterface
    public interface MoveFunction {
-      void accept(Entity var1, double var2, double var4, double var6);
+      void accept(Entity target, double x, double y, double z);
    }
 }

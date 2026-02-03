@@ -7,66 +7,59 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public abstract class CompositeLootItemCondition implements LootItemCondition {
    protected final List<LootItemCondition> terms;
    private final Predicate<LootContext> composedPredicate;
 
-   protected CompositeLootItemCondition(List<LootItemCondition> var1, Predicate<LootContext> var2) {
+   protected CompositeLootItemCondition(final List<LootItemCondition> terms, final Predicate<LootContext> composedPredicate) {
       super();
-      this.terms = var1;
-      this.composedPredicate = var2;
+      this.terms = terms;
+      this.composedPredicate = composedPredicate;
    }
 
-   protected static <T extends CompositeLootItemCondition> MapCodec<T> createCodec(Function<List<LootItemCondition>, T> var0) {
-      return RecordCodecBuilder.mapCodec((var1) -> var1.group(LootItemCondition.DIRECT_CODEC.listOf().fieldOf("terms").forGetter((var0x) -> var0x.terms)).apply(var1, var0));
+   public abstract MapCodec<? extends CompositeLootItemCondition> codec();
+
+   protected static <T extends CompositeLootItemCondition> MapCodec<T> createCodec(final Function<List<LootItemCondition>, T> factory) {
+      return RecordCodecBuilder.mapCodec((i) -> i.group(LootItemCondition.DIRECT_CODEC.listOf().fieldOf("terms").forGetter((condition) -> condition.terms)).apply(i, factory));
    }
 
-   protected static <T extends CompositeLootItemCondition> Codec<T> createInlineCodec(Function<List<LootItemCondition>, T> var0) {
-      return LootItemCondition.DIRECT_CODEC.listOf().xmap(var0, (var0x) -> var0x.terms);
+   protected static <T extends CompositeLootItemCondition> Codec<T> createInlineCodec(final Function<List<LootItemCondition>, T> factory) {
+      return LootItemCondition.DIRECT_CODEC.listOf().xmap(factory, (condition) -> condition.terms);
    }
 
-   public final boolean test(LootContext var1) {
-      return this.composedPredicate.test(var1);
+   public final boolean test(final LootContext context) {
+      return this.composedPredicate.test(context);
    }
 
-   public void validate(ValidationContext var1) {
-      LootItemCondition.super.validate(var1);
-
-      for(int var2 = 0; var2 < this.terms.size(); ++var2) {
-         ((LootItemCondition)this.terms.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("terms", var2)));
-      }
-
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((LootContext)var1);
+   public void validate(final ValidationContext output) {
+      LootItemCondition.super.validate(output);
+      Validatable.validate(output, "terms", this.terms);
    }
 
    public abstract static class Builder implements LootItemCondition.Builder {
       private final ImmutableList.Builder<LootItemCondition> terms = ImmutableList.builder();
 
-      protected Builder(LootItemCondition.Builder... var1) {
+      protected Builder(final LootItemCondition.Builder... terms) {
          super();
 
-         for(LootItemCondition.Builder var5 : var1) {
-            this.terms.add(var5.build());
+         for(LootItemCondition.Builder term : terms) {
+            this.terms.add(term.build());
          }
 
       }
 
-      public void addTerm(LootItemCondition.Builder var1) {
-         this.terms.add(var1.build());
+      public void addTerm(final LootItemCondition.Builder term) {
+         this.terms.add(term.build());
       }
 
       public LootItemCondition build() {
          return this.create(this.terms.build());
       }
 
-      protected abstract LootItemCondition create(List<LootItemCondition> var1);
+      protected abstract LootItemCondition create(List<LootItemCondition> terms);
    }
 }

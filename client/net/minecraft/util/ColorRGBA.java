@@ -6,9 +6,8 @@ import java.util.HexFormat;
 public record ColorRGBA(int rgba) {
    public static final Codec<ColorRGBA> CODEC;
 
-   public ColorRGBA(int var1) {
+   public ColorRGBA {
       super();
-      this.rgba = var1;
    }
 
    public String toString() {

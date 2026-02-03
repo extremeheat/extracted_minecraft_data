@@ -12,8 +12,8 @@ import net.minecraft.sounds.SoundSource;
 public class SoundOptionsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.sounds.title");
 
-   public SoundOptionsScreen(Screen var1, Options var2) {
-      super(var1, var2, TITLE);
+   public SoundOptionsScreen(final Screen lastScreen, final Options options) {
+      super(lastScreen, options, TITLE);
    }
 
    protected void addOptions() {
@@ -25,9 +25,9 @@ public class SoundOptionsScreen extends OptionsSubScreen {
    }
 
    private OptionInstance<?>[] getAllSoundOptionsExceptMaster() {
-      Stream var10000 = Arrays.stream(SoundSource.values()).filter((var0) -> var0 != SoundSource.MASTER);
+      Stream var10000 = Arrays.stream(SoundSource.values()).filter((s) -> s != SoundSource.MASTER);
       Options var10001 = this.options;
       Objects.requireNonNull(var10001);
-      return (OptionInstance[])var10000.map(var10001::getSoundSourceOptionInstance).toArray((var0) -> new OptionInstance[var0]);
+      return (OptionInstance[])var10000.map(var10001::getSoundSourceOptionInstance).toArray((x$0) -> new OptionInstance[x$0]);
    }
 }

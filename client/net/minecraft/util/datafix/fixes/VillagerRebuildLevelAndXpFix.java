@@ -16,49 +16,49 @@ public class VillagerRebuildLevelAndXpFix extends DataFix {
    private static final int TRADES_PER_LEVEL = 2;
    private static final int[] LEVEL_XP_THRESHOLDS = new int[]{0, 10, 50, 100, 150};
 
-   public static int getMinXpPerLevel(int var0) {
-      return LEVEL_XP_THRESHOLDS[Mth.clamp(var0 - 1, 0, LEVEL_XP_THRESHOLDS.length - 1)];
+   public static int getMinXpPerLevel(final int level) {
+      return LEVEL_XP_THRESHOLDS[Mth.clamp(level - 1, 0, LEVEL_XP_THRESHOLDS.length - 1)];
    }
 
-   public VillagerRebuildLevelAndXpFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public VillagerRebuildLevelAndXpFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    public TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getChoiceType(References.ENTITY, "minecraft:villager");
-      OpticFinder var2 = DSL.namedChoice("minecraft:villager", var1);
-      OpticFinder var3 = var1.findField("Offers");
-      Type var4 = var3.type();
-      OpticFinder var5 = var4.findField("Recipes");
-      List.ListType var6 = (List.ListType)var5.type();
-      OpticFinder var7 = var6.getElement().finder();
-      return this.fixTypeEverywhereTyped("Villager level and xp rebuild", this.getInputSchema().getType(References.ENTITY), (var5x) -> var5x.updateTyped(var2, var1, (var3x) -> {
-            Dynamic var4 = (Dynamic)var3x.get(DSL.remainderFinder());
-            int var5x = var4.get("VillagerData").get("level").asInt(0);
-            Typed var6 = var3x;
-            if (var5x == 0 || var5x == 1) {
-               int var7x = (Integer)var3x.getOptionalTyped(var3).flatMap((var1) -> var1.getOptionalTyped(var5)).map((var1) -> var1.getAllTyped(var7).size()).orElse(0);
-               var5x = Mth.clamp(var7x / 2, 1, 5);
-               if (var5x > 1) {
-                  var6 = addLevel(var3x, var5x);
+      Type<?> villagerType = this.getInputSchema().getChoiceType(References.ENTITY, "minecraft:villager");
+      OpticFinder<?> entityF = DSL.namedChoice("minecraft:villager", villagerType);
+      OpticFinder<?> offersF = villagerType.findField("Offers");
+      Type<?> offersType = offersF.type();
+      OpticFinder<?> recipeListF = offersType.findField("Recipes");
+      List.ListType<?> recipeListType = (List.ListType)recipeListF.type();
+      OpticFinder<?> recipeF = recipeListType.getElement().finder();
+      return this.fixTypeEverywhereTyped("Villager level and xp rebuild", this.getInputSchema().getType(References.ENTITY), (input) -> input.updateTyped(entityF, villagerType, (villager) -> {
+            Dynamic<?> remainder = (Dynamic)villager.get(DSL.remainderFinder());
+            int level = remainder.get("VillagerData").get("level").asInt(0);
+            Typed<?> modifiedVillager = villager;
+            if (level == 0 || level == 1) {
+               int offerCount = (Integer)villager.getOptionalTyped(offersF).flatMap((o) -> o.getOptionalTyped(recipeListF)).map((recipeList) -> recipeList.getAllTyped(recipeF).size()).orElse(0);
+               level = Mth.clamp(offerCount / 2, 1, 5);
+               if (level > 1) {
+                  modifiedVillager = addLevel(villager, level);
                }
             }
 
-            Optional var8 = var4.get("Xp").asNumber().result();
-            if (var8.isEmpty()) {
-               var6 = addXpFromLevel(var6, var5x);
+            Optional<Number> xp = remainder.get("Xp").asNumber().result();
+            if (xp.isEmpty()) {
+               modifiedVillager = addXpFromLevel(modifiedVillager, level);
             }
 
-            return var6;
+            return modifiedVillager;
          }));
    }
 
-   private static Typed<?> addLevel(Typed<?> var0, int var1) {
-      return var0.update(DSL.remainderFinder(), (var1x) -> var1x.update("VillagerData", (var1xx) -> var1xx.set("level", var1xx.createInt(var1))));
+   private static Typed<?> addLevel(final Typed<?> villager, final int level) {
+      return villager.update(DSL.remainderFinder(), (remainder) -> remainder.update("VillagerData", (villagerData) -> villagerData.set("level", villagerData.createInt(level))));
    }
 
-   private static Typed<?> addXpFromLevel(Typed<?> var0, int var1) {
-      int var2 = getMinXpPerLevel(var1);
-      return var0.update(DSL.remainderFinder(), (var1x) -> var1x.set("Xp", var1x.createInt(var2)));
+   private static Typed<?> addXpFromLevel(final Typed<?> villager, final int level) {
+      int xp = getMinXpPerLevel(level);
+      return villager.update(DSL.remainderFinder(), (remainder) -> remainder.set("Xp", remainder.createInt(xp)));
    }
 }

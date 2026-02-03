@@ -13,26 +13,26 @@ public class ClientboundUpdateTagsPacket implements Packet<ClientCommonPacketLis
    public static final StreamCodec<FriendlyByteBuf, ClientboundUpdateTagsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundUpdateTagsPacket>codec(ClientboundUpdateTagsPacket::write, ClientboundUpdateTagsPacket::new);
    private final Map<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload> tags;
 
-   public ClientboundUpdateTagsPacket(Map<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload> var1) {
+   public ClientboundUpdateTagsPacket(final Map<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload> tags) {
       super();
-      this.tags = var1;
+      this.tags = tags;
    }
 
-   private ClientboundUpdateTagsPacket(FriendlyByteBuf var1) {
+   private ClientboundUpdateTagsPacket(final FriendlyByteBuf input) {
       super();
-      this.tags = var1.<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload>readMap(FriendlyByteBuf::readRegistryKey, TagNetworkSerialization.NetworkPayload::read);
+      this.tags = input.<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload>readMap(FriendlyByteBuf::readRegistryKey, TagNetworkSerialization.NetworkPayload::read);
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeMap(this.tags, FriendlyByteBuf::writeResourceKey, (var0, var1x) -> var1x.write(var0));
+   private void write(final FriendlyByteBuf output) {
+      output.writeMap(this.tags, FriendlyByteBuf::writeResourceKey, (buffer, value) -> value.write(buffer));
    }
 
    public PacketType<ClientboundUpdateTagsPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_UPDATE_TAGS;
    }
 
-   public void handle(ClientCommonPacketListener var1) {
-      var1.handleUpdateTags(this);
+   public void handle(final ClientCommonPacketListener listener) {
+      listener.handleUpdateTags(this);
    }
 
    public Map<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload> getTags() {

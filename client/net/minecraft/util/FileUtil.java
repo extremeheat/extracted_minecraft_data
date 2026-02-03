@@ -27,64 +27,64 @@ public class FileUtil {
       super();
    }
 
-   public static String sanitizeName(String var0) {
-      for(char var4 : SharedConstants.ILLEGAL_FILE_CHARACTERS) {
-         var0 = var0.replace(var4, '_');
+   public static String sanitizeName(String baseName) {
+      for(char replacer : SharedConstants.ILLEGAL_FILE_CHARACTERS) {
+         baseName = baseName.replace(replacer, '_');
       }
 
-      return var0.replaceAll("[./\"]", "_");
+      return baseName.replaceAll("[./\"]", "_");
    }
 
-   public static String findAvailableName(Path var0, String var1, String var2) throws IOException {
-      var1 = sanitizeName(var1);
-      if (!isPathPartPortable(var1)) {
-         var1 = "_" + var1 + "_";
+   public static String findAvailableName(final Path baseDir, String baseName, final String suffix) throws IOException {
+      baseName = sanitizeName(baseName);
+      if (!isPathPartPortable(baseName)) {
+         baseName = "_" + baseName + "_";
       }
 
-      Matcher var3 = COPY_COUNTER_PATTERN.matcher(var1);
-      int var4 = 0;
-      if (var3.matches()) {
-         var1 = var3.group("name");
-         var4 = Integer.parseInt(var3.group("count"));
+      Matcher matcher = COPY_COUNTER_PATTERN.matcher(baseName);
+      int count = 0;
+      if (matcher.matches()) {
+         baseName = matcher.group("name");
+         count = Integer.parseInt(matcher.group("count"));
       }
 
-      if (var1.length() > 255 - var2.length()) {
-         var1 = var1.substring(0, 255 - var2.length());
+      if (baseName.length() > 255 - suffix.length()) {
+         baseName = baseName.substring(0, 255 - suffix.length());
       }
 
       while(true) {
-         String var5 = var1;
-         if (var4 != 0) {
-            String var6 = " (" + var4 + ")";
-            int var7 = 255 - var6.length();
-            if (var1.length() > var7) {
-               var5 = var1.substring(0, var7);
+         String nameToTest = baseName;
+         if (count != 0) {
+            String countSuffix = " (" + count + ")";
+            int length = 255 - countSuffix.length();
+            if (baseName.length() > length) {
+               nameToTest = baseName.substring(0, length);
             }
 
-            var5 = var5 + var6;
+            nameToTest = nameToTest + countSuffix;
          }
 
-         var5 = var5 + var2;
-         Path var11 = var0.resolve(var5);
+         nameToTest = nameToTest + suffix;
+         Path fullPath = baseDir.resolve(nameToTest);
 
          try {
-            Path var12 = Files.createDirectory(var11);
-            Files.deleteIfExists(var12);
-            return var0.relativize(var12).toString();
+            Path created = Files.createDirectory(fullPath);
+            Files.deleteIfExists(created);
+            return baseDir.relativize(created).toString();
          } catch (FileAlreadyExistsException var8) {
-            ++var4;
+            ++count;
          }
       }
    }
 
-   public static boolean isPathNormalized(Path var0) {
-      Path var1 = var0.normalize();
-      return var1.equals(var0);
+   public static boolean isPathNormalized(final Path path) {
+      Path normalized = path.normalize();
+      return normalized.equals(path);
    }
 
-   public static boolean isPathPortable(Path var0) {
-      for(Path var2 : var0) {
-         if (!isPathPartPortable(var2.toString())) {
+   public static boolean isPathPortable(final Path path) {
+      for(Path part : path) {
+         if (!isPathPartPortable(part.toString())) {
             return false;
          }
       }
@@ -92,120 +92,120 @@ public class FileUtil {
       return true;
    }
 
-   public static boolean isPathPartPortable(String var0) {
-      return !RESERVED_WINDOWS_FILENAMES.matcher(var0).matches();
+   public static boolean isPathPartPortable(final String name) {
+      return !RESERVED_WINDOWS_FILENAMES.matcher(name).matches();
    }
 
-   public static Path createPathToResource(Path var0, String var1, String var2) {
-      String var3 = var1 + var2;
-      Path var4 = Paths.get(var3);
-      if (var4.endsWith(var2)) {
-         throw new InvalidPathException(var3, "empty resource name");
+   public static Path createPathToResource(final Path resourceDirectory, final String resource, final String extension) {
+      String path = resource + extension;
+      Path relativeResourcePath = Paths.get(path);
+      if (relativeResourcePath.endsWith(extension)) {
+         throw new InvalidPathException(path, "empty resource name");
       } else {
-         return var0.resolve(var4);
+         return resourceDirectory.resolve(relativeResourcePath);
       }
    }
 
-   public static String getFullResourcePath(String var0) {
-      return FilenameUtils.getFullPath(var0).replace(File.separator, "/");
+   public static String getFullResourcePath(final String filename) {
+      return FilenameUtils.getFullPath(filename).replace(File.separator, "/");
    }
 
-   public static String normalizeResourcePath(String var0) {
-      return FilenameUtils.normalize(var0).replace(File.separator, "/");
+   public static String normalizeResourcePath(final String filename) {
+      return FilenameUtils.normalize(filename).replace(File.separator, "/");
    }
 
-   public static DataResult<List<String>> decomposePath(String var0) {
-      int var1 = var0.indexOf(47);
-      if (var1 == -1) {
+   public static DataResult<List<String>> decomposePath(final String path) {
+      int segmentEnd = path.indexOf(47);
+      if (segmentEnd == -1) {
          DataResult var10000;
-         switch (var0) {
+         switch (path) {
             case "":
             case ".":
             case "..":
-               var10000 = DataResult.error(() -> "Invalid path '" + var0 + "'");
+               var10000 = DataResult.error(() -> "Invalid path '" + path + "'");
                break;
             default:
-               var10000 = !containsAllowedCharactersOnly(var0) ? DataResult.error(() -> "Invalid path '" + var0 + "'") : DataResult.success(List.of(var0));
+               var10000 = !containsAllowedCharactersOnly(path) ? DataResult.error(() -> "Invalid path '" + path + "'") : DataResult.success(List.of(path));
          }
 
          return var10000;
       } else {
-         ArrayList var2 = new ArrayList();
-         int var3 = 0;
-         boolean var4 = false;
+         List<String> result = new ArrayList();
+         int segmentStart = 0;
+         boolean lastSegment = false;
 
          while(true) {
-            switch (var0.substring(var3, var1)) {
+            switch (path.substring(segmentStart, segmentEnd)) {
                case "":
                case ".":
                case "..":
-                  return DataResult.error(() -> "Invalid segment '" + var5 + "' in path '" + var0 + "'");
+                  return DataResult.error(() -> "Invalid segment '" + segment + "' in path '" + path + "'");
             }
 
-            if (!containsAllowedCharactersOnly(var5)) {
-               return DataResult.error(() -> "Invalid segment '" + var5 + "' in path '" + var0 + "'");
+            if (!containsAllowedCharactersOnly(segment)) {
+               return DataResult.error(() -> "Invalid segment '" + segment + "' in path '" + path + "'");
             }
 
-            var2.add(var5);
-            if (var4) {
-               return DataResult.success(var2);
+            result.add(segment);
+            if (lastSegment) {
+               return DataResult.success(result);
             }
 
-            var3 = var1 + 1;
-            var1 = var0.indexOf(47, var3);
-            if (var1 == -1) {
-               var1 = var0.length();
-               var4 = true;
+            segmentStart = segmentEnd + 1;
+            segmentEnd = path.indexOf(47, segmentStart);
+            if (segmentEnd == -1) {
+               segmentEnd = path.length();
+               lastSegment = true;
             }
          }
       }
    }
 
-   public static Path resolvePath(Path var0, List<String> var1) {
-      int var2 = var1.size();
+   public static Path resolvePath(final Path root, final List<String> segments) {
+      int size = segments.size();
       Path var10000;
-      switch (var2) {
+      switch (size) {
          case 0:
-            var10000 = var0;
+            var10000 = root;
             break;
          case 1:
-            var10000 = var0.resolve((String)var1.get(0));
+            var10000 = root.resolve((String)segments.get(0));
             break;
          default:
-            String[] var3 = new String[var2 - 1];
+            String[] rest = new String[size - 1];
 
-            for(int var4 = 1; var4 < var2; ++var4) {
-               var3[var4 - 1] = (String)var1.get(var4);
+            for(int i = 1; i < size; ++i) {
+               rest[i - 1] = (String)segments.get(i);
             }
 
-            var10000 = var0.resolve(var0.getFileSystem().getPath((String)var1.get(0), var3));
+            var10000 = root.resolve(root.getFileSystem().getPath((String)segments.get(0), rest));
       }
 
       return var10000;
    }
 
-   private static boolean containsAllowedCharactersOnly(String var0) {
-      return STRICT_PATH_SEGMENT_CHECK.matcher(var0).matches();
+   private static boolean containsAllowedCharactersOnly(final String segment) {
+      return STRICT_PATH_SEGMENT_CHECK.matcher(segment).matches();
    }
 
-   public static boolean isValidPathSegment(String var0) {
-      return !var0.equals("..") && !var0.equals(".") && containsAllowedCharactersOnly(var0);
+   public static boolean isValidPathSegment(final String segment) {
+      return !segment.equals("..") && !segment.equals(".") && containsAllowedCharactersOnly(segment);
    }
 
-   public static void validatePath(String... var0) {
-      if (var0.length == 0) {
+   public static void validatePath(final String... path) {
+      if (path.length == 0) {
          throw new IllegalArgumentException("Path must have at least one element");
       } else {
-         for(String var4 : var0) {
-            if (!isValidPathSegment(var4)) {
-               throw new IllegalArgumentException("Illegal segment " + var4 + " in path " + Arrays.toString(var0));
+         for(String segment : path) {
+            if (!isValidPathSegment(segment)) {
+               throw new IllegalArgumentException("Illegal segment " + segment + " in path " + Arrays.toString(path));
             }
          }
 
       }
    }
 
-   public static void createDirectoriesSafe(Path var0) throws IOException {
-      Files.createDirectories(Files.exists(var0, new LinkOption[0]) ? var0.toRealPath() : var0);
+   public static void createDirectoriesSafe(final Path dir) throws IOException {
+      Files.createDirectories(Files.exists(dir, new LinkOption[0]) ? dir.toRealPath() : dir);
    }
 }

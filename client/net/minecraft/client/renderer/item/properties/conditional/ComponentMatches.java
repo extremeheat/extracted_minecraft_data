@@ -10,15 +10,14 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public record ComponentMatches(DataComponentPredicate.Single<?> predicate) implements ConditionalItemModelProperty {
-   public static final MapCodec<ComponentMatches> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DataComponentPredicate.singleCodec("predicate").forGetter(ComponentMatches::predicate)).apply(var0, ComponentMatches::new));
+   public static final MapCodec<ComponentMatches> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DataComponentPredicate.singleCodec("predicate").forGetter(ComponentMatches::predicate)).apply(i, ComponentMatches::new));
 
-   public ComponentMatches(DataComponentPredicate.Single<?> var1) {
+   public ComponentMatches {
       super();
-      this.predicate = var1;
    }
 
-   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      return this.predicate.predicate().matches(var1);
+   public boolean get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      return this.predicate.predicate().matches(itemStack);
    }
 
    public MapCodec<ComponentMatches> type() {

@@ -10,9 +10,9 @@ import org.jspecify.annotations.Nullable;
 class LinkFSFileStore extends FileStore {
    private final String name;
 
-   public LinkFSFileStore(String var1) {
+   public LinkFSFileStore(final String name) {
       super();
-      this.name = var1;
+      this.name = name;
    }
 
    public String name() {
@@ -39,19 +39,19 @@ class LinkFSFileStore extends FileStore {
       return 0L;
    }
 
-   public boolean supportsFileAttributeView(Class<? extends FileAttributeView> var1) {
-      return var1 == BasicFileAttributeView.class;
+   public boolean supportsFileAttributeView(final Class<? extends FileAttributeView> type) {
+      return type == BasicFileAttributeView.class;
    }
 
-   public boolean supportsFileAttributeView(String var1) {
-      return "basic".equals(var1);
+   public boolean supportsFileAttributeView(final String name) {
+      return "basic".equals(name);
    }
 
-   public <V extends FileStoreAttributeView> @Nullable V getFileStoreAttributeView(Class<V> var1) {
+   public <V extends FileStoreAttributeView> @Nullable V getFileStoreAttributeView(final Class<V> type) {
       return null;
    }
 
-   public Object getAttribute(String var1) throws IOException {
+   public Object getAttribute(final String attribute) throws IOException {
       throw new UnsupportedOperationException();
    }
 }

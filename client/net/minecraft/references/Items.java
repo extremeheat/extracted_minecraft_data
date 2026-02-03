@@ -13,7 +13,7 @@ public class Items {
       super();
    }
 
-   private static ResourceKey<Item> createKey(String var0) {
-      return ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<Item> createKey(final String name) {
+      return ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace(name));
    }
 }

@@ -8,19 +8,17 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 
 public record AmbientParticle(ParticleOptions particle, float probability) {
-   public static final Codec<AmbientParticle> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ParticleTypes.CODEC.fieldOf("particle").forGetter((var0x) -> var0x.particle), Codec.floatRange(0.0F, 1.0F).fieldOf("probability").forGetter((var0x) -> var0x.probability)).apply(var0, AmbientParticle::new));
+   public static final Codec<AmbientParticle> CODEC = RecordCodecBuilder.create((i) -> i.group(ParticleTypes.CODEC.fieldOf("particle").forGetter((s) -> s.particle), Codec.floatRange(0.0F, 1.0F).fieldOf("probability").forGetter((s) -> s.probability)).apply(i, AmbientParticle::new));
 
-   public AmbientParticle(ParticleOptions var1, float var2) {
+   public AmbientParticle {
       super();
-      this.particle = var1;
-      this.probability = var2;
    }
 
-   public boolean canSpawn(RandomSource var1) {
-      return var1.nextFloat() <= this.probability;
+   public boolean canSpawn(final RandomSource random) {
+      return random.nextFloat() <= this.probability;
    }
 
-   public static List<AmbientParticle> of(ParticleOptions var0, float var1) {
-      return List.of(new AmbientParticle(var0, var1));
+   public static List<AmbientParticle> of(final ParticleOptions particle, final float probability) {
+      return List.of(new AmbientParticle(particle, probability));
    }
 }

@@ -73,12 +73,12 @@ public class Noises {
       super();
    }
 
-   private static ResourceKey<NormalNoise.NoiseParameters> createKey(String var0) {
-      return ResourceKey.create(Registries.NOISE, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<NormalNoise.NoiseParameters> createKey(final String name) {
+      return ResourceKey.create(Registries.NOISE, Identifier.withDefaultNamespace(name));
    }
 
-   public static NormalNoise instantiate(HolderGetter<NormalNoise.NoiseParameters> var0, PositionalRandomFactory var1, ResourceKey<NormalNoise.NoiseParameters> var2) {
-      Holder.Reference var3 = var0.getOrThrow(var2);
-      return NormalNoise.create(var1.fromHashOf(((ResourceKey)var3.unwrapKey().orElseThrow()).identifier()), (NormalNoise.NoiseParameters)var3.value());
+   public static NormalNoise instantiate(final HolderGetter<NormalNoise.NoiseParameters> noises, final PositionalRandomFactory context, final ResourceKey<NormalNoise.NoiseParameters> name) {
+      Holder<NormalNoise.NoiseParameters> holder = noises.getOrThrow(name);
+      return NormalNoise.create(context.fromHashOf(((ResourceKey)holder.unwrapKey().orElseThrow()).identifier()), holder.value());
    }
 }

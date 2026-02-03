@@ -31,17 +31,17 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
    private static final VoxelShape SHAPE_SLOPE;
    private final boolean isStraight;
 
-   public static boolean isRail(Level var0, BlockPos var1) {
-      return isRail(var0.getBlockState(var1));
+   public static boolean isRail(final Level level, final BlockPos pos) {
+      return isRail(level.getBlockState(pos));
    }
 
-   public static boolean isRail(BlockState var0) {
-      return var0.is(BlockTags.RAILS) && var0.getBlock() instanceof BaseRailBlock;
+   public static boolean isRail(final BlockState state) {
+      return state.is(BlockTags.RAILS) && state.getBlock() instanceof BaseRailBlock;
    }
 
-   protected BaseRailBlock(boolean var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.isStraight = var1;
+   protected BaseRailBlock(final boolean isStraight, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.isStraight = isStraight;
    }
 
    protected abstract MapCodec<? extends BaseRailBlock> codec();
@@ -50,58 +50,58 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
       return this.isStraight;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return ((RailShape)var1.getValue(this.getShapeProperty())).isSlope() ? SHAPE_SLOPE : SHAPE_FLAT;
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return ((RailShape)state.getValue(this.getShapeProperty())).isSlope() ? SHAPE_SLOPE : SHAPE_FLAT;
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return canSupportRigidBlock(var2, var3.below());
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return canSupportRigidBlock(level, pos.below());
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
-         this.updateState(var1, var2, var3, var5);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!oldState.is(state.getBlock())) {
+         this.updateState(state, level, pos, movedByPiston);
       }
    }
 
-   protected BlockState updateState(BlockState var1, Level var2, BlockPos var3, boolean var4) {
-      var1 = this.updateDir(var2, var3, var1, true);
+   protected BlockState updateState(BlockState state, final Level level, final BlockPos pos, final boolean movedByPiston) {
+      state = this.updateDir(level, pos, state, true);
       if (this.isStraight) {
-         var2.neighborChanged(var1, var3, this, (Orientation)null, var4);
+         level.neighborChanged(state, pos, this, (Orientation)null, movedByPiston);
       }
 
-      return var1;
+      return state;
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide() && var2.getBlockState(var3).is(this)) {
-         RailShape var7 = (RailShape)var1.getValue(this.getShapeProperty());
-         if (shouldBeRemoved(var3, var2, var7)) {
-            dropResources(var1, var2, var3);
-            var2.removeBlock(var3, var6);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (!level.isClientSide() && level.getBlockState(pos).is(this)) {
+         RailShape shape = (RailShape)state.getValue(this.getShapeProperty());
+         if (shouldBeRemoved(pos, level, shape)) {
+            dropResources(state, level, pos);
+            level.removeBlock(pos, movedByPiston);
          } else {
-            this.updateState(var1, var2, var3, var4);
+            this.updateState(state, level, pos, block);
          }
 
       }
    }
 
-   private static boolean shouldBeRemoved(BlockPos var0, Level var1, RailShape var2) {
-      if (!canSupportRigidBlock(var1, var0.below())) {
+   private static boolean shouldBeRemoved(final BlockPos pos, final Level level, final RailShape shape) {
+      if (!canSupportRigidBlock(level, pos.below())) {
          return true;
       } else {
-         switch (var2) {
+         switch (shape) {
             case ASCENDING_EAST -> {
-               return !canSupportRigidBlock(var1, var0.east());
+               return !canSupportRigidBlock(level, pos.east());
             }
             case ASCENDING_WEST -> {
-               return !canSupportRigidBlock(var1, var0.west());
+               return !canSupportRigidBlock(level, pos.west());
             }
             case ASCENDING_NORTH -> {
-               return !canSupportRigidBlock(var1, var0.north());
+               return !canSupportRigidBlock(level, pos.north());
             }
             case ASCENDING_SOUTH -> {
-               return !canSupportRigidBlock(var1, var0.south());
+               return !canSupportRigidBlock(level, pos.south());
             }
             default -> {
                return false;
@@ -110,48 +110,48 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
       }
    }
 
-   protected void updateState(BlockState var1, Level var2, BlockPos var3, Block var4) {
+   protected void updateState(final BlockState state, final Level level, final BlockPos pos, final Block block) {
    }
 
-   protected BlockState updateDir(Level var1, BlockPos var2, BlockState var3, boolean var4) {
-      if (var1.isClientSide()) {
-         return var3;
+   protected BlockState updateDir(final Level level, final BlockPos pos, final BlockState state, final boolean first) {
+      if (level.isClientSide()) {
+         return state;
       } else {
-         RailShape var5 = (RailShape)var3.getValue(this.getShapeProperty());
-         return (new RailState(var1, var2, var3)).place(var1.hasNeighborSignal(var2), var4, var5).getState();
+         RailShape current = (RailShape)state.getValue(this.getShapeProperty());
+         return (new RailState(level, pos, state)).place(level.hasNeighborSignal(pos), first, current).getState();
       }
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      if (!var4) {
-         if (((RailShape)var1.getValue(this.getShapeProperty())).isSlope()) {
-            var2.updateNeighborsAt(var3.above(), this);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      if (!movedByPiston) {
+         if (((RailShape)state.getValue(this.getShapeProperty())).isSlope()) {
+            level.updateNeighborsAt(pos.above(), this);
          }
 
          if (this.isStraight) {
-            var2.updateNeighborsAt(var3, this);
-            var2.updateNeighborsAt(var3.below(), this);
+            level.updateNeighborsAt(pos, this);
+            level.updateNeighborsAt(pos.below(), this);
          }
 
       }
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      boolean var3 = var2.getType() == Fluids.WATER;
-      BlockState var4 = super.defaultBlockState();
-      Direction var5 = var1.getHorizontalDirection();
-      boolean var6 = var5 == Direction.EAST || var5 == Direction.WEST;
-      return (BlockState)((BlockState)var4.setValue(this.getShapeProperty(), var6 ? RailShape.EAST_WEST : RailShape.NORTH_SOUTH)).setValue(WATERLOGGED, var3);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      boolean isWaterSource = replacedFluidState.is(Fluids.WATER);
+      BlockState state = super.defaultBlockState();
+      Direction direction = context.getHorizontalDirection();
+      boolean isEastWest = direction == Direction.EAST || direction == Direction.WEST;
+      return (BlockState)((BlockState)state.setValue(this.getShapeProperty(), isEastWest ? RailShape.EAST_WEST : RailShape.NORTH_SOUTH)).setValue(WATERLOGGED, isWaterSource);
    }
 
    public abstract Property<RailShape> getShapeProperty();
 
-   protected RailShape rotate(RailShape var1, Rotation var2) {
+   protected RailShape rotate(final RailShape shape, final Rotation rotation) {
       RailShape var10000;
-      switch (var2) {
+      switch (rotation) {
          case CLOCKWISE_180:
-            switch (var1) {
+            switch (shape) {
                case ASCENDING_EAST:
                   var10000 = RailShape.ASCENDING_WEST;
                   return var10000;
@@ -186,7 +186,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
                   throw new MatchException((String)null, (Throwable)null);
             }
          case COUNTERCLOCKWISE_90:
-            switch (var1) {
+            switch (shape) {
                case ASCENDING_EAST:
                   var10000 = RailShape.ASCENDING_NORTH;
                   return var10000;
@@ -221,7 +221,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
                   throw new MatchException((String)null, (Throwable)null);
             }
          case CLOCKWISE_90:
-            switch (var1) {
+            switch (shape) {
                case ASCENDING_EAST:
                   var10000 = RailShape.ASCENDING_SOUTH;
                   return var10000;
@@ -256,16 +256,16 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
                   throw new MatchException((String)null, (Throwable)null);
             }
          default:
-            var10000 = var1;
+            var10000 = shape;
             return var10000;
       }
    }
 
-   protected RailShape mirror(RailShape var1, Mirror var2) {
+   protected RailShape mirror(final RailShape shape, final Mirror mirror) {
       RailShape var10000;
-      switch (var2) {
+      switch (mirror) {
          case LEFT_RIGHT:
-            switch (var1) {
+            switch (shape) {
                case ASCENDING_NORTH:
                   var10000 = RailShape.ASCENDING_SOUTH;
                   return var10000;
@@ -275,7 +275,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
                case NORTH_SOUTH:
                case EAST_WEST:
                default:
-                  var10000 = var1;
+                  var10000 = shape;
                   return var10000;
                case SOUTH_EAST:
                   var10000 = RailShape.NORTH_EAST;
@@ -291,7 +291,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
                   return var10000;
             }
          case FRONT_BACK:
-            switch (var1) {
+            switch (shape) {
                case ASCENDING_EAST:
                   var10000 = RailShape.ASCENDING_WEST;
                   return var10000;
@@ -303,7 +303,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
                case NORTH_SOUTH:
                case EAST_WEST:
                default:
-                  var10000 = var1;
+                  var10000 = shape;
                   return var10000;
                case SOUTH_EAST:
                   var10000 = RailShape.SOUTH_WEST;
@@ -319,21 +319,21 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
                   return var10000;
             }
          default:
-            var10000 = var1;
+            var10000 = shape;
             return var10000;
       }
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
    static {

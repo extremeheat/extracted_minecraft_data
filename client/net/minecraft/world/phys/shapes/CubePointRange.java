@@ -5,17 +5,17 @@ import it.unimi.dsi.fastutil.doubles.AbstractDoubleList;
 public class CubePointRange extends AbstractDoubleList {
    private final int parts;
 
-   public CubePointRange(int var1) {
+   public CubePointRange(final int parts) {
       super();
-      if (var1 <= 0) {
+      if (parts <= 0) {
          throw new IllegalArgumentException("Need at least 1 part");
       } else {
-         this.parts = var1;
+         this.parts = parts;
       }
    }
 
-   public double getDouble(int var1) {
-      return (double)var1 / (double)this.parts;
+   public double getDouble(final int index) {
+      return (double)index / (double)this.parts;
    }
 
    public int size() {

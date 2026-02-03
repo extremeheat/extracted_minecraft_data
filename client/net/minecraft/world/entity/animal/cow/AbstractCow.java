@@ -31,23 +31,23 @@ import net.minecraft.world.level.block.state.BlockState;
 public abstract class AbstractCow extends Animal {
    private static final EntityDimensions BABY_DIMENSIONS;
 
-   public AbstractCow(EntityType<? extends AbstractCow> var1, Level var2) {
-      super(var1, var2);
+   public AbstractCow(final EntityType<? extends AbstractCow> type, final Level level) {
+      super(type, level);
    }
 
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 2.0));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (var0) -> var0.is(ItemTags.COW_FOOD), false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (i) -> i.is(ItemTags.COW_FOOD), false));
       this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.25));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.COW_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.COW_FOOD);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -58,7 +58,7 @@ public abstract class AbstractCow extends Animal {
       return SoundEvents.COW_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.COW_HURT;
    }
 
@@ -66,7 +66,7 @@ public abstract class AbstractCow extends Animal {
       return SoundEvents.COW_DEATH;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(SoundEvents.COW_STEP, 0.15F, 1.0F);
    }
 
@@ -74,20 +74,20 @@ public abstract class AbstractCow extends Animal {
       return 0.4F;
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(Items.BUCKET) && !this.isBaby()) {
-         var1.playSound(SoundEvents.COW_MILK, 1.0F, 1.0F);
-         ItemStack var4 = ItemUtils.createFilledResult(var3, var1, Items.MILK_BUCKET.getDefaultInstance());
-         var1.setItemInHand(var2, var4);
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (itemStack.is(Items.BUCKET) && !this.isBaby()) {
+         player.playSound(SoundEvents.COW_MILK, 1.0F, 1.0F);
+         ItemStack bucketOrMilkBucket = ItemUtils.createFilledResult(itemStack, player, Items.MILK_BUCKET.getDefaultInstance());
+         player.setItemInHand(hand, bucketOrMilkBucket);
          return InteractionResult.SUCCESS;
       } else {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    static {

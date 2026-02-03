@@ -39,22 +39,22 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
       return CODEC;
    }
 
-   public SlabBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public SlabBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.defaultBlockState().setValue(TYPE, SlabType.BOTTOM)).setValue(WATERLOGGED, false));
    }
 
-   protected boolean useShapeForLightOcclusion(BlockState var1) {
-      return var1.getValue(TYPE) != SlabType.DOUBLE;
+   protected boolean useShapeForLightOcclusion(final BlockState state) {
+      return state.getValue(TYPE) != SlabType.DOUBLE;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(TYPE, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(TYPE, WATERLOGGED);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       VoxelShape var10000;
-      switch ((SlabType)var1.getValue(TYPE)) {
+      switch ((SlabType)state.getValue(TYPE)) {
          case TOP -> var10000 = SHAPE_TOP;
          case BOTTOM -> var10000 = SHAPE_BOTTOM;
          case DOUBLE -> var10000 = Shapes.block();
@@ -64,30 +64,30 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
       return var10000;
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockPos var2 = var1.getClickedPos();
-      BlockState var3 = var1.getLevel().getBlockState(var2);
-      if (var3.is(this)) {
-         return (BlockState)((BlockState)var3.setValue(TYPE, SlabType.DOUBLE)).setValue(WATERLOGGED, false);
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockPos pos = context.getClickedPos();
+      BlockState replacedBlockState = context.getLevel().getBlockState(pos);
+      if (replacedBlockState.is(this)) {
+         return (BlockState)((BlockState)replacedBlockState.setValue(TYPE, SlabType.DOUBLE)).setValue(WATERLOGGED, false);
       } else {
-         FluidState var4 = var1.getLevel().getFluidState(var2);
-         BlockState var5 = (BlockState)((BlockState)this.defaultBlockState().setValue(TYPE, SlabType.BOTTOM)).setValue(WATERLOGGED, var4.getType() == Fluids.WATER);
-         Direction var6 = var1.getClickedFace();
-         return var6 != Direction.DOWN && (var6 == Direction.UP || !(var1.getClickLocation().y - (double)var2.getY() > 0.5)) ? var5 : (BlockState)var5.setValue(TYPE, SlabType.TOP);
+         FluidState replacedFluidState = context.getLevel().getFluidState(pos);
+         BlockState result = (BlockState)((BlockState)this.defaultBlockState().setValue(TYPE, SlabType.BOTTOM)).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+         Direction clickedFace = context.getClickedFace();
+         return clickedFace != Direction.DOWN && (clickedFace == Direction.UP || !(context.getClickLocation().y - (double)pos.getY() > 0.5)) ? result : (BlockState)result.setValue(TYPE, SlabType.TOP);
       }
    }
 
-   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      ItemStack var3 = var2.getItemInHand();
-      SlabType var4 = (SlabType)var1.getValue(TYPE);
-      if (var4 != SlabType.DOUBLE && var3.is(this.asItem())) {
-         if (var2.replacingClickedOnBlock()) {
-            boolean var5 = var2.getClickLocation().y - (double)var2.getClickedPos().getY() > 0.5;
-            Direction var6 = var2.getClickedFace();
-            if (var4 == SlabType.BOTTOM) {
-               return var6 == Direction.UP || var5 && var6.getAxis().isHorizontal();
+   protected boolean canBeReplaced(final BlockState state, final BlockPlaceContext context) {
+      ItemStack itemStack = context.getItemInHand();
+      SlabType type = (SlabType)state.getValue(TYPE);
+      if (type != SlabType.DOUBLE && itemStack.is(this.asItem())) {
+         if (context.replacingClickedOnBlock()) {
+            boolean above = context.getClickLocation().y - (double)context.getClickedPos().getY() > 0.5;
+            Direction clickedFace = context.getClickedFace();
+            if (type == SlabType.BOTTOM) {
+               return clickedFace == Direction.UP || above && clickedFace.getAxis().isHorizontal();
             } else {
-               return var6 == Direction.DOWN || !var5 && var6.getAxis().isHorizontal();
+               return clickedFace == Direction.DOWN || !above && clickedFace.getAxis().isHorizontal();
             }
          } else {
             return true;
@@ -97,33 +97,33 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
       }
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   public boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
-      return var3.getValue(TYPE) != SlabType.DOUBLE ? SimpleWaterloggedBlock.super.placeLiquid(var1, var2, var3, var4) : false;
+   public boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
+      return state.getValue(TYPE) != SlabType.DOUBLE ? SimpleWaterloggedBlock.super.placeLiquid(level, pos, state, fluidState) : false;
    }
 
-   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
-      return var4.getValue(TYPE) != SlabType.DOUBLE ? SimpleWaterloggedBlock.super.canPlaceLiquid(var1, var2, var3, var4, var5) : false;
+   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid type) {
+      return state.getValue(TYPE) != SlabType.DOUBLE ? SimpleWaterloggedBlock.super.canPlaceLiquid(user, level, pos, state, type) : false;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      switch (var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
+      switch (type) {
          case LAND -> {
             return false;
          }
          case WATER -> {
-            return var1.getFluidState().is(FluidTags.WATER);
+            return state.getFluidState().is(FluidTags.WATER);
          }
          case AIR -> {
             return false;

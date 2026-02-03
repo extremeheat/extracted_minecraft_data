@@ -32,60 +32,60 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       super();
    }
 
-   public SubmitNodeCollection order(int var1) {
-      return (SubmitNodeCollection)this.submitsPerOrder.computeIfAbsent(var1, (var1x) -> new SubmitNodeCollection(this));
+   public SubmitNodeCollection order(final int order) {
+      return (SubmitNodeCollection)this.submitsPerOrder.computeIfAbsent(order, (ignored) -> new SubmitNodeCollection(this));
    }
 
-   public void submitShadow(PoseStack var1, float var2, List<EntityRenderState.ShadowPiece> var3) {
-      this.order(0).submitShadow(var1, var2, var3);
+   public void submitShadow(final PoseStack poseStack, final float radius, final List<EntityRenderState.ShadowPiece> pieces) {
+      this.order(0).submitShadow(poseStack, radius, pieces);
    }
 
-   public void submitNameTag(PoseStack var1, @Nullable Vec3 var2, int var3, Component var4, boolean var5, int var6, double var7, CameraRenderState var9) {
-      this.order(0).submitNameTag(var1, var2, var3, var4, var5, var6, var7, var9);
+   public void submitNameTag(final PoseStack poseStack, final @Nullable Vec3 nameTagAttachment, final int offset, final Component name, final boolean seeThrough, final int lightCoords, final double distanceToCameraSq, final CameraRenderState camera) {
+      this.order(0).submitNameTag(poseStack, nameTagAttachment, offset, name, seeThrough, lightCoords, distanceToCameraSq, camera);
    }
 
-   public void submitText(PoseStack var1, float var2, float var3, FormattedCharSequence var4, boolean var5, Font.DisplayMode var6, int var7, int var8, int var9, int var10) {
-      this.order(0).submitText(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10);
+   public void submitText(final PoseStack poseStack, final float x, final float y, final FormattedCharSequence string, final boolean dropShadow, final Font.DisplayMode displayMode, final int lightCoords, final int color, final int backgroundColor, final int outlineColor) {
+      this.order(0).submitText(poseStack, x, y, string, dropShadow, displayMode, lightCoords, color, backgroundColor, outlineColor);
    }
 
-   public void submitFlame(PoseStack var1, EntityRenderState var2, Quaternionf var3) {
-      this.order(0).submitFlame(var1, var2, var3);
+   public void submitFlame(final PoseStack poseStack, final EntityRenderState renderState, final Quaternionf rotation) {
+      this.order(0).submitFlame(poseStack, renderState, rotation);
    }
 
-   public void submitLeash(PoseStack var1, EntityRenderState.LeashState var2) {
-      this.order(0).submitLeash(var1, var2);
+   public void submitLeash(final PoseStack poseStack, final EntityRenderState.LeashState leashState) {
+      this.order(0).submitLeash(poseStack, leashState);
    }
 
-   public <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10) {
-      this.order(0).submitModel(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10);
+   public <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int tintedColor, final @Nullable TextureAtlasSprite sprite, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+      this.order(0).submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, tintedColor, sprite, outlineColor, crumblingOverlay);
    }
 
-   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10, int var11) {
-      this.order(0).submitModelPart(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
+   public void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite, final boolean sheeted, final boolean hasFoil, final int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, final int outlineColor) {
+      this.order(0).submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, sheeted, hasFoil, tintedColor, crumblingOverlay, outlineColor);
    }
 
-   public void submitBlock(PoseStack var1, BlockState var2, int var3, int var4, int var5) {
-      this.order(0).submitBlock(var1, var2, var3, var4, var5);
+   public void submitBlock(final PoseStack poseStack, final BlockState state, final int lightCoords, final int overlayCoords, final int outlineColor) {
+      this.order(0).submitBlock(poseStack, state, lightCoords, overlayCoords, outlineColor);
    }
 
-   public void submitMovingBlock(PoseStack var1, MovingBlockRenderState var2) {
-      this.order(0).submitMovingBlock(var1, var2);
+   public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState) {
+      this.order(0).submitMovingBlock(poseStack, movingBlockRenderState);
    }
 
-   public void submitBlockModel(PoseStack var1, RenderType var2, BlockStateModel var3, float var4, float var5, float var6, int var7, int var8, int var9) {
-      this.order(0).submitBlockModel(var1, var2, var3, var4, var5, var6, var7, var8, var9);
+   public void submitBlockModel(final PoseStack poseStack, final RenderType renderType, final BlockStateModel model, final float r, final float g, final float b, final int lightCoords, final int overlayCoords, final int outlineColor) {
+      this.order(0).submitBlockModel(poseStack, renderType, model, r, g, b, lightCoords, overlayCoords, outlineColor);
    }
 
-   public void submitItem(PoseStack var1, ItemDisplayContext var2, int var3, int var4, int var5, int[] var6, List<BakedQuad> var7, RenderType var8, ItemStackRenderState.FoilType var9) {
-      this.order(0).submitItem(var1, var2, var3, var4, var5, var6, var7, var8, var9);
+   public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final List<BakedQuad> quads, final RenderType renderType, final ItemStackRenderState.FoilType foilType) {
+      this.order(0).submitItem(poseStack, displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, renderType, foilType);
    }
 
-   public void submitCustomGeometry(PoseStack var1, RenderType var2, SubmitNodeCollector.CustomGeometryRenderer var3) {
-      this.order(0).submitCustomGeometry(var1, var2, var3);
+   public void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
+      this.order(0).submitCustomGeometry(poseStack, renderType, customGeometryRenderer);
    }
 
-   public void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer var1) {
-      this.order(0).submitParticleGroup(var1);
+   public void submitParticleGroup(final SubmitNodeCollector.ParticleGroupRenderer particleGroupRenderer) {
+      this.order(0).submitParticleGroup(particleGroupRenderer);
    }
 
    public void clear() {
@@ -93,7 +93,7 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
    }
 
    public void endFrame() {
-      this.submitsPerOrder.values().removeIf((var0) -> !var0.wasUsed());
+      this.submitsPerOrder.values().removeIf((collection) -> !collection.wasUsed());
       this.submitsPerOrder.values().forEach(SubmitNodeCollection::endFrame);
    }
 
@@ -101,161 +101,81 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       return this.submitsPerOrder;
    }
 
-   // $FF: synthetic method
-   public OrderedSubmitNodeCollector order(final int var1) {
-      return this.order(var1);
-   }
-
    public static record ShadowSubmit(Matrix4f pose, float radius, List<EntityRenderState.ShadowPiece> pieces) {
-      public ShadowSubmit(Matrix4f var1, float var2, List<EntityRenderState.ShadowPiece> var3) {
+      public ShadowSubmit {
          super();
-         this.pose = var1;
-         this.radius = var2;
-         this.pieces = var3;
       }
    }
 
    public static record FlameSubmit(PoseStack.Pose pose, EntityRenderState entityRenderState, Quaternionf rotation) {
-      public FlameSubmit(PoseStack.Pose var1, EntityRenderState var2, Quaternionf var3) {
+      public FlameSubmit {
          super();
-         this.pose = var1;
-         this.entityRenderState = var2;
-         this.rotation = var3;
       }
    }
 
    public static record NameTagSubmit(Matrix4f pose, float x, float y, Component text, int lightCoords, int color, int backgroundColor, double distanceToCameraSq) {
-      public NameTagSubmit(Matrix4f var1, float var2, float var3, Component var4, int var5, int var6, int var7, double var8) {
+      public NameTagSubmit {
          super();
-         this.pose = var1;
-         this.x = var2;
-         this.y = var3;
-         this.text = var4;
-         this.lightCoords = var5;
-         this.color = var6;
-         this.backgroundColor = var7;
-         this.distanceToCameraSq = var8;
       }
    }
 
    public static record TextSubmit(Matrix4f pose, float x, float y, FormattedCharSequence string, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color, int backgroundColor, int outlineColor) {
-      public TextSubmit(Matrix4f var1, float var2, float var3, FormattedCharSequence var4, boolean var5, Font.DisplayMode var6, int var7, int var8, int var9, int var10) {
+      public TextSubmit {
          super();
-         this.pose = var1;
-         this.x = var2;
-         this.y = var3;
-         this.string = var4;
-         this.dropShadow = var5;
-         this.displayMode = var6;
-         this.lightCoords = var7;
-         this.color = var8;
-         this.backgroundColor = var9;
-         this.outlineColor = var10;
       }
    }
 
    public static record LeashSubmit(Matrix4f pose, EntityRenderState.LeashState leashState) {
-      public LeashSubmit(Matrix4f var1, EntityRenderState.LeashState var2) {
+      public LeashSubmit {
          super();
-         this.pose = var1;
-         this.leashState = var2;
       }
    }
 
    public static record ModelSubmit<S>(PoseStack.Pose pose, Model<? super S> model, S state, int lightCoords, int overlayCoords, int tintedColor, @Nullable TextureAtlasSprite sprite, int outlineColor, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
-      public ModelSubmit(PoseStack.Pose var1, Model<? super S> var2, S var3, int var4, int var5, int var6, @Nullable TextureAtlasSprite var7, int var8, ModelFeatureRenderer.@Nullable CrumblingOverlay var9) {
+      public ModelSubmit {
          super();
-         this.pose = var1;
-         this.model = var2;
-         this.state = var3;
-         this.lightCoords = var4;
-         this.overlayCoords = var5;
-         this.tintedColor = var6;
-         this.sprite = var7;
-         this.outlineColor = var8;
-         this.crumblingOverlay = var9;
       }
    }
 
    public static record ModelPartSubmit(PoseStack.Pose pose, ModelPart modelPart, int lightCoords, int overlayCoords, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintedColor, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, int outlineColor) {
-      public ModelPartSubmit(PoseStack.Pose var1, ModelPart var2, int var3, int var4, @Nullable TextureAtlasSprite var5, boolean var6, boolean var7, int var8, ModelFeatureRenderer.@Nullable CrumblingOverlay var9, int var10) {
+      public ModelPartSubmit {
          super();
-         this.pose = var1;
-         this.modelPart = var2;
-         this.lightCoords = var3;
-         this.overlayCoords = var4;
-         this.sprite = var5;
-         this.sheeted = var6;
-         this.hasFoil = var7;
-         this.tintedColor = var8;
-         this.crumblingOverlay = var9;
-         this.outlineColor = var10;
       }
    }
 
    public static record TranslucentModelSubmit<S>(ModelSubmit<S> modelSubmit, RenderType renderType, Vector3f position) {
-      public TranslucentModelSubmit(ModelSubmit<S> var1, RenderType var2, Vector3f var3) {
+      public TranslucentModelSubmit {
          super();
-         this.modelSubmit = var1;
-         this.renderType = var2;
-         this.position = var3;
       }
    }
 
    public static record BlockSubmit(PoseStack.Pose pose, BlockState state, int lightCoords, int overlayCoords, int outlineColor) {
-      public BlockSubmit(PoseStack.Pose var1, BlockState var2, int var3, int var4, int var5) {
+      public BlockSubmit {
          super();
-         this.pose = var1;
-         this.state = var2;
-         this.lightCoords = var3;
-         this.overlayCoords = var4;
-         this.outlineColor = var5;
       }
    }
 
    public static record MovingBlockSubmit(Matrix4f pose, MovingBlockRenderState movingBlockRenderState) {
-      public MovingBlockSubmit(Matrix4f var1, MovingBlockRenderState var2) {
+      public MovingBlockSubmit {
          super();
-         this.pose = var1;
-         this.movingBlockRenderState = var2;
       }
    }
 
    public static record BlockModelSubmit(PoseStack.Pose pose, RenderType renderType, BlockStateModel model, float r, float g, float b, int lightCoords, int overlayCoords, int outlineColor) {
-      public BlockModelSubmit(PoseStack.Pose var1, RenderType var2, BlockStateModel var3, float var4, float var5, float var6, int var7, int var8, int var9) {
+      public BlockModelSubmit {
          super();
-         this.pose = var1;
-         this.renderType = var2;
-         this.model = var3;
-         this.r = var4;
-         this.g = var5;
-         this.b = var6;
-         this.lightCoords = var7;
-         this.overlayCoords = var8;
-         this.outlineColor = var9;
       }
    }
 
    public static record ItemSubmit(PoseStack.Pose pose, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, RenderType renderType, ItemStackRenderState.FoilType foilType) {
-      public ItemSubmit(PoseStack.Pose var1, ItemDisplayContext var2, int var3, int var4, int var5, int[] var6, List<BakedQuad> var7, RenderType var8, ItemStackRenderState.FoilType var9) {
+      public ItemSubmit {
          super();
-         this.pose = var1;
-         this.displayContext = var2;
-         this.lightCoords = var3;
-         this.overlayCoords = var4;
-         this.outlineColor = var5;
-         this.tintLayers = var6;
-         this.quads = var7;
-         this.renderType = var8;
-         this.foilType = var9;
       }
    }
 
    public static record CustomGeometrySubmit(PoseStack.Pose pose, SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
-      public CustomGeometrySubmit(PoseStack.Pose var1, SubmitNodeCollector.CustomGeometryRenderer var2) {
+      public CustomGeometrySubmit {
          super();
-         this.pose = var1;
-         this.customGeometryRenderer = var2;
       }
    }
 }

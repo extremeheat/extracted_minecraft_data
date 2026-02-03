@@ -21,62 +21,62 @@ public class FeatureFlagRegistry {
    private final Map<Identifier, FeatureFlag> names;
    private final FeatureFlagSet allFlags;
 
-   FeatureFlagRegistry(FeatureFlagUniverse var1, FeatureFlagSet var2, Map<Identifier, FeatureFlag> var3) {
+   private FeatureFlagRegistry(final FeatureFlagUniverse universe, final FeatureFlagSet allFlags, final Map<Identifier, FeatureFlag> names) {
       super();
-      this.universe = var1;
-      this.names = var3;
-      this.allFlags = var2;
+      this.universe = universe;
+      this.names = names;
+      this.allFlags = allFlags;
    }
 
-   public boolean isSubset(FeatureFlagSet var1) {
-      return var1.isSubsetOf(this.allFlags);
+   public boolean isSubset(final FeatureFlagSet set) {
+      return set.isSubsetOf(this.allFlags);
    }
 
    public FeatureFlagSet allFlags() {
       return this.allFlags;
    }
 
-   public FeatureFlagSet fromNames(Iterable<Identifier> var1) {
-      return this.fromNames(var1, (var0) -> LOGGER.warn("Unknown feature flag: {}", var0));
+   public FeatureFlagSet fromNames(final Iterable<Identifier> flagIds) {
+      return this.fromNames(flagIds, (flagId) -> LOGGER.warn("Unknown feature flag: {}", flagId));
    }
 
-   public FeatureFlagSet subset(FeatureFlag... var1) {
-      return FeatureFlagSet.create(this.universe, Arrays.asList(var1));
+   public FeatureFlagSet subset(final FeatureFlag... flags) {
+      return FeatureFlagSet.create(this.universe, Arrays.asList(flags));
    }
 
-   public FeatureFlagSet fromNames(Iterable<Identifier> var1, Consumer<Identifier> var2) {
-      Set var3 = Sets.newIdentityHashSet();
+   public FeatureFlagSet fromNames(final Iterable<Identifier> flagIds, final Consumer<Identifier> unknownFlags) {
+      Set<FeatureFlag> flags = Sets.newIdentityHashSet();
 
-      for(Identifier var5 : var1) {
-         FeatureFlag var6 = (FeatureFlag)this.names.get(var5);
-         if (var6 == null) {
-            var2.accept(var5);
+      for(Identifier flagId : flagIds) {
+         FeatureFlag flag = (FeatureFlag)this.names.get(flagId);
+         if (flag == null) {
+            unknownFlags.accept(flagId);
          } else {
-            var3.add(var6);
+            flags.add(flag);
          }
       }
 
-      return FeatureFlagSet.create(this.universe, var3);
+      return FeatureFlagSet.create(this.universe, flags);
    }
 
-   public Set<Identifier> toNames(FeatureFlagSet var1) {
-      HashSet var2 = new HashSet();
-      this.names.forEach((var2x, var3) -> {
-         if (var1.contains(var3)) {
-            var2.add(var2x);
+   public Set<Identifier> toNames(final FeatureFlagSet set) {
+      Set<Identifier> result = new HashSet();
+      this.names.forEach((id, flag) -> {
+         if (set.contains(flag)) {
+            result.add(id);
          }
 
       });
-      return var2;
+      return result;
    }
 
    public Codec<FeatureFlagSet> codec() {
-      return Identifier.CODEC.listOf().comapFlatMap((var1) -> {
-         HashSet var2 = new HashSet();
-         Objects.requireNonNull(var2);
-         FeatureFlagSet var3 = this.fromNames(var1, var2::add);
-         return !var2.isEmpty() ? DataResult.error(() -> "Unknown feature ids: " + String.valueOf(var2), var3) : DataResult.success(var3);
-      }, (var1) -> List.copyOf(this.toNames(var1)));
+      return Identifier.CODEC.listOf().comapFlatMap((ids) -> {
+         Set<Identifier> unknownIds = new HashSet();
+         Objects.requireNonNull(unknownIds);
+         FeatureFlagSet result = this.fromNames(ids, unknownIds::add);
+         return !unknownIds.isEmpty() ? DataResult.error(() -> "Unknown feature ids: " + String.valueOf(unknownIds), result) : DataResult.success(result);
+      }, (set) -> List.copyOf(this.toNames(set)));
    }
 
    public static class Builder {
@@ -84,32 +84,32 @@ public class FeatureFlagRegistry {
       private int id;
       private final Map<Identifier, FeatureFlag> flags = new LinkedHashMap();
 
-      public Builder(String var1) {
+      public Builder(final String universeId) {
          super();
-         this.universe = new FeatureFlagUniverse(var1);
+         this.universe = new FeatureFlagUniverse(universeId);
       }
 
-      public FeatureFlag createVanilla(String var1) {
-         return this.create(Identifier.withDefaultNamespace(var1));
+      public FeatureFlag createVanilla(final String name) {
+         return this.create(Identifier.withDefaultNamespace(name));
       }
 
-      public FeatureFlag create(Identifier var1) {
+      public FeatureFlag create(final Identifier name) {
          if (this.id >= 64) {
             throw new IllegalStateException("Too many feature flags");
          } else {
-            FeatureFlag var2 = new FeatureFlag(this.universe, this.id++);
-            FeatureFlag var3 = (FeatureFlag)this.flags.put(var1, var2);
-            if (var3 != null) {
-               throw new IllegalStateException("Duplicate feature flag " + String.valueOf(var1));
+            FeatureFlag result = new FeatureFlag(this.universe, this.id++);
+            FeatureFlag previous = (FeatureFlag)this.flags.put(name, result);
+            if (previous != null) {
+               throw new IllegalStateException("Duplicate feature flag " + String.valueOf(name));
             } else {
-               return var2;
+               return result;
             }
          }
       }
 
       public FeatureFlagRegistry build() {
-         FeatureFlagSet var1 = FeatureFlagSet.create(this.universe, this.flags.values());
-         return new FeatureFlagRegistry(this.universe, var1, Map.copyOf(this.flags));
+         FeatureFlagSet allValues = FeatureFlagSet.create(this.universe, this.flags.values());
+         return new FeatureFlagRegistry(this.universe, allValues, Map.copyOf(this.flags));
       }
    }
 }

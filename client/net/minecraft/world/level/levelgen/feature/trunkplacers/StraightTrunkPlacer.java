@@ -13,23 +13,23 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class StraightTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<StraightTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> trunkPlacerParts(var0).apply(var0, StraightTrunkPlacer::new));
+   public static final MapCodec<StraightTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> trunkPlacerParts(i).apply(i, StraightTrunkPlacer::new));
 
-   public StraightTrunkPlacer(int var1, int var2, int var3) {
-      super(var1, var2, var3);
+   public StraightTrunkPlacer(final int baseHeight, final int heightRandA, final int heightRandB) {
+      super(baseHeight, heightRandA, heightRandB);
    }
 
    protected TrunkPlacerType<?> type() {
       return TrunkPlacerType.STRAIGHT_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6) {
-      setDirtAt(var1, var2, var3, var5.below(), var6);
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+      setDirtAt(level, trunkSetter, random, origin.below(), config);
 
-      for(int var7 = 0; var7 < var4; ++var7) {
-         this.placeLog(var1, var2, var3, var5.above(var7), var6);
+      for(int y = 0; y < treeHeight; ++y) {
+         this.placeLog(level, trunkSetter, random, origin.above(y), config);
       }
 
-      return ImmutableList.of(new FoliagePlacer.FoliageAttachment(var5.above(var4), 0, false));
+      return ImmutableList.of(new FoliagePlacer.FoliageAttachment(origin.above(treeHeight), 0, false));
    }
 }

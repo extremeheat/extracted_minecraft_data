@@ -5,21 +5,21 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.ZombifiedPiglinRenderState;
 
 public class ZombifiedPiglinModel extends AbstractPiglinModel<ZombifiedPiglinRenderState> {
-   public ZombifiedPiglinModel(ModelPart var1) {
-      super(var1);
+   public ZombifiedPiglinModel(final ModelPart root) {
+      super(root);
    }
 
-   public void setupAnim(ZombifiedPiglinRenderState var1) {
-      super.setupAnim(var1);
-      AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, var1.isAggressive, var1);
+   public void setupAnim(final ZombifiedPiglinRenderState state) {
+      super.setupAnim(state);
+      AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, state.isAggressive, state);
    }
 
-   public void setAllVisible(boolean var1) {
-      super.setAllVisible(var1);
-      this.leftSleeve.visible = var1;
-      this.rightSleeve.visible = var1;
-      this.leftPants.visible = var1;
-      this.rightPants.visible = var1;
-      this.jacket.visible = var1;
+   public void setAllVisible(final boolean visible) {
+      super.setAllVisible(visible);
+      this.leftSleeve.visible = visible;
+      this.rightSleeve.visible = visible;
+      this.leftPants.visible = visible;
+      this.rightPants.visible = visible;
+      this.jacket.visible = visible;
    }
 }

@@ -27,41 +27,41 @@ public class BanIpCommands {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban-ip").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("target", StringArgumentType.word()).executes((var0x) -> banIpOrName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> banIpOrName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"), MessageArgument.getMessage(var0x, "reason"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban-ip").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("target", StringArgumentType.word()).executes((c) -> banIpOrName((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "target"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((c) -> banIpOrName((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "target"), MessageArgument.getMessage(c, "reason"))))));
    }
 
-   private static int banIpOrName(CommandSourceStack var0, String var1, @Nullable Component var2) throws CommandSyntaxException {
-      if (InetAddresses.isInetAddress(var1)) {
-         return banIp(var0, var1, var2);
+   private static int banIpOrName(final CommandSourceStack source, final String target, final @Nullable Component reason) throws CommandSyntaxException {
+      if (InetAddresses.isInetAddress(target)) {
+         return banIp(source, target, reason);
       } else {
-         ServerPlayer var3 = var0.getServer().getPlayerList().getPlayerByName(var1);
-         if (var3 != null) {
-            return banIp(var0, var3.getIpAddress(), var2);
+         ServerPlayer player = source.getServer().getPlayerList().getPlayerByName(target);
+         if (player != null) {
+            return banIp(source, player.getIpAddress(), reason);
          } else {
             throw ERROR_INVALID_IP.create();
          }
       }
    }
 
-   private static int banIp(CommandSourceStack var0, String var1, @Nullable Component var2) throws CommandSyntaxException {
-      IpBanList var3 = var0.getServer().getPlayerList().getIpBans();
-      if (var3.isBanned(var1)) {
+   private static int banIp(final CommandSourceStack source, final String ip, final @Nullable Component reason) throws CommandSyntaxException {
+      IpBanList list = source.getServer().getPlayerList().getIpBans();
+      if (list.isBanned(ip)) {
          throw ERROR_ALREADY_BANNED.create();
       } else {
-         List var4 = var0.getServer().getPlayerList().getPlayersWithAddress(var1);
-         IpBanListEntry var5 = new IpBanListEntry(var1, (Date)null, var0.getTextName(), (Date)null, var2 == null ? null : var2.getString());
-         var3.add(var5);
-         var0.sendSuccess(() -> Component.translatable("commands.banip.success", var1, var5.getReasonMessage()), true);
-         if (!var4.isEmpty()) {
-            var0.sendSuccess(() -> Component.translatable("commands.banip.info", var4.size(), EntitySelector.joinNames(var4)), true);
+         List<ServerPlayer> players = source.getServer().getPlayerList().getPlayersWithAddress(ip);
+         IpBanListEntry entry = new IpBanListEntry(ip, (Date)null, source.getTextName(), (Date)null, reason == null ? null : reason.getString());
+         list.add(entry);
+         source.sendSuccess(() -> Component.translatable("commands.banip.success", ip, entry.getReasonMessage()), true);
+         if (!players.isEmpty()) {
+            source.sendSuccess(() -> Component.translatable("commands.banip.info", players.size(), EntitySelector.joinNames(players)), true);
          }
 
-         for(ServerPlayer var7 : var4) {
-            var7.connection.disconnect(Component.translatable("multiplayer.disconnect.ip_banned"));
+         for(ServerPlayer player : players) {
+            player.connection.disconnect(Component.translatable("multiplayer.disconnect.ip_banned"));
          }
 
-         return var4.size();
+         return players.size();
       }
    }
 }

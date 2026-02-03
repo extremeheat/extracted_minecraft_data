@@ -10,28 +10,28 @@ public abstract class ValueObject {
    }
 
    public String toString() {
-      StringBuilder var1 = new StringBuilder("{");
+      StringBuilder sb = new StringBuilder("{");
 
-      for(Field var5 : this.getClass().getFields()) {
-         if (!isStatic(var5)) {
+      for(Field f : this.getClass().getFields()) {
+         if (!isStatic(f)) {
             try {
-               var1.append(getName(var5)).append("=").append(var5.get(this)).append(" ");
+               sb.append(getName(f)).append("=").append(f.get(this)).append(" ");
             } catch (IllegalAccessException var7) {
             }
          }
       }
 
-      var1.deleteCharAt(var1.length() - 1);
-      var1.append('}');
-      return var1.toString();
+      sb.deleteCharAt(sb.length() - 1);
+      sb.append('}');
+      return sb.toString();
    }
 
-   private static String getName(Field var0) {
-      SerializedName var1 = (SerializedName)var0.getAnnotation(SerializedName.class);
-      return var1 != null ? var1.value() : var0.getName();
+   private static String getName(final Field f) {
+      SerializedName override = (SerializedName)f.getAnnotation(SerializedName.class);
+      return override != null ? override.value() : f.getName();
    }
 
-   private static boolean isStatic(Field var0) {
-      return Modifier.isStatic(var0.getModifiers());
+   private static boolean isStatic(final Field f) {
+      return Modifier.isStatic(f.getModifiers());
    }
 }

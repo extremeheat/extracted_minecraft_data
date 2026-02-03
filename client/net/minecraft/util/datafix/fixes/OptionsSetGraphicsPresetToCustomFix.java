@@ -6,11 +6,11 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 
 public class OptionsSetGraphicsPresetToCustomFix extends DataFix {
-   public OptionsSetGraphicsPresetToCustomFix(Schema var1) {
-      super(var1, true);
+   public OptionsSetGraphicsPresetToCustomFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("graphicsPreset set to \"custom\"", this.getInputSchema().getType(References.OPTIONS), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.set("graphicsPreset", var0x.createString("custom"))));
+      return this.fixTypeEverywhereTyped("graphicsPreset set to \"custom\"", this.getInputSchema().getType(References.OPTIONS), (input) -> input.update(DSL.remainderFinder(), (tag) -> tag.set("graphicsPreset", tag.createString("custom"))));
    }
 }

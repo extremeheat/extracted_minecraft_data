@@ -15,8 +15,8 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LanServerDetection {
-   static final AtomicInteger UNIQUE_THREAD_ID = new AtomicInteger(0);
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final AtomicInteger UNIQUE_THREAD_ID = new AtomicInteger(0);
+   private static final Logger LOGGER = LogUtils.getLogger();
 
    public LanServerDetection() {
       super();
@@ -32,32 +32,32 @@ public class LanServerDetection {
 
       public synchronized @Nullable List<LanServer> takeDirtyServers() {
          if (this.isDirty) {
-            List var1 = List.copyOf(this.servers);
+            List<LanServer> newServers = List.copyOf(this.servers);
             this.isDirty = false;
-            return var1;
+            return newServers;
          } else {
             return null;
          }
       }
 
-      public synchronized void addServer(String var1, InetAddress var2) {
-         String var3 = LanServerPinger.parseMotd(var1);
-         String var4 = LanServerPinger.parseAddress(var1);
-         if (var4 != null) {
-            String var10000 = var2.getHostAddress();
-            var4 = var10000 + ":" + var4;
-            boolean var5 = false;
+      public synchronized void addServer(final String pingData, final InetAddress socketAddress) {
+         String motd = LanServerPinger.parseMotd(pingData);
+         String address = LanServerPinger.parseAddress(pingData);
+         if (address != null) {
+            String var10000 = socketAddress.getHostAddress();
+            address = var10000 + ":" + address;
+            boolean found = false;
 
-            for(LanServer var7 : this.servers) {
-               if (var7.getAddress().equals(var4)) {
-                  var7.updatePingTime();
-                  var5 = true;
+            for(LanServer server : this.servers) {
+               if (server.getAddress().equals(address)) {
+                  server.updatePingTime();
+                  found = true;
                   break;
                }
             }
 
-            if (!var5) {
-               this.servers.add(new LanServer(var3, var4));
+            if (!found) {
+               this.servers.add(new LanServer(motd, address));
                this.isDirty = true;
             }
 
@@ -70,9 +70,9 @@ public class LanServerDetection {
       private final InetAddress pingGroup;
       private final MulticastSocket socket;
 
-      public LanServerDetector(LanServerList var1) throws IOException {
+      public LanServerDetector(final LanServerList serverList) throws IOException {
          super("LanServerDetector #" + LanServerDetection.UNIQUE_THREAD_ID.incrementAndGet());
-         this.serverList = var1;
+         this.serverList = serverList;
          this.setDaemon(true);
          this.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LanServerDetection.LOGGER));
          this.socket = new MulticastSocket(4445);
@@ -82,23 +82,23 @@ public class LanServerDetection {
       }
 
       public void run() {
-         byte[] var2 = new byte[1024];
+         byte[] buf = new byte[1024];
 
          while(!this.isInterrupted()) {
-            DatagramPacket var1 = new DatagramPacket(var2, var2.length);
+            DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
             try {
-               this.socket.receive(var1);
+               this.socket.receive(packet);
             } catch (SocketTimeoutException var5) {
                continue;
-            } catch (IOException var6) {
-               LanServerDetection.LOGGER.error("Couldn't ping server", var6);
+            } catch (IOException e) {
+               LanServerDetection.LOGGER.error("Couldn't ping server", e);
                break;
             }
 
-            String var3 = new String(var1.getData(), var1.getOffset(), var1.getLength(), StandardCharsets.UTF_8);
-            LanServerDetection.LOGGER.debug("{}: {}", var1.getAddress(), var3);
-            this.serverList.addServer(var3, var1.getAddress());
+            String received = new String(packet.getData(), packet.getOffset(), packet.getLength(), StandardCharsets.UTF_8);
+            LanServerDetection.LOGGER.debug("{}: {}", packet.getAddress(), received);
+            this.serverList.addServer(received, packet.getAddress());
          }
 
          try {

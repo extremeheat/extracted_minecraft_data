@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -28,162 +29,163 @@ public class RegistrySetBuilder {
       super();
    }
 
-   static <T> HolderGetter<T> wrapContextLookup(final HolderLookup.RegistryLookup<T> var0) {
-      return new EmptyTagLookup<T>(var0) {
-         public Optional<Holder.Reference<T>> get(ResourceKey<T> var1) {
-            return var0.get(var1);
+   private static <T> HolderGetter<T> wrapContextLookup(final HolderLookup.RegistryLookup<T> original) {
+      return new EmptyTagLookup<T>(original) {
+         public Optional<Holder.Reference<T>> get(final ResourceKey<T> id) {
+            return original.get(id);
          }
       };
    }
 
-   static <T> HolderLookup.RegistryLookup<T> lookupFromMap(final ResourceKey<? extends Registry<? extends T>> var0, final Lifecycle var1, HolderOwner<T> var2, final Map<ResourceKey<T>, Holder.Reference<T>> var3) {
-      return new EmptyTagRegistryLookup<T>(var2) {
+   private static <T> HolderLookup.RegistryLookup<T> lookupFromMap(final ResourceKey<? extends Registry<? extends T>> key, final Lifecycle lifecycle, final HolderOwner<T> owner, final Map<ResourceKey<T>, Holder.Reference<T>> entries) {
+      return new EmptyTagRegistryLookup<T>(owner) {
          public ResourceKey<? extends Registry<? extends T>> key() {
-            return var0;
+            return key;
          }
 
          public Lifecycle registryLifecycle() {
-            return var1;
+            return lifecycle;
          }
 
-         public Optional<Holder.Reference<T>> get(ResourceKey<T> var1x) {
-            return Optional.ofNullable((Holder.Reference)var3.get(var1x));
+         public Optional<Holder.Reference<T>> get(final ResourceKey<T> id) {
+            return Optional.ofNullable((Holder.Reference)entries.get(id));
          }
 
          public Stream<Holder.Reference<T>> listElements() {
-            return var3.values().stream();
+            return entries.values().stream();
          }
       };
    }
 
-   public <T> RegistrySetBuilder add(ResourceKey<? extends Registry<T>> var1, Lifecycle var2, RegistryBootstrap<T> var3) {
-      this.entries.add(new RegistryStub(var1, var2, var3));
+   public <T> RegistrySetBuilder add(final ResourceKey<? extends Registry<T>> key, final Lifecycle lifecycle, final RegistryBootstrap<T> bootstrap) {
+      this.entries.add(new RegistryStub(key, lifecycle, bootstrap));
       return this;
    }
 
-   public <T> RegistrySetBuilder add(ResourceKey<? extends Registry<T>> var1, RegistryBootstrap<T> var2) {
-      return this.add(var1, Lifecycle.stable(), var2);
+   public <T> RegistrySetBuilder add(final ResourceKey<? extends Registry<T>> key, final RegistryBootstrap<T> bootstrap) {
+      return this.add(key, Lifecycle.stable(), bootstrap);
    }
 
-   private BuildState createState(RegistryAccess var1) {
-      BuildState var2 = RegistrySetBuilder.BuildState.create(var1, this.entries.stream().map(RegistryStub::key));
-      this.entries.forEach((var1x) -> var1x.apply(var2));
-      return var2;
+   private BuildState createState(final RegistryAccess context) {
+      BuildState state = RegistrySetBuilder.BuildState.create(context, this.entries.stream().map(RegistryStub::key));
+      this.entries.forEach((e) -> e.apply(state));
+      return state;
    }
 
-   private static HolderLookup.Provider buildProviderWithContext(UniversalOwner var0, RegistryAccess var1, Stream<HolderLookup.RegistryLookup<?>> var2) {
-      final HashMap var3 = new HashMap();
-      var1.registries().forEach((var1x) -> var3.put(var1x.key(), 1Entry.createForContextRegistry(var1x.value())));
-      var2.forEach((var2x) -> var3.put(var2x.key(), 1Entry.createForNewRegistry(var0, var2x)));
+   private static HolderLookup.Provider buildProviderWithContext(final UniversalOwner owner, final RegistryAccess context, final Stream<HolderLookup.RegistryLookup<?>> newRegistries) {
+      record Entry<T>(HolderLookup.RegistryLookup<T> lookup, RegistryOps.RegistryInfo<T> opsInfo) {
+         Entry {
+            super();
+         }
+
+         public static <T> Entry<T> createForContextRegistry(final HolderLookup.RegistryLookup<T> registryLookup) {
+            return new Entry<T>(new EmptyTagLookupWrapper(registryLookup, registryLookup), RegistryOps.RegistryInfo.fromRegistryLookup(registryLookup));
+         }
+
+         public static <T> Entry<T> createForNewRegistry(final UniversalOwner owner, final HolderLookup.RegistryLookup<T> registryLookup) {
+            return new Entry<T>(new EmptyTagLookupWrapper(owner.cast(), registryLookup), new RegistryOps.RegistryInfo(owner.cast(), registryLookup, registryLookup.registryLifecycle()));
+         }
+      }
+
+      final Map<ResourceKey<? extends Registry<?>>, Entry<?>> lookups = new HashMap();
+      context.registries().forEach((contextRegistry) -> lookups.put(contextRegistry.key(), Entry.createForContextRegistry(contextRegistry.value())));
+      newRegistries.forEach((newRegistry) -> lookups.put(newRegistry.key(), Entry.createForNewRegistry(owner, newRegistry)));
       return new HolderLookup.Provider() {
          public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
-            return var3.keySet().stream();
+            return lookups.keySet().stream();
          }
 
-         <T> Optional<1Entry<T>> getEntry(ResourceKey<? extends Registry<? extends T>> var1) {
-            return Optional.ofNullable((1Entry)var3.get(var1));
+         private <T> Optional<Entry<T>> getEntry(final ResourceKey<? extends Registry<? extends T>> key) {
+            return Optional.ofNullable((Entry)lookups.get(key));
          }
 
-         public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-            return this.getEntry(var1).map(1Entry::lookup);
+         public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(final ResourceKey<? extends Registry<? extends T>> key) {
+            return this.getEntry(key).map(Entry::lookup);
          }
 
-         public <V> RegistryOps<V> createSerializationContext(DynamicOps<V> var1) {
-            return RegistryOps.create(var1, new RegistryOps.RegistryInfoLookup() {
-               public <T> Optional<RegistryOps.RegistryInfo<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-                  return getEntry(var1).map(1Entry::opsInfo);
+         public <V> RegistryOps<V> createSerializationContext(final DynamicOps<V> parent) {
+            return RegistryOps.create(parent, new RegistryOps.RegistryInfoLookup() {
+               {
+                  Objects.requireNonNull(<VAR_NAMELESS_ENCLOSURE>);
+               }
+
+               public <T> Optional<RegistryOps.RegistryInfo<T>> lookup(final ResourceKey<? extends Registry<? extends T>> registryKey) {
+                  return getEntry(registryKey).map(Entry::opsInfo);
                }
             });
          }
       };
-
-      record 1Entry<T>(HolderLookup.RegistryLookup<T> lookup, RegistryOps.RegistryInfo<T> opsInfo) {
-         _Entry/* $FF was: 1Entry*/(HolderLookup.RegistryLookup<T> var1, RegistryOps.RegistryInfo<T> var2) {
-            super();
-            this.lookup = var1;
-            this.opsInfo = var2;
-         }
-
-         public static <T> 1Entry<T> createForContextRegistry(HolderLookup.RegistryLookup<T> var0) {
-            return new 1Entry<T>(new EmptyTagLookupWrapper(var0, var0), RegistryOps.RegistryInfo.fromRegistryLookup(var0));
-         }
-
-         public static <T> 1Entry<T> createForNewRegistry(UniversalOwner var0, HolderLookup.RegistryLookup<T> var1) {
-            return new 1Entry<T>(new EmptyTagLookupWrapper(var0.cast(), var1), new RegistryOps.RegistryInfo(var0.cast(), var1, var1.registryLifecycle()));
-         }
-      }
-
    }
 
-   public HolderLookup.Provider build(RegistryAccess var1) {
-      BuildState var2 = this.createState(var1);
-      Stream var3 = this.entries.stream().map((var1x) -> var1x.collectRegisteredValues(var2).buildAsLookup(var2.owner));
-      HolderLookup.Provider var4 = buildProviderWithContext(var2.owner, var1, var3);
-      var2.reportNotCollectedHolders();
-      var2.reportUnclaimedRegisteredValues();
-      var2.throwOnError();
-      return var4;
+   public HolderLookup.Provider build(final RegistryAccess context) {
+      BuildState state = this.createState(context);
+      Stream<HolderLookup.RegistryLookup<?>> newRegistries = this.entries.stream().map((stub) -> stub.collectRegisteredValues(state).buildAsLookup(state.owner));
+      HolderLookup.Provider result = buildProviderWithContext(state.owner, context, newRegistries);
+      state.reportNotCollectedHolders();
+      state.reportUnclaimedRegisteredValues();
+      state.throwOnError();
+      return result;
    }
 
-   private HolderLookup.Provider createLazyFullPatchedRegistries(RegistryAccess var1, HolderLookup.Provider var2, Cloner.Factory var3, Map<ResourceKey<? extends Registry<?>>, RegistryContents<?>> var4, HolderLookup.Provider var5) {
-      UniversalOwner var6 = new UniversalOwner();
-      MutableObject var7 = new MutableObject();
-      List var8 = (List)var4.keySet().stream().map((var6x) -> this.createLazyFullPatchedRegistries(var6, var3, var6x, var5, var2, var7)).collect(Collectors.toUnmodifiableList());
-      HolderLookup.Provider var9 = buildProviderWithContext(var6, var1, var8.stream());
-      var7.setValue(var9);
-      return var9;
+   private HolderLookup.Provider createLazyFullPatchedRegistries(final RegistryAccess context, final HolderLookup.Provider fallbackProvider, final Cloner.Factory clonerFactory, final Map<ResourceKey<? extends Registry<?>>, RegistryContents<?>> newRegistries, final HolderLookup.Provider patchOnlyRegistries) {
+      UniversalOwner fullPatchedOwner = new UniversalOwner();
+      MutableObject<HolderLookup.Provider> resultReference = new MutableObject();
+      List<HolderLookup.RegistryLookup<?>> lazyFullRegistries = (List)newRegistries.keySet().stream().map((registryKey) -> this.createLazyFullPatchedRegistries(fullPatchedOwner, clonerFactory, registryKey, patchOnlyRegistries, fallbackProvider, resultReference)).collect(Collectors.toUnmodifiableList());
+      HolderLookup.Provider result = buildProviderWithContext(fullPatchedOwner, context, lazyFullRegistries.stream());
+      resultReference.setValue(result);
+      return result;
    }
 
-   private <T> HolderLookup.RegistryLookup<T> createLazyFullPatchedRegistries(HolderOwner<T> var1, Cloner.Factory var2, ResourceKey<? extends Registry<? extends T>> var3, HolderLookup.Provider var4, HolderLookup.Provider var5, MutableObject<HolderLookup.Provider> var6) {
-      Cloner var7 = var2.cloner(var3);
-      if (var7 == null) {
-         throw new NullPointerException("No cloner for " + String.valueOf(var3.identifier()));
+   private <T> HolderLookup.RegistryLookup<T> createLazyFullPatchedRegistries(final HolderOwner<T> owner, final Cloner.Factory clonerFactory, final ResourceKey<? extends Registry<? extends T>> registryKey, final HolderLookup.Provider patchProvider, final HolderLookup.Provider fallbackProvider, final MutableObject<HolderLookup.Provider> targetProvider) {
+      Cloner<T> cloner = clonerFactory.<T>cloner(registryKey);
+      if (cloner == null) {
+         throw new NullPointerException("No cloner for " + String.valueOf(registryKey.identifier()));
       } else {
-         HashMap var8 = new HashMap();
-         HolderLookup.RegistryLookup var9 = var4.lookupOrThrow(var3);
-         var9.listElements().forEach((var5x) -> {
-            ResourceKey var6x = var5x.key();
-            LazyHolder var7x = new LazyHolder(var1, var6x);
-            var7x.supplier = () -> var7.clone(var5x.value(), var4, (HolderLookup.Provider)var6.get());
-            var8.put(var6x, var7x);
+         Map<ResourceKey<T>, Holder.Reference<T>> entries = new HashMap();
+         HolderLookup.RegistryLookup<T> patchContents = patchProvider.lookupOrThrow(registryKey);
+         patchContents.listElements().forEach((elementHolder) -> {
+            ResourceKey<T> elementKey = elementHolder.key();
+            LazyHolder<T> holder = new LazyHolder<T>(owner, elementKey);
+            holder.supplier = () -> cloner.clone(elementHolder.value(), patchProvider, (HolderLookup.Provider)targetProvider.get());
+            entries.put(elementKey, holder);
          });
-         HolderLookup.RegistryLookup var10 = var5.lookupOrThrow(var3);
-         var10.listElements().forEach((var5x) -> {
-            ResourceKey var6x = var5x.key();
-            var8.computeIfAbsent(var6x, (var6xx) -> {
-               LazyHolder var7x = new LazyHolder(var1, var6x);
-               var7x.supplier = () -> var7.clone(var5x.value(), var5, (HolderLookup.Provider)var6.get());
-               return var7x;
+         HolderLookup.RegistryLookup<T> fallbackContents = fallbackProvider.lookupOrThrow(registryKey);
+         fallbackContents.listElements().forEach((elementHolder) -> {
+            ResourceKey<T> elementKey = elementHolder.key();
+            entries.computeIfAbsent(elementKey, (key) -> {
+               LazyHolder<T> holder = new LazyHolder<T>(owner, elementKey);
+               holder.supplier = () -> cloner.clone(elementHolder.value(), fallbackProvider, (HolderLookup.Provider)targetProvider.get());
+               return holder;
             });
          });
-         Lifecycle var11 = var9.registryLifecycle().add(var10.registryLifecycle());
-         return lookupFromMap(var3, var11, var1, var8);
+         Lifecycle lifecycle = patchContents.registryLifecycle().add(fallbackContents.registryLifecycle());
+         return lookupFromMap(registryKey, lifecycle, owner, entries);
       }
    }
 
-   public PatchedRegistries buildPatch(RegistryAccess var1, HolderLookup.Provider var2, Cloner.Factory var3) {
-      BuildState var4 = this.createState(var1);
-      HashMap var5 = new HashMap();
-      this.entries.stream().map((var1x) -> var1x.collectRegisteredValues(var4)).forEach((var1x) -> var5.put(var1x.key, var1x));
-      Set var6 = (Set)var1.listRegistryKeys().collect(Collectors.toUnmodifiableSet());
-      var2.listRegistryKeys().filter((var1x) -> !var6.contains(var1x)).forEach((var1x) -> var5.putIfAbsent(var1x, new RegistryContents(var1x, Lifecycle.stable(), Map.of())));
-      Stream var7 = var5.values().stream().map((var1x) -> var1x.buildAsLookup(var4.owner));
-      HolderLookup.Provider var8 = buildProviderWithContext(var4.owner, var1, var7);
-      var4.reportUnclaimedRegisteredValues();
-      var4.throwOnError();
-      HolderLookup.Provider var9 = this.createLazyFullPatchedRegistries(var1, var2, var3, var5, var8);
-      return new PatchedRegistries(var9, var8);
+   public PatchedRegistries buildPatch(final RegistryAccess context, final HolderLookup.Provider fallbackProvider, final Cloner.Factory clonerFactory) {
+      BuildState state = this.createState(context);
+      Map<ResourceKey<? extends Registry<?>>, RegistryContents<?>> newRegistries = new HashMap();
+      this.entries.stream().map((stub) -> stub.collectRegisteredValues(state)).forEach((e) -> newRegistries.put(e.key, e));
+      Set<ResourceKey<? extends Registry<?>>> contextRegistries = (Set)context.listRegistryKeys().collect(Collectors.toUnmodifiableSet());
+      fallbackProvider.listRegistryKeys().filter((k) -> !contextRegistries.contains(k)).forEach((resourceKey) -> newRegistries.putIfAbsent(resourceKey, new RegistryContents(resourceKey, Lifecycle.stable(), Map.of())));
+      Stream<HolderLookup.RegistryLookup<?>> dynamicRegistries = newRegistries.values().stream().map((registryContents) -> registryContents.buildAsLookup(state.owner));
+      HolderLookup.Provider patchOnlyRegistries = buildProviderWithContext(state.owner, context, dynamicRegistries);
+      state.reportUnclaimedRegisteredValues();
+      state.throwOnError();
+      HolderLookup.Provider fullPatchedRegistries = this.createLazyFullPatchedRegistries(context, fallbackProvider, clonerFactory, newRegistries, patchOnlyRegistries);
+      return new PatchedRegistries(fullPatchedRegistries, patchOnlyRegistries);
    }
 
-   static class LazyHolder<T> extends Holder.Reference<T> {
-      @Nullable Supplier<T> supplier;
+   private static class LazyHolder<T> extends Holder.Reference<T> {
+      private @Nullable Supplier<T> supplier;
 
-      protected LazyHolder(HolderOwner<T> var1, @Nullable ResourceKey<T> var2) {
-         super(Holder.Reference.Type.STAND_ALONE, var1, var2, (Object)null);
+      protected LazyHolder(final HolderOwner<T> owner, final @Nullable ResourceKey<T> key) {
+         super(Holder.Reference.Type.STAND_ALONE, owner, key, (Object)null);
       }
 
-      protected void bindValue(T var1) {
-         super.bindValue(var1);
+      protected void bindValue(final T value) {
+         super.bindValue(value);
          this.supplier = null;
       }
 
@@ -196,22 +198,22 @@ public class RegistrySetBuilder {
       }
    }
 
-   abstract static class EmptyTagLookup<T> implements HolderGetter<T> {
+   private abstract static class EmptyTagLookup<T> implements HolderGetter<T> {
       protected final HolderOwner<T> owner;
 
-      protected EmptyTagLookup(HolderOwner<T> var1) {
+      protected EmptyTagLookup(final HolderOwner<T> owner) {
          super();
-         this.owner = var1;
+         this.owner = owner;
       }
 
-      public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
-         return Optional.of(HolderSet.emptyNamed(this.owner, var1));
+      public Optional<HolderSet.Named<T>> get(final TagKey<T> id) {
+         return Optional.of(HolderSet.emptyNamed(this.owner, id));
       }
    }
 
-   abstract static class EmptyTagRegistryLookup<T> extends EmptyTagLookup<T> implements HolderLookup.RegistryLookup<T> {
-      protected EmptyTagRegistryLookup(HolderOwner<T> var1) {
-         super(var1);
+   private abstract static class EmptyTagRegistryLookup<T> extends EmptyTagLookup<T> implements HolderLookup.RegistryLookup<T> {
+      protected EmptyTagRegistryLookup(final HolderOwner<T> owner) {
+         super(owner);
       }
 
       public Stream<HolderSet.Named<T>> listTags() {
@@ -219,12 +221,12 @@ public class RegistrySetBuilder {
       }
    }
 
-   static class EmptyTagLookupWrapper<T> extends EmptyTagRegistryLookup<T> implements HolderLookup.RegistryLookup.Delegate<T> {
+   private static class EmptyTagLookupWrapper<T> extends EmptyTagRegistryLookup<T> implements HolderLookup.RegistryLookup.Delegate<T> {
       private final HolderLookup.RegistryLookup<T> parent;
 
-      EmptyTagLookupWrapper(HolderOwner<T> var1, HolderLookup.RegistryLookup<T> var2) {
-         super(var1);
-         this.parent = var2;
+      private EmptyTagLookupWrapper(final HolderOwner<T> owner, final HolderLookup.RegistryLookup<T> parent) {
+         super(owner);
+         this.parent = parent;
       }
 
       public HolderLookup.RegistryLookup<T> parent() {
@@ -232,8 +234,8 @@ public class RegistrySetBuilder {
       }
    }
 
-   static class UniversalOwner implements HolderOwner<Object> {
-      UniversalOwner() {
+   private static class UniversalOwner implements HolderOwner<Object> {
+      private UniversalOwner() {
          super();
       }
 
@@ -242,175 +244,152 @@ public class RegistrySetBuilder {
       }
    }
 
-   static class UniversalLookup extends EmptyTagLookup<Object> {
-      final Map<ResourceKey<Object>, Holder.Reference<Object>> holders = new HashMap();
+   private static class UniversalLookup extends EmptyTagLookup<Object> {
+      private final Map<ResourceKey<Object>, Holder.Reference<Object>> holders = new HashMap();
 
-      public UniversalLookup(HolderOwner<Object> var1) {
-         super(var1);
+      public UniversalLookup(final HolderOwner<Object> owner) {
+         super(owner);
       }
 
-      public Optional<Holder.Reference<Object>> get(ResourceKey<Object> var1) {
-         return Optional.of(this.getOrCreate(var1));
+      public Optional<Holder.Reference<Object>> get(final ResourceKey<Object> id) {
+         return Optional.of(this.getOrCreate(id));
       }
 
-      <T> Holder.Reference<T> getOrCreate(ResourceKey<T> var1) {
-         return (Holder.Reference)this.holders.computeIfAbsent(var1, (var1x) -> Holder.Reference.createStandAlone(this.owner, var1x));
-      }
-   }
-
-   static record RegisteredValue<T>(T value, Lifecycle lifecycle) {
-      final T value;
-
-      RegisteredValue(T var1, Lifecycle var2) {
-         super();
-         this.value = var1;
-         this.lifecycle = var2;
+      private <T> Holder.Reference<T> getOrCreate(final ResourceKey<T> id) {
+         return (Holder.Reference)this.holders.computeIfAbsent(id, (k) -> Holder.Reference.createStandAlone(this.owner, k));
       }
    }
 
-   static record BuildState(UniversalOwner owner, UniversalLookup lookup, Map<Identifier, HolderGetter<?>> registries, Map<ResourceKey<?>, RegisteredValue<?>> registeredValues, List<RuntimeException> errors) {
-      final UniversalOwner owner;
-      final UniversalLookup lookup;
-      final Map<Identifier, HolderGetter<?>> registries;
-      final Map<ResourceKey<?>, RegisteredValue<?>> registeredValues;
-      final List<RuntimeException> errors;
-
-      private BuildState(UniversalOwner var1, UniversalLookup var2, Map<Identifier, HolderGetter<?>> var3, Map<ResourceKey<?>, RegisteredValue<?>> var4, List<RuntimeException> var5) {
+   private static record RegisteredValue<T>(T value, Lifecycle lifecycle) {
+      private RegisteredValue {
          super();
-         this.owner = var1;
-         this.lookup = var2;
-         this.registries = var3;
-         this.registeredValues = var4;
-         this.errors = var5;
+      }
+   }
+
+   private static record BuildState(UniversalOwner owner, UniversalLookup lookup, Map<Identifier, HolderGetter<?>> registries, Map<ResourceKey<?>, RegisteredValue<?>> registeredValues, List<RuntimeException> errors) {
+      private BuildState {
+         super();
       }
 
-      public static BuildState create(RegistryAccess var0, Stream<ResourceKey<? extends Registry<?>>> var1) {
-         UniversalOwner var2 = new UniversalOwner();
-         ArrayList var3 = new ArrayList();
-         UniversalLookup var4 = new UniversalLookup(var2);
-         ImmutableMap.Builder var5 = ImmutableMap.builder();
-         var0.registries().forEach((var1x) -> var5.put(var1x.key().identifier(), RegistrySetBuilder.wrapContextLookup(var1x.value())));
-         var1.forEach((var2x) -> var5.put(var2x.identifier(), var4));
-         return new BuildState(var2, var4, var5.build(), new HashMap(), var3);
+      public static BuildState create(final RegistryAccess context, final Stream<ResourceKey<? extends Registry<?>>> newRegistries) {
+         UniversalOwner owner = new UniversalOwner();
+         List<RuntimeException> errors = new ArrayList();
+         UniversalLookup lookup = new UniversalLookup(owner);
+         ImmutableMap.Builder<Identifier, HolderGetter<?>> registries = ImmutableMap.builder();
+         context.registries().forEach((contextRegistry) -> registries.put(contextRegistry.key().identifier(), RegistrySetBuilder.wrapContextLookup(contextRegistry.value())));
+         newRegistries.forEach((newRegistry) -> registries.put(newRegistry.identifier(), lookup));
+         return new BuildState(owner, lookup, registries.build(), new HashMap(), errors);
       }
 
       public <T> BootstrapContext<T> bootstrapContext() {
          return new BootstrapContext<T>() {
-            public Holder.Reference<T> register(ResourceKey<T> var1, T var2, Lifecycle var3) {
-               RegisteredValue var4 = (RegisteredValue)BuildState.this.registeredValues.put(var1, new RegisteredValue(var2, var3));
-               if (var4 != null) {
-                  List var10000 = BuildState.this.errors;
-                  String var10003 = String.valueOf(var1);
-                  var10000.add(new IllegalStateException("Duplicate registration for " + var10003 + ", new=" + String.valueOf(var2) + ", old=" + String.valueOf(var4.value)));
-               }
-
-               return BuildState.this.lookup.<T>getOrCreate(var1);
+            {
+               Objects.requireNonNull(BuildState.this);
             }
 
-            public <S> HolderGetter<S> lookup(ResourceKey<? extends Registry<? extends S>> var1) {
-               return (HolderGetter)BuildState.this.registries.getOrDefault(var1.identifier(), BuildState.this.lookup);
+            public Holder.Reference<T> register(final ResourceKey<T> key, final T value, final Lifecycle lifecycle) {
+               RegisteredValue<?> previousValue = (RegisteredValue)BuildState.this.registeredValues.put(key, new RegisteredValue(value, lifecycle));
+               if (previousValue != null) {
+                  List var10000 = BuildState.this.errors;
+                  String var10003 = String.valueOf(key);
+                  var10000.add(new IllegalStateException("Duplicate registration for " + var10003 + ", new=" + String.valueOf(value) + ", old=" + String.valueOf(previousValue.value)));
+               }
+
+               return BuildState.this.lookup.<T>getOrCreate(key);
+            }
+
+            public <S> HolderGetter<S> lookup(final ResourceKey<? extends Registry<? extends S>> key) {
+               return (HolderGetter)BuildState.this.registries.getOrDefault(key.identifier(), BuildState.this.lookup);
             }
          };
       }
 
       public void reportUnclaimedRegisteredValues() {
-         this.registeredValues.forEach((var1, var2) -> {
+         this.registeredValues.forEach((key, registeredValue) -> {
             List var10000 = this.errors;
-            String var10003 = String.valueOf(var2.value);
-            var10000.add(new IllegalStateException("Orpaned value " + var10003 + " for key " + String.valueOf(var1)));
+            String var10003 = String.valueOf(registeredValue.value);
+            var10000.add(new IllegalStateException("Orpaned value " + var10003 + " for key " + String.valueOf(key)));
          });
       }
 
       public void reportNotCollectedHolders() {
-         for(ResourceKey var2 : this.lookup.holders.keySet()) {
-            this.errors.add(new IllegalStateException("Unreferenced key: " + String.valueOf(var2)));
+         for(ResourceKey<Object> key : this.lookup.holders.keySet()) {
+            this.errors.add(new IllegalStateException("Unreferenced key: " + String.valueOf(key)));
          }
 
       }
 
       public void throwOnError() {
          if (!this.errors.isEmpty()) {
-            IllegalStateException var1 = new IllegalStateException("Errors during registry creation");
+            IllegalStateException result = new IllegalStateException("Errors during registry creation");
 
-            for(RuntimeException var3 : this.errors) {
-               var1.addSuppressed(var3);
+            for(RuntimeException error : this.errors) {
+               result.addSuppressed(error);
             }
 
-            throw var1;
+            throw result;
          }
       }
    }
 
-   static record ValueAndHolder<T>(RegisteredValue<T> value, Optional<Holder.Reference<T>> holder) {
-      ValueAndHolder(RegisteredValue<T> var1, Optional<Holder.Reference<T>> var2) {
+   private static record ValueAndHolder<T>(RegisteredValue<T> value, Optional<Holder.Reference<T>> holder) {
+      private ValueAndHolder {
          super();
-         this.value = var1;
-         this.holder = var2;
       }
    }
 
-   static record RegistryStub<T>(ResourceKey<? extends Registry<T>> key, Lifecycle lifecycle, RegistryBootstrap<T> bootstrap) {
-      RegistryStub(ResourceKey<? extends Registry<T>> var1, Lifecycle var2, RegistryBootstrap<T> var3) {
+   private static record RegistryStub<T>(ResourceKey<? extends Registry<T>> key, Lifecycle lifecycle, RegistryBootstrap<T> bootstrap) {
+      private RegistryStub {
          super();
-         this.key = var1;
-         this.lifecycle = var2;
-         this.bootstrap = var3;
       }
 
-      void apply(BuildState var1) {
-         this.bootstrap.run(var1.bootstrapContext());
+      private void apply(final BuildState state) {
+         this.bootstrap.run(state.bootstrapContext());
       }
 
-      public RegistryContents<T> collectRegisteredValues(BuildState var1) {
-         HashMap var2 = new HashMap();
-         Iterator var3 = var1.registeredValues.entrySet().iterator();
+      public RegistryContents<T> collectRegisteredValues(final BuildState state) {
+         Map<ResourceKey<T>, ValueAndHolder<T>> result = new HashMap();
+         Iterator<Map.Entry<ResourceKey<?>, RegisteredValue<?>>> iterator = state.registeredValues.entrySet().iterator();
 
-         while(var3.hasNext()) {
-            Map.Entry var4 = (Map.Entry)var3.next();
-            ResourceKey var5 = (ResourceKey)var4.getKey();
-            if (var5.isFor(this.key)) {
-               RegisteredValue var7 = (RegisteredValue)var4.getValue();
-               Holder.Reference var8 = (Holder.Reference)var1.lookup.holders.remove(var5);
-               var2.put(var5, new ValueAndHolder(var7, Optional.ofNullable(var8)));
-               var3.remove();
+         while(iterator.hasNext()) {
+            Map.Entry<ResourceKey<?>, RegisteredValue<?>> entry = (Map.Entry)iterator.next();
+            ResourceKey<?> key = (ResourceKey)entry.getKey();
+            if (key.isFor(this.key)) {
+               RegisteredValue<T> value = (RegisteredValue)entry.getValue();
+               Holder.Reference<T> holder = (Holder.Reference)state.lookup.holders.remove(key);
+               result.put(key, new ValueAndHolder(value, Optional.ofNullable(holder)));
+               iterator.remove();
             }
          }
 
-         return new RegistryContents<T>(this.key, this.lifecycle, var2);
+         return new RegistryContents<T>(this.key, this.lifecycle, result);
       }
    }
 
-   static record RegistryContents<T>(ResourceKey<? extends Registry<? extends T>> key, Lifecycle lifecycle, Map<ResourceKey<T>, ValueAndHolder<T>> values) {
-      final ResourceKey<? extends Registry<? extends T>> key;
-
-      RegistryContents(ResourceKey<? extends Registry<? extends T>> var1, Lifecycle var2, Map<ResourceKey<T>, ValueAndHolder<T>> var3) {
+   private static record RegistryContents<T>(ResourceKey<? extends Registry<? extends T>> key, Lifecycle lifecycle, Map<ResourceKey<T>, ValueAndHolder<T>> values) {
+      private RegistryContents {
          super();
-         this.key = var1;
-         this.lifecycle = var2;
-         this.values = var3;
       }
 
-      public HolderLookup.RegistryLookup<T> buildAsLookup(UniversalOwner var1) {
-         Map var2 = (Map)this.values.entrySet().stream().collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, (var1x) -> {
-            ValueAndHolder var2 = (ValueAndHolder)var1x.getValue();
-            Holder.Reference var3 = (Holder.Reference)var2.holder().orElseGet(() -> Holder.Reference.createStandAlone(var1.cast(), (ResourceKey)var1x.getKey()));
-            var3.bindValue(var2.value().value());
-            return var3;
+      public HolderLookup.RegistryLookup<T> buildAsLookup(final UniversalOwner owner) {
+         Map<ResourceKey<T>, Holder.Reference<T>> entries = (Map)this.values.entrySet().stream().collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, (e) -> {
+            ValueAndHolder<T> entry = (ValueAndHolder)e.getValue();
+            Holder.Reference<T> holder = (Holder.Reference)entry.holder().orElseGet(() -> Holder.Reference.createStandAlone(owner.cast(), (ResourceKey)e.getKey()));
+            holder.bindValue(entry.value().value());
+            return holder;
          }));
-         return RegistrySetBuilder.<T>lookupFromMap(this.key, this.lifecycle, var1.cast(), var2);
+         return RegistrySetBuilder.<T>lookupFromMap(this.key, this.lifecycle, owner.cast(), entries);
       }
    }
 
    public static record PatchedRegistries(HolderLookup.Provider full, HolderLookup.Provider patches) {
-      public PatchedRegistries(HolderLookup.Provider var1, HolderLookup.Provider var2) {
+      public PatchedRegistries {
          super();
-         this.full = var1;
-         this.patches = var2;
       }
    }
 
    @FunctionalInterface
    public interface RegistryBootstrap<T> {
-      void run(BootstrapContext<T> var1);
+      void run(BootstrapContext<T> registry);
    }
 }

@@ -21,28 +21,28 @@ public class KickCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kick").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((var0x) -> kickPlayers((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), Component.translatable("multiplayer.disconnect.kicked")))).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> kickPlayers((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), MessageArgument.getMessage(var0x, "reason"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kick").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((c) -> kickPlayers((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), Component.translatable("multiplayer.disconnect.kicked")))).then(Commands.argument("reason", MessageArgument.message()).executes((c) -> kickPlayers((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), MessageArgument.getMessage(c, "reason"))))));
    }
 
-   private static int kickPlayers(CommandSourceStack var0, Collection<ServerPlayer> var1, Component var2) throws CommandSyntaxException {
-      if (!var0.getServer().isPublished()) {
+   private static int kickPlayers(final CommandSourceStack source, final Collection<ServerPlayer> players, final Component reason) throws CommandSyntaxException {
+      if (!source.getServer().isPublished()) {
          throw ERROR_SINGLEPLAYER.create();
       } else {
-         int var3 = 0;
+         int count = 0;
 
-         for(ServerPlayer var5 : var1) {
-            if (!var0.getServer().isSingleplayerOwner(var5.nameAndId())) {
-               var5.connection.disconnect(var2);
-               var0.sendSuccess(() -> Component.translatable("commands.kick.success", var5.getDisplayName(), var2), true);
-               ++var3;
+         for(ServerPlayer player : players) {
+            if (!source.getServer().isSingleplayerOwner(player.nameAndId())) {
+               player.connection.disconnect(reason);
+               source.sendSuccess(() -> Component.translatable("commands.kick.success", player.getDisplayName(), reason), true);
+               ++count;
             }
          }
 
-         if (var3 == 0) {
+         if (count == 0) {
             throw ERROR_KICKING_OWNER.create();
          } else {
-            return var3;
+            return count;
          }
       }
    }

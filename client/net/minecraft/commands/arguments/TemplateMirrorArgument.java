@@ -13,7 +13,7 @@ public class TemplateMirrorArgument extends StringRepresentableArgument<Mirror> 
       return new TemplateMirrorArgument();
    }
 
-   public static Mirror getMirror(CommandContext<CommandSourceStack> var0, String var1) {
-      return (Mirror)var0.getArgument(var1, Mirror.class);
+   public static Mirror getMirror(final CommandContext<CommandSourceStack> context, final String name) {
+      return (Mirror)context.getArgument(name, Mirror.class);
    }
 }

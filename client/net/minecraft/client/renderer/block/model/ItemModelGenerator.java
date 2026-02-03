@@ -46,148 +46,148 @@ public class ItemModelGenerator implements UnbakedModel {
       return UnbakedModel.GuiLight.FRONT;
    }
 
-   private static QuadCollection bake(TextureSlots var0, ModelBaker var1, ModelState var2, ModelDebugName var3) {
-      ArrayList var4 = new ArrayList();
+   private static QuadCollection bake(final TextureSlots textureSlots, final ModelBaker modelBaker, final ModelState modelState, final ModelDebugName name) {
+      List<BlockElement> elements = new ArrayList();
 
-      for(int var5 = 0; var5 < LAYERS.size(); ++var5) {
-         String var6 = (String)LAYERS.get(var5);
-         Material var7 = var0.getMaterial(var6);
-         if (var7 == null) {
+      for(int layerIndex = 0; layerIndex < LAYERS.size(); ++layerIndex) {
+         String textureReference = (String)LAYERS.get(layerIndex);
+         Material material = textureSlots.getMaterial(textureReference);
+         if (material == null) {
             break;
          }
 
-         SpriteContents var8 = var1.sprites().get(var7, var3).contents();
-         var4.addAll(processFrames(var5, var6, var8));
+         SpriteContents sprite = modelBaker.sprites().get(material, name).contents();
+         elements.addAll(processFrames(layerIndex, textureReference, sprite));
       }
 
-      return SimpleUnbakedGeometry.bake(var4, var0, var1, var2, var3);
+      return SimpleUnbakedGeometry.bake(elements, textureSlots, modelBaker, modelState, name);
    }
 
-   private static List<BlockElement> processFrames(int var0, String var1, SpriteContents var2) {
-      Map var3 = Map.of(Direction.SOUTH, new BlockElementFace((Direction)null, var0, var1, SOUTH_FACE_UVS, Quadrant.R0), Direction.NORTH, new BlockElementFace((Direction)null, var0, var1, NORTH_FACE_UVS, Quadrant.R0));
-      ArrayList var4 = new ArrayList();
-      var4.add(new BlockElement(new Vector3f(0.0F, 0.0F, 7.5F), new Vector3f(16.0F, 16.0F, 8.5F), var3));
-      var4.addAll(createSideElements(var2, var1, var0));
-      return var4;
+   private static List<BlockElement> processFrames(final int tintIndex, final String textureName, final SpriteContents sprite) {
+      Map<Direction, BlockElementFace> frontAndBackFaces = Map.of(Direction.SOUTH, new BlockElementFace((Direction)null, tintIndex, textureName, SOUTH_FACE_UVS, Quadrant.R0), Direction.NORTH, new BlockElementFace((Direction)null, tintIndex, textureName, NORTH_FACE_UVS, Quadrant.R0));
+      List<BlockElement> elements = new ArrayList();
+      elements.add(new BlockElement(new Vector3f(0.0F, 0.0F, 7.5F), new Vector3f(16.0F, 16.0F, 8.5F), frontAndBackFaces));
+      elements.addAll(createSideElements(sprite, textureName, tintIndex));
+      return elements;
    }
 
-   private static List<BlockElement> createSideElements(SpriteContents var0, String var1, int var2) {
-      float var3 = 16.0F / (float)var0.width();
-      float var4 = 16.0F / (float)var0.height();
-      ArrayList var5 = new ArrayList();
+   private static List<BlockElement> createSideElements(final SpriteContents sprite, final String textureName, final int tintIndex) {
+      float xScale = 16.0F / (float)sprite.width();
+      float yScale = 16.0F / (float)sprite.height();
+      List<BlockElement> result = new ArrayList();
 
-      for(SideFace var7 : getSideFaces(var0)) {
-         float var8 = (float)var7.x();
-         float var9 = (float)var7.y();
-         SideDirection var10 = var7.facing();
-         float var11 = var8 + 0.1F;
-         float var12 = var8 + 1.0F - 0.1F;
-         float var13;
-         float var14;
-         if (var10.isHorizontal()) {
-            var13 = var9 + 0.1F;
-            var14 = var9 + 1.0F - 0.1F;
+      for(SideFace sideFace : getSideFaces(sprite)) {
+         float x = (float)sideFace.x();
+         float y = (float)sideFace.y();
+         SideDirection sideDirection = sideFace.facing();
+         float u0 = x + 0.1F;
+         float u1 = x + 1.0F - 0.1F;
+         float v0;
+         float v1;
+         if (sideDirection.isHorizontal()) {
+            v0 = y + 0.1F;
+            v1 = y + 1.0F - 0.1F;
          } else {
-            var13 = var9 + 1.0F - 0.1F;
-            var14 = var9 + 0.1F;
+            v0 = y + 1.0F - 0.1F;
+            v1 = y + 0.1F;
          }
 
-         float var15 = var8;
-         float var16 = var9;
-         float var17 = var8;
-         float var18 = var9;
-         switch (var10.ordinal()) {
+         float startX = x;
+         float startY = y;
+         float endX = x;
+         float endY = y;
+         switch (sideDirection.ordinal()) {
             case 0:
-               var17 = var8 + 1.0F;
+               endX = x + 1.0F;
                break;
             case 1:
-               var17 = var8 + 1.0F;
-               var16 = var9 + 1.0F;
-               var18 = var9 + 1.0F;
+               endX = x + 1.0F;
+               startY = y + 1.0F;
+               endY = y + 1.0F;
                break;
             case 2:
-               var18 = var9 + 1.0F;
+               endY = y + 1.0F;
                break;
             case 3:
-               var15 = var8 + 1.0F;
-               var17 = var8 + 1.0F;
-               var18 = var9 + 1.0F;
+               startX = x + 1.0F;
+               endX = x + 1.0F;
+               endY = y + 1.0F;
          }
 
-         var15 *= var3;
-         var17 *= var3;
-         var16 *= var4;
-         var18 *= var4;
-         var16 = 16.0F - var16;
-         var18 = 16.0F - var18;
-         Map var19 = Map.of(var10.getDirection(), new BlockElementFace((Direction)null, var2, var1, new BlockElementFace.UVs(var11 * var3, var13 * var3, var12 * var4, var14 * var4), Quadrant.R0));
-         switch (var10.ordinal()) {
+         startX *= xScale;
+         endX *= xScale;
+         startY *= yScale;
+         endY *= yScale;
+         startY = 16.0F - startY;
+         endY = 16.0F - endY;
+         Map<Direction, BlockElementFace> faces = Map.of(sideDirection.getDirection(), new BlockElementFace((Direction)null, tintIndex, textureName, new BlockElementFace.UVs(u0 * xScale, v0 * xScale, u1 * yScale, v1 * yScale), Quadrant.R0));
+         switch (sideDirection.ordinal()) {
             case 0:
-               var5.add(new BlockElement(new Vector3f(var15, var16, 7.5F), new Vector3f(var17, var16, 8.5F), var19));
+               result.add(new BlockElement(new Vector3f(startX, startY, 7.5F), new Vector3f(endX, startY, 8.5F), faces));
                break;
             case 1:
-               var5.add(new BlockElement(new Vector3f(var15, var18, 7.5F), new Vector3f(var17, var18, 8.5F), var19));
+               result.add(new BlockElement(new Vector3f(startX, endY, 7.5F), new Vector3f(endX, endY, 8.5F), faces));
                break;
             case 2:
-               var5.add(new BlockElement(new Vector3f(var15, var16, 7.5F), new Vector3f(var15, var18, 8.5F), var19));
+               result.add(new BlockElement(new Vector3f(startX, startY, 7.5F), new Vector3f(startX, endY, 8.5F), faces));
                break;
             case 3:
-               var5.add(new BlockElement(new Vector3f(var17, var16, 7.5F), new Vector3f(var17, var18, 8.5F), var19));
+               result.add(new BlockElement(new Vector3f(endX, startY, 7.5F), new Vector3f(endX, endY, 8.5F), faces));
          }
       }
 
-      return var5;
+      return result;
    }
 
-   private static Collection<SideFace> getSideFaces(SpriteContents var0) {
-      int var1 = var0.width();
-      int var2 = var0.height();
-      HashSet var3 = new HashSet();
-      var0.getUniqueFrames().forEach((var4) -> {
-         for(int var5 = 0; var5 < var2; ++var5) {
-            for(int var6 = 0; var6 < var1; ++var6) {
-               boolean var7 = !isTransparent(var0, var4, var6, var5, var1, var2);
-               if (var7) {
-                  checkTransition(ItemModelGenerator.SideDirection.UP, var3, var0, var4, var6, var5, var1, var2);
-                  checkTransition(ItemModelGenerator.SideDirection.DOWN, var3, var0, var4, var6, var5, var1, var2);
-                  checkTransition(ItemModelGenerator.SideDirection.LEFT, var3, var0, var4, var6, var5, var1, var2);
-                  checkTransition(ItemModelGenerator.SideDirection.RIGHT, var3, var0, var4, var6, var5, var1, var2);
+   private static Collection<SideFace> getSideFaces(final SpriteContents sprite) {
+      int width = sprite.width();
+      int height = sprite.height();
+      Set<SideFace> sideFaces = new HashSet();
+      sprite.getUniqueFrames().forEach((frame) -> {
+         for(int y = 0; y < height; ++y) {
+            for(int x = 0; x < width; ++x) {
+               boolean thisOpaque = !isTransparent(sprite, frame, x, y, width, height);
+               if (thisOpaque) {
+                  checkTransition(ItemModelGenerator.SideDirection.UP, sideFaces, sprite, frame, x, y, width, height);
+                  checkTransition(ItemModelGenerator.SideDirection.DOWN, sideFaces, sprite, frame, x, y, width, height);
+                  checkTransition(ItemModelGenerator.SideDirection.LEFT, sideFaces, sprite, frame, x, y, width, height);
+                  checkTransition(ItemModelGenerator.SideDirection.RIGHT, sideFaces, sprite, frame, x, y, width, height);
                }
             }
          }
 
       });
-      return var3;
+      return sideFaces;
    }
 
-   private static void checkTransition(SideDirection var0, Set<SideFace> var1, SpriteContents var2, int var3, int var4, int var5, int var6, int var7) {
-      if (isTransparent(var2, var3, var4 - var0.direction.getStepX(), var5 - var0.direction.getStepY(), var6, var7)) {
-         var1.add(new SideFace(var0, var4, var5));
+   private static void checkTransition(final SideDirection facing, final Set<SideFace> sideFaces, final SpriteContents sprite, final int frame, final int x, final int y, final int width, final int height) {
+      if (isTransparent(sprite, frame, x - facing.direction.getStepX(), y - facing.direction.getStepY(), width, height)) {
+         sideFaces.add(new SideFace(facing, x, y));
       }
 
    }
 
-   private static boolean isTransparent(SpriteContents var0, int var1, int var2, int var3, int var4, int var5) {
-      return var2 >= 0 && var3 >= 0 && var2 < var4 && var3 < var5 ? var0.isTransparent(var1, var2, var3) : true;
+   private static boolean isTransparent(final SpriteContents sprite, final int frame, final int x, final int y, final int width, final int height) {
+      return x >= 0 && y >= 0 && x < width && y < height ? sprite.isTransparent(frame, x, y) : true;
    }
 
-   static enum SideDirection {
+   private static enum SideDirection {
       UP(Direction.UP),
       DOWN(Direction.DOWN),
       LEFT(Direction.EAST),
       RIGHT(Direction.WEST);
 
-      final Direction direction;
+      private final Direction direction;
 
-      private SideDirection(final Direction var3) {
-         this.direction = var3;
+      private SideDirection(final Direction direction) {
+         this.direction = direction;
       }
 
       public Direction getDirection() {
          return this.direction;
       }
 
-      boolean isHorizontal() {
+      private boolean isHorizontal() {
          return this == DOWN || this == UP;
       }
 
@@ -197,12 +197,9 @@ public class ItemModelGenerator implements UnbakedModel {
       }
    }
 
-   static record SideFace(SideDirection facing, int x, int y) {
-      SideFace(SideDirection var1, int var2, int var3) {
+   private static record SideFace(SideDirection facing, int x, int y) {
+      private SideFace {
          super();
-         this.facing = var1;
-         this.x = var2;
-         this.y = var3;
       }
    }
 }

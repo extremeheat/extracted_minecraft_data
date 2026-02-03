@@ -4,11 +4,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
 public class ConsecutiveExecutor extends AbstractConsecutiveExecutor<Runnable> {
-   public ConsecutiveExecutor(Executor var1, String var2) {
-      super(new StrictQueue.QueueStrictQueue(new ConcurrentLinkedQueue()), var1, var2);
+   public ConsecutiveExecutor(final Executor dispatcher, final String name) {
+      super(new StrictQueue.QueueStrictQueue(new ConcurrentLinkedQueue()), dispatcher, name);
    }
 
-   public Runnable wrapRunnable(Runnable var1) {
-      return var1;
+   public Runnable wrapRunnable(final Runnable runnable) {
+      return runnable;
    }
 }

@@ -8,15 +8,15 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V3325 extends NamespacedSchema {
-   public V3325(int var1, Schema var2) {
-      super(var1, var2);
+   public V3325(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
-      Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:item_display", (var1x) -> DSL.optionalFields("item", References.ITEM_STACK.in(var1)));
-      var1.register(var2, "minecraft:block_display", (var1x) -> DSL.optionalFields("block_state", References.BLOCK_STATE.in(var1)));
-      var1.register(var2, "minecraft:text_display", () -> DSL.optionalFields("text", References.TEXT_COMPONENT.in(var1)));
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerEntities(schema);
+      schema.register(map, "minecraft:item_display", (name) -> DSL.optionalFields("item", References.ITEM_STACK.in(schema)));
+      schema.register(map, "minecraft:block_display", (name) -> DSL.optionalFields("block_state", References.BLOCK_STATE.in(schema)));
+      schema.register(map, "minecraft:text_display", () -> DSL.optionalFields("text", References.TEXT_COMPONENT.in(schema)));
+      return map;
    }
 }

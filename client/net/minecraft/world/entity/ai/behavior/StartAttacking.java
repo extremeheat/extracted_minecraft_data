@@ -13,25 +13,25 @@ public class StartAttacking {
       super();
    }
 
-   public static <E extends Mob> BehaviorControl<E> create(TargetFinder<E> var0) {
-      return create((var0x, var1) -> true, var0);
+   public static <E extends Mob> BehaviorControl<E> create(final TargetFinder<E> targetFinderFunction) {
+      return create((level, body) -> true, targetFinderFunction);
    }
 
-   public static <E extends Mob> BehaviorControl<E> create(StartAttackingCondition<E> var0, TargetFinder<E> var1) {
-      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.absent(MemoryModuleType.ATTACK_TARGET), var2.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(var2, (var2x, var3) -> (var4, var5, var6) -> {
-               if (!var0.test(var4, var5)) {
+   public static <E extends Mob> BehaviorControl<E> create(final StartAttackingCondition<E> canAttackPredicate, final TargetFinder<E> targetFinderFunction) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.ATTACK_TARGET), i.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(i, (attackTarget, cantReachSince) -> (level, body, timestamp) -> {
+               if (!canAttackPredicate.test(level, body)) {
                   return false;
                } else {
-                  Optional var8 = var1.get(var4, var5);
-                  if (var8.isEmpty()) {
+                  Optional<? extends LivingEntity> target = targetFinderFunction.get(level, body);
+                  if (target.isEmpty()) {
                      return false;
                   } else {
-                     LivingEntity var9 = (LivingEntity)var8.get();
-                     if (!var5.canAttack(var9)) {
+                     LivingEntity targetEntity = (LivingEntity)target.get();
+                     if (!body.canAttack(targetEntity)) {
                         return false;
                      } else {
-                        var2x.set(var9);
-                        var3.erase();
+                        attackTarget.set(targetEntity);
+                        cantReachSince.erase();
                         return true;
                      }
                   }
@@ -41,11 +41,11 @@ public class StartAttacking {
 
    @FunctionalInterface
    public interface StartAttackingCondition<E> {
-      boolean test(ServerLevel var1, E var2);
+      boolean test(ServerLevel level, E body);
    }
 
    @FunctionalInterface
    public interface TargetFinder<E> {
-      Optional<? extends LivingEntity> get(ServerLevel var1, E var2);
+      Optional<? extends LivingEntity> get(ServerLevel level, E body);
    }
 }

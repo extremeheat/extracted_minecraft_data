@@ -20,19 +20,19 @@ public class SplashRenderer {
    private static final float TEXT_ANGLE = -0.34906584F;
    private final Component splash;
 
-   public SplashRenderer(Component var1) {
+   public SplashRenderer(final Component splash) {
       super();
-      this.splash = var1;
+      this.splash = splash;
    }
 
-   public void render(GuiGraphics var1, int var2, Font var3, float var4) {
-      int var5 = var3.width((FormattedText)this.splash);
-      ActiveTextCollector var6 = var1.textRenderer();
-      float var7 = 1.8F - Mth.abs(Mth.sin((double)((float)(Util.getMillis() % 1000L) / 1000.0F * 6.2831855F)) * 0.1F);
-      float var8 = var7 * 100.0F / (float)(var5 + 32);
-      Matrix3x2f var9 = (new Matrix3x2f(var6.defaultParameters().pose())).translate((float)var2 / 2.0F + 123.0F, 69.0F).rotate(-0.34906584F).scale(var8);
-      ActiveTextCollector.Parameters var10 = var6.defaultParameters().withOpacity(var4).withPose(var9);
-      var6.accept(TextAlignment.LEFT, -var5 / 2, -8, var10, (Component)this.splash);
+   public void render(final GuiGraphics graphics, final int screenWidth, final Font font, final float alpha) {
+      int textWidth = font.width((FormattedText)this.splash);
+      ActiveTextCollector textRenderer = graphics.textRenderer();
+      float textPhase = 1.8F - Mth.abs(Mth.sin((double)((float)(Util.getMillis() % 1000L) / 1000.0F * 6.2831855F)) * 0.1F);
+      float textScale = textPhase * 100.0F / (float)(textWidth + 32);
+      Matrix3x2f transform = (new Matrix3x2f(textRenderer.defaultParameters().pose())).translate((float)screenWidth / 2.0F + 123.0F, 69.0F).rotate(-0.34906584F).scale(textScale);
+      ActiveTextCollector.Parameters renderParameters = textRenderer.defaultParameters().withOpacity(alpha).withPose(transform);
+      textRenderer.accept(TextAlignment.LEFT, -textWidth / 2, -8, renderParameters, (Component)this.splash);
    }
 
    static {

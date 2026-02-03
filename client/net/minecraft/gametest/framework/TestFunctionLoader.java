@@ -14,16 +14,16 @@ public abstract class TestFunctionLoader {
       super();
    }
 
-   public static void registerLoader(TestFunctionLoader var0) {
-      loaders.add(var0);
+   public static void registerLoader(final TestFunctionLoader loader) {
+      loaders.add(loader);
    }
 
-   public static void runLoaders(Registry<Consumer<GameTestHelper>> var0) {
-      for(TestFunctionLoader var2 : loaders) {
-         var2.load((var1, var2x) -> Registry.register(var0, (ResourceKey)var1, var2x));
+   public static void runLoaders(final Registry<Consumer<GameTestHelper>> registry) {
+      for(TestFunctionLoader loader : loaders) {
+         loader.load((key, function) -> Registry.register(registry, (ResourceKey)key, function));
       }
 
    }
 
-   public abstract void load(BiConsumer<ResourceKey<Consumer<GameTestHelper>>, Consumer<GameTestHelper>> var1);
+   public abstract void load(BiConsumer<ResourceKey<Consumer<GameTestHelper>>, Consumer<GameTestHelper>> register);
 }

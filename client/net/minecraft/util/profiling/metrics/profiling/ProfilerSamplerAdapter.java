@@ -17,20 +17,20 @@ public class ProfilerSamplerAdapter {
       super();
    }
 
-   public Set<MetricSampler> newSamplersFoundInProfiler(Supplier<ProfileCollector> var1) {
-      Set var2 = (Set)((ProfileCollector)var1.get()).getChartedPaths().stream().filter((var1x) -> !this.previouslyFoundSamplerNames.contains(var1x.getLeft())).map((var1x) -> samplerForProfilingPath(var1, (String)var1x.getLeft(), (MetricCategory)var1x.getRight())).collect(Collectors.toSet());
+   public Set<MetricSampler> newSamplersFoundInProfiler(final Supplier<ProfileCollector> profiler) {
+      Set<MetricSampler> newSamplers = (Set)((ProfileCollector)profiler.get()).getChartedPaths().stream().filter((pathAndCategory) -> !this.previouslyFoundSamplerNames.contains(pathAndCategory.getLeft())).map((pathAndCategory) -> samplerForProfilingPath(profiler, (String)pathAndCategory.getLeft(), (MetricCategory)pathAndCategory.getRight())).collect(Collectors.toSet());
 
-      for(MetricSampler var4 : var2) {
-         this.previouslyFoundSamplerNames.add(var4.getName());
+      for(MetricSampler sampler : newSamplers) {
+         this.previouslyFoundSamplerNames.add(sampler.getName());
       }
 
-      return var2;
+      return newSamplers;
    }
 
-   private static MetricSampler samplerForProfilingPath(Supplier<ProfileCollector> var0, String var1, MetricCategory var2) {
-      return MetricSampler.create(var1, var2, () -> {
-         ActiveProfiler.PathEntry var2 = ((ProfileCollector)var0.get()).getEntry(var1);
-         return var2 == null ? 0.0 : (double)var2.getMaxDuration() / (double)TimeUtil.NANOSECONDS_PER_MILLISECOND;
+   private static MetricSampler samplerForProfilingPath(final Supplier<ProfileCollector> profiler, final String profilerPath, final MetricCategory category) {
+      return MetricSampler.create(profilerPath, category, () -> {
+         ActiveProfiler.PathEntry entry = ((ProfileCollector)profiler.get()).getEntry(profilerPath);
+         return entry == null ? 0.0 : (double)entry.getMaxDuration() / (double)TimeUtil.NANOSECONDS_PER_MILLISECOND;
       });
    }
 }

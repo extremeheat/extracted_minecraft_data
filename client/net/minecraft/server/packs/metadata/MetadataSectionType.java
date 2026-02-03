@@ -4,25 +4,21 @@ import com.mojang.serialization.Codec;
 import java.util.Optional;
 
 public record MetadataSectionType<T>(String name, Codec<T> codec) {
-   public MetadataSectionType(String var1, Codec<T> var2) {
+   public MetadataSectionType {
       super();
-      this.name = var1;
-      this.codec = var2;
    }
 
-   public WithValue<T> withValue(T var1) {
-      return new WithValue<T>(this, var1);
+   public WithValue<T> withValue(final T value) {
+      return new WithValue<T>(this, value);
    }
 
    public static record WithValue<T>(MetadataSectionType<T> type, T value) {
-      public WithValue(MetadataSectionType<T> var1, T var2) {
+      public WithValue {
          super();
-         this.type = var1;
-         this.value = var2;
       }
 
-      public <U> Optional<U> unwrapToType(MetadataSectionType<U> var1) {
-         return var1 == this.type ? Optional.of(this.value) : Optional.empty();
+      public <U> Optional<U> unwrapToType(final MetadataSectionType<U> type) {
+         return type == this.type ? Optional.of(this.value) : Optional.empty();
       }
    }
 }

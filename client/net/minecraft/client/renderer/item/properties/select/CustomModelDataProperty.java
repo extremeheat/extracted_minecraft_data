@@ -16,14 +16,13 @@ public record CustomModelDataProperty(int index) implements SelectItemModelPrope
    public static final PrimitiveCodec<String> VALUE_CODEC;
    public static final SelectItemModelProperty.Type<CustomModelDataProperty, String> TYPE;
 
-   public CustomModelDataProperty(int var1) {
+   public CustomModelDataProperty {
       super();
-      this.index = var1;
    }
 
-   public @Nullable String get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      CustomModelData var6 = (CustomModelData)var1.get(DataComponents.CUSTOM_MODEL_DATA);
-      return var6 != null ? var6.getString(this.index) : null;
+   public @Nullable String get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      CustomModelData customModelData = (CustomModelData)itemStack.get(DataComponents.CUSTOM_MODEL_DATA);
+      return customModelData != null ? customModelData.getString(this.index) : null;
    }
 
    public SelectItemModelProperty.Type<CustomModelDataProperty, String> type() {
@@ -34,13 +33,8 @@ public record CustomModelDataProperty(int index) implements SelectItemModelPrope
       return VALUE_CODEC;
    }
 
-   // $FF: synthetic method
-   public @Nullable Object get(final ItemStack var1, final @Nullable ClientLevel var2, final @Nullable LivingEntity var3, final int var4, final ItemDisplayContext var5) {
-      return this.get(var1, var2, var3, var4, var5);
-   }
-
    static {
       VALUE_CODEC = Codec.STRING;
-      TYPE = SelectItemModelProperty.Type.<CustomModelDataProperty, String>create(RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataProperty::index)).apply(var0, CustomModelDataProperty::new)), VALUE_CODEC);
+      TYPE = SelectItemModelProperty.Type.<CustomModelDataProperty, String>create(RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataProperty::index)).apply(i, CustomModelDataProperty::new)), VALUE_CODEC);
    }
 }

@@ -35,8 +35,8 @@ public class Salmon extends AbstractSchoolingFish {
    private static final String TAG_TYPE = "type";
    private static final EntityDataAccessor<Integer> DATA_TYPE;
 
-   public Salmon(EntityType<? extends Salmon> var1, Level var2) {
-      super(var1, var2);
+   public Salmon(final EntityType<? extends Salmon> type, final Level level) {
+      super(type, level);
       this.refreshDimensions();
    }
 
@@ -56,7 +56,7 @@ public class Salmon extends AbstractSchoolingFish {
       return SoundEvents.SALMON_DEATH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.SALMON_HURT;
    }
 
@@ -64,75 +64,75 @@ public class Salmon extends AbstractSchoolingFish {
       return SoundEvents.SALMON_FLOP;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_TYPE, Salmon.Variant.DEFAULT.id());
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_TYPE, Salmon.Variant.DEFAULT.id());
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      super.onSyncedDataUpdated(var1);
-      if (DATA_TYPE.equals(var1)) {
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      super.onSyncedDataUpdated(accessor);
+      if (DATA_TYPE.equals(accessor)) {
          this.refreshDimensions();
       }
 
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.store("type", Salmon.Variant.CODEC, this.getVariant());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.store("type", Salmon.Variant.CODEC, this.getVariant());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setVariant((Variant)var1.read("type", Salmon.Variant.CODEC).orElse(Salmon.Variant.DEFAULT));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setVariant((Variant)input.read("type", Salmon.Variant.CODEC).orElse(Salmon.Variant.DEFAULT));
    }
 
-   public void saveToBucketTag(ItemStack var1) {
-      Bucketable.saveDefaultDataToBucketTag(this, var1);
-      var1.copyFrom(DataComponents.SALMON_SIZE, this);
+   public void saveToBucketTag(final ItemStack bucket) {
+      Bucketable.saveDefaultDataToBucketTag(this, bucket);
+      bucket.copyFrom(DataComponents.SALMON_SIZE, this);
    }
 
-   private void setVariant(Variant var1) {
-      this.entityData.set(DATA_TYPE, var1.id);
+   private void setVariant(final Variant variant) {
+      this.entityData.set(DATA_TYPE, variant.id);
    }
 
    public Variant getVariant() {
       return (Variant)Salmon.Variant.BY_ID.apply((Integer)this.entityData.get(DATA_TYPE));
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.SALMON_SIZE ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)(type == DataComponents.SALMON_SIZE ? castComponentValue(type, this.getVariant()) : super.get(type));
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.SALMON_SIZE);
-      super.applyImplicitComponents(var1);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.SALMON_SIZE);
+      super.applyImplicitComponents(components);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.SALMON_SIZE) {
-         this.setVariant((Variant)castComponentValue(DataComponents.SALMON_SIZE, var2));
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.SALMON_SIZE) {
+         this.setVariant((Variant)castComponentValue(DataComponents.SALMON_SIZE, value));
          return true;
       } else {
-         return super.applyImplicitComponent(var1, var2);
+         return super.applyImplicitComponent(type, value);
       }
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      WeightedList.Builder var5 = WeightedList.builder();
-      var5.add(Salmon.Variant.SMALL, 30);
-      var5.add(Salmon.Variant.MEDIUM, 50);
-      var5.add(Salmon.Variant.LARGE, 15);
-      var5.build().getRandom(this.random).ifPresent(this::setVariant);
-      return super.finalizeSpawn(var1, var2, var3, var4);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      WeightedList.Builder<Variant> builder = WeightedList.<Variant>builder();
+      builder.add(Salmon.Variant.SMALL, 30);
+      builder.add(Salmon.Variant.MEDIUM, 50);
+      builder.add(Salmon.Variant.LARGE, 15);
+      builder.build().getRandom(this.random).ifPresent(this::setVariant);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
    public float getSalmonScale() {
       return this.getVariant().boundingBoxScale;
    }
 
-   protected EntityDimensions getDefaultDimensions(Pose var1) {
-      return super.getDefaultDimensions(var1).scale(this.getSalmonScale());
+   protected EntityDimensions getDefaultDimensions(final Pose pose) {
+      return super.getDefaultDimensions(pose).scale(this.getSalmonScale());
    }
 
    static {
@@ -146,23 +146,23 @@ public class Salmon extends AbstractSchoolingFish {
 
       public static final Variant DEFAULT = MEDIUM;
       public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
-      static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);
       private final String name;
-      final int id;
-      final float boundingBoxScale;
+      private final int id;
+      private final float boundingBoxScale;
 
-      private Variant(final String var3, final int var4, final float var5) {
-         this.name = var3;
-         this.id = var4;
-         this.boundingBoxScale = var5;
+      private Variant(final String name, final int id, final float boundingBoxScale) {
+         this.name = name;
+         this.id = id;
+         this.boundingBoxScale = boundingBoxScale;
       }
 
       public String getSerializedName() {
          return this.name;
       }
 
-      int id() {
+      private int id() {
          return this.id;
       }
 

@@ -19,37 +19,37 @@ public class CreeperModel extends EntityModel<CreeperRenderState> {
    private final ModelPart leftFrontLeg;
    private static final int Y_OFFSET = 6;
 
-   public CreeperModel(ModelPart var1) {
-      super(var1);
-      this.head = var1.getChild("head");
-      this.leftHindLeg = var1.getChild("right_hind_leg");
-      this.rightHindLeg = var1.getChild("left_hind_leg");
-      this.leftFrontLeg = var1.getChild("right_front_leg");
-      this.rightFrontLeg = var1.getChild("left_front_leg");
+   public CreeperModel(final ModelPart root) {
+      super(root);
+      this.head = root.getChild("head");
+      this.leftHindLeg = root.getChild("right_hind_leg");
+      this.rightHindLeg = root.getChild("left_hind_leg");
+      this.leftFrontLeg = root.getChild("right_front_leg");
+      this.rightFrontLeg = root.getChild("left_front_leg");
    }
 
-   public static LayerDefinition createBodyLayer(CubeDeformation var0) {
-      MeshDefinition var1 = new MeshDefinition();
-      PartDefinition var2 = var1.getRoot();
-      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0), PartPose.offset(0.0F, 6.0F, 0.0F));
-      var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, var0), PartPose.offset(0.0F, 6.0F, 0.0F));
-      CubeListBuilder var3 = CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 6.0F, 4.0F, var0);
-      var2.addOrReplaceChild("right_hind_leg", var3, PartPose.offset(-2.0F, 18.0F, 4.0F));
-      var2.addOrReplaceChild("left_hind_leg", var3, PartPose.offset(2.0F, 18.0F, 4.0F));
-      var2.addOrReplaceChild("right_front_leg", var3, PartPose.offset(-2.0F, 18.0F, -4.0F));
-      var2.addOrReplaceChild("left_front_leg", var3, PartPose.offset(2.0F, 18.0F, -4.0F));
-      return LayerDefinition.create(var1, 64, 32);
+   public static LayerDefinition createBodyLayer(final CubeDeformation g) {
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, g), PartPose.offset(0.0F, 6.0F, 0.0F));
+      root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, g), PartPose.offset(0.0F, 6.0F, 0.0F));
+      CubeListBuilder leg = CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 6.0F, 4.0F, g);
+      root.addOrReplaceChild("right_hind_leg", leg, PartPose.offset(-2.0F, 18.0F, 4.0F));
+      root.addOrReplaceChild("left_hind_leg", leg, PartPose.offset(2.0F, 18.0F, 4.0F));
+      root.addOrReplaceChild("right_front_leg", leg, PartPose.offset(-2.0F, 18.0F, -4.0F));
+      root.addOrReplaceChild("left_front_leg", leg, PartPose.offset(2.0F, 18.0F, -4.0F));
+      return LayerDefinition.create(mesh, 64, 32);
    }
 
-   public void setupAnim(CreeperRenderState var1) {
-      super.setupAnim(var1);
-      this.head.yRot = var1.yRot * 0.017453292F;
-      this.head.xRot = var1.xRot * 0.017453292F;
-      float var2 = var1.walkAnimationSpeed;
-      float var3 = var1.walkAnimationPos;
-      this.rightHindLeg.xRot = Mth.cos((double)(var3 * 0.6662F)) * 1.4F * var2;
-      this.leftHindLeg.xRot = Mth.cos((double)(var3 * 0.6662F + 3.1415927F)) * 1.4F * var2;
-      this.rightFrontLeg.xRot = Mth.cos((double)(var3 * 0.6662F + 3.1415927F)) * 1.4F * var2;
-      this.leftFrontLeg.xRot = Mth.cos((double)(var3 * 0.6662F)) * 1.4F * var2;
+   public void setupAnim(final CreeperRenderState state) {
+      super.setupAnim(state);
+      this.head.yRot = state.yRot * 0.017453292F;
+      this.head.xRot = state.xRot * 0.017453292F;
+      float animationSpeed = state.walkAnimationSpeed;
+      float animationPos = state.walkAnimationPos;
+      this.rightHindLeg.xRot = Mth.cos((double)(animationPos * 0.6662F)) * 1.4F * animationSpeed;
+      this.leftHindLeg.xRot = Mth.cos((double)(animationPos * 0.6662F + 3.1415927F)) * 1.4F * animationSpeed;
+      this.rightFrontLeg.xRot = Mth.cos((double)(animationPos * 0.6662F + 3.1415927F)) * 1.4F * animationSpeed;
+      this.leftFrontLeg.xRot = Mth.cos((double)(animationPos * 0.6662F)) * 1.4F * animationSpeed;
    }
 }

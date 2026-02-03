@@ -10,23 +10,23 @@ import net.minecraft.resources.Identifier;
 
 @FunctionalInterface
 public interface ResourceProvider {
-   ResourceProvider EMPTY = (var0) -> Optional.empty();
+   ResourceProvider EMPTY = (location) -> Optional.empty();
 
-   Optional<Resource> getResource(Identifier var1);
+   Optional<Resource> getResource(Identifier location);
 
-   default Resource getResourceOrThrow(Identifier var1) throws FileNotFoundException {
-      return (Resource)this.getResource(var1).orElseThrow(() -> new FileNotFoundException(var1.toString()));
+   default Resource getResourceOrThrow(final Identifier location) throws FileNotFoundException {
+      return (Resource)this.getResource(location).orElseThrow(() -> new FileNotFoundException(location.toString()));
    }
 
-   default InputStream open(Identifier var1) throws IOException {
-      return this.getResourceOrThrow(var1).open();
+   default InputStream open(final Identifier location) throws IOException {
+      return this.getResourceOrThrow(location).open();
    }
 
-   default BufferedReader openAsReader(Identifier var1) throws IOException {
-      return this.getResourceOrThrow(var1).openAsReader();
+   default BufferedReader openAsReader(final Identifier location) throws IOException {
+      return this.getResourceOrThrow(location).openAsReader();
    }
 
-   static ResourceProvider fromMap(Map<Identifier, Resource> var0) {
-      return (var1) -> Optional.ofNullable((Resource)var0.get(var1));
+   static ResourceProvider fromMap(final Map<Identifier, Resource> map) {
+      return (location) -> Optional.ofNullable((Resource)map.get(location));
    }
 }

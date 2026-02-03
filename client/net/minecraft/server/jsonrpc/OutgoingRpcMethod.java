@@ -19,11 +19,11 @@ public interface OutgoingRpcMethod<Params, Result> {
 
    Attributes attributes();
 
-   default @Nullable JsonElement encodeParams(Params var1) {
+   default @Nullable JsonElement encodeParams(final Params params) {
       return null;
    }
 
-   default @Nullable Result decodeResult(JsonElement var1) {
+   default @Nullable Result decodeResult(final JsonElement result) {
       return null;
    }
 
@@ -44,72 +44,63 @@ public interface OutgoingRpcMethod<Params, Result> {
    }
 
    public static record Attributes(boolean discoverable) {
-      public Attributes(boolean var1) {
+      public Attributes {
          super();
-         this.discoverable = var1;
       }
    }
 
    public static record ParmeterlessNotification(MethodInfo<Void, Void> info, Attributes attributes) implements OutgoingRpcMethod<Void, Void> {
-      public ParmeterlessNotification(MethodInfo<Void, Void> var1, Attributes var2) {
+      public ParmeterlessNotification {
          super();
-         this.info = var1;
-         this.attributes = var2;
       }
    }
 
    public static record Notification<Params>(MethodInfo<Params, Void> info, Attributes attributes) implements OutgoingRpcMethod<Params, Void> {
-      public Notification(MethodInfo<Params, Void> var1, Attributes var2) {
+      public Notification {
          super();
-         this.info = var1;
-         this.attributes = var2;
       }
 
-      public @Nullable JsonElement encodeParams(Params var1) {
+      public @Nullable JsonElement encodeParams(final Params params) {
          if (this.info.params().isEmpty()) {
             throw new IllegalStateException("Method defined as having no parameters");
          } else {
-            return (JsonElement)((ParamInfo)this.info.params().get()).schema().codec().encodeStart(JsonOps.INSTANCE, var1).getOrThrow();
+            return (JsonElement)((ParamInfo)this.info.params().get()).schema().codec().encodeStart(JsonOps.INSTANCE, params).getOrThrow();
          }
       }
    }
 
    public static record ParameterlessMethod<Result>(MethodInfo<Void, Result> info, Attributes attributes) implements OutgoingRpcMethod<Void, Result> {
-      public ParameterlessMethod(MethodInfo<Void, Result> var1, Attributes var2) {
+      public ParameterlessMethod {
          super();
-         this.info = var1;
-         this.attributes = var2;
       }
 
-      public Result decodeResult(JsonElement var1) {
+      public Result decodeResult(final JsonElement result) {
          if (this.info.result().isEmpty()) {
             throw new IllegalStateException("Method defined as having no result");
          } else {
-            return (Result)((ResultInfo)this.info.result().get()).schema().codec().parse(JsonOps.INSTANCE, var1).getOrThrow();
+            return (Result)((ResultInfo)this.info.result().get()).schema().codec().parse(JsonOps.INSTANCE, result).getOrThrow();
          }
       }
    }
 
    public static record Method<Params, Result>(MethodInfo<Params, Result> info, Attributes attributes) implements OutgoingRpcMethod<Params, Result> {
-      public Method(MethodInfo<Params, Result> var1, Attributes var2) {
+      public Method {
          super();
-         this.info = var1;
-         this.attributes = var2;
       }
 
-      public @Nullable JsonElement encodeParams(Params var1) {
+      public @Nullable JsonElement encodeParams(final Params params) {
          if (this.info.params().isEmpty()) {
             throw new IllegalStateException("Method defined as having no parameters");
          } else {
-            return (JsonElement)((ParamInfo)this.info.params().get()).schema().codec().encodeStart(JsonOps.INSTANCE, var1).getOrThrow();
+            return (JsonElement)((ParamInfo)this.info.params().get()).schema().codec().encodeStart(JsonOps.INSTANCE, params).getOrThrow();
          }
       }
 
-      public Result decodeResult(JsonElement var1) {
+      public Result decodeResult(final JsonElement result) {
          if (this.info.result().isEmpty()) {
             throw new IllegalStateException("Method defined as having no result");
          } else {
-            return (Result)((ResultInfo)this.info.result().get()).schema().codec().parse(JsonOps.INSTANCE, var1).getOrThrow();
+            return (Result)((ResultInfo)this.info.result().get()).schema().codec().parse(JsonOps.INSTANCE, result).getOrThrow();
          }
       }
    }
@@ -121,42 +112,42 @@ public interface OutgoingRpcMethod<Params, Result> {
       private @Nullable ParamInfo<Params> paramInfo;
       private @Nullable ResultInfo<Result> resultInfo;
 
-      public OutgoingRpcMethodBuilder(Factory<Params, Result> var1) {
+      public OutgoingRpcMethodBuilder(final Factory<Params, Result> method) {
          super();
-         this.method = var1;
+         this.method = method;
       }
 
-      public OutgoingRpcMethodBuilder<Params, Result> description(String var1) {
-         this.description = var1;
+      public OutgoingRpcMethodBuilder<Params, Result> description(final String description) {
+         this.description = description;
          return this;
       }
 
-      public OutgoingRpcMethodBuilder<Params, Result> response(String var1, Schema<Result> var2) {
-         this.resultInfo = new ResultInfo<Result>(var1, var2);
+      public OutgoingRpcMethodBuilder<Params, Result> response(final String resultName, final Schema<Result> resultSchema) {
+         this.resultInfo = new ResultInfo<Result>(resultName, resultSchema);
          return this;
       }
 
-      public OutgoingRpcMethodBuilder<Params, Result> param(String var1, Schema<Params> var2) {
-         this.paramInfo = new ParamInfo<Params>(var1, var2);
+      public OutgoingRpcMethodBuilder<Params, Result> param(final String paramName, final Schema<Params> paramSchema) {
+         this.paramInfo = new ParamInfo<Params>(paramName, paramSchema);
          return this;
       }
 
       private OutgoingRpcMethod<Params, Result> build() {
-         MethodInfo var1 = new MethodInfo(this.description, this.paramInfo, this.resultInfo);
-         return this.method.create(var1, DEFAULT_ATTRIBUTES);
+         MethodInfo<Params, Result> methodInfo = new MethodInfo<Params, Result>(this.description, this.paramInfo, this.resultInfo);
+         return this.method.create(methodInfo, DEFAULT_ATTRIBUTES);
       }
 
-      public Holder.Reference<OutgoingRpcMethod<Params, Result>> register(String var1) {
-         return this.register(Identifier.withDefaultNamespace("notification/" + var1));
+      public Holder.Reference<OutgoingRpcMethod<Params, Result>> register(final String key) {
+         return this.register(Identifier.withDefaultNamespace("notification/" + key));
       }
 
-      private Holder.Reference<OutgoingRpcMethod<Params, Result>> register(Identifier var1) {
-         return Registry.registerForHolder(BuiltInRegistries.OUTGOING_RPC_METHOD, var1, this.build());
+      private Holder.Reference<OutgoingRpcMethod<Params, Result>> register(final Identifier id) {
+         return Registry.registerForHolder(BuiltInRegistries.OUTGOING_RPC_METHOD, id, this.build());
       }
    }
 
    @FunctionalInterface
    public interface Factory<Params, Result> {
-      OutgoingRpcMethod<Params, Result> create(MethodInfo<Params, Result> var1, Attributes var2);
+      OutgoingRpcMethod<Params, Result> create(MethodInfo<Params, Result> info, Attributes attributes);
    }
 }

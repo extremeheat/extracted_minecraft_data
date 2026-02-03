@@ -15,35 +15,35 @@ public class ClientboundHelloPacket implements Packet<ClientLoginPacketListener>
    private final byte[] challenge;
    private final boolean shouldAuthenticate;
 
-   public ClientboundHelloPacket(String var1, byte[] var2, byte[] var3, boolean var4) {
+   public ClientboundHelloPacket(final String serverId, final byte[] publicKey, final byte[] challenge, final boolean shouldAuthenticate) {
       super();
-      this.serverId = var1;
-      this.publicKey = var2;
-      this.challenge = var3;
-      this.shouldAuthenticate = var4;
+      this.serverId = serverId;
+      this.publicKey = publicKey;
+      this.challenge = challenge;
+      this.shouldAuthenticate = shouldAuthenticate;
    }
 
-   private ClientboundHelloPacket(FriendlyByteBuf var1) {
+   private ClientboundHelloPacket(final FriendlyByteBuf input) {
       super();
-      this.serverId = var1.readUtf(20);
-      this.publicKey = var1.readByteArray();
-      this.challenge = var1.readByteArray();
-      this.shouldAuthenticate = var1.readBoolean();
+      this.serverId = input.readUtf(20);
+      this.publicKey = input.readByteArray();
+      this.challenge = input.readByteArray();
+      this.shouldAuthenticate = input.readBoolean();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.serverId);
-      var1.writeByteArray(this.publicKey);
-      var1.writeByteArray(this.challenge);
-      var1.writeBoolean(this.shouldAuthenticate);
+   private void write(final FriendlyByteBuf output) {
+      output.writeUtf(this.serverId);
+      output.writeByteArray(this.publicKey);
+      output.writeByteArray(this.challenge);
+      output.writeBoolean(this.shouldAuthenticate);
    }
 
    public PacketType<ClientboundHelloPacket> type() {
       return LoginPacketTypes.CLIENTBOUND_HELLO;
    }
 
-   public void handle(ClientLoginPacketListener var1) {
-      var1.handleHello(this);
+   public void handle(final ClientLoginPacketListener listener) {
+      listener.handleHello(this);
    }
 
    public String getServerId() {

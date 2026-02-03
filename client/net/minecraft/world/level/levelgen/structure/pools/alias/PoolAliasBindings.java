@@ -15,13 +15,13 @@ public class PoolAliasBindings {
       super();
    }
 
-   public static MapCodec<? extends PoolAliasBinding> bootstrap(Registry<MapCodec<? extends PoolAliasBinding>> var0) {
-      Registry.register(var0, (String)"random", RandomPoolAlias.CODEC);
-      Registry.register(var0, (String)"random_group", RandomGroupPoolAlias.CODEC);
-      return (MapCodec)Registry.register(var0, (String)"direct", DirectPoolAlias.CODEC);
+   public static MapCodec<? extends PoolAliasBinding> bootstrap(final Registry<MapCodec<? extends PoolAliasBinding>> registry) {
+      Registry.register(registry, (String)"random", RandomPoolAlias.CODEC);
+      Registry.register(registry, (String)"random_group", RandomGroupPoolAlias.CODEC);
+      return (MapCodec)Registry.register(registry, (String)"direct", DirectPoolAlias.CODEC);
    }
 
-   public static void registerTargetsAsPools(BootstrapContext<StructureTemplatePool> var0, Holder<StructureTemplatePool> var1, List<PoolAliasBinding> var2) {
-      var2.stream().flatMap(PoolAliasBinding::allTargets).map((var0x) -> var0x.identifier().getPath()).forEach((var2x) -> Pools.register(var0, var2x, new StructureTemplatePool(var1, List.of(Pair.of(StructurePoolElement.single(var2x), 1)), StructureTemplatePool.Projection.RIGID)));
+   public static void registerTargetsAsPools(final BootstrapContext<StructureTemplatePool> context, final Holder<StructureTemplatePool> emptyPool, final List<PoolAliasBinding> aliasBindings) {
+      aliasBindings.stream().flatMap(PoolAliasBinding::allTargets).map((key) -> key.identifier().getPath()).forEach((path) -> Pools.register(context, path, new StructureTemplatePool(emptyPool, List.of(Pair.of(StructurePoolElement.single(path), 1)), StructureTemplatePool.Projection.RIGID)));
    }
 }

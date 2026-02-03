@@ -22,26 +22,26 @@ public class SimpleEquipmentLayer<S extends LivingEntityRenderState, RM extends 
    private final @Nullable EM babyModel;
    private final int order;
 
-   public SimpleEquipmentLayer(RenderLayerParent<S, RM> var1, EquipmentLayerRenderer var2, EquipmentClientInfo.LayerType var3, Function<S, ItemStack> var4, EM var5, @Nullable EM var6, int var7) {
-      super(var1);
-      this.equipmentRenderer = var2;
-      this.layer = var3;
-      this.itemGetter = var4;
-      this.adultModel = var5;
-      this.babyModel = var6;
-      this.order = var7;
+   public SimpleEquipmentLayer(final RenderLayerParent<S, RM> renderer, final EquipmentLayerRenderer equipmentRenderer, final EquipmentClientInfo.LayerType layer, final Function<S, ItemStack> itemGetter, final EM adultModel, final @Nullable EM babyModel, final int order) {
+      super(renderer);
+      this.equipmentRenderer = equipmentRenderer;
+      this.layer = layer;
+      this.itemGetter = itemGetter;
+      this.adultModel = adultModel;
+      this.babyModel = babyModel;
+      this.order = order;
    }
 
-   public SimpleEquipmentLayer(RenderLayerParent<S, RM> var1, EquipmentLayerRenderer var2, EquipmentClientInfo.LayerType var3, Function<S, ItemStack> var4, EM var5, @Nullable EM var6) {
-      this(var1, var2, var3, var4, var5, var6, 0);
+   public SimpleEquipmentLayer(final RenderLayerParent<S, RM> renderer, final EquipmentLayerRenderer equipmentRenderer, final EquipmentClientInfo.LayerType layer, final Function<S, ItemStack> itemGetter, final EM adultModel, final @Nullable EM babyModel) {
+      this(renderer, equipmentRenderer, layer, itemGetter, adultModel, babyModel, 0);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, S var4, float var5, float var6) {
-      ItemStack var7 = (ItemStack)this.itemGetter.apply(var4);
-      Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
-      if (var8 != null && !var8.assetId().isEmpty() && (!var4.isBaby || this.babyModel != null)) {
-         EntityModel var9 = var4.isBaby ? this.babyModel : this.adultModel;
-         this.equipmentRenderer.renderLayers(this.layer, (ResourceKey)var8.assetId().get(), var9, var4, var7, var1, var2, var3, (Identifier)null, var4.outlineColor, this.order);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final S state, final float yRot, final float xRot) {
+      ItemStack equipment = (ItemStack)this.itemGetter.apply(state);
+      Equippable equippable = (Equippable)equipment.get(DataComponents.EQUIPPABLE);
+      if (equippable != null && !equippable.assetId().isEmpty() && (!state.isBaby || this.babyModel != null)) {
+         EM model = state.isBaby ? this.babyModel : this.adultModel;
+         this.equipmentRenderer.renderLayers(this.layer, (ResourceKey)equippable.assetId().get(), model, state, equipment, poseStack, submitNodeCollector, lightCoords, (Identifier)null, state.outlineColor, this.order);
       }
    }
 }

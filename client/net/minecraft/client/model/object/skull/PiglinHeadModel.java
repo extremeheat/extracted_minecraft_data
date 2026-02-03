@@ -10,25 +10,25 @@ public class PiglinHeadModel extends SkullModelBase {
    private final ModelPart leftEar;
    private final ModelPart rightEar;
 
-   public PiglinHeadModel(ModelPart var1) {
-      super(var1);
-      this.head = var1.getChild("head");
+   public PiglinHeadModel(final ModelPart root) {
+      super(root);
+      this.head = root.getChild("head");
       this.leftEar = this.head.getChild("left_ear");
       this.rightEar = this.head.getChild("right_ear");
    }
 
    public static MeshDefinition createHeadModel() {
-      MeshDefinition var0 = new MeshDefinition();
-      PiglinModel.addHead(CubeDeformation.NONE, var0);
-      return var0;
+      MeshDefinition mesh = new MeshDefinition();
+      PiglinModel.addHead(CubeDeformation.NONE, mesh);
+      return mesh;
    }
 
-   public void setupAnim(SkullModelBase.State var1) {
-      super.setupAnim(var1);
-      this.head.yRot = var1.yRot * 0.017453292F;
-      this.head.xRot = var1.xRot * 0.017453292F;
-      float var2 = 1.2F;
-      this.leftEar.zRot = (float)(-(Math.cos((double)(var1.animationPos * 3.1415927F * 0.2F * 1.2F)) + 2.5)) * 0.2F;
-      this.rightEar.zRot = (float)(Math.cos((double)(var1.animationPos * 3.1415927F * 0.2F)) + 2.5) * 0.2F;
+   public void setupAnim(final SkullModelBase.State state) {
+      super.setupAnim(state);
+      this.head.yRot = state.yRot * 0.017453292F;
+      this.head.xRot = state.xRot * 0.017453292F;
+      float asymmetry = 1.2F;
+      this.leftEar.zRot = (float)(-(Math.cos((double)(state.animationPos * 3.1415927F * 0.2F * 1.2F)) + 2.5)) * 0.2F;
+      this.rightEar.zRot = (float)(Math.cos((double)(state.animationPos * 3.1415927F * 0.2F)) + 2.5) * 0.2F;
    }
 }

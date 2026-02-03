@@ -18,8 +18,8 @@ public interface ProfileKeyPairManager {
       }
    };
 
-   static ProfileKeyPairManager create(UserApiService var0, User var1, Path var2) {
-      return new AccountProfileKeyPairManager(var0, var1.getProfileId(), var2);
+   static ProfileKeyPairManager create(final UserApiService userApiService, final User user, final Path gameDirectory) {
+      return new AccountProfileKeyPairManager(userApiService, user.getProfileId(), gameDirectory);
    }
 
    CompletableFuture<Optional<ProfileKeyPair>> prepareKeyPair();

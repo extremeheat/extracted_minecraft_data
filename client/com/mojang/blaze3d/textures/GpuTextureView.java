@@ -1,18 +1,15 @@
 package com.mojang.blaze3d.textures;
 
-import com.mojang.blaze3d.DontObfuscate;
-
-@DontObfuscate
 public abstract class GpuTextureView implements AutoCloseable {
    private final GpuTexture texture;
    private final int baseMipLevel;
    private final int mipLevels;
 
-   public GpuTextureView(GpuTexture var1, int var2, int var3) {
+   protected GpuTextureView(final GpuTexture texture, final int baseMipLevel, final int mipLevels) {
       super();
-      this.texture = var1;
-      this.baseMipLevel = var2;
-      this.mipLevels = var3;
+      this.texture = texture;
+      this.baseMipLevel = baseMipLevel;
+      this.mipLevels = mipLevels;
    }
 
    public abstract void close();
@@ -29,12 +26,12 @@ public abstract class GpuTextureView implements AutoCloseable {
       return this.mipLevels;
    }
 
-   public int getWidth(int var1) {
-      return this.texture.getWidth(var1 + this.baseMipLevel);
+   public int getWidth(final int mipLevel) {
+      return this.texture.getWidth(mipLevel + this.baseMipLevel);
    }
 
-   public int getHeight(int var1) {
-      return this.texture.getHeight(var1 + this.baseMipLevel);
+   public int getHeight(final int mipLevel) {
+      return this.texture.getHeight(mipLevel + this.baseMipLevel);
    }
 
    public abstract boolean isClosed();

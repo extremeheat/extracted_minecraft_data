@@ -7,11 +7,11 @@ import net.minecraft.world.entity.Mob;
 public class FloatGoal extends Goal {
    private final Mob mob;
 
-   public FloatGoal(Mob var1) {
+   public FloatGoal(final Mob mob) {
       super();
-      this.mob = var1;
+      this.mob = mob;
       this.setFlags(EnumSet.of(Goal.Flag.JUMP));
-      var1.getNavigation().setCanFloat(true);
+      mob.getNavigation().setCanFloat(true);
    }
 
    public boolean canUse() {

@@ -19,8 +19,8 @@ public class GameTestTicker {
       this.state = GameTestTicker.State.IDLE;
    }
 
-   public void add(GameTestInfo var1) {
-      this.testInfos.add(var1);
+   public void add(final GameTestInfo testInfo) {
+      this.testInfos.add(testInfo);
    }
 
    public void clear() {
@@ -36,29 +36,29 @@ public class GameTestTicker {
       }
    }
 
-   public void setRunner(GameTestRunner var1) {
+   public void setRunner(final GameTestRunner runner) {
       if (this.runner != null) {
          Util.logAndPauseIfInIde("The runner was already set in GameTestTicker");
       }
 
-      this.runner = var1;
+      this.runner = runner;
    }
 
    public void tick() {
       if (this.runner != null) {
          this.state = GameTestTicker.State.RUNNING;
-         this.testInfos.forEach((var1x) -> var1x.tick(this.runner));
+         this.testInfos.forEach((i) -> i.tick(this.runner));
          this.testInfos.removeIf(GameTestInfo::isDone);
-         State var1 = this.state;
+         State finishingState = this.state;
          this.state = GameTestTicker.State.IDLE;
-         if (var1 == GameTestTicker.State.HALTING) {
+         if (finishingState == GameTestTicker.State.HALTING) {
             this.clear();
          }
 
       }
    }
 
-   static enum State {
+   private static enum State {
       IDLE,
       RUNNING,
       HALTING;

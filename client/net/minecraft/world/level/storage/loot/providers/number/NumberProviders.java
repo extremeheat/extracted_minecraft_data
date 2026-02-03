@@ -5,46 +5,39 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 
 public class NumberProviders {
    private static final Codec<NumberProvider> TYPED_CODEC;
    public static final Codec<NumberProvider> CODEC;
-   public static final LootNumberProviderType CONSTANT;
-   public static final LootNumberProviderType UNIFORM;
-   public static final LootNumberProviderType BINOMIAL;
-   public static final LootNumberProviderType SCORE;
-   public static final LootNumberProviderType STORAGE;
-   public static final LootNumberProviderType ENCHANTMENT_LEVEL;
 
    public NumberProviders() {
       super();
    }
 
-   private static LootNumberProviderType register(String var0, MapCodec<? extends NumberProvider> var1) {
-      return (LootNumberProviderType)Registry.register(BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootNumberProviderType(var1));
+   public static MapCodec<? extends NumberProvider> bootstrap(final Registry<MapCodec<? extends NumberProvider>> registry) {
+      Registry.register(registry, (String)"constant", ConstantValue.MAP_CODEC);
+      Registry.register(registry, (String)"uniform", UniformGenerator.MAP_CODEC);
+      Registry.register(registry, (String)"binomial", BinomialDistributionGenerator.MAP_CODEC);
+      Registry.register(registry, (String)"score", ScoreboardValue.MAP_CODEC);
+      Registry.register(registry, (String)"storage", StorageValue.MAP_CODEC);
+      Registry.register(registry, (String)"sum", Sum.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (String)"enchantment_level", EnchantmentLevelProvider.MAP_CODEC);
    }
 
    static {
-      TYPED_CODEC = BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE.byNameCodec().dispatch(NumberProvider::getType, LootNumberProviderType::codec);
+      TYPED_CODEC = BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE.byNameCodec().dispatch(NumberProvider::codec, (c) -> c);
       CODEC = Codec.lazyInitialized(() -> {
-         Codec var0 = Codec.withAlternative(TYPED_CODEC, UniformGenerator.CODEC.codec());
-         return Codec.either(ConstantValue.INLINE_CODEC, var0).xmap(Either::unwrap, (var0x) -> {
+         Codec<NumberProvider> typedCodecWithFallback = Codec.withAlternative(TYPED_CODEC, UniformGenerator.MAP_CODEC.codec());
+         return Codec.either(ConstantValue.INLINE_CODEC, typedCodecWithFallback).xmap(Either::unwrap, (provider) -> {
             Either var10000;
-            if (var0x instanceof ConstantValue var1) {
-               var10000 = Either.left(var1);
+            if (provider instanceof ConstantValue constant) {
+               var10000 = Either.left(constant);
             } else {
-               var10000 = Either.right(var0x);
+               var10000 = Either.right(provider);
             }
 
             return var10000;
          });
       });
-      CONSTANT = register("constant", ConstantValue.CODEC);
-      UNIFORM = register("uniform", UniformGenerator.CODEC);
-      BINOMIAL = register("binomial", BinomialDistributionGenerator.CODEC);
-      SCORE = register("score", ScoreboardValue.CODEC);
-      STORAGE = register("storage", StorageValue.CODEC);
-      ENCHANTMENT_LEVEL = register("enchantment_level", EnchantmentLevelProvider.CODEC);
    }
 }

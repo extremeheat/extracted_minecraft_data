@@ -25,40 +25,40 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
    protected final Predicate<? super LivingEntity> predicateOnAvoidEntity;
    private final TargetingConditions avoidEntityTargeting;
 
-   public AvoidEntityGoal(PathfinderMob var1, Class<T> var2, float var3, double var4, double var6) {
-      this(var1, var2, (var0) -> true, var3, var4, var6, EntitySelector.NO_CREATIVE_OR_SPECTATOR);
+   public AvoidEntityGoal(final PathfinderMob mob, final Class<T> avoidClass, final float maxDist, final double walkSpeedModifier, final double sprintSpeedModifier) {
+      this(mob, avoidClass, (t) -> true, maxDist, walkSpeedModifier, sprintSpeedModifier, EntitySelector.NO_CREATIVE_OR_SPECTATOR);
    }
 
-   public AvoidEntityGoal(PathfinderMob var1, Class<T> var2, Predicate<LivingEntity> var3, float var4, double var5, double var7, Predicate<? super LivingEntity> var9) {
+   public AvoidEntityGoal(final PathfinderMob mob, final Class<T> avoidClass, final Predicate<LivingEntity> avoidPredicate, final float maxDist, final double walkSpeedModifier, final double sprintSpeedModifier, final Predicate<? super LivingEntity> predicateOnAvoidEntity) {
       super();
-      this.mob = var1;
-      this.avoidClass = var2;
-      this.avoidPredicate = var3;
-      this.maxDist = var4;
-      this.walkSpeedModifier = var5;
-      this.sprintSpeedModifier = var7;
-      this.predicateOnAvoidEntity = var9;
-      this.pathNav = var1.getNavigation();
+      this.mob = mob;
+      this.avoidClass = avoidClass;
+      this.avoidPredicate = avoidPredicate;
+      this.maxDist = maxDist;
+      this.walkSpeedModifier = walkSpeedModifier;
+      this.sprintSpeedModifier = sprintSpeedModifier;
+      this.predicateOnAvoidEntity = predicateOnAvoidEntity;
+      this.pathNav = mob.getNavigation();
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-      this.avoidEntityTargeting = TargetingConditions.forCombat().range((double)var4).selector((var2x, var3x) -> var9.test(var2x) && var3.test(var2x));
+      this.avoidEntityTargeting = TargetingConditions.forCombat().range((double)maxDist).selector((target, level) -> predicateOnAvoidEntity.test(target) && avoidPredicate.test(target));
    }
 
-   public AvoidEntityGoal(PathfinderMob var1, Class<T> var2, float var3, double var4, double var6, Predicate<? super LivingEntity> var8) {
-      this(var1, var2, (var0) -> true, var3, var4, var6, var8);
+   public AvoidEntityGoal(final PathfinderMob mob, final Class<T> avoidClass, final float maxDist, final double walkSpeedModifier, final double sprintSpeedModifier, final Predicate<? super LivingEntity> predicateOnAvoidEntity) {
+      this(mob, avoidClass, (t) -> true, maxDist, walkSpeedModifier, sprintSpeedModifier, predicateOnAvoidEntity);
    }
 
    public boolean canUse() {
-      this.toAvoid = getServerLevel(this.mob).getNearestEntity(this.mob.level().getEntitiesOfClass(this.avoidClass, this.mob.getBoundingBox().inflate((double)this.maxDist, 3.0, (double)this.maxDist), (var0) -> true), this.avoidEntityTargeting, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
+      this.toAvoid = getServerLevel(this.mob).getNearestEntity(this.mob.level().getEntitiesOfClass(this.avoidClass, this.mob.getBoundingBox().inflate((double)this.maxDist, 3.0, (double)this.maxDist), (entity) -> true), this.avoidEntityTargeting, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
       if (this.toAvoid == null) {
          return false;
       } else {
-         Vec3 var1 = DefaultRandomPos.getPosAway(this.mob, 16, 7, this.toAvoid.position());
-         if (var1 == null) {
+         Vec3 pos = DefaultRandomPos.getPosAway(this.mob, 16, 7, this.toAvoid.position());
+         if (pos == null) {
             return false;
-         } else if (this.toAvoid.distanceToSqr(var1.x, var1.y, var1.z) < this.toAvoid.distanceToSqr(this.mob)) {
+         } else if (this.toAvoid.distanceToSqr(pos.x, pos.y, pos.z) < this.toAvoid.distanceToSqr(this.mob)) {
             return false;
          } else {
-            this.path = this.pathNav.createPath(var1.x, var1.y, var1.z, 0);
+            this.path = this.pathNav.createPath(pos.x, pos.y, pos.z, 0);
             return this.path != null;
          }
       }

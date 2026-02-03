@@ -27,16 +27,16 @@ public class TorchflowerCropBlock extends CropBlock {
       return CODEC;
    }
 
-   public TorchflowerCropBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public TorchflowerCropBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE);
    }
 
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPES[this.getAge(var1)];
+   public VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPES[this.getAge(state)];
    }
 
    protected IntegerProperty getAgeProperty() {
@@ -51,23 +51,23 @@ public class TorchflowerCropBlock extends CropBlock {
       return Items.TORCHFLOWER_SEEDS;
    }
 
-   public BlockState getStateForAge(int var1) {
-      return var1 == 2 ? Blocks.TORCHFLOWER.defaultBlockState() : super.getStateForAge(var1);
+   public BlockState getStateForAge(final int age) {
+      return age == 2 ? Blocks.TORCHFLOWER.defaultBlockState() : super.getStateForAge(age);
    }
 
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var4.nextInt(3) != 0) {
-         super.randomTick(var1, var2, var3, var4);
+   public void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (random.nextInt(3) != 0) {
+         super.randomTick(state, level, pos, random);
       }
 
    }
 
-   protected int getBonemealAgeIncrease(Level var1) {
+   protected int getBonemealAgeIncrease(final Level level) {
       return 1;
    }
 
    static {
       AGE = BlockStateProperties.AGE_1;
-      SHAPES = Block.boxes(1, (var0) -> Block.column(6.0, 0.0, (double)(6 + var0 * 4)));
+      SHAPES = Block.boxes(1, (age) -> Block.column(6.0, 0.0, (double)(6 + age * 4)));
    }
 }

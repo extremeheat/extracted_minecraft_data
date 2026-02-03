@@ -34,89 +34,89 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
    private final float integrity;
    private final long seed;
 
-   public ServerboundSetStructureBlockPacket(BlockPos var1, StructureBlockEntity.UpdateType var2, StructureMode var3, String var4, BlockPos var5, Vec3i var6, Mirror var7, Rotation var8, String var9, boolean var10, boolean var11, boolean var12, boolean var13, float var14, long var15) {
+   public ServerboundSetStructureBlockPacket(final BlockPos pos, final StructureBlockEntity.UpdateType updateType, final StructureMode mode, final String name, final BlockPos offset, final Vec3i size, final Mirror mirror, final Rotation rotation, final String data, final boolean ignoreEntities, final boolean strict, final boolean showAir, final boolean showBoundingBox, final float integrity, final long seed) {
       super();
-      this.pos = var1;
-      this.updateType = var2;
-      this.mode = var3;
-      this.name = var4;
-      this.offset = var5;
-      this.size = var6;
-      this.mirror = var7;
-      this.rotation = var8;
-      this.data = var9;
-      this.ignoreEntities = var10;
-      this.strict = var11;
-      this.showAir = var12;
-      this.showBoundingBox = var13;
-      this.integrity = var14;
-      this.seed = var15;
+      this.pos = pos;
+      this.updateType = updateType;
+      this.mode = mode;
+      this.name = name;
+      this.offset = offset;
+      this.size = size;
+      this.mirror = mirror;
+      this.rotation = rotation;
+      this.data = data;
+      this.ignoreEntities = ignoreEntities;
+      this.strict = strict;
+      this.showAir = showAir;
+      this.showBoundingBox = showBoundingBox;
+      this.integrity = integrity;
+      this.seed = seed;
    }
 
-   private ServerboundSetStructureBlockPacket(FriendlyByteBuf var1) {
+   private ServerboundSetStructureBlockPacket(final FriendlyByteBuf input) {
       super();
-      this.pos = var1.readBlockPos();
-      this.updateType = (StructureBlockEntity.UpdateType)var1.readEnum(StructureBlockEntity.UpdateType.class);
-      this.mode = (StructureMode)var1.readEnum(StructureMode.class);
-      this.name = var1.readUtf();
-      boolean var2 = true;
-      this.offset = new BlockPos(Mth.clamp(var1.readByte(), -48, 48), Mth.clamp(var1.readByte(), -48, 48), Mth.clamp(var1.readByte(), -48, 48));
-      boolean var3 = true;
-      this.size = new Vec3i(Mth.clamp(var1.readByte(), 0, 48), Mth.clamp(var1.readByte(), 0, 48), Mth.clamp(var1.readByte(), 0, 48));
-      this.mirror = (Mirror)var1.readEnum(Mirror.class);
-      this.rotation = (Rotation)var1.readEnum(Rotation.class);
-      this.data = var1.readUtf(128);
-      this.integrity = Mth.clamp(var1.readFloat(), 0.0F, 1.0F);
-      this.seed = var1.readVarLong();
-      byte var4 = var1.readByte();
-      this.ignoreEntities = (var4 & 1) != 0;
-      this.strict = (var4 & 8) != 0;
-      this.showAir = (var4 & 2) != 0;
-      this.showBoundingBox = (var4 & 4) != 0;
+      this.pos = input.readBlockPos();
+      this.updateType = (StructureBlockEntity.UpdateType)input.readEnum(StructureBlockEntity.UpdateType.class);
+      this.mode = (StructureMode)input.readEnum(StructureMode.class);
+      this.name = input.readUtf();
+      int maxOffset = 48;
+      this.offset = new BlockPos(Mth.clamp(input.readByte(), -48, 48), Mth.clamp(input.readByte(), -48, 48), Mth.clamp(input.readByte(), -48, 48));
+      int maxSize = 48;
+      this.size = new Vec3i(Mth.clamp(input.readByte(), 0, 48), Mth.clamp(input.readByte(), 0, 48), Mth.clamp(input.readByte(), 0, 48));
+      this.mirror = (Mirror)input.readEnum(Mirror.class);
+      this.rotation = (Rotation)input.readEnum(Rotation.class);
+      this.data = input.readUtf(128);
+      this.integrity = Mth.clamp(input.readFloat(), 0.0F, 1.0F);
+      this.seed = input.readVarLong();
+      int flags = input.readByte();
+      this.ignoreEntities = (flags & 1) != 0;
+      this.strict = (flags & 8) != 0;
+      this.showAir = (flags & 2) != 0;
+      this.showBoundingBox = (flags & 4) != 0;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBlockPos(this.pos);
-      var1.writeEnum(this.updateType);
-      var1.writeEnum(this.mode);
-      var1.writeUtf(this.name);
-      var1.writeByte(this.offset.getX());
-      var1.writeByte(this.offset.getY());
-      var1.writeByte(this.offset.getZ());
-      var1.writeByte(this.size.getX());
-      var1.writeByte(this.size.getY());
-      var1.writeByte(this.size.getZ());
-      var1.writeEnum(this.mirror);
-      var1.writeEnum(this.rotation);
-      var1.writeUtf(this.data);
-      var1.writeFloat(this.integrity);
-      var1.writeVarLong(this.seed);
-      int var2 = 0;
+   private void write(final FriendlyByteBuf output) {
+      output.writeBlockPos(this.pos);
+      output.writeEnum(this.updateType);
+      output.writeEnum(this.mode);
+      output.writeUtf(this.name);
+      output.writeByte(this.offset.getX());
+      output.writeByte(this.offset.getY());
+      output.writeByte(this.offset.getZ());
+      output.writeByte(this.size.getX());
+      output.writeByte(this.size.getY());
+      output.writeByte(this.size.getZ());
+      output.writeEnum(this.mirror);
+      output.writeEnum(this.rotation);
+      output.writeUtf(this.data);
+      output.writeFloat(this.integrity);
+      output.writeVarLong(this.seed);
+      int flags = 0;
       if (this.ignoreEntities) {
-         var2 |= 1;
+         flags |= 1;
       }
 
       if (this.showAir) {
-         var2 |= 2;
+         flags |= 2;
       }
 
       if (this.showBoundingBox) {
-         var2 |= 4;
+         flags |= 4;
       }
 
       if (this.strict) {
-         var2 |= 8;
+         flags |= 8;
       }
 
-      var1.writeByte(var2);
+      output.writeByte(flags);
    }
 
    public PacketType<ServerboundSetStructureBlockPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_STRUCTURE_BLOCK;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSetStructureBlock(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleSetStructureBlock(this);
    }
 
    public BlockPos getPos() {

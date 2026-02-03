@@ -26,21 +26,21 @@ public class FlowerBlock extends VegetationBlock implements SuspiciousEffectHold
       return CODEC;
    }
 
-   public FlowerBlock(Holder<MobEffect> var1, float var2, BlockBehaviour.Properties var3) {
-      this(makeEffectList(var1, var2), var3);
+   public FlowerBlock(final Holder<MobEffect> suspiciousStewEffect, final float effectSeconds, final BlockBehaviour.Properties properties) {
+      this(makeEffectList(suspiciousStewEffect, effectSeconds), properties);
    }
 
-   public FlowerBlock(SuspiciousStewEffects var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.suspiciousStewEffects = var1;
+   public FlowerBlock(final SuspiciousStewEffects suspiciousStewEffects, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.suspiciousStewEffects = suspiciousStewEffects;
    }
 
-   protected static SuspiciousStewEffects makeEffectList(Holder<MobEffect> var0, float var1) {
-      return new SuspiciousStewEffects(List.of(new SuspiciousStewEffects.Entry(var0, Mth.floor(var1 * 20.0F))));
+   protected static SuspiciousStewEffects makeEffectList(final Holder<MobEffect> suspiciousStewEffect, final float effectSeconds) {
+      return new SuspiciousStewEffects(List.of(new SuspiciousStewEffects.Entry(suspiciousStewEffect, Mth.floor(effectSeconds * 20.0F))));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE.move(var1.getOffset(var3));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPE.move(state.getOffset(pos));
    }
 
    public SuspiciousStewEffects getSuspiciousEffects() {
@@ -53,7 +53,7 @@ public class FlowerBlock extends VegetationBlock implements SuspiciousEffectHold
 
    static {
       EFFECTS_FIELD = SuspiciousStewEffects.CODEC.fieldOf("suspicious_stew_effects");
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, FlowerBlock::new));
+      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(i, FlowerBlock::new));
       SHAPE = Block.column(6.0, 0.0, 10.0);
    }
 }

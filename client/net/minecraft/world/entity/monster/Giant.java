@@ -8,15 +8,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 
 public class Giant extends Monster {
-   public Giant(EntityType<? extends Giant> var1, Level var2) {
-      super(var1, var2);
+   public Giant(final EntityType<? extends Giant> type, final Level level) {
+      super(type, level);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 100.0).add(Attributes.MOVEMENT_SPEED, 0.5).add(Attributes.ATTACK_DAMAGE, 50.0).add(Attributes.CAMERA_DISTANCE, 16.0);
    }
 
-   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
-      return var2.getPathfindingCostFromLightLevels(var1);
+   public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {
+      return level.getPathfindingCostFromLightLevels(pos);
    }
 }

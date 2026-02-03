@@ -12,24 +12,20 @@ import net.minecraft.world.entity.Relative;
 public record ClientboundTeleportEntityPacket(int id, PositionMoveRotation change, Set<Relative> relatives, boolean onGround) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundTeleportEntityPacket> STREAM_CODEC;
 
-   public ClientboundTeleportEntityPacket(int var1, PositionMoveRotation var2, Set<Relative> var3, boolean var4) {
+   public ClientboundTeleportEntityPacket {
       super();
-      this.id = var1;
-      this.change = var2;
-      this.relatives = var3;
-      this.onGround = var4;
    }
 
-   public static ClientboundTeleportEntityPacket teleport(int var0, PositionMoveRotation var1, Set<Relative> var2, boolean var3) {
-      return new ClientboundTeleportEntityPacket(var0, var1, var2, var3);
+   public static ClientboundTeleportEntityPacket teleport(final int id, final PositionMoveRotation values, final Set<Relative> relatives, final boolean onGround) {
+      return new ClientboundTeleportEntityPacket(id, values, relatives, onGround);
    }
 
    public PacketType<ClientboundTeleportEntityPacket> type() {
       return GamePacketTypes.CLIENTBOUND_TELEPORT_ENTITY;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleTeleportEntity(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleTeleportEntity(this);
    }
 
    static {

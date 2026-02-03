@@ -6,18 +6,18 @@ import net.minecraft.world.level.storage.loot.LootContext;
 
 @FunctionalInterface
 interface ComposableEntryContainer {
-   ComposableEntryContainer ALWAYS_FALSE = (var0, var1) -> false;
-   ComposableEntryContainer ALWAYS_TRUE = (var0, var1) -> true;
+   ComposableEntryContainer ALWAYS_FALSE = (context, output) -> false;
+   ComposableEntryContainer ALWAYS_TRUE = (context, output) -> true;
 
-   boolean expand(LootContext var1, Consumer<LootPoolEntry> var2);
+   boolean expand(final LootContext context, final Consumer<LootPoolEntry> output);
 
-   default ComposableEntryContainer and(ComposableEntryContainer var1) {
-      Objects.requireNonNull(var1);
-      return (var2, var3) -> this.expand(var2, var3) && var1.expand(var2, var3);
+   default ComposableEntryContainer and(final ComposableEntryContainer other) {
+      Objects.requireNonNull(other);
+      return (context, output) -> this.expand(context, output) && other.expand(context, output);
    }
 
-   default ComposableEntryContainer or(ComposableEntryContainer var1) {
-      Objects.requireNonNull(var1);
-      return (var2, var3) -> this.expand(var2, var3) || var1.expand(var2, var3);
+   default ComposableEntryContainer or(final ComposableEntryContainer other) {
+      Objects.requireNonNull(other);
+      return (context, output) -> this.expand(context, output) || other.expand(context, output);
    }
 }

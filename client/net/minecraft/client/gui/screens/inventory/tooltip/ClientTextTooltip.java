@@ -7,20 +7,20 @@ import net.minecraft.util.FormattedCharSequence;
 public class ClientTextTooltip implements ClientTooltipComponent {
    private final FormattedCharSequence text;
 
-   public ClientTextTooltip(FormattedCharSequence var1) {
+   public ClientTextTooltip(final FormattedCharSequence text) {
       super();
-      this.text = var1;
+      this.text = text;
    }
 
-   public int getWidth(Font var1) {
-      return var1.width(this.text);
+   public int getWidth(final Font font) {
+      return font.width(this.text);
    }
 
-   public int getHeight(Font var1) {
+   public int getHeight(final Font font) {
       return 10;
    }
 
-   public void renderText(GuiGraphics var1, Font var2, int var3, int var4) {
-      var1.drawString(var2, (FormattedCharSequence)this.text, var3, var4, -1, true);
+   public void renderText(final GuiGraphics guiGraphics, final Font font, final int x, final int y) {
+      guiGraphics.drawString(font, (FormattedCharSequence)this.text, x, y, -1, true);
    }
 }

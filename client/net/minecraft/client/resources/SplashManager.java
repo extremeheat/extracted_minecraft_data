@@ -28,26 +28,26 @@ public class SplashManager extends SimplePreparableReloadListener<List<Component
    private List<Component> splashes = List.of();
    private final User user;
 
-   public SplashManager(User var1) {
+   public SplashManager(final User user) {
       super();
-      this.user = var1;
+      this.user = user;
    }
 
-   private static Component literalSplash(String var0) {
-      return Component.literal(var0).setStyle(DEFAULT_STYLE);
+   private static Component literalSplash(final String text) {
+      return Component.literal(text).setStyle(DEFAULT_STYLE);
    }
 
-   protected List<Component> prepare(ResourceManager var1, ProfilerFiller var2) {
+   protected List<Component> prepare(final ResourceManager manager, final ProfilerFiller profiler) {
       try {
-         BufferedReader var3 = Minecraft.getInstance().getResourceManager().openAsReader(SPLASHES_LOCATION);
+         BufferedReader reader = Minecraft.getInstance().getResourceManager().openAsReader(SPLASHES_LOCATION);
 
          List var4;
          try {
-            var4 = var3.lines().map(String::trim).filter((var0) -> var0.hashCode() != 125780783).map(SplashManager::literalSplash).toList();
+            var4 = reader.lines().map(String::trim).filter((line) -> line.hashCode() != 125780783).map(SplashManager::literalSplash).toList();
          } catch (Throwable var7) {
-            if (var3 != null) {
+            if (reader != null) {
                try {
-                  var3.close();
+                  reader.close();
                } catch (Throwable var6) {
                   var7.addSuppressed(var6);
                }
@@ -56,8 +56,8 @@ public class SplashManager extends SimplePreparableReloadListener<List<Component
             throw var7;
          }
 
-         if (var3 != null) {
-            var3.close();
+         if (reader != null) {
+            reader.close();
          }
 
          return var4;
@@ -66,17 +66,17 @@ public class SplashManager extends SimplePreparableReloadListener<List<Component
       }
    }
 
-   protected void apply(List<Component> var1, ResourceManager var2, ProfilerFiller var3) {
-      this.splashes = List.copyOf(var1);
+   protected void apply(final List<Component> preparations, final ResourceManager manager, final ProfilerFiller profiler) {
+      this.splashes = List.copyOf(preparations);
    }
 
    public @Nullable SplashRenderer getSplash() {
-      MonthDay var1 = SpecialDates.dayNow();
-      if (var1.equals(SpecialDates.CHRISTMAS)) {
+      MonthDay monthDay = SpecialDates.dayNow();
+      if (monthDay.equals(SpecialDates.CHRISTMAS)) {
          return SplashRenderer.CHRISTMAS;
-      } else if (var1.equals(SpecialDates.NEW_YEAR)) {
+      } else if (monthDay.equals(SpecialDates.NEW_YEAR)) {
          return SplashRenderer.NEW_YEAR;
-      } else if (var1.equals(SpecialDates.HALLOWEEN)) {
+      } else if (monthDay.equals(SpecialDates.HALLOWEEN)) {
          return SplashRenderer.HALLOWEEN;
       } else if (this.splashes.isEmpty()) {
          return null;
@@ -86,11 +86,6 @@ public class SplashManager extends SimplePreparableReloadListener<List<Component
       } else {
          return new SplashRenderer((Component)this.splashes.get(RANDOM.nextInt(this.splashes.size())));
       }
-   }
-
-   // $FF: synthetic method
-   protected Object prepare(final ResourceManager var1, final ProfilerFiller var2) {
-      return this.prepare(var1, var2);
    }
 
    static {

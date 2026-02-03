@@ -69,25 +69,29 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
    public static final int PLAYERNAME_COLOR;
    public static final int PLAYER_STATUS_COLOR;
 
-   public PlayerEntry(Minecraft var1, SocialInteractionsScreen var2, UUID var3, String var4, Supplier<PlayerSkin> var5, boolean var6) {
+   public PlayerEntry(final Minecraft minecraft, final SocialInteractionsScreen socialInteractionsScreen, final UUID id, final String playerName, final Supplier<PlayerSkin> skinGetter, final boolean chatReportable) {
       super();
-      this.minecraft = var1;
-      this.id = var3;
-      this.playerName = var4;
-      this.skinGetter = var5;
-      ReportingContext var7 = var1.getReportingContext();
-      this.reportingEnabled = var7.sender().isEnabled();
-      this.chatReportable = var6;
-      this.refreshHasDraftReport(var7);
-      MutableComponent var8 = Component.translatable("gui.socialInteractions.narration.hide", var4);
-      MutableComponent var9 = Component.translatable("gui.socialInteractions.narration.show", var4);
-      PlayerSocialManager var10 = var1.getPlayerSocialManager();
-      boolean var11 = var1.getChatStatus().isChatAllowed(var1.isLocalServer());
-      boolean var12 = !var1.player.getUUID().equals(var3);
-      if (!SharedConstants.DEBUG_SOCIAL_INTERACTIONS && (!var12 || !var11 || var10.isBlocked(var3))) {
+      this.minecraft = minecraft;
+      this.id = id;
+      this.playerName = playerName;
+      this.skinGetter = skinGetter;
+      ReportingContext reportingContext = minecraft.getReportingContext();
+      this.reportingEnabled = reportingContext.sender().isEnabled();
+      this.chatReportable = chatReportable;
+      this.refreshHasDraftReport(reportingContext);
+      Component hideNarration = Component.translatable("gui.socialInteractions.narration.hide", playerName);
+      Component showNarration = Component.translatable("gui.socialInteractions.narration.show", playerName);
+      PlayerSocialManager socialManager = minecraft.getPlayerSocialManager();
+      boolean chatAllowed = minecraft.getChatStatus().isChatAllowed(minecraft.isLocalServer());
+      boolean notLocalPlayer = !minecraft.player.getUUID().equals(id);
+      if (!SharedConstants.DEBUG_SOCIAL_INTERACTIONS && (!notLocalPlayer || !chatAllowed || socialManager.isBlocked(id))) {
          this.children = ImmutableList.of();
       } else {
-         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (var4x) -> var7.draftReportHandled(var1, var2, () -> var1.setScreen(new ReportPlayerScreen(var2, var7, this)), false), Component.translatable("gui.socialInteractions.report")) {
+         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (button) -> reportingContext.draftReportHandled(minecraft, socialInteractionsScreen, () -> minecraft.setScreen(new ReportPlayerScreen(socialInteractionsScreen, reportingContext, this)), false), Component.translatable("gui.socialInteractions.report")) {
+            {
+               Objects.requireNonNull(PlayerEntry.this);
+            }
+
             protected MutableComponent createNarrationMessage() {
                return PlayerEntry.this.getEntryNarationMessage(super.createNarrationMessage());
             }
@@ -95,88 +99,96 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          this.reportButton.active = this.reportingEnabled;
          this.reportButton.setTooltip(this.createReportButtonTooltip());
          this.reportButton.setTooltipDelay(TOOLTIP_DELAY);
-         this.hideButton = new ImageButton(0, 0, 20, 20, MUTE_BUTTON_SPRITES, (var4x) -> {
-            var10.hidePlayer(var3);
-            this.onHiddenOrShown(true, Component.translatable("gui.socialInteractions.hidden_in_chat", var4));
+         this.hideButton = new ImageButton(0, 0, 20, 20, MUTE_BUTTON_SPRITES, (button) -> {
+            socialManager.hidePlayer(id);
+            this.onHiddenOrShown(true, Component.translatable("gui.socialInteractions.hidden_in_chat", playerName));
          }, Component.translatable("gui.socialInteractions.hide")) {
+            {
+               Objects.requireNonNull(PlayerEntry.this);
+            }
+
             protected MutableComponent createNarrationMessage() {
                return PlayerEntry.this.getEntryNarationMessage(super.createNarrationMessage());
             }
          };
-         this.hideButton.setTooltip(Tooltip.create(HIDE_TEXT_TOOLTIP, var8));
+         this.hideButton.setTooltip(Tooltip.create(HIDE_TEXT_TOOLTIP, hideNarration));
          this.hideButton.setTooltipDelay(TOOLTIP_DELAY);
-         this.showButton = new ImageButton(0, 0, 20, 20, UNMUTE_BUTTON_SPRITES, (var4x) -> {
-            var10.showPlayer(var3);
-            this.onHiddenOrShown(false, Component.translatable("gui.socialInteractions.shown_in_chat", var4));
+         this.showButton = new ImageButton(0, 0, 20, 20, UNMUTE_BUTTON_SPRITES, (button) -> {
+            socialManager.showPlayer(id);
+            this.onHiddenOrShown(false, Component.translatable("gui.socialInteractions.shown_in_chat", playerName));
          }, Component.translatable("gui.socialInteractions.show")) {
+            {
+               Objects.requireNonNull(PlayerEntry.this);
+            }
+
             protected MutableComponent createNarrationMessage() {
                return PlayerEntry.this.getEntryNarationMessage(super.createNarrationMessage());
             }
          };
-         this.showButton.setTooltip(Tooltip.create(SHOW_TEXT_TOOLTIP, var9));
+         this.showButton.setTooltip(Tooltip.create(SHOW_TEXT_TOOLTIP, showNarration));
          this.showButton.setTooltipDelay(TOOLTIP_DELAY);
          this.children = new ArrayList();
          this.children.add(this.hideButton);
          this.children.add(this.reportButton);
-         this.updateHideAndShowButton(var10.isHidden(this.id));
+         this.updateHideAndShowButton(socialManager.isHidden(this.id));
       }
 
    }
 
-   public void refreshHasDraftReport(ReportingContext var1) {
-      this.hasDraftReport = var1.hasDraftReportFor(this.id);
+   public void refreshHasDraftReport(final ReportingContext reportingContext) {
+      this.hasDraftReport = reportingContext.hasDraftReportFor(this.id);
    }
 
    private Tooltip createReportButtonTooltip() {
       return !this.reportingEnabled ? Tooltip.create(REPORT_DISABLED_TOOLTIP) : Tooltip.create(REPORT_PLAYER_TOOLTIP, Component.translatable("gui.socialInteractions.narration.report", this.playerName));
    }
 
-   public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-      int var6 = this.getContentX() + 4;
-      int var7 = this.getContentY() + (this.getContentHeight() - 24) / 2;
-      int var8 = var6 + 24 + 4;
-      Component var10 = this.getStatusComponent();
-      int var9;
-      if (var10 == CommonComponents.EMPTY) {
-         var1.fill(this.getContentX(), this.getContentY(), this.getContentRight(), this.getContentBottom(), BG_FILL);
+   public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      int skinX = this.getContentX() + 4;
+      int skinY = this.getContentY() + (this.getContentHeight() - 24) / 2;
+      int textStartX = skinX + 24 + 4;
+      Component status = this.getStatusComponent();
+      int textStartY;
+      if (status == CommonComponents.EMPTY) {
+         graphics.fill(this.getContentX(), this.getContentY(), this.getContentRight(), this.getContentBottom(), BG_FILL);
          int var10000 = this.getContentY();
          int var10001 = this.getContentHeight();
          Objects.requireNonNull(this.minecraft.font);
-         var9 = var10000 + (var10001 - 9) / 2;
+         textStartY = var10000 + (var10001 - 9) / 2;
       } else {
-         var1.fill(this.getContentX(), this.getContentY(), this.getContentRight(), this.getContentBottom(), BG_FILL_REMOVED);
+         graphics.fill(this.getContentX(), this.getContentY(), this.getContentRight(), this.getContentBottom(), BG_FILL_REMOVED);
          int var12 = this.getContentY();
          int var13 = this.getContentHeight();
          Objects.requireNonNull(this.minecraft.font);
          Objects.requireNonNull(this.minecraft.font);
-         var9 = var12 + (var13 - (9 + 9)) / 2;
-         var1.drawString(this.minecraft.font, var10, var8, var9 + 12, PLAYER_STATUS_COLOR);
+         textStartY = var12 + (var13 - (9 + 9)) / 2;
+         graphics.drawString(this.minecraft.font, status, textStartX, textStartY + 12, PLAYER_STATUS_COLOR);
       }
 
-      PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skinGetter.get(), var6, var7, 24);
-      var1.drawString(this.minecraft.font, this.playerName, var8, var9, PLAYERNAME_COLOR);
+      PlayerFaceRenderer.draw(graphics, (PlayerSkin)this.skinGetter.get(), skinX, skinY, 24);
+      graphics.drawString(this.minecraft.font, this.playerName, textStartX, textStartY, PLAYERNAME_COLOR);
       if (this.isRemoved) {
-         var1.fill(var6, var7, var6 + 24, var7 + 24, SKIN_SHADE);
+         graphics.fill(skinX, skinY, skinX + 24, skinY + 24, SKIN_SHADE);
       }
 
       if (this.hideButton != null && this.showButton != null && this.reportButton != null) {
-         float var11 = this.tooltipHoverTime;
+         float lastHoverTime = this.tooltipHoverTime;
          this.hideButton.setX(this.getContentX() + (this.getContentWidth() - this.hideButton.getWidth() - 4) - 20 - 4);
          this.hideButton.setY(this.getContentY() + (this.getContentHeight() - this.hideButton.getHeight()) / 2);
-         this.hideButton.render(var1, var2, var3, var5);
+         this.hideButton.render(graphics, mouseX, mouseY, a);
          this.showButton.setX(this.getContentX() + (this.getContentWidth() - this.showButton.getWidth() - 4) - 20 - 4);
          this.showButton.setY(this.getContentY() + (this.getContentHeight() - this.showButton.getHeight()) / 2);
-         this.showButton.render(var1, var2, var3, var5);
+         this.showButton.render(graphics, mouseX, mouseY, a);
          this.reportButton.setX(this.getContentX() + (this.getContentWidth() - this.showButton.getWidth() - 4));
          this.reportButton.setY(this.getContentY() + (this.getContentHeight() - this.showButton.getHeight()) / 2);
-         this.reportButton.render(var1, var2, var3, var5);
-         if (var11 == this.tooltipHoverTime) {
+         this.reportButton.render(graphics, mouseX, mouseY, a);
+         if (lastHoverTime == this.tooltipHoverTime) {
             this.tooltipHoverTime = 0.0F;
          }
       }
 
       if (this.hasDraftReport && this.reportButton != null) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
       }
 
    }
@@ -201,16 +213,16 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       return this.skinGetter;
    }
 
-   public void setRemoved(boolean var1) {
-      this.isRemoved = var1;
+   public void setRemoved(final boolean isRemoved) {
+      this.isRemoved = isRemoved;
    }
 
    public boolean isRemoved() {
       return this.isRemoved;
    }
 
-   public void setHasRecentMessages(boolean var1) {
-      this.hasRecentMessages = var1;
+   public void setHasRecentMessages(final boolean hasRecentMessages) {
+      this.hasRecentMessages = hasRecentMessages;
    }
 
    public boolean hasRecentMessages() {
@@ -221,33 +233,33 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       return this.chatReportable;
    }
 
-   private void onHiddenOrShown(boolean var1, Component var2) {
-      this.updateHideAndShowButton(var1);
-      this.minecraft.gui.getChat().addMessage(var2);
-      this.minecraft.getNarrator().saySystemNow(var2);
+   private void onHiddenOrShown(final boolean isHidden, final Component message) {
+      this.updateHideAndShowButton(isHidden);
+      this.minecraft.gui.getChat().addMessage(message);
+      this.minecraft.getNarrator().saySystemNow(message);
    }
 
-   private void updateHideAndShowButton(boolean var1) {
-      this.showButton.visible = var1;
-      this.hideButton.visible = !var1;
-      this.children.set(0, var1 ? this.showButton : this.hideButton);
+   private void updateHideAndShowButton(final boolean isHidden) {
+      this.showButton.visible = isHidden;
+      this.hideButton.visible = !isHidden;
+      this.children.set(0, isHidden ? this.showButton : this.hideButton);
    }
 
-   MutableComponent getEntryNarationMessage(MutableComponent var1) {
-      Component var2 = this.getStatusComponent();
-      return var2 == CommonComponents.EMPTY ? Component.literal(this.playerName).append(", ").append((Component)var1) : Component.literal(this.playerName).append(", ").append(var2).append(", ").append((Component)var1);
+   private MutableComponent getEntryNarationMessage(final MutableComponent buttonNarrationMessage) {
+      Component status = this.getStatusComponent();
+      return status == CommonComponents.EMPTY ? Component.literal(this.playerName).append(", ").append((Component)buttonNarrationMessage) : Component.literal(this.playerName).append(", ").append(status).append(", ").append((Component)buttonNarrationMessage);
    }
 
    private Component getStatusComponent() {
-      boolean var1 = this.minecraft.getPlayerSocialManager().isHidden(this.id);
-      boolean var2 = this.minecraft.getPlayerSocialManager().isBlocked(this.id);
-      if (var2 && this.isRemoved) {
+      boolean isHidden = this.minecraft.getPlayerSocialManager().isHidden(this.id);
+      boolean isBlocked = this.minecraft.getPlayerSocialManager().isBlocked(this.id);
+      if (isBlocked && this.isRemoved) {
          return BLOCKED_OFFLINE;
-      } else if (var1 && this.isRemoved) {
+      } else if (isHidden && this.isRemoved) {
          return HIDDEN_OFFLINE;
-      } else if (var2) {
+      } else if (isBlocked) {
          return BLOCKED;
-      } else if (var1) {
+      } else if (isHidden) {
          return HIDDEN;
       } else {
          return this.isRemoved ? OFFLINE : CommonComponents.EMPTY;

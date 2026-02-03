@@ -17,53 +17,53 @@ public class SummaryReporter {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Runnable onDeregistration;
 
-   protected SummaryReporter(Runnable var1) {
+   protected SummaryReporter(final Runnable onDeregistration) {
       super();
-      this.onDeregistration = var1;
+      this.onDeregistration = onDeregistration;
    }
 
-   public void recordingStopped(@Nullable Path var1) {
-      if (var1 != null) {
+   public void recordingStopped(final @Nullable Path result) {
+      if (result != null) {
          this.onDeregistration.run();
-         infoWithFallback(() -> "Dumped flight recorder profiling to " + String.valueOf(var1));
+         infoWithFallback(() -> "Dumped flight recorder profiling to " + String.valueOf(result));
 
-         JfrStatsResult var2;
+         JfrStatsResult statsResult;
          try {
-            var2 = JfrStatsParser.parse(var1);
-         } catch (Throwable var5) {
-            warnWithFallback(() -> "Failed to parse JFR recording", var5);
+            statsResult = JfrStatsParser.parse(result);
+         } catch (Throwable t) {
+            warnWithFallback(() -> "Failed to parse JFR recording", t);
             return;
          }
 
          try {
-            Objects.requireNonNull(var2);
-            infoWithFallback(var2::asJson);
-            String var10001 = var1.getFileName().toString();
-            Path var3 = var1.resolveSibling("jfr-report-" + StringUtils.substringBefore(var10001, ".jfr") + ".json");
-            Files.writeString(var3, var2.asJson(), StandardOpenOption.CREATE);
-            infoWithFallback(() -> "Dumped recording summary to " + String.valueOf(var3));
-         } catch (Throwable var4) {
-            warnWithFallback(() -> "Failed to output JFR report", var4);
+            Objects.requireNonNull(statsResult);
+            infoWithFallback(statsResult::asJson);
+            String var10001 = result.getFileName().toString();
+            Path jsonReport = result.resolveSibling("jfr-report-" + StringUtils.substringBefore(var10001, ".jfr") + ".json");
+            Files.writeString(jsonReport, statsResult.asJson(), StandardOpenOption.CREATE);
+            infoWithFallback(() -> "Dumped recording summary to " + String.valueOf(jsonReport));
+         } catch (Throwable t) {
+            warnWithFallback(() -> "Failed to output JFR report", t);
          }
 
       }
    }
 
-   private static void infoWithFallback(Supplier<String> var0) {
+   private static void infoWithFallback(final Supplier<String> message) {
       if (LogUtils.isLoggerActive()) {
-         LOGGER.info((String)var0.get());
+         LOGGER.info((String)message.get());
       } else {
-         Bootstrap.realStdoutPrintln((String)var0.get());
+         Bootstrap.realStdoutPrintln((String)message.get());
       }
 
    }
 
-   private static void warnWithFallback(Supplier<String> var0, Throwable var1) {
+   private static void warnWithFallback(final Supplier<String> message, final Throwable t) {
       if (LogUtils.isLoggerActive()) {
-         LOGGER.warn((String)var0.get(), var1);
+         LOGGER.warn((String)message.get(), t);
       } else {
-         Bootstrap.realStdoutPrintln((String)var0.get());
-         var1.printStackTrace(Bootstrap.STDOUT);
+         Bootstrap.realStdoutPrintln((String)message.get());
+         t.printStackTrace(Bootstrap.STDOUT);
       }
 
    }

@@ -27,235 +27,201 @@ public class DrawableGizmoPrimitives implements GizmoPrimitives {
       super();
    }
 
-   private Group getGroup(int var1) {
-      return ARGB.alpha(var1) < 255 ? this.translucent : this.opaque;
+   private Group getGroup(final int color) {
+      return ARGB.alpha(color) < 255 ? this.translucent : this.opaque;
    }
 
-   public void addPoint(Vec3 var1, int var2, float var3) {
-      this.getGroup(var2).points.add(new Point(var1, var2, var3));
+   public void addPoint(final Vec3 pos, final int color, final float size) {
+      this.getGroup(color).points.add(new Point(pos, color, size));
       this.isEmpty = false;
    }
 
-   public void addLine(Vec3 var1, Vec3 var2, int var3, float var4) {
-      this.getGroup(var3).lines.add(new Line(var1, var2, var3, var4));
+   public void addLine(final Vec3 start, final Vec3 end, final int color, final float width) {
+      this.getGroup(color).lines.add(new Line(start, end, color, width));
       this.isEmpty = false;
    }
 
-   public void addTriangleFan(Vec3[] var1, int var2) {
-      this.getGroup(var2).triangleFans.add(new TriangleFan(var1, var2));
+   public void addTriangleFan(final Vec3[] points, final int color) {
+      this.getGroup(color).triangleFans.add(new TriangleFan(points, color));
       this.isEmpty = false;
    }
 
-   public void addQuad(Vec3 var1, Vec3 var2, Vec3 var3, Vec3 var4, int var5) {
-      this.getGroup(var5).quads.add(new Quad(var1, var2, var3, var4, var5));
+   public void addQuad(final Vec3 a, final Vec3 b, final Vec3 c, final Vec3 d, final int color) {
+      this.getGroup(color).quads.add(new Quad(a, b, c, d, color));
       this.isEmpty = false;
    }
 
-   public void addText(Vec3 var1, String var2, TextGizmo.Style var3) {
-      this.getGroup(var3.color()).texts.add(new Text(var1, var2, var3));
+   public void addText(final Vec3 pos, final String text, final TextGizmo.Style style) {
+      this.getGroup(style.color()).texts.add(new Text(pos, text, style));
       this.isEmpty = false;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, CameraRenderState var3, Matrix4f var4) {
-      this.opaque.render(var1, var2, var3, var4);
-      this.translucent.render(var1, var2, var3, var4);
+   public void render(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera, final Matrix4f modelViewMatrix) {
+      this.opaque.render(poseStack, bufferSource, camera, modelViewMatrix);
+      this.translucent.render(poseStack, bufferSource, camera, modelViewMatrix);
    }
 
    public boolean isEmpty() {
       return this.isEmpty;
    }
 
-   static record Line(Vec3 start, Vec3 end, int color, float width) {
-      Line(Vec3 var1, Vec3 var2, int var3, float var4) {
+   private static record Line(Vec3 start, Vec3 end, int color, float width) {
+      private Line {
          super();
-         this.start = var1;
-         this.end = var2;
-         this.color = var3;
-         this.width = var4;
       }
    }
 
-   static record TriangleFan(Vec3[] points, int color) {
-      TriangleFan(Vec3[] var1, int var2) {
+   private static record TriangleFan(Vec3[] points, int color) {
+      private TriangleFan {
          super();
-         this.points = var1;
-         this.color = var2;
       }
    }
 
-   static record Quad(Vec3 a, Vec3 b, Vec3 c, Vec3 d, int color) {
-      Quad(Vec3 var1, Vec3 var2, Vec3 var3, Vec3 var4, int var5) {
+   private static record Quad(Vec3 a, Vec3 b, Vec3 c, Vec3 d, int color) {
+      private Quad {
          super();
-         this.a = var1;
-         this.b = var2;
-         this.c = var3;
-         this.d = var4;
-         this.color = var5;
       }
    }
 
-   static record Text(Vec3 pos, String text, TextGizmo.Style style) {
-      final String text;
-      final TextGizmo.Style style;
-
-      Text(Vec3 var1, String var2, TextGizmo.Style var3) {
+   private static record Text(Vec3 pos, String text, TextGizmo.Style style) {
+      private Text {
          super();
-         this.pos = var1;
-         this.text = var2;
-         this.style = var3;
       }
    }
 
-   static record Point(Vec3 pos, int color, float size) {
-      final Vec3 pos;
-
-      Point(Vec3 var1, int var2, float var3) {
+   private static record Point(Vec3 pos, int color, float size) {
+      private Point {
          super();
-         this.pos = var1;
-         this.color = var2;
-         this.size = var3;
       }
    }
 
-   static record Group(boolean opaque, List<Line> lines, List<Quad> quads, List<TriangleFan> triangleFans, List<Text> texts, List<Point> points) {
-      final List<Line> lines;
-      final List<Quad> quads;
-      final List<TriangleFan> triangleFans;
-      final List<Text> texts;
-      final List<Point> points;
-
-      Group(boolean var1) {
-         this(var1, new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList());
+   private static record Group(boolean opaque, List<Line> lines, List<Quad> quads, List<TriangleFan> triangleFans, List<Text> texts, List<Point> points) {
+      private Group(final boolean opaque) {
+         this(opaque, new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList());
       }
 
-      private Group(boolean var1, List<Line> var2, List<Quad> var3, List<TriangleFan> var4, List<Text> var5, List<Point> var6) {
+      private Group {
          super();
-         this.opaque = var1;
-         this.lines = var2;
-         this.quads = var3;
-         this.triangleFans = var4;
-         this.texts = var5;
-         this.points = var6;
       }
 
-      public void render(PoseStack var1, MultiBufferSource var2, CameraRenderState var3, Matrix4f var4) {
-         this.renderQuads(var1, var2, var3);
-         this.renderTriangleFans(var1, var2, var3);
-         this.renderLines(var1, var2, var3, var4);
-         this.renderTexts(var1, var2, var3);
-         this.renderPoints(var1, var2, var3);
+      public void render(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera, final Matrix4f modelViewMatrix) {
+         this.renderQuads(poseStack, bufferSource, camera);
+         this.renderTriangleFans(poseStack, bufferSource, camera);
+         this.renderLines(poseStack, bufferSource, camera, modelViewMatrix);
+         this.renderTexts(poseStack, bufferSource, camera);
+         this.renderPoints(poseStack, bufferSource, camera);
       }
 
-      private void renderTexts(PoseStack var1, MultiBufferSource var2, CameraRenderState var3) {
-         Minecraft var4 = Minecraft.getInstance();
-         Font var5 = var4.font;
-         if (var3.initialized) {
-            double var6 = var3.pos.x();
-            double var8 = var3.pos.y();
-            double var10 = var3.pos.z();
+      private void renderTexts(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera) {
+         Minecraft minecraft = Minecraft.getInstance();
+         Font font = minecraft.font;
+         if (camera.initialized) {
+            double camX = camera.pos.x();
+            double camY = camera.pos.y();
+            double camZ = camera.pos.z();
 
-            for(Text var13 : this.texts) {
-               var1.pushPose();
-               var1.translate((float)(var13.pos().x() - var6), (float)(var13.pos().y() - var8), (float)(var13.pos().z() - var10));
-               var1.mulPose((Quaternionfc)var3.orientation);
-               var1.scale(var13.style.scale() / 16.0F, -var13.style.scale() / 16.0F, var13.style.scale() / 16.0F);
-               float var14;
-               if (var13.style.adjustLeft().isEmpty()) {
-                  var14 = (float)(-var5.width(var13.text)) / 2.0F;
+            for(Text text : this.texts) {
+               poseStack.pushPose();
+               poseStack.translate((float)(text.pos().x() - camX), (float)(text.pos().y() - camY), (float)(text.pos().z() - camZ));
+               poseStack.mulPose((Quaternionfc)camera.orientation);
+               poseStack.scale(text.style.scale() / 16.0F, -text.style.scale() / 16.0F, text.style.scale() / 16.0F);
+               float fontX;
+               if (text.style.adjustLeft().isEmpty()) {
+                  fontX = (float)(-font.width(text.text)) / 2.0F;
                } else {
-                  var14 = (float)(-var13.style.adjustLeft().getAsDouble()) / var13.style.scale();
+                  fontX = (float)(-text.style.adjustLeft().getAsDouble()) / text.style.scale();
                }
 
-               var5.drawInBatch((String)var13.text, var14, 0.0F, var13.style.color(), false, var1.last().pose(), var2, Font.DisplayMode.NORMAL, 0, 15728880);
-               var1.popPose();
+               font.drawInBatch((String)text.text, fontX, 0.0F, text.style.color(), false, poseStack.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, 15728880);
+               poseStack.popPose();
             }
 
          }
       }
 
-      private void renderLines(PoseStack var1, MultiBufferSource var2, CameraRenderState var3, Matrix4f var4) {
-         VertexConsumer var5 = var2.getBuffer(this.opaque ? RenderTypes.lines() : RenderTypes.linesTranslucent());
-         PoseStack.Pose var6 = var1.last();
-         Vector4f var7 = new Vector4f();
-         Vector4f var8 = new Vector4f();
-         Vector4f var9 = new Vector4f();
-         Vector4f var10 = new Vector4f();
-         Vector4f var11 = new Vector4f();
-         double var12 = var3.pos.x();
-         double var14 = var3.pos.y();
-         double var16 = var3.pos.z();
+      private void renderLines(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera, final Matrix4f modelViewMatrix) {
+         VertexConsumer builder = bufferSource.getBuffer(this.opaque ? RenderTypes.lines() : RenderTypes.linesTranslucent());
+         PoseStack.Pose pose = poseStack.last();
+         Vector4f start = new Vector4f();
+         Vector4f end = new Vector4f();
+         Vector4f startViewSpace = new Vector4f();
+         Vector4f endViewSpace = new Vector4f();
+         Vector4f intersectionInWorld = new Vector4f();
+         double camX = camera.pos.x();
+         double camY = camera.pos.y();
+         double camZ = camera.pos.z();
 
-         for(Line var19 : this.lines) {
-            var7.set(var19.start().x() - var12, var19.start().y() - var14, var19.start().z() - var16, 1.0);
-            var8.set(var19.end().x() - var12, var19.end().y() - var14, var19.end().z() - var16, 1.0);
-            var7.mul(var4, var9);
-            var8.mul(var4, var10);
-            boolean var20 = var9.z > -0.05F;
-            boolean var21 = var10.z > -0.05F;
-            if (!var20 || !var21) {
-               if (var20 || var21) {
-                  float var22 = var10.z - var9.z;
-                  if (Math.abs(var22) < 1.0E-9F) {
+         for(Line line : this.lines) {
+            start.set(line.start().x() - camX, line.start().y() - camY, line.start().z() - camZ, 1.0);
+            end.set(line.end().x() - camX, line.end().y() - camY, line.end().z() - camZ, 1.0);
+            start.mul(modelViewMatrix, startViewSpace);
+            end.mul(modelViewMatrix, endViewSpace);
+            boolean startIsBehindCamera = startViewSpace.z > -0.05F;
+            boolean endIsBehindCamera = endViewSpace.z > -0.05F;
+            if (!startIsBehindCamera || !endIsBehindCamera) {
+               if (startIsBehindCamera || endIsBehindCamera) {
+                  float denom = endViewSpace.z - startViewSpace.z;
+                  if (Math.abs(denom) < 1.0E-9F) {
                      continue;
                   }
 
-                  float var23 = Mth.clamp((-0.05F - var9.z) / var22, 0.0F, 1.0F);
-                  var7.lerp(var8, var23, var11);
-                  if (var20) {
-                     var7.set(var11);
+                  float intersection = Mth.clamp((-0.05F - startViewSpace.z) / denom, 0.0F, 1.0F);
+                  start.lerp(end, intersection, intersectionInWorld);
+                  if (startIsBehindCamera) {
+                     start.set(intersectionInWorld);
                   } else {
-                     var8.set(var11);
+                     end.set(intersectionInWorld);
                   }
                }
 
-               var5.addVertex(var6, var7.x, var7.y, var7.z).setNormal(var6, var8.x - var7.x, var8.y - var7.y, var8.z - var7.z).setColor(var19.color()).setLineWidth(var19.width());
-               var5.addVertex(var6, var8.x, var8.y, var8.z).setNormal(var6, var8.x - var7.x, var8.y - var7.y, var8.z - var7.z).setColor(var19.color()).setLineWidth(var19.width());
+               builder.addVertex(pose, start.x, start.y, start.z).setNormal(pose, end.x - start.x, end.y - start.y, end.z - start.z).setColor(line.color()).setLineWidth(line.width());
+               builder.addVertex(pose, end.x, end.y, end.z).setNormal(pose, end.x - start.x, end.y - start.y, end.z - start.z).setColor(line.color()).setLineWidth(line.width());
             }
          }
 
       }
 
-      private void renderTriangleFans(PoseStack var1, MultiBufferSource var2, CameraRenderState var3) {
-         PoseStack.Pose var4 = var1.last();
-         double var5 = var3.pos.x();
-         double var7 = var3.pos.y();
-         double var9 = var3.pos.z();
+      private void renderTriangleFans(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera) {
+         PoseStack.Pose pose = poseStack.last();
+         double camX = camera.pos.x();
+         double camY = camera.pos.y();
+         double camZ = camera.pos.z();
 
-         for(TriangleFan var12 : this.triangleFans) {
-            VertexConsumer var13 = var2.getBuffer(RenderTypes.debugTriangleFan());
+         for(TriangleFan triangleFan : this.triangleFans) {
+            VertexConsumer builder = bufferSource.getBuffer(RenderTypes.debugTriangleFan());
 
-            for(Vec3 var17 : var12.points()) {
-               var13.addVertex(var4, (float)(var17.x() - var5), (float)(var17.y() - var7), (float)(var17.z() - var9)).setColor(var12.color());
+            for(Vec3 point : triangleFan.points()) {
+               builder.addVertex(pose, (float)(point.x() - camX), (float)(point.y() - camY), (float)(point.z() - camZ)).setColor(triangleFan.color());
             }
          }
 
       }
 
-      private void renderQuads(PoseStack var1, MultiBufferSource var2, CameraRenderState var3) {
-         VertexConsumer var4 = var2.getBuffer(RenderTypes.debugFilledBox());
-         PoseStack.Pose var5 = var1.last();
-         double var6 = var3.pos.x();
-         double var8 = var3.pos.y();
-         double var10 = var3.pos.z();
+      private void renderQuads(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera) {
+         VertexConsumer builder = bufferSource.getBuffer(RenderTypes.debugFilledBox());
+         PoseStack.Pose pose = poseStack.last();
+         double camX = camera.pos.x();
+         double camY = camera.pos.y();
+         double camZ = camera.pos.z();
 
-         for(Quad var13 : this.quads) {
-            var4.addVertex(var5, (float)(var13.a().x() - var6), (float)(var13.a().y() - var8), (float)(var13.a().z() - var10)).setColor(var13.color());
-            var4.addVertex(var5, (float)(var13.b().x() - var6), (float)(var13.b().y() - var8), (float)(var13.b().z() - var10)).setColor(var13.color());
-            var4.addVertex(var5, (float)(var13.c().x() - var6), (float)(var13.c().y() - var8), (float)(var13.c().z() - var10)).setColor(var13.color());
-            var4.addVertex(var5, (float)(var13.d().x() - var6), (float)(var13.d().y() - var8), (float)(var13.d().z() - var10)).setColor(var13.color());
+         for(Quad quad : this.quads) {
+            builder.addVertex(pose, (float)(quad.a().x() - camX), (float)(quad.a().y() - camY), (float)(quad.a().z() - camZ)).setColor(quad.color());
+            builder.addVertex(pose, (float)(quad.b().x() - camX), (float)(quad.b().y() - camY), (float)(quad.b().z() - camZ)).setColor(quad.color());
+            builder.addVertex(pose, (float)(quad.c().x() - camX), (float)(quad.c().y() - camY), (float)(quad.c().z() - camZ)).setColor(quad.color());
+            builder.addVertex(pose, (float)(quad.d().x() - camX), (float)(quad.d().y() - camY), (float)(quad.d().z() - camZ)).setColor(quad.color());
          }
 
       }
 
-      private void renderPoints(PoseStack var1, MultiBufferSource var2, CameraRenderState var3) {
-         VertexConsumer var4 = var2.getBuffer(RenderTypes.debugPoint());
-         PoseStack.Pose var5 = var1.last();
-         double var6 = var3.pos.x();
-         double var8 = var3.pos.y();
-         double var10 = var3.pos.z();
+      private void renderPoints(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera) {
+         VertexConsumer builder = bufferSource.getBuffer(RenderTypes.debugPoint());
+         PoseStack.Pose pose = poseStack.last();
+         double camX = camera.pos.x();
+         double camY = camera.pos.y();
+         double camZ = camera.pos.z();
 
-         for(Point var13 : this.points) {
-            var4.addVertex(var5, (float)(var13.pos.x() - var6), (float)(var13.pos.y() - var8), (float)(var13.pos.z() - var10)).setColor(var13.color()).setLineWidth(var13.size());
+         for(Point point : this.points) {
+            builder.addVertex(pose, (float)(point.pos.x() - camX), (float)(point.pos.y() - camY), (float)(point.pos.z() - camZ)).setColor(point.color()).setLineWidth(point.size());
          }
 
       }

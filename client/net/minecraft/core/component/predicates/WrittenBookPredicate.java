@@ -15,50 +15,39 @@ import net.minecraft.server.network.Filterable;
 import net.minecraft.world.item.component.WrittenBookContent;
 
 public record WrittenBookPredicate(Optional<CollectionPredicate<Filterable<Component>, PagePredicate>> pages, Optional<String> author, Optional<String> title, MinMaxBounds.Ints generation, Optional<Boolean> resolved) implements SingleComponentItemPredicate<WrittenBookContent> {
-   public static final Codec<WrittenBookPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CollectionPredicate.codec(WrittenBookPredicate.PagePredicate.CODEC).optionalFieldOf("pages").forGetter(WrittenBookPredicate::pages), Codec.STRING.optionalFieldOf("author").forGetter(WrittenBookPredicate::author), Codec.STRING.optionalFieldOf("title").forGetter(WrittenBookPredicate::title), MinMaxBounds.Ints.CODEC.optionalFieldOf("generation", MinMaxBounds.Ints.ANY).forGetter(WrittenBookPredicate::generation), Codec.BOOL.optionalFieldOf("resolved").forGetter(WrittenBookPredicate::resolved)).apply(var0, WrittenBookPredicate::new));
+   public static final Codec<WrittenBookPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(CollectionPredicate.codec(WrittenBookPredicate.PagePredicate.CODEC).optionalFieldOf("pages").forGetter(WrittenBookPredicate::pages), Codec.STRING.optionalFieldOf("author").forGetter(WrittenBookPredicate::author), Codec.STRING.optionalFieldOf("title").forGetter(WrittenBookPredicate::title), MinMaxBounds.Ints.CODEC.optionalFieldOf("generation", MinMaxBounds.Ints.ANY).forGetter(WrittenBookPredicate::generation), Codec.BOOL.optionalFieldOf("resolved").forGetter(WrittenBookPredicate::resolved)).apply(i, WrittenBookPredicate::new));
 
-   public WrittenBookPredicate(Optional<CollectionPredicate<Filterable<Component>, PagePredicate>> var1, Optional<String> var2, Optional<String> var3, MinMaxBounds.Ints var4, Optional<Boolean> var5) {
+   public WrittenBookPredicate {
       super();
-      this.pages = var1;
-      this.author = var2;
-      this.title = var3;
-      this.generation = var4;
-      this.resolved = var5;
    }
 
    public DataComponentType<WrittenBookContent> componentType() {
       return DataComponents.WRITTEN_BOOK_CONTENT;
    }
 
-   public boolean matches(WrittenBookContent var1) {
-      if (this.author.isPresent() && !((String)this.author.get()).equals(var1.author())) {
+   public boolean matches(final WrittenBookContent value) {
+      if (this.author.isPresent() && !((String)this.author.get()).equals(value.author())) {
          return false;
-      } else if (this.title.isPresent() && !((String)this.title.get()).equals(var1.title().raw())) {
+      } else if (this.title.isPresent() && !((String)this.title.get()).equals(value.title().raw())) {
          return false;
-      } else if (!this.generation.matches(var1.generation())) {
+      } else if (!this.generation.matches(value.generation())) {
          return false;
-      } else if (this.resolved.isPresent() && (Boolean)this.resolved.get() != var1.resolved()) {
+      } else if (this.resolved.isPresent() && (Boolean)this.resolved.get() != value.resolved()) {
          return false;
       } else {
-         return !this.pages.isPresent() || ((CollectionPredicate)this.pages.get()).test(var1.pages());
+         return !this.pages.isPresent() || ((CollectionPredicate)this.pages.get()).test(value.pages());
       }
    }
 
    public static record PagePredicate(Component contents) implements Predicate<Filterable<Component>> {
       public static final Codec<PagePredicate> CODEC;
 
-      public PagePredicate(Component var1) {
+      public PagePredicate {
          super();
-         this.contents = var1;
       }
 
-      public boolean test(Filterable<Component> var1) {
-         return ((Component)var1.raw()).equals(this.contents);
-      }
-
-      // $FF: synthetic method
-      public boolean test(final Object var1) {
-         return this.test((Filterable)var1);
+      public boolean test(final Filterable<Component> value) {
+         return ((Component)value.raw()).equals(this.contents);
       }
 
       static {

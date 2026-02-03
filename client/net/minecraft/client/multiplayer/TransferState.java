@@ -5,10 +5,7 @@ import java.util.UUID;
 import net.minecraft.resources.Identifier;
 
 public record TransferState(Map<Identifier, byte[]> cookies, Map<UUID, PlayerInfo> seenPlayers, boolean seenInsecureChatWarning) {
-   public TransferState(Map<Identifier, byte[]> var1, Map<UUID, PlayerInfo> var2, boolean var3) {
+   public TransferState {
       super();
-      this.cookies = var1;
-      this.seenPlayers = var2;
-      this.seenInsecureChatWarning = var3;
    }
 }

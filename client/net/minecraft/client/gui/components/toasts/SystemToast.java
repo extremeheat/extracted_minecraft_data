@@ -30,30 +30,30 @@ public class SystemToast implements Toast {
    private boolean forceHide;
    private Toast.Visibility wantedVisibility;
 
-   public SystemToast(SystemToastId var1, Component var2, @Nullable Component var3) {
-      this(var1, var2, nullToEmpty(var3), Math.max(160, 30 + Math.max(Minecraft.getInstance().font.width((FormattedText)var2), var3 == null ? 0 : Minecraft.getInstance().font.width((FormattedText)var3))));
+   public SystemToast(final SystemToastId id, final Component title, final @Nullable Component message) {
+      this(id, title, nullToEmpty(message), Math.max(160, 30 + Math.max(Minecraft.getInstance().font.width((FormattedText)title), message == null ? 0 : Minecraft.getInstance().font.width((FormattedText)message))));
    }
 
-   public static SystemToast multiline(Minecraft var0, SystemToastId var1, Component var2, Component var3) {
-      Font var4 = var0.font;
-      List var5 = var4.split(var3, 200);
-      Stream var10001 = var5.stream();
-      Objects.requireNonNull(var4);
-      int var6 = Math.max(200, var10001.mapToInt(var4::width).max().orElse(200));
-      return new SystemToast(var1, var2, var5, var6 + 30);
+   public static SystemToast multiline(final Minecraft minecraft, final SystemToastId id, final Component title, final Component message) {
+      Font font = minecraft.font;
+      List<FormattedCharSequence> lines = font.split(message, 200);
+      Stream var10001 = lines.stream();
+      Objects.requireNonNull(font);
+      int width = Math.max(200, var10001.mapToInt(font::width).max().orElse(200));
+      return new SystemToast(id, title, lines, width + 30);
    }
 
-   private SystemToast(SystemToastId var1, Component var2, List<FormattedCharSequence> var3, int var4) {
+   private SystemToast(final SystemToastId id, final Component title, final List<FormattedCharSequence> messageLines, final int width) {
       super();
       this.wantedVisibility = Toast.Visibility.HIDE;
-      this.id = var1;
-      this.title = var2;
-      this.messageLines = var3;
-      this.width = var4;
+      this.id = id;
+      this.title = title;
+      this.messageLines = messageLines;
+      this.width = width;
    }
 
-   private static ImmutableList<FormattedCharSequence> nullToEmpty(@Nullable Component var0) {
-      return var0 == null ? ImmutableList.of() : ImmutableList.of(var0.getVisualOrderText());
+   private static ImmutableList<FormattedCharSequence> nullToEmpty(final @Nullable Component message) {
+      return message == null ? ImmutableList.of() : ImmutableList.of(message.getVisualOrderText());
    }
 
    public int width() {
@@ -72,34 +72,34 @@ public class SystemToast implements Toast {
       return this.wantedVisibility;
    }
 
-   public void update(ToastManager var1, long var2) {
+   public void update(final ToastManager manager, final long fullyVisibleForMs) {
       if (this.changed) {
-         this.lastChanged = var2;
+         this.lastChanged = fullyVisibleForMs;
          this.changed = false;
       }
 
-      double var4 = (double)this.id.displayTime * var1.getNotificationDisplayTimeMultiplier();
-      long var6 = var2 - this.lastChanged;
-      this.wantedVisibility = !this.forceHide && (double)var6 < var4 ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
+      double timeToDisplayUpdate = (double)this.id.displayTime * manager.getNotificationDisplayTimeMultiplier();
+      long timeSinceUpdate = fullyVisibleForMs - this.lastChanged;
+      this.wantedVisibility = !this.forceHide && (double)timeSinceUpdate < timeToDisplayUpdate ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
    }
 
-   public void render(GuiGraphics var1, Font var2, long var3) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+   public void render(final GuiGraphics graphics, final Font font, final long fullyVisibleForMs) {
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (this.messageLines.isEmpty()) {
-         var1.drawString(var2, (Component)this.title, 18, 12, -256, false);
+         graphics.drawString(font, (Component)this.title, 18, 12, -256, false);
       } else {
-         var1.drawString(var2, (Component)this.title, 18, 7, -256, false);
+         graphics.drawString(font, (Component)this.title, 18, 7, -256, false);
 
-         for(int var5 = 0; var5 < this.messageLines.size(); ++var5) {
-            var1.drawString(var2, (FormattedCharSequence)((FormattedCharSequence)this.messageLines.get(var5)), 18, 18 + var5 * 12, -1, false);
+         for(int i = 0; i < this.messageLines.size(); ++i) {
+            graphics.drawString(font, (FormattedCharSequence)((FormattedCharSequence)this.messageLines.get(i)), 18, 18 + i * 12, -1, false);
          }
       }
 
    }
 
-   public void reset(Component var1, @Nullable Component var2) {
-      this.title = var1;
-      this.messageLines = nullToEmpty(var2);
+   public void reset(final Component title, final @Nullable Component message) {
+      this.title = title;
+      this.messageLines = nullToEmpty(message);
       this.changed = true;
    }
 
@@ -107,59 +107,54 @@ public class SystemToast implements Toast {
       return this.id;
    }
 
-   public static void add(ToastManager var0, SystemToastId var1, Component var2, @Nullable Component var3) {
-      var0.addToast(new SystemToast(var1, var2, var3));
+   public static void add(final ToastManager toastManager, final SystemToastId id, final Component title, final @Nullable Component message) {
+      toastManager.addToast(new SystemToast(id, title, message));
    }
 
-   public static void addOrUpdate(ToastManager var0, SystemToastId var1, Component var2, @Nullable Component var3) {
-      SystemToast var4 = (SystemToast)var0.getToast(SystemToast.class, var1);
-      if (var4 == null) {
-         add(var0, var1, var2, var3);
+   public static void addOrUpdate(final ToastManager toastManager, final SystemToastId id, final Component title, final @Nullable Component message) {
+      SystemToast toast = (SystemToast)toastManager.getToast(SystemToast.class, id);
+      if (toast == null) {
+         add(toastManager, id, title, message);
       } else {
-         var4.reset(var2, var3);
+         toast.reset(title, message);
       }
 
    }
 
-   public static void forceHide(ToastManager var0, SystemToastId var1) {
-      SystemToast var2 = (SystemToast)var0.getToast(SystemToast.class, var1);
-      if (var2 != null) {
-         var2.forceHide();
+   public static void forceHide(final ToastManager toastManager, final SystemToastId id) {
+      SystemToast toast = (SystemToast)toastManager.getToast(SystemToast.class, id);
+      if (toast != null) {
+         toast.forceHide();
       }
 
    }
 
-   public static void onWorldAccessFailure(Minecraft var0, String var1) {
-      add(var0.getToastManager(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.access_failure"), Component.literal(var1));
+   public static void onWorldAccessFailure(final Minecraft minecraft, final String levelId) {
+      add(minecraft.getToastManager(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.access_failure"), Component.literal(levelId));
    }
 
-   public static void onWorldDeleteFailure(Minecraft var0, String var1) {
-      add(var0.getToastManager(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.delete_failure"), Component.literal(var1));
+   public static void onWorldDeleteFailure(final Minecraft minecraft, final String levelId) {
+      add(minecraft.getToastManager(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.delete_failure"), Component.literal(levelId));
    }
 
-   public static void onPackCopyFailure(Minecraft var0, String var1) {
-      add(var0.getToastManager(), SystemToast.SystemToastId.PACK_COPY_FAILURE, Component.translatable("pack.copyFailure"), Component.literal(var1));
+   public static void onPackCopyFailure(final Minecraft minecraft, final String extraInfo) {
+      add(minecraft.getToastManager(), SystemToast.SystemToastId.PACK_COPY_FAILURE, Component.translatable("pack.copyFailure"), Component.literal(extraInfo));
    }
 
-   public static void onFileDropFailure(Minecraft var0, int var1) {
-      add(var0.getToastManager(), SystemToast.SystemToastId.FILE_DROP_FAILURE, Component.translatable("gui.fileDropFailure.title"), Component.translatable("gui.fileDropFailure.detail", var1));
+   public static void onFileDropFailure(final Minecraft minecraft, final int count) {
+      add(minecraft.getToastManager(), SystemToast.SystemToastId.FILE_DROP_FAILURE, Component.translatable("gui.fileDropFailure.title"), Component.translatable("gui.fileDropFailure.detail", count));
    }
 
-   public static void onLowDiskSpace(Minecraft var0) {
-      addOrUpdate(var0.getToastManager(), SystemToast.SystemToastId.LOW_DISK_SPACE, Component.translatable("chunk.toast.lowDiskSpace"), Component.translatable("chunk.toast.lowDiskSpace.description"));
+   public static void onLowDiskSpace(final Minecraft minecraft) {
+      addOrUpdate(minecraft.getToastManager(), SystemToast.SystemToastId.LOW_DISK_SPACE, Component.translatable("chunk.toast.lowDiskSpace"), Component.translatable("chunk.toast.lowDiskSpace.description"));
    }
 
-   public static void onChunkLoadFailure(Minecraft var0, ChunkPos var1) {
-      addOrUpdate(var0.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE, Component.translatable("chunk.toast.loadFailure", Component.translationArg(var1)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
+   public static void onChunkLoadFailure(final Minecraft minecraft, final ChunkPos pos) {
+      addOrUpdate(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE, Component.translatable("chunk.toast.loadFailure", Component.translationArg(pos)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
    }
 
-   public static void onChunkSaveFailure(Minecraft var0, ChunkPos var1) {
-      addOrUpdate(var0.getToastManager(), SystemToast.SystemToastId.CHUNK_SAVE_FAILURE, Component.translatable("chunk.toast.saveFailure", Component.translationArg(var1)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
-   }
-
-   // $FF: synthetic method
-   public Object getToken() {
-      return this.getToken();
+   public static void onChunkSaveFailure(final Minecraft minecraft, final ChunkPos pos) {
+      addOrUpdate(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_SAVE_FAILURE, Component.translatable("chunk.toast.saveFailure", Component.translationArg(pos)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
    }
 
    public static class SystemToastId {
@@ -174,11 +169,11 @@ public class SystemToast implements Toast {
       public static final SystemToastId CHUNK_LOAD_FAILURE = new SystemToastId();
       public static final SystemToastId CHUNK_SAVE_FAILURE = new SystemToastId();
       public static final SystemToastId UNSECURE_SERVER_WARNING = new SystemToastId(10000L);
-      final long displayTime;
+      private final long displayTime;
 
-      public SystemToastId(long var1) {
+      public SystemToastId(final long displayTime) {
          super();
-         this.displayTime = var1;
+         this.displayTime = displayTime;
       }
 
       public SystemToastId() {

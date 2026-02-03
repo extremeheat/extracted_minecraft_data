@@ -5,18 +5,14 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.DataFixTypes;
 
 public record SavedDataType<T extends SavedData>(String id, Supplier<T> constructor, Codec<T> codec, DataFixTypes dataFixType) {
-   public SavedDataType(String var1, Supplier<T> var2, Codec<T> var3, DataFixTypes var4) {
+   public SavedDataType {
       super();
-      this.id = var1;
-      this.constructor = var2;
-      this.codec = var3;
-      this.dataFixType = var4;
    }
 
-   public boolean equals(Object var1) {
+   public boolean equals(final Object obj) {
       boolean var10000;
-      if (var1 instanceof SavedDataType var2) {
-         if (this.id.equals(var2.id)) {
+      if (obj instanceof SavedDataType<?> type) {
+         if (this.id.equals(type.id)) {
             var10000 = true;
             return var10000;
          }

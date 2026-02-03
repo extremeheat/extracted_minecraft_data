@@ -5,9 +5,14 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.BinaryOperator;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -18,8 +23,13 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
 import net.minecraft.world.level.block.entity.FuelValues;
@@ -28,27 +38,77 @@ public interface SlotDisplay {
    Codec<SlotDisplay> CODEC = BuiltInRegistries.SLOT_DISPLAY.byNameCodec().dispatch(SlotDisplay::type, Type::codec);
    StreamCodec<RegistryFriendlyByteBuf, SlotDisplay> STREAM_CODEC = ByteBufCodecs.registry(Registries.SLOT_DISPLAY).dispatch(SlotDisplay::type, Type::streamCodec);
 
-   <T> Stream<T> resolve(ContextMap var1, DisplayContentsFactory<T> var2);
+   <T> Stream<T> resolve(ContextMap context, DisplayContentsFactory<T> builder);
 
    Type<? extends SlotDisplay> type();
 
-   default boolean isEnabled(FeatureFlagSet var1) {
+   default boolean isEnabled(final FeatureFlagSet enabledFeatures) {
       return true;
    }
 
-   default List<ItemStack> resolveForStacks(ContextMap var1) {
-      return this.resolve(var1, SlotDisplay.ItemStackContentsFactory.INSTANCE).toList();
+   default List<ItemStack> resolveForStacks(final ContextMap context) {
+      return this.resolve(context, SlotDisplay.ItemStackContentsFactory.INSTANCE).toList();
    }
 
-   default ItemStack resolveForFirstStack(ContextMap var1) {
-      return (ItemStack)this.resolve(var1, SlotDisplay.ItemStackContentsFactory.INSTANCE).findFirst().orElse(ItemStack.EMPTY);
+   default ItemStack resolveForFirstStack(final ContextMap context) {
+      return (ItemStack)this.resolve(context, SlotDisplay.ItemStackContentsFactory.INSTANCE).findFirst().orElse(ItemStack.EMPTY);
+   }
+
+   private static <T> Stream<T> applyDemoTransformation(final ContextMap context, final DisplayContentsFactory<T> factory, final SlotDisplay firstDisplay, final SlotDisplay secondDisplay, final RandomSource randomSource, final BinaryOperator<ItemStack> operation) {
+      if (factory instanceof DisplayContentsFactory.ForStacks<T> stacks) {
+         List<ItemStack> firstItems = firstDisplay.resolveForStacks(context);
+         if (firstItems.isEmpty()) {
+            return Stream.empty();
+         } else {
+            List<ItemStack> secondItems = secondDisplay.resolveForStacks(context);
+            if (secondItems.isEmpty()) {
+               return Stream.empty();
+            } else {
+               Stream var10000 = Stream.generate(() -> {
+                  ItemStack first = (ItemStack)Util.getRandom(firstItems, randomSource);
+                  ItemStack second = (ItemStack)Util.getRandom(secondItems, randomSource);
+                  return (ItemStack)operation.apply(first, second);
+               }).limit(256L).filter((s) -> !s.isEmpty()).limit(16L);
+               Objects.requireNonNull(stacks);
+               return var10000.map(stacks::forStack);
+            }
+         }
+      } else {
+         return Stream.empty();
+      }
+   }
+
+   private static <T> Stream<T> applyDemoTransformation(final ContextMap context, final DisplayContentsFactory<T> factory, final SlotDisplay firstDisplay, final SlotDisplay secondDisplay, final BinaryOperator<ItemStack> operation) {
+      if (factory instanceof DisplayContentsFactory.ForStacks<T> stacks) {
+         List<ItemStack> firstItems = firstDisplay.resolveForStacks(context);
+         if (firstItems.isEmpty()) {
+            return Stream.empty();
+         } else {
+            List<ItemStack> secondItems = secondDisplay.resolveForStacks(context);
+            if (secondItems.isEmpty()) {
+               return Stream.empty();
+            } else {
+               int cycle = firstItems.size() * secondItems.size();
+               Stream var10000 = IntStream.range(0, cycle).mapToObj((index) -> {
+                  int firstItemCount = firstItems.size();
+                  int firstItemIndex = index % firstItemCount;
+                  int secondItemIndex = index / firstItemCount;
+                  ItemStack first = (ItemStack)firstItems.get(firstItemIndex);
+                  ItemStack second = (ItemStack)secondItems.get(secondItemIndex);
+                  return (ItemStack)operation.apply(first, second);
+               }).filter((s) -> !s.isEmpty()).limit(16L);
+               Objects.requireNonNull(stacks);
+               return var10000.map(stacks::forStack);
+            }
+         }
+      } else {
+         return Stream.empty();
+      }
    }
 
    public static record Type<T extends SlotDisplay>(MapCodec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
-      public Type(MapCodec<T> var1, StreamCodec<RegistryFriendlyByteBuf, T> var2) {
+      public Type {
          super();
-         this.codec = var1;
-         this.streamCodec = var2;
       }
    }
 
@@ -59,13 +119,8 @@ public interface SlotDisplay {
          super();
       }
 
-      public ItemStack forStack(ItemStack var1) {
-         return var1;
-      }
-
-      // $FF: synthetic method
-      public Object forStack(final ItemStack var1) {
-         return this.forStack(var1);
+      public ItemStack forStack(final ItemStack stack) {
+         return stack;
       }
    }
 
@@ -87,7 +142,7 @@ public interface SlotDisplay {
          return "<empty>";
       }
 
-      public <T> Stream<T> resolve(ContextMap var1, DisplayContentsFactory<T> var2) {
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
          return Stream.empty();
       }
 
@@ -116,13 +171,13 @@ public interface SlotDisplay {
          return "<any fuel>";
       }
 
-      public <T> Stream<T> resolve(ContextMap var1, DisplayContentsFactory<T> var2) {
-         if (var2 instanceof DisplayContentsFactory.ForStacks var3) {
-            FuelValues var4 = (FuelValues)var1.getOptional(SlotDisplayContext.FUEL_VALUES);
-            if (var4 != null) {
-               Stream var10000 = var4.fuelItems().stream();
-               Objects.requireNonNull(var3);
-               return var10000.map(var3::forStack);
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
+         if (factory instanceof DisplayContentsFactory.ForStacks<T> stacks) {
+            FuelValues fuelValues = (FuelValues)context.getOptional(SlotDisplayContext.FUEL_VALUES);
+            if (fuelValues != null) {
+               Stream var10000 = fuelValues.fuelItems().stream();
+               Objects.requireNonNull(stacks);
+               return var10000.map(stacks::forStack);
             }
          }
 
@@ -136,48 +191,115 @@ public interface SlotDisplay {
       }
    }
 
+   public static record WithAnyPotion(SlotDisplay display) implements SlotDisplay {
+      public static final MapCodec<WithAnyPotion> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SlotDisplay.CODEC.fieldOf("contents").forGetter(WithAnyPotion::display)).apply(i, WithAnyPotion::new));
+      public static final StreamCodec<RegistryFriendlyByteBuf, WithAnyPotion> STREAM_CODEC;
+      public static final Type<WithAnyPotion> TYPE;
+
+      public WithAnyPotion {
+         super();
+      }
+
+      public Type<WithAnyPotion> type() {
+         return TYPE;
+      }
+
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
+         if (factory instanceof DisplayContentsFactory.ForStacks<T> stacks) {
+            List<ItemStack> displayItems = this.display.resolveForStacks(context);
+            Optional<? extends HolderLookup.RegistryLookup<Potion>> potions = Optional.ofNullable((HolderLookup.Provider)context.getOptional(SlotDisplayContext.REGISTRIES)).flatMap((r) -> r.lookup(Registries.POTION));
+            return potions.stream().flatMap(HolderLookup::listElements).flatMap((potion) -> {
+               PotionContents potionContents = new PotionContents(potion);
+               return displayItems.stream().map((item) -> {
+                  ItemStack itemCopy = item.copy();
+                  itemCopy.set(DataComponents.POTION_CONTENTS, potionContents);
+                  return stacks.forStack(itemCopy);
+               });
+            });
+         } else {
+            return Stream.empty();
+         }
+      }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(SlotDisplay.STREAM_CODEC, WithAnyPotion::display, WithAnyPotion::new);
+         TYPE = new Type<WithAnyPotion>(MAP_CODEC, STREAM_CODEC);
+      }
+   }
+
+   public static record OnlyWithComponent(SlotDisplay source, DataComponentType<?> component) implements SlotDisplay {
+      public static final MapCodec<OnlyWithComponent> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SlotDisplay.CODEC.fieldOf("contents").forGetter(OnlyWithComponent::source), DataComponentType.CODEC.fieldOf("component").forGetter(OnlyWithComponent::component)).apply(i, OnlyWithComponent::new));
+      public static final StreamCodec<RegistryFriendlyByteBuf, OnlyWithComponent> STREAM_CODEC;
+      public static final Type<OnlyWithComponent> TYPE;
+
+      public OnlyWithComponent {
+         super();
+      }
+
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> builder) {
+         if (builder instanceof DisplayContentsFactory.ForStacks<T> stacks) {
+            Stream var10000 = this.source.resolve(context, SlotDisplay.ItemStackContentsFactory.INSTANCE).filter((s) -> s.has(this.component));
+            Objects.requireNonNull(stacks);
+            return var10000.map(stacks::forStack);
+         } else {
+            return Stream.empty();
+         }
+      }
+
+      public Type<OnlyWithComponent> type() {
+         return TYPE;
+      }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(SlotDisplay.STREAM_CODEC, OnlyWithComponent::source, DataComponentType.STREAM_CODEC, OnlyWithComponent::component, OnlyWithComponent::new);
+         TYPE = new Type<OnlyWithComponent>(MAP_CODEC, STREAM_CODEC);
+      }
+   }
+
+   public static record DyedSlotDemo(SlotDisplay dye, SlotDisplay target) implements SlotDisplay {
+      public static final MapCodec<DyedSlotDemo> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SlotDisplay.CODEC.fieldOf("dye").forGetter(DyedSlotDemo::dye), SlotDisplay.CODEC.fieldOf("target").forGetter(DyedSlotDemo::target)).apply(i, DyedSlotDemo::new));
+      public static final StreamCodec<RegistryFriendlyByteBuf, DyedSlotDemo> STREAM_CODEC;
+      public static final Type<DyedSlotDemo> TYPE;
+
+      public DyedSlotDemo {
+         super();
+      }
+
+      public Type<DyedSlotDemo> type() {
+         return TYPE;
+      }
+
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
+         BinaryOperator<ItemStack> tranformation = (target, dye) -> {
+            DyeColor dyeValue = (DyeColor)dye.getOrDefault(DataComponents.DYE, DyeColor.WHITE);
+            return DyedItemColor.applyDyes(target.copy(), List.of(dyeValue));
+         };
+         return SlotDisplay.<T>applyDemoTransformation(context, factory, this.target, this.dye, tranformation);
+      }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(SlotDisplay.STREAM_CODEC, DyedSlotDemo::dye, SlotDisplay.STREAM_CODEC, DyedSlotDemo::target, DyedSlotDemo::new);
+         TYPE = new Type<DyedSlotDemo>(MAP_CODEC, STREAM_CODEC);
+      }
+   }
+
    public static record SmithingTrimDemoSlotDisplay(SlotDisplay base, SlotDisplay material, Holder<TrimPattern> pattern) implements SlotDisplay {
-      public static final MapCodec<SmithingTrimDemoSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SlotDisplay.CODEC.fieldOf("base").forGetter(SmithingTrimDemoSlotDisplay::base), SlotDisplay.CODEC.fieldOf("material").forGetter(SmithingTrimDemoSlotDisplay::material), TrimPattern.CODEC.fieldOf("pattern").forGetter(SmithingTrimDemoSlotDisplay::pattern)).apply(var0, SmithingTrimDemoSlotDisplay::new));
+      public static final MapCodec<SmithingTrimDemoSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SlotDisplay.CODEC.fieldOf("base").forGetter(SmithingTrimDemoSlotDisplay::base), SlotDisplay.CODEC.fieldOf("material").forGetter(SmithingTrimDemoSlotDisplay::material), TrimPattern.CODEC.fieldOf("pattern").forGetter(SmithingTrimDemoSlotDisplay::pattern)).apply(i, SmithingTrimDemoSlotDisplay::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, SmithingTrimDemoSlotDisplay> STREAM_CODEC;
       public static final Type<SmithingTrimDemoSlotDisplay> TYPE;
 
-      public SmithingTrimDemoSlotDisplay(SlotDisplay var1, SlotDisplay var2, Holder<TrimPattern> var3) {
+      public SmithingTrimDemoSlotDisplay {
          super();
-         this.base = var1;
-         this.material = var2;
-         this.pattern = var3;
       }
 
       public Type<SmithingTrimDemoSlotDisplay> type() {
          return TYPE;
       }
 
-      public <T> Stream<T> resolve(ContextMap var1, DisplayContentsFactory<T> var2) {
-         if (var2 instanceof DisplayContentsFactory.ForStacks var3) {
-            HolderLookup.Provider var4 = (HolderLookup.Provider)var1.getOptional(SlotDisplayContext.REGISTRIES);
-            if (var4 != null) {
-               RandomSource var5 = RandomSource.create((long)System.identityHashCode(this));
-               List var6 = this.base.resolveForStacks(var1);
-               if (var6.isEmpty()) {
-                  return Stream.empty();
-               }
-
-               List var7 = this.material.resolveForStacks(var1);
-               if (var7.isEmpty()) {
-                  return Stream.empty();
-               }
-
-               Stream var10000 = Stream.generate(() -> {
-                  ItemStack var5x = (ItemStack)Util.getRandom(var6, var5);
-                  ItemStack var6x = (ItemStack)Util.getRandom(var7, var5);
-                  return SmithingTrimRecipe.applyTrim(var4, var5x, var6x, this.pattern);
-               }).limit(256L).filter((var0) -> !var0.isEmpty()).limit(16L);
-               Objects.requireNonNull(var3);
-               return var10000.map(var3::forStack);
-            }
-         }
-
-         return Stream.empty();
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
+         RandomSource randomSource = RandomSource.create((long)System.identityHashCode(this));
+         BinaryOperator<ItemStack> tranformation = (base, material) -> SmithingTrimRecipe.applyTrim(base, material, this.pattern);
+         return SlotDisplay.<T>applyDemoTransformation(context, factory, this.base, this.material, randomSource, tranformation);
       }
 
       static {
@@ -187,33 +309,32 @@ public interface SlotDisplay {
    }
 
    public static record ItemSlotDisplay(Holder<Item> item) implements SlotDisplay {
-      public static final MapCodec<ItemSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Item.CODEC.fieldOf("item").forGetter(ItemSlotDisplay::item)).apply(var0, ItemSlotDisplay::new));
+      public static final MapCodec<ItemSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Item.CODEC.fieldOf("item").forGetter(ItemSlotDisplay::item)).apply(i, ItemSlotDisplay::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, ItemSlotDisplay> STREAM_CODEC;
       public static final Type<ItemSlotDisplay> TYPE;
 
-      public ItemSlotDisplay(Item var1) {
-         this((Holder)var1.builtInRegistryHolder());
+      public ItemSlotDisplay(final Item item) {
+         this((Holder)item.builtInRegistryHolder());
       }
 
-      public ItemSlotDisplay(Holder<Item> var1) {
+      public ItemSlotDisplay {
          super();
-         this.item = var1;
       }
 
       public Type<ItemSlotDisplay> type() {
          return TYPE;
       }
 
-      public <T> Stream<T> resolve(ContextMap var1, DisplayContentsFactory<T> var2) {
-         if (var2 instanceof DisplayContentsFactory.ForStacks var3) {
-            return Stream.of(var3.forStack(this.item));
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
+         if (factory instanceof DisplayContentsFactory.ForStacks<T> stacks) {
+            return Stream.of(stacks.forStack(this.item));
          } else {
             return Stream.empty();
          }
       }
 
-      public boolean isEnabled(FeatureFlagSet var1) {
-         return ((Item)this.item.value()).isEnabled(var1);
+      public boolean isEnabled(final FeatureFlagSet enabledFeatures) {
+         return ((Item)this.item.value()).isEnabled(enabledFeatures);
       }
 
       static {
@@ -222,81 +343,59 @@ public interface SlotDisplay {
       }
    }
 
-   public static record ItemStackSlotDisplay(ItemStack stack) implements SlotDisplay {
-      public static final MapCodec<ItemStackSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ItemStack.STRICT_CODEC.fieldOf("item").forGetter(ItemStackSlotDisplay::stack)).apply(var0, ItemStackSlotDisplay::new));
+   public static record ItemStackSlotDisplay(ItemStackTemplate stack) implements SlotDisplay {
+      public static final MapCodec<ItemStackSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ItemStackTemplate.CODEC.fieldOf("item").forGetter(ItemStackSlotDisplay::stack)).apply(i, ItemStackSlotDisplay::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, ItemStackSlotDisplay> STREAM_CODEC;
       public static final Type<ItemStackSlotDisplay> TYPE;
 
-      public ItemStackSlotDisplay(ItemStack var1) {
+      public ItemStackSlotDisplay {
          super();
-         this.stack = var1;
       }
 
       public Type<ItemStackSlotDisplay> type() {
          return TYPE;
       }
 
-      public <T> Stream<T> resolve(ContextMap var1, DisplayContentsFactory<T> var2) {
-         if (var2 instanceof DisplayContentsFactory.ForStacks var3) {
-            return Stream.of(var3.forStack(this.stack));
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
+         if (factory instanceof DisplayContentsFactory.ForStacks<T> stacks) {
+            return Stream.of(stacks.forStack(this.stack.create()));
          } else {
             return Stream.empty();
          }
       }
 
-      public boolean equals(Object var1) {
-         boolean var10000;
-         if (this != var1) {
-            label26: {
-               if (var1 instanceof ItemStackSlotDisplay) {
-                  ItemStackSlotDisplay var2 = (ItemStackSlotDisplay)var1;
-                  if (ItemStack.matches(this.stack, var2.stack)) {
-                     break label26;
-                  }
-               }
-
-               var10000 = false;
-               return var10000;
-            }
-         }
-
-         var10000 = true;
-         return var10000;
-      }
-
-      public boolean isEnabled(FeatureFlagSet var1) {
-         return this.stack.getItem().isEnabled(var1);
+      public boolean isEnabled(final FeatureFlagSet enabledFeatures) {
+         return ((Item)this.stack.item().value()).isEnabled(enabledFeatures);
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(ItemStack.STREAM_CODEC, ItemStackSlotDisplay::stack, ItemStackSlotDisplay::new);
+         STREAM_CODEC = StreamCodec.composite(ItemStackTemplate.STREAM_CODEC, ItemStackSlotDisplay::stack, ItemStackSlotDisplay::new);
          TYPE = new Type<ItemStackSlotDisplay>(MAP_CODEC, STREAM_CODEC);
       }
    }
 
    public static record TagSlotDisplay(TagKey<Item> tag) implements SlotDisplay {
-      public static final MapCodec<TagSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TagKey.codec(Registries.ITEM).fieldOf("tag").forGetter(TagSlotDisplay::tag)).apply(var0, TagSlotDisplay::new));
+      public static final MapCodec<TagSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TagKey.codec(Registries.ITEM).fieldOf("tag").forGetter(TagSlotDisplay::tag)).apply(i, TagSlotDisplay::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, TagSlotDisplay> STREAM_CODEC;
       public static final Type<TagSlotDisplay> TYPE;
 
-      public TagSlotDisplay(TagKey<Item> var1) {
+      public TagSlotDisplay {
          super();
-         this.tag = var1;
       }
 
       public Type<TagSlotDisplay> type() {
          return TYPE;
       }
 
-      public <T> Stream<T> resolve(ContextMap var1, DisplayContentsFactory<T> var2) {
-         if (var2 instanceof DisplayContentsFactory.ForStacks var3) {
-            HolderLookup.Provider var4 = (HolderLookup.Provider)var1.getOptional(SlotDisplayContext.REGISTRIES);
-            if (var4 != null) {
-               return var4.lookupOrThrow(Registries.ITEM).get(this.tag).map((var1x) -> {
-                  Stream var10000 = var1x.stream();
-                  Objects.requireNonNull(var3);
-                  return var10000.map(var3::forStack);
-               }).stream().flatMap((var0) -> var0);
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
+         if (factory instanceof DisplayContentsFactory.ForStacks<T> stacks) {
+            HolderLookup.Provider registries = (HolderLookup.Provider)context.getOptional(SlotDisplayContext.REGISTRIES);
+            if (registries != null) {
+               return registries.lookupOrThrow(Registries.ITEM).get(this.tag).map((t) -> {
+                  Stream var10000 = t.stream();
+                  Objects.requireNonNull(stacks);
+                  return var10000.map(stacks::forStack);
+               }).stream().flatMap((s) -> s);
             }
          }
 
@@ -310,25 +409,24 @@ public interface SlotDisplay {
    }
 
    public static record Composite(List<SlotDisplay> contents) implements SlotDisplay {
-      public static final MapCodec<Composite> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SlotDisplay.CODEC.listOf().fieldOf("contents").forGetter(Composite::contents)).apply(var0, Composite::new));
+      public static final MapCodec<Composite> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SlotDisplay.CODEC.listOf().fieldOf("contents").forGetter(Composite::contents)).apply(i, Composite::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, Composite> STREAM_CODEC;
       public static final Type<Composite> TYPE;
 
-      public Composite(List<SlotDisplay> var1) {
+      public Composite {
          super();
-         this.contents = var1;
       }
 
       public Type<Composite> type() {
          return TYPE;
       }
 
-      public <T> Stream<T> resolve(ContextMap var1, DisplayContentsFactory<T> var2) {
-         return this.contents.stream().flatMap((var2x) -> var2x.resolve(var1, var2));
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
+         return this.contents.stream().flatMap((d) -> d.resolve(context, factory));
       }
 
-      public boolean isEnabled(FeatureFlagSet var1) {
-         return this.contents.stream().allMatch((var1x) -> var1x.isEnabled(var1));
+      public boolean isEnabled(final FeatureFlagSet enabledFeatures) {
+         return this.contents.stream().allMatch((c) -> c.isEnabled(enabledFeatures));
       }
 
       static {
@@ -338,31 +436,29 @@ public interface SlotDisplay {
    }
 
    public static record WithRemainder(SlotDisplay input, SlotDisplay remainder) implements SlotDisplay {
-      public static final MapCodec<WithRemainder> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SlotDisplay.CODEC.fieldOf("input").forGetter(WithRemainder::input), SlotDisplay.CODEC.fieldOf("remainder").forGetter(WithRemainder::remainder)).apply(var0, WithRemainder::new));
+      public static final MapCodec<WithRemainder> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SlotDisplay.CODEC.fieldOf("input").forGetter(WithRemainder::input), SlotDisplay.CODEC.fieldOf("remainder").forGetter(WithRemainder::remainder)).apply(i, WithRemainder::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, WithRemainder> STREAM_CODEC;
       public static final Type<WithRemainder> TYPE;
 
-      public WithRemainder(SlotDisplay var1, SlotDisplay var2) {
+      public WithRemainder {
          super();
-         this.input = var1;
-         this.remainder = var2;
       }
 
       public Type<WithRemainder> type() {
          return TYPE;
       }
 
-      public <T> Stream<T> resolve(ContextMap var1, DisplayContentsFactory<T> var2) {
-         if (var2 instanceof DisplayContentsFactory.ForRemainders var3) {
-            List var4 = this.remainder.resolve(var1, var2).toList();
-            return this.input.resolve(var1, var2).map((var2x) -> var3.addRemainder(var2x, var4));
+      public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
+         if (factory instanceof DisplayContentsFactory.ForRemainders<T> remainders) {
+            List<T> resolvedRemainders = this.remainder.resolve(context, factory).toList();
+            return this.input.resolve(context, factory).map((input) -> remainders.addRemainder(input, resolvedRemainders));
          } else {
-            return this.input.<T>resolve(var1, var2);
+            return this.input.<T>resolve(context, factory);
          }
       }
 
-      public boolean isEnabled(FeatureFlagSet var1) {
-         return this.input.isEnabled(var1) && this.remainder.isEnabled(var1);
+      public boolean isEnabled(final FeatureFlagSet enabledFeatures) {
+         return this.input.isEnabled(enabledFeatures) && this.remainder.isEnabled(enabledFeatures);
       }
 
       static {

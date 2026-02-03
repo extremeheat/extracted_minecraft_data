@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.EnumSet;
+import java.util.Set;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.EndPortalRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
@@ -19,45 +19,45 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntity, S extends EndPortalRenderState> implements BlockEntityRenderer<T, S> {
    public static final Identifier END_SKY_LOCATION = Identifier.withDefaultNamespace("textures/environment/end_sky.png");
-   public static final Identifier END_PORTAL_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_portal.png");
+   public static final Identifier END_PORTAL_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_portal/end_portal.png");
 
    public AbstractEndPortalRenderer() {
       super();
    }
 
-   public void extractRenderState(T var1, S var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
-      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
-      var2.facesToShow.clear();
+   public void extractRenderState(final T blockEntity, final S state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+      state.facesToShow.clear();
 
-      for(Direction var9 : Direction.values()) {
-         if (var1.shouldRenderFace(var9)) {
-            var2.facesToShow.add(var9);
+      for(Direction direction : Direction.values()) {
+         if (blockEntity.shouldRenderFace(direction)) {
+            state.facesToShow.add(direction);
          }
       }
 
    }
 
-   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      var3.submitCustomGeometry(var2, this.renderType(), (var2x, var3x) -> this.renderCube(var1.facesToShow, var2x.pose(), var3x));
+   public void submit(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      submitNodeCollector.submitCustomGeometry(poseStack, this.renderType(), (pose1, buffer) -> this.renderCube(state.facesToShow, pose1.pose(), buffer));
    }
 
-   private void renderCube(EnumSet<Direction> var1, Matrix4f var2, VertexConsumer var3) {
-      float var4 = this.getOffsetDown();
-      float var5 = this.getOffsetUp();
-      this.renderFace(var1, var2, var3, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, Direction.SOUTH);
-      this.renderFace(var1, var2, var3, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, Direction.NORTH);
-      this.renderFace(var1, var2, var3, 1.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, Direction.EAST);
-      this.renderFace(var1, var2, var3, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 0.0F, Direction.WEST);
-      this.renderFace(var1, var2, var3, 0.0F, 1.0F, var4, var4, 0.0F, 0.0F, 1.0F, 1.0F, Direction.DOWN);
-      this.renderFace(var1, var2, var3, 0.0F, 1.0F, var5, var5, 1.0F, 1.0F, 0.0F, 0.0F, Direction.UP);
+   private void renderCube(final Set<Direction> facesToShow, final Matrix4f pose, final VertexConsumer builder) {
+      float offsetDown = this.getOffsetDown();
+      float offsetUp = this.getOffsetUp();
+      renderFace(facesToShow, pose, builder, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, Direction.SOUTH);
+      renderFace(facesToShow, pose, builder, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, Direction.NORTH);
+      renderFace(facesToShow, pose, builder, 1.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, Direction.EAST);
+      renderFace(facesToShow, pose, builder, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 0.0F, Direction.WEST);
+      renderFace(facesToShow, pose, builder, 0.0F, 1.0F, offsetDown, offsetDown, 0.0F, 0.0F, 1.0F, 1.0F, Direction.DOWN);
+      renderFace(facesToShow, pose, builder, 0.0F, 1.0F, offsetUp, offsetUp, 1.0F, 1.0F, 0.0F, 0.0F, Direction.UP);
    }
 
-   private void renderFace(EnumSet<Direction> var1, Matrix4f var2, VertexConsumer var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, Direction var12) {
-      if (var1.contains(var12)) {
-         var3.addVertex((Matrix4fc)var2, var4, var6, var8);
-         var3.addVertex((Matrix4fc)var2, var5, var6, var9);
-         var3.addVertex((Matrix4fc)var2, var5, var7, var10);
-         var3.addVertex((Matrix4fc)var2, var4, var7, var11);
+   private static void renderFace(final Set<Direction> facesToShow, final Matrix4f pose, final VertexConsumer builder, final float x1, final float x2, final float y1, final float y2, final float z1, final float z2, final float z3, final float z4, final Direction face) {
+      if (facesToShow.contains(face)) {
+         builder.addVertex((Matrix4fc)pose, x1, y1, z1);
+         builder.addVertex((Matrix4fc)pose, x2, y1, z2);
+         builder.addVertex((Matrix4fc)pose, x2, y2, z3);
+         builder.addVertex((Matrix4fc)pose, x1, y2, z4);
       }
 
    }

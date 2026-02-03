@@ -17,30 +17,30 @@ public class HeaderAndFooterLayout implements Layout {
    private int headerHeight;
    private int footerHeight;
 
-   public HeaderAndFooterLayout(Screen var1) {
-      this(var1, 33);
+   public HeaderAndFooterLayout(final Screen screen) {
+      this(screen, 33);
    }
 
-   public HeaderAndFooterLayout(Screen var1, int var2) {
-      this(var1, var2, var2);
+   public HeaderAndFooterLayout(final Screen screen, final int headerAndFooterHeight) {
+      this(screen, headerAndFooterHeight, headerAndFooterHeight);
    }
 
-   public HeaderAndFooterLayout(Screen var1, int var2, int var3) {
+   public HeaderAndFooterLayout(final Screen screen, final int headerHeight, final int footerHeight) {
       super();
       this.headerFrame = new FrameLayout();
       this.footerFrame = new FrameLayout();
       this.contentsFrame = new FrameLayout();
-      this.screen = var1;
-      this.headerHeight = var2;
-      this.footerHeight = var3;
+      this.screen = screen;
+      this.headerHeight = headerHeight;
+      this.footerHeight = footerHeight;
       this.headerFrame.defaultChildLayoutSetting().align(0.5F, 0.5F);
       this.footerFrame.defaultChildLayoutSetting().align(0.5F, 0.5F);
    }
 
-   public void setX(int var1) {
+   public void setX(final int x) {
    }
 
-   public void setY(int var1) {
+   public void setY(final int y) {
    }
 
    public int getX() {
@@ -63,12 +63,12 @@ public class HeaderAndFooterLayout implements Layout {
       return this.footerHeight;
    }
 
-   public void setFooterHeight(int var1) {
-      this.footerHeight = var1;
+   public void setFooterHeight(final int footerHeight) {
+      this.footerHeight = footerHeight;
    }
 
-   public void setHeaderHeight(int var1) {
-      this.headerHeight = var1;
+   public void setHeaderHeight(final int headerHeight) {
+      this.headerHeight = headerHeight;
    }
 
    public int getHeaderHeight() {
@@ -79,55 +79,55 @@ public class HeaderAndFooterLayout implements Layout {
       return this.screen.height - this.getHeaderHeight() - this.getFooterHeight();
    }
 
-   public void visitChildren(Consumer<LayoutElement> var1) {
-      this.headerFrame.visitChildren(var1);
-      this.contentsFrame.visitChildren(var1);
-      this.footerFrame.visitChildren(var1);
+   public void visitChildren(final Consumer<LayoutElement> layoutElementVisitor) {
+      this.headerFrame.visitChildren(layoutElementVisitor);
+      this.contentsFrame.visitChildren(layoutElementVisitor);
+      this.footerFrame.visitChildren(layoutElementVisitor);
    }
 
    public void arrangeElements() {
-      int var1 = this.getHeaderHeight();
-      int var2 = this.getFooterHeight();
+      int headerHeight = this.getHeaderHeight();
+      int footerHeight = this.getFooterHeight();
       this.headerFrame.setMinWidth(this.screen.width);
-      this.headerFrame.setMinHeight(var1);
+      this.headerFrame.setMinHeight(headerHeight);
       this.headerFrame.setPosition(0, 0);
       this.headerFrame.arrangeElements();
       this.footerFrame.setMinWidth(this.screen.width);
-      this.footerFrame.setMinHeight(var2);
+      this.footerFrame.setMinHeight(footerHeight);
       this.footerFrame.arrangeElements();
-      this.footerFrame.setY(this.screen.height - var2);
+      this.footerFrame.setY(this.screen.height - footerHeight);
       this.contentsFrame.setMinWidth(this.screen.width);
       this.contentsFrame.arrangeElements();
-      int var3 = var1 + 30;
-      int var4 = this.screen.height - var2 - this.contentsFrame.getHeight();
-      this.contentsFrame.setPosition(0, Math.min(var3, var4));
+      int preferredContentY = headerHeight + 30;
+      int maxContentY = this.screen.height - footerHeight - this.contentsFrame.getHeight();
+      this.contentsFrame.setPosition(0, Math.min(preferredContentY, maxContentY));
    }
 
-   public <T extends LayoutElement> T addToHeader(T var1) {
-      return (T)this.headerFrame.addChild(var1);
+   public <T extends LayoutElement> T addToHeader(final T child) {
+      return (T)this.headerFrame.addChild(child);
    }
 
-   public <T extends LayoutElement> T addToHeader(T var1, Consumer<LayoutSettings> var2) {
-      return (T)this.headerFrame.addChild(var1, var2);
+   public <T extends LayoutElement> T addToHeader(final T child, final Consumer<LayoutSettings> layoutSettingsAdjustments) {
+      return (T)this.headerFrame.addChild(child, layoutSettingsAdjustments);
    }
 
-   public void addTitleHeader(Component var1, Font var2) {
-      this.headerFrame.addChild(new StringWidget(var1, var2));
+   public void addTitleHeader(final Component component, final Font font) {
+      this.headerFrame.addChild(new StringWidget(component, font));
    }
 
-   public <T extends LayoutElement> T addToFooter(T var1) {
-      return (T)this.footerFrame.addChild(var1);
+   public <T extends LayoutElement> T addToFooter(final T child) {
+      return (T)this.footerFrame.addChild(child);
    }
 
-   public <T extends LayoutElement> T addToFooter(T var1, Consumer<LayoutSettings> var2) {
-      return (T)this.footerFrame.addChild(var1, var2);
+   public <T extends LayoutElement> T addToFooter(final T child, final Consumer<LayoutSettings> layoutSettingsAdjustments) {
+      return (T)this.footerFrame.addChild(child, layoutSettingsAdjustments);
    }
 
-   public <T extends LayoutElement> T addToContents(T var1) {
-      return (T)this.contentsFrame.addChild(var1);
+   public <T extends LayoutElement> T addToContents(final T child) {
+      return (T)this.contentsFrame.addChild(child);
    }
 
-   public <T extends LayoutElement> T addToContents(T var1, Consumer<LayoutSettings> var2) {
-      return (T)this.contentsFrame.addChild(var1, var2);
+   public <T extends LayoutElement> T addToContents(final T child, final Consumer<LayoutSettings> layoutSettingsAdjustments) {
+      return (T)this.contentsFrame.addChild(child, layoutSettingsAdjustments);
    }
 }

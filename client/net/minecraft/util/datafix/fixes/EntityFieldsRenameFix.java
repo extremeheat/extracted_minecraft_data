@@ -9,20 +9,20 @@ import java.util.Map;
 public class EntityFieldsRenameFix extends NamedEntityFix {
    private final Map<String, String> renames;
 
-   public EntityFieldsRenameFix(Schema var1, String var2, String var3, Map<String, String> var4) {
-      super(var1, false, var2, References.ENTITY, var3);
-      this.renames = var4;
+   public EntityFieldsRenameFix(final Schema outputSchema, final String name, final String entityType, final Map<String, String> renames) {
+      super(outputSchema, false, name, References.ENTITY, entityType);
+      this.renames = renames;
    }
 
-   public Dynamic<?> fixTag(Dynamic<?> var1) {
-      for(Map.Entry var3 : this.renames.entrySet()) {
-         var1 = var1.renameField((String)var3.getKey(), (String)var3.getValue());
+   public Dynamic<?> fixTag(Dynamic<?> data) {
+      for(Map.Entry<String, String> entry : this.renames.entrySet()) {
+         data = data.renameField((String)entry.getKey(), (String)entry.getValue());
       }
 
-      return var1;
+      return data;
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fixTag);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), this::fixTag);
    }
 }

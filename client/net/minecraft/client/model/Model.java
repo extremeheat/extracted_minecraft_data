@@ -14,23 +14,23 @@ public abstract class Model<S> {
    protected final Function<Identifier, RenderType> renderType;
    private final List<ModelPart> allParts;
 
-   public Model(ModelPart var1, Function<Identifier, RenderType> var2) {
+   public Model(final ModelPart root, final Function<Identifier, RenderType> renderType) {
       super();
-      this.root = var1;
-      this.renderType = var2;
-      this.allParts = var1.getAllParts();
+      this.root = root;
+      this.renderType = renderType;
+      this.allParts = root.getAllParts();
    }
 
-   public final RenderType renderType(Identifier var1) {
-      return (RenderType)this.renderType.apply(var1);
+   public final RenderType renderType(final Identifier texture) {
+      return (RenderType)this.renderType.apply(texture);
    }
 
-   public final void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-      this.root().render(var1, var2, var3, var4, var5);
+   public final void renderToBuffer(final PoseStack poseStack, final VertexConsumer buffer, final int lightCoords, final int overlayCoords, final int color) {
+      this.root().render(poseStack, buffer, lightCoords, overlayCoords, color);
    }
 
-   public final void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4) {
-      this.renderToBuffer(var1, var2, var3, var4, -1);
+   public final void renderToBuffer(final PoseStack poseStack, final VertexConsumer buffer, final int lightCoords, final int overlayCoords) {
+      this.renderToBuffer(poseStack, buffer, lightCoords, overlayCoords, -1);
    }
 
    public final ModelPart root() {
@@ -41,23 +41,23 @@ public abstract class Model<S> {
       return this.allParts;
    }
 
-   public void setupAnim(S var1) {
+   public void setupAnim(final S state) {
       this.resetPose();
    }
 
    public final void resetPose() {
-      for(ModelPart var2 : this.allParts) {
-         var2.resetPose();
+      for(ModelPart part : this.allParts) {
+         part.resetPose();
       }
 
    }
 
    public static class Simple extends Model<Unit> {
-      public Simple(ModelPart var1, Function<Identifier, RenderType> var2) {
-         super(var1, var2);
+      public Simple(final ModelPart root, final Function<Identifier, RenderType> renderType) {
+         super(root, renderType);
       }
 
-      public void setupAnim(Unit var1) {
+      public void setupAnim(final Unit state) {
       }
    }
 }

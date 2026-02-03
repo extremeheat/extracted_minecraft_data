@@ -17,22 +17,21 @@ public record ClientboundCustomPayloadPacket(CustomPacketPayload payload) implem
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCustomPayloadPacket> GAMEPLAY_STREAM_CODEC;
    public static final StreamCodec<FriendlyByteBuf, ClientboundCustomPayloadPacket> CONFIG_STREAM_CODEC;
 
-   public ClientboundCustomPayloadPacket(CustomPacketPayload var1) {
+   public ClientboundCustomPayloadPacket {
       super();
-      this.payload = var1;
    }
 
    public PacketType<ClientboundCustomPayloadPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_CUSTOM_PAYLOAD;
    }
 
-   public void handle(ClientCommonPacketListener var1) {
-      var1.handleCustomPayload(this);
+   public void handle(final ClientCommonPacketListener listener) {
+      listener.handleCustomPayload(this);
    }
 
    static {
-      GAMEPLAY_STREAM_CODEC = CustomPacketPayload.codec((CustomPacketPayload.FallbackProvider)((var0) -> DiscardedPayload.codec(var0, 1048576)), (List)Util.make(Lists.newArrayList(new CustomPacketPayload.TypeAndCodec[]{new CustomPacketPayload.TypeAndCodec(BrandPayload.TYPE, BrandPayload.STREAM_CODEC)}), (var0) -> {
+      GAMEPLAY_STREAM_CODEC = CustomPacketPayload.codec((CustomPacketPayload.FallbackProvider)((id) -> DiscardedPayload.codec(id, 1048576)), (List)Util.make(Lists.newArrayList(new CustomPacketPayload.TypeAndCodec[]{new CustomPacketPayload.TypeAndCodec(BrandPayload.TYPE, BrandPayload.STREAM_CODEC)}), (types) -> {
       })).map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
-      CONFIG_STREAM_CODEC = CustomPacketPayload.codec((CustomPacketPayload.FallbackProvider)((var0) -> DiscardedPayload.codec(var0, 1048576)), List.of(new CustomPacketPayload.TypeAndCodec(BrandPayload.TYPE, BrandPayload.STREAM_CODEC))).map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
+      CONFIG_STREAM_CODEC = CustomPacketPayload.codec((CustomPacketPayload.FallbackProvider)((id) -> DiscardedPayload.codec(id, 1048576)), List.of(new CustomPacketPayload.TypeAndCodec(BrandPayload.TYPE, BrandPayload.STREAM_CODEC))).map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
    }
 }

@@ -14,13 +14,13 @@ public class BlockStateProviderType<P extends BlockStateProvider> {
    public static final BlockStateProviderType<RandomizedIntStateProvider> RANDOMIZED_INT_STATE_PROVIDER;
    private final MapCodec<P> codec;
 
-   private static <P extends BlockStateProvider> BlockStateProviderType<P> register(String var0, MapCodec<P> var1) {
-      return (BlockStateProviderType)Registry.register(BuiltInRegistries.BLOCKSTATE_PROVIDER_TYPE, (String)var0, new BlockStateProviderType(var1));
+   private static <P extends BlockStateProvider> BlockStateProviderType<P> register(final String name, final MapCodec<P> codec) {
+      return (BlockStateProviderType)Registry.register(BuiltInRegistries.BLOCKSTATE_PROVIDER_TYPE, (String)name, new BlockStateProviderType(codec));
    }
 
-   private BlockStateProviderType(MapCodec<P> var1) {
+   private BlockStateProviderType(final MapCodec<P> codec) {
       super();
-      this.codec = var1;
+      this.codec = codec;
    }
 
    public MapCodec<P> codec() {

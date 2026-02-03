@@ -2,47 +2,42 @@ package net.minecraft.client.renderer.entity;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
+import net.minecraft.client.model.animal.cow.BabyCowModel;
 import net.minecraft.client.model.animal.cow.CowModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.MushroomCowMushroomLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.MushroomCowRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
 
 public class MushroomCowRenderer extends AgeableMobRenderer<MushroomCow, MushroomCowRenderState, CowModel> {
-   private static final Map<MushroomCow.Variant, Identifier> TEXTURES = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      var0.put(MushroomCow.Variant.BROWN, Identifier.withDefaultNamespace("textures/entity/cow/brown_mooshroom.png"));
-      var0.put(MushroomCow.Variant.RED, Identifier.withDefaultNamespace("textures/entity/cow/red_mooshroom.png"));
+   private static final Map<MushroomCow.Variant, MushroomCowTexture> TEXTURES = (Map)Util.make(Maps.newHashMap(), (map) -> {
+      map.put(MushroomCow.Variant.BROWN, new MushroomCowTexture(Identifier.withDefaultNamespace("textures/entity/cow/mooshroom_brown.png"), Identifier.withDefaultNamespace("textures/entity/cow/mooshroom_brown_baby.png")));
+      map.put(MushroomCow.Variant.RED, new MushroomCowTexture(Identifier.withDefaultNamespace("textures/entity/cow/mooshroom_red.png"), Identifier.withDefaultNamespace("textures/entity/cow/mooshroom_red_baby.png")));
    });
 
-   public MushroomCowRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new CowModel(var1.bakeLayer(ModelLayers.MOOSHROOM)), new CowModel(var1.bakeLayer(ModelLayers.MOOSHROOM_BABY)), 0.7F);
-      this.addLayer(new MushroomCowMushroomLayer(this, var1.getBlockRenderDispatcher()));
+   public MushroomCowRenderer(final EntityRendererProvider.Context context) {
+      super(context, new CowModel(context.bakeLayer(ModelLayers.MOOSHROOM)), new BabyCowModel(context.bakeLayer(ModelLayers.MOOSHROOM_BABY)), 0.7F);
+      this.addLayer(new MushroomCowMushroomLayer(this, context.getBlockRenderDispatcher()));
    }
 
-   public Identifier getTextureLocation(MushroomCowRenderState var1) {
-      return (Identifier)TEXTURES.get(var1.variant);
+   public Identifier getTextureLocation(final MushroomCowRenderState state) {
+      return state.isBaby ? ((MushroomCowTexture)TEXTURES.get(state.variant)).baby : ((MushroomCowTexture)TEXTURES.get(state.variant)).adult;
    }
 
    public MushroomCowRenderState createRenderState() {
       return new MushroomCowRenderState();
    }
 
-   public void extractRenderState(MushroomCow var1, MushroomCowRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.variant = var1.getVariant();
+   public void extractRenderState(final MushroomCow entity, final MushroomCowRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.variant = entity.getVariant();
    }
 
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((MushroomCowRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   private static record MushroomCowTexture(Identifier adult, Identifier baby) {
+      private MushroomCowTexture {
+         super();
+      }
    }
 }

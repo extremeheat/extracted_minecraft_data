@@ -25,68 +25,68 @@ public interface RandomizableContainer extends Container {
 
    @Nullable ResourceKey<LootTable> getLootTable();
 
-   void setLootTable(@Nullable ResourceKey<LootTable> var1);
+   void setLootTable(final @Nullable ResourceKey<LootTable> lootTable);
 
-   default void setLootTable(ResourceKey<LootTable> var1, long var2) {
-      this.setLootTable(var1);
-      this.setLootTableSeed(var2);
+   default void setLootTable(final ResourceKey<LootTable> lootTable, final long seed) {
+      this.setLootTable(lootTable);
+      this.setLootTableSeed(seed);
    }
 
    long getLootTableSeed();
 
-   void setLootTableSeed(long var1);
+   void setLootTableSeed(final long lootTableSeed);
 
    BlockPos getBlockPos();
 
    @Nullable Level getLevel();
 
-   static void setBlockEntityLootTable(BlockGetter var0, RandomSource var1, BlockPos var2, ResourceKey<LootTable> var3) {
-      BlockEntity var4 = var0.getBlockEntity(var2);
-      if (var4 instanceof RandomizableContainer var5) {
-         var5.setLootTable(var3, var1.nextLong());
+   static void setBlockEntityLootTable(final BlockGetter level, final RandomSource random, final BlockPos blockEntityPos, final ResourceKey<LootTable> lootTable) {
+      BlockEntity blockEntity = level.getBlockEntity(blockEntityPos);
+      if (blockEntity instanceof RandomizableContainer randomizableContainer) {
+         randomizableContainer.setLootTable(lootTable, random.nextLong());
       }
 
    }
 
-   default boolean tryLoadLootTable(ValueInput var1) {
-      ResourceKey var2 = (ResourceKey)var1.read("LootTable", LootTable.KEY_CODEC).orElse((Object)null);
-      this.setLootTable(var2);
-      this.setLootTableSeed(var1.getLongOr("LootTableSeed", 0L));
-      return var2 != null;
+   default boolean tryLoadLootTable(final ValueInput base) {
+      ResourceKey<LootTable> lootTable = (ResourceKey)base.read("LootTable", LootTable.KEY_CODEC).orElse((Object)null);
+      this.setLootTable(lootTable);
+      this.setLootTableSeed(base.getLongOr("LootTableSeed", 0L));
+      return lootTable != null;
    }
 
-   default boolean trySaveLootTable(ValueOutput var1) {
-      ResourceKey var2 = this.getLootTable();
-      if (var2 == null) {
+   default boolean trySaveLootTable(final ValueOutput base) {
+      ResourceKey<LootTable> lootTable = this.getLootTable();
+      if (lootTable == null) {
          return false;
       } else {
-         var1.store("LootTable", LootTable.KEY_CODEC, var2);
-         long var3 = this.getLootTableSeed();
-         if (var3 != 0L) {
-            var1.putLong("LootTableSeed", var3);
+         base.store("LootTable", LootTable.KEY_CODEC, lootTable);
+         long lootTableSeed = this.getLootTableSeed();
+         if (lootTableSeed != 0L) {
+            base.putLong("LootTableSeed", lootTableSeed);
          }
 
          return true;
       }
    }
 
-   default void unpackLootTable(@Nullable Player var1) {
-      Level var2 = this.getLevel();
-      BlockPos var3 = this.getBlockPos();
-      ResourceKey var4 = this.getLootTable();
-      if (var4 != null && var2 != null && var2.getServer() != null) {
-         LootTable var5 = var2.getServer().reloadableRegistries().getLootTable(var4);
-         if (var1 instanceof ServerPlayer) {
-            CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var1, var4);
+   default void unpackLootTable(final @Nullable Player player) {
+      Level level = this.getLevel();
+      BlockPos worldPosition = this.getBlockPos();
+      ResourceKey<LootTable> lootTableKey = this.getLootTable();
+      if (lootTableKey != null && level != null && level.getServer() != null) {
+         LootTable lootTable = level.getServer().reloadableRegistries().getLootTable(lootTableKey);
+         if (player instanceof ServerPlayer) {
+            CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)player, lootTableKey);
          }
 
          this.setLootTable((ResourceKey)null);
-         LootParams.Builder var6 = (new LootParams.Builder((ServerLevel)var2)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var3));
-         if (var1 != null) {
-            var6.withLuck(var1.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var1);
+         LootParams.Builder params = (new LootParams.Builder((ServerLevel)level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(worldPosition));
+         if (player != null) {
+            params.withLuck(player.getLuck()).withParameter(LootContextParams.THIS_ENTITY, player);
          }
 
-         var5.fill(this, var6.create(LootContextParamSets.CHEST), this.getLootTableSeed());
+         lootTable.fill(this, params.create(LootContextParamSets.CHEST), this.getLootTableSeed());
       }
 
    }

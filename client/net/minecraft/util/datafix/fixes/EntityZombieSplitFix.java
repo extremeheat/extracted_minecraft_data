@@ -13,41 +13,41 @@ import net.minecraft.util.Util;
 public class EntityZombieSplitFix extends EntityRenameFix {
    private final Supplier<Type<?>> zombieVillagerType = Suppliers.memoize(() -> this.getOutputSchema().getChoiceType(References.ENTITY, "ZombieVillager"));
 
-   public EntityZombieSplitFix(Schema var1) {
-      super("EntityZombieSplitFix", var1, true);
+   public EntityZombieSplitFix(final Schema outputSchema) {
+      super("EntityZombieSplitFix", outputSchema, true);
    }
 
-   protected Pair<String, Typed<?>> fix(String var1, Typed<?> var2) {
-      if (!var1.equals("Zombie")) {
-         return Pair.of(var1, var2);
+   protected Pair<String, Typed<?>> fix(final String name, final Typed<?> entity) {
+      if (!name.equals("Zombie")) {
+         return Pair.of(name, entity);
       } else {
-         Dynamic var3 = (Dynamic)var2.getOptional(DSL.remainderFinder()).orElseThrow();
-         int var4 = var3.get("ZombieType").asInt(0);
-         String var5;
-         Typed var6;
-         switch (var4) {
+         Dynamic<?> tag = (Dynamic)entity.getOptional(DSL.remainderFinder()).orElseThrow();
+         int type = tag.get("ZombieType").asInt(0);
+         String newName;
+         Typed<?> newEntity;
+         switch (type) {
             case 1:
             case 2:
             case 3:
             case 4:
             case 5:
-               var5 = "ZombieVillager";
-               var6 = this.changeSchemaToZombieVillager(var2, var4 - 1);
+               newName = "ZombieVillager";
+               newEntity = this.changeSchemaToZombieVillager(entity, type - 1);
                break;
             case 6:
-               var5 = "Husk";
-               var6 = var2;
+               newName = "Husk";
+               newEntity = entity;
                break;
             default:
-               var5 = "Zombie";
-               var6 = var2;
+               newName = "Zombie";
+               newEntity = entity;
          }
 
-         return Pair.of(var5, var6.update(DSL.remainderFinder(), (var0) -> var0.remove("ZombieType")));
+         return Pair.of(newName, newEntity.update(DSL.remainderFinder(), (e) -> e.remove("ZombieType")));
       }
    }
 
-   private Typed<?> changeSchemaToZombieVillager(Typed<?> var1, int var2) {
-      return Util.writeAndReadTypedOrThrow(var1, (Type)this.zombieVillagerType.get(), (var1x) -> var1x.set("Profession", var1x.createInt(var2)));
+   private Typed<?> changeSchemaToZombieVillager(final Typed<?> entity, final int profession) {
+      return Util.writeAndReadTypedOrThrow(entity, (Type)this.zombieVillagerType.get(), (serializedEntity) -> serializedEntity.set("Profession", serializedEntity.createInt(profession)));
    }
 }

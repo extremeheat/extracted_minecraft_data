@@ -4,13 +4,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserNameToIdResolver {
-   void add(NameAndId var1);
+   void add(NameAndId nameAndId);
 
-   Optional<NameAndId> get(String var1);
+   Optional<NameAndId> get(String name);
 
-   Optional<NameAndId> get(UUID var1);
+   Optional<NameAndId> get(UUID id);
 
-   void resolveOfflineUsers(boolean var1);
+   void resolveOfflineUsers(boolean value);
 
    void save();
 }

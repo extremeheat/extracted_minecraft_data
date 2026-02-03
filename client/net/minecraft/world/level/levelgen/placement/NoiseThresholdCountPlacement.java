@@ -8,25 +8,25 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
 
 public class NoiseThresholdCountPlacement extends RepeatingPlacement {
-   public static final MapCodec<NoiseThresholdCountPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.DOUBLE.fieldOf("noise_level").forGetter((var0x) -> var0x.noiseLevel), Codec.INT.fieldOf("below_noise").forGetter((var0x) -> var0x.belowNoise), Codec.INT.fieldOf("above_noise").forGetter((var0x) -> var0x.aboveNoise)).apply(var0, NoiseThresholdCountPlacement::new));
+   public static final MapCodec<NoiseThresholdCountPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.DOUBLE.fieldOf("noise_level").forGetter((c) -> c.noiseLevel), Codec.INT.fieldOf("below_noise").forGetter((c) -> c.belowNoise), Codec.INT.fieldOf("above_noise").forGetter((c) -> c.aboveNoise)).apply(i, NoiseThresholdCountPlacement::new));
    private final double noiseLevel;
    private final int belowNoise;
    private final int aboveNoise;
 
-   private NoiseThresholdCountPlacement(double var1, int var3, int var4) {
+   private NoiseThresholdCountPlacement(final double noiseLevel, final int belowNoise, final int aboveNoise) {
       super();
-      this.noiseLevel = var1;
-      this.belowNoise = var3;
-      this.aboveNoise = var4;
+      this.noiseLevel = noiseLevel;
+      this.belowNoise = belowNoise;
+      this.aboveNoise = aboveNoise;
    }
 
-   public static NoiseThresholdCountPlacement of(double var0, int var2, int var3) {
-      return new NoiseThresholdCountPlacement(var0, var2, var3);
+   public static NoiseThresholdCountPlacement of(final double noiseLevel, final int belowNoise, final int aboveNoise) {
+      return new NoiseThresholdCountPlacement(noiseLevel, belowNoise, aboveNoise);
    }
 
-   protected int count(RandomSource var1, BlockPos var2) {
-      double var3 = Biome.BIOME_INFO_NOISE.getValue((double)var2.getX() / 200.0, (double)var2.getZ() / 200.0, false);
-      return var3 < this.noiseLevel ? this.belowNoise : this.aboveNoise;
+   protected int count(final RandomSource random, final BlockPos origin) {
+      double flowerNoise = Biome.BIOME_INFO_NOISE.getValue((double)origin.getX() / 200.0, (double)origin.getZ() / 200.0, false);
+      return flowerNoise < this.noiseLevel ? this.belowNoise : this.aboveNoise;
    }
 
    public PlacementModifierType<?> type() {

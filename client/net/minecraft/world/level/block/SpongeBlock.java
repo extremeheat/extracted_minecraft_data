@@ -26,62 +26,62 @@ public class SpongeBlock extends Block {
       return CODEC;
    }
 
-   protected SpongeBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected SpongeBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
-         this.tryAbsorbWater(var2, var3);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!oldState.is(state.getBlock())) {
+         this.tryAbsorbWater(level, pos);
       }
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      this.tryAbsorbWater(var2, var3);
-      super.neighborChanged(var1, var2, var3, var4, var5, var6);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      this.tryAbsorbWater(level, pos);
+      super.neighborChanged(state, level, pos, block, orientation, movedByPiston);
    }
 
-   protected void tryAbsorbWater(Level var1, BlockPos var2) {
-      if (this.removeWaterBreadthFirstSearch(var1, var2)) {
-         var1.setBlock(var2, Blocks.WET_SPONGE.defaultBlockState(), 2);
-         var1.playSound((Entity)null, (BlockPos)var2, SoundEvents.SPONGE_ABSORB, SoundSource.BLOCKS, 1.0F, 1.0F);
+   protected void tryAbsorbWater(final Level level, final BlockPos pos) {
+      if (this.removeWaterBreadthFirstSearch(level, pos)) {
+         level.setBlock(pos, Blocks.WET_SPONGE.defaultBlockState(), 2);
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.SPONGE_ABSORB, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
    }
 
-   private boolean removeWaterBreadthFirstSearch(Level var1, BlockPos var2) {
-      return BlockPos.breadthFirstTraversal(var2, 6, 65, (var0, var1x) -> {
-         for(Direction var5 : ALL_DIRECTIONS) {
-            var1x.accept(var0.relative(var5));
+   private boolean removeWaterBreadthFirstSearch(final Level level, final BlockPos startPos) {
+      return BlockPos.breadthFirstTraversal(startPos, 6, 65, (pos, consumer) -> {
+         for(Direction direction : ALL_DIRECTIONS) {
+            consumer.accept(pos.relative(direction));
          }
 
-      }, (var2x) -> {
-         if (var2x.equals(var2)) {
+      }, (pos) -> {
+         if (pos.equals(startPos)) {
             return BlockPos.TraversalNodeStatus.ACCEPT;
          } else {
-            BlockState var3 = var1.getBlockState(var2x);
-            FluidState var4 = var1.getFluidState(var2x);
-            if (!var4.is(FluidTags.WATER)) {
+            BlockState state = level.getBlockState(pos);
+            FluidState fluidState = level.getFluidState(pos);
+            if (!fluidState.is(FluidTags.WATER)) {
                return BlockPos.TraversalNodeStatus.SKIP;
             } else {
-               Block var6 = var3.getBlock();
-               if (var6 instanceof BucketPickup) {
-                  BucketPickup var5 = (BucketPickup)var6;
-                  if (!var5.pickupBlock((LivingEntity)null, var1, var2x, var3).isEmpty()) {
+               Block patt0$temp = state.getBlock();
+               if (patt0$temp instanceof BucketPickup) {
+                  BucketPickup bucketPickup = (BucketPickup)patt0$temp;
+                  if (!bucketPickup.pickupBlock((LivingEntity)null, level, pos, state).isEmpty()) {
                      return BlockPos.TraversalNodeStatus.ACCEPT;
                   }
                }
 
-               if (var3.getBlock() instanceof LiquidBlock) {
-                  var1.setBlock(var2x, Blocks.AIR.defaultBlockState(), 3);
+               if (state.getBlock() instanceof LiquidBlock) {
+                  level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
                } else {
-                  if (!var3.is(Blocks.KELP) && !var3.is(Blocks.KELP_PLANT) && !var3.is(Blocks.SEAGRASS) && !var3.is(Blocks.TALL_SEAGRASS)) {
+                  if (!state.is(Blocks.KELP) && !state.is(Blocks.KELP_PLANT) && !state.is(Blocks.SEAGRASS) && !state.is(Blocks.TALL_SEAGRASS)) {
                      return BlockPos.TraversalNodeStatus.SKIP;
                   }
 
-                  BlockEntity var7 = var3.hasBlockEntity() ? var1.getBlockEntity(var2x) : null;
-                  dropResources(var3, var1, var2x, var7);
-                  var1.setBlock(var2x, Blocks.AIR.defaultBlockState(), 3);
+                  BlockEntity blockEntity = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
+                  dropResources(state, level, pos, blockEntity);
+                  level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
                }
 
                return BlockPos.TraversalNodeStatus.ACCEPT;

@@ -17,25 +17,25 @@ public abstract class ItemStackTagFix extends DataFix {
    private final String name;
    private final Predicate<String> idFilter;
 
-   public ItemStackTagFix(Schema var1, String var2, Predicate<String> var3) {
-      super(var1, false);
-      this.name = var2;
-      this.idFilter = var3;
+   public ItemStackTagFix(final Schema outputSchema, final String name, final Predicate<String> idFilter) {
+      super(outputSchema, false);
+      this.name = name;
+      this.idFilter = idFilter;
    }
 
    public final TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
-      return this.fixTypeEverywhereTyped(this.name, var1, createFixer(var1, this.idFilter, this::fixItemStackTag));
+      Type<?> itemStackType = this.getInputSchema().getType(References.ITEM_STACK);
+      return this.fixTypeEverywhereTyped(this.name, itemStackType, createFixer(itemStackType, this.idFilter, this::fixItemStackTag));
    }
 
-   public static UnaryOperator<Typed<?>> createFixer(Type<?> var0, Predicate<String> var1, UnaryOperator<Typed<?>> var2) {
-      OpticFinder var3 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      OpticFinder var4 = var0.findField("tag");
-      return (var4x) -> {
-         Optional var5 = var4x.getOptional(var3);
-         return var5.isPresent() && var1.test((String)((Pair)var5.get()).getSecond()) ? var4x.updateTyped(var4, var2) : var4x;
+   public static UnaryOperator<Typed<?>> createFixer(final Type<?> itemStackType, final Predicate<String> idFilter, final UnaryOperator<Typed<?>> fixer) {
+      OpticFinder<Pair<String, String>> idF = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      OpticFinder<?> tagF = itemStackType.findField("tag");
+      return (input) -> {
+         Optional<Pair<String, String>> idOpt = input.getOptional(idF);
+         return idOpt.isPresent() && idFilter.test((String)((Pair)idOpt.get()).getSecond()) ? input.updateTyped(tagF, fixer) : input;
       };
    }
 
-   protected abstract Typed<?> fixItemStackTag(Typed<?> var1);
+   protected abstract Typed<?> fixItemStackTag(final Typed<?> tag);
 }

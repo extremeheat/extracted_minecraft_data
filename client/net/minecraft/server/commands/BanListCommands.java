@@ -16,24 +16,24 @@ public class BanListCommands {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("banlist").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).executes((var0x) -> {
-         PlayerList var1 = ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList();
-         return showList((CommandSourceStack)var0x.getSource(), Lists.newArrayList(Iterables.concat(var1.getBans().getEntries(), var1.getIpBans().getEntries())));
-      })).then(Commands.literal("ips").executes((var0x) -> showList((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getIpBans().getEntries())))).then(Commands.literal("players").executes((var0x) -> showList((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getBans().getEntries()))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("banlist").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).executes((s) -> {
+         PlayerList players = ((CommandSourceStack)s.getSource()).getServer().getPlayerList();
+         return showList((CommandSourceStack)s.getSource(), Lists.newArrayList(Iterables.concat(players.getBans().getEntries(), players.getIpBans().getEntries())));
+      })).then(Commands.literal("ips").executes((s) -> showList((CommandSourceStack)s.getSource(), ((CommandSourceStack)s.getSource()).getServer().getPlayerList().getIpBans().getEntries())))).then(Commands.literal("players").executes((s) -> showList((CommandSourceStack)s.getSource(), ((CommandSourceStack)s.getSource()).getServer().getPlayerList().getBans().getEntries()))));
    }
 
-   private static int showList(CommandSourceStack var0, Collection<? extends BanListEntry<?>> var1) {
-      if (var1.isEmpty()) {
-         var0.sendSuccess(() -> Component.translatable("commands.banlist.none"), false);
+   private static int showList(final CommandSourceStack source, final Collection<? extends BanListEntry<?>> list) {
+      if (list.isEmpty()) {
+         source.sendSuccess(() -> Component.translatable("commands.banlist.none"), false);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.banlist.list", var1.size()), false);
+         source.sendSuccess(() -> Component.translatable("commands.banlist.list", list.size()), false);
 
-         for(BanListEntry var3 : var1) {
-            var0.sendSuccess(() -> Component.translatable("commands.banlist.entry", var3.getDisplayName(), var3.getSource(), var3.getReasonMessage()), false);
+         for(BanListEntry<?> entry : list) {
+            source.sendSuccess(() -> Component.translatable("commands.banlist.entry", entry.getDisplayName(), entry.getSource(), entry.getReasonMessage()), false);
          }
       }
 
-      return var1.size();
+      return list.size();
    }
 }

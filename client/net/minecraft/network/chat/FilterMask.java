@@ -16,27 +16,27 @@ public class FilterMask {
    public static final FilterMask FULLY_FILTERED;
    public static final FilterMask PASS_THROUGH;
    public static final Style FILTERED_STYLE;
-   static final MapCodec<FilterMask> PASS_THROUGH_CODEC;
-   static final MapCodec<FilterMask> FULLY_FILTERED_CODEC;
-   static final MapCodec<FilterMask> PARTIALLY_FILTERED_CODEC;
+   private static final MapCodec<FilterMask> PASS_THROUGH_CODEC;
+   private static final MapCodec<FilterMask> FULLY_FILTERED_CODEC;
+   private static final MapCodec<FilterMask> PARTIALLY_FILTERED_CODEC;
    private static final char HASH = '#';
    private final BitSet mask;
    private final Type type;
 
-   private FilterMask(BitSet var1, Type var2) {
+   private FilterMask(final BitSet mask, final Type type) {
       super();
-      this.mask = var1;
-      this.type = var2;
+      this.mask = mask;
+      this.type = type;
    }
 
-   private FilterMask(BitSet var1) {
+   private FilterMask(final BitSet mask) {
       super();
-      this.mask = var1;
+      this.mask = mask;
       this.type = FilterMask.Type.PARTIALLY_FILTERED;
    }
 
-   public FilterMask(int var1) {
-      this(new BitSet(var1), FilterMask.Type.PARTIALLY_FILTERED);
+   public FilterMask(final int length) {
+      this(new BitSet(length), FilterMask.Type.PARTIALLY_FILTERED);
    }
 
    private Type type() {
@@ -47,50 +47,50 @@ public class FilterMask {
       return this.mask;
    }
 
-   public static FilterMask read(FriendlyByteBuf var0) {
-      Type var1 = (Type)var0.readEnum(Type.class);
+   public static FilterMask read(final FriendlyByteBuf input) {
+      Type type = (Type)input.readEnum(Type.class);
       FilterMask var10000;
-      switch (var1.ordinal()) {
+      switch (type.ordinal()) {
          case 0 -> var10000 = PASS_THROUGH;
          case 1 -> var10000 = FULLY_FILTERED;
-         case 2 -> var10000 = new FilterMask(var0.readBitSet(), FilterMask.Type.PARTIALLY_FILTERED);
+         case 2 -> var10000 = new FilterMask(input.readBitSet(), FilterMask.Type.PARTIALLY_FILTERED);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   public static void write(FriendlyByteBuf var0, FilterMask var1) {
-      var0.writeEnum(var1.type);
-      if (var1.type == FilterMask.Type.PARTIALLY_FILTERED) {
-         var0.writeBitSet(var1.mask);
+   public static void write(final FriendlyByteBuf output, final FilterMask mask) {
+      output.writeEnum(mask.type);
+      if (mask.type == FilterMask.Type.PARTIALLY_FILTERED) {
+         output.writeBitSet(mask.mask);
       }
 
    }
 
-   public void setFiltered(int var1) {
-      this.mask.set(var1);
+   public void setFiltered(final int index) {
+      this.mask.set(index);
    }
 
-   public @Nullable String apply(String var1) {
+   public @Nullable String apply(final String text) {
       String var10000;
       switch (this.type.ordinal()) {
          case 0:
-            var10000 = var1;
+            var10000 = text;
             break;
          case 1:
             var10000 = null;
             break;
          case 2:
-            char[] var2 = var1.toCharArray();
+            char[] chars = text.toCharArray();
 
-            for(int var3 = 0; var3 < var2.length && var3 < this.mask.length(); ++var3) {
-               if (this.mask.get(var3)) {
-                  var2[var3] = '#';
+            for(int i = 0; i < chars.length && i < this.mask.length(); ++i) {
+               if (this.mask.get(i)) {
+                  chars[i] = '#';
                }
             }
 
-            var10000 = new String(var2);
+            var10000 = new String(chars);
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);
@@ -99,36 +99,36 @@ public class FilterMask {
       return var10000;
    }
 
-   public @Nullable Component applyWithFormatting(String var1) {
+   public @Nullable Component applyWithFormatting(final String text) {
       MutableComponent var10000;
       switch (this.type.ordinal()) {
          case 0:
-            var10000 = Component.literal(var1);
+            var10000 = Component.literal(text);
             break;
          case 1:
             var10000 = null;
             break;
          case 2:
-            MutableComponent var2 = Component.empty();
-            int var3 = 0;
-            boolean var4 = this.mask.get(0);
+            MutableComponent result = Component.empty();
+            int previousIndex = 0;
+            boolean filtered = this.mask.get(0);
 
             while(true) {
-               int var5 = var4 ? this.mask.nextClearBit(var3) : this.mask.nextSetBit(var3);
-               var5 = var5 < 0 ? var1.length() : var5;
-               if (var5 == var3) {
-                  var10000 = var2;
+               int nextIndex = filtered ? this.mask.nextClearBit(previousIndex) : this.mask.nextSetBit(previousIndex);
+               nextIndex = nextIndex < 0 ? text.length() : nextIndex;
+               if (nextIndex == previousIndex) {
+                  var10000 = result;
                   return var10000;
                }
 
-               if (var4) {
-                  var2.append((Component)Component.literal(StringUtils.repeat('#', var5 - var3)).withStyle(FILTERED_STYLE));
+               if (filtered) {
+                  result.append((Component)Component.literal(StringUtils.repeat('#', nextIndex - previousIndex)).withStyle(FILTERED_STYLE));
                } else {
-                  var2.append(var1.substring(var3, var5));
+                  result.append(text.substring(previousIndex, nextIndex));
                }
 
-               var4 = !var4;
-               var3 = var5;
+               filtered = !filtered;
+               previousIndex = nextIndex;
             }
          default:
             throw new MatchException((String)null, (Throwable)null);
@@ -145,21 +145,21 @@ public class FilterMask {
       return this.type == FilterMask.Type.FULLY_FILTERED;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         FilterMask var2 = (FilterMask)var1;
-         return this.mask.equals(var2.mask) && this.type == var2.type;
+      } else if (o != null && this.getClass() == o.getClass()) {
+         FilterMask that = (FilterMask)o;
+         return this.mask.equals(that.mask) && this.type == that.type;
       } else {
          return false;
       }
    }
 
    public int hashCode() {
-      int var1 = this.mask.hashCode();
-      var1 = 31 * var1 + this.type.hashCode();
-      return var1;
+      int result = this.mask.hashCode();
+      result = 31 * result + this.type.hashCode();
+      return result;
    }
 
    static {
@@ -171,7 +171,7 @@ public class FilterMask {
       PARTIALLY_FILTERED_CODEC = ExtraCodecs.BIT_SET.xmap(FilterMask::new, FilterMask::mask).fieldOf("value");
    }
 
-   static enum Type implements StringRepresentable {
+   private static enum Type implements StringRepresentable {
       PASS_THROUGH("pass_through", () -> FilterMask.PASS_THROUGH_CODEC),
       FULLY_FILTERED("fully_filtered", () -> FilterMask.FULLY_FILTERED_CODEC),
       PARTIALLY_FILTERED("partially_filtered", () -> FilterMask.PARTIALLY_FILTERED_CODEC);
@@ -179,9 +179,9 @@ public class FilterMask {
       private final String serializedName;
       private final Supplier<MapCodec<FilterMask>> codec;
 
-      private Type(final String var3, final Supplier<MapCodec<FilterMask>> var4) {
-         this.serializedName = var3;
-         this.codec = var4;
+      private Type(final String serializedName, final Supplier<MapCodec<FilterMask>> codec) {
+         this.serializedName = serializedName;
+         this.codec = codec;
       }
 
       public String getSerializedName() {

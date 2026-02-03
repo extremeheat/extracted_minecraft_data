@@ -14,10 +14,10 @@ public class StatsRenameFix extends DataFix {
    private final String name;
    private final Map<String, String> renames;
 
-   public StatsRenameFix(Schema var1, String var2, Map<String, String> var3) {
-      super(var1, false);
-      this.name = var2;
-      this.renames = var3;
+   public StatsRenameFix(final Schema outputSchema, final String name, final Map<String, String> renames) {
+      super(outputSchema, false);
+      this.name = name;
+      this.renames = renames;
    }
 
    protected TypeRewriteRule makeRule() {
@@ -25,26 +25,26 @@ public class StatsRenameFix extends DataFix {
    }
 
    private TypeRewriteRule createCriteriaRule() {
-      Type var1 = this.getOutputSchema().getType(References.OBJECTIVE);
-      Type var2 = this.getInputSchema().getType(References.OBJECTIVE);
-      OpticFinder var3 = var2.findField("CriteriaType");
-      TaggedChoice.TaggedChoiceType var4 = (TaggedChoice.TaggedChoiceType)var3.type().findChoiceType("type", -1).orElseThrow(() -> new IllegalStateException("Can't find choice type for criteria"));
-      Type var5 = (Type)var4.types().get("minecraft:custom");
-      if (var5 == null) {
+      Type<?> outputType = this.getOutputSchema().getType(References.OBJECTIVE);
+      Type<?> inputType = this.getInputSchema().getType(References.OBJECTIVE);
+      OpticFinder<?> criteriaTypeFinder = inputType.findField("CriteriaType");
+      TaggedChoice.TaggedChoiceType<?> choiceType = (TaggedChoice.TaggedChoiceType)criteriaTypeFinder.type().findChoiceType("type", -1).orElseThrow(() -> new IllegalStateException("Can't find choice type for criteria"));
+      Type<?> customFieldType = (Type)choiceType.types().get("minecraft:custom");
+      if (customFieldType == null) {
          throw new IllegalStateException("Failed to find custom criterion type variant");
       } else {
-         OpticFinder var6 = DSL.namedChoice("minecraft:custom", var5);
-         OpticFinder var7 = DSL.fieldFinder("id", NamespacedSchema.namespacedString());
-         return this.fixTypeEverywhereTyped(this.name, var2, var1, (var4x) -> var4x.updateTyped(var3, (var3x) -> var3x.updateTyped(var6, (var2) -> var2.update(var7, (var1) -> (String)this.renames.getOrDefault(var1, var1)))));
+         OpticFinder<?> customTypeFinder = DSL.namedChoice("minecraft:custom", customFieldType);
+         OpticFinder<String> idFinder = DSL.fieldFinder("id", NamespacedSchema.namespacedString());
+         return this.fixTypeEverywhereTyped(this.name, inputType, outputType, (input) -> input.updateTyped(criteriaTypeFinder, (stats) -> stats.updateTyped(customTypeFinder, (custom) -> custom.update(idFinder, (value) -> (String)this.renames.getOrDefault(value, value)))));
       }
    }
 
    private TypeRewriteRule createStatRule() {
-      Type var1 = this.getOutputSchema().getType(References.STATS);
-      Type var2 = this.getInputSchema().getType(References.STATS);
-      OpticFinder var3 = var2.findField("stats");
-      OpticFinder var4 = var3.type().findField("minecraft:custom");
-      OpticFinder var5 = NamespacedSchema.namespacedString().finder();
-      return this.fixTypeEverywhereTyped(this.name, var2, var1, (var4x) -> var4x.updateTyped(var3, (var3x) -> var3x.updateTyped(var4, (var2) -> var2.update(var5, (var1) -> (String)this.renames.getOrDefault(var1, var1)))));
+      Type<?> outputType = this.getOutputSchema().getType(References.STATS);
+      Type<?> inputType = this.getInputSchema().getType(References.STATS);
+      OpticFinder<?> statsFinder = inputType.findField("stats");
+      OpticFinder<?> customFinder = statsFinder.type().findField("minecraft:custom");
+      OpticFinder<String> nameFinder = NamespacedSchema.namespacedString().finder();
+      return this.fixTypeEverywhereTyped(this.name, inputType, outputType, (input) -> input.updateTyped(statsFinder, (stats) -> stats.updateTyped(customFinder, (custom) -> custom.update(nameFinder, (value) -> (String)this.renames.getOrDefault(value, value)))));
    }
 }

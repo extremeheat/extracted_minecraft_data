@@ -21,27 +21,27 @@ public class KelpPlantBlock extends GrowingPlantBodyBlock implements LiquidBlock
       return CODEC;
    }
 
-   protected KelpPlantBlock(BlockBehaviour.Properties var1) {
-      super(var1, Direction.UP, Shapes.block(), true);
+   protected KelpPlantBlock(final BlockBehaviour.Properties properties) {
+      super(properties, Direction.UP, Shapes.block(), true);
    }
 
    protected GrowingPlantHeadBlock getHeadBlock() {
       return (GrowingPlantHeadBlock)Blocks.KELP;
    }
 
-   protected FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(final BlockState state) {
       return Fluids.WATER.getSource(false);
    }
 
-   protected boolean canAttachTo(BlockState var1) {
-      return this.getHeadBlock().canAttachTo(var1);
+   protected boolean canAttachTo(final BlockState state) {
+      return this.getHeadBlock().canAttachTo(state);
    }
 
-   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
+   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid type) {
       return false;
    }
 
-   public boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
+   public boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
       return false;
    }
 }

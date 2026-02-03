@@ -17,47 +17,47 @@ public class WorldGenSettingsHeightAndBiomeFix extends DataFix {
    private static final String NAME = "WorldGenSettingsHeightAndBiomeFix";
    public static final String WAS_PREVIOUSLY_INCREASED_KEY = "has_increased_height_already";
 
-   public WorldGenSettingsHeightAndBiomeFix(Schema var1) {
-      super(var1, true);
+   public WorldGenSettingsHeightAndBiomeFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.WORLD_GEN_SETTINGS);
-      OpticFinder var2 = var1.findField("dimensions");
-      Type var3 = this.getOutputSchema().getType(References.WORLD_GEN_SETTINGS);
-      Type var4 = var3.findFieldType("dimensions");
-      return this.fixTypeEverywhereTyped("WorldGenSettingsHeightAndBiomeFix", var1, var3, (var2x) -> {
-         OptionalDynamic var3 = ((Dynamic)var2x.get(DSL.remainderFinder())).get("has_increased_height_already");
-         boolean var4x = var3.result().isEmpty();
-         boolean var5 = var3.asBoolean(true);
-         return var2x.update(DSL.remainderFinder(), (var0) -> var0.remove("has_increased_height_already")).updateTyped(var2, var4, (var3x) -> Util.writeAndReadTypedOrThrow(var3x, var4, (var2) -> var2.update("minecraft:overworld", (var2x) -> var2x.update("generator", (var2) -> {
-                     String var3 = var2.get("type").asString("");
-                     if ("minecraft:noise".equals(var3)) {
-                        MutableBoolean var4 = new MutableBoolean();
-                        var2 = var2.update("biome_source", (var2x) -> {
-                           String var3 = var2x.get("type").asString("");
-                           if ("minecraft:vanilla_layered".equals(var3) || var4x && "minecraft:multi_noise".equals(var3)) {
-                              if (var2x.get("large_biomes").asBoolean(false)) {
-                                 var4.setTrue();
+      Type<?> worldGenSettingsType = this.getInputSchema().getType(References.WORLD_GEN_SETTINGS);
+      OpticFinder<?> dimensionsFinder = worldGenSettingsType.findField("dimensions");
+      Type<?> worldGenSettingsTypeNew = this.getOutputSchema().getType(References.WORLD_GEN_SETTINGS);
+      Type<?> dimensionsType = worldGenSettingsTypeNew.findFieldType("dimensions");
+      return this.fixTypeEverywhereTyped("WorldGenSettingsHeightAndBiomeFix", worldGenSettingsType, worldGenSettingsTypeNew, (input) -> {
+         OptionalDynamic<?> wasIncreasedOpt = ((Dynamic)input.get(DSL.remainderFinder())).get("has_increased_height_already");
+         boolean wasExpSnap = wasIncreasedOpt.result().isEmpty();
+         boolean wasPreviouslyIncreased = wasIncreasedOpt.asBoolean(true);
+         return input.update(DSL.remainderFinder(), (tag) -> tag.remove("has_increased_height_already")).updateTyped(dimensionsFinder, dimensionsType, (dimensions) -> Util.writeAndReadTypedOrThrow(dimensions, dimensionsType, (dimensionsTag) -> dimensionsTag.update("minecraft:overworld", (overworldTag) -> overworldTag.update("generator", (generator) -> {
+                     String generatorType = generator.get("type").asString("");
+                     if ("minecraft:noise".equals(generatorType)) {
+                        MutableBoolean isLargeBiomes = new MutableBoolean();
+                        generator = generator.update("biome_source", (biomeSource) -> {
+                           String type = biomeSource.get("type").asString("");
+                           if ("minecraft:vanilla_layered".equals(type) || wasExpSnap && "minecraft:multi_noise".equals(type)) {
+                              if (biomeSource.get("large_biomes").asBoolean(false)) {
+                                 isLargeBiomes.setTrue();
                               }
 
-                              return var2x.createMap(ImmutableMap.of(var2x.createString("preset"), var2x.createString("minecraft:overworld"), var2x.createString("type"), var2x.createString("minecraft:multi_noise")));
+                              return biomeSource.createMap(ImmutableMap.of(biomeSource.createString("preset"), biomeSource.createString("minecraft:overworld"), biomeSource.createString("type"), biomeSource.createString("minecraft:multi_noise")));
                            } else {
-                              return var2x;
+                              return biomeSource;
                            }
                         });
-                        return var4.booleanValue() ? var2.update("settings", (var0) -> "minecraft:overworld".equals(var0.asString("")) ? var0.createString("minecraft:large_biomes") : var0) : var2;
-                     } else if ("minecraft:flat".equals(var3)) {
-                        return var5 ? var2 : var2.update("settings", (var0) -> var0.update("layers", WorldGenSettingsHeightAndBiomeFix::updateLayers));
+                        return isLargeBiomes.booleanValue() ? generator.update("settings", (settings) -> "minecraft:overworld".equals(settings.asString("")) ? settings.createString("minecraft:large_biomes") : settings) : generator;
+                     } else if ("minecraft:flat".equals(generatorType)) {
+                        return wasPreviouslyIncreased ? generator : generator.update("settings", (settings) -> settings.update("layers", WorldGenSettingsHeightAndBiomeFix::updateLayers));
                      } else {
-                        return var2;
+                        return generator;
                      }
                   }))));
       });
    }
 
-   private static Dynamic<?> updateLayers(Dynamic<?> var0) {
-      Dynamic var1 = var0.createMap(ImmutableMap.of(var0.createString("height"), var0.createInt(64), var0.createString("block"), var0.createString("minecraft:air")));
-      return var0.createList(Stream.concat(Stream.of(var1), var0.asStream()));
+   private static Dynamic<?> updateLayers(final Dynamic<?> layers) {
+      Dynamic<?> airLayer = layers.createMap(ImmutableMap.of(layers.createString("height"), layers.createInt(64), layers.createString("block"), layers.createString("minecraft:air")));
+      return layers.createList(Stream.concat(Stream.of(airLayer), layers.asStream()));
    }
 }

@@ -17,17 +17,17 @@ public class ItemCooldowns {
       super();
    }
 
-   public boolean isOnCooldown(ItemStack var1) {
-      return this.getCooldownPercent(var1, 0.0F) > 0.0F;
+   public boolean isOnCooldown(final ItemStack item) {
+      return this.getCooldownPercent(item, 0.0F) > 0.0F;
    }
 
-   public float getCooldownPercent(ItemStack var1, float var2) {
-      Identifier var3 = this.getCooldownGroup(var1);
-      CooldownInstance var4 = (CooldownInstance)this.cooldowns.get(var3);
-      if (var4 != null) {
-         float var5 = (float)(var4.endTime - var4.startTime);
-         float var6 = (float)var4.endTime - ((float)this.tickCount + var2);
-         return Mth.clamp(var6 / var5, 0.0F, 1.0F);
+   public float getCooldownPercent(final ItemStack item, final float a) {
+      Identifier group = this.getCooldownGroup(item);
+      CooldownInstance cooldown = (CooldownInstance)this.cooldowns.get(group);
+      if (cooldown != null) {
+         float duration = (float)(cooldown.endTime - cooldown.startTime);
+         float remaining = (float)cooldown.endTime - ((float)this.tickCount + a);
+         return Mth.clamp(remaining / duration, 0.0F, 1.0F);
       } else {
          return 0.0F;
       }
@@ -36,53 +36,48 @@ public class ItemCooldowns {
    public void tick() {
       ++this.tickCount;
       if (!this.cooldowns.isEmpty()) {
-         Iterator var1 = this.cooldowns.entrySet().iterator();
+         Iterator<Map.Entry<Identifier, CooldownInstance>> iterator = this.cooldowns.entrySet().iterator();
 
-         while(var1.hasNext()) {
-            Map.Entry var2 = (Map.Entry)var1.next();
-            if (((CooldownInstance)var2.getValue()).endTime <= this.tickCount) {
-               var1.remove();
-               this.onCooldownEnded((Identifier)var2.getKey());
+         while(iterator.hasNext()) {
+            Map.Entry<Identifier, CooldownInstance> entry = (Map.Entry)iterator.next();
+            if (((CooldownInstance)entry.getValue()).endTime <= this.tickCount) {
+               iterator.remove();
+               this.onCooldownEnded((Identifier)entry.getKey());
             }
          }
       }
 
    }
 
-   public Identifier getCooldownGroup(ItemStack var1) {
-      UseCooldown var2 = (UseCooldown)var1.get(DataComponents.USE_COOLDOWN);
-      Identifier var3 = BuiltInRegistries.ITEM.getKey(var1.getItem());
-      return var2 == null ? var3 : (Identifier)var2.cooldownGroup().orElse(var3);
+   public Identifier getCooldownGroup(final ItemStack item) {
+      UseCooldown useCooldown = (UseCooldown)item.get(DataComponents.USE_COOLDOWN);
+      Identifier defaultItemGroup = BuiltInRegistries.ITEM.getKey(item.getItem());
+      return useCooldown == null ? defaultItemGroup : (Identifier)useCooldown.cooldownGroup().orElse(defaultItemGroup);
    }
 
-   public void addCooldown(ItemStack var1, int var2) {
-      this.addCooldown(this.getCooldownGroup(var1), var2);
+   public void addCooldown(final ItemStack item, final int time) {
+      this.addCooldown(this.getCooldownGroup(item), time);
    }
 
-   public void addCooldown(Identifier var1, int var2) {
-      this.cooldowns.put(var1, new CooldownInstance(this.tickCount, this.tickCount + var2));
-      this.onCooldownStarted(var1, var2);
+   public void addCooldown(final Identifier cooldownGroup, final int time) {
+      this.cooldowns.put(cooldownGroup, new CooldownInstance(this.tickCount, this.tickCount + time));
+      this.onCooldownStarted(cooldownGroup, time);
    }
 
-   public void removeCooldown(Identifier var1) {
-      this.cooldowns.remove(var1);
-      this.onCooldownEnded(var1);
+   public void removeCooldown(final Identifier cooldownGroup) {
+      this.cooldowns.remove(cooldownGroup);
+      this.onCooldownEnded(cooldownGroup);
    }
 
-   protected void onCooldownStarted(Identifier var1, int var2) {
+   protected void onCooldownStarted(final Identifier cooldownGroup, final int duration) {
    }
 
-   protected void onCooldownEnded(Identifier var1) {
+   protected void onCooldownEnded(final Identifier cooldownGroup) {
    }
 
-   static record CooldownInstance(int startTime, int endTime) {
-      final int startTime;
-      final int endTime;
-
-      CooldownInstance(int var1, int var2) {
+   private static record CooldownInstance(int startTime, int endTime) {
+      private CooldownInstance {
          super();
-         this.startTime = var1;
-         this.endTime = var2;
       }
    }
 }

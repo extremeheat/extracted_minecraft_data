@@ -13,18 +13,15 @@ import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record DamageEntity(LevelBasedValue minDamage, LevelBasedValue maxDamage, Holder<DamageType> damageType) implements EnchantmentEntityEffect {
-   public static final MapCodec<DamageEntity> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LevelBasedValue.CODEC.fieldOf("min_damage").forGetter(DamageEntity::minDamage), LevelBasedValue.CODEC.fieldOf("max_damage").forGetter(DamageEntity::maxDamage), DamageType.CODEC.fieldOf("damage_type").forGetter(DamageEntity::damageType)).apply(var0, DamageEntity::new));
+   public static final MapCodec<DamageEntity> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LevelBasedValue.CODEC.fieldOf("min_damage").forGetter(DamageEntity::minDamage), LevelBasedValue.CODEC.fieldOf("max_damage").forGetter(DamageEntity::maxDamage), DamageType.CODEC.fieldOf("damage_type").forGetter(DamageEntity::damageType)).apply(i, DamageEntity::new));
 
-   public DamageEntity(LevelBasedValue var1, LevelBasedValue var2, Holder<DamageType> var3) {
+   public DamageEntity {
       super();
-      this.minDamage = var1;
-      this.maxDamage = var2;
-      this.damageType = var3;
    }
 
-   public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-      float var6 = Mth.randomBetween(var4.getRandom(), this.minDamage.calculate(var2), this.maxDamage.calculate(var2));
-      var4.hurtServer(var1, new DamageSource(this.damageType, var3.owner()), var6);
+   public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
+      float damage = Mth.randomBetween(entity.getRandom(), this.minDamage.calculate(enchantmentLevel), this.maxDamage.calculate(enchantmentLevel));
+      entity.hurtServer(serverLevel, new DamageSource(this.damageType, item.owner()), damage);
    }
 
    public MapCodec<DamageEntity> codec() {

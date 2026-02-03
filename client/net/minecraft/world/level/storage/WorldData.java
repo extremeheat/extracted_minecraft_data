@@ -23,7 +23,7 @@ public interface WorldData {
 
    WorldDataConfiguration getDataConfiguration();
 
-   void setDataConfiguration(WorldDataConfiguration var1);
+   void setDataConfiguration(final WorldDataConfiguration dataConfiguration);
 
    boolean wasModded();
 
@@ -31,20 +31,20 @@ public interface WorldData {
 
    Set<String> getRemovedFeatureFlags();
 
-   void setModdedInfo(String var1, boolean var2);
+   void setModdedInfo(final String serverBrand, final boolean isModded);
 
-   default void fillCrashReportCategory(CrashReportCategory var1) {
-      var1.setDetail("Known server brands", (CrashReportDetail)(() -> String.join(", ", this.getKnownServerBrands())));
-      var1.setDetail("Removed feature flags", (CrashReportDetail)(() -> String.join(", ", this.getRemovedFeatureFlags())));
-      var1.setDetail("Level was modded", (CrashReportDetail)(() -> Boolean.toString(this.wasModded())));
-      var1.setDetail("Level storage version", (CrashReportDetail)(() -> {
-         int var1 = this.getVersion();
-         return String.format(Locale.ROOT, "0x%05X - %s", var1, this.getStorageVersionName(var1));
+   default void fillCrashReportCategory(final CrashReportCategory category) {
+      category.setDetail("Known server brands", (CrashReportDetail)(() -> String.join(", ", this.getKnownServerBrands())));
+      category.setDetail("Removed feature flags", (CrashReportDetail)(() -> String.join(", ", this.getRemovedFeatureFlags())));
+      category.setDetail("Level was modded", (CrashReportDetail)(() -> Boolean.toString(this.wasModded())));
+      category.setDetail("Level storage version", (CrashReportDetail)(() -> {
+         int version = this.getVersion();
+         return String.format(Locale.ROOT, "0x%05X - %s", version, this.getStorageVersionName(version));
       }));
    }
 
-   default String getStorageVersionName(int var1) {
-      switch (var1) {
+   default String getStorageVersionName(final int version) {
+      switch (version) {
          case 19132 -> {
             return "McRegion";
          }
@@ -59,13 +59,13 @@ public interface WorldData {
 
    @Nullable CompoundTag getCustomBossEvents();
 
-   void setCustomBossEvents(@Nullable CompoundTag var1);
+   void setCustomBossEvents(@Nullable CompoundTag customBossEvents);
 
    ServerLevelData overworldData();
 
    LevelSettings getLevelSettings();
 
-   CompoundTag createTag(RegistryAccess var1, @Nullable CompoundTag var2);
+   CompoundTag createTag(final RegistryAccess registryAccess, @Nullable CompoundTag playerData);
 
    boolean isHardcore();
 
@@ -75,17 +75,17 @@ public interface WorldData {
 
    GameType getGameType();
 
-   void setGameType(GameType var1);
+   void setGameType(GameType gameType);
 
    boolean isAllowCommands();
 
    Difficulty getDifficulty();
 
-   void setDifficulty(Difficulty var1);
+   void setDifficulty(final Difficulty difficulty);
 
    boolean isDifficultyLocked();
 
-   void setDifficultyLocked(boolean var1);
+   void setDifficultyLocked(final boolean difficultyLocked);
 
    GameRules getGameRules();
 
@@ -93,7 +93,7 @@ public interface WorldData {
 
    EndDragonFight.Data endDragonFightData();
 
-   void setEndDragonFightData(EndDragonFight.Data var1);
+   void setEndDragonFightData(EndDragonFight.Data data);
 
    WorldOptions worldGenOptions();
 

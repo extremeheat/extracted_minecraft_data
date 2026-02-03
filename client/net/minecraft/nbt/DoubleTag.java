@@ -9,17 +9,17 @@ public record DoubleTag(double value) implements NumericTag {
    private static final int SELF_SIZE_IN_BYTES = 16;
    public static final DoubleTag ZERO = new DoubleTag(0.0);
    public static final TagType<DoubleTag> TYPE = new TagType.StaticSize<DoubleTag>() {
-      public DoubleTag load(DataInput var1, NbtAccounter var2) throws IOException {
-         return DoubleTag.valueOf(readAccounted(var1, var2));
+      public DoubleTag load(final DataInput input, final NbtAccounter accounter) throws IOException {
+         return DoubleTag.valueOf(readAccounted(input, accounter));
       }
 
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
-         return var2.visit(readAccounted(var1, var3));
+      public StreamTagVisitor.ValueResult parse(final DataInput input, final StreamTagVisitor output, final NbtAccounter accounter) throws IOException {
+         return output.visit(readAccounted(input, accounter));
       }
 
-      private static double readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
-         var1.accountBytes(16L);
-         return var0.readDouble();
+      private static double readAccounted(final DataInput input, final NbtAccounter accounter) throws IOException {
+         accounter.accountBytes(16L);
+         return input.readDouble();
       }
 
       public int size() {
@@ -33,28 +33,23 @@ public record DoubleTag(double value) implements NumericTag {
       public String getPrettyName() {
          return "TAG_Double";
       }
-
-      // $FF: synthetic method
-      public Tag load(final DataInput var1, final NbtAccounter var2) throws IOException {
-         return this.load(var1, var2);
-      }
    };
 
    /** @deprecated */
    @Deprecated(
       forRemoval = true
    )
-   public DoubleTag(double var1) {
+   public DoubleTag(double value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
-   public static DoubleTag valueOf(double var0) {
-      return var0 == 0.0 ? ZERO : new DoubleTag(var0);
+   public static DoubleTag valueOf(final double data) {
+      return data == 0.0 ? ZERO : new DoubleTag(data);
    }
 
-   public void write(DataOutput var1) throws IOException {
-      var1.writeDouble(this.value);
+   public void write(final DataOutput output) throws IOException {
+      output.writeDouble(this.value);
    }
 
    public int sizeInBytes() {
@@ -73,8 +68,8 @@ public record DoubleTag(double value) implements NumericTag {
       return this;
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitDouble(this);
+   public void accept(final TagVisitor visitor) {
+      visitor.visitDouble(this);
    }
 
    public long longValue() {
@@ -105,18 +100,13 @@ public record DoubleTag(double value) implements NumericTag {
       return this.value;
    }
 
-   public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      return var1.visit(this.value);
+   public StreamTagVisitor.ValueResult accept(final StreamTagVisitor visitor) {
+      return visitor.visit(this.value);
    }
 
    public String toString() {
-      StringTagVisitor var1 = new StringTagVisitor();
-      var1.visitDouble(this);
-      return var1.build();
-   }
-
-   // $FF: synthetic method
-   public Tag copy() {
-      return this.copy();
+      StringTagVisitor visitor = new StringTagVisitor();
+      visitor.visitDouble(this);
+      return visitor.build();
    }
 }

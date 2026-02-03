@@ -41,10 +41,10 @@ public class TexturedModel {
    private final TextureMapping mapping;
    private final ModelTemplate template;
 
-   private TexturedModel(TextureMapping var1, ModelTemplate var2) {
+   private TexturedModel(final TextureMapping mapping, final ModelTemplate template) {
       super();
-      this.mapping = var1;
-      this.template = var2;
+      this.mapping = mapping;
+      this.template = template;
    }
 
    public ModelTemplate getTemplate() {
@@ -55,25 +55,25 @@ public class TexturedModel {
       return this.mapping;
    }
 
-   public TexturedModel updateTextures(Consumer<TextureMapping> var1) {
-      var1.accept(this.mapping);
+   public TexturedModel updateTextures(final Consumer<TextureMapping> mutator) {
+      mutator.accept(this.mapping);
       return this;
    }
 
-   public Identifier create(Block var1, BiConsumer<Identifier, ModelInstance> var2) {
-      return this.template.create(var1, this.mapping, var2);
+   public Identifier create(final Block block, final BiConsumer<Identifier, ModelInstance> modelOutput) {
+      return this.template.create(block, this.mapping, modelOutput);
    }
 
-   public Identifier createWithSuffix(Block var1, String var2, BiConsumer<Identifier, ModelInstance> var3) {
-      return this.template.createWithSuffix(var1, var2, this.mapping, var3);
+   public Identifier createWithSuffix(final Block block, final String extraSuffix, final BiConsumer<Identifier, ModelInstance> modelOutput) {
+      return this.template.createWithSuffix(block, extraSuffix, this.mapping, modelOutput);
    }
 
-   private static Provider createDefault(Function<Block, TextureMapping> var0, ModelTemplate var1) {
-      return (var2) -> new TexturedModel((TextureMapping)var0.apply(var2), var1);
+   private static Provider createDefault(final Function<Block, TextureMapping> mapping, final ModelTemplate template) {
+      return (block) -> new TexturedModel((TextureMapping)mapping.apply(block), template);
    }
 
-   public static TexturedModel createAllSame(Identifier var0) {
-      return new TexturedModel(TextureMapping.cube(var0), ModelTemplates.CUBE_ALL);
+   public static TexturedModel createAllSame(final Identifier id) {
+      return new TexturedModel(TextureMapping.cube(id), ModelTemplates.CUBE_ALL);
    }
 
    static {
@@ -112,18 +112,18 @@ public class TexturedModel {
 
    @FunctionalInterface
    public interface Provider {
-      TexturedModel get(Block var1);
+      TexturedModel get(final Block block);
 
-      default Identifier create(Block var1, BiConsumer<Identifier, ModelInstance> var2) {
-         return this.get(var1).create(var1, var2);
+      default Identifier create(final Block block, final BiConsumer<Identifier, ModelInstance> modelOutput) {
+         return this.get(block).create(block, modelOutput);
       }
 
-      default Identifier createWithSuffix(Block var1, String var2, BiConsumer<Identifier, ModelInstance> var3) {
-         return this.get(var1).createWithSuffix(var1, var2, var3);
+      default Identifier createWithSuffix(final Block block, final String suffix, final BiConsumer<Identifier, ModelInstance> modelOutput) {
+         return this.get(block).createWithSuffix(block, suffix, modelOutput);
       }
 
-      default Provider updateTexture(Consumer<TextureMapping> var1) {
-         return (var2) -> this.get(var2).updateTextures(var1);
+      default Provider updateTexture(final Consumer<TextureMapping> mutator) {
+         return (block) -> this.get(block).updateTextures(mutator);
       }
    }
 }

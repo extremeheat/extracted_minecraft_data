@@ -40,115 +40,115 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
       return CODEC;
    }
 
-   protected ScaffoldingBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected ScaffoldingBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(DISTANCE, 7)).setValue(WATERLOGGED, false)).setValue(BOTTOM, false));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(DISTANCE, WATERLOGGED, BOTTOM);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(DISTANCE, WATERLOGGED, BOTTOM);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (!var4.isHoldingItem(var1.getBlock().asItem())) {
-         return (Boolean)var1.getValue(BOTTOM) ? SHAPE_UNSTABLE : SHAPE_STABLE;
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      if (!context.isHoldingItem(state.getBlock().asItem())) {
+         return (Boolean)state.getValue(BOTTOM) ? SHAPE_UNSTABLE : SHAPE_STABLE;
       } else {
          return Shapes.block();
       }
    }
 
-   protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getInteractionShape(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return Shapes.block();
    }
 
-   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      return var2.getItemInHand().is(this.asItem());
+   protected boolean canBeReplaced(final BlockState state, final BlockPlaceContext context) {
+      return context.getItemInHand().is(this.asItem());
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockPos var2 = var1.getClickedPos();
-      Level var3 = var1.getLevel();
-      int var4 = getDistance(var3, var2);
-      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, var3.getFluidState(var2).getType() == Fluids.WATER)).setValue(DISTANCE, var4)).setValue(BOTTOM, this.isBottom(var3, var2, var4));
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockPos pos = context.getClickedPos();
+      Level level = context.getLevel();
+      int distance = getDistance(level, pos);
+      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, level.getFluidState(pos).is(Fluids.WATER))).setValue(DISTANCE, distance)).setValue(BOTTOM, this.isBottom(level, pos, distance));
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var2.isClientSide()) {
-         var2.scheduleTick(var3, this, 1);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!level.isClientSide()) {
+         level.scheduleTick(pos, this, 1);
       }
 
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      if (!var2.isClientSide()) {
-         var3.scheduleTick(var4, (Block)this, 1);
+      if (!level.isClientSide()) {
+         ticks.scheduleTick(pos, (Block)this, 1);
       }
 
-      return var1;
+      return state;
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      int var5 = getDistance(var2, var3);
-      BlockState var6 = (BlockState)((BlockState)var1.setValue(DISTANCE, var5)).setValue(BOTTOM, this.isBottom(var2, var3, var5));
-      if ((Integer)var6.getValue(DISTANCE) == 7) {
-         if ((Integer)var1.getValue(DISTANCE) == 7) {
-            FallingBlockEntity.fall(var2, var3, var6);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      int distance = getDistance(level, pos);
+      BlockState newState = (BlockState)((BlockState)state.setValue(DISTANCE, distance)).setValue(BOTTOM, this.isBottom(level, pos, distance));
+      if ((Integer)newState.getValue(DISTANCE) == 7) {
+         if ((Integer)state.getValue(DISTANCE) == 7) {
+            FallingBlockEntity.fall(level, pos, newState);
          } else {
-            var2.destroyBlock(var3, true);
+            level.destroyBlock(pos, true);
          }
-      } else if (var1 != var6) {
-         var2.setBlock(var3, var6, 3);
+      } else if (state != newState) {
+         level.setBlock(pos, newState, 3);
       }
 
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return getDistance(var2, var3) < 7;
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return getDistance(level, pos) < 7;
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (var4.isPlacement()) {
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      if (context.isPlacement()) {
          return Shapes.empty();
-      } else if (var4.isAbove(Shapes.block(), var3, true) && !var4.isDescending()) {
+      } else if (context.isAbove(Shapes.block(), pos, true) && !context.isDescending()) {
          return SHAPE_STABLE;
       } else {
-         return (Integer)var1.getValue(DISTANCE) != 0 && (Boolean)var1.getValue(BOTTOM) && var4.isAbove(SHAPE_BELOW_BLOCK, var3, true) ? SHAPE_UNSTABLE_BOTTOM : Shapes.empty();
+         return (Integer)state.getValue(DISTANCE) != 0 && (Boolean)state.getValue(BOTTOM) && context.isAbove(SHAPE_BELOW_BLOCK, pos, true) ? SHAPE_UNSTABLE_BOTTOM : Shapes.empty();
       }
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   private boolean isBottom(BlockGetter var1, BlockPos var2, int var3) {
-      return var3 > 0 && !var1.getBlockState(var2.below()).is(this);
+   private boolean isBottom(final BlockGetter level, final BlockPos pos, final int distance) {
+      return distance > 0 && !level.getBlockState(pos.below()).is(this);
    }
 
-   public static int getDistance(BlockGetter var0, BlockPos var1) {
-      BlockPos.MutableBlockPos var2 = var1.mutable().move(Direction.DOWN);
-      BlockState var3 = var0.getBlockState(var2);
-      int var4 = 7;
-      if (var3.is(Blocks.SCAFFOLDING)) {
-         var4 = (Integer)var3.getValue(DISTANCE);
-      } else if (var3.isFaceSturdy(var0, var2, Direction.UP)) {
+   public static int getDistance(final BlockGetter level, final BlockPos pos) {
+      BlockPos.MutableBlockPos relativePos = pos.mutable().move(Direction.DOWN);
+      BlockState belowState = level.getBlockState(relativePos);
+      int distance = 7;
+      if (belowState.is(Blocks.SCAFFOLDING)) {
+         distance = (Integer)belowState.getValue(DISTANCE);
+      } else if (belowState.isFaceSturdy(level, relativePos, Direction.UP)) {
          return 0;
       }
 
-      for(Direction var6 : Direction.Plane.HORIZONTAL) {
-         BlockState var7 = var0.getBlockState(var2.setWithOffset(var1, (Direction)var6));
-         if (var7.is(Blocks.SCAFFOLDING)) {
-            var4 = Math.min(var4, (Integer)var7.getValue(DISTANCE) + 1);
-            if (var4 == 1) {
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         BlockState relativeState = level.getBlockState(relativePos.setWithOffset(pos, (Direction)direction));
+         if (relativeState.is(Blocks.SCAFFOLDING)) {
+            distance = Math.min(distance, (Integer)relativeState.getValue(DISTANCE) + 1);
+            if (distance == 1) {
                break;
             }
          }
       }
 
-      return var4;
+      return distance;
    }
 
    static {

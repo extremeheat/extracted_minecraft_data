@@ -26,35 +26,35 @@ public class Hotbar {
    private static final Dynamic<?> EMPTY_STACK;
    private List<Dynamic<?>> items;
 
-   private Hotbar(List<Dynamic<?>> var1) {
+   private Hotbar(final List<Dynamic<?>> items) {
       super();
-      this.items = var1;
+      this.items = items;
    }
 
    public Hotbar() {
       this(Collections.nCopies(SIZE, EMPTY_STACK));
    }
 
-   public List<ItemStack> load(HolderLookup.Provider var1) {
-      return this.items.stream().map((var1x) -> (ItemStack)ItemStack.OPTIONAL_CODEC.parse(RegistryOps.injectRegistryContext(var1x, var1)).resultOrPartial((var0) -> LOGGER.warn("Could not parse hotbar item: {}", var0)).orElse(ItemStack.EMPTY)).toList();
+   public List<ItemStack> load(final HolderLookup.Provider registries) {
+      return this.items.stream().map((dynamic) -> (ItemStack)ItemStack.OPTIONAL_CODEC.parse(RegistryOps.injectRegistryContext(dynamic, registries)).resultOrPartial((error) -> LOGGER.warn("Could not parse hotbar item: {}", error)).orElse(ItemStack.EMPTY)).toList();
    }
 
-   public void storeFrom(Inventory var1, RegistryAccess var2) {
-      RegistryOps var3 = var2.createSerializationContext(DEFAULT_OPS);
-      ImmutableList.Builder var4 = ImmutableList.builderWithExpectedSize(SIZE);
+   public void storeFrom(final Inventory inventory, final RegistryAccess lookupProvider) {
+      RegistryOps<Tag> registryOps = lookupProvider.createSerializationContext(DEFAULT_OPS);
+      ImmutableList.Builder<Dynamic<?>> newItems = ImmutableList.builderWithExpectedSize(SIZE);
 
-      for(int var5 = 0; var5 < SIZE; ++var5) {
-         ItemStack var6 = var1.getItem(var5);
-         Optional var7 = ItemStack.OPTIONAL_CODEC.encodeStart(var3, var6).resultOrPartial((var0) -> LOGGER.warn("Could not encode hotbar item: {}", var0)).map((var0) -> new Dynamic(DEFAULT_OPS, var0));
-         var4.add((Dynamic)var7.orElse(EMPTY_STACK));
+      for(int i = 0; i < SIZE; ++i) {
+         ItemStack item = inventory.getItem(i);
+         Optional<Dynamic<?>> result = ItemStack.OPTIONAL_CODEC.encodeStart(registryOps, item).resultOrPartial((error) -> LOGGER.warn("Could not encode hotbar item: {}", error)).map((tag) -> new Dynamic(DEFAULT_OPS, tag));
+         newItems.add((Dynamic)result.orElse(EMPTY_STACK));
       }
 
-      this.items = var4.build();
+      this.items = newItems.build();
    }
 
    public boolean isEmpty() {
-      for(Dynamic var2 : this.items) {
-         if (!isEmpty(var2)) {
+      for(Dynamic<?> item : this.items) {
+         if (!isEmpty(item)) {
             return false;
          }
       }
@@ -62,12 +62,12 @@ public class Hotbar {
       return true;
    }
 
-   private static boolean isEmpty(Dynamic<?> var0) {
-      return EMPTY_STACK.equals(var0);
+   private static boolean isEmpty(final Dynamic<?> item) {
+      return EMPTY_STACK.equals(item);
    }
 
    static {
-      CODEC = Codec.PASSTHROUGH.listOf().validate((var0) -> Util.fixedSize(var0, SIZE)).xmap(Hotbar::new, (var0) -> var0.items);
+      CODEC = Codec.PASSTHROUGH.listOf().validate((list) -> Util.fixedSize(list, SIZE)).xmap(Hotbar::new, (hotbar) -> hotbar.items);
       DEFAULT_OPS = NbtOps.INSTANCE;
       EMPTY_STACK = new Dynamic(DEFAULT_OPS, (Tag)ItemStack.OPTIONAL_CODEC.encodeStart(DEFAULT_OPS, ItemStack.EMPTY).getOrThrow());
    }

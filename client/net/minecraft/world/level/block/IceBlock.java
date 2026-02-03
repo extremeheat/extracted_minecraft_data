@@ -24,43 +24,43 @@ public class IceBlock extends HalfTransparentBlock {
       return CODEC;
    }
 
-   public IceBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public IceBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    public static BlockState meltsInto() {
       return Blocks.WATER.defaultBlockState();
    }
 
-   public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
-      super.playerDestroy(var1, var2, var3, var4, var5, var6);
-      if (!EnchantmentHelper.hasTag(var6, EnchantmentTags.PREVENTS_ICE_MELTING)) {
-         if ((Boolean)var1.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, var3)) {
-            var1.removeBlock(var3, false);
+   public void playerDestroy(final Level level, final Player player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
+      super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
+      if (!EnchantmentHelper.hasTag(destroyedWith, EnchantmentTags.PREVENTS_ICE_MELTING)) {
+         if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos)) {
+            level.removeBlock(pos, false);
             return;
          }
 
-         BlockState var7 = var1.getBlockState(var3.below());
-         if (var7.blocksMotion() || var7.liquid()) {
-            var1.setBlockAndUpdate(var3, meltsInto());
+         BlockState belowState = level.getBlockState(pos.below());
+         if (belowState.blocksMotion() || belowState.liquid()) {
+            level.setBlockAndUpdate(pos, meltsInto());
          }
       }
 
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var2.getBrightness(LightLayer.BLOCK, var3) > 11 - var1.getLightBlock()) {
-         this.melt(var1, var2, var3);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (level.getBrightness(LightLayer.BLOCK, pos) > 11 - state.getLightBlock()) {
+         this.melt(state, level, pos);
       }
 
    }
 
-   protected void melt(BlockState var1, Level var2, BlockPos var3) {
-      if ((Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, var3)) {
-         var2.removeBlock(var3, false);
+   protected void melt(final BlockState state, final Level level, final BlockPos pos) {
+      if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos)) {
+         level.removeBlock(pos, false);
       } else {
-         var2.setBlockAndUpdate(var3, meltsInto());
-         var2.neighborChanged(var3, meltsInto().getBlock(), (Orientation)null);
+         level.setBlockAndUpdate(pos, meltsInto());
+         level.neighborChanged(pos, meltsInto().getBlock(), (Orientation)null);
       }
    }
 }

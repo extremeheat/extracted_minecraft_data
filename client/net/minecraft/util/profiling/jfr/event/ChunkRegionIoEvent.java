@@ -48,19 +48,19 @@ public abstract class ChunkRegionIoEvent extends Event {
    @Label("Bytes")
    public final int bytes;
 
-   public ChunkRegionIoEvent(RegionStorageInfo var1, ChunkPos var2, RegionFileVersion var3, int var4) {
+   protected ChunkRegionIoEvent(final RegionStorageInfo info, final ChunkPos chunkPos, final RegionFileVersion version, final int bytes) {
       super();
-      this.regionPosX = var2.getRegionX();
-      this.regionPosZ = var2.getRegionZ();
-      this.localChunkPosX = var2.getRegionLocalX();
-      this.localChunkPosZ = var2.getRegionLocalZ();
-      this.chunkPosX = var2.x;
-      this.chunkPosZ = var2.z;
-      this.levelId = var1.level();
-      this.dimension = var1.dimension().identifier().toString();
-      this.type = var1.type();
-      this.compression = "standard:" + var3.getId();
-      this.bytes = var4;
+      this.regionPosX = chunkPos.getRegionX();
+      this.regionPosZ = chunkPos.getRegionZ();
+      this.localChunkPosX = chunkPos.getRegionLocalX();
+      this.localChunkPosZ = chunkPos.getRegionLocalZ();
+      this.chunkPosX = chunkPos.x();
+      this.chunkPosZ = chunkPos.z();
+      this.levelId = info.level();
+      this.dimension = info.dimension().identifier().toString();
+      this.type = info.type();
+      this.compression = "standard:" + version.getId();
+      this.bytes = bytes;
    }
 
    public static class Fields {

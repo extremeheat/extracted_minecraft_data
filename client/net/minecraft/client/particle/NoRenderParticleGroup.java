@@ -5,14 +5,14 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.ParticleGroupRenderState;
 
 public class NoRenderParticleGroup extends ParticleGroup<NoRenderParticle> {
-   private static final ParticleGroupRenderState EMPTY_RENDER_STATE = (var0, var1) -> {
+   private static final ParticleGroupRenderState EMPTY_RENDER_STATE = (ignored, camera) -> {
    };
 
-   public NoRenderParticleGroup(ParticleEngine var1) {
-      super(var1);
+   public NoRenderParticleGroup(final ParticleEngine engine) {
+      super(engine);
    }
 
-   public ParticleGroupRenderState extractRenderState(Frustum var1, Camera var2, float var3) {
+   public ParticleGroupRenderState extractRenderState(final Frustum frustum, final Camera camera, final float partialTickTime) {
       return EMPTY_RENDER_STATE;
    }
 }

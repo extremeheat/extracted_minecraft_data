@@ -31,8 +31,8 @@ public class MinecartFurnace extends AbstractMinecart {
    private int fuel = 0;
    public Vec3 push;
 
-   public MinecartFurnace(EntityType<? extends MinecartFurnace> var1, Level var2) {
-      super(var1, var2);
+   public MinecartFurnace(final EntityType<? extends MinecartFurnace> type, final Level level) {
+      super(type, level);
       this.push = DEFAULT_PUSH;
    }
 
@@ -40,9 +40,9 @@ public class MinecartFurnace extends AbstractMinecart {
       return true;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_ID_FUEL, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_ID_FUEL, false);
    }
 
    public void tick() {
@@ -65,8 +65,8 @@ public class MinecartFurnace extends AbstractMinecart {
 
    }
 
-   protected double getMaxSpeed(ServerLevel var1) {
-      return this.isInWater() ? super.getMaxSpeed(var1) * 0.75 : super.getMaxSpeed(var1) * 0.5;
+   protected double getMaxSpeed(final ServerLevel level) {
+      return this.isInWater() ? super.getMaxSpeed(level) * 0.75 : super.getMaxSpeed(level) * 0.5;
    }
 
    protected Item getDropItem() {
@@ -77,41 +77,41 @@ public class MinecartFurnace extends AbstractMinecart {
       return new ItemStack(Items.FURNACE_MINECART);
    }
 
-   protected Vec3 applyNaturalSlowdown(Vec3 var1) {
-      Vec3 var2;
+   protected Vec3 applyNaturalSlowdown(final Vec3 deltaMovement) {
+      Vec3 newDeltaMovement;
       if (this.push.lengthSqr() > 1.0E-7) {
-         this.push = this.calculateNewPushAlong(var1);
-         var2 = var1.multiply(0.8, 0.0, 0.8).add(this.push);
+         this.push = this.calculateNewPushAlong(deltaMovement);
+         newDeltaMovement = deltaMovement.multiply(0.8, 0.0, 0.8).add(this.push);
          if (this.isInWater()) {
-            var2 = var2.scale(0.1);
+            newDeltaMovement = newDeltaMovement.scale(0.1);
          }
       } else {
-         var2 = var1.multiply(0.98, 0.0, 0.98);
+         newDeltaMovement = deltaMovement.multiply(0.98, 0.0, 0.98);
       }
 
-      return super.applyNaturalSlowdown(var2);
+      return super.applyNaturalSlowdown(newDeltaMovement);
    }
 
-   private Vec3 calculateNewPushAlong(Vec3 var1) {
-      double var2 = 1.0E-4;
-      double var4 = 0.001;
-      return this.push.horizontalDistanceSqr() > 1.0E-4 && var1.horizontalDistanceSqr() > 0.001 ? this.push.projectedOn(var1).normalize().scale(this.push.length()) : this.push;
+   private Vec3 calculateNewPushAlong(final Vec3 deltaMovement) {
+      double epsilonPushCheck = 1.0E-4;
+      double epsilonMovementCheck = 0.001;
+      return this.push.horizontalDistanceSqr() > 1.0E-4 && deltaMovement.horizontalDistanceSqr() > 0.001 ? this.push.projectedOn(deltaMovement).normalize().scale(this.push.length()) : this.push;
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (this.addFuel(var1.position(), var3)) {
-         var3.consume(1, var1);
+   public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (this.addFuel(player.position(), itemStack)) {
+         itemStack.consume(1, player);
       }
 
       return InteractionResult.SUCCESS;
    }
 
-   public boolean addFuel(Vec3 var1, ItemStack var2) {
-      if (var2.is(ItemTags.FURNACE_MINECART_FUEL) && this.fuel + 3600 <= 32000) {
+   public boolean addFuel(final Vec3 interactingPos, final ItemStack itemStack) {
+      if (itemStack.is(ItemTags.FURNACE_MINECART_FUEL) && this.fuel + 3600 <= 32000) {
          this.fuel += 3600;
          if (this.fuel > 0) {
-            this.push = this.position().subtract(var1).horizontal();
+            this.push = this.position().subtract(interactingPos).horizontal();
          }
 
          return true;
@@ -120,27 +120,27 @@ public class MinecartFurnace extends AbstractMinecart {
       }
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putDouble("PushX", this.push.x);
-      var1.putDouble("PushZ", this.push.z);
-      var1.putShort("Fuel", (short)this.fuel);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putDouble("PushX", this.push.x);
+      output.putDouble("PushZ", this.push.z);
+      output.putShort("Fuel", (short)this.fuel);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      double var2 = var1.getDoubleOr("PushX", DEFAULT_PUSH.x);
-      double var4 = var1.getDoubleOr("PushZ", DEFAULT_PUSH.z);
-      this.push = new Vec3(var2, 0.0, var4);
-      this.fuel = var1.getShortOr("Fuel", (short)0);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      double xPush = input.getDoubleOr("PushX", DEFAULT_PUSH.x);
+      double zPush = input.getDoubleOr("PushZ", DEFAULT_PUSH.z);
+      this.push = new Vec3(xPush, 0.0, zPush);
+      this.fuel = input.getShortOr("Fuel", (short)0);
    }
 
    protected boolean hasFuel() {
       return (Boolean)this.entityData.get(DATA_ID_FUEL);
    }
 
-   protected void setHasFuel(boolean var1) {
-      this.entityData.set(DATA_ID_FUEL, var1);
+   protected void setHasFuel(final boolean fuel) {
+      this.entityData.set(DATA_ID_FUEL, fuel);
    }
 
    public BlockState getDefaultDisplayBlockState() {

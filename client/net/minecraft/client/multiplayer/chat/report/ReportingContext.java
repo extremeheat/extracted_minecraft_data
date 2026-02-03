@@ -17,33 +17,33 @@ public final class ReportingContext {
    private final ChatLog chatLog;
    private @Nullable Report draftReport;
 
-   public ReportingContext(AbuseReportSender var1, ReportEnvironment var2, ChatLog var3) {
+   public ReportingContext(final AbuseReportSender sender, final ReportEnvironment environment, final ChatLog chatLog) {
       super();
-      this.sender = var1;
-      this.environment = var2;
-      this.chatLog = var3;
+      this.sender = sender;
+      this.environment = environment;
+      this.chatLog = chatLog;
    }
 
-   public static ReportingContext create(ReportEnvironment var0, UserApiService var1) {
-      ChatLog var2 = new ChatLog(1024);
-      AbuseReportSender var3 = AbuseReportSender.create(var0, var1);
-      return new ReportingContext(var3, var0, var2);
+   public static ReportingContext create(final ReportEnvironment environment, final UserApiService userApiService) {
+      ChatLog chatLog = new ChatLog(1024);
+      AbuseReportSender sender = AbuseReportSender.create(environment, userApiService);
+      return new ReportingContext(sender, environment, chatLog);
    }
 
-   public void draftReportHandled(Minecraft var1, Screen var2, Runnable var3, boolean var4) {
+   public void draftReportHandled(final Minecraft minecraft, final Screen lastScreen, final Runnable onDiscard, final boolean quitToTitle) {
       if (this.draftReport != null) {
-         Report var5 = this.draftReport.copy();
-         var1.setScreen(new ConfirmScreen((var5x) -> {
+         Report report = this.draftReport.copy();
+         minecraft.setScreen(new ConfirmScreen((response) -> {
             this.setReportDraft((Report)null);
-            if (var5x) {
-               var1.setScreen(var5.createScreen(var2, this));
+            if (response) {
+               minecraft.setScreen(report.createScreen(lastScreen, this));
             } else {
-               var3.run();
+               onDiscard.run();
             }
 
-         }, Component.translatable(var4 ? "gui.abuseReport.draft.quittotitle.title" : "gui.abuseReport.draft.title"), Component.translatable(var4 ? "gui.abuseReport.draft.quittotitle.content" : "gui.abuseReport.draft.content"), Component.translatable("gui.abuseReport.draft.edit"), Component.translatable("gui.abuseReport.draft.discard")));
+         }, Component.translatable(quitToTitle ? "gui.abuseReport.draft.quittotitle.title" : "gui.abuseReport.draft.title"), Component.translatable(quitToTitle ? "gui.abuseReport.draft.quittotitle.content" : "gui.abuseReport.draft.content"), Component.translatable("gui.abuseReport.draft.edit"), Component.translatable("gui.abuseReport.draft.discard")));
       } else {
-         var3.run();
+         onDiscard.run();
       }
 
    }
@@ -56,19 +56,19 @@ public final class ReportingContext {
       return this.chatLog;
    }
 
-   public boolean matches(ReportEnvironment var1) {
-      return Objects.equals(this.environment, var1);
+   public boolean matches(final ReportEnvironment environment) {
+      return Objects.equals(this.environment, environment);
    }
 
-   public void setReportDraft(@Nullable Report var1) {
-      this.draftReport = var1;
+   public void setReportDraft(final @Nullable Report draftReport) {
+      this.draftReport = draftReport;
    }
 
    public boolean hasDraftReport() {
       return this.draftReport != null;
    }
 
-   public boolean hasDraftReportFor(UUID var1) {
-      return this.hasDraftReport() && this.draftReport.isReportedPlayer(var1);
+   public boolean hasDraftReportFor(final UUID playerId) {
+      return this.hasDraftReport() && this.draftReport.isReportedPlayer(playerId);
    }
 }

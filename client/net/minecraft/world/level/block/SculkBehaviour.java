@@ -11,22 +11,22 @@ import org.jspecify.annotations.Nullable;
 
 public interface SculkBehaviour {
    SculkBehaviour DEFAULT = new SculkBehaviour() {
-      public boolean attemptSpreadVein(LevelAccessor var1, BlockPos var2, BlockState var3, @Nullable Collection<Direction> var4, boolean var5) {
-         if (var4 == null) {
-            return ((SculkVeinBlock)Blocks.SCULK_VEIN).getSameSpaceSpreader().spreadAll(var1.getBlockState(var2), var1, var2, var5) > 0L;
-         } else if (!var4.isEmpty()) {
-            return !var3.isAir() && !var3.getFluidState().is(Fluids.WATER) ? false : SculkVeinBlock.regrow(var1, var2, var3, var4);
+      public boolean attemptSpreadVein(final LevelAccessor level, final BlockPos pos, final BlockState state, final @Nullable Collection<Direction> facings, final boolean postProcess) {
+         if (facings == null) {
+            return ((SculkVeinBlock)Blocks.SCULK_VEIN).getSameSpaceSpreader().spreadAll(level.getBlockState(pos), level, pos, postProcess) > 0L;
+         } else if (!facings.isEmpty()) {
+            return !state.isAir() && !state.getFluidState().is(Fluids.WATER) ? false : SculkVeinBlock.regrow(level, pos, state, facings);
          } else {
-            return SculkBehaviour.super.attemptSpreadVein(var1, var2, var3, var4, var5);
+            return SculkBehaviour.super.attemptSpreadVein(level, pos, state, facings, postProcess);
          }
       }
 
-      public int attemptUseCharge(SculkSpreader.ChargeCursor var1, LevelAccessor var2, BlockPos var3, RandomSource var4, SculkSpreader var5, boolean var6) {
-         return var1.getDecayDelay() > 0 ? var1.getCharge() : 0;
+      public int attemptUseCharge(final SculkSpreader.ChargeCursor cursor, final LevelAccessor level, final BlockPos originPos, final RandomSource random, final SculkSpreader spreader, final boolean spreadVeins) {
+         return cursor.getDecayDelay() > 0 ? cursor.getCharge() : 0;
       }
 
-      public int updateDecayDelay(int var1) {
-         return Math.max(var1 - 1, 0);
+      public int updateDecayDelay(final int age) {
+         return Math.max(age - 1, 0);
       }
    };
 
@@ -34,24 +34,24 @@ public interface SculkBehaviour {
       return 1;
    }
 
-   default void onDischarged(LevelAccessor var1, BlockState var2, BlockPos var3, RandomSource var4) {
+   default void onDischarged(final LevelAccessor level, final BlockState state, final BlockPos pos, final RandomSource random) {
    }
 
-   default boolean depositCharge(LevelAccessor var1, BlockPos var2, RandomSource var3) {
+   default boolean depositCharge(final LevelAccessor level, final BlockPos pos, final RandomSource random) {
       return false;
    }
 
-   default boolean attemptSpreadVein(LevelAccessor var1, BlockPos var2, BlockState var3, @Nullable Collection<Direction> var4, boolean var5) {
-      return ((MultifaceSpreadeableBlock)Blocks.SCULK_VEIN).getSpreader().spreadAll(var3, var1, var2, var5) > 0L;
+   default boolean attemptSpreadVein(final LevelAccessor level, final BlockPos pos, final BlockState state, final @Nullable Collection<Direction> facings, final boolean postProcess) {
+      return ((MultifaceSpreadeableBlock)Blocks.SCULK_VEIN).getSpreader().spreadAll(state, level, pos, postProcess) > 0L;
    }
 
    default boolean canChangeBlockStateOnSpread() {
       return true;
    }
 
-   default int updateDecayDelay(int var1) {
+   default int updateDecayDelay(final int age) {
       return 1;
    }
 
-   int attemptUseCharge(SculkSpreader.ChargeCursor var1, LevelAccessor var2, BlockPos var3, RandomSource var4, SculkSpreader var5, boolean var6);
+   int attemptUseCharge(SculkSpreader.ChargeCursor cursor, LevelAccessor level, BlockPos originPos, RandomSource random, SculkSpreader spreader, boolean spreadVeins);
 }

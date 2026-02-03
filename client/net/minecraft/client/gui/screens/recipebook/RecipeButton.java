@@ -36,40 +36,40 @@ public class RecipeButton extends AbstractWidget {
    private final SlotSelectTime slotSelectTime;
    private float animationTime;
 
-   public RecipeButton(SlotSelectTime var1) {
+   public RecipeButton(final SlotSelectTime slotSelectTime) {
       super(0, 0, 25, 25, CommonComponents.EMPTY);
       this.collection = RecipeCollection.EMPTY;
       this.selectedEntries = List.of();
-      this.slotSelectTime = var1;
+      this.slotSelectTime = slotSelectTime;
    }
 
-   public void init(RecipeCollection var1, boolean var2, RecipeBookPage var3, ContextMap var4) {
-      this.collection = var1;
-      List var5 = var1.getSelectedRecipes(var2 ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY);
-      this.selectedEntries = var5.stream().map((var1x) -> new ResolvedEntry(var1x.id(), var1x.resultItems(var4))).toList();
+   public void init(final RecipeCollection collection, final boolean isFiltering, final RecipeBookPage page, final ContextMap resolutionContext) {
+      this.collection = collection;
+      List<RecipeDisplayEntry> fittingRecipes = collection.getSelectedRecipes(isFiltering ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY);
+      this.selectedEntries = fittingRecipes.stream().map((entry) -> new ResolvedEntry(entry.id(), entry.resultItems(resolutionContext))).toList();
       this.allRecipesHaveSameResultDisplay = allRecipesHaveSameResultDisplay(this.selectedEntries);
-      Stream var10000 = var5.stream().map(RecipeDisplayEntry::id);
-      ClientRecipeBook var10001 = var3.getRecipeBook();
+      Stream var10000 = fittingRecipes.stream().map(RecipeDisplayEntry::id);
+      ClientRecipeBook var10001 = page.getRecipeBook();
       Objects.requireNonNull(var10001);
-      List var6 = var10000.filter(var10001::willHighlight).toList();
-      if (!var6.isEmpty()) {
-         Objects.requireNonNull(var3);
-         var6.forEach(var3::recipeShown);
+      List<RecipeDisplayId> newlyShownRecipes = var10000.filter(var10001::willHighlight).toList();
+      if (!newlyShownRecipes.isEmpty()) {
+         Objects.requireNonNull(page);
+         newlyShownRecipes.forEach(page::recipeShown);
          this.animationTime = 15.0F;
       }
 
    }
 
-   private static boolean allRecipesHaveSameResultDisplay(List<ResolvedEntry> var0) {
-      Iterator var1 = var0.stream().flatMap((var0x) -> var0x.displayItems().stream()).iterator();
-      if (!var1.hasNext()) {
+   private static boolean allRecipesHaveSameResultDisplay(final List<ResolvedEntry> entries) {
+      Iterator<ItemStack> itemsIterator = entries.stream().flatMap((e) -> e.displayItems().stream()).iterator();
+      if (!itemsIterator.hasNext()) {
          return true;
       } else {
-         ItemStack var2 = (ItemStack)var1.next();
+         ItemStack firstItem = (ItemStack)itemsIterator.next();
 
-         while(var1.hasNext()) {
-            ItemStack var3 = (ItemStack)var1.next();
-            if (!ItemStack.isSameItemSameComponents(var2, var3)) {
+         while(itemsIterator.hasNext()) {
+            ItemStack nextItem = (ItemStack)itemsIterator.next();
+            if (!ItemStack.isSameItemSameComponents(firstItem, nextItem)) {
                return false;
             }
          }
@@ -82,41 +82,41 @@ public class RecipeButton extends AbstractWidget {
       return this.collection;
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      Identifier var5;
+   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      Identifier sprite;
       if (this.collection.hasCraftable()) {
          if (this.hasMultipleRecipes()) {
-            var5 = SLOT_MANY_CRAFTABLE_SPRITE;
+            sprite = SLOT_MANY_CRAFTABLE_SPRITE;
          } else {
-            var5 = SLOT_CRAFTABLE_SPRITE;
+            sprite = SLOT_CRAFTABLE_SPRITE;
          }
       } else if (this.hasMultipleRecipes()) {
-         var5 = SLOT_MANY_UNCRAFTABLE_SPRITE;
+         sprite = SLOT_MANY_UNCRAFTABLE_SPRITE;
       } else {
-         var5 = SLOT_UNCRAFTABLE_SPRITE;
+         sprite = SLOT_UNCRAFTABLE_SPRITE;
       }
 
-      boolean var6 = this.animationTime > 0.0F;
-      if (var6) {
-         float var7 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
-         var1.pose().pushMatrix();
-         var1.pose().translate((float)(this.getX() + 8), (float)(this.getY() + 12));
-         var1.pose().scale(var7, var7);
-         var1.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)));
-         this.animationTime -= var4;
+      boolean shouldAnimate = this.animationTime > 0.0F;
+      if (shouldAnimate) {
+         float squeeze = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
+         graphics.pose().pushMatrix();
+         graphics.pose().translate((float)(this.getX() + 8), (float)(this.getY() + 12));
+         graphics.pose().scale(squeeze, squeeze);
+         graphics.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)));
+         this.animationTime -= a;
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.width, this.height);
-      ItemStack var9 = this.getDisplayStack();
-      int var8 = 4;
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
+      ItemStack currentItemStack = this.getDisplayStack();
+      int offset = 4;
       if (this.hasMultipleRecipes() && this.allRecipesHaveSameResultDisplay) {
-         var1.renderItem(var9, this.getX() + var8 + 1, this.getY() + var8 + 1, 0);
-         --var8;
+         graphics.renderItem(currentItemStack, this.getX() + offset + 1, this.getY() + offset + 1, 0);
+         --offset;
       }
 
-      var1.renderFakeItem(var9, this.getX() + var8, this.getY() + var8);
-      if (var6) {
-         var1.pose().popMatrix();
+      graphics.renderFakeItem(currentItemStack, this.getX() + offset, this.getY() + offset);
+      if (shouldAnimate) {
+         graphics.pose().popMatrix();
       }
 
    }
@@ -130,33 +130,33 @@ public class RecipeButton extends AbstractWidget {
    }
 
    public RecipeDisplayId getCurrentRecipe() {
-      int var1 = this.slotSelectTime.currentIndex() % this.selectedEntries.size();
-      return ((ResolvedEntry)this.selectedEntries.get(var1)).id;
+      int index = this.slotSelectTime.currentIndex() % this.selectedEntries.size();
+      return ((ResolvedEntry)this.selectedEntries.get(index)).id;
    }
 
    public ItemStack getDisplayStack() {
-      int var1 = this.slotSelectTime.currentIndex();
-      int var2 = this.selectedEntries.size();
-      int var3 = var1 / var2;
-      int var4 = var1 - var2 * var3;
-      return ((ResolvedEntry)this.selectedEntries.get(var4)).selectItem(var3);
+      int currentIndex = this.slotSelectTime.currentIndex();
+      int entryCount = this.selectedEntries.size();
+      int offsetIndex = currentIndex / entryCount;
+      int entryIndex = currentIndex - entryCount * offsetIndex;
+      return ((ResolvedEntry)this.selectedEntries.get(entryIndex)).selectItem(offsetIndex);
    }
 
-   public List<Component> getTooltipText(ItemStack var1) {
-      ArrayList var2 = new ArrayList(Screen.getTooltipFromItem(Minecraft.getInstance(), var1));
+   public List<Component> getTooltipText(final ItemStack displayStack) {
+      List<Component> texts = new ArrayList(Screen.getTooltipFromItem(Minecraft.getInstance(), displayStack));
       if (this.hasMultipleRecipes()) {
-         var2.add(MORE_RECIPES_TOOLTIP);
+         texts.add(MORE_RECIPES_TOOLTIP);
       }
 
-      return var2;
+      return texts;
    }
 
-   public void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, (Component)Component.translatable("narration.recipe", this.getDisplayStack().getHoverName()));
+   public void updateWidgetNarration(final NarrationElementOutput output) {
+      output.add(NarratedElementType.TITLE, (Component)Component.translatable("narration.recipe", this.getDisplayStack().getHoverName()));
       if (this.hasMultipleRecipes()) {
-         var1.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"), Component.translatable("narration.recipe.usage.more"));
+         output.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"), Component.translatable("narration.recipe.usage.more"));
       } else {
-         var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.button.usage.hovered"));
+         output.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.button.usage.hovered"));
       }
 
    }
@@ -165,25 +165,21 @@ public class RecipeButton extends AbstractWidget {
       return 25;
    }
 
-   protected boolean isValidClickButton(MouseButtonInfo var1) {
-      return var1.button() == 0 || var1.button() == 1;
+   protected boolean isValidClickButton(final MouseButtonInfo buttonInfo) {
+      return buttonInfo.button() == 0 || buttonInfo.button() == 1;
    }
 
-   static record ResolvedEntry(RecipeDisplayId id, List<ItemStack> displayItems) {
-      final RecipeDisplayId id;
-
-      ResolvedEntry(RecipeDisplayId var1, List<ItemStack> var2) {
+   private static record ResolvedEntry(RecipeDisplayId id, List<ItemStack> displayItems) {
+      private ResolvedEntry {
          super();
-         this.id = var1;
-         this.displayItems = var2;
       }
 
-      public ItemStack selectItem(int var1) {
+      public ItemStack selectItem(final int index) {
          if (this.displayItems.isEmpty()) {
             return ItemStack.EMPTY;
          } else {
-            int var2 = var1 % this.displayItems.size();
-            return (ItemStack)this.displayItems.get(var2);
+            int offset = index % this.displayItems.size();
+            return (ItemStack)this.displayItems.get(offset);
          }
       }
    }

@@ -17,45 +17,45 @@ public final class MobEffectUtil {
       super();
    }
 
-   public static Component formatDuration(MobEffectInstance var0, float var1, float var2) {
-      if (var0.isInfiniteDuration()) {
+   public static Component formatDuration(final MobEffectInstance instance, final float scale, final float tickrate) {
+      if (instance.isInfiniteDuration()) {
          return Component.translatable("effect.duration.infinite");
       } else {
-         int var3 = Mth.floor((float)var0.getDuration() * var1);
-         return Component.literal(StringUtil.formatTickDuration(var3, var2));
+         int duration = Mth.floor((float)instance.getDuration() * scale);
+         return Component.literal(StringUtil.formatTickDuration(duration, tickrate));
       }
    }
 
-   public static boolean hasDigSpeed(LivingEntity var0) {
-      return var0.hasEffect(MobEffects.HASTE) || var0.hasEffect(MobEffects.CONDUIT_POWER);
+   public static boolean hasDigSpeed(final LivingEntity mob) {
+      return mob.hasEffect(MobEffects.HASTE) || mob.hasEffect(MobEffects.CONDUIT_POWER);
    }
 
-   public static int getDigSpeedAmplification(LivingEntity var0) {
-      int var1 = 0;
-      int var2 = 0;
-      if (var0.hasEffect(MobEffects.HASTE)) {
-         var1 = var0.getEffect(MobEffects.HASTE).getAmplifier();
+   public static int getDigSpeedAmplification(final LivingEntity mob) {
+      int a = 0;
+      int b = 0;
+      if (mob.hasEffect(MobEffects.HASTE)) {
+         a = mob.getEffect(MobEffects.HASTE).getAmplifier();
       }
 
-      if (var0.hasEffect(MobEffects.CONDUIT_POWER)) {
-         var2 = var0.getEffect(MobEffects.CONDUIT_POWER).getAmplifier();
+      if (mob.hasEffect(MobEffects.CONDUIT_POWER)) {
+         b = mob.getEffect(MobEffects.CONDUIT_POWER).getAmplifier();
       }
 
-      return Math.max(var1, var2);
+      return Math.max(a, b);
    }
 
-   public static boolean hasWaterBreathing(LivingEntity var0) {
-      return var0.hasEffect(MobEffects.WATER_BREATHING) || var0.hasEffect(MobEffects.CONDUIT_POWER) || var0.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS);
+   public static boolean hasWaterBreathing(final LivingEntity mob) {
+      return mob.hasEffect(MobEffects.WATER_BREATHING) || mob.hasEffect(MobEffects.CONDUIT_POWER) || mob.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS);
    }
 
-   public static boolean shouldEffectsRefillAirsupply(LivingEntity var0) {
-      return !var0.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS) || var0.hasEffect(MobEffects.WATER_BREATHING) || var0.hasEffect(MobEffects.CONDUIT_POWER);
+   public static boolean shouldEffectsRefillAirsupply(final LivingEntity mob) {
+      return !mob.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS) || mob.hasEffect(MobEffects.WATER_BREATHING) || mob.hasEffect(MobEffects.CONDUIT_POWER);
    }
 
-   public static List<ServerPlayer> addEffectToPlayersAround(ServerLevel var0, @Nullable Entity var1, Vec3 var2, double var3, MobEffectInstance var5, int var6) {
-      Holder var7 = var5.getEffect();
-      List var8 = var0.getPlayers((var7x) -> var7x.gameMode.isSurvival() && (var1 == null || !var1.isAlliedTo((Entity)var7x)) && var2.closerThan(var7x.position(), var3) && (!var7x.hasEffect(var7) || var7x.getEffect(var7).getAmplifier() < var5.getAmplifier() || var7x.getEffect(var7).endsWithin(var6 - 1)));
-      var8.forEach((var2x) -> var2x.addEffect(new MobEffectInstance(var5), var1));
-      return var8;
+   public static List<ServerPlayer> addEffectToPlayersAround(final ServerLevel level, final @Nullable Entity source, final Vec3 position, final double radius, final MobEffectInstance effectInstance, final int displayEffectLimit) {
+      Holder<MobEffect> effect = effectInstance.getEffect();
+      List<ServerPlayer> players = level.getPlayers((input) -> input.gameMode.isSurvival() && (source == null || !source.isAlliedTo((Entity)input)) && position.closerThan(input.position(), radius) && (!input.hasEffect(effect) || input.getEffect(effect).getAmplifier() < effectInstance.getAmplifier() || input.getEffect(effect).endsWithin(displayEffectLimit - 1)));
+      players.forEach((player) -> player.addEffect(new MobEffectInstance(effectInstance), source));
+      return players;
    }
 }

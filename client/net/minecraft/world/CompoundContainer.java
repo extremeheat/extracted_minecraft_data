@@ -8,10 +8,10 @@ public class CompoundContainer implements Container {
    private final Container container1;
    private final Container container2;
 
-   public CompoundContainer(Container var1, Container var2) {
+   public CompoundContainer(final Container container1, final Container container2) {
       super();
-      this.container1 = var1;
-      this.container2 = var2;
+      this.container1 = container1;
+      this.container2 = container2;
    }
 
    public int getContainerSize() {
@@ -22,27 +22,27 @@ public class CompoundContainer implements Container {
       return this.container1.isEmpty() && this.container2.isEmpty();
    }
 
-   public boolean contains(Container var1) {
-      return this.container1 == var1 || this.container2 == var1;
+   public boolean contains(final Container container) {
+      return this.container1 == container || this.container2 == container;
    }
 
-   public ItemStack getItem(int var1) {
-      return var1 >= this.container1.getContainerSize() ? this.container2.getItem(var1 - this.container1.getContainerSize()) : this.container1.getItem(var1);
+   public ItemStack getItem(final int slot) {
+      return slot >= this.container1.getContainerSize() ? this.container2.getItem(slot - this.container1.getContainerSize()) : this.container1.getItem(slot);
    }
 
-   public ItemStack removeItem(int var1, int var2) {
-      return var1 >= this.container1.getContainerSize() ? this.container2.removeItem(var1 - this.container1.getContainerSize(), var2) : this.container1.removeItem(var1, var2);
+   public ItemStack removeItem(final int slot, final int count) {
+      return slot >= this.container1.getContainerSize() ? this.container2.removeItem(slot - this.container1.getContainerSize(), count) : this.container1.removeItem(slot, count);
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
-      return var1 >= this.container1.getContainerSize() ? this.container2.removeItemNoUpdate(var1 - this.container1.getContainerSize()) : this.container1.removeItemNoUpdate(var1);
+   public ItemStack removeItemNoUpdate(final int slot) {
+      return slot >= this.container1.getContainerSize() ? this.container2.removeItemNoUpdate(slot - this.container1.getContainerSize()) : this.container1.removeItemNoUpdate(slot);
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      if (var1 >= this.container1.getContainerSize()) {
-         this.container2.setItem(var1 - this.container1.getContainerSize(), var2);
+   public void setItem(final int slot, final ItemStack itemStack) {
+      if (slot >= this.container1.getContainerSize()) {
+         this.container2.setItem(slot - this.container1.getContainerSize(), itemStack);
       } else {
-         this.container1.setItem(var1, var2);
+         this.container1.setItem(slot, itemStack);
       }
 
    }
@@ -56,22 +56,22 @@ public class CompoundContainer implements Container {
       this.container2.setChanged();
    }
 
-   public boolean stillValid(Player var1) {
-      return this.container1.stillValid(var1) && this.container2.stillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.container1.stillValid(player) && this.container2.stillValid(player);
    }
 
-   public void startOpen(ContainerUser var1) {
-      this.container1.startOpen(var1);
-      this.container2.startOpen(var1);
+   public void startOpen(final ContainerUser containerUser) {
+      this.container1.startOpen(containerUser);
+      this.container2.startOpen(containerUser);
    }
 
-   public void stopOpen(ContainerUser var1) {
-      this.container1.stopOpen(var1);
-      this.container2.stopOpen(var1);
+   public void stopOpen(final ContainerUser containerUser) {
+      this.container1.stopOpen(containerUser);
+      this.container2.stopOpen(containerUser);
    }
 
-   public boolean canPlaceItem(int var1, ItemStack var2) {
-      return var1 >= this.container1.getContainerSize() ? this.container2.canPlaceItem(var1 - this.container1.getContainerSize(), var2) : this.container1.canPlaceItem(var1, var2);
+   public boolean canPlaceItem(final int slot, final ItemStack itemStack) {
+      return slot >= this.container1.getContainerSize() ? this.container2.canPlaceItem(slot - this.container1.getContainerSize(), itemStack) : this.container1.canPlaceItem(slot, itemStack);
    }
 
    public void clearContent() {

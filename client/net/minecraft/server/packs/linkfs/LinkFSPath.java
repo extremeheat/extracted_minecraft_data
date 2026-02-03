@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.FileSystem;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -50,16 +49,16 @@ class LinkFSPath implements Path {
    private @Nullable String pathString;
    private final PathContents pathContents;
 
-   public LinkFSPath(LinkFileSystem var1, String var2, @Nullable LinkFSPath var3, PathContents var4) {
+   public LinkFSPath(final LinkFileSystem fileSystem, final String name, final @Nullable LinkFSPath parent, final PathContents pathContents) {
       super();
-      this.fileSystem = var1;
-      this.name = var2;
-      this.parent = var3;
-      this.pathContents = var4;
+      this.fileSystem = fileSystem;
+      this.name = name;
+      this.parent = parent;
+      this.pathContents = pathContents;
    }
 
-   private LinkFSPath createRelativePath(@Nullable LinkFSPath var1, String var2) {
-      return new LinkFSPath(this.fileSystem, var2, var1, PathContents.RELATIVE);
+   private LinkFSPath createRelativePath(final @Nullable LinkFSPath parent, final String name) {
+      return new LinkFSPath(this.fileSystem, name, parent, PathContents.RELATIVE);
    }
 
    public LinkFileSystem getFileSystem() {
@@ -72,8 +71,8 @@ class LinkFSPath implements Path {
 
    public File toFile() {
       PathContents var2 = this.pathContents;
-      if (var2 instanceof PathContents.FileContents var1) {
-         return var1.contents().toFile();
+      if (var2 instanceof PathContents.FileContents file) {
+         return file.contents().toFile();
       } else {
          throw new UnsupportedOperationException("Path " + this.pathToString() + " does not represent file");
       }
@@ -100,59 +99,59 @@ class LinkFSPath implements Path {
          return List.of();
       } else {
          if (this.pathToRoot == null) {
-            ImmutableList.Builder var1 = ImmutableList.builder();
+            ImmutableList.Builder<String> result = ImmutableList.builder();
             if (this.parent != null) {
-               var1.addAll(this.parent.pathToRoot());
+               result.addAll(this.parent.pathToRoot());
             }
 
-            var1.add(this.name);
-            this.pathToRoot = var1.build();
+            result.add(this.name);
+            this.pathToRoot = result.build();
          }
 
          return this.pathToRoot;
       }
    }
 
-   public LinkFSPath getName(int var1) {
-      List var2 = this.pathToRoot();
-      if (var1 >= 0 && var1 < var2.size()) {
-         return this.createRelativePath((LinkFSPath)null, (String)var2.get(var1));
+   public LinkFSPath getName(final int index) {
+      List<String> names = this.pathToRoot();
+      if (index >= 0 && index < names.size()) {
+         return this.createRelativePath((LinkFSPath)null, (String)names.get(index));
       } else {
-         throw new IllegalArgumentException("Invalid index: " + var1);
+         throw new IllegalArgumentException("Invalid index: " + index);
       }
    }
 
-   public LinkFSPath subpath(int var1, int var2) {
-      List var3 = this.pathToRoot();
-      if (var1 >= 0 && var2 <= var3.size() && var1 < var2) {
-         LinkFSPath var4 = null;
+   public LinkFSPath subpath(final int beginIndex, final int endIndex) {
+      List<String> names = this.pathToRoot();
+      if (beginIndex >= 0 && endIndex <= names.size() && beginIndex < endIndex) {
+         LinkFSPath current = null;
 
-         for(int var5 = var1; var5 < var2; ++var5) {
-            var4 = this.createRelativePath(var4, (String)var3.get(var5));
+         for(int i = beginIndex; i < endIndex; ++i) {
+            current = this.createRelativePath(current, (String)names.get(i));
          }
 
-         return var4;
+         return current;
       } else {
          throw new IllegalArgumentException();
       }
    }
 
-   public boolean startsWith(Path var1) {
-      if (var1.isAbsolute() != this.isAbsolute()) {
+   public boolean startsWith(final Path other) {
+      if (other.isAbsolute() != this.isAbsolute()) {
          return false;
-      } else if (var1 instanceof LinkFSPath) {
-         LinkFSPath var2 = (LinkFSPath)var1;
-         if (var2.fileSystem != this.fileSystem) {
+      } else if (other instanceof LinkFSPath) {
+         LinkFSPath otherLink = (LinkFSPath)other;
+         if (otherLink.fileSystem != this.fileSystem) {
             return false;
          } else {
-            List var3 = this.pathToRoot();
-            List var4 = var2.pathToRoot();
-            int var5 = var4.size();
-            if (var5 > var3.size()) {
+            List<String> thisNames = this.pathToRoot();
+            List<String> otherNames = otherLink.pathToRoot();
+            int otherSize = otherNames.size();
+            if (otherSize > thisNames.size()) {
                return false;
             } else {
-               for(int var6 = 0; var6 < var5; ++var6) {
-                  if (!((String)var4.get(var6)).equals(var3.get(var6))) {
+               for(int i = 0; i < otherSize; ++i) {
+                  if (!((String)otherNames.get(i)).equals(thisNames.get(i))) {
                      return false;
                   }
                }
@@ -165,23 +164,23 @@ class LinkFSPath implements Path {
       }
    }
 
-   public boolean endsWith(Path var1) {
-      if (var1.isAbsolute() && !this.isAbsolute()) {
+   public boolean endsWith(final Path other) {
+      if (other.isAbsolute() && !this.isAbsolute()) {
          return false;
-      } else if (var1 instanceof LinkFSPath) {
-         LinkFSPath var2 = (LinkFSPath)var1;
-         if (var2.fileSystem != this.fileSystem) {
+      } else if (other instanceof LinkFSPath) {
+         LinkFSPath otherLink = (LinkFSPath)other;
+         if (otherLink.fileSystem != this.fileSystem) {
             return false;
          } else {
-            List var3 = this.pathToRoot();
-            List var4 = var2.pathToRoot();
-            int var5 = var4.size();
-            int var6 = var3.size() - var5;
-            if (var6 < 0) {
+            List<String> thisNames = this.pathToRoot();
+            List<String> otherNames = otherLink.pathToRoot();
+            int otherSize = otherNames.size();
+            int delta = thisNames.size() - otherSize;
+            if (delta < 0) {
                return false;
             } else {
-               for(int var7 = var5 - 1; var7 >= 0; --var7) {
-                  if (!((String)var4.get(var7)).equals(var3.get(var6 + var7))) {
+               for(int i = otherSize - 1; i >= 0; --i) {
+                  if (!((String)otherNames.get(i)).equals(thisNames.get(delta + i))) {
                      return false;
                   }
                }
@@ -198,59 +197,59 @@ class LinkFSPath implements Path {
       return this;
    }
 
-   public LinkFSPath resolve(Path var1) {
-      LinkFSPath var2 = this.toLinkPath(var1);
-      return var1.isAbsolute() ? var2 : this.resolve(var2.pathToRoot());
+   public LinkFSPath resolve(final Path other) {
+      LinkFSPath otherLink = this.toLinkPath(other);
+      return other.isAbsolute() ? otherLink : this.resolve(otherLink.pathToRoot());
    }
 
-   private LinkFSPath resolve(List<String> var1) {
-      LinkFSPath var2 = this;
+   private LinkFSPath resolve(final List<String> names) {
+      LinkFSPath current = this;
 
-      for(String var4 : var1) {
-         var2 = var2.resolveName(var4);
+      for(String name : names) {
+         current = current.resolveName(name);
       }
 
-      return var2;
+      return current;
    }
 
-   LinkFSPath resolveName(String var1) {
+   LinkFSPath resolveName(final String name) {
       if (isRelativeOrMissing(this.pathContents)) {
-         return new LinkFSPath(this.fileSystem, var1, this, this.pathContents);
+         return new LinkFSPath(this.fileSystem, name, this, this.pathContents);
       } else {
          PathContents var3 = this.pathContents;
          if (var3 instanceof PathContents.DirectoryContents) {
-            PathContents.DirectoryContents var2 = (PathContents.DirectoryContents)var3;
-            LinkFSPath var4 = (LinkFSPath)var2.children().get(var1);
-            return var4 != null ? var4 : new LinkFSPath(this.fileSystem, var1, this, PathContents.MISSING);
+            PathContents.DirectoryContents directory = (PathContents.DirectoryContents)var3;
+            LinkFSPath child = (LinkFSPath)directory.children().get(name);
+            return child != null ? child : new LinkFSPath(this.fileSystem, name, this, PathContents.MISSING);
          } else if (this.pathContents instanceof PathContents.FileContents) {
-            return new LinkFSPath(this.fileSystem, var1, this, PathContents.MISSING);
+            return new LinkFSPath(this.fileSystem, name, this, PathContents.MISSING);
          } else {
             throw new AssertionError("All content types should be already handled");
          }
       }
    }
 
-   private static boolean isRelativeOrMissing(PathContents var0) {
-      return var0 == PathContents.MISSING || var0 == PathContents.RELATIVE;
+   private static boolean isRelativeOrMissing(final PathContents contents) {
+      return contents == PathContents.MISSING || contents == PathContents.RELATIVE;
    }
 
-   public LinkFSPath relativize(Path var1) {
-      LinkFSPath var2 = this.toLinkPath(var1);
-      if (this.isAbsolute() != var2.isAbsolute()) {
+   public LinkFSPath relativize(final Path other) {
+      LinkFSPath otherLink = this.toLinkPath(other);
+      if (this.isAbsolute() != otherLink.isAbsolute()) {
          throw new IllegalArgumentException("absolute mismatch");
       } else {
-         List var3 = this.pathToRoot();
-         List var4 = var2.pathToRoot();
-         if (var3.size() >= var4.size()) {
+         List<String> thisNames = this.pathToRoot();
+         List<String> otherNames = otherLink.pathToRoot();
+         if (thisNames.size() >= otherNames.size()) {
             throw new IllegalArgumentException();
          } else {
-            for(int var5 = 0; var5 < var3.size(); ++var5) {
-               if (!((String)var3.get(var5)).equals(var4.get(var5))) {
+            for(int i = 0; i < thisNames.size(); ++i) {
+               if (!((String)thisNames.get(i)).equals(otherNames.get(i))) {
                   throw new IllegalArgumentException();
                }
             }
 
-            return var2.subpath(var3.size(), var4.size());
+            return otherLink.subpath(thisNames.size(), otherNames.size());
          }
       }
    }
@@ -258,8 +257,8 @@ class LinkFSPath implements Path {
    public URI toUri() {
       try {
          return new URI("x-mc-link", this.fileSystem.store().name(), this.pathToString(), (String)null);
-      } catch (URISyntaxException var2) {
-         throw new AssertionError("Failed to create URI", var2);
+      } catch (URISyntaxException e) {
+         throw new AssertionError("Failed to create URI", e);
       }
    }
 
@@ -267,34 +266,34 @@ class LinkFSPath implements Path {
       return this.isAbsolute() ? this : this.fileSystem.rootPath().resolve(this);
    }
 
-   public LinkFSPath toRealPath(LinkOption... var1) {
+   public LinkFSPath toRealPath(final LinkOption... options) {
       return this.toAbsolutePath();
    }
 
-   public WatchKey register(WatchService var1, WatchEvent.Kind<?>[] var2, WatchEvent.Modifier... var3) {
+   public WatchKey register(final WatchService watcher, final WatchEvent.Kind<?>[] events, final WatchEvent.Modifier... modifiers) {
       throw new UnsupportedOperationException();
    }
 
-   public int compareTo(Path var1) {
-      LinkFSPath var2 = this.toLinkPath(var1);
-      return PATH_COMPARATOR.compare(this, var2);
+   public int compareTo(final Path other) {
+      LinkFSPath otherPath = this.toLinkPath(other);
+      return PATH_COMPARATOR.compare(this, otherPath);
    }
 
-   public boolean equals(Object var1) {
-      if (var1 == this) {
+   public boolean equals(final Object other) {
+      if (other == this) {
          return true;
-      } else if (var1 instanceof LinkFSPath) {
-         LinkFSPath var2 = (LinkFSPath)var1;
-         if (this.fileSystem != var2.fileSystem) {
+      } else if (other instanceof LinkFSPath) {
+         LinkFSPath that = (LinkFSPath)other;
+         if (this.fileSystem != that.fileSystem) {
             return false;
          } else {
-            boolean var3 = this.hasRealContents();
-            if (var3 != var2.hasRealContents()) {
+            boolean hasRealContents = this.hasRealContents();
+            if (hasRealContents != that.hasRealContents()) {
                return false;
-            } else if (var3) {
-               return this.pathContents == var2.pathContents;
+            } else if (hasRealContents) {
+               return this.pathContents == that.pathContents;
             } else {
-               return Objects.equals(this.parent, var2.parent) && Objects.equals(this.name, var2.name);
+               return Objects.equals(this.parent, that.parent) && Objects.equals(this.name, that.name);
             }
          }
       } else {
@@ -316,26 +315,26 @@ class LinkFSPath implements Path {
 
    private String pathToString() {
       if (this.pathString == null) {
-         StringBuilder var1 = new StringBuilder();
+         StringBuilder builder = new StringBuilder();
          if (this.isAbsolute()) {
-            var1.append("/");
+            builder.append("/");
          }
 
-         Joiner.on("/").appendTo(var1, this.pathToRoot());
-         this.pathString = var1.toString();
+         Joiner.on("/").appendTo(builder, this.pathToRoot());
+         this.pathString = builder.toString();
       }
 
       return this.pathString;
    }
 
-   private LinkFSPath toLinkPath(@Nullable Path var1) {
-      if (var1 == null) {
+   private LinkFSPath toLinkPath(final @Nullable Path path) {
+      if (path == null) {
          throw new NullPointerException();
       } else {
-         if (var1 instanceof LinkFSPath) {
-            LinkFSPath var2 = (LinkFSPath)var1;
-            if (var2.fileSystem == this.fileSystem) {
-               return var2;
+         if (path instanceof LinkFSPath) {
+            LinkFSPath p = (LinkFSPath)path;
+            if (p.fileSystem == this.fileSystem) {
+               return p;
             }
          }
 
@@ -350,8 +349,8 @@ class LinkFSPath implements Path {
    public @Nullable Path getTargetPath() {
       PathContents var2 = this.pathContents;
       Path var10000;
-      if (var2 instanceof PathContents.FileContents var1) {
-         var10000 = var1.contents();
+      if (var2 instanceof PathContents.FileContents file) {
+         var10000 = file.contents();
       } else {
          var10000 = null;
       }
@@ -362,8 +361,8 @@ class LinkFSPath implements Path {
    public PathContents.@Nullable DirectoryContents getDirectoryContents() {
       PathContents var2 = this.pathContents;
       PathContents.DirectoryContents var10000;
-      if (var2 instanceof PathContents.DirectoryContents var1) {
-         var10000 = var1;
+      if (var2 instanceof PathContents.DirectoryContents dir) {
+         var10000 = dir;
       } else {
          var10000 = null;
       }
@@ -373,6 +372,10 @@ class LinkFSPath implements Path {
 
    public BasicFileAttributeView getBasicAttributeView() {
       return new BasicFileAttributeView() {
+         {
+            Objects.requireNonNull(LinkFSPath.this);
+         }
+
          public String name() {
             return "basic";
          }
@@ -381,7 +384,7 @@ class LinkFSPath implements Path {
             return LinkFSPath.this.getBasicAttributes();
          }
 
-         public void setTimes(FileTime var1, FileTime var2, FileTime var3) {
+         public void setTimes(final FileTime lastModifiedTime, final FileTime lastAccessTime, final FileTime createTime) {
             throw new ReadOnlyFileSystemException();
          }
       };
@@ -395,60 +398,5 @@ class LinkFSPath implements Path {
       } else {
          throw new NoSuchFileException(this.pathToString());
       }
-   }
-
-   // $FF: synthetic method
-   public Path toRealPath(final LinkOption[] var1) throws IOException {
-      return this.toRealPath(var1);
-   }
-
-   // $FF: synthetic method
-   public Path toAbsolutePath() {
-      return this.toAbsolutePath();
-   }
-
-   // $FF: synthetic method
-   public Path relativize(final Path var1) {
-      return this.relativize(var1);
-   }
-
-   // $FF: synthetic method
-   public Path resolve(final Path var1) {
-      return this.resolve(var1);
-   }
-
-   // $FF: synthetic method
-   public Path normalize() {
-      return this.normalize();
-   }
-
-   // $FF: synthetic method
-   public Path subpath(final int var1, final int var2) {
-      return this.subpath(var1, var2);
-   }
-
-   // $FF: synthetic method
-   public Path getName(final int var1) {
-      return this.getName(var1);
-   }
-
-   // $FF: synthetic method
-   public @Nullable Path getParent() {
-      return this.getParent();
-   }
-
-   // $FF: synthetic method
-   public Path getFileName() {
-      return this.getFileName();
-   }
-
-   // $FF: synthetic method
-   public @Nullable Path getRoot() {
-      return this.getRoot();
-   }
-
-   // $FF: synthetic method
-   public FileSystem getFileSystem() {
-      return this.getFileSystem();
    }
 }

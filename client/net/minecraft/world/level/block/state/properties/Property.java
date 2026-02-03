@@ -17,23 +17,23 @@ public abstract class Property<T extends Comparable<T>> {
    private final Codec<T> codec;
    private final Codec<Value<T>> valueCodec;
 
-   protected Property(String var1, Class<T> var2) {
+   protected Property(final String name, final Class<T> clazz) {
       super();
-      this.codec = Codec.STRING.comapFlatMap((var1x) -> (DataResult)this.getValue(var1x).map(DataResult::success).orElseGet(() -> DataResult.error(() -> {
+      this.codec = Codec.STRING.comapFlatMap((namex) -> (DataResult)this.getValue(namex).map(DataResult::success).orElseGet(() -> DataResult.error(() -> {
                String var10000 = String.valueOf(this);
-               return "Unable to read property: " + var10000 + " with value: " + var1x;
+               return "Unable to read property: " + var10000 + " with value: " + namex;
             })), this::getName);
       this.valueCodec = this.codec.xmap(this::value, Value::value);
-      this.clazz = var2;
-      this.name = var1;
+      this.clazz = clazz;
+      this.name = name;
    }
 
-   public Value<T> value(T var1) {
-      return new Value<T>(this, var1);
+   public Value<T> value(final T value) {
+      return new Value<T>(this, value);
    }
 
-   public Value<T> value(StateHolder<?, ?> var1) {
-      return new Value<T>(this, var1.getValue(this));
+   public Value<T> value(final StateHolder<?, ?> stateHolder) {
+      return new Value<T>(this, stateHolder.getValue(this));
    }
 
    public Stream<Value<T>> getAllValues() {
@@ -58,24 +58,24 @@ public abstract class Property<T extends Comparable<T>> {
 
    public abstract List<T> getPossibleValues();
 
-   public abstract String getName(T var1);
+   public abstract String getName(final T value);
 
-   public abstract Optional<T> getValue(String var1);
+   public abstract Optional<T> getValue(final String name);
 
-   public abstract int getInternalIndex(T var1);
+   public abstract int getInternalIndex(final T value);
 
    public String toString() {
       return MoreObjects.toStringHelper(this).add("name", this.name).add("clazz", this.clazz).add("values", this.getPossibleValues()).toString();
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (!(var1 instanceof Property)) {
+      } else if (!(o instanceof Property)) {
          return false;
       } else {
-         Property var2 = (Property)var1;
-         return this.clazz.equals(var2.clazz) && this.name.equals(var2.name);
+         Property<?> that = (Property)o;
+         return this.clazz.equals(that.clazz) && this.name.equals(that.name);
       }
    }
 
@@ -91,20 +91,17 @@ public abstract class Property<T extends Comparable<T>> {
       return 31 * this.clazz.hashCode() + this.name.hashCode();
    }
 
-   public <U, S extends StateHolder<?, S>> DataResult<S> parseValue(DynamicOps<U> var1, S var2, U var3) {
-      DataResult var4 = this.codec.parse(var1, var3);
-      return var4.map((var2x) -> (StateHolder)var2.setValue(this, var2x)).setPartial(var2);
+   public <U, S extends StateHolder<?, S>> DataResult<S> parseValue(final DynamicOps<U> ops, final S state, final U value) {
+      DataResult<T> parsed = this.codec.parse(ops, value);
+      return parsed.map((v) -> (StateHolder)((StateHolder)state).setValue(this, v)).setPartial(state);
    }
 
    public static record Value<T extends Comparable<T>>(Property<T> property, T value) {
-      public Value(Property<T> var1, T var2) {
+      public Value {
          super();
-         if (!var1.getPossibleValues().contains(var2)) {
-            String var10002 = String.valueOf(var2);
-            throw new IllegalArgumentException("Value " + var10002 + " does not belong to property " + String.valueOf(var1));
-         } else {
-            this.property = var1;
-            this.value = var2;
+         if (!property.getPossibleValues().contains(value)) {
+            String var10002 = String.valueOf(value);
+            throw new IllegalArgumentException("Value " + var10002 + " does not belong to property " + String.valueOf(property));
          }
       }
 

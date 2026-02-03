@@ -11,23 +11,21 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import org.jspecify.annotations.Nullable;
 
 public record TextureContents(NativeImage image, @Nullable TextureMetadataSection metadata) implements Closeable {
-   public TextureContents(NativeImage var1, @Nullable TextureMetadataSection var2) {
+   public TextureContents {
       super();
-      this.image = var1;
-      this.metadata = var2;
    }
 
-   public static TextureContents load(ResourceManager var0, Identifier var1) throws IOException {
-      Resource var2 = var0.getResourceOrThrow(var1);
-      InputStream var4 = var2.open();
+   public static TextureContents load(final ResourceManager resourceManager, final Identifier location) throws IOException {
+      Resource resource = resourceManager.getResourceOrThrow(location);
+      InputStream is = resource.open();
 
-      NativeImage var3;
+      NativeImage image;
       try {
-         var3 = NativeImage.read(var4);
+         image = NativeImage.read(is);
       } catch (Throwable var8) {
-         if (var4 != null) {
+         if (is != null) {
             try {
-               var4.close();
+               is.close();
             } catch (Throwable var7) {
                var8.addSuppressed(var7);
             }
@@ -36,12 +34,12 @@ public record TextureContents(NativeImage image, @Nullable TextureMetadataSectio
          throw var8;
       }
 
-      if (var4 != null) {
-         var4.close();
+      if (is != null) {
+         is.close();
       }
 
-      TextureMetadataSection var9 = (TextureMetadataSection)var2.metadata().getSection(TextureMetadataSection.TYPE).orElse((Object)null);
-      return new TextureContents(var3, var9);
+      TextureMetadataSection metadata = (TextureMetadataSection)resource.metadata().getSection(TextureMetadataSection.TYPE).orElse((Object)null);
+      return new TextureContents(image, metadata);
    }
 
    public static TextureContents createMissing() {

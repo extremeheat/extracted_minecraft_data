@@ -15,19 +15,19 @@ public class WeepingVinesBlock extends GrowingPlantHeadBlock {
       return CODEC;
    }
 
-   public WeepingVinesBlock(BlockBehaviour.Properties var1) {
-      super(var1, Direction.DOWN, SHAPE, false, 0.1);
+   public WeepingVinesBlock(final BlockBehaviour.Properties properties) {
+      super(properties, Direction.DOWN, SHAPE, false, 0.1);
    }
 
-   protected int getBlocksToGrowWhenBonemealed(RandomSource var1) {
-      return NetherVines.getBlocksToGrowWhenBonemealed(var1);
+   protected int getBlocksToGrowWhenBonemealed(final RandomSource random) {
+      return NetherVines.getBlocksToGrowWhenBonemealed(random);
    }
 
    protected Block getBodyBlock() {
       return Blocks.WEEPING_VINES_PLANT;
    }
 
-   protected boolean canGrowInto(BlockState var1) {
-      return NetherVines.isValidGrowthState(var1);
+   protected boolean canGrowInto(final BlockState state) {
+      return NetherVines.isValidGrowthState(state);
    }
 }

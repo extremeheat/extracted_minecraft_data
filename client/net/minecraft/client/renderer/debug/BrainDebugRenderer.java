@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.debug;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -49,111 +48,111 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private final Minecraft minecraft;
    private @Nullable UUID lastLookedAtUuid;
 
-   public BrainDebugRenderer(Minecraft var1) {
+   public BrainDebugRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      this.doRender(var7);
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      this.doRender(debugValues);
       if (!this.minecraft.player.isSpectator()) {
          this.updateLastLookedAtUuid();
       }
 
    }
 
-   private void doRender(DebugValueAccess var1) {
-      var1.forEachEntity(DebugSubscriptions.BRAINS, (var1x, var2) -> {
-         if (this.minecraft.player.closerThan(var1x, 30.0)) {
-            this.renderBrainInfo(var1x, var2);
+   private void doRender(final DebugValueAccess debugValues) {
+      debugValues.forEachEntity(DebugSubscriptions.BRAINS, (entity, brainDump) -> {
+         if (this.minecraft.player.closerThan(entity, 30.0)) {
+            this.renderBrainInfo(entity, brainDump);
          }
 
       });
    }
 
-   private void renderBrainInfo(Entity var1, DebugBrainDump var2) {
-      boolean var3 = this.isMobSelected(var1);
-      int var4 = 0;
-      Gizmos.billboardTextOverMob(var1, var4, var2.name(), -1, 0.48F);
-      ++var4;
-      if (var3) {
-         Gizmos.billboardTextOverMob(var1, var4, var2.profession() + " " + var2.xp() + " xp", -1, 0.32F);
-         ++var4;
+   private void renderBrainInfo(final Entity entity, final DebugBrainDump brainDump) {
+      boolean selected = this.isMobSelected(entity);
+      int row = 0;
+      Gizmos.billboardTextOverMob(entity, row, brainDump.name(), -1, 0.48F);
+      ++row;
+      if (selected) {
+         Gizmos.billboardTextOverMob(entity, row, brainDump.profession() + " " + brainDump.xp() + " xp", -1, 0.32F);
+         ++row;
       }
 
-      if (var3) {
-         int var5 = var2.health() < var2.maxHealth() ? -23296 : -1;
-         String var10002 = String.format(Locale.ROOT, "%.1f", var2.health());
-         Gizmos.billboardTextOverMob(var1, var4, "health: " + var10002 + " / " + String.format(Locale.ROOT, "%.1f", var2.maxHealth()), var5, 0.32F);
-         ++var4;
+      if (selected) {
+         int color = brainDump.health() < brainDump.maxHealth() ? -23296 : -1;
+         String var10002 = String.format(Locale.ROOT, "%.1f", brainDump.health());
+         Gizmos.billboardTextOverMob(entity, row, "health: " + var10002 + " / " + String.format(Locale.ROOT, "%.1f", brainDump.maxHealth()), color, 0.32F);
+         ++row;
       }
 
-      if (var3 && !var2.inventory().equals("")) {
-         Gizmos.billboardTextOverMob(var1, var4, var2.inventory(), -98404, 0.32F);
-         ++var4;
+      if (selected && !brainDump.inventory().equals("")) {
+         Gizmos.billboardTextOverMob(entity, row, brainDump.inventory(), -98404, 0.32F);
+         ++row;
       }
 
-      if (var3) {
-         for(String var6 : var2.behaviors()) {
-            Gizmos.billboardTextOverMob(var1, var4, var6, -16711681, 0.32F);
-            ++var4;
+      if (selected) {
+         for(String goal : brainDump.behaviors()) {
+            Gizmos.billboardTextOverMob(entity, row, goal, -16711681, 0.32F);
+            ++row;
          }
       }
 
-      if (var3) {
-         for(String var12 : var2.activities()) {
-            Gizmos.billboardTextOverMob(var1, var4, var12, -16711936, 0.32F);
-            ++var4;
+      if (selected) {
+         for(String activity : brainDump.activities()) {
+            Gizmos.billboardTextOverMob(entity, row, activity, -16711936, 0.32F);
+            ++row;
          }
       }
 
-      if (var2.wantsGolem()) {
-         Gizmos.billboardTextOverMob(var1, var4, "Wants Golem", -23296, 0.32F);
-         ++var4;
+      if (brainDump.wantsGolem()) {
+         Gizmos.billboardTextOverMob(entity, row, "Wants Golem", -23296, 0.32F);
+         ++row;
       }
 
-      if (var3 && var2.angerLevel() != -1) {
-         Gizmos.billboardTextOverMob(var1, var4, "Anger Level: " + var2.angerLevel(), -98404, 0.32F);
-         ++var4;
+      if (selected && brainDump.angerLevel() != -1) {
+         Gizmos.billboardTextOverMob(entity, row, "Anger Level: " + brainDump.angerLevel(), -98404, 0.32F);
+         ++row;
       }
 
-      if (var3) {
-         for(String var13 : var2.gossips()) {
-            if (var13.startsWith(var2.name())) {
-               Gizmos.billboardTextOverMob(var1, var4, var13, -1, 0.32F);
+      if (selected) {
+         for(String gossip : brainDump.gossips()) {
+            if (gossip.startsWith(brainDump.name())) {
+               Gizmos.billboardTextOverMob(entity, row, gossip, -1, 0.32F);
             } else {
-               Gizmos.billboardTextOverMob(var1, var4, var13, -23296, 0.32F);
+               Gizmos.billboardTextOverMob(entity, row, gossip, -23296, 0.32F);
             }
 
-            ++var4;
+            ++row;
          }
       }
 
-      if (var3) {
-         for(String var14 : Lists.reverse(var2.memories())) {
-            Gizmos.billboardTextOverMob(var1, var4, var14, -3355444, 0.32F);
-            ++var4;
+      if (selected) {
+         for(String memory : Lists.reverse(brainDump.memories())) {
+            Gizmos.billboardTextOverMob(entity, row, memory, -3355444, 0.32F);
+            ++row;
          }
       }
 
    }
 
-   private boolean isMobSelected(Entity var1) {
-      return Objects.equals(this.lastLookedAtUuid, var1.getUUID());
+   private boolean isMobSelected(final Entity entity) {
+      return Objects.equals(this.lastLookedAtUuid, entity.getUUID());
    }
 
-   public Map<BlockPos, List<String>> getGhostPois(DebugValueAccess var1) {
-      HashMap var2 = Maps.newHashMap();
-      var1.forEachEntity(DebugSubscriptions.BRAINS, (var1x, var2x) -> {
-         for(BlockPos var4 : Iterables.concat(var2x.pois(), var2x.potentialPois())) {
-            ((List)var2.computeIfAbsent(var4, (var0) -> Lists.newArrayList())).add(var2x.name());
+   public Map<BlockPos, List<String>> getGhostPois(final DebugValueAccess debugValues) {
+      Map<BlockPos, List<String>> ghostPois = Maps.newHashMap();
+      debugValues.forEachEntity(DebugSubscriptions.BRAINS, (entity, brainDump) -> {
+         for(BlockPos poiPos : Iterables.concat(brainDump.pois(), brainDump.potentialPois())) {
+            ((List)ghostPois.computeIfAbsent(poiPos, (k) -> Lists.newArrayList())).add(brainDump.name());
          }
 
       });
-      return var2;
+      return ghostPois;
    }
 
    private void updateLastLookedAtUuid() {
-      DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent((var1) -> this.lastLookedAtUuid = var1.getUUID());
+      DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent((entity) -> this.lastLookedAtUuid = entity.getUUID());
    }
 }

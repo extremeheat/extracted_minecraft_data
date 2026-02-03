@@ -30,6 +30,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.SoundType;
@@ -43,74 +44,74 @@ public class Horse extends AbstractHorse {
    private static final EntityDimensions BABY_DIMENSIONS;
    private static final int DEFAULT_VARIANT = 0;
 
-   public Horse(EntityType<? extends Horse> var1, Level var2) {
-      super(var1, var2);
+   public Horse(final EntityType<? extends Horse> type, final Level level) {
+      super(type, level);
       this.setPathfindingMalus(PathType.DANGER_OTHER, -1.0F);
       this.setPathfindingMalus(PathType.DAMAGE_OTHER, -1.0F);
    }
 
-   protected void randomizeAttributes(RandomSource var1) {
+   protected void randomizeAttributes(final RandomSource random) {
       AttributeInstance var10000 = this.getAttribute(Attributes.MAX_HEALTH);
-      Objects.requireNonNull(var1);
-      var10000.setBaseValue((double)generateMaxHealth(var1::nextInt));
+      Objects.requireNonNull(random);
+      var10000.setBaseValue((double)generateMaxHealth(random::nextInt));
       var10000 = this.getAttribute(Attributes.MOVEMENT_SPEED);
-      Objects.requireNonNull(var1);
-      var10000.setBaseValue(generateSpeed(var1::nextDouble));
+      Objects.requireNonNull(random);
+      var10000.setBaseValue(generateSpeed(random::nextDouble));
       var10000 = this.getAttribute(Attributes.JUMP_STRENGTH);
-      Objects.requireNonNull(var1);
-      var10000.setBaseValue(generateJumpStrength(var1::nextDouble));
+      Objects.requireNonNull(random);
+      var10000.setBaseValue(generateJumpStrength(random::nextDouble));
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_ID_TYPE_VARIANT, 0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_ID_TYPE_VARIANT, 0);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("Variant", this.getTypeVariant());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("Variant", this.getTypeVariant());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setTypeVariant(var1.getIntOr("Variant", 0));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setTypeVariant(input.getIntOr("Variant", 0));
    }
 
-   private void setTypeVariant(int var1) {
-      this.entityData.set(DATA_ID_TYPE_VARIANT, var1);
+   private void setTypeVariant(final int i) {
+      this.entityData.set(DATA_ID_TYPE_VARIANT, i);
    }
 
    private int getTypeVariant() {
       return (Integer)this.entityData.get(DATA_ID_TYPE_VARIANT);
    }
 
-   private void setVariantAndMarkings(Variant var1, Markings var2) {
-      this.setTypeVariant(var1.getId() & 255 | var2.getId() << 8 & '\uff00');
+   private void setVariantAndMarkings(final Variant variant, final Markings markings) {
+      this.setTypeVariant(variant.getId() & 255 | markings.getId() << 8 & '\uff00');
    }
 
    public Variant getVariant() {
       return Variant.byId(this.getTypeVariant() & 255);
    }
 
-   private void setVariant(Variant var1) {
-      this.setTypeVariant(var1.getId() & 255 | this.getTypeVariant() & -256);
+   private void setVariant(final Variant variant) {
+      this.setTypeVariant(variant.getId() & 255 | this.getTypeVariant() & -256);
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.HORSE_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)(type == DataComponents.HORSE_VARIANT ? castComponentValue(type, this.getVariant()) : super.get(type));
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.HORSE_VARIANT);
-      super.applyImplicitComponents(var1);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.HORSE_VARIANT);
+      super.applyImplicitComponents(components);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.HORSE_VARIANT) {
-         this.setVariant((Variant)castComponentValue(DataComponents.HORSE_VARIANT, var2));
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.HORSE_VARIANT) {
+         this.setVariant((Variant)castComponentValue(DataComponents.HORSE_VARIANT, value));
          return true;
       } else {
-         return super.applyImplicitComponent(var1, var2);
+         return super.applyImplicitComponent(type, value);
       }
    }
 
@@ -118,41 +119,41 @@ public class Horse extends AbstractHorse {
       return Markings.byId((this.getTypeVariant() & '\uff00') >> 8);
    }
 
-   protected void playGallopSound(SoundType var1) {
-      super.playGallopSound(var1);
+   protected void playGallopSound(final SoundType soundType) {
+      super.playGallopSound(soundType);
       if (this.random.nextInt(10) == 0) {
-         this.playSound(SoundEvents.HORSE_BREATHE, var1.getVolume() * 0.6F, var1.getPitch());
+         this.playSound(this.isBaby() ? SoundEvents.HORSE_BREATHE_BABY : SoundEvents.HORSE_BREATHE, soundType.getVolume() * 0.6F, soundType.getPitch());
       }
 
    }
 
    protected SoundEvent getAmbientSound() {
-      return SoundEvents.HORSE_AMBIENT;
+      return this.isBaby() ? SoundEvents.HORSE_AMBIENT_BABY : SoundEvents.HORSE_AMBIENT;
    }
 
    protected SoundEvent getDeathSound() {
-      return SoundEvents.HORSE_DEATH;
+      return this.isBaby() ? SoundEvents.HORSE_DEATH_BABY : SoundEvents.HORSE_DEATH;
    }
 
    protected SoundEvent getEatingSound() {
-      return SoundEvents.HORSE_EAT;
+      return this.isBaby() ? SoundEvents.HORSE_EAT_BABY : SoundEvents.HORSE_EAT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
-      return SoundEvents.HORSE_HURT;
+   protected SoundEvent getHurtSound(final DamageSource source) {
+      return this.isBaby() ? SoundEvents.HORSE_HURT_BABY : SoundEvents.HORSE_HURT;
    }
 
    protected SoundEvent getAngrySound() {
-      return SoundEvents.HORSE_ANGRY;
+      return this.isBaby() ? SoundEvents.HORSE_ANGRY_BABY : SoundEvents.HORSE_ANGRY;
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      boolean var3 = !this.isBaby() && this.isTamed() && var1.isSecondaryUseActive();
-      if (!this.isVehicle() && !var3) {
-         ItemStack var4 = var1.getItemInHand(var2);
-         if (!var4.isEmpty()) {
-            if (this.isFood(var4)) {
-               return this.fedFood(var1, var4);
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      boolean shouldOpenInventory = !this.isBaby() && this.isTamed() && player.isSecondaryUseActive();
+      if (!this.isVehicle() && !shouldOpenInventory && (!this.isBaby() || !player.isHolding(Items.GOLDEN_DANDELION))) {
+         ItemStack itemStack = player.getItemInHand(hand);
+         if (!itemStack.isEmpty()) {
+            if (this.isFood(itemStack)) {
+               return this.fedFood(player, itemStack);
             }
 
             if (!this.isTamed()) {
@@ -161,99 +162,99 @@ public class Horse extends AbstractHorse {
             }
          }
 
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       } else {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
-   public boolean canMate(Animal var1) {
-      if (var1 == this) {
+   public boolean canMate(final Animal partner) {
+      if (partner == this) {
          return false;
-      } else if (!(var1 instanceof Donkey) && !(var1 instanceof Horse)) {
+      } else if (!(partner instanceof Donkey) && !(partner instanceof Horse)) {
          return false;
       } else {
-         return this.canParent() && ((AbstractHorse)var1).canParent();
+         return this.canParent() && ((AbstractHorse)partner).canParent();
       }
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      if (var2 instanceof Donkey) {
-         Mule var9 = EntityType.MULE.create(var1, EntitySpawnReason.BREEDING);
-         if (var9 != null) {
-            this.setOffspringAttributes(var2, var9);
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      if (partner instanceof Donkey) {
+         Mule baby = EntityType.MULE.create(level, EntitySpawnReason.BREEDING);
+         if (baby != null) {
+            this.setOffspringAttributes(partner, baby);
          }
 
-         return var9;
+         return baby;
       } else {
-         Horse var3 = (Horse)var2;
-         Horse var4 = EntityType.HORSE.create(var1, EntitySpawnReason.BREEDING);
-         if (var4 != null) {
-            int var6 = this.random.nextInt(9);
-            Variant var5;
-            if (var6 < 4) {
-               var5 = this.getVariant();
-            } else if (var6 < 8) {
-               var5 = var3.getVariant();
+         Horse horsePartner = (Horse)partner;
+         Horse baby = EntityType.HORSE.create(level, EntitySpawnReason.BREEDING);
+         if (baby != null) {
+            int selectSkin = this.random.nextInt(9);
+            Variant variant;
+            if (selectSkin < 4) {
+               variant = this.getVariant();
+            } else if (selectSkin < 8) {
+               variant = horsePartner.getVariant();
             } else {
-               var5 = (Variant)Util.getRandom(Variant.values(), this.random);
+               variant = (Variant)Util.getRandom(Variant.values(), this.random);
             }
 
-            int var8 = this.random.nextInt(5);
-            Markings var7;
-            if (var8 < 2) {
-               var7 = this.getMarkings();
-            } else if (var8 < 4) {
-               var7 = var3.getMarkings();
+            int selectMarking = this.random.nextInt(5);
+            Markings markings;
+            if (selectMarking < 2) {
+               markings = this.getMarkings();
+            } else if (selectMarking < 4) {
+               markings = horsePartner.getMarkings();
             } else {
-               var7 = (Markings)Util.getRandom(Markings.values(), this.random);
+               markings = (Markings)Util.getRandom(Markings.values(), this.random);
             }
 
-            var4.setVariantAndMarkings(var5, var7);
-            this.setOffspringAttributes(var2, var4);
+            baby.setVariantAndMarkings(variant, markings);
+            this.setOffspringAttributes(partner, baby);
          }
 
-         return var4;
+         return baby;
       }
    }
 
-   public boolean canUseSlot(EquipmentSlot var1) {
+   public boolean canUseSlot(final EquipmentSlot slot) {
       return true;
    }
 
-   protected void hurtArmor(DamageSource var1, float var2) {
-      this.doHurtEquipment(var1, var2, new EquipmentSlot[]{EquipmentSlot.BODY});
+   protected void hurtArmor(final DamageSource damageSource, final float damage) {
+      this.doHurtEquipment(damageSource, damage, new EquipmentSlot[]{EquipmentSlot.BODY});
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      RandomSource var5 = var1.getRandom();
-      Variant var6;
-      if (var4 instanceof HorseGroupData) {
-         var6 = ((HorseGroupData)var4).variant;
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
+      RandomSource random = level.getRandom();
+      Variant variant;
+      if (groupData instanceof HorseGroupData) {
+         variant = ((HorseGroupData)groupData).variant;
       } else {
-         var6 = (Variant)Util.getRandom(Variant.values(), var5);
-         var4 = new HorseGroupData(var6);
+         variant = (Variant)Util.getRandom(Variant.values(), random);
+         groupData = new HorseGroupData(variant);
       }
 
-      this.setVariantAndMarkings(var6, (Markings)Util.getRandom(Markings.values(), var5));
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
+      this.setVariantAndMarkings(variant, (Markings)Util.getRandom(Markings.values(), random));
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    static {
       DATA_ID_TYPE_VARIANT = SynchedEntityData.<Integer>defineId(Horse.class, EntityDataSerializers.INT);
-      BABY_DIMENSIONS = EntityType.HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.HORSE.getHeight() + 0.125F, 0.0F)).scale(0.5F);
+      BABY_DIMENSIONS = EntityType.HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.HORSE.getHeight() + 0.125F, 0.0F)).scale(0.7F);
    }
 
    public static class HorseGroupData extends AgeableMob.AgeableMobGroupData {
       public final Variant variant;
 
-      public HorseGroupData(Variant var1) {
+      public HorseGroupData(final Variant variant) {
          super(true);
-         this.variant = var1;
+         this.variant = variant;
       }
    }
 }

@@ -15,36 +15,36 @@ public class StructureFeatureIndexSavedData extends SavedData {
    private static final Codec<LongSet> LONG_SET;
    public static final Codec<StructureFeatureIndexSavedData> CODEC;
 
-   public static SavedDataType<StructureFeatureIndexSavedData> type(String var0) {
-      return new SavedDataType<StructureFeatureIndexSavedData>(var0, StructureFeatureIndexSavedData::new, CODEC, DataFixTypes.SAVED_DATA_STRUCTURE_FEATURE_INDICES);
+   public static SavedDataType<StructureFeatureIndexSavedData> type(final String id) {
+      return new SavedDataType<StructureFeatureIndexSavedData>(id, StructureFeatureIndexSavedData::new, CODEC, DataFixTypes.SAVED_DATA_STRUCTURE_FEATURE_INDICES);
    }
 
-   private StructureFeatureIndexSavedData(LongSet var1, LongSet var2) {
+   private StructureFeatureIndexSavedData(final LongSet all, final LongSet remaining) {
       super();
-      this.all = var1;
-      this.remaining = var2;
+      this.all = all;
+      this.remaining = remaining;
    }
 
    public StructureFeatureIndexSavedData() {
       this(new LongOpenHashSet(), new LongOpenHashSet());
    }
 
-   public void addIndex(long var1) {
-      this.all.add(var1);
-      this.remaining.add(var1);
+   public void addIndex(final long chunkPosKey) {
+      this.all.add(chunkPosKey);
+      this.remaining.add(chunkPosKey);
       this.setDirty();
    }
 
-   public boolean hasStartIndex(long var1) {
-      return this.all.contains(var1);
+   public boolean hasStartIndex(final long chunkPosKey) {
+      return this.all.contains(chunkPosKey);
    }
 
-   public boolean hasUnhandledIndex(long var1) {
-      return this.remaining.contains(var1);
+   public boolean hasUnhandledIndex(final long chunkPosKey) {
+      return this.remaining.contains(chunkPosKey);
    }
 
-   public void removeIndex(long var1) {
-      if (this.remaining.remove(var1)) {
+   public void removeIndex(final long chunkPosKey) {
+      if (this.remaining.remove(chunkPosKey)) {
          this.setDirty();
       }
 
@@ -56,6 +56,6 @@ public class StructureFeatureIndexSavedData extends SavedData {
 
    static {
       LONG_SET = Codec.LONG_STREAM.xmap(LongOpenHashSet::toSet, LongCollection::longStream);
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(LONG_SET.fieldOf("All").forGetter((var0x) -> var0x.all), LONG_SET.fieldOf("Remaining").forGetter((var0x) -> var0x.remaining)).apply(var0, StructureFeatureIndexSavedData::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(LONG_SET.fieldOf("All").forGetter((data) -> data.all), LONG_SET.fieldOf("Remaining").forGetter((data) -> data.remaining)).apply(i, StructureFeatureIndexSavedData::new));
    }
 }

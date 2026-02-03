@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -21,59 +20,59 @@ import net.minecraft.world.item.equipment.EquipmentAssets;
 public class EquipmentAssetProvider implements DataProvider {
    private final PackOutput.PathProvider pathProvider;
 
-   public EquipmentAssetProvider(PackOutput var1) {
+   public EquipmentAssetProvider(final PackOutput output) {
       super();
-      this.pathProvider = var1.createPathProvider(PackOutput.Target.RESOURCE_PACK, "equipment");
+      this.pathProvider = output.createPathProvider(PackOutput.Target.RESOURCE_PACK, "equipment");
    }
 
-   private static void bootstrap(BiConsumer<ResourceKey<EquipmentAsset>, EquipmentClientInfo> var0) {
-      var0.accept(EquipmentAssets.LEATHER, EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace("leather"), true).addHumanoidLayers(Identifier.withDefaultNamespace("leather_overlay"), false).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather"), true), EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather_overlay"), false)).build());
-      var0.accept(EquipmentAssets.CHAINMAIL, onlyHumanoid("chainmail"));
-      var0.accept(EquipmentAssets.COPPER, humanoidAndMountArmor("copper"));
-      var0.accept(EquipmentAssets.IRON, humanoidAndMountArmor("iron"));
-      var0.accept(EquipmentAssets.GOLD, humanoidAndMountArmor("gold"));
-      var0.accept(EquipmentAssets.DIAMOND, humanoidAndMountArmor("diamond"));
-      var0.accept(EquipmentAssets.TURTLE_SCUTE, EquipmentClientInfo.builder().addMainHumanoidLayer(Identifier.withDefaultNamespace("turtle_scute"), false).build());
-      var0.accept(EquipmentAssets.NETHERITE, humanoidAndMountArmor("netherite"));
-      var0.accept(EquipmentAssets.ARMADILLO_SCUTE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(Identifier.withDefaultNamespace("armadillo_scute"), false)).addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(Identifier.withDefaultNamespace("armadillo_scute_overlay"), true)).build());
-      var0.accept(EquipmentAssets.ELYTRA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WINGS, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("elytra"), Optional.empty(), true)).build());
-      EquipmentClientInfo.Layer var1 = new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("saddle"));
-      var0.accept(EquipmentAssets.SADDLE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.PIG_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.STRIDER_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.CAMEL_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.CAMEL_HUSK_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.DONKEY_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.MULE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.SKELETON_HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.ZOMBIE_HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.NAUTILUS_SADDLE, var1).build());
+   private static void bootstrap(final BiConsumer<ResourceKey<EquipmentAsset>, EquipmentClientInfo> consumer) {
+      consumer.accept(EquipmentAssets.LEATHER, EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace("leather"), true).addHumanoidLayers(Identifier.withDefaultNamespace("leather_overlay"), false).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather"), true), EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather_overlay"), false)).build());
+      consumer.accept(EquipmentAssets.CHAINMAIL, onlyHumanoid("chainmail"));
+      consumer.accept(EquipmentAssets.COPPER, humanoidAndMountArmor("copper"));
+      consumer.accept(EquipmentAssets.IRON, humanoidAndMountArmor("iron"));
+      consumer.accept(EquipmentAssets.GOLD, humanoidAndMountArmor("gold"));
+      consumer.accept(EquipmentAssets.DIAMOND, humanoidAndMountArmor("diamond"));
+      consumer.accept(EquipmentAssets.TURTLE_SCUTE, EquipmentClientInfo.builder().addMainHumanoidLayer(Identifier.withDefaultNamespace("turtle_scute"), false).build());
+      consumer.accept(EquipmentAssets.NETHERITE, humanoidAndMountArmor("netherite"));
+      consumer.accept(EquipmentAssets.ARMADILLO_SCUTE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(Identifier.withDefaultNamespace("armadillo_scute"), false)).addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(Identifier.withDefaultNamespace("armadillo_scute_overlay"), true)).build());
+      consumer.accept(EquipmentAssets.ELYTRA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WINGS, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("elytra"), Optional.empty(), true)).build());
+      EquipmentClientInfo.Layer saddleLayer = new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("saddle"));
+      consumer.accept(EquipmentAssets.SADDLE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.PIG_SADDLE, saddleLayer).addLayers(EquipmentClientInfo.LayerType.STRIDER_SADDLE, saddleLayer).addLayers(EquipmentClientInfo.LayerType.CAMEL_SADDLE, saddleLayer).addLayers(EquipmentClientInfo.LayerType.CAMEL_HUSK_SADDLE, saddleLayer).addLayers(EquipmentClientInfo.LayerType.HORSE_SADDLE, saddleLayer).addLayers(EquipmentClientInfo.LayerType.DONKEY_SADDLE, saddleLayer).addLayers(EquipmentClientInfo.LayerType.MULE_SADDLE, saddleLayer).addLayers(EquipmentClientInfo.LayerType.SKELETON_HORSE_SADDLE, saddleLayer).addLayers(EquipmentClientInfo.LayerType.ZOMBIE_HORSE_SADDLE, saddleLayer).addLayers(EquipmentClientInfo.LayerType.NAUTILUS_SADDLE, saddleLayer).build());
 
-      for(Map.Entry var3 : EquipmentAssets.HARNESSES.entrySet()) {
-         DyeColor var4 = (DyeColor)var3.getKey();
-         ResourceKey var5 = (ResourceKey)var3.getValue();
-         var0.accept(var5, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.HAPPY_GHAST_BODY, EquipmentClientInfo.Layer.onlyIfDyed(Identifier.withDefaultNamespace(var4.getSerializedName() + "_harness"), false)).build());
+      for(Map.Entry<DyeColor, ResourceKey<EquipmentAsset>> entry : EquipmentAssets.HARNESSES.entrySet()) {
+         DyeColor color = (DyeColor)entry.getKey();
+         ResourceKey<EquipmentAsset> id = (ResourceKey)entry.getValue();
+         consumer.accept(id, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.HAPPY_GHAST_BODY, EquipmentClientInfo.Layer.onlyIfDyed(Identifier.withDefaultNamespace(color.getSerializedName() + "_harness"), false)).build());
       }
 
-      for(Map.Entry var7 : EquipmentAssets.CARPETS.entrySet()) {
-         DyeColor var8 = (DyeColor)var7.getKey();
-         ResourceKey var9 = (ResourceKey)var7.getValue();
-         var0.accept(var9, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace(var8.getSerializedName()))).build());
+      for(Map.Entry<DyeColor, ResourceKey<EquipmentAsset>> entry : EquipmentAssets.CARPETS.entrySet()) {
+         DyeColor color = (DyeColor)entry.getKey();
+         ResourceKey<EquipmentAsset> id = (ResourceKey)entry.getValue();
+         consumer.accept(id, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace(color.getSerializedName()))).build());
       }
 
-      var0.accept(EquipmentAssets.TRADER_LLAMA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("trader_llama"))).build());
+      consumer.accept(EquipmentAssets.TRADER_LLAMA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("trader_llama"))).build());
    }
 
-   private static EquipmentClientInfo onlyHumanoid(String var0) {
-      return EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace(var0)).build();
+   private static EquipmentClientInfo onlyHumanoid(final String name) {
+      return EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace(name)).build();
    }
 
-   private static EquipmentClientInfo humanoidAndMountArmor(String var0) {
-      return EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace(var0)).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace(var0), false)).addLayers(EquipmentClientInfo.LayerType.NAUTILUS_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace(var0), false)).build();
+   private static EquipmentClientInfo humanoidAndMountArmor(final String name) {
+      return EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace(name)).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace(name), false)).addLayers(EquipmentClientInfo.LayerType.NAUTILUS_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace(name), false)).build();
    }
 
-   public CompletableFuture<?> run(CachedOutput var1) {
-      HashMap var2 = new HashMap();
-      bootstrap((var1x, var2x) -> {
-         if (var2.putIfAbsent(var1x, var2x) != null) {
-            throw new IllegalStateException("Tried to register equipment asset twice for id: " + String.valueOf(var1x));
+   public CompletableFuture<?> run(final CachedOutput cache) {
+      Map<ResourceKey<EquipmentAsset>, EquipmentClientInfo> equipmentAssets = new HashMap();
+      bootstrap((id, asset) -> {
+         if (equipmentAssets.putIfAbsent(id, asset) != null) {
+            throw new IllegalStateException("Tried to register equipment asset twice for id: " + String.valueOf(id));
          }
       });
       Codec var10001 = EquipmentClientInfo.CODEC;
       PackOutput.PathProvider var10002 = this.pathProvider;
       Objects.requireNonNull(var10002);
-      return DataProvider.saveAll(var1, var10001, (Function)(var10002::json), var2);
+      return DataProvider.saveAll(cache, var10001, var10002::json, equipmentAssets);
    }
 
    public String getName() {

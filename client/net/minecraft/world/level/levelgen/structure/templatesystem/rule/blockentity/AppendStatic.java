@@ -7,16 +7,16 @@ import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
 public class AppendStatic implements RuleBlockEntityModifier {
-   public static final MapCodec<AppendStatic> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(CompoundTag.CODEC.fieldOf("data").forGetter((var0x) -> var0x.tag)).apply(var0, AppendStatic::new));
+   public static final MapCodec<AppendStatic> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(CompoundTag.CODEC.fieldOf("data").forGetter((r) -> r.tag)).apply(i, AppendStatic::new));
    private final CompoundTag tag;
 
-   public AppendStatic(CompoundTag var1) {
+   public AppendStatic(final CompoundTag tag) {
       super();
-      this.tag = var1;
+      this.tag = tag;
    }
 
-   public CompoundTag apply(RandomSource var1, @Nullable CompoundTag var2) {
-      return var2 == null ? this.tag.copy() : var2.merge(this.tag);
+   public CompoundTag apply(final RandomSource random, final @Nullable CompoundTag existingTag) {
+      return existingTag == null ? this.tag.copy() : existingTag.merge(this.tag);
    }
 
    public RuleBlockEntityModifierType<?> getType() {

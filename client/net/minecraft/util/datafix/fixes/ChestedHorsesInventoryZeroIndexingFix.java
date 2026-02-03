@@ -12,20 +12,20 @@ import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Dynamic;
 
 public class ChestedHorsesInventoryZeroIndexingFix extends DataFix {
-   public ChestedHorsesInventoryZeroIndexingFix(Schema var1) {
-      super(var1, false);
+   public ChestedHorsesInventoryZeroIndexingFix(final Schema v3807) {
+      super(v3807, false);
    }
 
    protected TypeRewriteRule makeRule() {
-      OpticFinder var1 = DSL.typeFinder(this.getInputSchema().getType(References.ITEM_STACK));
-      Type var2 = this.getInputSchema().getType(References.ENTITY);
-      return TypeRewriteRule.seq(this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:llama"), new TypeRewriteRule[]{this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:trader_llama"), this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:mule"), this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:donkey")});
+      OpticFinder<Pair<String, Pair<Either<Pair<String, String>, Unit>, Pair<Either<?, Unit>, Dynamic<?>>>>> itemStackFinder = DSL.typeFinder(this.getInputSchema().getType(References.ITEM_STACK));
+      Type<?> entityType = this.getInputSchema().getType(References.ENTITY);
+      return TypeRewriteRule.seq(this.horseLikeInventoryIndexingFixer(itemStackFinder, entityType, "minecraft:llama"), new TypeRewriteRule[]{this.horseLikeInventoryIndexingFixer(itemStackFinder, entityType, "minecraft:trader_llama"), this.horseLikeInventoryIndexingFixer(itemStackFinder, entityType, "minecraft:mule"), this.horseLikeInventoryIndexingFixer(itemStackFinder, entityType, "minecraft:donkey")});
    }
 
-   private TypeRewriteRule horseLikeInventoryIndexingFixer(OpticFinder<Pair<String, Pair<Either<Pair<String, String>, Unit>, Pair<Either<?, Unit>, Dynamic<?>>>>> var1, Type<?> var2, String var3) {
-      Type var4 = this.getInputSchema().getChoiceType(References.ENTITY, var3);
-      OpticFinder var5 = DSL.namedChoice(var3, var4);
-      OpticFinder var6 = var4.findField("Items");
-      return this.fixTypeEverywhereTyped("Fix non-zero indexing in chest horse type " + var3, var2, (var3x) -> var3x.updateTyped(var5, (var2) -> var2.updateTyped(var6, (var1x) -> var1x.update(var1, (var0) -> var0.mapSecond((var0x) -> var0x.mapSecond((var0) -> var0.mapSecond((var0x) -> var0x.update("Slot", (var0) -> var0.createByte((byte)(var0.asInt(2) - 2))))))))));
+   private TypeRewriteRule horseLikeInventoryIndexingFixer(final OpticFinder<Pair<String, Pair<Either<Pair<String, String>, Unit>, Pair<Either<?, Unit>, Dynamic<?>>>>> itemStackFinder, final Type<?> schema, final String horseId) {
+      Type<?> choiceType = this.getInputSchema().getChoiceType(References.ENTITY, horseId);
+      OpticFinder<?> entityFinder = DSL.namedChoice(horseId, choiceType);
+      OpticFinder<?> itemsFieldFinder = choiceType.findField("Items");
+      return this.fixTypeEverywhereTyped("Fix non-zero indexing in chest horse type " + horseId, schema, (input) -> input.updateTyped(entityFinder, (horseLike) -> horseLike.updateTyped(itemsFieldFinder, (items) -> items.update(itemStackFinder, (namedStack) -> namedStack.mapSecond((itemStack) -> itemStack.mapSecond((pair) -> pair.mapSecond((remainder) -> remainder.update("Slot", (slot) -> slot.createByte((byte)(slot.asInt(2) - 2))))))))));
    }
 }

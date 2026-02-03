@@ -7,9 +7,9 @@ import net.minecraft.world.level.chunk.DataLayer;
 import org.jspecify.annotations.Nullable;
 
 public interface LayerLightEventListener extends LightEventListener {
-   @Nullable DataLayer getDataLayerData(SectionPos var1);
+   @Nullable DataLayer getDataLayerData(final SectionPos pos);
 
-   int getLightValue(BlockPos var1);
+   int getLightValue(final BlockPos pos);
 
    public static enum DummyLightLayerEventListener implements LayerLightEventListener {
       INSTANCE;
@@ -17,15 +17,15 @@ public interface LayerLightEventListener extends LightEventListener {
       private DummyLightLayerEventListener() {
       }
 
-      public @Nullable DataLayer getDataLayerData(SectionPos var1) {
+      public @Nullable DataLayer getDataLayerData(final SectionPos pos) {
          return null;
       }
 
-      public int getLightValue(BlockPos var1) {
+      public int getLightValue(final BlockPos pos) {
          return 0;
       }
 
-      public void checkBlock(BlockPos var1) {
+      public void checkBlock(final BlockPos pos) {
       }
 
       public boolean hasLightWork() {
@@ -36,13 +36,13 @@ public interface LayerLightEventListener extends LightEventListener {
          return 0;
       }
 
-      public void updateSectionStatus(SectionPos var1, boolean var2) {
+      public void updateSectionStatus(final SectionPos pos, final boolean sectionEmpty) {
       }
 
-      public void setLightEnabled(ChunkPos var1, boolean var2) {
+      public void setLightEnabled(final ChunkPos pos, final boolean enable) {
       }
 
-      public void propagateLightSources(ChunkPos var1) {
+      public void propagateLightSources(final ChunkPos pos) {
       }
 
       // $FF: synthetic method

@@ -8,26 +8,21 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WouldSurvivePredicate implements BlockPredicate {
-   public static final MapCodec<WouldSurvivePredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", Vec3i.ZERO).forGetter((var0x) -> var0x.offset), BlockState.CODEC.fieldOf("state").forGetter((var0x) -> var0x.state)).apply(var0, WouldSurvivePredicate::new));
+   public static final MapCodec<WouldSurvivePredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", Vec3i.ZERO).forGetter((c) -> c.offset), BlockState.CODEC.fieldOf("state").forGetter((c) -> c.state)).apply(i, WouldSurvivePredicate::new));
    private final Vec3i offset;
    private final BlockState state;
 
-   protected WouldSurvivePredicate(Vec3i var1, BlockState var2) {
+   protected WouldSurvivePredicate(final Vec3i offset, final BlockState state) {
       super();
-      this.offset = var1;
-      this.state = var2;
+      this.offset = offset;
+      this.state = state;
    }
 
-   public boolean test(WorldGenLevel var1, BlockPos var2) {
-      return this.state.canSurvive(var1, var2.offset(this.offset));
+   public boolean test(final WorldGenLevel level, final BlockPos origin) {
+      return this.state.canSurvive(level, origin.offset(this.offset));
    }
 
    public BlockPredicateType<?> type() {
       return BlockPredicateType.WOULD_SURVIVE;
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1, final Object var2) {
-      return this.test((WorldGenLevel)var1, (BlockPos)var2);
    }
 }

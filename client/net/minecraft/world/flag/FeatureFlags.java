@@ -19,27 +19,27 @@ public class FeatureFlags {
       super();
    }
 
-   public static String printMissingFlags(FeatureFlagSet var0, FeatureFlagSet var1) {
-      return printMissingFlags(REGISTRY, var0, var1);
+   public static String printMissingFlags(final FeatureFlagSet allowedFlags, final FeatureFlagSet requestedFlags) {
+      return printMissingFlags(REGISTRY, allowedFlags, requestedFlags);
    }
 
-   public static String printMissingFlags(FeatureFlagRegistry var0, FeatureFlagSet var1, FeatureFlagSet var2) {
-      Set var3 = var0.toNames(var2);
-      Set var4 = var0.toNames(var1);
-      return (String)var3.stream().filter((var1x) -> !var4.contains(var1x)).map(Identifier::toString).collect(Collectors.joining(", "));
+   public static String printMissingFlags(final FeatureFlagRegistry registry, final FeatureFlagSet allowedFlags, final FeatureFlagSet requestedFlags) {
+      Set<Identifier> requestedFlagIds = registry.toNames(requestedFlags);
+      Set<Identifier> allowedFlagsIds = registry.toNames(allowedFlags);
+      return (String)requestedFlagIds.stream().filter((f) -> !allowedFlagsIds.contains(f)).map(Identifier::toString).collect(Collectors.joining(", "));
    }
 
-   public static boolean isExperimental(FeatureFlagSet var0) {
-      return !var0.isSubsetOf(VANILLA_SET);
+   public static boolean isExperimental(final FeatureFlagSet features) {
+      return !features.isSubsetOf(VANILLA_SET);
    }
 
    static {
-      FeatureFlagRegistry.Builder var0 = new FeatureFlagRegistry.Builder("main");
-      VANILLA = var0.createVanilla("vanilla");
-      TRADE_REBALANCE = var0.createVanilla("trade_rebalance");
-      REDSTONE_EXPERIMENTS = var0.createVanilla("redstone_experiments");
-      MINECART_IMPROVEMENTS = var0.createVanilla("minecart_improvements");
-      REGISTRY = var0.build();
+      FeatureFlagRegistry.Builder builder = new FeatureFlagRegistry.Builder("main");
+      VANILLA = builder.createVanilla("vanilla");
+      TRADE_REBALANCE = builder.createVanilla("trade_rebalance");
+      REDSTONE_EXPERIMENTS = builder.createVanilla("redstone_experiments");
+      MINECART_IMPROVEMENTS = builder.createVanilla("minecart_improvements");
+      REGISTRY = builder.build();
       CODEC = REGISTRY.codec();
       VANILLA_SET = FeatureFlagSet.of(VANILLA);
       DEFAULT_FLAGS = VANILLA_SET;

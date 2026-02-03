@@ -16,10 +16,10 @@ public class Material {
    private final Identifier texture;
    private @Nullable RenderType renderType;
 
-   public Material(Identifier var1, Identifier var2) {
+   public Material(final Identifier atlasLocation, final Identifier texture) {
       super();
-      this.atlasLocation = var1;
-      this.texture = var2;
+      this.atlasLocation = atlasLocation;
+      this.texture = texture;
    }
 
    public Identifier atlasLocation() {
@@ -30,28 +30,28 @@ public class Material {
       return this.texture;
    }
 
-   public RenderType renderType(Function<Identifier, RenderType> var1) {
+   public RenderType renderType(final Function<Identifier, RenderType> renderType) {
       if (this.renderType == null) {
-         this.renderType = (RenderType)var1.apply(this.atlasLocation);
+         this.renderType = (RenderType)renderType.apply(this.atlasLocation);
       }
 
       return this.renderType;
    }
 
-   public VertexConsumer buffer(MaterialSet var1, MultiBufferSource var2, Function<Identifier, RenderType> var3) {
-      return var1.get(this).wrap(var2.getBuffer(this.renderType(var3)));
+   public VertexConsumer buffer(final MaterialSet materials, final MultiBufferSource bufferSource, final Function<Identifier, RenderType> renderType) {
+      return materials.get(this).wrap(bufferSource.getBuffer(this.renderType(renderType)));
    }
 
-   public VertexConsumer buffer(MaterialSet var1, MultiBufferSource var2, Function<Identifier, RenderType> var3, boolean var4, boolean var5) {
-      return var1.get(this).wrap(ItemRenderer.getFoilBuffer(var2, this.renderType(var3), var4, var5));
+   public VertexConsumer buffer(final MaterialSet materials, final MultiBufferSource bufferSource, final Function<Identifier, RenderType> renderType, final boolean sheeted, final boolean hasFoil) {
+      return materials.get(this).wrap(ItemRenderer.getFoilBuffer(bufferSource, this.renderType(renderType), sheeted, hasFoil));
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         Material var2 = (Material)var1;
-         return this.atlasLocation.equals(var2.atlasLocation) && this.texture.equals(var2.texture);
+      } else if (o != null && this.getClass() == o.getClass()) {
+         Material material = (Material)o;
+         return this.atlasLocation.equals(material.atlasLocation) && this.texture.equals(material.texture);
       } else {
          return false;
       }

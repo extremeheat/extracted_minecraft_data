@@ -10,17 +10,15 @@ public interface GlyphProvider extends AutoCloseable {
    default void close() {
    }
 
-   default @Nullable UnbakedGlyph getGlyph(int var1) {
+   default @Nullable UnbakedGlyph getGlyph(final int codepoint) {
       return null;
    }
 
    IntSet getSupportedGlyphs();
 
    public static record Conditional(GlyphProvider provider, FontOption.Filter filter) implements AutoCloseable {
-      public Conditional(GlyphProvider var1, FontOption.Filter var2) {
+      public Conditional {
          super();
-         this.provider = var1;
-         this.filter = var2;
       }
 
       public void close() {

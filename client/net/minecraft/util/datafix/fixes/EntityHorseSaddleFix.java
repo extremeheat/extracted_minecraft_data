@@ -11,27 +11,27 @@ import java.util.Optional;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class EntityHorseSaddleFix extends NamedEntityFix {
-   public EntityHorseSaddleFix(Schema var1, boolean var2) {
-      super(var1, var2, "EntityHorseSaddleFix", References.ENTITY, "EntityHorse");
+   public EntityHorseSaddleFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType, "EntityHorseSaddleFix", References.ENTITY, "EntityHorse");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      Type var3 = this.getInputSchema().getTypeRaw(References.ITEM_STACK);
-      OpticFinder var4 = DSL.fieldFinder("SaddleItem", var3);
-      Optional var5 = var1.getOptionalTyped(var4);
-      Dynamic var6 = (Dynamic)var1.get(DSL.remainderFinder());
-      if (var5.isEmpty() && var6.get("Saddle").asBoolean(false)) {
-         Typed var7 = (Typed)var3.pointTyped(var1.getOps()).orElseThrow(IllegalStateException::new);
-         var7 = var7.set(var2, Pair.of(References.ITEM_NAME.typeName(), "minecraft:saddle"));
-         Dynamic var8 = var6.emptyMap();
-         var8 = var8.set("Count", var8.createByte((byte)1));
-         var8 = var8.set("Damage", var8.createShort((short)0));
-         var7 = var7.set(DSL.remainderFinder(), var8);
-         var6.remove("Saddle");
-         return var1.set(var4, var7).set(DSL.remainderFinder(), var6);
+   protected Typed<?> fix(final Typed<?> entity) {
+      OpticFinder<Pair<String, String>> idF = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      Type<?> itemStackType = this.getInputSchema().getTypeRaw(References.ITEM_STACK);
+      OpticFinder<?> saddleF = DSL.fieldFinder("SaddleItem", itemStackType);
+      Optional<? extends Typed<?>> saddle = entity.getOptionalTyped(saddleF);
+      Dynamic<?> tag = (Dynamic)entity.get(DSL.remainderFinder());
+      if (saddle.isEmpty() && tag.get("Saddle").asBoolean(false)) {
+         Typed<?> newSaddle = (Typed)itemStackType.pointTyped(entity.getOps()).orElseThrow(IllegalStateException::new);
+         newSaddle = newSaddle.set(idF, Pair.of(References.ITEM_NAME.typeName(), "minecraft:saddle"));
+         Dynamic<?> saddleTag = tag.emptyMap();
+         saddleTag = saddleTag.set("Count", saddleTag.createByte((byte)1));
+         saddleTag = saddleTag.set("Damage", saddleTag.createShort((short)0));
+         newSaddle = newSaddle.set(DSL.remainderFinder(), saddleTag);
+         tag.remove("Saddle");
+         return entity.set(saddleF, newSaddle).set(DSL.remainderFinder(), tag);
       } else {
-         return var1;
+         return entity;
       }
    }
 }

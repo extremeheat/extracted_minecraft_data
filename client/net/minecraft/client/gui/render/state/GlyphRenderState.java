@@ -12,15 +12,12 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 public record GlyphRenderState(Matrix3x2fc pose, TextRenderable renderable, @Nullable ScreenRectangle scissorArea) implements GuiElementRenderState {
-   public GlyphRenderState(Matrix3x2fc var1, TextRenderable var2, @Nullable ScreenRectangle var3) {
+   public GlyphRenderState {
       super();
-      this.pose = var1;
-      this.renderable = var2;
-      this.scissorArea = var3;
    }
 
-   public void buildVertices(VertexConsumer var1) {
-      this.renderable.render((new Matrix4f()).mul(this.pose), var1, 15728880, true);
+   public void buildVertices(final VertexConsumer vertexConsumer) {
+      this.renderable.render((new Matrix4f()).mul(this.pose), vertexConsumer, 15728880, true);
    }
 
    public RenderPipeline pipeline() {

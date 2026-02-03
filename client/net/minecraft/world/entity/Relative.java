@@ -25,95 +25,95 @@ public enum Relative {
    private final int bit;
 
    @SafeVarargs
-   public static Set<Relative> union(Set<Relative>... var0) {
-      HashSet var1 = new HashSet();
+   public static Set<Relative> union(final Set<Relative>... sets) {
+      HashSet<Relative> set = new HashSet();
 
-      for(Set var5 : var0) {
-         var1.addAll(var5);
+      for(Set<Relative> s : sets) {
+         set.addAll(s);
       }
 
-      return var1;
+      return set;
    }
 
-   public static Set<Relative> rotation(boolean var0, boolean var1) {
-      EnumSet var2 = EnumSet.noneOf(Relative.class);
-      if (var0) {
-         var2.add(Y_ROT);
+   public static Set<Relative> rotation(final boolean relativeYRot, final boolean relativeXRot) {
+      Set<Relative> relatives = EnumSet.noneOf(Relative.class);
+      if (relativeYRot) {
+         relatives.add(Y_ROT);
       }
 
-      if (var1) {
-         var2.add(X_ROT);
+      if (relativeXRot) {
+         relatives.add(X_ROT);
       }
 
-      return var2;
+      return relatives;
    }
 
-   public static Set<Relative> position(boolean var0, boolean var1, boolean var2) {
-      EnumSet var3 = EnumSet.noneOf(Relative.class);
-      if (var0) {
-         var3.add(X);
+   public static Set<Relative> position(final boolean relativeX, final boolean relativeY, final boolean relativeZ) {
+      Set<Relative> relatives = EnumSet.noneOf(Relative.class);
+      if (relativeX) {
+         relatives.add(X);
       }
 
-      if (var1) {
-         var3.add(Y);
+      if (relativeY) {
+         relatives.add(Y);
       }
 
-      if (var2) {
-         var3.add(Z);
+      if (relativeZ) {
+         relatives.add(Z);
       }
 
-      return var3;
+      return relatives;
    }
 
-   public static Set<Relative> direction(boolean var0, boolean var1, boolean var2) {
-      EnumSet var3 = EnumSet.noneOf(Relative.class);
-      if (var0) {
-         var3.add(DELTA_X);
+   public static Set<Relative> direction(final boolean relativeX, final boolean relativeY, final boolean relativeZ) {
+      Set<Relative> relatives = EnumSet.noneOf(Relative.class);
+      if (relativeX) {
+         relatives.add(DELTA_X);
       }
 
-      if (var1) {
-         var3.add(DELTA_Y);
+      if (relativeY) {
+         relatives.add(DELTA_Y);
       }
 
-      if (var2) {
-         var3.add(DELTA_Z);
+      if (relativeZ) {
+         relatives.add(DELTA_Z);
       }
 
-      return var3;
+      return relatives;
    }
 
-   private Relative(final int var3) {
-      this.bit = var3;
+   private Relative(final int bit) {
+      this.bit = bit;
    }
 
    private int getMask() {
       return 1 << this.bit;
    }
 
-   private boolean isSet(int var1) {
-      return (var1 & this.getMask()) == this.getMask();
+   private boolean isSet(final int value) {
+      return (value & this.getMask()) == this.getMask();
    }
 
-   public static Set<Relative> unpack(int var0) {
-      EnumSet var1 = EnumSet.noneOf(Relative.class);
+   public static Set<Relative> unpack(final int value) {
+      Set<Relative> result = EnumSet.noneOf(Relative.class);
 
-      for(Relative var5 : values()) {
-         if (var5.isSet(var0)) {
-            var1.add(var5);
+      for(Relative argument : values()) {
+         if (argument.isSet(value)) {
+            result.add(argument);
          }
       }
 
-      return var1;
+      return result;
    }
 
-   public static int pack(Set<Relative> var0) {
-      int var1 = 0;
+   public static int pack(final Set<Relative> set) {
+      int result = 0;
 
-      for(Relative var3 : var0) {
-         var1 |= var3.getMask();
+      for(Relative argument : set) {
+         result |= argument.getMask();
       }
 
-      return var1;
+      return result;
    }
 
    // $FF: synthetic method

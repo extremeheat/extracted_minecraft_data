@@ -15,20 +15,20 @@ class PlayerScores {
       super();
    }
 
-   public @Nullable Score get(Objective var1) {
-      return (Score)this.scores.get(var1);
+   public @Nullable Score get(final Objective objective) {
+      return (Score)this.scores.get(objective);
    }
 
-   public Score getOrCreate(Objective var1, Consumer<Score> var2) {
-      return (Score)this.scores.computeIfAbsent(var1, (var1x) -> {
-         Score var2x = new Score();
-         var2.accept(var2x);
-         return var2x;
+   public Score getOrCreate(final Objective objective, final Consumer<Score> newResultCallback) {
+      return (Score)this.scores.computeIfAbsent(objective, (obj) -> {
+         Score newScore = new Score();
+         newResultCallback.accept(newScore);
+         return newScore;
       });
    }
 
-   public boolean remove(Objective var1) {
-      return this.scores.remove(var1) != null;
+   public boolean remove(final Objective objective) {
+      return this.scores.remove(objective) != null;
    }
 
    public boolean hasScores() {
@@ -36,13 +36,13 @@ class PlayerScores {
    }
 
    public Object2IntMap<Objective> listScores() {
-      Object2IntOpenHashMap var1 = new Object2IntOpenHashMap();
-      this.scores.forEach((var1x, var2) -> var1.put(var1x, var2.value()));
-      return var1;
+      Object2IntMap<Objective> result = new Object2IntOpenHashMap();
+      this.scores.forEach((objective, score) -> result.put(objective, score.value()));
+      return result;
    }
 
-   void setScore(Objective var1, Score var2) {
-      this.scores.put(var1, var2);
+   void setScore(final Objective objective, final Score score) {
+      this.scores.put(objective, score);
    }
 
    Map<Objective, Score> listRawScores() {

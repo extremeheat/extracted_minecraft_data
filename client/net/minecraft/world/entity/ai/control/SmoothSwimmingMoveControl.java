@@ -13,13 +13,13 @@ public class SmoothSwimmingMoveControl extends MoveControl {
    private final float outsideWaterSpeedModifier;
    private final boolean applyGravity;
 
-   public SmoothSwimmingMoveControl(Mob var1, int var2, int var3, float var4, float var5, boolean var6) {
-      super(var1);
-      this.maxTurnX = var2;
-      this.maxTurnY = var3;
-      this.inWaterSpeedModifier = var4;
-      this.outsideWaterSpeedModifier = var5;
-      this.applyGravity = var6;
+   public SmoothSwimmingMoveControl(final Mob mob, final int maxTurnX, final int maxTurnY, final float inWaterSpeedModifier, final float outsideWaterSpeedModifier, final boolean applyGravity) {
+      super(mob);
+      this.maxTurnX = maxTurnX;
+      this.maxTurnY = maxTurnY;
+      this.inWaterSpeedModifier = inWaterSpeedModifier;
+      this.outsideWaterSpeedModifier = outsideWaterSpeedModifier;
+      this.applyGravity = applyGravity;
    }
 
    public void tick() {
@@ -28,35 +28,35 @@ public class SmoothSwimmingMoveControl extends MoveControl {
       }
 
       if (this.operation == MoveControl.Operation.MOVE_TO && !this.mob.getNavigation().isDone()) {
-         double var1 = this.wantedX - this.mob.getX();
-         double var3 = this.wantedY - this.mob.getY();
-         double var5 = this.wantedZ - this.mob.getZ();
-         double var7 = var1 * var1 + var3 * var3 + var5 * var5;
-         if (var7 < 2.500000277905201E-7) {
+         double xd = this.wantedX - this.mob.getX();
+         double yd = this.wantedY - this.mob.getY();
+         double zd = this.wantedZ - this.mob.getZ();
+         double dd = xd * xd + yd * yd + zd * zd;
+         if (dd < 2.500000277905201E-7) {
             this.mob.setZza(0.0F);
          } else {
-            float var9 = (float)(Mth.atan2(var5, var1) * 57.2957763671875) - 90.0F;
-            this.mob.setYRot(this.rotlerp(this.mob.getYRot(), var9, (float)this.maxTurnY));
+            float yRotD = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
+            this.mob.setYRot(this.rotlerp(this.mob.getYRot(), yRotD, (float)this.maxTurnY));
             this.mob.yBodyRot = this.mob.getYRot();
             this.mob.yHeadRot = this.mob.getYRot();
-            float var10 = (float)(this.speedModifier * this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            float speed = (float)(this.speedModifier * this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED));
             if (this.mob.isInWater()) {
-               this.mob.setSpeed(var10 * this.inWaterSpeedModifier);
-               double var11 = Math.sqrt(var1 * var1 + var5 * var5);
-               if (Math.abs(var3) > 9.999999747378752E-6 || Math.abs(var11) > 9.999999747378752E-6) {
-                  float var13 = -((float)(Mth.atan2(var3, var11) * 57.2957763671875));
-                  var13 = Mth.clamp(Mth.wrapDegrees(var13), (float)(-this.maxTurnX), (float)this.maxTurnX);
-                  this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), var13, 5.0F));
+               this.mob.setSpeed(speed * this.inWaterSpeedModifier);
+               double sqrt = Math.sqrt(xd * xd + zd * zd);
+               if (Math.abs(yd) > 9.999999747378752E-6 || Math.abs(sqrt) > 9.999999747378752E-6) {
+                  float xRotD = -((float)(Mth.atan2(yd, sqrt) * 57.2957763671875));
+                  xRotD = Mth.clamp(Mth.wrapDegrees(xRotD), (float)(-this.maxTurnX), (float)this.maxTurnX);
+                  this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), xRotD, 5.0F));
                }
 
-               float var17 = Mth.cos((double)(this.mob.getXRot() * 0.017453292F));
-               float var14 = Mth.sin((double)(this.mob.getXRot() * 0.017453292F));
-               this.mob.zza = var17 * var10;
-               this.mob.yya = -var14 * var10;
+               float cos = Mth.cos((double)(this.mob.getXRot() * 0.017453292F));
+               float sin = Mth.sin((double)(this.mob.getXRot() * 0.017453292F));
+               this.mob.zza = cos * speed;
+               this.mob.yya = -sin * speed;
             } else {
-               float var15 = Math.abs(Mth.wrapDegrees(this.mob.getYRot() - var9));
-               float var12 = getTurningSpeedFactor(var15);
-               this.mob.setSpeed(var10 * this.outsideWaterSpeedModifier * var12);
+               float leftToTurn = Math.abs(Mth.wrapDegrees(this.mob.getYRot() - yRotD));
+               float turningSpeedFactor = getTurningSpeedFactor(leftToTurn);
+               this.mob.setSpeed(speed * this.outsideWaterSpeedModifier * turningSpeedFactor);
             }
 
          }
@@ -68,7 +68,7 @@ public class SmoothSwimmingMoveControl extends MoveControl {
       }
    }
 
-   private static float getTurningSpeedFactor(float var0) {
-      return 1.0F - Mth.clamp((var0 - 10.0F) / 50.0F, 0.0F, 1.0F);
+   private static float getTurningSpeedFactor(final float leftToTurn) {
+      return 1.0F - Mth.clamp((leftToTurn - 10.0F) / 50.0F, 0.0F, 1.0F);
    }
 }

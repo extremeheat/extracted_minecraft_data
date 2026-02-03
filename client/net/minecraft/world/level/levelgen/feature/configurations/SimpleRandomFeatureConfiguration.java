@@ -11,16 +11,16 @@ public class SimpleRandomFeatureConfiguration implements FeatureConfiguration {
    public static final Codec<SimpleRandomFeatureConfiguration> CODEC;
    public final HolderSet<PlacedFeature> features;
 
-   public SimpleRandomFeatureConfiguration(HolderSet<PlacedFeature> var1) {
+   public SimpleRandomFeatureConfiguration(final HolderSet<PlacedFeature> features) {
       super();
-      this.features = var1;
+      this.features = features;
    }
 
    public Stream<ConfiguredFeature<?, ?>> getFeatures() {
-      return this.features.stream().flatMap((var0) -> ((PlacedFeature)var0.value()).getFeatures());
+      return this.features.stream().flatMap((f) -> ((PlacedFeature)f.value()).getFeatures());
    }
 
    static {
-      CODEC = ExtraCodecs.nonEmptyHolderSet(PlacedFeature.LIST_CODEC).fieldOf("features").xmap(SimpleRandomFeatureConfiguration::new, (var0) -> var0.features).codec();
+      CODEC = ExtraCodecs.nonEmptyHolderSet(PlacedFeature.LIST_CODEC).fieldOf("features").xmap(SimpleRandomFeatureConfiguration::new, (c) -> c.features).codec();
    }
 }

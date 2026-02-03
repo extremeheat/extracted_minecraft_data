@@ -23,14 +23,14 @@ public class ClientMannequin extends Mannequin implements ClientAvatarEntity {
    private PlayerSkin skin;
    private final PlayerSkinRenderCache skinRenderCache;
 
-   public static void registerOverrides(PlayerSkinRenderCache var0) {
-      Mannequin.constructor = (var1, var2) -> (Mannequin)(var2 instanceof ClientLevel ? new ClientMannequin(var2, var0) : new Mannequin(var1, var2));
+   public static void registerOverrides(final PlayerSkinRenderCache cache) {
+      Mannequin.constructor = (type, level) -> (Mannequin)(level instanceof ClientLevel ? new ClientMannequin(level, cache) : new Mannequin(type, level));
    }
 
-   public ClientMannequin(Level var1, PlayerSkinRenderCache var2) {
-      super(var1);
+   public ClientMannequin(final Level level, final PlayerSkinRenderCache skinRenderCache) {
+      super(level);
       this.skin = DEFAULT_SKIN;
-      this.skinRenderCache = var2;
+      this.skinRenderCache = skinRenderCache;
    }
 
    public void tick() {
@@ -40,16 +40,16 @@ public class ClientMannequin extends Mannequin implements ClientAvatarEntity {
          try {
             ((Optional)this.skinLookup.get()).ifPresent(this::setSkin);
             this.skinLookup = null;
-         } catch (Exception var2) {
-            LOGGER.error("Error when trying to look up skin", var2);
+         } catch (Exception e) {
+            LOGGER.error("Error when trying to look up skin", e);
          }
       }
 
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      super.onSyncedDataUpdated(var1);
-      if (var1.equals(DATA_PROFILE)) {
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      super.onSyncedDataUpdated(accessor);
+      if (accessor.equals(DATA_PROFILE)) {
          this.updateSkin();
       }
 
@@ -57,12 +57,12 @@ public class ClientMannequin extends Mannequin implements ClientAvatarEntity {
 
    private void updateSkin() {
       if (this.skinLookup != null) {
-         CompletableFuture var1 = this.skinLookup;
+         CompletableFuture<Optional<PlayerSkin>> future = this.skinLookup;
          this.skinLookup = null;
-         var1.cancel(false);
+         future.cancel(false);
       }
 
-      this.skinLookup = this.skinRenderCache.lookup(this.getProfile()).thenApply((var0) -> var0.map(PlayerSkinRenderCache.RenderInfo::playerSkin));
+      this.skinLookup = this.skinRenderCache.lookup(this.getProfile()).thenApply((info) -> info.map(PlayerSkinRenderCache.RenderInfo::playerSkin));
    }
 
    public ClientAvatarState avatarState() {
@@ -73,15 +73,15 @@ public class ClientMannequin extends Mannequin implements ClientAvatarEntity {
       return this.skin;
    }
 
-   private void setSkin(PlayerSkin var1) {
-      this.skin = var1;
+   private void setSkin(final PlayerSkin skin) {
+      this.skin = skin;
    }
 
    public @Nullable Component belowNameDisplay() {
       return this.getDescription();
    }
 
-   public Parrot.@Nullable Variant getParrotVariantOnShoulder(boolean var1) {
+   public Parrot.@Nullable Variant getParrotVariantOnShoulder(final boolean left) {
       return null;
    }
 

@@ -1,8 +1,5 @@
 package com.mojang.blaze3d.platform;
 
-import com.mojang.blaze3d.DontObfuscate;
-
-@DontObfuscate
 public enum DepthTestFunction {
    NO_DEPTH_TEST,
    EQUAL_DEPTH_TEST,

@@ -7,9 +7,8 @@ import net.minecraft.network.codec.StreamCodec;
 public record RecipeDisplayId(int index) {
    public static final StreamCodec<ByteBuf, RecipeDisplayId> STREAM_CODEC;
 
-   public RecipeDisplayId(int var1) {
+   public RecipeDisplayId {
       super();
-      this.index = var1;
    }
 
    static {

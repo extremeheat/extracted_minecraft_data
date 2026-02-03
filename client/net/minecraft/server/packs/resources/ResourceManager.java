@@ -12,11 +12,11 @@ import net.minecraft.server.packs.PackResources;
 public interface ResourceManager extends ResourceProvider {
    Set<String> getNamespaces();
 
-   List<Resource> getResourceStack(Identifier var1);
+   List<Resource> getResourceStack(Identifier location);
 
-   Map<Identifier, Resource> listResources(String var1, Predicate<Identifier> var2);
+   Map<Identifier, Resource> listResources(String directory, Predicate<Identifier> filter);
 
-   Map<Identifier, List<Resource>> listResourceStacks(String var1, Predicate<Identifier> var2);
+   Map<Identifier, List<Resource>> listResourceStacks(String directory, Predicate<Identifier> filter);
 
    Stream<PackResources> listPacks();
 
@@ -30,19 +30,19 @@ public interface ResourceManager extends ResourceProvider {
          return Set.of();
       }
 
-      public Optional<Resource> getResource(Identifier var1) {
+      public Optional<Resource> getResource(final Identifier location) {
          return Optional.empty();
       }
 
-      public List<Resource> getResourceStack(Identifier var1) {
+      public List<Resource> getResourceStack(final Identifier location) {
          return List.of();
       }
 
-      public Map<Identifier, Resource> listResources(String var1, Predicate<Identifier> var2) {
+      public Map<Identifier, Resource> listResources(final String directory, final Predicate<Identifier> filter) {
          return Map.of();
       }
 
-      public Map<Identifier, List<Resource>> listResourceStacks(String var1, Predicate<Identifier> var2) {
+      public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final Predicate<Identifier> filter) {
          return Map.of();
       }
 

@@ -25,38 +25,38 @@ import org.slf4j.Logger;
 
 public class BlockDataAccessor implements DataAccessor {
    private static final Logger LOGGER = LogUtils.getLogger();
-   static final SimpleCommandExceptionType ERROR_NOT_A_BLOCK_ENTITY = new SimpleCommandExceptionType(Component.translatable("commands.data.block.invalid"));
-   public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> new DataCommands.DataProvider() {
-         public DataAccessor access(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-            BlockPos var2 = BlockPosArgument.getLoadedBlockPos(var1, var0 + "Pos");
-            BlockEntity var3 = ((CommandSourceStack)var1.getSource()).getLevel().getBlockEntity(var2);
-            if (var3 == null) {
+   private static final SimpleCommandExceptionType ERROR_NOT_A_BLOCK_ENTITY = new SimpleCommandExceptionType(Component.translatable("commands.data.block.invalid"));
+   public static final Function<String, DataCommands.DataProvider> PROVIDER = (argPrefix) -> new DataCommands.DataProvider() {
+         public DataAccessor access(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+            BlockPos pos = BlockPosArgument.getLoadedBlockPos(context, argPrefix + "Pos");
+            BlockEntity entity = ((CommandSourceStack)context.getSource()).getLevel().getBlockEntity(pos);
+            if (entity == null) {
                throw BlockDataAccessor.ERROR_NOT_A_BLOCK_ENTITY.create();
             } else {
-               return new BlockDataAccessor(var3, var2);
+               return new BlockDataAccessor(entity, pos);
             }
          }
 
-         public ArgumentBuilder<CommandSourceStack, ?> wrap(ArgumentBuilder<CommandSourceStack, ?> var1, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var2) {
-            return var1.then(Commands.literal("block").then((ArgumentBuilder)var2.apply(Commands.argument(var0 + "Pos", BlockPosArgument.blockPos()))));
+         public ArgumentBuilder<CommandSourceStack, ?> wrap(final ArgumentBuilder<CommandSourceStack, ?> parent, final Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> function) {
+            return parent.then(Commands.literal("block").then((ArgumentBuilder)function.apply(Commands.argument(argPrefix + "Pos", BlockPosArgument.blockPos()))));
          }
       };
    private final BlockEntity entity;
    private final BlockPos pos;
 
-   public BlockDataAccessor(BlockEntity var1, BlockPos var2) {
+   public BlockDataAccessor(final BlockEntity entity, final BlockPos pos) {
       super();
-      this.entity = var1;
-      this.pos = var2;
+      this.entity = entity;
+      this.pos = pos;
    }
 
-   public void setData(CompoundTag var1) {
-      BlockState var2 = this.entity.getLevel().getBlockState(this.pos);
+   public void setData(final CompoundTag tag) {
+      BlockState state = this.entity.getLevel().getBlockState(this.pos);
 
-      try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(this.entity.problemPath(), LOGGER)) {
-         this.entity.loadWithComponents(TagValueInput.create(var3, this.entity.getLevel().registryAccess(), var1));
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.entity.problemPath(), LOGGER)) {
+         this.entity.loadWithComponents(TagValueInput.create(reporter, this.entity.getLevel().registryAccess(), tag));
          this.entity.setChanged();
-         this.entity.getLevel().sendBlockUpdated(this.pos, var2, var2, 3);
+         this.entity.getLevel().sendBlockUpdated(this.pos, state, state, 3);
       }
 
    }
@@ -69,11 +69,11 @@ public class BlockDataAccessor implements DataAccessor {
       return Component.translatable("commands.data.block.modified", this.pos.getX(), this.pos.getY(), this.pos.getZ());
    }
 
-   public Component getPrintSuccess(Tag var1) {
-      return Component.translatable("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), NbtUtils.toPrettyComponent(var1));
+   public Component getPrintSuccess(final Tag data) {
+      return Component.translatable("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), NbtUtils.toPrettyComponent(data));
    }
 
-   public Component getPrintSuccess(NbtPathArgument.NbtPath var1, double var2, int var4) {
-      return Component.translatable("commands.data.block.get", var1.asString(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), String.format(Locale.ROOT, "%.2f", var2), var4);
+   public Component getPrintSuccess(final NbtPathArgument.NbtPath path, final double scale, final int value) {
+      return Component.translatable("commands.data.block.get", path.asString(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), String.format(Locale.ROOT, "%.2f", scale), value);
    }
 }

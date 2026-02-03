@@ -6,11 +6,11 @@ import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.RecipeType;
 
 public class SmokerMenu extends AbstractFurnaceMenu {
-   public SmokerMenu(int var1, Inventory var2) {
-      super(MenuType.SMOKER, RecipeType.SMOKING, RecipePropertySet.SMOKER_INPUT, RecipeBookType.SMOKER, var1, var2);
+   public SmokerMenu(final int containerId, final Inventory inventory) {
+      super(MenuType.SMOKER, RecipeType.SMOKING, RecipePropertySet.SMOKER_INPUT, RecipeBookType.SMOKER, containerId, inventory);
    }
 
-   public SmokerMenu(int var1, Inventory var2, Container var3, ContainerData var4) {
-      super(MenuType.SMOKER, RecipeType.SMOKING, RecipePropertySet.SMOKER_INPUT, RecipeBookType.SMOKER, var1, var2, var3, var4);
+   public SmokerMenu(final int containerId, final Inventory inventory, final Container container, final ContainerData data) {
+      super(MenuType.SMOKER, RecipeType.SMOKING, RecipePropertySet.SMOKER_INPUT, RecipeBookType.SMOKER, containerId, inventory, container, data);
    }
 }

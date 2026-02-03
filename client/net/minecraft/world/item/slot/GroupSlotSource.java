@@ -8,8 +8,8 @@ public class GroupSlotSource extends CompositeSlotSource {
    public static final MapCodec<GroupSlotSource> MAP_CODEC = createCodec(GroupSlotSource::new);
    public static final Codec<GroupSlotSource> INLINE_CODEC = createInlineCodec(GroupSlotSource::new);
 
-   private GroupSlotSource(List<SlotSource> var1) {
-      super(var1);
+   private GroupSlotSource(final List<SlotSource> terms) {
+      super(terms);
    }
 
    public MapCodec<GroupSlotSource> codec() {

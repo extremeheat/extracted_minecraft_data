@@ -3,38 +3,32 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 
 public class Swim<T extends Mob> extends Behavior<T> {
    private final float chance;
 
-   public Swim(float var1) {
+   public Swim(final float chance) {
       super(ImmutableMap.of());
-      this.chance = var1;
+      this.chance = chance;
    }
 
-   public static <T extends Mob> boolean shouldSwim(T var0) {
-      return var0.isInWater() && var0.getFluidHeight(FluidTags.WATER) > var0.getFluidJumpThreshold() || var0.isInLava();
+   public static <T extends Mob> boolean shouldSwim(final T mob) {
+      return mob.isInWater() && mob.getFluidHeight(FluidTags.WATER) > mob.getFluidJumpThreshold() || mob.isInLava();
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Mob var2) {
-      return shouldSwim(var2);
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Mob body) {
+      return shouldSwim(body);
    }
 
-   protected boolean canStillUse(ServerLevel var1, Mob var2, long var3) {
-      return this.checkExtraStartConditions(var1, var2);
+   protected boolean canStillUse(final ServerLevel level, final Mob body, final long timestamp) {
+      return this.checkExtraStartConditions(level, body);
    }
 
-   protected void tick(ServerLevel var1, Mob var2, long var3) {
-      if (var2.getRandom().nextFloat() < this.chance) {
-         var2.getJumpControl().jump();
+   protected void tick(final ServerLevel level, final Mob body, final long timestamp) {
+      if (body.getRandom().nextFloat() < this.chance) {
+         body.getJumpControl().jump();
       }
 
-   }
-
-   // $FF: synthetic method
-   protected void tick(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.tick(var1, (Mob)var2, var3);
    }
 }

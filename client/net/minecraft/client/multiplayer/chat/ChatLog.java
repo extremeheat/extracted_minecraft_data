@@ -10,44 +10,44 @@ public class ChatLog {
    private final LoggedChatEvent[] buffer;
    private int nextId;
 
-   public static Codec<ChatLog> codec(int var0) {
-      return Codec.list(LoggedChatEvent.CODEC).comapFlatMap((var1) -> {
-         int var2 = var1.size();
-         return var2 > var0 ? DataResult.error(() -> "Expected: a buffer of size less than or equal to " + var0 + " but: " + var2 + " is greater than " + var0) : DataResult.success(new ChatLog(var0, var1));
+   public static Codec<ChatLog> codec(final int capacity) {
+      return Codec.list(LoggedChatEvent.CODEC).comapFlatMap((loggedChatEvents) -> {
+         int parsedSize = loggedChatEvents.size();
+         return parsedSize > capacity ? DataResult.error(() -> "Expected: a buffer of size less than or equal to " + capacity + " but: " + parsedSize + " is greater than " + capacity) : DataResult.success(new ChatLog(capacity, loggedChatEvents));
       }, ChatLog::loggedChatEvents);
    }
 
-   public ChatLog(int var1) {
+   public ChatLog(final int capacity) {
       super();
-      this.buffer = new LoggedChatEvent[var1];
+      this.buffer = new LoggedChatEvent[capacity];
    }
 
-   private ChatLog(int var1, List<LoggedChatEvent> var2) {
+   private ChatLog(final int capacity, final List<LoggedChatEvent> buffer) {
       super();
-      this.buffer = (LoggedChatEvent[])var2.toArray((var1x) -> new LoggedChatEvent[var1]);
-      this.nextId = var2.size();
+      this.buffer = (LoggedChatEvent[])buffer.toArray((size) -> new LoggedChatEvent[capacity]);
+      this.nextId = buffer.size();
    }
 
    private List<LoggedChatEvent> loggedChatEvents() {
-      ArrayList var1 = new ArrayList(this.size());
+      List<LoggedChatEvent> loggedChatEvents = new ArrayList(this.size());
 
-      for(int var2 = this.start(); var2 <= this.end(); ++var2) {
-         var1.add(this.lookup(var2));
+      for(int i = this.start(); i <= this.end(); ++i) {
+         loggedChatEvents.add(this.lookup(i));
       }
 
-      return var1;
+      return loggedChatEvents;
    }
 
-   public void push(LoggedChatEvent var1) {
-      this.buffer[this.index(this.nextId++)] = var1;
+   public void push(final LoggedChatEvent event) {
+      this.buffer[this.index(this.nextId++)] = event;
    }
 
-   public @Nullable LoggedChatEvent lookup(int var1) {
-      return var1 >= this.start() && var1 <= this.end() ? this.buffer[this.index(var1)] : null;
+   public @Nullable LoggedChatEvent lookup(final int id) {
+      return id >= this.start() && id <= this.end() ? this.buffer[this.index(id)] : null;
    }
 
-   private int index(int var1) {
-      return var1 % this.buffer.length;
+   private int index(final int id) {
+      return id % this.buffer.length;
    }
 
    public int start() {

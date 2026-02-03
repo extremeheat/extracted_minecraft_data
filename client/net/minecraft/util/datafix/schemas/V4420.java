@@ -8,13 +8,13 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V4420 extends NamespacedSchema {
-   public V4420(int var1, Schema var2) {
-      super(var1, var2);
+   public V4420(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
-      Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:area_effect_cloud", (var1x) -> DSL.optionalFields("custom_particle", References.PARTICLE.in(var1)));
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerEntities(schema);
+      schema.register(map, "minecraft:area_effect_cloud", (name) -> DSL.optionalFields("custom_particle", References.PARTICLE.in(schema)));
+      return map;
    }
 }

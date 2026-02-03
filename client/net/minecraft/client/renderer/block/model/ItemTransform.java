@@ -17,34 +17,31 @@ import org.joml.Vector3fc;
 public record ItemTransform(Vector3fc rotation, Vector3fc translation, Vector3fc scale) {
    public static final ItemTransform NO_TRANSFORM = new ItemTransform(new Vector3f(), new Vector3f(), new Vector3f(1.0F, 1.0F, 1.0F));
 
-   public ItemTransform(Vector3fc var1, Vector3fc var2, Vector3fc var3) {
+   public ItemTransform {
       super();
-      this.rotation = var1;
-      this.translation = var2;
-      this.scale = var3;
    }
 
-   public void apply(boolean var1, PoseStack.Pose var2) {
+   public void apply(final boolean applyLeftHandFix, final PoseStack.Pose pose) {
       if (this == NO_TRANSFORM) {
-         var2.translate(-0.5F, -0.5F, -0.5F);
+         pose.translate(-0.5F, -0.5F, -0.5F);
       } else {
-         float var3;
-         float var4;
-         float var5;
-         if (var1) {
-            var3 = -this.translation.x();
-            var4 = -this.rotation.y();
-            var5 = -this.rotation.z();
+         float translationX;
+         float rotY;
+         float rotZ;
+         if (applyLeftHandFix) {
+            translationX = -this.translation.x();
+            rotY = -this.rotation.y();
+            rotZ = -this.rotation.z();
          } else {
-            var3 = this.translation.x();
-            var4 = this.rotation.y();
-            var5 = this.rotation.z();
+            translationX = this.translation.x();
+            rotY = this.rotation.y();
+            rotZ = this.rotation.z();
          }
 
-         var2.translate(var3, this.translation.y(), this.translation.z());
-         var2.rotate((new Quaternionf()).rotationXYZ(this.rotation.x() * 0.017453292F, var4 * 0.017453292F, var5 * 0.017453292F));
-         var2.scale(this.scale.x(), this.scale.y(), this.scale.z());
-         var2.translate(-0.5F, -0.5F, -0.5F);
+         pose.translate(translationX, this.translation.y(), this.translation.z());
+         pose.rotate((new Quaternionf()).rotationXYZ(this.rotation.x() * 0.017453292F, rotY * 0.017453292F, rotZ * 0.017453292F));
+         pose.scale(this.scale.x(), this.scale.y(), this.scale.z());
+         pose.translate(-0.5F, -0.5F, -0.5F);
       }
    }
 
@@ -59,39 +56,34 @@ public record ItemTransform(Vector3fc rotation, Vector3fc translation, Vector3fc
          super();
       }
 
-      public ItemTransform deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         JsonObject var4 = var1.getAsJsonObject();
-         Vector3f var5 = this.getVector3f(var4, "rotation", DEFAULT_ROTATION);
-         Vector3f var6 = this.getVector3f(var4, "translation", DEFAULT_TRANSLATION);
-         var6.mul(0.0625F);
-         var6.set(Mth.clamp(var6.x, -5.0F, 5.0F), Mth.clamp(var6.y, -5.0F, 5.0F), Mth.clamp(var6.z, -5.0F, 5.0F));
-         Vector3f var7 = this.getVector3f(var4, "scale", DEFAULT_SCALE);
-         var7.set(Mth.clamp(var7.x, -4.0F, 4.0F), Mth.clamp(var7.y, -4.0F, 4.0F), Mth.clamp(var7.z, -4.0F, 4.0F));
-         return new ItemTransform(var5, var6, var7);
+      public ItemTransform deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
+         JsonObject object = json.getAsJsonObject();
+         Vector3f rotation = this.getVector3f(object, "rotation", DEFAULT_ROTATION);
+         Vector3f translation = this.getVector3f(object, "translation", DEFAULT_TRANSLATION);
+         translation.mul(0.0625F);
+         translation.set(Mth.clamp(translation.x, -5.0F, 5.0F), Mth.clamp(translation.y, -5.0F, 5.0F), Mth.clamp(translation.z, -5.0F, 5.0F));
+         Vector3f scale = this.getVector3f(object, "scale", DEFAULT_SCALE);
+         scale.set(Mth.clamp(scale.x, -4.0F, 4.0F), Mth.clamp(scale.y, -4.0F, 4.0F), Mth.clamp(scale.z, -4.0F, 4.0F));
+         return new ItemTransform(rotation, translation, scale);
       }
 
-      private Vector3f getVector3f(JsonObject var1, String var2, Vector3f var3) {
-         if (!var1.has(var2)) {
-            return var3;
+      private Vector3f getVector3f(final JsonObject object, final String key, final Vector3f def) {
+         if (!object.has(key)) {
+            return def;
          } else {
-            JsonArray var4 = GsonHelper.getAsJsonArray(var1, var2);
-            if (var4.size() != 3) {
-               throw new JsonParseException("Expected 3 " + var2 + " values, found: " + var4.size());
+            JsonArray vecArray = GsonHelper.getAsJsonArray(object, key);
+            if (vecArray.size() != 3) {
+               throw new JsonParseException("Expected 3 " + key + " values, found: " + vecArray.size());
             } else {
-               float[] var5 = new float[3];
+               float[] elements = new float[3];
 
-               for(int var6 = 0; var6 < var5.length; ++var6) {
-                  var5[var6] = GsonHelper.convertToFloat(var4.get(var6), var2 + "[" + var6 + "]");
+               for(int i = 0; i < elements.length; ++i) {
+                  elements[i] = GsonHelper.convertToFloat(vecArray.get(i), key + "[" + i + "]");
                }
 
-               return new Vector3f(var5[0], var5[1], var5[2]);
+               return new Vector3f(elements[0], elements[1], elements[2]);
             }
          }
-      }
-
-      // $FF: synthetic method
-      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
-         return this.deserialize(var1, var2, var3);
       }
    }
 }

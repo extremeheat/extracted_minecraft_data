@@ -11,83 +11,78 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DirectoryValidator {
    private final PathMatcher symlinkTargetAllowList;
 
-   public DirectoryValidator(PathMatcher var1) {
+   public DirectoryValidator(final PathMatcher symlinkTargetAllowList) {
       super();
-      this.symlinkTargetAllowList = var1;
+      this.symlinkTargetAllowList = symlinkTargetAllowList;
    }
 
-   public void validateSymlink(Path var1, List<ForbiddenSymlinkInfo> var2) throws IOException {
-      Path var3 = Files.readSymbolicLink(var1);
-      if (!this.symlinkTargetAllowList.matches(var3)) {
-         var2.add(new ForbiddenSymlinkInfo(var1, var3));
+   public void validateSymlink(final Path path, final List<ForbiddenSymlinkInfo> issues) throws IOException {
+      Path target = Files.readSymbolicLink(path);
+      if (!this.symlinkTargetAllowList.matches(target)) {
+         issues.add(new ForbiddenSymlinkInfo(path, target));
       }
 
    }
 
-   public List<ForbiddenSymlinkInfo> validateSymlink(Path var1) throws IOException {
-      ArrayList var2 = new ArrayList();
-      this.validateSymlink(var1, var2);
-      return var2;
+   public List<ForbiddenSymlinkInfo> validateSymlink(final Path path) throws IOException {
+      List<ForbiddenSymlinkInfo> result = new ArrayList();
+      this.validateSymlink(path, result);
+      return result;
    }
 
-   public List<ForbiddenSymlinkInfo> validateDirectory(Path var1, boolean var2) throws IOException {
-      ArrayList var3 = new ArrayList();
+   public List<ForbiddenSymlinkInfo> validateDirectory(Path directory, final boolean allowTopSymlink) throws IOException {
+      List<ForbiddenSymlinkInfo> issues = new ArrayList();
 
-      BasicFileAttributes var4;
+      BasicFileAttributes targetAttributes;
       try {
-         var4 = Files.readAttributes(var1, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+         targetAttributes = Files.readAttributes(directory, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
       } catch (NoSuchFileException var6) {
-         return var3;
+         return issues;
       }
 
-      if (var4.isRegularFile()) {
-         throw new IOException("Path " + String.valueOf(var1) + " is not a directory");
+      if (targetAttributes.isRegularFile()) {
+         throw new IOException("Path " + String.valueOf(directory) + " is not a directory");
       } else {
-         if (var4.isSymbolicLink()) {
-            if (!var2) {
-               this.validateSymlink(var1, var3);
-               return var3;
+         if (targetAttributes.isSymbolicLink()) {
+            if (!allowTopSymlink) {
+               this.validateSymlink(directory, issues);
+               return issues;
             }
 
-            var1 = Files.readSymbolicLink(var1);
+            directory = Files.readSymbolicLink(directory);
          }
 
-         this.validateKnownDirectory(var1, var3);
-         return var3;
+         this.validateKnownDirectory(directory, issues);
+         return issues;
       }
    }
 
-   public void validateKnownDirectory(Path var1, final List<ForbiddenSymlinkInfo> var2) throws IOException {
-      Files.walkFileTree(var1, new SimpleFileVisitor<Path>() {
-         private void validateSymlink(Path var1, BasicFileAttributes var2x) throws IOException {
-            if (var2x.isSymbolicLink()) {
-               DirectoryValidator.this.validateSymlink(var1, var2);
+   public void validateKnownDirectory(final Path directory, final List<ForbiddenSymlinkInfo> issues) throws IOException {
+      Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+         {
+            Objects.requireNonNull(DirectoryValidator.this);
+         }
+
+         private void validateSymlink(final Path path, final BasicFileAttributes attrs) throws IOException {
+            if (attrs.isSymbolicLink()) {
+               DirectoryValidator.this.validateSymlink(path, issues);
             }
 
          }
 
-         public FileVisitResult preVisitDirectory(Path var1, BasicFileAttributes var2x) throws IOException {
-            this.validateSymlink(var1, var2x);
-            return super.preVisitDirectory(var1, var2x);
+         public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+            this.validateSymlink(dir, attrs);
+            return super.preVisitDirectory(dir, attrs);
          }
 
-         public FileVisitResult visitFile(Path var1, BasicFileAttributes var2x) throws IOException {
-            this.validateSymlink(var1, var2x);
-            return super.visitFile(var1, var2x);
-         }
-
-         // $FF: synthetic method
-         public FileVisitResult visitFile(final Object var1, final BasicFileAttributes var2x) throws IOException {
-            return this.visitFile((Path)var1, var2x);
-         }
-
-         // $FF: synthetic method
-         public FileVisitResult preVisitDirectory(final Object var1, final BasicFileAttributes var2x) throws IOException {
-            return this.preVisitDirectory((Path)var1, var2x);
+         public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+            this.validateSymlink(file, attrs);
+            return super.visitFile(file, attrs);
          }
       });
    }

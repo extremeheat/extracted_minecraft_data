@@ -12,41 +12,41 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.lighting.LightEngine;
 
 public abstract class SpreadingSnowyDirtBlock extends SnowyDirtBlock {
-   protected SpreadingSnowyDirtBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected SpreadingSnowyDirtBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   private static boolean canBeGrass(BlockState var0, LevelReader var1, BlockPos var2) {
-      BlockPos var3 = var2.above();
-      BlockState var4 = var1.getBlockState(var3);
-      if (var4.is(Blocks.SNOW) && (Integer)var4.getValue(SnowLayerBlock.LAYERS) == 1) {
+   private static boolean canBeGrass(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockPos above = pos.above();
+      BlockState aboveState = level.getBlockState(above);
+      if (aboveState.is(Blocks.SNOW) && (Integer)aboveState.getValue(SnowLayerBlock.LAYERS) == 1) {
          return true;
-      } else if (var4.getFluidState().getAmount() == 8) {
+      } else if (aboveState.getFluidState().isFull()) {
          return false;
       } else {
-         int var5 = LightEngine.getLightBlockInto(var0, var4, Direction.UP, var4.getLightBlock());
-         return var5 < 15;
+         int lightBlockInto = LightEngine.getLightBlockInto(state, aboveState, Direction.UP, aboveState.getLightBlock());
+         return lightBlockInto < 15;
       }
    }
 
    protected abstract MapCodec<? extends SpreadingSnowyDirtBlock> codec();
 
-   private static boolean canPropagate(BlockState var0, LevelReader var1, BlockPos var2) {
-      BlockPos var3 = var2.above();
-      return canBeGrass(var0, var1, var2) && !var1.getFluidState(var3).is(FluidTags.WATER);
+   private static boolean canPropagate(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockPos above = pos.above();
+      return canBeGrass(state, level, pos) && !level.getFluidState(above).is(FluidTags.WATER);
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!canBeGrass(var1, var2, var3)) {
-         var2.setBlockAndUpdate(var3, Blocks.DIRT.defaultBlockState());
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!canBeGrass(state, level, pos)) {
+         level.setBlockAndUpdate(pos, Blocks.DIRT.defaultBlockState());
       } else {
-         if (var2.getMaxLocalRawBrightness(var3.above()) >= 9) {
-            BlockState var5 = this.defaultBlockState();
+         if (level.getMaxLocalRawBrightness(pos.above()) >= 9) {
+            BlockState defaultBlockState = this.defaultBlockState();
 
-            for(int var6 = 0; var6 < 4; ++var6) {
-               BlockPos var7 = var3.offset(var4.nextInt(3) - 1, var4.nextInt(5) - 3, var4.nextInt(3) - 1);
-               if (var2.getBlockState(var7).is(Blocks.DIRT) && canPropagate(var5, var2, var7)) {
-                  var2.setBlockAndUpdate(var7, (BlockState)var5.setValue(SNOWY, isSnowySetting(var2.getBlockState(var7.above()))));
+            for(int i = 0; i < 4; ++i) {
+               BlockPos testPos = pos.offset(random.nextInt(3) - 1, random.nextInt(5) - 3, random.nextInt(3) - 1);
+               if (level.getBlockState(testPos).is(Blocks.DIRT) && canPropagate(defaultBlockState, level, testPos)) {
+                  level.setBlockAndUpdate(testPos, (BlockState)defaultBlockState.setValue(SNOWY, isSnowySetting(level.getBlockState(testPos.above()))));
                }
             }
          }

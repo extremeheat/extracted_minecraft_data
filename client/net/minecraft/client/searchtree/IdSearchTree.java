@@ -13,25 +13,25 @@ public class IdSearchTree<T> implements SearchTree<T> {
    protected final Comparator<T> additionOrder;
    protected final IdentifierSearchTree<T> identifierSearchTree;
 
-   public IdSearchTree(Function<T, Stream<Identifier>> var1, List<T> var2) {
+   public IdSearchTree(final Function<T, Stream<Identifier>> idGetter, final List<T> contents) {
       super();
-      ToIntFunction var3 = Util.createIndexLookup(var2);
-      this.additionOrder = Comparator.comparingInt(var3);
-      this.identifierSearchTree = IdentifierSearchTree.<T>create(var2, var1);
+      ToIntFunction<T> indexLookup = Util.<T>createIndexLookup(contents);
+      this.additionOrder = Comparator.comparingInt(indexLookup);
+      this.identifierSearchTree = IdentifierSearchTree.<T>create(contents, idGetter);
    }
 
-   public List<T> search(String var1) {
-      int var2 = var1.indexOf(58);
-      return var2 == -1 ? this.searchPlainText(var1) : this.searchIdentifier(var1.substring(0, var2).trim(), var1.substring(var2 + 1).trim());
+   public List<T> search(final String text) {
+      int colon = text.indexOf(58);
+      return colon == -1 ? this.searchPlainText(text) : this.searchIdentifier(text.substring(0, colon).trim(), text.substring(colon + 1).trim());
    }
 
-   protected List<T> searchPlainText(String var1) {
-      return this.identifierSearchTree.searchPath(var1);
+   protected List<T> searchPlainText(final String text) {
+      return this.identifierSearchTree.searchPath(text);
    }
 
-   protected List<T> searchIdentifier(String var1, String var2) {
-      List var3 = this.identifierSearchTree.searchNamespace(var1);
-      List var4 = this.identifierSearchTree.searchPath(var2);
-      return ImmutableList.copyOf(new IntersectionIterator(var3.iterator(), var4.iterator(), this.additionOrder));
+   protected List<T> searchIdentifier(final String namespace, final String path) {
+      List<T> namespaces = this.identifierSearchTree.searchNamespace(namespace);
+      List<T> paths = this.identifierSearchTree.searchPath(path);
+      return ImmutableList.copyOf(new IntersectionIterator(namespaces.iterator(), paths.iterator(), this.additionOrder));
    }
 }

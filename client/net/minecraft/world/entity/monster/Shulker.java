@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -75,7 +76,7 @@ public class Shulker extends AbstractGolem implements Enemy {
    private static final float PEEK_PER_TICK = 0.05F;
    private static final byte DEFAULT_PEEK = 0;
    private static final Direction DEFAULT_ATTACH_FACE;
-   static final Vector3f FORWARD;
+   private static final Vector3f FORWARD;
    private static final float MAX_SCALE = 3.0F;
    private float currentPeekAmountO;
    private float currentPeekAmount;
@@ -83,8 +84,8 @@ public class Shulker extends AbstractGolem implements Enemy {
    private int clientSideTeleportInterpolation;
    private static final float MAX_LID_OPEN = 1.0F;
 
-   public Shulker(EntityType<? extends Shulker> var1, Level var2) {
-      super(var1, var2);
+   public Shulker(final EntityType<? extends Shulker> type, final Level level) {
+      super(type, level);
       this.xpReward = 5;
       this.lookControl = new ShulkerLookControl(this);
    }
@@ -122,15 +123,15 @@ public class Shulker extends AbstractGolem implements Enemy {
       return SoundEvents.SHULKER_DEATH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return this.isClosed() ? SoundEvents.SHULKER_HURT_CLOSED : SoundEvents.SHULKER_HURT;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_ATTACH_FACE_ID, DEFAULT_ATTACH_FACE);
-      var1.define(DATA_PEEK_ID, (byte)0);
-      var1.define(DATA_COLOR_ID, (byte)16);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_ATTACH_FACE_ID, DEFAULT_ATTACH_FACE);
+      entityData.define(DATA_PEEK_ID, (byte)0);
+      entityData.define(DATA_COLOR_ID, (byte)16);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -141,18 +142,18 @@ public class Shulker extends AbstractGolem implements Enemy {
       return new ShulkerBodyRotationControl(this);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setAttachFace((Direction)var1.read("AttachFace", Direction.LEGACY_ID_CODEC).orElse(DEFAULT_ATTACH_FACE));
-      this.entityData.set(DATA_PEEK_ID, var1.getByteOr("Peek", (byte)0));
-      this.entityData.set(DATA_COLOR_ID, var1.getByteOr("Color", (byte)16));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setAttachFace((Direction)input.read("AttachFace", Direction.LEGACY_ID_CODEC).orElse(DEFAULT_ATTACH_FACE));
+      this.entityData.set(DATA_PEEK_ID, input.getByteOr("Peek", (byte)0));
+      this.entityData.set(DATA_COLOR_ID, input.getByteOr("Color", (byte)16));
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.store("AttachFace", Direction.LEGACY_ID_CODEC, this.getAttachFace());
-      var1.putByte("Peek", (Byte)this.entityData.get(DATA_PEEK_ID));
-      var1.putByte("Color", (Byte)this.entityData.get(DATA_COLOR_ID));
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.store("AttachFace", Direction.LEGACY_ID_CODEC, this.getAttachFace());
+      output.putByte("Peek", (Byte)this.entityData.get(DATA_PEEK_ID));
+      output.putByte("Color", (Byte)this.entityData.get(DATA_COLOR_ID));
    }
 
    public void tick() {
@@ -176,35 +177,35 @@ public class Shulker extends AbstractGolem implements Enemy {
    }
 
    private void findNewAttachment() {
-      Direction var1 = this.findAttachableSurface(this.blockPosition());
-      if (var1 != null) {
-         this.setAttachFace(var1);
+      Direction attachmentDirection = this.findAttachableSurface(this.blockPosition());
+      if (attachmentDirection != null) {
+         this.setAttachFace(attachmentDirection);
       } else {
          this.teleportSomewhere();
       }
 
    }
 
-   protected AABB makeBoundingBox(Vec3 var1) {
-      float var2 = getPhysicalPeek(this.currentPeekAmount);
-      Direction var3 = this.getAttachFace().getOpposite();
-      return getProgressAabb(this.getScale(), var3, var2, var1);
+   protected AABB makeBoundingBox(final Vec3 position) {
+      float physPeek = getPhysicalPeek(this.currentPeekAmount);
+      Direction direction = this.getAttachFace().getOpposite();
+      return getProgressAabb(this.getScale(), direction, physPeek, position);
    }
 
-   private static float getPhysicalPeek(float var0) {
-      return 0.5F - Mth.sin((double)((0.5F + var0) * 3.1415927F)) * 0.5F;
+   private static float getPhysicalPeek(final float amount) {
+      return 0.5F - Mth.sin((double)((0.5F + amount) * 3.1415927F)) * 0.5F;
    }
 
    private boolean updatePeekAmount() {
       this.currentPeekAmountO = this.currentPeekAmount;
-      float var1 = (float)this.getRawPeekAmount() * 0.01F;
-      if (this.currentPeekAmount == var1) {
+      float targetPeekAmount = (float)this.getRawPeekAmount() * 0.01F;
+      if (this.currentPeekAmount == targetPeekAmount) {
          return false;
       } else {
-         if (this.currentPeekAmount > var1) {
-            this.currentPeekAmount = Mth.clamp(this.currentPeekAmount - 0.05F, var1, 1.0F);
+         if (this.currentPeekAmount > targetPeekAmount) {
+            this.currentPeekAmount = Mth.clamp(this.currentPeekAmount - 0.05F, targetPeekAmount, 1.0F);
          } else {
-            this.currentPeekAmount = Mth.clamp(this.currentPeekAmount + 0.05F, 0.0F, var1);
+            this.currentPeekAmount = Mth.clamp(this.currentPeekAmount + 0.05F, 0.0F, targetPeekAmount);
          }
 
          return true;
@@ -213,40 +214,40 @@ public class Shulker extends AbstractGolem implements Enemy {
 
    private void onPeekAmountChange() {
       this.reapplyPosition();
-      float var1 = getPhysicalPeek(this.currentPeekAmount);
-      float var2 = getPhysicalPeek(this.currentPeekAmountO);
-      Direction var3 = this.getAttachFace().getOpposite();
-      float var4 = (var1 - var2) * this.getScale();
-      if (!(var4 <= 0.0F)) {
-         for(Entity var7 : this.level().getEntities(this, getProgressDeltaAabb(this.getScale(), var3, var2, var1, this.position()), EntitySelector.NO_SPECTATORS.and((var1x) -> !var1x.isPassengerOfSameVehicle(this)))) {
-            if (!(var7 instanceof Shulker) && !var7.noPhysics) {
-               var7.move(MoverType.SHULKER, new Vec3((double)(var4 * (float)var3.getStepX()), (double)(var4 * (float)var3.getStepY()), (double)(var4 * (float)var3.getStepZ())));
+      float physicalPeek = getPhysicalPeek(this.currentPeekAmount);
+      float physicalPeekOld = getPhysicalPeek(this.currentPeekAmountO);
+      Direction direction = this.getAttachFace().getOpposite();
+      float push = (physicalPeek - physicalPeekOld) * this.getScale();
+      if (!(push <= 0.0F)) {
+         for(Entity entity : this.level().getEntities(this, getProgressDeltaAabb(this.getScale(), direction, physicalPeekOld, physicalPeek, this.position()), EntitySelector.NO_SPECTATORS.and((e) -> !e.isPassengerOfSameVehicle(this)))) {
+            if (!(entity instanceof Shulker) && !entity.noPhysics) {
+               entity.move(MoverType.SHULKER, new Vec3((double)(push * (float)direction.getStepX()), (double)(push * (float)direction.getStepY()), (double)(push * (float)direction.getStepZ())));
             }
          }
 
       }
    }
 
-   public static AABB getProgressAabb(float var0, Direction var1, float var2, Vec3 var3) {
-      return getProgressDeltaAabb(var0, var1, -1.0F, var2, var3);
+   public static AABB getProgressAabb(final float size, final Direction direction, final float progressTo, final Vec3 position) {
+      return getProgressDeltaAabb(size, direction, -1.0F, progressTo, position);
    }
 
-   public static AABB getProgressDeltaAabb(float var0, Direction var1, float var2, float var3, Vec3 var4) {
-      AABB var5 = new AABB((double)(-var0) * 0.5, 0.0, (double)(-var0) * 0.5, (double)var0 * 0.5, (double)var0, (double)var0 * 0.5);
-      double var6 = (double)Math.max(var2, var3);
-      double var8 = (double)Math.min(var2, var3);
-      AABB var10 = var5.expandTowards((double)var1.getStepX() * var6 * (double)var0, (double)var1.getStepY() * var6 * (double)var0, (double)var1.getStepZ() * var6 * (double)var0).contract((double)(-var1.getStepX()) * (1.0 + var8) * (double)var0, (double)(-var1.getStepY()) * (1.0 + var8) * (double)var0, (double)(-var1.getStepZ()) * (1.0 + var8) * (double)var0);
-      return var10.move(var4.x, var4.y, var4.z);
+   public static AABB getProgressDeltaAabb(final float size, final Direction direction, final float progressFrom, final float progressTo, final Vec3 position) {
+      AABB boundsAtBottomCenter = new AABB((double)(-size) * 0.5, 0.0, (double)(-size) * 0.5, (double)size * 0.5, (double)size, (double)size * 0.5);
+      double maxMovement = (double)Math.max(progressFrom, progressTo);
+      double minMovement = (double)Math.min(progressFrom, progressTo);
+      AABB aabb = boundsAtBottomCenter.expandTowards((double)direction.getStepX() * maxMovement * (double)size, (double)direction.getStepY() * maxMovement * (double)size, (double)direction.getStepZ() * maxMovement * (double)size).contract((double)(-direction.getStepX()) * (1.0 + minMovement) * (double)size, (double)(-direction.getStepY()) * (1.0 + minMovement) * (double)size, (double)(-direction.getStepZ()) * (1.0 + minMovement) * (double)size);
+      return aabb.move(position.x, position.y, position.z);
    }
 
-   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
+   public boolean startRiding(final Entity entity, final boolean force, final boolean sendEventAndTriggers) {
       if (this.level().isClientSide()) {
          this.clientOldAttachPosition = null;
          this.clientSideTeleportInterpolation = 0;
       }
 
       this.setAttachFace(Direction.DOWN);
-      return super.startRiding(var1, var2, var3);
+      return super.startRiding(entity, force, sendEventAndTriggers);
    }
 
    public void stopRiding() {
@@ -259,18 +260,18 @@ public class Shulker extends AbstractGolem implements Enemy {
       this.yBodyRot = 0.0F;
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
       this.setYRot(0.0F);
       this.yHeadRot = this.getYRot();
       this.setOldPosAndRot();
-      return super.finalizeSpawn(var1, var2, var3, var4);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   public void move(MoverType var1, Vec3 var2) {
-      if (var1 == MoverType.SHULKER_BOX) {
+   public void move(final MoverType moverType, final Vec3 delta) {
+      if (moverType == MoverType.SHULKER_BOX) {
          this.teleportSomewhere();
       } else {
-         super.move(var1, var2);
+         super.move(moverType, delta);
       }
 
    }
@@ -279,24 +280,24 @@ public class Shulker extends AbstractGolem implements Enemy {
       return Vec3.ZERO;
    }
 
-   public void setDeltaMovement(Vec3 var1) {
+   public void setDeltaMovement(final Vec3 deltaMovement) {
    }
 
-   public void setPos(double var1, double var3, double var5) {
-      BlockPos var7 = this.blockPosition();
+   public void setPos(final double x, final double y, final double z) {
+      BlockPos oldPos = this.blockPosition();
       if (this.isPassenger()) {
-         super.setPos(var1, var3, var5);
+         super.setPos(x, y, z);
       } else {
-         super.setPos((double)Mth.floor(var1) + 0.5, (double)Mth.floor(var3 + 0.5), (double)Mth.floor(var5) + 0.5);
+         super.setPos((double)Mth.floor(x) + 0.5, (double)Mth.floor(y + 0.5), (double)Mth.floor(z) + 0.5);
       }
 
       if (this.tickCount != 0) {
-         BlockPos var8 = this.blockPosition();
-         if (!var8.equals(var7)) {
+         BlockPos pos = this.blockPosition();
+         if (!pos.equals(oldPos)) {
             this.entityData.set(DATA_PEEK_ID, (byte)0);
             this.needsSync = true;
-            if (this.level().isClientSide() && !this.isPassenger() && !var8.equals(this.clientOldAttachPosition)) {
-               this.clientOldAttachPosition = var7;
+            if (this.level().isClientSide() && !this.isPassenger() && !pos.equals(this.clientOldAttachPosition)) {
+               this.clientOldAttachPosition = oldPos;
                this.clientSideTeleportInterpolation = 6;
                this.xOld = this.getX();
                this.yOld = this.getY();
@@ -307,54 +308,54 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
    }
 
-   protected @Nullable Direction findAttachableSurface(BlockPos var1) {
-      for(Direction var5 : Direction.values()) {
-         if (this.canStayAt(var1, var5)) {
-            return var5;
+   protected @Nullable Direction findAttachableSurface(final BlockPos target) {
+      for(Direction direction : Direction.values()) {
+         if (this.canStayAt(target, direction)) {
+            return direction;
          }
       }
 
       return null;
    }
 
-   boolean canStayAt(BlockPos var1, Direction var2) {
-      if (this.isPositionBlocked(var1)) {
+   private boolean canStayAt(final BlockPos target, final Direction face) {
+      if (this.isPositionBlocked(target)) {
          return false;
       } else {
-         Direction var3 = var2.getOpposite();
-         if (!this.level().loadedAndEntityCanStandOnFace(var1.relative(var2), this, var3)) {
+         Direction oppositeFace = face.getOpposite();
+         if (!this.level().loadedAndEntityCanStandOnFace(target.relative(face), this, oppositeFace)) {
             return false;
          } else {
-            AABB var4 = getProgressAabb(this.getScale(), var3, 1.0F, var1.getBottomCenter()).deflate(1.0E-6);
-            return this.level().noCollision(this, var4);
+            AABB fullyOpened = getProgressAabb(this.getScale(), oppositeFace, 1.0F, target.getBottomCenter()).deflate(1.0E-6);
+            return this.level().noCollision(this, fullyOpened);
          }
       }
    }
 
-   private boolean isPositionBlocked(BlockPos var1) {
-      BlockState var2 = this.level().getBlockState(var1);
-      if (var2.isAir()) {
+   private boolean isPositionBlocked(final BlockPos target) {
+      BlockState state = this.level().getBlockState(target);
+      if (state.isAir()) {
          return false;
       } else {
-         boolean var3 = var2.is(Blocks.MOVING_PISTON) && var1.equals(this.blockPosition());
-         return !var3;
+         boolean movingPistonInOurCurrentPosition = state.is(Blocks.MOVING_PISTON) && target.equals(this.blockPosition());
+         return !movingPistonInOurCurrentPosition;
       }
    }
 
    protected boolean teleportSomewhere() {
       if (!this.isNoAi() && this.isAlive()) {
-         BlockPos var1 = this.blockPosition();
+         BlockPos current = this.blockPosition();
 
-         for(int var2 = 0; var2 < 5; ++var2) {
-            BlockPos var3 = var1.offset(Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8));
-            if (var3.getY() > this.level().getMinY() && this.level().isEmptyBlock(var3) && this.level().getWorldBorder().isWithinBounds(var3) && this.level().noCollision(this, (new AABB(var3)).deflate(1.0E-6))) {
-               Direction var4 = this.findAttachableSurface(var3);
-               if (var4 != null) {
+         for(int attempt = 0; attempt < 5; ++attempt) {
+            BlockPos target = current.offset(Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8));
+            if (target.getY() > this.level().getMinY() && this.level().isEmptyBlock(target) && this.level().getWorldBorder().isWithinBounds(target) && this.level().noCollision(this, (new AABB(target)).deflate(1.0E-6))) {
+               Direction attachmentDirection = this.findAttachableSurface(target);
+               if (attachmentDirection != null) {
                   this.unRide();
-                  this.setAttachFace(var4);
+                  this.setAttachFace(attachmentDirection);
                   this.playSound(SoundEvents.SHULKER_TELEPORT, 1.0F, 1.0F);
-                  this.setPos((double)var3.getX() + 0.5, (double)var3.getY(), (double)var3.getZ() + 0.5);
-                  this.level().gameEvent(GameEvent.TELEPORT, var1, GameEvent.Context.of((Entity)this));
+                  this.setPos((double)target.getX() + 0.5, (double)target.getY(), (double)target.getZ() + 0.5);
+                  this.level().gameEvent(GameEvent.TELEPORT, current, GameEvent.Context.of((Entity)this));
                   this.entityData.set(DATA_PEEK_ID, (byte)0);
                   this.setTarget((LivingEntity)null);
                   return true;
@@ -372,22 +373,22 @@ public class Shulker extends AbstractGolem implements Enemy {
       return null;
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       if (this.isClosed()) {
-         Entity var4 = var2.getDirectEntity();
-         if (var4 instanceof AbstractArrow) {
+         Entity directEntity = source.getDirectEntity();
+         if (directEntity instanceof AbstractArrow) {
             return false;
          }
       }
 
-      if (!super.hurtServer(var1, var2, var3)) {
+      if (!super.hurtServer(level, source, damage)) {
          return false;
       } else {
          if ((double)this.getHealth() < (double)this.getMaxHealth() * 0.5 && this.random.nextInt(4) == 0) {
             this.teleportSomewhere();
-         } else if (var2.is(DamageTypeTags.IS_PROJECTILE)) {
-            Entity var5 = var2.getDirectEntity();
-            if (var5 != null && var5.getType() == EntityType.SHULKER_BULLET) {
+         } else if (source.is(DamageTypeTags.IS_PROJECTILE)) {
+            Entity directEntity = source.getDirectEntity();
+            if (directEntity != null && directEntity.is(EntityType.SHULKER_BULLET)) {
                this.hitByShulkerBullet();
             }
          }
@@ -401,24 +402,24 @@ public class Shulker extends AbstractGolem implements Enemy {
    }
 
    private void hitByShulkerBullet() {
-      Vec3 var1 = this.position();
-      AABB var2 = this.getBoundingBox();
+      Vec3 oldPosition = this.position();
+      AABB oldAabb = this.getBoundingBox();
       if (!this.isClosed() && this.teleportSomewhere()) {
-         int var3 = this.level().getEntities((EntityTypeTest)EntityType.SHULKER, var2.inflate(8.0), Entity::isAlive).size();
-         float var4 = (float)(var3 - 1) / 5.0F;
-         if (!(this.level().random.nextFloat() < var4)) {
-            Shulker var5 = EntityType.SHULKER.create(this.level(), EntitySpawnReason.BREEDING);
-            if (var5 != null) {
-               var5.setVariant(this.getVariant());
-               var5.snapTo(var1);
-               this.level().addFreshEntity(var5);
+         int shulkerCount = this.level().getEntities((EntityTypeTest)EntityType.SHULKER, oldAabb.inflate(8.0), Entity::isAlive).size();
+         float failureChance = (float)(shulkerCount - 1) / 5.0F;
+         if (!(this.level().getRandom().nextFloat() < failureChance)) {
+            Shulker baby = EntityType.SHULKER.create(this.level(), EntitySpawnReason.BREEDING);
+            if (baby != null) {
+               baby.setVariant(this.getVariant());
+               baby.snapTo(oldPosition);
+               this.level().addFreshEntity(baby);
             }
 
          }
       }
    }
 
-   public boolean canBeCollidedWith(@Nullable Entity var1) {
+   public boolean canBeCollidedWith(final @Nullable Entity other) {
       return this.isAlive();
    }
 
@@ -426,26 +427,26 @@ public class Shulker extends AbstractGolem implements Enemy {
       return (Direction)this.entityData.get(DATA_ATTACH_FACE_ID);
    }
 
-   private void setAttachFace(Direction var1) {
-      this.entityData.set(DATA_ATTACH_FACE_ID, var1);
+   private void setAttachFace(final Direction attachmentDirection) {
+      this.entityData.set(DATA_ATTACH_FACE_ID, attachmentDirection);
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (DATA_ATTACH_FACE_ID.equals(var1)) {
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      if (DATA_ATTACH_FACE_ID.equals(accessor)) {
          this.setBoundingBox(this.makeBoundingBox());
       }
 
-      super.onSyncedDataUpdated(var1);
+      super.onSyncedDataUpdated(accessor);
    }
 
    private int getRawPeekAmount() {
       return (Byte)this.entityData.get(DATA_PEEK_ID);
    }
 
-   void setRawPeekAmount(int var1) {
+   private void setRawPeekAmount(final int amount) {
       if (!this.level().isClientSide()) {
          this.getAttribute(Attributes.ARMOR).removeModifier(COVERED_ARMOR_MODIFIER_ID);
-         if (var1 == 0) {
+         if (amount == 0) {
             this.getAttribute(Attributes.ARMOR).addPermanentModifier(COVERED_ARMOR_MODIFIER);
             this.playSound(SoundEvents.SHULKER_CLOSE, 1.0F, 1.0F);
             this.gameEvent(GameEvent.CONTAINER_CLOSE);
@@ -455,15 +456,15 @@ public class Shulker extends AbstractGolem implements Enemy {
          }
       }
 
-      this.entityData.set(DATA_PEEK_ID, (byte)var1);
+      this.entityData.set(DATA_PEEK_ID, (byte)amount);
    }
 
-   public float getClientPeekAmount(float var1) {
-      return Mth.lerp(var1, this.currentPeekAmountO, this.currentPeekAmount);
+   public float getClientPeekAmount(final float a) {
+      return Mth.lerp(a, this.currentPeekAmountO, this.currentPeekAmount);
    }
 
-   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
-      super.recreateFromPacket(var1);
+   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
+      super.recreateFromPacket(packet);
       this.yBodyRot = 0.0F;
       this.yBodyRotO = 0.0F;
    }
@@ -476,30 +477,30 @@ public class Shulker extends AbstractGolem implements Enemy {
       return 180;
    }
 
-   public void push(Entity var1) {
+   public void push(final Entity entity) {
    }
 
-   public @Nullable Vec3 getRenderPosition(float var1) {
+   public @Nullable Vec3 getRenderPosition(final float a) {
       if (this.clientOldAttachPosition != null && this.clientSideTeleportInterpolation > 0) {
-         double var2 = (double)((float)this.clientSideTeleportInterpolation - var1) / 6.0;
-         var2 *= var2;
-         var2 *= (double)this.getScale();
-         BlockPos var4 = this.blockPosition();
-         double var5 = (double)(var4.getX() - this.clientOldAttachPosition.getX()) * var2;
-         double var7 = (double)(var4.getY() - this.clientOldAttachPosition.getY()) * var2;
-         double var9 = (double)(var4.getZ() - this.clientOldAttachPosition.getZ()) * var2;
-         return new Vec3(-var5, -var7, -var9);
+         double scale = (double)((float)this.clientSideTeleportInterpolation - a) / 6.0;
+         scale *= scale;
+         scale *= (double)this.getScale();
+         BlockPos currentPos = this.blockPosition();
+         double ox = (double)(currentPos.getX() - this.clientOldAttachPosition.getX()) * scale;
+         double oy = (double)(currentPos.getY() - this.clientOldAttachPosition.getY()) * scale;
+         double oz = (double)(currentPos.getZ() - this.clientOldAttachPosition.getZ()) * scale;
+         return new Vec3(-ox, -oy, -oz);
       } else {
          return null;
       }
    }
 
-   protected float sanitizeScale(float var1) {
-      return Math.min(var1, 3.0F);
+   protected float sanitizeScale(final float scale) {
+      return Math.min(scale, 3.0F);
    }
 
-   private void setVariant(Optional<DyeColor> var1) {
-      this.entityData.set(DATA_COLOR_ID, (Byte)var1.map((var0) -> (byte)var0.getId()).orElse((byte)16));
+   private void setVariant(final Optional<DyeColor> color) {
+      this.entityData.set(DATA_COLOR_ID, (Byte)color.map((dyeColor) -> (byte)dyeColor.getId()).orElse((byte)16));
    }
 
    public Optional<DyeColor> getVariant() {
@@ -507,25 +508,25 @@ public class Shulker extends AbstractGolem implements Enemy {
    }
 
    public @Nullable DyeColor getColor() {
-      byte var1 = (Byte)this.entityData.get(DATA_COLOR_ID);
-      return var1 != 16 && var1 <= 15 ? DyeColor.byId(var1) : null;
+      byte color = (Byte)this.entityData.get(DATA_COLOR_ID);
+      return color != 16 && color <= 15 ? DyeColor.byId(color) : null;
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.SHULKER_COLOR ? castComponentValue(var1, this.getColor()) : super.get(var1));
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)(type == DataComponents.SHULKER_COLOR ? castComponentValue(type, this.getColor()) : super.get(type));
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.SHULKER_COLOR);
-      super.applyImplicitComponents(var1);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.SHULKER_COLOR);
+      super.applyImplicitComponents(components);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.SHULKER_COLOR) {
-         this.setVariant(Optional.of((DyeColor)castComponentValue(DataComponents.SHULKER_COLOR, var2)));
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.SHULKER_COLOR) {
+         this.setVariant(Optional.of((DyeColor)castComponentValue(DataComponents.SHULKER_COLOR, value)));
          return true;
       } else {
-         return super.applyImplicitComponent(var1, var2);
+         return super.applyImplicitComponent(type, value);
       }
    }
 
@@ -536,32 +537,33 @@ public class Shulker extends AbstractGolem implements Enemy {
       DATA_COLOR_ID = SynchedEntityData.<Byte>defineId(Shulker.class, EntityDataSerializers.BYTE);
       DEFAULT_ATTACH_FACE = Direction.DOWN;
       FORWARD = (Vector3f)Util.make(() -> {
-         Vec3i var0 = Direction.SOUTH.getUnitVec3i();
-         return new Vector3f((float)var0.getX(), (float)var0.getY(), (float)var0.getZ());
+         Vec3i forwardNormal = Direction.SOUTH.getUnitVec3i();
+         return new Vector3f((float)forwardNormal.getX(), (float)forwardNormal.getY(), (float)forwardNormal.getZ());
       });
    }
 
-   class ShulkerLookControl extends LookControl {
-      public ShulkerLookControl(final Mob var2) {
-         super(var2);
+   private class ShulkerLookControl extends LookControl {
+      public ShulkerLookControl(final Mob mob) {
+         Objects.requireNonNull(Shulker.this);
+         super(mob);
       }
 
       protected void clampHeadRotationToBody() {
       }
 
       protected Optional<Float> getYRotD() {
-         Direction var1 = Shulker.this.getAttachFace().getOpposite();
-         Vector3f var2 = var1.getRotation().transform(new Vector3f(Shulker.FORWARD));
-         Vec3i var3 = var1.getUnitVec3i();
-         Vector3f var4 = new Vector3f((float)var3.getX(), (float)var3.getY(), (float)var3.getZ());
-         var4.cross(var2);
-         double var5 = this.wantedX - this.mob.getX();
-         double var7 = this.wantedY - this.mob.getEyeY();
-         double var9 = this.wantedZ - this.mob.getZ();
-         Vector3f var11 = new Vector3f((float)var5, (float)var7, (float)var9);
-         float var12 = var4.dot(var11);
-         float var13 = var2.dot(var11);
-         return !(Math.abs(var12) > 1.0E-5F) && !(Math.abs(var13) > 1.0E-5F) ? Optional.empty() : Optional.of((float)(Mth.atan2((double)(-var12), (double)var13) * 57.2957763671875));
+         Direction attachFace = Shulker.this.getAttachFace().getOpposite();
+         Vector3f forward = attachFace.getRotation().transform(new Vector3f(Shulker.FORWARD));
+         Vec3i upNormal = attachFace.getUnitVec3i();
+         Vector3f right = new Vector3f((float)upNormal.getX(), (float)upNormal.getY(), (float)upNormal.getZ());
+         right.cross(forward);
+         double xd = this.wantedX - this.mob.getX();
+         double yd = this.wantedY - this.mob.getEyeY();
+         double zd = this.wantedZ - this.mob.getZ();
+         Vector3f out = new Vector3f((float)xd, (float)yd, (float)zd);
+         float deltaRight = right.dot(out);
+         float deltaForward = forward.dot(out);
+         return !(Math.abs(deltaRight) > 1.0E-5F) && !(Math.abs(deltaForward) > 1.0E-5F) ? Optional.empty() : Optional.of((float)(Mth.atan2((double)(-deltaRight), (double)deltaForward) * 57.2957763671875));
       }
 
       protected Optional<Float> getXRotD() {
@@ -569,19 +571,20 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
    }
 
-   static class ShulkerBodyRotationControl extends BodyRotationControl {
-      public ShulkerBodyRotationControl(Mob var1) {
-         super(var1);
+   private static class ShulkerBodyRotationControl extends BodyRotationControl {
+      public ShulkerBodyRotationControl(final Mob mob) {
+         super(mob);
       }
 
       public void clientTick() {
       }
    }
 
-   class ShulkerPeekGoal extends Goal {
+   private class ShulkerPeekGoal extends Goal {
       private int peekTime;
 
-      ShulkerPeekGoal() {
+      private ShulkerPeekGoal() {
+         Objects.requireNonNull(Shulker.this);
          super();
       }
 
@@ -610,17 +613,18 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
    }
 
-   class ShulkerAttackGoal extends Goal {
+   private class ShulkerAttackGoal extends Goal {
       private int attackTime;
 
       public ShulkerAttackGoal() {
+         Objects.requireNonNull(Shulker.this);
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
       }
 
       public boolean canUse() {
-         LivingEntity var1 = Shulker.this.getTarget();
-         if (var1 != null && var1.isAlive()) {
+         LivingEntity target = Shulker.this.getTarget();
+         if (target != null && target.isAlive()) {
             return Shulker.this.level().getDifficulty() != Difficulty.PEACEFUL;
          } else {
             return false;
@@ -643,14 +647,14 @@ public class Shulker extends AbstractGolem implements Enemy {
       public void tick() {
          if (Shulker.this.level().getDifficulty() != Difficulty.PEACEFUL) {
             --this.attackTime;
-            LivingEntity var1 = Shulker.this.getTarget();
-            if (var1 != null) {
-               Shulker.this.getLookControl().setLookAt(var1, 180.0F, 180.0F);
-               double var2 = Shulker.this.distanceToSqr(var1);
-               if (var2 < 400.0) {
+            LivingEntity target = Shulker.this.getTarget();
+            if (target != null) {
+               Shulker.this.getLookControl().setLookAt(target, 180.0F, 180.0F);
+               double distance = Shulker.this.distanceToSqr(target);
+               if (distance < 400.0) {
                   if (this.attackTime <= 0) {
                      this.attackTime = 20 + Shulker.this.random.nextInt(10) * 20 / 2;
-                     Shulker.this.level().addFreshEntity(new ShulkerBullet(Shulker.this.level(), Shulker.this, var1, Shulker.this.getAttachFace().getAxis()));
+                     Shulker.this.level().addFreshEntity(new ShulkerBullet(Shulker.this.level(), Shulker.this, target, Shulker.this.getAttachFace().getAxis()));
                      Shulker.this.playSound(SoundEvents.SHULKER_SHOOT, 2.0F, (Shulker.this.random.nextFloat() - Shulker.this.random.nextFloat()) * 0.2F + 1.0F);
                   }
                } else {
@@ -663,40 +667,41 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
    }
 
-   class ShulkerNearestAttackGoal extends NearestAttackableTargetGoal<Player> {
-      public ShulkerNearestAttackGoal(final Shulker var2) {
-         super(var2, Player.class, true);
+   private class ShulkerNearestAttackGoal extends NearestAttackableTargetGoal<Player> {
+      public ShulkerNearestAttackGoal(final Shulker mob) {
+         Objects.requireNonNull(Shulker.this);
+         super(mob, Player.class, true);
       }
 
       public boolean canUse() {
          return Shulker.this.level().getDifficulty() == Difficulty.PEACEFUL ? false : super.canUse();
       }
 
-      protected AABB getTargetSearchArea(double var1) {
-         Direction var3 = ((Shulker)this.mob).getAttachFace();
-         if (var3.getAxis() == Direction.Axis.X) {
-            return this.mob.getBoundingBox().inflate(4.0, var1, var1);
+      protected AABB getTargetSearchArea(final double followDistance) {
+         Direction attachFace = ((Shulker)this.mob).getAttachFace();
+         if (attachFace.getAxis() == Direction.Axis.X) {
+            return this.mob.getBoundingBox().inflate(4.0, followDistance, followDistance);
          } else {
-            return var3.getAxis() == Direction.Axis.Z ? this.mob.getBoundingBox().inflate(var1, var1, 4.0) : this.mob.getBoundingBox().inflate(var1, 4.0, var1);
+            return attachFace.getAxis() == Direction.Axis.Z ? this.mob.getBoundingBox().inflate(followDistance, followDistance, 4.0) : this.mob.getBoundingBox().inflate(followDistance, 4.0, followDistance);
          }
       }
    }
 
-   static class ShulkerDefenseAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
-      public ShulkerDefenseAttackGoal(Shulker var1) {
-         super(var1, LivingEntity.class, 10, true, false, (var0, var1x) -> var0 instanceof Enemy);
+   private static class ShulkerDefenseAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
+      public ShulkerDefenseAttackGoal(final Shulker mob) {
+         super(mob, LivingEntity.class, 10, true, false, (input, level) -> input instanceof Enemy);
       }
 
       public boolean canUse() {
          return this.mob.getTeam() == null ? false : super.canUse();
       }
 
-      protected AABB getTargetSearchArea(double var1) {
-         Direction var3 = ((Shulker)this.mob).getAttachFace();
-         if (var3.getAxis() == Direction.Axis.X) {
-            return this.mob.getBoundingBox().inflate(4.0, var1, var1);
+      protected AABB getTargetSearchArea(final double followDistance) {
+         Direction attachFace = ((Shulker)this.mob).getAttachFace();
+         if (attachFace.getAxis() == Direction.Axis.X) {
+            return this.mob.getBoundingBox().inflate(4.0, followDistance, followDistance);
          } else {
-            return var3.getAxis() == Direction.Axis.Z ? this.mob.getBoundingBox().inflate(var1, var1, 4.0) : this.mob.getBoundingBox().inflate(var1, 4.0, var1);
+            return attachFace.getAxis() == Direction.Axis.Z ? this.mob.getBoundingBox().inflate(followDistance, followDistance, 4.0) : this.mob.getBoundingBox().inflate(followDistance, 4.0, followDistance);
          }
       }
    }

@@ -23,16 +23,16 @@ public abstract class RenderTarget {
    protected @Nullable GpuTexture depthTexture;
    protected @Nullable GpuTextureView depthTextureView;
 
-   public RenderTarget(@Nullable String var1, boolean var2) {
+   public RenderTarget(final @Nullable String label, final boolean useDepth) {
       super();
-      this.label = var1 == null ? "FBO " + UNNAMED_RENDER_TARGETS++ : var1;
-      this.useDepth = var2;
+      this.label = label == null ? "FBO " + UNNAMED_RENDER_TARGETS++ : label;
+      this.useDepth = useDepth;
    }
 
-   public void resize(int var1, int var2) {
+   public void resize(final int width, final int height) {
       RenderSystem.assertOnRenderThread();
       this.destroyBuffers();
-      this.createBuffers(var1, var2);
+      this.createBuffers(width, height);
    }
 
    public void destroyBuffers() {
@@ -59,33 +59,33 @@ public abstract class RenderTarget {
 
    }
 
-   public void copyDepthFrom(RenderTarget var1) {
+   public void copyDepthFrom(final RenderTarget source) {
       RenderSystem.assertOnRenderThread();
       if (this.depthTexture == null) {
          throw new IllegalStateException("Trying to copy depth texture to a RenderTarget without a depth texture");
-      } else if (var1.depthTexture == null) {
+      } else if (source.depthTexture == null) {
          throw new IllegalStateException("Trying to copy depth texture from a RenderTarget without a depth texture");
       } else {
-         RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(var1.depthTexture, this.depthTexture, 0, 0, 0, 0, 0, this.width, this.height);
+         RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(source.depthTexture, this.depthTexture, 0, 0, 0, 0, 0, this.width, this.height);
       }
    }
 
-   public void createBuffers(int var1, int var2) {
+   public void createBuffers(final int width, final int height) {
       RenderSystem.assertOnRenderThread();
-      GpuDevice var3 = RenderSystem.getDevice();
-      int var4 = var3.getMaxTextureSize();
-      if (var1 > 0 && var1 <= var4 && var2 > 0 && var2 <= var4) {
-         this.width = var1;
-         this.height = var2;
+      GpuDevice device = RenderSystem.getDevice();
+      int maxTextureSize = device.getMaxTextureSize();
+      if (width > 0 && width <= maxTextureSize && height > 0 && height <= maxTextureSize) {
+         this.width = width;
+         this.height = height;
          if (this.useDepth) {
-            this.depthTexture = var3.createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, var1, var2, 1, 1);
-            this.depthTextureView = var3.createTextureView(this.depthTexture);
+            this.depthTexture = device.createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, width, height, 1, 1);
+            this.depthTextureView = device.createTextureView(this.depthTexture);
          }
 
-         this.colorTexture = var3.createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, var1, var2, 1, 1);
-         this.colorTextureView = var3.createTextureView(this.colorTexture);
+         this.colorTexture = device.createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, width, height, 1, 1);
+         this.colorTextureView = device.createTextureView(this.colorTexture);
       } else {
-         throw new IllegalArgumentException("Window " + var1 + "x" + var2 + " size out of bounds (max. size: " + var4 + ")");
+         throw new IllegalArgumentException("Window " + width + "x" + height + " size out of bounds (max. size: " + maxTextureSize + ")");
       }
    }
 
@@ -97,14 +97,14 @@ public abstract class RenderTarget {
       }
    }
 
-   public void blitAndBlendToTexture(GpuTextureView var1) {
+   public void blitAndBlendToTexture(final GpuTextureView output) {
       RenderSystem.assertOnRenderThread();
 
-      try (RenderPass var2 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", var1, OptionalInt.empty())) {
-         var2.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
-         RenderSystem.bindDefaultUniforms(var2);
-         var2.bindTexture("InSampler", this.colorTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-         var2.draw(0, 3);
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", output, OptionalInt.empty())) {
+         renderPass.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
+         RenderSystem.bindDefaultUniforms(renderPass);
+         renderPass.bindTexture("InSampler", this.colorTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+         renderPass.draw(0, 3);
       }
 
    }

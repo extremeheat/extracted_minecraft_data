@@ -11,8 +11,8 @@ public class UpdateActivityFromSchedule {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.point((Trigger)(var0x, var1, var2) -> {
-            var1.getBrain().updateActivityFromSchedule(var0x.environmentAttributes(), var0x.getGameTime(), var1.position());
+      return BehaviorBuilder.create((Function)((i) -> i.point((Trigger)(level, body, timestamp) -> {
+            body.getBrain().updateActivityFromSchedule(level.environmentAttributes(), level.getGameTime(), body.position());
             return true;
          })));
    }

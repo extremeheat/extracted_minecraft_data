@@ -13,31 +13,31 @@ public class VoidStartPlatformFeature extends Feature<NoneFeatureConfiguration> 
    private static final int PLATFORM_RADIUS = 16;
    private static final int PLATFORM_RADIUS_CHUNKS = 1;
 
-   public VoidStartPlatformFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public VoidStartPlatformFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   private static int checkerboardDistance(int var0, int var1, int var2, int var3) {
-      return Math.max(Math.abs(var0 - var2), Math.abs(var1 - var3));
+   private static int checkerboardDistance(final int xa, final int za, final int xb, final int zb) {
+      return Math.max(Math.abs(xa - xb), Math.abs(za - zb));
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      WorldGenLevel var2 = var1.level();
-      ChunkPos var3 = new ChunkPos(var1.origin());
-      if (checkerboardDistance(var3.x, var3.z, PLATFORM_ORIGIN_CHUNK.x, PLATFORM_ORIGIN_CHUNK.z) > 1) {
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      WorldGenLevel level = context.level();
+      ChunkPos currentChunkPos = ChunkPos.containing(context.origin());
+      if (checkerboardDistance(currentChunkPos.x(), currentChunkPos.z(), PLATFORM_ORIGIN_CHUNK.x(), PLATFORM_ORIGIN_CHUNK.z()) > 1) {
          return true;
       } else {
-         BlockPos var4 = PLATFORM_OFFSET.atY(var1.origin().getY() + PLATFORM_OFFSET.getY());
-         BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
+         BlockPos platformOrigin = PLATFORM_OFFSET.atY(context.origin().getY() + PLATFORM_OFFSET.getY());
+         BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
 
-         for(int var6 = var3.getMinBlockZ(); var6 <= var3.getMaxBlockZ(); ++var6) {
-            for(int var7 = var3.getMinBlockX(); var7 <= var3.getMaxBlockX(); ++var7) {
-               if (checkerboardDistance(var4.getX(), var4.getZ(), var7, var6) <= 16) {
-                  var5.set(var7, var4.getY(), var6);
-                  if (var5.equals(var4)) {
-                     var2.setBlock(var5, Blocks.COBBLESTONE.defaultBlockState(), 2);
+         for(int z = currentChunkPos.getMinBlockZ(); z <= currentChunkPos.getMaxBlockZ(); ++z) {
+            for(int x = currentChunkPos.getMinBlockX(); x <= currentChunkPos.getMaxBlockX(); ++x) {
+               if (checkerboardDistance(platformOrigin.getX(), platformOrigin.getZ(), x, z) <= 16) {
+                  blockPos.set(x, platformOrigin.getY(), z);
+                  if (blockPos.equals(platformOrigin)) {
+                     level.setBlock(blockPos, Blocks.COBBLESTONE.defaultBlockState(), 2);
                   } else {
-                     var2.setBlock(var5, Blocks.STONE.defaultBlockState(), 2);
+                     level.setBlock(blockPos, Blocks.STONE.defaultBlockState(), 2);
                   }
                }
             }
@@ -48,6 +48,6 @@ public class VoidStartPlatformFeature extends Feature<NoneFeatureConfiguration> 
    }
 
    static {
-      PLATFORM_ORIGIN_CHUNK = new ChunkPos(PLATFORM_OFFSET);
+      PLATFORM_ORIGIN_CHUNK = ChunkPos.containing(PLATFORM_OFFSET);
    }
 }

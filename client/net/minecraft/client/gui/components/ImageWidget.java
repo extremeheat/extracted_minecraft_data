@@ -11,69 +11,69 @@ import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public abstract class ImageWidget extends AbstractWidget {
-   ImageWidget(int var1, int var2, int var3, int var4) {
-      super(var1, var2, var3, var4, CommonComponents.EMPTY);
+   private ImageWidget(final int x, final int y, final int width, final int height) {
+      super(x, y, width, height, CommonComponents.EMPTY);
    }
 
-   public static ImageWidget texture(int var0, int var1, Identifier var2, int var3, int var4) {
-      return new Texture(0, 0, var0, var1, var2, var3, var4);
+   public static ImageWidget texture(final int width, final int height, final Identifier texture, final int textureWidth, final int textureHeight) {
+      return new Texture(0, 0, width, height, texture, textureWidth, textureHeight);
    }
 
-   public static ImageWidget sprite(int var0, int var1, Identifier var2) {
-      return new Sprite(0, 0, var0, var1, var2);
+   public static ImageWidget sprite(final int width, final int height, final Identifier sprite) {
+      return new Sprite(0, 0, width, height, sprite);
    }
 
-   protected void updateWidgetNarration(NarrationElementOutput var1) {
+   protected void updateWidgetNarration(final NarrationElementOutput output) {
    }
 
-   public void playDownSound(SoundManager var1) {
+   public void playDownSound(final SoundManager soundManager) {
    }
 
    public boolean isActive() {
       return false;
    }
 
-   public abstract void updateResource(Identifier var1);
+   public abstract void updateResource(Identifier identifier);
 
-   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
       return null;
    }
 
-   static class Sprite extends ImageWidget {
+   private static class Sprite extends ImageWidget {
       private Identifier sprite;
 
-      public Sprite(int var1, int var2, int var3, int var4, Identifier var5) {
-         super(var1, var2, var3, var4);
-         this.sprite = var5;
+      public Sprite(final int x, final int y, final int width, final int height, final Identifier sprite) {
+         super(x, y, width, height);
+         this.sprite = sprite;
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+      public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
       }
 
-      public void updateResource(Identifier var1) {
-         this.sprite = var1;
+      public void updateResource(final Identifier identifier) {
+         this.sprite = identifier;
       }
    }
 
-   static class Texture extends ImageWidget {
+   private static class Texture extends ImageWidget {
       private Identifier texture;
       private final int textureWidth;
       private final int textureHeight;
 
-      public Texture(int var1, int var2, int var3, int var4, Identifier var5, int var6, int var7) {
-         super(var1, var2, var3, var4);
-         this.texture = var5;
-         this.textureWidth = var6;
-         this.textureHeight = var7;
+      public Texture(final int x, final int y, final int width, final int height, final Identifier texture, final int textureWidth, final int textureHeight) {
+         super(x, y, width, height);
+         this.texture = texture;
+         this.textureWidth = textureWidth;
+         this.textureHeight = textureHeight;
       }
 
-      protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         var1.blit(RenderPipelines.GUI_TEXTURED, this.texture, this.getX(), this.getY(), 0.0F, 0.0F, this.getWidth(), this.getHeight(), this.textureWidth, this.textureHeight);
+      protected void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+         graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, this.getX(), this.getY(), 0.0F, 0.0F, this.getWidth(), this.getHeight(), this.textureWidth, this.textureHeight);
       }
 
-      public void updateResource(Identifier var1) {
-         this.texture = var1;
+      public void updateResource(final Identifier identifier) {
+         this.texture = identifier;
       }
    }
 }

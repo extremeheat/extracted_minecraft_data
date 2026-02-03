@@ -9,24 +9,24 @@ import java.util.stream.Stream;
 @FunctionalInterface
 public interface SearchTree<T> {
    static <T> SearchTree<T> empty() {
-      return (var0) -> List.of();
+      return (text) -> List.of();
    }
 
-   static <T> SearchTree<T> plainText(List<T> var0, Function<T, Stream<String>> var1) {
-      if (var0.isEmpty()) {
+   static <T> SearchTree<T> plainText(final List<T> elements, final Function<T, Stream<String>> idGetter) {
+      if (elements.isEmpty()) {
          return empty();
       } else {
-         SuffixArray var2 = new SuffixArray();
+         SuffixArray<T> tree = new SuffixArray<T>();
 
-         for(Object var4 : var0) {
-            ((Stream)var1.apply(var4)).forEach((var2x) -> var2.add(var4, var2x.toLowerCase(Locale.ROOT)));
+         for(T element : elements) {
+            ((Stream)idGetter.apply(element)).forEach((elementId) -> tree.add(element, elementId.toLowerCase(Locale.ROOT)));
          }
 
-         var2.generate();
-         Objects.requireNonNull(var2);
-         return var2::search;
+         tree.generate();
+         Objects.requireNonNull(tree);
+         return tree::search;
       }
    }
 
-   List<T> search(String var1);
+   List<T> search(String text);
 }

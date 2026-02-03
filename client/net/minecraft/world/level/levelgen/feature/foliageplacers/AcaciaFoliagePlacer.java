@@ -9,33 +9,33 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class AcaciaFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<AcaciaFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> foliagePlacerParts(var0).apply(var0, AcaciaFoliagePlacer::new));
+   public static final MapCodec<AcaciaFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).apply(i, AcaciaFoliagePlacer::new));
 
-   public AcaciaFoliagePlacer(IntProvider var1, IntProvider var2) {
-      super(var1, var2);
+   public AcaciaFoliagePlacer(final IntProvider radius, final IntProvider offset) {
+      super(radius, offset);
    }
 
    protected FoliagePlacerType<?> type() {
       return FoliagePlacerType.ACACIA_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(LevelSimulatedReader var1, FoliagePlacer.FoliageSetter var2, RandomSource var3, TreeConfiguration var4, int var5, FoliagePlacer.FoliageAttachment var6, int var7, int var8, int var9) {
-      boolean var10 = var6.doubleTrunk();
-      BlockPos var11 = var6.pos().above(var9);
-      this.placeLeavesRow(var1, var2, var3, var4, var11, var8 + var6.radiusOffset(), -1 - var7, var10);
-      this.placeLeavesRow(var1, var2, var3, var4, var11, var8 - 1, -var7, var10);
-      this.placeLeavesRow(var1, var2, var3, var4, var11, var8 + var6.radiusOffset() - 1, 0, var10);
+   protected void createFoliage(final LevelSimulatedReader level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+      boolean doubleTrunk = foliageAttachment.doubleTrunk();
+      BlockPos foliagePos = foliageAttachment.pos().above(offset);
+      this.placeLeavesRow(level, foliageSetter, random, config, foliagePos, leafRadius + foliageAttachment.radiusOffset(), -1 - foliageHeight, doubleTrunk);
+      this.placeLeavesRow(level, foliageSetter, random, config, foliagePos, leafRadius - 1, -foliageHeight, doubleTrunk);
+      this.placeLeavesRow(level, foliageSetter, random, config, foliagePos, leafRadius + foliageAttachment.radiusOffset() - 1, 0, doubleTrunk);
    }
 
-   public int foliageHeight(RandomSource var1, int var2, TreeConfiguration var3) {
+   public int foliageHeight(final RandomSource random, final int treeHeight, final TreeConfiguration config) {
       return 0;
    }
 
-   protected boolean shouldSkipLocation(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
-      if (var3 == 0) {
-         return (var2 > 1 || var4 > 1) && var2 != 0 && var4 != 0;
+   protected boolean shouldSkipLocation(final RandomSource random, final int dx, final int y, final int dz, final int currentRadius, final boolean doubleTrunk) {
+      if (y == 0) {
+         return (dx > 1 || dz > 1) && dx != 0 && dz != 0;
       } else {
-         return var2 == var5 && var4 == var5 && var5 > 0;
+         return dx == currentRadius && dz == currentRadius && currentRadius > 0;
       }
    }
 }

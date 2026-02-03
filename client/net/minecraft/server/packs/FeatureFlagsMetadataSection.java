@@ -7,12 +7,11 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 
 public record FeatureFlagsMetadataSection(FeatureFlagSet flags) {
-   private static final Codec<FeatureFlagsMetadataSection> CODEC = RecordCodecBuilder.create((var0) -> var0.group(FeatureFlags.CODEC.fieldOf("enabled").forGetter(FeatureFlagsMetadataSection::flags)).apply(var0, FeatureFlagsMetadataSection::new));
+   private static final Codec<FeatureFlagsMetadataSection> CODEC = RecordCodecBuilder.create((i) -> i.group(FeatureFlags.CODEC.fieldOf("enabled").forGetter(FeatureFlagsMetadataSection::flags)).apply(i, FeatureFlagsMetadataSection::new));
    public static final MetadataSectionType<FeatureFlagsMetadataSection> TYPE;
 
-   public FeatureFlagsMetadataSection(FeatureFlagSet var1) {
+   public FeatureFlagsMetadataSection {
       super();
-      this.flags = var1;
    }
 
    static {

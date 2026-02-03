@@ -19,50 +19,50 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
 public class ClearInventoryCommands {
-   private static final DynamicCommandExceptionType ERROR_SINGLE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("clear.failed.single", var0));
-   private static final DynamicCommandExceptionType ERROR_MULTIPLE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("clear.failed.multiple", var0));
+   private static final DynamicCommandExceptionType ERROR_SINGLE = new DynamicCommandExceptionType((name) -> Component.translatableEscape("clear.failed.single", name));
+   private static final DynamicCommandExceptionType ERROR_MULTIPLE = new DynamicCommandExceptionType((count) -> Component.translatableEscape("clear.failed.multiple", count));
 
    public ClearInventoryCommands() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clear").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((var0x) -> clearUnlimited((CommandSourceStack)var0x.getSource(), Collections.singleton(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), (var0) -> true))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((var0x) -> clearUnlimited((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), (var0) -> true))).then(((RequiredArgumentBuilder)Commands.argument("item", ItemPredicateArgument.itemPredicate(var1)).executes((var0x) -> clearUnlimited((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ItemPredicateArgument.getItemPredicate(var0x, "item")))).then(Commands.argument("maxCount", IntegerArgumentType.integer(0)).executes((var0x) -> clearInventory((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ItemPredicateArgument.getItemPredicate(var0x, "item"), IntegerArgumentType.getInteger(var0x, "maxCount")))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clear").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((c) -> clearUnlimited((CommandSourceStack)c.getSource(), Collections.singleton(((CommandSourceStack)c.getSource()).getPlayerOrException()), (i) -> true))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((c) -> clearUnlimited((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), (i) -> true))).then(((RequiredArgumentBuilder)Commands.argument("item", ItemPredicateArgument.itemPredicate(context)).executes((c) -> clearUnlimited((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ItemPredicateArgument.getItemPredicate(c, "item")))).then(Commands.argument("maxCount", IntegerArgumentType.integer(0)).executes((c) -> clearInventory((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ItemPredicateArgument.getItemPredicate(c, "item"), IntegerArgumentType.getInteger(c, "maxCount")))))));
    }
 
-   private static int clearUnlimited(CommandSourceStack var0, Collection<ServerPlayer> var1, Predicate<ItemStack> var2) throws CommandSyntaxException {
-      return clearInventory(var0, var1, var2, -1);
+   private static int clearUnlimited(final CommandSourceStack source, final Collection<ServerPlayer> players, final Predicate<ItemStack> predicate) throws CommandSyntaxException {
+      return clearInventory(source, players, predicate, -1);
    }
 
-   private static int clearInventory(CommandSourceStack var0, Collection<ServerPlayer> var1, Predicate<ItemStack> var2, int var3) throws CommandSyntaxException {
-      int var4 = 0;
+   private static int clearInventory(final CommandSourceStack source, final Collection<ServerPlayer> players, final Predicate<ItemStack> predicate, final int maxCount) throws CommandSyntaxException {
+      int count = 0;
 
-      for(ServerPlayer var6 : var1) {
-         var4 += var6.getInventory().clearOrCountMatchingItems(var2, var3, var6.inventoryMenu.getCraftSlots());
-         var6.containerMenu.broadcastChanges();
-         var6.inventoryMenu.slotsChanged(var6.getInventory());
+      for(ServerPlayer player : players) {
+         count += player.getInventory().clearOrCountMatchingItems(predicate, maxCount, player.inventoryMenu.getCraftSlots());
+         player.containerMenu.broadcastChanges();
+         player.inventoryMenu.slotsChanged(player.getInventory());
       }
 
-      if (var4 == 0) {
-         if (var1.size() == 1) {
-            throw ERROR_SINGLE.create(((ServerPlayer)var1.iterator().next()).getName());
+      if (count == 0) {
+         if (players.size() == 1) {
+            throw ERROR_SINGLE.create(((ServerPlayer)players.iterator().next()).getName());
          } else {
-            throw ERROR_MULTIPLE.create(var1.size());
+            throw ERROR_MULTIPLE.create(players.size());
          }
       } else {
-         if (var3 == 0) {
-            if (var1.size() == 1) {
-               var0.sendSuccess(() -> Component.translatable("commands.clear.test.single", var4, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         if (maxCount == 0) {
+            if (players.size() == 1) {
+               source.sendSuccess(() -> Component.translatable("commands.clear.test.single", count, ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
             } else {
-               var0.sendSuccess(() -> Component.translatable("commands.clear.test.multiple", var4, var1.size()), true);
+               source.sendSuccess(() -> Component.translatable("commands.clear.test.multiple", count, players.size()), true);
             }
-         } else if (var1.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.clear.success.single", var4, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         } else if (players.size() == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.clear.success.single", count, ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.clear.success.multiple", var4, var1.size()), true);
+            source.sendSuccess(() -> Component.translatable("commands.clear.success.multiple", count, players.size()), true);
          }
 
-         return var4;
+         return count;
       }
    }
 }

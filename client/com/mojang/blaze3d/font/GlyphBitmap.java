@@ -7,7 +7,7 @@ public interface GlyphBitmap {
 
    int getPixelHeight();
 
-   void upload(int var1, int var2, GpuTexture var3);
+   void upload(int x, int y, GpuTexture texture);
 
    boolean isColored();
 

@@ -12,28 +12,28 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 public class SignItem extends StandingAndWallBlockItem {
-   public SignItem(Block var1, Block var2, Item.Properties var3) {
-      super(var1, var2, Direction.DOWN, var3);
+   public SignItem(final Block sign, final Block wallSign, final Item.Properties properties) {
+      super(sign, wallSign, Direction.DOWN, properties);
    }
 
-   public SignItem(Item.Properties var1, Block var2, Block var3, Direction var4) {
-      super(var2, var3, var4, var1);
+   public SignItem(final Item.Properties properties, final Block sign, final Block wallSign, final Direction direction) {
+      super(sign, wallSign, direction, properties);
    }
 
-   protected boolean updateCustomBlockEntityTag(BlockPos var1, Level var2, @Nullable Player var3, ItemStack var4, BlockState var5) {
-      boolean var6 = super.updateCustomBlockEntityTag(var1, var2, var3, var4, var5);
-      if (!var2.isClientSide() && !var6 && var3 != null) {
-         BlockEntity var9 = var2.getBlockEntity(var1);
+   protected boolean updateCustomBlockEntityTag(final BlockPos pos, final Level level, final @Nullable Player player, final ItemStack itemStack, final BlockState placedState) {
+      boolean success = super.updateCustomBlockEntityTag(pos, level, player, itemStack, placedState);
+      if (!level.isClientSide() && !success && player != null) {
+         BlockEntity var9 = level.getBlockEntity(pos);
          if (var9 instanceof SignBlockEntity) {
-            SignBlockEntity var7 = (SignBlockEntity)var9;
-            Block var10 = var2.getBlockState(var1).getBlock();
+            SignBlockEntity signEntity = (SignBlockEntity)var9;
+            Block var10 = level.getBlockState(pos).getBlock();
             if (var10 instanceof SignBlock) {
-               SignBlock var8 = (SignBlock)var10;
-               var8.openTextEdit(var3, var7, true);
+               SignBlock sign = (SignBlock)var10;
+               sign.openTextEdit(player, signEntity, true);
             }
          }
       }
 
-      return var6;
+      return success;
    }
 }

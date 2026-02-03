@@ -28,101 +28,101 @@ import net.minecraft.network.chat.Component;
 
 public class BuildContexts<T extends ExecutionCommandSource<T>> {
    @VisibleForTesting
-   public static final DynamicCommandExceptionType ERROR_FORK_LIMIT_REACHED = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("command.forkLimit", var0));
+   public static final DynamicCommandExceptionType ERROR_FORK_LIMIT_REACHED = new DynamicCommandExceptionType((limit) -> Component.translatableEscape("command.forkLimit", limit));
    private final String commandInput;
    private final ContextChain<T> command;
 
-   public BuildContexts(String var1, ContextChain<T> var2) {
+   public BuildContexts(final String commandInput, final ContextChain<T> command) {
       super();
-      this.commandInput = var1;
-      this.command = var2;
+      this.commandInput = commandInput;
+      this.command = command;
    }
 
-   protected void execute(T var1, List<T> var2, ExecutionContext<T> var3, Frame var4, ChainModifiers var5) {
-      ContextChain var6 = this.command;
-      ChainModifiers var7 = var5;
-      Object var8 = var2;
-      if (var6.getStage() != Stage.EXECUTE) {
-         var3.profiler().push((Supplier)(() -> "prepare " + this.commandInput));
+   protected void execute(final T originalSource, final List<T> initialSources, final ExecutionContext<T> context, final Frame frame, final ChainModifiers initialModifiers) {
+      ContextChain<T> currentStage = this.command;
+      ChainModifiers modifiers = initialModifiers;
+      List<T> currentSources = initialSources;
+      if (currentStage.getStage() != Stage.EXECUTE) {
+         context.profiler().push((Supplier)(() -> "prepare " + this.commandInput));
 
          try {
-            for(int var9 = var3.forkLimit(); var6.getStage() != Stage.EXECUTE; var6 = var6.nextStage()) {
-               CommandContext var10 = var6.getTopContext();
-               if (var10.isForked()) {
-                  var7 = var7.setForked();
+            for(int forkLimit = context.forkLimit(); currentStage.getStage() != Stage.EXECUTE; currentStage = currentStage.nextStage()) {
+               CommandContext<T> contextToRun = currentStage.getTopContext();
+               if (contextToRun.isForked()) {
+                  modifiers = modifiers.setForked();
                }
 
-               RedirectModifier var11 = var10.getRedirectModifier();
-               if (var11 instanceof CustomModifierExecutor) {
-                  CustomModifierExecutor var28 = (CustomModifierExecutor)var11;
-                  var28.apply(var1, (List)var8, var6, var7, ExecutionControl.create(var3, var4));
+               RedirectModifier<T> modifier = contextToRun.getRedirectModifier();
+               if (modifier instanceof CustomModifierExecutor) {
+                  CustomModifierExecutor<T> customModifierExecutor = (CustomModifierExecutor)modifier;
+                  customModifierExecutor.apply(originalSource, currentSources, currentStage, modifiers, ExecutionControl.create(context, frame));
                   return;
                }
 
-               if (var11 != null) {
-                  var3.incrementCost();
-                  boolean var12 = var7.isForked();
-                  ObjectArrayList var13 = new ObjectArrayList();
+               if (modifier != null) {
+                  context.incrementCost();
+                  boolean forkedMode = modifiers.isForked();
+                  List<T> nextSources = new ObjectArrayList();
 
-                  for(ExecutionCommandSource var15 : var8) {
+                  for(T source : currentSources) {
                      try {
-                        Collection var16 = ContextChain.runModifier(var10, var15, (var0, var1x, var2x) -> {
-                        }, var12);
-                        if (var13.size() + var16.size() >= var9) {
-                           var1.handleError(ERROR_FORK_LIMIT_REACHED.create(var9), var12, var3.tracer());
+                        Collection<T> newSources = ContextChain.runModifier(contextToRun, source, (c, s, r) -> {
+                        }, forkedMode);
+                        if (nextSources.size() + newSources.size() >= forkLimit) {
+                           originalSource.handleError(ERROR_FORK_LIMIT_REACHED.create(forkLimit), forkedMode, context.tracer());
                            return;
                         }
 
-                        var13.addAll(var16);
-                     } catch (CommandSyntaxException var20) {
-                        var15.handleError(var20, var12, var3.tracer());
-                        if (!var12) {
+                        nextSources.addAll(newSources);
+                     } catch (CommandSyntaxException e) {
+                        source.handleError(e, forkedMode, context.tracer());
+                        if (!forkedMode) {
                            return;
                         }
                      }
                   }
 
-                  var8 = var13;
+                  currentSources = nextSources;
                }
             }
          } finally {
-            var3.profiler().pop();
+            context.profiler().pop();
          }
       }
 
-      if (((List)var8).isEmpty()) {
-         if (var7.isReturn()) {
-            var3.queueNext(new CommandQueueEntry(var4, FallthroughTask.instance()));
+      if (currentSources.isEmpty()) {
+         if (modifiers.isReturn()) {
+            context.queueNext(new CommandQueueEntry(frame, FallthroughTask.instance()));
          }
 
       } else {
-         CommandContext var22 = var6.getTopContext();
-         Command var23 = var22.getCommand();
-         if (var23 instanceof CustomCommandExecutor) {
-            CustomCommandExecutor var24 = (CustomCommandExecutor)var23;
-            ExecutionControl var29 = ExecutionControl.create(var3, var4);
+         CommandContext<T> executeContext = currentStage.getTopContext();
+         Command<T> command = executeContext.getCommand();
+         if (command instanceof CustomCommandExecutor) {
+            CustomCommandExecutor<T> customCommandExecutor = (CustomCommandExecutor)command;
+            ExecutionControl<T> executionControl = ExecutionControl.<T>create(context, frame);
 
-            for(ExecutionCommandSource var31 : var8) {
-               var24.run(var31, var6, var7, var29);
+            for(T executionSource : currentSources) {
+               customCommandExecutor.run(executionSource, currentStage, modifiers, executionControl);
             }
          } else {
-            if (var7.isReturn()) {
-               ExecutionCommandSource var25 = (ExecutionCommandSource)((List)var8).get(0);
-               var25 = var25.withCallback(CommandResultCallback.chain(var25.callback(), var4.returnValueConsumer()));
-               var8 = List.of(var25);
+            if (modifiers.isReturn()) {
+               T returningSource = (T)(currentSources.get(0));
+               returningSource = returningSource.withCallback(CommandResultCallback.chain(returningSource.callback(), frame.returnValueConsumer()));
+               currentSources = List.of(returningSource);
             }
 
-            ExecuteCommand var27 = new ExecuteCommand(this.commandInput, var7, var22);
-            ContinuationTask.schedule(var3, var4, (List)var8, (var1x, var2x) -> new CommandQueueEntry(var1x, var27.bind(var2x)));
+            ExecuteCommand<T> action = new ExecuteCommand<T>(this.commandInput, modifiers, executeContext);
+            ContinuationTask.schedule(context, frame, currentSources, (frame1, entrySource) -> new CommandQueueEntry(frame1, action.bind(entrySource)));
          }
 
       }
    }
 
-   protected void traceCommandStart(ExecutionContext<T> var1, Frame var2) {
-      TraceCallbacks var3 = var1.tracer();
-      if (var3 != null) {
-         var3.onCommand(var2.depth(), this.commandInput);
+   protected void traceCommandStart(final ExecutionContext<T> context, final Frame frame) {
+      TraceCallbacks tracer = context.tracer();
+      if (tracer != null) {
+         tracer.onCommand(frame.depth(), this.commandInput);
       }
 
    }
@@ -132,18 +132,13 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
    }
 
    public static class Unbound<T extends ExecutionCommandSource<T>> extends BuildContexts<T> implements UnboundEntryAction<T> {
-      public Unbound(String var1, ContextChain<T> var2) {
-         super(var1, var2);
+      public Unbound(final String commandInput, final ContextChain<T> command) {
+         super(commandInput, command);
       }
 
-      public void execute(T var1, ExecutionContext<T> var2, Frame var3) {
-         this.traceCommandStart(var2, var3);
-         this.execute(var1, List.of(var1), var2, var3, ChainModifiers.DEFAULT);
-      }
-
-      // $FF: synthetic method
-      public void execute(final Object var1, final ExecutionContext var2, final Frame var3) {
-         this.execute((ExecutionCommandSource)var1, var2, var3);
+      public void execute(final T sender, final ExecutionContext<T> context, final Frame frame) {
+         this.traceCommandStart(context, frame);
+         this.execute(sender, List.of(sender), context, frame, ChainModifiers.DEFAULT);
       }
    }
 
@@ -152,29 +147,29 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
       private final T originalSource;
       private final List<T> sources;
 
-      public Continuation(String var1, ContextChain<T> var2, ChainModifiers var3, T var4, List<T> var5) {
-         super(var1, var2);
-         this.originalSource = var4;
-         this.sources = var5;
-         this.modifiers = var3;
+      public Continuation(final String commandInput, final ContextChain<T> command, final ChainModifiers modifiers, final T originalSource, final List<T> sources) {
+         super(commandInput, command);
+         this.originalSource = originalSource;
+         this.sources = sources;
+         this.modifiers = modifiers;
       }
 
-      public void execute(ExecutionContext<T> var1, Frame var2) {
-         this.execute(this.originalSource, this.sources, var1, var2, this.modifiers);
+      public void execute(final ExecutionContext<T> context, final Frame frame) {
+         this.execute(this.originalSource, this.sources, context, frame, this.modifiers);
       }
    }
 
    public static class TopLevel<T extends ExecutionCommandSource<T>> extends BuildContexts<T> implements EntryAction<T> {
       private final T source;
 
-      public TopLevel(String var1, ContextChain<T> var2, T var3) {
-         super(var1, var2);
-         this.source = var3;
+      public TopLevel(final String commandInput, final ContextChain<T> command, final T source) {
+         super(commandInput, command);
+         this.source = source;
       }
 
-      public void execute(ExecutionContext<T> var1, Frame var2) {
-         this.traceCommandStart(var1, var2);
-         this.execute(this.source, List.of(this.source), var1, var2, ChainModifiers.DEFAULT);
+      public void execute(final ExecutionContext<T> context, final Frame frame) {
+         this.traceCommandStart(context, frame);
+         this.execute(this.source, List.of(this.source), context, frame, ChainModifiers.DEFAULT);
       }
    }
 }

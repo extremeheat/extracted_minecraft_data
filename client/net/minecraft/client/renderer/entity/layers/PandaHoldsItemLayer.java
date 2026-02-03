@@ -10,24 +10,24 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 
 public class PandaHoldsItemLayer extends RenderLayer<PandaRenderState, PandaModel> {
-   public PandaHoldsItemLayer(RenderLayerParent<PandaRenderState, PandaModel> var1) {
-      super(var1);
+   public PandaHoldsItemLayer(final RenderLayerParent<PandaRenderState, PandaModel> renderer) {
+      super(renderer);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, PandaRenderState var4, float var5, float var6) {
-      ItemStackRenderState var7 = var4.heldItem;
-      if (!var7.isEmpty() && var4.isSitting && !var4.isScared) {
-         float var8 = -0.6F;
-         float var9 = 1.4F;
-         if (var4.isEating) {
-            var8 -= 0.2F * Mth.sin((double)(var4.ageInTicks * 0.6F)) + 0.2F;
-            var9 -= 0.09F * Mth.sin((double)(var4.ageInTicks * 0.6F));
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final PandaRenderState state, final float yRot, final float xRot) {
+      ItemStackRenderState item = state.heldItem;
+      if (!item.isEmpty() && state.isSitting && !state.isScared) {
+         float z = -0.6F;
+         float y = 1.4F;
+         if (state.isEating) {
+            z -= 0.2F * Mth.sin((double)(state.ageInTicks * 0.6F)) + 0.2F;
+            y -= 0.09F * Mth.sin((double)(state.ageInTicks * 0.6F));
          }
 
-         var1.pushPose();
-         var1.translate(0.1F, var9, var8);
-         var7.submit(var1, var2, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
-         var1.popPose();
+         poseStack.pushPose();
+         poseStack.translate(0.1F, y, z);
+         item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+         poseStack.popPose();
       }
    }
 }

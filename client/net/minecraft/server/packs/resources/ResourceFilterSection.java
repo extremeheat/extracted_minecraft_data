@@ -7,21 +7,21 @@ import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.util.IdentifierPattern;
 
 public class ResourceFilterSection {
-   private static final Codec<ResourceFilterSection> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.list(IdentifierPattern.CODEC).fieldOf("block").forGetter((var0x) -> var0x.blockList)).apply(var0, ResourceFilterSection::new));
+   private static final Codec<ResourceFilterSection> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.list(IdentifierPattern.CODEC).fieldOf("block").forGetter((o) -> o.blockList)).apply(i, ResourceFilterSection::new));
    public static final MetadataSectionType<ResourceFilterSection> TYPE;
    private final List<IdentifierPattern> blockList;
 
-   public ResourceFilterSection(List<IdentifierPattern> var1) {
+   public ResourceFilterSection(final List<IdentifierPattern> blockList) {
       super();
-      this.blockList = List.copyOf(var1);
+      this.blockList = List.copyOf(blockList);
    }
 
-   public boolean isNamespaceFiltered(String var1) {
-      return this.blockList.stream().anyMatch((var1x) -> var1x.namespacePredicate().test(var1));
+   public boolean isNamespaceFiltered(final String namespace) {
+      return this.blockList.stream().anyMatch((p) -> p.namespacePredicate().test(namespace));
    }
 
-   public boolean isPathFiltered(String var1) {
-      return this.blockList.stream().anyMatch((var1x) -> var1x.pathPredicate().test(var1));
+   public boolean isPathFiltered(final String path) {
+      return this.blockList.stream().anyMatch((p) -> p.pathPredicate().test(path));
    }
 
    static {

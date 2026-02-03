@@ -12,6 +12,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -33,109 +34,109 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
    public static final SimpleCommandExceptionType NO_ENTITIES_FOUND = new SimpleCommandExceptionType(Component.translatable("argument.entity.notfound.entity"));
    public static final SimpleCommandExceptionType NO_PLAYERS_FOUND = new SimpleCommandExceptionType(Component.translatable("argument.entity.notfound.player"));
    public static final SimpleCommandExceptionType ERROR_SELECTORS_NOT_ALLOWED = new SimpleCommandExceptionType(Component.translatable("argument.entity.selector.not_allowed"));
-   final boolean single;
-   final boolean playersOnly;
+   private final boolean single;
+   private final boolean playersOnly;
 
-   protected EntityArgument(boolean var1, boolean var2) {
+   protected EntityArgument(final boolean single, final boolean playersOnly) {
       super();
-      this.single = var1;
-      this.playersOnly = var2;
+      this.single = single;
+      this.playersOnly = playersOnly;
    }
 
    public static EntityArgument entity() {
       return new EntityArgument(true, false);
    }
 
-   public static Entity getEntity(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return ((EntitySelector)var0.getArgument(var1, EntitySelector.class)).findSingleEntity((CommandSourceStack)var0.getSource());
+   public static Entity getEntity(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return ((EntitySelector)context.getArgument(name, EntitySelector.class)).findSingleEntity((CommandSourceStack)context.getSource());
    }
 
    public static EntityArgument entities() {
       return new EntityArgument(false, false);
    }
 
-   public static Collection<? extends Entity> getEntities(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      Collection var2 = getOptionalEntities(var0, var1);
-      if (var2.isEmpty()) {
+   public static Collection<? extends Entity> getEntities(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      Collection<? extends Entity> result = getOptionalEntities(context, name);
+      if (result.isEmpty()) {
          throw NO_ENTITIES_FOUND.create();
       } else {
-         return var2;
+         return result;
       }
    }
 
-   public static Collection<? extends Entity> getOptionalEntities(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return ((EntitySelector)var0.getArgument(var1, EntitySelector.class)).findEntities((CommandSourceStack)var0.getSource());
+   public static Collection<? extends Entity> getOptionalEntities(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return ((EntitySelector)context.getArgument(name, EntitySelector.class)).findEntities((CommandSourceStack)context.getSource());
    }
 
-   public static Collection<ServerPlayer> getOptionalPlayers(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return ((EntitySelector)var0.getArgument(var1, EntitySelector.class)).findPlayers((CommandSourceStack)var0.getSource());
+   public static Collection<ServerPlayer> getOptionalPlayers(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return ((EntitySelector)context.getArgument(name, EntitySelector.class)).findPlayers((CommandSourceStack)context.getSource());
    }
 
    public static EntityArgument player() {
       return new EntityArgument(true, true);
    }
 
-   public static ServerPlayer getPlayer(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return ((EntitySelector)var0.getArgument(var1, EntitySelector.class)).findSinglePlayer((CommandSourceStack)var0.getSource());
+   public static ServerPlayer getPlayer(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return ((EntitySelector)context.getArgument(name, EntitySelector.class)).findSinglePlayer((CommandSourceStack)context.getSource());
    }
 
    public static EntityArgument players() {
       return new EntityArgument(false, true);
    }
 
-   public static Collection<ServerPlayer> getPlayers(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      List var2 = ((EntitySelector)var0.getArgument(var1, EntitySelector.class)).findPlayers((CommandSourceStack)var0.getSource());
-      if (var2.isEmpty()) {
+   public static Collection<ServerPlayer> getPlayers(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      List<ServerPlayer> players = ((EntitySelector)context.getArgument(name, EntitySelector.class)).findPlayers((CommandSourceStack)context.getSource());
+      if (players.isEmpty()) {
          throw NO_PLAYERS_FOUND.create();
       } else {
-         return var2;
+         return players;
       }
    }
 
-   public EntitySelector parse(StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1, true);
+   public EntitySelector parse(final StringReader reader) throws CommandSyntaxException {
+      return this.parse(reader, true);
    }
 
-   public <S> EntitySelector parse(StringReader var1, S var2) throws CommandSyntaxException {
-      return this.parse(var1, EntitySelectorParser.allowSelectors(var2));
+   public <S> EntitySelector parse(final StringReader reader, final S source) throws CommandSyntaxException {
+      return this.parse(reader, EntitySelectorParser.allowSelectors(source));
    }
 
-   private EntitySelector parse(StringReader var1, boolean var2) throws CommandSyntaxException {
-      boolean var3 = false;
-      EntitySelectorParser var4 = new EntitySelectorParser(var1, var2);
-      EntitySelector var5 = var4.parse();
-      if (var5.getMaxResults() > 1 && this.single) {
+   private EntitySelector parse(final StringReader reader, final boolean allowSelectors) throws CommandSyntaxException {
+      int start = 0;
+      EntitySelectorParser parser = new EntitySelectorParser(reader, allowSelectors);
+      EntitySelector selector = parser.parse();
+      if (selector.getMaxResults() > 1 && this.single) {
          if (this.playersOnly) {
-            var1.setCursor(0);
-            throw ERROR_NOT_SINGLE_PLAYER.createWithContext(var1);
+            reader.setCursor(0);
+            throw ERROR_NOT_SINGLE_PLAYER.createWithContext(reader);
          } else {
-            var1.setCursor(0);
-            throw ERROR_NOT_SINGLE_ENTITY.createWithContext(var1);
+            reader.setCursor(0);
+            throw ERROR_NOT_SINGLE_ENTITY.createWithContext(reader);
          }
-      } else if (var5.includesEntities() && this.playersOnly && !var5.isSelfSelector()) {
-         var1.setCursor(0);
-         throw ERROR_ONLY_PLAYERS_ALLOWED.createWithContext(var1);
+      } else if (selector.includesEntities() && this.playersOnly && !selector.isSelfSelector()) {
+         reader.setCursor(0);
+         throw ERROR_ONLY_PLAYERS_ALLOWED.createWithContext(reader);
       } else {
-         return var5;
+         return selector;
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      Object var4 = var1.getSource();
-      if (var4 instanceof SharedSuggestionProvider var3) {
-         StringReader var8 = new StringReader(var2.getInput());
-         var8.setCursor(var2.getStart());
-         EntitySelectorParser var5 = new EntitySelectorParser(var8, var3.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> contextBuilder, final SuggestionsBuilder builder) {
+      Object var4 = contextBuilder.getSource();
+      if (var4 instanceof SharedSuggestionProvider source) {
+         StringReader reader = new StringReader(builder.getInput());
+         reader.setCursor(builder.getStart());
+         EntitySelectorParser parser = new EntitySelectorParser(reader, source.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
 
          try {
-            var5.parse();
+            parser.parse();
          } catch (CommandSyntaxException var7) {
          }
 
-         return var5.fillSuggestions(var2, (var2x) -> {
-            Collection var3x = var3.getOnlinePlayerNames();
-            Object var4 = this.playersOnly ? var3x : Iterables.concat(var3x, var3.getSelectedEntities());
-            SharedSuggestionProvider.suggest((Iterable)var4, var2x);
+         return parser.fillSuggestions(builder, (suggestions) -> {
+            Collection<String> onlinePlayerNames = source.getOnlinePlayerNames();
+            Iterable<String> suggestedNames = (Iterable<String>)(this.playersOnly ? onlinePlayerNames : Iterables.concat(onlinePlayerNames, source.getSelectedEntities()));
+            SharedSuggestionProvider.suggest(suggestedNames, suggestions);
          });
       } else {
          return Suggestions.empty();
@@ -146,16 +147,6 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
       return EXAMPLES;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1, final Object var2) throws CommandSyntaxException {
-      return this.parse(var1, var2);
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
    public static class Info implements ArgumentTypeInfo<EntityArgument, Template> {
       private static final byte FLAG_SINGLE = 1;
       private static final byte FLAG_PLAYERS_ONLY = 2;
@@ -164,59 +155,50 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
          super();
       }
 
-      public void serializeToNetwork(Template var1, FriendlyByteBuf var2) {
-         int var3 = 0;
-         if (var1.single) {
-            var3 |= 1;
+      public void serializeToNetwork(final Template template, final FriendlyByteBuf out) {
+         int flags = 0;
+         if (template.single) {
+            flags |= 1;
          }
 
-         if (var1.playersOnly) {
-            var3 |= 2;
+         if (template.playersOnly) {
+            flags |= 2;
          }
 
-         var2.writeByte(var3);
+         out.writeByte(flags);
       }
 
-      public Template deserializeFromNetwork(FriendlyByteBuf var1) {
-         byte var2 = var1.readByte();
-         return new Template((var2 & 1) != 0, (var2 & 2) != 0);
+      public Template deserializeFromNetwork(final FriendlyByteBuf in) {
+         byte flags = in.readByte();
+         return new Template((flags & 1) != 0, (flags & 2) != 0);
       }
 
-      public void serializeToJson(Template var1, JsonObject var2) {
-         var2.addProperty("amount", var1.single ? "single" : "multiple");
-         var2.addProperty("type", var1.playersOnly ? "players" : "entities");
+      public void serializeToJson(final Template template, final JsonObject out) {
+         out.addProperty("amount", template.single ? "single" : "multiple");
+         out.addProperty("type", template.playersOnly ? "players" : "entities");
       }
 
-      public Template unpack(EntityArgument var1) {
-         return new Template(var1.single, var1.playersOnly);
-      }
-
-      // $FF: synthetic method
-      public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
-         return this.deserializeFromNetwork(var1);
+      public Template unpack(final EntityArgument argument) {
+         return new Template(argument.single, argument.playersOnly);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<EntityArgument> {
-         final boolean single;
-         final boolean playersOnly;
+         private final boolean single;
+         private final boolean playersOnly;
 
-         Template(final boolean var2, final boolean var3) {
+         private Template(final boolean single, final boolean playersOnly) {
+            Objects.requireNonNull(Info.this);
             super();
-            this.single = var2;
-            this.playersOnly = var3;
+            this.single = single;
+            this.playersOnly = playersOnly;
          }
 
-         public EntityArgument instantiate(CommandBuildContext var1) {
+         public EntityArgument instantiate(final CommandBuildContext context) {
             return new EntityArgument(this.single, this.playersOnly);
          }
 
          public ArgumentTypeInfo<EntityArgument, ?> type() {
             return Info.this;
-         }
-
-         // $FF: synthetic method
-         public ArgumentType instantiate(final CommandBuildContext var1) {
-            return this.instantiate(var1);
          }
       }
    }

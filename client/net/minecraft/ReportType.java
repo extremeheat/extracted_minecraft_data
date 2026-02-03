@@ -10,10 +10,8 @@ public record ReportType(String header, List<String> nuggets) {
    public static final ReportType NETWORK_PROTOCOL_ERROR = new ReportType("Minecraft Network Protocol Error Report", List.of("0xBADF00D", "+'${`%&NO CARRIER", "Please insert The Internet CD #4", "Sabotage!", "Are you sure you are not moving wrongly?", "This time is not my fault, I promise!", "All lines are down!", "Maybe a shark bit some cable", "404", "I'm sorry, I don't speak that language", "What we've got here is failure to communicate", "It's the tubes, they're clogged!", "Abort, Retry, Ignore?", "Could be worse, I guess", "Wait, was the last bit one or zero?", "Too many suspicious packets", "Don't worry, I'll be fine", "Maybe this time it will work!", "I heard pigeons are more reliable"));
    public static final ReportType CHUNK_IO_ERROR = new ReportType("Minecraft Chunk IO Error Report", List.of("I have failed you!", "Let's not do it again...", "Worst magic trick ever!", "Remember to backup your worlds regularly", "Pirates stole your chunk!", "Ker-chunk!", "Ideally, this shouldn't be here", "Let's hope it wasn't anything important", "Computers were a mistake", "Welp", "Not my proudest moment", "Who needs blocks in a block game, right?", "This chunk is no more...it has ceased to be...this is an EX-chunk", "loss.mca"));
 
-   public ReportType(String var1, List<String> var2) {
+   public ReportType {
       super();
-      this.header = var1;
-      this.nuggets = var2;
    }
 
    public String getErrorComment() {
@@ -24,20 +22,20 @@ public record ReportType(String header, List<String> nuggets) {
       }
    }
 
-   public void appendHeader(StringBuilder var1, List<String> var2) {
-      var1.append("---- ");
-      var1.append(this.header());
-      var1.append(" ----\n");
-      var1.append("// ");
-      var1.append(this.getErrorComment());
-      var1.append('\n');
+   public void appendHeader(final StringBuilder builder, final List<String> extraComments) {
+      builder.append("---- ");
+      builder.append(this.header());
+      builder.append(" ----\n");
+      builder.append("// ");
+      builder.append(this.getErrorComment());
+      builder.append('\n');
 
-      for(String var4 : var2) {
-         var1.append("// ");
-         var1.append(var4);
-         var1.append('\n');
+      for(String extraComment : extraComments) {
+         builder.append("// ");
+         builder.append(extraComment);
+         builder.append('\n');
       }
 
-      var1.append('\n');
+      builder.append('\n');
    }
 }

@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Util;
@@ -19,128 +20,128 @@ class ReportGameListener implements GameTestListener {
       super();
    }
 
-   public void testStructureLoaded(GameTestInfo var1) {
+   public void testStructureLoaded(final GameTestInfo testInfo) {
       ++this.attempts;
    }
 
-   private void handleRetry(GameTestInfo var1, GameTestRunner var2, boolean var3) {
-      RetryOptions var4 = var1.retryOptions();
-      String var5 = String.format(Locale.ROOT, "[Run: %4d, Ok: %4d, Fail: %4d", this.attempts, this.successes, this.attempts - this.successes);
-      if (!var4.unlimitedTries()) {
-         var5 = var5 + String.format(Locale.ROOT, ", Left: %4d", var4.numberOfTries() - this.attempts);
+   private void handleRetry(final GameTestInfo testInfo, final GameTestRunner runner, final boolean passed) {
+      RetryOptions retryOptions = testInfo.retryOptions();
+      String reportAs = String.format(Locale.ROOT, "[Run: %4d, Ok: %4d, Fail: %4d", this.attempts, this.successes, this.attempts - this.successes);
+      if (!retryOptions.unlimitedTries()) {
+         reportAs = reportAs + String.format(Locale.ROOT, ", Left: %4d", retryOptions.numberOfTries() - this.attempts);
       }
 
-      var5 = var5 + "]";
-      String var10000 = String.valueOf(var1.id());
-      String var6 = var10000 + " " + (var3 ? "passed" : "failed") + "! " + var1.getRunTime() + "ms";
-      String var7 = String.format(Locale.ROOT, "%-53s%s", var5, var6);
-      if (var3) {
-         reportPassed(var1, var7);
+      reportAs = reportAs + "]";
+      String var10000 = String.valueOf(testInfo.id());
+      String namePart = var10000 + " " + (passed ? "passed" : "failed") + "! " + testInfo.getRunTime() + "ms";
+      String text = String.format(Locale.ROOT, "%-53s%s", reportAs, namePart);
+      if (passed) {
+         reportPassed(testInfo, text);
       } else {
-         say(var1.getLevel(), ChatFormatting.RED, var7);
+         say(testInfo.getLevel(), ChatFormatting.RED, text);
       }
 
-      if (var4.hasTriesLeft(this.attempts, this.successes)) {
-         var2.rerunTest(var1);
+      if (retryOptions.hasTriesLeft(this.attempts, this.successes)) {
+         runner.rerunTest(testInfo);
       }
 
    }
 
-   public void testPassed(GameTestInfo var1, GameTestRunner var2) {
+   public void testPassed(final GameTestInfo testInfo, final GameTestRunner runner) {
       ++this.successes;
-      if (var1.retryOptions().hasRetries()) {
-         this.handleRetry(var1, var2, true);
-      } else if (!var1.isFlaky()) {
-         String var4 = String.valueOf(var1.id());
-         reportPassed(var1, var4 + " passed! (" + var1.getRunTime() + "ms / " + var1.getTick() + "gameticks)");
+      if (testInfo.retryOptions().hasRetries()) {
+         this.handleRetry(testInfo, runner, true);
+      } else if (!testInfo.isFlaky()) {
+         String var4 = String.valueOf(testInfo.id());
+         reportPassed(testInfo, var4 + " passed! (" + testInfo.getRunTime() + "ms / " + testInfo.getTick() + "gameticks)");
       } else {
-         if (this.successes >= var1.requiredSuccesses()) {
-            String var10001 = String.valueOf(var1);
-            reportPassed(var1, var10001 + " passed " + this.successes + " times of " + this.attempts + " attempts.");
+         if (this.successes >= testInfo.requiredSuccesses()) {
+            String var10001 = String.valueOf(testInfo);
+            reportPassed(testInfo, var10001 + " passed " + this.successes + " times of " + this.attempts + " attempts.");
          } else {
-            ServerLevel var10000 = var1.getLevel();
+            ServerLevel var10000 = testInfo.getLevel();
             ChatFormatting var3 = ChatFormatting.GREEN;
-            String var10002 = String.valueOf(var1);
+            String var10002 = String.valueOf(testInfo);
             say(var10000, var3, "Flaky test " + var10002 + " succeeded, attempt: " + this.attempts + " successes: " + this.successes);
-            var2.rerunTest(var1);
+            runner.rerunTest(testInfo);
          }
 
       }
    }
 
-   public void testFailed(GameTestInfo var1, GameTestRunner var2) {
-      if (!var1.isFlaky()) {
-         reportFailure(var1, var1.getError());
-         if (var1.retryOptions().hasRetries()) {
-            this.handleRetry(var1, var2, false);
+   public void testFailed(final GameTestInfo testInfo, final GameTestRunner runner) {
+      if (!testInfo.isFlaky()) {
+         reportFailure(testInfo, testInfo.getError());
+         if (testInfo.retryOptions().hasRetries()) {
+            this.handleRetry(testInfo, runner, false);
          }
 
       } else {
-         GameTestInstance var3 = var1.getTest();
-         String var10000 = String.valueOf(var1);
-         String var4 = "Flaky test " + var10000 + " failed, attempt: " + this.attempts + "/" + var3.maxAttempts();
-         if (var3.requiredSuccesses() > 1) {
-            var4 = var4 + ", successes: " + this.successes + " (" + var3.requiredSuccesses() + " required)";
+         GameTestInstance testFunction = testInfo.getTest();
+         String var10000 = String.valueOf(testInfo);
+         String text = "Flaky test " + var10000 + " failed, attempt: " + this.attempts + "/" + testFunction.maxAttempts();
+         if (testFunction.requiredSuccesses() > 1) {
+            text = text + ", successes: " + this.successes + " (" + testFunction.requiredSuccesses() + " required)";
          }
 
-         say(var1.getLevel(), ChatFormatting.YELLOW, var4);
-         if (var1.maxAttempts() - this.attempts + this.successes >= var1.requiredSuccesses()) {
-            var2.rerunTest(var1);
+         say(testInfo.getLevel(), ChatFormatting.YELLOW, text);
+         if (testInfo.maxAttempts() - this.attempts + this.successes >= testInfo.requiredSuccesses()) {
+            runner.rerunTest(testInfo);
          } else {
-            reportFailure(var1, new ExhaustedAttemptsException(this.attempts, this.successes, var1));
+            reportFailure(testInfo, new ExhaustedAttemptsException(this.attempts, this.successes, testInfo));
          }
 
       }
    }
 
-   public void testAddedForRerun(GameTestInfo var1, GameTestInfo var2, GameTestRunner var3) {
-      var2.addListener(this);
+   public void testAddedForRerun(final GameTestInfo original, final GameTestInfo copy, final GameTestRunner runner) {
+      copy.addListener(this);
    }
 
-   public static void reportPassed(GameTestInfo var0, String var1) {
-      getTestInstanceBlockEntity(var0).ifPresent((var0x) -> var0x.setSuccess());
-      visualizePassedTest(var0, var1);
+   public static void reportPassed(final GameTestInfo testInfo, final String text) {
+      getTestInstanceBlockEntity(testInfo).ifPresent((blockEntity) -> blockEntity.setSuccess());
+      visualizePassedTest(testInfo, text);
    }
 
-   private static void visualizePassedTest(GameTestInfo var0, String var1) {
-      say(var0.getLevel(), ChatFormatting.GREEN, var1);
-      GlobalTestReporter.onTestSuccess(var0);
+   private static void visualizePassedTest(final GameTestInfo testInfo, final String text) {
+      say(testInfo.getLevel(), ChatFormatting.GREEN, text);
+      GlobalTestReporter.onTestSuccess(testInfo);
    }
 
-   protected static void reportFailure(GameTestInfo var0, Throwable var1) {
-      Object var2;
-      if (var1 instanceof GameTestAssertException var3) {
-         var2 = var3.getDescription();
+   protected static void reportFailure(final GameTestInfo testInfo, final Throwable error) {
+      Component description;
+      if (error instanceof GameTestAssertException testException) {
+         description = testException.getDescription();
       } else {
-         var2 = Component.literal(Util.describeError(var1));
+         description = Component.literal(Util.describeError(error));
       }
 
-      getTestInstanceBlockEntity(var0).ifPresent((var1x) -> var1x.setErrorMessage(var2));
-      visualizeFailedTest(var0, var1);
+      getTestInstanceBlockEntity(testInfo).ifPresent((blockEntity) -> blockEntity.setErrorMessage(description));
+      visualizeFailedTest(testInfo, error);
    }
 
-   protected static void visualizeFailedTest(GameTestInfo var0, Throwable var1) {
-      String var10000 = var1.getMessage();
-      String var2 = var10000 + (var1.getCause() == null ? "" : " cause: " + Util.describeError(var1.getCause()));
-      var10000 = var0.isRequired() ? "" : "(optional) ";
-      String var3 = var10000 + String.valueOf(var0.id()) + " failed! " + var2;
-      say(var0.getLevel(), var0.isRequired() ? ChatFormatting.RED : ChatFormatting.YELLOW, var3);
-      Throwable var4 = (Throwable)MoreObjects.firstNonNull(ExceptionUtils.getRootCause(var1), var1);
-      if (var4 instanceof GameTestAssertPosException var5) {
-         var0.getTestInstanceBlockEntity().markError(var5.getAbsolutePos(), var5.getMessageToShowAtBlock());
+   protected static void visualizeFailedTest(final GameTestInfo testInfo, final Throwable error) {
+      String var10000 = error.getMessage();
+      String errorMessage = var10000 + (error.getCause() == null ? "" : " cause: " + Util.describeError(error.getCause()));
+      var10000 = testInfo.isRequired() ? "" : "(optional) ";
+      String failureMessage = var10000 + String.valueOf(testInfo.id()) + " failed! " + errorMessage;
+      say(testInfo.getLevel(), testInfo.isRequired() ? ChatFormatting.RED : ChatFormatting.YELLOW, failureMessage);
+      Throwable rootCause = (Throwable)MoreObjects.firstNonNull(ExceptionUtils.getRootCause(error), error);
+      if (rootCause instanceof GameTestAssertPosException assertError) {
+         testInfo.getTestInstanceBlockEntity().markError(assertError.getAbsolutePos(), assertError.getMessageToShowAtBlock());
       }
 
-      GlobalTestReporter.onTestFailed(var0);
+      GlobalTestReporter.onTestFailed(testInfo);
    }
 
-   private static Optional<TestInstanceBlockEntity> getTestInstanceBlockEntity(GameTestInfo var0) {
-      ServerLevel var1 = var0.getLevel();
-      Optional var2 = Optional.ofNullable(var0.getTestBlockPos());
-      Optional var3 = var2.flatMap((var1x) -> var1.getBlockEntity(var1x, BlockEntityType.TEST_INSTANCE_BLOCK));
-      return var3;
+   private static Optional<TestInstanceBlockEntity> getTestInstanceBlockEntity(final GameTestInfo testInfo) {
+      ServerLevel level = testInfo.getLevel();
+      Optional<BlockPos> testPos = Optional.ofNullable(testInfo.getTestBlockPos());
+      Optional<TestInstanceBlockEntity> test = testPos.flatMap((pos) -> level.getBlockEntity(pos, BlockEntityType.TEST_INSTANCE_BLOCK));
+      return test;
    }
 
-   protected static void say(ServerLevel var0, ChatFormatting var1, String var2) {
-      var0.getPlayers((var0x) -> true).forEach((var2x) -> var2x.sendSystemMessage(Component.literal(var2).withStyle(var1)));
+   protected static void say(final ServerLevel level, final ChatFormatting format, final String text) {
+      level.getPlayers((player) -> true).forEach((player) -> player.sendSystemMessage(Component.literal(text).withStyle(format)));
    }
 }

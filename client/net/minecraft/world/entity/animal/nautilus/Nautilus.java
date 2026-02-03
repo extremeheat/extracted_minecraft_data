@@ -1,6 +1,6 @@
 package net.minecraft.world.entity.animal.nautilus;
 
-import com.mojang.serialization.Dynamic;
+import java.util.List;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -11,47 +11,46 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 public class Nautilus extends AbstractNautilus {
    private static final int NAUTILUS_TOTAL_AIR_SUPPLY = 300;
+   private static final Brain.Provider<Nautilus> BRAIN_PROVIDER;
 
-   public Nautilus(EntityType<? extends Nautilus> var1, Level var2) {
-      super(var1, var2);
+   public Nautilus(final EntityType<? extends Nautilus> type, final Level level) {
+      super(type, level);
    }
 
-   protected Brain.Provider<Nautilus> brainProvider() {
-      return NautilusAi.brainProvider();
-   }
-
-   protected Brain<?> makeBrain(Dynamic<?> var1) {
-      return NautilusAi.makeBrain(this.brainProvider().makeBrain(var1));
+   protected Brain<Nautilus> makeBrain(final Brain.Packed packedBrain) {
+      return BRAIN_PROVIDER.makeBrain(this, packedBrain);
    }
 
    public Brain<Nautilus> getBrain() {
       return super.getBrain();
    }
 
-   public @Nullable Nautilus getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Nautilus var3 = EntityType.NAUTILUS.create(var1, EntitySpawnReason.BREEDING);
-      if (var3 != null && this.isTame()) {
-         var3.setOwnerReference(this.getOwnerReference());
-         var3.setTame(true, true);
+   public @Nullable Nautilus getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      Nautilus baby = EntityType.NAUTILUS.create(level, EntitySpawnReason.BREEDING);
+      if (baby != null && this.isTame()) {
+         baby.setOwnerReference(this.getOwnerReference());
+         baby.setTame(true, true);
       }
 
-      return var3;
+      return baby;
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
-      ProfilerFiller var2 = Profiler.get();
-      var2.push("nautilusBrain");
-      this.getBrain().tick(var1, this);
-      var2.pop();
-      var2.push("nautilusActivityUpdate");
+   protected void customServerAiStep(final ServerLevel level) {
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("nautilusBrain");
+      this.getBrain().tick(level, this);
+      profiler.pop();
+      profiler.push("nautilusActivityUpdate");
       NautilusAi.updateActivity(this);
-      var2.pop();
-      super.customServerAiStep(var1);
+      profiler.pop();
+      super.customServerAiStep(level);
    }
 
    protected SoundEvent getAmbientSound() {
@@ -62,7 +61,7 @@ public class Nautilus extends AbstractNautilus {
       }
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       if (this.isBaby()) {
          return this.isUnderWater() ? SoundEvents.BABY_NAUTILUS_HURT : SoundEvents.BABY_NAUTILUS_HURT_ON_LAND;
       } else {
@@ -87,8 +86,8 @@ public class Nautilus extends AbstractNautilus {
    }
 
    protected void playEatingSound() {
-      SoundEvent var1 = this.isBaby() ? SoundEvents.BABY_NAUTILUS_EAT : SoundEvents.NAUTILUS_EAT;
-      this.makeSound(var1);
+      SoundEvent nautilusEatSound = this.isBaby() ? SoundEvents.BABY_NAUTILUS_EAT : SoundEvents.NAUTILUS_EAT;
+      this.makeSound(nautilusEatSound);
    }
 
    protected SoundEvent getSwimSound() {
@@ -99,12 +98,12 @@ public class Nautilus extends AbstractNautilus {
       return 300;
    }
 
-   protected void handleAirSupply(ServerLevel var1, int var2) {
+   protected void handleAirSupply(final ServerLevel level, final int preTickAirSupply) {
       if (this.isAlive() && !this.isInWater()) {
-         this.setAirSupply(var2 - 1);
+         this.setAirSupply(preTickAirSupply - 1);
          if (this.getAirSupply() <= -20) {
             this.setAirSupply(0);
-            this.hurtServer(var1, this.damageSources().dryOut(), 2.0F);
+            this.hurtServer(level, this.damageSources().dryOut(), 2.0F);
          }
       } else {
          this.setAirSupply(300);
@@ -113,13 +112,13 @@ public class Nautilus extends AbstractNautilus {
    }
 
    public void baseTick() {
-      int var1 = this.getAirSupply();
+      int airSupply = this.getAirSupply();
       super.baseTick();
       if (!this.isNoAi()) {
          Level var3 = this.level();
          if (var3 instanceof ServerLevel) {
-            ServerLevel var2 = (ServerLevel)var3;
-            this.handleAirSupply(var2, var1);
+            ServerLevel serverLevel = (ServerLevel)var3;
+            this.handleAirSupply(serverLevel, airSupply);
          }
       }
 
@@ -129,8 +128,7 @@ public class Nautilus extends AbstractNautilus {
       return !this.isAggravated();
    }
 
-   // $FF: synthetic method
-   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
+   static {
+      BRAIN_PROVIDER = Brain.<Nautilus>provider(List.of(MemoryModuleType.ANGRY_AT, MemoryModuleType.ATTACK_TARGET_COOLDOWN), List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_ADULT, SensorType.NEAREST_PLAYERS, SensorType.HURT_BY, SensorType.NAUTILUS_TEMPTATIONS), (var0) -> NautilusAi.getActivities());
    }
 }

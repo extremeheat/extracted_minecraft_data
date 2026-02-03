@@ -20,9 +20,9 @@ public class OfferFlowerGoal extends Goal {
    private @Nullable LivingEntity entity;
    private int tick;
 
-   public OfferFlowerGoal(IronGolem var1) {
+   public OfferFlowerGoal(final IronGolem golem) {
       super();
-      this.golem = var1;
+      this.golem = golem;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
    }
 
@@ -51,10 +51,10 @@ public class OfferFlowerGoal extends Goal {
       if (this.tick == 0) {
          LivingEntity var2 = this.entity;
          if (var2 instanceof Mob) {
-            Mob var1 = (Mob)var2;
-            if (var1.getType().is(EntityTypeTags.ACCEPTS_IRON_GOLEM_GIFT) && var1.getItemBySlot(CopperGolem.EQUIPMENT_SLOT_ANTENNA).isEmpty() && this.getGolemBoundingBox().intersects(var1.getBoundingBox())) {
-               var1.setItemSlot(CopperGolem.EQUIPMENT_SLOT_ANTENNA, OFFER_ITEM.getDefaultInstance());
-               var1.setGuaranteedDrop(CopperGolem.EQUIPMENT_SLOT_ANTENNA);
+            Mob mob = (Mob)var2;
+            if (mob.is(EntityTypeTags.ACCEPTS_IRON_GOLEM_GIFT) && mob.getItemBySlot(CopperGolem.EQUIPMENT_SLOT_ANTENNA).isEmpty() && this.getGolemBoundingBox().intersects(mob.getBoundingBox())) {
+               mob.setItemSlot(CopperGolem.EQUIPMENT_SLOT_ANTENNA, OFFER_ITEM.getDefaultInstance());
+               mob.setGuaranteedDrop(CopperGolem.EQUIPMENT_SLOT_ANTENNA);
             }
          }
       }

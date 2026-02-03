@@ -10,20 +10,20 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class VinesFeature extends Feature<NoneFeatureConfiguration> {
-   public VinesFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public VinesFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      WorldGenLevel var2 = var1.level();
-      BlockPos var3 = var1.origin();
-      var1.config();
-      if (!var2.isEmptyBlock(var3)) {
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
+      context.config();
+      if (!level.isEmptyBlock(origin)) {
          return false;
       } else {
-         for(Direction var7 : Direction.values()) {
-            if (var7 != Direction.DOWN && VineBlock.isAcceptableNeighbour(var2, var3.relative(var7), var7)) {
-               var2.setBlock(var3, (BlockState)Blocks.VINE.defaultBlockState().setValue(VineBlock.getPropertyForFace(var7), true), 2);
+         for(Direction direction : Direction.values()) {
+            if (direction != Direction.DOWN && VineBlock.isAcceptableNeighbour(level, origin.relative(direction), direction)) {
+               level.setBlock(origin, (BlockState)Blocks.VINE.defaultBlockState().setValue(VineBlock.getPropertyForFace(direction), true), 2);
                return true;
             }
          }

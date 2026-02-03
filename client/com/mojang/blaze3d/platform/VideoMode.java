@@ -17,34 +17,34 @@ public final class VideoMode {
    private final int refreshRate;
    private static final Pattern PATTERN = Pattern.compile("(\\d+)x(\\d+)(?:@(\\d+)(?::(\\d+))?)?");
 
-   public VideoMode(int var1, int var2, int var3, int var4, int var5, int var6) {
+   public VideoMode(final int width, final int height, final int redBits, final int greenBits, final int blueBits, final int refreshRate) {
       super();
-      this.width = var1;
-      this.height = var2;
-      this.redBits = var3;
-      this.greenBits = var4;
-      this.blueBits = var5;
-      this.refreshRate = var6;
+      this.width = width;
+      this.height = height;
+      this.redBits = redBits;
+      this.greenBits = greenBits;
+      this.blueBits = blueBits;
+      this.refreshRate = refreshRate;
    }
 
-   public VideoMode(GLFWVidMode.Buffer var1) {
+   public VideoMode(final GLFWVidMode.Buffer buffer) {
       super();
-      this.width = var1.width();
-      this.height = var1.height();
-      this.redBits = var1.redBits();
-      this.greenBits = var1.greenBits();
-      this.blueBits = var1.blueBits();
-      this.refreshRate = var1.refreshRate();
+      this.width = buffer.width();
+      this.height = buffer.height();
+      this.redBits = buffer.redBits();
+      this.greenBits = buffer.greenBits();
+      this.blueBits = buffer.blueBits();
+      this.refreshRate = buffer.refreshRate();
    }
 
-   public VideoMode(GLFWVidMode var1) {
+   public VideoMode(final GLFWVidMode mode) {
       super();
-      this.width = var1.width();
-      this.height = var1.height();
-      this.redBits = var1.redBits();
-      this.greenBits = var1.greenBits();
-      this.blueBits = var1.blueBits();
-      this.refreshRate = var1.refreshRate();
+      this.width = mode.width();
+      this.height = mode.height();
+      this.redBits = mode.redBits();
+      this.greenBits = mode.greenBits();
+      this.blueBits = mode.blueBits();
+      this.refreshRate = mode.refreshRate();
    }
 
    public int getWidth() {
@@ -71,12 +71,12 @@ public final class VideoMode {
       return this.refreshRate;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         VideoMode var2 = (VideoMode)var1;
-         return this.width == var2.width && this.height == var2.height && this.redBits == var2.redBits && this.greenBits == var2.greenBits && this.blueBits == var2.blueBits && this.refreshRate == var2.refreshRate;
+      } else if (o != null && this.getClass() == o.getClass()) {
+         VideoMode videoMode = (VideoMode)o;
+         return this.width == videoMode.width && this.height == videoMode.height && this.redBits == videoMode.redBits && this.greenBits == videoMode.greenBits && this.blueBits == videoMode.blueBits && this.refreshRate == videoMode.refreshRate;
       } else {
          return false;
       }
@@ -90,33 +90,33 @@ public final class VideoMode {
       return String.format(Locale.ROOT, "%sx%s@%s (%sbit)", this.width, this.height, this.refreshRate, this.redBits + this.greenBits + this.blueBits);
    }
 
-   public static Optional<VideoMode> read(@Nullable String var0) {
-      if (var0 == null) {
+   public static Optional<VideoMode> read(final @Nullable String s) {
+      if (s == null) {
          return Optional.empty();
       } else {
          try {
-            Matcher var1 = PATTERN.matcher(var0);
-            if (var1.matches()) {
-               int var2 = Integer.parseInt(var1.group(1));
-               int var3 = Integer.parseInt(var1.group(2));
-               String var4 = var1.group(3);
-               int var5;
-               if (var4 == null) {
-                  var5 = 60;
+            Matcher m = PATTERN.matcher(s);
+            if (m.matches()) {
+               int width = Integer.parseInt(m.group(1));
+               int height = Integer.parseInt(m.group(2));
+               String rateString = m.group(3);
+               int rate;
+               if (rateString == null) {
+                  rate = 60;
                } else {
-                  var5 = Integer.parseInt(var4);
+                  rate = Integer.parseInt(rateString);
                }
 
-               String var6 = var1.group(4);
-               int var7;
-               if (var6 == null) {
-                  var7 = 24;
+               String bitString = m.group(4);
+               int bits;
+               if (bitString == null) {
+                  bits = 24;
                } else {
-                  var7 = Integer.parseInt(var6);
+                  bits = Integer.parseInt(bitString);
                }
 
-               int var8 = var7 / 3;
-               return Optional.of(new VideoMode(var2, var3, var8, var8, var8, var5));
+               int componentBits = bits / 3;
+               return Optional.of(new VideoMode(width, height, componentBits, componentBits, componentBits, rate));
             }
          } catch (Exception var9) {
          }

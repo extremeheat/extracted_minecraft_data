@@ -22,21 +22,21 @@ public class Skeleton extends AbstractSkeleton {
    private int inPowderSnowTime;
    private int conversionTime;
 
-   public Skeleton(EntityType<? extends Skeleton> var1, Level var2) {
-      super(var1, var2);
+   public Skeleton(final EntityType<? extends Skeleton> type, final Level level) {
+      super(type, level);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_STRAY_CONVERSION_ID, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_STRAY_CONVERSION_ID, false);
    }
 
    public boolean isFreezeConverting() {
       return (Boolean)this.getEntityData().get(DATA_STRAY_CONVERSION_ID);
    }
 
-   public void setFreezeConverting(boolean var1) {
-      this.entityData.set(DATA_STRAY_CONVERSION_ID, var1);
+   public void setFreezeConverting(final boolean isConverting) {
+      this.entityData.set(DATA_STRAY_CONVERSION_ID, isConverting);
    }
 
    public boolean isShaking() {
@@ -66,16 +66,16 @@ public class Skeleton extends AbstractSkeleton {
       super.tick();
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("StrayConversionTime", this.isFreezeConverting() ? this.conversionTime : -1);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("StrayConversionTime", this.isFreezeConverting() ? this.conversionTime : -1);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      int var2 = var1.getIntOr("StrayConversionTime", -1);
-      if (var2 != -1) {
-         this.startFreezeConversion(var2);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      int conversionTime = input.getIntOr("StrayConversionTime", -1);
+      if (conversionTime != -1) {
+         this.startFreezeConversion(conversionTime);
       } else {
          this.setFreezeConverting(false);
       }
@@ -83,13 +83,13 @@ public class Skeleton extends AbstractSkeleton {
    }
 
    @VisibleForTesting
-   public void startFreezeConversion(int var1) {
-      this.conversionTime = var1;
+   public void startFreezeConversion(final int time) {
+      this.conversionTime = time;
       this.setFreezeConverting(true);
    }
 
    protected void doFreezeConversion() {
-      this.convertTo(EntityType.STRAY, ConversionParams.single(this, true, true), (var1) -> {
+      this.convertTo(EntityType.STRAY, ConversionParams.single(this, true, true), (stray) -> {
          if (!this.isSilent()) {
             this.level().levelEvent((Entity)null, 1048, this.blockPosition(), 0);
          }
@@ -105,7 +105,7 @@ public class Skeleton extends AbstractSkeleton {
       return SoundEvents.SKELETON_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.SKELETON_HURT;
    }
 

@@ -11,105 +11,105 @@ import net.minecraft.util.ExtraCodecs;
 import org.jspecify.annotations.Nullable;
 
 public class TagEntry {
-   private static final Codec<TagEntry> FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.TAG_OR_ELEMENT_ID.fieldOf("id").forGetter(TagEntry::elementOrTag), Codec.BOOL.optionalFieldOf("required", true).forGetter((var0x) -> var0x.required)).apply(var0, TagEntry::new));
+   private static final Codec<TagEntry> FULL_CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.TAG_OR_ELEMENT_ID.fieldOf("id").forGetter(TagEntry::elementOrTag), Codec.BOOL.optionalFieldOf("required", true).forGetter((e) -> e.required)).apply(i, TagEntry::new));
    public static final Codec<TagEntry> CODEC;
    private final Identifier id;
    private final boolean tag;
    private final boolean required;
 
-   private TagEntry(Identifier var1, boolean var2, boolean var3) {
+   private TagEntry(final Identifier id, final boolean tag, final boolean required) {
       super();
-      this.id = var1;
-      this.tag = var2;
-      this.required = var3;
+      this.id = id;
+      this.tag = tag;
+      this.required = required;
    }
 
-   private TagEntry(ExtraCodecs.TagOrElementLocation var1, boolean var2) {
+   private TagEntry(final ExtraCodecs.TagOrElementLocation elementOrTag, final boolean required) {
       super();
-      this.id = var1.id();
-      this.tag = var1.tag();
-      this.required = var2;
+      this.id = elementOrTag.id();
+      this.tag = elementOrTag.tag();
+      this.required = required;
    }
 
    private ExtraCodecs.TagOrElementLocation elementOrTag() {
       return new ExtraCodecs.TagOrElementLocation(this.id, this.tag);
    }
 
-   public static TagEntry element(Identifier var0) {
-      return new TagEntry(var0, false, true);
+   public static TagEntry element(final Identifier id) {
+      return new TagEntry(id, false, true);
    }
 
-   public static TagEntry optionalElement(Identifier var0) {
-      return new TagEntry(var0, false, false);
+   public static TagEntry optionalElement(final Identifier id) {
+      return new TagEntry(id, false, false);
    }
 
-   public static TagEntry tag(Identifier var0) {
-      return new TagEntry(var0, true, true);
+   public static TagEntry tag(final Identifier id) {
+      return new TagEntry(id, true, true);
    }
 
-   public static TagEntry optionalTag(Identifier var0) {
-      return new TagEntry(var0, true, false);
+   public static TagEntry optionalTag(final Identifier id) {
+      return new TagEntry(id, true, false);
    }
 
-   public <T> boolean build(Lookup<T> var1, Consumer<T> var2) {
+   public <T> boolean build(final Lookup<T> lookup, final Consumer<T> output) {
       if (this.tag) {
-         Collection var3 = var1.tag(this.id);
-         if (var3 == null) {
+         Collection<T> result = lookup.tag(this.id);
+         if (result == null) {
             return !this.required;
          }
 
-         var3.forEach(var2);
+         result.forEach(output);
       } else {
-         Object var4 = var1.element(this.id, this.required);
-         if (var4 == null) {
+         T result = lookup.element(this.id, this.required);
+         if (result == null) {
             return !this.required;
          }
 
-         var2.accept(var4);
+         output.accept(result);
       }
 
       return true;
    }
 
-   public void visitRequiredDependencies(Consumer<Identifier> var1) {
+   public void visitRequiredDependencies(final Consumer<Identifier> output) {
       if (this.tag && this.required) {
-         var1.accept(this.id);
+         output.accept(this.id);
       }
 
    }
 
-   public void visitOptionalDependencies(Consumer<Identifier> var1) {
+   public void visitOptionalDependencies(final Consumer<Identifier> output) {
       if (this.tag && !this.required) {
-         var1.accept(this.id);
+         output.accept(this.id);
       }
 
    }
 
-   public boolean verifyIfPresent(Predicate<Identifier> var1, Predicate<Identifier> var2) {
-      return !this.required || (this.tag ? var2 : var1).test(this.id);
+   public boolean verifyIfPresent(final Predicate<Identifier> elementCheck, final Predicate<Identifier> tagCheck) {
+      return !this.required || (this.tag ? tagCheck : elementCheck).test(this.id);
    }
 
    public String toString() {
-      StringBuilder var1 = new StringBuilder();
+      StringBuilder result = new StringBuilder();
       if (this.tag) {
-         var1.append('#');
+         result.append('#');
       }
 
-      var1.append(this.id);
+      result.append(this.id);
       if (!this.required) {
-         var1.append('?');
+         result.append('?');
       }
 
-      return var1.toString();
+      return result.toString();
    }
 
    static {
-      CODEC = Codec.either(ExtraCodecs.TAG_OR_ELEMENT_ID, FULL_CODEC).xmap((var0) -> (TagEntry)var0.map((var0x) -> new TagEntry(var0x, true), (var0x) -> var0x), (var0) -> var0.required ? Either.left(var0.elementOrTag()) : Either.right(var0));
+      CODEC = Codec.either(ExtraCodecs.TAG_OR_ELEMENT_ID, FULL_CODEC).xmap((e) -> (TagEntry)e.map((l) -> new TagEntry(l, true), (r) -> r), (entry) -> entry.required ? Either.left(entry.elementOrTag()) : Either.right(entry));
    }
 
    public interface Lookup<T> {
-      @Nullable T element(Identifier var1, boolean var2);
+      @Nullable T element(Identifier key, boolean required);
 
-      @Nullable Collection<T> tag(Identifier var1);
+      @Nullable Collection<T> tag(Identifier key);
    }
 }

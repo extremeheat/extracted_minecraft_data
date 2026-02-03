@@ -7,17 +7,16 @@ import net.minecraft.core.component.DataComponentGetter;
 public record CustomDataPredicate(NbtPredicate value) implements DataComponentPredicate {
    public static final Codec<CustomDataPredicate> CODEC;
 
-   public CustomDataPredicate(NbtPredicate var1) {
+   public CustomDataPredicate {
       super();
-      this.value = var1;
    }
 
-   public boolean matches(DataComponentGetter var1) {
-      return this.value.matches(var1);
+   public boolean matches(final DataComponentGetter components) {
+      return this.value.matches(components);
    }
 
-   public static CustomDataPredicate customData(NbtPredicate var0) {
-      return new CustomDataPredicate(var0);
+   public static CustomDataPredicate customData(final NbtPredicate value) {
+      return new CustomDataPredicate(value);
    }
 
    static {

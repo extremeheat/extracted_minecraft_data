@@ -10,8 +10,8 @@ public enum DebugScreenEntryStatus implements StringRepresentable {
    public static final StringRepresentable.EnumCodec<DebugScreenEntryStatus> CODEC = StringRepresentable.<DebugScreenEntryStatus>fromEnum(DebugScreenEntryStatus::values);
    private final String name;
 
-   private DebugScreenEntryStatus(final String var3) {
-      this.name = var3;
+   private DebugScreenEntryStatus(final String name) {
+      this.name = name;
    }
 
    public String getSerializedName() {

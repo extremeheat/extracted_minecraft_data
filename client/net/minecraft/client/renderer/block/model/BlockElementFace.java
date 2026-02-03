@@ -15,38 +15,29 @@ import org.jspecify.annotations.Nullable;
 public record BlockElementFace(@Nullable Direction cullForDirection, int tintIndex, String texture, @Nullable UVs uvs, Quadrant rotation) {
    public static final int NO_TINT = -1;
 
-   public BlockElementFace(@Nullable Direction var1, int var2, String var3, @Nullable UVs var4, Quadrant var5) {
+   public BlockElementFace {
       super();
-      this.cullForDirection = var1;
-      this.tintIndex = var2;
-      this.texture = var3;
-      this.uvs = var4;
-      this.rotation = var5;
    }
 
-   public static float getU(UVs var0, Quadrant var1, int var2) {
-      return var0.getVertexU(var1.rotateVertexIndex(var2)) / 16.0F;
+   public static float getU(final UVs uvs, final Quadrant rotation, final int vertex) {
+      return uvs.getVertexU(rotation.rotateVertexIndex(vertex)) / 16.0F;
    }
 
-   public static float getV(UVs var0, Quadrant var1, int var2) {
-      return var0.getVertexV(var1.rotateVertexIndex(var2)) / 16.0F;
+   public static float getV(final UVs uvs, final Quadrant rotation, final int index) {
+      return uvs.getVertexV(rotation.rotateVertexIndex(index)) / 16.0F;
    }
 
    public static record UVs(float minU, float minV, float maxU, float maxV) {
-      public UVs(float var1, float var2, float var3, float var4) {
+      public UVs {
          super();
-         this.minU = var1;
-         this.minV = var2;
-         this.maxU = var3;
-         this.maxV = var4;
       }
 
-      public float getVertexU(int var1) {
-         return var1 != 0 && var1 != 1 ? this.maxU : this.minU;
+      public float getVertexU(final int index) {
+         return index != 0 && index != 1 ? this.maxU : this.minU;
       }
 
-      public float getVertexV(int var1) {
-         return var1 != 0 && var1 != 3 ? this.maxV : this.minV;
+      public float getVertexV(final int index) {
+         return index != 0 && index != 3 ? this.maxV : this.minV;
       }
    }
 
@@ -58,54 +49,49 @@ public record BlockElementFace(@Nullable Direction cullForDirection, int tintInd
          super();
       }
 
-      public BlockElementFace deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         JsonObject var4 = var1.getAsJsonObject();
-         Direction var5 = getCullFacing(var4);
-         int var6 = getTintIndex(var4);
-         String var7 = getTexture(var4);
-         UVs var8 = getUVs(var4);
-         Quadrant var9 = getRotation(var4);
-         return new BlockElementFace(var5, var6, var7, var8, var9);
+      public BlockElementFace deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
+         JsonObject object = json.getAsJsonObject();
+         Direction cullDirection = getCullFacing(object);
+         int tintIndex = getTintIndex(object);
+         String texture = getTexture(object);
+         UVs uvs = getUVs(object);
+         Quadrant rotation = getRotation(object);
+         return new BlockElementFace(cullDirection, tintIndex, texture, uvs, rotation);
       }
 
-      private static int getTintIndex(JsonObject var0) {
-         return GsonHelper.getAsInt(var0, "tintindex", -1);
+      private static int getTintIndex(final JsonObject object) {
+         return GsonHelper.getAsInt(object, "tintindex", -1);
       }
 
-      private static String getTexture(JsonObject var0) {
-         return GsonHelper.getAsString(var0, "texture");
+      private static String getTexture(final JsonObject object) {
+         return GsonHelper.getAsString(object, "texture");
       }
 
-      private static @Nullable Direction getCullFacing(JsonObject var0) {
-         String var1 = GsonHelper.getAsString(var0, "cullface", "");
-         return Direction.byName(var1);
+      private static @Nullable Direction getCullFacing(final JsonObject object) {
+         String cullFace = GsonHelper.getAsString(object, "cullface", "");
+         return Direction.byName(cullFace);
       }
 
-      private static Quadrant getRotation(JsonObject var0) {
-         int var1 = GsonHelper.getAsInt(var0, "rotation", 0);
-         return Quadrant.parseJson(var1);
+      private static Quadrant getRotation(final JsonObject object) {
+         int rotation = GsonHelper.getAsInt(object, "rotation", 0);
+         return Quadrant.parseJson(rotation);
       }
 
-      private static @Nullable UVs getUVs(JsonObject var0) {
-         if (!var0.has("uv")) {
+      private static @Nullable UVs getUVs(final JsonObject object) {
+         if (!object.has("uv")) {
             return null;
          } else {
-            JsonArray var1 = GsonHelper.getAsJsonArray(var0, "uv");
-            if (var1.size() != 4) {
-               throw new JsonParseException("Expected 4 uv values, found: " + var1.size());
+            JsonArray uvArray = GsonHelper.getAsJsonArray(object, "uv");
+            if (uvArray.size() != 4) {
+               throw new JsonParseException("Expected 4 uv values, found: " + uvArray.size());
             } else {
-               float var2 = GsonHelper.convertToFloat(var1.get(0), "minU");
-               float var3 = GsonHelper.convertToFloat(var1.get(1), "minV");
-               float var4 = GsonHelper.convertToFloat(var1.get(2), "maxU");
-               float var5 = GsonHelper.convertToFloat(var1.get(3), "maxV");
-               return new UVs(var2, var3, var4, var5);
+               float minU = GsonHelper.convertToFloat(uvArray.get(0), "minU");
+               float minV = GsonHelper.convertToFloat(uvArray.get(1), "minV");
+               float maxU = GsonHelper.convertToFloat(uvArray.get(2), "maxU");
+               float maxV = GsonHelper.convertToFloat(uvArray.get(3), "maxV");
+               return new UVs(minU, minV, maxU, maxV);
             }
          }
-      }
-
-      // $FF: synthetic method
-      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
-         return this.deserialize(var1, var2, var3);
       }
    }
 }

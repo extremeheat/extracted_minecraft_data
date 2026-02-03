@@ -9,17 +9,17 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.OptionalDynamic;
 
 public class BlendingDataRemoveFromNetherEndFix extends DataFix {
-   public BlendingDataRemoveFromNetherEndFix(Schema var1) {
-      super(var1, false);
+   public BlendingDataRemoveFromNetherEndFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getOutputSchema().getType(References.CHUNK);
-      return this.fixTypeEverywhereTyped("BlendingDataRemoveFromNetherEndFix", var1, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> updateChunkTag(var0x, var0x.get("__context"))));
+      Type<?> chunkType = this.getOutputSchema().getType(References.CHUNK);
+      return this.fixTypeEverywhereTyped("BlendingDataRemoveFromNetherEndFix", chunkType, (chunk) -> chunk.update(DSL.remainderFinder(), (chunkTag) -> updateChunkTag(chunkTag, chunkTag.get("__context"))));
    }
 
-   private static Dynamic<?> updateChunkTag(Dynamic<?> var0, OptionalDynamic<?> var1) {
-      boolean var2 = "minecraft:overworld".equals(var1.get("dimension").asString().result().orElse(""));
-      return var2 ? var0 : var0.remove("blending_data");
+   private static Dynamic<?> updateChunkTag(final Dynamic<?> chunkTag, final OptionalDynamic<?> contextTag) {
+      boolean isOverworld = "minecraft:overworld".equals(contextTag.get("dimension").asString().result().orElse(""));
+      return isOverworld ? chunkTag : chunkTag.remove("blending_data");
    }
 }

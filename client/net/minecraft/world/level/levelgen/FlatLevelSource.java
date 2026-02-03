@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.server.level.WorldGenRegion;
@@ -26,19 +27,19 @@ import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 
 public class FlatLevelSource extends ChunkGenerator {
-   public static final MapCodec<FlatLevelSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings)).apply(var0, var0.stable(FlatLevelSource::new)));
+   public static final MapCodec<FlatLevelSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings)).apply(i, i.stable(FlatLevelSource::new)));
    private final FlatLevelGeneratorSettings settings;
 
-   public FlatLevelSource(FlatLevelGeneratorSettings var1) {
-      FixedBiomeSource var10001 = new FixedBiomeSource(var1.getBiome());
-      Objects.requireNonNull(var1);
-      super(var10001, Util.memoize(var1::adjustGenerationSettings));
-      this.settings = var1;
+   public FlatLevelSource(final FlatLevelGeneratorSettings generatorSettings) {
+      FixedBiomeSource var10001 = new FixedBiomeSource(generatorSettings.getBiome());
+      Objects.requireNonNull(generatorSettings);
+      super(var10001, Util.memoize(generatorSettings::adjustGenerationSettings));
+      this.settings = generatorSettings;
    }
 
-   public ChunkGeneratorStructureState createState(HolderLookup<StructureSet> var1, RandomState var2, long var3) {
-      Stream var5 = (Stream)this.settings.structureOverrides().map(HolderSet::stream).orElseGet(() -> var1.listElements().map((var0) -> var0));
-      return ChunkGeneratorStructureState.createForFlat(var2, var3, this.biomeSource, var5);
+   public ChunkGeneratorStructureState createState(final HolderLookup<StructureSet> structureSets, final RandomState randomState, final long levelSeed) {
+      Stream<Holder<StructureSet>> structures = (Stream)this.settings.structureOverrides().map(HolderSet::stream).orElseGet(() -> structureSets.listElements().map((e) -> e));
+      return ChunkGeneratorStructureState.createForFlat(randomState, levelSeed, this.biomeSource, structures);
    }
 
    protected MapCodec<? extends ChunkGenerator> codec() {
@@ -49,61 +50,61 @@ public class FlatLevelSource extends ChunkGenerator {
       return this.settings;
    }
 
-   public void buildSurface(WorldGenRegion var1, StructureManager var2, RandomState var3, ChunkAccess var4) {
+   public void buildSurface(final WorldGenRegion level, final StructureManager structureManager, final RandomState randomState, final ChunkAccess protoChunk) {
    }
 
-   public int getSpawnHeight(LevelHeightAccessor var1) {
-      return var1.getMinY() + Math.min(var1.getHeight(), this.settings.getLayers().size());
+   public int getSpawnHeight(final LevelHeightAccessor heightAccessor) {
+      return heightAccessor.getMinY() + Math.min(heightAccessor.getHeight(), this.settings.getLayers().size());
    }
 
-   public CompletableFuture<ChunkAccess> fillFromNoise(Blender var1, RandomState var2, StructureManager var3, ChunkAccess var4) {
-      List var5 = this.settings.getLayers();
-      BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
-      Heightmap var7 = var4.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
-      Heightmap var8 = var4.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
+   public CompletableFuture<ChunkAccess> fillFromNoise(final Blender blender, final RandomState randomState, final StructureManager structureManager, final ChunkAccess centerChunk) {
+      List<BlockState> layers = this.settings.getLayers();
+      BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
+      Heightmap oceanFloor = centerChunk.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
+      Heightmap worldSurface = centerChunk.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
 
-      for(int var9 = 0; var9 < Math.min(var4.getHeight(), var5.size()); ++var9) {
-         BlockState var10 = (BlockState)var5.get(var9);
-         if (var10 != null) {
-            int var11 = var4.getMinY() + var9;
+      for(int layerIndex = 0; layerIndex < Math.min(centerChunk.getHeight(), layers.size()); ++layerIndex) {
+         BlockState blockState = (BlockState)layers.get(layerIndex);
+         if (blockState != null) {
+            int y = centerChunk.getMinY() + layerIndex;
 
-            for(int var12 = 0; var12 < 16; ++var12) {
-               for(int var13 = 0; var13 < 16; ++var13) {
-                  var4.setBlockState(var6.set(var12, var11, var13), var10);
-                  var7.update(var12, var11, var13, var10);
-                  var8.update(var12, var11, var13, var10);
+            for(int x = 0; x < 16; ++x) {
+               for(int z = 0; z < 16; ++z) {
+                  centerChunk.setBlockState(blockPos.set(x, y, z), blockState);
+                  oceanFloor.update(x, y, z, blockState);
+                  worldSurface.update(x, y, z, blockState);
                }
             }
          }
       }
 
-      return CompletableFuture.completedFuture(var4);
+      return CompletableFuture.completedFuture(centerChunk);
    }
 
-   public int getBaseHeight(int var1, int var2, Heightmap.Types var3, LevelHeightAccessor var4, RandomState var5) {
-      List var6 = this.settings.getLayers();
+   public int getBaseHeight(final int x, final int z, final Heightmap.Types type, final LevelHeightAccessor heightAccessor, final RandomState randomState) {
+      List<BlockState> layers = this.settings.getLayers();
 
-      for(int var7 = Math.min(var6.size() - 1, var4.getMaxY()); var7 >= 0; --var7) {
-         BlockState var8 = (BlockState)var6.get(var7);
-         if (var8 != null && var3.isOpaque().test(var8)) {
-            return var4.getMinY() + var7 + 1;
+      for(int layerIndex = Math.min(layers.size() - 1, heightAccessor.getMaxY()); layerIndex >= 0; --layerIndex) {
+         BlockState state = (BlockState)layers.get(layerIndex);
+         if (state != null && type.isOpaque().test(state)) {
+            return heightAccessor.getMinY() + layerIndex + 1;
          }
       }
 
-      return var4.getMinY();
+      return heightAccessor.getMinY();
    }
 
-   public NoiseColumn getBaseColumn(int var1, int var2, LevelHeightAccessor var3, RandomState var4) {
-      return new NoiseColumn(var3.getMinY(), (BlockState[])this.settings.getLayers().stream().limit((long)var3.getHeight()).map((var0) -> var0 == null ? Blocks.AIR.defaultBlockState() : var0).toArray((var0) -> new BlockState[var0]));
+   public NoiseColumn getBaseColumn(final int x, final int z, final LevelHeightAccessor heightAccessor, final RandomState randomState) {
+      return new NoiseColumn(heightAccessor.getMinY(), (BlockState[])this.settings.getLayers().stream().limit((long)heightAccessor.getHeight()).map((state) -> state == null ? Blocks.AIR.defaultBlockState() : state).toArray((x$0) -> new BlockState[x$0]));
    }
 
-   public void addDebugScreenInfo(List<String> var1, RandomState var2, BlockPos var3) {
+   public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos) {
    }
 
-   public void applyCarvers(WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7) {
+   public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk) {
    }
 
-   public void spawnOriginalMobs(WorldGenRegion var1) {
+   public void spawnOriginalMobs(final WorldGenRegion worldGenRegion) {
    }
 
    public int getMinY() {

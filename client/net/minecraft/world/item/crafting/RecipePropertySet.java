@@ -27,26 +27,26 @@ public class RecipePropertySet {
    public static final RecipePropertySet EMPTY;
    private final Set<Holder<Item>> items;
 
-   private RecipePropertySet(Set<Holder<Item>> var1) {
+   private RecipePropertySet(final Set<Holder<Item>> items) {
       super();
-      this.items = var1;
+      this.items = items;
    }
 
-   private static ResourceKey<RecipePropertySet> registerVanilla(String var0) {
-      return ResourceKey.create(TYPE_KEY, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<RecipePropertySet> registerVanilla(final String name) {
+      return ResourceKey.create(TYPE_KEY, Identifier.withDefaultNamespace(name));
    }
 
-   public boolean test(ItemStack var1) {
-      return this.items.contains(var1.getItemHolder());
+   public boolean test(final ItemStack itemStack) {
+      return this.items.contains(itemStack.typeHolder());
    }
 
-   static RecipePropertySet create(Collection<Ingredient> var0) {
-      Set var1 = (Set)var0.stream().flatMap(Ingredient::items).collect(Collectors.toUnmodifiableSet());
-      return new RecipePropertySet(var1);
+   static RecipePropertySet create(final Collection<Ingredient> ingredients) {
+      Set<Holder<Item>> items = (Set)ingredients.stream().flatMap(Ingredient::items).collect(Collectors.toUnmodifiableSet());
+      return new RecipePropertySet(items);
    }
 
    static {
-      STREAM_CODEC = Item.STREAM_CODEC.apply(ByteBufCodecs.list()).map((var0) -> new RecipePropertySet(Set.copyOf(var0)), (var0) -> List.copyOf(var0.items));
+      STREAM_CODEC = Item.STREAM_CODEC.apply(ByteBufCodecs.list()).map((holders) -> new RecipePropertySet(Set.copyOf(holders)), (propertySet) -> List.copyOf(propertySet.items));
       EMPTY = new RecipePropertySet(Set.of());
    }
 }

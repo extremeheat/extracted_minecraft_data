@@ -14,33 +14,33 @@ public class MinecraftOperatorListServiceImpl implements MinecraftOperatorListSe
    private final MinecraftServer minecraftServer;
    private final JsonRpcLogger jsonrpcLogger;
 
-   public MinecraftOperatorListServiceImpl(MinecraftServer var1, JsonRpcLogger var2) {
+   public MinecraftOperatorListServiceImpl(final MinecraftServer minecraftServer, final JsonRpcLogger jsonrpcLogger) {
       super();
-      this.minecraftServer = var1;
-      this.jsonrpcLogger = var2;
+      this.minecraftServer = minecraftServer;
+      this.jsonrpcLogger = jsonrpcLogger;
    }
 
    public Collection<ServerOpListEntry> getEntries() {
       return this.minecraftServer.getPlayerList().getOps().getEntries();
    }
 
-   public void op(NameAndId var1, Optional<PermissionLevel> var2, Optional<Boolean> var3, ClientInfo var4) {
-      this.jsonrpcLogger.log(var4, "Op '{}'", var1);
-      this.minecraftServer.getPlayerList().op(var1, var2.map(LevelBasedPermissionSet::forLevel), var3);
+   public void op(final NameAndId nameAndId, final Optional<PermissionLevel> permissionLevel, final Optional<Boolean> canBypassPlayerLimit, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Op '{}'", nameAndId);
+      this.minecraftServer.getPlayerList().op(nameAndId, permissionLevel.map(LevelBasedPermissionSet::forLevel), canBypassPlayerLimit);
    }
 
-   public void op(NameAndId var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Op '{}'", var1);
-      this.minecraftServer.getPlayerList().op(var1);
+   public void op(final NameAndId nameAndId, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Op '{}'", nameAndId);
+      this.minecraftServer.getPlayerList().op(nameAndId);
    }
 
-   public void deop(NameAndId var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Deop '{}'", var1);
-      this.minecraftServer.getPlayerList().deop(var1);
+   public void deop(final NameAndId nameAndId, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Deop '{}'", nameAndId);
+      this.minecraftServer.getPlayerList().deop(nameAndId);
    }
 
-   public void clear(ClientInfo var1) {
-      this.jsonrpcLogger.log(var1, "Clear operator list");
+   public void clear(final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Clear operator list");
       this.minecraftServer.getPlayerList().getOps().clear();
    }
 }

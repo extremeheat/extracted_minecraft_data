@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gamerules.GameRules;
 
 public class InfestedBlock extends Block {
-   public static final MapCodec<InfestedBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("host").forGetter(InfestedBlock::getHostBlock), propertiesCodec()).apply(var0, InfestedBlock::new));
+   public static final MapCodec<InfestedBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("host").forGetter(InfestedBlock::getHostBlock), propertiesCodec()).apply(i, InfestedBlock::new));
    private final Block hostBlock;
    private static final Map<Block, Block> BLOCK_BY_HOST_BLOCK = Maps.newIdentityHashMap();
    private static final Map<BlockState, BlockState> HOST_TO_INFESTED_STATES = Maps.newIdentityHashMap();
@@ -30,55 +30,59 @@ public class InfestedBlock extends Block {
       return CODEC;
    }
 
-   public InfestedBlock(Block var1, BlockBehaviour.Properties var2) {
-      super(var2.destroyTime(var1.defaultDestroyTime() / 2.0F).explosionResistance(0.75F));
-      this.hostBlock = var1;
-      BLOCK_BY_HOST_BLOCK.put(var1, this);
+   public InfestedBlock(final Block hostBlock, final BlockBehaviour.Properties properties) {
+      super(properties.destroyTime(hostBlock.defaultDestroyTime() / 2.0F).explosionResistance(0.75F));
+      this.hostBlock = hostBlock;
+      BLOCK_BY_HOST_BLOCK.put(hostBlock, this);
    }
 
    public Block getHostBlock() {
       return this.hostBlock;
    }
 
-   public static boolean isCompatibleHostBlock(BlockState var0) {
-      return BLOCK_BY_HOST_BLOCK.containsKey(var0.getBlock());
+   public static boolean isCompatibleHostBlock(final BlockState blockState) {
+      return BLOCK_BY_HOST_BLOCK.containsKey(blockState.getBlock());
    }
 
-   private void spawnInfestation(ServerLevel var1, BlockPos var2) {
-      Silverfish var3 = EntityType.SILVERFISH.create(var1, EntitySpawnReason.TRIGGERED);
-      if (var3 != null) {
-         var3.snapTo((double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5, 0.0F, 0.0F);
-         var1.addFreshEntity(var3);
-         var3.spawnAnim();
+   private void spawnInfestation(final ServerLevel level, final BlockPos pos) {
+      Silverfish silverfish = EntityType.SILVERFISH.create(level, EntitySpawnReason.TRIGGERED);
+      if (silverfish != null) {
+         silverfish.snapTo((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, 0.0F, 0.0F);
+         level.addFreshEntity(silverfish);
+         silverfish.spawnAnim();
       }
 
    }
 
-   protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
-      super.spawnAfterBreak(var1, var2, var3, var4, var5);
-      if ((Boolean)var2.getGameRules().get(GameRules.BLOCK_DROPS) && !EnchantmentHelper.hasTag(var4, EnchantmentTags.PREVENTS_INFESTED_SPAWNS)) {
-         this.spawnInfestation(var2, var3);
+   protected void spawnAfterBreak(final BlockState state, final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience) {
+      super.spawnAfterBreak(state, level, pos, tool, dropExperience);
+      if ((Boolean)level.getGameRules().get(GameRules.BLOCK_DROPS) && !EnchantmentHelper.hasTag(tool, EnchantmentTags.PREVENTS_INFESTED_SPAWNS)) {
+         this.spawnInfestation(level, pos);
       }
 
    }
 
-   public static BlockState infestedStateByHost(BlockState var0) {
-      return getNewStateWithProperties(HOST_TO_INFESTED_STATES, var0, () -> ((Block)BLOCK_BY_HOST_BLOCK.get(var0.getBlock())).defaultBlockState());
+   public static BlockState infestedStateByHost(final BlockState hostState) {
+      return getNewStateWithProperties(HOST_TO_INFESTED_STATES, hostState, () -> ((Block)BLOCK_BY_HOST_BLOCK.get(hostState.getBlock())).defaultBlockState());
    }
 
-   public BlockState hostStateByInfested(BlockState var1) {
-      return getNewStateWithProperties(INFESTED_TO_HOST_STATES, var1, () -> this.getHostBlock().defaultBlockState());
+   public BlockState hostStateByInfested(final BlockState infestedState) {
+      return getNewStateWithProperties(INFESTED_TO_HOST_STATES, infestedState, () -> this.getHostBlock().defaultBlockState());
    }
 
-   private static BlockState getNewStateWithProperties(Map<BlockState, BlockState> var0, BlockState var1, Supplier<BlockState> var2) {
-      return (BlockState)var0.computeIfAbsent(var1, (var1x) -> {
-         BlockState var2x = (BlockState)var2.get();
+   private static BlockState getNewStateWithProperties(final Map<BlockState, BlockState> map, final BlockState oldState, final Supplier<BlockState> newStateSupplier) {
+      return (BlockState)map.computeIfAbsent(oldState, (k) -> {
+         BlockState newState = (BlockState)newStateSupplier.get();
 
-         for(Property var4 : var1x.getProperties()) {
-            var2x = var2x.hasProperty(var4) ? (BlockState)var2x.setValue(var4, var1x.getValue(var4)) : var2x;
+         for(Property<?> property : k.getProperties()) {
+            newState = copyProperty(property, k, newState);
          }
 
-         return var2x;
+         return newState;
       });
+   }
+
+   private static <T extends Comparable<T>> BlockState copyProperty(final Property<T> property, final BlockState source, final BlockState target) {
+      return target.hasProperty(property) ? (BlockState)target.setValue(property, source.getValue(property)) : target;
    }
 }

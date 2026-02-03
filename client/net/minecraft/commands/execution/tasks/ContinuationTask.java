@@ -12,42 +12,42 @@ public class ContinuationTask<T, P> implements EntryAction<T> {
    private final CommandQueueEntry<T> selfEntry;
    private int index;
 
-   private ContinuationTask(TaskProvider<T, P> var1, List<P> var2, Frame var3) {
+   private ContinuationTask(final TaskProvider<T, P> taskFactory, final List<P> arguments, final Frame frame) {
       super();
-      this.taskFactory = var1;
-      this.arguments = var2;
-      this.selfEntry = new CommandQueueEntry<T>(var3, this);
+      this.taskFactory = taskFactory;
+      this.arguments = arguments;
+      this.selfEntry = new CommandQueueEntry<T>(frame, this);
    }
 
-   public void execute(ExecutionContext<T> var1, Frame var2) {
-      Object var3 = this.arguments.get(this.index);
-      var1.queueNext(this.taskFactory.create(var2, var3));
+   public void execute(final ExecutionContext<T> context, final Frame frame) {
+      P argument = (P)this.arguments.get(this.index);
+      context.queueNext(this.taskFactory.create(frame, argument));
       if (++this.index < this.arguments.size()) {
-         var1.queueNext(this.selfEntry);
+         context.queueNext(this.selfEntry);
       }
 
    }
 
-   public static <T, P> void schedule(ExecutionContext<T> var0, Frame var1, List<P> var2, TaskProvider<T, P> var3) {
-      int var4 = var2.size();
-      switch (var4) {
+   public static <T, P> void schedule(final ExecutionContext<T> context, final Frame frame, final List<P> arguments, final TaskProvider<T, P> taskFactory) {
+      int argumentCount = arguments.size();
+      switch (argumentCount) {
          case 0:
             break;
          case 1:
-            var0.queueNext(var3.create(var1, var2.get(0)));
+            context.queueNext(taskFactory.create(frame, arguments.get(0)));
             break;
          case 2:
-            var0.queueNext(var3.create(var1, var2.get(0)));
-            var0.queueNext(var3.create(var1, var2.get(1)));
+            context.queueNext(taskFactory.create(frame, arguments.get(0)));
+            context.queueNext(taskFactory.create(frame, arguments.get(1)));
             break;
          default:
-            var0.queueNext((new ContinuationTask(var3, var2, var1)).selfEntry);
+            context.queueNext((new ContinuationTask(taskFactory, arguments, frame)).selfEntry);
       }
 
    }
 
    @FunctionalInterface
    public interface TaskProvider<T, P> {
-      CommandQueueEntry<T> create(Frame var1, P var2);
+      CommandQueueEntry<T> create(Frame frame, P argument);
    }
 }

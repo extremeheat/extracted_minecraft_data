@@ -5,38 +5,33 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
 
 public record DistancePredicate(MinMaxBounds.Doubles x, MinMaxBounds.Doubles y, MinMaxBounds.Doubles z, MinMaxBounds.Doubles horizontal, MinMaxBounds.Doubles absolute) {
-   public static final Codec<DistancePredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MinMaxBounds.Doubles.CODEC.optionalFieldOf("x", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::x), MinMaxBounds.Doubles.CODEC.optionalFieldOf("y", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::y), MinMaxBounds.Doubles.CODEC.optionalFieldOf("z", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::z), MinMaxBounds.Doubles.CODEC.optionalFieldOf("horizontal", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::horizontal), MinMaxBounds.Doubles.CODEC.optionalFieldOf("absolute", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::absolute)).apply(var0, DistancePredicate::new));
+   public static final Codec<DistancePredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(MinMaxBounds.Doubles.CODEC.optionalFieldOf("x", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::x), MinMaxBounds.Doubles.CODEC.optionalFieldOf("y", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::y), MinMaxBounds.Doubles.CODEC.optionalFieldOf("z", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::z), MinMaxBounds.Doubles.CODEC.optionalFieldOf("horizontal", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::horizontal), MinMaxBounds.Doubles.CODEC.optionalFieldOf("absolute", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::absolute)).apply(i, DistancePredicate::new));
 
-   public DistancePredicate(MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2, MinMaxBounds.Doubles var3, MinMaxBounds.Doubles var4, MinMaxBounds.Doubles var5) {
+   public DistancePredicate {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
-      this.horizontal = var4;
-      this.absolute = var5;
    }
 
-   public static DistancePredicate horizontal(MinMaxBounds.Doubles var0) {
-      return new DistancePredicate(MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, var0, MinMaxBounds.Doubles.ANY);
+   public static DistancePredicate horizontal(final MinMaxBounds.Doubles horizontal) {
+      return new DistancePredicate(MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, horizontal, MinMaxBounds.Doubles.ANY);
    }
 
-   public static DistancePredicate vertical(MinMaxBounds.Doubles var0) {
-      return new DistancePredicate(MinMaxBounds.Doubles.ANY, var0, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY);
+   public static DistancePredicate vertical(final MinMaxBounds.Doubles y) {
+      return new DistancePredicate(MinMaxBounds.Doubles.ANY, y, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY);
    }
 
-   public static DistancePredicate absolute(MinMaxBounds.Doubles var0) {
-      return new DistancePredicate(MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, var0);
+   public static DistancePredicate absolute(final MinMaxBounds.Doubles absolute) {
+      return new DistancePredicate(MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, absolute);
    }
 
-   public boolean matches(double var1, double var3, double var5, double var7, double var9, double var11) {
-      float var13 = (float)(var1 - var7);
-      float var14 = (float)(var3 - var9);
-      float var15 = (float)(var5 - var11);
-      if (this.x.matches((double)Mth.abs(var13)) && this.y.matches((double)Mth.abs(var14)) && this.z.matches((double)Mth.abs(var15))) {
-         if (!this.horizontal.matchesSqr((double)(var13 * var13 + var15 * var15))) {
+   public boolean matches(final double x0, final double y0, final double z0, final double x1, final double y1, final double z1) {
+      float xd = (float)(x0 - x1);
+      float yd = (float)(y0 - y1);
+      float zd = (float)(z0 - z1);
+      if (this.x.matches((double)Mth.abs(xd)) && this.y.matches((double)Mth.abs(yd)) && this.z.matches((double)Mth.abs(zd))) {
+         if (!this.horizontal.matchesSqr((double)(xd * xd + zd * zd))) {
             return false;
          } else {
-            return this.absolute.matchesSqr((double)(var13 * var13 + var14 * var14 + var15 * var15));
+            return this.absolute.matchesSqr((double)(xd * xd + yd * yd + zd * zd));
          }
       } else {
          return false;

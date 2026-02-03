@@ -1,8 +1,8 @@
 package net.minecraft.commands.synchronization.brigadier;
 
 import com.google.gson.JsonObject;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
+import java.util.Objects;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentUtils;
@@ -13,68 +13,59 @@ public class LongArgumentInfo implements ArgumentTypeInfo<LongArgumentType, Temp
       super();
    }
 
-   public void serializeToNetwork(Template var1, FriendlyByteBuf var2) {
-      boolean var3 = var1.min != -9223372036854775808L;
-      boolean var4 = var1.max != 9223372036854775807L;
-      var2.writeByte(ArgumentUtils.createNumberFlags(var3, var4));
-      if (var3) {
-         var2.writeLong(var1.min);
+   public void serializeToNetwork(final Template template, final FriendlyByteBuf out) {
+      boolean hasMin = template.min != -9223372036854775808L;
+      boolean hasMax = template.max != 9223372036854775807L;
+      out.writeByte(ArgumentUtils.createNumberFlags(hasMin, hasMax));
+      if (hasMin) {
+         out.writeLong(template.min);
       }
 
-      if (var4) {
-         var2.writeLong(var1.max);
-      }
-
-   }
-
-   public Template deserializeFromNetwork(FriendlyByteBuf var1) {
-      byte var2 = var1.readByte();
-      long var3 = ArgumentUtils.numberHasMin(var2) ? var1.readLong() : -9223372036854775808L;
-      long var5 = ArgumentUtils.numberHasMax(var2) ? var1.readLong() : 9223372036854775807L;
-      return new Template(var3, var5);
-   }
-
-   public void serializeToJson(Template var1, JsonObject var2) {
-      if (var1.min != -9223372036854775808L) {
-         var2.addProperty("min", var1.min);
-      }
-
-      if (var1.max != 9223372036854775807L) {
-         var2.addProperty("max", var1.max);
+      if (hasMax) {
+         out.writeLong(template.max);
       }
 
    }
 
-   public Template unpack(LongArgumentType var1) {
-      return new Template(var1.getMinimum(), var1.getMaximum());
+   public Template deserializeFromNetwork(final FriendlyByteBuf in) {
+      byte flags = in.readByte();
+      long min = ArgumentUtils.numberHasMin(flags) ? in.readLong() : -9223372036854775808L;
+      long max = ArgumentUtils.numberHasMax(flags) ? in.readLong() : 9223372036854775807L;
+      return new Template(min, max);
    }
 
-   // $FF: synthetic method
-   public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
-      return this.deserializeFromNetwork(var1);
+   public void serializeToJson(final Template template, final JsonObject out) {
+      if (template.min != -9223372036854775808L) {
+         out.addProperty("min", template.min);
+      }
+
+      if (template.max != 9223372036854775807L) {
+         out.addProperty("max", template.max);
+      }
+
+   }
+
+   public Template unpack(final LongArgumentType argument) {
+      return new Template(argument.getMinimum(), argument.getMaximum());
    }
 
    public final class Template implements ArgumentTypeInfo.Template<LongArgumentType> {
-      final long min;
-      final long max;
+      private final long min;
+      private final long max;
 
-      Template(final long var2, final long var4) {
+      private Template(final long min, final long max) {
+         Objects.requireNonNull(LongArgumentInfo.this);
          super();
-         this.min = var2;
-         this.max = var4;
+         this.min = min;
+         this.max = max;
       }
 
-      public LongArgumentType instantiate(CommandBuildContext var1) {
+      public LongArgumentType instantiate(final CommandBuildContext context) {
          return LongArgumentType.longArg(this.min, this.max);
       }
 
       public ArgumentTypeInfo<LongArgumentType, ?> type() {
          return LongArgumentInfo.this;
-      }
-
-      // $FF: synthetic method
-      public ArgumentType instantiate(final CommandBuildContext var1) {
-         return this.instantiate(var1);
       }
    }
 }

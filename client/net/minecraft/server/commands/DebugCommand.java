@@ -15,11 +15,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Objects;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.arguments.item.FunctionArgument;
 import net.minecraft.commands.execution.ChainModifiers;
@@ -43,129 +43,123 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 public class DebugCommand {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final SimpleCommandExceptionType ERROR_NOT_RUNNING = new SimpleCommandExceptionType(Component.translatable("commands.debug.notRunning"));
    private static final SimpleCommandExceptionType ERROR_ALREADY_RUNNING = new SimpleCommandExceptionType(Component.translatable("commands.debug.alreadyRunning"));
-   static final SimpleCommandExceptionType NO_RECURSIVE_TRACES = new SimpleCommandExceptionType(Component.translatable("commands.debug.function.noRecursion"));
-   static final SimpleCommandExceptionType NO_RETURN_RUN = new SimpleCommandExceptionType(Component.translatable("commands.debug.function.noReturnRun"));
+   private static final SimpleCommandExceptionType NO_RECURSIVE_TRACES = new SimpleCommandExceptionType(Component.translatable("commands.debug.function.noRecursion"));
+   private static final SimpleCommandExceptionType NO_RETURN_RUN = new SimpleCommandExceptionType(Component.translatable("commands.debug.function.noReturnRun"));
 
    public DebugCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("start").executes((var0x) -> start((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("start").executes((c) -> start((CommandSourceStack)c.getSource())))).then(Commands.literal("stop").executes((c) -> stop((CommandSourceStack)c.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
    }
 
-   private static int start(CommandSourceStack var0) throws CommandSyntaxException {
-      MinecraftServer var1 = var0.getServer();
-      if (var1.isTimeProfilerRunning()) {
+   private static int start(final CommandSourceStack source) throws CommandSyntaxException {
+      MinecraftServer server = source.getServer();
+      if (server.isTimeProfilerRunning()) {
          throw ERROR_ALREADY_RUNNING.create();
       } else {
-         var1.startTimeProfiler();
-         var0.sendSuccess(() -> Component.translatable("commands.debug.started"), true);
+         server.startTimeProfiler();
+         source.sendSuccess(() -> Component.translatable("commands.debug.started"), true);
          return 0;
       }
    }
 
-   private static int stop(CommandSourceStack var0) throws CommandSyntaxException {
-      MinecraftServer var1 = var0.getServer();
-      if (!var1.isTimeProfilerRunning()) {
+   private static int stop(final CommandSourceStack source) throws CommandSyntaxException {
+      MinecraftServer server = source.getServer();
+      if (!server.isTimeProfilerRunning()) {
          throw ERROR_NOT_RUNNING.create();
       } else {
-         ProfileResults var2 = var1.stopTimeProfiler();
-         double var3 = (double)var2.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
-         double var5 = (double)var2.getTickDuration() / var3;
-         var0.sendSuccess(() -> Component.translatable("commands.debug.stopped", String.format(Locale.ROOT, "%.2f", var3), var2.getTickDuration(), String.format(Locale.ROOT, "%.2f", var5)), true);
-         return (int)var5;
+         ProfileResults results = server.stopTimeProfiler();
+         double seconds = (double)results.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
+         double tps = (double)results.getTickDuration() / seconds;
+         source.sendSuccess(() -> Component.translatable("commands.debug.stopped", String.format(Locale.ROOT, "%.2f", seconds), results.getTickDuration(), String.format(Locale.ROOT, "%.2f", tps)), true);
+         return (int)tps;
       }
    }
 
-   static class TraceCustomExecutor extends CustomCommandExecutor.WithErrorHandling<CommandSourceStack> implements CustomCommandExecutor.CommandAdapter<CommandSourceStack> {
-      TraceCustomExecutor() {
+   private static class TraceCustomExecutor extends CustomCommandExecutor.WithErrorHandling<CommandSourceStack> implements CustomCommandExecutor.CommandAdapter<CommandSourceStack> {
+      private TraceCustomExecutor() {
          super();
       }
 
-      public void runGuarded(CommandSourceStack var1, ContextChain<CommandSourceStack> var2, ChainModifiers var3, ExecutionControl<CommandSourceStack> var4) throws CommandSyntaxException {
-         if (var3.isReturn()) {
+      public void runGuarded(final CommandSourceStack source, final ContextChain<CommandSourceStack> currentStep, final ChainModifiers modifiers, final ExecutionControl<CommandSourceStack> context) throws CommandSyntaxException {
+         if (modifiers.isReturn()) {
             throw DebugCommand.NO_RETURN_RUN.create();
-         } else if (var4.tracer() != null) {
+         } else if (context.tracer() != null) {
             throw DebugCommand.NO_RECURSIVE_TRACES.create();
          } else {
-            CommandContext var5 = var2.getTopContext();
-            Collection var6 = FunctionArgument.getFunctions(var5, "name");
-            MinecraftServer var7 = var1.getServer();
-            String var8 = "debug-trace-" + Util.getFilenameFormattedDateTime() + ".txt";
-            CommandDispatcher var9 = var1.getServer().getFunctions().getDispatcher();
-            int var10 = 0;
+            CommandContext<CommandSourceStack> currentContext = currentStep.getTopContext();
+            Collection<CommandFunction<CommandSourceStack>> functions = FunctionArgument.getFunctions(currentContext, "name");
+            MinecraftServer server = source.getServer();
+            String outputName = "debug-trace-" + Util.getFilenameFormattedDateTime() + ".txt";
+            CommandDispatcher<CommandSourceStack> dispatcher = source.getServer().getFunctions().getDispatcher();
+            int commandCount = 0;
 
             try {
-               Path var11 = var7.getFile("debug");
-               Files.createDirectories(var11);
-               final PrintWriter var12 = new PrintWriter(Files.newBufferedWriter(var11.resolve(var8), StandardCharsets.UTF_8));
-               Tracer var13 = new Tracer(var12);
-               var4.tracer(var13);
+               Path dirPath = server.getFile("debug");
+               Files.createDirectories(dirPath);
+               final PrintWriter output = new PrintWriter(Files.newBufferedWriter(dirPath.resolve(outputName), StandardCharsets.UTF_8));
+               Tracer tracer = new Tracer(output);
+               context.tracer(tracer);
 
-               for(final CommandFunction var15 : var6) {
+               for(final CommandFunction<CommandSourceStack> function : functions) {
                   try {
-                     CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(LevelBasedPermissionSet.GAMEMASTER);
-                     InstantiatedFunction var17 = var15.instantiate((CompoundTag)null, var9);
-                     var4.queueNext((new CallFunction<CommandSourceStack>(var17, CommandResultCallback.EMPTY, false) {
-                        public void execute(CommandSourceStack var1, ExecutionContext<CommandSourceStack> var2, Frame var3) {
-                           var12.println(var15.id());
-                           super.execute(var1, var2, var3);
+                     CommandSourceStack functionSource = source.withSource(tracer).withMaximumPermission(LevelBasedPermissionSet.GAMEMASTER);
+                     InstantiatedFunction<CommandSourceStack> instantiatedFunction = function.instantiate((CompoundTag)null, dispatcher);
+                     context.queueNext((new CallFunction<CommandSourceStack>(instantiatedFunction, CommandResultCallback.EMPTY, false) {
+                        {
+                           Objects.requireNonNull(TraceCustomExecutor.this);
                         }
 
-                        // $FF: synthetic method
-                        public void execute(final Object var1, final ExecutionContext var2, final Frame var3) {
-                           this.execute((CommandSourceStack)var1, var2, var3);
+                        public void execute(final CommandSourceStack sender, final ExecutionContext<CommandSourceStack> context, final Frame frame) {
+                           output.println(function.id());
+                           super.execute(sender, context, frame);
                         }
-                     }).bind(var16));
-                     var10 += var17.entries().size();
-                  } catch (FunctionInstantiationException var18) {
-                     var1.sendFailure(var18.messageComponent());
+                     }).bind(functionSource));
+                     commandCount += instantiatedFunction.entries().size();
+                  } catch (FunctionInstantiationException exception) {
+                     source.sendFailure(exception.messageComponent());
                   }
                }
-            } catch (IOException | UncheckedIOException var19) {
-               DebugCommand.LOGGER.warn("Tracing failed", var19);
-               var1.sendFailure(Component.translatable("commands.debug.function.traceFailed"));
+            } catch (IOException | UncheckedIOException e) {
+               DebugCommand.LOGGER.warn("Tracing failed", e);
+               source.sendFailure(Component.translatable("commands.debug.function.traceFailed"));
             }
 
-            var4.queueNext((var4x, var5x) -> {
-               if (var6.size() == 1) {
-                  var1.sendSuccess(() -> Component.translatable("commands.debug.function.success.single", var10, Component.translationArg(((CommandFunction)var6.iterator().next()).id()), var8), true);
+            context.queueNext((c, frame) -> {
+               if (functions.size() == 1) {
+                  source.sendSuccess(() -> Component.translatable("commands.debug.function.success.single", commandCount, Component.translationArg(((CommandFunction)functions.iterator().next()).id()), outputName), true);
                } else {
-                  var1.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", var10, var6.size(), var8), true);
+                  source.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", commandCount, functions.size(), outputName), true);
                }
 
             });
          }
       }
-
-      // $FF: synthetic method
-      public void runGuarded(final ExecutionCommandSource var1, final ContextChain var2, final ChainModifiers var3, final ExecutionControl var4) throws CommandSyntaxException {
-         this.runGuarded((CommandSourceStack)var1, var2, var3, var4);
-      }
    }
 
-   static class Tracer implements CommandSource, TraceCallbacks {
+   private static class Tracer implements CommandSource, TraceCallbacks {
       public static final int INDENT_OFFSET = 1;
       private final PrintWriter output;
       private int lastIndent;
       private boolean waitingForResult;
 
-      Tracer(PrintWriter var1) {
+      private Tracer(final PrintWriter output) {
          super();
-         this.output = var1;
+         this.output = output;
       }
 
-      private void indentAndSave(int var1) {
-         this.printIndent(var1);
-         this.lastIndent = var1;
+      private void indentAndSave(final int value) {
+         this.printIndent(value);
+         this.lastIndent = value;
       }
 
-      private void printIndent(int var1) {
-         for(int var2 = 0; var2 < var1 + 1; ++var2) {
+      private void printIndent(final int value) {
+         for(int i = 0; i < value + 1; ++i) {
             this.output.write("    ");
          }
 
@@ -179,50 +173,50 @@ public class DebugCommand {
 
       }
 
-      public void onCommand(int var1, String var2) {
+      public void onCommand(final int depth, final String command) {
          this.newLine();
-         this.indentAndSave(var1);
+         this.indentAndSave(depth);
          this.output.print("[C] ");
-         this.output.print(var2);
+         this.output.print(command);
          this.waitingForResult = true;
       }
 
-      public void onReturn(int var1, String var2, int var3) {
+      public void onReturn(final int depth, final String command, final int result) {
          if (this.waitingForResult) {
             this.output.print(" -> ");
-            this.output.println(var3);
+            this.output.println(result);
             this.waitingForResult = false;
          } else {
-            this.indentAndSave(var1);
+            this.indentAndSave(depth);
             this.output.print("[R = ");
-            this.output.print(var3);
+            this.output.print(result);
             this.output.print("] ");
-            this.output.println(var2);
+            this.output.println(command);
          }
 
       }
 
-      public void onCall(int var1, Identifier var2, int var3) {
+      public void onCall(final int depth, final Identifier function, final int size) {
          this.newLine();
-         this.indentAndSave(var1);
+         this.indentAndSave(depth);
          this.output.print("[F] ");
-         this.output.print(var2);
+         this.output.print(function);
          this.output.print(" size=");
-         this.output.println(var3);
+         this.output.println(size);
       }
 
-      public void onError(String var1) {
+      public void onError(final String message) {
          this.newLine();
          this.indentAndSave(this.lastIndent + 1);
          this.output.print("[E] ");
-         this.output.print(var1);
+         this.output.print(message);
       }
 
-      public void sendSystemMessage(Component var1) {
+      public void sendSystemMessage(final Component message) {
          this.newLine();
          this.printIndent(this.lastIndent + 1);
          this.output.print("[M] ");
-         this.output.println(var1.getString());
+         this.output.println(message.getString());
       }
 
       public boolean acceptsSuccess() {

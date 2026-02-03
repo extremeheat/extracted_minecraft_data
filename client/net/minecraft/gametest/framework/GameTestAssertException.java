@@ -6,10 +6,10 @@ public class GameTestAssertException extends GameTestException {
    protected final Component message;
    protected final int tick;
 
-   public GameTestAssertException(Component var1, int var2) {
-      super(var1.getString());
-      this.message = var1;
-      this.tick = var2;
+   public GameTestAssertException(final Component message, final int tick) {
+      super(message.getString());
+      this.message = message;
+      this.tick = tick;
    }
 
    public Component getDescription() {

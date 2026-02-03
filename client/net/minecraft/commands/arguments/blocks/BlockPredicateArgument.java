@@ -30,59 +30,54 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
    private static final Collection<String> EXAMPLES = Arrays.asList("stone", "minecraft:stone", "stone[foo=bar]", "#stone", "#stone[foo=bar]{baz=nbt}");
    private final HolderLookup<Block> blocks;
 
-   public BlockPredicateArgument(CommandBuildContext var1) {
+   public BlockPredicateArgument(final CommandBuildContext context) {
       super();
-      this.blocks = var1.lookupOrThrow(Registries.BLOCK);
+      this.blocks = context.lookupOrThrow(Registries.BLOCK);
    }
 
-   public static BlockPredicateArgument blockPredicate(CommandBuildContext var0) {
-      return new BlockPredicateArgument(var0);
+   public static BlockPredicateArgument blockPredicate(final CommandBuildContext context) {
+      return new BlockPredicateArgument(context);
    }
 
-   public Result parse(StringReader var1) throws CommandSyntaxException {
-      return parse(this.blocks, var1);
+   public Result parse(final StringReader reader) throws CommandSyntaxException {
+      return parse(this.blocks, reader);
    }
 
-   public static Result parse(HolderLookup<Block> var0, StringReader var1) throws CommandSyntaxException {
-      return (Result)BlockStateParser.parseForTesting(var0, var1, true).map((var0x) -> new BlockPredicate(var0x.blockState(), var0x.properties().keySet(), var0x.nbt()), (var0x) -> new TagPredicate(var0x.tag(), var0x.vagueProperties(), var0x.nbt()));
+   public static Result parse(final HolderLookup<Block> blocks, final StringReader reader) throws CommandSyntaxException {
+      return (Result)BlockStateParser.parseForTesting(blocks, reader, true).map((block) -> new BlockPredicate(block.blockState(), block.properties().keySet(), block.nbt()), (tag) -> new TagPredicate(tag.tag(), tag.vagueProperties(), tag.nbt()));
    }
 
-   public static Predicate<BlockInWorld> getBlockPredicate(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return (Predicate)var0.getArgument(var1, Result.class);
+   public static Predicate<BlockInWorld> getBlockPredicate(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return (Predicate)context.getArgument(name, Result.class);
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return BlockStateParser.fillSuggestions(this.blocks, var2, true, true);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return BlockStateParser.fillSuggestions(this.blocks, builder, true, true);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
-   static class BlockPredicate implements Result {
+   private static class BlockPredicate implements Result {
       private final BlockState state;
       private final Set<Property<?>> properties;
       private final @Nullable CompoundTag nbt;
 
-      public BlockPredicate(BlockState var1, Set<Property<?>> var2, @Nullable CompoundTag var3) {
+      public BlockPredicate(final BlockState state, final Set<Property<?>> properties, final @Nullable CompoundTag nbt) {
          super();
-         this.state = var1;
-         this.properties = var2;
-         this.nbt = var3;
+         this.state = state;
+         this.properties = properties;
+         this.nbt = nbt;
       }
 
-      public boolean test(BlockInWorld var1) {
-         BlockState var2 = var1.getState();
-         if (!var2.is(this.state.getBlock())) {
+      public boolean test(final BlockInWorld blockInWorld) {
+         BlockState state = blockInWorld.getState();
+         if (!state.is(this.state.getBlock())) {
             return false;
          } else {
-            for(Property var4 : this.properties) {
-               if (var2.getValue(var4) != this.state.getValue(var4)) {
+            for(Property<?> property : this.properties) {
+               if (state.getValue(property) != this.state.getValue(property)) {
                   return false;
                }
             }
@@ -90,8 +85,8 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
             if (this.nbt == null) {
                return true;
             } else {
-               BlockEntity var5 = var1.getEntity();
-               return var5 != null && NbtUtils.compareNbt(this.nbt, var5.saveWithFullMetadata((HolderLookup.Provider)var1.getLevel().registryAccess()), true);
+               BlockEntity entity = blockInWorld.getEntity();
+               return entity != null && NbtUtils.compareNbt(this.nbt, entity.saveWithFullMetadata((HolderLookup.Provider)blockInWorld.getLevel().registryAccess()), true);
             }
          }
       }
@@ -99,42 +94,37 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
       public boolean requiresNbt() {
          return this.nbt != null;
       }
-
-      // $FF: synthetic method
-      public boolean test(final Object var1) {
-         return this.test((BlockInWorld)var1);
-      }
    }
 
-   static class TagPredicate implements Result {
+   private static class TagPredicate implements Result {
       private final HolderSet<Block> tag;
       private final @Nullable CompoundTag nbt;
       private final Map<String, String> vagueProperties;
 
-      TagPredicate(HolderSet<Block> var1, Map<String, String> var2, @Nullable CompoundTag var3) {
+      private TagPredicate(final HolderSet<Block> tag, final Map<String, String> vagueProperties, final @Nullable CompoundTag nbt) {
          super();
-         this.tag = var1;
-         this.vagueProperties = var2;
-         this.nbt = var3;
+         this.tag = tag;
+         this.vagueProperties = vagueProperties;
+         this.nbt = nbt;
       }
 
-      public boolean test(BlockInWorld var1) {
-         BlockState var2 = var1.getState();
-         if (!var2.is(this.tag)) {
+      public boolean test(final BlockInWorld blockInWorld) {
+         BlockState state = blockInWorld.getState();
+         if (!state.is(this.tag)) {
             return false;
          } else {
-            for(Map.Entry var4 : this.vagueProperties.entrySet()) {
-               Property var5 = var2.getBlock().getStateDefinition().getProperty((String)var4.getKey());
-               if (var5 == null) {
+            for(Map.Entry<String, String> entry : this.vagueProperties.entrySet()) {
+               Property<?> property = state.getBlock().getStateDefinition().getProperty((String)entry.getKey());
+               if (property == null) {
                   return false;
                }
 
-               Comparable var6 = (Comparable)var5.getValue((String)var4.getValue()).orElse((Object)null);
-               if (var6 == null) {
+               Comparable<?> value = (Comparable)property.getValue((String)entry.getValue()).orElse((Object)null);
+               if (value == null) {
                   return false;
                }
 
-               if (var2.getValue(var5) != var6) {
+               if (state.getValue(property) != value) {
                   return false;
                }
             }
@@ -142,19 +132,14 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
             if (this.nbt == null) {
                return true;
             } else {
-               BlockEntity var7 = var1.getEntity();
-               return var7 != null && NbtUtils.compareNbt(this.nbt, var7.saveWithFullMetadata((HolderLookup.Provider)var1.getLevel().registryAccess()), true);
+               BlockEntity entity = blockInWorld.getEntity();
+               return entity != null && NbtUtils.compareNbt(this.nbt, entity.saveWithFullMetadata((HolderLookup.Provider)blockInWorld.getLevel().registryAccess()), true);
             }
          }
       }
 
       public boolean requiresNbt() {
          return this.nbt != null;
-      }
-
-      // $FF: synthetic method
-      public boolean test(final Object var1) {
-         return this.test((BlockInWorld)var1);
       }
    }
 

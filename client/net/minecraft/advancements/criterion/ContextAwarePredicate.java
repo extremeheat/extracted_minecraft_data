@@ -3,40 +3,36 @@ package net.minecraft.advancements.criterion;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.function.Predicate;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
-public class ContextAwarePredicate {
+public class ContextAwarePredicate implements Validatable {
    public static final Codec<ContextAwarePredicate> CODEC;
    private final List<LootItemCondition> conditions;
    private final Predicate<LootContext> compositePredicates;
 
-   ContextAwarePredicate(List<LootItemCondition> var1) {
+   ContextAwarePredicate(final List<LootItemCondition> conditions) {
       super();
-      this.conditions = var1;
-      this.compositePredicates = Util.allOf(var1);
+      this.conditions = conditions;
+      this.compositePredicates = Util.allOf(conditions);
    }
 
-   public static ContextAwarePredicate create(LootItemCondition... var0) {
-      return new ContextAwarePredicate(List.of(var0));
+   public static ContextAwarePredicate create(final LootItemCondition... conditions) {
+      return new ContextAwarePredicate(List.of(conditions));
    }
 
-   public boolean matches(LootContext var1) {
-      return this.compositePredicates.test(var1);
+   public boolean matches(final LootContext context) {
+      return this.compositePredicates.test(context);
    }
 
-   public void validate(ValidationContext var1) {
-      for(int var2 = 0; var2 < this.conditions.size(); ++var2) {
-         LootItemCondition var3 = (LootItemCondition)this.conditions.get(var2);
-         var3.validate(var1.forChild(new ProblemReporter.IndexedPathElement(var2)));
-      }
-
+   public void validate(final ValidationContext context) {
+      Validatable.validate(context, this.conditions);
    }
 
    static {
-      CODEC = LootItemCondition.DIRECT_CODEC.listOf().xmap(ContextAwarePredicate::new, (var0) -> var0.conditions);
+      CODEC = LootItemCondition.DIRECT_CODEC.listOf().xmap(ContextAwarePredicate::new, (predicate) -> predicate.conditions);
    }
 }

@@ -8,18 +8,18 @@ import java.util.List;
 
 public interface EasingType {
    ExtraCodecs.LateBoundIdMapper<String, EasingType> SIMPLE_REGISTRY = new ExtraCodecs.LateBoundIdMapper<String, EasingType>();
-   Codec<EasingType> CODEC = Codec.either(SIMPLE_REGISTRY.codec(Codec.STRING), EasingType.CubicBezier.CODEC).xmap(Either::unwrap, (var0) -> {
+   Codec<EasingType> CODEC = Codec.either(SIMPLE_REGISTRY.codec(Codec.STRING), EasingType.CubicBezier.CODEC).xmap(Either::unwrap, (easing) -> {
       Either var10000;
-      if (var0 instanceof CubicBezier var1) {
-         var10000 = Either.right(var1);
+      if (easing instanceof CubicBezier bezier) {
+         var10000 = Either.right(bezier);
       } else {
-         var10000 = Either.left(var0);
+         var10000 = Either.left(easing);
       }
 
       return var10000;
    });
-   EasingType CONSTANT = registerSimple("constant", (var0) -> 0.0F);
-   EasingType LINEAR = registerSimple("linear", (var0) -> var0);
+   EasingType CONSTANT = registerSimple("constant", (x) -> 0.0F);
+   EasingType LINEAR = registerSimple("linear", (x) -> x);
    EasingType IN_BACK = registerSimple("in_back", Ease::inBack);
    EasingType IN_BOUNCE = registerSimple("in_bounce", Ease::inBounce);
    EasingType IN_CIRC = registerSimple("in_circ", Ease::inCirc);
@@ -51,59 +51,59 @@ public interface EasingType {
    EasingType OUT_QUINT = registerSimple("out_quint", Ease::outQuint);
    EasingType OUT_SINE = registerSimple("out_sine", Ease::outSine);
 
-   static EasingType registerSimple(String var0, EasingType var1) {
-      SIMPLE_REGISTRY.put(var0, var1);
-      return var1;
+   static EasingType registerSimple(final String id, final EasingType easing) {
+      SIMPLE_REGISTRY.put(id, easing);
+      return easing;
    }
 
-   static EasingType cubicBezier(float var0, float var1, float var2, float var3) {
-      return new CubicBezier(new CubicBezierControls(var0, var1, var2, var3));
+   static EasingType cubicBezier(final float x1, final float y1, final float x2, final float y2) {
+      return new CubicBezier(new CubicBezierControls(x1, y1, x2, y2));
    }
 
-   static EasingType symmetricCubicBezier(float var0, float var1) {
-      return cubicBezier(var0, var1, 1.0F - var0, 1.0F - var1);
+   static EasingType symmetricCubicBezier(final float x1, final float y1) {
+      return cubicBezier(x1, y1, 1.0F - x1, 1.0F - y1);
    }
 
-   float apply(float var1);
+   float apply(float x);
 
    public static final class CubicBezier implements EasingType {
-      public static final Codec<CubicBezier> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EasingType.CubicBezierControls.CODEC.fieldOf("cubic_bezier").forGetter((var0x) -> var0x.controls)).apply(var0, CubicBezier::new));
+      public static final Codec<CubicBezier> CODEC = RecordCodecBuilder.create((i) -> i.group(EasingType.CubicBezierControls.CODEC.fieldOf("cubic_bezier").forGetter((b) -> b.controls)).apply(i, CubicBezier::new));
       private static final int NEWTON_RAPHSON_ITERATIONS = 4;
       private final CubicBezierControls controls;
       private final CubicCurve xCurve;
       private final CubicCurve yCurve;
 
-      public CubicBezier(CubicBezierControls var1) {
+      public CubicBezier(final CubicBezierControls controls) {
          super();
-         this.controls = var1;
-         this.xCurve = curveFromControls(var1.x1, var1.x2);
-         this.yCurve = curveFromControls(var1.y1, var1.y2);
+         this.controls = controls;
+         this.xCurve = curveFromControls(controls.x1, controls.x2);
+         this.yCurve = curveFromControls(controls.y1, controls.y2);
       }
 
-      private static CubicCurve curveFromControls(float var0, float var1) {
-         return new CubicCurve(3.0F * var0 - 3.0F * var1 + 1.0F, -6.0F * var0 + 3.0F * var1, 3.0F * var0);
+      private static CubicCurve curveFromControls(final float v1, final float v2) {
+         return new CubicCurve(3.0F * v1 - 3.0F * v2 + 1.0F, -6.0F * v1 + 3.0F * v2, 3.0F * v1);
       }
 
-      public float apply(float var1) {
-         float var2 = var1;
+      public float apply(final float x) {
+         float t = x;
 
-         for(int var3 = 0; var3 < 4; ++var3) {
-            float var4 = this.xCurve.sampleGradient(var2);
-            if (var4 < 1.0E-5F) {
+         for(int i = 0; i < 4; ++i) {
+            float gradient = this.xCurve.sampleGradient(t);
+            if (gradient < 1.0E-5F) {
                break;
             }
 
-            float var5 = this.xCurve.sample(var2) - var1;
-            var2 -= var5 / var4;
+            float error = this.xCurve.sample(t) - x;
+            t -= error / gradient;
          }
 
-         return this.yCurve.sample(var2);
+         return this.yCurve.sample(t);
       }
 
-      public boolean equals(Object var1) {
+      public boolean equals(final Object obj) {
          boolean var10000;
-         if (var1 instanceof CubicBezier var2) {
-            if (this.controls.equals(var2.controls)) {
+         if (obj instanceof CubicBezier bezier) {
+            if (this.controls.equals(bezier.controls)) {
                var10000 = true;
                return var10000;
             }
@@ -121,37 +121,26 @@ public interface EasingType {
          return "CubicBezier(" + this.controls.x1 + ", " + this.controls.y1 + ", " + this.controls.x2 + ", " + this.controls.y2 + ")";
       }
 
-      static record CubicCurve(float a, float b, float c) {
-         CubicCurve(float var1, float var2, float var3) {
+      private static record CubicCurve(float a, float b, float c) {
+         private CubicCurve {
             super();
-            this.a = var1;
-            this.b = var2;
-            this.c = var3;
          }
 
-         public float sample(float var1) {
-            return ((this.a * var1 + this.b) * var1 + this.c) * var1;
+         public float sample(final float t) {
+            return ((this.a * t + this.b) * t + this.c) * t;
          }
 
-         public float sampleGradient(float var1) {
-            return (3.0F * this.a * var1 + 2.0F * this.b) * var1 + this.c;
+         public float sampleGradient(final float t) {
+            return (3.0F * this.a * t + 2.0F * this.b) * t + this.c;
          }
       }
    }
 
    public static record CubicBezierControls(float x1, float y1, float x2, float y2) {
-      final float x1;
-      final float y1;
-      final float x2;
-      final float y2;
       public static final Codec<CubicBezierControls> CODEC;
 
-      public CubicBezierControls(float var1, float var2, float var3, float var4) {
+      public CubicBezierControls {
          super();
-         this.x1 = var1;
-         this.y1 = var2;
-         this.x2 = var3;
-         this.y2 = var4;
       }
 
       private DataResult<CubicBezierControls> validate() {
@@ -163,7 +152,7 @@ public interface EasingType {
       }
 
       static {
-         CODEC = Codec.FLOAT.listOf(4, 4).xmap((var0) -> new CubicBezierControls((Float)var0.get(0), (Float)var0.get(1), (Float)var0.get(2), (Float)var0.get(3)), (var0) -> List.of(var0.x1, var0.y1, var0.x2, var0.y2)).validate(CubicBezierControls::validate);
+         CODEC = Codec.FLOAT.listOf(4, 4).xmap((floats) -> new CubicBezierControls((Float)floats.get(0), (Float)floats.get(1), (Float)floats.get(2), (Float)floats.get(3)), (controls) -> List.of(controls.x1, controls.y1, controls.x2, controls.y2)).validate(CubicBezierControls::validate);
       }
    }
 }

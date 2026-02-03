@@ -22,11 +22,11 @@ public class RecipeBookCategories {
       super();
    }
 
-   private static RecipeBookCategory register(String var0) {
-      return (RecipeBookCategory)Registry.register(BuiltInRegistries.RECIPE_BOOK_CATEGORY, (String)var0, new RecipeBookCategory());
+   private static RecipeBookCategory register(final String id) {
+      return (RecipeBookCategory)Registry.register(BuiltInRegistries.RECIPE_BOOK_CATEGORY, (String)id, new RecipeBookCategory());
    }
 
-   public static RecipeBookCategory bootstrap(Registry<RecipeBookCategory> var0) {
+   public static RecipeBookCategory bootstrap(final Registry<RecipeBookCategory> registry) {
       return CAMPFIRE;
    }
 }

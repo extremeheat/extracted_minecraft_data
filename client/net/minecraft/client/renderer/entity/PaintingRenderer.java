@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.PaintingRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -27,21 +26,21 @@ public class PaintingRenderer extends EntityRenderer<Painting, PaintingRenderSta
    private static final Identifier BACK_SPRITE_LOCATION = Identifier.withDefaultNamespace("back");
    private final TextureAtlas paintingsAtlas;
 
-   public PaintingRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
-      this.paintingsAtlas = var1.getAtlas(AtlasIds.PAINTINGS);
+   public PaintingRenderer(final EntityRendererProvider.Context context) {
+      super(context);
+      this.paintingsAtlas = context.getAtlas(AtlasIds.PAINTINGS);
    }
 
-   public void submit(PaintingRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      PaintingVariant var5 = var1.variant;
-      if (var5 != null) {
-         var2.pushPose();
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(180 - var1.direction.get2DDataValue() * 90)));
-         TextureAtlasSprite var6 = this.paintingsAtlas.getSprite(var5.assetId());
-         TextureAtlasSprite var7 = this.paintingsAtlas.getSprite(BACK_SPRITE_LOCATION);
-         this.renderPainting(var2, var3, RenderTypes.entitySolidZOffsetForward(var7.atlasLocation()), var1.lightCoordsPerBlock, var5.width(), var5.height(), var6, var7);
-         var2.popPose();
-         super.submit(var1, var2, var3, var4);
+   public void submit(final PaintingRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      PaintingVariant variant = state.variant;
+      if (variant != null) {
+         poseStack.pushPose();
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(180 - state.direction.get2DDataValue() * 90)));
+         TextureAtlasSprite frontSprite = this.paintingsAtlas.getSprite(variant.assetId());
+         TextureAtlasSprite backSprite = this.paintingsAtlas.getSprite(BACK_SPRITE_LOCATION);
+         this.renderPainting(poseStack, submitNodeCollector, RenderTypes.entitySolidZOffsetForward(backSprite.atlasLocation()), state.lightCoordsPerBlock, variant.width(), variant.height(), frontSprite, backSprite);
+         poseStack.popPose();
+         super.submit(state, poseStack, submitNodeCollector, camera);
       }
    }
 
@@ -49,109 +48,104 @@ public class PaintingRenderer extends EntityRenderer<Painting, PaintingRenderSta
       return new PaintingRenderState();
    }
 
-   public void extractRenderState(Painting var1, PaintingRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      Direction var4 = var1.getDirection();
-      PaintingVariant var5 = (PaintingVariant)var1.getVariant().value();
-      var2.direction = var4;
-      var2.variant = var5;
-      int var6 = var5.width();
-      int var7 = var5.height();
-      if (var2.lightCoordsPerBlock.length != var6 * var7) {
-         var2.lightCoordsPerBlock = new int[var6 * var7];
+   public void extractRenderState(final Painting entity, final PaintingRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      Direction direction = entity.getDirection();
+      PaintingVariant variant = (PaintingVariant)entity.getVariant().value();
+      state.direction = direction;
+      state.variant = variant;
+      int width = variant.width();
+      int height = variant.height();
+      if (state.lightCoordsPerBlock.length != width * height) {
+         state.lightCoordsPerBlock = new int[width * height];
       }
 
-      float var8 = (float)(-var6) / 2.0F;
-      float var9 = (float)(-var7) / 2.0F;
-      Level var10 = var1.level();
+      float offsetX = (float)(-width) / 2.0F;
+      float offsetY = (float)(-height) / 2.0F;
+      Level level = entity.level();
 
-      for(int var11 = 0; var11 < var7; ++var11) {
-         for(int var12 = 0; var12 < var6; ++var12) {
-            float var13 = (float)var12 + var8 + 0.5F;
-            float var14 = (float)var11 + var9 + 0.5F;
-            int var15 = var1.getBlockX();
-            int var16 = Mth.floor(var1.getY() + (double)var14);
-            int var17 = var1.getBlockZ();
-            switch (var4) {
-               case NORTH -> var15 = Mth.floor(var1.getX() + (double)var13);
-               case WEST -> var17 = Mth.floor(var1.getZ() - (double)var13);
-               case SOUTH -> var15 = Mth.floor(var1.getX() - (double)var13);
-               case EAST -> var17 = Mth.floor(var1.getZ() + (double)var13);
+      for(int segmentY = 0; segmentY < height; ++segmentY) {
+         for(int segmentX = 0; segmentX < width; ++segmentX) {
+            float segmentOffsetX = (float)segmentX + offsetX + 0.5F;
+            float segmentOffsetY = (float)segmentY + offsetY + 0.5F;
+            int x = entity.getBlockX();
+            int y = Mth.floor(entity.getY() + (double)segmentOffsetY);
+            int z = entity.getBlockZ();
+            switch (direction) {
+               case NORTH -> x = Mth.floor(entity.getX() + (double)segmentOffsetX);
+               case WEST -> z = Mth.floor(entity.getZ() - (double)segmentOffsetX);
+               case SOUTH -> x = Mth.floor(entity.getX() - (double)segmentOffsetX);
+               case EAST -> z = Mth.floor(entity.getZ() + (double)segmentOffsetX);
             }
 
-            var2.lightCoordsPerBlock[var12 + var11 * var6] = LevelRenderer.getLightColor(var10, new BlockPos(var15, var16, var17));
+            state.lightCoordsPerBlock[segmentX + segmentY * width] = LevelRenderer.getLightCoords(level, new BlockPos(x, y, z));
          }
       }
 
    }
 
-   private void renderPainting(PoseStack var1, SubmitNodeCollector var2, RenderType var3, int[] var4, int var5, int var6, TextureAtlasSprite var7, TextureAtlasSprite var8) {
-      var2.submitCustomGeometry(var1, var3, (var6x, var7x) -> {
-         float var8x = (float)(-var5) / 2.0F;
-         float var9 = (float)(-var6) / 2.0F;
-         float var10 = 0.03125F;
-         float var11 = var8.getU0();
-         float var12 = var8.getU1();
-         float var13 = var8.getV0();
-         float var14 = var8.getV1();
-         float var15 = var8.getU0();
-         float var16 = var8.getU1();
-         float var17 = var8.getV0();
-         float var18 = var8.getV(0.0625F);
-         float var19 = var8.getU0();
-         float var20 = var8.getU(0.0625F);
-         float var21 = var8.getV0();
-         float var22 = var8.getV1();
-         double var23 = 1.0 / (double)var5;
-         double var25 = 1.0 / (double)var6;
+   private void renderPainting(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final RenderType renderType, final int[] lightCoordsMap, final int width, final int height, final TextureAtlasSprite front, final TextureAtlasSprite back) {
+      submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
+         float offsetX = (float)(-width) / 2.0F;
+         float offsetY = (float)(-height) / 2.0F;
+         float edgeHalfWidth = 0.03125F;
+         float backU0 = back.getU0();
+         float backU1 = back.getU1();
+         float backV0 = back.getV0();
+         float backV1 = back.getV1();
+         float topBottomU0 = back.getU0();
+         float topBottomU1 = back.getU1();
+         float topBottomV0 = back.getV0();
+         float topBottomV1 = back.getV(0.0625F);
+         float leftRightU0 = back.getU0();
+         float leftRightU1 = back.getU(0.0625F);
+         float leftRightV0 = back.getV0();
+         float leftRightV1 = back.getV1();
+         double deltaU = 1.0 / (double)width;
+         double deltaV = 1.0 / (double)height;
 
-         for(int var27 = 0; var27 < var5; ++var27) {
-            for(int var28 = 0; var28 < var6; ++var28) {
-               float var29 = var8x + (float)(var27 + 1);
-               float var30 = var8x + (float)var27;
-               float var31 = var9 + (float)(var28 + 1);
-               float var32 = var9 + (float)var28;
-               int var33 = var4[var27 + var28 * var5];
-               float var34 = var7.getU((float)(var23 * (double)(var5 - var27)));
-               float var35 = var7.getU((float)(var23 * (double)(var5 - (var27 + 1))));
-               float var36 = var7.getV((float)(var25 * (double)(var6 - var28)));
-               float var37 = var7.getV((float)(var25 * (double)(var6 - (var28 + 1))));
-               this.vertex(var6x, var7x, var29, var32, var35, var36, -0.03125F, 0, 0, -1, var33);
-               this.vertex(var6x, var7x, var30, var32, var34, var36, -0.03125F, 0, 0, -1, var33);
-               this.vertex(var6x, var7x, var30, var31, var34, var37, -0.03125F, 0, 0, -1, var33);
-               this.vertex(var6x, var7x, var29, var31, var35, var37, -0.03125F, 0, 0, -1, var33);
-               this.vertex(var6x, var7x, var29, var31, var12, var13, 0.03125F, 0, 0, 1, var33);
-               this.vertex(var6x, var7x, var30, var31, var11, var13, 0.03125F, 0, 0, 1, var33);
-               this.vertex(var6x, var7x, var30, var32, var11, var14, 0.03125F, 0, 0, 1, var33);
-               this.vertex(var6x, var7x, var29, var32, var12, var14, 0.03125F, 0, 0, 1, var33);
-               this.vertex(var6x, var7x, var29, var31, var15, var17, -0.03125F, 0, 1, 0, var33);
-               this.vertex(var6x, var7x, var30, var31, var16, var17, -0.03125F, 0, 1, 0, var33);
-               this.vertex(var6x, var7x, var30, var31, var16, var18, 0.03125F, 0, 1, 0, var33);
-               this.vertex(var6x, var7x, var29, var31, var15, var18, 0.03125F, 0, 1, 0, var33);
-               this.vertex(var6x, var7x, var29, var32, var15, var17, 0.03125F, 0, -1, 0, var33);
-               this.vertex(var6x, var7x, var30, var32, var16, var17, 0.03125F, 0, -1, 0, var33);
-               this.vertex(var6x, var7x, var30, var32, var16, var18, -0.03125F, 0, -1, 0, var33);
-               this.vertex(var6x, var7x, var29, var32, var15, var18, -0.03125F, 0, -1, 0, var33);
-               this.vertex(var6x, var7x, var29, var31, var20, var21, 0.03125F, -1, 0, 0, var33);
-               this.vertex(var6x, var7x, var29, var32, var20, var22, 0.03125F, -1, 0, 0, var33);
-               this.vertex(var6x, var7x, var29, var32, var19, var22, -0.03125F, -1, 0, 0, var33);
-               this.vertex(var6x, var7x, var29, var31, var19, var21, -0.03125F, -1, 0, 0, var33);
-               this.vertex(var6x, var7x, var30, var31, var20, var21, -0.03125F, 1, 0, 0, var33);
-               this.vertex(var6x, var7x, var30, var32, var20, var22, -0.03125F, 1, 0, 0, var33);
-               this.vertex(var6x, var7x, var30, var32, var19, var22, 0.03125F, 1, 0, 0, var33);
-               this.vertex(var6x, var7x, var30, var31, var19, var21, 0.03125F, 1, 0, 0, var33);
+         for(int segmentX = 0; segmentX < width; ++segmentX) {
+            for(int segmentY = 0; segmentY < height; ++segmentY) {
+               float x0 = offsetX + (float)(segmentX + 1);
+               float x1 = offsetX + (float)segmentX;
+               float y0 = offsetY + (float)(segmentY + 1);
+               float y1 = offsetY + (float)segmentY;
+               int lightCoords = lightCoordsMap[segmentX + segmentY * width];
+               float frontU0 = front.getU((float)(deltaU * (double)(width - segmentX)));
+               float frontU1 = front.getU((float)(deltaU * (double)(width - (segmentX + 1))));
+               float frontV0 = front.getV((float)(deltaV * (double)(height - segmentY)));
+               float frontV1 = front.getV((float)(deltaV * (double)(height - (segmentY + 1))));
+               this.vertex(pose, buffer, x0, y1, frontU1, frontV0, -0.03125F, 0, 0, -1, lightCoords);
+               this.vertex(pose, buffer, x1, y1, frontU0, frontV0, -0.03125F, 0, 0, -1, lightCoords);
+               this.vertex(pose, buffer, x1, y0, frontU0, frontV1, -0.03125F, 0, 0, -1, lightCoords);
+               this.vertex(pose, buffer, x0, y0, frontU1, frontV1, -0.03125F, 0, 0, -1, lightCoords);
+               this.vertex(pose, buffer, x0, y0, backU1, backV0, 0.03125F, 0, 0, 1, lightCoords);
+               this.vertex(pose, buffer, x1, y0, backU0, backV0, 0.03125F, 0, 0, 1, lightCoords);
+               this.vertex(pose, buffer, x1, y1, backU0, backV1, 0.03125F, 0, 0, 1, lightCoords);
+               this.vertex(pose, buffer, x0, y1, backU1, backV1, 0.03125F, 0, 0, 1, lightCoords);
+               this.vertex(pose, buffer, x0, y0, topBottomU0, topBottomV0, -0.03125F, 0, 1, 0, lightCoords);
+               this.vertex(pose, buffer, x1, y0, topBottomU1, topBottomV0, -0.03125F, 0, 1, 0, lightCoords);
+               this.vertex(pose, buffer, x1, y0, topBottomU1, topBottomV1, 0.03125F, 0, 1, 0, lightCoords);
+               this.vertex(pose, buffer, x0, y0, topBottomU0, topBottomV1, 0.03125F, 0, 1, 0, lightCoords);
+               this.vertex(pose, buffer, x0, y1, topBottomU0, topBottomV0, 0.03125F, 0, -1, 0, lightCoords);
+               this.vertex(pose, buffer, x1, y1, topBottomU1, topBottomV0, 0.03125F, 0, -1, 0, lightCoords);
+               this.vertex(pose, buffer, x1, y1, topBottomU1, topBottomV1, -0.03125F, 0, -1, 0, lightCoords);
+               this.vertex(pose, buffer, x0, y1, topBottomU0, topBottomV1, -0.03125F, 0, -1, 0, lightCoords);
+               this.vertex(pose, buffer, x0, y0, leftRightU1, leftRightV0, 0.03125F, -1, 0, 0, lightCoords);
+               this.vertex(pose, buffer, x0, y1, leftRightU1, leftRightV1, 0.03125F, -1, 0, 0, lightCoords);
+               this.vertex(pose, buffer, x0, y1, leftRightU0, leftRightV1, -0.03125F, -1, 0, 0, lightCoords);
+               this.vertex(pose, buffer, x0, y0, leftRightU0, leftRightV0, -0.03125F, -1, 0, 0, lightCoords);
+               this.vertex(pose, buffer, x1, y0, leftRightU1, leftRightV0, -0.03125F, 1, 0, 0, lightCoords);
+               this.vertex(pose, buffer, x1, y1, leftRightU1, leftRightV1, -0.03125F, 1, 0, 0, lightCoords);
+               this.vertex(pose, buffer, x1, y1, leftRightU0, leftRightV1, 0.03125F, 1, 0, 0, lightCoords);
+               this.vertex(pose, buffer, x1, y0, leftRightU0, leftRightV0, 0.03125F, 1, 0, 0, lightCoords);
             }
          }
 
       });
    }
 
-   private void vertex(PoseStack.Pose var1, VertexConsumer var2, float var3, float var4, float var5, float var6, float var7, int var8, int var9, int var10, int var11) {
-      var2.addVertex(var1, var3, var4, var7).setColor(-1).setUv(var5, var6).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var11).setNormal(var1, (float)var8, (float)var9, (float)var10);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   private void vertex(final PoseStack.Pose pose, final VertexConsumer buffer, final float x, final float y, final float u, final float v, final float z, final int nx, final int ny, final int nz, final int lightCoords) {
+      buffer.addVertex(pose, x, y, z).setColor(-1).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(lightCoords).setNormal(pose, (float)nx, (float)ny, (float)nz);
    }
 }

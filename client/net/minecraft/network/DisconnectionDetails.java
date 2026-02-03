@@ -6,14 +6,11 @@ import java.util.Optional;
 import net.minecraft.network.chat.Component;
 
 public record DisconnectionDetails(Component reason, Optional<Path> report, Optional<URI> bugReportLink) {
-   public DisconnectionDetails(Component var1) {
-      this(var1, Optional.empty(), Optional.empty());
+   public DisconnectionDetails(final Component reason) {
+      this(reason, Optional.empty(), Optional.empty());
    }
 
-   public DisconnectionDetails(Component var1, Optional<Path> var2, Optional<URI> var3) {
+   public DisconnectionDetails {
       super();
-      this.reason = var1;
-      this.report = var2;
-      this.bugReportLink = var3;
    }
 }

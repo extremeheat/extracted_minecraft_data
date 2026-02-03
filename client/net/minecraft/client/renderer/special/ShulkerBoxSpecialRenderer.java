@@ -22,46 +22,43 @@ public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
    private final Direction orientation;
    private final Material material;
 
-   public ShulkerBoxSpecialRenderer(ShulkerBoxRenderer var1, float var2, Direction var3, Material var4) {
+   public ShulkerBoxSpecialRenderer(final ShulkerBoxRenderer shulkerBoxRenderer, final float openness, final Direction orientation, final Material material) {
       super();
-      this.shulkerBoxRenderer = var1;
-      this.openness = var2;
-      this.orientation = var3;
-      this.material = var4;
+      this.shulkerBoxRenderer = shulkerBoxRenderer;
+      this.openness = openness;
+      this.orientation = orientation;
+      this.material = material;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      this.shulkerBoxRenderer.submit(var2, var3, var4, var5, this.orientation, this.openness, (ModelFeatureRenderer.CrumblingOverlay)null, this.material, var7);
+   public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      this.shulkerBoxRenderer.submit(poseStack, submitNodeCollector, lightCoords, overlayCoords, this.orientation, this.openness, (ModelFeatureRenderer.CrumblingOverlay)null, this.material, outlineColor);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      this.shulkerBoxRenderer.getExtents(this.orientation, this.openness, var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      this.shulkerBoxRenderer.getExtents(this.orientation, this.openness, output);
    }
 
    public static record Unbaked(Identifier texture, float openness, Direction orientation) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness), Direction.CODEC.optionalFieldOf("orientation", Direction.UP).forGetter(Unbaked::orientation)).apply(var0, Unbaked::new));
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness), Direction.CODEC.optionalFieldOf("orientation", Direction.UP).forGetter(Unbaked::orientation)).apply(i, Unbaked::new));
 
       public Unbaked() {
          this(Identifier.withDefaultNamespace("shulker"), 0.0F, Direction.UP);
       }
 
-      public Unbaked(DyeColor var1) {
-         this(Sheets.colorToShulkerMaterial(var1), 0.0F, Direction.UP);
+      public Unbaked(final DyeColor color) {
+         this(Sheets.colorToShulkerMaterial(color), 0.0F, Direction.UP);
       }
 
-      public Unbaked(Identifier var1, float var2, Direction var3) {
+      public Unbaked {
          super();
-         this.texture = var1;
-         this.openness = var2;
-         this.orientation = var3;
       }
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         return new ShulkerBoxSpecialRenderer(new ShulkerBoxRenderer(var1), this.openness, this.orientation, Sheets.SHULKER_MAPPER.apply(this.texture));
+      public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+         return new ShulkerBoxSpecialRenderer(new ShulkerBoxRenderer(context), this.openness, this.orientation, Sheets.SHULKER_MAPPER.apply(this.texture));
       }
    }
 }

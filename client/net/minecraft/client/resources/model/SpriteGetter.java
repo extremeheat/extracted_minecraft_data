@@ -4,12 +4,12 @@ import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 public interface SpriteGetter {
-   TextureAtlasSprite get(Material var1, ModelDebugName var2);
+   TextureAtlasSprite get(Material material, ModelDebugName name);
 
-   TextureAtlasSprite reportMissingReference(String var1, ModelDebugName var2);
+   TextureAtlasSprite reportMissingReference(String reference, ModelDebugName name);
 
-   default TextureAtlasSprite resolveSlot(TextureSlots var1, String var2, ModelDebugName var3) {
-      Material var4 = var1.getMaterial(var2);
-      return var4 != null ? this.get(var4, var3) : this.reportMissingReference(var2, var3);
+   default TextureAtlasSprite resolveSlot(final TextureSlots slots, final String id, final ModelDebugName name) {
+      Material resolvedMaterial = slots.getMaterial(id);
+      return resolvedMaterial != null ? this.get(resolvedMaterial, name) : this.reportMissingReference(id, name);
    }
 }

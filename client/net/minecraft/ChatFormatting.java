@@ -3,9 +3,9 @@ package net.minecraft;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -39,9 +39,9 @@ public enum ChatFormatting implements StringRepresentable {
    RESET("RESET", 'r', -1, (Integer)null);
 
    public static final Codec<ChatFormatting> CODEC = StringRepresentable.<ChatFormatting>fromEnum(ChatFormatting::values);
-   public static final Codec<ChatFormatting> COLOR_CODEC = CODEC.validate((var0) -> var0.isFormat() ? DataResult.error(() -> "Formatting was not a valid color: " + String.valueOf(var0)) : DataResult.success(var0));
+   public static final Codec<ChatFormatting> COLOR_CODEC = CODEC.validate((color) -> color.isFormat() ? DataResult.error(() -> "Formatting was not a valid color: " + String.valueOf(color)) : DataResult.success(color));
    public static final char PREFIX_CODE = '\u00a7';
-   private static final Map<String, ChatFormatting> FORMATTING_BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> cleanName(var0.name), (var0) -> var0));
+   private static final Map<String, ChatFormatting> FORMATTING_BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((format) -> cleanName(format.name), (f) -> f));
    private static final Pattern STRIP_FORMATTING_PATTERN = Pattern.compile("(?i)\u00a7[0-9A-FK-OR]");
    private final String name;
    private final char code;
@@ -50,25 +50,25 @@ public enum ChatFormatting implements StringRepresentable {
    private final int id;
    private final @Nullable Integer color;
 
-   private static String cleanName(String var0) {
-      return var0.toLowerCase(Locale.ROOT).replaceAll("[^a-z]", "");
+   private static String cleanName(final String name) {
+      return name.toLowerCase(Locale.ROOT).replaceAll("[^a-z]", "");
    }
 
-   private ChatFormatting(final String var3, final @Nullable char var4, final int var5, final Integer var6) {
-      this(var3, var4, false, var5, var6);
+   private ChatFormatting(final String name, final @Nullable char code, final int id, final Integer color) {
+      this(name, code, false, id, color);
    }
 
-   private ChatFormatting(final String var3, final char var4, final boolean var5) {
-      this(var3, var4, var5, -1, (Integer)null);
+   private ChatFormatting(final String name, final char code, final boolean isFormat) {
+      this(name, code, isFormat, -1, (Integer)null);
    }
 
-   private ChatFormatting(final String var3, final char var4, final @Nullable boolean var5, final int var6, final Integer var7) {
-      this.name = var3;
-      this.code = var4;
-      this.isFormat = var5;
-      this.id = var6;
-      this.color = var7;
-      this.toString = "\u00a7" + String.valueOf(var4);
+   private ChatFormatting(final String name, final char code, final @Nullable boolean isFormat, final int id, final Integer color) {
+      this.name = name;
+      this.code = code;
+      this.isFormat = isFormat;
+      this.id = id;
+      this.color = color;
+      this.toString = "\u00a7" + String.valueOf(code);
    }
 
    public char getChar() {
@@ -100,21 +100,21 @@ public enum ChatFormatting implements StringRepresentable {
    }
 
    @Contract("!null->!null;_->_")
-   public static @Nullable String stripFormatting(@Nullable String var0) {
-      return var0 == null ? null : STRIP_FORMATTING_PATTERN.matcher(var0).replaceAll("");
+   public static @Nullable String stripFormatting(final @Nullable String input) {
+      return input == null ? null : STRIP_FORMATTING_PATTERN.matcher(input).replaceAll("");
    }
 
-   public static @Nullable ChatFormatting getByName(@Nullable String var0) {
-      return var0 == null ? null : (ChatFormatting)FORMATTING_BY_NAME.get(cleanName(var0));
+   public static @Nullable ChatFormatting getByName(final @Nullable String name) {
+      return name == null ? null : (ChatFormatting)FORMATTING_BY_NAME.get(cleanName(name));
    }
 
-   public static @Nullable ChatFormatting getById(int var0) {
-      if (var0 < 0) {
+   public static @Nullable ChatFormatting getById(final int id) {
+      if (id < 0) {
          return RESET;
       } else {
-         for(ChatFormatting var4 : values()) {
-            if (var4.getId() == var0) {
-               return var4;
+         for(ChatFormatting format : values()) {
+            if (format.getId() == id) {
+               return format;
             }
          }
 
@@ -122,28 +122,28 @@ public enum ChatFormatting implements StringRepresentable {
       }
    }
 
-   public static @Nullable ChatFormatting getByCode(char var0) {
-      char var1 = Character.toLowerCase(var0);
+   public static @Nullable ChatFormatting getByCode(final char code) {
+      char sanitized = Character.toLowerCase(code);
 
-      for(ChatFormatting var5 : values()) {
-         if (var5.code == var1) {
-            return var5;
+      for(ChatFormatting format : values()) {
+         if (format.code == sanitized) {
+            return format;
          }
       }
 
       return null;
    }
 
-   public static Collection<String> getNames(boolean var0, boolean var1) {
-      ArrayList var2 = Lists.newArrayList();
+   public static Collection<String> getNames(final boolean getColors, final boolean getFormats) {
+      List<String> result = Lists.newArrayList();
 
-      for(ChatFormatting var6 : values()) {
-         if ((!var6.isColor() || var0) && (!var6.isFormat() || var1)) {
-            var2.add(var6.getName());
+      for(ChatFormatting format : values()) {
+         if ((!format.isColor() || getColors) && (!format.isFormat() || getFormats)) {
+            result.add(format.getName());
          }
       }
 
-      return var2;
+      return result;
    }
 
    public String getSerializedName() {

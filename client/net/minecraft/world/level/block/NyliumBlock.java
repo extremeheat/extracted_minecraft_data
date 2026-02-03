@@ -24,51 +24,51 @@ public class NyliumBlock extends Block implements BonemealableBlock {
       return CODEC;
    }
 
-   protected NyliumBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected NyliumBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   private static boolean canBeNylium(BlockState var0, LevelReader var1, BlockPos var2) {
-      BlockPos var3 = var2.above();
-      BlockState var4 = var1.getBlockState(var3);
-      int var5 = LightEngine.getLightBlockInto(var0, var4, Direction.UP, var4.getLightBlock());
-      return var5 < 15;
+   private static boolean canBeNylium(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockPos above = pos.above();
+      BlockState aboveState = level.getBlockState(above);
+      int lightBlockInto = LightEngine.getLightBlockInto(state, aboveState, Direction.UP, aboveState.getLightBlock());
+      return lightBlockInto < 15;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!canBeNylium(var1, var2, var3)) {
-         var2.setBlockAndUpdate(var3, Blocks.NETHERRACK.defaultBlockState());
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!canBeNylium(state, level, pos)) {
+         level.setBlockAndUpdate(pos, Blocks.NETHERRACK.defaultBlockState());
       }
 
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return var1.getBlockState(var2.above()).isAir();
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return level.getBlockState(pos.above()).isAir();
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      BlockState var5 = var1.getBlockState(var3);
-      BlockPos var6 = var3.above();
-      ChunkGenerator var7 = var1.getChunkSource().getGenerator();
-      Registry var8 = var1.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE);
-      if (var5.is(Blocks.CRIMSON_NYLIUM)) {
-         this.place(var8, NetherFeatures.CRIMSON_FOREST_VEGETATION_BONEMEAL, var1, var7, var2, var6);
-      } else if (var5.is(Blocks.WARPED_NYLIUM)) {
-         this.place(var8, NetherFeatures.WARPED_FOREST_VEGETATION_BONEMEAL, var1, var7, var2, var6);
-         this.place(var8, NetherFeatures.NETHER_SPROUTS_BONEMEAL, var1, var7, var2, var6);
-         if (var2.nextInt(8) == 0) {
-            this.place(var8, NetherFeatures.TWISTING_VINES_BONEMEAL, var1, var7, var2, var6);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      BlockState blockState = level.getBlockState(pos);
+      BlockPos abovePos = pos.above();
+      ChunkGenerator generator = level.getChunkSource().getGenerator();
+      Registry<ConfiguredFeature<?, ?>> configuredFeatures = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE);
+      if (blockState.is(Blocks.CRIMSON_NYLIUM)) {
+         this.place(configuredFeatures, NetherFeatures.CRIMSON_FOREST_VEGETATION_BONEMEAL, level, generator, random, abovePos);
+      } else if (blockState.is(Blocks.WARPED_NYLIUM)) {
+         this.place(configuredFeatures, NetherFeatures.WARPED_FOREST_VEGETATION_BONEMEAL, level, generator, random, abovePos);
+         this.place(configuredFeatures, NetherFeatures.NETHER_SPROUTS_BONEMEAL, level, generator, random, abovePos);
+         if (random.nextInt(8) == 0) {
+            this.place(configuredFeatures, NetherFeatures.TWISTING_VINES_BONEMEAL, level, generator, random, abovePos);
          }
       }
 
    }
 
-   private void place(Registry<ConfiguredFeature<?, ?>> var1, ResourceKey<ConfiguredFeature<?, ?>> var2, ServerLevel var3, ChunkGenerator var4, RandomSource var5, BlockPos var6) {
-      var1.get(var2).ifPresent((var4x) -> ((ConfiguredFeature)var4x.value()).place(var3, var4, var5, var6));
+   private void place(final Registry<ConfiguredFeature<?, ?>> configuredFeatures, final ResourceKey<ConfiguredFeature<?, ?>> id, final ServerLevel level, final ChunkGenerator generator, final RandomSource random, final BlockPos pos) {
+      configuredFeatures.get(id).ifPresent((h) -> ((ConfiguredFeature)h.value()).place(level, generator, random, pos));
    }
 
    public BonemealableBlock.Type getType() {

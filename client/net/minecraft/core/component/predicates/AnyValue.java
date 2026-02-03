@@ -4,12 +4,11 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 
 public record AnyValue(DataComponentType<?> type) implements DataComponentPredicate {
-   public AnyValue(DataComponentType<?> var1) {
+   public AnyValue {
       super();
-      this.type = var1;
    }
 
-   public boolean matches(DataComponentGetter var1) {
-      return var1.get(this.type) != null;
+   public boolean matches(final DataComponentGetter components) {
+      return components.get(this.type) != null;
    }
 }

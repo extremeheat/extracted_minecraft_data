@@ -23,8 +23,8 @@ public class VexModel extends EntityModel<VexRenderState> implements ArmedModel<
    private final ModelPart leftWing;
    private final ModelPart head;
 
-   public VexModel(ModelPart var1) {
-      super(var1.getChild("root"), RenderTypes::entityTranslucent);
+   public VexModel(final ModelPart root) {
+      super(root.getChild("root"), RenderTypes::entityTranslucent);
       this.body = this.root.getChild("body");
       this.rightArm = this.body.getChild("right_arm");
       this.leftArm = this.body.getChild("left_arm");
@@ -34,33 +34,33 @@ public class VexModel extends EntityModel<VexRenderState> implements ArmedModel<
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("root", CubeListBuilder.create(), PartPose.offset(0.0F, -2.5F, 0.0F));
-      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-2.5F, -5.0F, -2.5F, 5.0F, 5.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 20.0F, 0.0F));
-      PartDefinition var3 = var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 10).addBox(-1.5F, 0.0F, -1.0F, 3.0F, 4.0F, 2.0F, new CubeDeformation(0.0F)).texOffs(0, 16).addBox(-1.5F, 1.0F, -1.0F, 3.0F, 5.0F, 2.0F, new CubeDeformation(-0.2F)), PartPose.offset(0.0F, 20.0F, 0.0F));
-      var3.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(23, 0).addBox(-1.25F, -0.5F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.1F)), PartPose.offset(-1.75F, 0.25F, 0.0F));
-      var3.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(23, 6).addBox(-0.75F, -0.5F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.1F)), PartPose.offset(1.75F, 0.25F, 0.0F));
-      var3.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(16, 14).mirror().addBox(0.0F, 0.0F, 0.0F, 0.0F, 5.0F, 8.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(0.5F, 1.0F, 1.0F));
-      var3.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(16, 14).addBox(0.0F, 0.0F, 0.0F, 0.0F, 5.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offset(-0.5F, 1.0F, 1.0F));
-      return LayerDefinition.create(var0, 32, 32);
+      MeshDefinition meshdefinition = new MeshDefinition();
+      PartDefinition partdefinition = meshdefinition.getRoot();
+      PartDefinition root = partdefinition.addOrReplaceChild("root", CubeListBuilder.create(), PartPose.offset(0.0F, -2.5F, 0.0F));
+      root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-2.5F, -5.0F, -2.5F, 5.0F, 5.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 20.0F, 0.0F));
+      PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 10).addBox(-1.5F, 0.0F, -1.0F, 3.0F, 4.0F, 2.0F, new CubeDeformation(0.0F)).texOffs(0, 16).addBox(-1.5F, 1.0F, -1.0F, 3.0F, 5.0F, 2.0F, new CubeDeformation(-0.2F)), PartPose.offset(0.0F, 20.0F, 0.0F));
+      body.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(23, 0).addBox(-1.25F, -0.5F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.1F)), PartPose.offset(-1.75F, 0.25F, 0.0F));
+      body.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(23, 6).addBox(-0.75F, -0.5F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.1F)), PartPose.offset(1.75F, 0.25F, 0.0F));
+      body.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(16, 14).mirror().addBox(0.0F, 0.0F, 0.0F, 0.0F, 5.0F, 8.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(0.5F, 1.0F, 1.0F));
+      body.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(16, 14).addBox(0.0F, 0.0F, 0.0F, 0.0F, 5.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offset(-0.5F, 1.0F, 1.0F));
+      return LayerDefinition.create(meshdefinition, 32, 32);
    }
 
-   public void setupAnim(VexRenderState var1) {
-      super.setupAnim(var1);
-      this.head.yRot = var1.yRot * 0.017453292F;
-      this.head.xRot = var1.xRot * 0.017453292F;
-      float var2 = Mth.cos((double)(var1.ageInTicks * 5.5F * 0.017453292F)) * 0.1F;
-      this.rightArm.zRot = 0.62831855F + var2;
-      this.leftArm.zRot = -(0.62831855F + var2);
-      if (var1.isCharging) {
+   public void setupAnim(final VexRenderState state) {
+      super.setupAnim(state);
+      this.head.yRot = state.yRot * 0.017453292F;
+      this.head.xRot = state.xRot * 0.017453292F;
+      float movingArmZBob = Mth.cos((double)(state.ageInTicks * 5.5F * 0.017453292F)) * 0.1F;
+      this.rightArm.zRot = 0.62831855F + movingArmZBob;
+      this.leftArm.zRot = -(0.62831855F + movingArmZBob);
+      if (state.isCharging) {
          this.body.xRot = 0.0F;
-         this.setArmsCharging(!var1.rightHandItemState.isEmpty(), !var1.leftHandItemState.isEmpty(), var2);
+         this.setArmsCharging(!state.rightHandItemState.isEmpty(), !state.leftHandItemState.isEmpty(), movingArmZBob);
       } else {
          this.body.xRot = 0.15707964F;
       }
 
-      this.leftWing.yRot = 1.0995574F + Mth.cos((double)(var1.ageInTicks * 45.836624F * 0.017453292F)) * 0.017453292F * 16.2F;
+      this.leftWing.yRot = 1.0995574F + Mth.cos((double)(state.ageInTicks * 45.836624F * 0.017453292F)) * 0.017453292F * 16.2F;
       this.rightWing.yRot = -this.leftWing.yRot;
       this.leftWing.xRot = 0.47123888F;
       this.leftWing.zRot = -0.47123888F;
@@ -68,45 +68,45 @@ public class VexModel extends EntityModel<VexRenderState> implements ArmedModel<
       this.rightWing.zRot = 0.47123888F;
    }
 
-   private void setArmsCharging(boolean var1, boolean var2, float var3) {
-      if (!var1 && !var2) {
+   private void setArmsCharging(final boolean hasItemInRightHand, final boolean hasItemInLeftHand, final float movingArmZBob) {
+      if (!hasItemInRightHand && !hasItemInLeftHand) {
          this.rightArm.xRot = -1.2217305F;
          this.rightArm.yRot = 0.2617994F;
-         this.rightArm.zRot = -0.47123888F - var3;
+         this.rightArm.zRot = -0.47123888F - movingArmZBob;
          this.leftArm.xRot = -1.2217305F;
          this.leftArm.yRot = -0.2617994F;
-         this.leftArm.zRot = 0.47123888F + var3;
+         this.leftArm.zRot = 0.47123888F + movingArmZBob;
       } else {
-         if (var1) {
+         if (hasItemInRightHand) {
             this.rightArm.xRot = 3.6651914F;
             this.rightArm.yRot = 0.2617994F;
-            this.rightArm.zRot = -0.47123888F - var3;
+            this.rightArm.zRot = -0.47123888F - movingArmZBob;
          }
 
-         if (var2) {
+         if (hasItemInLeftHand) {
             this.leftArm.xRot = 3.6651914F;
             this.leftArm.yRot = -0.2617994F;
-            this.leftArm.zRot = 0.47123888F + var3;
+            this.leftArm.zRot = 0.47123888F + movingArmZBob;
          }
 
       }
    }
 
-   public void translateToHand(VexRenderState var1, HumanoidArm var2, PoseStack var3) {
-      boolean var4 = var2 == HumanoidArm.RIGHT;
-      ModelPart var5 = var4 ? this.rightArm : this.leftArm;
-      this.root.translateAndRotate(var3);
-      this.body.translateAndRotate(var3);
-      var5.translateAndRotate(var3);
-      var3.scale(0.55F, 0.55F, 0.55F);
-      this.offsetStackPosition(var3, var4);
+   public void translateToHand(final VexRenderState state, final HumanoidArm arm, final PoseStack poseStack) {
+      boolean mainArm = arm == HumanoidArm.RIGHT;
+      ModelPart activeArm = mainArm ? this.rightArm : this.leftArm;
+      this.root.translateAndRotate(poseStack);
+      this.body.translateAndRotate(poseStack);
+      activeArm.translateAndRotate(poseStack);
+      poseStack.scale(0.55F, 0.55F, 0.55F);
+      this.offsetStackPosition(poseStack, mainArm);
    }
 
-   private void offsetStackPosition(PoseStack var1, boolean var2) {
-      if (var2) {
-         var1.translate(0.046875, -0.15625, 0.078125);
+   private void offsetStackPosition(final PoseStack poseStack, final boolean mainArm) {
+      if (mainArm) {
+         poseStack.translate(0.046875, -0.15625, 0.078125);
       } else {
-         var1.translate(-0.046875, -0.15625, 0.078125);
+         poseStack.translate(-0.046875, -0.15625, 0.078125);
       }
 
    }

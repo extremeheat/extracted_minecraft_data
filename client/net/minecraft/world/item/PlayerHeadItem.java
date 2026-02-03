@@ -7,12 +7,12 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.Block;
 
 public class PlayerHeadItem extends StandingAndWallBlockItem {
-   public PlayerHeadItem(Block var1, Block var2, Item.Properties var3) {
-      super(var1, var2, Direction.DOWN, var3);
+   public PlayerHeadItem(final Block block, final Block wallBlock, final Item.Properties properties) {
+      super(block, wallBlock, Direction.DOWN, properties);
    }
 
-   public Component getName(ItemStack var1) {
-      ResolvableProfile var2 = (ResolvableProfile)var1.get(DataComponents.PROFILE);
-      return (Component)(var2 != null && var2.name().isPresent() ? Component.translatable(this.descriptionId + ".named", var2.name().get()) : super.getName(var1));
+   public Component getName(final ItemStack itemStack) {
+      ResolvableProfile profile = (ResolvableProfile)itemStack.get(DataComponents.PROFILE);
+      return (Component)(profile != null && profile.name().isPresent() ? Component.translatable(this.descriptionId + ".named", profile.name().get()) : super.getName(itemStack));
    }
 }

@@ -4,54 +4,49 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public record EntityDimensions(float width, float height, float eyeHeight, EntityAttachments attachments, boolean fixed) {
-   private EntityDimensions(float var1, float var2, boolean var3) {
-      this(var1, var2, defaultEyeHeight(var2), EntityAttachments.createDefault(var1, var2), var3);
+   private EntityDimensions(final float width, final float height, final boolean fixed) {
+      this(width, height, defaultEyeHeight(height), EntityAttachments.createDefault(width, height), fixed);
    }
 
-   public EntityDimensions(float var1, float var2, float var3, EntityAttachments var4, boolean var5) {
+   public EntityDimensions {
       super();
-      this.width = var1;
-      this.height = var2;
-      this.eyeHeight = var3;
-      this.attachments = var4;
-      this.fixed = var5;
    }
 
-   private static float defaultEyeHeight(float var0) {
-      return var0 * 0.85F;
+   private static float defaultEyeHeight(final float height) {
+      return height * 0.85F;
    }
 
-   public AABB makeBoundingBox(Vec3 var1) {
-      return this.makeBoundingBox(var1.x, var1.y, var1.z);
+   public AABB makeBoundingBox(final Vec3 pos) {
+      return this.makeBoundingBox(pos.x, pos.y, pos.z);
    }
 
-   public AABB makeBoundingBox(double var1, double var3, double var5) {
-      float var7 = this.width / 2.0F;
-      float var8 = this.height;
-      return new AABB(var1 - (double)var7, var3, var5 - (double)var7, var1 + (double)var7, var3 + (double)var8, var5 + (double)var7);
+   public AABB makeBoundingBox(final double x, final double y, final double z) {
+      float w = this.width / 2.0F;
+      float h = this.height;
+      return new AABB(x - (double)w, y, z - (double)w, x + (double)w, y + (double)h, z + (double)w);
    }
 
-   public EntityDimensions scale(float var1) {
-      return this.scale(var1, var1);
+   public EntityDimensions scale(final float scaleFactor) {
+      return this.scale(scaleFactor, scaleFactor);
    }
 
-   public EntityDimensions scale(float var1, float var2) {
-      return !this.fixed && (var1 != 1.0F || var2 != 1.0F) ? new EntityDimensions(this.width * var1, this.height * var2, this.eyeHeight * var2, this.attachments.scale(var1, var2, var1), false) : this;
+   public EntityDimensions scale(final float widthScaleFactor, final float heightScaleFactor) {
+      return !this.fixed && (widthScaleFactor != 1.0F || heightScaleFactor != 1.0F) ? new EntityDimensions(this.width * widthScaleFactor, this.height * heightScaleFactor, this.eyeHeight * heightScaleFactor, this.attachments.scale(widthScaleFactor, heightScaleFactor, widthScaleFactor), false) : this;
    }
 
-   public static EntityDimensions scalable(float var0, float var1) {
-      return new EntityDimensions(var0, var1, false);
+   public static EntityDimensions scalable(final float width, final float height) {
+      return new EntityDimensions(width, height, false);
    }
 
-   public static EntityDimensions fixed(float var0, float var1) {
-      return new EntityDimensions(var0, var1, true);
+   public static EntityDimensions fixed(final float width, final float height) {
+      return new EntityDimensions(width, height, true);
    }
 
-   public EntityDimensions withEyeHeight(float var1) {
-      return new EntityDimensions(this.width, this.height, var1, this.attachments, this.fixed);
+   public EntityDimensions withEyeHeight(final float eyeHeight) {
+      return new EntityDimensions(this.width, this.height, eyeHeight, this.attachments, this.fixed);
    }
 
-   public EntityDimensions withAttachments(EntityAttachments.Builder var1) {
-      return new EntityDimensions(this.width, this.height, this.eyeHeight, var1.build(this.width, this.height), this.fixed);
+   public EntityDimensions withAttachments(final EntityAttachments.Builder attachments) {
+      return new EntityDimensions(this.width, this.height, this.eyeHeight, attachments.build(this.width, this.height), this.fixed);
    }
 }

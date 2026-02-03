@@ -14,8 +14,8 @@ public class TimeUtil {
       super();
    }
 
-   public static UniformInt rangeOfSeconds(int var0, int var1) {
-      return UniformInt.of(var0 * 20, var1 * 20);
+   public static UniformInt rangeOfSeconds(final int minInclusive, final int maxInclusive) {
+      return UniformInt.of(minInclusive * 20, maxInclusive * 20);
    }
 
    static {

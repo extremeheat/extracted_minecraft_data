@@ -6,23 +6,23 @@ import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public interface ErrorCollector<S> {
-   void store(int var1, SuggestionSupplier<S> var2, Object var3);
+   void store(int cursor, SuggestionSupplier<S> suggestions, Object reason);
 
-   default void store(int var1, Object var2) {
-      this.store(var1, SuggestionSupplier.empty(), var2);
+   default void store(final int cursor, final Object reason) {
+      this.store(cursor, SuggestionSupplier.empty(), reason);
    }
 
-   void finish(int var1);
+   void finish(int finalCursor);
 
    public static class Nop<S> implements ErrorCollector<S> {
       public Nop() {
          super();
       }
 
-      public void store(int var1, SuggestionSupplier<S> var2, Object var3) {
+      public void store(final int cursor, final SuggestionSupplier<S> suggestions, final Object reason) {
       }
 
-      public void finish(int var1) {
+      public void finish(final int finalCursor) {
       }
    }
 
@@ -35,59 +35,59 @@ public interface ErrorCollector<S> {
          super();
       }
 
-      private void discardErrorsFromShorterParse(int var1) {
-         if (var1 > this.lastCursor) {
-            this.lastCursor = var1;
+      private void discardErrorsFromShorterParse(final int cursor) {
+         if (cursor > this.lastCursor) {
+            this.lastCursor = cursor;
             this.nextErrorEntry = 0;
          }
 
       }
 
-      public void finish(int var1) {
-         this.discardErrorsFromShorterParse(var1);
+      public void finish(final int finalCursor) {
+         this.discardErrorsFromShorterParse(finalCursor);
       }
 
-      public void store(int var1, SuggestionSupplier<S> var2, Object var3) {
-         this.discardErrorsFromShorterParse(var1);
-         if (var1 == this.lastCursor) {
-            this.addErrorEntry(var2, var3);
+      public void store(final int cursor, final SuggestionSupplier<S> suggestions, final Object reason) {
+         this.discardErrorsFromShorterParse(cursor);
+         if (cursor == this.lastCursor) {
+            this.addErrorEntry(suggestions, reason);
          }
 
       }
 
-      private void addErrorEntry(SuggestionSupplier<S> var1, Object var2) {
-         int var3 = this.entries.length;
-         if (this.nextErrorEntry >= var3) {
-            int var4 = Util.growByHalf(var3, this.nextErrorEntry + 1);
-            MutableErrorEntry[] var5 = new MutableErrorEntry[var4];
-            System.arraycopy(this.entries, 0, var5, 0, var3);
-            this.entries = var5;
+      private void addErrorEntry(final SuggestionSupplier<S> suggestions, final Object reason) {
+         int currentSize = this.entries.length;
+         if (this.nextErrorEntry >= currentSize) {
+            int newSize = Util.growByHalf(currentSize, this.nextErrorEntry + 1);
+            MutableErrorEntry<S>[] newEntries = new MutableErrorEntry[newSize];
+            System.arraycopy(this.entries, 0, newEntries, 0, currentSize);
+            this.entries = newEntries;
          }
 
-         int var6 = this.nextErrorEntry++;
-         MutableErrorEntry var7 = this.entries[var6];
-         if (var7 == null) {
-            var7 = new MutableErrorEntry();
-            this.entries[var6] = var7;
+         int entryIndex = this.nextErrorEntry++;
+         MutableErrorEntry<S> entry = this.entries[entryIndex];
+         if (entry == null) {
+            entry = new MutableErrorEntry<S>();
+            this.entries[entryIndex] = entry;
          }
 
-         var7.suggestions = var1;
-         var7.reason = var2;
+         entry.suggestions = suggestions;
+         entry.reason = reason;
       }
 
       public List<ErrorEntry<S>> entries() {
-         int var1 = this.nextErrorEntry;
-         if (var1 == 0) {
+         int errorCount = this.nextErrorEntry;
+         if (errorCount == 0) {
             return List.of();
          } else {
-            ArrayList var2 = new ArrayList(var1);
+            List<ErrorEntry<S>> result = new ArrayList(errorCount);
 
-            for(int var3 = 0; var3 < var1; ++var3) {
-               MutableErrorEntry var4 = this.entries[var3];
-               var2.add(new ErrorEntry(this.lastCursor, var4.suggestions, var4.reason));
+            for(int i = 0; i < errorCount; ++i) {
+               MutableErrorEntry<S> entry = this.entries[i];
+               result.add(new ErrorEntry(this.lastCursor, entry.suggestions, entry.reason));
             }
 
-            return var2;
+            return result;
          }
       }
 
@@ -95,11 +95,11 @@ public interface ErrorCollector<S> {
          return this.lastCursor;
       }
 
-      static class MutableErrorEntry<S> {
-         SuggestionSupplier<S> suggestions = SuggestionSupplier.<S>empty();
-         Object reason = "empty";
+      private static class MutableErrorEntry<S> {
+         private SuggestionSupplier<S> suggestions = SuggestionSupplier.<S>empty();
+         private Object reason = "empty";
 
-         MutableErrorEntry() {
+         private MutableErrorEntry() {
             super();
          }
       }

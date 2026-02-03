@@ -8,28 +8,28 @@ import net.minecraft.world.level.Level;
 
 public interface ContainerLevelAccess {
    ContainerLevelAccess NULL = new ContainerLevelAccess() {
-      public <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> var1) {
+      public <T> Optional<T> evaluate(final BiFunction<Level, BlockPos, T> action) {
          return Optional.empty();
       }
    };
 
-   static ContainerLevelAccess create(final Level var0, final BlockPos var1) {
+   static ContainerLevelAccess create(final Level level, final BlockPos pos) {
       return new ContainerLevelAccess() {
-         public <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> var1x) {
-            return Optional.of(var1x.apply(var0, var1));
+         public <T> Optional<T> evaluate(final BiFunction<Level, BlockPos, T> action) {
+            return Optional.of(action.apply(level, pos));
          }
       };
    }
 
-   <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> var1);
+   <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> action);
 
-   default <T> T evaluate(BiFunction<Level, BlockPos, T> var1, T var2) {
-      return (T)this.evaluate(var1).orElse(var2);
+   default <T> T evaluate(final BiFunction<Level, BlockPos, T> action, final T defaultValue) {
+      return (T)this.evaluate(action).orElse(defaultValue);
    }
 
-   default void execute(BiConsumer<Level, BlockPos> var1) {
-      this.evaluate((var1x, var2) -> {
-         var1.accept(var1x, var2);
+   default void execute(final BiConsumer<Level, BlockPos> action) {
+      this.evaluate((level, pos) -> {
+         action.accept(level, pos);
          return Optional.empty();
       });
    }

@@ -15,44 +15,44 @@ public class StopAttackingIfTargetInvalid {
       super();
    }
 
-   public static <E extends Mob> BehaviorControl<E> create(TargetErasedCallback<E> var0) {
-      return create((var0x, var1) -> false, var0, true);
+   public static <E extends Mob> BehaviorControl<E> create(final TargetErasedCallback<E> onTargetErased) {
+      return create((level, entity) -> false, onTargetErased, true);
    }
 
-   public static <E extends Mob> BehaviorControl<E> create(StopAttackCondition var0) {
-      return create(var0, (var0x, var1, var2) -> {
+   public static <E extends Mob> BehaviorControl<E> create(final StopAttackCondition stopAttackingWhen) {
+      return create(stopAttackingWhen, (level, body, target) -> {
       }, true);
    }
 
    public static <E extends Mob> BehaviorControl<E> create() {
-      return create((var0, var1) -> false, (var0, var1, var2) -> {
+      return create((level, entity) -> false, (level, body, target) -> {
       }, true);
    }
 
-   public static <E extends Mob> BehaviorControl<E> create(StopAttackCondition var0, TargetErasedCallback<E> var1, boolean var2) {
-      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.present(MemoryModuleType.ATTACK_TARGET), var3.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(var3, (var4, var5) -> (var6, var7, var8) -> {
-               LivingEntity var10 = (LivingEntity)var3.get(var4);
-               if (var7.canAttack(var10) && (!var2 || !isTiredOfTryingToReachTarget(var7, var3.tryGet(var5))) && var10.isAlive() && var10.level() == var7.level() && !var0.test(var6, var10)) {
+   public static <E extends Mob> BehaviorControl<E> create(final StopAttackCondition stopAttackingWhen, final TargetErasedCallback<E> onTargetErased, final boolean canGrowTiredOfTryingToReachTarget) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.ATTACK_TARGET), i.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(i, (attackTarget, cantReachSince) -> (level, body, timestamp) -> {
+               LivingEntity target = (LivingEntity)i.get(attackTarget);
+               if (body.canAttack(target) && (!canGrowTiredOfTryingToReachTarget || !isTiredOfTryingToReachTarget(body, i.tryGet(cantReachSince))) && target.isAlive() && target.level() == body.level() && !stopAttackingWhen.test(level, target)) {
                   return true;
                } else {
-                  var1.accept(var6, var7, var10);
-                  var4.erase();
+                  onTargetErased.accept(level, body, target);
+                  attackTarget.erase();
                   return true;
                }
             })));
    }
 
-   private static boolean isTiredOfTryingToReachTarget(LivingEntity var0, Optional<Long> var1) {
-      return var1.isPresent() && var0.level().getGameTime() - (Long)var1.get() > 200L;
+   private static boolean isTiredOfTryingToReachTarget(final LivingEntity body, final Optional<Long> cantReachSince) {
+      return cantReachSince.isPresent() && body.level().getGameTime() - (Long)cantReachSince.get() > 200L;
    }
 
    @FunctionalInterface
    public interface StopAttackCondition {
-      boolean test(ServerLevel var1, LivingEntity var2);
+      boolean test(ServerLevel level, LivingEntity target);
    }
 
    @FunctionalInterface
    public interface TargetErasedCallback<E> {
-      void accept(ServerLevel var1, E var2, LivingEntity var3);
+      void accept(ServerLevel level, E body, LivingEntity target);
    }
 }

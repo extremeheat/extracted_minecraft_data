@@ -53,128 +53,128 @@ public class FireBlock extends BaseFireBlock {
       return CODEC;
    }
 
-   public FireBlock(BlockBehaviour.Properties var1) {
-      super(var1, 1.0F);
+   public FireBlock(final BlockBehaviour.Properties properties) {
+      super(properties, 1.0F);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0)).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(UP, false));
       this.shapes = this.makeShapes();
    }
 
    private Function<BlockState, VoxelShape> makeShapes() {
-      Map var1 = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
-      return this.getShapeForEachState((var1x) -> {
-         VoxelShape var2 = Shapes.empty();
+      Map<Direction, VoxelShape> shapes = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
+      return this.getShapeForEachState((state) -> {
+         VoxelShape shape = Shapes.empty();
 
-         for(Map.Entry var4 : PROPERTY_BY_DIRECTION.entrySet()) {
-            if ((Boolean)var1x.getValue((Property)var4.getValue())) {
-               var2 = Shapes.or(var2, (VoxelShape)var1.get(var4.getKey()));
+         for(Map.Entry<Direction, BooleanProperty> entry : PROPERTY_BY_DIRECTION.entrySet()) {
+            if ((Boolean)state.getValue((Property)entry.getValue())) {
+               shape = Shapes.or(shape, (VoxelShape)shapes.get(entry.getKey()));
             }
          }
 
-         return var2.isEmpty() ? SHAPE : var2;
+         return shape.isEmpty() ? SHAPE : shape;
       }, new Property[]{AGE});
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return this.canSurvive(var1, var2, var4) ? this.getStateWithAge(var2, var4, (Integer)var1.getValue(AGE)) : Blocks.AIR.defaultBlockState();
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return this.canSurvive(state, level, pos) ? this.getStateWithAge(level, pos, (Integer)state.getValue(AGE)) : Blocks.AIR.defaultBlockState();
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapes.apply(var1);
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)this.shapes.apply(state);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.getStateForPlacement(var1.getLevel(), var1.getClickedPos());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return this.getStateForPlacement(context.getLevel(), context.getClickedPos());
    }
 
-   protected BlockState getStateForPlacement(BlockGetter var1, BlockPos var2) {
-      BlockPos var3 = var2.below();
-      BlockState var4 = var1.getBlockState(var3);
-      if (!this.canBurn(var4) && !var4.isFaceSturdy(var1, var3, Direction.UP)) {
-         BlockState var5 = this.defaultBlockState();
+   protected BlockState getStateForPlacement(final BlockGetter level, final BlockPos pos) {
+      BlockPos below = pos.below();
+      BlockState belowState = level.getBlockState(below);
+      if (!this.canBurn(belowState) && !belowState.isFaceSturdy(level, below, Direction.UP)) {
+         BlockState result = this.defaultBlockState();
 
-         for(Direction var9 : Direction.values()) {
-            BooleanProperty var10 = (BooleanProperty)PROPERTY_BY_DIRECTION.get(var9);
-            if (var10 != null) {
-               var5 = (BlockState)var5.setValue(var10, this.canBurn(var1.getBlockState(var2.relative(var9))));
+         for(Direction direction : Direction.values()) {
+            BooleanProperty property = (BooleanProperty)PROPERTY_BY_DIRECTION.get(direction);
+            if (property != null) {
+               result = (BlockState)result.setValue(property, this.canBurn(level.getBlockState(pos.relative(direction))));
             }
          }
 
-         return var5;
+         return result;
       } else {
          return this.defaultBlockState();
       }
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockPos var4 = var3.below();
-      return var2.getBlockState(var4).isFaceSturdy(var2, var4, Direction.UP) || this.isValidFireLocation(var2, var3);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockPos below = pos.below();
+      return level.getBlockState(below).isFaceSturdy(level, below, Direction.UP) || this.isValidFireLocation(level, pos);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      var2.scheduleTick(var3, this, getFireTickDelay(var2.random));
-      if (var2.canSpreadFireAround(var3)) {
-         if (!var1.canSurvive(var2, var3)) {
-            var2.removeBlock(var3, false);
+   protected void tick(BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      level.scheduleTick(pos, this, getFireTickDelay(level.getRandom()));
+      if (level.canSpreadFireAround(pos)) {
+         if (!state.canSurvive(level, pos)) {
+            level.removeBlock(pos, false);
          }
 
-         BlockState var5 = var2.getBlockState(var3.below());
-         boolean var6 = var5.is(var2.dimensionType().infiniburn());
-         int var7 = (Integer)var1.getValue(AGE);
-         if (!var6 && var2.isRaining() && this.isNearRain(var2, var3) && var4.nextFloat() < 0.2F + (float)var7 * 0.03F) {
-            var2.removeBlock(var3, false);
+         BlockState belowState = level.getBlockState(pos.below());
+         boolean infiniBurn = belowState.is(level.dimensionType().infiniburn());
+         int age = (Integer)state.getValue(AGE);
+         if (!infiniBurn && level.isRaining() && this.isNearRain(level, pos) && random.nextFloat() < 0.2F + (float)age * 0.03F) {
+            level.removeBlock(pos, false);
          } else {
-            int var8 = Math.min(15, var7 + var4.nextInt(3) / 2);
-            if (var7 != var8) {
-               var1 = (BlockState)var1.setValue(AGE, var8);
-               var2.setBlock(var3, var1, 260);
+            int newAge = Math.min(15, age + random.nextInt(3) / 2);
+            if (age != newAge) {
+               state = (BlockState)state.setValue(AGE, newAge);
+               level.setBlock(pos, state, 260);
             }
 
-            if (!var6) {
-               if (!this.isValidFireLocation(var2, var3)) {
-                  BlockPos var20 = var3.below();
-                  if (!var2.getBlockState(var20).isFaceSturdy(var2, var20, Direction.UP) || var7 > 3) {
-                     var2.removeBlock(var3, false);
+            if (!infiniBurn) {
+               if (!this.isValidFireLocation(level, pos)) {
+                  BlockPos below = pos.below();
+                  if (!level.getBlockState(below).isFaceSturdy(level, below, Direction.UP) || age > 3) {
+                     level.removeBlock(pos, false);
                   }
 
                   return;
                }
 
-               if (var7 == 15 && var4.nextInt(4) == 0 && !this.canBurn(var2.getBlockState(var3.below()))) {
-                  var2.removeBlock(var3, false);
+               if (age == 15 && random.nextInt(4) == 0 && !this.canBurn(level.getBlockState(pos.below()))) {
+                  level.removeBlock(pos, false);
                   return;
                }
             }
 
-            boolean var9 = (Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, var3);
-            int var10 = var9 ? -50 : 0;
-            this.checkBurnOut(var2, var3.east(), 300 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.west(), 300 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.below(), 250 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.above(), 250 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.north(), 300 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.south(), 300 + var10, var4, var7);
-            BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
+            boolean increasedBurnout = (Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, pos);
+            int extra = increasedBurnout ? -50 : 0;
+            this.checkBurnOut(level, pos.east(), 300 + extra, random, age);
+            this.checkBurnOut(level, pos.west(), 300 + extra, random, age);
+            this.checkBurnOut(level, pos.below(), 250 + extra, random, age);
+            this.checkBurnOut(level, pos.above(), 250 + extra, random, age);
+            this.checkBurnOut(level, pos.north(), 300 + extra, random, age);
+            this.checkBurnOut(level, pos.south(), 300 + extra, random, age);
+            BlockPos.MutableBlockPos testPos = new BlockPos.MutableBlockPos();
 
-            for(int var12 = -1; var12 <= 1; ++var12) {
-               for(int var13 = -1; var13 <= 1; ++var13) {
-                  for(int var14 = -1; var14 <= 4; ++var14) {
-                     if (var12 != 0 || var14 != 0 || var13 != 0) {
-                        int var15 = 100;
-                        if (var14 > 1) {
-                           var15 += (var14 - 1) * 100;
+            for(int xx = -1; xx <= 1; ++xx) {
+               for(int zz = -1; zz <= 1; ++zz) {
+                  for(int yy = -1; yy <= 4; ++yy) {
+                     if (xx != 0 || yy != 0 || zz != 0) {
+                        int rate = 100;
+                        if (yy > 1) {
+                           rate += (yy - 1) * 100;
                         }
 
-                        var11.setWithOffset(var3, var12, var14, var13);
-                        int var16 = this.getIgniteOdds(var2, var11);
-                        if (var16 > 0) {
-                           int var17 = (var16 + 40 + var2.getDifficulty().getId() * 7) / (var7 + 30);
-                           if (var9) {
-                              var17 /= 2;
+                        testPos.setWithOffset(pos, xx, yy, zz);
+                        int igniteOdds = this.getIgniteOdds(level, testPos);
+                        if (igniteOdds > 0) {
+                           int odds = (igniteOdds + 40 + level.getDifficulty().getId() * 7) / (age + 30);
+                           if (increasedBurnout) {
+                              odds /= 2;
                            }
 
-                           if (var17 > 0 && var4.nextInt(var15) <= var17 && (!var2.isRaining() || !this.isNearRain(var2, var11))) {
-                              int var18 = Math.min(15, var7 + var4.nextInt(5) / 4);
-                              var2.setBlock(var11, this.getStateWithAge(var2, var11, var18), 3);
+                           if (odds > 0 && random.nextInt(rate) <= odds && (!level.isRaining() || !this.isNearRain(level, testPos))) {
+                              int spreadAge = Math.min(15, age + random.nextInt(5) / 4);
+                              level.setBlock(testPos, this.getStateWithAge(level, testPos, spreadAge), 3);
                            }
                         }
                      }
@@ -186,45 +186,45 @@ public class FireBlock extends BaseFireBlock {
       }
    }
 
-   protected boolean isNearRain(Level var1, BlockPos var2) {
-      return var1.isRainingAt(var2) || var1.isRainingAt(var2.west()) || var1.isRainingAt(var2.east()) || var1.isRainingAt(var2.north()) || var1.isRainingAt(var2.south());
+   protected boolean isNearRain(final Level level, final BlockPos testPos) {
+      return level.isRainingAt(testPos) || level.isRainingAt(testPos.west()) || level.isRainingAt(testPos.east()) || level.isRainingAt(testPos.north()) || level.isRainingAt(testPos.south());
    }
 
-   private int getBurnOdds(BlockState var1) {
-      return var1.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)var1.getValue(BlockStateProperties.WATERLOGGED) ? 0 : this.burnOdds.getInt(var1.getBlock());
+   private int getBurnOdds(final BlockState state) {
+      return state.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)state.getValue(BlockStateProperties.WATERLOGGED) ? 0 : this.burnOdds.getInt(state.getBlock());
    }
 
-   private int getIgniteOdds(BlockState var1) {
-      return var1.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)var1.getValue(BlockStateProperties.WATERLOGGED) ? 0 : this.igniteOdds.getInt(var1.getBlock());
+   private int getIgniteOdds(final BlockState state) {
+      return state.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)state.getValue(BlockStateProperties.WATERLOGGED) ? 0 : this.igniteOdds.getInt(state.getBlock());
    }
 
-   private void checkBurnOut(Level var1, BlockPos var2, int var3, RandomSource var4, int var5) {
-      int var6 = this.getBurnOdds(var1.getBlockState(var2));
-      if (var4.nextInt(var3) < var6) {
-         BlockState var7 = var1.getBlockState(var2);
-         if (var4.nextInt(var5 + 10) < 5 && !var1.isRainingAt(var2)) {
-            int var8 = Math.min(var5 + var4.nextInt(5) / 4, 15);
-            var1.setBlock(var2, this.getStateWithAge(var1, var2, var8), 3);
+   private void checkBurnOut(final Level level, final BlockPos pos, final int chance, final RandomSource random, final int age) {
+      int odds = this.getBurnOdds(level.getBlockState(pos));
+      if (random.nextInt(chance) < odds) {
+         BlockState oldState = level.getBlockState(pos);
+         if (random.nextInt(age + 10) < 5 && !level.isRainingAt(pos)) {
+            int newAge = Math.min(age + random.nextInt(5) / 4, 15);
+            level.setBlock(pos, this.getStateWithAge(level, pos, newAge), 3);
          } else {
-            var1.removeBlock(var2, false);
+            level.removeBlock(pos, false);
          }
 
-         Block var9 = var7.getBlock();
-         if (var9 instanceof TntBlock) {
-            TntBlock.prime(var1, var2);
+         Block block = oldState.getBlock();
+         if (block instanceof TntBlock) {
+            TntBlock.prime(level, pos);
          }
       }
 
    }
 
-   private BlockState getStateWithAge(LevelReader var1, BlockPos var2, int var3) {
-      BlockState var4 = getState(var1, var2);
-      return var4.is(Blocks.FIRE) ? (BlockState)var4.setValue(AGE, var3) : var4;
+   private BlockState getStateWithAge(final LevelReader level, final BlockPos pos, final int age) {
+      BlockState stateForPlacement = getState(level, pos);
+      return stateForPlacement.is(Blocks.FIRE) ? (BlockState)stateForPlacement.setValue(AGE, age) : stateForPlacement;
    }
 
-   private boolean isValidFireLocation(BlockGetter var1, BlockPos var2) {
-      for(Direction var6 : Direction.values()) {
-         if (this.canBurn(var1.getBlockState(var2.relative(var6)))) {
+   private boolean isValidFireLocation(final BlockGetter level, final BlockPos pos) {
+      for(Direction direction : Direction.values()) {
+         if (this.canBurn(level.getBlockState(pos.relative(direction)))) {
             return true;
          }
       }
@@ -232,251 +232,252 @@ public class FireBlock extends BaseFireBlock {
       return false;
    }
 
-   private int getIgniteOdds(LevelReader var1, BlockPos var2) {
-      if (!var1.isEmptyBlock(var2)) {
+   private int getIgniteOdds(final LevelReader level, final BlockPos pos) {
+      if (!level.isEmptyBlock(pos)) {
          return 0;
       } else {
-         int var3 = 0;
+         int odds = 0;
 
-         for(Direction var7 : Direction.values()) {
-            BlockState var8 = var1.getBlockState(var2.relative(var7));
-            var3 = Math.max(this.getIgniteOdds(var8), var3);
+         for(Direction direction : Direction.values()) {
+            BlockState blockState = level.getBlockState(pos.relative(direction));
+            odds = Math.max(this.getIgniteOdds(blockState), odds);
          }
 
-         return var3;
+         return odds;
       }
    }
 
-   protected boolean canBurn(BlockState var1) {
-      return this.getIgniteOdds(var1) > 0;
+   protected boolean canBurn(final BlockState state) {
+      return this.getIgniteOdds(state) > 0;
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      super.onPlace(var1, var2, var3, var4, var5);
-      var2.scheduleTick(var3, this, getFireTickDelay(var2.random));
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      super.onPlace(state, level, pos, oldState, movedByPiston);
+      level.scheduleTick(pos, this, getFireTickDelay(level.getRandom()));
    }
 
-   private static int getFireTickDelay(RandomSource var0) {
-      return 30 + var0.nextInt(10);
+   private static int getFireTickDelay(final RandomSource random) {
+      return 30 + random.nextInt(10);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE, NORTH, EAST, SOUTH, WEST, UP);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE, NORTH, EAST, SOUTH, WEST, UP);
    }
 
-   public void setFlammable(Block var1, int var2, int var3) {
-      this.igniteOdds.put(var1, var2);
-      this.burnOdds.put(var1, var3);
+   private void setFlammable(final Block block, final int igniteOdds, final int burnOdds) {
+      this.igniteOdds.put(block, igniteOdds);
+      this.burnOdds.put(block, burnOdds);
    }
 
    public static void bootStrap() {
-      FireBlock var0 = (FireBlock)Blocks.FIRE;
-      var0.setFlammable(Blocks.OAK_PLANKS, 5, 20);
-      var0.setFlammable(Blocks.SPRUCE_PLANKS, 5, 20);
-      var0.setFlammable(Blocks.BIRCH_PLANKS, 5, 20);
-      var0.setFlammable(Blocks.JUNGLE_PLANKS, 5, 20);
-      var0.setFlammable(Blocks.ACACIA_PLANKS, 5, 20);
-      var0.setFlammable(Blocks.CHERRY_PLANKS, 5, 20);
-      var0.setFlammable(Blocks.DARK_OAK_PLANKS, 5, 20);
-      var0.setFlammable(Blocks.PALE_OAK_PLANKS, 5, 20);
-      var0.setFlammable(Blocks.MANGROVE_PLANKS, 5, 20);
-      var0.setFlammable(Blocks.BAMBOO_PLANKS, 5, 20);
-      var0.setFlammable(Blocks.BAMBOO_MOSAIC, 5, 20);
-      var0.setFlammable(Blocks.OAK_SLAB, 5, 20);
-      var0.setFlammable(Blocks.SPRUCE_SLAB, 5, 20);
-      var0.setFlammable(Blocks.BIRCH_SLAB, 5, 20);
-      var0.setFlammable(Blocks.JUNGLE_SLAB, 5, 20);
-      var0.setFlammable(Blocks.ACACIA_SLAB, 5, 20);
-      var0.setFlammable(Blocks.CHERRY_SLAB, 5, 20);
-      var0.setFlammable(Blocks.DARK_OAK_SLAB, 5, 20);
-      var0.setFlammable(Blocks.PALE_OAK_SLAB, 5, 20);
-      var0.setFlammable(Blocks.MANGROVE_SLAB, 5, 20);
-      var0.setFlammable(Blocks.BAMBOO_SLAB, 5, 20);
-      var0.setFlammable(Blocks.BAMBOO_MOSAIC_SLAB, 5, 20);
-      var0.setFlammable(Blocks.OAK_FENCE_GATE, 5, 20);
-      var0.setFlammable(Blocks.SPRUCE_FENCE_GATE, 5, 20);
-      var0.setFlammable(Blocks.BIRCH_FENCE_GATE, 5, 20);
-      var0.setFlammable(Blocks.JUNGLE_FENCE_GATE, 5, 20);
-      var0.setFlammable(Blocks.ACACIA_FENCE_GATE, 5, 20);
-      var0.setFlammable(Blocks.CHERRY_FENCE_GATE, 5, 20);
-      var0.setFlammable(Blocks.DARK_OAK_FENCE_GATE, 5, 20);
-      var0.setFlammable(Blocks.PALE_OAK_FENCE_GATE, 5, 20);
-      var0.setFlammable(Blocks.MANGROVE_FENCE_GATE, 5, 20);
-      var0.setFlammable(Blocks.BAMBOO_FENCE_GATE, 5, 20);
-      var0.setFlammable(Blocks.OAK_FENCE, 5, 20);
-      var0.setFlammable(Blocks.SPRUCE_FENCE, 5, 20);
-      var0.setFlammable(Blocks.BIRCH_FENCE, 5, 20);
-      var0.setFlammable(Blocks.JUNGLE_FENCE, 5, 20);
-      var0.setFlammable(Blocks.ACACIA_FENCE, 5, 20);
-      var0.setFlammable(Blocks.CHERRY_FENCE, 5, 20);
-      var0.setFlammable(Blocks.DARK_OAK_FENCE, 5, 20);
-      var0.setFlammable(Blocks.PALE_OAK_FENCE, 5, 20);
-      var0.setFlammable(Blocks.MANGROVE_FENCE, 5, 20);
-      var0.setFlammable(Blocks.BAMBOO_FENCE, 5, 20);
-      var0.setFlammable(Blocks.OAK_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.BIRCH_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.SPRUCE_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.JUNGLE_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.ACACIA_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.CHERRY_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.DARK_OAK_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.PALE_OAK_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.MANGROVE_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.BAMBOO_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.BAMBOO_MOSAIC_STAIRS, 5, 20);
-      var0.setFlammable(Blocks.OAK_LOG, 5, 5);
-      var0.setFlammable(Blocks.SPRUCE_LOG, 5, 5);
-      var0.setFlammable(Blocks.BIRCH_LOG, 5, 5);
-      var0.setFlammable(Blocks.JUNGLE_LOG, 5, 5);
-      var0.setFlammable(Blocks.ACACIA_LOG, 5, 5);
-      var0.setFlammable(Blocks.CHERRY_LOG, 5, 5);
-      var0.setFlammable(Blocks.PALE_OAK_LOG, 5, 5);
-      var0.setFlammable(Blocks.DARK_OAK_LOG, 5, 5);
-      var0.setFlammable(Blocks.MANGROVE_LOG, 5, 5);
-      var0.setFlammable(Blocks.BAMBOO_BLOCK, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_OAK_LOG, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_SPRUCE_LOG, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_BIRCH_LOG, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_JUNGLE_LOG, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_ACACIA_LOG, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_CHERRY_LOG, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_DARK_OAK_LOG, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_PALE_OAK_LOG, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_MANGROVE_LOG, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_BAMBOO_BLOCK, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_OAK_WOOD, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_SPRUCE_WOOD, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_BIRCH_WOOD, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_JUNGLE_WOOD, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_ACACIA_WOOD, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_CHERRY_WOOD, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_DARK_OAK_WOOD, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_PALE_OAK_WOOD, 5, 5);
-      var0.setFlammable(Blocks.STRIPPED_MANGROVE_WOOD, 5, 5);
-      var0.setFlammable(Blocks.OAK_WOOD, 5, 5);
-      var0.setFlammable(Blocks.SPRUCE_WOOD, 5, 5);
-      var0.setFlammable(Blocks.BIRCH_WOOD, 5, 5);
-      var0.setFlammable(Blocks.JUNGLE_WOOD, 5, 5);
-      var0.setFlammable(Blocks.ACACIA_WOOD, 5, 5);
-      var0.setFlammable(Blocks.CHERRY_WOOD, 5, 5);
-      var0.setFlammable(Blocks.PALE_OAK_WOOD, 5, 5);
-      var0.setFlammable(Blocks.DARK_OAK_WOOD, 5, 5);
-      var0.setFlammable(Blocks.MANGROVE_WOOD, 5, 5);
-      var0.setFlammable(Blocks.MANGROVE_ROOTS, 5, 20);
-      var0.setFlammable(Blocks.OAK_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.SPRUCE_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.BIRCH_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.JUNGLE_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.ACACIA_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.CHERRY_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.DARK_OAK_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.PALE_OAK_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.MANGROVE_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.BOOKSHELF, 30, 20);
-      var0.setFlammable(Blocks.TNT, 15, 100);
-      var0.setFlammable(Blocks.SHORT_GRASS, 60, 100);
-      var0.setFlammable(Blocks.FERN, 60, 100);
-      var0.setFlammable(Blocks.DEAD_BUSH, 60, 100);
-      var0.setFlammable(Blocks.SHORT_DRY_GRASS, 60, 100);
-      var0.setFlammable(Blocks.TALL_DRY_GRASS, 60, 100);
-      var0.setFlammable(Blocks.SUNFLOWER, 60, 100);
-      var0.setFlammable(Blocks.LILAC, 60, 100);
-      var0.setFlammable(Blocks.ROSE_BUSH, 60, 100);
-      var0.setFlammable(Blocks.PEONY, 60, 100);
-      var0.setFlammable(Blocks.TALL_GRASS, 60, 100);
-      var0.setFlammable(Blocks.LARGE_FERN, 60, 100);
-      var0.setFlammable(Blocks.DANDELION, 60, 100);
-      var0.setFlammable(Blocks.POPPY, 60, 100);
-      var0.setFlammable(Blocks.OPEN_EYEBLOSSOM, 60, 100);
-      var0.setFlammable(Blocks.CLOSED_EYEBLOSSOM, 60, 100);
-      var0.setFlammable(Blocks.BLUE_ORCHID, 60, 100);
-      var0.setFlammable(Blocks.ALLIUM, 60, 100);
-      var0.setFlammable(Blocks.AZURE_BLUET, 60, 100);
-      var0.setFlammable(Blocks.RED_TULIP, 60, 100);
-      var0.setFlammable(Blocks.ORANGE_TULIP, 60, 100);
-      var0.setFlammable(Blocks.WHITE_TULIP, 60, 100);
-      var0.setFlammable(Blocks.PINK_TULIP, 60, 100);
-      var0.setFlammable(Blocks.OXEYE_DAISY, 60, 100);
-      var0.setFlammable(Blocks.CORNFLOWER, 60, 100);
-      var0.setFlammable(Blocks.LILY_OF_THE_VALLEY, 60, 100);
-      var0.setFlammable(Blocks.TORCHFLOWER, 60, 100);
-      var0.setFlammable(Blocks.PITCHER_PLANT, 60, 100);
-      var0.setFlammable(Blocks.WITHER_ROSE, 60, 100);
-      var0.setFlammable(Blocks.PINK_PETALS, 60, 100);
-      var0.setFlammable(Blocks.WILDFLOWERS, 60, 100);
-      var0.setFlammable(Blocks.LEAF_LITTER, 60, 100);
-      var0.setFlammable(Blocks.CACTUS_FLOWER, 60, 100);
-      var0.setFlammable(Blocks.WHITE_WOOL, 30, 60);
-      var0.setFlammable(Blocks.ORANGE_WOOL, 30, 60);
-      var0.setFlammable(Blocks.MAGENTA_WOOL, 30, 60);
-      var0.setFlammable(Blocks.LIGHT_BLUE_WOOL, 30, 60);
-      var0.setFlammable(Blocks.YELLOW_WOOL, 30, 60);
-      var0.setFlammable(Blocks.LIME_WOOL, 30, 60);
-      var0.setFlammable(Blocks.PINK_WOOL, 30, 60);
-      var0.setFlammable(Blocks.GRAY_WOOL, 30, 60);
-      var0.setFlammable(Blocks.LIGHT_GRAY_WOOL, 30, 60);
-      var0.setFlammable(Blocks.CYAN_WOOL, 30, 60);
-      var0.setFlammable(Blocks.PURPLE_WOOL, 30, 60);
-      var0.setFlammable(Blocks.BLUE_WOOL, 30, 60);
-      var0.setFlammable(Blocks.BROWN_WOOL, 30, 60);
-      var0.setFlammable(Blocks.GREEN_WOOL, 30, 60);
-      var0.setFlammable(Blocks.RED_WOOL, 30, 60);
-      var0.setFlammable(Blocks.BLACK_WOOL, 30, 60);
-      var0.setFlammable(Blocks.VINE, 15, 100);
-      var0.setFlammable(Blocks.COAL_BLOCK, 5, 5);
-      var0.setFlammable(Blocks.HAY_BLOCK, 60, 20);
-      var0.setFlammable(Blocks.TARGET, 15, 20);
-      var0.setFlammable(Blocks.WHITE_CARPET, 60, 20);
-      var0.setFlammable(Blocks.ORANGE_CARPET, 60, 20);
-      var0.setFlammable(Blocks.MAGENTA_CARPET, 60, 20);
-      var0.setFlammable(Blocks.LIGHT_BLUE_CARPET, 60, 20);
-      var0.setFlammable(Blocks.YELLOW_CARPET, 60, 20);
-      var0.setFlammable(Blocks.LIME_CARPET, 60, 20);
-      var0.setFlammable(Blocks.PINK_CARPET, 60, 20);
-      var0.setFlammable(Blocks.GRAY_CARPET, 60, 20);
-      var0.setFlammable(Blocks.LIGHT_GRAY_CARPET, 60, 20);
-      var0.setFlammable(Blocks.CYAN_CARPET, 60, 20);
-      var0.setFlammable(Blocks.PURPLE_CARPET, 60, 20);
-      var0.setFlammable(Blocks.BLUE_CARPET, 60, 20);
-      var0.setFlammable(Blocks.BROWN_CARPET, 60, 20);
-      var0.setFlammable(Blocks.GREEN_CARPET, 60, 20);
-      var0.setFlammable(Blocks.RED_CARPET, 60, 20);
-      var0.setFlammable(Blocks.BLACK_CARPET, 60, 20);
-      var0.setFlammable(Blocks.PALE_MOSS_BLOCK, 5, 100);
-      var0.setFlammable(Blocks.PALE_MOSS_CARPET, 5, 100);
-      var0.setFlammable(Blocks.PALE_HANGING_MOSS, 5, 100);
-      var0.setFlammable(Blocks.DRIED_KELP_BLOCK, 30, 60);
-      var0.setFlammable(Blocks.BAMBOO, 60, 60);
-      var0.setFlammable(Blocks.SCAFFOLDING, 60, 60);
-      var0.setFlammable(Blocks.LECTERN, 30, 20);
-      var0.setFlammable(Blocks.COMPOSTER, 5, 20);
-      var0.setFlammable(Blocks.SWEET_BERRY_BUSH, 60, 100);
-      var0.setFlammable(Blocks.BEEHIVE, 5, 20);
-      var0.setFlammable(Blocks.BEE_NEST, 30, 20);
-      var0.setFlammable(Blocks.AZALEA_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.FLOWERING_AZALEA_LEAVES, 30, 60);
-      var0.setFlammable(Blocks.CAVE_VINES, 15, 60);
-      var0.setFlammable(Blocks.CAVE_VINES_PLANT, 15, 60);
-      var0.setFlammable(Blocks.SPORE_BLOSSOM, 60, 100);
-      var0.setFlammable(Blocks.AZALEA, 30, 60);
-      var0.setFlammable(Blocks.FLOWERING_AZALEA, 30, 60);
-      var0.setFlammable(Blocks.BIG_DRIPLEAF, 60, 100);
-      var0.setFlammable(Blocks.BIG_DRIPLEAF_STEM, 60, 100);
-      var0.setFlammable(Blocks.SMALL_DRIPLEAF, 60, 100);
-      var0.setFlammable(Blocks.HANGING_ROOTS, 30, 60);
-      var0.setFlammable(Blocks.GLOW_LICHEN, 15, 100);
-      var0.setFlammable(Blocks.FIREFLY_BUSH, 60, 100);
-      var0.setFlammable(Blocks.BUSH, 60, 100);
-      var0.setFlammable(Blocks.ACACIA_SHELF, 30, 20);
-      var0.setFlammable(Blocks.BAMBOO_SHELF, 30, 20);
-      var0.setFlammable(Blocks.BIRCH_SHELF, 30, 20);
-      var0.setFlammable(Blocks.CHERRY_SHELF, 30, 20);
-      var0.setFlammable(Blocks.DARK_OAK_SHELF, 30, 20);
-      var0.setFlammable(Blocks.JUNGLE_SHELF, 30, 20);
-      var0.setFlammable(Blocks.MANGROVE_SHELF, 30, 20);
-      var0.setFlammable(Blocks.OAK_SHELF, 30, 20);
-      var0.setFlammable(Blocks.PALE_OAK_SHELF, 30, 20);
-      var0.setFlammable(Blocks.SPRUCE_SHELF, 30, 20);
+      FireBlock fire = (FireBlock)Blocks.FIRE;
+      fire.setFlammable(Blocks.OAK_PLANKS, 5, 20);
+      fire.setFlammable(Blocks.SPRUCE_PLANKS, 5, 20);
+      fire.setFlammable(Blocks.BIRCH_PLANKS, 5, 20);
+      fire.setFlammable(Blocks.JUNGLE_PLANKS, 5, 20);
+      fire.setFlammable(Blocks.ACACIA_PLANKS, 5, 20);
+      fire.setFlammable(Blocks.CHERRY_PLANKS, 5, 20);
+      fire.setFlammable(Blocks.DARK_OAK_PLANKS, 5, 20);
+      fire.setFlammable(Blocks.PALE_OAK_PLANKS, 5, 20);
+      fire.setFlammable(Blocks.MANGROVE_PLANKS, 5, 20);
+      fire.setFlammable(Blocks.BAMBOO_PLANKS, 5, 20);
+      fire.setFlammable(Blocks.BAMBOO_MOSAIC, 5, 20);
+      fire.setFlammable(Blocks.OAK_SLAB, 5, 20);
+      fire.setFlammable(Blocks.SPRUCE_SLAB, 5, 20);
+      fire.setFlammable(Blocks.BIRCH_SLAB, 5, 20);
+      fire.setFlammable(Blocks.JUNGLE_SLAB, 5, 20);
+      fire.setFlammable(Blocks.ACACIA_SLAB, 5, 20);
+      fire.setFlammable(Blocks.CHERRY_SLAB, 5, 20);
+      fire.setFlammable(Blocks.DARK_OAK_SLAB, 5, 20);
+      fire.setFlammable(Blocks.PALE_OAK_SLAB, 5, 20);
+      fire.setFlammable(Blocks.MANGROVE_SLAB, 5, 20);
+      fire.setFlammable(Blocks.BAMBOO_SLAB, 5, 20);
+      fire.setFlammable(Blocks.BAMBOO_MOSAIC_SLAB, 5, 20);
+      fire.setFlammable(Blocks.OAK_FENCE_GATE, 5, 20);
+      fire.setFlammable(Blocks.SPRUCE_FENCE_GATE, 5, 20);
+      fire.setFlammable(Blocks.BIRCH_FENCE_GATE, 5, 20);
+      fire.setFlammable(Blocks.JUNGLE_FENCE_GATE, 5, 20);
+      fire.setFlammable(Blocks.ACACIA_FENCE_GATE, 5, 20);
+      fire.setFlammable(Blocks.CHERRY_FENCE_GATE, 5, 20);
+      fire.setFlammable(Blocks.DARK_OAK_FENCE_GATE, 5, 20);
+      fire.setFlammable(Blocks.PALE_OAK_FENCE_GATE, 5, 20);
+      fire.setFlammable(Blocks.MANGROVE_FENCE_GATE, 5, 20);
+      fire.setFlammable(Blocks.BAMBOO_FENCE_GATE, 5, 20);
+      fire.setFlammable(Blocks.OAK_FENCE, 5, 20);
+      fire.setFlammable(Blocks.SPRUCE_FENCE, 5, 20);
+      fire.setFlammable(Blocks.BIRCH_FENCE, 5, 20);
+      fire.setFlammable(Blocks.JUNGLE_FENCE, 5, 20);
+      fire.setFlammable(Blocks.ACACIA_FENCE, 5, 20);
+      fire.setFlammable(Blocks.CHERRY_FENCE, 5, 20);
+      fire.setFlammable(Blocks.DARK_OAK_FENCE, 5, 20);
+      fire.setFlammable(Blocks.PALE_OAK_FENCE, 5, 20);
+      fire.setFlammable(Blocks.MANGROVE_FENCE, 5, 20);
+      fire.setFlammable(Blocks.BAMBOO_FENCE, 5, 20);
+      fire.setFlammable(Blocks.OAK_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.BIRCH_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.SPRUCE_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.JUNGLE_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.ACACIA_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.CHERRY_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.DARK_OAK_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.PALE_OAK_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.MANGROVE_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.BAMBOO_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.BAMBOO_MOSAIC_STAIRS, 5, 20);
+      fire.setFlammable(Blocks.OAK_LOG, 5, 5);
+      fire.setFlammable(Blocks.SPRUCE_LOG, 5, 5);
+      fire.setFlammable(Blocks.BIRCH_LOG, 5, 5);
+      fire.setFlammable(Blocks.JUNGLE_LOG, 5, 5);
+      fire.setFlammable(Blocks.ACACIA_LOG, 5, 5);
+      fire.setFlammable(Blocks.CHERRY_LOG, 5, 5);
+      fire.setFlammable(Blocks.PALE_OAK_LOG, 5, 5);
+      fire.setFlammable(Blocks.DARK_OAK_LOG, 5, 5);
+      fire.setFlammable(Blocks.MANGROVE_LOG, 5, 5);
+      fire.setFlammable(Blocks.BAMBOO_BLOCK, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_OAK_LOG, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_SPRUCE_LOG, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_BIRCH_LOG, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_JUNGLE_LOG, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_ACACIA_LOG, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_CHERRY_LOG, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_DARK_OAK_LOG, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_PALE_OAK_LOG, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_MANGROVE_LOG, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_BAMBOO_BLOCK, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_OAK_WOOD, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_SPRUCE_WOOD, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_BIRCH_WOOD, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_JUNGLE_WOOD, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_ACACIA_WOOD, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_CHERRY_WOOD, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_DARK_OAK_WOOD, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_PALE_OAK_WOOD, 5, 5);
+      fire.setFlammable(Blocks.STRIPPED_MANGROVE_WOOD, 5, 5);
+      fire.setFlammable(Blocks.OAK_WOOD, 5, 5);
+      fire.setFlammable(Blocks.SPRUCE_WOOD, 5, 5);
+      fire.setFlammable(Blocks.BIRCH_WOOD, 5, 5);
+      fire.setFlammable(Blocks.JUNGLE_WOOD, 5, 5);
+      fire.setFlammable(Blocks.ACACIA_WOOD, 5, 5);
+      fire.setFlammable(Blocks.CHERRY_WOOD, 5, 5);
+      fire.setFlammable(Blocks.PALE_OAK_WOOD, 5, 5);
+      fire.setFlammable(Blocks.DARK_OAK_WOOD, 5, 5);
+      fire.setFlammable(Blocks.MANGROVE_WOOD, 5, 5);
+      fire.setFlammable(Blocks.MANGROVE_ROOTS, 5, 20);
+      fire.setFlammable(Blocks.OAK_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.SPRUCE_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.BIRCH_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.JUNGLE_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.ACACIA_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.CHERRY_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.DARK_OAK_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.PALE_OAK_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.MANGROVE_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.BOOKSHELF, 30, 20);
+      fire.setFlammable(Blocks.TNT, 15, 100);
+      fire.setFlammable(Blocks.SHORT_GRASS, 60, 100);
+      fire.setFlammable(Blocks.FERN, 60, 100);
+      fire.setFlammable(Blocks.DEAD_BUSH, 60, 100);
+      fire.setFlammable(Blocks.SHORT_DRY_GRASS, 60, 100);
+      fire.setFlammable(Blocks.TALL_DRY_GRASS, 60, 100);
+      fire.setFlammable(Blocks.SUNFLOWER, 60, 100);
+      fire.setFlammable(Blocks.LILAC, 60, 100);
+      fire.setFlammable(Blocks.ROSE_BUSH, 60, 100);
+      fire.setFlammable(Blocks.PEONY, 60, 100);
+      fire.setFlammable(Blocks.TALL_GRASS, 60, 100);
+      fire.setFlammable(Blocks.LARGE_FERN, 60, 100);
+      fire.setFlammable(Blocks.DANDELION, 60, 100);
+      fire.setFlammable(Blocks.GOLDEN_DANDELION, 60, 100);
+      fire.setFlammable(Blocks.POPPY, 60, 100);
+      fire.setFlammable(Blocks.OPEN_EYEBLOSSOM, 60, 100);
+      fire.setFlammable(Blocks.CLOSED_EYEBLOSSOM, 60, 100);
+      fire.setFlammable(Blocks.BLUE_ORCHID, 60, 100);
+      fire.setFlammable(Blocks.ALLIUM, 60, 100);
+      fire.setFlammable(Blocks.AZURE_BLUET, 60, 100);
+      fire.setFlammable(Blocks.RED_TULIP, 60, 100);
+      fire.setFlammable(Blocks.ORANGE_TULIP, 60, 100);
+      fire.setFlammable(Blocks.WHITE_TULIP, 60, 100);
+      fire.setFlammable(Blocks.PINK_TULIP, 60, 100);
+      fire.setFlammable(Blocks.OXEYE_DAISY, 60, 100);
+      fire.setFlammable(Blocks.CORNFLOWER, 60, 100);
+      fire.setFlammable(Blocks.LILY_OF_THE_VALLEY, 60, 100);
+      fire.setFlammable(Blocks.TORCHFLOWER, 60, 100);
+      fire.setFlammable(Blocks.PITCHER_PLANT, 60, 100);
+      fire.setFlammable(Blocks.WITHER_ROSE, 60, 100);
+      fire.setFlammable(Blocks.PINK_PETALS, 60, 100);
+      fire.setFlammable(Blocks.WILDFLOWERS, 60, 100);
+      fire.setFlammable(Blocks.LEAF_LITTER, 60, 100);
+      fire.setFlammable(Blocks.CACTUS_FLOWER, 60, 100);
+      fire.setFlammable(Blocks.WHITE_WOOL, 30, 60);
+      fire.setFlammable(Blocks.ORANGE_WOOL, 30, 60);
+      fire.setFlammable(Blocks.MAGENTA_WOOL, 30, 60);
+      fire.setFlammable(Blocks.LIGHT_BLUE_WOOL, 30, 60);
+      fire.setFlammable(Blocks.YELLOW_WOOL, 30, 60);
+      fire.setFlammable(Blocks.LIME_WOOL, 30, 60);
+      fire.setFlammable(Blocks.PINK_WOOL, 30, 60);
+      fire.setFlammable(Blocks.GRAY_WOOL, 30, 60);
+      fire.setFlammable(Blocks.LIGHT_GRAY_WOOL, 30, 60);
+      fire.setFlammable(Blocks.CYAN_WOOL, 30, 60);
+      fire.setFlammable(Blocks.PURPLE_WOOL, 30, 60);
+      fire.setFlammable(Blocks.BLUE_WOOL, 30, 60);
+      fire.setFlammable(Blocks.BROWN_WOOL, 30, 60);
+      fire.setFlammable(Blocks.GREEN_WOOL, 30, 60);
+      fire.setFlammable(Blocks.RED_WOOL, 30, 60);
+      fire.setFlammable(Blocks.BLACK_WOOL, 30, 60);
+      fire.setFlammable(Blocks.VINE, 15, 100);
+      fire.setFlammable(Blocks.COAL_BLOCK, 5, 5);
+      fire.setFlammable(Blocks.HAY_BLOCK, 60, 20);
+      fire.setFlammable(Blocks.TARGET, 15, 20);
+      fire.setFlammable(Blocks.WHITE_CARPET, 60, 20);
+      fire.setFlammable(Blocks.ORANGE_CARPET, 60, 20);
+      fire.setFlammable(Blocks.MAGENTA_CARPET, 60, 20);
+      fire.setFlammable(Blocks.LIGHT_BLUE_CARPET, 60, 20);
+      fire.setFlammable(Blocks.YELLOW_CARPET, 60, 20);
+      fire.setFlammable(Blocks.LIME_CARPET, 60, 20);
+      fire.setFlammable(Blocks.PINK_CARPET, 60, 20);
+      fire.setFlammable(Blocks.GRAY_CARPET, 60, 20);
+      fire.setFlammable(Blocks.LIGHT_GRAY_CARPET, 60, 20);
+      fire.setFlammable(Blocks.CYAN_CARPET, 60, 20);
+      fire.setFlammable(Blocks.PURPLE_CARPET, 60, 20);
+      fire.setFlammable(Blocks.BLUE_CARPET, 60, 20);
+      fire.setFlammable(Blocks.BROWN_CARPET, 60, 20);
+      fire.setFlammable(Blocks.GREEN_CARPET, 60, 20);
+      fire.setFlammable(Blocks.RED_CARPET, 60, 20);
+      fire.setFlammable(Blocks.BLACK_CARPET, 60, 20);
+      fire.setFlammable(Blocks.PALE_MOSS_BLOCK, 5, 100);
+      fire.setFlammable(Blocks.PALE_MOSS_CARPET, 5, 100);
+      fire.setFlammable(Blocks.PALE_HANGING_MOSS, 5, 100);
+      fire.setFlammable(Blocks.DRIED_KELP_BLOCK, 30, 60);
+      fire.setFlammable(Blocks.BAMBOO, 60, 60);
+      fire.setFlammable(Blocks.SCAFFOLDING, 60, 60);
+      fire.setFlammable(Blocks.LECTERN, 30, 20);
+      fire.setFlammable(Blocks.COMPOSTER, 5, 20);
+      fire.setFlammable(Blocks.SWEET_BERRY_BUSH, 60, 100);
+      fire.setFlammable(Blocks.BEEHIVE, 5, 20);
+      fire.setFlammable(Blocks.BEE_NEST, 30, 20);
+      fire.setFlammable(Blocks.AZALEA_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.FLOWERING_AZALEA_LEAVES, 30, 60);
+      fire.setFlammable(Blocks.CAVE_VINES, 15, 60);
+      fire.setFlammable(Blocks.CAVE_VINES_PLANT, 15, 60);
+      fire.setFlammable(Blocks.SPORE_BLOSSOM, 60, 100);
+      fire.setFlammable(Blocks.AZALEA, 30, 60);
+      fire.setFlammable(Blocks.FLOWERING_AZALEA, 30, 60);
+      fire.setFlammable(Blocks.BIG_DRIPLEAF, 60, 100);
+      fire.setFlammable(Blocks.BIG_DRIPLEAF_STEM, 60, 100);
+      fire.setFlammable(Blocks.SMALL_DRIPLEAF, 60, 100);
+      fire.setFlammable(Blocks.HANGING_ROOTS, 30, 60);
+      fire.setFlammable(Blocks.GLOW_LICHEN, 15, 100);
+      fire.setFlammable(Blocks.FIREFLY_BUSH, 60, 100);
+      fire.setFlammable(Blocks.BUSH, 60, 100);
+      fire.setFlammable(Blocks.ACACIA_SHELF, 30, 20);
+      fire.setFlammable(Blocks.BAMBOO_SHELF, 30, 20);
+      fire.setFlammable(Blocks.BIRCH_SHELF, 30, 20);
+      fire.setFlammable(Blocks.CHERRY_SHELF, 30, 20);
+      fire.setFlammable(Blocks.DARK_OAK_SHELF, 30, 20);
+      fire.setFlammable(Blocks.JUNGLE_SHELF, 30, 20);
+      fire.setFlammable(Blocks.MANGROVE_SHELF, 30, 20);
+      fire.setFlammable(Blocks.OAK_SHELF, 30, 20);
+      fire.setFlammable(Blocks.PALE_OAK_SHELF, 30, 20);
+      fire.setFlammable(Blocks.SPRUCE_SHELF, 30, 20);
    }
 
    static {
@@ -486,6 +487,6 @@ public class FireBlock extends BaseFireBlock {
       SOUTH = PipeBlock.SOUTH;
       WEST = PipeBlock.WEST;
       UP = PipeBlock.UP;
-      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> var0.getKey() != Direction.DOWN).collect(Util.toMap());
+      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((e) -> e.getKey() != Direction.DOWN).collect(Util.toMap());
    }
 }

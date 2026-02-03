@@ -18,31 +18,31 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.CommandStorage;
 
 public class StorageDataAccessor implements DataAccessor {
-   static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = (var0, var1) -> SharedSuggestionProvider.suggestResource(getGlobalTags(var0).keys(), var1);
-   public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> new DataCommands.DataProvider() {
-         public DataAccessor access(CommandContext<CommandSourceStack> var1) {
-            return new StorageDataAccessor(StorageDataAccessor.getGlobalTags(var1), IdentifierArgument.getId(var1, var0));
+   private static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = (c, p) -> SharedSuggestionProvider.suggestResource(getGlobalTags(c).keys(), p);
+   public static final Function<String, DataCommands.DataProvider> PROVIDER = (arg) -> new DataCommands.DataProvider() {
+         public DataAccessor access(final CommandContext<CommandSourceStack> context) {
+            return new StorageDataAccessor(StorageDataAccessor.getGlobalTags(context), IdentifierArgument.getId(context, arg));
          }
 
-         public ArgumentBuilder<CommandSourceStack, ?> wrap(ArgumentBuilder<CommandSourceStack, ?> var1, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var2) {
-            return var1.then(Commands.literal("storage").then((ArgumentBuilder)var2.apply(Commands.argument(var0, IdentifierArgument.id()).suggests(StorageDataAccessor.SUGGEST_STORAGE))));
+         public ArgumentBuilder<CommandSourceStack, ?> wrap(final ArgumentBuilder<CommandSourceStack, ?> parent, final Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> function) {
+            return parent.then(Commands.literal("storage").then((ArgumentBuilder)function.apply(Commands.argument(arg, IdentifierArgument.id()).suggests(StorageDataAccessor.SUGGEST_STORAGE))));
          }
       };
    private final CommandStorage storage;
    private final Identifier id;
 
-   static CommandStorage getGlobalTags(CommandContext<CommandSourceStack> var0) {
-      return ((CommandSourceStack)var0.getSource()).getServer().getCommandStorage();
+   private static CommandStorage getGlobalTags(final CommandContext<CommandSourceStack> context) {
+      return ((CommandSourceStack)context.getSource()).getServer().getCommandStorage();
    }
 
-   StorageDataAccessor(CommandStorage var1, Identifier var2) {
+   private StorageDataAccessor(final CommandStorage storage, final Identifier id) {
       super();
-      this.storage = var1;
-      this.id = var2;
+      this.storage = storage;
+      this.id = id;
    }
 
-   public void setData(CompoundTag var1) {
-      this.storage.set(this.id, var1);
+   public void setData(final CompoundTag tag) {
+      this.storage.set(this.id, tag);
    }
 
    public CompoundTag getData() {
@@ -53,11 +53,11 @@ public class StorageDataAccessor implements DataAccessor {
       return Component.translatable("commands.data.storage.modified", Component.translationArg(this.id));
    }
 
-   public Component getPrintSuccess(Tag var1) {
-      return Component.translatable("commands.data.storage.query", Component.translationArg(this.id), NbtUtils.toPrettyComponent(var1));
+   public Component getPrintSuccess(final Tag data) {
+      return Component.translatable("commands.data.storage.query", Component.translationArg(this.id), NbtUtils.toPrettyComponent(data));
    }
 
-   public Component getPrintSuccess(NbtPathArgument.NbtPath var1, double var2, int var4) {
-      return Component.translatable("commands.data.storage.get", var1.asString(), Component.translationArg(this.id), String.format(Locale.ROOT, "%.2f", var2), var4);
+   public Component getPrintSuccess(final NbtPathArgument.NbtPath path, final double scale, final int value) {
+      return Component.translatable("commands.data.storage.get", path.asString(), Component.translationArg(this.id), String.format(Locale.ROOT, "%.2f", scale), value);
    }
 }

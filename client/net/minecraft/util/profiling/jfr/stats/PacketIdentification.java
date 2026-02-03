@@ -3,14 +3,11 @@ package net.minecraft.util.profiling.jfr.stats;
 import jdk.jfr.consumer.RecordedEvent;
 
 public record PacketIdentification(String direction, String protocolId, String packetId) {
-   public PacketIdentification(String var1, String var2, String var3) {
+   public PacketIdentification {
       super();
-      this.direction = var1;
-      this.protocolId = var2;
-      this.packetId = var3;
    }
 
-   public static PacketIdentification from(RecordedEvent var0) {
-      return new PacketIdentification(var0.getString("packetDirection"), var0.getString("protocolId"), var0.getString("packetId"));
+   public static PacketIdentification from(final RecordedEvent event) {
+      return new PacketIdentification(event.getString("packetDirection"), event.getString("protocolId"), event.getString("packetId"));
    }
 }

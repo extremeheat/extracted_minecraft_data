@@ -16,10 +16,10 @@ public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends G
    private final boolean alertOthersOfSameType;
    private int lastHurtByPlayerTimestamp;
 
-   public ResetUniversalAngerTargetGoal(T var1, boolean var2) {
+   public ResetUniversalAngerTargetGoal(final T mob, final boolean alertOthersOfSameType) {
       super();
-      this.mob = var1;
-      this.alertOthersOfSameType = var2;
+      this.mob = mob;
+      this.alertOthersOfSameType = alertOthersOfSameType;
    }
 
    public boolean canUse() {
@@ -27,22 +27,22 @@ public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends G
    }
 
    private boolean wasHurtByPlayer() {
-      return this.mob.getLastHurtByMob() != null && this.mob.getLastHurtByMob().getType() == EntityType.PLAYER && this.mob.getLastHurtByMobTimestamp() > this.lastHurtByPlayerTimestamp;
+      return this.mob.getLastHurtByMob() != null && this.mob.getLastHurtByMob().is(EntityType.PLAYER) && this.mob.getLastHurtByMobTimestamp() > this.lastHurtByPlayerTimestamp;
    }
 
    public void start() {
       this.lastHurtByPlayerTimestamp = this.mob.getLastHurtByMobTimestamp();
       ((NeutralMob)this.mob).forgetCurrentTargetAndRefreshUniversalAnger();
       if (this.alertOthersOfSameType) {
-         this.getNearbyMobsOfSameType().stream().filter((var1) -> var1 != this.mob).map((var0) -> (NeutralMob)var0).forEach(NeutralMob::forgetCurrentTargetAndRefreshUniversalAnger);
+         this.getNearbyMobsOfSameType().stream().filter((otherMob) -> otherMob != this.mob).map((otherMob) -> (NeutralMob)otherMob).forEach(NeutralMob::forgetCurrentTargetAndRefreshUniversalAnger);
       }
 
       super.start();
    }
 
    private List<? extends Mob> getNearbyMobsOfSameType() {
-      double var1 = this.mob.getAttributeValue(Attributes.FOLLOW_RANGE);
-      AABB var3 = AABB.unitCubeFromLowerCorner(this.mob.position()).inflate(var1, 10.0, var1);
-      return this.mob.level().getEntitiesOfClass(this.mob.getClass(), var3, EntitySelector.NO_SPECTATORS);
+      double within = this.mob.getAttributeValue(Attributes.FOLLOW_RANGE);
+      AABB searchAabb = AABB.unitCubeFromLowerCorner(this.mob.position()).inflate(within, 10.0, within);
+      return this.mob.level().getEntitiesOfClass(this.mob.getClass(), searchAabb, EntitySelector.NO_SPECTATORS);
    }
 }

@@ -15,153 +15,153 @@ import net.minecraft.world.scores.Scoreboard;
 
 public enum ConversionType {
    SINGLE(true) {
-      void convert(Mob var1, Mob var2, ConversionParams var3) {
-         Entity var4 = var1.getFirstPassenger();
-         var2.copyPosition(var1);
-         var2.setDeltaMovement(var1.getDeltaMovement());
-         if (var4 != null) {
-            var4.stopRiding();
-            var4.boardingCooldown = 0;
+      void convert(final Mob from, final Mob to, final ConversionParams params) {
+         Entity rootPassenger = from.getFirstPassenger();
+         to.copyPosition(from);
+         to.setDeltaMovement(from.getDeltaMovement());
+         if (rootPassenger != null) {
+            rootPassenger.stopRiding();
+            rootPassenger.boardingCooldown = 0;
 
-            for(Entity var6 : var2.getPassengers()) {
-               var6.stopRiding();
-               var6.remove(Entity.RemovalReason.DISCARDED);
+            for(Entity passenger : to.getPassengers()) {
+               passenger.stopRiding();
+               passenger.remove(Entity.RemovalReason.DISCARDED);
             }
 
-            var4.startRiding(var2);
+            rootPassenger.startRiding(to);
          }
 
-         Entity var9 = var1.getVehicle();
-         if (var9 != null) {
-            var1.stopRiding();
-            var2.startRiding(var9, false, false);
+         Entity vehicle = from.getVehicle();
+         if (vehicle != null) {
+            from.stopRiding();
+            to.startRiding(vehicle, false, false);
          }
 
-         if (var3.keepEquipment()) {
-            for(EquipmentSlot var7 : EquipmentSlot.VALUES) {
-               ItemStack var8 = var1.getItemBySlot(var7);
-               if (!var8.isEmpty()) {
-                  var2.setItemSlot(var7, var8.copyAndClear());
-                  var2.setDropChance(var7, var1.getDropChances().byEquipment(var7));
+         if (params.keepEquipment()) {
+            for(EquipmentSlot slot : EquipmentSlot.VALUES) {
+               ItemStack itemStack = from.getItemBySlot(slot);
+               if (!itemStack.isEmpty()) {
+                  to.setItemSlot(slot, itemStack.copyAndClear());
+                  to.setDropChance(slot, from.getDropChances().byEquipment(slot));
                }
             }
          }
 
-         var2.fallDistance = var1.fallDistance;
-         var2.setSharedFlag(7, var1.isFallFlying());
-         var2.lastHurtByPlayerMemoryTime = var1.lastHurtByPlayerMemoryTime;
-         var2.hurtTime = var1.hurtTime;
-         var2.yBodyRot = var1.yBodyRot;
-         var2.setOnGround(var1.onGround());
-         Optional var10000 = var1.getSleepingPos();
-         Objects.requireNonNull(var2);
-         var10000.ifPresent(var2::setSleepingPos);
-         Entity var11 = var1.getLeashHolder();
-         if (var11 != null) {
-            var2.setLeashedTo(var11, true);
+         to.fallDistance = from.fallDistance;
+         to.setSharedFlag(7, from.isFallFlying());
+         to.lastHurtByPlayerMemoryTime = from.lastHurtByPlayerMemoryTime;
+         to.hurtTime = from.hurtTime;
+         to.yBodyRot = from.yBodyRot;
+         to.setOnGround(from.onGround());
+         Optional var10000 = from.getSleepingPos();
+         Objects.requireNonNull(to);
+         var10000.ifPresent(to::setSleepingPos);
+         Entity leashHolder = from.getLeashHolder();
+         if (leashHolder != null) {
+            to.setLeashedTo(leashHolder, true);
          }
 
-         this.convertCommon(var1, var2, var3);
+         this.convertCommon(from, to, params);
       }
    },
    SPLIT_ON_DEATH(false) {
-      void convert(Mob var1, Mob var2, ConversionParams var3) {
-         Entity var4 = var1.getFirstPassenger();
-         if (var4 != null) {
-            var4.stopRiding();
+      void convert(final Mob from, final Mob to, final ConversionParams params) {
+         Entity rootPassenger = from.getFirstPassenger();
+         if (rootPassenger != null) {
+            rootPassenger.stopRiding();
          }
 
-         Entity var5 = var1.getLeashHolder();
-         if (var5 != null) {
-            var1.dropLeash();
+         Entity leashHolder = from.getLeashHolder();
+         if (leashHolder != null) {
+            from.dropLeash();
          }
 
-         this.convertCommon(var1, var2, var3);
+         this.convertCommon(from, to, params);
       }
    };
 
    private static final Set<DataComponentType<?>> COMPONENTS_TO_COPY = Set.of(DataComponents.CUSTOM_NAME, DataComponents.CUSTOM_DATA);
    private final boolean discardAfterConversion;
 
-   ConversionType(final boolean var3) {
-      this.discardAfterConversion = var3;
+   private ConversionType(final boolean discardAfterConversion) {
+      this.discardAfterConversion = discardAfterConversion;
    }
 
    public boolean shouldDiscardAfterConversion() {
       return this.discardAfterConversion;
    }
 
-   abstract void convert(Mob var1, Mob var2, ConversionParams var3);
+   abstract void convert(final Mob from, final Mob to, final ConversionParams params);
 
-   void convertCommon(Mob var1, Mob var2, ConversionParams var3) {
-      var2.setAbsorptionAmount(var1.getAbsorptionAmount());
+   void convertCommon(final Mob from, final Mob to, final ConversionParams params) {
+      to.setAbsorptionAmount(from.getAbsorptionAmount());
 
-      for(MobEffectInstance var5 : var1.getActiveEffects()) {
-         var2.addEffect(new MobEffectInstance(var5));
+      for(MobEffectInstance effect : from.getActiveEffects()) {
+         to.addEffect(new MobEffectInstance(effect));
       }
 
-      if (var1.isBaby()) {
-         var2.setBaby(true);
+      if (from.isBaby()) {
+         to.setBaby(true);
       }
 
-      if (var1 instanceof AgeableMob var8) {
-         if (var2 instanceof AgeableMob var10) {
-            var10.setAge(var8.getAge());
-            var10.forcedAge = var8.forcedAge;
-            var10.forcedAgeTimer = var8.forcedAgeTimer;
+      if (from instanceof AgeableMob oldAgeable) {
+         if (to instanceof AgeableMob convertedAgeable) {
+            convertedAgeable.setAge(oldAgeable.getAge());
+            convertedAgeable.forcedAge = oldAgeable.forcedAge;
+            convertedAgeable.forcedAgeTimer = oldAgeable.forcedAgeTimer;
          }
       }
 
-      Brain var9 = var1.getBrain();
-      Brain var11 = var2.getBrain();
-      if (var9.checkMemory(MemoryModuleType.ANGRY_AT, MemoryStatus.REGISTERED) && var9.hasMemoryValue(MemoryModuleType.ANGRY_AT)) {
-         var11.setMemory(MemoryModuleType.ANGRY_AT, var9.getMemory(MemoryModuleType.ANGRY_AT));
+      Brain<?> oldBrain = from.getBrain();
+      Brain<?> convertedBrain = to.getBrain();
+      if (oldBrain.checkMemory(MemoryModuleType.ANGRY_AT, MemoryStatus.REGISTERED) && oldBrain.hasMemoryValue(MemoryModuleType.ANGRY_AT)) {
+         convertedBrain.setMemory(MemoryModuleType.ANGRY_AT, oldBrain.getMemory(MemoryModuleType.ANGRY_AT));
       }
 
-      if (var3.preserveCanPickUpLoot()) {
-         var2.setCanPickUpLoot(var1.canPickUpLoot());
+      if (params.preserveCanPickUpLoot()) {
+         to.setCanPickUpLoot(from.canPickUpLoot());
       }
 
-      var2.setLeftHanded(var1.isLeftHanded());
-      var2.setNoAi(var1.isNoAi());
-      if (var1.isPersistenceRequired()) {
-         var2.setPersistenceRequired();
+      to.setLeftHanded(from.isLeftHanded());
+      to.setNoAi(from.isNoAi());
+      if (from.isPersistenceRequired()) {
+         to.setPersistenceRequired();
       }
 
-      var2.setCustomNameVisible(var1.isCustomNameVisible());
-      var2.setSharedFlagOnFire(var1.isOnFire());
-      var2.setInvulnerable(var1.isInvulnerable());
-      var2.setNoGravity(var1.isNoGravity());
-      var2.setPortalCooldown(var1.getPortalCooldown());
-      var2.setSilent(var1.isSilent());
-      Set var10000 = var1.getTags();
-      Objects.requireNonNull(var2);
-      var10000.forEach(var2::addTag);
+      to.setCustomNameVisible(from.isCustomNameVisible());
+      to.setSharedFlagOnFire(from.isOnFire());
+      to.setInvulnerable(from.isInvulnerable());
+      to.setNoGravity(from.isNoGravity());
+      to.setPortalCooldown(from.getPortalCooldown());
+      to.setSilent(from.isSilent());
+      Set var10000 = from.entityTags();
+      Objects.requireNonNull(to);
+      var10000.forEach(to::addTag);
 
-      for(DataComponentType var7 : COMPONENTS_TO_COPY) {
-         copyComponent(var1, var2, var7);
+      for(DataComponentType<?> component : COMPONENTS_TO_COPY) {
+         copyComponent(from, to, component);
       }
 
-      if (var3.team() != null) {
-         Scoreboard var12 = var2.level().getScoreboard();
-         var12.addPlayerToTeam(var2.getStringUUID(), var3.team());
-         if (var1.getTeam() != null && var1.getTeam() == var3.team()) {
-            var12.removePlayerFromTeam(var1.getStringUUID(), var1.getTeam());
+      if (params.team() != null) {
+         Scoreboard scoreboard = to.level().getScoreboard();
+         scoreboard.addPlayerToTeam(to.getStringUUID(), params.team());
+         if (from.getTeam() != null && from.getTeam() == params.team()) {
+            scoreboard.removePlayerFromTeam(from.getStringUUID(), from.getTeam());
          }
       }
 
-      if (var1 instanceof Zombie var13) {
-         if (var13.canBreakDoors() && var2 instanceof Zombie var14) {
-            var14.setCanBreakDoors(true);
+      if (from instanceof Zombie fromZombie) {
+         if (fromZombie.canBreakDoors() && to instanceof Zombie toZombie) {
+            toZombie.setCanBreakDoors(true);
          }
       }
 
    }
 
-   private static <T> void copyComponent(Mob var0, Mob var1, DataComponentType<T> var2) {
-      Object var3 = var0.get(var2);
-      if (var3 != null) {
-         var1.setComponent(var2, var3);
+   private static <T> void copyComponent(final Mob from, final Mob to, final DataComponentType<T> componentType) {
+      T value = (T)from.get(componentType);
+      if (value != null) {
+         to.setComponent(componentType, value);
       }
 
    }

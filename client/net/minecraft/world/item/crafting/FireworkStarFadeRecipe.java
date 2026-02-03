@@ -1,80 +1,92 @@
 package net.minecraft.world.item.crafting;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import net.minecraft.core.HolderLookup;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.Item;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.FireworkExplosion;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 
 public class FireworkStarFadeRecipe extends CustomRecipe {
-   private static final Ingredient STAR_INGREDIENT;
+   public static final MapCodec<FireworkStarFadeRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Ingredient.CODEC.fieldOf("target").forGetter((o) -> o.target), Ingredient.CODEC.fieldOf("dye").forGetter((o) -> o.dye), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result)).apply(i, FireworkStarFadeRecipe::new));
+   public static final StreamCodec<RegistryFriendlyByteBuf, FireworkStarFadeRecipe> STREAM_CODEC;
+   public static final RecipeSerializer<FireworkStarFadeRecipe> SERIALIZER;
+   private final Ingredient target;
+   private final Ingredient dye;
+   private final ItemStackTemplate result;
 
-   public FireworkStarFadeRecipe(CraftingBookCategory var1) {
-      super(var1);
+   public FireworkStarFadeRecipe(final Ingredient target, final Ingredient dye, final ItemStackTemplate result) {
+      super();
+      this.target = target;
+      this.dye = dye;
+      this.result = result;
    }
 
-   public boolean matches(CraftingInput var1, Level var2) {
-      if (var1.ingredientCount() < 2) {
+   public boolean matches(final CraftingInput input, final Level level) {
+      if (input.ingredientCount() < 2) {
          return false;
       } else {
-         boolean var3 = false;
-         boolean var4 = false;
+         boolean hasDye = false;
+         boolean hasTarget = false;
 
-         for(int var5 = 0; var5 < var1.size(); ++var5) {
-            ItemStack var6 = var1.getItem(var5);
-            if (!var6.isEmpty()) {
-               if (var6.getItem() instanceof DyeItem) {
-                  var3 = true;
+         for(int slot = 0; slot < input.size(); ++slot) {
+            ItemStack itemStack = input.getItem(slot);
+            if (!itemStack.isEmpty()) {
+               if (this.dye.test(itemStack) && itemStack.has(DataComponents.DYE)) {
+                  hasDye = true;
                } else {
-                  if (!STAR_INGREDIENT.test(var6)) {
+                  if (!this.target.test(itemStack)) {
                      return false;
                   }
 
-                  if (var4) {
+                  if (hasTarget) {
                      return false;
                   }
 
-                  var4 = true;
+                  hasTarget = true;
                }
             }
          }
 
-         return var4 && var3;
+         return hasTarget && hasDye;
       }
    }
 
-   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      IntArrayList var3 = new IntArrayList();
-      ItemStack var4 = null;
+   public ItemStack assemble(final CraftingInput input) {
+      IntList colors = new IntArrayList();
+      ItemStack targetStack = null;
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         ItemStack var6 = var1.getItem(var5);
-         Item var7 = var6.getItem();
-         if (var7 instanceof DyeItem var8) {
-            var3.add(var8.getDyeColor().getFireworkColor());
-         } else if (STAR_INGREDIENT.test(var6)) {
-            var4 = var6.copyWithCount(1);
+      for(int slot = 0; slot < input.size(); ++slot) {
+         ItemStack itemStack = input.getItem(slot);
+         if (this.dye.test(itemStack)) {
+            DyeColor dye = (DyeColor)itemStack.getOrDefault(DataComponents.DYE, DyeColor.WHITE);
+            colors.add(dye.getFireworkColor());
+         } else if (this.target.test(itemStack)) {
+            targetStack = itemStack;
          }
       }
 
-      if (var4 != null && !var3.isEmpty()) {
-         var4.update(DataComponents.FIREWORK_EXPLOSION, FireworkExplosion.DEFAULT, var3, FireworkExplosion::withFadeColors);
-         return var4;
+      if (targetStack != null && !colors.isEmpty()) {
+         ItemStack result = TransmuteRecipe.createWithOriginalComponents(this.result, targetStack);
+         result.update(DataComponents.FIREWORK_EXPLOSION, FireworkExplosion.DEFAULT, colors, FireworkExplosion::withFadeColors);
+         return result;
       } else {
          return ItemStack.EMPTY;
       }
    }
 
    public RecipeSerializer<FireworkStarFadeRecipe> getSerializer() {
-      return RecipeSerializer.FIREWORK_STAR_FADE;
+      return SERIALIZER;
    }
 
    static {
-      STAR_INGREDIENT = Ingredient.of((ItemLike)Items.FIREWORK_STAR);
+      STREAM_CODEC = StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.target, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.dye, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, FireworkStarFadeRecipe::new);
+      SERIALIZER = new RecipeSerializer<FireworkStarFadeRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

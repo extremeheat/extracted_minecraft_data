@@ -18,9 +18,9 @@ public class CubeListBuilder {
       super();
    }
 
-   public CubeListBuilder texOffs(int var1, int var2) {
-      this.xTexOffs = var1;
-      this.yTexOffs = var2;
+   public CubeListBuilder texOffs(final int xTexOffs, final int yTexOffs) {
+      this.xTexOffs = xTexOffs;
+      this.yTexOffs = yTexOffs;
       return this;
    }
 
@@ -28,55 +28,55 @@ public class CubeListBuilder {
       return this.mirror(true);
    }
 
-   public CubeListBuilder mirror(boolean var1) {
-      this.mirror = var1;
+   public CubeListBuilder mirror(final boolean mirror) {
+      this.mirror = mirror;
       return this;
    }
 
-   public CubeListBuilder addBox(String var1, float var2, float var3, float var4, int var5, int var6, int var7, CubeDeformation var8, int var9, int var10) {
-      this.texOffs(var9, var10);
-      this.cubes.add(new CubeDefinition(var1, (float)this.xTexOffs, (float)this.yTexOffs, var2, var3, var4, (float)var5, (float)var6, (float)var7, var8, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
+   public CubeListBuilder addBox(final String id, final float x0, final float y0, final float z0, final int w, final int h, final int d, final CubeDeformation g, final int xTexOffs, final int yTexOffs) {
+      this.texOffs(xTexOffs, yTexOffs);
+      this.cubes.add(new CubeDefinition(id, (float)this.xTexOffs, (float)this.yTexOffs, x0, y0, z0, (float)w, (float)h, (float)d, g, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
       return this;
    }
 
-   public CubeListBuilder addBox(String var1, float var2, float var3, float var4, int var5, int var6, int var7, int var8, int var9) {
-      this.texOffs(var8, var9);
-      this.cubes.add(new CubeDefinition(var1, (float)this.xTexOffs, (float)this.yTexOffs, var2, var3, var4, (float)var5, (float)var6, (float)var7, CubeDeformation.NONE, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
+   public CubeListBuilder addBox(final String id, final float x0, final float y0, final float z0, final int w, final int h, final int d, final int xTexOffs, final int yTexOffs) {
+      this.texOffs(xTexOffs, yTexOffs);
+      this.cubes.add(new CubeDefinition(id, (float)this.xTexOffs, (float)this.yTexOffs, x0, y0, z0, (float)w, (float)h, (float)d, CubeDeformation.NONE, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
       return this;
    }
 
-   public CubeListBuilder addBox(float var1, float var2, float var3, float var4, float var5, float var6) {
-      this.cubes.add(new CubeDefinition((String)null, (float)this.xTexOffs, (float)this.yTexOffs, var1, var2, var3, var4, var5, var6, CubeDeformation.NONE, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
+   public CubeListBuilder addBox(final float x0, final float y0, final float z0, final float w, final float h, final float d) {
+      this.cubes.add(new CubeDefinition((String)null, (float)this.xTexOffs, (float)this.yTexOffs, x0, y0, z0, w, h, d, CubeDeformation.NONE, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
       return this;
    }
 
-   public CubeListBuilder addBox(float var1, float var2, float var3, float var4, float var5, float var6, Set<Direction> var7) {
-      this.cubes.add(new CubeDefinition((String)null, (float)this.xTexOffs, (float)this.yTexOffs, var1, var2, var3, var4, var5, var6, CubeDeformation.NONE, this.mirror, 1.0F, 1.0F, var7));
+   public CubeListBuilder addBox(final float x0, final float y0, final float z0, final float w, final float h, final float d, final Set<Direction> visibleSides) {
+      this.cubes.add(new CubeDefinition((String)null, (float)this.xTexOffs, (float)this.yTexOffs, x0, y0, z0, w, h, d, CubeDeformation.NONE, this.mirror, 1.0F, 1.0F, visibleSides));
       return this;
    }
 
-   public CubeListBuilder addBox(String var1, float var2, float var3, float var4, float var5, float var6, float var7) {
-      this.cubes.add(new CubeDefinition(var1, (float)this.xTexOffs, (float)this.yTexOffs, var2, var3, var4, var5, var6, var7, CubeDeformation.NONE, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
+   public CubeListBuilder addBox(final String id, final float x0, final float y0, final float z0, final float w, final float h, final float d) {
+      this.cubes.add(new CubeDefinition(id, (float)this.xTexOffs, (float)this.yTexOffs, x0, y0, z0, w, h, d, CubeDeformation.NONE, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
       return this;
    }
 
-   public CubeListBuilder addBox(String var1, float var2, float var3, float var4, float var5, float var6, float var7, CubeDeformation var8) {
-      this.cubes.add(new CubeDefinition(var1, (float)this.xTexOffs, (float)this.yTexOffs, var2, var3, var4, var5, var6, var7, var8, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
+   public CubeListBuilder addBox(final String id, final float x0, final float y0, final float z0, final float w, final float h, final float d, final CubeDeformation g) {
+      this.cubes.add(new CubeDefinition(id, (float)this.xTexOffs, (float)this.yTexOffs, x0, y0, z0, w, h, d, g, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
       return this;
    }
 
-   public CubeListBuilder addBox(float var1, float var2, float var3, float var4, float var5, float var6, boolean var7) {
-      this.cubes.add(new CubeDefinition((String)null, (float)this.xTexOffs, (float)this.yTexOffs, var1, var2, var3, var4, var5, var6, CubeDeformation.NONE, var7, 1.0F, 1.0F, ALL_VISIBLE));
+   public CubeListBuilder addBox(final float x0, final float y0, final float z0, final float w, final float h, final float d, final boolean mirror) {
+      this.cubes.add(new CubeDefinition((String)null, (float)this.xTexOffs, (float)this.yTexOffs, x0, y0, z0, w, h, d, CubeDeformation.NONE, mirror, 1.0F, 1.0F, ALL_VISIBLE));
       return this;
    }
 
-   public CubeListBuilder addBox(float var1, float var2, float var3, float var4, float var5, float var6, CubeDeformation var7, float var8, float var9) {
-      this.cubes.add(new CubeDefinition((String)null, (float)this.xTexOffs, (float)this.yTexOffs, var1, var2, var3, var4, var5, var6, var7, this.mirror, var8, var9, ALL_VISIBLE));
+   public CubeListBuilder addBox(final float x0, final float y0, final float z0, final float w, final float h, final float d, final CubeDeformation g, final float xTexScale, final float yTexScale) {
+      this.cubes.add(new CubeDefinition((String)null, (float)this.xTexOffs, (float)this.yTexOffs, x0, y0, z0, w, h, d, g, this.mirror, xTexScale, yTexScale, ALL_VISIBLE));
       return this;
    }
 
-   public CubeListBuilder addBox(float var1, float var2, float var3, float var4, float var5, float var6, CubeDeformation var7) {
-      this.cubes.add(new CubeDefinition((String)null, (float)this.xTexOffs, (float)this.yTexOffs, var1, var2, var3, var4, var5, var6, var7, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
+   public CubeListBuilder addBox(final float x0, final float y0, final float z0, final float w, final float h, final float d, final CubeDeformation g) {
+      this.cubes.add(new CubeDefinition((String)null, (float)this.xTexOffs, (float)this.yTexOffs, x0, y0, z0, w, h, d, g, this.mirror, 1.0F, 1.0F, ALL_VISIBLE));
       return this;
    }
 

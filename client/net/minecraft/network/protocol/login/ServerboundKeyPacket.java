@@ -16,38 +16,38 @@ public class ServerboundKeyPacket implements Packet<ServerLoginPacketListener> {
    private final byte[] keybytes;
    private final byte[] encryptedChallenge;
 
-   public ServerboundKeyPacket(SecretKey var1, PublicKey var2, byte[] var3) throws CryptException {
+   public ServerboundKeyPacket(final SecretKey secretKey, final PublicKey publicKey, final byte[] challenge) throws CryptException {
       super();
-      this.keybytes = Crypt.encryptUsingKey(var2, var1.getEncoded());
-      this.encryptedChallenge = Crypt.encryptUsingKey(var2, var3);
+      this.keybytes = Crypt.encryptUsingKey(publicKey, secretKey.getEncoded());
+      this.encryptedChallenge = Crypt.encryptUsingKey(publicKey, challenge);
    }
 
-   private ServerboundKeyPacket(FriendlyByteBuf var1) {
+   private ServerboundKeyPacket(final FriendlyByteBuf input) {
       super();
-      this.keybytes = var1.readByteArray();
-      this.encryptedChallenge = var1.readByteArray();
+      this.keybytes = input.readByteArray();
+      this.encryptedChallenge = input.readByteArray();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeByteArray(this.keybytes);
-      var1.writeByteArray(this.encryptedChallenge);
+   private void write(final FriendlyByteBuf output) {
+      output.writeByteArray(this.keybytes);
+      output.writeByteArray(this.encryptedChallenge);
    }
 
    public PacketType<ServerboundKeyPacket> type() {
       return LoginPacketTypes.SERVERBOUND_KEY;
    }
 
-   public void handle(ServerLoginPacketListener var1) {
-      var1.handleKey(this);
+   public void handle(final ServerLoginPacketListener listener) {
+      listener.handleKey(this);
    }
 
-   public SecretKey getSecretKey(PrivateKey var1) throws CryptException {
-      return Crypt.decryptByteToSecretKey(var1, this.keybytes);
+   public SecretKey getSecretKey(final PrivateKey privateKey) throws CryptException {
+      return Crypt.decryptByteToSecretKey(privateKey, this.keybytes);
    }
 
-   public boolean isChallengeValid(byte[] var1, PrivateKey var2) {
+   public boolean isChallengeValid(final byte[] challenge, final PrivateKey privateKey) {
       try {
-         return Arrays.equals(var1, Crypt.decryptUsingKey(var2, this.encryptedChallenge));
+         return Arrays.equals(challenge, Crypt.decryptUsingKey(privateKey, this.encryptedChallenge));
       } catch (CryptException var4) {
          return false;
       }

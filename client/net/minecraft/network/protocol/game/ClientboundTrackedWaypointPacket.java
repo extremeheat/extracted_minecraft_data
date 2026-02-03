@@ -20,67 +20,65 @@ import net.minecraft.world.waypoints.WaypointManager;
 public record ClientboundTrackedWaypointPacket(Operation operation, TrackedWaypoint waypoint) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundTrackedWaypointPacket> STREAM_CODEC;
 
-   public ClientboundTrackedWaypointPacket(Operation var1, TrackedWaypoint var2) {
+   public ClientboundTrackedWaypointPacket {
       super();
-      this.operation = var1;
-      this.waypoint = var2;
    }
 
-   public static ClientboundTrackedWaypointPacket removeWaypoint(UUID var0) {
-      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.UNTRACK, TrackedWaypoint.empty(var0));
+   public static ClientboundTrackedWaypointPacket removeWaypoint(final UUID identifier) {
+      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.UNTRACK, TrackedWaypoint.empty(identifier));
    }
 
-   public static ClientboundTrackedWaypointPacket addWaypointPosition(UUID var0, Waypoint.Icon var1, Vec3i var2) {
-      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.TRACK, TrackedWaypoint.setPosition(var0, var1, var2));
+   public static ClientboundTrackedWaypointPacket addWaypointPosition(final UUID identifier, final Waypoint.Icon icon, final Vec3i position) {
+      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.TRACK, TrackedWaypoint.setPosition(identifier, icon, position));
    }
 
-   public static ClientboundTrackedWaypointPacket updateWaypointPosition(UUID var0, Waypoint.Icon var1, Vec3i var2) {
-      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.UPDATE, TrackedWaypoint.setPosition(var0, var1, var2));
+   public static ClientboundTrackedWaypointPacket updateWaypointPosition(final UUID identifier, final Waypoint.Icon icon, final Vec3i position) {
+      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.UPDATE, TrackedWaypoint.setPosition(identifier, icon, position));
    }
 
-   public static ClientboundTrackedWaypointPacket addWaypointChunk(UUID var0, Waypoint.Icon var1, ChunkPos var2) {
-      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.TRACK, TrackedWaypoint.setChunk(var0, var1, var2));
+   public static ClientboundTrackedWaypointPacket addWaypointChunk(final UUID identifier, final Waypoint.Icon icon, final ChunkPos chunk) {
+      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.TRACK, TrackedWaypoint.setChunk(identifier, icon, chunk));
    }
 
-   public static ClientboundTrackedWaypointPacket updateWaypointChunk(UUID var0, Waypoint.Icon var1, ChunkPos var2) {
-      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.UPDATE, TrackedWaypoint.setChunk(var0, var1, var2));
+   public static ClientboundTrackedWaypointPacket updateWaypointChunk(final UUID identifier, final Waypoint.Icon icon, final ChunkPos chunk) {
+      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.UPDATE, TrackedWaypoint.setChunk(identifier, icon, chunk));
    }
 
-   public static ClientboundTrackedWaypointPacket addWaypointAzimuth(UUID var0, Waypoint.Icon var1, float var2) {
-      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.TRACK, TrackedWaypoint.setAzimuth(var0, var1, var2));
+   public static ClientboundTrackedWaypointPacket addWaypointAzimuth(final UUID identifier, final Waypoint.Icon icon, final float angle) {
+      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.TRACK, TrackedWaypoint.setAzimuth(identifier, icon, angle));
    }
 
-   public static ClientboundTrackedWaypointPacket updateWaypointAzimuth(UUID var0, Waypoint.Icon var1, float var2) {
-      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.UPDATE, TrackedWaypoint.setAzimuth(var0, var1, var2));
+   public static ClientboundTrackedWaypointPacket updateWaypointAzimuth(final UUID identifier, final Waypoint.Icon icon, final float angle) {
+      return new ClientboundTrackedWaypointPacket(ClientboundTrackedWaypointPacket.Operation.UPDATE, TrackedWaypoint.setAzimuth(identifier, icon, angle));
    }
 
    public PacketType<ClientboundTrackedWaypointPacket> type() {
       return GamePacketTypes.CLIENTBOUND_WAYPOINT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleWaypoint(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleWaypoint(this);
    }
 
-   public void apply(TrackedWaypointManager var1) {
-      this.operation.action.accept(var1, this.waypoint);
+   public void apply(final TrackedWaypointManager manager) {
+      this.operation.action.accept(manager, this.waypoint);
    }
 
    static {
       STREAM_CODEC = StreamCodec.composite(ClientboundTrackedWaypointPacket.Operation.STREAM_CODEC, ClientboundTrackedWaypointPacket::operation, TrackedWaypoint.STREAM_CODEC, ClientboundTrackedWaypointPacket::waypoint, ClientboundTrackedWaypointPacket::new);
    }
 
-   static enum Operation {
+   private static enum Operation {
       TRACK(WaypointManager::trackWaypoint),
       UNTRACK(WaypointManager::untrackWaypoint),
       UPDATE(WaypointManager::updateWaypoint);
 
-      final BiConsumer<TrackedWaypointManager, TrackedWaypoint> action;
+      private final BiConsumer<TrackedWaypointManager, TrackedWaypoint> action;
       public static final IntFunction<Operation> BY_ID = ByIdMap.<Operation>continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
       public static final StreamCodec<ByteBuf, Operation> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Enum::ordinal);
 
-      private Operation(final BiConsumer<TrackedWaypointManager, TrackedWaypoint> var3) {
-         this.action = var3;
+      private Operation(final BiConsumer<TrackedWaypointManager, TrackedWaypoint> action) {
+         this.action = action;
       }
 
       // $FF: synthetic method

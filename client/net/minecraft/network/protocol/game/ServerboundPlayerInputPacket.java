@@ -9,17 +9,16 @@ import net.minecraft.world.entity.player.Input;
 public record ServerboundPlayerInputPacket(Input input) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundPlayerInputPacket> STREAM_CODEC;
 
-   public ServerboundPlayerInputPacket(Input var1) {
+   public ServerboundPlayerInputPacket {
       super();
-      this.input = var1;
    }
 
    public PacketType<ServerboundPlayerInputPacket> type() {
       return GamePacketTypes.SERVERBOUND_PLAYER_INPUT;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handlePlayerInput(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handlePlayerInput(this);
    }
 
    static {

@@ -5,13 +5,13 @@ import net.minecraft.network.chat.Component;
 public class RealmsUploadFailedException extends RealmsUploadException {
    private final Component errorMessage;
 
-   public RealmsUploadFailedException(Component var1) {
+   public RealmsUploadFailedException(final Component errorMessage) {
       super();
-      this.errorMessage = var1;
+      this.errorMessage = errorMessage;
    }
 
-   public RealmsUploadFailedException(String var1) {
-      this((Component)Component.literal(var1));
+   public RealmsUploadFailedException(final String errorMessage) {
+      this((Component)Component.literal(errorMessage));
    }
 
    public Component getStatusMessage() {

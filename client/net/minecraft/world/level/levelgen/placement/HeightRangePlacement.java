@@ -11,28 +11,28 @@ import net.minecraft.world.level.levelgen.heightproviders.TrapezoidHeight;
 import net.minecraft.world.level.levelgen.heightproviders.UniformHeight;
 
 public class HeightRangePlacement extends PlacementModifier {
-   public static final MapCodec<HeightRangePlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(HeightProvider.CODEC.fieldOf("height").forGetter((var0x) -> var0x.height)).apply(var0, HeightRangePlacement::new));
+   public static final MapCodec<HeightRangePlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(HeightProvider.CODEC.fieldOf("height").forGetter((c) -> c.height)).apply(i, HeightRangePlacement::new));
    private final HeightProvider height;
 
-   private HeightRangePlacement(HeightProvider var1) {
+   private HeightRangePlacement(final HeightProvider height) {
       super();
-      this.height = var1;
+      this.height = height;
    }
 
-   public static HeightRangePlacement of(HeightProvider var0) {
-      return new HeightRangePlacement(var0);
+   public static HeightRangePlacement of(final HeightProvider height) {
+      return new HeightRangePlacement(height);
    }
 
-   public static HeightRangePlacement uniform(VerticalAnchor var0, VerticalAnchor var1) {
-      return of(UniformHeight.of(var0, var1));
+   public static HeightRangePlacement uniform(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive) {
+      return of(UniformHeight.of(minInclusive, maxInclusive));
    }
 
-   public static HeightRangePlacement triangle(VerticalAnchor var0, VerticalAnchor var1) {
-      return of(TrapezoidHeight.of(var0, var1));
+   public static HeightRangePlacement triangle(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive) {
+      return of(TrapezoidHeight.of(minInclusive, maxInclusive));
    }
 
-   public Stream<BlockPos> getPositions(PlacementContext var1, RandomSource var2, BlockPos var3) {
-      return Stream.of(var3.atY(this.height.sample(var2, var1)));
+   public Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
+      return Stream.of(origin.atY(this.height.sample(random, context)));
    }
 
    public PlacementModifierType<?> type() {

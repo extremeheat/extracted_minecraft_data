@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -53,72 +53,72 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    private final VerticalPlacement verticalPlacement;
    private final Properties properties;
 
-   public RuinedPortalPiece(StructureTemplateManager var1, BlockPos var2, VerticalPlacement var3, Properties var4, Identifier var5, StructureTemplate var6, Rotation var7, Mirror var8, BlockPos var9) {
-      super(StructurePieceType.RUINED_PORTAL, 0, var1, var5, var5.toString(), makeSettings(var8, var7, var3, var9, var4), var2);
-      this.verticalPlacement = var3;
-      this.properties = var4;
+   public RuinedPortalPiece(final StructureTemplateManager structureTemplateManager, final BlockPos templatePosition, final VerticalPlacement verticalPlacement, final Properties properties, final Identifier templateLocation, final StructureTemplate template, final Rotation rotation, final Mirror mirror, final BlockPos pivot) {
+      super(StructurePieceType.RUINED_PORTAL, 0, structureTemplateManager, templateLocation, templateLocation.toString(), makeSettings(mirror, rotation, verticalPlacement, pivot, properties), templatePosition);
+      this.verticalPlacement = verticalPlacement;
+      this.properties = properties;
    }
 
-   public RuinedPortalPiece(StructureTemplateManager var1, CompoundTag var2) {
-      super(StructurePieceType.RUINED_PORTAL, var2, var1, (var2x) -> makeSettings(var1, var2, var2x));
-      this.verticalPlacement = (VerticalPlacement)var2.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow();
-      this.properties = (Properties)var2.read("Properties", RuinedPortalPiece.Properties.CODEC).orElseThrow();
+   public RuinedPortalPiece(final StructureTemplateManager structureTemplateManager, final CompoundTag tag) {
+      super(StructurePieceType.RUINED_PORTAL, tag, structureTemplateManager, (location) -> makeSettings(structureTemplateManager, tag, location));
+      this.verticalPlacement = (VerticalPlacement)tag.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow();
+      this.properties = (Properties)tag.read("Properties", RuinedPortalPiece.Properties.CODEC).orElseThrow();
    }
 
-   protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
-      super.addAdditionalSaveData(var1, var2);
-      var2.store("Rotation", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
-      var2.store("Mirror", Mirror.LEGACY_CODEC, this.placeSettings.getMirror());
-      var2.store("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC, this.verticalPlacement);
-      var2.store("Properties", RuinedPortalPiece.Properties.CODEC, this.properties);
+   protected void addAdditionalSaveData(final StructurePieceSerializationContext context, final CompoundTag tag) {
+      super.addAdditionalSaveData(context, tag);
+      tag.store("Rotation", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
+      tag.store("Mirror", Mirror.LEGACY_CODEC, this.placeSettings.getMirror());
+      tag.store("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC, this.verticalPlacement);
+      tag.store("Properties", RuinedPortalPiece.Properties.CODEC, this.properties);
    }
 
-   private static StructurePlaceSettings makeSettings(StructureTemplateManager var0, CompoundTag var1, Identifier var2) {
-      StructureTemplate var3 = var0.getOrCreate(var2);
-      BlockPos var4 = new BlockPos(var3.getSize().getX() / 2, 0, var3.getSize().getZ() / 2);
-      return makeSettings((Mirror)var1.read("Mirror", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)var1.read("Rotation", Rotation.LEGACY_CODEC).orElseThrow(), (VerticalPlacement)var1.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow(), var4, (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties"))).getPartialOrThrow());
+   private static StructurePlaceSettings makeSettings(final StructureTemplateManager structureTemplateManager, final CompoundTag tag, final Identifier location) {
+      StructureTemplate template = structureTemplateManager.getOrCreate(location);
+      BlockPos pivot = new BlockPos(template.getSize().getX() / 2, 0, template.getSize().getZ() / 2);
+      return makeSettings((Mirror)tag.read("Mirror", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)tag.read("Rotation", Rotation.LEGACY_CODEC).orElseThrow(), (VerticalPlacement)tag.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow(), pivot, (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, tag.get("Properties"))).getPartialOrThrow());
    }
 
-   private static StructurePlaceSettings makeSettings(Mirror var0, Rotation var1, VerticalPlacement var2, BlockPos var3, Properties var4) {
-      BlockIgnoreProcessor var5 = var4.airPocket ? BlockIgnoreProcessor.STRUCTURE_BLOCK : BlockIgnoreProcessor.STRUCTURE_AND_AIR;
-      ArrayList var6 = Lists.newArrayList();
-      var6.add(getBlockReplaceRule(Blocks.GOLD_BLOCK, 0.3F, Blocks.AIR));
-      var6.add(getLavaProcessorRule(var2, var4));
-      if (!var4.cold) {
-         var6.add(getBlockReplaceRule(Blocks.NETHERRACK, 0.07F, Blocks.MAGMA_BLOCK));
+   private static StructurePlaceSettings makeSettings(final Mirror mirror, final Rotation rotation, final VerticalPlacement verticalPlacement, final BlockPos pivot, final Properties properties) {
+      BlockIgnoreProcessor ignoreProcessor = properties.airPocket ? BlockIgnoreProcessor.STRUCTURE_BLOCK : BlockIgnoreProcessor.STRUCTURE_AND_AIR;
+      List<ProcessorRule> rules = Lists.newArrayList();
+      rules.add(getBlockReplaceRule(Blocks.GOLD_BLOCK, 0.3F, Blocks.AIR));
+      rules.add(getLavaProcessorRule(verticalPlacement, properties));
+      if (!properties.cold) {
+         rules.add(getBlockReplaceRule(Blocks.NETHERRACK, 0.07F, Blocks.MAGMA_BLOCK));
       }
 
-      StructurePlaceSettings var7 = (new StructurePlaceSettings()).setRotation(var1).setMirror(var0).setRotationPivot(var3).addProcessor(var5).addProcessor(new RuleProcessor(var6)).addProcessor(new BlockAgeProcessor(var4.mossiness)).addProcessor(new ProtectedBlockProcessor(BlockTags.FEATURES_CANNOT_REPLACE)).addProcessor(new LavaSubmergedBlockProcessor());
-      if (var4.replaceWithBlackstone) {
-         var7.addProcessor(BlackstoneReplaceProcessor.INSTANCE);
+      StructurePlaceSettings settings = (new StructurePlaceSettings()).setRotation(rotation).setMirror(mirror).setRotationPivot(pivot).addProcessor(ignoreProcessor).addProcessor(new RuleProcessor(rules)).addProcessor(new BlockAgeProcessor(properties.mossiness)).addProcessor(new ProtectedBlockProcessor(BlockTags.FEATURES_CANNOT_REPLACE)).addProcessor(new LavaSubmergedBlockProcessor());
+      if (properties.replaceWithBlackstone) {
+         settings.addProcessor(BlackstoneReplaceProcessor.INSTANCE);
       }
 
-      return var7;
+      return settings;
    }
 
-   private static ProcessorRule getLavaProcessorRule(VerticalPlacement var0, Properties var1) {
-      if (var0 == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR) {
+   private static ProcessorRule getLavaProcessorRule(final VerticalPlacement verticalPlacement, final Properties properties) {
+      if (verticalPlacement == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR) {
          return getBlockReplaceRule(Blocks.LAVA, Blocks.MAGMA_BLOCK);
       } else {
-         return var1.cold ? getBlockReplaceRule(Blocks.LAVA, Blocks.NETHERRACK) : getBlockReplaceRule(Blocks.LAVA, 0.2F, Blocks.MAGMA_BLOCK);
+         return properties.cold ? getBlockReplaceRule(Blocks.LAVA, Blocks.NETHERRACK) : getBlockReplaceRule(Blocks.LAVA, 0.2F, Blocks.MAGMA_BLOCK);
       }
    }
 
-   public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-      BoundingBox var8 = this.template.getBoundingBox(this.placeSettings, this.templatePosition);
-      if (var5.isInside(var8.getCenter())) {
-         var5.encapsulate(var8);
-         super.postProcess(var1, var2, var3, var4, var5, var6, var7);
-         this.spreadNetherrack(var4, var1);
-         this.addNetherrackDripColumnsBelowPortal(var4, var1);
+   public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
+      BoundingBox boundingBox = this.template.getBoundingBox(this.placeSettings, this.templatePosition);
+      if (chunkBB.isInside(boundingBox.getCenter())) {
+         chunkBB.encapsulate(boundingBox);
+         super.postProcess(level, structureManager, generator, random, chunkBB, chunkPos, referencePos);
+         this.spreadNetherrack(random, level);
+         this.addNetherrackDripColumnsBelowPortal(random, level);
          if (this.properties.vines || this.properties.overgrown) {
-            BlockPos.betweenClosedStream(this.getBoundingBox()).forEach((var3x) -> {
+            BlockPos.betweenClosedStream(this.getBoundingBox()).forEach((pos) -> {
                if (this.properties.vines) {
-                  this.maybeAddVines(var4, var1, var3x);
+                  this.maybeAddVines(random, level, pos);
                }
 
                if (this.properties.overgrown) {
-                  this.maybeAddLeavesAbove(var4, var1, var3x);
+                  this.maybeAddLeavesAbove(random, level, pos);
                }
 
             });
@@ -127,85 +127,85 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       }
    }
 
-   protected void handleDataMarker(String var1, BlockPos var2, ServerLevelAccessor var3, RandomSource var4, BoundingBox var5) {
+   protected void handleDataMarker(final String markerId, final BlockPos pos, final ServerLevelAccessor level, final RandomSource random, final BoundingBox chunkBB) {
    }
 
-   private void maybeAddVines(RandomSource var1, LevelAccessor var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3);
-      if (!var4.isAir() && !var4.is(Blocks.VINE)) {
-         Direction var5 = getRandomHorizontalDirection(var1);
-         BlockPos var6 = var3.relative(var5);
-         BlockState var7 = var2.getBlockState(var6);
-         if (var7.isAir()) {
-            if (Block.isFaceFull(var4.getCollisionShape(var2, var3), var5)) {
-               BooleanProperty var8 = VineBlock.getPropertyForFace(var5.getOpposite());
-               var2.setBlock(var6, (BlockState)Blocks.VINE.defaultBlockState().setValue(var8, true), 3);
+   private void maybeAddVines(final RandomSource random, final LevelAccessor level, final BlockPos pos) {
+      BlockState state = level.getBlockState(pos);
+      if (!state.isAir() && !state.is(Blocks.VINE)) {
+         Direction direction = getRandomHorizontalDirection(random);
+         BlockPos neighbourPos = pos.relative(direction);
+         BlockState neighourState = level.getBlockState(neighbourPos);
+         if (neighourState.isAir()) {
+            if (Block.isFaceFull(state.getCollisionShape(level, pos), direction)) {
+               BooleanProperty vineDir = VineBlock.getPropertyForFace(direction.getOpposite());
+               level.setBlock(neighbourPos, (BlockState)Blocks.VINE.defaultBlockState().setValue(vineDir, true), 3);
             }
          }
       }
    }
 
-   private void maybeAddLeavesAbove(RandomSource var1, LevelAccessor var2, BlockPos var3) {
-      if (var1.nextFloat() < 0.5F && var2.getBlockState(var3).is(Blocks.NETHERRACK) && var2.getBlockState(var3.above()).isAir()) {
-         var2.setBlock(var3.above(), (BlockState)Blocks.JUNGLE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true), 3);
+   private void maybeAddLeavesAbove(final RandomSource random, final LevelAccessor level, final BlockPos pos) {
+      if (random.nextFloat() < 0.5F && level.getBlockState(pos).is(Blocks.NETHERRACK) && level.getBlockState(pos.above()).isAir()) {
+         level.setBlock(pos.above(), (BlockState)Blocks.JUNGLE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true), 3);
       }
 
    }
 
-   private void addNetherrackDripColumnsBelowPortal(RandomSource var1, LevelAccessor var2) {
-      for(int var3 = this.boundingBox.minX() + 1; var3 < this.boundingBox.maxX(); ++var3) {
-         for(int var4 = this.boundingBox.minZ() + 1; var4 < this.boundingBox.maxZ(); ++var4) {
-            BlockPos var5 = new BlockPos(var3, this.boundingBox.minY(), var4);
-            if (var2.getBlockState(var5).is(Blocks.NETHERRACK)) {
-               this.addNetherrackDripColumn(var1, var2, var5.below());
+   private void addNetherrackDripColumnsBelowPortal(final RandomSource random, final LevelAccessor level) {
+      for(int x = this.boundingBox.minX() + 1; x < this.boundingBox.maxX(); ++x) {
+         for(int z = this.boundingBox.minZ() + 1; z < this.boundingBox.maxZ(); ++z) {
+            BlockPos pos = new BlockPos(x, this.boundingBox.minY(), z);
+            if (level.getBlockState(pos).is(Blocks.NETHERRACK)) {
+               this.addNetherrackDripColumn(random, level, pos.below());
             }
          }
       }
 
    }
 
-   private void addNetherrackDripColumn(RandomSource var1, LevelAccessor var2, BlockPos var3) {
-      BlockPos.MutableBlockPos var4 = var3.mutable();
-      this.placeNetherrackOrMagma(var1, var2, var4);
-      int var5 = 8;
+   private void addNetherrackDripColumn(final RandomSource random, final LevelAccessor level, final BlockPos pos) {
+      BlockPos.MutableBlockPos currentPos = pos.mutable();
+      this.placeNetherrackOrMagma(random, level, currentPos);
+      int remainingCap = 8;
 
-      while(var5 > 0 && var1.nextFloat() < 0.5F) {
-         var4.move(Direction.DOWN);
-         --var5;
-         this.placeNetherrackOrMagma(var1, var2, var4);
+      while(remainingCap > 0 && random.nextFloat() < 0.5F) {
+         currentPos.move(Direction.DOWN);
+         --remainingCap;
+         this.placeNetherrackOrMagma(random, level, currentPos);
       }
 
    }
 
-   private void spreadNetherrack(RandomSource var1, LevelAccessor var2) {
-      boolean var3 = this.verticalPlacement == RuinedPortalPiece.VerticalPlacement.ON_LAND_SURFACE || this.verticalPlacement == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR;
-      BlockPos var4 = this.boundingBox.getCenter();
-      int var5 = var4.getX();
-      int var6 = var4.getZ();
-      float[] var7 = new float[]{1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.9F, 0.9F, 0.8F, 0.7F, 0.6F, 0.4F, 0.2F};
-      int var8 = var7.length;
-      int var9 = (this.boundingBox.getXSpan() + this.boundingBox.getZSpan()) / 2;
-      int var10 = var1.nextInt(Math.max(1, 8 - var9 / 2));
-      boolean var11 = true;
-      BlockPos.MutableBlockPos var12 = BlockPos.ZERO.mutable();
+   private void spreadNetherrack(final RandomSource random, final LevelAccessor level) {
+      boolean followGroundSurface = this.verticalPlacement == RuinedPortalPiece.VerticalPlacement.ON_LAND_SURFACE || this.verticalPlacement == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR;
+      BlockPos center = this.boundingBox.getCenter();
+      int centerX = center.getX();
+      int centerZ = center.getZ();
+      float[] netherrackProbabilityByDistance = new float[]{1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.9F, 0.9F, 0.8F, 0.7F, 0.6F, 0.4F, 0.2F};
+      int maxDistance = netherrackProbabilityByDistance.length;
+      int averageWidth = (this.boundingBox.getXSpan() + this.boundingBox.getZSpan()) / 2;
+      int distanceAdjustment = random.nextInt(Math.max(1, 8 - averageWidth / 2));
+      int maxYDiff = 3;
+      BlockPos.MutableBlockPos pos = BlockPos.ZERO.mutable();
 
-      for(int var13 = var5 - var8; var13 <= var5 + var8; ++var13) {
-         for(int var14 = var6 - var8; var14 <= var6 + var8; ++var14) {
-            int var15 = Math.abs(var13 - var5) + Math.abs(var14 - var6);
-            int var16 = Math.max(0, var15 + var10);
-            if (var16 < var8) {
-               float var17 = var7[var16];
-               if (var1.nextDouble() < (double)var17) {
-                  int var18 = getSurfaceY(var2, var13, var14, this.verticalPlacement);
-                  int var19 = var3 ? var18 : Math.min(this.boundingBox.minY(), var18);
-                  var12.set(var13, var19, var14);
-                  if (Math.abs(var19 - this.boundingBox.minY()) <= 3 && this.canBlockBeReplacedByNetherrackOrMagma(var2, var12)) {
-                     this.placeNetherrackOrMagma(var1, var2, var12);
+      for(int x = centerX - maxDistance; x <= centerX + maxDistance; ++x) {
+         for(int z = centerZ - maxDistance; z <= centerZ + maxDistance; ++z) {
+            int distance = Math.abs(x - centerX) + Math.abs(z - centerZ);
+            int adjustedDistance = Math.max(0, distance + distanceAdjustment);
+            if (adjustedDistance < maxDistance) {
+               float probabilityOfNetherrack = netherrackProbabilityByDistance[adjustedDistance];
+               if (random.nextDouble() < (double)probabilityOfNetherrack) {
+                  int surfaceY = getSurfaceY(level, x, z, this.verticalPlacement);
+                  int y = followGroundSurface ? surfaceY : Math.min(this.boundingBox.minY(), surfaceY);
+                  pos.set(x, y, z);
+                  if (Math.abs(y - this.boundingBox.minY()) <= 3 && this.canBlockBeReplacedByNetherrackOrMagma(level, pos)) {
+                     this.placeNetherrackOrMagma(random, level, pos);
                      if (this.properties.overgrown) {
-                        this.maybeAddLeavesAbove(var1, var2, var12);
+                        this.maybeAddLeavesAbove(random, level, pos);
                      }
 
-                     this.addNetherrackDripColumn(var1, var2, var12.below());
+                     this.addNetherrackDripColumn(random, level, pos.below());
                   }
                }
             }
@@ -214,38 +214,38 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
 
    }
 
-   private boolean canBlockBeReplacedByNetherrackOrMagma(LevelAccessor var1, BlockPos var2) {
-      BlockState var3 = var1.getBlockState(var2);
-      return !var3.is(Blocks.AIR) && !var3.is(Blocks.OBSIDIAN) && !var3.is(BlockTags.FEATURES_CANNOT_REPLACE) && (this.verticalPlacement == RuinedPortalPiece.VerticalPlacement.IN_NETHER || !var3.is(Blocks.LAVA));
+   private boolean canBlockBeReplacedByNetherrackOrMagma(final LevelAccessor level, final BlockPos pos) {
+      BlockState state = level.getBlockState(pos);
+      return !state.is(Blocks.AIR) && !state.is(Blocks.OBSIDIAN) && !state.is(BlockTags.FEATURES_CANNOT_REPLACE) && (this.verticalPlacement == RuinedPortalPiece.VerticalPlacement.IN_NETHER || !state.is(Blocks.LAVA));
    }
 
-   private void placeNetherrackOrMagma(RandomSource var1, LevelAccessor var2, BlockPos var3) {
-      if (!this.properties.cold && var1.nextFloat() < 0.07F) {
-         var2.setBlock(var3, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
+   private void placeNetherrackOrMagma(final RandomSource random, final LevelAccessor level, final BlockPos pos) {
+      if (!this.properties.cold && random.nextFloat() < 0.07F) {
+         level.setBlock(pos, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
       } else {
-         var2.setBlock(var3, Blocks.NETHERRACK.defaultBlockState(), 3);
+         level.setBlock(pos, Blocks.NETHERRACK.defaultBlockState(), 3);
       }
 
    }
 
-   private static int getSurfaceY(LevelAccessor var0, int var1, int var2, VerticalPlacement var3) {
-      return var0.getHeight(getHeightMapType(var3), var1, var2) - 1;
+   private static int getSurfaceY(final LevelAccessor level, final int x, final int z, final VerticalPlacement verticalPlacement) {
+      return level.getHeight(getHeightMapType(verticalPlacement), x, z) - 1;
    }
 
-   public static Heightmap.Types getHeightMapType(VerticalPlacement var0) {
-      return var0 == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR ? Heightmap.Types.OCEAN_FLOOR_WG : Heightmap.Types.WORLD_SURFACE_WG;
+   public static Heightmap.Types getHeightMapType(final VerticalPlacement verticalPlacement) {
+      return verticalPlacement == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR ? Heightmap.Types.OCEAN_FLOOR_WG : Heightmap.Types.WORLD_SURFACE_WG;
    }
 
-   private static ProcessorRule getBlockReplaceRule(Block var0, float var1, Block var2) {
-      return new ProcessorRule(new RandomBlockMatchTest(var0, var1), AlwaysTrueTest.INSTANCE, var2.defaultBlockState());
+   private static ProcessorRule getBlockReplaceRule(final Block source, final float probability, final Block target) {
+      return new ProcessorRule(new RandomBlockMatchTest(source, probability), AlwaysTrueTest.INSTANCE, target.defaultBlockState());
    }
 
-   private static ProcessorRule getBlockReplaceRule(Block var0, Block var1) {
-      return new ProcessorRule(new BlockMatchTest(var0), AlwaysTrueTest.INSTANCE, var1.defaultBlockState());
+   private static ProcessorRule getBlockReplaceRule(final Block source, final Block target) {
+      return new ProcessorRule(new BlockMatchTest(source), AlwaysTrueTest.INSTANCE, target.defaultBlockState());
    }
 
    public static class Properties {
-      public static final Codec<Properties> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.fieldOf("cold").forGetter((var0x) -> var0x.cold), Codec.FLOAT.fieldOf("mossiness").forGetter((var0x) -> var0x.mossiness), Codec.BOOL.fieldOf("air_pocket").forGetter((var0x) -> var0x.airPocket), Codec.BOOL.fieldOf("overgrown").forGetter((var0x) -> var0x.overgrown), Codec.BOOL.fieldOf("vines").forGetter((var0x) -> var0x.vines), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter((var0x) -> var0x.replaceWithBlackstone)).apply(var0, Properties::new));
+      public static final Codec<Properties> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.fieldOf("cold").forGetter((p) -> p.cold), Codec.FLOAT.fieldOf("mossiness").forGetter((p) -> p.mossiness), Codec.BOOL.fieldOf("air_pocket").forGetter((p) -> p.airPocket), Codec.BOOL.fieldOf("overgrown").forGetter((p) -> p.overgrown), Codec.BOOL.fieldOf("vines").forGetter((p) -> p.vines), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter((p) -> p.replaceWithBlackstone)).apply(i, Properties::new));
       public boolean cold;
       public float mossiness;
       public boolean airPocket;
@@ -257,14 +257,14 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
          super();
       }
 
-      public Properties(boolean var1, float var2, boolean var3, boolean var4, boolean var5, boolean var6) {
+      public Properties(final boolean cold, final float mossiness, final boolean airPocket, final boolean overgrown, final boolean vines, final boolean replaceWithBlackstone) {
          super();
-         this.cold = var1;
-         this.mossiness = var2;
-         this.airPocket = var3;
-         this.overgrown = var4;
-         this.vines = var5;
-         this.replaceWithBlackstone = var6;
+         this.cold = cold;
+         this.mossiness = mossiness;
+         this.airPocket = airPocket;
+         this.overgrown = overgrown;
+         this.vines = vines;
+         this.replaceWithBlackstone = replaceWithBlackstone;
       }
    }
 
@@ -279,8 +279,8 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       public static final Codec<VerticalPlacement> CODEC = StringRepresentable.<VerticalPlacement>fromEnum(VerticalPlacement::values);
       private final String name;
 
-      private VerticalPlacement(final String var3) {
-         this.name = var3;
+      private VerticalPlacement(final String name) {
+         this.name = name;
       }
 
       public String getName() {

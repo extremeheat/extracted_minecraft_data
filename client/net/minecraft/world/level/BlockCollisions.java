@@ -29,79 +29,79 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
    private long cachedBlockGetterPos;
    private final BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> resultProvider;
 
-   public BlockCollisions(CollisionGetter var1, @Nullable Entity var2, AABB var3, boolean var4, BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> var5) {
-      this(var1, var2 == null ? CollisionContext.empty() : CollisionContext.of(var2), var3, var4, var5);
+   public BlockCollisions(final CollisionGetter collisionGetter, final @Nullable Entity source, final AABB box, final boolean onlySuffocatingBlocks, final BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> resultProvider) {
+      this(collisionGetter, source == null ? CollisionContext.empty() : CollisionContext.of(source), box, onlySuffocatingBlocks, resultProvider);
    }
 
-   public BlockCollisions(CollisionGetter var1, CollisionContext var2, AABB var3, boolean var4, BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> var5) {
+   public BlockCollisions(final CollisionGetter collisionGetter, final CollisionContext context, final AABB box, final boolean onlySuffocatingBlocks, final BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> resultProvider) {
       super();
-      this.context = var2;
+      this.context = context;
       this.pos = new BlockPos.MutableBlockPos();
-      this.entityShape = Shapes.create(var3);
-      this.collisionGetter = var1;
-      this.box = var3;
-      this.onlySuffocatingBlocks = var4;
-      this.resultProvider = var5;
-      int var6 = Mth.floor(var3.minX - 1.0E-7) - 1;
-      int var7 = Mth.floor(var3.maxX + 1.0E-7) + 1;
-      int var8 = Mth.floor(var3.minY - 1.0E-7) - 1;
-      int var9 = Mth.floor(var3.maxY + 1.0E-7) + 1;
-      int var10 = Mth.floor(var3.minZ - 1.0E-7) - 1;
-      int var11 = Mth.floor(var3.maxZ + 1.0E-7) + 1;
-      this.cursor = new Cursor3D(var6, var8, var10, var7, var9, var11);
+      this.entityShape = Shapes.create(box);
+      this.collisionGetter = collisionGetter;
+      this.box = box;
+      this.onlySuffocatingBlocks = onlySuffocatingBlocks;
+      this.resultProvider = resultProvider;
+      int x0 = Mth.floor(box.minX - 1.0E-7) - 1;
+      int x1 = Mth.floor(box.maxX + 1.0E-7) + 1;
+      int y0 = Mth.floor(box.minY - 1.0E-7) - 1;
+      int y1 = Mth.floor(box.maxY + 1.0E-7) + 1;
+      int z0 = Mth.floor(box.minZ - 1.0E-7) - 1;
+      int z1 = Mth.floor(box.maxZ + 1.0E-7) + 1;
+      this.cursor = new Cursor3D(x0, y0, z0, x1, y1, z1);
    }
 
-   private @Nullable BlockGetter getChunk(int var1, int var2) {
-      int var3 = SectionPos.blockToSectionCoord(var1);
-      int var4 = SectionPos.blockToSectionCoord(var2);
-      long var5 = ChunkPos.asLong(var3, var4);
-      if (this.cachedBlockGetter != null && this.cachedBlockGetterPos == var5) {
+   private @Nullable BlockGetter getChunk(final int x, final int z) {
+      int chunkX = SectionPos.blockToSectionCoord(x);
+      int chunkZ = SectionPos.blockToSectionCoord(z);
+      long chunkPos = ChunkPos.pack(chunkX, chunkZ);
+      if (this.cachedBlockGetter != null && this.cachedBlockGetterPos == chunkPos) {
          return this.cachedBlockGetter;
       } else {
-         BlockGetter var7 = this.collisionGetter.getChunkForCollisions(var3, var4);
-         this.cachedBlockGetter = var7;
-         this.cachedBlockGetterPos = var5;
-         return var7;
+         BlockGetter result = this.collisionGetter.getChunkForCollisions(chunkX, chunkZ);
+         this.cachedBlockGetter = result;
+         this.cachedBlockGetterPos = chunkPos;
+         return result;
       }
    }
 
    protected T computeNext() {
       while(true) {
          if (this.cursor.advance()) {
-            int var1 = this.cursor.nextX();
-            int var2 = this.cursor.nextY();
-            int var3 = this.cursor.nextZ();
-            int var4 = this.cursor.getNextType();
-            if (var4 == 3) {
+            int x = this.cursor.nextX();
+            int y = this.cursor.nextY();
+            int z = this.cursor.nextZ();
+            int cursorFaceType = this.cursor.getNextType();
+            if (cursorFaceType == 3) {
                continue;
             }
 
-            BlockGetter var5 = this.getChunk(var1, var3);
-            if (var5 == null) {
+            BlockGetter chunk = this.getChunk(x, z);
+            if (chunk == null) {
                continue;
             }
 
-            this.pos.set(var1, var2, var3);
-            BlockState var6 = var5.getBlockState(this.pos);
-            if (this.onlySuffocatingBlocks && !var6.isSuffocating(var5, this.pos) || var4 == 1 && !var6.hasLargeCollisionShape() || var4 == 2 && !var6.is(Blocks.MOVING_PISTON)) {
+            this.pos.set(x, y, z);
+            BlockState blockState = chunk.getBlockState(this.pos);
+            if (this.onlySuffocatingBlocks && !blockState.isSuffocating(chunk, this.pos) || cursorFaceType == 1 && !blockState.hasLargeCollisionShape() || cursorFaceType == 2 && !blockState.is(Blocks.MOVING_PISTON)) {
                continue;
             }
 
-            VoxelShape var7 = this.context.getCollisionShape(var6, this.collisionGetter, this.pos);
-            if (var7 == Shapes.block()) {
-               if (!this.box.intersects((double)var1, (double)var2, (double)var3, (double)var1 + 1.0, (double)var2 + 1.0, (double)var3 + 1.0)) {
+            VoxelShape blockShape = this.context.getCollisionShape(blockState, this.collisionGetter, this.pos);
+            if (blockShape == Shapes.block()) {
+               if (!this.box.intersects((double)x, (double)y, (double)z, (double)x + 1.0, (double)y + 1.0, (double)z + 1.0)) {
                   continue;
                }
 
-               return (T)this.resultProvider.apply(this.pos, var7.move((Vec3i)this.pos));
+               return (T)this.resultProvider.apply(this.pos, blockShape.move((Vec3i)this.pos));
             }
 
-            VoxelShape var8 = var7.move((Vec3i)this.pos);
-            if (var8.isEmpty() || !Shapes.joinIsNotEmpty(var8, this.entityShape, BooleanOp.AND)) {
+            VoxelShape shape = blockShape.move((Vec3i)this.pos);
+            if (shape.isEmpty() || !Shapes.joinIsNotEmpty(shape, this.entityShape, BooleanOp.AND)) {
                continue;
             }
 
-            return (T)this.resultProvider.apply(this.pos, var8);
+            return (T)this.resultProvider.apply(this.pos, shape);
          }
 
          return (T)this.endOfData();

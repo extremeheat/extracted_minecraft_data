@@ -46,8 +46,6 @@ public class RenderPipelines {
    public static final RenderPipeline CUTOUT_BLOCK;
    public static final RenderPipeline CUTOUT_TERRAIN;
    public static final RenderPipeline TRANSLUCENT_TERRAIN;
-   public static final RenderPipeline TRIPWIRE_BLOCK;
-   public static final RenderPipeline TRIPWIRE_TERRAIN;
    public static final RenderPipeline TRANSLUCENT_MOVING_BLOCK;
    public static final RenderPipeline ARMOR_CUTOUT_NO_CULL;
    public static final RenderPipeline ARMOR_DECAL_CUTOUT_NO_CULL;
@@ -92,6 +90,7 @@ public class RenderPipelines {
    public static final RenderPipeline CLOUDS;
    public static final RenderPipeline LINES;
    public static final RenderPipeline LINES_TRANSLUCENT;
+   public static final RenderPipeline LINES_DEPTH_BIAS;
    public static final RenderPipeline SECONDARY_BLOCK_OUTLINE;
    public static final RenderPipeline DEBUG_POINTS;
    public static final RenderPipeline DEBUG_FILLED_BOX;
@@ -133,9 +132,9 @@ public class RenderPipelines {
       super();
    }
 
-   private static RenderPipeline register(RenderPipeline var0) {
-      PIPELINES_BY_LOCATION.put(var0.getLocation(), var0);
-      return var0;
+   private static RenderPipeline register(final RenderPipeline pipeline) {
+      PIPELINES_BY_LOCATION.put(pipeline.getLocation(), pipeline);
+      return pipeline;
    }
 
    public static List<RenderPipeline> getStaticPipelines() {
@@ -172,8 +171,6 @@ public class RenderPipelines {
       CUTOUT_BLOCK = register(RenderPipeline.builder(BLOCK_SNIPPET).withLocation("pipeline/cutout_block").withShaderDefine("ALPHA_CUTOUT", 0.5F).build());
       CUTOUT_TERRAIN = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/cutout_terrain").withShaderDefine("ALPHA_CUTOUT", 0.5F).build());
       TRANSLUCENT_TERRAIN = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/translucent_terrain").withBlend(BlendFunction.TRANSLUCENT).withShaderDefine("ALPHA_CUTOUT", 0.01F).build());
-      TRIPWIRE_BLOCK = register(RenderPipeline.builder(BLOCK_SNIPPET).withLocation("pipeline/tripwire_block").withShaderDefine("ALPHA_CUTOUT", 0.1F).withBlend(BlendFunction.TRANSLUCENT).build());
-      TRIPWIRE_TERRAIN = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/tripwire_terrain").withShaderDefine("ALPHA_CUTOUT", 0.1F).withBlend(BlendFunction.TRANSLUCENT).build());
       TRANSLUCENT_MOVING_BLOCK = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/translucent_moving_block").withVertexShader("core/rendertype_translucent_moving_block").withFragmentShader("core/rendertype_translucent_moving_block").withSampler("Sampler0").withSampler("Sampler2").withBlend(BlendFunction.TRANSLUCENT).withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS).build());
       ARMOR_CUTOUT_NO_CULL = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/armor_cutout_no_cull").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("NO_OVERLAY").withShaderDefine("PER_FACE_LIGHTING").withCull(false).build());
       ARMOR_DECAL_CUTOUT_NO_CULL = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/armor_decal_cutout_no_cull").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("NO_OVERLAY").withShaderDefine("PER_FACE_LIGHTING").withCull(false).withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST).build());
@@ -197,7 +194,7 @@ public class RenderPipelines {
       BEACON_BEAM_TRANSLUCENT = register(RenderPipeline.builder(BEACON_BEAM_SNIPPET).withLocation("pipeline/beacon_beam_translucent").withDepthWrite(false).withBlend(BlendFunction.TRANSLUCENT).build());
       DRAGON_EXPLOSION_ALPHA = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/dragon_explosion_alpha").withVertexShader("core/rendertype_entity_alpha").withFragmentShader("core/rendertype_entity_alpha").withSampler("Sampler0").withCull(false).withVertexFormat(DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS).build());
       LEASH = register(RenderPipeline.builder(MATRICES_FOG_SNIPPET).withLocation("pipeline/leash").withVertexShader("core/rendertype_leash").withFragmentShader("core/rendertype_leash").withSampler("Sampler2").withCull(false).withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.TRIANGLE_STRIP).build());
-      WATER_MASK = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/water_mask").withVertexShader("core/rendertype_water_mask").withFragmentShader("core/rendertype_water_mask").withColorWrite(false).withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).build());
+      WATER_MASK = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/water_mask").withVertexShader("core/rendertype_water_mask").withFragmentShader("core/rendertype_water_mask").withBlend(BlendFunction.TRANSLUCENT).withColorWrite(false).withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).build());
       GLINT = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET, FOG_SNIPPET, GLOBALS_SNIPPET).withLocation("pipeline/glint").withVertexShader("core/glint").withFragmentShader("core/glint").withSampler("Sampler0").withDepthWrite(false).withCull(false).withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST).withBlend(BlendFunction.GLINT).withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS).build());
       CRUMBLING = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/crumbling").withVertexShader("core/rendertype_crumbling").withFragmentShader("core/rendertype_crumbling").withSampler("Sampler0").withBlend(new BlendFunction(SourceFactor.DST_COLOR, DestFactor.SRC_COLOR, SourceFactor.ONE, DestFactor.ZERO)).withDepthWrite(false).withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS).withDepthBias(-1.0F, -10.0F).build());
       TEXT = register(RenderPipeline.builder(TEXT_SNIPPET, FOG_SNIPPET).withLocation("pipeline/text").withVertexShader("core/rendertype_text").withFragmentShader("core/rendertype_text").withSampler("Sampler0").withSampler("Sampler2").build());
@@ -218,6 +215,7 @@ public class RenderPipelines {
       CLOUDS = register(RenderPipeline.builder(CLOUDS_SNIPPET).withLocation("pipeline/clouds").build());
       LINES = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/lines").build());
       LINES_TRANSLUCENT = register(RenderPipeline.builder(LINES_SNIPPET).withDepthWrite(false).withLocation("pipeline/lines_translucent").build());
+      LINES_DEPTH_BIAS = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/lines_depth_bias").withDepthBias(-1.0F, -1.0F).build());
       SECONDARY_BLOCK_OUTLINE = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/secondary_block_outline").withBlend(BlendFunction.TRANSLUCENT).withDepthWrite(false).build());
       DEBUG_POINTS = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/debug_points").withVertexShader("core/debug_point").withFragmentShader("core/position_color").withCull(false).withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LINE_WIDTH, VertexFormat.Mode.POINTS).build());
       DEBUG_FILLED_BOX = register(RenderPipeline.builder(DEBUG_FILLED_SNIPPET).withLocation("pipeline/debug_filled_box").build());
@@ -242,7 +240,7 @@ public class RenderPipelines {
       FIRE_SCREEN_EFFECT = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/fire_screen_effect").withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withDepthWrite(false).build());
       GUI_OPAQUE_TEXTURED_BACKGROUND = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_opaque_textured_background").withoutBlend().build());
       GUI_NAUSEA_OVERLAY = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_nausea_overlay").withBlend(BlendFunction.ADDITIVE).build());
-      VIGNETTE = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/vignette").withBlend(new BlendFunction(SourceFactor.ZERO, DestFactor.ONE_MINUS_SRC_COLOR)).build());
+      VIGNETTE = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/vignette").withBlend(new BlendFunction(SourceFactor.ZERO, DestFactor.ONE_MINUS_SRC_COLOR, SourceFactor.ZERO, DestFactor.ONE)).build());
       CROSSHAIR = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/crosshair").withBlend(BlendFunction.INVERT).build());
       MOJANG_LOGO = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/mojang_logo").withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE)).build());
       ENTITY_OUTLINE_BLIT = register(RenderPipeline.builder().withLocation("pipeline/entity_outline_blit").withVertexShader("core/screenquad").withFragmentShader("core/blit_screen").withSampler("InSampler").withBlend(BlendFunction.ENTITY_OUTLINE_BLIT).withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withColorWrite(true, false).withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES).build());

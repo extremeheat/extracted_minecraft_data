@@ -5,9 +5,9 @@ import net.minecraft.network.chat.Component;
 public class UnknownGameTestException extends GameTestException {
    private final Throwable reason;
 
-   public UnknownGameTestException(Throwable var1) {
-      super(var1.getMessage());
-      this.reason = var1;
+   public UnknownGameTestException(final Throwable reason) {
+      super(reason.getMessage());
+      this.reason = reason;
    }
 
    public Component getDescription() {

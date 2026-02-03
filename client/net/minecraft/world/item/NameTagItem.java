@@ -9,21 +9,21 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 
 public class NameTagItem extends Item {
-   public NameTagItem(Item.Properties var1) {
-      super(var1);
+   public NameTagItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult interactLivingEntity(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
-      Component var5 = (Component)var1.get(DataComponents.CUSTOM_NAME);
-      if (var5 != null && var3.getType().canSerialize()) {
-         if (!var2.level().isClientSide() && var3.isAlive()) {
-            var3.setCustomName(var5);
-            if (var3 instanceof Mob) {
-               Mob var6 = (Mob)var3;
-               var6.setPersistenceRequired();
+   public InteractionResult interactLivingEntity(final ItemStack itemStack, final Player player, final LivingEntity target, final InteractionHand type) {
+      Component customName = (Component)itemStack.get(DataComponents.CUSTOM_NAME);
+      if (customName != null && target.getType().canSerialize()) {
+         if (!player.level().isClientSide() && target.isAlive()) {
+            target.setCustomName(customName);
+            if (target instanceof Mob) {
+               Mob mob = (Mob)target;
+               mob.setPersistenceRequired();
             }
 
-            var1.shrink(1);
+            itemStack.shrink(1);
          }
 
          return InteractionResult.SUCCESS;

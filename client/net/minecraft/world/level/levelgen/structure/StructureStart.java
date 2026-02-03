@@ -29,38 +29,38 @@ public final class StructureStart {
    private int references;
    private volatile @Nullable BoundingBox cachedBoundingBox;
 
-   public StructureStart(Structure var1, ChunkPos var2, int var3, PiecesContainer var4) {
+   public StructureStart(final Structure structure, final ChunkPos chunkPos, final int references, final PiecesContainer pieceContainer) {
       super();
-      this.structure = var1;
-      this.chunkPos = var2;
-      this.references = var3;
-      this.pieceContainer = var4;
+      this.structure = structure;
+      this.chunkPos = chunkPos;
+      this.references = references;
+      this.pieceContainer = pieceContainer;
    }
 
-   public static @Nullable StructureStart loadStaticStart(StructurePieceSerializationContext var0, CompoundTag var1, long var2) {
-      String var4 = var1.getStringOr("id", "");
-      if ("INVALID".equals(var4)) {
+   public static @Nullable StructureStart loadStaticStart(final StructurePieceSerializationContext context, final CompoundTag tag, final long seed) {
+      String id = tag.getStringOr("id", "");
+      if ("INVALID".equals(id)) {
          return INVALID_START;
       } else {
-         Registry var5 = var0.registryAccess().lookupOrThrow(Registries.STRUCTURE);
-         Structure var6 = (Structure)var5.getValue(Identifier.parse(var4));
-         if (var6 == null) {
-            LOGGER.error("Unknown stucture id: {}", var4);
+         Registry<Structure> structuresRegistry = context.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+         Structure stucture = (Structure)structuresRegistry.getValue(Identifier.parse(id));
+         if (stucture == null) {
+            LOGGER.error("Unknown stucture id: {}", id);
             return null;
          } else {
-            ChunkPos var7 = new ChunkPos(var1.getIntOr("ChunkX", 0), var1.getIntOr("ChunkZ", 0));
-            int var8 = var1.getIntOr("references", 0);
-            ListTag var9 = var1.getListOrEmpty("Children");
+            ChunkPos chunkPos = new ChunkPos(tag.getIntOr("ChunkX", 0), tag.getIntOr("ChunkZ", 0));
+            int references = tag.getIntOr("references", 0);
+            ListTag children = tag.getListOrEmpty("Children");
 
             try {
-               PiecesContainer var10 = PiecesContainer.load(var9, var0);
-               if (var6 instanceof OceanMonumentStructure) {
-                  var10 = OceanMonumentStructure.regeneratePiecesAfterLoad(var7, var2, var10);
+               PiecesContainer pieces = PiecesContainer.load(children, context);
+               if (stucture instanceof OceanMonumentStructure) {
+                  pieces = OceanMonumentStructure.regeneratePiecesAfterLoad(chunkPos, seed, pieces);
                }
 
-               return new StructureStart(var6, var7, var8, var10);
-            } catch (Exception var11) {
-               LOGGER.error("Failed Start with id {}", var4, var11);
+               return new StructureStart(stucture, chunkPos, references, pieces);
+            } catch (Exception e) {
+               LOGGER.error("Failed Start with id {}", id, e);
                return null;
             }
          }
@@ -68,44 +68,44 @@ public final class StructureStart {
    }
 
    public BoundingBox getBoundingBox() {
-      BoundingBox var1 = this.cachedBoundingBox;
-      if (var1 == null) {
-         var1 = this.structure.adjustBoundingBox(this.pieceContainer.calculateBoundingBox());
-         this.cachedBoundingBox = var1;
+      BoundingBox boundingBox = this.cachedBoundingBox;
+      if (boundingBox == null) {
+         boundingBox = this.structure.adjustBoundingBox(this.pieceContainer.calculateBoundingBox());
+         this.cachedBoundingBox = boundingBox;
       }
 
-      return var1;
+      return boundingBox;
    }
 
-   public void placeInChunk(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6) {
-      List var7 = this.pieceContainer.pieces();
-      if (!var7.isEmpty()) {
-         BoundingBox var8 = ((StructurePiece)var7.get(0)).boundingBox;
-         BlockPos var9 = var8.getCenter();
-         BlockPos var10 = new BlockPos(var9.getX(), var8.minY(), var9.getZ());
+   public void placeInChunk(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos) {
+      List<StructurePiece> pieces = this.pieceContainer.pieces();
+      if (!pieces.isEmpty()) {
+         BoundingBox centerBB = ((StructurePiece)pieces.get(0)).boundingBox;
+         BlockPos centerPos = centerBB.getCenter();
+         BlockPos referencePos = new BlockPos(centerPos.getX(), centerBB.minY(), centerPos.getZ());
 
-         for(StructurePiece var12 : var7) {
-            if (var12.getBoundingBox().intersects(var5)) {
-               var12.postProcess(var1, var2, var3, var4, var5, var6, var10);
+         for(StructurePiece next : pieces) {
+            if (next.getBoundingBox().intersects(chunkBB)) {
+               next.postProcess(level, structureManager, generator, random, chunkBB, chunkPos, referencePos);
             }
          }
 
-         this.structure.afterPlace(var1, var2, var3, var4, var5, var6, this.pieceContainer);
+         this.structure.afterPlace(level, structureManager, generator, random, chunkBB, chunkPos, this.pieceContainer);
       }
    }
 
-   public CompoundTag createTag(StructurePieceSerializationContext var1, ChunkPos var2) {
-      CompoundTag var3 = new CompoundTag();
+   public CompoundTag createTag(final StructurePieceSerializationContext context, final ChunkPos chunkPos) {
+      CompoundTag tag = new CompoundTag();
       if (this.isValid()) {
-         var3.putString("id", var1.registryAccess().lookupOrThrow(Registries.STRUCTURE).getKey(this.structure).toString());
-         var3.putInt("ChunkX", var2.x);
-         var3.putInt("ChunkZ", var2.z);
-         var3.putInt("references", this.references);
-         var3.put("Children", this.pieceContainer.save(var1));
-         return var3;
+         tag.putString("id", context.registryAccess().lookupOrThrow(Registries.STRUCTURE).getKey(this.structure).toString());
+         tag.putInt("ChunkX", chunkPos.x());
+         tag.putInt("ChunkZ", chunkPos.z());
+         tag.putInt("references", this.references);
+         tag.put("Children", this.pieceContainer.save(context));
+         return tag;
       } else {
-         var3.putString("id", "INVALID");
-         return var3;
+         tag.putString("id", "INVALID");
+         return tag;
       }
    }
 

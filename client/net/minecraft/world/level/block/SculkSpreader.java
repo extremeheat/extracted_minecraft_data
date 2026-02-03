@@ -10,8 +10,10 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -41,7 +43,7 @@ public class SculkSpreader {
    private static final int MAX_CURSORS = 32;
    public static final int SHRIEKER_PLACEMENT_RATE = 11;
    public static final int MAX_CURSOR_DISTANCE = 1024;
-   final boolean isWorldGeneration;
+   private final boolean isWorldGeneration;
    private final TagKey<Block> replaceableBlocks;
    private final int growthSpawnCost;
    private final int noGrowthRadius;
@@ -49,14 +51,14 @@ public class SculkSpreader {
    private final int additionalDecayRate;
    private List<ChargeCursor> cursors = new ArrayList();
 
-   public SculkSpreader(boolean var1, TagKey<Block> var2, int var3, int var4, int var5, int var6) {
+   public SculkSpreader(final boolean isWorldGeneration, final TagKey<Block> replaceableBlocks, final int growthSpawnCost, final int noGrowthRadius, final int chargeDecayRate, final int additionalDecayRate) {
       super();
-      this.isWorldGeneration = var1;
-      this.replaceableBlocks = var2;
-      this.growthSpawnCost = var3;
-      this.noGrowthRadius = var4;
-      this.chargeDecayRate = var5;
-      this.additionalDecayRate = var6;
+      this.isWorldGeneration = isWorldGeneration;
+      this.replaceableBlocks = replaceableBlocks;
+      this.growthSpawnCost = growthSpawnCost;
+      this.noGrowthRadius = noGrowthRadius;
+      this.chargeDecayRate = chargeDecayRate;
+      this.additionalDecayRate = additionalDecayRate;
    }
 
    public static SculkSpreader createLevelSpreader() {
@@ -100,123 +102,123 @@ public class SculkSpreader {
       this.cursors.clear();
    }
 
-   public void load(ValueInput var1) {
+   public void load(final ValueInput input) {
       this.cursors.clear();
-      ((List)var1.read("cursors", SculkSpreader.ChargeCursor.CODEC.sizeLimitedListOf(32)).orElse(List.of())).forEach(this::addCursor);
+      ((List)input.read("cursors", SculkSpreader.ChargeCursor.CODEC.sizeLimitedListOf(32)).orElse(List.of())).forEach(this::addCursor);
    }
 
-   public void save(ValueOutput var1) {
-      var1.store("cursors", SculkSpreader.ChargeCursor.CODEC.listOf(), this.cursors);
+   public void save(final ValueOutput output) {
+      output.store("cursors", SculkSpreader.ChargeCursor.CODEC.listOf(), this.cursors);
       if (SharedConstants.DEBUG_SCULK_CATALYST) {
-         int var2 = (Integer)this.getCursors().stream().map(ChargeCursor::getCharge).reduce(0, Integer::sum);
-         int var3 = (Integer)this.getCursors().stream().map((var0) -> 1).reduce(0, Integer::sum);
-         int var4 = (Integer)this.getCursors().stream().map(ChargeCursor::getCharge).reduce(0, Math::max);
-         var1.putInt("stats.total", var2);
-         var1.putInt("stats.count", var3);
-         var1.putInt("stats.max", var4);
-         var1.putInt("stats.avg", var2 / (var3 + 1));
+         int charge = (Integer)this.getCursors().stream().map(ChargeCursor::getCharge).reduce(0, Integer::sum);
+         int charges = (Integer)this.getCursors().stream().map((c) -> 1).reduce(0, Integer::sum);
+         int max = (Integer)this.getCursors().stream().map(ChargeCursor::getCharge).reduce(0, Math::max);
+         output.putInt("stats.total", charge);
+         output.putInt("stats.count", charges);
+         output.putInt("stats.max", max);
+         output.putInt("stats.avg", charge / (charges + 1));
       }
 
    }
 
-   public void addCursors(BlockPos var1, int var2) {
-      while(var2 > 0) {
-         int var3 = Math.min(var2, 1000);
-         this.addCursor(new ChargeCursor(var1, var3));
-         var2 -= var3;
+   public void addCursors(final BlockPos startPos, int charge) {
+      while(charge > 0) {
+         int currentCharge = Math.min(charge, 1000);
+         this.addCursor(new ChargeCursor(startPos, currentCharge));
+         charge -= currentCharge;
       }
 
    }
 
-   private void addCursor(ChargeCursor var1) {
+   private void addCursor(final ChargeCursor cursor) {
       if (this.cursors.size() < 32) {
-         this.cursors.add(var1);
+         this.cursors.add(cursor);
       }
    }
 
-   public void updateCursors(LevelAccessor var1, BlockPos var2, RandomSource var3, boolean var4) {
+   public void updateCursors(final LevelAccessor level, final BlockPos originPos, final RandomSource random, final boolean spreadVeins) {
       if (!this.cursors.isEmpty()) {
-         ArrayList var5 = new ArrayList();
-         HashMap var6 = new HashMap();
-         Object2IntOpenHashMap var7 = new Object2IntOpenHashMap();
+         List<ChargeCursor> processedCursors = new ArrayList();
+         Map<BlockPos, ChargeCursor> mergeableCursors = new HashMap();
+         Object2IntMap<BlockPos> chargeMap = new Object2IntOpenHashMap();
 
-         for(ChargeCursor var9 : this.cursors) {
-            if (!var9.isPosUnreasonable(var2)) {
-               var9.update(var1, var2, var3, this, var4);
-               if (var9.charge <= 0) {
-                  var1.levelEvent(3006, var9.getPos(), 0);
+         for(ChargeCursor cursor : this.cursors) {
+            if (!cursor.isPosUnreasonable(originPos)) {
+               cursor.update(level, originPos, random, this, spreadVeins);
+               if (cursor.charge <= 0) {
+                  level.levelEvent(3006, cursor.getPos(), 0);
                } else {
-                  BlockPos var10 = var9.getPos();
-                  var7.computeInt(var10, (var1x, var2x) -> (var2x == null ? 0 : var2x) + var9.charge);
-                  ChargeCursor var11 = (ChargeCursor)var6.get(var10);
-                  if (var11 == null) {
-                     var6.put(var10, var9);
-                     var5.add(var9);
-                  } else if (!this.isWorldGeneration() && var9.charge + var11.charge <= 1000) {
-                     var11.mergeWith(var9);
+                  BlockPos pos = cursor.getPos();
+                  chargeMap.computeInt(pos, (k, count) -> (count == null ? 0 : count) + cursor.charge);
+                  ChargeCursor existing = (ChargeCursor)mergeableCursors.get(pos);
+                  if (existing == null) {
+                     mergeableCursors.put(pos, cursor);
+                     processedCursors.add(cursor);
+                  } else if (!this.isWorldGeneration() && cursor.charge + existing.charge <= 1000) {
+                     existing.mergeWith(cursor);
                   } else {
-                     var5.add(var9);
-                     if (var9.charge < var11.charge) {
-                        var6.put(var10, var9);
+                     processedCursors.add(cursor);
+                     if (cursor.charge < existing.charge) {
+                        mergeableCursors.put(pos, cursor);
                      }
                   }
                }
             }
          }
 
-         ObjectIterator var16 = var7.object2IntEntrySet().iterator();
+         ObjectIterator var16 = chargeMap.object2IntEntrySet().iterator();
 
          while(var16.hasNext()) {
-            Object2IntMap.Entry var17 = (Object2IntMap.Entry)var16.next();
-            BlockPos var18 = (BlockPos)var17.getKey();
-            int var19 = var17.getIntValue();
-            ChargeCursor var12 = (ChargeCursor)var6.get(var18);
-            Set var13 = var12 == null ? null : var12.getFacingData();
-            if (var19 > 0 && var13 != null) {
-               int var14 = (int)(Math.log1p((double)var19) / 2.299999952316284) + 1;
-               int var15 = (var14 << 6) + MultifaceBlock.pack(var13);
-               var1.levelEvent(3006, var18, var15);
+            Object2IntMap.Entry<BlockPos> entry = (Object2IntMap.Entry)var16.next();
+            BlockPos pos = (BlockPos)entry.getKey();
+            int charge = entry.getIntValue();
+            ChargeCursor cursor = (ChargeCursor)mergeableCursors.get(pos);
+            Collection<Direction> faces = cursor == null ? null : cursor.getFacingData();
+            if (charge > 0 && faces != null) {
+               int numParticles = (int)(Math.log1p((double)charge) / 2.299999952316284) + 1;
+               int data = (numParticles << 6) + MultifaceBlock.pack(faces);
+               level.levelEvent(3006, pos, data);
             }
          }
 
-         this.cursors = var5;
+         this.cursors = processedCursors;
       }
    }
 
    public static class ChargeCursor {
-      private static final ObjectArrayList<Vec3i> NON_CORNER_NEIGHBOURS = (ObjectArrayList)Util.make(new ObjectArrayList(18), (var0) -> {
-         Stream var10000 = BlockPos.betweenClosedStream(new BlockPos(-1, -1, -1), new BlockPos(1, 1, 1)).filter((var0x) -> (var0x.getX() == 0 || var0x.getY() == 0 || var0x.getZ() == 0) && !var0x.equals(BlockPos.ZERO)).map(BlockPos::immutable);
-         Objects.requireNonNull(var0);
-         var10000.forEach(var0::add);
+      private static final ObjectArrayList<Vec3i> NON_CORNER_NEIGHBOURS = (ObjectArrayList)Util.make(new ObjectArrayList(18), (list) -> {
+         Stream var10000 = BlockPos.betweenClosedStream(new BlockPos(-1, -1, -1), new BlockPos(1, 1, 1)).filter((position) -> (position.getX() == 0 || position.getY() == 0 || position.getZ() == 0) && !position.equals(BlockPos.ZERO)).map(BlockPos::immutable);
+         Objects.requireNonNull(list);
+         var10000.forEach(list::add);
       });
       public static final int MAX_CURSOR_DECAY_DELAY = 1;
       private BlockPos pos;
-      int charge;
+      private int charge;
       private int updateDelay;
       private int decayDelay;
       private @Nullable Set<Direction> facings;
       private static final Codec<Set<Direction>> DIRECTION_SET;
       public static final Codec<ChargeCursor> CODEC;
 
-      private ChargeCursor(BlockPos var1, int var2, int var3, int var4, Optional<Set<Direction>> var5) {
+      private ChargeCursor(final BlockPos pos, final int charge, final int decayDelay, final int updateDelay, final Optional<Set<Direction>> facings) {
          super();
-         this.pos = var1;
-         this.charge = var2;
-         this.decayDelay = var3;
-         this.updateDelay = var4;
-         this.facings = (Set)var5.orElse((Object)null);
+         this.pos = pos;
+         this.charge = charge;
+         this.decayDelay = decayDelay;
+         this.updateDelay = updateDelay;
+         this.facings = (Set)facings.orElse((Object)null);
       }
 
-      public ChargeCursor(BlockPos var1, int var2) {
-         this(var1, var2, 1, 0, Optional.empty());
+      public ChargeCursor(final BlockPos pos, final int charge) {
+         this(pos, charge, 1, 0, Optional.empty());
       }
 
       public BlockPos getPos() {
          return this.pos;
       }
 
-      boolean isPosUnreasonable(BlockPos var1) {
-         return this.pos.distChessboard(var1) > 1024;
+      private boolean isPosUnreasonable(final BlockPos originPos) {
+         return this.pos.distChessboard(originPos) > 1024;
       }
 
       public int getCharge() {
@@ -231,73 +233,73 @@ public class SculkSpreader {
          return this.facings;
       }
 
-      private boolean shouldUpdate(LevelAccessor var1, BlockPos var2, boolean var3) {
+      private boolean shouldUpdate(final LevelAccessor level, final BlockPos pos, final boolean isWorldGen) {
          if (this.charge <= 0) {
             return false;
-         } else if (var3) {
+         } else if (isWorldGen) {
             return true;
-         } else if (var1 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var1;
-            return var4.shouldTickBlocksAt(var2);
+         } else if (level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
+            return serverLevel.shouldTickBlocksAt(pos);
          } else {
             return false;
          }
       }
 
-      public void update(LevelAccessor var1, BlockPos var2, RandomSource var3, SculkSpreader var4, boolean var5) {
-         if (this.shouldUpdate(var1, var2, var4.isWorldGeneration)) {
+      public void update(final LevelAccessor level, final BlockPos originPos, final RandomSource random, final SculkSpreader spreader, final boolean spreadVeins) {
+         if (this.shouldUpdate(level, originPos, spreader.isWorldGeneration)) {
             if (this.updateDelay > 0) {
                --this.updateDelay;
             } else {
-               BlockState var6 = var1.getBlockState(this.pos);
-               SculkBehaviour var7 = getBlockBehaviour(var6);
-               if (var5 && var7.attemptSpreadVein(var1, this.pos, var6, this.facings, var4.isWorldGeneration())) {
-                  if (var7.canChangeBlockStateOnSpread()) {
-                     var6 = var1.getBlockState(this.pos);
-                     var7 = getBlockBehaviour(var6);
+               BlockState currentState = level.getBlockState(this.pos);
+               SculkBehaviour sculkBehaviour = getBlockBehaviour(currentState);
+               if (spreadVeins && sculkBehaviour.attemptSpreadVein(level, this.pos, currentState, this.facings, spreader.isWorldGeneration())) {
+                  if (sculkBehaviour.canChangeBlockStateOnSpread()) {
+                     currentState = level.getBlockState(this.pos);
+                     sculkBehaviour = getBlockBehaviour(currentState);
                   }
 
-                  var1.playSound((Entity)null, this.pos, SoundEvents.SCULK_BLOCK_SPREAD, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  level.playSound((Entity)null, this.pos, SoundEvents.SCULK_BLOCK_SPREAD, SoundSource.BLOCKS, 1.0F, 1.0F);
                }
 
-               this.charge = var7.attemptUseCharge(this, var1, var2, var3, var4, var5);
+               this.charge = sculkBehaviour.attemptUseCharge(this, level, originPos, random, spreader, spreadVeins);
                if (this.charge <= 0) {
-                  var7.onDischarged(var1, var6, this.pos, var3);
+                  sculkBehaviour.onDischarged(level, currentState, this.pos, random);
                } else {
-                  BlockPos var8 = getValidMovementPos(var1, this.pos, var3);
-                  if (var8 != null) {
-                     var7.onDischarged(var1, var6, this.pos, var3);
-                     this.pos = var8.immutable();
-                     if (var4.isWorldGeneration() && !this.pos.closerThan(new Vec3i(var2.getX(), this.pos.getY(), var2.getZ()), 15.0)) {
+                  BlockPos transferPos = getValidMovementPos(level, this.pos, random);
+                  if (transferPos != null) {
+                     sculkBehaviour.onDischarged(level, currentState, this.pos, random);
+                     this.pos = transferPos.immutable();
+                     if (spreader.isWorldGeneration() && !this.pos.closerThan(new Vec3i(originPos.getX(), this.pos.getY(), originPos.getZ()), 15.0)) {
                         this.charge = 0;
                         return;
                      }
 
-                     var6 = var1.getBlockState(var8);
+                     currentState = level.getBlockState(transferPos);
                   }
 
-                  if (var6.getBlock() instanceof SculkBehaviour) {
-                     this.facings = MultifaceBlock.availableFaces(var6);
+                  if (currentState.getBlock() instanceof SculkBehaviour) {
+                     this.facings = MultifaceBlock.availableFaces(currentState);
                   }
 
-                  this.decayDelay = var7.updateDecayDelay(this.decayDelay);
-                  this.updateDelay = var7.getSculkSpreadDelay();
+                  this.decayDelay = sculkBehaviour.updateDecayDelay(this.decayDelay);
+                  this.updateDelay = sculkBehaviour.getSculkSpreadDelay();
                }
             }
          }
       }
 
-      void mergeWith(ChargeCursor var1) {
-         this.charge += var1.charge;
-         var1.charge = 0;
-         this.updateDelay = Math.min(this.updateDelay, var1.updateDelay);
+      private void mergeWith(final ChargeCursor other) {
+         this.charge += other.charge;
+         other.charge = 0;
+         this.updateDelay = Math.min(this.updateDelay, other.updateDelay);
       }
 
-      private static SculkBehaviour getBlockBehaviour(BlockState var0) {
-         Block var2 = var0.getBlock();
+      private static SculkBehaviour getBlockBehaviour(final BlockState state) {
+         Block var2 = state.getBlock();
          SculkBehaviour var10000;
-         if (var2 instanceof SculkBehaviour var1) {
-            var10000 = var1;
+         if (var2 instanceof SculkBehaviour behaviour) {
+            var10000 = behaviour;
          } else {
             var10000 = SculkBehaviour.DEFAULT;
          }
@@ -305,54 +307,54 @@ public class SculkSpreader {
          return var10000;
       }
 
-      private static List<Vec3i> getRandomizedNonCornerNeighbourOffsets(RandomSource var0) {
-         return Util.shuffledCopy(NON_CORNER_NEIGHBOURS, var0);
+      private static List<Vec3i> getRandomizedNonCornerNeighbourOffsets(final RandomSource random) {
+         return Util.shuffledCopy(NON_CORNER_NEIGHBOURS, random);
       }
 
-      private static @Nullable BlockPos getValidMovementPos(LevelAccessor var0, BlockPos var1, RandomSource var2) {
-         BlockPos.MutableBlockPos var3 = var1.mutable();
-         BlockPos.MutableBlockPos var4 = var1.mutable();
+      private static @Nullable BlockPos getValidMovementPos(final LevelAccessor level, final BlockPos pos, final RandomSource random) {
+         BlockPos.MutableBlockPos sculkPosition = pos.mutable();
+         BlockPos.MutableBlockPos neighbour = pos.mutable();
 
-         for(Vec3i var6 : getRandomizedNonCornerNeighbourOffsets(var2)) {
-            var4.setWithOffset(var1, (Vec3i)var6);
-            BlockState var7 = var0.getBlockState(var4);
-            if (var7.getBlock() instanceof SculkBehaviour && isMovementUnobstructed(var0, var1, var4)) {
-               var3.set(var4);
-               if (SculkVeinBlock.hasSubstrateAccess(var0, var7, var4)) {
+         for(Vec3i offset : getRandomizedNonCornerNeighbourOffsets(random)) {
+            neighbour.setWithOffset(pos, (Vec3i)offset);
+            BlockState transferee = level.getBlockState(neighbour);
+            if (transferee.getBlock() instanceof SculkBehaviour && isMovementUnobstructed(level, pos, neighbour)) {
+               sculkPosition.set(neighbour);
+               if (SculkVeinBlock.hasSubstrateAccess(level, transferee, neighbour)) {
                   break;
                }
             }
          }
 
-         return var3.equals(var1) ? null : var3;
+         return sculkPosition.equals(pos) ? null : sculkPosition;
       }
 
-      private static boolean isMovementUnobstructed(LevelAccessor var0, BlockPos var1, BlockPos var2) {
-         if (var1.distManhattan(var2) == 1) {
+      private static boolean isMovementUnobstructed(final LevelAccessor level, final BlockPos from, final BlockPos to) {
+         if (from.distManhattan(to) == 1) {
             return true;
          } else {
-            BlockPos var3 = var2.subtract(var1);
-            Direction var4 = Direction.fromAxisAndDirection(Direction.Axis.X, var3.getX() < 0 ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
-            Direction var5 = Direction.fromAxisAndDirection(Direction.Axis.Y, var3.getY() < 0 ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
-            Direction var6 = Direction.fromAxisAndDirection(Direction.Axis.Z, var3.getZ() < 0 ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
-            if (var3.getX() == 0) {
-               return isUnobstructed(var0, var1, var5) || isUnobstructed(var0, var1, var6);
-            } else if (var3.getY() == 0) {
-               return isUnobstructed(var0, var1, var4) || isUnobstructed(var0, var1, var6);
+            BlockPos delta = to.subtract(from);
+            Direction directionX = Direction.fromAxisAndDirection(Direction.Axis.X, delta.getX() < 0 ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
+            Direction directionY = Direction.fromAxisAndDirection(Direction.Axis.Y, delta.getY() < 0 ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
+            Direction directionZ = Direction.fromAxisAndDirection(Direction.Axis.Z, delta.getZ() < 0 ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
+            if (delta.getX() == 0) {
+               return isUnobstructed(level, from, directionY) || isUnobstructed(level, from, directionZ);
+            } else if (delta.getY() == 0) {
+               return isUnobstructed(level, from, directionX) || isUnobstructed(level, from, directionZ);
             } else {
-               return isUnobstructed(var0, var1, var4) || isUnobstructed(var0, var1, var5);
+               return isUnobstructed(level, from, directionX) || isUnobstructed(level, from, directionY);
             }
          }
       }
 
-      private static boolean isUnobstructed(LevelAccessor var0, BlockPos var1, Direction var2) {
-         BlockPos var3 = var1.relative(var2);
-         return !var0.getBlockState(var3).isFaceSturdy(var0, var3, var2.getOpposite());
+      private static boolean isUnobstructed(final LevelAccessor level, final BlockPos from, final Direction direction) {
+         BlockPos testPos = from.relative(direction);
+         return !level.getBlockState(testPos).isFaceSturdy(level, testPos, direction.getOpposite());
       }
 
       static {
-         DIRECTION_SET = Direction.CODEC.listOf().xmap((var0) -> Sets.newEnumSet(var0, Direction.class), Lists::newArrayList);
-         CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(ChargeCursor::getPos), Codec.intRange(0, 1000).fieldOf("charge").orElse(0).forGetter(ChargeCursor::getCharge), Codec.intRange(0, 1).fieldOf("decay_delay").orElse(1).forGetter(ChargeCursor::getDecayDelay), Codec.intRange(0, 2147483647).fieldOf("update_delay").orElse(0).forGetter((var0x) -> var0x.updateDelay), DIRECTION_SET.lenientOptionalFieldOf("facings").forGetter((var0x) -> Optional.ofNullable(var0x.getFacingData()))).apply(var0, ChargeCursor::new));
+         DIRECTION_SET = Direction.CODEC.listOf().xmap((l) -> Sets.newEnumSet(l, Direction.class), Lists::newArrayList);
+         CODEC = RecordCodecBuilder.create((i) -> i.group(BlockPos.CODEC.fieldOf("pos").forGetter(ChargeCursor::getPos), Codec.intRange(0, 1000).fieldOf("charge").orElse(0).forGetter(ChargeCursor::getCharge), Codec.intRange(0, 1).fieldOf("decay_delay").orElse(1).forGetter(ChargeCursor::getDecayDelay), Codec.intRange(0, 2147483647).fieldOf("update_delay").orElse(0).forGetter((o) -> o.updateDelay), DIRECTION_SET.lenientOptionalFieldOf("facings").forGetter((o) -> Optional.ofNullable(o.getFacingData()))).apply(i, ChargeCursor::new));
       }
    }
 }

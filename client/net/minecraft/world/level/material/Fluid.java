@@ -33,21 +33,21 @@ public abstract class Fluid {
    protected Fluid() {
       super();
       this.builtInRegistryHolder = BuiltInRegistries.FLUID.createIntrusiveHolder(this);
-      StateDefinition.Builder var1 = new StateDefinition.Builder(this);
-      this.createFluidStateDefinition(var1);
-      this.stateDefinition = var1.create(Fluid::defaultFluidState, FluidState::new);
+      StateDefinition.Builder<Fluid, FluidState> builder = new StateDefinition.Builder<Fluid, FluidState>(this);
+      this.createFluidStateDefinition(builder);
+      this.stateDefinition = builder.create(Fluid::defaultFluidState, FluidState::new);
       this.registerDefaultState(this.stateDefinition.any());
    }
 
-   protected void createFluidStateDefinition(StateDefinition.Builder<Fluid, FluidState> var1) {
+   protected void createFluidStateDefinition(final StateDefinition.Builder<Fluid, FluidState> builder) {
    }
 
    public StateDefinition<Fluid, FluidState> getStateDefinition() {
       return this.stateDefinition;
    }
 
-   protected final void registerDefaultState(FluidState var1) {
-      this.defaultFluidState = var1;
+   protected final void registerDefaultState(final FluidState state) {
+      this.defaultFluidState = state;
    }
 
    public final FluidState defaultFluidState() {
@@ -56,27 +56,27 @@ public abstract class Fluid {
 
    public abstract Item getBucket();
 
-   protected void animateTick(Level var1, BlockPos var2, FluidState var3, RandomSource var4) {
+   protected void animateTick(final Level level, final BlockPos pos, final FluidState fluidState, final RandomSource random) {
    }
 
-   protected void tick(ServerLevel var1, BlockPos var2, BlockState var3, FluidState var4) {
+   protected void tick(final ServerLevel level, final BlockPos pos, final BlockState blockState, final FluidState fluidState) {
    }
 
-   protected void randomTick(ServerLevel var1, BlockPos var2, FluidState var3, RandomSource var4) {
+   protected void randomTick(final ServerLevel level, final BlockPos pos, final FluidState fluidState, final RandomSource random) {
    }
 
-   protected void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
+   protected void entityInside(final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier) {
    }
 
    protected @Nullable ParticleOptions getDripParticle() {
       return null;
    }
 
-   protected abstract boolean canBeReplacedWith(FluidState var1, BlockGetter var2, BlockPos var3, Fluid var4, Direction var5);
+   protected abstract boolean canBeReplacedWith(FluidState state, final BlockGetter level, final BlockPos pos, Fluid other, Direction direction);
 
-   protected abstract Vec3 getFlow(BlockGetter var1, BlockPos var2, FluidState var3);
+   protected abstract Vec3 getFlow(BlockGetter level, BlockPos pos, FluidState fluidState);
 
-   public abstract int getTickDelay(LevelReader var1);
+   public abstract int getTickDelay(LevelReader level);
 
    protected boolean isRandomlyTicking() {
       return false;
@@ -88,34 +88,34 @@ public abstract class Fluid {
 
    protected abstract float getExplosionResistance();
 
-   public abstract float getHeight(FluidState var1, BlockGetter var2, BlockPos var3);
+   public abstract float getHeight(FluidState fluidState, final BlockGetter level, final BlockPos pos);
 
-   public abstract float getOwnHeight(FluidState var1);
+   public abstract float getOwnHeight(FluidState fluidState);
 
-   protected abstract BlockState createLegacyBlock(FluidState var1);
+   protected abstract BlockState createLegacyBlock(FluidState fluidState);
 
-   public abstract boolean isSource(FluidState var1);
+   public abstract boolean isSource(FluidState fluidState);
 
-   public abstract int getAmount(FluidState var1);
+   public abstract int getAmount(FluidState fluidState);
 
-   public boolean isSame(Fluid var1) {
-      return var1 == this;
+   public boolean isSame(final Fluid other) {
+      return other == this;
    }
 
    /** @deprecated */
    @Deprecated
-   public boolean is(TagKey<Fluid> var1) {
-      return this.builtInRegistryHolder.is(var1);
+   public boolean is(final TagKey<Fluid> tag) {
+      return this.builtInRegistryHolder.is(tag);
    }
 
-   public abstract VoxelShape getShape(FluidState var1, BlockGetter var2, BlockPos var3);
+   public abstract VoxelShape getShape(final FluidState state, final BlockGetter level, final BlockPos pos);
 
-   public @Nullable AABB getAABB(FluidState var1, BlockGetter var2, BlockPos var3) {
+   public @Nullable AABB getAABB(final FluidState state, final BlockGetter level, final BlockPos pos) {
       if (this.isEmpty()) {
          return null;
       } else {
-         float var4 = var1.getHeight(var2, var3);
-         return new AABB((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), (double)var3.getX() + 1.0, (double)((float)var3.getY() + var4), (double)var3.getZ() + 1.0);
+         float height = state.getHeight(level, pos);
+         return new AABB((double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), (double)pos.getX() + 1.0, (double)((float)pos.getY() + height), (double)pos.getZ() + 1.0);
       }
    }
 

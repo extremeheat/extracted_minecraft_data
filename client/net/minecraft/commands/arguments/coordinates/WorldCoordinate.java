@@ -10,66 +10,64 @@ public record WorldCoordinate(boolean relative, double value) {
    public static final SimpleCommandExceptionType ERROR_EXPECTED_DOUBLE = new SimpleCommandExceptionType(Component.translatable("argument.pos.missing.double"));
    public static final SimpleCommandExceptionType ERROR_EXPECTED_INT = new SimpleCommandExceptionType(Component.translatable("argument.pos.missing.int"));
 
-   public WorldCoordinate(boolean var1, double var2) {
+   public WorldCoordinate {
       super();
-      this.relative = var1;
-      this.value = var2;
    }
 
-   public double get(double var1) {
-      return this.relative ? this.value + var1 : this.value;
+   public double get(final double original) {
+      return this.relative ? this.value + original : this.value;
    }
 
-   public static WorldCoordinate parseDouble(StringReader var0, boolean var1) throws CommandSyntaxException {
-      if (var0.canRead() && var0.peek() == '^') {
-         throw Vec3Argument.ERROR_MIXED_TYPE.createWithContext(var0);
-      } else if (!var0.canRead()) {
-         throw ERROR_EXPECTED_DOUBLE.createWithContext(var0);
+   public static WorldCoordinate parseDouble(final StringReader reader, final boolean center) throws CommandSyntaxException {
+      if (reader.canRead() && reader.peek() == '^') {
+         throw Vec3Argument.ERROR_MIXED_TYPE.createWithContext(reader);
+      } else if (!reader.canRead()) {
+         throw ERROR_EXPECTED_DOUBLE.createWithContext(reader);
       } else {
-         boolean var2 = isRelative(var0);
-         int var3 = var0.getCursor();
-         double var4 = var0.canRead() && var0.peek() != ' ' ? var0.readDouble() : 0.0;
-         String var6 = var0.getString().substring(var3, var0.getCursor());
-         if (var2 && var6.isEmpty()) {
+         boolean relative = isRelative(reader);
+         int start = reader.getCursor();
+         double value = reader.canRead() && reader.peek() != ' ' ? reader.readDouble() : 0.0;
+         String number = reader.getString().substring(start, reader.getCursor());
+         if (relative && number.isEmpty()) {
             return new WorldCoordinate(true, 0.0);
          } else {
-            if (!var6.contains(".") && !var2 && var1) {
-               var4 += 0.5;
+            if (!number.contains(".") && !relative && center) {
+               value += 0.5;
             }
 
-            return new WorldCoordinate(var2, var4);
+            return new WorldCoordinate(relative, value);
          }
       }
    }
 
-   public static WorldCoordinate parseInt(StringReader var0) throws CommandSyntaxException {
-      if (var0.canRead() && var0.peek() == '^') {
-         throw Vec3Argument.ERROR_MIXED_TYPE.createWithContext(var0);
-      } else if (!var0.canRead()) {
-         throw ERROR_EXPECTED_INT.createWithContext(var0);
+   public static WorldCoordinate parseInt(final StringReader reader) throws CommandSyntaxException {
+      if (reader.canRead() && reader.peek() == '^') {
+         throw Vec3Argument.ERROR_MIXED_TYPE.createWithContext(reader);
+      } else if (!reader.canRead()) {
+         throw ERROR_EXPECTED_INT.createWithContext(reader);
       } else {
-         boolean var1 = isRelative(var0);
-         double var2;
-         if (var0.canRead() && var0.peek() != ' ') {
-            var2 = var1 ? var0.readDouble() : (double)var0.readInt();
+         boolean relative = isRelative(reader);
+         double value;
+         if (reader.canRead() && reader.peek() != ' ') {
+            value = relative ? reader.readDouble() : (double)reader.readInt();
          } else {
-            var2 = 0.0;
+            value = 0.0;
          }
 
-         return new WorldCoordinate(var1, var2);
+         return new WorldCoordinate(relative, value);
       }
    }
 
-   public static boolean isRelative(StringReader var0) {
-      boolean var1;
-      if (var0.peek() == '~') {
-         var1 = true;
-         var0.skip();
+   public static boolean isRelative(final StringReader reader) {
+      boolean relative;
+      if (reader.peek() == '~') {
+         relative = true;
+         reader.skip();
       } else {
-         var1 = false;
+         relative = false;
       }
 
-      return var1;
+      return relative;
    }
 
    public boolean isRelative() {

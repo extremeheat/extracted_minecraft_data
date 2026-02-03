@@ -3,7 +3,6 @@ package net.minecraft.network.chat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -15,65 +14,65 @@ public class SubStringSource {
    private final List<Style> charStyles;
    private final Int2IntFunction reverseCharModifier;
 
-   private SubStringSource(String var1, List<Style> var2, Int2IntFunction var3) {
+   private SubStringSource(final String plainText, final List<Style> charStyles, final Int2IntFunction reverseCharModifier) {
       super();
-      this.plainText = var1;
-      this.charStyles = ImmutableList.copyOf(var2);
-      this.reverseCharModifier = var3;
+      this.plainText = plainText;
+      this.charStyles = ImmutableList.copyOf(charStyles);
+      this.reverseCharModifier = reverseCharModifier;
    }
 
    public String getPlainText() {
       return this.plainText;
    }
 
-   public List<FormattedCharSequence> substring(int var1, int var2, boolean var3) {
-      if (var2 == 0) {
+   public List<FormattedCharSequence> substring(final int start, final int length, final boolean reverse) {
+      if (length == 0) {
          return ImmutableList.of();
       } else {
-         ArrayList var4 = Lists.newArrayList();
-         Style var5 = (Style)this.charStyles.get(var1);
-         int var6 = var1;
+         List<FormattedCharSequence> parts = Lists.newArrayList();
+         Style currentRunStyle = (Style)this.charStyles.get(start);
+         int currentRunStart = start;
 
-         for(int var7 = 1; var7 < var2; ++var7) {
-            int var8 = var1 + var7;
-            Style var9 = (Style)this.charStyles.get(var8);
-            if (!var9.equals(var5)) {
-               String var10 = this.plainText.substring(var6, var8);
-               var4.add(var3 ? FormattedCharSequence.backward(var10, var5, this.reverseCharModifier) : FormattedCharSequence.forward(var10, var5));
-               var5 = var9;
-               var6 = var8;
+         for(int i = 1; i < length; ++i) {
+            int actualIndex = start + i;
+            Style charStyle = (Style)this.charStyles.get(actualIndex);
+            if (!charStyle.equals(currentRunStyle)) {
+               String currentRunText = this.plainText.substring(currentRunStart, actualIndex);
+               parts.add(reverse ? FormattedCharSequence.backward(currentRunText, currentRunStyle, this.reverseCharModifier) : FormattedCharSequence.forward(currentRunText, currentRunStyle));
+               currentRunStyle = charStyle;
+               currentRunStart = actualIndex;
             }
          }
 
-         if (var6 < var1 + var2) {
-            String var11 = this.plainText.substring(var6, var1 + var2);
-            var4.add(var3 ? FormattedCharSequence.backward(var11, var5, this.reverseCharModifier) : FormattedCharSequence.forward(var11, var5));
+         if (currentRunStart < start + length) {
+            String lastRunText = this.plainText.substring(currentRunStart, start + length);
+            parts.add(reverse ? FormattedCharSequence.backward(lastRunText, currentRunStyle, this.reverseCharModifier) : FormattedCharSequence.forward(lastRunText, currentRunStyle));
          }
 
-         return (List<FormattedCharSequence>)(var3 ? Lists.reverse(var4) : var4);
+         return reverse ? Lists.reverse(parts) : parts;
       }
    }
 
-   public static SubStringSource create(FormattedText var0) {
-      return create(var0, (var0x) -> var0x, (var0x) -> var0x);
+   public static SubStringSource create(final FormattedText text) {
+      return create(text, (ch) -> ch, (s) -> s);
    }
 
-   public static SubStringSource create(FormattedText var0, Int2IntFunction var1, UnaryOperator<String> var2) {
-      StringBuilder var3 = new StringBuilder();
-      ArrayList var4 = Lists.newArrayList();
-      var0.visit((var2x, var3x) -> {
-         StringDecomposer.iterateFormatted((String)var3x, var2x, (var2, var3xx, var4x) -> {
-            var3.appendCodePoint(var4x);
-            int var5 = Character.charCount(var4x);
+   public static SubStringSource create(final FormattedText text, final Int2IntFunction reverseCharModifier, final UnaryOperator<String> shaper) {
+      StringBuilder plainText = new StringBuilder();
+      List<Style> charStyles = Lists.newArrayList();
+      text.visit((style, contents) -> {
+         StringDecomposer.iterateFormatted((String)contents, style, (position, charStyle, codepoint) -> {
+            plainText.appendCodePoint(codepoint);
+            int charCount = Character.charCount(codepoint);
 
-            for(int var6 = 0; var6 < var5; ++var6) {
-               var4.add(var3xx);
+            for(int i = 0; i < charCount; ++i) {
+               charStyles.add(charStyle);
             }
 
             return true;
          });
          return Optional.empty();
       }, Style.EMPTY);
-      return new SubStringSource((String)var2.apply(var3.toString()), var4, var1);
+      return new SubStringSource((String)shaper.apply(plainText.toString()), charStyles, reverseCharModifier);
    }
 }

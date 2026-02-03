@@ -28,69 +28,69 @@ public class TitleCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("title").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.literal("clear").executes((var0x) -> clearTitle((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"))))).then(Commands.literal("reset").executes((var0x) -> resetTitle((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"))))).then(Commands.literal("title").then(Commands.argument("title", ComponentArgument.textComponent(var1)).executes((var0x) -> showTitle((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ComponentArgument.getRawComponent(var0x, "title"), "title", ClientboundSetTitleTextPacket::new))))).then(Commands.literal("subtitle").then(Commands.argument("title", ComponentArgument.textComponent(var1)).executes((var0x) -> showTitle((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ComponentArgument.getRawComponent(var0x, "title"), "subtitle", ClientboundSetSubtitleTextPacket::new))))).then(Commands.literal("actionbar").then(Commands.argument("title", ComponentArgument.textComponent(var1)).executes((var0x) -> showTitle((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ComponentArgument.getRawComponent(var0x, "title"), "actionbar", ClientboundSetActionBarTextPacket::new))))).then(Commands.literal("times").then(Commands.argument("fadeIn", TimeArgument.time()).then(Commands.argument("stay", TimeArgument.time()).then(Commands.argument("fadeOut", TimeArgument.time()).executes((var0x) -> setTimes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), IntegerArgumentType.getInteger(var0x, "fadeIn"), IntegerArgumentType.getInteger(var0x, "stay"), IntegerArgumentType.getInteger(var0x, "fadeOut")))))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("title").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.literal("clear").executes((c) -> clearTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"))))).then(Commands.literal("reset").executes((c) -> resetTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"))))).then(Commands.literal("title").then(Commands.argument("title", ComponentArgument.textComponent(context)).executes((c) -> showTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ComponentArgument.getRawComponent(c, "title"), "title", ClientboundSetTitleTextPacket::new))))).then(Commands.literal("subtitle").then(Commands.argument("title", ComponentArgument.textComponent(context)).executes((c) -> showTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ComponentArgument.getRawComponent(c, "title"), "subtitle", ClientboundSetSubtitleTextPacket::new))))).then(Commands.literal("actionbar").then(Commands.argument("title", ComponentArgument.textComponent(context)).executes((c) -> showTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ComponentArgument.getRawComponent(c, "title"), "actionbar", ClientboundSetActionBarTextPacket::new))))).then(Commands.literal("times").then(Commands.argument("fadeIn", TimeArgument.time()).then(Commands.argument("stay", TimeArgument.time()).then(Commands.argument("fadeOut", TimeArgument.time()).executes((c) -> setTimes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IntegerArgumentType.getInteger(c, "fadeIn"), IntegerArgumentType.getInteger(c, "stay"), IntegerArgumentType.getInteger(c, "fadeOut")))))))));
    }
 
-   private static int clearTitle(CommandSourceStack var0, Collection<ServerPlayer> var1) {
-      ClientboundClearTitlesPacket var2 = new ClientboundClearTitlesPacket(false);
+   private static int clearTitle(final CommandSourceStack source, final Collection<ServerPlayer> targets) {
+      ClientboundClearTitlesPacket packet = new ClientboundClearTitlesPacket(false);
 
-      for(ServerPlayer var4 : var1) {
-         var4.connection.send(var2);
+      for(ServerPlayer player : targets) {
+         player.connection.send(packet);
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.title.cleared.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+      if (targets.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.title.cleared.single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.title.cleared.multiple", var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.title.cleared.multiple", targets.size()), true);
       }
 
-      return var1.size();
+      return targets.size();
    }
 
-   private static int resetTitle(CommandSourceStack var0, Collection<ServerPlayer> var1) {
-      ClientboundClearTitlesPacket var2 = new ClientboundClearTitlesPacket(true);
+   private static int resetTitle(final CommandSourceStack source, final Collection<ServerPlayer> targets) {
+      ClientboundClearTitlesPacket packet = new ClientboundClearTitlesPacket(true);
 
-      for(ServerPlayer var4 : var1) {
-         var4.connection.send(var2);
+      for(ServerPlayer player : targets) {
+         player.connection.send(packet);
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.title.reset.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+      if (targets.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.title.reset.single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.title.reset.multiple", var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.title.reset.multiple", targets.size()), true);
       }
 
-      return var1.size();
+      return targets.size();
    }
 
-   private static int showTitle(CommandSourceStack var0, Collection<ServerPlayer> var1, Component var2, String var3, Function<Component, Packet<?>> var4) throws CommandSyntaxException {
-      for(ServerPlayer var6 : var1) {
-         var6.connection.send((Packet)var4.apply(ComponentUtils.updateForEntity(var0, var2, var6, 0)));
+   private static int showTitle(final CommandSourceStack source, final Collection<ServerPlayer> targets, final Component title, final String type, final Function<Component, Packet<?>> factory) throws CommandSyntaxException {
+      for(ServerPlayer player : targets) {
+         player.connection.send((Packet)factory.apply(ComponentUtils.updateForEntity(source, title, player, 0)));
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.title.show." + var3 + ".single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+      if (targets.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.title.show." + type + ".single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.title.show." + var3 + ".multiple", var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.title.show." + type + ".multiple", targets.size()), true);
       }
 
-      return var1.size();
+      return targets.size();
    }
 
-   private static int setTimes(CommandSourceStack var0, Collection<ServerPlayer> var1, int var2, int var3, int var4) {
-      ClientboundSetTitlesAnimationPacket var5 = new ClientboundSetTitlesAnimationPacket(var2, var3, var4);
+   private static int setTimes(final CommandSourceStack source, final Collection<ServerPlayer> targets, final int fadeIn, final int stay, final int fadeOut) {
+      ClientboundSetTitlesAnimationPacket packet = new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut);
 
-      for(ServerPlayer var7 : var1) {
-         var7.connection.send(var5);
+      for(ServerPlayer player : targets) {
+         player.connection.send(packet);
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.title.times.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+      if (targets.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.title.times.single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.title.times.multiple", var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.title.times.multiple", targets.size()), true);
       }
 
-      return var1.size();
+      return targets.size();
    }
 }

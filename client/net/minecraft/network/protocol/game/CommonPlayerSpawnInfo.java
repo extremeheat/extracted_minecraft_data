@@ -13,34 +13,24 @@ import net.minecraft.world.level.dimension.DimensionType;
 import org.jspecify.annotations.Nullable;
 
 public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, ResourceKey<Level> dimension, long seed, GameType gameType, @Nullable GameType previousGameType, boolean isDebug, boolean isFlat, Optional<GlobalPos> lastDeathLocation, int portalCooldown, int seaLevel) {
-   public CommonPlayerSpawnInfo(RegistryFriendlyByteBuf var1) {
-      this((Holder)DimensionType.STREAM_CODEC.decode(var1), var1.readResourceKey(Registries.DIMENSION), var1.readLong(), GameType.byId(var1.readByte()), GameType.byNullableId(var1.readByte()), var1.readBoolean(), var1.readBoolean(), var1.readOptional(FriendlyByteBuf::readGlobalPos), var1.readVarInt(), var1.readVarInt());
+   public CommonPlayerSpawnInfo(final RegistryFriendlyByteBuf input) {
+      this((Holder)DimensionType.STREAM_CODEC.decode(input), input.readResourceKey(Registries.DIMENSION), input.readLong(), GameType.byId(input.readByte()), GameType.byNullableId(input.readByte()), input.readBoolean(), input.readBoolean(), input.readOptional(FriendlyByteBuf::readGlobalPos), input.readVarInt(), input.readVarInt());
    }
 
-   public CommonPlayerSpawnInfo(Holder<DimensionType> var1, ResourceKey<Level> var2, long var3, GameType var5, @Nullable GameType var6, boolean var7, boolean var8, Optional<GlobalPos> var9, int var10, int var11) {
+   public CommonPlayerSpawnInfo {
       super();
-      this.dimensionType = var1;
-      this.dimension = var2;
-      this.seed = var3;
-      this.gameType = var5;
-      this.previousGameType = var6;
-      this.isDebug = var7;
-      this.isFlat = var8;
-      this.lastDeathLocation = var9;
-      this.portalCooldown = var10;
-      this.seaLevel = var11;
    }
 
-   public void write(RegistryFriendlyByteBuf var1) {
-      DimensionType.STREAM_CODEC.encode(var1, this.dimensionType);
-      var1.writeResourceKey(this.dimension);
-      var1.writeLong(this.seed);
-      var1.writeByte(this.gameType.getId());
-      var1.writeByte(GameType.getNullableId(this.previousGameType));
-      var1.writeBoolean(this.isDebug);
-      var1.writeBoolean(this.isFlat);
-      var1.writeOptional(this.lastDeathLocation, FriendlyByteBuf::writeGlobalPos);
-      var1.writeVarInt(this.portalCooldown);
-      var1.writeVarInt(this.seaLevel);
+   public void write(final RegistryFriendlyByteBuf output) {
+      DimensionType.STREAM_CODEC.encode(output, this.dimensionType);
+      output.writeResourceKey(this.dimension);
+      output.writeLong(this.seed);
+      output.writeByte(this.gameType.getId());
+      output.writeByte(GameType.getNullableId(this.previousGameType));
+      output.writeBoolean(this.isDebug);
+      output.writeBoolean(this.isFlat);
+      output.writeOptional(this.lastDeathLocation, FriendlyByteBuf::writeGlobalPos);
+      output.writeVarInt(this.portalCooldown);
+      output.writeVarInt(this.seaLevel);
    }
 }

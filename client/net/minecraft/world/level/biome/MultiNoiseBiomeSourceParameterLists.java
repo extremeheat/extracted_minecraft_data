@@ -14,13 +14,13 @@ public class MultiNoiseBiomeSourceParameterLists {
       super();
    }
 
-   public static void bootstrap(BootstrapContext<MultiNoiseBiomeSourceParameterList> var0) {
-      HolderGetter var1 = var0.lookup(Registries.BIOME);
-      var0.register(NETHER, new MultiNoiseBiomeSourceParameterList(MultiNoiseBiomeSourceParameterList.Preset.NETHER, var1));
-      var0.register(OVERWORLD, new MultiNoiseBiomeSourceParameterList(MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD, var1));
+   public static void bootstrap(final BootstrapContext<MultiNoiseBiomeSourceParameterList> context) {
+      HolderGetter<Biome> biomes = context.<Biome>lookup(Registries.BIOME);
+      context.register(NETHER, new MultiNoiseBiomeSourceParameterList(MultiNoiseBiomeSourceParameterList.Preset.NETHER, biomes));
+      context.register(OVERWORLD, new MultiNoiseBiomeSourceParameterList(MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD, biomes));
    }
 
-   private static ResourceKey<MultiNoiseBiomeSourceParameterList> register(String var0) {
-      return ResourceKey.create(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<MultiNoiseBiomeSourceParameterList> register(final String name) {
+      return ResourceKey.create(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, Identifier.withDefaultNamespace(name));
    }
 }

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal.polarbear;
 
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -47,6 +48,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -62,15 +64,15 @@ public class PolarBear extends Animal implements NeutralMob {
    private long persistentAngerEndTime;
    private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
 
-   public PolarBear(EntityType<? extends PolarBear> var1, Level var2) {
-      super(var1, var2);
+   public PolarBear(final EntityType<? extends PolarBear> type, final Level level) {
+      super(type, level);
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.POLAR_BEAR.create(var1, EntitySpawnReason.BREEDING);
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      return EntityType.POLAR_BEAR.create(level, EntitySpawnReason.BREEDING);
    }
 
-   public boolean isFood(ItemStack var1) {
+   public boolean isFood(final ItemStack itemStack) {
       return false;
    }
 
@@ -78,7 +80,7 @@ public class PolarBear extends Animal implements NeutralMob {
       super.registerGoals();
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PolarBearMeleeAttackGoal());
-      this.goalSelector.addGoal(1, new PanicGoal(this, 2.0, (var0) -> var0.isBaby() ? DamageTypeTags.PANIC_CAUSES : DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES));
+      this.goalSelector.addGoal(1, new PanicGoal(this, 2.0, (bear) -> bear.isBaby() ? DamageTypeTags.PANIC_CAUSES : DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES));
       this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.25));
       this.goalSelector.addGoal(5, new RandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
@@ -94,39 +96,39 @@ public class PolarBear extends Animal implements NeutralMob {
       return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 30.0).add(Attributes.FOLLOW_RANGE, 20.0).add(Attributes.MOVEMENT_SPEED, 0.25).add(Attributes.ATTACK_DAMAGE, 6.0);
    }
 
-   public static boolean checkPolarBearSpawnRules(EntityType<PolarBear> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      Holder var5 = var1.getBiome(var3);
-      if (!var5.is(BiomeTags.POLAR_BEARS_SPAWN_ON_ALTERNATE_BLOCKS)) {
-         return checkAnimalSpawnRules(var0, var1, var2, var3, var4);
+   public static boolean checkPolarBearSpawnRules(final EntityType<PolarBear> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      Holder<Biome> biome = level.getBiome(pos);
+      if (!biome.is(BiomeTags.POLAR_BEARS_SPAWN_ON_ALTERNATE_BLOCKS)) {
+         return checkAnimalSpawnRules(type, level, spawnReason, pos, random);
       } else {
-         return isBrightEnoughToSpawn(var1, var3) && var1.getBlockState(var3.below()).is(BlockTags.POLAR_BEARS_SPAWNABLE_ON_ALTERNATE);
+         return isBrightEnoughToSpawn(level, pos) && level.getBlockState(pos.below()).is(BlockTags.POLAR_BEARS_SPAWNABLE_ON_ALTERNATE);
       }
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.readPersistentAngerSaveData(this.level(), var1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.readPersistentAngerSaveData(this.level(), input);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      this.addPersistentAngerSaveData(var1);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      this.addPersistentAngerSaveData(output);
    }
 
    public void startPersistentAngerTimer() {
       this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
    }
 
-   public void setPersistentAngerEndTime(long var1) {
-      this.persistentAngerEndTime = var1;
+   public void setPersistentAngerEndTime(final long endTime) {
+      this.persistentAngerEndTime = endTime;
    }
 
    public long getPersistentAngerEndTime() {
       return this.persistentAngerEndTime;
    }
 
-   public void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> var1) {
-      this.persistentAngerTarget = var1;
+   public void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget) {
+      this.persistentAngerTarget = persistentAngerTarget;
    }
 
    public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
@@ -137,7 +139,7 @@ public class PolarBear extends Animal implements NeutralMob {
       return this.isBaby() ? SoundEvents.POLAR_BEAR_AMBIENT_BABY : SoundEvents.POLAR_BEAR_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.POLAR_BEAR_HURT;
    }
 
@@ -145,7 +147,7 @@ public class PolarBear extends Animal implements NeutralMob {
       return SoundEvents.POLAR_BEAR_DEATH;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(SoundEvents.POLAR_BEAR_STEP, 0.15F, 1.0F);
    }
 
@@ -157,9 +159,9 @@ public class PolarBear extends Animal implements NeutralMob {
 
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_STANDING_ID, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_STANDING_ID, false);
    }
 
    public void tick() {
@@ -187,13 +189,13 @@ public class PolarBear extends Animal implements NeutralMob {
 
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
       if (this.clientSideStandAnimation > 0.0F) {
-         float var2 = this.clientSideStandAnimation / 6.0F;
-         float var3 = 1.0F + var2;
-         return super.getDefaultDimensions(var1).scale(1.0F, var3);
+         float standFactor = this.clientSideStandAnimation / 6.0F;
+         float heightScaleFactor = 1.0F + standFactor;
+         return super.getDefaultDimensions(pose).scale(1.0F, heightScaleFactor);
       } else {
-         return super.getDefaultDimensions(var1);
+         return super.getDefaultDimensions(pose);
       }
    }
 
@@ -201,24 +203,24 @@ public class PolarBear extends Animal implements NeutralMob {
       return (Boolean)this.entityData.get(DATA_STANDING_ID);
    }
 
-   public void setStanding(boolean var1) {
-      this.entityData.set(DATA_STANDING_ID, var1);
+   public void setStanding(final boolean value) {
+      this.entityData.set(DATA_STANDING_ID, value);
    }
 
-   public float getStandingAnimationScale(float var1) {
-      return Mth.lerp(var1, this.clientSideStandAnimationO, this.clientSideStandAnimation) / 6.0F;
+   public float getStandingAnimationScale(final float a) {
+      return Mth.lerp(a, this.clientSideStandAnimationO, this.clientSideStandAnimation) / 6.0F;
    }
 
    protected float getWaterSlowDown() {
       return 0.98F;
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(1.0F);
+   public SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
+      if (groupData == null) {
+         groupData = new AgeableMob.AgeableMobGroupData(1.0F);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
    static {
@@ -226,8 +228,9 @@ public class PolarBear extends Animal implements NeutralMob {
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }
 
-   class PolarBearHurtByTargetGoal extends HurtByTargetGoal {
+   private class PolarBearHurtByTargetGoal extends HurtByTargetGoal {
       public PolarBearHurtByTargetGoal() {
+         Objects.requireNonNull(PolarBear.this);
          super(PolarBear.this);
       }
 
@@ -240,16 +243,17 @@ public class PolarBear extends Animal implements NeutralMob {
 
       }
 
-      protected void alertOther(Mob var1, LivingEntity var2) {
-         if (var1 instanceof PolarBear && !var1.isBaby()) {
-            super.alertOther(var1, var2);
+      protected void alertOther(final Mob other, final LivingEntity hurtByMob) {
+         if (other instanceof PolarBear && !other.isBaby()) {
+            super.alertOther(other, hurtByMob);
          }
 
       }
    }
 
-   class PolarBearAttackPlayersGoal extends NearestAttackableTargetGoal<Player> {
+   private class PolarBearAttackPlayersGoal extends NearestAttackableTargetGoal<Player> {
       public PolarBearAttackPlayersGoal() {
+         Objects.requireNonNull(PolarBear.this);
          super(PolarBear.this, Player.class, 20, true, true, (TargetingConditions.Selector)null);
       }
 
@@ -258,8 +262,8 @@ public class PolarBear extends Animal implements NeutralMob {
             return false;
          } else {
             if (super.canUse()) {
-               for(PolarBear var3 : PolarBear.this.level().getEntitiesOfClass(PolarBear.class, PolarBear.this.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
-                  if (var3.isBaby()) {
+               for(PolarBear bear : PolarBear.this.level().getEntitiesOfClass(PolarBear.class, PolarBear.this.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
+                  if (bear.isBaby()) {
                      return true;
                   }
                }
@@ -274,17 +278,18 @@ public class PolarBear extends Animal implements NeutralMob {
       }
    }
 
-   class PolarBearMeleeAttackGoal extends MeleeAttackGoal {
+   private class PolarBearMeleeAttackGoal extends MeleeAttackGoal {
       public PolarBearMeleeAttackGoal() {
+         Objects.requireNonNull(PolarBear.this);
          super(PolarBear.this, 1.25, true);
       }
 
-      protected void checkAndPerformAttack(LivingEntity var1) {
-         if (this.canPerformAttack(var1)) {
+      protected void checkAndPerformAttack(final LivingEntity target) {
+         if (this.canPerformAttack(target)) {
             this.resetAttackCooldown();
-            this.mob.doHurtTarget(getServerLevel(this.mob), var1);
+            this.mob.doHurtTarget(getServerLevel(this.mob), target);
             PolarBear.this.setStanding(false);
-         } else if (this.mob.distanceToSqr(var1) < (double)((var1.getBbWidth() + 3.0F) * (var1.getBbWidth() + 3.0F))) {
+         } else if (this.mob.distanceToSqr(target) < (double)((target.getBbWidth() + 3.0F) * (target.getBbWidth() + 3.0F))) {
             if (this.isTimeToAttack()) {
                PolarBear.this.setStanding(false);
                this.resetAttackCooldown();

@@ -34,48 +34,48 @@ public class SmithingMenu extends ItemCombinerMenu {
    private final RecipePropertySet additionItemTest;
    private final DataSlot hasRecipeError;
 
-   public SmithingMenu(int var1, Inventory var2) {
-      this(var1, var2, ContainerLevelAccess.NULL);
+   public SmithingMenu(final int containerId, final Inventory inventory) {
+      this(containerId, inventory, ContainerLevelAccess.NULL);
    }
 
-   public SmithingMenu(int var1, Inventory var2, ContainerLevelAccess var3) {
-      this(var1, var2, var3, var2.player.level());
+   public SmithingMenu(final int containerId, final Inventory inventory, final ContainerLevelAccess access) {
+      this(containerId, inventory, access, inventory.player.level());
    }
 
-   private SmithingMenu(int var1, Inventory var2, ContainerLevelAccess var3, Level var4) {
-      super(MenuType.SMITHING, var1, var2, var3, createInputSlotDefinitions(var4.recipeAccess()));
+   private SmithingMenu(final int containerId, final Inventory inventory, final ContainerLevelAccess access, final Level level) {
+      super(MenuType.SMITHING, containerId, inventory, access, createInputSlotDefinitions(level.recipeAccess()));
       this.hasRecipeError = DataSlot.standalone();
-      this.level = var4;
-      this.baseItemTest = var4.recipeAccess().propertySet(RecipePropertySet.SMITHING_BASE);
-      this.templateItemTest = var4.recipeAccess().propertySet(RecipePropertySet.SMITHING_TEMPLATE);
-      this.additionItemTest = var4.recipeAccess().propertySet(RecipePropertySet.SMITHING_ADDITION);
+      this.level = level;
+      this.baseItemTest = level.recipeAccess().propertySet(RecipePropertySet.SMITHING_BASE);
+      this.templateItemTest = level.recipeAccess().propertySet(RecipePropertySet.SMITHING_TEMPLATE);
+      this.additionItemTest = level.recipeAccess().propertySet(RecipePropertySet.SMITHING_ADDITION);
       this.addDataSlot(this.hasRecipeError).set(0);
    }
 
-   private static ItemCombinerMenuSlotDefinition createInputSlotDefinitions(RecipeAccess var0) {
-      RecipePropertySet var1 = var0.propertySet(RecipePropertySet.SMITHING_BASE);
-      RecipePropertySet var2 = var0.propertySet(RecipePropertySet.SMITHING_TEMPLATE);
-      RecipePropertySet var3 = var0.propertySet(RecipePropertySet.SMITHING_ADDITION);
+   private static ItemCombinerMenuSlotDefinition createInputSlotDefinitions(final RecipeAccess recipes) {
+      RecipePropertySet baseItemTest = recipes.propertySet(RecipePropertySet.SMITHING_BASE);
+      RecipePropertySet templateItemTest = recipes.propertySet(RecipePropertySet.SMITHING_TEMPLATE);
+      RecipePropertySet additionItemTest = recipes.propertySet(RecipePropertySet.SMITHING_ADDITION);
       ItemCombinerMenuSlotDefinition.Builder var10000 = ItemCombinerMenuSlotDefinition.create();
-      Objects.requireNonNull(var2);
-      var10000 = var10000.withSlot(0, 8, 48, var2::test);
-      Objects.requireNonNull(var1);
-      var10000 = var10000.withSlot(1, 26, 48, var1::test);
-      Objects.requireNonNull(var3);
-      return var10000.withSlot(2, 44, 48, var3::test).withResultSlot(3, 98, 48).build();
+      Objects.requireNonNull(templateItemTest);
+      var10000 = var10000.withSlot(0, 8, 48, templateItemTest::test);
+      Objects.requireNonNull(baseItemTest);
+      var10000 = var10000.withSlot(1, 26, 48, baseItemTest::test);
+      Objects.requireNonNull(additionItemTest);
+      return var10000.withSlot(2, 44, 48, additionItemTest::test).withResultSlot(3, 98, 48).build();
    }
 
-   protected boolean isValidBlock(BlockState var1) {
-      return var1.is(Blocks.SMITHING_TABLE);
+   protected boolean isValidBlock(final BlockState state) {
+      return state.is(Blocks.SMITHING_TABLE);
    }
 
-   protected void onTake(Player var1, ItemStack var2) {
-      var2.onCraftedBy(var1, var2.getCount());
-      this.resultSlots.awardUsedRecipes(var1, this.getRelevantItems());
+   protected void onTake(final Player player, final ItemStack carried) {
+      carried.onCraftedBy(player, carried.getCount());
+      this.resultSlots.awardUsedRecipes(player, this.getRelevantItems());
       this.shrinkStackInSlot(0);
       this.shrinkStackInSlot(1);
       this.shrinkStackInSlot(2);
-      this.access.execute((var0, var1x) -> var0.levelEvent(1044, var1x, 0));
+      this.access.execute((level, pos) -> level.levelEvent(1044, pos, 0));
    }
 
    private List<ItemStack> getRelevantItems() {
@@ -86,55 +86,55 @@ public class SmithingMenu extends ItemCombinerMenu {
       return new SmithingRecipeInput(this.inputSlots.getItem(0), this.inputSlots.getItem(1), this.inputSlots.getItem(2));
    }
 
-   private void shrinkStackInSlot(int var1) {
-      ItemStack var2 = this.inputSlots.getItem(var1);
-      if (!var2.isEmpty()) {
-         var2.shrink(1);
-         this.inputSlots.setItem(var1, var2);
+   private void shrinkStackInSlot(final int slot) {
+      ItemStack stack = this.inputSlots.getItem(slot);
+      if (!stack.isEmpty()) {
+         stack.shrink(1);
+         this.inputSlots.setItem(slot, stack);
       }
 
    }
 
-   public void slotsChanged(Container var1) {
-      super.slotsChanged(var1);
+   public void slotsChanged(final Container container) {
+      super.slotsChanged(container);
       if (this.level instanceof ServerLevel) {
-         boolean var2 = this.getSlot(0).hasItem() && this.getSlot(1).hasItem() && this.getSlot(2).hasItem() && !this.getSlot(this.getResultSlot()).hasItem();
-         this.hasRecipeError.set(var2 ? 1 : 0);
+         boolean hasRecipeError = this.getSlot(0).hasItem() && this.getSlot(1).hasItem() && this.getSlot(2).hasItem() && !this.getSlot(this.getResultSlot()).hasItem();
+         this.hasRecipeError.set(hasRecipeError ? 1 : 0);
       }
 
    }
 
    public void createResult() {
-      SmithingRecipeInput var1 = this.createRecipeInput();
+      SmithingRecipeInput input = this.createRecipeInput();
       Level var4 = this.level;
-      Optional var2;
-      if (var4 instanceof ServerLevel var3) {
-         var2 = var3.recipeAccess().getRecipeFor(RecipeType.SMITHING, var1, var3);
+      Optional<RecipeHolder<SmithingRecipe>> foundRecipe;
+      if (var4 instanceof ServerLevel serverLevel) {
+         foundRecipe = serverLevel.recipeAccess().getRecipeFor(RecipeType.SMITHING, input, serverLevel);
       } else {
-         var2 = Optional.empty();
+         foundRecipe = Optional.empty();
       }
 
-      var2.ifPresentOrElse((var2x) -> {
-         ItemStack var3 = ((SmithingRecipe)var2x.value()).assemble(var1, this.level.registryAccess());
-         this.resultSlots.setRecipeUsed(var2x);
-         this.resultSlots.setItem(0, var3);
+      foundRecipe.ifPresentOrElse((recipe) -> {
+         ItemStack result = ((SmithingRecipe)recipe.value()).assemble(input);
+         this.resultSlots.setRecipeUsed(recipe);
+         this.resultSlots.setItem(0, result);
       }, () -> {
          this.resultSlots.setRecipeUsed((RecipeHolder)null);
          this.resultSlots.setItem(0, ItemStack.EMPTY);
       });
    }
 
-   public boolean canTakeItemForPickAll(ItemStack var1, Slot var2) {
-      return var2.container != this.resultSlots && super.canTakeItemForPickAll(var1, var2);
+   public boolean canTakeItemForPickAll(final ItemStack carried, final Slot target) {
+      return target.container != this.resultSlots && super.canTakeItemForPickAll(carried, target);
    }
 
-   public boolean canMoveIntoInputSlots(ItemStack var1) {
-      if (this.templateItemTest.test(var1) && !this.getSlot(0).hasItem()) {
+   public boolean canMoveIntoInputSlots(final ItemStack stack) {
+      if (this.templateItemTest.test(stack) && !this.getSlot(0).hasItem()) {
          return true;
-      } else if (this.baseItemTest.test(var1) && !this.getSlot(1).hasItem()) {
+      } else if (this.baseItemTest.test(stack) && !this.getSlot(1).hasItem()) {
          return true;
       } else {
-         return this.additionItemTest.test(var1) && !this.getSlot(2).hasItem();
+         return this.additionItemTest.test(stack) && !this.getSlot(2).hasItem();
       }
    }
 

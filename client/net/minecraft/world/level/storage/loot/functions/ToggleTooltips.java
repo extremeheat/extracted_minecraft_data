@@ -13,27 +13,27 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class ToggleTooltips extends LootItemConditionalFunction {
-   public static final MapCodec<ToggleTooltips> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(Codec.unboundedMap(DataComponentType.CODEC, Codec.BOOL).fieldOf("toggles").forGetter((var0x) -> var0x.values)).apply(var0, ToggleTooltips::new));
+   public static final MapCodec<ToggleTooltips> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(Codec.unboundedMap(DataComponentType.CODEC, Codec.BOOL).fieldOf("toggles").forGetter((e) -> e.values)).apply(i, ToggleTooltips::new));
    private final Map<DataComponentType<?>, Boolean> values;
 
-   private ToggleTooltips(List<LootItemCondition> var1, Map<DataComponentType<?>, Boolean> var2) {
-      super(var1);
-      this.values = var2;
+   private ToggleTooltips(final List<LootItemCondition> predicates, final Map<DataComponentType<?>, Boolean> values) {
+      super(predicates);
+      this.values = values;
    }
 
-   protected ItemStack run(ItemStack var1, LootContext var2) {
-      var1.update(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT, (var1x) -> {
-         for(Map.Entry var3 : this.values.entrySet()) {
-            boolean var4 = (Boolean)var3.getValue();
-            var1x = var1x.withHidden((DataComponentType)var3.getKey(), !var4);
+   protected ItemStack run(final ItemStack itemStack, final LootContext context) {
+      itemStack.update(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT, (display) -> {
+         for(Map.Entry<DataComponentType<?>, Boolean> entry : this.values.entrySet()) {
+            boolean shown = (Boolean)entry.getValue();
+            display = display.withHidden((DataComponentType)entry.getKey(), !shown);
          }
 
-         return var1x;
+         return display;
       });
-      return var1;
+      return itemStack;
    }
 
-   public LootItemFunctionType<ToggleTooltips> getType() {
-      return LootItemFunctions.TOGGLE_TOOLTIPS;
+   public MapCodec<ToggleTooltips> codec() {
+      return MAP_CODEC;
    }
 }

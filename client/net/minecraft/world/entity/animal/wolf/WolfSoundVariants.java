@@ -22,26 +22,26 @@ public class WolfSoundVariants {
       super();
    }
 
-   private static ResourceKey<WolfSoundVariant> createKey(SoundSet var0) {
-      return ResourceKey.create(Registries.WOLF_SOUND_VARIANT, Identifier.withDefaultNamespace(var0.getIdentifier()));
+   private static ResourceKey<WolfSoundVariant> createKey(final SoundSet wolfSoundVariant) {
+      return ResourceKey.create(Registries.WOLF_SOUND_VARIANT, Identifier.withDefaultNamespace(wolfSoundVariant.getIdentifier()));
    }
 
-   public static void bootstrap(BootstrapContext<WolfSoundVariant> var0) {
-      register(var0, CLASSIC, WolfSoundVariants.SoundSet.CLASSIC);
-      register(var0, PUGLIN, WolfSoundVariants.SoundSet.PUGLIN);
-      register(var0, SAD, WolfSoundVariants.SoundSet.SAD);
-      register(var0, ANGRY, WolfSoundVariants.SoundSet.ANGRY);
-      register(var0, GRUMPY, WolfSoundVariants.SoundSet.GRUMPY);
-      register(var0, BIG, WolfSoundVariants.SoundSet.BIG);
-      register(var0, CUTE, WolfSoundVariants.SoundSet.CUTE);
+   public static void bootstrap(final BootstrapContext<WolfSoundVariant> context) {
+      register(context, CLASSIC, WolfSoundVariants.SoundSet.CLASSIC);
+      register(context, PUGLIN, WolfSoundVariants.SoundSet.PUGLIN);
+      register(context, SAD, WolfSoundVariants.SoundSet.SAD);
+      register(context, ANGRY, WolfSoundVariants.SoundSet.ANGRY);
+      register(context, GRUMPY, WolfSoundVariants.SoundSet.GRUMPY);
+      register(context, BIG, WolfSoundVariants.SoundSet.BIG);
+      register(context, CUTE, WolfSoundVariants.SoundSet.CUTE);
    }
 
-   private static void register(BootstrapContext<WolfSoundVariant> var0, ResourceKey<WolfSoundVariant> var1, SoundSet var2) {
-      var0.register(var1, (WolfSoundVariant)SoundEvents.WOLF_SOUNDS.get(var2));
+   private static void register(final BootstrapContext<WolfSoundVariant> context, final ResourceKey<WolfSoundVariant> key, final SoundSet wolfSoundVariant) {
+      context.register(key, (WolfSoundVariant)SoundEvents.WOLF_SOUNDS.get(wolfSoundVariant));
    }
 
-   public static Holder<WolfSoundVariant> pickRandomSoundVariant(RegistryAccess var0, RandomSource var1) {
-      return (Holder)var0.lookupOrThrow(Registries.WOLF_SOUND_VARIANT).getRandom(var1).orElseThrow();
+   public static Holder<WolfSoundVariant> pickRandomSoundVariant(final RegistryAccess registryAccess, final RandomSource random) {
+      return (Holder)registryAccess.lookupOrThrow(Registries.WOLF_SOUND_VARIANT).getRandom(random).orElseThrow();
    }
 
    static {
@@ -55,28 +55,28 @@ public class WolfSoundVariants {
    }
 
    public static enum SoundSet {
-      CLASSIC("classic", ""),
-      PUGLIN("puglin", "_puglin"),
-      SAD("sad", "_sad"),
-      ANGRY("angry", "_angry"),
-      GRUMPY("grumpy", "_grumpy"),
-      BIG("big", "_big"),
-      CUTE("cute", "_cute");
+      CLASSIC("classic", "wolf"),
+      PUGLIN("puglin", "wolf_puglin"),
+      SAD("sad", "wolf_sad"),
+      ANGRY("angry", "wolf_angry"),
+      GRUMPY("grumpy", "wolf_grumpy"),
+      BIG("big", "wolf_big"),
+      CUTE("cute", "wolf_cute");
 
       private final String identifier;
-      private final String soundEventSuffix;
+      private final String soundEventIdentifier;
 
-      private SoundSet(final String var3, final String var4) {
-         this.identifier = var3;
-         this.soundEventSuffix = var4;
+      private SoundSet(final String identifier, final String soundEventIdentifier) {
+         this.identifier = identifier;
+         this.soundEventIdentifier = soundEventIdentifier;
       }
 
       public String getIdentifier() {
          return this.identifier;
       }
 
-      public String getSoundEventSuffix() {
-         return this.soundEventSuffix;
+      public String getSoundEventIdentifier() {
+         return this.soundEventIdentifier;
       }
 
       // $FF: synthetic method

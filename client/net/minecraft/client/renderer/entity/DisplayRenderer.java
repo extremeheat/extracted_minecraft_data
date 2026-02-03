@@ -9,12 +9,10 @@ import java.util.Objects;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.BlockDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.DisplayEntityRenderState;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TextDisplayEntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -24,8 +22,8 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Display;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -34,309 +32,234 @@ import org.joml.Quaternionfc;
 public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEntityRenderState> extends EntityRenderer<T, ST> {
    private final EntityRenderDispatcher entityRenderDispatcher;
 
-   protected DisplayRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
-      this.entityRenderDispatcher = var1.getEntityRenderDispatcher();
+   protected DisplayRenderer(final EntityRendererProvider.Context context) {
+      super(context);
+      this.entityRenderDispatcher = context.getEntityRenderDispatcher();
    }
 
-   protected AABB getBoundingBoxForCulling(T var1) {
-      return var1.getBoundingBoxForCulling();
+   protected AABB getBoundingBoxForCulling(final T entity) {
+      return entity.getBoundingBoxForCulling();
    }
 
-   protected boolean affectedByCulling(T var1) {
-      return var1.affectedByCulling();
+   protected boolean affectedByCulling(final T entity) {
+      return entity.affectedByCulling();
    }
 
-   private static int getBrightnessOverride(Display var0) {
-      Display.RenderState var1 = var0.renderState();
-      return var1 != null ? var1.brightnessOverride() : -1;
+   private static int getBrightnessOverride(final Display entity) {
+      Display.RenderState renderState = entity.renderState();
+      return renderState != null ? renderState.brightnessOverride() : -1;
    }
 
-   protected int getSkyLightLevel(T var1, BlockPos var2) {
-      int var3 = getBrightnessOverride(var1);
-      return var3 != -1 ? LightTexture.sky(var3) : super.getSkyLightLevel(var1, var2);
+   protected int getSkyLightLevel(final T entity, final BlockPos blockPos) {
+      int packedBrightnessOverride = getBrightnessOverride(entity);
+      return packedBrightnessOverride != -1 ? LightCoordsUtil.sky(packedBrightnessOverride) : super.getSkyLightLevel(entity, blockPos);
    }
 
-   protected int getBlockLightLevel(T var1, BlockPos var2) {
-      int var3 = getBrightnessOverride(var1);
-      return var3 != -1 ? LightTexture.block(var3) : super.getBlockLightLevel(var1, var2);
+   protected int getBlockLightLevel(final T entity, final BlockPos blockPos) {
+      int packedBrightnessOverride = getBrightnessOverride(entity);
+      return packedBrightnessOverride != -1 ? LightCoordsUtil.block(packedBrightnessOverride) : super.getBlockLightLevel(entity, blockPos);
    }
 
-   protected float getShadowRadius(ST var1) {
-      Display.RenderState var2 = var1.renderState;
-      return var2 == null ? 0.0F : var2.shadowRadius().get(var1.interpolationProgress);
+   protected float getShadowRadius(final ST state) {
+      Display.RenderState renderState = state.renderState;
+      return renderState == null ? 0.0F : renderState.shadowRadius().get(state.interpolationProgress);
    }
 
-   protected float getShadowStrength(ST var1) {
-      Display.RenderState var2 = var1.renderState;
-      return var2 == null ? 0.0F : var2.shadowStrength().get(var1.interpolationProgress);
+   protected float getShadowStrength(final ST state) {
+      Display.RenderState renderState = state.renderState;
+      return renderState == null ? 0.0F : renderState.shadowStrength().get(state.interpolationProgress);
    }
 
-   public void submit(ST var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      Display.RenderState var5 = var1.renderState;
-      if (var5 != null && var1.hasSubState()) {
-         float var6 = var1.interpolationProgress;
-         super.submit(var1, var2, var3, var4);
-         var2.pushPose();
-         var2.mulPose((Quaternionfc)this.calculateOrientation(var5, var1, new Quaternionf()));
-         Transformation var7 = (Transformation)var5.transformation().get(var6);
-         var2.mulPose(var7.getMatrix());
-         this.submitInner(var1, var2, var3, var1.lightCoords, var6);
-         var2.popPose();
+   public void submit(final ST state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      Display.RenderState renderState = state.renderState;
+      if (renderState != null && state.hasSubState()) {
+         float interpolationProgress = state.interpolationProgress;
+         super.submit(state, poseStack, submitNodeCollector, camera);
+         poseStack.pushPose();
+         poseStack.mulPose((Quaternionfc)this.calculateOrientation(renderState, state, new Quaternionf()));
+         Transformation transformation = (Transformation)renderState.transformation().get(interpolationProgress);
+         poseStack.mulPose(transformation.getMatrix());
+         this.submitInner(state, poseStack, submitNodeCollector, state.lightCoords, interpolationProgress);
+         poseStack.popPose();
       }
    }
 
-   private Quaternionf calculateOrientation(Display.RenderState var1, ST var2, Quaternionf var3) {
+   private Quaternionf calculateOrientation(final Display.RenderState renderState, final ST state, final Quaternionf output) {
       Quaternionf var10000;
-      switch (var1.billboardConstraints()) {
-         case FIXED -> var10000 = var3.rotationYXZ(-0.017453292F * var2.entityYRot, 0.017453292F * var2.entityXRot, 0.0F);
-         case HORIZONTAL -> var10000 = var3.rotationYXZ(-0.017453292F * var2.entityYRot, 0.017453292F * transformXRot(var2.cameraXRot), 0.0F);
-         case VERTICAL -> var10000 = var3.rotationYXZ(-0.017453292F * transformYRot(var2.cameraYRot), 0.017453292F * var2.entityXRot, 0.0F);
-         case CENTER -> var10000 = var3.rotationYXZ(-0.017453292F * transformYRot(var2.cameraYRot), 0.017453292F * transformXRot(var2.cameraXRot), 0.0F);
+      switch (renderState.billboardConstraints()) {
+         case FIXED -> var10000 = output.rotationYXZ(-0.017453292F * state.entityYRot, 0.017453292F * state.entityXRot, 0.0F);
+         case HORIZONTAL -> var10000 = output.rotationYXZ(-0.017453292F * state.entityYRot, 0.017453292F * transformXRot(state.cameraXRot), 0.0F);
+         case VERTICAL -> var10000 = output.rotationYXZ(-0.017453292F * transformYRot(state.cameraYRot), 0.017453292F * state.entityXRot, 0.0F);
+         case CENTER -> var10000 = output.rotationYXZ(-0.017453292F * transformYRot(state.cameraYRot), 0.017453292F * transformXRot(state.cameraXRot), 0.0F);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   private static float transformYRot(float var0) {
-      return var0 - 180.0F;
+   private static float transformYRot(final float cameraYRot) {
+      return cameraYRot - 180.0F;
    }
 
-   private static float transformXRot(float var0) {
-      return -var0;
+   private static float transformXRot(final float cameraXRot) {
+      return -cameraXRot;
    }
 
-   private static <T extends Display> float entityYRot(T var0, float var1) {
-      return var0.getYRot(var1);
+   private static <T extends Display> float entityYRot(final T entity, final float partialTicks) {
+      return entity.getYRot(partialTicks);
    }
 
-   private static <T extends Display> float entityXRot(T var0, float var1) {
-      return var0.getXRot(var1);
+   private static <T extends Display> float entityXRot(final T entity, final float partialTicks) {
+      return entity.getXRot(partialTicks);
    }
 
-   protected abstract void submitInner(ST var1, PoseStack var2, SubmitNodeCollector var3, int var4, float var5);
+   protected abstract void submitInner(final ST state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float interpolationProgress);
 
-   public void extractRenderState(T var1, ST var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.renderState = var1.renderState();
-      var2.interpolationProgress = var1.calculateInterpolationProgress(var3);
-      var2.entityYRot = entityYRot(var1, var3);
-      var2.entityXRot = entityXRot(var1, var3);
-      Camera var4 = this.entityRenderDispatcher.camera;
-      var2.cameraXRot = var4.xRot();
-      var2.cameraYRot = var4.yRot();
-   }
-
-   // $FF: synthetic method
-   protected float getShadowRadius(final EntityRenderState var1) {
-      return this.getShadowRadius((DisplayEntityRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   protected int getBlockLightLevel(final Entity var1, final BlockPos var2) {
-      return this.getBlockLightLevel((Display)var1, var2);
-   }
-
-   // $FF: synthetic method
-   protected int getSkyLightLevel(final Entity var1, final BlockPos var2) {
-      return this.getSkyLightLevel((Display)var1, var2);
+   public void extractRenderState(final T entity, final ST state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.renderState = entity.renderState();
+      state.interpolationProgress = entity.calculateInterpolationProgress(partialTicks);
+      state.entityYRot = entityYRot(entity, partialTicks);
+      state.entityXRot = entityXRot(entity, partialTicks);
+      Camera camera = this.entityRenderDispatcher.camera;
+      state.cameraXRot = camera.xRot();
+      state.cameraYRot = camera.yRot();
    }
 
    public static class BlockDisplayRenderer extends DisplayRenderer<Display.BlockDisplay, Display.BlockDisplay.BlockRenderState, BlockDisplayEntityRenderState> {
-      protected BlockDisplayRenderer(EntityRendererProvider.Context var1) {
-         super(var1);
+      protected BlockDisplayRenderer(final EntityRendererProvider.Context context) {
+         super(context);
       }
 
       public BlockDisplayEntityRenderState createRenderState() {
          return new BlockDisplayEntityRenderState();
       }
 
-      public void extractRenderState(Display.BlockDisplay var1, BlockDisplayEntityRenderState var2, float var3) {
-         super.extractRenderState(var1, var2, var3);
-         var2.blockRenderState = var1.blockRenderState();
+      public void extractRenderState(final Display.BlockDisplay entity, final BlockDisplayEntityRenderState state, final float partialTicks) {
+         super.extractRenderState(entity, state, partialTicks);
+         state.blockRenderState = entity.blockRenderState();
       }
 
-      public void submitInner(BlockDisplayEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4, float var5) {
-         var3.submitBlock(var2, var1.blockRenderState.blockState(), var4, OverlayTexture.NO_OVERLAY, var1.outlineColor);
-      }
-
-      // $FF: synthetic method
-      public EntityRenderState createRenderState() {
-         return this.createRenderState();
-      }
-
-      // $FF: synthetic method
-      protected float getShadowRadius(final EntityRenderState var1) {
-         return super.getShadowRadius((DisplayEntityRenderState)var1);
-      }
-
-      // $FF: synthetic method
-      protected int getBlockLightLevel(final Entity var1, final BlockPos var2) {
-         return super.getBlockLightLevel((Display)var1, var2);
-      }
-
-      // $FF: synthetic method
-      protected int getSkyLightLevel(final Entity var1, final BlockPos var2) {
-         return super.getSkyLightLevel((Display)var1, var2);
+      public void submitInner(final BlockDisplayEntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float interpolationProgress) {
+         submitNodeCollector.submitBlock(poseStack, state.blockRenderState.blockState(), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       }
    }
 
    public static class ItemDisplayRenderer extends DisplayRenderer<Display.ItemDisplay, Display.ItemDisplay.ItemRenderState, ItemDisplayEntityRenderState> {
       private final ItemModelResolver itemModelResolver;
 
-      protected ItemDisplayRenderer(EntityRendererProvider.Context var1) {
-         super(var1);
-         this.itemModelResolver = var1.getItemModelResolver();
+      protected ItemDisplayRenderer(final EntityRendererProvider.Context context) {
+         super(context);
+         this.itemModelResolver = context.getItemModelResolver();
       }
 
       public ItemDisplayEntityRenderState createRenderState() {
          return new ItemDisplayEntityRenderState();
       }
 
-      public void extractRenderState(Display.ItemDisplay var1, ItemDisplayEntityRenderState var2, float var3) {
-         super.extractRenderState(var1, var2, var3);
-         Display.ItemDisplay.ItemRenderState var4 = var1.itemRenderState();
-         if (var4 != null) {
-            this.itemModelResolver.updateForNonLiving(var2.item, var4.itemStack(), var4.itemTransform(), var1);
+      public void extractRenderState(final Display.ItemDisplay entity, final ItemDisplayEntityRenderState state, final float partialTicks) {
+         super.extractRenderState(entity, state, partialTicks);
+         Display.ItemDisplay.ItemRenderState itemRenderState = entity.itemRenderState();
+         if (itemRenderState != null) {
+            this.itemModelResolver.updateForNonLiving(state.item, itemRenderState.itemStack(), itemRenderState.itemTransform(), entity);
          } else {
-            var2.item.clear();
+            state.item.clear();
          }
 
       }
 
-      public void submitInner(ItemDisplayEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4, float var5) {
-         if (!var1.item.isEmpty()) {
-            var2.mulPose((Quaternionfc)Axis.YP.rotation(3.1415927F));
-            var1.item.submit(var2, var3, var4, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+      public void submitInner(final ItemDisplayEntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float interpolationProgress) {
+         if (!state.item.isEmpty()) {
+            poseStack.mulPose((Quaternionfc)Axis.YP.rotation(3.1415927F));
+            state.item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
          }
-      }
-
-      // $FF: synthetic method
-      public EntityRenderState createRenderState() {
-         return this.createRenderState();
-      }
-
-      // $FF: synthetic method
-      protected float getShadowRadius(final EntityRenderState var1) {
-         return super.getShadowRadius((DisplayEntityRenderState)var1);
-      }
-
-      // $FF: synthetic method
-      protected int getBlockLightLevel(final Entity var1, final BlockPos var2) {
-         return super.getBlockLightLevel((Display)var1, var2);
-      }
-
-      // $FF: synthetic method
-      protected int getSkyLightLevel(final Entity var1, final BlockPos var2) {
-         return super.getSkyLightLevel((Display)var1, var2);
       }
    }
 
    public static class TextDisplayRenderer extends DisplayRenderer<Display.TextDisplay, Display.TextDisplay.TextRenderState, TextDisplayEntityRenderState> {
       private final Font font;
 
-      protected TextDisplayRenderer(EntityRendererProvider.Context var1) {
-         super(var1);
-         this.font = var1.getFont();
+      protected TextDisplayRenderer(final EntityRendererProvider.Context context) {
+         super(context);
+         this.font = context.getFont();
       }
 
       public TextDisplayEntityRenderState createRenderState() {
          return new TextDisplayEntityRenderState();
       }
 
-      public void extractRenderState(Display.TextDisplay var1, TextDisplayEntityRenderState var2, float var3) {
-         super.extractRenderState(var1, var2, var3);
-         var2.textRenderState = var1.textRenderState();
-         var2.cachedInfo = var1.cacheDisplay(this::splitLines);
+      public void extractRenderState(final Display.TextDisplay entity, final TextDisplayEntityRenderState state, final float partialTicks) {
+         super.extractRenderState(entity, state, partialTicks);
+         state.textRenderState = entity.textRenderState();
+         state.cachedInfo = entity.cacheDisplay(this::splitLines);
       }
 
-      private Display.TextDisplay.CachedInfo splitLines(Component var1, int var2) {
-         List var3 = this.font.split(var1, var2);
-         ArrayList var4 = new ArrayList(var3.size());
-         int var5 = 0;
+      private Display.TextDisplay.CachedInfo splitLines(final Component input, final int width) {
+         List<FormattedCharSequence> lines = this.font.split(input, width);
+         List<Display.TextDisplay.CachedLine> result = new ArrayList(lines.size());
+         int maxLineWidth = 0;
 
-         for(FormattedCharSequence var7 : var3) {
-            int var8 = this.font.width(var7);
-            var5 = Math.max(var5, var8);
-            var4.add(new Display.TextDisplay.CachedLine(var7, var8));
+         for(FormattedCharSequence line : lines) {
+            int lineWidth = this.font.width(line);
+            maxLineWidth = Math.max(maxLineWidth, lineWidth);
+            result.add(new Display.TextDisplay.CachedLine(line, lineWidth));
          }
 
-         return new Display.TextDisplay.CachedInfo(var4, var5);
+         return new Display.TextDisplay.CachedInfo(result, maxLineWidth);
       }
 
-      public void submitInner(TextDisplayEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4, float var5) {
-         Display.TextDisplay.TextRenderState var6 = var1.textRenderState;
-         byte var7 = var6.flags();
-         boolean var8 = (var7 & 2) != 0;
-         boolean var9 = (var7 & 4) != 0;
-         boolean var10 = (var7 & 1) != 0;
-         Display.TextDisplay.Align var11 = Display.TextDisplay.getAlign(var7);
-         byte var12 = (byte)var6.textOpacity().get(var5);
-         int var13;
-         if (var9) {
-            float var14 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
-            var13 = (int)(var14 * 255.0F) << 24;
+      public void submitInner(final TextDisplayEntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float interpolationProgress) {
+         Display.TextDisplay.TextRenderState renderState = state.textRenderState;
+         byte flags = renderState.flags();
+         boolean seeThrough = (flags & 2) != 0;
+         boolean useDefaultBackground = (flags & 4) != 0;
+         boolean shadow = (flags & 1) != 0;
+         Display.TextDisplay.Align alignment = Display.TextDisplay.getAlign(flags);
+         byte textOpacity = (byte)renderState.textOpacity().get(interpolationProgress);
+         int backgroundColor;
+         if (useDefaultBackground) {
+            float backgroundAlpha = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
+            backgroundColor = (int)(backgroundAlpha * 255.0F) << 24;
          } else {
-            var13 = var6.backgroundColor().get(var5);
+            backgroundColor = renderState.backgroundColor().get(interpolationProgress);
          }
 
-         float var25 = 0.0F;
-         Matrix4f var15 = var2.last().pose();
-         var15.rotate(3.1415927F, 0.0F, 1.0F, 0.0F);
-         var15.scale(-0.025F, -0.025F, -0.025F);
-         Display.TextDisplay.CachedInfo var16 = var1.cachedInfo;
-         boolean var17 = true;
+         float y = 0.0F;
+         Matrix4f pose = poseStack.last().pose();
+         pose.rotate(3.1415927F, 0.0F, 1.0F, 0.0F);
+         pose.scale(-0.025F, -0.025F, -0.025F);
+         Display.TextDisplay.CachedInfo cachedInfo = state.cachedInfo;
+         int lineSpacing = 1;
          Objects.requireNonNull(this.font);
-         int var18 = 9 + 1;
-         int var19 = var16.width();
-         int var20 = var16.lines().size() * var18 - 1;
-         var15.translate(1.0F - (float)var19 / 2.0F, (float)(-var20), 0.0F);
-         if (var13 != 0) {
-            var3.submitCustomGeometry(var2, var8 ? RenderTypes.textBackgroundSeeThrough() : RenderTypes.textBackground(), (var4x, var5x) -> {
-               var5x.addVertex(var4x, -1.0F, -1.0F, 0.0F).setColor(var13).setLight(var4);
-               var5x.addVertex(var4x, -1.0F, (float)var20, 0.0F).setColor(var13).setLight(var4);
-               var5x.addVertex(var4x, (float)var19, (float)var20, 0.0F).setColor(var13).setLight(var4);
-               var5x.addVertex(var4x, (float)var19, -1.0F, 0.0F).setColor(var13).setLight(var4);
+         int lineHeight = 9 + 1;
+         int width = cachedInfo.width();
+         int height = cachedInfo.lines().size() * lineHeight - 1;
+         pose.translate(1.0F - (float)width / 2.0F, (float)(-height), 0.0F);
+         if (backgroundColor != 0) {
+            submitNodeCollector.submitCustomGeometry(poseStack, seeThrough ? RenderTypes.textBackgroundSeeThrough() : RenderTypes.textBackground(), (lambdaPose, buffer) -> {
+               buffer.addVertex(lambdaPose, -1.0F, -1.0F, 0.0F).setColor(backgroundColor).setLight(lightCoords);
+               buffer.addVertex(lambdaPose, -1.0F, (float)height, 0.0F).setColor(backgroundColor).setLight(lightCoords);
+               buffer.addVertex(lambdaPose, (float)width, (float)height, 0.0F).setColor(backgroundColor).setLight(lightCoords);
+               buffer.addVertex(lambdaPose, (float)width, -1.0F, 0.0F).setColor(backgroundColor).setLight(lightCoords);
             });
          }
 
-         OrderedSubmitNodeCollector var21 = var3.order(var13 != 0 ? 1 : 0);
+         OrderedSubmitNodeCollector textCollector = submitNodeCollector.order(backgroundColor != 0 ? 1 : 0);
 
-         for(Display.TextDisplay.CachedLine var23 : var16.lines()) {
+         for(Display.TextDisplay.CachedLine line : cachedInfo.lines()) {
             float var10000;
-            switch (var11) {
+            switch (alignment) {
                case LEFT -> var10000 = 0.0F;
-               case RIGHT -> var10000 = (float)(var19 - var23.width());
-               case CENTER -> var10000 = (float)var19 / 2.0F - (float)var23.width() / 2.0F;
+               case RIGHT -> var10000 = (float)(width - line.width());
+               case CENTER -> var10000 = (float)width / 2.0F - (float)line.width() / 2.0F;
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
-            float var24 = var10000;
-            var21.submitText(var2, var24, var25, var23.contents(), var10, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, var4, var12 << 24 | 16777215, 0, 0);
-            var25 += (float)var18;
+            float offset = var10000;
+            textCollector.submitText(poseStack, offset, y, line.contents(), shadow, seeThrough ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, lightCoords, textOpacity << 24 | 16777215, 0, 0);
+            y += (float)lineHeight;
          }
 
-      }
-
-      // $FF: synthetic method
-      public EntityRenderState createRenderState() {
-         return this.createRenderState();
-      }
-
-      // $FF: synthetic method
-      protected float getShadowRadius(final EntityRenderState var1) {
-         return super.getShadowRadius((DisplayEntityRenderState)var1);
-      }
-
-      // $FF: synthetic method
-      protected int getBlockLightLevel(final Entity var1, final BlockPos var2) {
-         return super.getBlockLightLevel((Display)var1, var2);
-      }
-
-      // $FF: synthetic method
-      protected int getSkyLightLevel(final Entity var1, final BlockPos var2) {
-         return super.getSkyLightLevel((Display)var1, var2);
       }
    }
 }

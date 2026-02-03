@@ -9,46 +9,46 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class DarkOakFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<DarkOakFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> foliagePlacerParts(var0).apply(var0, DarkOakFoliagePlacer::new));
+   public static final MapCodec<DarkOakFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).apply(i, DarkOakFoliagePlacer::new));
 
-   public DarkOakFoliagePlacer(IntProvider var1, IntProvider var2) {
-      super(var1, var2);
+   public DarkOakFoliagePlacer(final IntProvider radius, final IntProvider offset) {
+      super(radius, offset);
    }
 
    protected FoliagePlacerType<?> type() {
       return FoliagePlacerType.DARK_OAK_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(LevelSimulatedReader var1, FoliagePlacer.FoliageSetter var2, RandomSource var3, TreeConfiguration var4, int var5, FoliagePlacer.FoliageAttachment var6, int var7, int var8, int var9) {
-      BlockPos var10 = var6.pos().above(var9);
-      boolean var11 = var6.doubleTrunk();
-      if (var11) {
-         this.placeLeavesRow(var1, var2, var3, var4, var10, var8 + 2, -1, var11);
-         this.placeLeavesRow(var1, var2, var3, var4, var10, var8 + 3, 0, var11);
-         this.placeLeavesRow(var1, var2, var3, var4, var10, var8 + 2, 1, var11);
-         if (var3.nextBoolean()) {
-            this.placeLeavesRow(var1, var2, var3, var4, var10, var8, 2, var11);
+   protected void createFoliage(final LevelSimulatedReader level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+      BlockPos pos = foliageAttachment.pos().above(offset);
+      boolean doubleTrunk = foliageAttachment.doubleTrunk();
+      if (doubleTrunk) {
+         this.placeLeavesRow(level, foliageSetter, random, config, pos, leafRadius + 2, -1, doubleTrunk);
+         this.placeLeavesRow(level, foliageSetter, random, config, pos, leafRadius + 3, 0, doubleTrunk);
+         this.placeLeavesRow(level, foliageSetter, random, config, pos, leafRadius + 2, 1, doubleTrunk);
+         if (random.nextBoolean()) {
+            this.placeLeavesRow(level, foliageSetter, random, config, pos, leafRadius, 2, doubleTrunk);
          }
       } else {
-         this.placeLeavesRow(var1, var2, var3, var4, var10, var8 + 2, -1, var11);
-         this.placeLeavesRow(var1, var2, var3, var4, var10, var8 + 1, 0, var11);
+         this.placeLeavesRow(level, foliageSetter, random, config, pos, leafRadius + 2, -1, doubleTrunk);
+         this.placeLeavesRow(level, foliageSetter, random, config, pos, leafRadius + 1, 0, doubleTrunk);
       }
 
    }
 
-   public int foliageHeight(RandomSource var1, int var2, TreeConfiguration var3) {
+   public int foliageHeight(final RandomSource random, final int treeHeight, final TreeConfiguration config) {
       return 4;
    }
 
-   protected boolean shouldSkipLocationSigned(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
-      return var3 != 0 || !var6 || var2 != -var5 && var2 < var5 || var4 != -var5 && var4 < var5 ? super.shouldSkipLocationSigned(var1, var2, var3, var4, var5, var6) : true;
+   protected boolean shouldSkipLocationSigned(final RandomSource random, final int dx, final int y, final int dz, final int currentRadius, final boolean doubleTrunk) {
+      return y != 0 || !doubleTrunk || dx != -currentRadius && dx < currentRadius || dz != -currentRadius && dz < currentRadius ? super.shouldSkipLocationSigned(random, dx, y, dz, currentRadius, doubleTrunk) : true;
    }
 
-   protected boolean shouldSkipLocation(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
-      if (var3 == -1 && !var6) {
-         return var2 == var5 && var4 == var5;
-      } else if (var3 == 1) {
-         return var2 + var4 > var5 * 2 - 2;
+   protected boolean shouldSkipLocation(final RandomSource random, final int dx, final int y, final int dz, final int currentRadius, final boolean doubleTrunk) {
+      if (y == -1 && !doubleTrunk) {
+         return dx == currentRadius && dz == currentRadius;
+      } else if (y == 1) {
+         return dx + dz > currentRadius * 2 - 2;
       } else {
          return false;
       }

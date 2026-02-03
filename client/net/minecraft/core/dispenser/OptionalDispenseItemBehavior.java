@@ -11,11 +11,11 @@ public abstract class OptionalDispenseItemBehavior extends DefaultDispenseItemBe
       return this.success;
    }
 
-   public void setSuccess(boolean var1) {
-      this.success = var1;
+   public void setSuccess(final boolean success) {
+      this.success = success;
    }
 
-   protected void playSound(BlockSource var1) {
-      var1.level().levelEvent(this.isSuccess() ? 1000 : 1001, var1.pos(), 0);
+   protected void playSound(final BlockSource source) {
+      source.level().levelEvent(this.isSuccess() ? 1000 : 1001, source.pos(), 0);
    }
 }

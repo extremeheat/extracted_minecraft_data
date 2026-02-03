@@ -11,22 +11,13 @@ import net.minecraft.world.item.ItemDisplayContext;
 public record ItemTransforms(ItemTransform thirdPersonLeftHand, ItemTransform thirdPersonRightHand, ItemTransform firstPersonLeftHand, ItemTransform firstPersonRightHand, ItemTransform head, ItemTransform gui, ItemTransform ground, ItemTransform fixed, ItemTransform fixedFromBottom) {
    public static final ItemTransforms NO_TRANSFORMS;
 
-   public ItemTransforms(ItemTransform var1, ItemTransform var2, ItemTransform var3, ItemTransform var4, ItemTransform var5, ItemTransform var6, ItemTransform var7, ItemTransform var8, ItemTransform var9) {
+   public ItemTransforms {
       super();
-      this.thirdPersonLeftHand = var1;
-      this.thirdPersonRightHand = var2;
-      this.firstPersonLeftHand = var3;
-      this.firstPersonRightHand = var4;
-      this.head = var5;
-      this.gui = var6;
-      this.ground = var7;
-      this.fixed = var8;
-      this.fixedFromBottom = var9;
    }
 
-   public ItemTransform getTransform(ItemDisplayContext var1) {
+   public ItemTransform getTransform(final ItemDisplayContext type) {
       ItemTransform var10000;
-      switch (var1) {
+      switch (type) {
          case THIRD_PERSON_LEFT_HAND -> var10000 = this.thirdPersonLeftHand;
          case THIRD_PERSON_RIGHT_HAND -> var10000 = this.thirdPersonRightHand;
          case FIRST_PERSON_LEFT_HAND -> var10000 = this.firstPersonLeftHand;
@@ -51,36 +42,31 @@ public record ItemTransforms(ItemTransform thirdPersonLeftHand, ItemTransform th
          super();
       }
 
-      public ItemTransforms deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         JsonObject var4 = var1.getAsJsonObject();
-         ItemTransform var5 = this.getTransform(var3, var4, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
-         ItemTransform var6 = this.getTransform(var3, var4, ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
-         if (var6 == ItemTransform.NO_TRANSFORM) {
-            var6 = var5;
+      public ItemTransforms deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
+         JsonObject object = json.getAsJsonObject();
+         ItemTransform thirdPersonRightHand = this.getTransform(context, object, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
+         ItemTransform thirdPersonLeftHand = this.getTransform(context, object, ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
+         if (thirdPersonLeftHand == ItemTransform.NO_TRANSFORM) {
+            thirdPersonLeftHand = thirdPersonRightHand;
          }
 
-         ItemTransform var7 = this.getTransform(var3, var4, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
-         ItemTransform var8 = this.getTransform(var3, var4, ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
-         if (var8 == ItemTransform.NO_TRANSFORM) {
-            var8 = var7;
+         ItemTransform firstPersonRightHand = this.getTransform(context, object, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
+         ItemTransform firstPersonLeftHand = this.getTransform(context, object, ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
+         if (firstPersonLeftHand == ItemTransform.NO_TRANSFORM) {
+            firstPersonLeftHand = firstPersonRightHand;
          }
 
-         ItemTransform var9 = this.getTransform(var3, var4, ItemDisplayContext.HEAD);
-         ItemTransform var10 = this.getTransform(var3, var4, ItemDisplayContext.GUI);
-         ItemTransform var11 = this.getTransform(var3, var4, ItemDisplayContext.GROUND);
-         ItemTransform var12 = this.getTransform(var3, var4, ItemDisplayContext.FIXED);
-         ItemTransform var13 = this.getTransform(var3, var4, ItemDisplayContext.ON_SHELF);
-         return new ItemTransforms(var6, var5, var8, var7, var9, var10, var11, var12, var13);
+         ItemTransform head = this.getTransform(context, object, ItemDisplayContext.HEAD);
+         ItemTransform gui = this.getTransform(context, object, ItemDisplayContext.GUI);
+         ItemTransform ground = this.getTransform(context, object, ItemDisplayContext.GROUND);
+         ItemTransform fixed = this.getTransform(context, object, ItemDisplayContext.FIXED);
+         ItemTransform fixedFromBottom = this.getTransform(context, object, ItemDisplayContext.ON_SHELF);
+         return new ItemTransforms(thirdPersonLeftHand, thirdPersonRightHand, firstPersonLeftHand, firstPersonRightHand, head, gui, ground, fixed, fixedFromBottom);
       }
 
-      private ItemTransform getTransform(JsonDeserializationContext var1, JsonObject var2, ItemDisplayContext var3) {
-         String var4 = var3.getSerializedName();
-         return var2.has(var4) ? (ItemTransform)var1.deserialize(var2.get(var4), ItemTransform.class) : ItemTransform.NO_TRANSFORM;
-      }
-
-      // $FF: synthetic method
-      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
-         return this.deserialize(var1, var2, var3);
+      private ItemTransform getTransform(final JsonDeserializationContext context, final JsonObject object, final ItemDisplayContext transform) {
+         String name = transform.getSerializedName();
+         return object.has(name) ? (ItemTransform)context.deserialize(object.get(name), ItemTransform.class) : ItemTransform.NO_TRANSFORM;
       }
    }
 }

@@ -18,12 +18,12 @@ public class BreezeEyesLayer extends RenderLayer<BreezeRenderState, BreezeModel>
    private static final RenderType BREEZE_EYES = RenderTypes.breezeEyes(Identifier.withDefaultNamespace("textures/entity/breeze/breeze_eyes.png"));
    private final BreezeModel model;
 
-   public BreezeEyesLayer(RenderLayerParent<BreezeRenderState, BreezeModel> var1, EntityModelSet var2) {
-      super(var1);
-      this.model = new BreezeModel(var2.bakeLayer(ModelLayers.BREEZE_EYES));
+   public BreezeEyesLayer(final RenderLayerParent<BreezeRenderState, BreezeModel> renderer, final EntityModelSet modelSet) {
+      super(renderer);
+      this.model = new BreezeModel(modelSet.bakeLayer(ModelLayers.BREEZE_EYES));
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, BreezeRenderState var4, float var5, float var6) {
-      var2.order(1).submitModel(this.model, var4, var1, BREEZE_EYES, var3, OverlayTexture.NO_OVERLAY, -1, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final BreezeRenderState state, final float yRot, final float xRot) {
+      submitNodeCollector.order(1).submitModel(this.model, state, poseStack, BREEZE_EYES, lightCoords, OverlayTexture.NO_OVERLAY, -1, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 }

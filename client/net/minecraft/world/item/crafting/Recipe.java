@@ -1,8 +1,10 @@
 package net.minecraft.world.item.crafting;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import net.minecraft.core.HolderLookup;
+import java.util.function.BiFunction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -18,21 +20,17 @@ public interface Recipe<T extends RecipeInput> {
    Codec<ResourceKey<Recipe<?>>> KEY_CODEC = ResourceKey.codec(Registries.RECIPE);
    StreamCodec<RegistryFriendlyByteBuf, Recipe<?>> STREAM_CODEC = ByteBufCodecs.registry(Registries.RECIPE_SERIALIZER).dispatch(Recipe::getSerializer, RecipeSerializer::streamCodec);
 
-   boolean matches(T var1, Level var2);
+   boolean matches(T input, Level level);
 
-   ItemStack assemble(T var1, HolderLookup.Provider var2);
+   ItemStack assemble(T input);
 
    default boolean isSpecial() {
       return false;
    }
 
-   default boolean showNotification() {
-      return true;
-   }
+   boolean showNotification();
 
-   default String group() {
-      return "";
-   }
+   String group();
 
    RecipeSerializer<? extends Recipe<T>> getSerializer();
 
@@ -45,4 +43,35 @@ public interface Recipe<T extends RecipeInput> {
    }
 
    RecipeBookCategory recipeBookCategory();
+
+   public static record CommonInfo(boolean showNotification) {
+      public static final MapCodec<CommonInfo> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.optionalFieldOf("show_notification", true).forGetter(CommonInfo::showNotification)).apply(i, CommonInfo::new));
+      public static final StreamCodec<RegistryFriendlyByteBuf, CommonInfo> STREAM_CODEC;
+
+      public CommonInfo {
+         super();
+      }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, CommonInfo::showNotification, CommonInfo::new);
+      }
+   }
+
+   public interface BookInfo<CategoryType> {
+      CategoryType category();
+
+      String group();
+
+      static <CategoryType, SelfType extends BookInfo<CategoryType>> MapCodec<SelfType> mapCodec(final Codec<CategoryType> categoryCodec, final CategoryType defaultCategory, final Constructor<CategoryType, SelfType> constructor) {
+         return RecordCodecBuilder.mapCodec((i) -> i.group(categoryCodec.fieldOf("category").orElse(defaultCategory).forGetter(BookInfo::category), Codec.STRING.optionalFieldOf("group", "").forGetter(BookInfo::group)).apply(i, constructor));
+      }
+
+      static <CategoryType, SelfType extends BookInfo<CategoryType>> StreamCodec<RegistryFriendlyByteBuf, SelfType> streamCodec(final StreamCodec<? super RegistryFriendlyByteBuf, CategoryType> categoryCodec, final Constructor<CategoryType, SelfType> constructor) {
+         return StreamCodec.composite(categoryCodec, BookInfo::category, ByteBufCodecs.STRING_UTF8, BookInfo::group, constructor);
+      }
+
+      @FunctionalInterface
+      public interface Constructor<CategoryType, SelfType extends BookInfo<CategoryType>> extends BiFunction<CategoryType, String, SelfType> {
+      }
+   }
 }

@@ -25,53 +25,53 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class ShearsItem extends Item {
-   public ShearsItem(Item.Properties var1) {
-      super(var1);
+   public ShearsItem(final Item.Properties properties) {
+      super(properties);
    }
 
    public static Tool createToolProperties() {
-      HolderGetter var0 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
-      return new Tool(List.of(Tool.Rule.minesAndDrops(HolderSet.direct(Blocks.COBWEB.builtInRegistryHolder()), 15.0F), Tool.Rule.overrideSpeed(var0.getOrThrow(BlockTags.LEAVES), 15.0F), Tool.Rule.overrideSpeed(var0.getOrThrow(BlockTags.WOOL), 5.0F), Tool.Rule.overrideSpeed(HolderSet.direct(Blocks.VINE.builtInRegistryHolder(), Blocks.GLOW_LICHEN.builtInRegistryHolder()), 2.0F)), 1.0F, 1, true);
+      HolderGetter<Block> registrationLookup = BuiltInRegistries.<Block>acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
+      return new Tool(List.of(Tool.Rule.minesAndDrops(HolderSet.direct(Blocks.COBWEB.builtInRegistryHolder()), 15.0F), Tool.Rule.overrideSpeed(registrationLookup.getOrThrow(BlockTags.LEAVES), 15.0F), Tool.Rule.overrideSpeed(registrationLookup.getOrThrow(BlockTags.WOOL), 5.0F), Tool.Rule.overrideSpeed(HolderSet.direct(Blocks.VINE.builtInRegistryHolder(), Blocks.GLOW_LICHEN.builtInRegistryHolder()), 2.0F)), 1.0F, 1, true);
    }
 
-   public boolean mineBlock(ItemStack var1, Level var2, BlockState var3, BlockPos var4, LivingEntity var5) {
-      Tool var6 = (Tool)var1.get(DataComponents.TOOL);
-      if (var6 == null) {
+   public boolean mineBlock(final ItemStack itemStack, final Level level, final BlockState state, final BlockPos pos, final LivingEntity miner) {
+      Tool tool = (Tool)itemStack.get(DataComponents.TOOL);
+      if (tool == null) {
          return false;
       } else {
-         if (!var2.isClientSide() && !var3.is(BlockTags.FIRE) && var6.damagePerBlock() > 0) {
-            var1.hurtAndBreak(var6.damagePerBlock(), var5, EquipmentSlot.MAINHAND);
+         if (!level.isClientSide() && !state.is(BlockTags.FIRE) && tool.damagePerBlock() > 0) {
+            itemStack.hurtAndBreak(tool.damagePerBlock(), miner, EquipmentSlot.MAINHAND);
          }
 
          return true;
       }
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      BlockState var4 = var2.getBlockState(var3);
-      Block var5 = var4.getBlock();
-      if (var5 instanceof GrowingPlantHeadBlock var6) {
-         if (!var6.isMaxAge(var4)) {
-            Player var7 = var1.getPlayer();
-            ItemStack var8 = var1.getItemInHand();
-            if (var7 instanceof ServerPlayer) {
-               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)var7, var3, var8);
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      BlockState state = level.getBlockState(pos);
+      Block block = state.getBlock();
+      if (block instanceof GrowingPlantHeadBlock plantBlock) {
+         if (!plantBlock.isMaxAge(state)) {
+            Player player = context.getPlayer();
+            ItemStack itemInHand = context.getItemInHand();
+            if (player instanceof ServerPlayer) {
+               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)player, pos, itemInHand);
             }
 
-            var2.playSound(var7, (BlockPos)var3, SoundEvents.GROWING_PLANT_CROP, SoundSource.BLOCKS, 1.0F, 1.0F);
-            BlockState var9 = var6.getMaxAgeState(var4);
-            var2.setBlockAndUpdate(var3, var9);
-            var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1.getPlayer(), var9));
-            if (var7 != null) {
-               var8.hurtAndBreak(1, var7, (EquipmentSlot)var1.getHand().asEquipmentSlot());
+            level.playSound(player, (BlockPos)pos, SoundEvents.GROWING_PLANT_CROP, SoundSource.BLOCKS, 1.0F, 1.0F);
+            BlockState newState = plantBlock.getMaxAgeState(state);
+            level.setBlockAndUpdate(pos, newState);
+            level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(context.getPlayer(), newState));
+            if (player != null) {
+               itemInHand.hurtAndBreak(1, player, (EquipmentSlot)context.getHand().asEquipmentSlot());
             }
 
             return InteractionResult.SUCCESS;
          }
       }
 
-      return super.useOn(var1);
+      return super.useOn(context);
    }
 }

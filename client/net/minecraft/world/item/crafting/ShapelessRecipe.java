@@ -1,91 +1,59 @@
 package net.minecraft.world.item.crafting;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.Level;
-import org.jspecify.annotations.Nullable;
 
-public class ShapelessRecipe implements CraftingRecipe {
-   final String group;
-   final CraftingBookCategory category;
-   final ItemStack result;
-   final List<Ingredient> ingredients;
-   private @Nullable PlacementInfo placementInfo;
+public class ShapelessRecipe extends NormalCraftingRecipe {
+   public static final MapCodec<ShapelessRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Recipe.CommonInfo.MAP_CODEC.forGetter((o) -> o.commonInfo), CraftingRecipe.CraftingBookInfo.MAP_CODEC.forGetter((o) -> o.bookInfo), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result), Ingredient.CODEC.listOf(1, 9).fieldOf("ingredients").forGetter((o) -> o.ingredients)).apply(i, ShapelessRecipe::new));
+   public static final StreamCodec<RegistryFriendlyByteBuf, ShapelessRecipe> STREAM_CODEC;
+   public static final RecipeSerializer<ShapelessRecipe> SERIALIZER;
+   private final ItemStackTemplate result;
+   private final List<Ingredient> ingredients;
 
-   public ShapelessRecipe(String var1, CraftingBookCategory var2, ItemStack var3, List<Ingredient> var4) {
-      super();
-      this.group = var1;
-      this.category = var2;
-      this.result = var3;
-      this.ingredients = var4;
+   public ShapelessRecipe(final Recipe.CommonInfo commonInfo, final CraftingRecipe.CraftingBookInfo bookInfo, final ItemStackTemplate result, final List<Ingredient> ingredients) {
+      super(commonInfo, bookInfo);
+      this.result = result;
+      this.ingredients = ingredients;
    }
 
    public RecipeSerializer<ShapelessRecipe> getSerializer() {
-      return RecipeSerializer.SHAPELESS_RECIPE;
+      return SERIALIZER;
    }
 
-   public String group() {
-      return this.group;
+   protected PlacementInfo createPlacementInfo() {
+      return PlacementInfo.create(this.ingredients);
    }
 
-   public CraftingBookCategory category() {
-      return this.category;
-   }
-
-   public PlacementInfo placementInfo() {
-      if (this.placementInfo == null) {
-         this.placementInfo = PlacementInfo.create(this.ingredients);
-      }
-
-      return this.placementInfo;
-   }
-
-   public boolean matches(CraftingInput var1, Level var2) {
-      if (var1.ingredientCount() != this.ingredients.size()) {
+   public boolean matches(final CraftingInput input, final Level level) {
+      if (input.ingredientCount() != this.ingredients.size()) {
          return false;
       } else {
-         return var1.size() == 1 && this.ingredients.size() == 1 ? ((Ingredient)this.ingredients.getFirst()).test(var1.getItem(0)) : var1.stackedContents().canCraft(this, (StackedContents.Output)null);
+         return input.size() == 1 && this.ingredients.size() == 1 ? ((Ingredient)this.ingredients.getFirst()).test(input.getItem(0)) : input.stackedContents().canCraft(this, (StackedContents.Output)null);
       }
    }
 
-   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      return this.result.copy();
+   public ItemStack assemble(final CraftingInput input) {
+      return this.result.create();
    }
 
    public List<RecipeDisplay> display() {
       return List.of(new ShapelessCraftingRecipeDisplay(this.ingredients.stream().map(Ingredient::display).toList(), new SlotDisplay.ItemStackSlotDisplay(this.result), new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
    }
 
-   public static class Serializer implements RecipeSerializer<ShapelessRecipe> {
-      private static final MapCodec<ShapelessRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.optionalFieldOf("group", "").forGetter((var0x) -> var0x.group), CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter((var0x) -> var0x.category), ItemStack.STRICT_CODEC.fieldOf("result").forGetter((var0x) -> var0x.result), Ingredient.CODEC.listOf(1, 9).fieldOf("ingredients").forGetter((var0x) -> var0x.ingredients)).apply(var0, ShapelessRecipe::new));
-      public static final StreamCodec<RegistryFriendlyByteBuf, ShapelessRecipe> STREAM_CODEC;
-
-      public Serializer() {
-         super();
-      }
-
-      public MapCodec<ShapelessRecipe> codec() {
-         return CODEC;
-      }
-
-      public StreamCodec<RegistryFriendlyByteBuf, ShapelessRecipe> streamCodec() {
-         return STREAM_CODEC;
-      }
-
-      static {
-         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, (var0) -> var0.group, CraftingBookCategory.STREAM_CODEC, (var0) -> var0.category, ItemStack.STREAM_CODEC, (var0) -> var0.result, Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), (var0) -> var0.ingredients, ShapelessRecipe::new);
-      }
+   static {
+      STREAM_CODEC = StreamCodec.composite(Recipe.CommonInfo.STREAM_CODEC, (o) -> o.commonInfo, CraftingRecipe.CraftingBookInfo.STREAM_CODEC, (o) -> o.bookInfo, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), (o) -> o.ingredients, ShapelessRecipe::new);
+      SERIALIZER = new RecipeSerializer<ShapelessRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

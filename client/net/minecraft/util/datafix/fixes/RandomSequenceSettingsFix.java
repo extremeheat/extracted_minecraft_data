@@ -6,11 +6,11 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 
 public class RandomSequenceSettingsFix extends DataFix {
-   public RandomSequenceSettingsFix(Schema var1) {
-      super(var1, false);
+   public RandomSequenceSettingsFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("RandomSequenceSettingsFix", this.getInputSchema().getType(References.SAVED_DATA_RANDOM_SEQUENCES), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.update("data", (var0) -> var0.emptyMap().set("sequences", var0))));
+      return this.fixTypeEverywhereTyped("RandomSequenceSettingsFix", this.getInputSchema().getType(References.SAVED_DATA_RANDOM_SEQUENCES), (input) -> input.update(DSL.remainderFinder(), (container) -> container.update("data", (tag) -> tag.emptyMap().set("sequences", tag))));
    }
 }

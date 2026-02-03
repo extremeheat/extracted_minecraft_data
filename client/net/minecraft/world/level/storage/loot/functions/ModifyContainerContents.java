@@ -3,40 +3,40 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.ContainerComponentManipulator;
 import net.minecraft.world.level.storage.loot.ContainerComponentManipulators;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class ModifyContainerContents extends LootItemConditionalFunction {
-   public static final MapCodec<ModifyContainerContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ContainerComponentManipulators.CODEC.fieldOf("component").forGetter((var0x) -> var0x.component), LootItemFunctions.ROOT_CODEC.fieldOf("modifier").forGetter((var0x) -> var0x.modifier))).apply(var0, ModifyContainerContents::new));
+   public static final MapCodec<ModifyContainerContents> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ContainerComponentManipulators.CODEC.fieldOf("component").forGetter((f) -> f.component), LootItemFunctions.ROOT_CODEC.fieldOf("modifier").forGetter((f) -> f.modifier))).apply(i, ModifyContainerContents::new));
    private final ContainerComponentManipulator<?> component;
    private final LootItemFunction modifier;
 
-   private ModifyContainerContents(List<LootItemCondition> var1, ContainerComponentManipulator<?> var2, LootItemFunction var3) {
-      super(var1);
-      this.component = var2;
-      this.modifier = var3;
+   private ModifyContainerContents(final List<LootItemCondition> predicates, final ContainerComponentManipulator<?> component, final LootItemFunction modifier) {
+      super(predicates);
+      this.component = component;
+      this.modifier = modifier;
    }
 
-   public LootItemFunctionType<ModifyContainerContents> getType() {
-      return LootItemFunctions.MODIFY_CONTENTS;
+   public MapCodec<ModifyContainerContents> codec() {
+      return MAP_CODEC;
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      if (var1.isEmpty()) {
-         return var1;
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      if (itemStack.isEmpty()) {
+         return itemStack;
       } else {
-         this.component.modifyItems(var1, (var2x) -> (ItemStack)this.modifier.apply(var2x, var2));
-         return var1;
+         this.component.modifyItems(itemStack, (c) -> (ItemStack)this.modifier.apply(c, context));
+         return itemStack;
       }
    }
 
-   public void validate(ValidationContext var1) {
-      super.validate(var1);
-      this.modifier.validate(var1.forChild(new ProblemReporter.FieldPathElement("modifier")));
+   public void validate(final ValidationContext context) {
+      super.validate(context);
+      Validatable.validate(context, "modifier", this.modifier);
    }
 }

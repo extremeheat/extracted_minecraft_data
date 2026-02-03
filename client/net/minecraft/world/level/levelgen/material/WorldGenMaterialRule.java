@@ -5,5 +5,5 @@ import net.minecraft.world.level.levelgen.NoiseChunk;
 import org.jspecify.annotations.Nullable;
 
 public interface WorldGenMaterialRule {
-   @Nullable BlockState apply(NoiseChunk var1, int var2, int var3, int var4);
+   @Nullable BlockState apply(final NoiseChunk noiseChunk, final int posX, final int posY, final int posZ);
 }

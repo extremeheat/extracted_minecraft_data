@@ -8,81 +8,81 @@ import net.minecraft.world.level.GameType;
 public interface MinecraftServerSettingsService {
    boolean isAutoSave();
 
-   boolean setAutoSave(boolean var1, ClientInfo var2);
+   boolean setAutoSave(boolean enabled, ClientInfo clientInfo);
 
    Difficulty getDifficulty();
 
-   Difficulty setDifficulty(Difficulty var1, ClientInfo var2);
+   Difficulty setDifficulty(Difficulty difficulty, ClientInfo clientInfo);
 
    boolean isEnforceWhitelist();
 
-   boolean setEnforceWhitelist(boolean var1, ClientInfo var2);
+   boolean setEnforceWhitelist(boolean enforce, ClientInfo clientInfo);
 
    boolean isUsingWhitelist();
 
-   boolean setUsingWhitelist(boolean var1, ClientInfo var2);
+   boolean setUsingWhitelist(boolean use, ClientInfo clientInfo);
 
    int getMaxPlayers();
 
-   int setMaxPlayers(int var1, ClientInfo var2);
+   int setMaxPlayers(int maxPlayers, ClientInfo clientInfo);
 
    int getPauseWhenEmptySeconds();
 
-   int setPauseWhenEmptySeconds(int var1, ClientInfo var2);
+   int setPauseWhenEmptySeconds(int emptySeconds, ClientInfo clientInfo);
 
    int getPlayerIdleTimeout();
 
-   int setPlayerIdleTimeout(int var1, ClientInfo var2);
+   int setPlayerIdleTimeout(int idleTime, ClientInfo clientInfo);
 
    boolean allowFlight();
 
-   boolean setAllowFlight(boolean var1, ClientInfo var2);
+   boolean setAllowFlight(boolean allow, ClientInfo clientInfo);
 
    int getSpawnProtectionRadius();
 
-   int setSpawnProtectionRadius(int var1, ClientInfo var2);
+   int setSpawnProtectionRadius(int spawnProtection, ClientInfo clientInfo);
 
    String getMotd();
 
-   String setMotd(String var1, ClientInfo var2);
+   String setMotd(String motd, ClientInfo clientInfo);
 
    boolean forceGameMode();
 
-   boolean setForceGameMode(boolean var1, ClientInfo var2);
+   boolean setForceGameMode(boolean force, ClientInfo clientInfo);
 
    GameType getGameMode();
 
-   GameType setGameMode(GameType var1, ClientInfo var2);
+   GameType setGameMode(GameType gameMode, ClientInfo clientInfo);
 
    int getViewDistance();
 
-   int setViewDistance(int var1, ClientInfo var2);
+   int setViewDistance(int viewDistance, ClientInfo clientInfo);
 
    int getSimulationDistance();
 
-   int setSimulationDistance(int var1, ClientInfo var2);
+   int setSimulationDistance(int simulationDistance, ClientInfo clientInfo);
 
    boolean acceptsTransfers();
 
-   boolean setAcceptsTransfers(boolean var1, ClientInfo var2);
+   boolean setAcceptsTransfers(boolean accept, ClientInfo clientInfo);
 
    int getStatusHeartbeatInterval();
 
-   int setStatusHeartbeatInterval(int var1, ClientInfo var2);
+   int setStatusHeartbeatInterval(int statusHeartbeatInterval, ClientInfo clientInfo);
 
    LevelBasedPermissionSet getOperatorUserPermissions();
 
-   LevelBasedPermissionSet setOperatorUserPermissions(LevelBasedPermissionSet var1, ClientInfo var2);
+   LevelBasedPermissionSet setOperatorUserPermissions(LevelBasedPermissionSet level, ClientInfo clientInfo);
 
    boolean hidesOnlinePlayers();
 
-   boolean setHidesOnlinePlayers(boolean var1, ClientInfo var2);
+   boolean setHidesOnlinePlayers(boolean hide, ClientInfo clientInfo);
 
    boolean repliesToStatus();
 
-   boolean setRepliesToStatus(boolean var1, ClientInfo var2);
+   boolean setRepliesToStatus(boolean enable, ClientInfo clientInfo);
 
    int getEntityBroadcastRangePercentage();
 
-   int setEntityBroadcastRangePercentage(int var1, ClientInfo var2);
+   int setEntityBroadcastRangePercentage(int percentage, ClientInfo clientInfo);
 }

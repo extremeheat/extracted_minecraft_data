@@ -13,9 +13,9 @@ public class ProgressScreen extends Screen implements ProgressListener {
    private boolean stop;
    private final boolean clearScreenAfterStop;
 
-   public ProgressScreen(boolean var1) {
+   public ProgressScreen(final boolean clearScreenAfterStop) {
       super(GameNarrator.NO_TITLE);
-      this.clearScreenAfterStop = var1;
+      this.clearScreenAfterStop = clearScreenAfterStop;
    }
 
    public boolean shouldCloseOnEsc() {
@@ -26,42 +26,42 @@ public class ProgressScreen extends Screen implements ProgressListener {
       return false;
    }
 
-   public void progressStartNoAbort(Component var1) {
-      this.progressStart(var1);
+   public void progressStartNoAbort(final Component string) {
+      this.progressStart(string);
    }
 
-   public void progressStart(Component var1) {
-      this.header = var1;
+   public void progressStart(final Component string) {
+      this.header = string;
       this.progressStage(Component.translatable("menu.working"));
    }
 
-   public void progressStage(Component var1) {
-      this.stage = var1;
+   public void progressStage(final Component string) {
+      this.stage = string;
       this.progressStagePercentage(0);
    }
 
-   public void progressStagePercentage(int var1) {
-      this.progress = var1;
+   public void progressStagePercentage(final int i) {
+      this.progress = i;
    }
 
    public void stop() {
       this.stop = true;
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
       if (this.stop) {
          if (this.clearScreenAfterStop) {
             this.minecraft.setScreen((Screen)null);
          }
 
       } else {
-         super.render(var1, var2, var3, var4);
+         super.render(graphics, mouseX, mouseY, a);
          if (this.header != null) {
-            var1.drawCenteredString(this.font, (Component)this.header, this.width / 2, 70, -1);
+            graphics.drawCenteredString(this.font, (Component)this.header, this.width / 2, 70, -1);
          }
 
          if (this.stage != null && this.progress != 0) {
-            var1.drawCenteredString(this.font, (Component)Component.empty().append(this.stage).append(" " + this.progress + "%"), this.width / 2, 90, -1);
+            graphics.drawCenteredString(this.font, (Component)Component.empty().append(this.stage).append(" " + this.progress + "%"), this.width / 2, 90, -1);
          }
 
       }

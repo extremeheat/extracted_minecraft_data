@@ -17,8 +17,8 @@ public class FurnaceScreen extends AbstractFurnaceScreen<FurnaceMenu> {
    private static final Component FILTER_NAME = Component.translatable("gui.recipebook.toggleRecipes.smeltable");
    private static final List<RecipeBookComponent.TabInfo> TABS;
 
-   public FurnaceScreen(FurnaceMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3, FILTER_NAME, TEXTURE, LIT_PROGRESS_SPRITE, BURN_PROGRESS_SPRITE, TABS);
+   public FurnaceScreen(final FurnaceMenu menu, final Inventory inventory, final Component title) {
+      super(menu, inventory, title, FILTER_NAME, TEXTURE, LIT_PROGRESS_SPRITE, BURN_PROGRESS_SPRITE, TABS);
    }
 
    static {

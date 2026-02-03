@@ -25,50 +25,50 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
       this.crossbowState = CrossbowAttack.CrossbowState.UNCHARGED;
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      LivingEntity var3 = getAttackTarget(var2);
-      return var2.isHolding(Items.CROSSBOW) && BehaviorUtils.canSee(var2, var3) && BehaviorUtils.isWithinAttackRange(var2, var3, 0);
+   protected boolean checkExtraStartConditions(final ServerLevel level, final E body) {
+      LivingEntity attackTarget = getAttackTarget(body);
+      return body.isHolding(Items.CROSSBOW) && BehaviorUtils.canSee(body, attackTarget) && BehaviorUtils.isWithinAttackRange(body, attackTarget, 0);
    }
 
-   protected boolean canStillUse(ServerLevel var1, E var2, long var3) {
-      return var2.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET) && this.checkExtraStartConditions(var1, var2);
+   protected boolean canStillUse(final ServerLevel level, final E body, final long timestamp) {
+      return body.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET) && this.checkExtraStartConditions(level, body);
    }
 
-   protected void tick(ServerLevel var1, E var2, long var3) {
-      LivingEntity var5 = getAttackTarget(var2);
-      this.lookAtTarget(var2, var5);
-      this.crossbowAttack(var2, var5);
+   protected void tick(final ServerLevel level, final E body, final long timestamp) {
+      LivingEntity target = getAttackTarget(body);
+      this.lookAtTarget(body, target);
+      this.crossbowAttack(body, target);
    }
 
-   protected void stop(ServerLevel var1, E var2, long var3) {
-      if (var2.isUsingItem()) {
-         var2.stopUsingItem();
+   protected void stop(final ServerLevel level, final E body, final long timestamp) {
+      if (body.isUsingItem()) {
+         body.stopUsingItem();
       }
 
-      if (var2.isHolding(Items.CROSSBOW)) {
-         ((CrossbowAttackMob)var2).setChargingCrossbow(false);
-         var2.getUseItem().set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+      if (body.isHolding(Items.CROSSBOW)) {
+         ((CrossbowAttackMob)body).setChargingCrossbow(false);
+         body.getUseItem().set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
       }
 
    }
 
-   private void crossbowAttack(E var1, LivingEntity var2) {
+   private void crossbowAttack(final E body, final LivingEntity target) {
       if (this.crossbowState == CrossbowAttack.CrossbowState.UNCHARGED) {
-         var1.startUsingItem(ProjectileUtil.getWeaponHoldingHand(var1, Items.CROSSBOW));
+         body.startUsingItem(ProjectileUtil.getWeaponHoldingHand(body, Items.CROSSBOW));
          this.crossbowState = CrossbowAttack.CrossbowState.CHARGING;
-         ((CrossbowAttackMob)var1).setChargingCrossbow(true);
+         ((CrossbowAttackMob)body).setChargingCrossbow(true);
       } else if (this.crossbowState == CrossbowAttack.CrossbowState.CHARGING) {
-         if (!var1.isUsingItem()) {
+         if (!body.isUsingItem()) {
             this.crossbowState = CrossbowAttack.CrossbowState.UNCHARGED;
          }
 
-         int var3 = var1.getTicksUsingItem();
-         ItemStack var4 = var1.getUseItem();
-         if (var3 >= CrossbowItem.getChargeDuration(var4, var1)) {
-            var1.releaseUsingItem();
+         int pullTime = body.getTicksUsingItem();
+         ItemStack useItem = body.getUseItem();
+         if (pullTime >= CrossbowItem.getChargeDuration(useItem, body)) {
+            body.releaseUsingItem();
             this.crossbowState = CrossbowAttack.CrossbowState.CHARGED;
-            this.attackDelay = 20 + var1.getRandom().nextInt(20);
-            ((CrossbowAttackMob)var1).setChargingCrossbow(false);
+            this.attackDelay = 20 + body.getRandom().nextInt(20);
+            ((CrossbowAttackMob)body).setChargingCrossbow(false);
          }
       } else if (this.crossbowState == CrossbowAttack.CrossbowState.CHARGED) {
          --this.attackDelay;
@@ -76,31 +76,21 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
             this.crossbowState = CrossbowAttack.CrossbowState.READY_TO_ATTACK;
          }
       } else if (this.crossbowState == CrossbowAttack.CrossbowState.READY_TO_ATTACK) {
-         ((RangedAttackMob)var1).performRangedAttack(var2, 1.0F);
+         ((RangedAttackMob)body).performRangedAttack(target, 1.0F);
          this.crossbowState = CrossbowAttack.CrossbowState.UNCHARGED;
       }
 
    }
 
-   private void lookAtTarget(Mob var1, LivingEntity var2) {
-      var1.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var2, true));
+   private void lookAtTarget(final Mob body, final LivingEntity target) {
+      body.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(target, true));
    }
 
-   private static LivingEntity getAttackTarget(LivingEntity var0) {
-      return (LivingEntity)var0.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
+   private static LivingEntity getAttackTarget(final LivingEntity body) {
+      return (LivingEntity)body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
    }
 
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (Mob)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void tick(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.tick(var1, (Mob)var2, var3);
-   }
-
-   static enum CrossbowState {
+   private static enum CrossbowState {
       UNCHARGED,
       CHARGING,
       CHARGED,

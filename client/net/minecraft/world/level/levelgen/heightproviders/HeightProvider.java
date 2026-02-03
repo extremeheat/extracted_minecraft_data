@@ -15,12 +15,12 @@ public abstract class HeightProvider {
       super();
    }
 
-   public abstract int sample(RandomSource var1, WorldGenerationContext var2);
+   public abstract int sample(final RandomSource random, final WorldGenerationContext heightAccessor);
 
    public abstract HeightProviderType<?> getType();
 
    static {
       CONSTANT_OR_DISPATCH_CODEC = Codec.either(VerticalAnchor.CODEC, BuiltInRegistries.HEIGHT_PROVIDER_TYPE.byNameCodec().dispatch(HeightProvider::getType, HeightProviderType::codec));
-      CODEC = CONSTANT_OR_DISPATCH_CODEC.xmap((var0) -> (HeightProvider)var0.map(ConstantHeight::of, (var0x) -> var0x), (var0) -> var0.getType() == HeightProviderType.CONSTANT ? Either.left(((ConstantHeight)var0).getValue()) : Either.right(var0));
+      CODEC = CONSTANT_OR_DISPATCH_CODEC.xmap((either) -> (HeightProvider)either.map(ConstantHeight::of, (f) -> f), (f) -> f.getType() == HeightProviderType.CONSTANT ? Either.left(((ConstantHeight)f).getValue()) : Either.right(f));
    }
 }

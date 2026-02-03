@@ -11,19 +11,19 @@ public class RegistryCodecs {
       super();
    }
 
-   public static <E> Codec<HolderSet<E>> homogeneousList(ResourceKey<? extends Registry<E>> var0, Codec<E> var1) {
-      return homogeneousList(var0, var1, false);
+   public static <E> Codec<HolderSet<E>> homogeneousList(final ResourceKey<? extends Registry<E>> registryKey, final Codec<E> elementCodec) {
+      return homogeneousList(registryKey, elementCodec, false);
    }
 
-   public static <E> Codec<HolderSet<E>> homogeneousList(ResourceKey<? extends Registry<E>> var0, Codec<E> var1, boolean var2) {
-      return HolderSetCodec.create(var0, RegistryFileCodec.create(var0, var1), var2);
+   public static <E> Codec<HolderSet<E>> homogeneousList(final ResourceKey<? extends Registry<E>> registryKey, final Codec<E> elementCodec, final boolean alwaysUseList) {
+      return HolderSetCodec.create(registryKey, RegistryFileCodec.create(registryKey, elementCodec), alwaysUseList);
    }
 
-   public static <E> Codec<HolderSet<E>> homogeneousList(ResourceKey<? extends Registry<E>> var0) {
-      return homogeneousList(var0, false);
+   public static <E> Codec<HolderSet<E>> homogeneousList(final ResourceKey<? extends Registry<E>> registryKey) {
+      return homogeneousList(registryKey, false);
    }
 
-   public static <E> Codec<HolderSet<E>> homogeneousList(ResourceKey<? extends Registry<E>> var0, boolean var1) {
-      return HolderSetCodec.create(var0, RegistryFixedCodec.create(var0), var1);
+   public static <E> Codec<HolderSet<E>> homogeneousList(final ResourceKey<? extends Registry<E>> registryKey, final boolean alwaysUseList) {
+      return HolderSetCodec.create(registryKey, RegistryFixedCodec.create(registryKey), alwaysUseList);
    }
 }

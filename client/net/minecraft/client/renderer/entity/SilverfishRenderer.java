@@ -2,32 +2,26 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.silverfish.SilverfishModel;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Silverfish;
 
 public class SilverfishRenderer extends MobRenderer<Silverfish, LivingEntityRenderState, SilverfishModel> {
-   private static final Identifier SILVERFISH_LOCATION = Identifier.withDefaultNamespace("textures/entity/silverfish.png");
+   private static final Identifier SILVERFISH_LOCATION = Identifier.withDefaultNamespace("textures/entity/silverfish/silverfish.png");
 
-   public SilverfishRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new SilverfishModel(var1.bakeLayer(ModelLayers.SILVERFISH)), 0.3F);
+   public SilverfishRenderer(final EntityRendererProvider.Context context) {
+      super(context, new SilverfishModel(context.bakeLayer(ModelLayers.SILVERFISH)), 0.3F);
    }
 
    protected float getFlipDegrees() {
       return 180.0F;
    }
 
-   public Identifier getTextureLocation(LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState state) {
       return SILVERFISH_LOCATION;
    }
 
    public LivingEntityRenderState createRenderState() {
       return new LivingEntityRenderState();
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

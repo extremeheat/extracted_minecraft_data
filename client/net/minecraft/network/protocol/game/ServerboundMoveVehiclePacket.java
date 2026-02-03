@@ -11,24 +11,20 @@ import net.minecraft.world.phys.Vec3;
 public record ServerboundMoveVehiclePacket(Vec3 position, float yRot, float xRot, boolean onGround) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundMoveVehiclePacket> STREAM_CODEC;
 
-   public ServerboundMoveVehiclePacket(Vec3 var1, float var2, float var3, boolean var4) {
+   public ServerboundMoveVehiclePacket {
       super();
-      this.position = var1;
-      this.yRot = var2;
-      this.xRot = var3;
-      this.onGround = var4;
    }
 
-   public static ServerboundMoveVehiclePacket fromEntity(Entity var0) {
-      return var0.isInterpolating() ? new ServerboundMoveVehiclePacket(var0.getInterpolation().position(), var0.getInterpolation().yRot(), var0.getInterpolation().xRot(), var0.onGround()) : new ServerboundMoveVehiclePacket(var0.position(), var0.getYRot(), var0.getXRot(), var0.onGround());
+   public static ServerboundMoveVehiclePacket fromEntity(final Entity entity) {
+      return entity.isInterpolating() ? new ServerboundMoveVehiclePacket(entity.getInterpolation().position(), entity.getInterpolation().yRot(), entity.getInterpolation().xRot(), entity.onGround()) : new ServerboundMoveVehiclePacket(entity.position(), entity.getYRot(), entity.getXRot(), entity.onGround());
    }
 
    public PacketType<ServerboundMoveVehiclePacket> type() {
       return GamePacketTypes.SERVERBOUND_MOVE_VEHICLE;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleMoveVehicle(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleMoveVehicle(this);
    }
 
    static {

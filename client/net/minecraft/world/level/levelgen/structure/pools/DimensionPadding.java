@@ -7,18 +7,16 @@ import java.util.function.Function;
 import net.minecraft.util.ExtraCodecs;
 
 public record DimensionPadding(int bottom, int top) {
-   private static final Codec<DimensionPadding> RECORD_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.lenientOptionalFieldOf("bottom", 0).forGetter((var0x) -> var0x.bottom), ExtraCodecs.NON_NEGATIVE_INT.lenientOptionalFieldOf("top", 0).forGetter((var0x) -> var0x.top)).apply(var0, DimensionPadding::new));
+   private static final Codec<DimensionPadding> RECORD_CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.lenientOptionalFieldOf("bottom", 0).forGetter((r) -> r.bottom), ExtraCodecs.NON_NEGATIVE_INT.lenientOptionalFieldOf("top", 0).forGetter((r) -> r.top)).apply(i, DimensionPadding::new));
    public static final Codec<DimensionPadding> CODEC;
    public static final DimensionPadding ZERO;
 
-   public DimensionPadding(int var1) {
-      this(var1, var1);
+   public DimensionPadding(final int value) {
+      this(value, value);
    }
 
-   public DimensionPadding(int var1, int var2) {
+   public DimensionPadding {
       super();
-      this.bottom = var1;
-      this.top = var2;
    }
 
    public boolean hasEqualTopAndBottom() {
@@ -26,7 +24,7 @@ public record DimensionPadding(int bottom, int top) {
    }
 
    static {
-      CODEC = Codec.either(ExtraCodecs.NON_NEGATIVE_INT, RECORD_CODEC).xmap((var0) -> (DimensionPadding)var0.map(DimensionPadding::new, Function.identity()), (var0) -> var0.hasEqualTopAndBottom() ? Either.left(var0.bottom) : Either.right(var0));
+      CODEC = Codec.either(ExtraCodecs.NON_NEGATIVE_INT, RECORD_CODEC).xmap((e) -> (DimensionPadding)e.map(DimensionPadding::new, Function.identity()), (padding) -> padding.hasEqualTopAndBottom() ? Either.left(padding.bottom) : Either.right(padding));
       ZERO = new DimensionPadding(0);
    }
 }

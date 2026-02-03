@@ -10,33 +10,33 @@ public class LevelEntityGetterAdapter<T extends EntityAccess> implements LevelEn
    private final EntityLookup<T> visibleEntities;
    private final EntitySectionStorage<T> sectionStorage;
 
-   public LevelEntityGetterAdapter(EntityLookup<T> var1, EntitySectionStorage<T> var2) {
+   public LevelEntityGetterAdapter(final EntityLookup<T> visibleEntities, final EntitySectionStorage<T> sectionStorage) {
       super();
-      this.visibleEntities = var1;
-      this.sectionStorage = var2;
+      this.visibleEntities = visibleEntities;
+      this.sectionStorage = sectionStorage;
    }
 
-   public @Nullable T get(int var1) {
-      return this.visibleEntities.getEntity(var1);
+   public @Nullable T get(final int id) {
+      return this.visibleEntities.getEntity(id);
    }
 
-   public @Nullable T get(UUID var1) {
-      return this.visibleEntities.getEntity(var1);
+   public @Nullable T get(final UUID id) {
+      return this.visibleEntities.getEntity(id);
    }
 
    public Iterable<T> getAll() {
       return this.visibleEntities.getAllEntities();
    }
 
-   public <U extends T> void get(EntityTypeTest<T, U> var1, AbortableIterationConsumer<U> var2) {
-      this.visibleEntities.getEntities(var1, var2);
+   public <U extends T> void get(final EntityTypeTest<T, U> type, final AbortableIterationConsumer<U> consumer) {
+      this.visibleEntities.getEntities(type, consumer);
    }
 
-   public void get(AABB var1, Consumer<T> var2) {
-      this.sectionStorage.getEntities(var1, AbortableIterationConsumer.forConsumer(var2));
+   public void get(final AABB bb, final Consumer<T> output) {
+      this.sectionStorage.getEntities(bb, AbortableIterationConsumer.forConsumer(output));
    }
 
-   public <U extends T> void get(EntityTypeTest<T, U> var1, AABB var2, AbortableIterationConsumer<U> var3) {
-      this.sectionStorage.getEntities(var1, var2, var3);
+   public <U extends T> void get(final EntityTypeTest<T, U> type, final AABB bb, final AbortableIterationConsumer<U> consumer) {
+      this.sectionStorage.getEntities(type, bb, consumer);
    }
 }

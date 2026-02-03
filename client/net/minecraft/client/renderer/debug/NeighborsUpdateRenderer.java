@@ -17,47 +17,43 @@ public class NeighborsUpdateRenderer implements DebugRenderer.SimpleDebugRendere
       super();
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      int var10 = DebugSubscriptions.NEIGHBOR_UPDATES.expireAfterTicks();
-      double var11 = 1.0 / (double)(var10 * 2);
-      HashMap var13 = new HashMap();
-      var7.forEachEvent(DebugSubscriptions.NEIGHBOR_UPDATES, (var1x, var2, var3x) -> {
-         long var4 = (long)(var3x - var2);
-         LastUpdate var6 = (LastUpdate)var13.getOrDefault(var1x, NeighborsUpdateRenderer.LastUpdate.NONE);
-         var13.put(var1x, var6.tryCount((int)var4));
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      int shrinkTime = DebugSubscriptions.NEIGHBOR_UPDATES.expireAfterTicks();
+      double shrinkSpeed = 1.0 / (double)(shrinkTime * 2);
+      Map<BlockPos, LastUpdate> lastUpdates = new HashMap();
+      debugValues.forEachEvent(DebugSubscriptions.NEIGHBOR_UPDATES, (blockPos, remainingTicks, totalLifetime) -> {
+         long age = (long)(totalLifetime - remainingTicks);
+         LastUpdate lastUpdate = (LastUpdate)lastUpdates.getOrDefault(blockPos, NeighborsUpdateRenderer.LastUpdate.NONE);
+         lastUpdates.put(blockPos, lastUpdate.tryCount((int)age));
       });
 
-      for(Map.Entry var15 : var13.entrySet()) {
-         BlockPos var16 = (BlockPos)var15.getKey();
-         LastUpdate var17 = (LastUpdate)var15.getValue();
-         AABB var18 = (new AABB(var16)).inflate(0.002).deflate(var11 * (double)var17.age);
-         Gizmos.cuboid(var18, GizmoStyle.stroke(-1));
+      for(Map.Entry<BlockPos, LastUpdate> entry : lastUpdates.entrySet()) {
+         BlockPos pos = (BlockPos)entry.getKey();
+         LastUpdate lastUpdate = (LastUpdate)entry.getValue();
+         AABB aabb = (new AABB(pos)).inflate(0.002).deflate(shrinkSpeed * (double)lastUpdate.age);
+         Gizmos.cuboid(aabb, GizmoStyle.stroke(-1));
       }
 
-      for(Map.Entry var20 : var13.entrySet()) {
-         BlockPos var21 = (BlockPos)var20.getKey();
-         LastUpdate var22 = (LastUpdate)var20.getValue();
-         Gizmos.billboardText(String.valueOf(var22.count), Vec3.atCenterOf(var21), TextGizmo.Style.whiteAndCentered());
+      for(Map.Entry<BlockPos, LastUpdate> entry : lastUpdates.entrySet()) {
+         BlockPos pos = (BlockPos)entry.getKey();
+         LastUpdate lastUpdate = (LastUpdate)entry.getValue();
+         Gizmos.billboardText(String.valueOf(lastUpdate.count), Vec3.atCenterOf(pos), TextGizmo.Style.whiteAndCentered());
       }
 
    }
 
-   static record LastUpdate(int count, int age) {
-      final int count;
-      final int age;
-      static final LastUpdate NONE = new LastUpdate(0, 2147483647);
+   private static record LastUpdate(int count, int age) {
+      private static final LastUpdate NONE = new LastUpdate(0, 2147483647);
 
-      private LastUpdate(int var1, int var2) {
+      private LastUpdate {
          super();
-         this.count = var1;
-         this.age = var2;
       }
 
-      public LastUpdate tryCount(int var1) {
-         if (var1 == this.age) {
-            return new LastUpdate(this.count + 1, var1);
+      public LastUpdate tryCount(final int age) {
+         if (age == this.age) {
+            return new LastUpdate(this.count + 1, age);
          } else {
-            return var1 < this.age ? new LastUpdate(1, var1) : this;
+            return age < this.age ? new LastUpdate(1, age) : this;
          }
       }
    }

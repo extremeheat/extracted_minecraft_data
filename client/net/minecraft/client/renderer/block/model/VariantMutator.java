@@ -12,16 +12,16 @@ public interface VariantMutator extends UnaryOperator<Variant> {
    VariantProperty<Identifier> MODEL = Variant::withModel;
    VariantProperty<Boolean> UV_LOCK = Variant::withUvLock;
 
-   default VariantMutator then(VariantMutator var1) {
-      return (var2) -> (Variant)var1.apply((Variant)this.apply(var2));
+   default VariantMutator then(final VariantMutator other) {
+      return (variant) -> (Variant)other.apply((Variant)this.apply(variant));
    }
 
    @FunctionalInterface
    public interface VariantProperty<T> {
-      Variant apply(Variant var1, T var2);
+      Variant apply(Variant input, T value);
 
-      default VariantMutator withValue(T var1) {
-         return (var2) -> this.apply(var2, var1);
+      default VariantMutator withValue(final T value) {
+         return (variant) -> this.apply(variant, value);
       }
    }
 }

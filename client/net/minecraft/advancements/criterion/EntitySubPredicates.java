@@ -16,11 +16,11 @@ public class EntitySubPredicates {
       super();
    }
 
-   private static <T extends EntitySubPredicate> MapCodec<T> register(String var0, MapCodec<T> var1) {
-      return (MapCodec)Registry.register(BuiltInRegistries.ENTITY_SUB_PREDICATE_TYPE, (String)var0, var1);
+   private static <T extends EntitySubPredicate> MapCodec<T> register(final String id, final MapCodec<T> value) {
+      return (MapCodec)Registry.register(BuiltInRegistries.ENTITY_SUB_PREDICATE_TYPE, (String)id, value);
    }
 
-   public static MapCodec<? extends EntitySubPredicate> bootstrap(Registry<MapCodec<? extends EntitySubPredicate>> var0) {
+   public static MapCodec<? extends EntitySubPredicate> bootstrap(final Registry<MapCodec<? extends EntitySubPredicate>> registry) {
       return LIGHTNING;
    }
 

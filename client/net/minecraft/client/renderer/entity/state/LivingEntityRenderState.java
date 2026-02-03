@@ -37,7 +37,7 @@ public class LivingEntityRenderState extends EntityRenderState {
       this.headItem = new ItemStackRenderState();
    }
 
-   public boolean hasPose(Pose var1) {
-      return this.pose == var1;
+   public boolean hasPose(final Pose pose) {
+      return this.pose == pose;
    }
 }

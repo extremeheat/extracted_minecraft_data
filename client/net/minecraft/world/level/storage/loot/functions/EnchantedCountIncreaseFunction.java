@@ -1,7 +1,5 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -18,6 +16,8 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
@@ -25,51 +25,56 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction {
    public static final int NO_LIMIT = 0;
-   public static final MapCodec<EnchantedCountIncreaseFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((var0x) -> var0x.enchantment), NumberProviders.CODEC.fieldOf("count").forGetter((var0x) -> var0x.value), Codec.INT.optionalFieldOf("limit", 0).forGetter((var0x) -> var0x.limit))).apply(var0, EnchantedCountIncreaseFunction::new));
+   public static final MapCodec<EnchantedCountIncreaseFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((f) -> f.enchantment), NumberProviders.CODEC.fieldOf("count").forGetter((f) -> f.count), Codec.INT.optionalFieldOf("limit", 0).forGetter((f) -> f.limit))).apply(i, EnchantedCountIncreaseFunction::new));
    private final Holder<Enchantment> enchantment;
-   private final NumberProvider value;
+   private final NumberProvider count;
    private final int limit;
 
-   EnchantedCountIncreaseFunction(List<LootItemCondition> var1, Holder<Enchantment> var2, NumberProvider var3, int var4) {
-      super(var1);
-      this.enchantment = var2;
-      this.value = var3;
-      this.limit = var4;
+   private EnchantedCountIncreaseFunction(final List<LootItemCondition> predicates, final Holder<Enchantment> enchantment, final NumberProvider count, final int limit) {
+      super(predicates);
+      this.enchantment = enchantment;
+      this.count = count;
+      this.limit = limit;
    }
 
-   public LootItemFunctionType<EnchantedCountIncreaseFunction> getType() {
-      return LootItemFunctions.ENCHANTED_COUNT_INCREASE;
+   public MapCodec<EnchantedCountIncreaseFunction> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return Sets.union(ImmutableSet.of(LootContextParams.ATTACKING_ENTITY), this.value.getReferencedContextParams());
+      return Set.of(LootContextParams.ATTACKING_ENTITY);
+   }
+
+   public void validate(final ValidationContext context) {
+      super.validate(context);
+      Validatable.validate(context, "count", this.count);
    }
 
    private boolean hasLimit() {
       return this.limit > 0;
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      Entity var3 = (Entity)var2.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
-      if (var3 instanceof LivingEntity var4) {
-         int var5 = EnchantmentHelper.getEnchantmentLevel(this.enchantment, var4);
-         if (var5 == 0) {
-            return var1;
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      Entity killer = (Entity)context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
+      if (killer instanceof LivingEntity entity) {
+         int level = EnchantmentHelper.getEnchantmentLevel(this.enchantment, entity);
+         if (level == 0) {
+            return itemStack;
          }
 
-         float var6 = (float)var5 * this.value.getFloat(var2);
-         var1.grow(Math.round(var6));
+         float addition = (float)level * this.count.getFloat(context);
+         itemStack.grow(Math.round(addition));
          if (this.hasLimit()) {
-            var1.limitSize(this.limit);
+            itemStack.limitSize(this.limit);
          }
       }
 
-      return var1;
+      return itemStack;
    }
 
-   public static Builder lootingMultiplier(HolderLookup.Provider var0, NumberProvider var1) {
-      HolderLookup.RegistryLookup var2 = var0.lookupOrThrow(Registries.ENCHANTMENT);
-      return new Builder(var2.getOrThrow(Enchantments.LOOTING), var1);
+   public static Builder lootingMultiplier(final HolderLookup.Provider registries, final NumberProvider count) {
+      HolderLookup.RegistryLookup<Enchantment> enchantments = registries.lookupOrThrow(Registries.ENCHANTMENT);
+      return new Builder(enchantments.getOrThrow(Enchantments.LOOTING), count);
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
@@ -77,28 +82,23 @@ public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction 
       private final NumberProvider count;
       private int limit = 0;
 
-      public Builder(Holder<Enchantment> var1, NumberProvider var2) {
+      public Builder(final Holder<Enchantment> enchantment, final NumberProvider count) {
          super();
-         this.enchantment = var1;
-         this.count = var2;
+         this.enchantment = enchantment;
+         this.count = count;
       }
 
       protected Builder getThis() {
          return this;
       }
 
-      public Builder setLimit(int var1) {
-         this.limit = var1;
+      public Builder setLimit(final int limit) {
+         this.limit = limit;
          return this;
       }
 
       public LootItemFunction build() {
          return new EnchantedCountIncreaseFunction(this.getConditions(), this.enchantment, this.count, this.limit);
-      }
-
-      // $FF: synthetic method
-      protected LootItemConditionalFunction.Builder getThis() {
-         return this.getThis();
       }
    }
 }

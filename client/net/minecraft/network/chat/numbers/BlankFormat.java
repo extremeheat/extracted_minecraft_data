@@ -30,7 +30,7 @@ public class BlankFormat implements NumberFormat {
       super();
    }
 
-   public MutableComponent format(int var1) {
+   public MutableComponent format(final int value) {
       return Component.empty();
    }
 

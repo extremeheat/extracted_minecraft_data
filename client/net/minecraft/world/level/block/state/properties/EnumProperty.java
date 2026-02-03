@@ -14,27 +14,27 @@ public final class EnumProperty<T extends Enum<T> & StringRepresentable> extends
    private final Map<String, T> names;
    private final int[] ordinalToIndex;
 
-   private EnumProperty(String var1, Class<T> var2, List<T> var3) {
-      super(var1, var2);
-      if (var3.isEmpty()) {
-         throw new IllegalArgumentException("Trying to make empty EnumProperty '" + var1 + "'");
+   private EnumProperty(final String name, final Class<T> clazz, final List<T> values) {
+      super(name, clazz);
+      if (values.isEmpty()) {
+         throw new IllegalArgumentException("Trying to make empty EnumProperty '" + name + "'");
       } else {
-         this.values = List.copyOf(var3);
-         Enum[] var4 = (Enum[])var2.getEnumConstants();
-         this.ordinalToIndex = new int[var4.length];
+         this.values = List.copyOf(values);
+         T[] allEnumValues = (T[])(clazz.getEnumConstants());
+         this.ordinalToIndex = new int[allEnumValues.length];
 
-         for(Enum var8 : var4) {
-            this.ordinalToIndex[var8.ordinal()] = var3.indexOf(var8);
+         for(T value : allEnumValues) {
+            this.ordinalToIndex[value.ordinal()] = values.indexOf(value);
          }
 
-         ImmutableMap.Builder var9 = ImmutableMap.builder();
+         ImmutableMap.Builder<String, T> names = ImmutableMap.builder();
 
-         for(Enum var11 : var3) {
-            String var12 = ((StringRepresentable)var11).getSerializedName();
-            var9.put(var12, var11);
+         for(T value : values) {
+            String key = ((StringRepresentable)value).getSerializedName();
+            names.put(key, value);
          }
 
-         this.names = var9.buildOrThrow();
+         this.names = names.buildOrThrow();
       }
    }
 
@@ -42,26 +42,26 @@ public final class EnumProperty<T extends Enum<T> & StringRepresentable> extends
       return this.values;
    }
 
-   public Optional<T> getValue(String var1) {
-      return Optional.ofNullable((Enum)this.names.get(var1));
+   public Optional<T> getValue(final String name) {
+      return Optional.ofNullable((Enum)this.names.get(name));
    }
 
-   public String getName(T var1) {
-      return ((StringRepresentable)var1).getSerializedName();
+   public String getName(final T value) {
+      return ((StringRepresentable)value).getSerializedName();
    }
 
-   public int getInternalIndex(T var1) {
-      return this.ordinalToIndex[var1.ordinal()];
+   public int getInternalIndex(final T value) {
+      return this.ordinalToIndex[value.ordinal()];
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
       } else {
-         if (var1 instanceof EnumProperty) {
-            EnumProperty var2 = (EnumProperty)var1;
-            if (super.equals(var1)) {
-               return this.values.equals(var2.values);
+         if (o instanceof EnumProperty) {
+            EnumProperty<?> that = (EnumProperty)o;
+            if (super.equals(o)) {
+               return this.values.equals(that.values);
             }
          }
 
@@ -70,35 +70,25 @@ public final class EnumProperty<T extends Enum<T> & StringRepresentable> extends
    }
 
    public int generateHashCode() {
-      int var1 = super.generateHashCode();
-      var1 = 31 * var1 + this.values.hashCode();
-      return var1;
+      int result = super.generateHashCode();
+      result = 31 * result + this.values.hashCode();
+      return result;
    }
 
-   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1) {
-      return create(var0, var1, (Predicate)((var0x) -> true));
+   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(final String name, final Class<T> clazz) {
+      return create(name, clazz, (Predicate)((t) -> true));
    }
 
-   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, Predicate<T> var2) {
-      return create(var0, var1, (List)Arrays.stream((Enum[])var1.getEnumConstants()).filter(var2).collect(Collectors.toList()));
+   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(final String name, final Class<T> clazz, final Predicate<T> filter) {
+      return create(name, clazz, (List)Arrays.stream((Enum[])clazz.getEnumConstants()).filter(filter).collect(Collectors.toList()));
    }
 
    @SafeVarargs
-   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, T... var2) {
-      return create(var0, var1, List.of(var2));
+   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(final String name, final Class<T> clazz, final T... values) {
+      return create(name, clazz, List.of(values));
    }
 
-   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, List<T> var2) {
-      return new EnumProperty<T>(var0, var1, var2);
-   }
-
-   // $FF: synthetic method
-   public int getInternalIndex(final Comparable var1) {
-      return this.getInternalIndex((Enum)var1);
-   }
-
-   // $FF: synthetic method
-   public String getName(final Comparable var1) {
-      return this.getName((Enum)var1);
+   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(final String name, final Class<T> clazz, final List<T> values) {
+      return new EnumProperty<T>(name, clazz, values);
    }
 }

@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
@@ -27,29 +28,33 @@ public class StonecutterMenu extends AbstractContainerMenu {
    private static final int USE_ROW_SLOT_START = 29;
    private static final int USE_ROW_SLOT_END = 38;
    private final ContainerLevelAccess access;
-   final DataSlot selectedRecipeIndex;
+   private final DataSlot selectedRecipeIndex;
    private final Level level;
    private SelectableRecipe.SingleInputSet<StonecutterRecipe> recipesForInput;
    private ItemStack input;
-   long lastSoundTime;
+   private long lastSoundTime;
    final Slot inputSlot;
    final Slot resultSlot;
-   Runnable slotUpdateListener;
+   private Runnable slotUpdateListener;
    public final Container container;
-   final ResultContainer resultContainer;
+   private final ResultContainer resultContainer;
 
-   public StonecutterMenu(int var1, Inventory var2) {
-      this(var1, var2, ContainerLevelAccess.NULL);
+   public StonecutterMenu(final int containerId, final Inventory inventory) {
+      this(containerId, inventory, ContainerLevelAccess.NULL);
    }
 
-   public StonecutterMenu(int var1, Inventory var2, final ContainerLevelAccess var3) {
-      super(MenuType.STONECUTTER, var1);
+   public StonecutterMenu(final int containerId, final Inventory inventory, final ContainerLevelAccess access) {
+      super(MenuType.STONECUTTER, containerId);
       this.selectedRecipeIndex = DataSlot.standalone();
       this.recipesForInput = SelectableRecipe.SingleInputSet.<StonecutterRecipe>empty();
       this.input = ItemStack.EMPTY;
       this.slotUpdateListener = () -> {
       };
       this.container = new SimpleContainer(1) {
+         {
+            Objects.requireNonNull(StonecutterMenu.this);
+         }
+
          public void setChanged() {
             super.setChanged();
             StonecutterMenu.this.slotsChanged(this);
@@ -57,38 +62,42 @@ public class StonecutterMenu extends AbstractContainerMenu {
          }
       };
       this.resultContainer = new ResultContainer();
-      this.access = var3;
-      this.level = var2.player.level();
+      this.access = access;
+      this.level = inventory.player.level();
       this.inputSlot = this.addSlot(new Slot(this.container, 0, 20, 33));
       this.resultSlot = this.addSlot(new Slot(this.resultContainer, 1, 143, 33) {
-         public boolean mayPlace(ItemStack var1) {
+         {
+            Objects.requireNonNull(StonecutterMenu.this);
+         }
+
+         public boolean mayPlace(final ItemStack itemStack) {
             return false;
          }
 
-         public void onTake(Player var1, ItemStack var2) {
-            var2.onCraftedBy(var1, var2.getCount());
-            StonecutterMenu.this.resultContainer.awardUsedRecipes(var1, this.getRelevantItems());
-            ItemStack var3x = StonecutterMenu.this.inputSlot.remove(1);
-            if (!var3x.isEmpty()) {
+         public void onTake(final Player player, final ItemStack carried) {
+            carried.onCraftedBy(player, carried.getCount());
+            StonecutterMenu.this.resultContainer.awardUsedRecipes(player, this.getRelevantItems());
+            ItemStack remaining = StonecutterMenu.this.inputSlot.remove(1);
+            if (!remaining.isEmpty()) {
                StonecutterMenu.this.setupResultSlot(StonecutterMenu.this.selectedRecipeIndex.get());
             }
 
-            var3.execute((var1x, var2x) -> {
-               long var3x = var1x.getGameTime();
-               if (StonecutterMenu.this.lastSoundTime != var3x) {
-                  var1x.playSound((Entity)null, (BlockPos)var2x, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  StonecutterMenu.this.lastSoundTime = var3x;
+            access.execute((level, pos) -> {
+               long gameTime = level.getGameTime();
+               if (StonecutterMenu.this.lastSoundTime != gameTime) {
+                  level.playSound((Entity)null, (BlockPos)pos, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  StonecutterMenu.this.lastSoundTime = gameTime;
                }
 
             });
-            super.onTake(var1, var2);
+            super.onTake(player, carried);
          }
 
          private List<ItemStack> getRelevantItems() {
             return List.of(StonecutterMenu.this.inputSlot.getItem());
          }
       });
-      this.addStandardInventorySlots(var2, 8, 84);
+      this.addStandardInventorySlots(inventory, 8, 84);
       this.addDataSlot(this.selectedRecipeIndex);
    }
 
@@ -108,59 +117,59 @@ public class StonecutterMenu extends AbstractContainerMenu {
       return this.inputSlot.hasItem() && !this.recipesForInput.isEmpty();
    }
 
-   public boolean stillValid(Player var1) {
-      return stillValid(this.access, var1, Blocks.STONECUTTER);
+   public boolean stillValid(final Player player) {
+      return stillValid(this.access, player, Blocks.STONECUTTER);
    }
 
-   public boolean clickMenuButton(Player var1, int var2) {
-      if (this.selectedRecipeIndex.get() == var2) {
+   public boolean clickMenuButton(final Player player, final int buttonId) {
+      if (this.selectedRecipeIndex.get() == buttonId) {
          return false;
       } else {
-         if (this.isValidRecipeIndex(var2)) {
-            this.selectedRecipeIndex.set(var2);
-            this.setupResultSlot(var2);
+         if (this.isValidRecipeIndex(buttonId)) {
+            this.selectedRecipeIndex.set(buttonId);
+            this.setupResultSlot(buttonId);
          }
 
          return true;
       }
    }
 
-   private boolean isValidRecipeIndex(int var1) {
-      return var1 >= 0 && var1 < this.recipesForInput.size();
+   private boolean isValidRecipeIndex(final int buttonId) {
+      return buttonId >= 0 && buttonId < this.recipesForInput.size();
    }
 
-   public void slotsChanged(Container var1) {
-      ItemStack var2 = this.inputSlot.getItem();
-      if (!var2.is(this.input.getItem())) {
-         this.input = var2.copy();
-         this.setupRecipeList(var2);
+   public void slotsChanged(final Container container) {
+      ItemStack input = this.inputSlot.getItem();
+      if (!input.is(this.input.getItem())) {
+         this.input = input.copy();
+         this.setupRecipeList(input);
       }
 
    }
 
-   private void setupRecipeList(ItemStack var1) {
+   private void setupRecipeList(final ItemStack item) {
       this.selectedRecipeIndex.set(-1);
       this.resultSlot.set(ItemStack.EMPTY);
-      if (!var1.isEmpty()) {
-         this.recipesForInput = this.level.recipeAccess().stonecutterRecipes().selectByInput(var1);
+      if (!item.isEmpty()) {
+         this.recipesForInput = this.level.recipeAccess().stonecutterRecipes().selectByInput(item);
       } else {
          this.recipesForInput = SelectableRecipe.SingleInputSet.<StonecutterRecipe>empty();
       }
 
    }
 
-   void setupResultSlot(int var1) {
-      Optional var2;
-      if (!this.recipesForInput.isEmpty() && this.isValidRecipeIndex(var1)) {
-         SelectableRecipe.SingleInputEntry var3 = (SelectableRecipe.SingleInputEntry)this.recipesForInput.entries().get(var1);
-         var2 = var3.recipe().recipe();
+   private void setupResultSlot(final int index) {
+      Optional<RecipeHolder<StonecutterRecipe>> usedRecipe;
+      if (!this.recipesForInput.isEmpty() && this.isValidRecipeIndex(index)) {
+         SelectableRecipe.SingleInputEntry<StonecutterRecipe> entry = (SelectableRecipe.SingleInputEntry)this.recipesForInput.entries().get(index);
+         usedRecipe = entry.recipe().recipe();
       } else {
-         var2 = Optional.empty();
+         usedRecipe = Optional.empty();
       }
 
-      var2.ifPresentOrElse((var1x) -> {
-         this.resultContainer.setRecipeUsed(var1x);
-         this.resultSlot.set(((StonecutterRecipe)var1x.value()).assemble(new SingleRecipeInput(this.container.getItem(0)), this.level.registryAccess()));
+      usedRecipe.ifPresentOrElse((recipe) -> {
+         this.resultContainer.setRecipeUsed(recipe);
+         this.resultSlot.set(((StonecutterRecipe)recipe.value()).assemble(new SingleRecipeInput(this.container.getItem(0))));
       }, () -> {
          this.resultSlot.set(ItemStack.EMPTY);
          this.resultContainer.setRecipeUsed((RecipeHolder)null);
@@ -172,67 +181,67 @@ public class StonecutterMenu extends AbstractContainerMenu {
       return MenuType.STONECUTTER;
    }
 
-   public void registerUpdateListener(Runnable var1) {
-      this.slotUpdateListener = var1;
+   public void registerUpdateListener(final Runnable slotUpdateListener) {
+      this.slotUpdateListener = slotUpdateListener;
    }
 
-   public boolean canTakeItemForPickAll(ItemStack var1, Slot var2) {
-      return var2.container != this.resultContainer && super.canTakeItemForPickAll(var1, var2);
+   public boolean canTakeItemForPickAll(final ItemStack carried, final Slot target) {
+      return target.container != this.resultContainer && super.canTakeItemForPickAll(carried, target);
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4 != null && var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         Item var6 = var5.getItem();
-         var3 = var5.copy();
-         if (var2 == 1) {
-            var6.onCraftedBy(var5, var1);
-            if (!this.moveItemStackTo(var5, 2, 38, true)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot != null && slot.hasItem()) {
+         ItemStack stack = slot.getItem();
+         Item item = stack.getItem();
+         clicked = stack.copy();
+         if (slotIndex == 1) {
+            item.onCraftedBy(stack, player);
+            if (!this.moveItemStackTo(stack, 2, 38, true)) {
                return ItemStack.EMPTY;
             }
 
-            var4.onQuickCraft(var5, var3);
-         } else if (var2 == 0) {
-            if (!this.moveItemStackTo(var5, 2, 38, false)) {
+            slot.onQuickCraft(stack, clicked);
+         } else if (slotIndex == 0) {
+            if (!this.moveItemStackTo(stack, 2, 38, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (this.level.recipeAccess().stonecutterRecipes().acceptsInput(var5)) {
-            if (!this.moveItemStackTo(var5, 0, 1, false)) {
+         } else if (this.level.recipeAccess().stonecutterRecipes().acceptsInput(stack)) {
+            if (!this.moveItemStackTo(stack, 0, 1, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var2 >= 2 && var2 < 29) {
-            if (!this.moveItemStackTo(var5, 29, 38, false)) {
+         } else if (slotIndex >= 2 && slotIndex < 29) {
+            if (!this.moveItemStackTo(stack, 29, 38, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var2 >= 29 && var2 < 38 && !this.moveItemStackTo(var5, 2, 29, false)) {
+         } else if (slotIndex >= 29 && slotIndex < 38 && !this.moveItemStackTo(stack, 2, 29, false)) {
             return ItemStack.EMPTY;
          }
 
-         if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY);
+         if (stack.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY);
          }
 
-         var4.setChanged();
-         if (var5.getCount() == var3.getCount()) {
+         slot.setChanged();
+         if (stack.getCount() == clicked.getCount()) {
             return ItemStack.EMPTY;
          }
 
-         var4.onTake(var1, var5);
-         if (var2 == 1) {
-            var1.drop(var5, false);
+         slot.onTake(player, stack);
+         if (slotIndex == 1) {
+            player.drop(stack, false);
          }
 
          this.broadcastChanges();
       }
 
-      return var3;
+      return clicked;
    }
 
-   public void removed(Player var1) {
-      super.removed(var1);
+   public void removed(final Player player) {
+      super.removed(player);
       this.resultContainer.removeItemNoUpdate(1);
-      this.access.execute((var2, var3) -> this.clearContainer(var1, this.container));
+      this.access.execute((level, pos) -> this.clearContainer(player, this.container));
    }
 }

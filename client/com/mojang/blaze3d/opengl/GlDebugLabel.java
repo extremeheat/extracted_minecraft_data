@@ -17,36 +17,36 @@ public abstract class GlDebugLabel {
       super();
    }
 
-   public void applyLabel(GlBuffer var1) {
+   public void applyLabel(final GlBuffer buffer) {
    }
 
-   public void applyLabel(GlTexture var1) {
+   public void applyLabel(final GlTexture texture) {
    }
 
-   public void applyLabel(GlShaderModule var1) {
+   public void applyLabel(final GlShaderModule shaderModule) {
    }
 
-   public void applyLabel(GlProgram var1) {
+   public void applyLabel(final GlProgram program) {
    }
 
-   public void applyLabel(VertexArrayCache.VertexArray var1) {
+   public void applyLabel(final VertexArrayCache.VertexArray vertexArray) {
    }
 
-   public void pushDebugGroup(Supplier<String> var1) {
+   public void pushDebugGroup(final Supplier<String> label) {
    }
 
    public void popDebugGroup() {
    }
 
-   public static GlDebugLabel create(GLCapabilities var0, boolean var1, Set<String> var2) {
-      if (var1) {
-         if (var0.GL_KHR_debug && GlDevice.USE_GL_KHR_debug) {
-            var2.add("GL_KHR_debug");
+   public static GlDebugLabel create(final GLCapabilities caps, final boolean wantsLabels, final Set<String> enabledExtensions) {
+      if (wantsLabels) {
+         if (caps.GL_KHR_debug && GlDevice.USE_GL_KHR_debug) {
+            enabledExtensions.add("GL_KHR_debug");
             return new Core();
          }
 
-         if (var0.GL_EXT_debug_label && GlDevice.USE_GL_EXT_debug_label) {
-            var2.add("GL_EXT_debug_label");
+         if (caps.GL_EXT_debug_label && GlDevice.USE_GL_EXT_debug_label) {
+            enabledExtensions.add("GL_EXT_debug_label");
             return new Ext();
          }
 
@@ -60,45 +60,45 @@ public abstract class GlDebugLabel {
       return false;
    }
 
-   static class Empty extends GlDebugLabel {
-      Empty() {
+   private static class Empty extends GlDebugLabel {
+      private Empty() {
          super();
       }
    }
 
-   static class Core extends GlDebugLabel {
+   private static class Core extends GlDebugLabel {
       private final int maxLabelLength = GL11.glGetInteger(33512);
 
-      Core() {
+      private Core() {
          super();
       }
 
-      public void applyLabel(GlBuffer var1) {
-         Supplier var2 = var1.label;
-         if (var2 != null) {
-            KHRDebug.glObjectLabel(33504, var1.handle, StringUtil.truncateStringIfNecessary((String)var2.get(), this.maxLabelLength, true));
+      public void applyLabel(final GlBuffer buffer) {
+         Supplier<String> label = buffer.label;
+         if (label != null) {
+            KHRDebug.glObjectLabel(33504, buffer.handle, StringUtil.truncateStringIfNecessary((String)label.get(), this.maxLabelLength, true));
          }
 
       }
 
-      public void applyLabel(GlTexture var1) {
-         KHRDebug.glObjectLabel(5890, var1.id, StringUtil.truncateStringIfNecessary(var1.getLabel(), this.maxLabelLength, true));
+      public void applyLabel(final GlTexture texture) {
+         KHRDebug.glObjectLabel(5890, texture.id, StringUtil.truncateStringIfNecessary(texture.getLabel(), this.maxLabelLength, true));
       }
 
-      public void applyLabel(GlShaderModule var1) {
-         KHRDebug.glObjectLabel(33505, var1.getShaderId(), StringUtil.truncateStringIfNecessary(var1.getDebugLabel(), this.maxLabelLength, true));
+      public void applyLabel(final GlShaderModule shaderModule) {
+         KHRDebug.glObjectLabel(33505, shaderModule.getShaderId(), StringUtil.truncateStringIfNecessary(shaderModule.getDebugLabel(), this.maxLabelLength, true));
       }
 
-      public void applyLabel(GlProgram var1) {
-         KHRDebug.glObjectLabel(33506, var1.getProgramId(), StringUtil.truncateStringIfNecessary(var1.getDebugLabel(), this.maxLabelLength, true));
+      public void applyLabel(final GlProgram program) {
+         KHRDebug.glObjectLabel(33506, program.getProgramId(), StringUtil.truncateStringIfNecessary(program.getDebugLabel(), this.maxLabelLength, true));
       }
 
-      public void applyLabel(VertexArrayCache.VertexArray var1) {
-         KHRDebug.glObjectLabel(32884, var1.id, StringUtil.truncateStringIfNecessary(var1.format.toString(), this.maxLabelLength, true));
+      public void applyLabel(final VertexArrayCache.VertexArray vertexArray) {
+         KHRDebug.glObjectLabel(32884, vertexArray.id, StringUtil.truncateStringIfNecessary(vertexArray.format.toString(), this.maxLabelLength, true));
       }
 
-      public void pushDebugGroup(Supplier<String> var1) {
-         KHRDebug.glPushDebugGroup(33354, 0, (CharSequence)var1.get());
+      public void pushDebugGroup(final Supplier<String> label) {
+         KHRDebug.glPushDebugGroup(33354, 0, (CharSequence)label.get());
       }
 
       public void popDebugGroup() {
@@ -110,33 +110,33 @@ public abstract class GlDebugLabel {
       }
    }
 
-   static class Ext extends GlDebugLabel {
-      Ext() {
+   private static class Ext extends GlDebugLabel {
+      private Ext() {
          super();
       }
 
-      public void applyLabel(GlBuffer var1) {
-         Supplier var2 = var1.label;
-         if (var2 != null) {
-            EXTDebugLabel.glLabelObjectEXT(37201, var1.handle, StringUtil.truncateStringIfNecessary((String)var2.get(), 256, true));
+      public void applyLabel(final GlBuffer buffer) {
+         Supplier<String> label = buffer.label;
+         if (label != null) {
+            EXTDebugLabel.glLabelObjectEXT(37201, buffer.handle, StringUtil.truncateStringIfNecessary((String)label.get(), 256, true));
          }
 
       }
 
-      public void applyLabel(GlTexture var1) {
-         EXTDebugLabel.glLabelObjectEXT(5890, var1.id, StringUtil.truncateStringIfNecessary(var1.getLabel(), 256, true));
+      public void applyLabel(final GlTexture texture) {
+         EXTDebugLabel.glLabelObjectEXT(5890, texture.id, StringUtil.truncateStringIfNecessary(texture.getLabel(), 256, true));
       }
 
-      public void applyLabel(GlShaderModule var1) {
-         EXTDebugLabel.glLabelObjectEXT(35656, var1.getShaderId(), StringUtil.truncateStringIfNecessary(var1.getDebugLabel(), 256, true));
+      public void applyLabel(final GlShaderModule shaderModule) {
+         EXTDebugLabel.glLabelObjectEXT(35656, shaderModule.getShaderId(), StringUtil.truncateStringIfNecessary(shaderModule.getDebugLabel(), 256, true));
       }
 
-      public void applyLabel(GlProgram var1) {
-         EXTDebugLabel.glLabelObjectEXT(35648, var1.getProgramId(), StringUtil.truncateStringIfNecessary(var1.getDebugLabel(), 256, true));
+      public void applyLabel(final GlProgram program) {
+         EXTDebugLabel.glLabelObjectEXT(35648, program.getProgramId(), StringUtil.truncateStringIfNecessary(program.getDebugLabel(), 256, true));
       }
 
-      public void applyLabel(VertexArrayCache.VertexArray var1) {
-         EXTDebugLabel.glLabelObjectEXT(32884, var1.id, StringUtil.truncateStringIfNecessary(var1.format.toString(), 256, true));
+      public void applyLabel(final VertexArrayCache.VertexArray vertexArray) {
+         EXTDebugLabel.glLabelObjectEXT(32884, vertexArray.id, StringUtil.truncateStringIfNecessary(vertexArray.format.toString(), 256, true));
       }
 
       public boolean exists() {

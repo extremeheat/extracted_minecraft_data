@@ -9,20 +9,20 @@ import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 import org.jspecify.annotations.Nullable;
 
 public class SpikeConfiguration implements FeatureConfiguration {
-   public static final Codec<SpikeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.fieldOf("crystal_invulnerable").orElse(false).forGetter((var0x) -> var0x.crystalInvulnerable), SpikeFeature.EndSpike.CODEC.listOf().fieldOf("spikes").forGetter((var0x) -> var0x.spikes), BlockPos.CODEC.optionalFieldOf("crystal_beam_target").forGetter((var0x) -> Optional.ofNullable(var0x.crystalBeamTarget))).apply(var0, SpikeConfiguration::new));
+   public static final Codec<SpikeConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.fieldOf("crystal_invulnerable").orElse(false).forGetter((c) -> c.crystalInvulnerable), SpikeFeature.EndSpike.CODEC.listOf().fieldOf("spikes").forGetter((c) -> c.spikes), BlockPos.CODEC.optionalFieldOf("crystal_beam_target").forGetter((c) -> Optional.ofNullable(c.crystalBeamTarget))).apply(i, SpikeConfiguration::new));
    private final boolean crystalInvulnerable;
    private final List<SpikeFeature.EndSpike> spikes;
    private final @Nullable BlockPos crystalBeamTarget;
 
-   public SpikeConfiguration(boolean var1, List<SpikeFeature.EndSpike> var2, @Nullable BlockPos var3) {
-      this(var1, var2, Optional.ofNullable(var3));
+   public SpikeConfiguration(final boolean crystalInvulnerable, final List<SpikeFeature.EndSpike> spikes, final @Nullable BlockPos crystalBeamTarget) {
+      this(crystalInvulnerable, spikes, Optional.ofNullable(crystalBeamTarget));
    }
 
-   private SpikeConfiguration(boolean var1, List<SpikeFeature.EndSpike> var2, Optional<BlockPos> var3) {
+   private SpikeConfiguration(final boolean crystalInvulnerable, final List<SpikeFeature.EndSpike> spikes, final Optional<BlockPos> crystalBeamTarget) {
       super();
-      this.crystalInvulnerable = var1;
-      this.spikes = var2;
-      this.crystalBeamTarget = (BlockPos)var3.orElse((Object)null);
+      this.crystalInvulnerable = crystalInvulnerable;
+      this.spikes = spikes;
+      this.crystalBeamTarget = (BlockPos)crystalBeamTarget.orElse((Object)null);
    }
 
    public boolean isCrystalInvulnerable() {

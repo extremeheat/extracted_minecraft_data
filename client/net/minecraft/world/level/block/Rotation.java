@@ -30,15 +30,15 @@ public enum Rotation implements StringRepresentable {
    private final String id;
    private final OctahedralGroup rotation;
 
-   private Rotation(final int var3, final String var4, final OctahedralGroup var5) {
-      this.index = var3;
-      this.id = var4;
-      this.rotation = var5;
+   private Rotation(final int index, final String id, final OctahedralGroup rotation) {
+      this.index = index;
+      this.id = id;
+      this.rotation = rotation;
    }
 
-   public Rotation getRotated(Rotation var1) {
+   public Rotation getRotated(final Rotation rot) {
       Rotation var10000;
-      switch (var1.ordinal()) {
+      switch (rot.ordinal()) {
          case 1:
             switch (this.ordinal()) {
                case 0:
@@ -100,40 +100,40 @@ public enum Rotation implements StringRepresentable {
       return this.rotation;
    }
 
-   public Direction rotate(Direction var1) {
-      if (var1.getAxis() == Direction.Axis.Y) {
-         return var1;
+   public Direction rotate(final Direction direction) {
+      if (direction.getAxis() == Direction.Axis.Y) {
+         return direction;
       } else {
          Direction var10000;
          switch (this.ordinal()) {
-            case 1 -> var10000 = var1.getClockWise();
-            case 2 -> var10000 = var1.getOpposite();
-            case 3 -> var10000 = var1.getCounterClockWise();
-            default -> var10000 = var1;
+            case 1 -> var10000 = direction.getClockWise();
+            case 2 -> var10000 = direction.getOpposite();
+            case 3 -> var10000 = direction.getCounterClockWise();
+            default -> var10000 = direction;
          }
 
          return var10000;
       }
    }
 
-   public int rotate(int var1, int var2) {
+   public int rotate(final int rotation, final int steps) {
       int var10000;
       switch (this.ordinal()) {
-         case 1 -> var10000 = (var1 + var2 / 4) % var2;
-         case 2 -> var10000 = (var1 + var2 / 2) % var2;
-         case 3 -> var10000 = (var1 + var2 * 3 / 4) % var2;
-         default -> var10000 = var1;
+         case 1 -> var10000 = (rotation + steps / 4) % steps;
+         case 2 -> var10000 = (rotation + steps / 2) % steps;
+         case 3 -> var10000 = (rotation + steps * 3 / 4) % steps;
+         default -> var10000 = rotation;
       }
 
       return var10000;
    }
 
-   public static Rotation getRandom(RandomSource var0) {
-      return (Rotation)Util.getRandom(values(), var0);
+   public static Rotation getRandom(final RandomSource random) {
+      return (Rotation)Util.getRandom(values(), random);
    }
 
-   public static List<Rotation> getShuffled(RandomSource var0) {
-      return Util.shuffledCopy(values(), var0);
+   public static List<Rotation> getShuffled(final RandomSource random) {
+      return Util.shuffledCopy(values(), random);
    }
 
    public String getSerializedName() {

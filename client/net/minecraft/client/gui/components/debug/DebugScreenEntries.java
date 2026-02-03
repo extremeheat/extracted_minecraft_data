@@ -12,9 +12,12 @@ public class DebugScreenEntries {
    public static final Identifier TPS = register((String)"tps", new DebugEntryTps());
    public static final Identifier MEMORY = register((String)"memory", new DebugEntryMemory());
    public static final Identifier SYSTEM_SPECS = register((String)"system_specs", new DebugEntrySystemSpecs());
-   public static final Identifier LOOKING_AT_BLOCK = register((String)"looking_at_block", new DebugEntryLookingAtBlock());
-   public static final Identifier LOOKING_AT_FLUID = register((String)"looking_at_fluid", new DebugEntryLookingAtFluid());
+   public static final Identifier LOOKING_AT_BLOCK_STATE = register((String)"looking_at_block_state", new DebugEntryLookingAt.BlockStateInfo());
+   public static final Identifier LOOKING_AT_BLOCK_TAGS = register((String)"looking_at_block_tags", new DebugEntryLookingAt.BlockTagInfo());
+   public static final Identifier LOOKING_AT_FLUID_STATE = register((String)"looking_at_fluid_state", new DebugEntryLookingAt.FluidStateInfo());
+   public static final Identifier LOOKING_AT_FLUID_TAGS = register((String)"looking_at_fluid_tags", new DebugEntryLookingAt.FluidTagInfo());
    public static final Identifier LOOKING_AT_ENTITY = register((String)"looking_at_entity", new DebugEntryLookingAtEntity());
+   public static final Identifier LOOKING_AT_ENTITY_TAGS = register((String)"looking_at_entity_tags", new DebugEntryLookingAtEntityTags());
    public static final Identifier CHUNK_RENDER_STATS = register((String)"chunk_render_stats", new DebugEntryChunkRenderStats());
    public static final Identifier CHUNK_GENERATION_STATS = register((String)"chunk_generation_stats", new DebugEntryChunkGeneration());
    public static final Identifier ENTITY_RENDER_STATS = register((String)"entity_render_stats", new DebugEntryEntityRenderStats());
@@ -26,6 +29,7 @@ public class DebugScreenEntries {
    public static final Identifier HEIGHTMAP = register((String)"heightmap", new DebugEntryHeightmap());
    public static final Identifier BIOME = register((String)"biome", new DebugEntryBiome());
    public static final Identifier LOCAL_DIFFICULTY = register((String)"local_difficulty", new DebugEntryLocalDifficulty());
+   public static final Identifier DAY_COUNT = register((String)"day_count", new DebugEntryDayCount());
    public static final Identifier ENTITY_SPAWN_COUNTS = register((String)"entity_spawn_counts", new DebugEntrySpawnCounts());
    public static final Identifier SOUND_MOOD = register((String)"sound_mood", new DebugEntrySoundMood());
    public static final Identifier POST_EFFECT = register((String)"post_effect", new DebugEntryPostEffect());
@@ -52,26 +56,26 @@ public class DebugScreenEntries {
       super();
    }
 
-   private static Identifier register(String var0, DebugScreenEntry var1) {
-      return register(Identifier.withDefaultNamespace(var0), var1);
+   private static Identifier register(final String id, final DebugScreenEntry entry) {
+      return register(Identifier.withDefaultNamespace(id), entry);
    }
 
-   private static Identifier register(Identifier var0, DebugScreenEntry var1) {
-      ENTRIES_BY_ID.put(var0, var1);
-      return var0;
+   private static Identifier register(final Identifier identifier, final DebugScreenEntry entry) {
+      ENTRIES_BY_ID.put(identifier, entry);
+      return identifier;
    }
 
    public static Map<Identifier, DebugScreenEntry> allEntries() {
       return Map.copyOf(ENTRIES_BY_ID);
    }
 
-   public static @Nullable DebugScreenEntry getEntry(Identifier var0) {
-      return (DebugScreenEntry)ENTRIES_BY_ID.get(var0);
+   public static @Nullable DebugScreenEntry getEntry(final Identifier id) {
+      return (DebugScreenEntry)ENTRIES_BY_ID.get(id);
    }
 
    static {
-      Map var0 = Map.of(THREE_DIMENSIONAL_CROSSHAIR, DebugScreenEntryStatus.IN_OVERLAY, GAME_VERSION, DebugScreenEntryStatus.IN_OVERLAY, TPS, DebugScreenEntryStatus.IN_OVERLAY, FPS, DebugScreenEntryStatus.IN_OVERLAY, MEMORY, DebugScreenEntryStatus.IN_OVERLAY, SYSTEM_SPECS, DebugScreenEntryStatus.IN_OVERLAY, PLAYER_POSITION, DebugScreenEntryStatus.IN_OVERLAY, PLAYER_SECTION_POSITION, DebugScreenEntryStatus.IN_OVERLAY, SIMPLE_PERFORMANCE_IMPACTORS, DebugScreenEntryStatus.IN_OVERLAY);
-      Map var1 = Map.of(TPS, DebugScreenEntryStatus.IN_OVERLAY, FPS, DebugScreenEntryStatus.ALWAYS_ON, GPU_UTILIZATION, DebugScreenEntryStatus.IN_OVERLAY, MEMORY, DebugScreenEntryStatus.IN_OVERLAY, SIMPLE_PERFORMANCE_IMPACTORS, DebugScreenEntryStatus.IN_OVERLAY);
-      PROFILES = Map.of(DebugScreenProfile.DEFAULT, var0, DebugScreenProfile.PERFORMANCE, var1);
+      Map<Identifier, DebugScreenEntryStatus> defaultProfile = Map.of(THREE_DIMENSIONAL_CROSSHAIR, DebugScreenEntryStatus.IN_OVERLAY, GAME_VERSION, DebugScreenEntryStatus.IN_OVERLAY, TPS, DebugScreenEntryStatus.IN_OVERLAY, FPS, DebugScreenEntryStatus.IN_OVERLAY, MEMORY, DebugScreenEntryStatus.IN_OVERLAY, SYSTEM_SPECS, DebugScreenEntryStatus.IN_OVERLAY, PLAYER_POSITION, DebugScreenEntryStatus.IN_OVERLAY, PLAYER_SECTION_POSITION, DebugScreenEntryStatus.IN_OVERLAY, SIMPLE_PERFORMANCE_IMPACTORS, DebugScreenEntryStatus.IN_OVERLAY);
+      Map<Identifier, DebugScreenEntryStatus> performance = Map.of(TPS, DebugScreenEntryStatus.IN_OVERLAY, FPS, DebugScreenEntryStatus.ALWAYS_ON, GPU_UTILIZATION, DebugScreenEntryStatus.IN_OVERLAY, MEMORY, DebugScreenEntryStatus.IN_OVERLAY, SIMPLE_PERFORMANCE_IMPACTORS, DebugScreenEntryStatus.IN_OVERLAY);
+      PROFILES = Map.of(DebugScreenProfile.DEFAULT, defaultProfile, DebugScreenProfile.PERFORMANCE, performance);
    }
 }

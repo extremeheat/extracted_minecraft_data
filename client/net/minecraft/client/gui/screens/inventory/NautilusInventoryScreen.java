@@ -11,8 +11,8 @@ public class NautilusInventoryScreen extends AbstractMountInventoryScreen<Nautil
    private static final Identifier SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot");
    private static final Identifier NAUTILUS_INVENTORY_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/nautilus.png");
 
-   public NautilusInventoryScreen(NautilusInventoryMenu var1, Inventory var2, AbstractNautilus var3, int var4) {
-      super(var1, var2, var3.getDisplayName(), var4, var3);
+   public NautilusInventoryScreen(final NautilusInventoryMenu menu, final Inventory inventory, final AbstractNautilus nautilus, final int inventoryColumns) {
+      super(menu, inventory, nautilus.getDisplayName(), inventoryColumns, nautilus);
    }
 
    protected Identifier getBackgroundTextureLocation() {

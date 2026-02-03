@@ -9,17 +9,15 @@ public interface BoundingBoxRenderable {
    RenderableBox getRenderableBox();
 
    public static record RenderableBox(BlockPos localPos, Vec3i size) {
-      public RenderableBox(BlockPos var1, Vec3i var2) {
+      public RenderableBox {
          super();
-         this.localPos = var1;
-         this.size = var2;
       }
 
-      public static RenderableBox fromCorners(int var0, int var1, int var2, int var3, int var4, int var5) {
-         int var6 = Math.min(var0, var3);
-         int var7 = Math.min(var1, var4);
-         int var8 = Math.min(var2, var5);
-         return new RenderableBox(new BlockPos(var6, var7, var8), new Vec3i(Math.max(var0, var3) - var6, Math.max(var1, var4) - var7, Math.max(var2, var5) - var8));
+      public static RenderableBox fromCorners(final int x1, final int y1, final int z1, final int x2, final int y2, final int z2) {
+         int x = Math.min(x1, x2);
+         int y = Math.min(y1, y2);
+         int z = Math.min(z1, z2);
+         return new RenderableBox(new BlockPos(x, y, z), new Vec3i(Math.max(x1, x2) - x, Math.max(y1, y2) - y, Math.max(z1, z2) - z));
       }
    }
 

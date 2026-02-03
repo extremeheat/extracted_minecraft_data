@@ -10,19 +10,19 @@ public class BlockEntityRenameFix extends DataFix {
    private final String name;
    private final UnaryOperator<String> nameChangeLookup;
 
-   private BlockEntityRenameFix(Schema var1, String var2, UnaryOperator<String> var3) {
-      super(var1, true);
-      this.name = var2;
-      this.nameChangeLookup = var3;
+   private BlockEntityRenameFix(final Schema outputSchema, final String name, final UnaryOperator<String> nameChangeLookup) {
+      super(outputSchema, true);
+      this.name = name;
+      this.nameChangeLookup = nameChangeLookup;
    }
 
    public TypeRewriteRule makeRule() {
-      TaggedChoice.TaggedChoiceType var1 = this.getInputSchema().findChoiceType(References.BLOCK_ENTITY);
-      TaggedChoice.TaggedChoiceType var2 = this.getOutputSchema().findChoiceType(References.BLOCK_ENTITY);
-      return this.fixTypeEverywhere(this.name, var1, var2, (var1x) -> (var1) -> var1.mapFirst(this.nameChangeLookup));
+      TaggedChoice.TaggedChoiceType<String> oldType = this.getInputSchema().findChoiceType(References.BLOCK_ENTITY);
+      TaggedChoice.TaggedChoiceType<String> newType = this.getOutputSchema().findChoiceType(References.BLOCK_ENTITY);
+      return this.fixTypeEverywhere(this.name, oldType, newType, (ops) -> (input) -> input.mapFirst(this.nameChangeLookup));
    }
 
-   public static DataFix create(Schema var0, String var1, UnaryOperator<String> var2) {
-      return new BlockEntityRenameFix(var0, var1, var2);
+   public static DataFix create(final Schema outputSchema, final String name, final UnaryOperator<String> nameChangeLookup) {
+      return new BlockEntityRenameFix(outputSchema, name, nameChangeLookup);
    }
 }

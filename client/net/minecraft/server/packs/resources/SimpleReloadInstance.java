@@ -16,76 +16,80 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
    private static final int PREPARATION_PROGRESS_WEIGHT = 2;
    private static final int EXTRA_RELOAD_PROGRESS_WEIGHT = 2;
    private static final int LISTENER_PROGRESS_WEIGHT = 1;
-   final CompletableFuture<Unit> allPreparations = new CompletableFuture();
+   private final CompletableFuture<Unit> allPreparations = new CompletableFuture();
    private @Nullable CompletableFuture<List<S>> allDone;
-   final Set<PreparableReloadListener> preparingListeners;
+   private final Set<PreparableReloadListener> preparingListeners;
    private final int listenerCount;
    private final AtomicInteger startedTasks = new AtomicInteger();
    private final AtomicInteger finishedTasks = new AtomicInteger();
    private final AtomicInteger startedReloads = new AtomicInteger();
    private final AtomicInteger finishedReloads = new AtomicInteger();
 
-   public static ReloadInstance of(ResourceManager var0, List<PreparableReloadListener> var1, Executor var2, Executor var3, CompletableFuture<Unit> var4) {
-      SimpleReloadInstance var5 = new SimpleReloadInstance(var1);
-      var5.startTasks(var2, var3, var0, var1, SimpleReloadInstance.StateFactory.SIMPLE, var4);
-      return var5;
+   public static ReloadInstance of(final ResourceManager resourceManager, final List<PreparableReloadListener> listeners, final Executor taskExecutor, final Executor mainThreadExecutor, final CompletableFuture<Unit> initialTask) {
+      SimpleReloadInstance<Void> result = new SimpleReloadInstance<Void>(listeners);
+      result.startTasks(taskExecutor, mainThreadExecutor, resourceManager, listeners, SimpleReloadInstance.StateFactory.SIMPLE, initialTask);
+      return result;
    }
 
-   protected SimpleReloadInstance(List<PreparableReloadListener> var1) {
+   protected SimpleReloadInstance(final List<PreparableReloadListener> listeners) {
       super();
-      this.listenerCount = var1.size();
-      this.preparingListeners = new HashSet(var1);
+      this.listenerCount = listeners.size();
+      this.preparingListeners = new HashSet(listeners);
    }
 
-   protected void startTasks(Executor var1, Executor var2, ResourceManager var3, List<PreparableReloadListener> var4, StateFactory<S> var5, CompletableFuture<?> var6) {
-      this.allDone = this.prepareTasks(var1, var2, var3, var4, var5, var6);
+   protected void startTasks(final Executor taskExecutor, final Executor mainThreadExecutor, final ResourceManager resourceManager, final List<PreparableReloadListener> listeners, final StateFactory<S> stateFactory, final CompletableFuture<?> initialTask) {
+      this.allDone = this.prepareTasks(taskExecutor, mainThreadExecutor, resourceManager, listeners, stateFactory, initialTask);
    }
 
-   protected CompletableFuture<List<S>> prepareTasks(Executor var1, Executor var2, ResourceManager var3, List<PreparableReloadListener> var4, StateFactory<S> var5, CompletableFuture<?> var6) {
-      Executor var7 = (var2x) -> {
+   protected CompletableFuture<List<S>> prepareTasks(final Executor taskExecutor, final Executor mainThreadExecutor, final ResourceManager resourceManager, final List<PreparableReloadListener> listeners, final StateFactory<S> stateFactory, final CompletableFuture<?> initialTask) {
+      Executor countingTaskExecutor = (r) -> {
          this.startedTasks.incrementAndGet();
-         var1.execute(() -> {
-            var2x.run();
+         taskExecutor.execute(() -> {
+            r.run();
             this.finishedTasks.incrementAndGet();
          });
       };
-      Executor var8 = (var2x) -> {
+      Executor countingReloadExecutor = (r) -> {
          this.startedReloads.incrementAndGet();
-         var2.execute(() -> {
-            var2x.run();
+         mainThreadExecutor.execute(() -> {
+            r.run();
             this.finishedReloads.incrementAndGet();
          });
       };
       this.startedTasks.incrementAndGet();
       AtomicInteger var10001 = this.finishedTasks;
       Objects.requireNonNull(var10001);
-      var6.thenRun(var10001::incrementAndGet);
-      PreparableReloadListener.SharedState var9 = new PreparableReloadListener.SharedState(var3);
-      var4.forEach((var1x) -> var1x.prepareSharedState(var9));
-      CompletableFuture var10 = var6;
-      ArrayList var11 = new ArrayList();
+      initialTask.thenRun(var10001::incrementAndGet);
+      PreparableReloadListener.SharedState sharedState = new PreparableReloadListener.SharedState(resourceManager);
+      listeners.forEach((listenerx) -> listenerx.prepareSharedState(sharedState));
+      CompletableFuture<?> barrier = initialTask;
+      List<CompletableFuture<S>> allSteps = new ArrayList();
 
-      for(PreparableReloadListener var13 : var4) {
-         PreparableReloadListener.PreparationBarrier var14 = this.createBarrierForListener(var13, var10, var2);
-         CompletableFuture var15 = var5.create(var9, var14, var13, var7, var8);
-         var11.add(var15);
-         var10 = var15;
+      for(PreparableReloadListener listener : listeners) {
+         PreparableReloadListener.PreparationBarrier barrierForCurrentTask = this.createBarrierForListener(listener, barrier, mainThreadExecutor);
+         CompletableFuture<S> state = stateFactory.create(sharedState, barrierForCurrentTask, listener, countingTaskExecutor, countingReloadExecutor);
+         allSteps.add(state);
+         barrier = state;
       }
 
-      return Util.sequenceFailFast(var11);
+      return Util.sequenceFailFast(allSteps);
    }
 
-   private PreparableReloadListener.PreparationBarrier createBarrierForListener(final PreparableReloadListener var1, final CompletableFuture<?> var2, final Executor var3) {
+   private PreparableReloadListener.PreparationBarrier createBarrierForListener(final PreparableReloadListener listener, final CompletableFuture<?> previousBarrier, final Executor mainThreadExecutor) {
       return new PreparableReloadListener.PreparationBarrier() {
-         public <T> CompletableFuture<T> wait(T var1x) {
-            var3.execute(() -> {
-               SimpleReloadInstance.this.preparingListeners.remove(var1);
+         {
+            Objects.requireNonNull(SimpleReloadInstance.this);
+         }
+
+         public <T> CompletableFuture<T> wait(final T t) {
+            mainThreadExecutor.execute(() -> {
+               SimpleReloadInstance.this.preparingListeners.remove(listener);
                if (SimpleReloadInstance.this.preparingListeners.isEmpty()) {
                   SimpleReloadInstance.this.allPreparations.complete(Unit.INSTANCE);
                }
 
             });
-            return SimpleReloadInstance.this.allPreparations.thenCombine(var2, (var1xx, var2x) -> var1x);
+            return SimpleReloadInstance.this.allPreparations.thenCombine(previousBarrier, (v1, v2) -> t);
          }
       };
    }
@@ -95,24 +99,24 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
    }
 
    public float getActualProgress() {
-      int var1 = this.listenerCount - this.preparingListeners.size();
-      float var2 = (float)weightProgress(this.finishedTasks.get(), this.finishedReloads.get(), var1);
-      float var3 = (float)weightProgress(this.startedTasks.get(), this.startedReloads.get(), this.listenerCount);
-      return var2 / var3;
+      int preparationsDone = this.listenerCount - this.preparingListeners.size();
+      float doneCount = (float)weightProgress(this.finishedTasks.get(), this.finishedReloads.get(), preparationsDone);
+      float totalCount = (float)weightProgress(this.startedTasks.get(), this.startedReloads.get(), this.listenerCount);
+      return doneCount / totalCount;
    }
 
-   private static int weightProgress(int var0, int var1, int var2) {
-      return var0 * 2 + var1 * 2 + var2 * 1;
+   private static int weightProgress(final int preparationTasks, final int reloadTasks, final int listeners) {
+      return preparationTasks * 2 + reloadTasks * 2 + listeners * 1;
    }
 
-   public static ReloadInstance create(ResourceManager var0, List<PreparableReloadListener> var1, Executor var2, Executor var3, CompletableFuture<Unit> var4, boolean var5) {
-      return var5 ? ProfiledReloadInstance.of(var0, var1, var2, var3, var4) : of(var0, var1, var2, var3, var4);
+   public static ReloadInstance create(final ResourceManager resourceManager, final List<PreparableReloadListener> listeners, final Executor backgroundExecutor, final Executor mainThreadExecutor, final CompletableFuture<Unit> initialTask, final boolean enableProfiling) {
+      return enableProfiling ? ProfiledReloadInstance.of(resourceManager, listeners, backgroundExecutor, mainThreadExecutor, initialTask) : of(resourceManager, listeners, backgroundExecutor, mainThreadExecutor, initialTask);
    }
 
    @FunctionalInterface
    protected interface StateFactory<S> {
-      StateFactory<Void> SIMPLE = (var0, var1, var2, var3, var4) -> var2.reload(var0, var3, var1, var4);
+      StateFactory<Void> SIMPLE = (currentReload, previousStep, listener, taskExecutor, reloadExecutor) -> listener.reload(currentReload, taskExecutor, previousStep, reloadExecutor);
 
-      CompletableFuture<S> create(PreparableReloadListener.SharedState var1, PreparableReloadListener.PreparationBarrier var2, PreparableReloadListener var3, Executor var4, Executor var5);
+      CompletableFuture<S> create(PreparableReloadListener.SharedState sharedState, PreparableReloadListener.PreparationBarrier previousStep, PreparableReloadListener listener, Executor taskExecutor, Executor reloadExecutor);
    }
 }

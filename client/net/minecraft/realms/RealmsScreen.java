@@ -28,17 +28,17 @@ public abstract class RealmsScreen extends Screen {
    protected static final int LOGO_TEXTURE_HEIGHT = 64;
    private final List<RealmsLabel> labels = Lists.newArrayList();
 
-   public RealmsScreen(Component var1) {
-      super(var1);
+   public RealmsScreen(final Component title) {
+      super(title);
    }
 
-   protected static int row(int var0) {
-      return 40 + var0 * 13;
+   protected static int row(final int i) {
+      return 40 + i * 13;
    }
 
-   protected RealmsLabel addLabel(RealmsLabel var1) {
-      this.labels.add(var1);
-      return (RealmsLabel)this.addRenderableOnly(var1);
+   protected RealmsLabel addLabel(final RealmsLabel label) {
+      this.labels.add(label);
+      return (RealmsLabel)this.addRenderableOnly(label);
    }
 
    public Component createLabelNarration() {

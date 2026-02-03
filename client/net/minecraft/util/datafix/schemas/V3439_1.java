@@ -6,13 +6,13 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class V3439_1 extends NamespacedSchema {
-   public V3439_1(int var1, Schema var2) {
-      super(var1, var2);
+   public V3439_1(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
-      Map var2 = super.registerBlockEntities(var1);
-      this.register(var2, "minecraft:hanging_sign", () -> V3439.sign(var1));
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerBlockEntities(schema);
+      this.register(map, "minecraft:hanging_sign", () -> V3439.sign(schema));
+      return map;
    }
 }

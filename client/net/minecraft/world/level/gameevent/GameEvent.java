@@ -76,21 +76,20 @@ public record GameEvent(int notificationRadius) {
    public static final int DEFAULT_NOTIFICATION_RADIUS = 16;
    public static final Codec<Holder<GameEvent>> CODEC;
 
-   public GameEvent(int var1) {
+   public GameEvent {
       super();
-      this.notificationRadius = var1;
    }
 
-   public static Holder<GameEvent> bootstrap(Registry<GameEvent> var0) {
+   public static Holder<GameEvent> bootstrap(final Registry<GameEvent> registry) {
       return BLOCK_ACTIVATE;
    }
 
-   private static Holder.Reference<GameEvent> register(String var0) {
-      return register(var0, 16);
+   private static Holder.Reference<GameEvent> register(final String name) {
+      return register(name, 16);
    }
 
-   private static Holder.Reference<GameEvent> register(String var0, int var1) {
-      return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, Identifier.withDefaultNamespace(var0), new GameEvent(var1));
+   private static Holder.Reference<GameEvent> register(final String name, final int notificationRadius) {
+      return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, Identifier.withDefaultNamespace(name), new GameEvent(notificationRadius));
    }
 
    static {
@@ -98,22 +97,20 @@ public record GameEvent(int notificationRadius) {
    }
 
    public static record Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {
-      public Context(@Nullable Entity var1, @Nullable BlockState var2) {
+      public Context {
          super();
-         this.sourceEntity = var1;
-         this.affectedState = var2;
       }
 
-      public static Context of(@Nullable Entity var0) {
-         return new Context(var0, (BlockState)null);
+      public static Context of(final @Nullable Entity sourceEntity) {
+         return new Context(sourceEntity, (BlockState)null);
       }
 
-      public static Context of(@Nullable BlockState var0) {
-         return new Context((Entity)null, var0);
+      public static Context of(final @Nullable BlockState state) {
+         return new Context((Entity)null, state);
       }
 
-      public static Context of(@Nullable Entity var0, @Nullable BlockState var1) {
-         return new Context(var0, var1);
+      public static Context of(final @Nullable Entity sourceEntity, final @Nullable BlockState state) {
+         return new Context(sourceEntity, state);
       }
    }
 
@@ -124,17 +121,17 @@ public record GameEvent(int notificationRadius) {
       private final GameEventListener recipient;
       private final double distanceToRecipient;
 
-      public ListenerInfo(Holder<GameEvent> var1, Vec3 var2, Context var3, GameEventListener var4, Vec3 var5) {
+      public ListenerInfo(final Holder<GameEvent> gameEvent, final Vec3 source, final Context context, final GameEventListener recipient, final Vec3 recipientPos) {
          super();
-         this.gameEvent = var1;
-         this.source = var2;
-         this.context = var3;
-         this.recipient = var4;
-         this.distanceToRecipient = var2.distanceToSqr(var5);
+         this.gameEvent = gameEvent;
+         this.source = source;
+         this.context = context;
+         this.recipient = recipient;
+         this.distanceToRecipient = source.distanceToSqr(recipientPos);
       }
 
-      public int compareTo(ListenerInfo var1) {
-         return Double.compare(this.distanceToRecipient, var1.distanceToRecipient);
+      public int compareTo(final ListenerInfo other) {
+         return Double.compare(this.distanceToRecipient, other.distanceToRecipient);
       }
 
       public Holder<GameEvent> gameEvent() {
@@ -151,11 +148,6 @@ public record GameEvent(int notificationRadius) {
 
       public GameEventListener recipient() {
          return this.recipient;
-      }
-
-      // $FF: synthetic method
-      public int compareTo(final Object var1) {
-         return this.compareTo((ListenerInfo)var1);
       }
    }
 }

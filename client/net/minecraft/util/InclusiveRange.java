@@ -7,54 +7,51 @@ import java.util.function.Function;
 public record InclusiveRange<T extends Comparable<T>>(T minInclusive, T maxInclusive) {
    public static final Codec<InclusiveRange<Integer>> INT;
 
-   public InclusiveRange(T var1, T var2) {
+   public InclusiveRange {
       super();
-      if (var1.compareTo(var2) > 0) {
+      if (minInclusive.compareTo(maxInclusive) > 0) {
          throw new IllegalArgumentException("min_inclusive must be less than or equal to max_inclusive");
-      } else {
-         this.minInclusive = var1;
-         this.maxInclusive = var2;
       }
    }
 
-   public InclusiveRange(T var1) {
-      this(var1, var1);
+   public InclusiveRange(final T value) {
+      this(value, value);
    }
 
-   public static <T extends Comparable<T>> Codec<InclusiveRange<T>> codec(Codec<T> var0) {
-      return ExtraCodecs.intervalCodec(var0, "min_inclusive", "max_inclusive", InclusiveRange::create, InclusiveRange::minInclusive, InclusiveRange::maxInclusive);
+   public static <T extends Comparable<T>> Codec<InclusiveRange<T>> codec(final Codec<T> elementCodec) {
+      return ExtraCodecs.intervalCodec(elementCodec, "min_inclusive", "max_inclusive", InclusiveRange::create, InclusiveRange::minInclusive, InclusiveRange::maxInclusive);
    }
 
-   public static <T extends Comparable<T>> Codec<InclusiveRange<T>> codec(Codec<T> var0, T var1, T var2) {
-      return codec(var0).validate((var2x) -> {
-         if (var2x.minInclusive().compareTo(var1) < 0) {
+   public static <T extends Comparable<T>> Codec<InclusiveRange<T>> codec(final Codec<T> elementCodec, final T minAllowedInclusive, final T maxAllowedInclusive) {
+      return codec(elementCodec).validate((value) -> {
+         if (value.minInclusive().compareTo(minAllowedInclusive) < 0) {
             return DataResult.error(() -> {
-               String var10000 = String.valueOf(var1);
-               return "Range limit too low, expected at least " + var10000 + " [" + String.valueOf(var2x.minInclusive()) + "-" + String.valueOf(var2x.maxInclusive()) + "]";
+               String var10000 = String.valueOf(minAllowedInclusive);
+               return "Range limit too low, expected at least " + var10000 + " [" + String.valueOf(value.minInclusive()) + "-" + String.valueOf(value.maxInclusive()) + "]";
             });
          } else {
-            return var2x.maxInclusive().compareTo(var2) > 0 ? DataResult.error(() -> {
-               String var10000 = String.valueOf(var2);
-               return "Range limit too high, expected at most " + var10000 + " [" + String.valueOf(var2x.minInclusive()) + "-" + String.valueOf(var2x.maxInclusive()) + "]";
-            }) : DataResult.success(var2x);
+            return value.maxInclusive().compareTo(maxAllowedInclusive) > 0 ? DataResult.error(() -> {
+               String var10000 = String.valueOf(maxAllowedInclusive);
+               return "Range limit too high, expected at most " + var10000 + " [" + String.valueOf(value.minInclusive()) + "-" + String.valueOf(value.maxInclusive()) + "]";
+            }) : DataResult.success(value);
          }
       });
    }
 
-   public static <T extends Comparable<T>> DataResult<InclusiveRange<T>> create(T var0, T var1) {
-      return var0.compareTo(var1) <= 0 ? DataResult.success(new InclusiveRange(var0, var1)) : DataResult.error(() -> "min_inclusive must be less than or equal to max_inclusive");
+   public static <T extends Comparable<T>> DataResult<InclusiveRange<T>> create(final T minInclusive, final T maxInclusive) {
+      return minInclusive.compareTo(maxInclusive) <= 0 ? DataResult.success(new InclusiveRange(minInclusive, maxInclusive)) : DataResult.error(() -> "min_inclusive must be less than or equal to max_inclusive");
    }
 
-   public <S extends Comparable<S>> InclusiveRange<S> map(Function<? super T, ? extends S> var1) {
-      return new InclusiveRange<S>((Comparable)var1.apply(this.minInclusive), (Comparable)var1.apply(this.maxInclusive));
+   public <S extends Comparable<S>> InclusiveRange<S> map(final Function<? super T, ? extends S> mapper) {
+      return new InclusiveRange<S>((Comparable)mapper.apply(this.minInclusive), (Comparable)mapper.apply(this.maxInclusive));
    }
 
-   public boolean isValueInRange(T var1) {
-      return var1.compareTo(this.minInclusive) >= 0 && var1.compareTo(this.maxInclusive) <= 0;
+   public boolean isValueInRange(final T value) {
+      return value.compareTo(this.minInclusive) >= 0 && value.compareTo(this.maxInclusive) <= 0;
    }
 
-   public boolean contains(InclusiveRange<T> var1) {
-      return var1.minInclusive().compareTo(this.minInclusive) >= 0 && var1.maxInclusive.compareTo(this.maxInclusive) <= 0;
+   public boolean contains(final InclusiveRange<T> subRange) {
+      return subRange.minInclusive().compareTo(this.minInclusive) >= 0 && subRange.maxInclusive.compareTo(this.maxInclusive) <= 0;
    }
 
    public String toString() {

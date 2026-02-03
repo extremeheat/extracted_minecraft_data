@@ -29,103 +29,103 @@ import net.minecraft.world.phys.HitResult;
 public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
    public static final double SPLASH_RANGE = 4.0;
    protected static final double SPLASH_RANGE_SQ = 16.0;
-   public static final Predicate<LivingEntity> WATER_SENSITIVE_OR_ON_FIRE = (var0) -> var0.isSensitiveToWater() || var0.isOnFire();
+   public static final Predicate<LivingEntity> WATER_SENSITIVE_OR_ON_FIRE = (livingEntity) -> livingEntity.isSensitiveToWater() || livingEntity.isOnFire();
 
-   public AbstractThrownPotion(EntityType<? extends AbstractThrownPotion> var1, Level var2) {
-      super(var1, var2);
+   public AbstractThrownPotion(final EntityType<? extends AbstractThrownPotion> type, final Level level) {
+      super(type, level);
    }
 
-   public AbstractThrownPotion(EntityType<? extends AbstractThrownPotion> var1, Level var2, LivingEntity var3, ItemStack var4) {
-      super(var1, var3, var2, var4);
+   public AbstractThrownPotion(final EntityType<? extends AbstractThrownPotion> type, final Level level, final LivingEntity owner, final ItemStack itemStack) {
+      super(type, owner, level, itemStack);
    }
 
-   public AbstractThrownPotion(EntityType<? extends AbstractThrownPotion> var1, Level var2, double var3, double var5, double var7, ItemStack var9) {
-      super(var1, var3, var5, var7, var2, var9);
+   public AbstractThrownPotion(final EntityType<? extends AbstractThrownPotion> type, final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
+      super(type, x, y, z, level, itemStack);
    }
 
    protected double getDefaultGravity() {
       return 0.05;
    }
 
-   protected void onHitBlock(BlockHitResult var1) {
-      super.onHitBlock(var1);
+   protected void onHitBlock(final BlockHitResult hitResult) {
+      super.onHitBlock(hitResult);
       if (!this.level().isClientSide()) {
-         ItemStack var2 = this.getItem();
-         Direction var3 = var1.getDirection();
-         BlockPos var4 = var1.getBlockPos();
-         BlockPos var5 = var4.relative(var3);
-         PotionContents var6 = (PotionContents)var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-         if (var6.is(Potions.WATER)) {
-            this.dowseFire(var5);
-            this.dowseFire(var5.relative(var3.getOpposite()));
+         ItemStack potionItemStack = this.getItem();
+         Direction hitDirection = hitResult.getDirection();
+         BlockPos blockHitPos = hitResult.getBlockPos();
+         BlockPos blockEffectPos = blockHitPos.relative(hitDirection);
+         PotionContents potion = (PotionContents)potionItemStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+         if (potion.is(Potions.WATER)) {
+            this.dowseFire(blockEffectPos);
+            this.dowseFire(blockEffectPos.relative(hitDirection.getOpposite()));
 
-            for(Direction var8 : Direction.Plane.HORIZONTAL) {
-               this.dowseFire(var5.relative(var8));
+            for(Direction direction : Direction.Plane.HORIZONTAL) {
+               this.dowseFire(blockEffectPos.relative(direction));
             }
          }
 
       }
    }
 
-   protected void onHit(HitResult var1) {
-      super.onHit(var1);
+   protected void onHit(final HitResult hitResult) {
+      super.onHit(hitResult);
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         ItemStack var6 = this.getItem();
-         PotionContents var4 = (PotionContents)var6.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-         if (var4.is(Potions.WATER)) {
-            this.onHitAsWater(var2);
-         } else if (var4.hasEffects()) {
-            this.onHitAsPotion(var2, var6, var1);
+      if (var3 instanceof ServerLevel level) {
+         ItemStack potionItemStack = this.getItem();
+         PotionContents potion = (PotionContents)potionItemStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+         if (potion.is(Potions.WATER)) {
+            this.onHitAsWater(level);
+         } else if (potion.hasEffects()) {
+            this.onHitAsPotion(level, potionItemStack, hitResult);
          }
 
-         int var5 = var4.potion().isPresent() && ((Potion)((Holder)var4.potion().get()).value()).hasInstantEffects() ? 2007 : 2002;
-         var2.levelEvent(var5, this.blockPosition(), var4.getColor());
+         int type = potion.potion().isPresent() && ((Potion)((Holder)potion.potion().get()).value()).hasInstantEffects() ? 2007 : 2002;
+         level.levelEvent(type, this.blockPosition(), potion.getColor());
          this.discard();
       }
    }
 
-   private void onHitAsWater(ServerLevel var1) {
-      AABB var2 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
+   private void onHitAsWater(final ServerLevel level) {
+      AABB aabb = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
 
-      for(LivingEntity var5 : this.level().getEntitiesOfClass(LivingEntity.class, var2, WATER_SENSITIVE_OR_ON_FIRE)) {
-         double var6 = this.distanceToSqr(var5);
-         if (var6 < 16.0) {
-            if (var5.isSensitiveToWater()) {
-               var5.hurtServer(var1, this.damageSources().indirectMagic(this, this.getOwner()), 1.0F);
+      for(LivingEntity entity : this.level().getEntitiesOfClass(LivingEntity.class, aabb, WATER_SENSITIVE_OR_ON_FIRE)) {
+         double dist = this.distanceToSqr(entity);
+         if (dist < 16.0) {
+            if (entity.isSensitiveToWater()) {
+               entity.hurtServer(level, this.damageSources().indirectMagic(this, this.getOwner()), 1.0F);
             }
 
-            if (var5.isOnFire() && var5.isAlive()) {
-               var5.extinguishFire();
+            if (entity.isOnFire() && entity.isAlive()) {
+               entity.extinguishFire();
             }
          }
       }
 
-      for(Axolotl var10 : this.level().getEntitiesOfClass(Axolotl.class, var2)) {
-         var10.rehydrate();
+      for(Axolotl axolotl : this.level().getEntitiesOfClass(Axolotl.class, aabb)) {
+         axolotl.rehydrate();
       }
 
    }
 
-   protected abstract void onHitAsPotion(ServerLevel var1, ItemStack var2, HitResult var3);
+   protected abstract void onHitAsPotion(ServerLevel level, ItemStack potionItem, HitResult hitResult);
 
-   private void dowseFire(BlockPos var1) {
-      BlockState var2 = this.level().getBlockState(var1);
-      if (var2.is(BlockTags.FIRE)) {
-         this.level().destroyBlock(var1, false, this);
-      } else if (AbstractCandleBlock.isLit(var2)) {
-         AbstractCandleBlock.extinguish((Player)null, var2, this.level(), var1);
-      } else if (CampfireBlock.isLitCampfire(var2)) {
-         this.level().levelEvent((Entity)null, 1009, var1, 0);
-         CampfireBlock.dowse(this.getOwner(), this.level(), var1, var2);
-         this.level().setBlockAndUpdate(var1, (BlockState)var2.setValue(CampfireBlock.LIT, false));
+   private void dowseFire(final BlockPos pos) {
+      BlockState blockState = this.level().getBlockState(pos);
+      if (blockState.is(BlockTags.FIRE)) {
+         this.level().destroyBlock(pos, false, this);
+      } else if (AbstractCandleBlock.isLit(blockState)) {
+         AbstractCandleBlock.extinguish((Player)null, blockState, this.level(), pos);
+      } else if (CampfireBlock.isLitCampfire(blockState)) {
+         this.level().levelEvent((Entity)null, 1009, pos, 0);
+         CampfireBlock.dowse(this.getOwner(), this.level(), pos, blockState);
+         this.level().setBlockAndUpdate(pos, (BlockState)blockState.setValue(CampfireBlock.LIT, false));
       }
 
    }
 
-   public DoubleDoubleImmutablePair calculateHorizontalHurtKnockbackDirection(LivingEntity var1, DamageSource var2) {
-      double var3 = var1.position().x - this.position().x;
-      double var5 = var1.position().z - this.position().z;
-      return DoubleDoubleImmutablePair.of(var3, var5);
+   public DoubleDoubleImmutablePair calculateHorizontalHurtKnockbackDirection(final LivingEntity hurtEntity, final DamageSource damageSource) {
+      double dx = hurtEntity.position().x - this.position().x;
+      double dz = hurtEntity.position().z - this.position().z;
+      return DoubleDoubleImmutablePair.of(dx, dz);
    }
 }

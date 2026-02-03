@@ -4,34 +4,34 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.slot.SlotSource;
 import net.minecraft.world.item.slot.SlotSources;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SlotLoot extends LootPoolSingletonContainer {
-   public static final MapCodec<SlotLoot> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SlotSources.CODEC.fieldOf("slot_source").forGetter((var0x) -> var0x.slotSource)).and(singletonFields(var0)).apply(var0, SlotLoot::new));
+   public static final MapCodec<SlotLoot> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SlotSources.CODEC.fieldOf("slot_source").forGetter((t) -> t.slotSource)).and(singletonFields(i)).apply(i, SlotLoot::new));
    private final SlotSource slotSource;
 
-   private SlotLoot(SlotSource var1, int var2, int var3, List<LootItemCondition> var4, List<LootItemFunction> var5) {
-      super(var2, var3, var4, var5);
-      this.slotSource = var1;
+   private SlotLoot(final SlotSource slotSource, final int weight, final int quality, final List<LootItemCondition> conditions, final List<LootItemFunction> functions) {
+      super(weight, quality, conditions, functions);
+      this.slotSource = slotSource;
    }
 
-   public LootPoolEntryType getType() {
-      return LootPoolEntries.SLOTS;
+   public MapCodec<SlotLoot> codec() {
+      return MAP_CODEC;
    }
 
-   public void createItemStack(Consumer<ItemStack> var1, LootContext var2) {
-      this.slotSource.provide(var2).itemCopies().filter((var0) -> !var0.isEmpty()).forEach(var1);
+   public void createItemStack(final Consumer<ItemStack> output, final LootContext context) {
+      this.slotSource.provide(context).itemCopies().filter((stack) -> !stack.isEmpty()).forEach(output);
    }
 
-   public void validate(ValidationContext var1) {
-      super.validate(var1);
-      this.slotSource.validate(var1.forChild(new ProblemReporter.FieldPathElement("slot_source")));
+   public void validate(final ValidationContext context) {
+      super.validate(context);
+      Validatable.validate(context, "slot_source", this.slotSource);
    }
 }

@@ -26,39 +26,39 @@ public class SporeBlossomBlock extends Block {
       return CODEC;
    }
 
-   public SporeBlossomBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public SporeBlossomBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return Block.canSupportCenter(var2, var3.above(), Direction.DOWN) && !var2.isWaterAt(var3);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return Block.canSupportCenter(level, pos.above(), Direction.DOWN) && !level.isWaterAt(pos);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var5 == Direction.UP && !this.canSurvive(var1, var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return directionToNeighbour == Direction.UP && !this.canSurvive(state, level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      int var5 = var3.getX();
-      int var6 = var3.getY();
-      int var7 = var3.getZ();
-      double var8 = (double)var5 + var4.nextDouble();
-      double var10 = (double)var6 + 0.7;
-      double var12 = (double)var7 + var4.nextDouble();
-      var2.addParticle(ParticleTypes.FALLING_SPORE_BLOSSOM, var8, var10, var12, 0.0, 0.0, 0.0);
-      BlockPos.MutableBlockPos var14 = new BlockPos.MutableBlockPos();
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      int plantX = pos.getX();
+      int plantY = pos.getY();
+      int plantZ = pos.getZ();
+      double xFalling = (double)plantX + random.nextDouble();
+      double yFalling = (double)plantY + 0.7;
+      double zFalling = (double)plantZ + random.nextDouble();
+      level.addParticle(ParticleTypes.FALLING_SPORE_BLOSSOM, xFalling, yFalling, zFalling, 0.0, 0.0, 0.0);
+      BlockPos.MutableBlockPos ambientPos = new BlockPos.MutableBlockPos();
 
-      for(int var15 = 0; var15 < 14; ++var15) {
-         var14.set(var5 + Mth.nextInt(var4, -10, 10), var6 - var4.nextInt(10), var7 + Mth.nextInt(var4, -10, 10));
-         BlockState var16 = var2.getBlockState(var14);
-         if (!var16.isCollisionShapeFullBlock(var2, var14)) {
-            var2.addParticle(ParticleTypes.SPORE_BLOSSOM_AIR, (double)var14.getX() + var4.nextDouble(), (double)var14.getY() + var4.nextDouble(), (double)var14.getZ() + var4.nextDouble(), 0.0, 0.0, 0.0);
+      for(int i = 0; i < 14; ++i) {
+         ambientPos.set(plantX + Mth.nextInt(random, -10, 10), plantY - random.nextInt(10), plantZ + Mth.nextInt(random, -10, 10));
+         BlockState particlePosState = level.getBlockState(ambientPos);
+         if (!particlePosState.isCollisionShapeFullBlock(level, ambientPos)) {
+            level.addParticle(ParticleTypes.SPORE_BLOSSOM_AIR, (double)ambientPos.getX() + random.nextDouble(), (double)ambientPos.getY() + random.nextDouble(), (double)ambientPos.getZ() + random.nextDouble(), 0.0, 0.0, 0.0);
          }
       }
 
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 }

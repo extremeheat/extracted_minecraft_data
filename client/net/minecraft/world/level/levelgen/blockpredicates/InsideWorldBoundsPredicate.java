@@ -7,24 +7,19 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.WorldGenLevel;
 
 public class InsideWorldBoundsPredicate implements BlockPredicate {
-   public static final MapCodec<InsideWorldBoundsPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", BlockPos.ZERO).forGetter((var0x) -> var0x.offset)).apply(var0, InsideWorldBoundsPredicate::new));
+   public static final MapCodec<InsideWorldBoundsPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", BlockPos.ZERO).forGetter((c) -> c.offset)).apply(i, InsideWorldBoundsPredicate::new));
    private final Vec3i offset;
 
-   public InsideWorldBoundsPredicate(Vec3i var1) {
+   public InsideWorldBoundsPredicate(final Vec3i offset) {
       super();
-      this.offset = var1;
+      this.offset = offset;
    }
 
-   public boolean test(WorldGenLevel var1, BlockPos var2) {
-      return !var1.isOutsideBuildHeight(var2.offset(this.offset));
+   public boolean test(final WorldGenLevel worldGenLevel, final BlockPos blockPos) {
+      return !worldGenLevel.isOutsideBuildHeight(blockPos.offset(this.offset));
    }
 
    public BlockPredicateType<?> type() {
       return BlockPredicateType.INSIDE_WORLD_BOUNDS;
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1, final Object var2) {
-      return this.test((WorldGenLevel)var1, (BlockPos)var2);
    }
 }

@@ -6,17 +6,17 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
 
 public class HugeExplosionSeedParticle extends NoRenderParticle {
-   HugeExplosionSeedParticle(ClientLevel var1, double var2, double var4, double var6) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0);
+   private HugeExplosionSeedParticle(final ClientLevel level, final double x, final double y, final double z) {
+      super(level, x, y, z, 0.0, 0.0, 0.0);
       this.lifetime = 8;
    }
 
    public void tick() {
-      for(int var1 = 0; var1 < 6; ++var1) {
-         double var2 = this.x + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
-         double var4 = this.y + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
-         double var6 = this.z + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
-         this.level.addParticle(ParticleTypes.EXPLOSION, var2, var4, var6, (double)((float)this.age / (float)this.lifetime), 0.0, 0.0);
+      for(int i = 0; i < 6; ++i) {
+         double xx = this.x + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
+         double yy = this.y + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
+         double zz = this.z + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
+         this.level.addParticle(ParticleTypes.EXPLOSION, xx, yy, zz, (double)((float)this.age / (float)this.lifetime), 0.0, 0.0);
       }
 
       ++this.age;
@@ -31,8 +31,8 @@ public class HugeExplosionSeedParticle extends NoRenderParticle {
          super();
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new HugeExplosionSeedParticle(var2, var3, var5, var7);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new HugeExplosionSeedParticle(level, x, y, z);
       }
    }
 }

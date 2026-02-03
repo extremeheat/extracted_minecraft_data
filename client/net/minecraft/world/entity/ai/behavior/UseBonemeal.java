@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
@@ -29,12 +29,12 @@ public class UseBonemeal extends Behavior<Villager> {
       super(ImmutableMap.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT));
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      if (var2.tickCount % 10 == 0 && (this.lastBonemealingSession == 0L || this.lastBonemealingSession + 160L <= (long)var2.tickCount)) {
-         if (var2.getInventory().countItem(Items.BONE_MEAL) <= 0) {
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Villager body) {
+      if (body.tickCount % 10 == 0 && (this.lastBonemealingSession == 0L || this.lastBonemealingSession + 160L <= (long)body.tickCount)) {
+         if (body.getInventory().countItem(Items.BONE_MEAL) <= 0) {
             return false;
          } else {
-            this.cropPos = this.pickNextTarget(var1, var2);
+            this.cropPos = this.pickNextTarget(level, body);
             return this.cropPos.isPresent();
          }
       } else {
@@ -42,96 +42,82 @@ public class UseBonemeal extends Behavior<Villager> {
       }
    }
 
-   protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
+   protected boolean canStillUse(final ServerLevel level, final Villager body, final long timestamp) {
       return this.timeWorkedSoFar < 80 && this.cropPos.isPresent();
    }
 
-   private Optional<BlockPos> pickNextTarget(ServerLevel var1, Villager var2) {
-      BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
-      Optional var4 = Optional.empty();
-      int var5 = 0;
+   private Optional<BlockPos> pickNextTarget(final ServerLevel level, final Villager body) {
+      BlockPos.MutableBlockPos mutPos = new BlockPos.MutableBlockPos();
+      RandomSource random = level.getRandom();
+      Optional<BlockPos> result = Optional.empty();
+      int count = 0;
 
-      for(int var6 = -1; var6 <= 1; ++var6) {
-         for(int var7 = -1; var7 <= 1; ++var7) {
-            for(int var8 = -1; var8 <= 1; ++var8) {
-               var3.setWithOffset(var2.blockPosition(), var6, var7, var8);
-               if (this.validPos(var3, var1)) {
-                  ++var5;
-                  if (var1.random.nextInt(var5) == 0) {
-                     var4 = Optional.of(var3.immutable());
+      for(int x = -1; x <= 1; ++x) {
+         for(int y = -1; y <= 1; ++y) {
+            for(int z = -1; z <= 1; ++z) {
+               mutPos.setWithOffset(body.blockPosition(), x, y, z);
+               if (this.validPos(mutPos, level)) {
+                  ++count;
+                  if (random.nextInt(count) == 0) {
+                     result = Optional.of(mutPos.immutable());
                   }
                }
             }
          }
       }
 
-      return var4;
+      return result;
    }
 
-   private boolean validPos(BlockPos var1, ServerLevel var2) {
-      BlockState var3 = var2.getBlockState(var1);
-      Block var4 = var3.getBlock();
-      return var4 instanceof CropBlock && !((CropBlock)var4).isMaxAge(var3);
+   private boolean validPos(final BlockPos blockPos, final ServerLevel level) {
+      BlockState state = level.getBlockState(blockPos);
+      Block block = state.getBlock();
+      return block instanceof CropBlock && !((CropBlock)block).isMaxAge(state);
    }
 
-   protected void start(ServerLevel var1, Villager var2, long var3) {
-      this.setCurrentCropAsTarget(var2);
-      var2.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BONE_MEAL));
-      this.nextWorkCycleTime = var3;
+   protected void start(final ServerLevel level, final Villager body, final long timestamp) {
+      this.setCurrentCropAsTarget(body);
+      body.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BONE_MEAL));
+      this.nextWorkCycleTime = timestamp;
       this.timeWorkedSoFar = 0;
    }
 
-   private void setCurrentCropAsTarget(Villager var1) {
-      this.cropPos.ifPresent((var1x) -> {
-         BlockPosTracker var2 = new BlockPosTracker(var1x);
-         var1.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, var2);
-         var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var2, 0.5F, 1));
+   private void setCurrentCropAsTarget(final Villager body) {
+      this.cropPos.ifPresent((pos) -> {
+         BlockPosTracker cropPosWrapper = new BlockPosTracker(pos);
+         body.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, cropPosWrapper);
+         body.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(cropPosWrapper, 0.5F, 1));
       });
    }
 
-   protected void stop(ServerLevel var1, Villager var2, long var3) {
-      var2.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-      this.lastBonemealingSession = (long)var2.tickCount;
+   protected void stop(final ServerLevel level, final Villager body, final long timestamp) {
+      body.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+      this.lastBonemealingSession = (long)body.tickCount;
    }
 
-   protected void tick(ServerLevel var1, Villager var2, long var3) {
-      BlockPos var5 = (BlockPos)this.cropPos.get();
-      if (var3 >= this.nextWorkCycleTime && var5.closerToCenterThan(var2.position(), 1.0)) {
-         ItemStack var6 = ItemStack.EMPTY;
-         SimpleContainer var7 = var2.getInventory();
-         int var8 = var7.getContainerSize();
+   protected void tick(final ServerLevel level, final Villager body, final long timestamp) {
+      BlockPos targetPos = (BlockPos)this.cropPos.get();
+      if (timestamp >= this.nextWorkCycleTime && targetPos.closerToCenterThan(body.position(), 1.0)) {
+         ItemStack bonemealStack = ItemStack.EMPTY;
+         SimpleContainer inventory = body.getInventory();
+         int containerSize = inventory.getContainerSize();
 
-         for(int var9 = 0; var9 < var8; ++var9) {
-            ItemStack var10 = var7.getItem(var9);
-            if (var10.is(Items.BONE_MEAL)) {
-               var6 = var10;
+         for(int i = 0; i < containerSize; ++i) {
+            ItemStack item = inventory.getItem(i);
+            if (item.is(Items.BONE_MEAL)) {
+               bonemealStack = item;
                break;
             }
          }
 
-         if (!var6.isEmpty() && BoneMealItem.growCrop(var6, var1, var5)) {
-            var1.levelEvent(1505, var5, 15);
-            this.cropPos = this.pickNextTarget(var1, var2);
-            this.setCurrentCropAsTarget(var2);
-            this.nextWorkCycleTime = var3 + 40L;
+         if (!bonemealStack.isEmpty() && BoneMealItem.growCrop(bonemealStack, level, targetPos)) {
+            level.levelEvent(1505, targetPos, 15);
+            this.cropPos = this.pickNextTarget(level, body);
+            this.setCurrentCropAsTarget(body);
+            this.nextWorkCycleTime = timestamp + 40L;
          }
 
          ++this.timeWorkedSoFar;
       }
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (Villager)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void tick(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.tick(var1, (Villager)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Villager)var2, var3);
    }
 }

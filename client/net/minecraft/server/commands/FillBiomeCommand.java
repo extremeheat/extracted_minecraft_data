@@ -8,6 +8,7 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -35,86 +36,86 @@ import org.apache.commons.lang3.mutable.MutableInt;
 
 public class FillBiomeCommand {
    public static final SimpleCommandExceptionType ERROR_NOT_LOADED = new SimpleCommandExceptionType(Component.translatable("argument.pos.unloaded"));
-   private static final Dynamic2CommandExceptionType ERROR_VOLUME_TOO_LARGE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.fillbiome.toobig", var0, var1));
+   private static final Dynamic2CommandExceptionType ERROR_VOLUME_TOO_LARGE = new Dynamic2CommandExceptionType((max, count) -> Component.translatableEscape("commands.fillbiome.toobig", max, count));
 
    public FillBiomeCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fillbiome").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("biome", ResourceArgument.resource(var1, Registries.BIOME)).executes((var0x) -> fill((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to"), ResourceArgument.getResource(var0x, "biome", Registries.BIOME), (var0) -> true))).then(Commands.literal("replace").then(Commands.argument("filter", ResourceOrTagArgument.resourceOrTag(var1, Registries.BIOME)).executes((var0x) -> fill((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to"), ResourceArgument.getResource(var0x, "biome", Registries.BIOME), ResourceOrTagArgument.getResourceOrTag(var0x, "filter", Registries.BIOME)))))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fillbiome").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("biome", ResourceArgument.resource(context, Registries.BIOME)).executes((c) -> fill((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "from"), BlockPosArgument.getLoadedBlockPos(c, "to"), ResourceArgument.getResource(c, "biome", Registries.BIOME), (b) -> true))).then(Commands.literal("replace").then(Commands.argument("filter", ResourceOrTagArgument.resourceOrTag(context, Registries.BIOME)).executes((c) -> fill((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "from"), BlockPosArgument.getLoadedBlockPos(c, "to"), ResourceArgument.getResource(c, "biome", Registries.BIOME), ResourceOrTagArgument.getResourceOrTag(c, "filter", Registries.BIOME)))))))));
    }
 
-   private static int quantize(int var0) {
-      return QuartPos.toBlock(QuartPos.fromBlock(var0));
+   private static int quantize(final int blockCoord) {
+      return QuartPos.toBlock(QuartPos.fromBlock(blockCoord));
    }
 
-   private static BlockPos quantize(BlockPos var0) {
-      return new BlockPos(quantize(var0.getX()), quantize(var0.getY()), quantize(var0.getZ()));
+   private static BlockPos quantize(final BlockPos block) {
+      return new BlockPos(quantize(block.getX()), quantize(block.getY()), quantize(block.getZ()));
    }
 
-   private static BiomeResolver makeResolver(MutableInt var0, ChunkAccess var1, BoundingBox var2, Holder<Biome> var3, Predicate<Holder<Biome>> var4) {
-      return (var5, var6, var7, var8) -> {
-         int var9 = QuartPos.toBlock(var5);
-         int var10 = QuartPos.toBlock(var6);
-         int var11 = QuartPos.toBlock(var7);
-         Holder var12 = var1.getNoiseBiome(var5, var6, var7);
-         if (var2.isInside(var9, var10, var11) && var4.test(var12)) {
-            var0.increment();
-            return var3;
+   private static BiomeResolver makeResolver(final MutableInt count, final ChunkAccess chunk, final BoundingBox region, final Holder<Biome> toFill, final Predicate<Holder<Biome>> filter) {
+      return (quartX, quartY, quartZ, sampler) -> {
+         int blockX = QuartPos.toBlock(quartX);
+         int blockY = QuartPos.toBlock(quartY);
+         int blockZ = QuartPos.toBlock(quartZ);
+         Holder<Biome> currentBiome = chunk.getNoiseBiome(quartX, quartY, quartZ);
+         if (region.isInside(blockX, blockY, blockZ) && filter.test(currentBiome)) {
+            count.increment();
+            return toFill;
          } else {
-            return var12;
+            return currentBiome;
          }
       };
    }
 
-   public static Either<Integer, CommandSyntaxException> fill(ServerLevel var0, BlockPos var1, BlockPos var2, Holder<Biome> var3) {
-      return fill(var0, var1, var2, var3, (var0x) -> true, (var0x) -> {
+   public static Either<Integer, CommandSyntaxException> fill(final ServerLevel level, final BlockPos rawFrom, final BlockPos rawTo, final Holder<Biome> biome) {
+      return fill(level, rawFrom, rawTo, biome, (b) -> true, (m) -> {
       });
    }
 
-   public static Either<Integer, CommandSyntaxException> fill(ServerLevel var0, BlockPos var1, BlockPos var2, Holder<Biome> var3, Predicate<Holder<Biome>> var4, Consumer<Supplier<Component>> var5) {
-      BlockPos var6 = quantize(var1);
-      BlockPos var7 = quantize(var2);
-      BoundingBox var8 = BoundingBox.fromCorners(var6, var7);
-      int var9 = var8.getXSpan() * var8.getYSpan() * var8.getZSpan();
-      int var10 = (Integer)var0.getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
-      if (var9 > var10) {
-         return Either.right(ERROR_VOLUME_TOO_LARGE.create(var10, var9));
+   public static Either<Integer, CommandSyntaxException> fill(final ServerLevel level, final BlockPos rawFrom, final BlockPos rawTo, final Holder<Biome> biome, final Predicate<Holder<Biome>> filter, final Consumer<Supplier<Component>> successMessageConsumer) {
+      BlockPos from = quantize(rawFrom);
+      BlockPos to = quantize(rawTo);
+      BoundingBox region = BoundingBox.fromCorners(from, to);
+      int volume = region.getXSpan() * region.getYSpan() * region.getZSpan();
+      int limit = (Integer)level.getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
+      if (volume > limit) {
+         return Either.right(ERROR_VOLUME_TOO_LARGE.create(limit, volume));
       } else {
-         ArrayList var11 = new ArrayList();
+         List<ChunkAccess> chunks = new ArrayList();
 
-         for(int var12 = SectionPos.blockToSectionCoord(var8.minZ()); var12 <= SectionPos.blockToSectionCoord(var8.maxZ()); ++var12) {
-            for(int var13 = SectionPos.blockToSectionCoord(var8.minX()); var13 <= SectionPos.blockToSectionCoord(var8.maxX()); ++var13) {
-               ChunkAccess var14 = var0.getChunk(var13, var12, ChunkStatus.FULL, false);
-               if (var14 == null) {
+         for(int chunkZ = SectionPos.blockToSectionCoord(region.minZ()); chunkZ <= SectionPos.blockToSectionCoord(region.maxZ()); ++chunkZ) {
+            for(int chunkX = SectionPos.blockToSectionCoord(region.minX()); chunkX <= SectionPos.blockToSectionCoord(region.maxX()); ++chunkX) {
+               ChunkAccess chunk = level.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false);
+               if (chunk == null) {
                   return Either.right(ERROR_NOT_LOADED.create());
                }
 
-               var11.add(var14);
+               chunks.add(chunk);
             }
          }
 
-         MutableInt var15 = new MutableInt(0);
+         MutableInt changedCount = new MutableInt(0);
 
-         for(ChunkAccess var17 : var11) {
-            var17.fillBiomesFromNoise(makeResolver(var15, var17, var8, var3, var4), var0.getChunkSource().randomState().sampler());
-            var17.markUnsaved();
+         for(ChunkAccess chunk : chunks) {
+            chunk.fillBiomesFromNoise(makeResolver(changedCount, chunk, region, biome, filter), level.getChunkSource().randomState().sampler());
+            chunk.markUnsaved();
          }
 
-         var0.getChunkSource().chunkMap.resendBiomesForChunks(var11);
-         var5.accept((Supplier)() -> Component.translatable("commands.fillbiome.success.count", var15.intValue(), var8.minX(), var8.minY(), var8.minZ(), var8.maxX(), var8.maxY(), var8.maxZ()));
-         return Either.left(var15.intValue());
+         level.getChunkSource().chunkMap.resendBiomesForChunks(chunks);
+         successMessageConsumer.accept((Supplier)() -> Component.translatable("commands.fillbiome.success.count", changedCount.intValue(), region.minX(), region.minY(), region.minZ(), region.maxX(), region.maxY(), region.maxZ()));
+         return Either.left(changedCount.intValue());
       }
    }
 
-   private static int fill(CommandSourceStack var0, BlockPos var1, BlockPos var2, Holder.Reference<Biome> var3, Predicate<Holder<Biome>> var4) throws CommandSyntaxException {
-      Either var5 = fill(var0.getLevel(), var1, var2, var3, var4, (var1x) -> var0.sendSuccess(var1x, true));
-      Optional var6 = var5.right();
-      if (var6.isPresent()) {
-         throw (CommandSyntaxException)var6.get();
+   private static int fill(final CommandSourceStack source, final BlockPos rawFrom, final BlockPos rawTo, final Holder.Reference<Biome> biome, final Predicate<Holder<Biome>> filter) throws CommandSyntaxException {
+      Either<Integer, CommandSyntaxException> result = fill(source.getLevel(), rawFrom, rawTo, biome, filter, (m) -> source.sendSuccess(m, true));
+      Optional<CommandSyntaxException> exception = result.right();
+      if (exception.isPresent()) {
+         throw (CommandSyntaxException)exception.get();
       } else {
-         return (Integer)var5.left().get();
+         return (Integer)result.left().get();
       }
    }
 }

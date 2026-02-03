@@ -53,8 +53,8 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    private final CyclingSlotBackground additionalIcon = new CyclingSlotBackground(2);
    private final ArmorStandRenderState armorStandPreview = new ArmorStandRenderState();
 
-   public SmithingScreen(SmithingMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3, Identifier.withDefaultNamespace("textures/gui/container/smithing.png"));
+   public SmithingScreen(final SmithingMenu menu, final Inventory inventory, final Component title) {
+      super(menu, inventory, title, Identifier.withDefaultNamespace("textures/gui/container/smithing.png"));
       this.titleLabelX = 44;
       this.titleLabelY = 15;
       this.armorStandPreview.entityType = EntityType.ARMOR_STAND;
@@ -70,50 +70,50 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    public void containerTick() {
       super.containerTick();
-      Optional var1 = this.getTemplateItem();
+      Optional<SmithingTemplateItem> template = this.getTemplateItem();
       this.templateIcon.tick(EMPTY_SLOT_SMITHING_TEMPLATES);
-      this.baseIcon.tick((List)var1.map(SmithingTemplateItem::getBaseSlotEmptyIcons).orElse(List.of()));
-      this.additionalIcon.tick((List)var1.map(SmithingTemplateItem::getAdditionalSlotEmptyIcons).orElse(List.of()));
+      this.baseIcon.tick((List)template.map(SmithingTemplateItem::getBaseSlotEmptyIcons).orElse(List.of()));
+      this.additionalIcon.tick((List)template.map(SmithingTemplateItem::getAdditionalSlotEmptyIcons).orElse(List.of()));
    }
 
    private Optional<SmithingTemplateItem> getTemplateItem() {
-      ItemStack var1 = ((SmithingMenu)this.menu).getSlot(0).getItem();
-      if (!var1.isEmpty()) {
-         Item var3 = var1.getItem();
+      ItemStack templateSlotItem = ((SmithingMenu)this.menu).getSlot(0).getItem();
+      if (!templateSlotItem.isEmpty()) {
+         Item var3 = templateSlotItem.getItem();
          if (var3 instanceof SmithingTemplateItem) {
-            SmithingTemplateItem var2 = (SmithingTemplateItem)var3;
-            return Optional.of(var2);
+            SmithingTemplateItem templateItem = (SmithingTemplateItem)var3;
+            return Optional.of(templateItem);
          }
       }
 
       return Optional.empty();
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.renderOnboardingTooltips(var1, var2, var3);
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
+      this.renderOnboardingTooltips(graphics, mouseX, mouseY);
    }
 
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      super.renderBg(var1, var2, var3, var4);
-      this.templateIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
-      this.baseIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
-      this.additionalIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
-      int var5 = this.leftPos + 121;
-      int var6 = this.topPos + 20;
-      int var7 = this.leftPos + 161;
-      int var8 = this.topPos + 80;
-      var1.submitEntityRenderState(this.armorStandPreview, 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, var5, var6, var7, var8);
+   protected void renderBg(final GuiGraphics graphics, final float a, final int xMouse, final int yMouse) {
+      super.renderBg(graphics, a, xMouse, yMouse);
+      this.templateIcon.render(this.menu, graphics, a, this.leftPos, this.topPos);
+      this.baseIcon.render(this.menu, graphics, a, this.leftPos, this.topPos);
+      this.additionalIcon.render(this.menu, graphics, a, this.leftPos, this.topPos);
+      int x0 = this.leftPos + 121;
+      int y0 = this.topPos + 20;
+      int x1 = this.leftPos + 161;
+      int y1 = this.topPos + 80;
+      graphics.submitEntityRenderState(this.armorStandPreview, 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, x0, y0, x1, y1);
    }
 
-   public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
-      if (var2 == 3) {
-         this.updateArmorStandPreview(var3);
+   public void slotChanged(final AbstractContainerMenu container, final int slotIndex, final ItemStack itemStack) {
+      if (slotIndex == 3) {
+         this.updateArmorStandPreview(itemStack);
       }
 
    }
 
-   private void updateArmorStandPreview(ItemStack var1) {
+   private void updateArmorStandPreview(final ItemStack itemStack) {
       this.armorStandPreview.leftHandItemStack = ItemStack.EMPTY;
       this.armorStandPreview.leftHandItemState.clear();
       this.armorStandPreview.headEquipment = ItemStack.EMPTY;
@@ -121,78 +121,78 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       this.armorStandPreview.chestEquipment = ItemStack.EMPTY;
       this.armorStandPreview.legsEquipment = ItemStack.EMPTY;
       this.armorStandPreview.feetEquipment = ItemStack.EMPTY;
-      if (!var1.isEmpty()) {
-         Equippable var2 = (Equippable)var1.get(DataComponents.EQUIPPABLE);
-         EquipmentSlot var3 = var2 != null ? var2.slot() : null;
-         ItemModelResolver var4 = this.minecraft.getItemModelResolver();
+      if (!itemStack.isEmpty()) {
+         Equippable equippable = (Equippable)itemStack.get(DataComponents.EQUIPPABLE);
+         EquipmentSlot slot = equippable != null ? equippable.slot() : null;
+         ItemModelResolver itemModelResolver = this.minecraft.getItemModelResolver();
          byte var6 = 0;
          //$FF: var6->value
          //0->HEAD
          //1->CHEST
          //2->LEGS
          //3->FEET
-         switch (var3.enumSwitch<invokedynamic>(var3, var6)) {
+         switch (slot.enumSwitch<invokedynamic>(slot, var6)) {
             case -1:
             default:
-               this.armorStandPreview.leftHandItemStack = var1.copy();
-               var4.updateForTopItem(this.armorStandPreview.leftHandItemState, var1, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, (Level)null, (ItemOwner)null, 0);
+               this.armorStandPreview.leftHandItemStack = itemStack.copy();
+               itemModelResolver.updateForTopItem(this.armorStandPreview.leftHandItemState, itemStack, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, (Level)null, (ItemOwner)null, 0);
                break;
             case 0:
-               if (HumanoidArmorLayer.shouldRender(var1, EquipmentSlot.HEAD)) {
-                  this.armorStandPreview.headEquipment = var1.copy();
+               if (HumanoidArmorLayer.shouldRender(itemStack, EquipmentSlot.HEAD)) {
+                  this.armorStandPreview.headEquipment = itemStack.copy();
                } else {
-                  var4.updateForTopItem(this.armorStandPreview.headItem, var1, ItemDisplayContext.HEAD, (Level)null, (ItemOwner)null, 0);
+                  itemModelResolver.updateForTopItem(this.armorStandPreview.headItem, itemStack, ItemDisplayContext.HEAD, (Level)null, (ItemOwner)null, 0);
                }
                break;
             case 1:
-               this.armorStandPreview.chestEquipment = var1.copy();
+               this.armorStandPreview.chestEquipment = itemStack.copy();
                break;
             case 2:
-               this.armorStandPreview.legsEquipment = var1.copy();
+               this.armorStandPreview.legsEquipment = itemStack.copy();
                break;
             case 3:
-               this.armorStandPreview.feetEquipment = var1.copy();
+               this.armorStandPreview.feetEquipment = itemStack.copy();
          }
       }
 
    }
 
-   protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
+   protected void renderErrorIcon(final GuiGraphics graphics, final int xo, final int yo) {
       if (this.hasRecipeError()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, xo + 65, yo + 46, 28, 21);
       }
 
    }
 
-   private void renderOnboardingTooltips(GuiGraphics var1, int var2, int var3) {
-      Optional var4 = Optional.empty();
-      if (this.hasRecipeError() && this.isHovering(65, 46, 28, 21, (double)var2, (double)var3)) {
-         var4 = Optional.of(ERROR_TOOLTIP);
+   private void renderOnboardingTooltips(final GuiGraphics graphics, final int mouseX, final int mouseY) {
+      Optional<Component> tooltip = Optional.empty();
+      if (this.hasRecipeError() && this.isHovering(65, 46, 28, 21, (double)mouseX, (double)mouseY)) {
+         tooltip = Optional.of(ERROR_TOOLTIP);
       }
 
       if (this.hoveredSlot != null) {
-         ItemStack var5 = ((SmithingMenu)this.menu).getSlot(0).getItem();
-         ItemStack var6 = this.hoveredSlot.getItem();
-         if (var5.isEmpty()) {
+         ItemStack template = ((SmithingMenu)this.menu).getSlot(0).getItem();
+         ItemStack hoveredStack = this.hoveredSlot.getItem();
+         if (template.isEmpty()) {
             if (this.hoveredSlot.index == 0) {
-               var4 = Optional.of(MISSING_TEMPLATE_TOOLTIP);
+               tooltip = Optional.of(MISSING_TEMPLATE_TOOLTIP);
             }
          } else {
-            Item var8 = var5.getItem();
+            Item var8 = template.getItem();
             if (var8 instanceof SmithingTemplateItem) {
-               SmithingTemplateItem var7 = (SmithingTemplateItem)var8;
-               if (var6.isEmpty()) {
+               SmithingTemplateItem templateItem = (SmithingTemplateItem)var8;
+               if (hoveredStack.isEmpty()) {
                   if (this.hoveredSlot.index == 1) {
-                     var4 = Optional.of(var7.getBaseSlotDescription());
+                     tooltip = Optional.of(templateItem.getBaseSlotDescription());
                   } else if (this.hoveredSlot.index == 2) {
-                     var4 = Optional.of(var7.getAdditionSlotDescription());
+                     tooltip = Optional.of(templateItem.getAdditionSlotDescription());
                   }
                }
             }
          }
       }
 
-      var4.ifPresent((var4x) -> var1.setTooltipForNextFrame(this.font, this.font.split(var4x, 115), var2, var3));
+      tooltip.ifPresent((component) -> graphics.setTooltipForNextFrame(this.font, this.font.split(component, 115), mouseX, mouseY));
    }
 
    private boolean hasRecipeError() {

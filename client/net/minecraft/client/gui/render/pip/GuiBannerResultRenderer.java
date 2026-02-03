@@ -16,22 +16,22 @@ import net.minecraft.client.resources.model.ModelBakery;
 public class GuiBannerResultRenderer extends PictureInPictureRenderer<GuiBannerResultRenderState> {
    private final MaterialSet materials;
 
-   public GuiBannerResultRenderer(MultiBufferSource.BufferSource var1, MaterialSet var2) {
-      super(var1);
-      this.materials = var2;
+   public GuiBannerResultRenderer(final MultiBufferSource.BufferSource bufferSource, final MaterialSet materials) {
+      super(bufferSource);
+      this.materials = materials;
    }
 
    public Class<GuiBannerResultRenderState> getRenderStateClass() {
       return GuiBannerResultRenderState.class;
    }
 
-   protected void renderToTexture(GuiBannerResultRenderState var1, PoseStack var2) {
+   protected void renderToTexture(final GuiBannerResultRenderState renderState, final PoseStack poseStack) {
       Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_FLAT);
-      var2.translate(0.0F, 0.25F, 0.0F);
-      FeatureRenderDispatcher var3 = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
-      SubmitNodeStorage var4 = var3.getSubmitNodeStorage();
-      BannerRenderer.submitPatterns(this.materials, var2, var4, 15728880, OverlayTexture.NO_OVERLAY, var1.flag(), 0.0F, ModelBakery.BANNER_BASE, true, var1.baseColor(), var1.resultBannerPatterns(), false, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
-      var3.renderAllFeatures();
+      poseStack.translate(0.0F, 0.25F, 0.0F);
+      FeatureRenderDispatcher featureRenderDispatcher = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
+      SubmitNodeStorage submitNodeStorage = featureRenderDispatcher.getSubmitNodeStorage();
+      BannerRenderer.submitPatterns(this.materials, poseStack, submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, renderState.flag(), 0.0F, ModelBakery.BANNER_BASE, true, renderState.baseColor(), renderState.resultBannerPatterns(), false, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
+      featureRenderDispatcher.renderAllFeatures();
    }
 
    protected String getTextureLabel() {

@@ -10,18 +10,18 @@ public class OcelotAttackGoal extends Goal {
    private LivingEntity target;
    private int attackTime;
 
-   public OcelotAttackGoal(Mob var1) {
+   public OcelotAttackGoal(final Mob mob) {
       super();
-      this.mob = var1;
+      this.mob = mob;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
    }
 
    public boolean canUse() {
-      LivingEntity var1 = this.mob.getTarget();
-      if (var1 == null) {
+      LivingEntity bestTarget = this.mob.getTarget();
+      if (bestTarget == null) {
          return false;
       } else {
-         this.target = var1;
+         this.target = bestTarget;
          return true;
       }
    }
@@ -47,18 +47,18 @@ public class OcelotAttackGoal extends Goal {
 
    public void tick() {
       this.mob.getLookControl().setLookAt(this.target, 30.0F, 30.0F);
-      double var1 = (double)(this.mob.getBbWidth() * 2.0F * this.mob.getBbWidth() * 2.0F);
-      double var3 = this.mob.distanceToSqr(this.target.getX(), this.target.getY(), this.target.getZ());
-      double var5 = 0.8;
-      if (var3 > var1 && var3 < 16.0) {
-         var5 = 1.33;
-      } else if (var3 < 225.0) {
-         var5 = 0.6;
+      double meleeRadiusSqr = (double)(this.mob.getBbWidth() * 2.0F * this.mob.getBbWidth() * 2.0F);
+      double distSqr = this.mob.distanceToSqr(this.target.getX(), this.target.getY(), this.target.getZ());
+      double speedModifier = 0.8;
+      if (distSqr > meleeRadiusSqr && distSqr < 16.0) {
+         speedModifier = 1.33;
+      } else if (distSqr < 225.0) {
+         speedModifier = 0.6;
       }
 
-      this.mob.getNavigation().moveTo((Entity)this.target, var5);
+      this.mob.getNavigation().moveTo((Entity)this.target, speedModifier);
       this.attackTime = Math.max(this.attackTime - 1, 0);
-      if (!(var3 > var1)) {
+      if (!(distSqr > meleeRadiusSqr)) {
          if (this.attackTime <= 0) {
             this.attackTime = 20;
             this.mob.doHurtTarget(getServerLevel(this.mob), this.target);

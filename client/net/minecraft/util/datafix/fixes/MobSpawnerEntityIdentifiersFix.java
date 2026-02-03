@@ -14,46 +14,46 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public class MobSpawnerEntityIdentifiersFix extends DataFix {
-   public MobSpawnerEntityIdentifiersFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public MobSpawnerEntityIdentifiersFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
-   private Dynamic<?> fix(Dynamic<?> var1) {
-      if (!"MobSpawner".equals(var1.get("id").asString(""))) {
-         return var1;
+   private Dynamic<?> fix(Dynamic<?> input) {
+      if (!"MobSpawner".equals(input.get("id").asString(""))) {
+         return input;
       } else {
-         Optional var2 = var1.get("EntityId").asString().result();
-         if (var2.isPresent()) {
-            Dynamic var3 = (Dynamic)DataFixUtils.orElse(var1.get("SpawnData").result(), var1.emptyMap());
-            var3 = var3.set("id", var3.createString(((String)var2.get()).isEmpty() ? "Pig" : (String)var2.get()));
-            var1 = var1.set("SpawnData", var3);
-            var1 = var1.remove("EntityId");
+         Optional<String> entityId = input.get("EntityId").asString().result();
+         if (entityId.isPresent()) {
+            Dynamic<?> spawnData = (Dynamic)DataFixUtils.orElse(input.get("SpawnData").result(), input.emptyMap());
+            spawnData = spawnData.set("id", spawnData.createString(((String)entityId.get()).isEmpty() ? "Pig" : (String)entityId.get()));
+            input = input.set("SpawnData", spawnData);
+            input = input.remove("EntityId");
          }
 
-         Optional var6 = var1.get("SpawnPotentials").asStreamOpt().result();
-         if (var6.isPresent()) {
-            var1 = var1.set("SpawnPotentials", var1.createList(((Stream)var6.get()).map((var0) -> {
-               Optional var1 = var0.get("Type").asString().result();
-               if (var1.isPresent()) {
-                  Dynamic var2 = ((Dynamic)DataFixUtils.orElse(var0.get("Properties").result(), var0.emptyMap())).set("id", var0.createString((String)var1.get()));
-                  return var0.set("Entity", var2).remove("Type").remove("Properties");
+         Optional<? extends Stream<? extends Dynamic<?>>> spawnPotentials = input.get("SpawnPotentials").asStreamOpt().result();
+         if (spawnPotentials.isPresent()) {
+            input = input.set("SpawnPotentials", input.createList(((Stream)spawnPotentials.get()).map((spawnPotential) -> {
+               Optional<String> type = spawnPotential.get("Type").asString().result();
+               if (type.isPresent()) {
+                  Dynamic<?> spawnData = ((Dynamic)DataFixUtils.orElse(spawnPotential.get("Properties").result(), spawnPotential.emptyMap())).set("id", spawnPotential.createString((String)type.get()));
+                  return spawnPotential.set("Entity", spawnData).remove("Type").remove("Properties");
                } else {
-                  return var0;
+                  return spawnPotential;
                }
             })));
          }
 
-         return var1;
+         return input;
       }
    }
 
    public TypeRewriteRule makeRule() {
-      Type var1 = this.getOutputSchema().getType(References.UNTAGGED_SPAWNER);
-      return this.fixTypeEverywhereTyped("MobSpawnerEntityIdentifiersFix", this.getInputSchema().getType(References.UNTAGGED_SPAWNER), var1, (var2) -> {
-         Dynamic var3 = (Dynamic)var2.get(DSL.remainderFinder());
-         var3 = var3.set("id", var3.createString("MobSpawner"));
-         DataResult var4 = var1.readTyped(this.fix(var3));
-         return var4.result().isEmpty() ? var2 : (Typed)((Pair)var4.result().get()).getFirst();
+      Type<?> newType = this.getOutputSchema().getType(References.UNTAGGED_SPAWNER);
+      return this.fixTypeEverywhereTyped("MobSpawnerEntityIdentifiersFix", this.getInputSchema().getType(References.UNTAGGED_SPAWNER), newType, (input) -> {
+         Dynamic<?> tag = (Dynamic)input.get(DSL.remainderFinder());
+         tag = tag.set("id", tag.createString("MobSpawner"));
+         DataResult<? extends Pair<? extends Typed<?>, ?>> fixed = newType.readTyped(this.fix(tag));
+         return fixed.result().isEmpty() ? input : (Typed)((Pair)fixed.result().get()).getFirst();
       });
    }
 }

@@ -15,10 +15,10 @@ public record IsSelected() implements ConditionalItemModelProperty {
       super();
    }
 
-   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
+   public boolean get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
       boolean var10000;
-      if (var3 instanceof LocalPlayer var6) {
-         if (var6.getInventory().getSelectedItem() == var1) {
+      if (owner instanceof LocalPlayer player) {
+         if (player.getInventory().getSelectedItem() == itemStack) {
             var10000 = true;
             return var10000;
          }

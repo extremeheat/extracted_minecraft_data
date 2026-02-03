@@ -27,51 +27,51 @@ public class GiveCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("give").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("targets", EntityArgument.players()).then(((RequiredArgumentBuilder)Commands.argument("item", ItemArgument.item(var1)).executes((var0x) -> giveItem((CommandSourceStack)var0x.getSource(), ItemArgument.getItem(var0x, "item"), EntityArgument.getPlayers(var0x, "targets"), 1))).then(Commands.argument("count", IntegerArgumentType.integer(1)).executes((var0x) -> giveItem((CommandSourceStack)var0x.getSource(), ItemArgument.getItem(var0x, "item"), EntityArgument.getPlayers(var0x, "targets"), IntegerArgumentType.getInteger(var0x, "count")))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("give").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("targets", EntityArgument.players()).then(((RequiredArgumentBuilder)Commands.argument("item", ItemArgument.item(context)).executes((c) -> giveItem((CommandSourceStack)c.getSource(), ItemArgument.getItem(c, "item"), EntityArgument.getPlayers(c, "targets"), 1))).then(Commands.argument("count", IntegerArgumentType.integer(1)).executes((c) -> giveItem((CommandSourceStack)c.getSource(), ItemArgument.getItem(c, "item"), EntityArgument.getPlayers(c, "targets"), IntegerArgumentType.getInteger(c, "count")))))));
    }
 
-   private static int giveItem(CommandSourceStack var0, ItemInput var1, Collection<ServerPlayer> var2, int var3) throws CommandSyntaxException {
-      ItemStack var4 = var1.createItemStack(1, false);
-      int var5 = var4.getMaxStackSize();
-      int var6 = var5 * 100;
-      if (var3 > var6) {
-         var0.sendFailure(Component.translatable("commands.give.failed.toomanyitems", var6, var4.getDisplayName()));
+   private static int giveItem(final CommandSourceStack source, final ItemInput input, final Collection<ServerPlayer> players, final int count) throws CommandSyntaxException {
+      ItemStack prototypeItemStack = input.createItemStack(1);
+      int maxStackSize = prototypeItemStack.getMaxStackSize();
+      int maxAllowedCount = maxStackSize * 100;
+      if (count > maxAllowedCount) {
+         source.sendFailure(Component.translatable("commands.give.failed.toomanyitems", maxAllowedCount, prototypeItemStack.getDisplayName()));
          return 0;
       } else {
-         for(ServerPlayer var8 : var2) {
-            int var9 = var3;
+         for(ServerPlayer player : players) {
+            int remaining = count;
 
-            while(var9 > 0) {
-               int var10 = Math.min(var5, var9);
-               var9 -= var10;
-               ItemStack var11 = var1.createItemStack(var10, false);
-               boolean var12 = var8.getInventory().add(var11);
-               if (var12 && var11.isEmpty()) {
-                  ItemEntity var14 = var8.drop(var4, false);
-                  if (var14 != null) {
-                     var14.makeFakeItem();
+            while(remaining > 0) {
+               int size = Math.min(maxStackSize, remaining);
+               remaining -= size;
+               ItemStack copyToDrop = prototypeItemStack.copyWithCount(size);
+               boolean added = player.getInventory().add(copyToDrop);
+               if (added && copyToDrop.isEmpty()) {
+                  ItemEntity drop = player.drop(prototypeItemStack.copy(), false);
+                  if (drop != null) {
+                     drop.makeFakeItem();
                   }
 
-                  var8.level().playSound((Entity)null, var8.getX(), var8.getY(), var8.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var8.getRandom().nextFloat() - var8.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
-                  var8.containerMenu.broadcastChanges();
+                  player.level().playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+                  player.containerMenu.broadcastChanges();
                } else {
-                  ItemEntity var13 = var8.drop(var11, false);
-                  if (var13 != null) {
-                     var13.setNoPickUpDelay();
-                     var13.setTarget(var8.getUUID());
+                  ItemEntity drop = player.drop(copyToDrop, false);
+                  if (drop != null) {
+                     drop.setNoPickUpDelay();
+                     drop.setTarget(player.getUUID());
                   }
                }
             }
          }
 
-         if (var2.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.give.success.single", var3, var4.getDisplayName(), ((ServerPlayer)var2.iterator().next()).getDisplayName()), true);
+         if (players.size() == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.give.success.single", count, prototypeItemStack.getDisplayName(), ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.give.success.single", var3, var4.getDisplayName(), var2.size()), true);
+            source.sendSuccess(() -> Component.translatable("commands.give.success.single", count, prototypeItemStack.getDisplayName(), players.size()), true);
          }
 
-         return var2.size();
+         return players.size();
       }
    }
 }

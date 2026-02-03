@@ -10,38 +10,38 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class CoralTreeFeature extends CoralFeature {
-   public CoralTreeFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public CoralTreeFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   protected boolean placeFeature(LevelAccessor var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      BlockPos.MutableBlockPos var5 = var3.mutable();
-      int var6 = var2.nextInt(3) + 1;
+   protected boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state) {
+      BlockPos.MutableBlockPos mutPos = origin.mutable();
+      int trunckHeight = random.nextInt(3) + 1;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         if (!this.placeCoralBlock(var1, var2, var5, var4)) {
+      for(int i = 0; i < trunckHeight; ++i) {
+         if (!this.placeCoralBlock(level, random, mutPos, state)) {
             return true;
          }
 
-         var5.move(Direction.UP);
+         mutPos.move(Direction.UP);
       }
 
-      BlockPos var16 = var5.immutable();
-      int var8 = var2.nextInt(3) + 2;
-      List var9 = Direction.Plane.HORIZONTAL.shuffledCopy(var2);
+      BlockPos trunckTopPos = mutPos.immutable();
+      int nBranches = random.nextInt(3) + 2;
+      List<Direction> directions = Direction.Plane.HORIZONTAL.shuffledCopy(random);
 
-      for(Direction var12 : var9.subList(0, var8)) {
-         var5.set(var16);
-         var5.move(var12);
-         int var13 = var2.nextInt(5) + 2;
-         int var14 = 0;
+      for(Direction branchDirection : directions.subList(0, nBranches)) {
+         mutPos.set(trunckTopPos);
+         mutPos.move(branchDirection);
+         int branchHeight = random.nextInt(5) + 2;
+         int segmentLength = 0;
 
-         for(int var15 = 0; var15 < var13 && this.placeCoralBlock(var1, var2, var5, var4); ++var15) {
-            ++var14;
-            var5.move(Direction.UP);
-            if (var15 == 0 || var14 >= 2 && var2.nextFloat() < 0.25F) {
-               var5.move(var12);
-               var14 = 0;
+         for(int j = 0; j < branchHeight && this.placeCoralBlock(level, random, mutPos, state); ++j) {
+            ++segmentLength;
+            mutPos.move(Direction.UP);
+            if (j == 0 || segmentLength >= 2 && random.nextFloat() < 0.25F) {
+               mutPos.move(branchDirection);
+               segmentLength = 0;
             }
          }
       }

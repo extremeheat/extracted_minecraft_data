@@ -11,23 +11,20 @@ import net.minecraft.world.entity.PositionMoveRotation;
 public record ClientboundEntityPositionSyncPacket(int id, PositionMoveRotation values, boolean onGround) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundEntityPositionSyncPacket> STREAM_CODEC;
 
-   public ClientboundEntityPositionSyncPacket(int var1, PositionMoveRotation var2, boolean var3) {
+   public ClientboundEntityPositionSyncPacket {
       super();
-      this.id = var1;
-      this.values = var2;
-      this.onGround = var3;
    }
 
-   public static ClientboundEntityPositionSyncPacket of(Entity var0) {
-      return new ClientboundEntityPositionSyncPacket(var0.getId(), new PositionMoveRotation(var0.trackingPosition(), var0.getDeltaMovement(), var0.getYRot(), var0.getXRot()), var0.onGround());
+   public static ClientboundEntityPositionSyncPacket of(final Entity entity) {
+      return new ClientboundEntityPositionSyncPacket(entity.getId(), new PositionMoveRotation(entity.trackingPosition(), entity.getDeltaMovement(), entity.getYRot(), entity.getXRot()), entity.onGround());
    }
 
    public PacketType<ClientboundEntityPositionSyncPacket> type() {
       return GamePacketTypes.CLIENTBOUND_ENTITY_POSITION_SYNC;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleEntityPositionSync(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleEntityPositionSync(this);
    }
 
    static {

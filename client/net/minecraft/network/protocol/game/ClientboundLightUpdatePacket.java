@@ -15,32 +15,32 @@ public class ClientboundLightUpdatePacket implements Packet<ClientGamePacketList
    private final int z;
    private final ClientboundLightUpdatePacketData lightData;
 
-   public ClientboundLightUpdatePacket(ChunkPos var1, LevelLightEngine var2, @Nullable BitSet var3, @Nullable BitSet var4) {
+   public ClientboundLightUpdatePacket(final ChunkPos pos, final LevelLightEngine lightEngine, final @Nullable BitSet skyChangedLightSectionFilter, final @Nullable BitSet blockChangedLightSectionFilter) {
       super();
-      this.x = var1.x;
-      this.z = var1.z;
-      this.lightData = new ClientboundLightUpdatePacketData(var1, var2, var3, var4);
+      this.x = pos.x();
+      this.z = pos.z();
+      this.lightData = new ClientboundLightUpdatePacketData(pos, lightEngine, skyChangedLightSectionFilter, blockChangedLightSectionFilter);
    }
 
-   private ClientboundLightUpdatePacket(FriendlyByteBuf var1) {
+   private ClientboundLightUpdatePacket(final FriendlyByteBuf input) {
       super();
-      this.x = var1.readVarInt();
-      this.z = var1.readVarInt();
-      this.lightData = new ClientboundLightUpdatePacketData(var1, this.x, this.z);
+      this.x = input.readVarInt();
+      this.z = input.readVarInt();
+      this.lightData = new ClientboundLightUpdatePacketData(input, this.x, this.z);
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.x);
-      var1.writeVarInt(this.z);
-      this.lightData.write(var1);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.x);
+      output.writeVarInt(this.z);
+      this.lightData.write(output);
    }
 
    public PacketType<ClientboundLightUpdatePacket> type() {
       return GamePacketTypes.CLIENTBOUND_LIGHT_UPDATE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleLightUpdatePacket(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleLightUpdatePacket(this);
    }
 
    public int getX() {

@@ -7,14 +7,14 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class PlayerUUIDFix extends AbstractUUIDFix {
-   public PlayerUUIDFix(Schema var1) {
-      super(var1, References.PLAYER);
+   public PlayerUUIDFix(final Schema outputSchema) {
+      super(outputSchema, References.PLAYER);
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("PlayerUUIDFix", this.getInputSchema().getType(this.typeReference), (var0) -> {
-         OpticFinder var1 = var0.getType().findField("RootVehicle");
-         return var0.updateTyped(var1, var1.type(), (var0x) -> var0x.update(DSL.remainderFinder(), (var0) -> (Dynamic)replaceUUIDLeastMost(var0, "Attach", "Attach").orElse(var0))).update(DSL.remainderFinder(), (var0x) -> EntityUUIDFix.updateEntityUUID(EntityUUIDFix.updateLivingEntity(var0x)));
+      return this.fixTypeEverywhereTyped("PlayerUUIDFix", this.getInputSchema().getType(this.typeReference), (input) -> {
+         OpticFinder<?> rootVehicleFinder = input.getType().findField("RootVehicle");
+         return input.updateTyped(rootVehicleFinder, rootVehicleFinder.type(), (rootVehicle) -> rootVehicle.update(DSL.remainderFinder(), (tag) -> (Dynamic)replaceUUIDLeastMost(tag, "Attach", "Attach").orElse(tag))).update(DSL.remainderFinder(), (tag) -> EntityUUIDFix.updateEntityUUID(EntityUUIDFix.updateLivingEntity(tag)));
       });
    }
 }

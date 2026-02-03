@@ -9,60 +9,60 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
 public class SimpleSoundInstance extends AbstractSoundInstance {
-   public SimpleSoundInstance(SoundEvent var1, SoundSource var2, float var3, float var4, RandomSource var5, BlockPos var6) {
-      this(var1, var2, var3, var4, var5, (double)var6.getX() + 0.5, (double)var6.getY() + 0.5, (double)var6.getZ() + 0.5);
+   public SimpleSoundInstance(final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final RandomSource random, final BlockPos pos) {
+      this(sound, source, volume, pitch, random, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5);
    }
 
-   public static SimpleSoundInstance forUI(SoundEvent var0, float var1) {
-      return forUI(var0, var1, 0.25F);
+   public static SimpleSoundInstance forUI(final SoundEvent sound, final float pitch) {
+      return forUI(sound, pitch, 0.25F);
    }
 
-   public static SimpleSoundInstance forUI(Holder<SoundEvent> var0, float var1) {
-      return forUI((SoundEvent)var0.value(), var1);
+   public static SimpleSoundInstance forUI(final Holder<SoundEvent> sound, final float pitch) {
+      return forUI(sound.value(), pitch);
    }
 
-   public static SimpleSoundInstance forUI(SoundEvent var0, float var1, float var2) {
-      return new SimpleSoundInstance(var0.location(), SoundSource.UI, var2, var1, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+   public static SimpleSoundInstance forUI(final SoundEvent sound, final float pitch, final float volume) {
+      return new SimpleSoundInstance(sound.location(), SoundSource.UI, volume, pitch, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
-   public static SimpleSoundInstance forMusic(SoundEvent var0) {
-      return new SimpleSoundInstance(var0.location(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+   public static SimpleSoundInstance forMusic(final SoundEvent sound) {
+      return new SimpleSoundInstance(sound.location(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
-   public static SimpleSoundInstance forJukeboxSong(SoundEvent var0, Vec3 var1) {
-      return new SimpleSoundInstance(var0, SoundSource.RECORDS, 4.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.LINEAR, var1.x, var1.y, var1.z);
+   public static SimpleSoundInstance forJukeboxSong(final SoundEvent sound, final Vec3 pos) {
+      return new SimpleSoundInstance(sound, SoundSource.RECORDS, 4.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.LINEAR, pos.x, pos.y, pos.z);
    }
 
-   public static SimpleSoundInstance forLocalAmbience(SoundEvent var0, float var1, float var2) {
-      return new SimpleSoundInstance(var0.location(), SoundSource.AMBIENT, var2, var1, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+   public static SimpleSoundInstance forLocalAmbience(final SoundEvent sound, final float pitch, final float volume) {
+      return new SimpleSoundInstance(sound.location(), SoundSource.AMBIENT, volume, pitch, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
-   public static SimpleSoundInstance forAmbientAddition(SoundEvent var0) {
-      return forLocalAmbience(var0, 1.0F, 1.0F);
+   public static SimpleSoundInstance forAmbientAddition(final SoundEvent sound) {
+      return forLocalAmbience(sound, 1.0F, 1.0F);
    }
 
-   public static SimpleSoundInstance forAmbientMood(SoundEvent var0, RandomSource var1, double var2, double var4, double var6) {
-      return new SimpleSoundInstance(var0, SoundSource.AMBIENT, 1.0F, 1.0F, var1, false, 0, SoundInstance.Attenuation.LINEAR, var2, var4, var6);
+   public static SimpleSoundInstance forAmbientMood(final SoundEvent sound, final RandomSource random, final double x, final double y, final double z) {
+      return new SimpleSoundInstance(sound, SoundSource.AMBIENT, 1.0F, 1.0F, random, false, 0, SoundInstance.Attenuation.LINEAR, x, y, z);
    }
 
-   public SimpleSoundInstance(SoundEvent var1, SoundSource var2, float var3, float var4, RandomSource var5, double var6, double var8, double var10) {
-      this(var1, var2, var3, var4, var5, false, 0, SoundInstance.Attenuation.LINEAR, var6, var8, var10);
+   public SimpleSoundInstance(final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final RandomSource random, final double x, final double y, final double z) {
+      this(sound, source, volume, pitch, random, false, 0, SoundInstance.Attenuation.LINEAR, x, y, z);
    }
 
-   private SimpleSoundInstance(SoundEvent var1, SoundSource var2, float var3, float var4, RandomSource var5, boolean var6, int var7, SoundInstance.Attenuation var8, double var9, double var11, double var13) {
-      this(var1.location(), var2, var3, var4, var5, var6, var7, var8, var9, var11, var13, false);
+   private SimpleSoundInstance(final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final RandomSource random, final boolean looping, final int delay, final SoundInstance.Attenuation attenuation, final double x, final double y, final double z) {
+      this(sound.location(), source, volume, pitch, random, looping, delay, attenuation, x, y, z, false);
    }
 
-   public SimpleSoundInstance(Identifier var1, SoundSource var2, float var3, float var4, RandomSource var5, boolean var6, int var7, SoundInstance.Attenuation var8, double var9, double var11, double var13, boolean var15) {
-      super(var1, var2, var5);
-      this.volume = var3;
-      this.pitch = var4;
-      this.x = var9;
-      this.y = var11;
-      this.z = var13;
-      this.looping = var6;
-      this.delay = var7;
-      this.attenuation = var8;
-      this.relative = var15;
+   public SimpleSoundInstance(final Identifier location, final SoundSource source, final float volume, final float pitch, final RandomSource random, final boolean looping, final int delay, final SoundInstance.Attenuation attenuation, final double x, final double y, final double z, final boolean relative) {
+      super(location, source, random);
+      this.volume = volume;
+      this.pitch = pitch;
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.looping = looping;
+      this.delay = delay;
+      this.attenuation = attenuation;
+      this.relative = relative;
    }
 }

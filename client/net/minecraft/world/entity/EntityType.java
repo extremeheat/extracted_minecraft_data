@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,7 +26,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Util;
@@ -185,10 +183,11 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class EntityType<T extends Entity> implements FeatureElement, EntityTypeTest<Entity, T> {
+public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, FeatureElement {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Holder.Reference<EntityType<?>> builtInRegistryHolder;
    public static final Codec<EntityType<?>> CODEC;
@@ -370,148 +369,148 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    private final FeatureFlagSet requiredFeatures;
    private final boolean allowedInPeaceful;
 
-   private static <T extends Entity> EntityType<T> register(ResourceKey<EntityType<?>> var0, Builder<T> var1) {
-      return (EntityType)Registry.register(BuiltInRegistries.ENTITY_TYPE, (ResourceKey)var0, var1.build(var0));
+   private static <T extends Entity> EntityType<T> register(final ResourceKey<EntityType<?>> id, final Builder<T> builder) {
+      return (EntityType)Registry.register(BuiltInRegistries.ENTITY_TYPE, (ResourceKey)id, builder.build(id));
    }
 
-   private static ResourceKey<EntityType<?>> vanillaEntityId(String var0) {
-      return ResourceKey.create(Registries.ENTITY_TYPE, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<EntityType<?>> vanillaEntityId(final String vanillaId) {
+      return ResourceKey.create(Registries.ENTITY_TYPE, Identifier.withDefaultNamespace(vanillaId));
    }
 
-   private static <T extends Entity> EntityType<T> register(String var0, Builder<T> var1) {
-      return register(vanillaEntityId(var0), var1);
+   private static <T extends Entity> EntityType<T> register(final String vanillaId, final Builder<T> builder) {
+      return register(vanillaEntityId(vanillaId), builder);
    }
 
-   public static Identifier getKey(EntityType<?> var0) {
-      return BuiltInRegistries.ENTITY_TYPE.getKey(var0);
+   public static Identifier getKey(final EntityType<?> type) {
+      return BuiltInRegistries.ENTITY_TYPE.getKey(type);
    }
 
-   public static Optional<EntityType<?>> byString(String var0) {
-      return BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.tryParse(var0));
+   public static Optional<EntityType<?>> byString(final String id) {
+      return BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.tryParse(id));
    }
 
-   public EntityType(EntityFactory<T> var1, MobCategory var2, boolean var3, boolean var4, boolean var5, boolean var6, ImmutableSet<Block> var7, EntityDimensions var8, float var9, int var10, int var11, String var12, Optional<ResourceKey<LootTable>> var13, FeatureFlagSet var14, boolean var15) {
+   public EntityType(final EntityFactory<T> factory, final MobCategory category, final boolean serialize, final boolean summon, final boolean fireImmune, final boolean canSpawnFarFromPlayer, final ImmutableSet<Block> immuneTo, final EntityDimensions dimensions, final float spawnDimensionsScale, final int clientTrackingRange, final int updateInterval, final String descriptionId, final Optional<ResourceKey<LootTable>> lootTable, final FeatureFlagSet requiredFeatures, final boolean allowedInPeaceful) {
       super();
       this.builtInRegistryHolder = BuiltInRegistries.ENTITY_TYPE.createIntrusiveHolder(this);
-      this.factory = var1;
-      this.category = var2;
-      this.canSpawnFarFromPlayer = var6;
-      this.serialize = var3;
-      this.summon = var4;
-      this.fireImmune = var5;
-      this.immuneTo = var7;
-      this.dimensions = var8;
-      this.spawnDimensionsScale = var9;
-      this.clientTrackingRange = var10;
-      this.updateInterval = var11;
-      this.descriptionId = var12;
-      this.lootTable = var13;
-      this.requiredFeatures = var14;
-      this.allowedInPeaceful = var15;
+      this.factory = factory;
+      this.category = category;
+      this.canSpawnFarFromPlayer = canSpawnFarFromPlayer;
+      this.serialize = serialize;
+      this.summon = summon;
+      this.fireImmune = fireImmune;
+      this.immuneTo = immuneTo;
+      this.dimensions = dimensions;
+      this.spawnDimensionsScale = spawnDimensionsScale;
+      this.clientTrackingRange = clientTrackingRange;
+      this.updateInterval = updateInterval;
+      this.descriptionId = descriptionId;
+      this.lootTable = lootTable;
+      this.requiredFeatures = requiredFeatures;
+      this.allowedInPeaceful = allowedInPeaceful;
    }
 
-   public @Nullable T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable LivingEntity var3, BlockPos var4, EntitySpawnReason var5, boolean var6, boolean var7) {
-      Consumer var8;
-      if (var2 != null) {
-         var8 = createDefaultStackConfig(var1, var2, var3);
+   public @Nullable T spawn(final ServerLevel level, final @Nullable ItemStack itemStack, final @Nullable LivingEntity user, final BlockPos spawnPos, final EntitySpawnReason spawnReason, final boolean tryMoveDown, final boolean movedUp) {
+      Consumer<T> postSpawnConfig;
+      if (itemStack != null) {
+         postSpawnConfig = createDefaultStackConfig(level, itemStack, user);
       } else {
-         var8 = (var0) -> {
+         postSpawnConfig = (entity) -> {
          };
       }
 
-      return (T)this.spawn(var1, var8, var4, var5, var6, var7);
+      return (T)this.spawn(level, postSpawnConfig, spawnPos, spawnReason, tryMoveDown, movedUp);
    }
 
-   public static <T extends Entity> Consumer<T> createDefaultStackConfig(Level var0, ItemStack var1, @Nullable LivingEntity var2) {
-      return appendDefaultStackConfig((var0x) -> {
-      }, var0, var1, var2);
+   public static <T extends Entity> Consumer<T> createDefaultStackConfig(final Level level, final ItemStack itemStack, final @Nullable LivingEntity user) {
+      return appendDefaultStackConfig((entity) -> {
+      }, level, itemStack, user);
    }
 
-   public static <T extends Entity> Consumer<T> appendDefaultStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable LivingEntity var3) {
-      return appendCustomEntityStackConfig(appendComponentsConfig(var0, var2), var1, var2, var3);
+   public static <T extends Entity> Consumer<T> appendDefaultStackConfig(final Consumer<T> initialConfig, final Level level, final ItemStack itemStack, final @Nullable LivingEntity user) {
+      return appendCustomEntityStackConfig(appendComponentsConfig(initialConfig, itemStack), level, itemStack, user);
    }
 
-   public static <T extends Entity> Consumer<T> appendComponentsConfig(Consumer<T> var0, ItemStack var1) {
-      return var0.andThen((var1x) -> var1x.applyComponentsFromItemStack(var1));
+   public static <T extends Entity> Consumer<T> appendComponentsConfig(final Consumer<T> initialConfig, final ItemStack itemStack) {
+      return initialConfig.andThen((entity) -> entity.applyComponentsFromItemStack(itemStack));
    }
 
-   public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable LivingEntity var3) {
-      TypedEntityData var4 = (TypedEntityData)var2.get(DataComponents.ENTITY_DATA);
-      return var4 != null ? var0.andThen((var3x) -> updateCustomEntityTag(var1, var3, var3x, var4)) : var0;
+   public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(final Consumer<T> initialConfig, final Level level, final ItemStack itemStack, final @Nullable LivingEntity user) {
+      TypedEntityData<EntityType<?>> entityData = (TypedEntityData)itemStack.get(DataComponents.ENTITY_DATA);
+      return entityData != null ? initialConfig.andThen((entity) -> updateCustomEntityTag(level, user, entity, entityData)) : initialConfig;
    }
 
-   public @Nullable T spawn(ServerLevel var1, BlockPos var2, EntitySpawnReason var3) {
-      return (T)this.spawn(var1, (Consumer)null, var2, var3, false, false);
+   public @Nullable T spawn(final ServerLevel level, final BlockPos spawnPos, final EntitySpawnReason spawnReason) {
+      return (T)this.spawn(level, (Consumer)null, spawnPos, spawnReason, false, false);
    }
 
-   public @Nullable T spawn(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
-      Entity var7 = this.create(var1, var2, var3, var4, var5, var6);
-      if (var7 != null) {
-         var1.addFreshEntityWithPassengers(var7);
-         if (var7 instanceof Mob) {
-            Mob var8 = (Mob)var7;
-            var8.playAmbientSound();
+   public @Nullable T spawn(final ServerLevel level, final @Nullable Consumer<T> postSpawnConfig, final BlockPos spawnPos, final EntitySpawnReason spawnReason, final boolean tryMoveDown, final boolean movedUp) {
+      T entity = this.create(level, postSpawnConfig, spawnPos, spawnReason, tryMoveDown, movedUp);
+      if (entity != null) {
+         level.addFreshEntityWithPassengers(entity);
+         if (entity instanceof Mob) {
+            Mob mob = (Mob)entity;
+            mob.playAmbientSound();
          }
       }
 
-      return (T)var7;
+      return entity;
    }
 
-   public @Nullable T create(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
-      Entity var7 = this.create(var1, var4);
-      if (var7 == null) {
+   public @Nullable T create(final ServerLevel level, final @Nullable Consumer<T> postSpawnConfig, final BlockPos spawnPos, final EntitySpawnReason spawnReason, final boolean tryMoveDown, final boolean movedUp) {
+      T entity = this.create(level, spawnReason);
+      if (entity == null) {
          return null;
       } else {
-         double var8;
-         if (var5) {
-            var7.setPos((double)var3.getX() + 0.5, (double)(var3.getY() + 1), (double)var3.getZ() + 0.5);
-            var8 = getYOffset(var1, var3, var6, var7.getBoundingBox());
+         double yOff;
+         if (tryMoveDown) {
+            entity.setPos((double)spawnPos.getX() + 0.5, (double)(spawnPos.getY() + 1), (double)spawnPos.getZ() + 0.5);
+            yOff = getYOffset(level, spawnPos, movedUp, entity.getBoundingBox());
          } else {
-            var8 = 0.0;
+            yOff = 0.0;
          }
 
-         var7.snapTo((double)var3.getX() + 0.5, (double)var3.getY() + var8, (double)var3.getZ() + 0.5, Mth.wrapDegrees(var1.random.nextFloat() * 360.0F), 0.0F);
-         if (var7 instanceof Mob) {
-            Mob var10 = (Mob)var7;
-            var10.yHeadRot = var10.getYRot();
-            var10.yBodyRot = var10.getYRot();
-            var10.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var10.blockPosition()), var4, (SpawnGroupData)null);
+         entity.snapTo((double)spawnPos.getX() + 0.5, (double)spawnPos.getY() + yOff, (double)spawnPos.getZ() + 0.5, Mth.wrapDegrees(level.getRandom().nextFloat() * 360.0F), 0.0F);
+         if (entity instanceof Mob) {
+            Mob mob = (Mob)entity;
+            mob.yHeadRot = mob.getYRot();
+            mob.yBodyRot = mob.getYRot();
+            mob.finalizeSpawn(level, level.getCurrentDifficultyAt(mob.blockPosition()), spawnReason, (SpawnGroupData)null);
          }
 
-         if (var2 != null) {
-            var2.accept(var7);
+         if (postSpawnConfig != null) {
+            postSpawnConfig.accept(entity);
          }
 
-         return (T)var7;
+         return entity;
       }
    }
 
-   protected static double getYOffset(LevelReader var0, BlockPos var1, boolean var2, AABB var3) {
-      AABB var4 = new AABB(var1);
-      if (var2) {
-         var4 = var4.expandTowards(0.0, -1.0, 0.0);
+   protected static double getYOffset(final LevelReader level, final BlockPos spawnPos, final boolean movedUp, final AABB entityBox) {
+      AABB aabb = new AABB(spawnPos);
+      if (movedUp) {
+         aabb = aabb.expandTowards(0.0, -1.0, 0.0);
       }
 
-      Iterable var5 = var0.getCollisions((Entity)null, var4);
-      return 1.0 + Shapes.collide(Direction.Axis.Y, var3, var5, var2 ? -2.0 : -1.0);
+      Iterable<VoxelShape> shapes = level.getCollisions((Entity)null, aabb);
+      return 1.0 + Shapes.collide(Direction.Axis.Y, entityBox, shapes, movedUp ? -2.0 : -1.0);
    }
 
-   public static void updateCustomEntityTag(Level var0, @Nullable LivingEntity var1, @Nullable Entity var2, TypedEntityData<EntityType<?>> var3) {
-      MinecraftServer var4 = var0.getServer();
-      if (var4 != null && var2 != null) {
-         if (var2.getType() == var3.type()) {
-            if (!var0.isClientSide() && var2.getType().onlyOpCanSetNbt()) {
-               if (!(var1 instanceof Player)) {
+   public static void updateCustomEntityTag(final Level level, final @Nullable LivingEntity user, final @Nullable Entity entity, final TypedEntityData<EntityType<?>> entityData) {
+      MinecraftServer server = level.getServer();
+      if (server != null && entity != null) {
+         if (entity.getType() == entityData.type()) {
+            if (!level.isClientSide() && entity.getType().onlyOpCanSetNbt()) {
+               if (!(user instanceof Player)) {
                   return;
                }
 
-               Player var5 = (Player)var1;
-               if (!var4.getPlayerList().isOp(var5.nameAndId())) {
+               Player player = (Player)user;
+               if (!server.getPlayerList().isOp(player.nameAndId())) {
                   return;
                }
             }
 
-            var3.loadInto(var2);
+            entityData.loadInto(entity);
          }
       }
    }
@@ -553,8 +552,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    public String toShortString() {
-      int var1 = this.getDescriptionId().lastIndexOf(46);
-      return var1 == -1 ? this.getDescriptionId() : this.getDescriptionId().substring(var1 + 1);
+      int dot = this.getDescriptionId().lastIndexOf(46);
+      return dot == -1 ? this.getDescriptionId() : this.getDescriptionId().substring(dot + 1);
    }
 
    public Optional<ResourceKey<LootTable>> getDefaultLootTable() {
@@ -573,33 +572,33 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return this.requiredFeatures;
    }
 
-   public @Nullable T create(Level var1, EntitySpawnReason var2) {
-      return (T)(!this.isEnabled(var1.enabledFeatures()) ? null : this.factory.create(this, var1));
+   public @Nullable T create(final Level level, final EntitySpawnReason reason) {
+      return (T)(!this.isEnabled(level.enabledFeatures()) ? null : this.factory.create(this, level));
    }
 
-   public static Optional<Entity> create(ValueInput var0, Level var1, EntitySpawnReason var2) {
-      return Util.<Entity>ifElse(by(var0).map((var2x) -> var2x.create(var1, var2)), (var1x) -> var1x.load(var0), () -> LOGGER.warn("Skipping Entity with id {}", var0.getStringOr("id", "[invalid]")));
+   public static Optional<Entity> create(final ValueInput input, final Level level, final EntitySpawnReason reason) {
+      return Util.<Entity>ifElse(by(input).map((type) -> type.create(level, reason)), (entity) -> entity.load(input), () -> LOGGER.warn("Skipping Entity with id {}", input.getStringOr("id", "[invalid]")));
    }
 
-   public static Optional<Entity> create(EntityType<?> var0, ValueInput var1, Level var2, EntitySpawnReason var3) {
-      Optional var4 = Optional.ofNullable(var0.create(var2, var3));
-      var4.ifPresent((var1x) -> var1x.load(var1));
-      return var4;
+   public static Optional<Entity> create(final EntityType<?> type, final ValueInput input, final Level level, final EntitySpawnReason reason) {
+      Optional<Entity> entity = Optional.ofNullable(type.create(level, reason));
+      entity.ifPresent((e) -> e.load(input));
+      return entity;
    }
 
-   public AABB getSpawnAABB(double var1, double var3, double var5) {
-      float var7 = this.spawnDimensionsScale * this.getWidth() / 2.0F;
-      float var8 = this.spawnDimensionsScale * this.getHeight();
-      return new AABB(var1 - (double)var7, var3, var5 - (double)var7, var1 + (double)var7, var3 + (double)var8, var5 + (double)var7);
+   public AABB getSpawnAABB(final double x, final double y, final double z) {
+      float halfWidth = this.spawnDimensionsScale * this.getWidth() / 2.0F;
+      float height = this.spawnDimensionsScale * this.getHeight();
+      return new AABB(x - (double)halfWidth, y, z - (double)halfWidth, x + (double)halfWidth, y + (double)height, z + (double)halfWidth);
    }
 
-   public boolean isBlockDangerous(BlockState var1) {
-      if (this.immuneTo.contains(var1.getBlock())) {
+   public boolean isBlockDangerous(final BlockState state) {
+      if (this.immuneTo.contains(state.getBlock())) {
          return false;
-      } else if (!this.fireImmune && NodeEvaluator.isBurningBlock(var1)) {
+      } else if (!this.fireImmune && NodeEvaluator.isBurningBlock(state)) {
          return true;
       } else {
-         return var1.is(Blocks.WITHER_ROSE) || var1.is(Blocks.SWEET_BERRY_BUSH) || var1.is(Blocks.CACTUS) || var1.is(Blocks.POWDER_SNOW);
+         return state.is(Blocks.WITHER_ROSE) || state.is(Blocks.SWEET_BERRY_BUSH) || state.is(Blocks.CACTUS) || state.is(Blocks.POWDER_SNOW);
       }
    }
 
@@ -607,66 +606,66 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return this.dimensions;
    }
 
-   public static Optional<EntityType<?>> by(ValueInput var0) {
-      return var0.<EntityType<?>>read("id", CODEC);
+   public static Optional<EntityType<?>> by(final ValueInput input) {
+      return input.<EntityType<?>>read("id", CODEC);
    }
 
-   public static @Nullable Entity loadEntityRecursive(CompoundTag var0, Level var1, EntitySpawnReason var2, EntityProcessor var3) {
-      try (ProblemReporter.ScopedCollector var4 = new ProblemReporter.ScopedCollector(LOGGER)) {
-         return loadEntityRecursive(TagValueInput.create(var4, var1.registryAccess(), var0), var1, var2, var3);
+   public static @Nullable Entity loadEntityRecursive(final CompoundTag tag, final Level level, final EntitySpawnReason reason, final EntityProcessor postLoad) {
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
+         return loadEntityRecursive(TagValueInput.create(reporter, level.registryAccess(), tag), level, reason, postLoad);
       }
    }
 
-   public static @Nullable Entity loadEntityRecursive(EntityType<?> var0, CompoundTag var1, Level var2, EntitySpawnReason var3, EntityProcessor var4) {
-      try (ProblemReporter.ScopedCollector var5 = new ProblemReporter.ScopedCollector(LOGGER)) {
-         return loadEntityRecursive(var0, TagValueInput.create(var5, var2.registryAccess(), var1), var2, var3, var4);
+   public static @Nullable Entity loadEntityRecursive(final EntityType<?> type, final CompoundTag tag, final Level level, final EntitySpawnReason reason, final EntityProcessor postLoad) {
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
+         return loadEntityRecursive(type, TagValueInput.create(reporter, level.registryAccess(), tag), level, reason, postLoad);
       }
    }
 
-   public static @Nullable Entity loadEntityRecursive(ValueInput var0, Level var1, EntitySpawnReason var2, EntityProcessor var3) {
-      Optional var10000 = loadStaticEntity(var0, var1, var2);
-      Objects.requireNonNull(var3);
-      return (Entity)var10000.map(var3::process).map((var4) -> loadPassengersRecursive(var4, var0, var1, var2, var3)).orElse((Object)null);
+   public static @Nullable Entity loadEntityRecursive(final ValueInput input, final Level level, final EntitySpawnReason reason, final EntityProcessor postLoad) {
+      Optional var10000 = loadStaticEntity(input, level, reason);
+      Objects.requireNonNull(postLoad);
+      return (Entity)var10000.map(postLoad::process).map((entity) -> loadPassengersRecursive(entity, input, level, reason, postLoad)).orElse((Object)null);
    }
 
-   public static @Nullable Entity loadEntityRecursive(EntityType<?> var0, ValueInput var1, Level var2, EntitySpawnReason var3, EntityProcessor var4) {
-      Optional var10000 = loadStaticEntity(var0, var1, var2, var3);
-      Objects.requireNonNull(var4);
-      return (Entity)var10000.map(var4::process).map((var4x) -> loadPassengersRecursive(var4x, var1, var2, var3, var4)).orElse((Object)null);
+   public static @Nullable Entity loadEntityRecursive(final EntityType<?> type, final ValueInput input, final Level level, final EntitySpawnReason reason, final EntityProcessor postLoad) {
+      Optional var10000 = loadStaticEntity(type, input, level, reason);
+      Objects.requireNonNull(postLoad);
+      return (Entity)var10000.map(postLoad::process).map((entity) -> loadPassengersRecursive(entity, input, level, reason, postLoad)).orElse((Object)null);
    }
 
-   private static Entity loadPassengersRecursive(Entity var0, ValueInput var1, Level var2, EntitySpawnReason var3, EntityProcessor var4) {
-      for(ValueInput var6 : var1.childrenListOrEmpty("Passengers")) {
-         Entity var7 = loadEntityRecursive(var6, var2, var3, var4);
-         if (var7 != null) {
-            var7.startRiding(var0, true, false);
+   private static Entity loadPassengersRecursive(final Entity entity, final ValueInput input, final Level level, final EntitySpawnReason reason, final EntityProcessor postLoad) {
+      for(ValueInput passengerTag : input.childrenListOrEmpty("Passengers")) {
+         Entity passenger = loadEntityRecursive(passengerTag, level, reason, postLoad);
+         if (passenger != null) {
+            passenger.startRiding(entity, true, false);
          }
       }
 
-      return var0;
+      return entity;
    }
 
-   public static Stream<Entity> loadEntitiesRecursive(ValueInput.ValueInputList var0, Level var1, EntitySpawnReason var2) {
-      return var0.stream().mapMulti((var2x, var3) -> loadEntityRecursive((ValueInput)var2x, var1, var2, (var1x) -> {
-            var3.accept(var1x);
-            return var1x;
+   public static Stream<Entity> loadEntitiesRecursive(final ValueInput.ValueInputList entities, final Level level, final EntitySpawnReason reason) {
+      return entities.stream().mapMulti((tag, output) -> loadEntityRecursive((ValueInput)tag, level, reason, (entity) -> {
+            output.accept(entity);
+            return entity;
          }));
    }
 
-   private static Optional<Entity> loadStaticEntity(ValueInput var0, Level var1, EntitySpawnReason var2) {
+   private static Optional<Entity> loadStaticEntity(final ValueInput input, final Level level, final EntitySpawnReason reason) {
       try {
-         return create(var0, var1, var2);
-      } catch (RuntimeException var4) {
-         LOGGER.warn("Exception loading entity: ", var4);
+         return create(input, level, reason);
+      } catch (RuntimeException e) {
+         LOGGER.warn("Exception loading entity: ", e);
          return Optional.empty();
       }
    }
 
-   private static Optional<Entity> loadStaticEntity(EntityType<?> var0, ValueInput var1, Level var2, EntitySpawnReason var3) {
+   private static Optional<Entity> loadStaticEntity(final EntityType<?> type, final ValueInput input, final Level level, final EntitySpawnReason reason) {
       try {
-         return create(var0, var1, var2, var3);
-      } catch (RuntimeException var5) {
-         LOGGER.warn("Exception loading entity: ", var5);
+         return create(type, input, level, reason);
+      } catch (RuntimeException e) {
+         LOGGER.warn("Exception loading entity: ", e);
          return Optional.empty();
       }
    }
@@ -683,16 +682,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return this != PLAYER && this != LLAMA_SPIT && this != WITHER && this != BAT && this != ITEM_FRAME && this != GLOW_ITEM_FRAME && this != LEASH_KNOT && this != PAINTING && this != END_CRYSTAL && this != EVOKER_FANGS;
    }
 
-   public boolean is(TagKey<EntityType<?>> var1) {
-      return this.builtInRegistryHolder.is(var1);
-   }
-
-   public boolean is(HolderSet<EntityType<?>> var1) {
-      return var1.contains(this.builtInRegistryHolder);
-   }
-
-   public @Nullable T tryCast(Entity var1) {
-      return (T)(var1.getType() == this ? var1 : null);
+   public @Nullable T tryCast(final Entity entity) {
+      return (T)(entity.getType() == this ? entity : null);
    }
 
    public Class<? extends Entity> getBaseClass() {
@@ -709,20 +700,20 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return this.allowedInPeaceful;
    }
 
-   private static EntityFactory<Boat> boatFactory(Supplier<Item> var0) {
-      return (var1, var2) -> new Boat(var1, var2, var0);
+   private static EntityFactory<Boat> boatFactory(final Supplier<Item> boatItem) {
+      return (entityType, level) -> new Boat(entityType, level, boatItem);
    }
 
-   private static EntityFactory<ChestBoat> chestBoatFactory(Supplier<Item> var0) {
-      return (var1, var2) -> new ChestBoat(var1, var2, var0);
+   private static EntityFactory<ChestBoat> chestBoatFactory(final Supplier<Item> dropItem) {
+      return (entityType, level) -> new ChestBoat(entityType, level, dropItem);
    }
 
-   private static EntityFactory<Raft> raftFactory(Supplier<Item> var0) {
-      return (var1, var2) -> new Raft(var1, var2, var0);
+   private static EntityFactory<Raft> raftFactory(final Supplier<Item> dropItem) {
+      return (entityType, level) -> new Raft(entityType, level, dropItem);
    }
 
-   private static EntityFactory<ChestRaft> chestRaftFactory(Supplier<Item> var0) {
-      return (var1, var2) -> new ChestRaft(var1, var2, var0);
+   private static EntityFactory<ChestRaft> chestRaftFactory(final Supplier<Item> dropItem) {
+      return (entityType, level) -> new ChestRaft(entityType, level, dropItem);
    }
 
    public boolean onlyOpCanSetNbt() {
@@ -840,7 +831,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       SPLASH_POTION = register("splash_potion", EntityType.Builder.of(ThrownSplashPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       LINGERING_POTION = register("lingering_potion", EntityType.Builder.of(ThrownLingeringPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       PUFFERFISH = register("pufferfish", EntityType.Builder.of(Pufferfish::new, MobCategory.WATER_AMBIENT).sized(0.7F, 0.7F).eyeHeight(0.455F).clientTrackingRange(4));
-      RABBIT = register("rabbit", EntityType.Builder.of(Rabbit::new, MobCategory.CREATURE).sized(0.4F, 0.5F).clientTrackingRange(8));
+      RABBIT = register("rabbit", EntityType.Builder.of(Rabbit::new, MobCategory.CREATURE).sized(0.49F, 0.6F).eyeHeight(0.63F).clientTrackingRange(8));
       RAVAGER = register("ravager", EntityType.Builder.of(Ravager::new, MobCategory.MONSTER).sized(1.95F, 2.2F).passengerAttachments(new Vec3(0.0, 2.2625, -0.0625)).clientTrackingRange(10).notInPeaceful());
       SALMON = register("salmon", EntityType.Builder.of(Salmon::new, MobCategory.WATER_AMBIENT).sized(0.7F, 0.4F).eyeHeight(0.26F).clientTrackingRange(4));
       SHEEP = register("sheep", EntityType.Builder.of(Sheep::new, MobCategory.CREATURE).sized(0.9F, 1.3F).eyeHeight(1.235F).passengerAttachments(1.2375F).clientTrackingRange(10));
@@ -910,75 +901,75 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       private final DependantName<EntityType<?>, String> descriptionId;
       private boolean allowedInPeaceful;
 
-      private Builder(EntityFactory<T> var1, MobCategory var2) {
+      private Builder(final EntityFactory<T> factory, final MobCategory category) {
          super();
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
-         this.lootTable = (var0) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.identifier().withPrefix("entities/")));
-         this.descriptionId = (var0) -> Util.makeDescriptionId("entity", var0.identifier());
+         this.lootTable = (id) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, id.identifier().withPrefix("entities/")));
+         this.descriptionId = (id) -> Util.makeDescriptionId("entity", id.identifier());
          this.allowedInPeaceful = true;
-         this.factory = var1;
-         this.category = var2;
-         this.canSpawnFarFromPlayer = var2 == MobCategory.CREATURE || var2 == MobCategory.MISC;
+         this.factory = factory;
+         this.category = category;
+         this.canSpawnFarFromPlayer = category == MobCategory.CREATURE || category == MobCategory.MISC;
       }
 
-      public static <T extends Entity> Builder<T> of(EntityFactory<T> var0, MobCategory var1) {
-         return new Builder<T>(var0, var1);
+      public static <T extends Entity> Builder<T> of(final EntityFactory<T> factory, final MobCategory category) {
+         return new Builder<T>(factory, category);
       }
 
-      public static <T extends Entity> Builder<T> createNothing(MobCategory var0) {
-         return new Builder<T>((var0x, var1) -> null, var0);
+      public static <T extends Entity> Builder<T> createNothing(final MobCategory category) {
+         return new Builder<T>((t, l) -> null, category);
       }
 
-      public Builder<T> sized(float var1, float var2) {
-         this.dimensions = EntityDimensions.scalable(var1, var2);
+      public Builder<T> sized(final float width, final float height) {
+         this.dimensions = EntityDimensions.scalable(width, height);
          return this;
       }
 
-      public Builder<T> spawnDimensionsScale(float var1) {
-         this.spawnDimensionsScale = var1;
+      public Builder<T> spawnDimensionsScale(final float scale) {
+         this.spawnDimensionsScale = scale;
          return this;
       }
 
-      public Builder<T> eyeHeight(float var1) {
-         this.dimensions = this.dimensions.withEyeHeight(var1);
+      public Builder<T> eyeHeight(final float eyeHeight) {
+         this.dimensions = this.dimensions.withEyeHeight(eyeHeight);
          return this;
       }
 
-      public Builder<T> passengerAttachments(float... var1) {
-         for(float var5 : var1) {
-            this.attachments = this.attachments.attach(EntityAttachment.PASSENGER, 0.0F, var5, 0.0F);
+      public Builder<T> passengerAttachments(final float... offsetYs) {
+         for(float offsetY : offsetYs) {
+            this.attachments = this.attachments.attach(EntityAttachment.PASSENGER, 0.0F, offsetY, 0.0F);
          }
 
          return this;
       }
 
-      public Builder<T> passengerAttachments(Vec3... var1) {
-         for(Vec3 var5 : var1) {
-            this.attachments = this.attachments.attach(EntityAttachment.PASSENGER, var5);
+      public Builder<T> passengerAttachments(final Vec3... points) {
+         for(Vec3 point : points) {
+            this.attachments = this.attachments.attach(EntityAttachment.PASSENGER, point);
          }
 
          return this;
       }
 
-      public Builder<T> vehicleAttachment(Vec3 var1) {
-         return this.attach(EntityAttachment.VEHICLE, var1);
+      public Builder<T> vehicleAttachment(final Vec3 point) {
+         return this.attach(EntityAttachment.VEHICLE, point);
       }
 
-      public Builder<T> ridingOffset(float var1) {
-         return this.attach(EntityAttachment.VEHICLE, 0.0F, -var1, 0.0F);
+      public Builder<T> ridingOffset(final float ridingOffset) {
+         return this.attach(EntityAttachment.VEHICLE, 0.0F, -ridingOffset, 0.0F);
       }
 
-      public Builder<T> nameTagOffset(float var1) {
-         return this.attach(EntityAttachment.NAME_TAG, 0.0F, var1, 0.0F);
+      public Builder<T> nameTagOffset(final float nameTagOffset) {
+         return this.attach(EntityAttachment.NAME_TAG, 0.0F, nameTagOffset, 0.0F);
       }
 
-      public Builder<T> attach(EntityAttachment var1, float var2, float var3, float var4) {
-         this.attachments = this.attachments.attach(var1, var2, var3, var4);
+      public Builder<T> attach(final EntityAttachment attachment, final float x, final float y, final float z) {
+         this.attachments = this.attachments.attach(attachment, x, y, z);
          return this;
       }
 
-      public Builder<T> attach(EntityAttachment var1, Vec3 var2) {
-         this.attachments = this.attachments.attach(var1, var2);
+      public Builder<T> attach(final EntityAttachment attachment, final Vec3 point) {
+         this.attachments = this.attachments.attach(attachment, point);
          return this;
       }
 
@@ -997,8 +988,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          return this;
       }
 
-      public Builder<T> immuneTo(Block... var1) {
-         this.immuneTo = ImmutableSet.copyOf(var1);
+      public Builder<T> immuneTo(final Block... blocks) {
+         this.immuneTo = ImmutableSet.copyOf(blocks);
          return this;
       }
 
@@ -1007,18 +998,18 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          return this;
       }
 
-      public Builder<T> clientTrackingRange(int var1) {
-         this.clientTrackingRange = var1;
+      public Builder<T> clientTrackingRange(final int clientChunkRange) {
+         this.clientTrackingRange = clientChunkRange;
          return this;
       }
 
-      public Builder<T> updateInterval(int var1) {
-         this.updateInterval = var1;
+      public Builder<T> updateInterval(final int updateInterval) {
+         this.updateInterval = updateInterval;
          return this;
       }
 
-      public Builder<T> requiredFeatures(FeatureFlag... var1) {
-         this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
+      public Builder<T> requiredFeatures(final FeatureFlag... flags) {
+         this.requiredFeatures = FeatureFlags.REGISTRY.subset(flags);
          return this;
       }
 
@@ -1032,17 +1023,17 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          return this;
       }
 
-      public EntityType<T> build(ResourceKey<EntityType<?>> var1) {
+      public EntityType<T> build(final ResourceKey<EntityType<?>> name) {
          if (this.serialize) {
-            Util.fetchChoiceType(References.ENTITY_TREE, var1.identifier().toString());
+            Util.fetchChoiceType(References.ENTITY_TREE, name.identifier().toString());
          }
 
-         return new EntityType<T>(this.factory, this.category, this.serialize, this.summon, this.fireImmune, this.canSpawnFarFromPlayer, this.immuneTo, this.dimensions.withAttachments(this.attachments), this.spawnDimensionsScale, this.clientTrackingRange, this.updateInterval, this.descriptionId.get(var1), this.lootTable.get(var1), this.requiredFeatures, this.allowedInPeaceful);
+         return new EntityType<T>(this.factory, this.category, this.serialize, this.summon, this.fireImmune, this.canSpawnFarFromPlayer, this.immuneTo, this.dimensions.withAttachments(this.attachments), this.spawnDimensionsScale, this.clientTrackingRange, this.updateInterval, this.descriptionId.get(name), this.lootTable.get(name), this.requiredFeatures, this.allowedInPeaceful);
       }
    }
 
    @FunctionalInterface
    public interface EntityFactory<T extends Entity> {
-      @Nullable T create(EntityType<T> var1, Level var2);
+      @Nullable T create(final EntityType<T> entityType, final Level level);
    }
 }

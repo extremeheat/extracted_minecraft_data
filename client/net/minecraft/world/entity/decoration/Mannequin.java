@@ -45,55 +45,55 @@ public class Mannequin extends Avatar {
    private Component description;
    private boolean hideDescription;
 
-   public Mannequin(EntityType<Mannequin> var1, Level var2) {
-      super(var1, var2);
+   public Mannequin(final EntityType<Mannequin> type, final Level level) {
+      super(type, level);
       this.description = DEFAULT_DESCRIPTION;
       this.hideDescription = false;
       this.entityData.set(DATA_PLAYER_MODE_CUSTOMISATION, ALL_LAYERS);
    }
 
-   protected Mannequin(Level var1) {
-      this(EntityType.MANNEQUIN, var1);
+   protected Mannequin(final Level level) {
+      this(EntityType.MANNEQUIN, level);
    }
 
-   public static @Nullable Mannequin create(EntityType<Mannequin> var0, Level var1) {
-      return constructor.create(var0, var1);
+   public static @Nullable Mannequin create(final EntityType<Mannequin> type, final Level level) {
+      return constructor.create(type, level);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_PROFILE, DEFAULT_PROFILE);
-      var1.define(DATA_IMMOVABLE, false);
-      var1.define(DATA_DESCRIPTION, Optional.of(DEFAULT_DESCRIPTION));
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_PROFILE, DEFAULT_PROFILE);
+      entityData.define(DATA_IMMOVABLE, false);
+      entityData.define(DATA_DESCRIPTION, Optional.of(DEFAULT_DESCRIPTION));
    }
 
    protected ResolvableProfile getProfile() {
       return (ResolvableProfile)this.entityData.get(DATA_PROFILE);
    }
 
-   private void setProfile(ResolvableProfile var1) {
-      this.entityData.set(DATA_PROFILE, var1);
+   private void setProfile(final ResolvableProfile profile) {
+      this.entityData.set(DATA_PROFILE, profile);
    }
 
    private boolean getImmovable() {
       return (Boolean)this.entityData.get(DATA_IMMOVABLE);
    }
 
-   private void setImmovable(boolean var1) {
-      this.entityData.set(DATA_IMMOVABLE, var1);
+   private void setImmovable(final boolean immovable) {
+      this.entityData.set(DATA_IMMOVABLE, immovable);
    }
 
    protected @Nullable Component getDescription() {
       return (Component)((Optional)this.entityData.get(DATA_DESCRIPTION)).orElse((Object)null);
    }
 
-   private void setDescription(Component var1) {
-      this.description = var1;
+   private void setDescription(final Component description) {
+      this.description = description;
       this.updateDescription();
    }
 
-   private void setHideDescription(boolean var1) {
-      this.hideDescription = var1;
+   private void setHideDescription(final boolean hideDescription) {
+      this.hideDescription = hideDescription;
       this.updateDescription();
    }
 
@@ -109,61 +109,66 @@ public class Mannequin extends Avatar {
       return !this.getImmovable() && super.isEffectiveAi();
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.store("profile", ResolvableProfile.CODEC, this.getProfile());
-      var1.store("hidden_layers", LAYERS_CODEC, (Byte)this.entityData.get(DATA_PLAYER_MODE_CUSTOMISATION));
-      var1.store("main_hand", HumanoidArm.CODEC, this.getMainArm());
-      var1.store("pose", POSE_CODEC, this.getPose());
-      var1.putBoolean("immovable", this.getImmovable());
-      Component var2 = this.getDescription();
-      if (var2 != null) {
-         if (!var2.equals(DEFAULT_DESCRIPTION)) {
-            var1.store("description", ComponentSerialization.CODEC, var2);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.store("profile", ResolvableProfile.CODEC, this.getProfile());
+      output.store("hidden_layers", LAYERS_CODEC, (Byte)this.entityData.get(DATA_PLAYER_MODE_CUSTOMISATION));
+      output.store("main_hand", HumanoidArm.CODEC, this.getMainArm());
+      output.store("pose", POSE_CODEC, this.getPose());
+      output.putBoolean("immovable", this.getImmovable());
+      Component description = this.getDescription();
+      if (description != null) {
+         if (!description.equals(DEFAULT_DESCRIPTION)) {
+            output.store("description", ComponentSerialization.CODEC, description);
          }
       } else {
-         var1.putBoolean("hide_description", true);
+         output.putBoolean("hide_description", true);
       }
 
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      var1.read("profile", ResolvableProfile.CODEC).ifPresent(this::setProfile);
-      this.entityData.set(DATA_PLAYER_MODE_CUSTOMISATION, (Byte)var1.read("hidden_layers", LAYERS_CODEC).orElse(ALL_LAYERS));
-      this.setMainArm((HumanoidArm)var1.read("main_hand", HumanoidArm.CODEC).orElse(DEFAULT_MAIN_HAND));
-      this.setPose((Pose)var1.read("pose", POSE_CODEC).orElse(Pose.STANDING));
-      this.setImmovable(var1.getBooleanOr("immovable", false));
-      this.setHideDescription(var1.getBooleanOr("hide_description", false));
-      this.setDescription((Component)var1.read("description", ComponentSerialization.CODEC).orElse(DEFAULT_DESCRIPTION));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      input.read("profile", ResolvableProfile.CODEC).ifPresent(this::setProfile);
+      this.entityData.set(DATA_PLAYER_MODE_CUSTOMISATION, (Byte)input.read("hidden_layers", LAYERS_CODEC).orElse(ALL_LAYERS));
+      this.setMainArm((HumanoidArm)input.read("main_hand", HumanoidArm.CODEC).orElse(DEFAULT_MAIN_HAND));
+      this.setPose((Pose)input.read("pose", POSE_CODEC).orElse(Pose.STANDING));
+      this.setImmovable(input.getBooleanOr("immovable", false));
+      this.setHideDescription(input.getBooleanOr("hide_description", false));
+      this.setDescription((Component)input.read("description", ComponentSerialization.CODEC).orElse(DEFAULT_DESCRIPTION));
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.PROFILE ? castComponentValue(var1, this.getProfile()) : super.get(var1));
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)(type == DataComponents.PROFILE ? castComponentValue(type, this.getProfile()) : super.get(type));
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.PROFILE);
-      super.applyImplicitComponents(var1);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.PROFILE);
+      super.applyImplicitComponents(components);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.PROFILE) {
-         this.setProfile((ResolvableProfile)castComponentValue(DataComponents.PROFILE, var2));
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.PROFILE) {
+         this.setProfile((ResolvableProfile)castComponentValue(DataComponents.PROFILE, value));
          return true;
       } else {
-         return super.applyImplicitComponent(var1, var2);
+         return super.applyImplicitComponent(type, value);
       }
+   }
+
+   public void aiStep() {
+      super.aiStep();
+      this.updateSwingTime();
    }
 
    static {
       DATA_PROFILE = SynchedEntityData.<ResolvableProfile>defineId(Mannequin.class, EntityDataSerializers.RESOLVABLE_PROFILE);
       DATA_IMMOVABLE = SynchedEntityData.<Boolean>defineId(Mannequin.class, EntityDataSerializers.BOOLEAN);
       DATA_DESCRIPTION = SynchedEntityData.<Optional<Component>>defineId(Mannequin.class, EntityDataSerializers.OPTIONAL_COMPONENT);
-      ALL_LAYERS = (byte)Arrays.stream(PlayerModelPart.values()).mapToInt(PlayerModelPart::getMask).reduce(0, (var0, var1) -> var0 | var1);
+      ALL_LAYERS = (byte)Arrays.stream(PlayerModelPart.values()).mapToInt(PlayerModelPart::getMask).reduce(0, (a, b) -> a | b);
       VALID_POSES = Set.of(Pose.STANDING, Pose.CROUCHING, Pose.SWIMMING, Pose.FALL_FLYING, Pose.SLEEPING);
-      POSE_CODEC = Pose.CODEC.validate((var0) -> VALID_POSES.contains(var0) ? DataResult.success(var0) : DataResult.error(() -> "Invalid pose: " + var0.getSerializedName()));
-      LAYERS_CODEC = PlayerModelPart.CODEC.listOf().xmap((var0) -> (byte)var0.stream().mapToInt(PlayerModelPart::getMask).reduce(ALL_LAYERS, (var0x, var1) -> var0x & ~var1), (var0) -> Arrays.stream(PlayerModelPart.values()).filter((var1) -> (var0 & var1.getMask()) == 0).toList());
+      POSE_CODEC = Pose.CODEC.validate((pose) -> VALID_POSES.contains(pose) ? DataResult.success(pose) : DataResult.error(() -> "Invalid pose: " + pose.getSerializedName()));
+      LAYERS_CODEC = PlayerModelPart.CODEC.listOf().xmap((list) -> (byte)list.stream().mapToInt(PlayerModelPart::getMask).reduce(ALL_LAYERS, (a, b) -> a & ~b), (mask) -> Arrays.stream(PlayerModelPart.values()).filter((part) -> (mask & part.getMask()) == 0).toList());
       DEFAULT_PROFILE = ResolvableProfile.Static.EMPTY;
       DEFAULT_DESCRIPTION = Component.translatable("entity.minecraft.mannequin.label");
       constructor = Mannequin::new;

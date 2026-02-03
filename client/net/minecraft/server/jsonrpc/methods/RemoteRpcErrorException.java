@@ -7,10 +7,10 @@ public class RemoteRpcErrorException extends RuntimeException {
    private final JsonElement id;
    private final JsonObject error;
 
-   public RemoteRpcErrorException(JsonElement var1, JsonObject var2) {
+   public RemoteRpcErrorException(final JsonElement id, final JsonObject error) {
       super();
-      this.id = var1;
-      this.error = var2;
+      this.id = id;
+      this.error = error;
    }
 
    private JsonObject getError() {

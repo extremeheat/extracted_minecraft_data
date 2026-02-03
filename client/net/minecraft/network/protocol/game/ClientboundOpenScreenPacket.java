@@ -16,19 +16,19 @@ public class ClientboundOpenScreenPacket implements Packet<ClientGamePacketListe
    private final MenuType<?> type;
    private final Component title;
 
-   public ClientboundOpenScreenPacket(int var1, MenuType<?> var2, Component var3) {
+   public ClientboundOpenScreenPacket(final int containerId, final MenuType<?> type, final Component title) {
       super();
-      this.containerId = var1;
-      this.type = var2;
-      this.title = var3;
+      this.containerId = containerId;
+      this.type = type;
+      this.title = title;
    }
 
    public PacketType<ClientboundOpenScreenPacket> type() {
       return GamePacketTypes.CLIENTBOUND_OPEN_SCREEN;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleOpenScreen(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleOpenScreen(this);
    }
 
    public int getContainerId() {

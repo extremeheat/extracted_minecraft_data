@@ -9,45 +9,45 @@ import net.minecraft.resources.Identifier;
 public interface IdentifierSearchTree<T> {
    static <T> IdentifierSearchTree<T> empty() {
       return new IdentifierSearchTree<T>() {
-         public List<T> searchNamespace(String var1) {
+         public List<T> searchNamespace(final String namespace) {
             return List.of();
          }
 
-         public List<T> searchPath(String var1) {
+         public List<T> searchPath(final String path) {
             return List.of();
          }
       };
    }
 
-   static <T> IdentifierSearchTree<T> create(List<T> var0, Function<T, Stream<Identifier>> var1) {
-      if (var0.isEmpty()) {
+   static <T> IdentifierSearchTree<T> create(final List<T> elements, final Function<T, Stream<Identifier>> idGetter) {
+      if (elements.isEmpty()) {
          return empty();
       } else {
-         final SuffixArray var2 = new SuffixArray();
-         final SuffixArray var3 = new SuffixArray();
+         final SuffixArray<T> namespaceTree = new SuffixArray<T>();
+         final SuffixArray<T> pathTree = new SuffixArray<T>();
 
-         for(Object var5 : var0) {
-            ((Stream)var1.apply(var5)).forEach((var3x) -> {
-               var2.add(var5, var3x.getNamespace().toLowerCase(Locale.ROOT));
-               var3.add(var5, var3x.getPath().toLowerCase(Locale.ROOT));
+         for(T element : elements) {
+            ((Stream)idGetter.apply(element)).forEach((elementId) -> {
+               namespaceTree.add(element, elementId.getNamespace().toLowerCase(Locale.ROOT));
+               pathTree.add(element, elementId.getPath().toLowerCase(Locale.ROOT));
             });
          }
 
-         var2.generate();
-         var3.generate();
+         namespaceTree.generate();
+         pathTree.generate();
          return new IdentifierSearchTree<T>() {
-            public List<T> searchNamespace(String var1) {
-               return var2.search(var1);
+            public List<T> searchNamespace(final String namespace) {
+               return namespaceTree.search(namespace);
             }
 
-            public List<T> searchPath(String var1) {
-               return var3.search(var1);
+            public List<T> searchPath(final String path) {
+               return pathTree.search(path);
             }
          };
       }
    }
 
-   List<T> searchNamespace(String var1);
+   List<T> searchNamespace(String namespace);
 
-   List<T> searchPath(String var1);
+   List<T> searchPath(String path);
 }

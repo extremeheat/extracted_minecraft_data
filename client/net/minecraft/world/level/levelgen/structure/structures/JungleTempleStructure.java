@@ -8,8 +8,8 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 public class JungleTempleStructure extends SinglePieceStructure {
    public static final MapCodec<JungleTempleStructure> CODEC = simpleCodec(JungleTempleStructure::new);
 
-   public JungleTempleStructure(Structure.StructureSettings var1) {
-      super(JungleTemplePiece::new, 12, 15, var1);
+   public JungleTempleStructure(final Structure.StructureSettings settings) {
+      super(JungleTemplePiece::new, 12, 15, settings);
    }
 
    public StructureType<?> type() {

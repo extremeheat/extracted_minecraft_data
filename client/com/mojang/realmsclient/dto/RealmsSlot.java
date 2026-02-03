@@ -18,15 +18,15 @@ public final class RealmsSlot implements ReflectionBasedSerialization {
    @SerializedName("settings")
    public List<RealmsSetting> settings;
 
-   public RealmsSlot(int var1, RealmsWorldOptions var2, List<RealmsSetting> var3) {
+   public RealmsSlot(final int slotId, final RealmsWorldOptions options, final List<RealmsSetting> settings) {
       super();
-      this.slotId = var1;
-      this.options = var2;
-      this.settings = var3;
+      this.slotId = slotId;
+      this.options = options;
+      this.settings = settings;
    }
 
-   public static RealmsSlot defaults(int var0) {
-      return new RealmsSlot(var0, RealmsWorldOptions.createEmptyDefaults(), List.of(RealmsSetting.hardcoreSetting(false)));
+   public static RealmsSlot defaults(final int slotId) {
+      return new RealmsSlot(slotId, RealmsWorldOptions.createEmptyDefaults(), List.of(RealmsSetting.hardcoreSetting(false)));
    }
 
    public RealmsSlot copy() {
@@ -37,28 +37,18 @@ public final class RealmsSlot implements ReflectionBasedSerialization {
       return RealmsSetting.isHardcore(this.settings);
    }
 
-   static class RealmsWorldOptionsJsonAdapter extends TypeAdapter<RealmsWorldOptions> {
+   private static class RealmsWorldOptionsJsonAdapter extends TypeAdapter<RealmsWorldOptions> {
       private RealmsWorldOptionsJsonAdapter() {
          super();
       }
 
-      public void write(JsonWriter var1, RealmsWorldOptions var2) throws IOException {
-         var1.jsonValue((new GuardedSerializer()).toJson((ReflectionBasedSerialization)var2));
+      public void write(final JsonWriter jsonWriter, final RealmsWorldOptions realmsSlotOptions) throws IOException {
+         jsonWriter.jsonValue((new GuardedSerializer()).toJson((ReflectionBasedSerialization)realmsSlotOptions));
       }
 
-      public RealmsWorldOptions read(JsonReader var1) throws IOException {
-         String var2 = var1.nextString();
-         return RealmsWorldOptions.parse(new GuardedSerializer(), var2);
-      }
-
-      // $FF: synthetic method
-      public Object read(final JsonReader var1) throws IOException {
-         return this.read(var1);
-      }
-
-      // $FF: synthetic method
-      public void write(final JsonWriter var1, final Object var2) throws IOException {
-         this.write(var1, (RealmsWorldOptions)var2);
+      public RealmsWorldOptions read(final JsonReader jsonReader) throws IOException {
+         String json = jsonReader.nextString();
+         return RealmsWorldOptions.parse(new GuardedSerializer(), json);
       }
    }
 }

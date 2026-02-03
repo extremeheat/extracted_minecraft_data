@@ -36,90 +36,90 @@ public class BellBlockEntity extends BlockEntity {
    private boolean resonating;
    private int resonationTicks;
 
-   public BellBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.BELL, var1, var2);
+   public BellBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.BELL, worldPosition, blockState);
    }
 
-   public boolean triggerEvent(int var1, int var2) {
-      if (var1 == 1) {
+   public boolean triggerEvent(final int b0, final int b1) {
+      if (b0 == 1) {
          this.updateEntities();
          this.resonationTicks = 0;
-         this.clickDirection = Direction.from3DDataValue(var2);
+         this.clickDirection = Direction.from3DDataValue(b1);
          this.ticks = 0;
          this.shaking = true;
          return true;
       } else {
-         return super.triggerEvent(var1, var2);
+         return super.triggerEvent(b0, b1);
       }
    }
 
-   private static void tick(Level var0, BlockPos var1, BlockState var2, BellBlockEntity var3, ResonationEndAction var4) {
-      if (var3.shaking) {
-         ++var3.ticks;
+   private static void tick(final Level level, final BlockPos pos, final BlockState state, final BellBlockEntity entity, final ResonationEndAction onResonationEnd) {
+      if (entity.shaking) {
+         ++entity.ticks;
       }
 
-      if (var3.ticks >= 50) {
-         var3.shaking = false;
-         var3.ticks = 0;
+      if (entity.ticks >= 50) {
+         entity.shaking = false;
+         entity.ticks = 0;
       }
 
-      if (var3.ticks >= 5 && var3.resonationTicks == 0 && areRaidersNearby(var1, var3.nearbyEntities)) {
-         var3.resonating = true;
-         var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.BELL_RESONATE, SoundSource.BLOCKS, 1.0F, 1.0F);
+      if (entity.ticks >= 5 && entity.resonationTicks == 0 && areRaidersNearby(pos, entity.nearbyEntities)) {
+         entity.resonating = true;
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BELL_RESONATE, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
-      if (var3.resonating) {
-         if (var3.resonationTicks < 40) {
-            ++var3.resonationTicks;
+      if (entity.resonating) {
+         if (entity.resonationTicks < 40) {
+            ++entity.resonationTicks;
          } else {
-            var4.run(var0, var1, var3.nearbyEntities);
-            var3.resonating = false;
+            onResonationEnd.run(level, pos, entity.nearbyEntities);
+            entity.resonating = false;
          }
       }
 
    }
 
-   public static void clientTick(Level var0, BlockPos var1, BlockState var2, BellBlockEntity var3) {
-      tick(var0, var1, var2, var3, BellBlockEntity::showBellParticles);
+   public static void clientTick(final Level level, final BlockPos pos, final BlockState state, final BellBlockEntity entity) {
+      tick(level, pos, state, entity, BellBlockEntity::showBellParticles);
    }
 
-   public static void serverTick(Level var0, BlockPos var1, BlockState var2, BellBlockEntity var3) {
-      tick(var0, var1, var2, var3, BellBlockEntity::makeRaidersGlow);
+   public static void serverTick(final Level level, final BlockPos pos, final BlockState state, final BellBlockEntity entity) {
+      tick(level, pos, state, entity, BellBlockEntity::makeRaidersGlow);
    }
 
-   public void onHit(Direction var1) {
-      BlockPos var2 = this.getBlockPos();
-      this.clickDirection = var1;
+   public void onHit(final Direction clickDirection) {
+      BlockPos bellPos = this.getBlockPos();
+      this.clickDirection = clickDirection;
       if (this.shaking) {
          this.ticks = 0;
       } else {
          this.shaking = true;
       }
 
-      this.level.blockEvent(var2, this.getBlockState().getBlock(), 1, var1.get3DDataValue());
+      this.level.blockEvent(bellPos, this.getBlockState().getBlock(), 1, clickDirection.get3DDataValue());
    }
 
    private void updateEntities() {
-      BlockPos var1 = this.getBlockPos();
+      BlockPos blockPos = this.getBlockPos();
       if (this.level.getGameTime() > this.lastRingTimestamp + 60L || this.nearbyEntities == null) {
          this.lastRingTimestamp = this.level.getGameTime();
-         AABB var2 = (new AABB(var1)).inflate(48.0);
-         this.nearbyEntities = this.level.getEntitiesOfClass(LivingEntity.class, var2);
+         AABB aabb = (new AABB(blockPos)).inflate(48.0);
+         this.nearbyEntities = this.level.getEntitiesOfClass(LivingEntity.class, aabb);
       }
 
       if (!this.level.isClientSide()) {
-         for(LivingEntity var3 : this.nearbyEntities) {
-            if (var3.isAlive() && !var3.isRemoved() && var1.closerToCenterThan(var3.position(), 32.0)) {
-               var3.getBrain().setMemory(MemoryModuleType.HEARD_BELL_TIME, this.level.getGameTime());
+         for(LivingEntity entity : this.nearbyEntities) {
+            if (entity.isAlive() && !entity.isRemoved() && blockPos.closerToCenterThan(entity.position(), 32.0)) {
+               entity.getBrain().setMemory(MemoryModuleType.HEARD_BELL_TIME, this.level.getGameTime());
             }
          }
       }
 
    }
 
-   private static boolean areRaidersNearby(BlockPos var0, List<LivingEntity> var1) {
-      for(LivingEntity var3 : var1) {
-         if (var3.isAlive() && !var3.isRemoved() && var0.closerToCenterThan(var3.position(), 32.0) && var3.getType().is(EntityTypeTags.RAIDERS)) {
+   private static boolean areRaidersNearby(final BlockPos bellPos, final List<LivingEntity> nearbyEntities) {
+      for(LivingEntity entity : nearbyEntities) {
+         if (entity.isAlive() && !entity.isRemoved() && bellPos.closerToCenterThan(entity.position(), 32.0) && entity.is(EntityTypeTags.RAIDERS)) {
             return true;
          }
       }
@@ -127,38 +127,38 @@ public class BellBlockEntity extends BlockEntity {
       return false;
    }
 
-   private static void makeRaidersGlow(Level var0, BlockPos var1, List<LivingEntity> var2) {
-      var2.stream().filter((var1x) -> isRaiderWithinRange(var1, var1x)).forEach(BellBlockEntity::glow);
+   private static void makeRaidersGlow(final Level level, final BlockPos blockPos, final List<LivingEntity> nearbyEntities) {
+      nearbyEntities.stream().filter((e) -> isRaiderWithinRange(blockPos, e)).forEach(BellBlockEntity::glow);
    }
 
-   private static void showBellParticles(Level var0, BlockPos var1, List<LivingEntity> var2) {
-      MutableInt var3 = new MutableInt(16700985);
-      int var4 = (int)var2.stream().filter((var1x) -> var1.closerToCenterThan(var1x.position(), 48.0)).count();
-      var2.stream().filter((var1x) -> isRaiderWithinRange(var1, var1x)).forEach((var4x) -> {
-         float var5 = 1.0F;
-         double var6 = Math.sqrt((var4x.getX() - (double)var1.getX()) * (var4x.getX() - (double)var1.getX()) + (var4x.getZ() - (double)var1.getZ()) * (var4x.getZ() - (double)var1.getZ()));
-         double var8 = (double)((float)var1.getX() + 0.5F) + 1.0 / var6 * (var4x.getX() - (double)var1.getX());
-         double var10 = (double)((float)var1.getZ() + 0.5F) + 1.0 / var6 * (var4x.getZ() - (double)var1.getZ());
-         int var12 = Mth.clamp((var4 - 21) / -2, 3, 15);
+   private static void showBellParticles(final Level level, final BlockPos bellPos, final List<LivingEntity> nearbyEntities) {
+      MutableInt particleColor = new MutableInt(16700985);
+      int nearbyRaiderCount = (int)nearbyEntities.stream().filter((p) -> bellPos.closerToCenterThan(p.position(), 48.0)).count();
+      nearbyEntities.stream().filter((e) -> isRaiderWithinRange(bellPos, e)).forEach((entity) -> {
+         float distAway = 1.0F;
+         double distBtwn = Math.sqrt((entity.getX() - (double)bellPos.getX()) * (entity.getX() - (double)bellPos.getX()) + (entity.getZ() - (double)bellPos.getZ()) * (entity.getZ() - (double)bellPos.getZ()));
+         double x3 = (double)((float)bellPos.getX() + 0.5F) + 1.0 / distBtwn * (entity.getX() - (double)bellPos.getX());
+         double z3 = (double)((float)bellPos.getZ() + 0.5F) + 1.0 / distBtwn * (entity.getZ() - (double)bellPos.getZ());
+         int particleCount = Mth.clamp((nearbyRaiderCount - 21) / -2, 3, 15);
 
-         for(int var13 = 0; var13 < var12; ++var13) {
-            int var14 = var3.addAndGet(5);
-            var0.addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var14), var8, (double)((float)var1.getY() + 0.5F), var10, 0.0, 0.0, 0.0);
+         for(int i = 0; i < particleCount; ++i) {
+            int color = particleColor.addAndGet(5);
+            level.addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, color), x3, (double)((float)bellPos.getY() + 0.5F), z3, 0.0, 0.0, 0.0);
          }
 
       });
    }
 
-   private static boolean isRaiderWithinRange(BlockPos var0, LivingEntity var1) {
-      return var1.isAlive() && !var1.isRemoved() && var0.closerToCenterThan(var1.position(), 48.0) && var1.getType().is(EntityTypeTags.RAIDERS);
+   private static boolean isRaiderWithinRange(final BlockPos blockPos, final LivingEntity entity) {
+      return entity.isAlive() && !entity.isRemoved() && blockPos.closerToCenterThan(entity.position(), 48.0) && entity.is(EntityTypeTags.RAIDERS);
    }
 
-   private static void glow(LivingEntity var0) {
-      var0.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60));
+   private static void glow(final LivingEntity raider) {
+      raider.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60));
    }
 
    @FunctionalInterface
-   interface ResonationEndAction {
-      void run(Level var1, BlockPos var2, List<LivingEntity> var3);
+   private interface ResonationEndAction {
+      void run(final Level level, final BlockPos pos, List<LivingEntity> nearbyEntities);
    }
 }

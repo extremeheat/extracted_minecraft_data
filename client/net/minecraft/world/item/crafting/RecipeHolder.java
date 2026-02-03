@@ -8,20 +8,18 @@ import net.minecraft.resources.ResourceKey;
 public record RecipeHolder<T extends Recipe<?>>(ResourceKey<Recipe<?>> id, T value) {
    public static final StreamCodec<RegistryFriendlyByteBuf, RecipeHolder<?>> STREAM_CODEC;
 
-   public RecipeHolder(ResourceKey<Recipe<?>> var1, T var2) {
+   public RecipeHolder {
       super();
-      this.id = var1;
-      this.value = var2;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object obj) {
+      if (this == obj) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof RecipeHolder) {
-            RecipeHolder var2 = (RecipeHolder)var1;
-            if (this.id == var2.id) {
+         if (obj instanceof RecipeHolder) {
+            RecipeHolder<?> holder = (RecipeHolder)obj;
+            if (this.id == holder.id) {
                var10000 = true;
                return var10000;
             }

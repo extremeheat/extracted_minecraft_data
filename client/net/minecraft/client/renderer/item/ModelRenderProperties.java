@@ -8,21 +8,18 @@ import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.world.item.ItemDisplayContext;
 
 public record ModelRenderProperties(boolean usesBlockLight, TextureAtlasSprite particleIcon, ItemTransforms transforms) {
-   public ModelRenderProperties(boolean var1, TextureAtlasSprite var2, ItemTransforms var3) {
+   public ModelRenderProperties {
       super();
-      this.usesBlockLight = var1;
-      this.particleIcon = var2;
-      this.transforms = var3;
    }
 
-   public static ModelRenderProperties fromResolvedModel(ModelBaker var0, ResolvedModel var1, TextureSlots var2) {
-      TextureAtlasSprite var3 = var1.resolveParticleSprite(var2, var0);
-      return new ModelRenderProperties(var1.getTopGuiLight().lightLikeBlock(), var3, var1.getTopTransforms());
+   public static ModelRenderProperties fromResolvedModel(final ModelBaker baker, final ResolvedModel resolvedModel, final TextureSlots textureSlots) {
+      TextureAtlasSprite particleSprite = resolvedModel.resolveParticleSprite(textureSlots, baker);
+      return new ModelRenderProperties(resolvedModel.getTopGuiLight().lightLikeBlock(), particleSprite, resolvedModel.getTopTransforms());
    }
 
-   public void applyToLayer(ItemStackRenderState.LayerRenderState var1, ItemDisplayContext var2) {
-      var1.setUsesBlockLight(this.usesBlockLight);
-      var1.setParticleIcon(this.particleIcon);
-      var1.setTransform(this.transforms.getTransform(var2));
+   public void applyToLayer(final ItemStackRenderState.LayerRenderState layer, final ItemDisplayContext displayContext) {
+      layer.setUsesBlockLight(this.usesBlockLight);
+      layer.setParticleIcon(this.particleIcon);
+      layer.setTransform(this.transforms.getTransform(displayContext));
    }
 }

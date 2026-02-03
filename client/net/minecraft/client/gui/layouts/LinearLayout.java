@@ -8,19 +8,19 @@ public class LinearLayout implements Layout {
    private final Orientation orientation;
    private int nextChildIndex;
 
-   private LinearLayout(Orientation var1) {
-      this(0, 0, var1);
+   private LinearLayout(final Orientation orientation) {
+      this(0, 0, orientation);
    }
 
-   public LinearLayout(int var1, int var2, Orientation var3) {
+   public LinearLayout(final int x, final int y, final Orientation orientation) {
       super();
       this.nextChildIndex = 0;
-      this.wrapped = new GridLayout(var1, var2);
-      this.orientation = var3;
+      this.wrapped = new GridLayout(x, y);
+      this.orientation = orientation;
    }
 
-   public LinearLayout spacing(int var1) {
-      this.orientation.setSpacing(this.wrapped, var1);
+   public LinearLayout spacing(final int spacing) {
+      this.orientation.setSpacing(this.wrapped, spacing);
       return this;
    }
 
@@ -32,20 +32,20 @@ public class LinearLayout implements Layout {
       return this.wrapped.defaultCellSetting();
    }
 
-   public <T extends LayoutElement> T addChild(T var1, LayoutSettings var2) {
-      return (T)this.orientation.addChild(this.wrapped, var1, this.nextChildIndex++, var2);
+   public <T extends LayoutElement> T addChild(final T child, final LayoutSettings cellSettings) {
+      return (T)this.orientation.addChild(this.wrapped, child, this.nextChildIndex++, cellSettings);
    }
 
-   public <T extends LayoutElement> T addChild(T var1) {
-      return (T)this.addChild(var1, this.newCellSettings());
+   public <T extends LayoutElement> T addChild(final T child) {
+      return (T)this.addChild(child, this.newCellSettings());
    }
 
-   public <T extends LayoutElement> T addChild(T var1, Consumer<LayoutSettings> var2) {
-      return (T)this.orientation.addChild(this.wrapped, var1, this.nextChildIndex++, (LayoutSettings)Util.make(this.newCellSettings(), var2));
+   public <T extends LayoutElement> T addChild(final T child, final Consumer<LayoutSettings> layoutSettingsAdjustments) {
+      return (T)this.orientation.addChild(this.wrapped, child, this.nextChildIndex++, (LayoutSettings)Util.make(this.newCellSettings(), layoutSettingsAdjustments));
    }
 
-   public void visitChildren(Consumer<LayoutElement> var1) {
-      this.wrapped.visitChildren(var1);
+   public void visitChildren(final Consumer<LayoutElement> layoutElementVisitor) {
+      this.wrapped.visitChildren(layoutElementVisitor);
    }
 
    public void arrangeElements() {
@@ -60,12 +60,12 @@ public class LinearLayout implements Layout {
       return this.wrapped.getHeight();
    }
 
-   public void setX(int var1) {
-      this.wrapped.setX(var1);
+   public void setX(final int x) {
+      this.wrapped.setX(x);
    }
 
-   public void setY(int var1) {
-      this.wrapped.setY(var1);
+   public void setY(final int y) {
+      this.wrapped.setY(y);
    }
 
    public int getX() {
@@ -91,19 +91,19 @@ public class LinearLayout implements Layout {
       private Orientation() {
       }
 
-      void setSpacing(GridLayout var1, int var2) {
+      private void setSpacing(final GridLayout gridLayout, final int spacing) {
          switch (this.ordinal()) {
-            case 0 -> var1.columnSpacing(var2);
-            case 1 -> var1.rowSpacing(var2);
+            case 0 -> gridLayout.columnSpacing(spacing);
+            case 1 -> gridLayout.rowSpacing(spacing);
          }
 
       }
 
-      public <T extends LayoutElement> T addChild(GridLayout var1, T var2, int var3, LayoutSettings var4) {
+      public <T extends LayoutElement> T addChild(final GridLayout gridLayout, final T child, final int index, final LayoutSettings cellSettings) {
          LayoutElement var10000;
          switch (this.ordinal()) {
-            case 0 -> var10000 = var1.addChild(var2, 0, var3, var4);
-            case 1 -> var10000 = var1.addChild(var2, var3, 0, var4);
+            case 0 -> var10000 = gridLayout.addChild(child, 0, index, cellSettings);
+            case 1 -> var10000 = gridLayout.addChild(child, index, 0, cellSettings);
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 

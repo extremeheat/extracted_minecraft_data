@@ -19,16 +19,17 @@ public class DataComponentPredicates {
    public static final DataComponentPredicate.Type<AttributeModifiersPredicate> ATTRIBUTE_MODIFIERS;
    public static final DataComponentPredicate.Type<TrimPredicate> ARMOR_TRIM;
    public static final DataComponentPredicate.Type<JukeboxPlayablePredicate> JUKEBOX_PLAYABLE;
+   public static final DataComponentPredicate.Type<VillagerTypePredicate> VILLAGER_VARIANT;
 
    public DataComponentPredicates() {
       super();
    }
 
-   private static <T extends DataComponentPredicate> DataComponentPredicate.Type<T> register(String var0, Codec<T> var1) {
-      return (DataComponentPredicate.Type)Registry.register(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, (String)var0, new DataComponentPredicate.ConcreteType(var1));
+   private static <T extends DataComponentPredicate> DataComponentPredicate.Type<T> register(final String id, final Codec<T> codec) {
+      return (DataComponentPredicate.Type)Registry.register(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, (String)id, new DataComponentPredicate.ConcreteType(codec));
    }
 
-   public static DataComponentPredicate.Type<?> bootstrap(Registry<DataComponentPredicate.Type<?>> var0) {
+   public static DataComponentPredicate.Type<?> bootstrap(final Registry<DataComponentPredicate.Type<?>> registry) {
       return DAMAGE;
    }
 
@@ -47,5 +48,6 @@ public class DataComponentPredicates {
       ATTRIBUTE_MODIFIERS = register("attribute_modifiers", AttributeModifiersPredicate.CODEC);
       ARMOR_TRIM = register("trim", TrimPredicate.CODEC);
       JUKEBOX_PLAYABLE = register("jukebox_playable", JukeboxPlayablePredicate.CODEC);
+      VILLAGER_VARIANT = register("villager/variant", VillagerTypePredicate.CODEC);
    }
 }

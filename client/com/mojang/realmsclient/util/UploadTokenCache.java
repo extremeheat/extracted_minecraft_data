@@ -11,15 +11,15 @@ public class UploadTokenCache {
       super();
    }
 
-   public static String get(long var0) {
-      return (String)TOKEN_CACHE.get(var0);
+   public static String get(final long realmId) {
+      return (String)TOKEN_CACHE.get(realmId);
    }
 
-   public static void invalidate(long var0) {
-      TOKEN_CACHE.remove(var0);
+   public static void invalidate(final long realmId) {
+      TOKEN_CACHE.remove(realmId);
    }
 
-   public static void put(long var0, @Nullable String var2) {
-      TOKEN_CACHE.put(var0, var2);
+   public static void put(final long realmId, final @Nullable String token) {
+      TOKEN_CACHE.put(realmId, token);
    }
 }

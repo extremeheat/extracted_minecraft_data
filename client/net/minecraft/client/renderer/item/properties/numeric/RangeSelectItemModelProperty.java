@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public interface RangeSelectItemModelProperty {
-   float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4);
+   float get(ItemStack itemStack, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed);
 
    MapCodec<? extends RangeSelectItemModelProperty> type();
 }

@@ -5,32 +5,32 @@ import java.util.List;
 import net.minecraft.util.Util;
 
 public class AnyOfCondition extends CompositeLootItemCondition {
-   public static final MapCodec<AnyOfCondition> CODEC = createCodec(AnyOfCondition::new);
+   public static final MapCodec<AnyOfCondition> MAP_CODEC = createCodec(AnyOfCondition::new);
 
-   AnyOfCondition(List<LootItemCondition> var1) {
-      super(var1, Util.anyOf(var1));
+   private AnyOfCondition(final List<LootItemCondition> terms) {
+      super(terms, Util.anyOf(terms));
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.ANY_OF;
+   public MapCodec<AnyOfCondition> codec() {
+      return MAP_CODEC;
    }
 
-   public static Builder anyOf(LootItemCondition.Builder... var0) {
-      return new Builder(var0);
+   public static Builder anyOf(final LootItemCondition.Builder... terms) {
+      return new Builder(terms);
    }
 
    public static class Builder extends CompositeLootItemCondition.Builder {
-      public Builder(LootItemCondition.Builder... var1) {
-         super(var1);
+      public Builder(final LootItemCondition.Builder... terms) {
+         super(terms);
       }
 
-      public Builder or(LootItemCondition.Builder var1) {
-         this.addTerm(var1);
+      public Builder or(final LootItemCondition.Builder term) {
+         this.addTerm(term);
          return this;
       }
 
-      protected LootItemCondition create(List<LootItemCondition> var1) {
-         return new AnyOfCondition(var1);
+      protected LootItemCondition create(final List<LootItemCondition> terms) {
+         return new AnyOfCondition(terms);
       }
    }
 }

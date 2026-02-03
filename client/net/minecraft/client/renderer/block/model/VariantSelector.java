@@ -19,31 +19,31 @@ public class VariantSelector {
       super();
    }
 
-   public static <O, S extends StateHolder<O, S>> Predicate<StateHolder<O, S>> predicate(StateDefinition<O, S> var0, String var1) {
-      HashMap var2 = new HashMap();
+   public static <O, S extends StateHolder<O, S>> Predicate<StateHolder<O, S>> predicate(final StateDefinition<O, S> stateDefinition, final String properties) {
+      Map<Property<?>, Comparable<?>> map = new HashMap();
 
-      for(String var4 : COMMA_SPLITTER.split(var1)) {
-         Iterator var5 = EQUAL_SPLITTER.split(var4).iterator();
-         if (var5.hasNext()) {
-            String var6 = (String)var5.next();
-            Property var7 = var0.getProperty(var6);
-            if (var7 != null && var5.hasNext()) {
-               String var8 = (String)var5.next();
-               Comparable var9 = getValueHelper(var7, var8);
-               if (var9 == null) {
-                  throw new RuntimeException("Unknown value: '" + var8 + "' for blockstate property: '" + var6 + "' " + String.valueOf(var7.getPossibleValues()));
+      for(String keyValue : COMMA_SPLITTER.split(properties)) {
+         Iterator<String> iterator = EQUAL_SPLITTER.split(keyValue).iterator();
+         if (iterator.hasNext()) {
+            String propertyName = (String)iterator.next();
+            Property<?> property = stateDefinition.getProperty(propertyName);
+            if (property != null && iterator.hasNext()) {
+               String propertyValue = (String)iterator.next();
+               Comparable<?> value = getValueHelper(property, propertyValue);
+               if (value == null) {
+                  throw new RuntimeException("Unknown value: '" + propertyValue + "' for blockstate property: '" + propertyName + "' " + String.valueOf(property.getPossibleValues()));
                }
 
-               var2.put(var7, var9);
-            } else if (!var6.isEmpty()) {
-               throw new RuntimeException("Unknown blockstate property: '" + var6 + "'");
+               map.put(property, value);
+            } else if (!propertyName.isEmpty()) {
+               throw new RuntimeException("Unknown blockstate property: '" + propertyName + "'");
             }
          }
       }
 
-      return (var1x) -> {
-         for(Map.Entry var3 : var2.entrySet()) {
-            if (!Objects.equals(var1x.getValue((Property)var3.getKey()), var3.getValue())) {
+      return (input) -> {
+         for(Map.Entry<Property<?>, Comparable<?>> entry : map.entrySet()) {
+            if (!Objects.equals(input.getValue((Property)entry.getKey()), entry.getValue())) {
                return false;
             }
          }
@@ -52,7 +52,7 @@ public class VariantSelector {
       };
    }
 
-   private static <T extends Comparable<T>> @Nullable T getValueHelper(Property<T> var0, String var1) {
-      return (T)(var0.getValue(var1).orElse((Object)null));
+   private static <T extends Comparable<T>> @Nullable T getValueHelper(final Property<T> property, final String next) {
+      return (T)(property.getValue(next).orElse((Object)null));
    }
 }

@@ -19,8 +19,8 @@ public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedIte
    private boolean usedOnThisFrame;
    private @Nullable Object modelOnTextureIdentity;
 
-   public OversizedItemRenderer(MultiBufferSource.BufferSource var1) {
-      super(var1);
+   public OversizedItemRenderer(final MultiBufferSource.BufferSource bufferSource) {
+      super(bufferSource);
    }
 
    public boolean usedOnThisFrame() {
@@ -39,43 +39,43 @@ public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedIte
       return OversizedItemRenderState.class;
    }
 
-   protected void renderToTexture(OversizedItemRenderState var1, PoseStack var2) {
-      var2.scale(1.0F, -1.0F, -1.0F);
-      GuiItemRenderState var3 = var1.guiItemRenderState();
-      ScreenRectangle var4 = var3.oversizedItemBounds();
-      Objects.requireNonNull(var4);
-      float var5 = (float)(var4.left() + var4.right()) / 2.0F;
-      float var6 = (float)(var4.top() + var4.bottom()) / 2.0F;
-      float var7 = (float)var3.x() + 8.0F;
-      float var8 = (float)var3.y() + 8.0F;
-      var2.translate((var7 - var5) / 16.0F, (var6 - var8) / 16.0F, 0.0F);
-      TrackingItemStackRenderState var9 = var3.itemStackRenderState();
-      boolean var10 = !var9.usesBlockLight();
-      if (var10) {
+   protected void renderToTexture(final OversizedItemRenderState renderState, final PoseStack poseStack) {
+      poseStack.scale(1.0F, -1.0F, -1.0F);
+      GuiItemRenderState guiItemRenderState = renderState.guiItemRenderState();
+      ScreenRectangle itemBounds = guiItemRenderState.oversizedItemBounds();
+      Objects.requireNonNull(itemBounds);
+      float itemBoundsCenterX = (float)(itemBounds.left() + itemBounds.right()) / 2.0F;
+      float itemBoundsCenterY = (float)(itemBounds.top() + itemBounds.bottom()) / 2.0F;
+      float slotCenterX = (float)guiItemRenderState.x() + 8.0F;
+      float slotCenterY = (float)guiItemRenderState.y() + 8.0F;
+      poseStack.translate((slotCenterX - itemBoundsCenterX) / 16.0F, (itemBoundsCenterY - slotCenterY) / 16.0F, 0.0F);
+      TrackingItemStackRenderState itemStackRenderState = guiItemRenderState.itemStackRenderState();
+      boolean flat = !itemStackRenderState.usesBlockLight();
+      if (flat) {
          Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_FLAT);
       } else {
          Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
       }
 
-      FeatureRenderDispatcher var11 = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
-      SubmitNodeStorage var12 = var11.getSubmitNodeStorage();
-      var9.submit(var2, var12, 15728880, OverlayTexture.NO_OVERLAY, 0);
-      var11.renderAllFeatures();
-      this.modelOnTextureIdentity = var9.getModelIdentity();
+      FeatureRenderDispatcher featureRenderDispatcher = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
+      SubmitNodeStorage submitNodeStorage = featureRenderDispatcher.getSubmitNodeStorage();
+      itemStackRenderState.submit(poseStack, submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, 0);
+      featureRenderDispatcher.renderAllFeatures();
+      this.modelOnTextureIdentity = itemStackRenderState.getModelIdentity();
    }
 
-   public void blitTexture(OversizedItemRenderState var1, GuiRenderState var2) {
-      super.blitTexture(var1, var2);
+   public void blitTexture(final OversizedItemRenderState renderState, final GuiRenderState guiRenderState) {
+      super.blitTexture(renderState, guiRenderState);
       this.usedOnThisFrame = true;
    }
 
-   public boolean textureIsReadyToBlit(OversizedItemRenderState var1) {
-      TrackingItemStackRenderState var2 = var1.guiItemRenderState().itemStackRenderState();
-      return !var2.isAnimated() && var2.getModelIdentity().equals(this.modelOnTextureIdentity);
+   public boolean textureIsReadyToBlit(final OversizedItemRenderState renderState) {
+      TrackingItemStackRenderState itemStackRenderState = renderState.guiItemRenderState().itemStackRenderState();
+      return !itemStackRenderState.isAnimated() && itemStackRenderState.getModelIdentity().equals(this.modelOnTextureIdentity);
    }
 
-   protected float getTranslateY(int var1, int var2) {
-      return (float)var1 / 2.0F;
+   protected float getTranslateY(final int height, final int guiScale) {
+      return (float)height / 2.0F;
    }
 
    protected String getTextureLabel() {

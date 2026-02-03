@@ -11,12 +11,12 @@ public class AirRandomPos {
       super();
    }
 
-   public static @Nullable Vec3 getPosTowards(PathfinderMob var0, int var1, int var2, int var3, Vec3 var4, double var5) {
-      Vec3 var7 = var4.subtract(var0.getX(), var0.getY(), var0.getZ());
-      boolean var8 = GoalUtils.mobRestricted(var0, (double)var1);
-      return RandomPos.generateRandomPos(var0, (Supplier)(() -> {
-         BlockPos var8x = AirAndWaterRandomPos.generateRandomPos(var0, var1, var2, var3, var7.x, var7.z, var5, var8);
-         return var8x != null && !GoalUtils.isWater(var0, var8x) ? var8x : null;
+   public static @Nullable Vec3 getPosTowards(final PathfinderMob mob, final int horizontalDist, final int verticalDist, final int flyingHeight, final Vec3 towardsPos, final double maxXzRadiansFromDir) {
+      Vec3 dir = towardsPos.subtract(mob.getX(), mob.getY(), mob.getZ());
+      boolean restrict = GoalUtils.mobRestricted(mob, (double)horizontalDist);
+      return RandomPos.generateRandomPos(mob, (Supplier)(() -> {
+         BlockPos pos = AirAndWaterRandomPos.generateRandomPos(mob, horizontalDist, verticalDist, flyingHeight, dir.x, dir.z, maxXzRadiansFromDir, restrict);
+         return pos != null && !GoalUtils.isWater(mob, pos) ? pos : null;
       }));
    }
 }

@@ -22,35 +22,31 @@ public interface RealmsError {
 
    String logMessage();
 
-   static RealmsError parse(int var0, String var1) {
-      if (var0 == 429) {
+   static RealmsError parse(final int httpCode, final String payload) {
+      if (httpCode == 429) {
          return RealmsError.CustomError.SERVICE_BUSY;
-      } else if (Strings.isNullOrEmpty(var1)) {
-         return RealmsError.CustomError.noPayload(var0);
+      } else if (Strings.isNullOrEmpty(payload)) {
+         return RealmsError.CustomError.noPayload(httpCode);
       } else {
          try {
-            JsonObject var2 = LenientJsonParser.parse(var1).getAsJsonObject();
-            String var3 = GsonHelper.getAsString(var2, "reason", (String)null);
-            String var4 = GsonHelper.getAsString(var2, "errorMsg", (String)null);
-            int var5 = GsonHelper.getAsInt(var2, "errorCode", -1);
-            if (var4 != null || var3 != null || var5 != -1) {
-               return new ErrorWithJsonPayload(var0, var5 != -1 ? var5 : var0, var3, var4);
+            JsonObject object = LenientJsonParser.parse(payload).getAsJsonObject();
+            String errorReason = GsonHelper.getAsString(object, "reason", (String)null);
+            String errorMessage = GsonHelper.getAsString(object, "errorMsg", (String)null);
+            int errorCode = GsonHelper.getAsInt(object, "errorCode", -1);
+            if (errorMessage != null || errorReason != null || errorCode != -1) {
+               return new ErrorWithJsonPayload(httpCode, errorCode != -1 ? errorCode : httpCode, errorReason, errorMessage);
             }
-         } catch (Exception var6) {
-            LOGGER.error("Could not parse RealmsError", var6);
+         } catch (Exception e) {
+            LOGGER.error("Could not parse RealmsError", e);
          }
 
-         return new ErrorWithRawPayload(var0, var1);
+         return new ErrorWithRawPayload(httpCode, payload);
       }
    }
 
    public static record ErrorWithJsonPayload(int httpCode, int code, @Nullable String reason, @Nullable String message) implements RealmsError {
-      public ErrorWithJsonPayload(int var1, int var2, @Nullable String var3, @Nullable String var4) {
+      public ErrorWithJsonPayload {
          super();
-         this.httpCode = var1;
-         this.code = var2;
-         this.reason = var3;
-         this.message = var4;
       }
 
       public int errorCode() {
@@ -58,14 +54,14 @@ public interface RealmsError {
       }
 
       public Component errorMessage() {
-         String var1 = "mco.errorMessage." + this.code;
-         if (I18n.exists(var1)) {
-            return Component.translatable(var1);
+         String codeTranslationKey = "mco.errorMessage." + this.code;
+         if (I18n.exists(codeTranslationKey)) {
+            return Component.translatable(codeTranslationKey);
          } else {
             if (this.reason != null) {
-               String var2 = "mco.errorReason." + this.reason;
-               if (I18n.exists(var2)) {
-                  return Component.translatable(var2);
+               String reasonTranslationKey = "mco.errorReason." + this.reason;
+               if (I18n.exists(reasonTranslationKey)) {
+                  return Component.translatable(reasonTranslationKey);
                }
             }
 
@@ -79,10 +75,8 @@ public interface RealmsError {
    }
 
    public static record ErrorWithRawPayload(int httpCode, String payload) implements RealmsError {
-      public ErrorWithRawPayload(int var1, String var2) {
+      public ErrorWithRawPayload {
          super();
-         this.httpCode = var1;
-         this.payload = var2;
       }
 
       public int errorCode() {
@@ -101,9 +95,8 @@ public interface RealmsError {
    public static record AuthenticationError(String message) implements RealmsError {
       public static final int ERROR_CODE = 401;
 
-      public AuthenticationError(String var1) {
+      public AuthenticationError {
          super();
-         this.message = var1;
       }
 
       public int errorCode() {
@@ -125,40 +118,38 @@ public interface RealmsError {
       public static final String BODY_TAG = "<body>";
       public static final String CLOSING_BODY_TAG = "</body>";
 
-      public CustomError(int var1, @Nullable Component var2) {
+      public CustomError {
          super();
-         this.httpCode = var1;
-         this.payload = var2;
       }
 
-      public static CustomError unknownCompatibilityResponse(String var0) {
-         return new CustomError(500, Component.translatable("mco.errorMessage.realmsService.unknownCompatibility", var0));
+      public static CustomError unknownCompatibilityResponse(final String response) {
+         return new CustomError(500, Component.translatable("mco.errorMessage.realmsService.unknownCompatibility", response));
       }
 
       public static CustomError configurationError() {
          return new CustomError(500, Component.translatable("mco.errorMessage.realmsService.configurationError"));
       }
 
-      public static CustomError connectivityError(RealmsHttpException var0) {
-         return new CustomError(500, Component.translatable("mco.errorMessage.realmsService.connectivity", var0.getMessage()));
+      public static CustomError connectivityError(final RealmsHttpException exception) {
+         return new CustomError(500, Component.translatable("mco.errorMessage.realmsService.connectivity", exception.getMessage()));
       }
 
-      public static CustomError retry(int var0) {
-         return new CustomError(var0, RETRY_MESSAGE);
+      public static CustomError retry(final int statusCode) {
+         return new CustomError(statusCode, RETRY_MESSAGE);
       }
 
-      public static CustomError noPayload(int var0) {
-         return new CustomError(var0, (Component)null);
+      public static CustomError noPayload(final int statusCode) {
+         return new CustomError(statusCode, (Component)null);
       }
 
-      public static CustomError htmlPayload(int var0, String var1) {
-         int var2 = var1.indexOf("<body>");
-         int var3 = var1.indexOf("</body>");
-         if (var2 >= 0 && var3 > var2) {
-            return new CustomError(var0, Component.literal(var1.substring(var2 + "<body>".length(), var3).trim()));
+      public static CustomError htmlPayload(final int statusCode, final String payload) {
+         int bodyStart = payload.indexOf("<body>");
+         int bodyEnd = payload.indexOf("</body>");
+         if (bodyStart >= 0 && bodyEnd > bodyStart) {
+            return new CustomError(statusCode, Component.literal(payload.substring(bodyStart + "<body>".length(), bodyEnd).trim()));
          } else {
-            LOGGER.error("Got an error with an unreadable html body {}", var1);
-            return new CustomError(var0, (Component)null);
+            LOGGER.error("Got an error with an unreadable html body {}", payload);
+            return new CustomError(statusCode, (Component)null);
          }
       }
 

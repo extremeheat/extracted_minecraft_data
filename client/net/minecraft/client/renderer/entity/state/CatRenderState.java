@@ -5,7 +5,7 @@ import net.minecraft.world.item.DyeColor;
 import org.jspecify.annotations.Nullable;
 
 public class CatRenderState extends FelineRenderState {
-   private static final Identifier DEFAULT_TEXTURE = Identifier.withDefaultNamespace("textures/entity/cat/tabby.png");
+   private static final Identifier DEFAULT_TEXTURE = Identifier.withDefaultNamespace("textures/entity/cat/cat_tabby.png");
    public Identifier texture;
    public boolean isLyingOnTopOfSleepingPlayer;
    public @Nullable DyeColor collarColor;

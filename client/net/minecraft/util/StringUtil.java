@@ -15,87 +15,87 @@ public class StringUtil {
       super();
    }
 
-   public static String formatTickDuration(int var0, float var1) {
-      int var2 = Mth.floor((float)var0 / var1);
-      int var3 = var2 / 60;
-      var2 %= 60;
-      int var4 = var3 / 60;
-      var3 %= 60;
-      return var4 > 0 ? String.format(Locale.ROOT, "%02d:%02d:%02d", var4, var3, var2) : String.format(Locale.ROOT, "%02d:%02d", var3, var2);
+   public static String formatTickDuration(final int ticks, final float tickrate) {
+      int seconds = Mth.floor((float)ticks / tickrate);
+      int minutes = seconds / 60;
+      seconds %= 60;
+      int hours = minutes / 60;
+      minutes %= 60;
+      return hours > 0 ? String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, seconds) : String.format(Locale.ROOT, "%02d:%02d", minutes, seconds);
    }
 
-   public static String stripColor(String var0) {
-      return STRIP_COLOR_PATTERN.matcher(var0).replaceAll("");
+   public static String stripColor(final String input) {
+      return STRIP_COLOR_PATTERN.matcher(input).replaceAll("");
    }
 
-   public static boolean isNullOrEmpty(@Nullable String var0) {
-      return StringUtils.isEmpty(var0);
+   public static boolean isNullOrEmpty(final @Nullable String s) {
+      return StringUtils.isEmpty(s);
    }
 
-   public static String truncateStringIfNecessary(String var0, int var1, boolean var2) {
-      if (var0.length() <= var1) {
-         return var0;
-      } else if (var2 && var1 > 3) {
-         String var10000 = var0.substring(0, var1 - 3);
+   public static String truncateStringIfNecessary(final String s, final int maxLength, final boolean addDotDotDotIfTruncated) {
+      if (s.length() <= maxLength) {
+         return s;
+      } else if (addDotDotDotIfTruncated && maxLength > 3) {
+         String var10000 = s.substring(0, maxLength - 3);
          return var10000 + "...";
       } else {
-         return var0.substring(0, var1);
+         return s.substring(0, maxLength);
       }
    }
 
-   public static int lineCount(String var0) {
-      if (var0.isEmpty()) {
+   public static int lineCount(final String s) {
+      if (s.isEmpty()) {
          return 0;
       } else {
-         Matcher var1 = LINE_PATTERN.matcher(var0);
+         Matcher matcher = LINE_PATTERN.matcher(s);
 
-         int var2;
-         for(var2 = 1; var1.find(); ++var2) {
+         int count;
+         for(count = 1; matcher.find(); ++count) {
          }
 
-         return var2;
+         return count;
       }
    }
 
-   public static boolean endsWithNewLine(String var0) {
-      return LINE_END_PATTERN.matcher(var0).find();
+   public static boolean endsWithNewLine(final String s) {
+      return LINE_END_PATTERN.matcher(s).find();
    }
 
-   public static String trimChatMessage(String var0) {
-      return truncateStringIfNecessary(var0, 256, false);
+   public static String trimChatMessage(final String message) {
+      return truncateStringIfNecessary(message, 256, false);
    }
 
-   public static boolean isAllowedChatCharacter(int var0) {
-      return var0 != 167 && var0 >= 32 && var0 != 127;
+   public static boolean isAllowedChatCharacter(final int ch) {
+      return ch != 167 && ch >= 32 && ch != 127;
    }
 
-   public static boolean isValidPlayerName(String var0) {
-      return var0.length() > 16 ? false : var0.chars().filter((var0x) -> var0x <= 32 || var0x >= 127).findAny().isEmpty();
+   public static boolean isValidPlayerName(final String name) {
+      return name.length() > 16 ? false : name.chars().filter((c) -> c <= 32 || c >= 127).findAny().isEmpty();
    }
 
-   public static String filterText(String var0) {
-      return filterText(var0, false);
+   public static String filterText(final String input) {
+      return filterText(input, false);
    }
 
-   public static String filterText(String var0, boolean var1) {
-      StringBuilder var2 = new StringBuilder();
+   public static String filterText(final String input, final boolean multiline) {
+      StringBuilder builder = new StringBuilder();
 
-      for(char var6 : var0.toCharArray()) {
-         if (isAllowedChatCharacter(var6)) {
-            var2.append(var6);
-         } else if (var1 && var6 == '\n') {
-            var2.append(var6);
+      for(char c : input.toCharArray()) {
+         if (isAllowedChatCharacter(c)) {
+            builder.append(c);
+         } else if (multiline && c == '\n') {
+            builder.append(c);
          }
       }
 
-      return var2.toString();
+      return builder.toString();
    }
 
-   public static boolean isWhitespace(int var0) {
-      return Character.isWhitespace(var0) || Character.isSpaceChar(var0);
+   public static boolean isWhitespace(final int codepoint) {
+      return Character.isWhitespace(codepoint) || Character.isSpaceChar(codepoint);
    }
 
-   public static boolean isBlank(@Nullable String var0) {
-      return var0 != null && !var0.isEmpty() ? var0.chars().allMatch(StringUtil::isWhitespace) : true;
+   public static boolean isBlank(final @Nullable String string) {
+      return string != null && !string.isEmpty() ? string.chars().allMatch(StringUtil::isWhitespace) : true;
    }
 }

@@ -18,36 +18,36 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public class BonusChestFeature extends Feature<NoneFeatureConfiguration> {
-   public BonusChestFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public BonusChestFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      RandomSource var2 = var1.random();
-      WorldGenLevel var3 = var1.level();
-      ChunkPos var4 = new ChunkPos(var1.origin());
-      IntArrayList var5 = Util.toShuffledList(IntStream.rangeClosed(var4.getMinBlockX(), var4.getMaxBlockX()), var2);
-      IntArrayList var6 = Util.toShuffledList(IntStream.rangeClosed(var4.getMinBlockZ(), var4.getMaxBlockZ()), var2);
-      BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
-      IntListIterator var8 = var5.iterator();
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      RandomSource random = context.random();
+      WorldGenLevel level = context.level();
+      ChunkPos chunkPos = ChunkPos.containing(context.origin());
+      IntArrayList xPoses = Util.toShuffledList(IntStream.rangeClosed(chunkPos.getMinBlockX(), chunkPos.getMaxBlockX()), random);
+      IntArrayList zPoses = Util.toShuffledList(IntStream.rangeClosed(chunkPos.getMinBlockZ(), chunkPos.getMaxBlockZ()), random);
+      BlockPos.MutableBlockPos mutPos = new BlockPos.MutableBlockPos();
+      IntListIterator var8 = xPoses.iterator();
 
       while(var8.hasNext()) {
-         Integer var9 = (Integer)var8.next();
-         IntListIterator var10 = var6.iterator();
+         Integer x = (Integer)var8.next();
+         IntListIterator var10 = zPoses.iterator();
 
          while(var10.hasNext()) {
-            Integer var11 = (Integer)var10.next();
-            var7.set(var9, 0, var11);
-            BlockPos var12 = var3.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var7);
-            if (var3.isEmptyBlock(var12) || var3.getBlockState(var12).getCollisionShape(var3, var12).isEmpty()) {
-               var3.setBlock(var12, Blocks.CHEST.defaultBlockState(), 2);
-               RandomizableContainer.setBlockEntityLootTable(var3, var2, var12, BuiltInLootTables.SPAWN_BONUS_CHEST);
-               BlockState var13 = Blocks.TORCH.defaultBlockState();
+            Integer z = (Integer)var10.next();
+            mutPos.set(x, 0, z);
+            BlockPos chestPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, mutPos);
+            if (level.isEmptyBlock(chestPos) || level.getBlockState(chestPos).getCollisionShape(level, chestPos).isEmpty()) {
+               level.setBlock(chestPos, Blocks.CHEST.defaultBlockState(), 2);
+               RandomizableContainer.setBlockEntityLootTable(level, random, chestPos, BuiltInLootTables.SPAWN_BONUS_CHEST);
+               BlockState torch = Blocks.TORCH.defaultBlockState();
 
-               for(Direction var15 : Direction.Plane.HORIZONTAL) {
-                  BlockPos var16 = var12.relative(var15);
-                  if (var13.canSurvive(var3, var16)) {
-                     var3.setBlock(var16, var13, 2);
+               for(Direction direction : Direction.Plane.HORIZONTAL) {
+                  BlockPos torchPos = chestPos.relative(direction);
+                  if (torch.canSurvive(level, torchPos)) {
+                     level.setBlock(torchPos, torch, 2);
                   }
                }
 

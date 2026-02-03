@@ -25,48 +25,48 @@ public class CopperBulbBlock extends Block {
       return CODEC;
    }
 
-   public CopperBulbBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public CopperBulbBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.defaultBlockState().setValue(LIT, false)).setValue(POWERED, false));
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (var4.getBlock() != var1.getBlock() && var2 instanceof ServerLevel var6) {
-         this.checkAndFlip(var1, var6, var3);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (oldState.getBlock() != state.getBlock() && level instanceof ServerLevel serverLevel) {
+         this.checkAndFlip(state, serverLevel, pos);
       }
 
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (var2 instanceof ServerLevel var7) {
-         this.checkAndFlip(var1, var7, var3);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (level instanceof ServerLevel serverLevel) {
+         this.checkAndFlip(state, serverLevel, pos);
       }
 
    }
 
-   public void checkAndFlip(BlockState var1, ServerLevel var2, BlockPos var3) {
-      boolean var4 = var2.hasNeighborSignal(var3);
-      if (var4 != (Boolean)var1.getValue(POWERED)) {
-         BlockState var5 = var1;
-         if (!(Boolean)var1.getValue(POWERED)) {
-            var5 = (BlockState)var1.cycle(LIT);
-            var2.playSound((Entity)null, var3, (Boolean)var5.getValue(LIT) ? SoundEvents.COPPER_BULB_TURN_ON : SoundEvents.COPPER_BULB_TURN_OFF, SoundSource.BLOCKS);
+   public void checkAndFlip(final BlockState state, final ServerLevel level, final BlockPos pos) {
+      boolean signal = level.hasNeighborSignal(pos);
+      if (signal != (Boolean)state.getValue(POWERED)) {
+         BlockState newState = state;
+         if (!(Boolean)state.getValue(POWERED)) {
+            newState = (BlockState)state.cycle(LIT);
+            level.playSound((Entity)null, pos, (Boolean)newState.getValue(LIT) ? SoundEvents.COPPER_BULB_TURN_ON : SoundEvents.COPPER_BULB_TURN_OFF, SoundSource.BLOCKS);
          }
 
-         var2.setBlock(var3, (BlockState)var5.setValue(POWERED, var4), 3);
+         level.setBlock(pos, (BlockState)newState.setValue(POWERED, signal), 3);
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(LIT, POWERED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(LIT, POWERED);
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      return (Boolean)var2.getBlockState(var3).getValue(LIT) ? 15 : 0;
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      return (Boolean)level.getBlockState(pos).getValue(LIT) ? 15 : 0;
    }
 
    static {

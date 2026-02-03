@@ -1,18 +1,23 @@
 package net.minecraft.world.entity.animal.allay;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalPanic;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
@@ -32,6 +37,7 @@ import net.minecraft.world.entity.ai.behavior.StayCloseToTarget;
 import net.minecraft.world.entity.ai.behavior.Swim;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.schedule.Activity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
@@ -53,80 +59,75 @@ public class AllayAi {
       super();
    }
 
-   protected static Brain<?> makeBrain(Brain<Allay> var0) {
-      initCoreActivity(var0);
-      initIdleActivity(var0);
-      var0.setCoreActivities(ImmutableSet.of(Activity.CORE));
-      var0.setDefaultActivity(Activity.IDLE);
-      var0.useDefaultActivity();
-      return var0;
+   protected static List<ActivityData<Allay>> getActivities() {
+      return List.of(initCoreActivity(), initIdleActivity());
    }
 
-   private static void initCoreActivity(Brain<Allay> var0) {
-      var0.addActivity(Activity.CORE, 0, ImmutableList.of(new Swim(0.8F), new AnimalPanic(2.5F), new LookAtTargetSink(45, 90), new MoveToTargetSink(), new CountDownCooldownTicks(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS), new CountDownCooldownTicks(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS)));
+   private static ActivityData<Allay> initCoreActivity() {
+      return ActivityData.<Allay>create(Activity.CORE, 0, ImmutableList.of(new Swim(0.8F), new AnimalPanic(2.5F), new LookAtTargetSink(45, 90), new MoveToTargetSink(), new CountDownCooldownTicks(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS), new CountDownCooldownTicks(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS)));
    }
 
-   private static void initIdleActivity(Brain<Allay> var0) {
-      var0.addActivityWithConditions(Activity.IDLE, ImmutableList.of(Pair.of(0, GoToWantedItem.create((var0x) -> true, 1.75F, true, 32)), Pair.of(1, new GoAndGiveItemsToTarget(AllayAi::getItemDepositPosition, 2.25F, 20)), Pair.of(2, StayCloseToTarget.create(AllayAi::getItemDepositPosition, Predicate.not(AllayAi::hasWantedItem), 4, 16, 2.25F)), Pair.of(3, SetEntityLookTargetSometimes.create(6.0F, UniformInt.of(30, 60))), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(RandomStroll.fly(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1))))), ImmutableSet.of());
+   private static ActivityData<Allay> initIdleActivity() {
+      return ActivityData.<Allay>create(Activity.IDLE, 0, ImmutableList.of(GoToWantedItem.create((mob) -> true, 1.75F, true, 32), new GoAndGiveItemsToTarget(AllayAi::getItemDepositPosition, 2.25F, 20, AllayAi::onItemThrown), StayCloseToTarget.create(AllayAi::getItemDepositPosition, Predicate.not(AllayAi::hasWantedItem), 4, 16, 2.25F), SetEntityLookTargetSometimes.create(6.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.fly(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
    }
 
-   public static void updateActivity(Allay var0) {
-      var0.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.IDLE));
+   public static void updateActivity(final Allay body) {
+      body.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.IDLE));
    }
 
-   public static void hearNoteblock(LivingEntity var0, BlockPos var1) {
-      Brain var2 = var0.getBrain();
-      GlobalPos var3 = GlobalPos.of(var0.level().dimension(), var1);
-      Optional var4 = var2.getMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION);
-      if (var4.isEmpty()) {
-         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION, var3);
-         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, 600);
-      } else if (((GlobalPos)var4.get()).equals(var3)) {
-         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, 600);
+   public static void hearNoteblock(final LivingEntity allay, final BlockPos pos) {
+      Brain<?> brain = allay.getBrain();
+      GlobalPos globalPos = GlobalPos.of(allay.level().dimension(), pos);
+      Optional<GlobalPos> likedNoteblockPos = brain.<GlobalPos>getMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION);
+      if (likedNoteblockPos.isEmpty()) {
+         brain.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION, globalPos);
+         brain.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, 600);
+      } else if (((GlobalPos)likedNoteblockPos.get()).equals(globalPos)) {
+         brain.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, 600);
       }
 
    }
 
-   private static Optional<PositionTracker> getItemDepositPosition(LivingEntity var0) {
-      Brain var1 = var0.getBrain();
-      Optional var2 = var1.getMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION);
-      if (var2.isPresent()) {
-         GlobalPos var3 = (GlobalPos)var2.get();
-         if (shouldDepositItemsAtLikedNoteblock(var0, var1, var3)) {
-            return Optional.of(new BlockPosTracker(var3.pos().above()));
+   private static Optional<PositionTracker> getItemDepositPosition(final LivingEntity allay) {
+      Brain<?> brain = allay.getBrain();
+      Optional<GlobalPos> likedNoteblockPos = brain.<GlobalPos>getMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION);
+      if (likedNoteblockPos.isPresent()) {
+         GlobalPos position = (GlobalPos)likedNoteblockPos.get();
+         if (shouldDepositItemsAtLikedNoteblock(allay, brain, position)) {
+            return Optional.of(new BlockPosTracker(position.pos().above()));
          }
 
-         var1.eraseMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION);
+         brain.eraseMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION);
       }
 
-      return getLikedPlayerPositionTracker(var0);
+      return getLikedPlayerPositionTracker(allay);
    }
 
-   private static boolean hasWantedItem(LivingEntity var0) {
-      Brain var1 = var0.getBrain();
-      return var1.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM);
+   private static boolean hasWantedItem(final LivingEntity allay) {
+      Brain<?> brain = allay.getBrain();
+      return brain.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM);
    }
 
-   private static boolean shouldDepositItemsAtLikedNoteblock(LivingEntity var0, Brain<?> var1, GlobalPos var2) {
-      Optional var3 = var1.getMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS);
-      Level var4 = var0.level();
-      return var2.isCloseEnough(var4.dimension(), var0.blockPosition(), 1024) && var4.getBlockState(var2.pos()).is(Blocks.NOTE_BLOCK) && var3.isPresent();
+   private static boolean shouldDepositItemsAtLikedNoteblock(final LivingEntity allay, final Brain<?> brain, final GlobalPos likedNoteblockPos) {
+      Optional<Integer> likedNoteblockCooldown = brain.<Integer>getMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS);
+      Level level = allay.level();
+      return likedNoteblockPos.isCloseEnough(level.dimension(), allay.blockPosition(), 1024) && level.getBlockState(likedNoteblockPos.pos()).is(Blocks.NOTE_BLOCK) && likedNoteblockCooldown.isPresent();
    }
 
-   private static Optional<PositionTracker> getLikedPlayerPositionTracker(LivingEntity var0) {
-      return getLikedPlayer(var0).map((var0x) -> new EntityTracker(var0x, true));
+   private static Optional<PositionTracker> getLikedPlayerPositionTracker(final LivingEntity allay) {
+      return getLikedPlayer(allay).map((serverPlayer) -> new EntityTracker(serverPlayer, true));
    }
 
-   public static Optional<ServerPlayer> getLikedPlayer(LivingEntity var0) {
-      Level var1 = var0.level();
-      if (!var1.isClientSide() && var1 instanceof ServerLevel var2) {
-         Optional var3 = var0.getBrain().getMemory(MemoryModuleType.LIKED_PLAYER);
-         if (var3.isPresent()) {
-            Entity var4 = var2.getEntity((UUID)var3.get());
-            if (var4 instanceof ServerPlayer) {
-               ServerPlayer var5 = (ServerPlayer)var4;
-               if ((var5.gameMode.isSurvival() || var5.gameMode.isCreative()) && var5.closerThan(var0, 64.0)) {
-                  return Optional.of(var5);
+   public static Optional<ServerPlayer> getLikedPlayer(final LivingEntity allay) {
+      Level level = allay.level();
+      if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
+         Optional<UUID> likedPlayer = allay.getBrain().<UUID>getMemory(MemoryModuleType.LIKED_PLAYER);
+         if (likedPlayer.isPresent()) {
+            Entity entity = serverLevel.getEntity((UUID)likedPlayer.get());
+            if (entity instanceof ServerPlayer) {
+               ServerPlayer serverPlayer = (ServerPlayer)entity;
+               if ((serverPlayer.gameMode.isSurvival() || serverPlayer.gameMode.isCreative()) && serverPlayer.closerThan(allay, 64.0)) {
+                  return Optional.of(serverPlayer);
                }
             }
 
@@ -135,5 +136,14 @@ public class AllayAi {
       }
 
       return Optional.empty();
+   }
+
+   private static void onItemThrown(final ServerLevel level, final Allay thrower, final ItemStack item, final BlockPos targetPos) {
+      getLikedPlayer(thrower).ifPresent((player) -> CriteriaTriggers.ALLAY_DROP_ITEM_ON_BLOCK.trigger(player, targetPos, item));
+      if (level.getGameTime() % 7L == 0L && level.getRandom().nextDouble() < 0.9) {
+         float pitch = (Float)Util.getRandom(Allay.THROW_SOUND_PITCHES, level.getRandom());
+         level.playSound((Entity)null, thrower, SoundEvents.ALLAY_THROW, SoundSource.NEUTRAL, 1.0F, pitch);
+      }
+
    }
 }

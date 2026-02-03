@@ -9,24 +9,23 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundDeleteChatPacket(MessageSignature.Packed messageSignature) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundDeleteChatPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundDeleteChatPacket>codec(ClientboundDeleteChatPacket::write, ClientboundDeleteChatPacket::new);
 
-   private ClientboundDeleteChatPacket(FriendlyByteBuf var1) {
-      this(MessageSignature.Packed.read(var1));
+   private ClientboundDeleteChatPacket(final FriendlyByteBuf input) {
+      this(MessageSignature.Packed.read(input));
    }
 
-   public ClientboundDeleteChatPacket(MessageSignature.Packed var1) {
+   public ClientboundDeleteChatPacket {
       super();
-      this.messageSignature = var1;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      MessageSignature.Packed.write(var1, this.messageSignature);
+   private void write(final FriendlyByteBuf output) {
+      MessageSignature.Packed.write(output, this.messageSignature);
    }
 
    public PacketType<ClientboundDeleteChatPacket> type() {
       return GamePacketTypes.CLIENTBOUND_DELETE_CHAT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleDeleteChat(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleDeleteChat(this);
    }
 }

@@ -13,20 +13,20 @@ public abstract class BeeSoundInstance extends AbstractTickableSoundInstance {
    protected final Bee bee;
    private boolean hasSwitched;
 
-   public BeeSoundInstance(Bee var1, SoundEvent var2, SoundSource var3) {
-      super(var2, var3, SoundInstance.createUnseededRandom());
-      this.bee = var1;
-      this.x = (double)((float)var1.getX());
-      this.y = (double)((float)var1.getY());
-      this.z = (double)((float)var1.getZ());
+   public BeeSoundInstance(final Bee bee, final SoundEvent event, final SoundSource source) {
+      super(event, source, SoundInstance.createUnseededRandom());
+      this.bee = bee;
+      this.x = (double)((float)bee.getX());
+      this.y = (double)((float)bee.getY());
+      this.z = (double)((float)bee.getZ());
       this.looping = true;
       this.delay = 0;
       this.volume = 0.0F;
    }
 
    public void tick() {
-      boolean var1 = this.shouldSwitchSounds();
-      if (var1 && !this.isStopped()) {
+      boolean shouldSwitchSounds = this.shouldSwitchSounds();
+      if (shouldSwitchSounds && !this.isStopped()) {
          Minecraft.getInstance().getSoundManager().queueTickingSound(this.getAlternativeSoundInstance());
          this.hasSwitched = true;
       }
@@ -35,10 +35,10 @@ public abstract class BeeSoundInstance extends AbstractTickableSoundInstance {
          this.x = (double)((float)this.bee.getX());
          this.y = (double)((float)this.bee.getY());
          this.z = (double)((float)this.bee.getZ());
-         float var2 = (float)this.bee.getDeltaMovement().horizontalDistance();
-         if (var2 >= 0.01F) {
-            this.pitch = Mth.lerp(Mth.clamp(var2, this.getMinPitch(), this.getMaxPitch()), this.getMinPitch(), this.getMaxPitch());
-            this.volume = Mth.lerp(Mth.clamp(var2, 0.0F, 0.5F), 0.0F, 1.2F);
+         float speed = (float)this.bee.getDeltaMovement().horizontalDistance();
+         if (speed >= 0.01F) {
+            this.pitch = Mth.lerp(Mth.clamp(speed, this.getMinPitch(), this.getMaxPitch()), this.getMinPitch(), this.getMaxPitch());
+            this.volume = Mth.lerp(Mth.clamp(speed, 0.0F, 0.5F), 0.0F, 1.2F);
          } else {
             this.pitch = 0.0F;
             this.volume = 0.0F;

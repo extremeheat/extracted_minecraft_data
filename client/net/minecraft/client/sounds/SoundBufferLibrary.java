@@ -18,74 +18,74 @@ public class SoundBufferLibrary {
    private final ResourceProvider resourceManager;
    private final Map<Identifier, CompletableFuture<SoundBuffer>> cache = Maps.newHashMap();
 
-   public SoundBufferLibrary(ResourceProvider var1) {
+   public SoundBufferLibrary(final ResourceProvider resourceProvider) {
       super();
-      this.resourceManager = var1;
+      this.resourceManager = resourceProvider;
    }
 
-   public CompletableFuture<SoundBuffer> getCompleteBuffer(Identifier var1) {
-      return (CompletableFuture)this.cache.computeIfAbsent(var1, (var1x) -> CompletableFuture.supplyAsync(() -> {
+   public CompletableFuture<SoundBuffer> getCompleteBuffer(final Identifier location) {
+      return (CompletableFuture)this.cache.computeIfAbsent(location, (l) -> CompletableFuture.supplyAsync(() -> {
             try {
-               InputStream var2 = this.resourceManager.open(var1x);
+               InputStream is = this.resourceManager.open(l);
 
                SoundBuffer var5;
                try {
-                  JOrbisAudioStream var3 = new JOrbisAudioStream(var2);
+                  FiniteAudioStream as = new JOrbisAudioStream(is);
 
                   try {
-                     ByteBuffer var4 = var3.readAll();
-                     var5 = new SoundBuffer(var4, var3.getFormat());
+                     ByteBuffer data = as.readAll();
+                     var5 = new SoundBuffer(data, as.getFormat());
                   } catch (Throwable var8) {
                      try {
-                        var3.close();
-                     } catch (Throwable var7) {
-                        var8.addSuppressed(var7);
+                        as.close();
+                     } catch (Throwable x2) {
+                        var8.addSuppressed(x2);
                      }
 
                      throw var8;
                   }
 
-                  var3.close();
+                  as.close();
                } catch (Throwable var9) {
-                  if (var2 != null) {
+                  if (is != null) {
                      try {
-                        var2.close();
-                     } catch (Throwable var6) {
-                        var9.addSuppressed(var6);
+                        is.close();
+                     } catch (Throwable x2) {
+                        var9.addSuppressed(x2);
                      }
                   }
 
                   throw var9;
                }
 
-               if (var2 != null) {
-                  var2.close();
+               if (is != null) {
+                  is.close();
                }
 
                return var5;
-            } catch (IOException var10) {
-               throw new CompletionException(var10);
+            } catch (IOException e) {
+               throw new CompletionException(e);
             }
          }, Util.nonCriticalIoPool()));
    }
 
-   public CompletableFuture<AudioStream> getStream(Identifier var1, boolean var2) {
+   public CompletableFuture<AudioStream> getStream(final Identifier location, final boolean looping) {
       return CompletableFuture.supplyAsync(() -> {
          try {
-            InputStream var3 = this.resourceManager.open(var1);
-            return (AudioStream)(var2 ? new LoopingAudioStream(JOrbisAudioStream::new, var3) : new JOrbisAudioStream(var3));
-         } catch (IOException var4) {
-            throw new CompletionException(var4);
+            InputStream is = this.resourceManager.open(location);
+            return (AudioStream)(looping ? new LoopingAudioStream(JOrbisAudioStream::new, is) : new JOrbisAudioStream(is));
+         } catch (IOException e) {
+            throw new CompletionException(e);
          }
       }, Util.nonCriticalIoPool());
    }
 
    public void clear() {
-      this.cache.values().forEach((var0) -> var0.thenAccept(SoundBuffer::discardAlBuffer));
+      this.cache.values().forEach((future) -> future.thenAccept(SoundBuffer::discardAlBuffer));
       this.cache.clear();
    }
 
-   public CompletableFuture<?> preload(Collection<Sound> var1) {
-      return CompletableFuture.allOf((CompletableFuture[])var1.stream().map((var1x) -> this.getCompleteBuffer(var1x.getPath())).toArray((var0) -> new CompletableFuture[var0]));
+   public CompletableFuture<?> preload(final Collection<Sound> sounds) {
+      return CompletableFuture.allOf((CompletableFuture[])sounds.stream().map((sound) -> this.getCompleteBuffer(sound.getPath())).toArray((x$0) -> new CompletableFuture[x$0]));
    }
 }

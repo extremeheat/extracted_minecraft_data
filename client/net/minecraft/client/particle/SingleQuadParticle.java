@@ -23,15 +23,15 @@ public abstract class SingleQuadParticle extends Particle {
    protected float oRoll;
    protected TextureAtlasSprite sprite;
 
-   protected SingleQuadParticle(ClientLevel var1, double var2, double var4, double var6, TextureAtlasSprite var8) {
-      super(var1, var2, var4, var6);
-      this.sprite = var8;
+   protected SingleQuadParticle(final ClientLevel level, final double x, final double y, final double z, final TextureAtlasSprite sprite) {
+      super(level, x, y, z);
+      this.sprite = sprite;
       this.quadSize = 0.1F * (this.random.nextFloat() * 0.5F + 0.5F) * 2.0F;
    }
 
-   protected SingleQuadParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
-      super(var1, var2, var4, var6, var8, var10, var12);
-      this.sprite = var14;
+   protected SingleQuadParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, xa, ya, za);
+      this.sprite = sprite;
       this.quadSize = 0.1F * (this.random.nextFloat() * 0.5F + 0.5F) * 2.0F;
    }
 
@@ -39,50 +39,50 @@ public abstract class SingleQuadParticle extends Particle {
       return SingleQuadParticle.FacingCameraMode.LOOKAT_XYZ;
    }
 
-   public void extract(QuadParticleRenderState var1, Camera var2, float var3) {
-      Quaternionf var4 = new Quaternionf();
-      this.getFacingCameraMode().setRotation(var4, var2, var3);
+   public void extract(final QuadParticleRenderState particleTypeRenderState, final Camera camera, final float partialTickTime) {
+      Quaternionf rotation = new Quaternionf();
+      this.getFacingCameraMode().setRotation(rotation, camera, partialTickTime);
       if (this.roll != 0.0F) {
-         var4.rotateZ(Mth.lerp(var3, this.oRoll, this.roll));
+         rotation.rotateZ(Mth.lerp(partialTickTime, this.oRoll, this.roll));
       }
 
-      this.extractRotatedQuad(var1, var2, var4, var3);
+      this.extractRotatedQuad(particleTypeRenderState, camera, rotation, partialTickTime);
    }
 
-   protected void extractRotatedQuad(QuadParticleRenderState var1, Camera var2, Quaternionf var3, float var4) {
-      Vec3 var5 = var2.position();
-      float var6 = (float)(Mth.lerp((double)var4, this.xo, this.x) - var5.x());
-      float var7 = (float)(Mth.lerp((double)var4, this.yo, this.y) - var5.y());
-      float var8 = (float)(Mth.lerp((double)var4, this.zo, this.z) - var5.z());
-      this.extractRotatedQuad(var1, var3, var6, var7, var8, var4);
+   protected void extractRotatedQuad(final QuadParticleRenderState particleTypeRenderState, final Camera camera, final Quaternionf rotation, final float partialTickTime) {
+      Vec3 pos = camera.position();
+      float x = (float)(Mth.lerp((double)partialTickTime, this.xo, this.x) - pos.x());
+      float y = (float)(Mth.lerp((double)partialTickTime, this.yo, this.y) - pos.y());
+      float z = (float)(Mth.lerp((double)partialTickTime, this.zo, this.z) - pos.z());
+      this.extractRotatedQuad(particleTypeRenderState, rotation, x, y, z, partialTickTime);
    }
 
-   protected void extractRotatedQuad(QuadParticleRenderState var1, Quaternionf var2, float var3, float var4, float var5, float var6) {
-      var1.add(this.getLayer(), var3, var4, var5, var2.x, var2.y, var2.z, var2.w, this.getQuadSize(var6), this.getU0(), this.getU1(), this.getV0(), this.getV1(), ARGB.colorFromFloat(this.alpha, this.rCol, this.gCol, this.bCol), this.getLightColor(var6));
+   protected void extractRotatedQuad(final QuadParticleRenderState particleTypeRenderState, final Quaternionf rotation, final float x, final float y, final float z, final float partialTickTime) {
+      particleTypeRenderState.add(this.getLayer(), x, y, z, rotation.x, rotation.y, rotation.z, rotation.w, this.getQuadSize(partialTickTime), this.getU0(), this.getU1(), this.getV0(), this.getV1(), ARGB.colorFromFloat(this.alpha, this.rCol, this.gCol, this.bCol), this.getLightCoords(partialTickTime));
    }
 
-   public float getQuadSize(float var1) {
+   public float getQuadSize(final float a) {
       return this.quadSize;
    }
 
-   public Particle scale(float var1) {
-      this.quadSize *= var1;
-      return super.scale(var1);
+   public Particle scale(final float scale) {
+      this.quadSize *= scale;
+      return super.scale(scale);
    }
 
    public ParticleRenderType getGroup() {
       return ParticleRenderType.SINGLE_QUADS;
    }
 
-   public void setSpriteFromAge(SpriteSet var1) {
+   public void setSpriteFromAge(final SpriteSet sprites) {
       if (!this.removed) {
-         this.setSprite(var1.get(this.age, this.lifetime));
+         this.setSprite(sprites.get(this.age, this.lifetime));
       }
 
    }
 
-   protected void setSprite(TextureAtlasSprite var1) {
-      this.sprite = var1;
+   protected void setSprite(final TextureAtlasSprite icon) {
+      this.sprite = icon;
    }
 
    protected float getU0() {
@@ -103,14 +103,14 @@ public abstract class SingleQuadParticle extends Particle {
 
    protected abstract Layer getLayer();
 
-   public void setColor(float var1, float var2, float var3) {
-      this.rCol = var1;
-      this.gCol = var2;
-      this.bCol = var3;
+   public void setColor(final float r, final float g, final float b) {
+      this.rCol = r;
+      this.gCol = g;
+      this.bCol = b;
    }
 
-   protected void setAlpha(float var1) {
-      this.alpha = var1;
+   protected void setAlpha(final float alpha) {
+      this.alpha = alpha;
    }
 
    public String toString() {
@@ -119,10 +119,10 @@ public abstract class SingleQuadParticle extends Particle {
    }
 
    public interface FacingCameraMode {
-      FacingCameraMode LOOKAT_XYZ = (var0, var1, var2) -> var0.set(var1.rotation());
-      FacingCameraMode LOOKAT_Y = (var0, var1, var2) -> var0.set(0.0F, var1.rotation().y, 0.0F, var1.rotation().w);
+      FacingCameraMode LOOKAT_XYZ = (target, camera, partialTickTime) -> target.set(camera.rotation());
+      FacingCameraMode LOOKAT_Y = (target, camera, partialTickTime) -> target.set(0.0F, camera.rotation().y, 0.0F, camera.rotation().w);
 
-      void setRotation(Quaternionf var1, Camera var2, float var3);
+      void setRotation(final Quaternionf target, final Camera camera, final float partialTickTime);
    }
 
    public static record Layer(boolean translucent, Identifier textureAtlasLocation, RenderPipeline pipeline) {
@@ -131,11 +131,8 @@ public abstract class SingleQuadParticle extends Particle {
       public static final Layer OPAQUE;
       public static final Layer TRANSLUCENT;
 
-      public Layer(boolean var1, Identifier var2, RenderPipeline var3) {
+      public Layer {
          super();
-         this.translucent = var1;
-         this.textureAtlasLocation = var2;
-         this.pipeline = var3;
       }
 
       static {

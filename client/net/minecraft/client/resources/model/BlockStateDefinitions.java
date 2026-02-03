@@ -27,19 +27,19 @@ public class BlockStateDefinitions {
       return (new StateDefinition.Builder<Block, BlockState>(Blocks.AIR)).add(BlockStateProperties.MAP).create(Block::defaultBlockState, BlockState::new);
    }
 
-   public static BlockState getItemFrameFakeState(boolean var0, boolean var1) {
-      return (BlockState)((BlockState)(var0 ? GLOW_ITEM_FRAME_FAKE_DEFINITION : ITEM_FRAME_FAKE_DEFINITION).any()).setValue(BlockStateProperties.MAP, var1);
+   public static BlockState getItemFrameFakeState(final boolean isGlowing, final boolean map) {
+      return (BlockState)((BlockState)(isGlowing ? GLOW_ITEM_FRAME_FAKE_DEFINITION : ITEM_FRAME_FAKE_DEFINITION).any()).setValue(BlockStateProperties.MAP, map);
    }
 
    static Function<Identifier, StateDefinition<Block, BlockState>> definitionLocationToBlockStateMapper() {
-      HashMap var0 = new HashMap(STATIC_DEFINITIONS);
+      Map<Identifier, StateDefinition<Block, BlockState>> result = new HashMap(STATIC_DEFINITIONS);
 
-      for(Block var2 : BuiltInRegistries.BLOCK) {
-         var0.put(var2.builtInRegistryHolder().key().identifier(), var2.getStateDefinition());
+      for(Block block : BuiltInRegistries.BLOCK) {
+         result.put(block.builtInRegistryHolder().key().identifier(), block.getStateDefinition());
       }
 
-      Objects.requireNonNull(var0);
-      return var0::get;
+      Objects.requireNonNull(result);
+      return result::get;
    }
 
    static {

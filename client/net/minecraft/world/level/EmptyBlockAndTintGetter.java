@@ -16,7 +16,7 @@ public enum EmptyBlockAndTintGetter implements BlockAndTintGetter {
    private EmptyBlockAndTintGetter() {
    }
 
-   public float getShade(Direction var1, boolean var2) {
+   public float getShade(final Direction direction, final boolean shade) {
       return 1.0F;
    }
 
@@ -24,19 +24,19 @@ public enum EmptyBlockAndTintGetter implements BlockAndTintGetter {
       return LevelLightEngine.EMPTY;
    }
 
-   public int getBlockTint(BlockPos var1, ColorResolver var2) {
+   public int getBlockTint(final BlockPos pos, final ColorResolver color) {
       return -1;
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
       return null;
    }
 
-   public BlockState getBlockState(BlockPos var1) {
+   public BlockState getBlockState(final BlockPos pos) {
       return Blocks.AIR.defaultBlockState();
    }
 
-   public FluidState getFluidState(BlockPos var1) {
+   public FluidState getFluidState(final BlockPos pos) {
       return Fluids.EMPTY.defaultFluidState();
    }
 

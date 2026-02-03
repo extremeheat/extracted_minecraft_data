@@ -14,26 +14,26 @@ public class FutureChain implements TaskChainer, AutoCloseable {
    private final Executor executor;
    private volatile boolean closed;
 
-   public FutureChain(Executor var1) {
+   public FutureChain(final Executor executor) {
       super();
-      this.executor = var1;
+      this.executor = executor;
    }
 
-   public <T> void append(CompletableFuture<T> var1, Consumer<T> var2) {
-      this.head = this.head.thenCombine(var1, (var0, var1x) -> var1x).thenAcceptAsync((var2x) -> {
+   public <T> void append(final CompletableFuture<T> preparation, final Consumer<T> chainedTask) {
+      this.head = this.head.thenCombine(preparation, (ignored, value) -> value).thenAcceptAsync((value) -> {
          if (!this.closed) {
-            var2.accept(var2x);
+            chainedTask.accept(value);
          }
 
-      }, this.executor).exceptionally((var0) -> {
-         if (var0 instanceof CompletionException var1) {
-            var0 = var1.getCause();
+      }, this.executor).exceptionally((t) -> {
+         if (t instanceof CompletionException c) {
+            t = c.getCause();
          }
 
-         if (var0 instanceof CancellationException var2) {
-            throw var2;
+         if (t instanceof CancellationException c) {
+            throw c;
          } else {
-            LOGGER.error("Chain link failed, continuing to next one", var0);
+            LOGGER.error("Chain link failed, continuing to next one", t);
             return null;
          }
       });

@@ -12,21 +12,21 @@ public class GoToTargetLocation {
       super();
    }
 
-   private static BlockPos getNearbyPos(Mob var0, BlockPos var1) {
-      RandomSource var2 = var0.level().random;
-      return var1.offset(getRandomOffset(var2), 0, getRandomOffset(var2));
+   private static BlockPos getNearbyPos(final Mob body, final BlockPos pos) {
+      RandomSource random = body.level().getRandom();
+      return pos.offset(getRandomOffset(random), 0, getRandomOffset(random));
    }
 
-   private static int getRandomOffset(RandomSource var0) {
-      return var0.nextInt(3) - 1;
+   private static int getRandomOffset(final RandomSource random) {
+      return random.nextInt(3) - 1;
    }
 
-   public static <E extends Mob> OneShot<E> create(MemoryModuleType<BlockPos> var0, int var1, float var2) {
-      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.present(var0), var3.absent(MemoryModuleType.ATTACK_TARGET), var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.LOOK_TARGET)).apply(var3, (var3x, var4, var5, var6) -> (var4x, var5x, var6x) -> {
-               BlockPos var8 = (BlockPos)var3.get(var3x);
-               boolean var9 = var8.closerThan(var5x.blockPosition(), (double)var1);
-               if (!var9) {
-                  BehaviorUtils.setWalkAndLookTargetMemories(var5x, (BlockPos)getNearbyPos(var5x, var8), var2, var1);
+   public static <E extends Mob> OneShot<E> create(final MemoryModuleType<BlockPos> locationMemory, final int closeEnoughDist, final float speedModifier) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(locationMemory), i.absent(MemoryModuleType.ATTACK_TARGET), i.absent(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.LOOK_TARGET)).apply(i, (location, attackTarget, walkTarget, lookTarget) -> (level, body, timestamp) -> {
+               BlockPos celebrateLocation = (BlockPos)i.get(location);
+               boolean closeEnoughToTarget = celebrateLocation.closerThan(body.blockPosition(), (double)closeEnoughDist);
+               if (!closeEnoughToTarget) {
+                  BehaviorUtils.setWalkAndLookTargetMemories(body, (BlockPos)getNearbyPos(body, celebrateLocation), speedModifier, closeEnoughDist);
                }
 
                return true;

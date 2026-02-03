@@ -22,20 +22,20 @@ public class GenericWaitingScreen extends Screen {
    private Button button;
    private int disableButtonTicks;
 
-   public static GenericWaitingScreen createWaiting(Component var0, Component var1, Runnable var2) {
-      return new GenericWaitingScreen(var0, (Component)null, var1, var2, 0);
+   public static GenericWaitingScreen createWaiting(final Component title, final Component buttonLabel, final Runnable buttonCallback) {
+      return new GenericWaitingScreen(title, (Component)null, buttonLabel, buttonCallback, 0);
    }
 
-   public static GenericWaitingScreen createCompleted(Component var0, Component var1, Component var2, Runnable var3) {
-      return new GenericWaitingScreen(var0, var1, var2, var3, 20);
+   public static GenericWaitingScreen createCompleted(final Component title, final Component messageText, final Component buttonLabel, final Runnable buttonCallback) {
+      return new GenericWaitingScreen(title, messageText, buttonLabel, buttonCallback, 20);
    }
 
-   protected GenericWaitingScreen(Component var1, @Nullable Component var2, Component var3, Runnable var4, int var5) {
-      super(var1);
-      this.messageText = var2;
-      this.buttonLabel = var3;
-      this.buttonCallback = var4;
-      this.disableButtonTicks = var5;
+   protected GenericWaitingScreen(final Component title, final @Nullable Component messageText, final Component buttonLabel, final Runnable buttonCallback, final int disableButtonTicks) {
+      super(title);
+      this.messageText = messageText;
+      this.buttonLabel = buttonLabel;
+      this.buttonCallback = buttonCallback;
+      this.disableButtonTicks = disableButtonTicks;
    }
 
    protected void init() {
@@ -44,14 +44,14 @@ public class GenericWaitingScreen extends Screen {
          this.message = MultiLineLabel.create(this.font, this.messageText, 360);
       }
 
-      boolean var1 = true;
-      boolean var2 = true;
-      int var3 = this.message != null ? this.message.getLineCount() : 1;
-      int var10000 = Math.max(var3, 5);
+      int buttonWidth = 150;
+      int buttonHeight = 20;
+      int lineCount = this.message != null ? this.message.getLineCount() : 1;
+      int var10000 = Math.max(lineCount, 5);
       Objects.requireNonNull(this.font);
-      int var4 = var10000 * 9;
-      int var5 = Math.min(120 + var4, this.height - 40);
-      this.button = (Button)this.addRenderableWidget(Button.builder(this.buttonLabel, (var1x) -> this.onClose()).bounds((this.width - 150) / 2, var5, 150, 20).build());
+      int messageButtonSpacing = var10000 * 9;
+      int buttonY = Math.min(120 + messageButtonSpacing, this.height - 40);
+      this.button = (Button)this.addRenderableWidget(Button.builder(this.buttonLabel, (b) -> this.onClose()).bounds((this.width - 150) / 2, buttonY, 150, 20).build());
    }
 
    public void tick() {
@@ -62,19 +62,19 @@ public class GenericWaitingScreen extends Screen {
       this.button.active = this.disableButtonTicks == 0;
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      ActiveTextCollector var5 = var1.textRenderer();
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 80, -1);
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
+      ActiveTextCollector textRenderer = graphics.textRenderer();
+      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 80, -1);
       if (this.message == null) {
-         String var6 = LoadingDotsText.get(Util.getMillis());
-         var1.drawCenteredString(this.font, (String)var6, this.width / 2, 120, -6250336);
+         String loadingDots = LoadingDotsText.get(Util.getMillis());
+         graphics.drawCenteredString(this.font, (String)loadingDots, this.width / 2, 120, -6250336);
       } else {
          MultiLineLabel var10000 = this.message;
          TextAlignment var10001 = TextAlignment.CENTER;
          int var10002 = this.width / 2;
          Objects.requireNonNull(this.font);
-         var10000.visitLines(var10001, var10002, 120, 9, var5);
+         var10000.visitLines(var10001, var10002, 120, 9, textRenderer);
       }
 
    }

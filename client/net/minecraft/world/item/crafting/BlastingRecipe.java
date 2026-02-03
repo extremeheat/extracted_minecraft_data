@@ -1,12 +1,19 @@
 package net.minecraft.world.item.crafting;
 
+import com.mojang.serialization.MapCodec;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 
 public class BlastingRecipe extends AbstractCookingRecipe {
-   public BlastingRecipe(String var1, CookingBookCategory var2, Ingredient var3, ItemStack var4, float var5, int var6) {
-      super(var1, var2, var3, var4, var5, var6);
+   public static final MapCodec<BlastingRecipe> MAP_CODEC = cookingMapCodec(BlastingRecipe::new, 100);
+   public static final StreamCodec<RegistryFriendlyByteBuf, BlastingRecipe> STREAM_CODEC = cookingStreamCodec(BlastingRecipe::new);
+   public static final RecipeSerializer<BlastingRecipe> SERIALIZER;
+
+   public BlastingRecipe(final Recipe.CommonInfo commonInfo, final AbstractCookingRecipe.CookingBookInfo bookInfo, final Ingredient ingredient, final ItemStackTemplate result, final float experience, final int cookingTime) {
+      super(commonInfo, bookInfo, ingredient, result, experience, cookingTime);
    }
 
    protected Item furnaceIcon() {
@@ -14,7 +21,7 @@ public class BlastingRecipe extends AbstractCookingRecipe {
    }
 
    public RecipeSerializer<BlastingRecipe> getSerializer() {
-      return RecipeSerializer.BLASTING_RECIPE;
+      return SERIALIZER;
    }
 
    public RecipeType<BlastingRecipe> getType() {
@@ -36,5 +43,9 @@ public class BlastingRecipe extends AbstractCookingRecipe {
       }
 
       return var10000;
+   }
+
+   static {
+      SERIALIZER = new RecipeSerializer<BlastingRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

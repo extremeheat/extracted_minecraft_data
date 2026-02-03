@@ -18,7 +18,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
-import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.Container;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,6 +28,7 @@ import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
 import net.minecraft.world.entity.ai.memory.ExpirableValue;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.npc.InventoryCarrier;
@@ -36,75 +37,61 @@ import net.minecraft.world.entity.schedule.Activity;
 import org.jspecify.annotations.Nullable;
 
 public record DebugBrainDump(String name, String profession, int xp, float health, float maxHealth, String inventory, boolean wantsGolem, int angerLevel, List<String> activities, List<String> behaviors, List<String> memories, List<String> gossips, Set<BlockPos> pois, Set<BlockPos> potentialPois) {
-   public static final StreamCodec<FriendlyByteBuf, DebugBrainDump> STREAM_CODEC = StreamCodec.<FriendlyByteBuf, DebugBrainDump>of((var0, var1) -> var1.write(var0), DebugBrainDump::new);
+   public static final StreamCodec<FriendlyByteBuf, DebugBrainDump> STREAM_CODEC = StreamCodec.<FriendlyByteBuf, DebugBrainDump>of((output, value) -> value.write(output), DebugBrainDump::new);
 
-   public DebugBrainDump(FriendlyByteBuf var1) {
-      this(var1.readUtf(), var1.readUtf(), var1.readInt(), var1.readFloat(), var1.readFloat(), var1.readUtf(), var1.readBoolean(), var1.readInt(), var1.readList(FriendlyByteBuf::readUtf), var1.readList(FriendlyByteBuf::readUtf), var1.readList(FriendlyByteBuf::readUtf), var1.readList(FriendlyByteBuf::readUtf), (Set)var1.readCollection(HashSet::new, BlockPos.STREAM_CODEC), (Set)var1.readCollection(HashSet::new, BlockPos.STREAM_CODEC));
+   public DebugBrainDump(final FriendlyByteBuf input) {
+      this(input.readUtf(), input.readUtf(), input.readInt(), input.readFloat(), input.readFloat(), input.readUtf(), input.readBoolean(), input.readInt(), input.readList(FriendlyByteBuf::readUtf), input.readList(FriendlyByteBuf::readUtf), input.readList(FriendlyByteBuf::readUtf), input.readList(FriendlyByteBuf::readUtf), (Set)input.readCollection(HashSet::new, BlockPos.STREAM_CODEC), (Set)input.readCollection(HashSet::new, BlockPos.STREAM_CODEC));
    }
 
-   public DebugBrainDump(String var1, String var2, int var3, float var4, float var5, String var6, boolean var7, int var8, List<String> var9, List<String> var10, List<String> var11, List<String> var12, Set<BlockPos> var13, Set<BlockPos> var14) {
+   public DebugBrainDump {
       super();
-      this.name = var1;
-      this.profession = var2;
-      this.xp = var3;
-      this.health = var4;
-      this.maxHealth = var5;
-      this.inventory = var6;
-      this.wantsGolem = var7;
-      this.angerLevel = var8;
-      this.activities = var9;
-      this.behaviors = var10;
-      this.memories = var11;
-      this.gossips = var12;
-      this.pois = var13;
-      this.potentialPois = var14;
    }
 
-   public void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.name);
-      var1.writeUtf(this.profession);
-      var1.writeInt(this.xp);
-      var1.writeFloat(this.health);
-      var1.writeFloat(this.maxHealth);
-      var1.writeUtf(this.inventory);
-      var1.writeBoolean(this.wantsGolem);
-      var1.writeInt(this.angerLevel);
-      var1.writeCollection(this.activities, FriendlyByteBuf::writeUtf);
-      var1.writeCollection(this.behaviors, FriendlyByteBuf::writeUtf);
-      var1.writeCollection(this.memories, FriendlyByteBuf::writeUtf);
-      var1.writeCollection(this.gossips, FriendlyByteBuf::writeUtf);
-      var1.writeCollection(this.pois, BlockPos.STREAM_CODEC);
-      var1.writeCollection(this.potentialPois, BlockPos.STREAM_CODEC);
+   public void write(final FriendlyByteBuf output) {
+      output.writeUtf(this.name);
+      output.writeUtf(this.profession);
+      output.writeInt(this.xp);
+      output.writeFloat(this.health);
+      output.writeFloat(this.maxHealth);
+      output.writeUtf(this.inventory);
+      output.writeBoolean(this.wantsGolem);
+      output.writeInt(this.angerLevel);
+      output.writeCollection(this.activities, FriendlyByteBuf::writeUtf);
+      output.writeCollection(this.behaviors, FriendlyByteBuf::writeUtf);
+      output.writeCollection(this.memories, FriendlyByteBuf::writeUtf);
+      output.writeCollection(this.gossips, FriendlyByteBuf::writeUtf);
+      output.writeCollection(this.pois, BlockPos.STREAM_CODEC);
+      output.writeCollection(this.potentialPois, BlockPos.STREAM_CODEC);
    }
 
-   public static DebugBrainDump takeBrainDump(ServerLevel var0, LivingEntity var1) {
-      String var2 = DebugEntityNameGenerator.getEntityName((Entity)var1);
-      String var3;
-      int var4;
-      if (var1 instanceof Villager var5) {
-         var3 = var5.getVillagerData().profession().getRegisteredName();
-         var4 = var5.getVillagerXp();
+   public static DebugBrainDump takeBrainDump(final ServerLevel serverLevel, final LivingEntity entity) {
+      String name = DebugEntityNameGenerator.getEntityName((Entity)entity);
+      String profession;
+      int xp;
+      if (entity instanceof Villager villager) {
+         profession = villager.getVillagerData().profession().getRegisteredName();
+         xp = villager.getVillagerXp();
       } else {
-         var3 = "";
-         var4 = 0;
+         profession = "";
+         xp = 0;
       }
 
-      float var20 = var1.getHealth();
-      float var6 = var1.getMaxHealth();
-      Brain var7 = var1.getBrain();
-      long var8 = var1.level().getGameTime();
-      String var10;
-      if (var1 instanceof InventoryCarrier var11) {
-         SimpleContainer var12 = var11.getInventory();
-         var10 = var12.isEmpty() ? "" : var12.toString();
+      float health = entity.getHealth();
+      float maxHealth = entity.getMaxHealth();
+      Brain<?> brain = entity.getBrain();
+      long gameTime = entity.level().getGameTime();
+      String inventoryStr;
+      if (entity instanceof InventoryCarrier inventoryCarrier) {
+         Container inventory = inventoryCarrier.getInventory();
+         inventoryStr = inventory.isEmpty() ? "" : inventory.toString();
       } else {
-         var10 = "";
+         inventoryStr = "";
       }
 
       boolean var10000;
       label36: {
-         if (var1 instanceof Villager var22) {
-            if (var22.wantsToSpawnGolem(var8)) {
+         if (entity instanceof Villager villager) {
+            if (villager.wantsToSpawnGolem(gameTime)) {
                var10000 = 1;
                break label36;
             }
@@ -113,79 +100,79 @@ public record DebugBrainDump(String name, String profession, int xp, float healt
          var10000 = 0;
       }
 
-      boolean var21 = (boolean)var10000;
-      if (var1 instanceof Warden var13) {
-         var10000 = var13.getClientAngerLevel();
+      boolean wantsGolem = (boolean)var10000;
+      if (entity instanceof Warden warden) {
+         var10000 = warden.getClientAngerLevel();
       } else {
          var10000 = -1;
       }
 
-      int var23 = var10000;
-      List var24 = var7.getActiveActivities().stream().map(Activity::getName).toList();
-      List var14 = var7.getRunningBehaviors().stream().map(BehaviorControl::debugString).toList();
-      List var15 = getMemoryDescriptions(var0, var1, var8).map((var0x) -> StringUtil.truncateStringIfNecessary(var0x, 255, true)).toList();
-      Set var16 = getKnownBlockPositions(var7, MemoryModuleType.JOB_SITE, MemoryModuleType.HOME, MemoryModuleType.MEETING_POINT);
-      Set var17 = getKnownBlockPositions(var7, MemoryModuleType.POTENTIAL_JOB_SITE);
+      int angerLevel = var10000;
+      List<String> activities = brain.getActiveActivities().stream().map(Activity::getName).toList();
+      List<String> behaviors = brain.getRunningBehaviors().stream().map(BehaviorControl::debugString).toList();
+      List<String> memories = getMemoryDescriptions(serverLevel, entity, gameTime).map((description) -> StringUtil.truncateStringIfNecessary(description, 255, true)).toList();
+      Set<BlockPos> pois = getKnownBlockPositions(brain, MemoryModuleType.JOB_SITE, MemoryModuleType.HOME, MemoryModuleType.MEETING_POINT);
+      Set<BlockPos> potentialPois = getKnownBlockPositions(brain, MemoryModuleType.POTENTIAL_JOB_SITE);
       List var26;
-      if (var1 instanceof Villager var19) {
-         var26 = getVillagerGossips(var19);
+      if (entity instanceof Villager villager) {
+         var26 = getVillagerGossips(villager);
       } else {
          var26 = List.of();
       }
 
-      List var18 = var26;
-      return new DebugBrainDump(var2, var3, var4, var20, var6, var10, var21, var23, var24, var14, var15, var18, var16, var17);
+      List<String> gossips = var26;
+      return new DebugBrainDump(name, profession, xp, health, maxHealth, inventoryStr, wantsGolem, angerLevel, activities, behaviors, memories, gossips, pois, potentialPois);
    }
 
    @SafeVarargs
-   private static Set<BlockPos> getKnownBlockPositions(Brain<?> var0, MemoryModuleType<GlobalPos>... var1) {
-      Stream var10000 = Stream.of(var1);
-      Objects.requireNonNull(var0);
-      var10000 = var10000.filter(var0::hasMemoryValue);
-      Objects.requireNonNull(var0);
-      return (Set)var10000.map(var0::getMemory).flatMap(Optional::stream).map(GlobalPos::pos).collect(Collectors.toSet());
+   private static Set<BlockPos> getKnownBlockPositions(final Brain<?> brain, final MemoryModuleType<GlobalPos>... memories) {
+      Stream var10000 = Stream.of(memories);
+      Objects.requireNonNull(brain);
+      var10000 = var10000.filter(brain::hasMemoryValue);
+      Objects.requireNonNull(brain);
+      return (Set)var10000.map(brain::getMemory).flatMap(Optional::stream).map(GlobalPos::pos).collect(Collectors.toSet());
    }
 
-   private static List<String> getVillagerGossips(Villager var0) {
-      ArrayList var1 = new ArrayList();
-      var0.getGossips().getGossipEntries().forEach((var1x, var2) -> {
-         String var3 = DebugEntityNameGenerator.getEntityName(var1x);
-         var2.forEach((var2x, var3x) -> var1.add(var3 + ": " + String.valueOf(var2x) + ": " + var3x));
+   private static List<String> getVillagerGossips(final Villager villager) {
+      List<String> gossips = new ArrayList();
+      villager.getGossips().getGossipEntries().forEach((uuid, entries) -> {
+         String gossipeeName = DebugEntityNameGenerator.getEntityName(uuid);
+         entries.forEach((gossipType, value) -> gossips.add(gossipeeName + ": " + String.valueOf(gossipType) + ": " + value));
       });
-      return var1;
+      return gossips;
    }
 
-   private static Stream<String> getMemoryDescriptions(ServerLevel var0, LivingEntity var1, long var2) {
-      return var1.getBrain().getMemories().entrySet().stream().map((var3) -> {
-         MemoryModuleType var4 = (MemoryModuleType)var3.getKey();
-         Optional var5 = (Optional)var3.getValue();
-         return getMemoryDescription(var0, var2, var4, var5);
+   private static Stream<String> getMemoryDescriptions(final ServerLevel level, final LivingEntity body, final long timestamp) {
+      return body.getBrain().getMemories().entrySet().stream().map((entry) -> {
+         MemoryModuleType<?> memoryType = (MemoryModuleType)entry.getKey();
+         Optional<? extends ExpirableValue<?>> optionalExpirableValue = (Optional)entry.getValue();
+         return getMemoryDescription(level, timestamp, memoryType, optionalExpirableValue);
       }).sorted();
    }
 
-   private static String getMemoryDescription(ServerLevel var0, long var1, MemoryModuleType<?> var3, Optional<? extends ExpirableValue<?>> var4) {
-      String var5;
-      if (var4.isPresent()) {
-         ExpirableValue var6 = (ExpirableValue)var4.get();
-         Object var7 = var6.getValue();
-         if (var3 == MemoryModuleType.HEARD_BELL_TIME) {
-            long var8 = var1 - (Long)var7;
-            var5 = var8 + " ticks ago";
-         } else if (var6.canExpire()) {
-            String var10000 = getShortDescription(var0, var7);
-            var5 = var10000 + " (ttl: " + var6.getTimeToLive() + ")";
+   private static String getMemoryDescription(final ServerLevel level, final long timestamp, final MemoryModuleType<?> memoryType, final Optional<? extends ExpirableValue<?>> maybeValue) {
+      String description;
+      if (maybeValue.isPresent()) {
+         ExpirableValue<?> expirableValue = (ExpirableValue)maybeValue.get();
+         Object value = expirableValue.getValue();
+         if (memoryType == MemoryModuleType.HEARD_BELL_TIME) {
+            long timeSince = timestamp - (Long)value;
+            description = timeSince + " ticks ago";
+         } else if (expirableValue.canExpire()) {
+            String var10000 = getShortDescription(level, value);
+            description = var10000 + " (ttl: " + expirableValue.getTimeToLive() + ")";
          } else {
-            var5 = getShortDescription(var0, var7);
+            description = getShortDescription(level, value);
          }
       } else {
-         var5 = "-";
+         description = "-";
       }
 
-      String var10 = BuiltInRegistries.MEMORY_MODULE_TYPE.getKey(var3).getPath();
-      return var10 + ": " + var5;
+      String var10 = BuiltInRegistries.MEMORY_MODULE_TYPE.getKey(memoryType).getPath();
+      return var10 + ": " + description;
    }
 
-   private static String getShortDescription(ServerLevel var0, @Nullable Object var1) {
+   private static String getShortDescription(final ServerLevel level, final @Nullable Object obj) {
       byte var3 = 0;
       String var10000;
       //$FF: var3->value
@@ -196,56 +183,61 @@ public record DebugBrainDump(String name, String profession, int xp, float healt
       //4->net/minecraft/core/GlobalPos
       //5->net/minecraft/world/entity/ai/behavior/BlockPosTracker
       //6->net/minecraft/world/damagesource/DamageSource
-      //7->java/util/Collection
-      switch (((Class)var1).typeSwitch<invokedynamic>(var1, var3)) {
+      //7->net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities
+      //8->java/util/Collection
+      switch (((Class)obj).typeSwitch<invokedynamic>(obj, var3)) {
          case -1:
             var10000 = "-";
             break;
          case 0:
-            UUID var4 = (UUID)var1;
-            var10000 = getShortDescription(var0, var0.getEntity(var4));
+            UUID uuid = (UUID)obj;
+            var10000 = getShortDescription(level, level.getEntity(uuid));
             break;
          case 1:
-            Entity var5 = (Entity)var1;
-            var10000 = DebugEntityNameGenerator.getEntityName(var5);
+            Entity entity = (Entity)obj;
+            var10000 = DebugEntityNameGenerator.getEntityName(entity);
             break;
          case 2:
-            WalkTarget var6 = (WalkTarget)var1;
-            var10000 = getShortDescription(var0, var6.getTarget());
+            WalkTarget walkTarget = (WalkTarget)obj;
+            var10000 = getShortDescription(level, walkTarget.getTarget());
             break;
          case 3:
-            EntityTracker var7 = (EntityTracker)var1;
-            var10000 = getShortDescription(var0, var7.getEntity());
+            EntityTracker entityTracker = (EntityTracker)obj;
+            var10000 = getShortDescription(level, entityTracker.getEntity());
             break;
          case 4:
-            GlobalPos var8 = (GlobalPos)var1;
-            var10000 = getShortDescription(var0, var8.pos());
+            GlobalPos globalPos = (GlobalPos)obj;
+            var10000 = getShortDescription(level, globalPos.pos());
             break;
          case 5:
-            BlockPosTracker var9 = (BlockPosTracker)var1;
-            var10000 = getShortDescription(var0, var9.currentBlockPosition());
+            BlockPosTracker tracker = (BlockPosTracker)obj;
+            var10000 = getShortDescription(level, tracker.currentBlockPosition());
             break;
          case 6:
-            DamageSource var10 = (DamageSource)var1;
-            Entity var12 = var10.getEntity();
-            var10000 = var12 == null ? var1.toString() : getShortDescription(var0, var12);
+            DamageSource damageSource = (DamageSource)obj;
+            Entity entity = damageSource.getEntity();
+            var10000 = entity == null ? obj.toString() : getShortDescription(level, entity);
             break;
          case 7:
-            Collection var11 = (Collection)var1;
-            var10000 = "[" + (String)var11.stream().map((var1x) -> getShortDescription(var0, var1x)).collect(Collectors.joining(", ")) + "]";
+            NearestVisibleLivingEntities visibleEntities = (NearestVisibleLivingEntities)obj;
+            var10000 = getShortDescription(level, visibleEntities.nearbyEntities());
+            break;
+         case 8:
+            Collection<?> collection = (Collection)obj;
+            var10000 = "[" + (String)collection.stream().map((element) -> getShortDescription(level, element)).collect(Collectors.joining(", ")) + "]";
             break;
          default:
-            var10000 = var1.toString();
+            var10000 = obj.toString();
       }
 
       return var10000;
    }
 
-   public boolean hasPoi(BlockPos var1) {
-      return this.pois.contains(var1);
+   public boolean hasPoi(final BlockPos poiPos) {
+      return this.pois.contains(poiPos);
    }
 
-   public boolean hasPotentialPoi(BlockPos var1) {
-      return this.potentialPois.contains(var1);
+   public boolean hasPotentialPoi(final BlockPos poiPos) {
+      return this.potentialPois.contains(poiPos);
    }
 }

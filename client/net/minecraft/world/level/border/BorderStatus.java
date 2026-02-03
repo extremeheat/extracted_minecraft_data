@@ -7,8 +7,8 @@ public enum BorderStatus {
 
    private final int color;
 
-   private BorderStatus(final int var3) {
-      this.color = var3;
+   private BorderStatus(final int color) {
+      this.color = color;
    }
 
    public int getColor() {

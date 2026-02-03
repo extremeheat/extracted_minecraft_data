@@ -10,16 +10,16 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilde
 public class SwampHutStructure extends Structure {
    public static final MapCodec<SwampHutStructure> CODEC = simpleCodec(SwampHutStructure::new);
 
-   public SwampHutStructure(Structure.StructureSettings var1) {
-      super(var1);
+   public SwampHutStructure(final Structure.StructureSettings settings) {
+      super(settings);
    }
 
-   public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, (var1x) -> generatePieces(var1x, var1));
+   public Optional<Structure.GenerationStub> findGenerationPoint(final Structure.GenerationContext context) {
+      return onTopOfChunkCenter(context, Heightmap.Types.WORLD_SURFACE_WG, (builder) -> generatePieces(builder, context));
    }
 
-   private static void generatePieces(StructurePiecesBuilder var0, Structure.GenerationContext var1) {
-      var0.addPiece(new SwampHutPiece(var1.random(), var1.chunkPos().getMinBlockX(), var1.chunkPos().getMinBlockZ()));
+   private static void generatePieces(final StructurePiecesBuilder builder, final Structure.GenerationContext context) {
+      builder.addPiece(new SwampHutPiece(context.random(), context.chunkPos().getMinBlockX(), context.chunkPos().getMinBlockZ()));
    }
 
    public StructureType<?> type() {

@@ -10,20 +10,14 @@ import net.minecraft.world.inventory.HopperMenu;
 public class HopperScreen extends AbstractContainerScreen<HopperMenu> {
    private static final Identifier HOPPER_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/hopper.png");
 
-   public HopperScreen(HopperMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3);
-      this.imageHeight = 133;
+   public HopperScreen(final HopperMenu menu, final Inventory inventory, final Component title) {
+      super(menu, inventory, title, 176, 133);
       this.inventoryLabelY = this.imageHeight - 94;
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
-   }
-
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      int var5 = (this.width - this.imageWidth) / 2;
-      int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(RenderPipelines.GUI_TEXTURED, HOPPER_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+      int xo = (this.width - this.imageWidth) / 2;
+      int yo = (this.height - this.imageHeight) / 2;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, HOPPER_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
    }
 }

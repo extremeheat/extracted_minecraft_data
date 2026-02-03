@@ -48,22 +48,22 @@ public class SmithingTemplateItem extends Item {
    private final List<Identifier> baseSlotEmptyIcons;
    private final List<Identifier> additionalSlotEmptyIcons;
 
-   public SmithingTemplateItem(Component var1, Component var2, Component var3, Component var4, List<Identifier> var5, List<Identifier> var6, Item.Properties var7) {
-      super(var7);
-      this.appliesTo = var1;
-      this.ingredients = var2;
-      this.baseSlotDescription = var3;
-      this.additionsSlotDescription = var4;
-      this.baseSlotEmptyIcons = var5;
-      this.additionalSlotEmptyIcons = var6;
+   public SmithingTemplateItem(final Component appliesTo, final Component ingredients, final Component baseSlotDescription, final Component additionsSlotDescription, final List<Identifier> baseSlotEmptyIcons, final List<Identifier> additionalSlotEmptyIcons, final Item.Properties properties) {
+      super(properties);
+      this.appliesTo = appliesTo;
+      this.ingredients = ingredients;
+      this.baseSlotDescription = baseSlotDescription;
+      this.additionsSlotDescription = additionsSlotDescription;
+      this.baseSlotEmptyIcons = baseSlotEmptyIcons;
+      this.additionalSlotEmptyIcons = additionalSlotEmptyIcons;
    }
 
-   public static SmithingTemplateItem createArmorTrimTemplate(Item.Properties var0) {
-      return new SmithingTemplateItem(ARMOR_TRIM_APPLIES_TO, ARMOR_TRIM_INGREDIENTS, ARMOR_TRIM_BASE_SLOT_DESCRIPTION, ARMOR_TRIM_ADDITIONS_SLOT_DESCRIPTION, createTrimmableArmorIconList(), createTrimmableMaterialIconList(), var0);
+   public static SmithingTemplateItem createArmorTrimTemplate(final Item.Properties properties) {
+      return new SmithingTemplateItem(ARMOR_TRIM_APPLIES_TO, ARMOR_TRIM_INGREDIENTS, ARMOR_TRIM_BASE_SLOT_DESCRIPTION, ARMOR_TRIM_ADDITIONS_SLOT_DESCRIPTION, createTrimmableArmorIconList(), createTrimmableMaterialIconList(), properties);
    }
 
-   public static SmithingTemplateItem createNetheriteUpgradeTemplate(Item.Properties var0) {
-      return new SmithingTemplateItem(NETHERITE_UPGRADE_APPLIES_TO, NETHERITE_UPGRADE_INGREDIENTS, NETHERITE_UPGRADE_BASE_SLOT_DESCRIPTION, NETHERITE_UPGRADE_ADDITIONS_SLOT_DESCRIPTION, createNetheriteUpgradeIconList(), createNetheriteUpgradeMaterialList(), var0);
+   public static SmithingTemplateItem createNetheriteUpgradeTemplate(final Item.Properties properties) {
+      return new SmithingTemplateItem(NETHERITE_UPGRADE_APPLIES_TO, NETHERITE_UPGRADE_INGREDIENTS, NETHERITE_UPGRADE_BASE_SLOT_DESCRIPTION, NETHERITE_UPGRADE_ADDITIONS_SLOT_DESCRIPTION, createNetheriteUpgradeIconList(), createNetheriteUpgradeMaterialList(), properties);
    }
 
    private static List<Identifier> createTrimmableArmorIconList() {
@@ -82,13 +82,13 @@ public class SmithingTemplateItem extends Item {
       return List.of(EMPTY_SLOT_INGOT);
    }
 
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, TooltipDisplay var3, Consumer<Component> var4, TooltipFlag var5) {
-      var4.accept(SMITHING_TEMPLATE_SUFFIX);
-      var4.accept(CommonComponents.EMPTY);
-      var4.accept(APPLIES_TO_TITLE);
-      var4.accept(CommonComponents.space().append(this.appliesTo));
-      var4.accept(INGREDIENTS_TITLE);
-      var4.accept(CommonComponents.space().append(this.ingredients));
+   public void appendHoverText(final ItemStack itemStack, final Item.TooltipContext context, final TooltipDisplay display, final Consumer<Component> builder, final TooltipFlag tooltipFlag) {
+      builder.accept(SMITHING_TEMPLATE_SUFFIX);
+      builder.accept(CommonComponents.EMPTY);
+      builder.accept(APPLIES_TO_TITLE);
+      builder.accept(CommonComponents.space().append(this.appliesTo));
+      builder.accept(INGREDIENTS_TITLE);
+      builder.accept(CommonComponents.space().append(this.ingredients));
    }
 
    public Component getBaseSlotDescription() {

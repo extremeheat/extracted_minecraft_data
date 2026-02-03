@@ -26,89 +26,89 @@ public class ObserverBlock extends DirectionalBlock {
       return CODEC;
    }
 
-   public ObserverBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public ObserverBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.SOUTH)).setValue(POWERED, false));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, POWERED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, POWERED);
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((Boolean)var1.getValue(POWERED)) {
-         var2.setBlock(var3, (BlockState)var1.setValue(POWERED, false), 2);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if ((Boolean)state.getValue(POWERED)) {
+         level.setBlock(pos, (BlockState)state.setValue(POWERED, false), 2);
       } else {
-         var2.setBlock(var3, (BlockState)var1.setValue(POWERED, true), 2);
-         var2.scheduleTick(var3, this, 2);
+         level.setBlock(pos, (BlockState)state.setValue(POWERED, true), 2);
+         level.scheduleTick(pos, this, 2);
       }
 
-      this.updateNeighborsInFront(var2, var3, var1);
+      this.updateNeighborsInFront(level, pos, state);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (var1.getValue(FACING) == var5 && !(Boolean)var1.getValue(POWERED)) {
-         this.startSignal(var2, var3, var4);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (state.getValue(FACING) == directionToNeighbour && !(Boolean)state.getValue(POWERED)) {
+         this.startSignal(level, ticks, pos);
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   private void startSignal(LevelReader var1, ScheduledTickAccess var2, BlockPos var3) {
-      if (!var1.isClientSide() && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
-         var2.scheduleTick(var3, (Block)this, 2);
+   private void startSignal(final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos) {
+      if (!level.isClientSide() && !ticks.getBlockTicks().hasScheduledTick(pos, this)) {
+         ticks.scheduleTick(pos, (Block)this, 2);
       }
 
    }
 
-   protected void updateNeighborsInFront(Level var1, BlockPos var2, BlockState var3) {
-      Direction var4 = (Direction)var3.getValue(FACING);
-      BlockPos var5 = var2.relative(var4.getOpposite());
-      Orientation var6 = ExperimentalRedstoneUtils.initialOrientation(var1, var4.getOpposite(), (Direction)null);
-      var1.neighborChanged(var5, this, var6);
-      var1.updateNeighborsAtExceptFromFacing(var5, this, var4, var6);
+   protected void updateNeighborsInFront(final Level level, final BlockPos pos, final BlockState state) {
+      Direction direction = (Direction)state.getValue(FACING);
+      BlockPos oppositePos = pos.relative(direction.getOpposite());
+      Orientation orientation = ExperimentalRedstoneUtils.initialOrientation(level, direction.getOpposite(), (Direction)null);
+      level.neighborChanged(oppositePos, this, orientation);
+      level.updateNeighborsAtExceptFromFacing(oppositePos, this, direction, orientation);
    }
 
-   protected boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(final BlockState state) {
       return true;
    }
 
-   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return var1.getSignal(var2, var3, var4);
+   protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return state.getSignal(level, pos, direction);
    }
 
-   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return (Boolean)var1.getValue(POWERED) && var1.getValue(FACING) == var4 ? 15 : 0;
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return (Boolean)state.getValue(POWERED) && state.getValue(FACING) == direction ? 15 : 0;
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         if (!var2.isClientSide() && (Boolean)var1.getValue(POWERED) && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
-            BlockState var6 = (BlockState)var1.setValue(POWERED, false);
-            var2.setBlock(var3, var6, 18);
-            this.updateNeighborsInFront(var2, var3, var6);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!state.is(oldState.getBlock())) {
+         if (!level.isClientSide() && (Boolean)state.getValue(POWERED) && !level.getBlockTicks().hasScheduledTick(pos, this)) {
+            BlockState newState = (BlockState)state.setValue(POWERED, false);
+            level.setBlock(pos, newState, 18);
+            this.updateNeighborsInFront(level, pos, newState);
          }
 
       }
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      if ((Boolean)var1.getValue(POWERED) && var2.getBlockTicks().hasScheduledTick(var3, this)) {
-         this.updateNeighborsInFront(var2, var3, (BlockState)var1.setValue(POWERED, false));
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      if ((Boolean)state.getValue(POWERED) && level.getBlockTicks().hasScheduledTick(pos, this)) {
+         this.updateNeighborsInFront(level, pos, (BlockState)state.setValue(POWERED, false));
       }
 
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite().getOpposite());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite().getOpposite());
    }
 
    static {

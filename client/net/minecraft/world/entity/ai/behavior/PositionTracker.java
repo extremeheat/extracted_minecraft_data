@@ -9,5 +9,5 @@ public interface PositionTracker {
 
    BlockPos currentBlockPosition();
 
-   boolean isVisibleBy(LivingEntity var1);
+   boolean isVisibleBy(final LivingEntity body);
 }

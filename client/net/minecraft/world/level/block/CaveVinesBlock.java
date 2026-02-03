@@ -24,53 +24,53 @@ public class CaveVinesBlock extends GrowingPlantHeadBlock implements CaveVines {
       return CODEC;
    }
 
-   public CaveVinesBlock(BlockBehaviour.Properties var1) {
-      super(var1, Direction.DOWN, SHAPE, false, 0.1);
+   public CaveVinesBlock(final BlockBehaviour.Properties properties) {
+      super(properties, Direction.DOWN, SHAPE, false, 0.1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0)).setValue(BERRIES, false));
    }
 
-   protected int getBlocksToGrowWhenBonemealed(RandomSource var1) {
+   protected int getBlocksToGrowWhenBonemealed(final RandomSource random) {
       return 1;
    }
 
-   protected boolean canGrowInto(BlockState var1) {
-      return var1.isAir();
+   protected boolean canGrowInto(final BlockState state) {
+      return state.isAir();
    }
 
    protected Block getBodyBlock() {
       return Blocks.CAVE_VINES_PLANT;
    }
 
-   protected BlockState updateBodyAfterConvertedFromHead(BlockState var1, BlockState var2) {
-      return (BlockState)var2.setValue(BERRIES, (Boolean)var1.getValue(BERRIES));
+   protected BlockState updateBodyAfterConvertedFromHead(final BlockState headState, final BlockState bodyState) {
+      return (BlockState)bodyState.setValue(BERRIES, (Boolean)headState.getValue(BERRIES));
    }
 
-   protected BlockState getGrowIntoState(BlockState var1, RandomSource var2) {
-      return (BlockState)super.getGrowIntoState(var1, var2).setValue(BERRIES, var2.nextFloat() < 0.11F);
+   protected BlockState getGrowIntoState(final BlockState growFromState, final RandomSource random) {
+      return (BlockState)super.getGrowIntoState(growFromState, random).setValue(BERRIES, random.nextFloat() < 0.11F);
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
       return new ItemStack(Items.GLOW_BERRIES);
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      return CaveVines.use(var4, var1, var2, var3);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      return CaveVines.use(player, state, level, pos);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      super.createBlockStateDefinition(var1);
-      var1.add(BERRIES);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      super.createBlockStateDefinition(builder);
+      builder.add(BERRIES);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return !(Boolean)var3.getValue(BERRIES);
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return !(Boolean)state.getValue(BERRIES);
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      var1.setBlock(var3, (BlockState)var4.setValue(BERRIES, true), 2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      level.setBlock(pos, (BlockState)state.setValue(BERRIES, true), 2);
    }
 }

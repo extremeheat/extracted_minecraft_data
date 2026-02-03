@@ -20,27 +20,27 @@ public class DebugEntryBiome implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      Entity var6 = var5.getCameraEntity();
-      if (var6 != null && var5.level != null) {
-         BlockPos var7 = var6.blockPosition();
-         if (var5.level.isInsideBuildHeight(var7.getY())) {
-            if (SharedConstants.DEBUG_SHOW_SERVER_DEBUG_VALUES && var2 instanceof ServerLevel) {
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      Entity entity = minecraft.getCameraEntity();
+      if (entity != null && minecraft.level != null) {
+         BlockPos feetPos = entity.blockPosition();
+         if (minecraft.level.isInsideBuildHeight(feetPos.getY())) {
+            if (SharedConstants.DEBUG_SHOW_SERVER_DEBUG_VALUES && serverOrClientLevel instanceof ServerLevel) {
                Identifier var8 = GROUP;
-               String var10002 = "Biome: " + printBiome(var5.level.getBiome(var7));
-               Holder var10003 = var2.getBiome(var7);
-               var1.addToGroup(var8, List.of(var10002, "Server Biome: " + printBiome(var10003)));
+               String var10002 = "Biome: " + printBiome(minecraft.level.getBiome(feetPos));
+               Holder var10003 = serverOrClientLevel.getBiome(feetPos);
+               displayer.addToGroup(var8, List.of(var10002, "Server Biome: " + printBiome(var10003)));
             } else {
-               Holder var10001 = var5.level.getBiome(var7);
-               var1.addLine("Biome: " + printBiome(var10001));
+               Holder var10001 = minecraft.level.getBiome(feetPos);
+               displayer.addLine("Biome: " + printBiome(var10001));
             }
          }
 
       }
    }
 
-   private static String printBiome(Holder<Biome> var0) {
-      return (String)var0.unwrap().map((var0x) -> var0x.identifier().toString(), (var0x) -> "[unregistered " + String.valueOf(var0x) + "]");
+   private static String printBiome(final Holder<Biome> biome) {
+      return (String)biome.unwrap().map((key) -> key.identifier().toString(), (l) -> "[unregistered " + String.valueOf(l) + "]");
    }
 }

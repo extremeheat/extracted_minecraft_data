@@ -31,21 +31,21 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
    private LockCode lockKey;
    private @Nullable Component name;
 
-   protected BaseContainerBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
-      super(var1, var2, var3);
+   protected BaseContainerBlockEntity(final BlockEntityType<?> type, final BlockPos worldPosition, final BlockState blockState) {
+      super(type, worldPosition, blockState);
       this.lockKey = LockCode.NO_LOCK;
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.lockKey = LockCode.fromTag(var1);
-      this.name = parseCustomNameSafe(var1, "CustomName");
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.lockKey = LockCode.fromTag(input);
+      this.name = parseCustomNameSafe(input, "CustomName");
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      this.lockKey.addToTag(var1);
-      var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      this.lockKey.addToTag(output);
+      output.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
    }
 
    public Component getName() {
@@ -62,15 +62,15 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
 
    protected abstract Component getDefaultName();
 
-   public boolean canOpen(Player var1) {
-      return this.lockKey.canUnlock(var1);
+   public boolean canOpen(final Player player) {
+      return this.lockKey.canUnlock(player);
    }
 
-   public static void sendChestLockedNotifications(Vec3 var0, Player var1, Component var2) {
-      Level var3 = var1.level();
-      var1.displayClientMessage(Component.translatable("container.isLocked", var2), true);
-      if (!var3.isClientSide()) {
-         var3.playSound((Entity)null, var0.x(), var0.y(), var0.z(), SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1.0F, 1.0F);
+   public static void sendChestLockedNotifications(final Vec3 pos, final Player player, final Component displayName) {
+      Level level = player.level();
+      player.displayClientMessage(Component.translatable("container.isLocked", displayName), true);
+      if (!level.isClientSide()) {
+         level.playSound((Entity)null, pos.x(), pos.y(), pos.z(), SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
    }
@@ -81,11 +81,11 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
 
    protected abstract NonNullList<ItemStack> getItems();
 
-   protected abstract void setItems(NonNullList<ItemStack> var1);
+   protected abstract void setItems(NonNullList<ItemStack> items);
 
    public boolean isEmpty() {
-      for(ItemStack var2 : this.getItems()) {
-         if (!var2.isEmpty()) {
+      for(ItemStack itemStack : this.getItems()) {
+         if (!itemStack.isEmpty()) {
             return false;
          }
       }
@@ -93,68 +93,68 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
       return true;
    }
 
-   public ItemStack getItem(int var1) {
-      return (ItemStack)this.getItems().get(var1);
+   public ItemStack getItem(final int slot) {
+      return (ItemStack)this.getItems().get(slot);
    }
 
-   public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = ContainerHelper.removeItem(this.getItems(), var1, var2);
-      if (!var3.isEmpty()) {
+   public ItemStack removeItem(final int slot, final int count) {
+      ItemStack result = ContainerHelper.removeItem(this.getItems(), slot, count);
+      if (!result.isEmpty()) {
          this.setChanged();
       }
 
-      return var3;
+      return result;
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
-      return ContainerHelper.takeItem(this.getItems(), var1);
+   public ItemStack removeItemNoUpdate(final int slot) {
+      return ContainerHelper.takeItem(this.getItems(), slot);
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      this.getItems().set(var1, var2);
-      var2.limitSize(this.getMaxStackSize(var2));
+   public void setItem(final int slot, final ItemStack itemStack) {
+      this.getItems().set(slot, itemStack);
+      itemStack.limitSize(this.getMaxStackSize(itemStack));
       this.setChanged();
    }
 
-   public boolean stillValid(Player var1) {
-      return Container.stillValidBlockEntity(this, var1);
+   public boolean stillValid(final Player player) {
+      return Container.stillValidBlockEntity(this, player);
    }
 
    public void clearContent() {
       this.getItems().clear();
    }
 
-   public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
-      if (this.canOpen(var3)) {
-         return this.createMenu(var1, var2);
+   public @Nullable AbstractContainerMenu createMenu(final int containerId, final Inventory inventory, final Player player) {
+      if (this.canOpen(player)) {
+         return this.createMenu(containerId, inventory);
       } else {
-         sendChestLockedNotifications(this.getBlockPos().getCenter(), var3, this.getDisplayName());
+         sendChestLockedNotifications(this.getBlockPos().getCenter(), player, this.getDisplayName());
          return null;
       }
    }
 
-   protected abstract AbstractContainerMenu createMenu(int var1, Inventory var2);
+   protected abstract AbstractContainerMenu createMenu(final int containerId, final Inventory inventory);
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      super.applyImplicitComponents(var1);
-      this.name = (Component)var1.get(DataComponents.CUSTOM_NAME);
-      this.lockKey = (LockCode)var1.getOrDefault(DataComponents.LOCK, LockCode.NO_LOCK);
-      ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.getItems());
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      super.applyImplicitComponents(components);
+      this.name = (Component)components.get(DataComponents.CUSTOM_NAME);
+      this.lockKey = (LockCode)components.getOrDefault(DataComponents.LOCK, LockCode.NO_LOCK);
+      ((ItemContainerContents)components.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.getItems());
    }
 
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
-      var1.set(DataComponents.CUSTOM_NAME, this.name);
+   protected void collectImplicitComponents(final DataComponentMap.Builder components) {
+      super.collectImplicitComponents(components);
+      components.set(DataComponents.CUSTOM_NAME, this.name);
       if (this.isLocked()) {
-         var1.set(DataComponents.LOCK, this.lockKey);
+         components.set(DataComponents.LOCK, this.lockKey);
       }
 
-      var1.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.getItems()));
+      components.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.getItems()));
    }
 
-   public void removeComponentsFromTag(ValueOutput var1) {
-      var1.discard("CustomName");
-      var1.discard("lock");
-      var1.discard("Items");
+   public void removeComponentsFromTag(final ValueOutput output) {
+      output.discard("CustomName");
+      output.discard("lock");
+      output.discard("Items");
    }
 }

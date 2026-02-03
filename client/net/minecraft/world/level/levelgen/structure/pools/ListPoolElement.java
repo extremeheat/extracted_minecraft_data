@@ -20,47 +20,47 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class ListPoolElement extends StructurePoolElement {
-   public static final MapCodec<ListPoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(StructurePoolElement.CODEC.listOf().fieldOf("elements").forGetter((var0x) -> var0x.elements), projectionCodec()).apply(var0, ListPoolElement::new));
+   public static final MapCodec<ListPoolElement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(StructurePoolElement.CODEC.listOf().fieldOf("elements").forGetter((e) -> e.elements), projectionCodec()).apply(i, ListPoolElement::new));
    private final List<StructurePoolElement> elements;
 
-   public ListPoolElement(List<StructurePoolElement> var1, StructureTemplatePool.Projection var2) {
-      super(var2);
-      if (var1.isEmpty()) {
+   public ListPoolElement(final List<StructurePoolElement> elements, final StructureTemplatePool.Projection projection) {
+      super(projection);
+      if (elements.isEmpty()) {
          throw new IllegalArgumentException("Elements are empty");
       } else {
-         this.elements = var1;
-         this.setProjectionOnEachElement(var2);
+         this.elements = elements;
+         this.setProjectionOnEachElement(projection);
       }
    }
 
-   public Vec3i getSize(StructureTemplateManager var1, Rotation var2) {
-      int var3 = 0;
-      int var4 = 0;
-      int var5 = 0;
+   public Vec3i getSize(final StructureTemplateManager structureTemplateManager, final Rotation rotation) {
+      int sizeX = 0;
+      int sizeY = 0;
+      int sizeZ = 0;
 
-      for(StructurePoolElement var7 : this.elements) {
-         Vec3i var8 = var7.getSize(var1, var2);
-         var3 = Math.max(var3, var8.getX());
-         var4 = Math.max(var4, var8.getY());
-         var5 = Math.max(var5, var8.getZ());
+      for(StructurePoolElement element : this.elements) {
+         Vec3i size = element.getSize(structureTemplateManager, rotation);
+         sizeX = Math.max(sizeX, size.getX());
+         sizeY = Math.max(sizeY, size.getY());
+         sizeZ = Math.max(sizeZ, size.getZ());
       }
 
-      return new Vec3i(var3, var4, var5);
+      return new Vec3i(sizeX, sizeY, sizeZ);
    }
 
-   public List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(StructureTemplateManager var1, BlockPos var2, Rotation var3, RandomSource var4) {
-      return ((StructurePoolElement)this.elements.get(0)).getShuffledJigsawBlocks(var1, var2, var3, var4);
+   public List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final RandomSource random) {
+      return ((StructurePoolElement)this.elements.get(0)).getShuffledJigsawBlocks(structureTemplateManager, position, rotation, random);
    }
 
-   public BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3) {
-      Stream var4 = this.elements.stream().filter((var0) -> var0 != EmptyPoolElement.INSTANCE).map((var3x) -> var3x.getBoundingBox(var1, var2, var3));
-      Objects.requireNonNull(var4);
-      return (BoundingBox)BoundingBox.encapsulatingBoxes(var4::iterator).orElseThrow(() -> new IllegalStateException("Unable to calculate boundingbox for ListPoolElement"));
+   public BoundingBox getBoundingBox(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation) {
+      Stream<BoundingBox> stream = this.elements.stream().filter((e) -> e != EmptyPoolElement.INSTANCE).map((e) -> e.getBoundingBox(structureTemplateManager, position, rotation));
+      Objects.requireNonNull(stream);
+      return (BoundingBox)BoundingBox.encapsulatingBoxes(stream::iterator).orElseThrow(() -> new IllegalStateException("Unable to calculate boundingbox for ListPoolElement"));
    }
 
-   public boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, LiquidSettings var10, boolean var11) {
-      for(StructurePoolElement var13 : this.elements) {
-         if (!var13.place(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11)) {
+   public boolean place(final StructureTemplateManager structureTemplateManager, final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final BlockPos position, final BlockPos referencePos, final Rotation rotation, final BoundingBox chunkBB, final RandomSource random, final LiquidSettings liquidSettings, final boolean keepJigsaws) {
+      for(StructurePoolElement element : this.elements) {
+         if (!element.place(structureTemplateManager, level, structureManager, generator, position, referencePos, rotation, chunkBB, random, liquidSettings, keepJigsaws)) {
             return false;
          }
       }
@@ -72,9 +72,9 @@ public class ListPoolElement extends StructurePoolElement {
       return StructurePoolElementType.LIST;
    }
 
-   public StructurePoolElement setProjection(StructureTemplatePool.Projection var1) {
-      super.setProjection(var1);
-      this.setProjectionOnEachElement(var1);
+   public StructurePoolElement setProjection(final StructureTemplatePool.Projection projection) {
+      super.setProjection(projection);
+      this.setProjectionOnEachElement(projection);
       return this;
    }
 
@@ -83,8 +83,8 @@ public class ListPoolElement extends StructurePoolElement {
       return "List[" + (String)var10000.collect(Collectors.joining(", ")) + "]";
    }
 
-   private void setProjectionOnEachElement(StructureTemplatePool.Projection var1) {
-      this.elements.forEach((var1x) -> var1x.setProjection(var1));
+   private void setProjectionOnEachElement(final StructureTemplatePool.Projection projection) {
+      this.elements.forEach((k) -> k.setProjection(projection));
    }
 
    @VisibleForTesting

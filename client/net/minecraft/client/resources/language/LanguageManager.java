@@ -3,9 +3,8 @@ package net.minecraft.client.resources.language;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedMap;
@@ -27,52 +26,52 @@ public class LanguageManager implements ResourceManagerReloadListener {
    private String currentCode;
    private final Consumer<ClientLanguage> reloadCallback;
 
-   public LanguageManager(String var1, Consumer<ClientLanguage> var2) {
+   public LanguageManager(final String languageCode, final Consumer<ClientLanguage> reloadCallback) {
       super();
       this.languages = ImmutableMap.of("en_us", DEFAULT_LANGUAGE);
-      this.currentCode = var1;
-      this.reloadCallback = var2;
+      this.currentCode = languageCode;
+      this.reloadCallback = reloadCallback;
    }
 
-   private static Map<String, LanguageInfo> extractLanguages(Stream<PackResources> var0) {
-      HashMap var1 = Maps.newHashMap();
-      var0.forEach((var1x) -> {
+   private static Map<String, LanguageInfo> extractLanguages(final Stream<PackResources> resourcePacks) {
+      Map<String, LanguageInfo> result = Maps.newHashMap();
+      resourcePacks.forEach((resourcePack) -> {
          try {
-            LanguageMetadataSection var2 = (LanguageMetadataSection)var1x.getMetadataSection(LanguageMetadataSection.TYPE);
-            if (var2 != null) {
-               Map var10000 = var2.languages();
-               Objects.requireNonNull(var1);
-               var10000.forEach(var1::putIfAbsent);
+            LanguageMetadataSection languageMetadataSection = (LanguageMetadataSection)resourcePack.getMetadataSection(LanguageMetadataSection.TYPE);
+            if (languageMetadataSection != null) {
+               Map var10000 = languageMetadataSection.languages();
+               Objects.requireNonNull(result);
+               var10000.forEach(result::putIfAbsent);
             }
-         } catch (IOException | RuntimeException var3) {
-            LOGGER.warn("Unable to parse language metadata section of resourcepack: {}", var1x.packId(), var3);
+         } catch (Exception e) {
+            LOGGER.warn("Unable to parse language metadata section of resourcepack: {}", resourcePack.packId(), e);
          }
 
       });
-      return ImmutableMap.copyOf(var1);
+      return ImmutableMap.copyOf(result);
    }
 
-   public void onResourceManagerReload(ResourceManager var1) {
-      this.languages = extractLanguages(var1.listPacks());
-      ArrayList var2 = new ArrayList(2);
-      boolean var3 = DEFAULT_LANGUAGE.bidirectional();
-      var2.add("en_us");
+   public void onResourceManagerReload(final ResourceManager resourceManager) {
+      this.languages = extractLanguages(resourceManager.listPacks());
+      List<String> languageStack = new ArrayList(2);
+      boolean defaultRightToLeft = DEFAULT_LANGUAGE.bidirectional();
+      languageStack.add("en_us");
       if (!this.currentCode.equals("en_us")) {
-         LanguageInfo var4 = (LanguageInfo)this.languages.get(this.currentCode);
-         if (var4 != null) {
-            var2.add(this.currentCode);
-            var3 = var4.bidirectional();
+         LanguageInfo currentLanguage = (LanguageInfo)this.languages.get(this.currentCode);
+         if (currentLanguage != null) {
+            languageStack.add(this.currentCode);
+            defaultRightToLeft = currentLanguage.bidirectional();
          }
       }
 
-      ClientLanguage var5 = ClientLanguage.loadFrom(var1, var2, var3);
-      I18n.setLanguage(var5);
-      Language.inject(var5);
-      this.reloadCallback.accept(var5);
+      ClientLanguage locale = ClientLanguage.loadFrom(resourceManager, languageStack, defaultRightToLeft);
+      I18n.setLanguage(locale);
+      Language.inject(locale);
+      this.reloadCallback.accept(locale);
    }
 
-   public void setSelected(String var1) {
-      this.currentCode = var1;
+   public void setSelected(final String code) {
+      this.currentCode = code;
    }
 
    public String getSelected() {
@@ -83,7 +82,7 @@ public class LanguageManager implements ResourceManagerReloadListener {
       return new TreeMap(this.languages);
    }
 
-   public @Nullable LanguageInfo getLanguage(String var1) {
-      return (LanguageInfo)this.languages.get(var1);
+   public @Nullable LanguageInfo getLanguage(final String code) {
+      return (LanguageInfo)this.languages.get(code);
    }
 }

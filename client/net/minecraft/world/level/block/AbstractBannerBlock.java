@@ -13,27 +13,27 @@ import net.minecraft.world.level.block.state.BlockState;
 public abstract class AbstractBannerBlock extends BaseEntityBlock {
    private final DyeColor color;
 
-   protected AbstractBannerBlock(DyeColor var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.color = var1;
+   protected AbstractBannerBlock(final DyeColor color, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.color = color;
    }
 
    protected abstract MapCodec<? extends AbstractBannerBlock> codec();
 
-   public boolean isPossibleToRespawnInThis(BlockState var1) {
+   public boolean isPossibleToRespawnInThis(final BlockState state) {
       return true;
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new BannerBlockEntity(var1, var2, this.color);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new BannerBlockEntity(worldPosition, blockState, this.color);
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      BlockEntity var6 = var1.getBlockEntity(var2);
-      if (var6 instanceof BannerBlockEntity var5) {
-         return var5.getItem();
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
+      BlockEntity var6 = level.getBlockEntity(pos);
+      if (var6 instanceof BannerBlockEntity banner) {
+         return banner.getItem();
       } else {
-         return super.getCloneItemStack(var1, var2, var3, var4);
+         return super.getCloneItemStack(level, pos, state, includeData);
       }
    }
 

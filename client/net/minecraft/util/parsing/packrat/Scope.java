@@ -25,29 +25,29 @@ public final class Scope {
       this.stack[1] = null;
    }
 
-   private int valueIndex(Atom<?> var1) {
-      for(int var2 = this.topEntryKeyIndex; var2 > this.topMarkerKeyIndex; var2 -= 2) {
-         Object var3 = this.stack[var2];
+   private int valueIndex(final Atom<?> atom) {
+      for(int i = this.topEntryKeyIndex; i > this.topMarkerKeyIndex; i -= 2) {
+         Object key = this.stack[i];
 
-         assert var3 instanceof Atom;
+         assert key instanceof Atom;
 
-         if (var3 == var1) {
-            return var2 + 1;
+         if (key == atom) {
+            return i + 1;
          }
       }
 
       return -1;
    }
 
-   public int valueIndexForAny(Atom<?>... var1) {
-      for(int var2 = this.topEntryKeyIndex; var2 > this.topMarkerKeyIndex; var2 -= 2) {
-         Object var3 = this.stack[var2];
+   public int valueIndexForAny(final Atom<?>... atoms) {
+      for(int i = this.topEntryKeyIndex; i > this.topMarkerKeyIndex; i -= 2) {
+         Object key = this.stack[i];
 
-         assert var3 instanceof Atom;
+         assert key instanceof Atom;
 
-         for(Atom var7 : var1) {
-            if (var7 == var3) {
-               return var2 + 1;
+         for(Atom<?> atom : atoms) {
+            if (atom == key) {
+               return i + 1;
             }
          }
       }
@@ -55,15 +55,15 @@ public final class Scope {
       return -1;
    }
 
-   private void ensureCapacity(int var1) {
-      int var2 = this.stack.length;
-      int var3 = this.topEntryKeyIndex + 1;
-      int var4 = var3 + var1 * 2;
-      if (var4 >= var2) {
-         int var5 = Util.growByHalf(var2, var4 + 1);
-         Object[] var6 = new Object[var5];
-         System.arraycopy(this.stack, 0, var6, 0, var2);
-         this.stack = var6;
+   private void ensureCapacity(final int additionalEntryCount) {
+      int currentSize = this.stack.length;
+      int currentLastValueIndex = this.topEntryKeyIndex + 1;
+      int newLastValueIndex = currentLastValueIndex + additionalEntryCount * 2;
+      if (newLastValueIndex >= currentSize) {
+         int newSize = Util.growByHalf(currentSize, newLastValueIndex + 1);
+         Object[] newStack = new Object[newSize];
+         System.arraycopy(this.stack, 0, newStack, 0, currentSize);
+         this.stack = newStack;
       }
 
       assert this.validateStructure();
@@ -85,8 +85,8 @@ public final class Scope {
 
    }
 
-   private int getPreviousMarkerIndex(int var1) {
-      return (Integer)this.stack[var1 + 1];
+   private int getPreviousMarkerIndex(final int markerKeyIndex) {
+      return (Integer)this.stack[markerKeyIndex + 1];
    }
 
    public void popFrame() {
@@ -100,35 +100,35 @@ public final class Scope {
    }
 
    public void splitFrame() {
-      int var1 = this.topMarkerKeyIndex;
-      int var2 = (this.topEntryKeyIndex - this.topMarkerKeyIndex) / 2;
-      this.ensureCapacity(var2 + 1);
+      int currentFrameMarkerIndex = this.topMarkerKeyIndex;
+      int nonMarkerEntriesInFrame = (this.topEntryKeyIndex - this.topMarkerKeyIndex) / 2;
+      this.ensureCapacity(nonMarkerEntriesInFrame + 1);
       this.setupNewFrame();
-      int var3 = var1 + 2;
-      int var4 = this.topEntryKeyIndex;
+      int sourceCursor = currentFrameMarkerIndex + 2;
+      int targetCursor = this.topEntryKeyIndex;
 
-      for(int var5 = 0; var5 < var2; ++var5) {
-         var4 += 2;
-         Object var6 = this.stack[var3];
+      for(int i = 0; i < nonMarkerEntriesInFrame; ++i) {
+         targetCursor += 2;
+         Object key = this.stack[sourceCursor];
 
-         assert var6 != null;
+         assert key != null;
 
-         this.stack[var4] = var6;
-         this.stack[var4 + 1] = null;
-         var3 += 2;
+         this.stack[targetCursor] = key;
+         this.stack[targetCursor + 1] = null;
+         sourceCursor += 2;
       }
 
-      this.topEntryKeyIndex = var4;
+      this.topEntryKeyIndex = targetCursor;
 
       assert this.validateStructure();
 
    }
 
    public void clearFrameValues() {
-      for(int var1 = this.topEntryKeyIndex; var1 > this.topMarkerKeyIndex; var1 -= 2) {
-         assert this.stack[var1] instanceof Atom;
+      for(int i = this.topEntryKeyIndex; i > this.topMarkerKeyIndex; i -= 2) {
+         assert this.stack[i] instanceof Atom;
 
-         this.stack[var1 + 1] = null;
+         this.stack[i + 1] = null;
       }
 
       assert this.validateStructure();
@@ -136,123 +136,123 @@ public final class Scope {
    }
 
    public void mergeFrame() {
-      int var1 = this.getPreviousMarkerIndex(this.topMarkerKeyIndex);
-      int var2 = var1;
-      int var3 = this.topMarkerKeyIndex;
+      int previousMarkerIndex = this.getPreviousMarkerIndex(this.topMarkerKeyIndex);
+      int previousFrameCursor = previousMarkerIndex;
+      int currentFrameCursor = this.topMarkerKeyIndex;
 
-      while(var3 < this.topEntryKeyIndex) {
-         var2 += 2;
-         var3 += 2;
-         Object var4 = this.stack[var3];
+      while(currentFrameCursor < this.topEntryKeyIndex) {
+         previousFrameCursor += 2;
+         currentFrameCursor += 2;
+         Object newKey = this.stack[currentFrameCursor];
 
-         assert var4 instanceof Atom;
+         assert newKey instanceof Atom;
 
-         Object var5 = this.stack[var3 + 1];
-         Object var6 = this.stack[var2];
-         if (var6 != var4) {
-            this.stack[var2] = var4;
-            this.stack[var2 + 1] = var5;
-         } else if (var5 != null) {
-            this.stack[var2 + 1] = var5;
+         Object newValue = this.stack[currentFrameCursor + 1];
+         Object oldKey = this.stack[previousFrameCursor];
+         if (oldKey != newKey) {
+            this.stack[previousFrameCursor] = newKey;
+            this.stack[previousFrameCursor + 1] = newValue;
+         } else if (newValue != null) {
+            this.stack[previousFrameCursor + 1] = newValue;
          }
       }
 
-      this.topEntryKeyIndex = var2;
-      this.topMarkerKeyIndex = var1;
+      this.topEntryKeyIndex = previousFrameCursor;
+      this.topMarkerKeyIndex = previousMarkerIndex;
 
       assert this.validateStructure();
 
    }
 
-   public <T> void put(Atom<T> var1, @Nullable T var2) {
-      int var3 = this.valueIndex(var1);
-      if (var3 != -1) {
-         this.stack[var3] = var2;
+   public <T> void put(final Atom<T> name, final @Nullable T value) {
+      int valueIndex = this.valueIndex(name);
+      if (valueIndex != -1) {
+         this.stack[valueIndex] = value;
       } else {
          this.ensureCapacity(1);
          this.topEntryKeyIndex += 2;
-         this.stack[this.topEntryKeyIndex] = var1;
-         this.stack[this.topEntryKeyIndex + 1] = var2;
+         this.stack[this.topEntryKeyIndex] = name;
+         this.stack[this.topEntryKeyIndex + 1] = value;
       }
 
       assert this.validateStructure();
 
    }
 
-   public <T> @Nullable T get(Atom<T> var1) {
-      int var2 = this.valueIndex(var1);
-      return (T)(var2 != -1 ? this.stack[var2] : null);
+   public <T> @Nullable T get(final Atom<T> name) {
+      int valueIndex = this.valueIndex(name);
+      return (T)(valueIndex != -1 ? this.stack[valueIndex] : null);
    }
 
-   public <T> T getOrThrow(Atom<T> var1) {
-      int var2 = this.valueIndex(var1);
-      if (var2 == -1) {
-         throw new IllegalArgumentException("No value for atom " + String.valueOf(var1));
+   public <T> T getOrThrow(final Atom<T> name) {
+      int valueIndex = this.valueIndex(name);
+      if (valueIndex == -1) {
+         throw new IllegalArgumentException("No value for atom " + String.valueOf(name));
       } else {
-         return (T)this.stack[var2];
+         return (T)this.stack[valueIndex];
       }
    }
 
-   public <T> T getOrDefault(Atom<T> var1, T var2) {
-      int var3 = this.valueIndex(var1);
-      return var3 != -1 ? this.stack[var3] : var2;
+   public <T> T getOrDefault(final Atom<T> name, final T fallback) {
+      int valueIndex = this.valueIndex(name);
+      return (T)(valueIndex != -1 ? this.stack[valueIndex] : fallback);
    }
 
    @SafeVarargs
-   public final <T> @Nullable T getAny(Atom<? extends T>... var1) {
-      int var2 = this.valueIndexForAny(var1);
-      return (T)(var2 != -1 ? this.stack[var2] : null);
+   public final <T> @Nullable T getAny(final Atom<? extends T>... names) {
+      int valueIndex = this.valueIndexForAny(names);
+      return (T)(valueIndex != -1 ? this.stack[valueIndex] : null);
    }
 
    @SafeVarargs
-   public final <T> T getAnyOrThrow(Atom<? extends T>... var1) {
-      int var2 = this.valueIndexForAny(var1);
-      if (var2 == -1) {
-         throw new IllegalArgumentException("No value for atoms " + Arrays.toString(var1));
+   public final <T> T getAnyOrThrow(final Atom<? extends T>... names) {
+      int valueIndex = this.valueIndexForAny(names);
+      if (valueIndex == -1) {
+         throw new IllegalArgumentException("No value for atoms " + Arrays.toString(names));
       } else {
-         return (T)this.stack[var2];
+         return (T)this.stack[valueIndex];
       }
    }
 
    public String toString() {
-      StringBuilder var1 = new StringBuilder();
-      boolean var2 = true;
+      StringBuilder result = new StringBuilder();
+      boolean afterFrame = true;
 
-      for(int var3 = 0; var3 <= this.topEntryKeyIndex; var3 += 2) {
-         Object var4 = this.stack[var3];
-         Object var5 = this.stack[var3 + 1];
-         if (var4 == FRAME_START_MARKER) {
-            var1.append('|');
-            var2 = true;
+      for(int i = 0; i <= this.topEntryKeyIndex; i += 2) {
+         Object key = this.stack[i];
+         Object value = this.stack[i + 1];
+         if (key == FRAME_START_MARKER) {
+            result.append('|');
+            afterFrame = true;
          } else {
-            if (!var2) {
-               var1.append(',');
+            if (!afterFrame) {
+               result.append(',');
             }
 
-            var2 = false;
-            var1.append(var4).append(':').append(var5);
+            afterFrame = false;
+            result.append(key).append(':').append(value);
          }
       }
 
-      return var1.toString();
+      return result.toString();
    }
 
    @VisibleForTesting
    public Map<Atom<?>, ?> lastFrame() {
-      HashMap var1 = new HashMap();
+      HashMap<Atom<?>, Object> result = new HashMap();
 
-      for(int var2 = this.topEntryKeyIndex; var2 > this.topMarkerKeyIndex; var2 -= 2) {
-         Object var3 = this.stack[var2];
-         Object var4 = this.stack[var2 + 1];
-         var1.put((Atom)var3, var4);
+      for(int i = this.topEntryKeyIndex; i > this.topMarkerKeyIndex; i -= 2) {
+         Object key = this.stack[i];
+         Object value = this.stack[i + 1];
+         result.put((Atom)key, value);
       }
 
-      return var1;
+      return result;
    }
 
    public boolean hasOnlySingleFrame() {
-      for(int var1 = this.topEntryKeyIndex; var1 > 0; --var1) {
-         if (this.stack[var1] == FRAME_START_MARKER) {
+      for(int i = this.topEntryKeyIndex; i > 0; --i) {
+         if (this.stack[i] == FRAME_START_MARKER) {
             return false;
          }
       }
@@ -269,16 +269,16 @@ public final class Scope {
 
       assert this.topEntryKeyIndex >= this.topMarkerKeyIndex;
 
-      for(int var1 = 0; var1 <= this.topEntryKeyIndex; var1 += 2) {
-         Object var2 = this.stack[var1];
-         if (var2 != FRAME_START_MARKER && !(var2 instanceof Atom)) {
+      for(int i = 0; i <= this.topEntryKeyIndex; i += 2) {
+         Object key = this.stack[i];
+         if (key != FRAME_START_MARKER && !(key instanceof Atom)) {
             return false;
          }
       }
 
-      for(int var3 = this.topMarkerKeyIndex; var3 != 0; var3 = this.getPreviousMarkerIndex(var3)) {
-         Object var4 = this.stack[var3];
-         if (var4 != FRAME_START_MARKER) {
+      for(int marker = this.topMarkerKeyIndex; marker != 0; marker = this.getPreviousMarkerIndex(marker)) {
+         Object key = this.stack[marker];
+         if (key != FRAME_START_MARKER) {
             return false;
          }
       }

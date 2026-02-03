@@ -22,30 +22,30 @@ public class Avatar extends LivingEntity {
    protected static final EntityDataAccessor<HumanoidArm> DATA_PLAYER_MAIN_HAND;
    protected static final EntityDataAccessor<Byte> DATA_PLAYER_MODE_CUSTOMISATION;
 
-   protected Avatar(EntityType<? extends LivingEntity> var1, Level var2) {
-      super(var1, var2);
+   protected Avatar(final EntityType<? extends LivingEntity> type, final Level level) {
+      super(type, level);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_PLAYER_MAIN_HAND, DEFAULT_MAIN_HAND);
-      var1.define(DATA_PLAYER_MODE_CUSTOMISATION, (byte)0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_PLAYER_MAIN_HAND, DEFAULT_MAIN_HAND);
+      entityData.define(DATA_PLAYER_MODE_CUSTOMISATION, (byte)0);
    }
 
    public HumanoidArm getMainArm() {
       return (HumanoidArm)this.entityData.get(DATA_PLAYER_MAIN_HAND);
    }
 
-   public void setMainArm(HumanoidArm var1) {
-      this.entityData.set(DATA_PLAYER_MAIN_HAND, var1);
+   public void setMainArm(final HumanoidArm mainArm) {
+      this.entityData.set(DATA_PLAYER_MAIN_HAND, mainArm);
    }
 
-   public boolean isModelPartShown(PlayerModelPart var1) {
-      return ((Byte)this.getEntityData().get(DATA_PLAYER_MODE_CUSTOMISATION) & var1.getMask()) == var1.getMask();
+   public boolean isModelPartShown(final PlayerModelPart part) {
+      return ((Byte)this.getEntityData().get(DATA_PLAYER_MODE_CUSTOMISATION) & part.getMask()) == part.getMask();
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return (EntityDimensions)POSES.getOrDefault(var1, STANDING_DIMENSIONS);
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return (EntityDimensions)POSES.getOrDefault(pose, STANDING_DIMENSIONS);
    }
 
    static {

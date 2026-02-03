@@ -10,17 +10,16 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public record Damage(boolean normalize) implements RangeSelectItemModelProperty {
-   public static final MapCodec<Damage> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("normalize", true).forGetter(Damage::normalize)).apply(var0, Damage::new));
+   public static final MapCodec<Damage> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.optionalFieldOf("normalize", true).forGetter(Damage::normalize)).apply(i, Damage::new));
 
-   public Damage(boolean var1) {
+   public Damage {
       super();
-      this.normalize = var1;
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
-      float var5 = (float)var1.getDamageValue();
-      float var6 = (float)var1.getMaxDamage();
-      return this.normalize ? Mth.clamp(var5 / var6, 0.0F, 1.0F) : Mth.clamp(var5, 0.0F, var6);
+   public float get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      float damage = (float)itemStack.getDamageValue();
+      float maxDamage = (float)itemStack.getMaxDamage();
+      return this.normalize ? Mth.clamp(damage / maxDamage, 0.0F, 1.0F) : Mth.clamp(damage, 0.0F, maxDamage);
    }
 
    public MapCodec<Damage> type() {

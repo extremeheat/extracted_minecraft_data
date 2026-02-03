@@ -9,10 +9,10 @@ public class ExpirableValue<T> {
    private final T value;
    private long timeToLive;
 
-   public ExpirableValue(T var1, long var2) {
+   public ExpirableValue(final T value, final long timeToLive) {
       super();
-      this.value = var1;
-      this.timeToLive = var2;
+      this.value = value;
+      this.timeToLive = timeToLive;
    }
 
    public void tick() {
@@ -22,12 +22,12 @@ public class ExpirableValue<T> {
 
    }
 
-   public static <T> ExpirableValue<T> of(T var0) {
-      return new ExpirableValue<T>(var0, 9223372036854775807L);
+   public static <T> ExpirableValue<T> of(final T value) {
+      return new ExpirableValue<T>(value, 9223372036854775807L);
    }
 
-   public static <T> ExpirableValue<T> of(T var0, long var1) {
-      return new ExpirableValue<T>(var0, var1);
+   public static <T> ExpirableValue<T> of(final T value, final long ticksUntilExpiry) {
+      return new ExpirableValue<T>(value, ticksUntilExpiry);
    }
 
    public long getTimeToLive() {
@@ -52,7 +52,7 @@ public class ExpirableValue<T> {
       return this.timeToLive != 9223372036854775807L;
    }
 
-   public static <T> Codec<ExpirableValue<T>> codec(Codec<T> var0) {
-      return RecordCodecBuilder.create((var1) -> var1.group(var0.fieldOf("value").forGetter((var0x) -> var0x.value), Codec.LONG.lenientOptionalFieldOf("ttl").forGetter((var0x) -> var0x.canExpire() ? Optional.of(var0x.timeToLive) : Optional.empty())).apply(var1, (var0x, var1x) -> new ExpirableValue(var0x, (Long)var1x.orElse(9223372036854775807L))));
+   public static <T> Codec<ExpirableValue<T>> codec(final Codec<T> valueCodec) {
+      return RecordCodecBuilder.create((i) -> i.group(valueCodec.fieldOf("value").forGetter((v) -> v.value), Codec.LONG.lenientOptionalFieldOf("ttl").forGetter((v) -> v.canExpire() ? Optional.of(v.timeToLive) : Optional.empty())).apply(i, (value, ttl) -> new ExpirableValue(value, (Long)ttl.orElse(9223372036854775807L))));
    }
 }

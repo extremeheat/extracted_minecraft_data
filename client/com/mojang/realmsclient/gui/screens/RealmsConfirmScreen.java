@@ -9,25 +9,25 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 
 public class RealmsConfirmScreen extends RealmsScreen {
-   protected BooleanConsumer callback;
+   protected final BooleanConsumer callback;
    private final Component title1;
    private final Component title2;
 
-   public RealmsConfirmScreen(BooleanConsumer var1, Component var2, Component var3) {
+   public RealmsConfirmScreen(final BooleanConsumer callback, final Component title1, final Component title2) {
       super(GameNarrator.NO_TITLE);
-      this.callback = var1;
-      this.title1 = var2;
-      this.title2 = var3;
+      this.callback = callback;
+      this.title1 = title1;
+      this.title2 = title2;
    }
 
    public void init() {
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_YES, (var1) -> this.callback.accept(true)).bounds(this.width / 2 - 105, row(9), 100, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_NO, (var1) -> this.callback.accept(false)).bounds(this.width / 2 + 5, row(9), 100, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_YES, (button) -> this.callback.accept(true)).bounds(this.width / 2 - 105, row(9), 100, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_NO, (button) -> this.callback.accept(false)).bounds(this.width / 2 + 5, row(9), 100, 20).build());
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title1, this.width / 2, row(3), -1);
-      var1.drawCenteredString(this.font, (Component)this.title2, this.width / 2, row(5), -1);
+   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
+      super.render(graphics, xm, ym, a);
+      graphics.drawCenteredString(this.font, (Component)this.title1, this.width / 2, row(3), -1);
+      graphics.drawCenteredString(this.font, (Component)this.title2, this.width / 2, row(5), -1);
    }
 }

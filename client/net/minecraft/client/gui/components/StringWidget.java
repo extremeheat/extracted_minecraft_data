@@ -16,18 +16,18 @@ public class StringWidget extends AbstractStringWidget {
    private boolean cachedWidthDirty;
    private TextOverflow textOverflow;
 
-   public StringWidget(Component var1, Font var2) {
-      int var10003 = var2.width(var1.getVisualOrderText());
-      Objects.requireNonNull(var2);
-      this(0, 0, var10003, 9, var1, var2);
+   public StringWidget(final Component message, final Font font) {
+      int var10003 = font.width(message.getVisualOrderText());
+      Objects.requireNonNull(font);
+      this(0, 0, var10003, 9, message, font);
    }
 
-   public StringWidget(int var1, int var2, Component var3, Font var4) {
-      this(0, 0, var1, var2, var3, var4);
+   public StringWidget(final int width, final int height, final Component message, final Font font) {
+      this(0, 0, width, height, message, font);
    }
 
-   public StringWidget(int var1, int var2, int var3, int var4, Component var5, Font var6) {
-      super(var1, var2, var3, var4, var5, var6);
+   public StringWidget(final int x, final int y, final int width, final int height, final Component message, final Font font) {
+      super(x, y, width, height, message, font);
       this.maxWidth = 0;
       this.cachedWidth = 0;
       this.cachedWidthDirty = true;
@@ -35,18 +35,18 @@ public class StringWidget extends AbstractStringWidget {
       this.active = false;
    }
 
-   public void setMessage(Component var1) {
-      super.setMessage(var1);
+   public void setMessage(final Component message) {
+      super.setMessage(message);
       this.cachedWidthDirty = true;
    }
 
-   public StringWidget setMaxWidth(int var1) {
-      return this.setMaxWidth(var1, StringWidget.TextOverflow.CLAMPED);
+   public StringWidget setMaxWidth(final int maxWidth) {
+      return this.setMaxWidth(maxWidth, StringWidget.TextOverflow.CLAMPED);
    }
 
-   public StringWidget setMaxWidth(int var1, TextOverflow var2) {
-      this.maxWidth = var1;
-      this.textOverflow = var2;
+   public StringWidget setMaxWidth(final int maxWidth, final TextOverflow textOverflow) {
+      this.maxWidth = maxWidth;
+      this.textOverflow = textOverflow;
       return this;
    }
 
@@ -63,31 +63,31 @@ public class StringWidget extends AbstractStringWidget {
       }
    }
 
-   public void visitLines(ActiveTextCollector var1) {
-      Component var2 = this.getMessage();
-      Font var3 = this.getFont();
-      int var4 = this.maxWidth > 0 ? this.maxWidth : this.getWidth();
-      int var5 = var3.width((FormattedText)var2);
-      int var6 = this.getX();
+   public void visitLines(final ActiveTextCollector output) {
+      Component message = this.getMessage();
+      Font font = this.getFont();
+      int maxWidth = this.maxWidth > 0 ? this.maxWidth : this.getWidth();
+      int textWidth = font.width((FormattedText)message);
+      int x = this.getX();
       int var10000 = this.getY();
       int var10001 = this.getHeight();
-      Objects.requireNonNull(var3);
-      int var7 = var10000 + (var10001 - 9) / 2;
-      boolean var8 = var5 > var4;
-      if (var8) {
+      Objects.requireNonNull(font);
+      int y = var10000 + (var10001 - 9) / 2;
+      boolean textOverflow = textWidth > maxWidth;
+      if (textOverflow) {
          switch (this.textOverflow.ordinal()) {
-            case 0 -> var1.accept(var6, var7, clipText(var2, var3, var4));
-            case 1 -> this.renderScrollingStringOverContents(var1, var2, 2);
+            case 0 -> output.accept(x, y, clipText(message, font, maxWidth));
+            case 1 -> this.renderScrollingStringOverContents(output, message, 2);
          }
       } else {
-         var1.accept(var6, var7, var2.getVisualOrderText());
+         output.accept(x, y, message.getVisualOrderText());
       }
 
    }
 
-   public static FormattedCharSequence clipText(Component var0, Font var1, int var2) {
-      FormattedText var3 = var1.substrByWidth(var0, var2 - var1.width((FormattedText)CommonComponents.ELLIPSIS));
-      return Language.getInstance().getVisualOrder(FormattedText.composite(var3, CommonComponents.ELLIPSIS));
+   public static FormattedCharSequence clipText(final Component text, final Font font, final int width) {
+      FormattedText clippedText = font.substrByWidth(text, width - font.width((FormattedText)CommonComponents.ELLIPSIS));
+      return Language.getInstance().getVisualOrder(FormattedText.composite(clippedText, CommonComponents.ELLIPSIS));
    }
 
    public static enum TextOverflow {

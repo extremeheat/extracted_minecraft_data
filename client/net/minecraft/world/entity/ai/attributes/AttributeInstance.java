@@ -27,11 +27,11 @@ public class AttributeInstance {
    private double cachedValue;
    private final Consumer<AttributeInstance> onDirty;
 
-   public AttributeInstance(Holder<Attribute> var1, Consumer<AttributeInstance> var2) {
+   public AttributeInstance(final Holder<Attribute> attribute, final Consumer<AttributeInstance> onDirty) {
       super();
-      this.attribute = var1;
-      this.onDirty = var2;
-      this.baseValue = ((Attribute)var1.value()).getDefaultValue();
+      this.attribute = attribute;
+      this.onDirty = onDirty;
+      this.baseValue = ((Attribute)attribute.value()).getDefaultValue();
    }
 
    public Holder<Attribute> getAttribute() {
@@ -42,16 +42,16 @@ public class AttributeInstance {
       return this.baseValue;
    }
 
-   public void setBaseValue(double var1) {
-      if (var1 != this.baseValue) {
-         this.baseValue = var1;
+   public void setBaseValue(final double baseValue) {
+      if (baseValue != this.baseValue) {
+         this.baseValue = baseValue;
          this.setDirty();
       }
    }
 
    @VisibleForTesting
-   Map<Identifier, AttributeModifier> getModifiers(AttributeModifier.Operation var1) {
-      return (Map)this.modifiersByOperation.computeIfAbsent(var1, (var0) -> new Object2ObjectOpenHashMap());
+   Map<Identifier, AttributeModifier> getModifiers(final AttributeModifier.Operation operation) {
+      return (Map)this.modifiersByOperation.computeIfAbsent(operation, (key) -> new Object2ObjectOpenHashMap());
    }
 
    public Set<AttributeModifier> getModifiers() {
@@ -62,50 +62,50 @@ public class AttributeInstance {
       return ImmutableSet.copyOf(this.permanentModifiers.values());
    }
 
-   public @Nullable AttributeModifier getModifier(Identifier var1) {
-      return (AttributeModifier)this.modifierById.get(var1);
+   public @Nullable AttributeModifier getModifier(final Identifier id) {
+      return (AttributeModifier)this.modifierById.get(id);
    }
 
-   public boolean hasModifier(Identifier var1) {
-      return this.modifierById.get(var1) != null;
+   public boolean hasModifier(final Identifier modifier) {
+      return this.modifierById.get(modifier) != null;
    }
 
-   private void addModifier(AttributeModifier var1) {
-      AttributeModifier var2 = (AttributeModifier)this.modifierById.putIfAbsent(var1.id(), var1);
-      if (var2 != null) {
+   private void addModifier(final AttributeModifier modifier) {
+      AttributeModifier previous = (AttributeModifier)this.modifierById.putIfAbsent(modifier.id(), modifier);
+      if (previous != null) {
          throw new IllegalArgumentException("Modifier is already applied on this attribute!");
       } else {
-         this.getModifiers(var1.operation()).put(var1.id(), var1);
+         this.getModifiers(modifier.operation()).put(modifier.id(), modifier);
          this.setDirty();
       }
    }
 
-   public void addOrUpdateTransientModifier(AttributeModifier var1) {
-      AttributeModifier var2 = (AttributeModifier)this.modifierById.put(var1.id(), var1);
-      if (var1 != var2) {
-         this.getModifiers(var1.operation()).put(var1.id(), var1);
+   public void addOrUpdateTransientModifier(final AttributeModifier modifier) {
+      AttributeModifier oldModifier = (AttributeModifier)this.modifierById.put(modifier.id(), modifier);
+      if (modifier != oldModifier) {
+         this.getModifiers(modifier.operation()).put(modifier.id(), modifier);
          this.setDirty();
       }
    }
 
-   public void addTransientModifier(AttributeModifier var1) {
-      this.addModifier(var1);
+   public void addTransientModifier(final AttributeModifier modifier) {
+      this.addModifier(modifier);
    }
 
-   public void addOrReplacePermanentModifier(AttributeModifier var1) {
-      this.removeModifier(var1.id());
-      this.addModifier(var1);
-      this.permanentModifiers.put(var1.id(), var1);
+   public void addOrReplacePermanentModifier(final AttributeModifier modifier) {
+      this.removeModifier(modifier.id());
+      this.addModifier(modifier);
+      this.permanentModifiers.put(modifier.id(), modifier);
    }
 
-   public void addPermanentModifier(AttributeModifier var1) {
-      this.addModifier(var1);
-      this.permanentModifiers.put(var1.id(), var1);
+   public void addPermanentModifier(final AttributeModifier modifier) {
+      this.addModifier(modifier);
+      this.permanentModifiers.put(modifier.id(), modifier);
    }
 
-   public void addPermanentModifiers(Collection<AttributeModifier> var1) {
-      for(AttributeModifier var3 : var1) {
-         this.addPermanentModifier(var3);
+   public void addPermanentModifiers(final Collection<AttributeModifier> modifiers) {
+      for(AttributeModifier modifier : modifiers) {
+         this.addPermanentModifier(modifier);
       }
 
    }
@@ -115,25 +115,25 @@ public class AttributeInstance {
       this.onDirty.accept(this);
    }
 
-   public void removeModifier(AttributeModifier var1) {
-      this.removeModifier(var1.id());
+   public void removeModifier(final AttributeModifier modifier) {
+      this.removeModifier(modifier.id());
    }
 
-   public boolean removeModifier(Identifier var1) {
-      AttributeModifier var2 = (AttributeModifier)this.modifierById.remove(var1);
-      if (var2 == null) {
+   public boolean removeModifier(final Identifier id) {
+      AttributeModifier modifier = (AttributeModifier)this.modifierById.remove(id);
+      if (modifier == null) {
          return false;
       } else {
-         this.getModifiers(var2.operation()).remove(var1);
-         this.permanentModifiers.remove(var1);
+         this.getModifiers(modifier.operation()).remove(id);
+         this.permanentModifiers.remove(id);
          this.setDirty();
          return true;
       }
    }
 
    public void removeModifiers() {
-      for(AttributeModifier var2 : this.getModifiers()) {
-         this.removeModifier(var2);
+      for(AttributeModifier modifier : this.getModifiers()) {
+         this.removeModifier(modifier);
       }
 
    }
@@ -148,37 +148,37 @@ public class AttributeInstance {
    }
 
    private double calculateValue() {
-      double var1 = this.getBaseValue();
+      double base = this.getBaseValue();
 
-      for(AttributeModifier var4 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_VALUE)) {
-         var1 += var4.amount();
+      for(AttributeModifier modifier : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_VALUE)) {
+         base += modifier.amount();
       }
 
-      double var7 = var1;
+      double result = base;
 
-      for(AttributeModifier var6 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_BASE)) {
-         var7 += var1 * var6.amount();
+      for(AttributeModifier modifier : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_BASE)) {
+         result += base * modifier.amount();
       }
 
-      for(AttributeModifier var9 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)) {
-         var7 *= 1.0 + var9.amount();
+      for(AttributeModifier modifier : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)) {
+         result *= 1.0 + modifier.amount();
       }
 
-      return ((Attribute)this.attribute.value()).sanitizeValue(var7);
+      return ((Attribute)this.attribute.value()).sanitizeValue(result);
    }
 
-   private Collection<AttributeModifier> getModifiersOrEmpty(AttributeModifier.Operation var1) {
-      return ((Map)this.modifiersByOperation.getOrDefault(var1, Map.of())).values();
+   private Collection<AttributeModifier> getModifiersOrEmpty(final AttributeModifier.Operation operation) {
+      return ((Map)this.modifiersByOperation.getOrDefault(operation, Map.of())).values();
    }
 
-   public void replaceFrom(AttributeInstance var1) {
-      this.baseValue = var1.baseValue;
+   public void replaceFrom(final AttributeInstance other) {
+      this.baseValue = other.baseValue;
       this.modifierById.clear();
-      this.modifierById.putAll(var1.modifierById);
+      this.modifierById.putAll(other.modifierById);
       this.permanentModifiers.clear();
-      this.permanentModifiers.putAll(var1.permanentModifiers);
+      this.permanentModifiers.putAll(other.permanentModifiers);
       this.modifiersByOperation.clear();
-      var1.modifiersByOperation.forEach((var1x, var2) -> this.getModifiers(var1x).putAll(var2));
+      other.modifiersByOperation.forEach((operation, attributeModifiers) -> this.getModifiers(operation).putAll(attributeModifiers));
       this.setDirty();
    }
 
@@ -186,29 +186,24 @@ public class AttributeInstance {
       return new Packed(this.attribute, this.baseValue, List.copyOf(this.permanentModifiers.values()));
    }
 
-   public void apply(Packed var1) {
-      this.baseValue = var1.baseValue;
+   public void apply(final Packed packed) {
+      this.baseValue = packed.baseValue;
 
-      for(AttributeModifier var3 : var1.modifiers) {
-         this.modifierById.put(var3.id(), var3);
-         this.getModifiers(var3.operation()).put(var3.id(), var3);
-         this.permanentModifiers.put(var3.id(), var3);
+      for(AttributeModifier modifier : packed.modifiers) {
+         this.modifierById.put(modifier.id(), modifier);
+         this.getModifiers(modifier.operation()).put(modifier.id(), modifier);
+         this.permanentModifiers.put(modifier.id(), modifier);
       }
 
       this.setDirty();
    }
 
    public static record Packed(Holder<Attribute> attribute, double baseValue, List<AttributeModifier> modifiers) {
-      final double baseValue;
-      final List<AttributeModifier> modifiers;
-      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("id").forGetter(Packed::attribute), Codec.DOUBLE.fieldOf("base").orElse(0.0).forGetter(Packed::baseValue), AttributeModifier.CODEC.listOf().optionalFieldOf("modifiers", List.of()).forGetter(Packed::modifiers)).apply(var0, Packed::new));
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("id").forGetter(Packed::attribute), Codec.DOUBLE.fieldOf("base").orElse(0.0).forGetter(Packed::baseValue), AttributeModifier.CODEC.listOf().optionalFieldOf("modifiers", List.of()).forGetter(Packed::modifiers)).apply(i, Packed::new));
       public static final Codec<List<Packed>> LIST_CODEC;
 
-      public Packed(Holder<Attribute> var1, double var2, List<AttributeModifier> var4) {
+      public Packed {
          super();
-         this.attribute = var1;
-         this.baseValue = var2;
-         this.modifiers = var4;
       }
 
       static {

@@ -17,45 +17,45 @@ import org.jspecify.annotations.Nullable;
 public class EmptyLevelChunk extends LevelChunk {
    private final Holder<Biome> biome;
 
-   public EmptyLevelChunk(Level var1, ChunkPos var2, Holder<Biome> var3) {
-      super(var1, var2);
-      this.biome = var3;
+   public EmptyLevelChunk(final Level level, final ChunkPos pos, final Holder<Biome> biome) {
+      super(level, pos);
+      this.biome = biome;
    }
 
-   public BlockState getBlockState(BlockPos var1) {
+   public BlockState getBlockState(final BlockPos pos) {
       return Blocks.VOID_AIR.defaultBlockState();
    }
 
-   public @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
+   public @Nullable BlockState setBlockState(final BlockPos pos, final BlockState state, final @Block.UpdateFlags int flags) {
       return null;
    }
 
-   public FluidState getFluidState(BlockPos var1) {
+   public FluidState getFluidState(final BlockPos pos) {
       return Fluids.EMPTY.defaultFluidState();
    }
 
-   public int getLightEmission(BlockPos var1) {
+   public int getLightEmission(final BlockPos pos) {
       return 0;
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1, LevelChunk.EntityCreationType var2) {
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos, final LevelChunk.EntityCreationType creationType) {
       return null;
    }
 
-   public void addAndRegisterBlockEntity(BlockEntity var1) {
+   public void addAndRegisterBlockEntity(final BlockEntity blockEntity) {
    }
 
-   public void setBlockEntity(BlockEntity var1) {
+   public void setBlockEntity(final BlockEntity blockEntity) {
    }
 
-   public void removeBlockEntity(BlockPos var1) {
+   public void removeBlockEntity(final BlockPos pos) {
    }
 
    public boolean isEmpty() {
       return true;
    }
 
-   public boolean isYSpaceEmpty(int var1, int var2) {
+   public boolean isYSpaceEmpty(final int yStartInclusive, final int yEndInclusive) {
       return true;
    }
 
@@ -63,7 +63,7 @@ public class EmptyLevelChunk extends LevelChunk {
       return FullChunkStatus.FULL;
    }
 
-   public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
+   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
       return this.biome;
    }
 }

@@ -21,23 +21,24 @@ public class SpawnUtil {
       super();
    }
 
-   public static <T extends Mob> Optional<T> trySpawnMob(EntityType<T> var0, EntitySpawnReason var1, ServerLevel var2, BlockPos var3, int var4, int var5, int var6, Strategy var7, boolean var8) {
-      BlockPos.MutableBlockPos var9 = var3.mutable();
+   public static <T extends Mob> Optional<T> trySpawnMob(final EntityType<T> entityType, final EntitySpawnReason spawnReason, final ServerLevel level, final BlockPos start, final int spawnAttempts, final int spawnRangeXZ, final int spawnRangeY, final Strategy strategy, final boolean checkCollisions) {
+      BlockPos.MutableBlockPos searchPos = start.mutable();
+      RandomSource random = level.getRandom();
 
-      for(int var10 = 0; var10 < var4; ++var10) {
-         int var11 = Mth.randomBetweenInclusive(var2.random, -var5, var5);
-         int var12 = Mth.randomBetweenInclusive(var2.random, -var5, var5);
-         var9.setWithOffset(var3, var11, var6, var12);
-         if (var2.getWorldBorder().isWithinBounds((BlockPos)var9) && moveToPossibleSpawnPosition(var2, var6, var9, var7) && (!var8 || var2.noCollision(var0.getSpawnAABB((double)var9.getX() + 0.5, (double)var9.getY(), (double)var9.getZ() + 0.5)))) {
-            Mob var13 = (Mob)var0.create(var2, (Consumer)null, var9, var1, false, false);
-            if (var13 != null) {
-               if (var13.checkSpawnRules(var2, var1) && var13.checkSpawnObstruction(var2)) {
-                  var2.addFreshEntityWithPassengers(var13);
-                  var13.playAmbientSound();
-                  return Optional.of(var13);
+      for(int i = 0; i < spawnAttempts; ++i) {
+         int dx = Mth.randomBetweenInclusive(random, -spawnRangeXZ, spawnRangeXZ);
+         int dz = Mth.randomBetweenInclusive(random, -spawnRangeXZ, spawnRangeXZ);
+         searchPos.setWithOffset(start, dx, spawnRangeY, dz);
+         if (level.getWorldBorder().isWithinBounds((BlockPos)searchPos) && moveToPossibleSpawnPosition(level, spawnRangeY, searchPos, strategy) && (!checkCollisions || level.noCollision(entityType.getSpawnAABB((double)searchPos.getX() + 0.5, (double)searchPos.getY(), (double)searchPos.getZ() + 0.5)))) {
+            T mob = entityType.create(level, (Consumer)null, searchPos, spawnReason, false, false);
+            if (mob != null) {
+               if (mob.checkSpawnRules(level, spawnReason) && mob.checkSpawnObstruction(level)) {
+                  level.addFreshEntityWithPassengers(mob);
+                  mob.playAmbientSound();
+                  return Optional.of(mob);
                }
 
-               var13.discard();
+               mob.discard();
             }
          }
       }
@@ -45,20 +46,20 @@ public class SpawnUtil {
       return Optional.empty();
    }
 
-   private static boolean moveToPossibleSpawnPosition(ServerLevel var0, int var1, BlockPos.MutableBlockPos var2, Strategy var3) {
-      BlockPos.MutableBlockPos var4 = (new BlockPos.MutableBlockPos()).set(var2);
-      BlockState var5 = var0.getBlockState(var4);
+   private static boolean moveToPossibleSpawnPosition(final ServerLevel level, final int spawnRangeY, final BlockPos.MutableBlockPos searchPos, final Strategy strategy) {
+      BlockPos.MutableBlockPos abovePos = (new BlockPos.MutableBlockPos()).set(searchPos);
+      BlockState aboveState = level.getBlockState(abovePos);
 
-      for(int var6 = var1; var6 >= -var1; --var6) {
-         var2.move(Direction.DOWN);
-         var4.setWithOffset(var2, (Direction)Direction.UP);
-         BlockState var7 = var0.getBlockState(var2);
-         if (var3.canSpawnOn(var0, var2, var7, var4, var5)) {
-            var2.move(Direction.UP);
+      for(int y = spawnRangeY; y >= -spawnRangeY; --y) {
+         searchPos.move(Direction.DOWN);
+         abovePos.setWithOffset(searchPos, (Direction)Direction.UP);
+         BlockState currentState = level.getBlockState(searchPos);
+         if (strategy.canSpawnOn(level, searchPos, currentState, abovePos, aboveState)) {
+            searchPos.move(Direction.UP);
             return true;
          }
 
-         var5 = var7;
+         aboveState = currentState;
       }
 
       return false;
@@ -67,16 +68,16 @@ public class SpawnUtil {
    public interface Strategy {
       /** @deprecated */
       @Deprecated
-      Strategy LEGACY_IRON_GOLEM = (var0, var1, var2, var3, var4) -> {
-         if (!var2.is(Blocks.COBWEB) && !var2.is(Blocks.CACTUS) && !var2.is(Blocks.GLASS_PANE) && !(var2.getBlock() instanceof StainedGlassPaneBlock) && !(var2.getBlock() instanceof StainedGlassBlock) && !(var2.getBlock() instanceof LeavesBlock) && !var2.is(Blocks.CONDUIT) && !var2.is(Blocks.ICE) && !var2.is(Blocks.TNT) && !var2.is(Blocks.GLOWSTONE) && !var2.is(Blocks.BEACON) && !var2.is(Blocks.SEA_LANTERN) && !var2.is(Blocks.FROSTED_ICE) && !var2.is(Blocks.TINTED_GLASS) && !var2.is(Blocks.GLASS)) {
-            return (var4.isAir() || var4.liquid()) && (var2.isSolid() || var2.is(Blocks.POWDER_SNOW));
+      Strategy LEGACY_IRON_GOLEM = (level, pos, blockState, abovePos, aboveState) -> {
+         if (!blockState.is(Blocks.COBWEB) && !blockState.is(Blocks.CACTUS) && !blockState.is(Blocks.GLASS_PANE) && !(blockState.getBlock() instanceof StainedGlassPaneBlock) && !(blockState.getBlock() instanceof StainedGlassBlock) && !(blockState.getBlock() instanceof LeavesBlock) && !blockState.is(Blocks.CONDUIT) && !blockState.is(Blocks.ICE) && !blockState.is(Blocks.TNT) && !blockState.is(Blocks.GLOWSTONE) && !blockState.is(Blocks.BEACON) && !blockState.is(Blocks.SEA_LANTERN) && !blockState.is(Blocks.FROSTED_ICE) && !blockState.is(Blocks.TINTED_GLASS) && !blockState.is(Blocks.GLASS)) {
+            return (aboveState.isAir() || aboveState.liquid()) && (blockState.isSolid() || blockState.is(Blocks.POWDER_SNOW));
          } else {
             return false;
          }
       };
-      Strategy ON_TOP_OF_COLLIDER = (var0, var1, var2, var3, var4) -> var4.getCollisionShape(var0, var3).isEmpty() && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
-      Strategy ON_TOP_OF_COLLIDER_NO_LEAVES = (var0, var1, var2, var3, var4) -> var4.getCollisionShape(var0, var3).isEmpty() && !var2.is(BlockTags.LEAVES) && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
+      Strategy ON_TOP_OF_COLLIDER = (level, pos, blockState, abovePos, aboveState) -> aboveState.getCollisionShape(level, abovePos).isEmpty() && Block.isFaceFull(blockState.getCollisionShape(level, pos), Direction.UP);
+      Strategy ON_TOP_OF_COLLIDER_NO_LEAVES = (level, pos, blockState, abovePos, aboveState) -> aboveState.getCollisionShape(level, abovePos).isEmpty() && !blockState.is(BlockTags.LEAVES) && Block.isFaceFull(blockState.getCollisionShape(level, pos), Direction.UP);
 
-      boolean canSpawnOn(ServerLevel var1, BlockPos var2, BlockState var3, BlockPos var4, BlockState var5);
+      boolean canSpawnOn(ServerLevel level, BlockPos pos, BlockState blockState, BlockPos abovePos, BlockState aboveState);
    }
 }

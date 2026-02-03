@@ -5,13 +5,13 @@ import org.slf4j.Logger;
 public class DefaultUncaughtExceptionHandlerWithName implements Thread.UncaughtExceptionHandler {
    private final Logger logger;
 
-   public DefaultUncaughtExceptionHandlerWithName(Logger var1) {
+   public DefaultUncaughtExceptionHandlerWithName(final Logger logger) {
       super();
-      this.logger = var1;
+      this.logger = logger;
    }
 
-   public void uncaughtException(Thread var1, Throwable var2) {
+   public void uncaughtException(final Thread t, final Throwable e) {
       this.logger.error("Caught previously unhandled exception :");
-      this.logger.error(var1.getName(), var2);
+      this.logger.error(t.getName(), e);
    }
 }

@@ -14,9 +14,9 @@ public class RealmsClientConfig {
       return proxy;
    }
 
-   public static void setProxy(Proxy var0) {
-      if (proxy == null) {
-         proxy = var0;
+   public static void setProxy(final Proxy proxy) {
+      if (RealmsClientConfig.proxy == null) {
+         RealmsClientConfig.proxy = proxy;
       }
 
    }

@@ -3,12 +3,12 @@ package net.minecraft.client.particle;
 import net.minecraft.client.multiplayer.ClientLevel;
 
 public class NoRenderParticle extends Particle {
-   protected NoRenderParticle(ClientLevel var1, double var2, double var4, double var6) {
-      super(var1, var2, var4, var6);
+   protected NoRenderParticle(final ClientLevel level, final double x, final double y, final double z) {
+      super(level, x, y, z);
    }
 
-   protected NoRenderParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      super(var1, var2, var4, var6, var8, var10, var12);
+   protected NoRenderParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za) {
+      super(level, x, y, z, xa, ya, za);
    }
 
    public ParticleRenderType getGroup() {

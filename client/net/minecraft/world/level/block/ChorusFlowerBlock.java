@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.BlockGetter;
@@ -23,7 +24,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class ChorusFlowerBlock extends Block {
-   public static final MapCodec<ChorusFlowerBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("plant").forGetter((var0x) -> var0x.plant), propertiesCodec()).apply(var0, ChorusFlowerBlock::new));
+   public static final MapCodec<ChorusFlowerBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("plant").forGetter((b) -> b.plant), propertiesCodec()).apply(i, ChorusFlowerBlock::new));
    public static final int DEAD_AGE = 5;
    public static final IntegerProperty AGE;
    private static final VoxelShape SHAPE_BLOCK_SUPPORT;
@@ -33,105 +34,105 @@ public class ChorusFlowerBlock extends Block {
       return CODEC;
    }
 
-   protected ChorusFlowerBlock(Block var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.plant = var1;
+   protected ChorusFlowerBlock(final Block plant, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.plant = plant;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!var1.canSurvive(var2, var3)) {
-         var2.destroyBlock(var3, true);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!state.canSurvive(level, pos)) {
+         level.destroyBlock(pos, true);
       }
 
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return (Integer)var1.getValue(AGE) < 5;
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return (Integer)state.getValue(AGE) < 5;
    }
 
-   public VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   public VoxelShape getBlockSupportShape(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return SHAPE_BLOCK_SUPPORT;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      BlockPos var5 = var3.above();
-      if (var2.isEmptyBlock(var5) && var5.getY() <= var2.getMaxY()) {
-         int var6 = (Integer)var1.getValue(AGE);
-         if (var6 < 5) {
-            boolean var7 = false;
-            boolean var8 = false;
-            BlockState var9 = var2.getBlockState(var3.below());
-            if (var9.is(Blocks.END_STONE)) {
-               var7 = true;
-            } else if (var9.is(this.plant)) {
-               int var10 = 1;
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      BlockPos above = pos.above();
+      if (level.isEmptyBlock(above) && above.getY() <= level.getMaxY()) {
+         int currentAge = (Integer)state.getValue(AGE);
+         if (currentAge < 5) {
+            boolean growUpwards = false;
+            boolean pillarOnSupportBlock = false;
+            BlockState belowState = level.getBlockState(pos.below());
+            if (belowState.is(BlockTags.SUPPORTS_CHORUS_FLOWER)) {
+               growUpwards = true;
+            } else if (belowState.is(this.plant)) {
+               int height = 1;
 
-               for(int var11 = 0; var11 < 4; ++var11) {
-                  BlockState var12 = var2.getBlockState(var3.below(var10 + 1));
-                  if (!var12.is(this.plant)) {
-                     if (var12.is(Blocks.END_STONE)) {
-                        var8 = true;
+               for(int i = 0; i < 4; ++i) {
+                  BlockState testState = level.getBlockState(pos.below(height + 1));
+                  if (!testState.is(this.plant)) {
+                     if (testState.is(BlockTags.SUPPORTS_CHORUS_FLOWER)) {
+                        pillarOnSupportBlock = true;
                      }
                      break;
                   }
 
-                  ++var10;
+                  ++height;
                }
 
-               if (var10 < 2 || var10 <= var4.nextInt(var8 ? 5 : 4)) {
-                  var7 = true;
+               if (height < 2 || height <= random.nextInt(pillarOnSupportBlock ? 5 : 4)) {
+                  growUpwards = true;
                }
-            } else if (var9.isAir()) {
-               var7 = true;
+            } else if (belowState.isAir()) {
+               growUpwards = true;
             }
 
-            if (var7 && allNeighborsEmpty(var2, var5, (Direction)null) && var2.isEmptyBlock(var3.above(2))) {
-               var2.setBlock(var3, ChorusPlantBlock.getStateWithConnections(var2, var3, this.plant.defaultBlockState()), 2);
-               this.placeGrownFlower(var2, var5, var6);
-            } else if (var6 < 4) {
-               int var15 = var4.nextInt(4);
-               if (var8) {
-                  ++var15;
+            if (growUpwards && allNeighborsEmpty(level, above, (Direction)null) && level.isEmptyBlock(pos.above(2))) {
+               level.setBlock(pos, ChorusPlantBlock.getStateWithConnections(level, pos, this.plant.defaultBlockState()), 2);
+               this.placeGrownFlower(level, above, currentAge);
+            } else if (currentAge < 4) {
+               int numBranchAttempts = random.nextInt(4);
+               if (pillarOnSupportBlock) {
+                  ++numBranchAttempts;
                }
 
-               boolean var16 = false;
+               boolean createdBranch = false;
 
-               for(int var17 = 0; var17 < var15; ++var17) {
-                  Direction var13 = Direction.Plane.HORIZONTAL.getRandomDirection(var4);
-                  BlockPos var14 = var3.relative(var13);
-                  if (var2.isEmptyBlock(var14) && var2.isEmptyBlock(var14.below()) && allNeighborsEmpty(var2, var14, var13.getOpposite())) {
-                     this.placeGrownFlower(var2, var14, var6 + 1);
-                     var16 = true;
+               for(int i = 0; i < numBranchAttempts; ++i) {
+                  Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+                  BlockPos target = pos.relative(direction);
+                  if (level.isEmptyBlock(target) && level.isEmptyBlock(target.below()) && allNeighborsEmpty(level, target, direction.getOpposite())) {
+                     this.placeGrownFlower(level, target, currentAge + 1);
+                     createdBranch = true;
                   }
                }
 
-               if (var16) {
-                  var2.setBlock(var3, ChorusPlantBlock.getStateWithConnections(var2, var3, this.plant.defaultBlockState()), 2);
+               if (createdBranch) {
+                  level.setBlock(pos, ChorusPlantBlock.getStateWithConnections(level, pos, this.plant.defaultBlockState()), 2);
                } else {
-                  this.placeDeadFlower(var2, var3);
+                  this.placeDeadFlower(level, pos);
                }
             } else {
-               this.placeDeadFlower(var2, var3);
+               this.placeDeadFlower(level, pos);
             }
 
          }
       }
    }
 
-   private void placeGrownFlower(Level var1, BlockPos var2, int var3) {
-      var1.setBlock(var2, (BlockState)this.defaultBlockState().setValue(AGE, var3), 2);
-      var1.levelEvent(1033, var2, 0);
+   private void placeGrownFlower(final Level level, final BlockPos pos, final int age) {
+      level.setBlock(pos, (BlockState)this.defaultBlockState().setValue(AGE, age), 2);
+      level.levelEvent(1033, pos, 0);
    }
 
-   private void placeDeadFlower(Level var1, BlockPos var2) {
-      var1.setBlock(var2, (BlockState)this.defaultBlockState().setValue(AGE, 5), 2);
-      var1.levelEvent(1034, var2, 0);
+   private void placeDeadFlower(final Level level, final BlockPos pos) {
+      level.setBlock(pos, (BlockState)this.defaultBlockState().setValue(AGE, 5), 2);
+      level.levelEvent(1034, pos, 0);
    }
 
-   private static boolean allNeighborsEmpty(LevelReader var0, BlockPos var1, @Nullable Direction var2) {
-      for(Direction var4 : Direction.Plane.HORIZONTAL) {
-         if (var4 != var2 && !var0.isEmptyBlock(var1.relative(var4))) {
+   private static boolean allNeighborsEmpty(final LevelReader level, final BlockPos pos, final @Nullable Direction ignore) {
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         if (direction != ignore && !level.isEmptyBlock(pos.relative(direction))) {
             return false;
          }
       }
@@ -139,98 +140,98 @@ public class ChorusFlowerBlock extends Block {
       return true;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (var5 != Direction.UP && !var1.canSurvive(var2, var4)) {
-         var3.scheduleTick(var4, (Block)this, 1);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (directionToNeighbour != Direction.UP && !state.canSurvive(level, pos)) {
+         ticks.scheduleTick(pos, (Block)this, 1);
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3.below());
-      if (!var4.is(this.plant) && !var4.is(Blocks.END_STONE)) {
-         if (!var4.isAir()) {
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockState belowState = level.getBlockState(pos.below());
+      if (!belowState.is(this.plant) && !belowState.is(BlockTags.SUPPORTS_CHORUS_FLOWER)) {
+         if (!belowState.isAir()) {
             return false;
          } else {
-            boolean var5 = false;
+            boolean oneNeighbor = false;
 
-            for(Direction var7 : Direction.Plane.HORIZONTAL) {
-               BlockState var8 = var2.getBlockState(var3.relative(var7));
-               if (var8.is(this.plant)) {
-                  if (var5) {
+            for(Direction direction : Direction.Plane.HORIZONTAL) {
+               BlockState neighbor = level.getBlockState(pos.relative(direction));
+               if (neighbor.is(this.plant)) {
+                  if (oneNeighbor) {
                      return false;
                   }
 
-                  var5 = true;
-               } else if (!var8.isAir()) {
+                  oneNeighbor = true;
+               } else if (!neighbor.isAir()) {
                   return false;
                }
             }
 
-            return var5;
+            return oneNeighbor;
          }
       } else {
          return true;
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE);
    }
 
-   public static void generatePlant(LevelAccessor var0, BlockPos var1, RandomSource var2, int var3) {
-      var0.setBlock(var1, ChorusPlantBlock.getStateWithConnections(var0, var1, Blocks.CHORUS_PLANT.defaultBlockState()), 2);
-      growTreeRecursive(var0, var1, var2, var1, var3, 0);
+   public static void generatePlant(final LevelAccessor level, final BlockPos target, final RandomSource random, final int maxHorizontalSpread) {
+      level.setBlock(target, ChorusPlantBlock.getStateWithConnections(level, target, Blocks.CHORUS_PLANT.defaultBlockState()), 2);
+      growTreeRecursive(level, target, random, target, maxHorizontalSpread, 0);
    }
 
-   private static void growTreeRecursive(LevelAccessor var0, BlockPos var1, RandomSource var2, BlockPos var3, int var4, int var5) {
-      Block var6 = Blocks.CHORUS_PLANT;
-      int var7 = var2.nextInt(4) + 1;
-      if (var5 == 0) {
-         ++var7;
+   private static void growTreeRecursive(final LevelAccessor level, final BlockPos current, final RandomSource random, final BlockPos startPos, final int maxHorizontalSpread, final int depth) {
+      Block chorus = Blocks.CHORUS_PLANT;
+      int height = random.nextInt(4) + 1;
+      if (depth == 0) {
+         ++height;
       }
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         BlockPos var9 = var1.above(var8 + 1);
-         if (!allNeighborsEmpty(var0, var9, (Direction)null)) {
+      for(int i = 0; i < height; ++i) {
+         BlockPos target = current.above(i + 1);
+         if (!allNeighborsEmpty(level, target, (Direction)null)) {
             return;
          }
 
-         var0.setBlock(var9, ChorusPlantBlock.getStateWithConnections(var0, var9, var6.defaultBlockState()), 2);
-         var0.setBlock(var9.below(), ChorusPlantBlock.getStateWithConnections(var0, var9.below(), var6.defaultBlockState()), 2);
+         level.setBlock(target, ChorusPlantBlock.getStateWithConnections(level, target, chorus.defaultBlockState()), 2);
+         level.setBlock(target.below(), ChorusPlantBlock.getStateWithConnections(level, target.below(), chorus.defaultBlockState()), 2);
       }
 
-      boolean var13 = false;
-      if (var5 < 4) {
-         int var14 = var2.nextInt(4);
-         if (var5 == 0) {
-            ++var14;
+      boolean placedStem = false;
+      if (depth < 4) {
+         int stems = random.nextInt(4);
+         if (depth == 0) {
+            ++stems;
          }
 
-         for(int var10 = 0; var10 < var14; ++var10) {
-            Direction var11 = Direction.Plane.HORIZONTAL.getRandomDirection(var2);
-            BlockPos var12 = var1.above(var7).relative(var11);
-            if (Math.abs(var12.getX() - var3.getX()) < var4 && Math.abs(var12.getZ() - var3.getZ()) < var4 && var0.isEmptyBlock(var12) && var0.isEmptyBlock(var12.below()) && allNeighborsEmpty(var0, var12, var11.getOpposite())) {
-               var13 = true;
-               var0.setBlock(var12, ChorusPlantBlock.getStateWithConnections(var0, var12, var6.defaultBlockState()), 2);
-               var0.setBlock(var12.relative(var11.getOpposite()), ChorusPlantBlock.getStateWithConnections(var0, var12.relative(var11.getOpposite()), var6.defaultBlockState()), 2);
-               growTreeRecursive(var0, var12, var2, var3, var4, var5 + 1);
+         for(int i = 0; i < stems; ++i) {
+            Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+            BlockPos target = current.above(height).relative(direction);
+            if (Math.abs(target.getX() - startPos.getX()) < maxHorizontalSpread && Math.abs(target.getZ() - startPos.getZ()) < maxHorizontalSpread && level.isEmptyBlock(target) && level.isEmptyBlock(target.below()) && allNeighborsEmpty(level, target, direction.getOpposite())) {
+               placedStem = true;
+               level.setBlock(target, ChorusPlantBlock.getStateWithConnections(level, target, chorus.defaultBlockState()), 2);
+               level.setBlock(target.relative(direction.getOpposite()), ChorusPlantBlock.getStateWithConnections(level, target.relative(direction.getOpposite()), chorus.defaultBlockState()), 2);
+               growTreeRecursive(level, target, random, startPos, maxHorizontalSpread, depth + 1);
             }
          }
       }
 
-      if (!var13) {
-         var0.setBlock(var1.above(var7), (BlockState)Blocks.CHORUS_FLOWER.defaultBlockState().setValue(AGE, 5), 2);
+      if (!placedStem) {
+         level.setBlock(current.above(height), (BlockState)Blocks.CHORUS_FLOWER.defaultBlockState().setValue(AGE, 5), 2);
       }
 
    }
 
-   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
-      BlockPos var5 = var3.getBlockPos();
-      if (var1 instanceof ServerLevel var6) {
-         if (var4.mayInteract(var6, var5) && var4.mayBreak(var6)) {
-            var1.destroyBlock(var5, true, var4);
+   protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile projectile) {
+      BlockPos pos = blockHit.getBlockPos();
+      if (level instanceof ServerLevel serverLevel) {
+         if (projectile.mayInteract(serverLevel, pos) && projectile.mayBreak(serverLevel)) {
+            level.destroyBlock(pos, true, projectile);
          }
       }
 

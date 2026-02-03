@@ -6,11 +6,11 @@ import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 
 public class EntityElderGuardianSplitFix extends SimpleEntityRenameFix {
-   public EntityElderGuardianSplitFix(Schema var1, boolean var2) {
-      super("EntityElderGuardianSplitFix", var1, var2);
+   public EntityElderGuardianSplitFix(final Schema outputSchema, final boolean changesType) {
+      super("EntityElderGuardianSplitFix", outputSchema, changesType);
    }
 
-   protected Pair<String, Dynamic<?>> getNewNameAndTag(String var1, Dynamic<?> var2) {
-      return Pair.of(Objects.equals(var1, "Guardian") && var2.get("Elder").asBoolean(false) ? "ElderGuardian" : var1, var2);
+   protected Pair<String, Dynamic<?>> getNewNameAndTag(final String name, final Dynamic<?> tag) {
+      return Pair.of(Objects.equals(name, "Guardian") && tag.get("Elder").asBoolean(false) ? "ElderGuardian" : name, tag);
    }
 }

@@ -12,25 +12,25 @@ public class PortalProcessor {
    private int portalTime;
    private boolean insidePortalThisTick;
 
-   public PortalProcessor(Portal var1, BlockPos var2) {
+   public PortalProcessor(final Portal portal, final BlockPos portalEntryPosition) {
       super();
-      this.portal = var1;
-      this.entryPosition = var2;
+      this.portal = portal;
+      this.entryPosition = portalEntryPosition;
       this.insidePortalThisTick = true;
    }
 
-   public boolean processPortalTeleportation(ServerLevel var1, Entity var2, boolean var3) {
+   public boolean processPortalTeleportation(final ServerLevel serverLevel, final Entity entity, final boolean allowedToTeleport) {
       if (!this.insidePortalThisTick) {
          this.decayTick();
          return false;
       } else {
          this.insidePortalThisTick = false;
-         return var3 && this.portalTime++ >= this.portal.getPortalTransitionTime(var1, var2);
+         return allowedToTeleport && this.portalTime++ >= this.portal.getPortalTransitionTime(serverLevel, entity);
       }
    }
 
-   public @Nullable TeleportTransition getPortalDestination(ServerLevel var1, Entity var2) {
-      return this.portal.getPortalDestination(var1, var2, this.entryPosition);
+   public @Nullable TeleportTransition getPortalDestination(final ServerLevel serverLevel, final Entity entity) {
+      return this.portal.getPortalDestination(serverLevel, entity, this.entryPosition);
    }
 
    public Portal.Transition getPortalLocalTransition() {
@@ -49,8 +49,8 @@ public class PortalProcessor {
       return this.entryPosition;
    }
 
-   public void updateEntryPosition(BlockPos var1) {
-      this.entryPosition = var1;
+   public void updateEntryPosition(final BlockPos entryPosition) {
+      this.entryPosition = entryPosition;
    }
 
    public int getPortalTime() {
@@ -61,11 +61,11 @@ public class PortalProcessor {
       return this.insidePortalThisTick;
    }
 
-   public void setAsInsidePortalThisTick(boolean var1) {
-      this.insidePortalThisTick = var1;
+   public void setAsInsidePortalThisTick(final boolean insidePortal) {
+      this.insidePortalThisTick = insidePortal;
    }
 
-   public boolean isSamePortal(Portal var1) {
-      return this.portal == var1;
+   public boolean isSamePortal(final Portal portal) {
+      return this.portal == portal;
    }
 }

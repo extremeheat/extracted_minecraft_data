@@ -32,95 +32,95 @@ public class SnowLayerBlock extends Block {
       return CODEC;
    }
 
-   protected SnowLayerBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected SnowLayerBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(LAYERS, 1));
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      if (var2 == PathComputationType.LAND) {
-         return (Integer)var1.getValue(LAYERS) < 5;
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
+      if (type == PathComputationType.LAND) {
+         return (Integer)state.getValue(LAYERS) < 5;
       } else {
          return false;
       }
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPES[(Integer)var1.getValue(LAYERS)];
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPES[(Integer)state.getValue(LAYERS)];
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPES[(Integer)var1.getValue(LAYERS) - 1];
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPES[(Integer)state.getValue(LAYERS) - 1];
    }
 
-   protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return SHAPES[(Integer)var1.getValue(LAYERS)];
+   protected VoxelShape getBlockSupportShape(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return SHAPES[(Integer)state.getValue(LAYERS)];
    }
 
-   protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPES[(Integer)var1.getValue(LAYERS)];
+   protected VoxelShape getVisualShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPES[(Integer)state.getValue(LAYERS)];
    }
 
-   protected boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(final BlockState state) {
       return true;
    }
 
-   protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return (Integer)var1.getValue(LAYERS) == 8 ? 0.2F : 1.0F;
+   protected float getShadeBrightness(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return (Integer)state.getValue(LAYERS) == 8 ? 0.2F : 1.0F;
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3.below());
-      if (var4.is(BlockTags.SNOW_LAYER_CANNOT_SURVIVE_ON)) {
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockState belowState = level.getBlockState(pos.below());
+      if (belowState.is(BlockTags.CANNOT_SUPPORT_SNOW_LAYER)) {
          return false;
-      } else if (var4.is(BlockTags.SNOW_LAYER_CAN_SURVIVE_ON)) {
+      } else if (belowState.is(BlockTags.SUPPORT_OVERRIDE_SNOW_LAYER)) {
          return true;
       } else {
-         return Block.isFaceFull(var4.getCollisionShape(var2, var3.below()), Direction.UP) || var4.is(this) && (Integer)var4.getValue(LAYERS) == 8;
+         return Block.isFaceFull(belowState.getCollisionShape(level, pos.below()), Direction.UP) || belowState.is(this) && (Integer)belowState.getValue(LAYERS) == 8;
       }
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var2.getBrightness(LightLayer.BLOCK, var3) > 11) {
-         dropResources(var1, var2, var3);
-         var2.removeBlock(var3, false);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (level.getBrightness(LightLayer.BLOCK, pos) > 11) {
+         dropResources(state, level, pos);
+         level.removeBlock(pos, false);
       }
 
    }
 
-   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      int var3 = (Integer)var1.getValue(LAYERS);
-      if (var2.getItemInHand().is(this.asItem()) && var3 < 8) {
-         if (var2.replacingClickedOnBlock()) {
-            return var2.getClickedFace() == Direction.UP;
+   protected boolean canBeReplaced(final BlockState state, final BlockPlaceContext context) {
+      int layers = (Integer)state.getValue(LAYERS);
+      if (context.getItemInHand().is(this.asItem()) && layers < 8) {
+         if (context.replacingClickedOnBlock()) {
+            return context.getClickedFace() == Direction.UP;
          } else {
             return true;
          }
       } else {
-         return var3 == 1;
+         return layers == 1;
       }
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
-      if (var2.is(this)) {
-         int var3 = (Integer)var2.getValue(LAYERS);
-         return (BlockState)var2.setValue(LAYERS, Math.min(8, var3 + 1));
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState state = context.getLevel().getBlockState(context.getClickedPos());
+      if (state.is(this)) {
+         int layers = (Integer)state.getValue(LAYERS);
+         return (BlockState)state.setValue(LAYERS, Math.min(8, layers + 1));
       } else {
-         return super.getStateForPlacement(var1);
+         return super.getStateForPlacement(context);
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(LAYERS);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(LAYERS);
    }
 
    static {
       LAYERS = BlockStateProperties.LAYERS;
-      SHAPES = Block.boxes(8, (var0) -> Block.column(16.0, 0.0, (double)(var0 * 2)));
+      SHAPES = Block.boxes(8, (height) -> Block.column(16.0, 0.0, (double)(height * 2)));
    }
 }

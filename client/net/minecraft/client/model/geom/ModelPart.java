@@ -39,11 +39,11 @@ public final class ModelPart {
    private final Map<String, ModelPart> children;
    private PartPose initialPose;
 
-   public ModelPart(List<Cube> var1, Map<String, ModelPart> var2) {
+   public ModelPart(final List<Cube> cubes, final Map<String, ModelPart> children) {
       super();
       this.initialPose = PartPose.ZERO;
-      this.cubes = var1;
-      this.children = var2;
+      this.cubes = cubes;
+      this.children = children;
    }
 
    public PartPose storePose() {
@@ -54,183 +54,183 @@ public final class ModelPart {
       return this.initialPose;
    }
 
-   public void setInitialPose(PartPose var1) {
-      this.initialPose = var1;
+   public void setInitialPose(final PartPose initialPose) {
+      this.initialPose = initialPose;
    }
 
    public void resetPose() {
       this.loadPose(this.initialPose);
    }
 
-   public void loadPose(PartPose var1) {
-      this.x = var1.x();
-      this.y = var1.y();
-      this.z = var1.z();
-      this.xRot = var1.xRot();
-      this.yRot = var1.yRot();
-      this.zRot = var1.zRot();
-      this.xScale = var1.xScale();
-      this.yScale = var1.yScale();
-      this.zScale = var1.zScale();
+   public void loadPose(final PartPose pose) {
+      this.x = pose.x();
+      this.y = pose.y();
+      this.z = pose.z();
+      this.xRot = pose.xRot();
+      this.yRot = pose.yRot();
+      this.zRot = pose.zRot();
+      this.xScale = pose.xScale();
+      this.yScale = pose.yScale();
+      this.zScale = pose.zScale();
    }
 
-   public boolean hasChild(String var1) {
-      return this.children.containsKey(var1);
+   public boolean hasChild(final String name) {
+      return this.children.containsKey(name);
    }
 
-   public ModelPart getChild(String var1) {
-      ModelPart var2 = (ModelPart)this.children.get(var1);
-      if (var2 == null) {
-         throw new NoSuchElementException("Can't find part " + var1);
+   public ModelPart getChild(final String name) {
+      ModelPart result = (ModelPart)this.children.get(name);
+      if (result == null) {
+         throw new NoSuchElementException("Can't find part " + name);
       } else {
-         return var2;
+         return result;
       }
    }
 
-   public void setPos(float var1, float var2, float var3) {
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
+   public void setPos(final float x, final float y, final float z) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
    }
 
-   public void setRotation(float var1, float var2, float var3) {
-      this.xRot = var1;
-      this.yRot = var2;
-      this.zRot = var3;
+   public void setRotation(final float xRot, final float yRot, final float zRot) {
+      this.xRot = xRot;
+      this.yRot = yRot;
+      this.zRot = zRot;
    }
 
-   public void render(PoseStack var1, VertexConsumer var2, int var3, int var4) {
-      this.render(var1, var2, var3, var4, -1);
+   public void render(final PoseStack poseStack, final VertexConsumer buffer, final int lightCoords, final int overlayCoords) {
+      this.render(poseStack, buffer, lightCoords, overlayCoords, -1);
    }
 
-   public void render(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
+   public void render(final PoseStack poseStack, final VertexConsumer buffer, final int lightCoords, final int overlayCoords, final int color) {
       if (this.visible) {
          if (!this.cubes.isEmpty() || !this.children.isEmpty()) {
-            var1.pushPose();
-            this.translateAndRotate(var1);
+            poseStack.pushPose();
+            this.translateAndRotate(poseStack);
             if (!this.skipDraw) {
-               this.compile(var1.last(), var2, var3, var4, var5);
+               this.compile(poseStack.last(), buffer, lightCoords, overlayCoords, color);
             }
 
-            for(ModelPart var7 : this.children.values()) {
-               var7.render(var1, var2, var3, var4, var5);
+            for(ModelPart child : this.children.values()) {
+               child.render(poseStack, buffer, lightCoords, overlayCoords, color);
             }
 
-            var1.popPose();
+            poseStack.popPose();
          }
       }
    }
 
-   public void rotateBy(Quaternionf var1) {
-      Matrix3f var2 = (new Matrix3f()).rotationZYX(this.zRot, this.yRot, this.xRot);
-      Matrix3f var3 = var2.rotate(var1);
-      Vector3f var4 = var3.getEulerAnglesZYX(new Vector3f());
-      this.setRotation(var4.x, var4.y, var4.z);
+   public void rotateBy(final Quaternionf rotation) {
+      Matrix3f oldRotation = (new Matrix3f()).rotationZYX(this.zRot, this.yRot, this.xRot);
+      Matrix3f newRotation = oldRotation.rotate(rotation);
+      Vector3f newAngles = newRotation.getEulerAnglesZYX(new Vector3f());
+      this.setRotation(newAngles.x, newAngles.y, newAngles.z);
    }
 
-   public void getExtentsForGui(PoseStack var1, Consumer<Vector3fc> var2) {
-      this.visit(var1, (var1x, var2x, var3, var4) -> {
-         for(Polygon var8 : var4.polygons) {
-            for(Vertex var12 : var8.vertices()) {
-               float var13 = var12.worldX();
-               float var14 = var12.worldY();
-               float var15 = var12.worldZ();
-               Vector3f var16 = var1x.pose().transformPosition(var13, var14, var15, new Vector3f());
-               var2.accept(var16);
+   public void getExtentsForGui(final PoseStack poseStack, final Consumer<Vector3fc> output) {
+      this.visit(poseStack, (pose, partPath, cubeIndex, cube) -> {
+         for(Polygon polygon : cube.polygons) {
+            for(Vertex vertex : polygon.vertices()) {
+               float x = vertex.worldX();
+               float y = vertex.worldY();
+               float z = vertex.worldZ();
+               Vector3f pos = pose.pose().transformPosition(x, y, z, new Vector3f());
+               output.accept(pos);
             }
          }
 
       });
    }
 
-   public void visit(PoseStack var1, Visitor var2) {
-      this.visit(var1, var2, "");
+   public void visit(final PoseStack poseStack, final Visitor visitor) {
+      this.visit(poseStack, visitor, "");
    }
 
-   private void visit(PoseStack var1, Visitor var2, String var3) {
+   private void visit(final PoseStack poseStack, final Visitor visitor, final String path) {
       if (!this.cubes.isEmpty() || !this.children.isEmpty()) {
-         var1.pushPose();
-         this.translateAndRotate(var1);
-         PoseStack.Pose var4 = var1.last();
+         poseStack.pushPose();
+         this.translateAndRotate(poseStack);
+         PoseStack.Pose pose = poseStack.last();
 
-         for(int var5 = 0; var5 < this.cubes.size(); ++var5) {
-            var2.visit(var4, var3, var5, (Cube)this.cubes.get(var5));
+         for(int i = 0; i < this.cubes.size(); ++i) {
+            visitor.visit(pose, path, i, (Cube)this.cubes.get(i));
          }
 
-         String var6 = var3 + "/";
-         this.children.forEach((var3x, var4x) -> var4x.visit(var1, var2, var6 + var3x));
-         var1.popPose();
+         String childPath = path + "/";
+         this.children.forEach((name, child) -> child.visit(poseStack, visitor, childPath + name));
+         poseStack.popPose();
       }
    }
 
-   public void translateAndRotate(PoseStack var1) {
-      var1.translate(this.x / 16.0F, this.y / 16.0F, this.z / 16.0F);
+   public void translateAndRotate(final PoseStack poseStack) {
+      poseStack.translate(this.x / 16.0F, this.y / 16.0F, this.z / 16.0F);
       if (this.xRot != 0.0F || this.yRot != 0.0F || this.zRot != 0.0F) {
-         var1.mulPose((Quaternionfc)(new Quaternionf()).rotationZYX(this.zRot, this.yRot, this.xRot));
+         poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationZYX(this.zRot, this.yRot, this.xRot));
       }
 
       if (this.xScale != 1.0F || this.yScale != 1.0F || this.zScale != 1.0F) {
-         var1.scale(this.xScale, this.yScale, this.zScale);
+         poseStack.scale(this.xScale, this.yScale, this.zScale);
       }
 
    }
 
-   private void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, int var5) {
-      for(Cube var7 : this.cubes) {
-         var7.compile(var1, var2, var3, var4, var5);
+   private void compile(final PoseStack.Pose pose, final VertexConsumer builder, final int lightCoords, final int overlayCoords, final int color) {
+      for(Cube cube : this.cubes) {
+         cube.compile(pose, builder, lightCoords, overlayCoords, color);
       }
 
    }
 
-   public Cube getRandomCube(RandomSource var1) {
-      return (Cube)this.cubes.get(var1.nextInt(this.cubes.size()));
+   public Cube getRandomCube(final RandomSource random) {
+      return (Cube)this.cubes.get(random.nextInt(this.cubes.size()));
    }
 
    public boolean isEmpty() {
       return this.cubes.isEmpty();
    }
 
-   public void offsetPos(Vector3f var1) {
-      this.x += var1.x();
-      this.y += var1.y();
-      this.z += var1.z();
+   public void offsetPos(final Vector3f offset) {
+      this.x += offset.x();
+      this.y += offset.y();
+      this.z += offset.z();
    }
 
-   public void offsetRotation(Vector3f var1) {
-      this.xRot += var1.x();
-      this.yRot += var1.y();
-      this.zRot += var1.z();
+   public void offsetRotation(final Vector3f offset) {
+      this.xRot += offset.x();
+      this.yRot += offset.y();
+      this.zRot += offset.z();
    }
 
-   public void offsetScale(Vector3f var1) {
-      this.xScale += var1.x();
-      this.yScale += var1.y();
-      this.zScale += var1.z();
+   public void offsetScale(final Vector3f offset) {
+      this.xScale += offset.x();
+      this.yScale += offset.y();
+      this.zScale += offset.z();
    }
 
    public List<ModelPart> getAllParts() {
-      ArrayList var1 = new ArrayList();
-      var1.add(this);
-      this.addAllChildren((var1x, var2) -> var1.add(var2));
-      return List.copyOf(var1);
+      List<ModelPart> allParts = new ArrayList();
+      allParts.add(this);
+      this.addAllChildren((name, part) -> allParts.add(part));
+      return List.copyOf(allParts);
    }
 
    public Function<String, @Nullable ModelPart> createPartLookup() {
-      HashMap var1 = new HashMap();
-      var1.put("root", this);
-      Objects.requireNonNull(var1);
-      this.addAllChildren(var1::putIfAbsent);
-      Objects.requireNonNull(var1);
-      return var1::get;
+      Map<String, ModelPart> parts = new HashMap();
+      parts.put("root", this);
+      Objects.requireNonNull(parts);
+      this.addAllChildren(parts::putIfAbsent);
+      Objects.requireNonNull(parts);
+      return parts::get;
    }
 
-   private void addAllChildren(BiConsumer<String, ModelPart> var1) {
-      for(Map.Entry var3 : this.children.entrySet()) {
-         var1.accept((String)var3.getKey(), (ModelPart)var3.getValue());
+   private void addAllChildren(final BiConsumer<String, ModelPart> output) {
+      for(Map.Entry<String, ModelPart> entry : this.children.entrySet()) {
+         output.accept((String)entry.getKey(), (ModelPart)entry.getValue());
       }
 
-      for(ModelPart var5 : this.children.values()) {
-         var5.addAllChildren(var1);
+      for(ModelPart part : this.children.values()) {
+         part.addAllChildren(output);
       }
 
    }
@@ -244,90 +244,90 @@ public final class ModelPart {
       public final float maxY;
       public final float maxZ;
 
-      public Cube(int var1, int var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, boolean var12, float var13, float var14, Set<Direction> var15) {
+      public Cube(final int xTexOffs, final int yTexOffs, float minX, float minY, float minZ, final float width, final float height, final float depth, final float growX, final float growY, final float growZ, final boolean mirror, final float xTexSize, final float yTexSize, final Set<Direction> visibleFaces) {
          super();
-         this.minX = var3;
-         this.minY = var4;
-         this.minZ = var5;
-         this.maxX = var3 + var6;
-         this.maxY = var4 + var7;
-         this.maxZ = var5 + var8;
-         this.polygons = new Polygon[var15.size()];
-         float var16 = var3 + var6;
-         float var17 = var4 + var7;
-         float var18 = var5 + var8;
-         var3 -= var9;
-         var4 -= var10;
-         var5 -= var11;
-         var16 += var9;
-         var17 += var10;
-         var18 += var11;
-         if (var12) {
-            float var19 = var16;
-            var16 = var3;
-            var3 = var19;
+         this.minX = minX;
+         this.minY = minY;
+         this.minZ = minZ;
+         this.maxX = minX + width;
+         this.maxY = minY + height;
+         this.maxZ = minZ + depth;
+         this.polygons = new Polygon[visibleFaces.size()];
+         float maxX = minX + width;
+         float maxY = minY + height;
+         float maxZ = minZ + depth;
+         minX -= growX;
+         minY -= growY;
+         minZ -= growZ;
+         maxX += growX;
+         maxY += growY;
+         maxZ += growZ;
+         if (mirror) {
+            float tmp = maxX;
+            maxX = minX;
+            minX = tmp;
          }
 
-         Vertex var43 = new Vertex(var3, var4, var5, 0.0F, 0.0F);
-         Vertex var20 = new Vertex(var16, var4, var5, 0.0F, 8.0F);
-         Vertex var21 = new Vertex(var16, var17, var5, 8.0F, 8.0F);
-         Vertex var22 = new Vertex(var3, var17, var5, 8.0F, 0.0F);
-         Vertex var23 = new Vertex(var3, var4, var18, 0.0F, 0.0F);
-         Vertex var24 = new Vertex(var16, var4, var18, 0.0F, 8.0F);
-         Vertex var25 = new Vertex(var16, var17, var18, 8.0F, 8.0F);
-         Vertex var26 = new Vertex(var3, var17, var18, 8.0F, 0.0F);
-         float var27 = (float)var1;
-         float var28 = (float)var1 + var8;
-         float var29 = (float)var1 + var8 + var6;
-         float var30 = (float)var1 + var8 + var6 + var6;
-         float var31 = (float)var1 + var8 + var6 + var8;
-         float var32 = (float)var1 + var8 + var6 + var8 + var6;
-         float var33 = (float)var2;
-         float var34 = (float)var2 + var8;
-         float var35 = (float)var2 + var8 + var7;
-         int var36 = 0;
-         if (var15.contains(Direction.DOWN)) {
-            this.polygons[var36++] = new Polygon(new Vertex[]{var24, var23, var43, var20}, var28, var33, var29, var34, var13, var14, var12, Direction.DOWN);
+         Vertex t0 = new Vertex(minX, minY, minZ, 0.0F, 0.0F);
+         Vertex t1 = new Vertex(maxX, minY, minZ, 0.0F, 8.0F);
+         Vertex t2 = new Vertex(maxX, maxY, minZ, 8.0F, 8.0F);
+         Vertex t3 = new Vertex(minX, maxY, minZ, 8.0F, 0.0F);
+         Vertex l0 = new Vertex(minX, minY, maxZ, 0.0F, 0.0F);
+         Vertex l1 = new Vertex(maxX, minY, maxZ, 0.0F, 8.0F);
+         Vertex l2 = new Vertex(maxX, maxY, maxZ, 8.0F, 8.0F);
+         Vertex l3 = new Vertex(minX, maxY, maxZ, 8.0F, 0.0F);
+         float u0 = (float)xTexOffs;
+         float u1 = (float)xTexOffs + depth;
+         float u2 = (float)xTexOffs + depth + width;
+         float u22 = (float)xTexOffs + depth + width + width;
+         float u3 = (float)xTexOffs + depth + width + depth;
+         float u4 = (float)xTexOffs + depth + width + depth + width;
+         float v0 = (float)yTexOffs;
+         float v1 = (float)yTexOffs + depth;
+         float v2 = (float)yTexOffs + depth + height;
+         int pos = 0;
+         if (visibleFaces.contains(Direction.DOWN)) {
+            this.polygons[pos++] = new Polygon(new Vertex[]{l1, l0, t0, t1}, u1, v0, u2, v1, xTexSize, yTexSize, mirror, Direction.DOWN);
          }
 
-         if (var15.contains(Direction.UP)) {
-            this.polygons[var36++] = new Polygon(new Vertex[]{var21, var22, var26, var25}, var29, var34, var30, var33, var13, var14, var12, Direction.UP);
+         if (visibleFaces.contains(Direction.UP)) {
+            this.polygons[pos++] = new Polygon(new Vertex[]{t2, t3, l3, l2}, u2, v1, u22, v0, xTexSize, yTexSize, mirror, Direction.UP);
          }
 
-         if (var15.contains(Direction.WEST)) {
-            this.polygons[var36++] = new Polygon(new Vertex[]{var43, var23, var26, var22}, var27, var34, var28, var35, var13, var14, var12, Direction.WEST);
+         if (visibleFaces.contains(Direction.WEST)) {
+            this.polygons[pos++] = new Polygon(new Vertex[]{t0, l0, l3, t3}, u0, v1, u1, v2, xTexSize, yTexSize, mirror, Direction.WEST);
          }
 
-         if (var15.contains(Direction.NORTH)) {
-            this.polygons[var36++] = new Polygon(new Vertex[]{var20, var43, var22, var21}, var28, var34, var29, var35, var13, var14, var12, Direction.NORTH);
+         if (visibleFaces.contains(Direction.NORTH)) {
+            this.polygons[pos++] = new Polygon(new Vertex[]{t1, t0, t3, t2}, u1, v1, u2, v2, xTexSize, yTexSize, mirror, Direction.NORTH);
          }
 
-         if (var15.contains(Direction.EAST)) {
-            this.polygons[var36++] = new Polygon(new Vertex[]{var24, var20, var21, var25}, var29, var34, var31, var35, var13, var14, var12, Direction.EAST);
+         if (visibleFaces.contains(Direction.EAST)) {
+            this.polygons[pos++] = new Polygon(new Vertex[]{l1, t1, t2, l2}, u2, v1, u3, v2, xTexSize, yTexSize, mirror, Direction.EAST);
          }
 
-         if (var15.contains(Direction.SOUTH)) {
-            this.polygons[var36] = new Polygon(new Vertex[]{var23, var24, var25, var26}, var31, var34, var32, var35, var13, var14, var12, Direction.SOUTH);
+         if (visibleFaces.contains(Direction.SOUTH)) {
+            this.polygons[pos] = new Polygon(new Vertex[]{l0, l1, l2, l3}, u3, v1, u4, v2, xTexSize, yTexSize, mirror, Direction.SOUTH);
          }
 
       }
 
-      public void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, int var5) {
-         Matrix4f var6 = var1.pose();
-         Vector3f var7 = new Vector3f();
+      public void compile(final PoseStack.Pose pose, final VertexConsumer builder, final int lightCoords, final int overlayCoords, final int color) {
+         Matrix4f matrix = pose.pose();
+         Vector3f scratchVector = new Vector3f();
 
-         for(Polygon var11 : this.polygons) {
-            Vector3f var12 = var1.transformNormal(var11.normal, var7);
-            float var13 = var12.x();
-            float var14 = var12.y();
-            float var15 = var12.z();
+         for(Polygon polygon : this.polygons) {
+            Vector3f normal = pose.transformNormal(polygon.normal, scratchVector);
+            float nx = normal.x();
+            float ny = normal.y();
+            float nz = normal.z();
 
-            for(Vertex var19 : var11.vertices) {
-               float var20 = var19.worldX();
-               float var21 = var19.worldY();
-               float var22 = var19.worldZ();
-               Vector3f var23 = var6.transformPosition(var20, var21, var22, var7);
-               var2.addVertex(var23.x(), var23.y(), var23.z(), var5, var19.u, var19.v, var4, var3, var13, var14, var15);
+            for(Vertex vertex : polygon.vertices) {
+               float x = vertex.worldX();
+               float y = vertex.worldY();
+               float z = vertex.worldZ();
+               Vector3f pos = matrix.transformPosition(x, y, z, scratchVector);
+               builder.addVertex(pos.x(), pos.y(), pos.z(), color, vertex.u, vertex.v, overlayCoords, lightCoords, nx, ny, nz);
             }
          }
 
@@ -335,56 +335,44 @@ public final class ModelPart {
    }
 
    public static record Polygon(Vertex[] vertices, Vector3fc normal) {
-      final Vertex[] vertices;
-      final Vector3fc normal;
+      public Polygon(final Vertex[] vertices, final float u0, final float v0, final float u1, final float v1, final float xTexSize, final float yTexSize, final boolean mirror, final Direction facing) {
+         this(vertices, (mirror ? mirrorFacing(facing) : facing).getUnitVec3f());
+         float us = 0.0F / xTexSize;
+         float vs = 0.0F / yTexSize;
+         vertices[0] = vertices[0].remap(u1 / xTexSize - us, v0 / yTexSize + vs);
+         vertices[1] = vertices[1].remap(u0 / xTexSize + us, v0 / yTexSize + vs);
+         vertices[2] = vertices[2].remap(u0 / xTexSize + us, v1 / yTexSize - vs);
+         vertices[3] = vertices[3].remap(u1 / xTexSize - us, v1 / yTexSize - vs);
+         if (mirror) {
+            int length = vertices.length;
 
-      public Polygon(Vertex[] var1, float var2, float var3, float var4, float var5, float var6, float var7, boolean var8, Direction var9) {
-         this(var1, (var8 ? mirrorFacing(var9) : var9).getUnitVec3f());
-         float var10 = 0.0F / var6;
-         float var11 = 0.0F / var7;
-         var1[0] = var1[0].remap(var4 / var6 - var10, var3 / var7 + var11);
-         var1[1] = var1[1].remap(var2 / var6 + var10, var3 / var7 + var11);
-         var1[2] = var1[2].remap(var2 / var6 + var10, var5 / var7 - var11);
-         var1[3] = var1[3].remap(var4 / var6 - var10, var5 / var7 - var11);
-         if (var8) {
-            int var12 = var1.length;
-
-            for(int var13 = 0; var13 < var12 / 2; ++var13) {
-               Vertex var14 = var1[var13];
-               var1[var13] = var1[var12 - 1 - var13];
-               var1[var12 - 1 - var13] = var14;
+            for(int i = 0; i < length / 2; ++i) {
+               Vertex tmp = vertices[i];
+               vertices[i] = vertices[length - 1 - i];
+               vertices[length - 1 - i] = tmp;
             }
          }
 
       }
 
-      public Polygon(Vertex[] var1, Vector3fc var2) {
+      public Polygon {
          super();
-         this.vertices = var1;
-         this.normal = var2;
       }
 
-      private static Direction mirrorFacing(Direction var0) {
-         return var0.getAxis() == Direction.Axis.X ? var0.getOpposite() : var0;
+      private static Direction mirrorFacing(final Direction facing) {
+         return facing.getAxis() == Direction.Axis.X ? facing.getOpposite() : facing;
       }
    }
 
    public static record Vertex(float x, float y, float z, float u, float v) {
-      final float u;
-      final float v;
       public static final float SCALE_FACTOR = 16.0F;
 
-      public Vertex(float var1, float var2, float var3, float var4, float var5) {
+      public Vertex {
          super();
-         this.x = var1;
-         this.y = var2;
-         this.z = var3;
-         this.u = var4;
-         this.v = var5;
       }
 
-      public Vertex remap(float var1, float var2) {
-         return new Vertex(this.x, this.y, this.z, var1, var2);
+      public Vertex remap(final float u, final float v) {
+         return new Vertex(this.x, this.y, this.z, u, v);
       }
 
       public float worldX() {
@@ -402,6 +390,6 @@ public final class ModelPart {
 
    @FunctionalInterface
    public interface Visitor {
-      void visit(PoseStack.Pose var1, String var2, int var3, Cube var4);
+      void visit(final PoseStack.Pose pose, final String partPath, final int cubeIndex, final Cube cube);
    }
 }

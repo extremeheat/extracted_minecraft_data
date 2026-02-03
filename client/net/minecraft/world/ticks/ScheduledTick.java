@@ -6,64 +6,54 @@ import net.minecraft.core.BlockPos;
 import org.jspecify.annotations.Nullable;
 
 public record ScheduledTick<T>(T type, BlockPos pos, long triggerTick, TickPriority priority, long subTickOrder) {
-   public static final Comparator<ScheduledTick<?>> DRAIN_ORDER = (var0, var1) -> {
-      int var2 = Long.compare(var0.triggerTick, var1.triggerTick);
-      if (var2 != 0) {
-         return var2;
+   public static final Comparator<ScheduledTick<?>> DRAIN_ORDER = (o1, o2) -> {
+      int compare = Long.compare(o1.triggerTick, o2.triggerTick);
+      if (compare != 0) {
+         return compare;
       } else {
-         var2 = var0.priority.compareTo(var1.priority);
-         return var2 != 0 ? var2 : Long.compare(var0.subTickOrder, var1.subTickOrder);
+         compare = o1.priority.compareTo(o2.priority);
+         return compare != 0 ? compare : Long.compare(o1.subTickOrder, o2.subTickOrder);
       }
    };
-   public static final Comparator<ScheduledTick<?>> INTRA_TICK_DRAIN_ORDER = (var0, var1) -> {
-      int var2 = var0.priority.compareTo(var1.priority);
-      return var2 != 0 ? var2 : Long.compare(var0.subTickOrder, var1.subTickOrder);
+   public static final Comparator<ScheduledTick<?>> INTRA_TICK_DRAIN_ORDER = (o1, o2) -> {
+      int compare = o1.priority.compareTo(o2.priority);
+      return compare != 0 ? compare : Long.compare(o1.subTickOrder, o2.subTickOrder);
    };
    public static final Hash.Strategy<ScheduledTick<?>> UNIQUE_TICK_HASH = new Hash.Strategy<ScheduledTick<?>>() {
-      public int hashCode(ScheduledTick<?> var1) {
-         return 31 * var1.pos().hashCode() + var1.type().hashCode();
+      public int hashCode(final ScheduledTick<?> o) {
+         return 31 * o.pos().hashCode() + o.type().hashCode();
       }
 
-      public boolean equals(@Nullable ScheduledTick<?> var1, @Nullable ScheduledTick<?> var2) {
-         if (var1 == var2) {
+      public boolean equals(final @Nullable ScheduledTick<?> a, final @Nullable ScheduledTick<?> b) {
+         if (a == b) {
             return true;
-         } else if (var1 != null && var2 != null) {
-            return var1.type() == var2.type() && var1.pos().equals(var2.pos());
+         } else if (a != null && b != null) {
+            return a.type() == b.type() && a.pos().equals(b.pos());
          } else {
             return false;
          }
       }
-
-      // $FF: synthetic method
-      public boolean equals(final @Nullable Object var1, final @Nullable Object var2) {
-         return this.equals((ScheduledTick)var1, (ScheduledTick)var2);
-      }
-
-      // $FF: synthetic method
-      public int hashCode(final Object var1) {
-         return this.hashCode((ScheduledTick)var1);
-      }
    };
 
-   public ScheduledTick(T var1, BlockPos var2, long var3, long var5) {
-      this(var1, var2, var3, TickPriority.NORMAL, var5);
+   public ScheduledTick(final T type, final BlockPos pos, final long triggerTick, final long subTickOrder) {
+      this(type, pos, triggerTick, TickPriority.NORMAL, subTickOrder);
    }
 
-   public ScheduledTick(T var1, BlockPos var2, long var3, TickPriority var5, long var6) {
+   public ScheduledTick(T type, BlockPos pos, long triggerTick, TickPriority priority, long subTickOrder) {
       super();
-      var2 = var2.immutable();
-      this.type = var1;
-      this.pos = var2;
-      this.triggerTick = var3;
-      this.priority = var5;
-      this.subTickOrder = var6;
+      pos = pos.immutable();
+      this.type = type;
+      this.pos = pos;
+      this.triggerTick = triggerTick;
+      this.priority = priority;
+      this.subTickOrder = subTickOrder;
    }
 
-   public static <T> ScheduledTick<T> probe(T var0, BlockPos var1) {
-      return new ScheduledTick<T>(var0, var1, 0L, TickPriority.NORMAL, 0L);
+   public static <T> ScheduledTick<T> probe(final T type, final BlockPos pos) {
+      return new ScheduledTick<T>(type, pos, 0L, TickPriority.NORMAL, 0L);
    }
 
-   public SavedTick<T> toSavedTick(long var1) {
-      return new SavedTick<T>(this.type, this.pos, (int)(this.triggerTick - var1), this.priority);
+   public SavedTick<T> toSavedTick(final long currentTick) {
+      return new SavedTick<T>(this.type, this.pos, (int)(this.triggerTick - currentTick), this.priority);
    }
 }

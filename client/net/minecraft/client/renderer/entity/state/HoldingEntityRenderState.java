@@ -12,7 +12,7 @@ public class HoldingEntityRenderState extends LivingEntityRenderState {
       super();
    }
 
-   public static void extractHoldingEntityRenderState(LivingEntity var0, HoldingEntityRenderState var1, ItemModelResolver var2) {
-      var2.updateForLiving(var1.heldItem, var0.getMainHandItem(), ItemDisplayContext.GROUND, var0);
+   public static void extractHoldingEntityRenderState(final LivingEntity entity, final HoldingEntityRenderState state, final ItemModelResolver itemModelResolver) {
+      itemModelResolver.updateForLiving(state.heldItem, entity.getMainHandItem(), ItemDisplayContext.GROUND, entity);
    }
 }

@@ -8,20 +8,20 @@ public class CacheSlot<C extends CacheSlot.Cleaner<C>, D> {
    private @Nullable C context;
    private @Nullable D value;
 
-   public CacheSlot(Function<C, D> var1) {
+   public CacheSlot(final Function<C, D> operation) {
       super();
-      this.operation = var1;
+      this.operation = operation;
    }
 
-   public D compute(C var1) {
-      if (var1 == this.context && this.value != null) {
+   public D compute(final C context) {
+      if (context == this.context && this.value != null) {
          return this.value;
       } else {
-         Object var2 = this.operation.apply(var1);
-         this.value = (D)var2;
-         this.context = var1;
-         var1.registerForCleaning(this);
-         return (D)var2;
+         D newValue = (D)this.operation.apply(context);
+         this.value = newValue;
+         this.context = context;
+         context.registerForCleaning(this);
+         return newValue;
       }
    }
 
@@ -32,6 +32,6 @@ public class CacheSlot<C extends CacheSlot.Cleaner<C>, D> {
 
    @FunctionalInterface
    public interface Cleaner<C extends Cleaner<C>> {
-      void registerForCleaning(CacheSlot<C, ?> var1);
+      void registerForCleaning(CacheSlot<C, ?> slot);
    }
 }

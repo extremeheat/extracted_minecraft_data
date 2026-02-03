@@ -33,121 +33,121 @@ public class GossipContainer {
       super();
    }
 
-   private GossipContainer(List<GossipEntry> var1) {
+   private GossipContainer(final List<GossipEntry> entries) {
       super();
-      var1.forEach((var1x) -> this.getOrCreate(var1x.target).entries.put(var1x.type, var1x.value));
+      entries.forEach((e) -> this.getOrCreate(e.target).entries.put(e.type, e.value));
    }
 
    @VisibleForDebug
    public Map<UUID, Object2IntMap<GossipType>> getGossipEntries() {
-      HashMap var1 = Maps.newHashMap();
-      this.gossips.keySet().forEach((var2) -> {
-         EntityGossips var3 = (EntityGossips)this.gossips.get(var2);
-         var1.put(var2, var3.entries);
+      Map<UUID, Object2IntMap<GossipType>> result = Maps.newHashMap();
+      this.gossips.keySet().forEach((uuid) -> {
+         EntityGossips entityGossips = (EntityGossips)this.gossips.get(uuid);
+         result.put(uuid, entityGossips.entries);
       });
-      return var1;
+      return result;
    }
 
    public void decay() {
-      Iterator var1 = this.gossips.values().iterator();
+      Iterator<EntityGossips> iterator = this.gossips.values().iterator();
 
-      while(var1.hasNext()) {
-         EntityGossips var2 = (EntityGossips)var1.next();
-         var2.decay();
-         if (var2.isEmpty()) {
-            var1.remove();
+      while(iterator.hasNext()) {
+         EntityGossips entityGossips = (EntityGossips)iterator.next();
+         entityGossips.decay();
+         if (entityGossips.isEmpty()) {
+            iterator.remove();
          }
       }
 
    }
 
    private Stream<GossipEntry> unpack() {
-      return this.gossips.entrySet().stream().flatMap((var0) -> ((EntityGossips)var0.getValue()).unpack((UUID)var0.getKey()));
+      return this.gossips.entrySet().stream().flatMap((e) -> ((EntityGossips)e.getValue()).unpack((UUID)e.getKey()));
    }
 
-   private Collection<GossipEntry> selectGossipsForTransfer(RandomSource var1, int var2) {
-      List var3 = this.unpack().toList();
-      if (var3.isEmpty()) {
+   private Collection<GossipEntry> selectGossipsForTransfer(final RandomSource random, final int maxCount) {
+      List<GossipEntry> entries = this.unpack().toList();
+      if (entries.isEmpty()) {
          return Collections.emptyList();
       } else {
-         int[] var4 = new int[var3.size()];
-         int var5 = 0;
+         int[] ranges = new int[entries.size()];
+         int rangesEnd = 0;
 
-         for(int var6 = 0; var6 < var3.size(); ++var6) {
-            GossipEntry var7 = (GossipEntry)var3.get(var6);
-            var5 += Math.abs(var7.weightedValue());
-            var4[var6] = var5 - 1;
+         for(int i = 0; i < entries.size(); ++i) {
+            GossipEntry gossip = (GossipEntry)entries.get(i);
+            rangesEnd += Math.abs(gossip.weightedValue());
+            ranges[i] = rangesEnd - 1;
          }
 
-         Set var10 = Sets.newIdentityHashSet();
+         Set<GossipEntry> results = Sets.newIdentityHashSet();
 
-         for(int var11 = 0; var11 < var2; ++var11) {
-            int var8 = var1.nextInt(var5);
-            int var9 = Arrays.binarySearch(var4, var8);
-            var10.add((GossipEntry)var3.get(var9 < 0 ? -var9 - 1 : var9));
+         for(int i = 0; i < maxCount; ++i) {
+            int choice = random.nextInt(rangesEnd);
+            int selectedIndex = Arrays.binarySearch(ranges, choice);
+            results.add((GossipEntry)entries.get(selectedIndex < 0 ? -selectedIndex - 1 : selectedIndex));
          }
 
-         return var10;
+         return results;
       }
    }
 
-   private EntityGossips getOrCreate(UUID var1) {
-      return (EntityGossips)this.gossips.computeIfAbsent(var1, (var0) -> new EntityGossips());
+   private EntityGossips getOrCreate(final UUID target) {
+      return (EntityGossips)this.gossips.computeIfAbsent(target, (uuid) -> new EntityGossips());
    }
 
-   public void transferFrom(GossipContainer var1, RandomSource var2, int var3) {
-      Collection var4 = var1.selectGossipsForTransfer(var2, var3);
-      var4.forEach((var1x) -> {
-         int var2 = var1x.value - var1x.type.decayPerTransfer;
-         if (var2 >= 2) {
-            this.getOrCreate(var1x.target).entries.mergeInt(var1x.type, var2, GossipContainer::mergeValuesForTransfer);
+   public void transferFrom(final GossipContainer source, final RandomSource random, final int maxCount) {
+      Collection<GossipEntry> newGossips = source.selectGossipsForTransfer(random, maxCount);
+      newGossips.forEach((newGossip) -> {
+         int decayedValue = newGossip.value - newGossip.type.decayPerTransfer;
+         if (decayedValue >= 2) {
+            this.getOrCreate(newGossip.target).entries.mergeInt(newGossip.type, decayedValue, GossipContainer::mergeValuesForTransfer);
          }
 
       });
    }
 
-   public int getReputation(UUID var1, Predicate<GossipType> var2) {
-      EntityGossips var3 = (EntityGossips)this.gossips.get(var1);
-      return var3 != null ? var3.weightedValue(var2) : 0;
+   public int getReputation(final UUID entity, final Predicate<GossipType> types) {
+      EntityGossips entry = (EntityGossips)this.gossips.get(entity);
+      return entry != null ? entry.weightedValue(types) : 0;
    }
 
-   public long getCountForType(GossipType var1, DoublePredicate var2) {
-      return this.gossips.values().stream().filter((var2x) -> var2.test((double)(var2x.entries.getOrDefault(var1, 0) * var1.weight))).count();
+   public long getCountForType(final GossipType type, final DoublePredicate valueTest) {
+      return this.gossips.values().stream().filter((e) -> valueTest.test((double)(e.entries.getOrDefault(type, 0) * type.weight))).count();
    }
 
-   public void add(UUID var1, GossipType var2, int var3) {
-      EntityGossips var4 = this.getOrCreate(var1);
-      var4.entries.mergeInt(var2, var3, (var2x, var3x) -> this.mergeValuesForAddition(var2, var2x, var3x));
-      var4.makeSureValueIsntTooLowOrTooHigh(var2);
-      if (var4.isEmpty()) {
-         this.gossips.remove(var1);
+   public void add(final UUID target, final GossipType type, final int amountToAdd) {
+      EntityGossips entityGossips = this.getOrCreate(target);
+      entityGossips.entries.mergeInt(type, amountToAdd, (o, n) -> this.mergeValuesForAddition(type, o, n));
+      entityGossips.makeSureValueIsntTooLowOrTooHigh(type);
+      if (entityGossips.isEmpty()) {
+         this.gossips.remove(target);
       }
 
    }
 
-   public void remove(UUID var1, GossipType var2, int var3) {
-      this.add(var1, var2, -var3);
+   public void remove(final UUID target, final GossipType type, final int amountToRemove) {
+      this.add(target, type, -amountToRemove);
    }
 
-   public void remove(UUID var1, GossipType var2) {
-      EntityGossips var3 = (EntityGossips)this.gossips.get(var1);
-      if (var3 != null) {
-         var3.remove(var2);
-         if (var3.isEmpty()) {
-            this.gossips.remove(var1);
+   public void remove(final UUID target, final GossipType type) {
+      EntityGossips entityGossips = (EntityGossips)this.gossips.get(target);
+      if (entityGossips != null) {
+         entityGossips.remove(type);
+         if (entityGossips.isEmpty()) {
+            this.gossips.remove(target);
          }
       }
 
    }
 
-   public void remove(GossipType var1) {
-      Iterator var2 = this.gossips.values().iterator();
+   public void remove(final GossipType type) {
+      Iterator<EntityGossips> iterator = this.gossips.values().iterator();
 
-      while(var2.hasNext()) {
-         EntityGossips var3 = (EntityGossips)var2.next();
-         var3.remove(var1);
-         if (var3.isEmpty()) {
-            var2.remove();
+      while(iterator.hasNext()) {
+         EntityGossips entityGossips = (EntityGossips)iterator.next();
+         entityGossips.remove(type);
+         if (entityGossips.isEmpty()) {
+            iterator.remove();
          }
       }
 
@@ -157,40 +157,34 @@ public class GossipContainer {
       this.gossips.clear();
    }
 
-   public void putAll(GossipContainer var1) {
-      var1.gossips.forEach((var1x, var2) -> this.getOrCreate(var1x).entries.putAll(var2.entries));
+   public void putAll(final GossipContainer container) {
+      container.gossips.forEach((target, gossips) -> this.getOrCreate(target).entries.putAll(gossips.entries));
    }
 
-   private static int mergeValuesForTransfer(int var0, int var1) {
-      return Math.max(var0, var1);
+   private static int mergeValuesForTransfer(final int oldValue, final int newValue) {
+      return Math.max(oldValue, newValue);
    }
 
-   private int mergeValuesForAddition(GossipType var1, int var2, int var3) {
-      int var4 = var2 + var3;
-      return var4 > var1.max ? Math.max(var1.max, var2) : var4;
+   private int mergeValuesForAddition(final GossipType type, final int oldValue, final int newValue) {
+      int sum = oldValue + newValue;
+      return sum > type.max ? Math.max(type.max, oldValue) : sum;
    }
 
    public GossipContainer copy() {
-      GossipContainer var1 = new GossipContainer();
-      var1.putAll(this);
-      return var1;
+      GossipContainer container = new GossipContainer();
+      container.putAll(this);
+      return container;
    }
 
    static {
-      CODEC = GossipContainer.GossipEntry.CODEC.listOf().xmap(GossipContainer::new, (var0) -> var0.unpack().toList());
+      CODEC = GossipContainer.GossipEntry.CODEC.listOf().xmap(GossipContainer::new, (container) -> container.unpack().toList());
    }
 
-   static record GossipEntry(UUID target, GossipType type, int value) {
-      final UUID target;
-      final GossipType type;
-      final int value;
-      public static final Codec<GossipEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.CODEC.fieldOf("Target").forGetter(GossipEntry::target), GossipType.CODEC.fieldOf("Type").forGetter(GossipEntry::type), ExtraCodecs.POSITIVE_INT.fieldOf("Value").forGetter(GossipEntry::value)).apply(var0, GossipEntry::new));
+   private static record GossipEntry(UUID target, GossipType type, int value) {
+      public static final Codec<GossipEntry> CODEC = RecordCodecBuilder.create((i) -> i.group(UUIDUtil.CODEC.fieldOf("Target").forGetter(GossipEntry::target), GossipType.CODEC.fieldOf("Type").forGetter(GossipEntry::type), ExtraCodecs.POSITIVE_INT.fieldOf("Value").forGetter(GossipEntry::value)).apply(i, GossipEntry::new));
 
-      GossipEntry(UUID var1, GossipType var2, int var3) {
+      private GossipEntry {
          super();
-         this.target = var1;
-         this.type = var2;
-         this.value = var3;
       }
 
       public int weightedValue() {
@@ -198,31 +192,31 @@ public class GossipContainer {
       }
    }
 
-   static class EntityGossips {
-      final Object2IntMap<GossipType> entries = new Object2IntOpenHashMap();
+   private static class EntityGossips {
+      private final Object2IntMap<GossipType> entries = new Object2IntOpenHashMap();
 
-      EntityGossips() {
+      private EntityGossips() {
          super();
       }
 
-      public int weightedValue(Predicate<GossipType> var1) {
-         return this.entries.object2IntEntrySet().stream().filter((var1x) -> var1.test((GossipType)var1x.getKey())).mapToInt((var0) -> var0.getIntValue() * ((GossipType)var0.getKey()).weight).sum();
+      public int weightedValue(final Predicate<GossipType> types) {
+         return this.entries.object2IntEntrySet().stream().filter((e) -> types.test((GossipType)e.getKey())).mapToInt((e) -> e.getIntValue() * ((GossipType)e.getKey()).weight).sum();
       }
 
-      public Stream<GossipEntry> unpack(UUID var1) {
-         return this.entries.object2IntEntrySet().stream().map((var1x) -> new GossipEntry(var1, (GossipType)var1x.getKey(), var1x.getIntValue()));
+      public Stream<GossipEntry> unpack(final UUID target) {
+         return this.entries.object2IntEntrySet().stream().map((e) -> new GossipEntry(target, (GossipType)e.getKey(), e.getIntValue()));
       }
 
       public void decay() {
-         ObjectIterator var1 = this.entries.object2IntEntrySet().iterator();
+         ObjectIterator<Object2IntMap.Entry<GossipType>> it = this.entries.object2IntEntrySet().iterator();
 
-         while(var1.hasNext()) {
-            Object2IntMap.Entry var2 = (Object2IntMap.Entry)var1.next();
-            int var3 = var2.getIntValue() - ((GossipType)var2.getKey()).decayPerDay;
-            if (var3 < 2) {
-               var1.remove();
+         while(it.hasNext()) {
+            Object2IntMap.Entry<GossipType> gossip = (Object2IntMap.Entry)it.next();
+            int newValue = gossip.getIntValue() - ((GossipType)gossip.getKey()).decayPerDay;
+            if (newValue < 2) {
+               it.remove();
             } else {
-               var2.setValue(var3);
+               gossip.setValue(newValue);
             }
          }
 
@@ -232,20 +226,20 @@ public class GossipContainer {
          return this.entries.isEmpty();
       }
 
-      public void makeSureValueIsntTooLowOrTooHigh(GossipType var1) {
-         int var2 = this.entries.getInt(var1);
-         if (var2 > var1.max) {
-            this.entries.put(var1, var1.max);
+      public void makeSureValueIsntTooLowOrTooHigh(final GossipType type) {
+         int value = this.entries.getInt(type);
+         if (value > type.max) {
+            this.entries.put(type, type.max);
          }
 
-         if (var2 < 2) {
-            this.remove(var1);
+         if (value < 2) {
+            this.remove(type);
          }
 
       }
 
-      public void remove(GossipType var1) {
-         this.entries.removeInt(var1);
+      public void remove(final GossipType type) {
+         this.entries.removeInt(type);
       }
    }
 }

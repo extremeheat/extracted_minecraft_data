@@ -11,28 +11,27 @@ import org.slf4j.Logger;
 public record PendingInvitesList(List<PendingInvite> pendingInvites) {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public PendingInvitesList(List<PendingInvite> var1) {
+   public PendingInvitesList {
       super();
-      this.pendingInvites = var1;
    }
 
-   public static PendingInvitesList parse(String var0) {
-      ArrayList var1 = new ArrayList();
+   public static PendingInvitesList parse(final String json) {
+      List<PendingInvite> pendingInvites = new ArrayList();
 
       try {
-         JsonObject var2 = LenientJsonParser.parse(var0).getAsJsonObject();
-         if (var2.get("invites").isJsonArray()) {
-            for(JsonElement var4 : var2.get("invites").getAsJsonArray()) {
-               PendingInvite var5 = PendingInvite.parse(var4.getAsJsonObject());
-               if (var5 != null) {
-                  var1.add(var5);
+         JsonObject jsonObject = LenientJsonParser.parse(json).getAsJsonObject();
+         if (jsonObject.get("invites").isJsonArray()) {
+            for(JsonElement element : jsonObject.get("invites").getAsJsonArray()) {
+               PendingInvite entry = PendingInvite.parse(element.getAsJsonObject());
+               if (entry != null) {
+                  pendingInvites.add(entry);
                }
             }
          }
-      } catch (Exception var6) {
-         LOGGER.error("Could not parse PendingInvitesList", var6);
+      } catch (Exception e) {
+         LOGGER.error("Could not parse PendingInvitesList", e);
       }
 
-      return new PendingInvitesList(var1);
+      return new PendingInvitesList(pendingInvites);
    }
 }

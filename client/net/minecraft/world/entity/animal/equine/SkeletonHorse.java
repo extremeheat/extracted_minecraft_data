@@ -38,26 +38,26 @@ public class SkeletonHorse extends AbstractHorse {
    private boolean isTrap = false;
    private int trapTime = 0;
 
-   public SkeletonHorse(EntityType<? extends SkeletonHorse> var1, Level var2) {
-      super(var1, var2);
+   public SkeletonHorse(final EntityType<? extends SkeletonHorse> type, final Level level) {
+      super(type, level);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return createBaseHorseAttributes().add(Attributes.MAX_HEALTH, 15.0).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224);
    }
 
-   public static boolean checkSkeletonHorseSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      if (!EntitySpawnReason.isSpawner(var2)) {
-         return Animal.checkAnimalSpawnRules(var0, var1, var2, var3, var4);
+   public static boolean checkSkeletonHorseSpawnRules(final EntityType<? extends Animal> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      if (!EntitySpawnReason.isSpawner(spawnReason)) {
+         return Animal.checkAnimalSpawnRules(type, level, spawnReason, pos, random);
       } else {
-         return EntitySpawnReason.ignoresLightRequirements(var2) || isBrightEnoughToSpawn(var1, var3);
+         return EntitySpawnReason.ignoresLightRequirements(spawnReason) || isBrightEnoughToSpawn(level, pos);
       }
    }
 
-   protected void randomizeAttributes(RandomSource var1) {
+   protected void randomizeAttributes(final RandomSource random) {
       AttributeInstance var10000 = this.getAttribute(Attributes.JUMP_STRENGTH);
-      Objects.requireNonNull(var1);
-      var10000.setBaseValue(generateJumpStrength(var1::nextDouble));
+      Objects.requireNonNull(random);
+      var10000.setBaseValue(generateJumpStrength(random::nextDouble));
    }
 
    protected void addBehaviourGoals() {
@@ -71,7 +71,7 @@ public class SkeletonHorse extends AbstractHorse {
       return SoundEvents.SKELETON_HORSE_DEATH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.SKELETON_HORSE_HURT;
    }
 
@@ -94,11 +94,11 @@ public class SkeletonHorse extends AbstractHorse {
       return SoundEvents.SKELETON_HORSE_SWIM;
    }
 
-   protected void playSwimSound(float var1) {
+   protected void playSwimSound(final float volume) {
       if (this.onGround()) {
          super.playSwimSound(0.3F);
       } else {
-         super.playSwimSound(Math.min(0.1F, var1 * 25.0F));
+         super.playSwimSound(Math.min(0.1F, volume * 25.0F));
       }
 
    }
@@ -112,8 +112,8 @@ public class SkeletonHorse extends AbstractHorse {
 
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    public void aiStep() {
@@ -124,16 +124,16 @@ public class SkeletonHorse extends AbstractHorse {
 
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("SkeletonTrap", this.isTrap());
-      var1.putInt("SkeletonTrapTime", this.trapTime);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("SkeletonTrap", this.isTrap());
+      output.putInt("SkeletonTrapTime", this.trapTime);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setTrap(var1.getBooleanOr("SkeletonTrap", false));
-      this.trapTime = var1.getIntOr("SkeletonTrapTime", 0);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setTrap(input.getBooleanOr("SkeletonTrap", false));
+      this.trapTime = input.getIntOr("SkeletonTrapTime", 0);
    }
 
    protected float getWaterSlowDown() {
@@ -144,10 +144,10 @@ public class SkeletonHorse extends AbstractHorse {
       return this.isTrap;
    }
 
-   public void setTrap(boolean var1) {
-      if (var1 != this.isTrap) {
-         this.isTrap = var1;
-         if (var1) {
+   public void setTrap(final boolean trap) {
+      if (trap != this.isTrap) {
+         this.isTrap = trap;
+         if (trap) {
             this.goalSelector.addGoal(1, this.skeletonTrapGoal);
          } else {
             this.goalSelector.removeGoal(this.skeletonTrapGoal);
@@ -156,19 +156,19 @@ public class SkeletonHorse extends AbstractHorse {
       }
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.SKELETON_HORSE.create(var1, EntitySpawnReason.BREEDING);
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      return EntityType.SKELETON_HORSE.create(level, EntitySpawnReason.BREEDING);
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      return (InteractionResult)(!this.isTamed() ? InteractionResult.PASS : super.mobInteract(var1, var2));
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      return (InteractionResult)(!this.isTamed() ? InteractionResult.PASS : super.mobInteract(player, hand));
    }
 
-   public boolean canUseSlot(EquipmentSlot var1) {
+   public boolean canUseSlot(final EquipmentSlot slot) {
       return true;
    }
 
    static {
-      BABY_DIMENSIONS = EntityType.SKELETON_HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.SKELETON_HORSE.getHeight() - 0.03125F, 0.0F)).scale(0.5F);
+      BABY_DIMENSIONS = EntityType.SKELETON_HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.SKELETON_HORSE.getHeight() - 0.03125F, 0.0F)).scale(0.7F);
    }
 }

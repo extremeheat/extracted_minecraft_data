@@ -16,25 +16,25 @@ import net.minecraft.resources.Identifier;
 public abstract class RenderLayer<S extends EntityRenderState, M extends EntityModel<? super S>> {
    private final RenderLayerParent<S, M> renderer;
 
-   public RenderLayer(RenderLayerParent<S, M> var1) {
+   public RenderLayer(final RenderLayerParent<S, M> renderer) {
       super();
-      this.renderer = var1;
+      this.renderer = renderer;
    }
 
-   protected static <S extends LivingEntityRenderState> void coloredCutoutModelCopyLayerRender(Model<? super S> var0, Identifier var1, PoseStack var2, SubmitNodeCollector var3, int var4, S var5, int var6, int var7) {
-      if (!var5.isInvisible) {
-         renderColoredCutoutModel(var0, var1, var2, var3, var4, var5, var6, var7);
+   protected static <S extends LivingEntityRenderState> void coloredCutoutModelCopyLayerRender(final Model<? super S> model, final Identifier texture, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final S state, final int color, final int order) {
+      if (!state.isInvisible) {
+         renderColoredCutoutModel(model, texture, poseStack, submitNodeCollector, lightCoords, state, color, order);
       }
 
    }
 
-   protected static <S extends LivingEntityRenderState> void renderColoredCutoutModel(Model<? super S> var0, Identifier var1, PoseStack var2, SubmitNodeCollector var3, int var4, S var5, int var6, int var7) {
-      var3.order(var7).submitModel(var0, var5, var2, RenderTypes.entityCutoutNoCull(var1), var4, LivingEntityRenderer.getOverlayCoords(var5, 0.0F), var6, (TextureAtlasSprite)null, var5.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   protected static <S extends LivingEntityRenderState> void renderColoredCutoutModel(final Model<? super S> model, final Identifier texture, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final S state, final int color, final int order) {
+      submitNodeCollector.order(order).submitModel(model, state, poseStack, RenderTypes.entityCutoutNoCull(texture), lightCoords, LivingEntityRenderer.getOverlayCoords(state, 0.0F), color, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public M getParentModel() {
       return this.renderer.getModel();
    }
 
-   public abstract void submit(PoseStack var1, SubmitNodeCollector var2, int var3, S var4, float var5, float var6);
+   public abstract void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, S state, float yRot, float xRot);
 }

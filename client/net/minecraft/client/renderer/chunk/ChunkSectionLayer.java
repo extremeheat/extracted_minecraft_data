@@ -7,18 +7,17 @@ import net.minecraft.client.renderer.RenderPipelines;
 public enum ChunkSectionLayer {
    SOLID(RenderPipelines.SOLID_TERRAIN, 4194304, false),
    CUTOUT(RenderPipelines.CUTOUT_TERRAIN, 4194304, false),
-   TRANSLUCENT(RenderPipelines.TRANSLUCENT_TERRAIN, 786432, true),
-   TRIPWIRE(RenderPipelines.TRIPWIRE_TERRAIN, 1536, true);
+   TRANSLUCENT(RenderPipelines.TRANSLUCENT_TERRAIN, 786432, true);
 
    private final RenderPipeline pipeline;
    private final int bufferSize;
    private final boolean sortOnUpload;
    private final String label;
 
-   private ChunkSectionLayer(final RenderPipeline var3, final int var4, final boolean var5) {
-      this.pipeline = var3;
-      this.bufferSize = var4;
-      this.sortOnUpload = var5;
+   private ChunkSectionLayer(final RenderPipeline pipeline, final int bufferSize, final boolean sortOnUpload) {
+      this.pipeline = pipeline;
+      this.bufferSize = bufferSize;
+      this.sortOnUpload = sortOnUpload;
       this.label = this.toString().toLowerCase(Locale.ROOT);
    }
 
@@ -40,6 +39,6 @@ public enum ChunkSectionLayer {
 
    // $FF: synthetic method
    private static ChunkSectionLayer[] $values() {
-      return new ChunkSectionLayer[]{SOLID, CUTOUT, TRANSLUCENT, TRIPWIRE};
+      return new ChunkSectionLayer[]{SOLID, CUTOUT, TRANSLUCENT};
    }
 }

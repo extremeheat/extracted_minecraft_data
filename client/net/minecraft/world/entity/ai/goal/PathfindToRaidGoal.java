@@ -2,8 +2,8 @@ package net.minecraft.world.entity.ai.goal;
 
 import com.google.common.collect.Sets;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
@@ -18,9 +18,9 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
    private final T mob;
    private int recruitmentTick;
 
-   public PathfindToRaidGoal(T var1) {
+   public PathfindToRaidGoal(final T mob) {
       super();
-      this.mob = var1;
+      this.mob = mob;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
@@ -34,31 +34,31 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
 
    public void tick() {
       if (this.mob.hasActiveRaid()) {
-         Raid var1 = this.mob.getCurrentRaid();
+         Raid raid = this.mob.getCurrentRaid();
          if (this.mob.tickCount > this.recruitmentTick) {
             this.recruitmentTick = this.mob.tickCount + 20;
-            this.recruitNearby(var1);
+            this.recruitNearby(raid);
          }
 
          if (!this.mob.isPathFinding()) {
-            Vec3 var2 = DefaultRandomPos.getPosTowards(this.mob, 15, 4, Vec3.atBottomCenterOf(var1.getCenter()), 1.5707963705062866);
-            if (var2 != null) {
-               this.mob.getNavigation().moveTo(var2.x, var2.y, var2.z, 1.0);
+            Vec3 posTowards = DefaultRandomPos.getPosTowards(this.mob, 15, 4, Vec3.atBottomCenterOf(raid.getCenter()), 1.5707963705062866);
+            if (posTowards != null) {
+               this.mob.getNavigation().moveTo(posTowards.x, posTowards.y, posTowards.z, 1.0);
             }
          }
       }
 
    }
 
-   private void recruitNearby(Raid var1) {
-      if (var1.isActive()) {
-         ServerLevel var2 = getServerLevel(this.mob.level());
-         HashSet var3 = Sets.newHashSet();
-         List var4 = var2.getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), (var0) -> !var0.hasActiveRaid() && Raids.canJoinRaid(var0));
-         var3.addAll(var4);
+   private void recruitNearby(final Raid raid) {
+      if (raid.isActive()) {
+         ServerLevel level = getServerLevel(this.mob.level());
+         Set<Raider> raidersToAdd = Sets.newHashSet();
+         List<Raider> raidersNearby = level.getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), (mob) -> !mob.hasActiveRaid() && Raids.canJoinRaid(mob));
+         raidersToAdd.addAll(raidersNearby);
 
-         for(Raider var6 : var3) {
-            var1.joinRaid(var2, var1.getGroupsSpawned(), var6, (BlockPos)null, true);
+         for(Raider raider : raidersToAdd) {
+            raid.joinRaid(level, raid.getGroupsSpawned(), raider, (BlockPos)null, true);
          }
       }
 

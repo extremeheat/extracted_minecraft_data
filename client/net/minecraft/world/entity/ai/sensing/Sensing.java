@@ -12,9 +12,9 @@ public class Sensing {
    private final IntSet seen = new IntOpenHashSet();
    private final IntSet unseen = new IntOpenHashSet();
 
-   public Sensing(Mob var1) {
+   public Sensing(final Mob mob) {
       super();
-      this.mob = var1;
+      this.mob = mob;
    }
 
    public void tick() {
@@ -22,24 +22,24 @@ public class Sensing {
       this.unseen.clear();
    }
 
-   public boolean hasLineOfSight(Entity var1) {
-      int var2 = var1.getId();
-      if (this.seen.contains(var2)) {
+   public boolean hasLineOfSight(final Entity target) {
+      int targetId = target.getId();
+      if (this.seen.contains(targetId)) {
          return true;
-      } else if (this.unseen.contains(var2)) {
+      } else if (this.unseen.contains(targetId)) {
          return false;
       } else {
-         ProfilerFiller var3 = Profiler.get();
-         var3.push("hasLineOfSight");
-         boolean var4 = this.mob.hasLineOfSight(var1);
-         var3.pop();
-         if (var4) {
-            this.seen.add(var2);
+         ProfilerFiller profiler = Profiler.get();
+         profiler.push("hasLineOfSight");
+         boolean hasLineOfSight = this.mob.hasLineOfSight(target);
+         profiler.pop();
+         if (hasLineOfSight) {
+            this.seen.add(targetId);
          } else {
-            this.unseen.add(var2);
+            this.unseen.add(targetId);
          }
 
-         return var4;
+         return hasLineOfSight;
       }
    }
 }

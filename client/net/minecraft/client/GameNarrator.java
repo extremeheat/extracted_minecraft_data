@@ -18,83 +18,83 @@ public class GameNarrator {
    private final Minecraft minecraft;
    private final Narrator narrator = Narrator.getNarrator();
 
-   public GameNarrator(Minecraft var1) {
+   public GameNarrator(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void sayChatQueued(Component var1) {
+   public void sayChatQueued(final Component message) {
       if (this.getStatus().shouldNarrateChat()) {
-         this.narrateNotInterruptingMessage(var1);
+         this.narrateNotInterruptingMessage(message);
       }
 
    }
 
-   public void saySystemChatQueued(Component var1) {
+   public void saySystemChatQueued(final Component message) {
       if (this.getStatus().shouldNarrateSystemOrChat()) {
-         this.narrateNotInterruptingMessage(var1);
+         this.narrateNotInterruptingMessage(message);
       }
 
    }
 
-   public void saySystemQueued(Component var1) {
+   public void saySystemQueued(final Component message) {
       if (this.getStatus().shouldNarrateSystem()) {
-         this.narrateNotInterruptingMessage(var1);
+         this.narrateNotInterruptingMessage(message);
       }
 
    }
 
-   private void narrateNotInterruptingMessage(Component var1) {
-      String var2 = var1.getString();
-      if (!var2.isEmpty()) {
-         this.logNarratedMessage(var2);
-         this.narrateMessage(var2, false);
+   private void narrateNotInterruptingMessage(final Component message) {
+      String messageString = message.getString();
+      if (!messageString.isEmpty()) {
+         this.logNarratedMessage(messageString);
+         this.narrateMessage(messageString, false);
       }
 
    }
 
-   public void saySystemNow(Component var1) {
-      this.saySystemNow(var1.getString());
+   public void saySystemNow(final Component message) {
+      this.saySystemNow(message.getString());
    }
 
-   public void saySystemNow(String var1) {
-      if (this.getStatus().shouldNarrateSystem() && !var1.isEmpty()) {
-         this.logNarratedMessage(var1);
+   public void saySystemNow(final String message) {
+      if (this.getStatus().shouldNarrateSystem() && !message.isEmpty()) {
+         this.logNarratedMessage(message);
          if (this.narrator.active()) {
             this.narrator.clear();
-            this.narrateMessage(var1, true);
+            this.narrateMessage(message, true);
          }
       }
 
    }
 
-   private void narrateMessage(String var1, boolean var2) {
-      this.narrator.say(var1, var2, this.minecraft.options.getFinalSoundSourceVolume(SoundSource.VOICE));
+   private void narrateMessage(final String message, final boolean interrupt) {
+      this.narrator.say(message, interrupt, this.minecraft.options.getFinalSoundSourceVolume(SoundSource.VOICE));
    }
 
    private NarratorStatus getStatus() {
       return (NarratorStatus)this.minecraft.options.narrator().get();
    }
 
-   private void logNarratedMessage(String var1) {
+   private void logNarratedMessage(final String message) {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         LOGGER.debug("Narrating: {}", var1.replaceAll("\n", "\\\\n"));
+         LOGGER.debug("Narrating: {}", message.replaceAll("\n", "\\\\n"));
       }
 
    }
 
-   public void updateNarratorStatus(NarratorStatus var1) {
+   public void updateNarratorStatus(final NarratorStatus status) {
       this.clear();
-      this.narrateMessage(Component.translatable("options.narrator").append(" : ").append(var1.getName()).getString(), true);
-      ToastManager var2 = Minecraft.getInstance().getToastManager();
+      this.narrateMessage(Component.translatable("options.narrator").append(" : ").append(status.getName()).getString(), true);
+      ToastManager toastManager = Minecraft.getInstance().getToastManager();
       if (this.narrator.active()) {
-         if (var1 == NarratorStatus.OFF) {
-            SystemToast.addOrUpdate(var2, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.disabled"), (Component)null);
+         if (status == NarratorStatus.OFF) {
+            SystemToast.addOrUpdate(toastManager, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.disabled"), (Component)null);
          } else {
-            SystemToast.addOrUpdate(var2, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.enabled"), var1.getName());
+            SystemToast.addOrUpdate(toastManager, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.enabled"), status.getName());
          }
       } else {
-         SystemToast.addOrUpdate(var2, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.disabled"), Component.translatable("options.narrator.notavailable"));
+         SystemToast.addOrUpdate(toastManager, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.disabled"), Component.translatable("options.narrator.notavailable"));
       }
 
    }
@@ -113,8 +113,8 @@ public class GameNarrator {
       this.narrator.destroy();
    }
 
-   public void checkStatus(boolean var1) {
-      if (var1 && !this.isActive() && !TinyFileDialogs.tinyfd_messageBox("Minecraft", "Failed to initialize text-to-speech library. Do you want to continue?\nIf this problem persists, please report it at bugs.mojang.com", "yesno", "error", true)) {
+   public void checkStatus(final boolean requiredActive) {
+      if (requiredActive && !this.isActive() && !TinyFileDialogs.tinyfd_messageBox("Minecraft", "Failed to initialize text-to-speech library. Do you want to continue?\nIf this problem persists, please report it at bugs.mojang.com", "yesno", "error", true)) {
          throw new NarratorInitException("Narrator library is not active");
       }
    }
@@ -125,8 +125,8 @@ public class GameNarrator {
    }
 
    public static class NarratorInitException extends SilentInitException {
-      public NarratorInitException(String var1) {
-         super(var1);
+      public NarratorInitException(final String message) {
+         super(message);
       }
    }
 }

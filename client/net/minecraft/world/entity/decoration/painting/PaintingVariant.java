@@ -15,18 +15,13 @@ import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.util.ExtraCodecs;
 
 public record PaintingVariant(int width, int height, Identifier assetId, Optional<Component> title, Optional<Component> author) {
-   public static final Codec<PaintingVariant> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.intRange(1, 16).fieldOf("width").forGetter(PaintingVariant::width), ExtraCodecs.intRange(1, 16).fieldOf("height").forGetter(PaintingVariant::height), Identifier.CODEC.fieldOf("asset_id").forGetter(PaintingVariant::assetId), ComponentSerialization.CODEC.optionalFieldOf("title").forGetter(PaintingVariant::title), ComponentSerialization.CODEC.optionalFieldOf("author").forGetter(PaintingVariant::author)).apply(var0, PaintingVariant::new));
+   public static final Codec<PaintingVariant> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.intRange(1, 16).fieldOf("width").forGetter(PaintingVariant::width), ExtraCodecs.intRange(1, 16).fieldOf("height").forGetter(PaintingVariant::height), Identifier.CODEC.fieldOf("asset_id").forGetter(PaintingVariant::assetId), ComponentSerialization.CODEC.optionalFieldOf("title").forGetter(PaintingVariant::title), ComponentSerialization.CODEC.optionalFieldOf("author").forGetter(PaintingVariant::author)).apply(i, PaintingVariant::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, PaintingVariant> DIRECT_STREAM_CODEC;
    public static final Codec<Holder<PaintingVariant>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<PaintingVariant>> STREAM_CODEC;
 
-   public PaintingVariant(int var1, int var2, Identifier var3, Optional<Component> var4, Optional<Component> var5) {
+   public PaintingVariant {
       super();
-      this.width = var1;
-      this.height = var2;
-      this.assetId = var3;
-      this.title = var4;
-      this.author = var5;
    }
 
    public int area() {

@@ -9,31 +9,25 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public record BlockColumnConfiguration(List<Layer> layers, Direction direction, BlockPredicate allowedPlacement, boolean prioritizeTip) implements FeatureConfiguration {
-   public static final Codec<BlockColumnConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockColumnConfiguration.Layer.CODEC.listOf().fieldOf("layers").forGetter(BlockColumnConfiguration::layers), Direction.CODEC.fieldOf("direction").forGetter(BlockColumnConfiguration::direction), BlockPredicate.CODEC.fieldOf("allowed_placement").forGetter(BlockColumnConfiguration::allowedPlacement), Codec.BOOL.fieldOf("prioritize_tip").forGetter(BlockColumnConfiguration::prioritizeTip)).apply(var0, BlockColumnConfiguration::new));
+   public static final Codec<BlockColumnConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockColumnConfiguration.Layer.CODEC.listOf().fieldOf("layers").forGetter(BlockColumnConfiguration::layers), Direction.CODEC.fieldOf("direction").forGetter(BlockColumnConfiguration::direction), BlockPredicate.CODEC.fieldOf("allowed_placement").forGetter(BlockColumnConfiguration::allowedPlacement), Codec.BOOL.fieldOf("prioritize_tip").forGetter(BlockColumnConfiguration::prioritizeTip)).apply(i, BlockColumnConfiguration::new));
 
-   public BlockColumnConfiguration(List<Layer> var1, Direction var2, BlockPredicate var3, boolean var4) {
+   public BlockColumnConfiguration {
       super();
-      this.layers = var1;
-      this.direction = var2;
-      this.allowedPlacement = var3;
-      this.prioritizeTip = var4;
    }
 
-   public static Layer layer(IntProvider var0, BlockStateProvider var1) {
-      return new Layer(var0, var1);
+   public static Layer layer(final IntProvider height, final BlockStateProvider state) {
+      return new Layer(height, state);
    }
 
-   public static BlockColumnConfiguration simple(IntProvider var0, BlockStateProvider var1) {
-      return new BlockColumnConfiguration(List.of(layer(var0, var1)), Direction.UP, BlockPredicate.ONLY_IN_AIR_PREDICATE, false);
+   public static BlockColumnConfiguration simple(final IntProvider height, final BlockStateProvider state) {
+      return new BlockColumnConfiguration(List.of(layer(height, state)), Direction.UP, BlockPredicate.ONLY_IN_AIR_PREDICATE, false);
    }
 
    public static record Layer(IntProvider height, BlockStateProvider state) {
-      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((var0) -> var0.group(IntProvider.NON_NEGATIVE_CODEC.fieldOf("height").forGetter(Layer::height), BlockStateProvider.CODEC.fieldOf("provider").forGetter(Layer::state)).apply(var0, Layer::new));
+      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((i) -> i.group(IntProvider.NON_NEGATIVE_CODEC.fieldOf("height").forGetter(Layer::height), BlockStateProvider.CODEC.fieldOf("provider").forGetter(Layer::state)).apply(i, Layer::new));
 
-      public Layer(IntProvider var1, BlockStateProvider var2) {
+      public Layer {
          super();
-         this.height = var1;
-         this.state = var2;
       }
    }
 }

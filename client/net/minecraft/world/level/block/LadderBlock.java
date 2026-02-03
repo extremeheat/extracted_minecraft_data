@@ -7,7 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -34,55 +33,55 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
       return CODEC;
    }
 
-   protected LadderBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected LadderBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(WATERLOGGED, false));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)SHAPES.get(state.getValue(FACING));
    }
 
-   private boolean canAttachTo(BlockGetter var1, BlockPos var2, Direction var3) {
-      BlockState var4 = var1.getBlockState(var2);
-      return var4.isFaceSturdy(var1, var2, var3);
+   private boolean canAttachTo(final BlockGetter level, final BlockPos pos, final Direction direction) {
+      BlockState blockState = level.getBlockState(pos);
+      return blockState.isFaceSturdy(level, pos, direction);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      Direction var4 = (Direction)var1.getValue(FACING);
-      return this.canAttachTo(var2, var3.relative(var4.getOpposite()), var4);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      Direction direction = (Direction)state.getValue(FACING);
+      return this.canAttachTo(level, pos.relative(direction.getOpposite()), direction);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (var5.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var2, var4)) {
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (directionToNeighbour.getOpposite() == state.getValue(FACING) && !state.canSurvive(level, pos)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         if ((Boolean)var1.getValue(WATERLOGGED)) {
-            var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+         if ((Boolean)state.getValue(WATERLOGGED)) {
+            ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
          }
 
-         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+         return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
       }
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      if (!var1.replacingClickedOnBlock()) {
-         BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var1.getClickedFace().getOpposite()));
-         if (var2.is(this) && var2.getValue(FACING) == var1.getClickedFace()) {
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      if (!context.replacingClickedOnBlock()) {
+         BlockState state = context.getLevel().getBlockState(context.getClickedPos().relative(context.getClickedFace().getOpposite()));
+         if (state.is(this) && state.getValue(FACING) == context.getClickedFace()) {
             return null;
          }
       }
 
-      BlockState var10 = this.defaultBlockState();
-      Level var3 = var1.getLevel();
-      BlockPos var4 = var1.getClickedPos();
-      FluidState var5 = var1.getLevel().getFluidState(var1.getClickedPos());
+      BlockState state = this.defaultBlockState();
+      LevelReader level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
 
-      for(Direction var9 : var1.getNearestLookingDirections()) {
-         if (var9.getAxis().isHorizontal()) {
-            var10 = (BlockState)var10.setValue(FACING, var9.getOpposite());
-            if (var10.canSurvive(var3, var4)) {
-               return (BlockState)var10.setValue(WATERLOGGED, var5.getType() == Fluids.WATER);
+      for(Direction direction : context.getNearestLookingDirections()) {
+         if (direction.getAxis().isHorizontal()) {
+            state = (BlockState)state.setValue(FACING, direction.getOpposite());
+            if (state.canSurvive(level, pos)) {
+               return (BlockState)state.setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
             }
          }
       }
@@ -90,20 +89,20 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
       return null;
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, WATERLOGGED);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
    static {

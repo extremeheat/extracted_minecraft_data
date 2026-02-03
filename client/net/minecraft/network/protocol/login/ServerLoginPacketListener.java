@@ -8,11 +8,11 @@ public interface ServerLoginPacketListener extends ServerCookiePacketListener {
       return ConnectionProtocol.LOGIN;
    }
 
-   void handleHello(ServerboundHelloPacket var1);
+   void handleHello(ServerboundHelloPacket packet);
 
-   void handleKey(ServerboundKeyPacket var1);
+   void handleKey(ServerboundKeyPacket packet);
 
-   void handleCustomQueryPacket(ServerboundCustomQueryAnswerPacket var1);
+   void handleCustomQueryPacket(ServerboundCustomQueryAnswerPacket packet);
 
-   void handleLoginAcknowledgement(ServerboundLoginAcknowledgedPacket var1);
+   void handleLoginAcknowledgement(ServerboundLoginAcknowledgedPacket packet);
 }

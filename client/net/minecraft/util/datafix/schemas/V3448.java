@@ -8,13 +8,13 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V3448 extends NamespacedSchema {
-   public V3448(int var1, Schema var2) {
-      super(var1, var2);
+   public V3448(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
-      Map var2 = super.registerBlockEntities(var1);
-      var1.register(var2, "minecraft:decorated_pot", () -> DSL.optionalFields("sherds", DSL.list(References.ITEM_NAME.in(var1)), "item", References.ITEM_STACK.in(var1)));
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerBlockEntities(schema);
+      schema.register(map, "minecraft:decorated_pot", () -> DSL.optionalFields("sherds", DSL.list(References.ITEM_NAME.in(schema)), "item", References.ITEM_STACK.in(schema)));
+      return map;
    }
 }

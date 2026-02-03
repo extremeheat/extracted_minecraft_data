@@ -29,23 +29,23 @@ public class CreateBuffetWorldScreen extends Screen {
    private static final Component SEARCH_HINT;
    private static final int SPACING = 3;
    private static final int SEARCH_BOX_HEIGHT = 15;
-   final HeaderAndFooterLayout layout;
+   private final HeaderAndFooterLayout layout;
    private final Screen parent;
    private final Consumer<Holder<Biome>> applySettings;
-   final Registry<Biome> biomes;
+   private final Registry<Biome> biomes;
    private BiomeList list;
-   Holder<Biome> biome;
+   private Holder<Biome> biome;
    private Button doneButton;
 
-   public CreateBuffetWorldScreen(Screen var1, WorldCreationContext var2, Consumer<Holder<Biome>> var3) {
+   public CreateBuffetWorldScreen(final Screen parent, final WorldCreationContext settings, final Consumer<Holder<Biome>> applySettings) {
       super(Component.translatable("createWorld.customize.buffet.title"));
-      this.parent = var1;
-      this.applySettings = var3;
+      this.parent = parent;
+      this.applySettings = applySettings;
       Objects.requireNonNull(this.font);
       this.layout = new HeaderAndFooterLayout(this, 13 + 9 + 3 + 15, 33);
-      this.biomes = var2.worldgenLoadContext().lookupOrThrow(Registries.BIOME);
-      Holder var4 = (Holder)this.biomes.get(Biomes.PLAINS).or(() -> this.biomes.listElements().findAny()).orElseThrow();
-      this.biome = (Holder)var2.selectedDimensions().overworld().getBiomeSource().possibleBiomes().stream().findFirst().orElse(var4);
+      this.biomes = settings.worldgenLoadContext().lookupOrThrow(Registries.BIOME);
+      Holder<Biome> defaultBiome = (Holder)this.biomes.get(Biomes.PLAINS).or(() -> this.biomes.listElements().findAny()).orElseThrow();
+      this.biome = (Holder)settings.selectedDimensions().overworld().getBiomeSource().possibleBiomes().stream().findFirst().orElse(defaultBiome);
    }
 
    public void onClose() {
@@ -53,22 +53,22 @@ public class CreateBuffetWorldScreen extends Screen {
    }
 
    protected void init() {
-      LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(3));
-      var1.defaultCellSetting().alignHorizontallyCenter();
-      var1.addChild(new StringWidget(this.getTitle(), this.font));
-      EditBox var2 = (EditBox)var1.addChild(new EditBox(this.font, 200, 15, Component.empty()));
-      BiomeList var3 = new BiomeList();
-      var2.setHint(SEARCH_HINT);
-      Objects.requireNonNull(var3);
-      var2.setResponder(var3::filterEntries);
-      this.list = (BiomeList)this.layout.addToContents(var3);
-      LinearLayout var4 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      this.doneButton = (Button)var4.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
+      LinearLayout header = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(3));
+      header.defaultCellSetting().alignHorizontallyCenter();
+      header.addChild(new StringWidget(this.getTitle(), this.font));
+      EditBox search = (EditBox)header.addChild(new EditBox(this.font, 200, 15, Component.empty()));
+      BiomeList biomeList = new BiomeList();
+      search.setHint(SEARCH_HINT);
+      Objects.requireNonNull(biomeList);
+      search.setResponder(biomeList::filterEntries);
+      this.list = (BiomeList)this.layout.addToContents(biomeList);
+      LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      this.doneButton = (Button)footer.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> {
          this.applySettings.accept(this.biome);
          this.onClose();
       }).build());
-      var4.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).build());
-      this.list.setSelected((BiomeList.Entry)this.list.children().stream().filter((var1x) -> Objects.equals(var1x.biome, this.biome)).findFirst().orElse((Object)null));
+      footer.addChild(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onClose()).build());
+      this.list.setSelected((BiomeList.Entry)this.list.children().stream().filter((e) -> Objects.equals(e.biome, this.biome)).findFirst().orElse((Object)null));
       this.layout.visitWidgets(this::addRenderableWidget);
       this.repositionElements();
    }
@@ -78,7 +78,7 @@ public class CreateBuffetWorldScreen extends Screen {
       this.list.updateSize(this.width, this.layout);
    }
 
-   void updateButtonValidity() {
+   private void updateButtonValidity() {
       this.doneButton.active = this.list.getSelected() != null;
    }
 
@@ -86,42 +86,44 @@ public class CreateBuffetWorldScreen extends Screen {
       SEARCH_HINT = Component.translatable("createWorld.customize.buffet.search").withStyle(EditBox.SEARCH_HINT_STYLE);
    }
 
-   class BiomeList extends ObjectSelectionList<Entry> {
-      BiomeList() {
+   private class BiomeList extends ObjectSelectionList<Entry> {
+      private BiomeList() {
+         Objects.requireNonNull(CreateBuffetWorldScreen.this);
          super(CreateBuffetWorldScreen.this.minecraft, CreateBuffetWorldScreen.this.width, CreateBuffetWorldScreen.this.layout.getContentHeight(), CreateBuffetWorldScreen.this.layout.getHeaderHeight(), 15);
          this.filterEntries("");
       }
 
-      private void filterEntries(String var1) {
-         Collator var2 = Collator.getInstance(Locale.getDefault());
-         String var3 = var1.toLowerCase(Locale.ROOT);
-         List var4 = CreateBuffetWorldScreen.this.biomes.listElements().map((var1x) -> new Entry(var1x)).sorted(Comparator.comparing((var0) -> var0.name.getString(), var2)).filter((var2x) -> var1.isEmpty() || var2x.name.getString().toLowerCase(Locale.ROOT).contains(var3)).toList();
-         this.replaceEntries(var4);
+      private void filterEntries(final String filter) {
+         Collator localeCollator = Collator.getInstance(Locale.getDefault());
+         String lowercaseFilter = filter.toLowerCase(Locale.ROOT);
+         List<Entry> list = CreateBuffetWorldScreen.this.biomes.listElements().map((x$0) -> new Entry(x$0)).sorted(Comparator.comparing((e) -> e.name.getString(), localeCollator)).filter((entry) -> filter.isEmpty() || entry.name.getString().toLowerCase(Locale.ROOT).contains(lowercaseFilter)).toList();
+         this.replaceEntries(list);
          this.refreshScrollAmount();
       }
 
-      public void setSelected(Entry var1) {
-         super.setSelected(var1);
-         if (var1 != null) {
-            CreateBuffetWorldScreen.this.biome = var1.biome;
+      public void setSelected(final Entry selected) {
+         super.setSelected(selected);
+         if (selected != null) {
+            CreateBuffetWorldScreen.this.biome = selected.biome;
          }
 
          CreateBuffetWorldScreen.this.updateButtonValidity();
       }
 
-      class Entry extends ObjectSelectionList.Entry<Entry> {
-         final Holder.Reference<Biome> biome;
-         final Component name;
+      private class Entry extends ObjectSelectionList.Entry<Entry> {
+         private final Holder.Reference<Biome> biome;
+         private final Component name;
 
-         public Entry(final Holder.Reference<Biome> var2) {
+         public Entry(final Holder.Reference<Biome> biome) {
+            Objects.requireNonNull(BiomeList.this);
             super();
-            this.biome = var2;
-            Identifier var3 = var2.key().identifier();
-            String var4 = var3.toLanguageKey("biome");
-            if (Language.getInstance().has(var4)) {
-               this.name = Component.translatable(var4);
+            this.biome = biome;
+            Identifier id = biome.key().identifier();
+            String translationKey = id.toLanguageKey("biome");
+            if (Language.getInstance().has(translationKey)) {
+               this.name = Component.translatable(translationKey);
             } else {
-               this.name = Component.literal(var3.toString());
+               this.name = Component.literal(id.toString());
             }
 
          }
@@ -130,13 +132,13 @@ public class CreateBuffetWorldScreen extends Screen {
             return Component.translatable("narrator.select", this.name);
          }
 
-         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-            var1.drawString(CreateBuffetWorldScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
+         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+            graphics.drawString(CreateBuffetWorldScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
          }
 
-         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
             BiomeList.this.setSelected(this);
-            return super.mouseClicked(var1, var2);
+            return super.mouseClicked(event, doubleClick);
          }
       }
    }

@@ -2,7 +2,8 @@ package net.minecraft.world.level.block.entity;
 
 import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import java.util.List;
+import it.unimi.dsi.fastutil.ints.IntList;
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
@@ -37,23 +38,29 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    private int craftingTicksRemaining;
    protected final ContainerData containerData;
 
-   public CrafterBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.CRAFTER, var1, var2);
+   public CrafterBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.CRAFTER, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(9, ItemStack.EMPTY);
       this.craftingTicksRemaining = 0;
       this.containerData = new ContainerData() {
-         private final int[] slotStates = new int[9];
-         private int triggered = 0;
+         private final int[] slotStates;
+         private int triggered;
 
-         public int get(int var1) {
-            return var1 == 9 ? this.triggered : this.slotStates[var1];
+         {
+            Objects.requireNonNull(CrafterBlockEntity.this);
+            this.slotStates = new int[9];
+            this.triggered = 0;
          }
 
-         public void set(int var1, int var2) {
-            if (var1 == 9) {
-               this.triggered = var2;
+         public int get(final int dataId) {
+            return dataId == 9 ? this.triggered : this.slotStates[dataId];
+         }
+
+         public void set(final int dataId, final int value) {
+            if (dataId == 9) {
+               this.triggered = value;
             } else {
-               this.slotStates[var1] = var2;
+               this.slotStates[dataId] = value;
             }
 
          }
@@ -68,46 +75,46 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       return DEFAULT_NAME;
    }
 
-   protected AbstractContainerMenu createMenu(int var1, Inventory var2) {
-      return new CrafterMenu(var1, var2, this, this.containerData);
+   protected AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
+      return new CrafterMenu(containerId, inventory, this, this.containerData);
    }
 
-   public void setSlotState(int var1, boolean var2) {
-      if (this.slotCanBeDisabled(var1)) {
-         this.containerData.set(var1, var2 ? 0 : 1);
+   public void setSlotState(final int slotId, final boolean enabled) {
+      if (this.slotCanBeDisabled(slotId)) {
+         this.containerData.set(slotId, enabled ? 0 : 1);
          this.setChanged();
       }
    }
 
-   public boolean isSlotDisabled(int var1) {
-      if (var1 >= 0 && var1 < 9) {
-         return this.containerData.get(var1) == 1;
+   public boolean isSlotDisabled(final int slotId) {
+      if (slotId >= 0 && slotId < 9) {
+         return this.containerData.get(slotId) == 1;
       } else {
          return false;
       }
    }
 
-   public boolean canPlaceItem(int var1, ItemStack var2) {
-      if (this.containerData.get(var1) == 1) {
+   public boolean canPlaceItem(final int slot, final ItemStack itemStack) {
+      if (this.containerData.get(slot) == 1) {
          return false;
       } else {
-         ItemStack var3 = this.items.get(var1);
-         int var4 = var3.getCount();
-         if (var4 >= var3.getMaxStackSize()) {
+         ItemStack slotStack = this.items.get(slot);
+         int currentStackSize = slotStack.getCount();
+         if (currentStackSize >= slotStack.getMaxStackSize()) {
             return false;
-         } else if (var3.isEmpty()) {
+         } else if (slotStack.isEmpty()) {
             return true;
          } else {
-            return !this.smallerStackExist(var4, var3, var1);
+            return !this.smallerStackExist(currentStackSize, slotStack, slot);
          }
       }
    }
 
-   private boolean smallerStackExist(int var1, ItemStack var2, int var3) {
-      for(int var4 = var3 + 1; var4 < 9; ++var4) {
-         if (!this.isSlotDisabled(var4)) {
-            ItemStack var5 = this.getItem(var4);
-            if (var5.isEmpty() || var5.getCount() < var1 && ItemStack.isSameItemSameComponents(var5, var2)) {
+   private boolean smallerStackExist(final int baseSize, final ItemStack baseItem, final int baseSlot) {
+      for(int i = baseSlot + 1; i < 9; ++i) {
+         if (!this.isSlotDisabled(i)) {
+            ItemStack slotStack = this.getItem(i);
+            if (slotStack.isEmpty() || slotStack.getCount() < baseSize && ItemStack.isSameItemSameComponents(slotStack, baseItem)) {
                return true;
             }
          }
@@ -116,38 +123,38 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       return false;
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.craftingTicksRemaining = var1.getIntOr("crafting_ticks_remaining", 0);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.craftingTicksRemaining = input.getIntOr("crafting_ticks_remaining", 0);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
-      if (!this.tryLoadLootTable(var1)) {
-         ContainerHelper.loadAllItems(var1, this.items);
+      if (!this.tryLoadLootTable(input)) {
+         ContainerHelper.loadAllItems(input, this.items);
       }
 
-      for(int var2 = 0; var2 < 9; ++var2) {
-         this.containerData.set(var2, 0);
+      for(int i = 0; i < 9; ++i) {
+         this.containerData.set(i, 0);
       }
 
-      var1.getIntArray("disabled_slots").ifPresent((var1x) -> {
-         for(int var5 : var1x) {
-            if (this.slotCanBeDisabled(var5)) {
-               this.containerData.set(var5, 1);
+      input.getIntArray("disabled_slots").ifPresent((disabledSlots) -> {
+         for(int i : disabledSlots) {
+            if (this.slotCanBeDisabled(i)) {
+               this.containerData.set(i, 1);
             }
          }
 
       });
-      this.containerData.set(9, var1.getIntOr("triggered", 0));
+      this.containerData.set(9, input.getIntOr("triggered", 0));
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      var1.putInt("crafting_ticks_remaining", this.craftingTicksRemaining);
-      if (!this.trySaveLootTable(var1)) {
-         ContainerHelper.saveAllItems(var1, this.items);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      output.putInt("crafting_ticks_remaining", this.craftingTicksRemaining);
+      if (!this.trySaveLootTable(output)) {
+         ContainerHelper.saveAllItems(output, this.items);
       }
 
-      this.addDisabledSlots(var1);
-      this.addTriggered(var1);
+      this.addDisabledSlots(output);
+      this.addTriggered(output);
    }
 
    public int getContainerSize() {
@@ -155,8 +162,8 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    }
 
    public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
-         if (!var2.isEmpty()) {
+      for(ItemStack is : this.items) {
+         if (!is.isEmpty()) {
             return false;
          }
       }
@@ -164,28 +171,28 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       return true;
    }
 
-   public ItemStack getItem(int var1) {
-      return this.items.get(var1);
+   public ItemStack getItem(final int slot) {
+      return this.items.get(slot);
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      if (this.isSlotDisabled(var1)) {
-         this.setSlotState(var1, true);
+   public void setItem(final int slot, final ItemStack itemStack) {
+      if (this.isSlotDisabled(slot)) {
+         this.setSlotState(slot, true);
       }
 
-      super.setItem(var1, var2);
+      super.setItem(slot, itemStack);
    }
 
-   public boolean stillValid(Player var1) {
-      return Container.stillValidBlockEntity(this, var1);
+   public boolean stillValid(final Player player) {
+      return Container.stillValidBlockEntity(this, player);
    }
 
    public NonNullList<ItemStack> getItems() {
       return this.items;
    }
 
-   protected void setItems(NonNullList<ItemStack> var1) {
-      this.items = var1;
+   protected void setItems(final NonNullList<ItemStack> items) {
+      this.items = items;
    }
 
    public int getWidth() {
@@ -196,31 +203,31 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       return 3;
    }
 
-   public void fillStackedContents(StackedItemContents var1) {
-      for(ItemStack var3 : this.items) {
-         var1.accountSimpleStack(var3);
+   public void fillStackedContents(final StackedItemContents contents) {
+      for(ItemStack itemStack : this.items) {
+         contents.accountSimpleStack(itemStack);
       }
 
    }
 
-   private void addDisabledSlots(ValueOutput var1) {
-      IntArrayList var2 = new IntArrayList();
+   private void addDisabledSlots(final ValueOutput output) {
+      IntList disabledSlots = new IntArrayList();
 
-      for(int var3 = 0; var3 < 9; ++var3) {
-         if (this.isSlotDisabled(var3)) {
-            var2.add(var3);
+      for(int i = 0; i < 9; ++i) {
+         if (this.isSlotDisabled(i)) {
+            disabledSlots.add(i);
          }
       }
 
-      var1.putIntArray("disabled_slots", var2.toIntArray());
+      output.putIntArray("disabled_slots", disabledSlots.toIntArray());
    }
 
-   private void addTriggered(ValueOutput var1) {
-      var1.putInt("triggered", this.containerData.get(9));
+   private void addTriggered(final ValueOutput output) {
+      output.putInt("triggered", this.containerData.get(9));
    }
 
-   public void setTriggered(boolean var1) {
-      this.containerData.set(9, var1 ? 1 : 0);
+   public void setTriggered(final boolean value) {
+      this.containerData.set(9, value ? 1 : 0);
    }
 
    @VisibleForTesting
@@ -228,40 +235,35 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       return this.containerData.get(9) == 1;
    }
 
-   public static void serverTick(Level var0, BlockPos var1, BlockState var2, CrafterBlockEntity var3) {
-      int var4 = var3.craftingTicksRemaining - 1;
-      if (var4 >= 0) {
-         var3.craftingTicksRemaining = var4;
-         if (var4 == 0) {
-            var0.setBlock(var1, (BlockState)var2.setValue(CrafterBlock.CRAFTING, false), 3);
+   public static void serverTick(final Level level, final BlockPos blockPos, final BlockState blockState, final CrafterBlockEntity entity) {
+      int craftingTicksRemaining = entity.craftingTicksRemaining - 1;
+      if (craftingTicksRemaining >= 0) {
+         entity.craftingTicksRemaining = craftingTicksRemaining;
+         if (craftingTicksRemaining == 0) {
+            level.setBlock(blockPos, (BlockState)blockState.setValue(CrafterBlock.CRAFTING, false), 3);
          }
 
       }
    }
 
-   public void setCraftingTicksRemaining(int var1) {
-      this.craftingTicksRemaining = var1;
+   public void setCraftingTicksRemaining(final int maxCraftingTicks) {
+      this.craftingTicksRemaining = maxCraftingTicks;
    }
 
    public int getRedstoneSignal() {
-      int var1 = 0;
+      int count = 0;
 
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         ItemStack var3 = this.getItem(var2);
-         if (!var3.isEmpty() || this.isSlotDisabled(var2)) {
-            ++var1;
+      for(int i = 0; i < this.getContainerSize(); ++i) {
+         ItemStack itemStack = this.getItem(i);
+         if (!itemStack.isEmpty() || this.isSlotDisabled(i)) {
+            ++count;
          }
       }
 
-      return var1;
+      return count;
    }
 
-   private boolean slotCanBeDisabled(int var1) {
-      return var1 > -1 && var1 < 9 && ((ItemStack)this.items.get(var1)).isEmpty();
-   }
-
-   // $FF: synthetic method
-   public List getItems() {
-      return this.getItems();
+   private boolean slotCanBeDisabled(final int slotId) {
+      return slotId > -1 && slotId < 9 && ((ItemStack)this.items.get(slotId)).isEmpty();
    }
 }

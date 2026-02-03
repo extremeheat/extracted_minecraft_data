@@ -34,7 +34,7 @@ public class PlayerTeam extends Team {
    private Team.CollisionRule collisionRule;
    private final Style displayNameStyle;
 
-   public PlayerTeam(Scoreboard var1, String var2) {
+   public PlayerTeam(final Scoreboard scoreboard, final String name) {
       super();
       this.playerPrefix = CommonComponents.EMPTY;
       this.playerSuffix = CommonComponents.EMPTY;
@@ -44,10 +44,10 @@ public class PlayerTeam extends Team {
       this.deathMessageVisibility = Team.Visibility.ALWAYS;
       this.color = ChatFormatting.RESET;
       this.collisionRule = Team.CollisionRule.ALWAYS;
-      this.scoreboard = var1;
-      this.name = var2;
-      this.displayName = Component.literal(var2);
-      this.displayNameStyle = Style.EMPTY.withInsertion(var2).withHoverEvent(new HoverEvent.ShowText(Component.literal(var2)));
+      this.scoreboard = scoreboard;
+      this.name = name;
+      this.displayName = Component.literal(name);
+      this.displayNameStyle = Style.EMPTY.withInsertion(name).withHoverEvent(new HoverEvent.ShowText(Component.literal(name)));
    }
 
    public Packed pack() {
@@ -67,26 +67,26 @@ public class PlayerTeam extends Team {
    }
 
    public MutableComponent getFormattedDisplayName() {
-      MutableComponent var1 = ComponentUtils.wrapInSquareBrackets(this.displayName.copy().withStyle(this.displayNameStyle));
-      ChatFormatting var2 = this.getColor();
-      if (var2 != ChatFormatting.RESET) {
-         var1.withStyle(var2);
+      MutableComponent result = ComponentUtils.wrapInSquareBrackets(this.displayName.copy().withStyle(this.displayNameStyle));
+      ChatFormatting color = this.getColor();
+      if (color != ChatFormatting.RESET) {
+         result.withStyle(color);
       }
 
-      return var1;
+      return result;
    }
 
-   public void setDisplayName(Component var1) {
-      if (var1 == null) {
+   public void setDisplayName(final Component displayName) {
+      if (displayName == null) {
          throw new IllegalArgumentException("Name cannot be null");
       } else {
-         this.displayName = var1;
+         this.displayName = displayName;
          this.scoreboard.onTeamChanged(this);
       }
    }
 
-   public void setPlayerPrefix(@Nullable Component var1) {
-      this.playerPrefix = var1 == null ? CommonComponents.EMPTY : var1;
+   public void setPlayerPrefix(final @Nullable Component playerPrefix) {
+      this.playerPrefix = playerPrefix == null ? CommonComponents.EMPTY : playerPrefix;
       this.scoreboard.onTeamChanged(this);
    }
 
@@ -94,8 +94,8 @@ public class PlayerTeam extends Team {
       return this.playerPrefix;
    }
 
-   public void setPlayerSuffix(@Nullable Component var1) {
-      this.playerSuffix = var1 == null ? CommonComponents.EMPTY : var1;
+   public void setPlayerSuffix(final @Nullable Component playerSuffix) {
+      this.playerSuffix = playerSuffix == null ? CommonComponents.EMPTY : playerSuffix;
       this.scoreboard.onTeamChanged(this);
    }
 
@@ -107,26 +107,26 @@ public class PlayerTeam extends Team {
       return this.players;
    }
 
-   public MutableComponent getFormattedName(Component var1) {
-      MutableComponent var2 = Component.empty().append(this.playerPrefix).append(var1).append(this.playerSuffix);
-      ChatFormatting var3 = this.getColor();
-      if (var3 != ChatFormatting.RESET) {
-         var2.withStyle(var3);
+   public MutableComponent getFormattedName(final Component teamMemberName) {
+      MutableComponent result = Component.empty().append(this.playerPrefix).append(teamMemberName).append(this.playerSuffix);
+      ChatFormatting color = this.getColor();
+      if (color != ChatFormatting.RESET) {
+         result.withStyle(color);
       }
 
-      return var2;
+      return result;
    }
 
-   public static MutableComponent formatNameForTeam(@Nullable Team var0, Component var1) {
-      return var0 == null ? var1.copy() : var0.getFormattedName(var1);
+   public static MutableComponent formatNameForTeam(final @Nullable Team team, final Component name) {
+      return team == null ? name.copy() : team.getFormattedName(name);
    }
 
    public boolean isAllowFriendlyFire() {
       return this.allowFriendlyFire;
    }
 
-   public void setAllowFriendlyFire(boolean var1) {
-      this.allowFriendlyFire = var1;
+   public void setAllowFriendlyFire(final boolean allowFriendlyFire) {
+      this.allowFriendlyFire = allowFriendlyFire;
       this.scoreboard.onTeamChanged(this);
    }
 
@@ -134,8 +134,8 @@ public class PlayerTeam extends Team {
       return this.seeFriendlyInvisibles;
    }
 
-   public void setSeeFriendlyInvisibles(boolean var1) {
-      this.seeFriendlyInvisibles = var1;
+   public void setSeeFriendlyInvisibles(final boolean seeFriendlyInvisibles) {
+      this.seeFriendlyInvisibles = seeFriendlyInvisibles;
       this.scoreboard.onTeamChanged(this);
    }
 
@@ -147,13 +147,13 @@ public class PlayerTeam extends Team {
       return this.deathMessageVisibility;
    }
 
-   public void setNameTagVisibility(Team.Visibility var1) {
-      this.nameTagVisibility = var1;
+   public void setNameTagVisibility(final Team.Visibility visibility) {
+      this.nameTagVisibility = visibility;
       this.scoreboard.onTeamChanged(this);
    }
 
-   public void setDeathMessageVisibility(Team.Visibility var1) {
-      this.deathMessageVisibility = var1;
+   public void setDeathMessageVisibility(final Team.Visibility visibility) {
+      this.deathMessageVisibility = visibility;
       this.scoreboard.onTeamChanged(this);
    }
 
@@ -161,31 +161,31 @@ public class PlayerTeam extends Team {
       return this.collisionRule;
    }
 
-   public void setCollisionRule(Team.CollisionRule var1) {
-      this.collisionRule = var1;
+   public void setCollisionRule(final Team.CollisionRule collisionRule) {
+      this.collisionRule = collisionRule;
       this.scoreboard.onTeamChanged(this);
    }
 
    public int packOptions() {
-      int var1 = 0;
+      int result = 0;
       if (this.isAllowFriendlyFire()) {
-         var1 |= 1;
+         result |= 1;
       }
 
       if (this.canSeeFriendlyInvisibles()) {
-         var1 |= 2;
+         result |= 2;
       }
 
-      return var1;
+      return result;
    }
 
-   public void unpackOptions(int var1) {
-      this.setAllowFriendlyFire((var1 & 1) > 0);
-      this.setSeeFriendlyInvisibles((var1 & 2) > 0);
+   public void unpackOptions(final int options) {
+      this.setAllowFriendlyFire((options & 1) > 0);
+      this.setSeeFriendlyInvisibles((options & 2) > 0);
    }
 
-   public void setColor(ChatFormatting var1) {
-      this.color = var1;
+   public void setColor(final ChatFormatting color) {
+      this.color = color;
       this.scoreboard.onTeamChanged(this);
    }
 
@@ -194,21 +194,10 @@ public class PlayerTeam extends Team {
    }
 
    public static record Packed(String name, Optional<Component> displayName, Optional<ChatFormatting> color, boolean allowFriendlyFire, boolean seeFriendlyInvisibles, Component memberNamePrefix, Component memberNameSuffix, Team.Visibility nameTagVisibility, Team.Visibility deathMessageVisibility, Team.CollisionRule collisionRule, List<String> players) {
-      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("Name").forGetter(Packed::name), ComponentSerialization.CODEC.optionalFieldOf("DisplayName").forGetter(Packed::displayName), ChatFormatting.COLOR_CODEC.optionalFieldOf("TeamColor").forGetter(Packed::color), Codec.BOOL.optionalFieldOf("AllowFriendlyFire", true).forGetter(Packed::allowFriendlyFire), Codec.BOOL.optionalFieldOf("SeeFriendlyInvisibles", true).forGetter(Packed::seeFriendlyInvisibles), ComponentSerialization.CODEC.optionalFieldOf("MemberNamePrefix", CommonComponents.EMPTY).forGetter(Packed::memberNamePrefix), ComponentSerialization.CODEC.optionalFieldOf("MemberNameSuffix", CommonComponents.EMPTY).forGetter(Packed::memberNameSuffix), Team.Visibility.CODEC.optionalFieldOf("NameTagVisibility", Team.Visibility.ALWAYS).forGetter(Packed::nameTagVisibility), Team.Visibility.CODEC.optionalFieldOf("DeathMessageVisibility", Team.Visibility.ALWAYS).forGetter(Packed::deathMessageVisibility), Team.CollisionRule.CODEC.optionalFieldOf("CollisionRule", Team.CollisionRule.ALWAYS).forGetter(Packed::collisionRule), Codec.STRING.listOf().optionalFieldOf("Players", List.of()).forGetter(Packed::players)).apply(var0, Packed::new));
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.STRING.fieldOf("Name").forGetter(Packed::name), ComponentSerialization.CODEC.optionalFieldOf("DisplayName").forGetter(Packed::displayName), ChatFormatting.COLOR_CODEC.optionalFieldOf("TeamColor").forGetter(Packed::color), Codec.BOOL.optionalFieldOf("AllowFriendlyFire", true).forGetter(Packed::allowFriendlyFire), Codec.BOOL.optionalFieldOf("SeeFriendlyInvisibles", true).forGetter(Packed::seeFriendlyInvisibles), ComponentSerialization.CODEC.optionalFieldOf("MemberNamePrefix", CommonComponents.EMPTY).forGetter(Packed::memberNamePrefix), ComponentSerialization.CODEC.optionalFieldOf("MemberNameSuffix", CommonComponents.EMPTY).forGetter(Packed::memberNameSuffix), Team.Visibility.CODEC.optionalFieldOf("NameTagVisibility", Team.Visibility.ALWAYS).forGetter(Packed::nameTagVisibility), Team.Visibility.CODEC.optionalFieldOf("DeathMessageVisibility", Team.Visibility.ALWAYS).forGetter(Packed::deathMessageVisibility), Team.CollisionRule.CODEC.optionalFieldOf("CollisionRule", Team.CollisionRule.ALWAYS).forGetter(Packed::collisionRule), Codec.STRING.listOf().optionalFieldOf("Players", List.of()).forGetter(Packed::players)).apply(i, Packed::new));
 
-      public Packed(String var1, Optional<Component> var2, Optional<ChatFormatting> var3, boolean var4, boolean var5, Component var6, Component var7, Team.Visibility var8, Team.Visibility var9, Team.CollisionRule var10, List<String> var11) {
+      public Packed {
          super();
-         this.name = var1;
-         this.displayName = var2;
-         this.color = var3;
-         this.allowFriendlyFire = var4;
-         this.seeFriendlyInvisibles = var5;
-         this.memberNamePrefix = var6;
-         this.memberNameSuffix = var7;
-         this.nameTagVisibility = var8;
-         this.deathMessageVisibility = var9;
-         this.collisionRule = var10;
-         this.players = var11;
       }
    }
 }

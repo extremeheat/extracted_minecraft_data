@@ -13,35 +13,33 @@ import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ThrownPotionSplitFix extends EntityRenameFix {
    private final Supplier<ItemIdFinder> itemIdFinder = Suppliers.memoize(() -> {
-      Type var1 = this.getInputSchema().getChoiceType(References.ENTITY, "minecraft:potion");
-      Type var2 = ExtraDataFixUtils.patchSubType(var1, this.getInputSchema().getType(References.ENTITY), this.getOutputSchema().getType(References.ENTITY));
-      OpticFinder var3 = var2.findField("Item");
-      OpticFinder var4 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      return new ItemIdFinder(var3, var4);
+      Type<?> potionType = this.getInputSchema().getChoiceType(References.ENTITY, "minecraft:potion");
+      Type<?> patchedPotionType = ExtraDataFixUtils.patchSubType(potionType, this.getInputSchema().getType(References.ENTITY), this.getOutputSchema().getType(References.ENTITY));
+      OpticFinder<?> itemFinder = patchedPotionType.findField("Item");
+      OpticFinder<Pair<String, String>> itemIdFinder = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      return new ItemIdFinder(itemFinder, itemIdFinder);
    });
 
-   public ThrownPotionSplitFix(Schema var1) {
-      super("ThrownPotionSplitFix", var1, true);
+   public ThrownPotionSplitFix(final Schema outputSchema) {
+      super("ThrownPotionSplitFix", outputSchema, true);
    }
 
-   protected Pair<String, Typed<?>> fix(String var1, Typed<?> var2) {
-      if (!var1.equals("minecraft:potion")) {
-         return Pair.of(var1, var2);
+   protected Pair<String, Typed<?>> fix(final String name, final Typed<?> entity) {
+      if (!name.equals("minecraft:potion")) {
+         return Pair.of(name, entity);
       } else {
-         String var3 = ((ItemIdFinder)this.itemIdFinder.get()).getItemId(var2);
-         return "minecraft:lingering_potion".equals(var3) ? Pair.of("minecraft:lingering_potion", var2) : Pair.of("minecraft:splash_potion", var2);
+         String itemId = ((ItemIdFinder)this.itemIdFinder.get()).getItemId(entity);
+         return "minecraft:lingering_potion".equals(itemId) ? Pair.of("minecraft:lingering_potion", entity) : Pair.of("minecraft:splash_potion", entity);
       }
    }
 
-   static record ItemIdFinder(OpticFinder<?> itemFinder, OpticFinder<Pair<String, String>> itemIdFinder) {
-      ItemIdFinder(OpticFinder<?> var1, OpticFinder<Pair<String, String>> var2) {
+   private static record ItemIdFinder(OpticFinder<?> itemFinder, OpticFinder<Pair<String, String>> itemIdFinder) {
+      private ItemIdFinder {
          super();
-         this.itemFinder = var1;
-         this.itemIdFinder = var2;
       }
 
-      public String getItemId(Typed<?> var1) {
-         return (String)var1.getOptionalTyped(this.itemFinder).flatMap((var1x) -> var1x.getOptional(this.itemIdFinder)).map(Pair::getSecond).map(NamespacedSchema::ensureNamespaced).orElse("");
+      public String getItemId(final Typed<?> entity) {
+         return (String)entity.getOptionalTyped(this.itemFinder).flatMap((item) -> item.getOptional(this.itemIdFinder)).map(Pair::getSecond).map(NamespacedSchema::ensureNamespaced).orElse("");
       }
    }
 }

@@ -9,18 +9,18 @@ import net.minecraft.world.level.levelgen.feature.configurations.SimpleRandomFea
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class SimpleRandomSelectorFeature extends Feature<SimpleRandomFeatureConfiguration> {
-   public SimpleRandomSelectorFeature(Codec<SimpleRandomFeatureConfiguration> var1) {
-      super(var1);
+   public SimpleRandomSelectorFeature(final Codec<SimpleRandomFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<SimpleRandomFeatureConfiguration> var1) {
-      RandomSource var2 = var1.random();
-      SimpleRandomFeatureConfiguration var3 = (SimpleRandomFeatureConfiguration)var1.config();
-      WorldGenLevel var4 = var1.level();
-      BlockPos var5 = var1.origin();
-      ChunkGenerator var6 = var1.chunkGenerator();
-      int var7 = var2.nextInt(var3.features.size());
-      PlacedFeature var8 = var3.features.get(var7).value();
-      return var8.place(var4, var6, var2, var5);
+   public boolean place(final FeaturePlaceContext<SimpleRandomFeatureConfiguration> context) {
+      RandomSource random = context.random();
+      SimpleRandomFeatureConfiguration config = context.config();
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
+      ChunkGenerator chunkGenerator = context.chunkGenerator();
+      int index = random.nextInt(config.features.size());
+      PlacedFeature feature = config.features.get(index).value();
+      return feature.place(level, chunkGenerator, random, origin);
    }
 }

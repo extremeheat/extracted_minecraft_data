@@ -32,60 +32,60 @@ public class AuthenticationHandler extends ChannelDuplexHandler {
    private final SecurityConfig securityConfig;
    private final Set<String> allowedOrigins;
 
-   public AuthenticationHandler(SecurityConfig var1, String var2) {
+   public AuthenticationHandler(final SecurityConfig securityConfig, final String allowedOrigins) {
       super();
-      this.securityConfig = var1;
-      this.allowedOrigins = Sets.newHashSet(var2.split(","));
+      this.securityConfig = securityConfig;
+      this.allowedOrigins = Sets.newHashSet(allowedOrigins.split(","));
    }
 
-   public void channelRead(ChannelHandlerContext var1, Object var2) throws Exception {
-      String var3 = this.getClientIp(var1);
-      if (var2 instanceof HttpRequest var4) {
-         SecurityCheckResult var5 = this.performSecurityChecks(var4);
-         if (!var5.isAllowed()) {
-            this.LOGGER.debug("Authentication rejected for connection with ip {}: {}", var3, var5.getReason());
-            var1.channel().attr(AUTHENTICATED_KEY).set(false);
-            this.sendUnauthorizedResponse(var1, var5.getReason());
+   public void channelRead(final ChannelHandlerContext context, final Object msg) throws Exception {
+      String clientIp = this.getClientIp(context);
+      if (msg instanceof HttpRequest request) {
+         SecurityCheckResult result = this.performSecurityChecks(request);
+         if (!result.isAllowed()) {
+            this.LOGGER.debug("Authentication rejected for connection with ip {}: {}", clientIp, result.getReason());
+            context.channel().attr(AUTHENTICATED_KEY).set(false);
+            this.sendUnauthorizedResponse(context, result.getReason());
             return;
          }
 
-         var1.channel().attr(AUTHENTICATED_KEY).set(true);
-         if (var5.isTokenSentInSecWebsocketProtocol()) {
-            var1.channel().attr(ATTR_WEBSOCKET_ALLOWED).set(Boolean.TRUE);
+         context.channel().attr(AUTHENTICATED_KEY).set(true);
+         if (result.isTokenSentInSecWebsocketProtocol()) {
+            context.channel().attr(ATTR_WEBSOCKET_ALLOWED).set(Boolean.TRUE);
          }
       }
 
-      Boolean var6 = (Boolean)var1.channel().attr(AUTHENTICATED_KEY).get();
-      if (Boolean.TRUE.equals(var6)) {
-         super.channelRead(var1, var2);
+      Boolean isAuthenticated = (Boolean)context.channel().attr(AUTHENTICATED_KEY).get();
+      if (Boolean.TRUE.equals(isAuthenticated)) {
+         super.channelRead(context, msg);
       } else {
-         this.LOGGER.debug("Dropping unauthenticated connection with ip {}", var3);
-         var1.close();
+         this.LOGGER.debug("Dropping unauthenticated connection with ip {}", clientIp);
+         context.close();
       }
 
    }
 
-   public void write(ChannelHandlerContext var1, Object var2, ChannelPromise var3) throws Exception {
-      if (var2 instanceof HttpResponse var4) {
-         if (var4.status().code() == HttpResponseStatus.SWITCHING_PROTOCOLS.code() && var1.channel().attr(ATTR_WEBSOCKET_ALLOWED).get() != null && ((Boolean)var1.channel().attr(ATTR_WEBSOCKET_ALLOWED).get()).equals(Boolean.TRUE)) {
-            var4.headers().set(HttpHeaderNames.SEC_WEBSOCKET_PROTOCOL, "minecraft-v1");
+   public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) throws Exception {
+      if (msg instanceof HttpResponse response) {
+         if (response.status().code() == HttpResponseStatus.SWITCHING_PROTOCOLS.code() && ctx.channel().attr(ATTR_WEBSOCKET_ALLOWED).get() != null && ((Boolean)ctx.channel().attr(ATTR_WEBSOCKET_ALLOWED).get()).equals(Boolean.TRUE)) {
+            response.headers().set(HttpHeaderNames.SEC_WEBSOCKET_PROTOCOL, "minecraft-v1");
          }
       }
 
-      super.write(var1, var2, var3);
+      super.write(ctx, msg, promise);
    }
 
-   private SecurityCheckResult performSecurityChecks(HttpRequest var1) {
-      String var2 = this.parseTokenInAuthorizationHeader(var1);
-      if (var2 != null) {
-         return this.isValidApiKey(var2) ? AuthenticationHandler.SecurityCheckResult.allowed() : AuthenticationHandler.SecurityCheckResult.denied("Invalid API key");
+   private SecurityCheckResult performSecurityChecks(final HttpRequest request) {
+      String tokenInAuthorizationHeader = this.parseTokenInAuthorizationHeader(request);
+      if (tokenInAuthorizationHeader != null) {
+         return this.isValidApiKey(tokenInAuthorizationHeader) ? AuthenticationHandler.SecurityCheckResult.allowed() : AuthenticationHandler.SecurityCheckResult.denied("Invalid API key");
       } else {
-         String var3 = this.parseTokenInSecWebsocketProtocolHeader(var1);
-         if (var3 != null) {
-            if (!this.isAllowedOriginHeader(var1)) {
+         String tokenInSecWebsocketProtocolHeader = this.parseTokenInSecWebsocketProtocolHeader(request);
+         if (tokenInSecWebsocketProtocolHeader != null) {
+            if (!this.isAllowedOriginHeader(request)) {
                return AuthenticationHandler.SecurityCheckResult.denied("Origin Not Allowed");
             } else {
-               return this.isValidApiKey(var3) ? AuthenticationHandler.SecurityCheckResult.allowed(true) : AuthenticationHandler.SecurityCheckResult.denied("Invalid API key");
+               return this.isValidApiKey(tokenInSecWebsocketProtocolHeader) ? AuthenticationHandler.SecurityCheckResult.allowed(true) : AuthenticationHandler.SecurityCheckResult.denied("Invalid API key");
             }
          } else {
             return AuthenticationHandler.SecurityCheckResult.denied("Missing API key");
@@ -93,68 +93,68 @@ public class AuthenticationHandler extends ChannelDuplexHandler {
       }
    }
 
-   private boolean isAllowedOriginHeader(HttpRequest var1) {
-      String var2 = var1.headers().get(HttpHeaderNames.ORIGIN);
-      return var2 != null && !var2.isEmpty() ? this.allowedOrigins.contains(var2) : false;
+   private boolean isAllowedOriginHeader(final HttpRequest request) {
+      String originHeader = request.headers().get(HttpHeaderNames.ORIGIN);
+      return originHeader != null && !originHeader.isEmpty() ? this.allowedOrigins.contains(originHeader) : false;
    }
 
-   private @Nullable String parseTokenInAuthorizationHeader(HttpRequest var1) {
-      String var2 = var1.headers().get(HttpHeaderNames.AUTHORIZATION);
-      return var2 != null && var2.startsWith("Bearer ") ? var2.substring("Bearer ".length()).trim() : null;
+   private @Nullable String parseTokenInAuthorizationHeader(final HttpRequest request) {
+      String authHeader = request.headers().get(HttpHeaderNames.AUTHORIZATION);
+      return authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring("Bearer ".length()).trim() : null;
    }
 
-   private @Nullable String parseTokenInSecWebsocketProtocolHeader(HttpRequest var1) {
-      String var2 = var1.headers().get(HttpHeaderNames.SEC_WEBSOCKET_PROTOCOL);
-      return var2 != null && var2.startsWith("minecraft-v1,") ? var2.substring("minecraft-v1,".length()).trim() : null;
+   private @Nullable String parseTokenInSecWebsocketProtocolHeader(final HttpRequest request) {
+      String authHeader = request.headers().get(HttpHeaderNames.SEC_WEBSOCKET_PROTOCOL);
+      return authHeader != null && authHeader.startsWith("minecraft-v1,") ? authHeader.substring("minecraft-v1,".length()).trim() : null;
    }
 
-   public boolean isValidApiKey(String var1) {
-      if (var1.isEmpty()) {
+   public boolean isValidApiKey(final String suppliedKey) {
+      if (suppliedKey.isEmpty()) {
          return false;
       } else {
-         byte[] var2 = var1.getBytes(StandardCharsets.UTF_8);
-         byte[] var3 = this.securityConfig.secretKey().getBytes(StandardCharsets.UTF_8);
-         return MessageDigest.isEqual(var2, var3);
+         byte[] suppliedKeyBytes = suppliedKey.getBytes(StandardCharsets.UTF_8);
+         byte[] configuredKeyBytes = this.securityConfig.secretKey().getBytes(StandardCharsets.UTF_8);
+         return MessageDigest.isEqual(suppliedKeyBytes, configuredKeyBytes);
       }
    }
 
-   private String getClientIp(ChannelHandlerContext var1) {
-      InetSocketAddress var2 = (InetSocketAddress)var1.channel().remoteAddress();
-      return var2.getAddress().getHostAddress();
+   private String getClientIp(final ChannelHandlerContext context) {
+      InetSocketAddress remoteAddress = (InetSocketAddress)context.channel().remoteAddress();
+      return remoteAddress.getAddress().getHostAddress();
    }
 
-   private void sendUnauthorizedResponse(ChannelHandlerContext var1, String var2) {
-      String var3 = "{\"error\":\"Unauthorized\",\"message\":\"" + var2 + "\"}";
-      byte[] var4 = var3.getBytes(StandardCharsets.UTF_8);
-      DefaultFullHttpResponse var5 = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, Unpooled.wrappedBuffer(var4));
-      var5.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
-      var5.headers().set(HttpHeaderNames.CONTENT_LENGTH, var4.length);
-      var5.headers().set(HttpHeaderNames.CONNECTION, "close");
-      var1.writeAndFlush(var5).addListener((var1x) -> var1.close());
+   private void sendUnauthorizedResponse(final ChannelHandlerContext context, final String reason) {
+      String responseBody = "{\"error\":\"Unauthorized\",\"message\":\"" + reason + "\"}";
+      byte[] content = responseBody.getBytes(StandardCharsets.UTF_8);
+      DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, Unpooled.wrappedBuffer(content));
+      response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
+      response.headers().set(HttpHeaderNames.CONTENT_LENGTH, content.length);
+      response.headers().set(HttpHeaderNames.CONNECTION, "close");
+      context.writeAndFlush(response).addListener((future) -> context.close());
    }
 
-   static class SecurityCheckResult {
+   private static class SecurityCheckResult {
       private final boolean allowed;
       private final String reason;
       private final boolean tokenSentInSecWebsocketProtocol;
 
-      private SecurityCheckResult(boolean var1, String var2, boolean var3) {
+      private SecurityCheckResult(final boolean allowed, final String reason, final boolean tokenSentInSecWebsocketProtocol) {
          super();
-         this.allowed = var1;
-         this.reason = var2;
-         this.tokenSentInSecWebsocketProtocol = var3;
+         this.allowed = allowed;
+         this.reason = reason;
+         this.tokenSentInSecWebsocketProtocol = tokenSentInSecWebsocketProtocol;
       }
 
       public static SecurityCheckResult allowed() {
          return new SecurityCheckResult(true, (String)null, false);
       }
 
-      public static SecurityCheckResult allowed(boolean var0) {
-         return new SecurityCheckResult(true, (String)null, var0);
+      public static SecurityCheckResult allowed(final boolean tokenSentInSecWebsocketProtocol) {
+         return new SecurityCheckResult(true, (String)null, tokenSentInSecWebsocketProtocol);
       }
 
-      public static SecurityCheckResult denied(String var0) {
-         return new SecurityCheckResult(false, var0, false);
+      public static SecurityCheckResult denied(final String reason) {
+         return new SecurityCheckResult(false, reason, false);
       }
 
       public boolean isAllowed() {

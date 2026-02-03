@@ -9,26 +9,26 @@ public class ClientboundClearTitlesPacket implements Packet<ClientGamePacketList
    public static final StreamCodec<FriendlyByteBuf, ClientboundClearTitlesPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundClearTitlesPacket>codec(ClientboundClearTitlesPacket::write, ClientboundClearTitlesPacket::new);
    private final boolean resetTimes;
 
-   public ClientboundClearTitlesPacket(boolean var1) {
+   public ClientboundClearTitlesPacket(final boolean resetTimes) {
       super();
-      this.resetTimes = var1;
+      this.resetTimes = resetTimes;
    }
 
-   private ClientboundClearTitlesPacket(FriendlyByteBuf var1) {
+   private ClientboundClearTitlesPacket(final FriendlyByteBuf input) {
       super();
-      this.resetTimes = var1.readBoolean();
+      this.resetTimes = input.readBoolean();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBoolean(this.resetTimes);
+   private void write(final FriendlyByteBuf output) {
+      output.writeBoolean(this.resetTimes);
    }
 
    public PacketType<ClientboundClearTitlesPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CLEAR_TITLES;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleTitlesClear(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleTitlesClear(this);
    }
 
    public boolean shouldResetTimes() {

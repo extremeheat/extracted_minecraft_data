@@ -20,19 +20,19 @@ public class QuadCollection {
    private final List<BakedQuad> up;
    private final List<BakedQuad> down;
 
-   QuadCollection(List<BakedQuad> var1, List<BakedQuad> var2, List<BakedQuad> var3, List<BakedQuad> var4, List<BakedQuad> var5, List<BakedQuad> var6, List<BakedQuad> var7, List<BakedQuad> var8) {
+   private QuadCollection(final List<BakedQuad> all, final List<BakedQuad> unculled, final List<BakedQuad> north, final List<BakedQuad> south, final List<BakedQuad> east, final List<BakedQuad> west, final List<BakedQuad> up, final List<BakedQuad> down) {
       super();
-      this.all = var1;
-      this.unculled = var2;
-      this.north = var3;
-      this.south = var4;
-      this.east = var5;
-      this.west = var6;
-      this.up = var7;
-      this.down = var8;
+      this.all = all;
+      this.unculled = unculled;
+      this.north = north;
+      this.south = south;
+      this.east = east;
+      this.west = west;
+      this.up = up;
+      this.down = down;
    }
 
-   public List<BakedQuad> getQuads(@Nullable Direction var1) {
+   public List<BakedQuad> getQuads(final @Nullable Direction direction) {
       byte var3 = 0;
       List var10000;
       //$FF: var3->value
@@ -42,7 +42,7 @@ public class QuadCollection {
       //3->WEST
       //4->UP
       //5->DOWN
-      switch (var1.enumSwitch<invokedynamic>(var1, var3)) {
+      switch (direction.enumSwitch<invokedynamic>(direction, var3)) {
          case -1 -> var10000 = this.unculled;
          case 0 -> var10000 = this.north;
          case 1 -> var10000 = this.south;
@@ -68,51 +68,51 @@ public class QuadCollection {
          super();
       }
 
-      public Builder addCulledFace(Direction var1, BakedQuad var2) {
-         this.culledFaces.put(var1, var2);
+      public Builder addCulledFace(final Direction direction, final BakedQuad quad) {
+         this.culledFaces.put(direction, quad);
          return this;
       }
 
-      public Builder addUnculledFace(BakedQuad var1) {
-         this.unculledFaces.add(var1);
+      public Builder addUnculledFace(final BakedQuad quad) {
+         this.unculledFaces.add(quad);
          return this;
       }
 
-      private static QuadCollection createFromSublists(List<BakedQuad> var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-         int var8 = 0;
+      private static QuadCollection createFromSublists(final List<BakedQuad> all, final int unculledCount, final int northCount, final int southCount, final int eastCount, final int westCount, final int upCount, final int downCount) {
+         int index = 0;
          int var16;
-         List var9 = var0.subList(var8, var16 = var8 + var1);
-         List var10 = var0.subList(var16, var8 = var16 + var2);
+         List<BakedQuad> unculled = all.subList(index, var16 = index + unculledCount);
+         List<BakedQuad> north = all.subList(var16, index = var16 + northCount);
          int var18;
-         List var11 = var0.subList(var8, var18 = var8 + var3);
-         List var12 = var0.subList(var18, var8 = var18 + var4);
+         List<BakedQuad> south = all.subList(index, var18 = index + southCount);
+         List<BakedQuad> east = all.subList(var18, index = var18 + eastCount);
          int var20;
-         List var13 = var0.subList(var8, var20 = var8 + var5);
-         List var14 = var0.subList(var20, var8 = var20 + var6);
-         List var15 = var0.subList(var8, var8 + var7);
-         return new QuadCollection(var0, var9, var10, var11, var12, var13, var14, var15);
+         List<BakedQuad> west = all.subList(index, var20 = index + westCount);
+         List<BakedQuad> up = all.subList(var20, index = var20 + upCount);
+         List<BakedQuad> down = all.subList(index, index + downCount);
+         return new QuadCollection(all, unculled, north, south, east, west, up, down);
       }
 
       public QuadCollection build() {
-         ImmutableList var1 = this.unculledFaces.build();
+         ImmutableList<BakedQuad> unculledFaces = this.unculledFaces.build();
          if (this.culledFaces.isEmpty()) {
-            return var1.isEmpty() ? QuadCollection.EMPTY : new QuadCollection(var1, var1, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+            return unculledFaces.isEmpty() ? QuadCollection.EMPTY : new QuadCollection(unculledFaces, unculledFaces, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
          } else {
-            ImmutableList.Builder var2 = ImmutableList.builder();
-            var2.addAll(var1);
-            Collection var3 = this.culledFaces.get(Direction.NORTH);
-            var2.addAll(var3);
-            Collection var4 = this.culledFaces.get(Direction.SOUTH);
-            var2.addAll(var4);
-            Collection var5 = this.culledFaces.get(Direction.EAST);
-            var2.addAll(var5);
-            Collection var6 = this.culledFaces.get(Direction.WEST);
-            var2.addAll(var6);
-            Collection var7 = this.culledFaces.get(Direction.UP);
-            var2.addAll(var7);
-            Collection var8 = this.culledFaces.get(Direction.DOWN);
-            var2.addAll(var8);
-            return createFromSublists(var2.build(), var1.size(), var3.size(), var4.size(), var5.size(), var6.size(), var7.size(), var8.size());
+            ImmutableList.Builder<BakedQuad> quads = ImmutableList.builder();
+            quads.addAll(unculledFaces);
+            Collection<BakedQuad> north = this.culledFaces.get(Direction.NORTH);
+            quads.addAll(north);
+            Collection<BakedQuad> south = this.culledFaces.get(Direction.SOUTH);
+            quads.addAll(south);
+            Collection<BakedQuad> east = this.culledFaces.get(Direction.EAST);
+            quads.addAll(east);
+            Collection<BakedQuad> west = this.culledFaces.get(Direction.WEST);
+            quads.addAll(west);
+            Collection<BakedQuad> up = this.culledFaces.get(Direction.UP);
+            quads.addAll(up);
+            Collection<BakedQuad> down = this.culledFaces.get(Direction.DOWN);
+            quads.addAll(down);
+            return createFromSublists(quads.build(), unculledFaces.size(), north.size(), south.size(), east.size(), west.size(), up.size(), down.size());
          }
       }
    }

@@ -25,9 +25,9 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
    private @Nullable TutorialToast toast;
    private int timeWaiting;
 
-   public FindTreeTutorialStepInstance(Tutorial var1) {
+   public FindTreeTutorialStepInstance(final Tutorial tutorial) {
       super();
-      this.tutorial = var1;
+      this.tutorial = tutorial;
    }
 
    public void tick() {
@@ -35,18 +35,18 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
       if (!this.tutorial.isSurvival()) {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
-         Minecraft var1 = this.tutorial.getMinecraft();
+         Minecraft minecraft = this.tutorial.getMinecraft();
          if (this.timeWaiting == 1) {
-            LocalPlayer var2 = var1.player;
-            if (var2 != null && (hasCollectedTreeItems(var2) || hasPunchedTreesPreviously(var2))) {
+            LocalPlayer player = minecraft.player;
+            if (player != null && (hasCollectedTreeItems(player) || hasPunchedTreesPreviously(player))) {
                this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
                return;
             }
          }
 
          if (this.timeWaiting >= 6000 && this.toast == null) {
-            this.toast = new TutorialToast(var1.font, TutorialToast.Icons.TREE, TITLE, DESCRIPTION, false);
-            var1.getToastManager().addToast(this.toast);
+            this.toast = new TutorialToast(minecraft.font, TutorialToast.Icons.TREE, TITLE, DESCRIPTION, false);
+            minecraft.getToastManager().addToast(this.toast);
          }
 
       }
@@ -60,31 +60,31 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
 
    }
 
-   public void onLookAt(ClientLevel var1, HitResult var2) {
-      if (var2.getType() == HitResult.Type.BLOCK) {
-         BlockState var3 = var1.getBlockState(((BlockHitResult)var2).getBlockPos());
-         if (var3.is(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
+   public void onLookAt(final ClientLevel level, final HitResult hit) {
+      if (hit.getType() == HitResult.Type.BLOCK) {
+         BlockState state = level.getBlockState(((BlockHitResult)hit).getBlockPos());
+         if (state.is(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
             this.tutorial.setStep(TutorialSteps.PUNCH_TREE);
          }
       }
 
    }
 
-   public void onGetItem(ItemStack var1) {
-      if (var1.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL)) {
+   public void onGetItem(final ItemStack itemStack) {
+      if (itemStack.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL)) {
          this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
       }
 
    }
 
-   private static boolean hasCollectedTreeItems(LocalPlayer var0) {
-      return var0.getInventory().hasAnyMatching((var0x) -> var0x.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL));
+   private static boolean hasCollectedTreeItems(final LocalPlayer player) {
+      return player.getInventory().hasAnyMatching((item) -> item.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL));
    }
 
-   public static boolean hasPunchedTreesPreviously(LocalPlayer var0) {
-      for(Holder var2 : BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
-         Block var3 = (Block)var2.value();
-         if (var0.getStats().getValue(Stats.BLOCK_MINED.get(var3)) > 0) {
+   public static boolean hasPunchedTreesPreviously(final LocalPlayer player) {
+      for(Holder<Block> holder : BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
+         Block block = holder.value();
+         if (player.getStats().getValue(Stats.BLOCK_MINED.get(block)) > 0) {
             return true;
          }
       }

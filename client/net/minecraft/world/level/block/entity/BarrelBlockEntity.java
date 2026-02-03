@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import java.util.List;
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -29,27 +30,31 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
    private NonNullList<ItemStack> items;
    private final ContainerOpenersCounter openersCounter;
 
-   public BarrelBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.BARREL, var1, var2);
+   public BarrelBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.BARREL, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
       this.openersCounter = new ContainerOpenersCounter() {
-         protected void onOpen(Level var1, BlockPos var2, BlockState var3) {
-            BarrelBlockEntity.this.playSound(var3, SoundEvents.BARREL_OPEN);
-            BarrelBlockEntity.this.updateBlockState(var3, true);
+         {
+            Objects.requireNonNull(BarrelBlockEntity.this);
          }
 
-         protected void onClose(Level var1, BlockPos var2, BlockState var3) {
-            BarrelBlockEntity.this.playSound(var3, SoundEvents.BARREL_CLOSE);
-            BarrelBlockEntity.this.updateBlockState(var3, false);
+         protected void onOpen(final Level level, final BlockPos pos, final BlockState state) {
+            BarrelBlockEntity.this.playSound(state, SoundEvents.BARREL_OPEN);
+            BarrelBlockEntity.this.updateBlockState(state, true);
          }
 
-         protected void openerCountChanged(Level var1, BlockPos var2, BlockState var3, int var4, int var5) {
+         protected void onClose(final Level level, final BlockPos pos, final BlockState state) {
+            BarrelBlockEntity.this.playSound(state, SoundEvents.BARREL_CLOSE);
+            BarrelBlockEntity.this.updateBlockState(state, false);
          }
 
-         public boolean isOwnContainer(Player var1) {
-            if (var1.containerMenu instanceof ChestMenu) {
-               Container var2 = ((ChestMenu)var1.containerMenu).getContainer();
-               return var2 == BarrelBlockEntity.this;
+         protected void openerCountChanged(final Level level, final BlockPos pos, final BlockState blockState, final int previous, final int current) {
+         }
+
+         public boolean isOwnContainer(final Player player) {
+            if (player.containerMenu instanceof ChestMenu) {
+               Container container = ((ChestMenu)player.containerMenu).getContainer();
+               return container == BarrelBlockEntity.this;
             } else {
                return false;
             }
@@ -57,19 +62,19 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
       };
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      if (!this.trySaveLootTable(var1)) {
-         ContainerHelper.saveAllItems(var1, this.items);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      if (!this.trySaveLootTable(output)) {
+         ContainerHelper.saveAllItems(output, this.items);
       }
 
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
-      if (!this.tryLoadLootTable(var1)) {
-         ContainerHelper.loadAllItems(var1, this.items);
+      if (!this.tryLoadLootTable(input)) {
+         ContainerHelper.loadAllItems(input, this.items);
       }
 
    }
@@ -82,28 +87,28 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
       return this.items;
    }
 
-   protected void setItems(NonNullList<ItemStack> var1) {
-      this.items = var1;
+   protected void setItems(final NonNullList<ItemStack> items) {
+      this.items = items;
    }
 
    protected Component getDefaultName() {
       return DEFAULT_NAME;
    }
 
-   protected AbstractContainerMenu createMenu(int var1, Inventory var2) {
-      return ChestMenu.threeRows(var1, var2, this);
+   protected AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
+      return ChestMenu.threeRows(containerId, inventory, this);
    }
 
-   public void startOpen(ContainerUser var1) {
-      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
-         this.openersCounter.incrementOpeners(var1.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState(), var1.getContainerInteractionRange());
+   public void startOpen(final ContainerUser containerUser) {
+      if (!this.remove && !containerUser.getLivingEntity().isSpectator()) {
+         this.openersCounter.incrementOpeners(containerUser.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState(), containerUser.getContainerInteractionRange());
       }
 
    }
 
-   public void stopOpen(ContainerUser var1) {
-      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
-         this.openersCounter.decrementOpeners(var1.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState());
+   public void stopOpen(final ContainerUser containerUser) {
+      if (!this.remove && !containerUser.getLivingEntity().isSpectator()) {
+         this.openersCounter.decrementOpeners(containerUser.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState());
       }
 
    }
@@ -119,15 +124,15 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
 
    }
 
-   void updateBlockState(BlockState var1, boolean var2) {
-      this.level.setBlock(this.getBlockPos(), (BlockState)var1.setValue(BarrelBlock.OPEN, var2), 3);
+   private void updateBlockState(final BlockState state, final boolean isOpen) {
+      this.level.setBlock(this.getBlockPos(), (BlockState)state.setValue(BarrelBlock.OPEN, isOpen), 3);
    }
 
-   void playSound(BlockState var1, SoundEvent var2) {
-      Vec3i var3 = ((Direction)var1.getValue(BarrelBlock.FACING)).getUnitVec3i();
-      double var4 = (double)this.worldPosition.getX() + 0.5 + (double)var3.getX() / 2.0;
-      double var6 = (double)this.worldPosition.getY() + 0.5 + (double)var3.getY() / 2.0;
-      double var8 = (double)this.worldPosition.getZ() + 0.5 + (double)var3.getZ() / 2.0;
-      this.level.playSound((Entity)null, var4, var6, var8, var2, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
+   private void playSound(final BlockState state, final SoundEvent event) {
+      Vec3i direction = ((Direction)state.getValue(BarrelBlock.FACING)).getUnitVec3i();
+      double x = (double)this.worldPosition.getX() + 0.5 + (double)direction.getX() / 2.0;
+      double y = (double)this.worldPosition.getY() + 0.5 + (double)direction.getY() / 2.0;
+      double z = (double)this.worldPosition.getZ() + 0.5 + (double)direction.getZ() / 2.0;
+      this.level.playSound((Entity)null, x, y, z, event, SoundSource.BLOCKS, 0.5F, this.level.getRandom().nextFloat() * 0.1F + 0.9F);
    }
 }

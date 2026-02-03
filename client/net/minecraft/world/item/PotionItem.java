@@ -21,45 +21,45 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class PotionItem extends Item {
-   public PotionItem(Item.Properties var1) {
-      super(var1);
+   public PotionItem(final Item.Properties properties) {
+      super(properties);
    }
 
    public ItemStack getDefaultInstance() {
-      ItemStack var1 = super.getDefaultInstance();
-      var1.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER));
-      return var1;
+      ItemStack itemStack = super.getDefaultInstance();
+      itemStack.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER));
+      return itemStack;
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      Player var4 = var1.getPlayer();
-      ItemStack var5 = var1.getItemInHand();
-      PotionContents var6 = (PotionContents)var5.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-      BlockState var7 = var2.getBlockState(var3);
-      if (var1.getClickedFace() != Direction.DOWN && var7.is(BlockTags.CONVERTABLE_TO_MUD) && var6.is(Potions.WATER)) {
-         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.0F, 1.0F);
-         var4.setItemInHand(var1.getHand(), ItemUtils.createFilledResult(var5, var4, new ItemStack(Items.GLASS_BOTTLE)));
-         if (!var2.isClientSide()) {
-            ServerLevel var8 = (ServerLevel)var2;
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      Player player = context.getPlayer();
+      ItemStack itemStack = context.getItemInHand();
+      PotionContents potionContents = (PotionContents)itemStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+      BlockState blockState = level.getBlockState(pos);
+      if (context.getClickedFace() != Direction.DOWN && blockState.is(BlockTags.CONVERTABLE_TO_MUD) && potionContents.is(Potions.WATER)) {
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.0F, 1.0F);
+         player.setItemInHand(context.getHand(), ItemUtils.createFilledResult(itemStack, player, new ItemStack(Items.GLASS_BOTTLE)));
+         if (!level.isClientSide()) {
+            ServerLevel serverLevel = (ServerLevel)level;
 
-            for(int var9 = 0; var9 < 5; ++var9) {
-               var8.sendParticles(ParticleTypes.SPLASH, (double)var3.getX() + var2.random.nextDouble(), (double)(var3.getY() + 1), (double)var3.getZ() + var2.random.nextDouble(), 1, 0.0, 0.0, 0.0, 1.0);
+            for(int i = 0; i < 5; ++i) {
+               serverLevel.sendParticles(ParticleTypes.SPLASH, (double)pos.getX() + level.getRandom().nextDouble(), (double)(pos.getY() + 1), (double)pos.getZ() + level.getRandom().nextDouble(), 1, 0.0, 0.0, 0.0, 1.0);
             }
          }
 
-         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
-         var2.gameEvent((Entity)null, GameEvent.FLUID_PLACE, var3);
-         var2.setBlockAndUpdate(var3, Blocks.MUD.defaultBlockState());
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.gameEvent((Entity)null, GameEvent.FLUID_PLACE, pos);
+         level.setBlockAndUpdate(pos, Blocks.MUD.defaultBlockState());
          return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }
    }
 
-   public Component getName(ItemStack var1) {
-      PotionContents var2 = (PotionContents)var1.get(DataComponents.POTION_CONTENTS);
-      return var2 != null ? var2.getName(this.descriptionId + ".effect.") : super.getName(var1);
+   public Component getName(final ItemStack itemStack) {
+      PotionContents potion = (PotionContents)itemStack.get(DataComponents.POTION_CONTENTS);
+      return potion != null ? potion.getName(this.descriptionId + ".effect.") : super.getName(itemStack);
    }
 }

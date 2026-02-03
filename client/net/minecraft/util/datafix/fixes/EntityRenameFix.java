@@ -16,34 +16,34 @@ import net.minecraft.util.datafix.ExtraDataFixUtils;
 public abstract class EntityRenameFix extends DataFix {
    protected final String name;
 
-   public EntityRenameFix(String var1, Schema var2, boolean var3) {
-      super(var2, var3);
-      this.name = var1;
+   public EntityRenameFix(final String name, final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
+      this.name = name;
    }
 
    public TypeRewriteRule makeRule() {
-      TaggedChoice.TaggedChoiceType var1 = this.getInputSchema().findChoiceType(References.ENTITY);
-      TaggedChoice.TaggedChoiceType var2 = this.getOutputSchema().findChoiceType(References.ENTITY);
-      Function var3 = Util.memoize((Function)((var2x) -> {
-         Type var3 = (Type)var1.types().get(var2x);
-         return ExtraDataFixUtils.patchSubType(var3, var1, var2);
+      TaggedChoice.TaggedChoiceType<String> oldType = this.getInputSchema().findChoiceType(References.ENTITY);
+      TaggedChoice.TaggedChoiceType<String> newType = this.getOutputSchema().findChoiceType(References.ENTITY);
+      Function<String, Type<?>> patchedInputTypes = Util.memoize((Function)((name) -> {
+         Type<?> type = (Type)oldType.types().get(name);
+         return ExtraDataFixUtils.patchSubType(type, oldType, newType);
       }));
-      return this.fixTypeEverywhere(this.name, var1, var2, (var3x) -> (var4) -> {
-            String var5 = (String)var4.getFirst();
-            Type var6 = (Type)var3.apply(var5);
-            Pair var7 = this.fix(var5, this.getEntity(var4.getSecond(), var3x, var6));
-            Type var8 = (Type)var2.types().get(var7.getFirst());
-            if (!var8.equals(((Typed)var7.getSecond()).getType(), true, true)) {
-               throw new IllegalStateException(String.format(Locale.ROOT, "Dynamic type check failed: %s not equal to %s", var8, ((Typed)var7.getSecond()).getType()));
+      return this.fixTypeEverywhere(this.name, oldType, newType, (ops) -> (input) -> {
+            String oldName = (String)input.getFirst();
+            Type<?> oldEntityType = (Type)patchedInputTypes.apply(oldName);
+            Pair<String, Typed<?>> newEntity = this.fix(oldName, this.getEntity(input.getSecond(), ops, oldEntityType));
+            Type<?> expectedType = (Type)newType.types().get(newEntity.getFirst());
+            if (!expectedType.equals(((Typed)newEntity.getSecond()).getType(), true, true)) {
+               throw new IllegalStateException(String.format(Locale.ROOT, "Dynamic type check failed: %s not equal to %s", expectedType, ((Typed)newEntity.getSecond()).getType()));
             } else {
-               return Pair.of((String)var7.getFirst(), ((Typed)var7.getSecond()).getValue());
+               return Pair.of((String)newEntity.getFirst(), ((Typed)newEntity.getSecond()).getValue());
             }
          });
    }
 
-   private <A> Typed<A> getEntity(Object var1, DynamicOps<?> var2, Type<A> var3) {
-      return new Typed(var3, var2, var1);
+   private <A> Typed<A> getEntity(final Object input, final DynamicOps<?> ops, final Type<A> oldEntityType) {
+      return new Typed(oldEntityType, ops, input);
    }
 
-   protected abstract Pair<String, Typed<?>> fix(String var1, Typed<?> var2);
+   protected abstract Pair<String, Typed<?>> fix(final String name, final Typed<?> entity);
 }

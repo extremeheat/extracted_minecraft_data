@@ -44,22 +44,22 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
    private volatile boolean killSwitch;
    private Set<MetricSampler> thisTickSamplers = ImmutableSet.of();
 
-   private ActiveMetricsRecorder(MetricsSamplerProvider var1, LongSupplier var2, Executor var3, MetricsPersister var4, Consumer<ProfileResults> var5, Consumer<Path> var6) {
+   private ActiveMetricsRecorder(final MetricsSamplerProvider metricsSamplerProvider, final LongSupplier timeSource, final Executor ioExecutor, final MetricsPersister metricsPersister, final Consumer<ProfileResults> onProfilingEnd, final Consumer<Path> onReportFinished) {
       super();
-      this.metricsSamplerProvider = var1;
-      this.wallTimeSource = var2;
-      this.taskProfiler = new ContinuousProfiler(var2, () -> this.currentTick, () -> false);
-      this.ioExecutor = var3;
-      this.metricsPersister = var4;
-      this.onProfilingEnd = var5;
-      this.onReportFinished = globalOnReportFinished == null ? var6 : var6.andThen(globalOnReportFinished);
-      this.deadlineNano = var2.getAsLong() + TimeUnit.NANOSECONDS.convert(10L, TimeUnit.SECONDS);
+      this.metricsSamplerProvider = metricsSamplerProvider;
+      this.wallTimeSource = timeSource;
+      this.taskProfiler = new ContinuousProfiler(timeSource, () -> this.currentTick, () -> false);
+      this.ioExecutor = ioExecutor;
+      this.metricsPersister = metricsPersister;
+      this.onProfilingEnd = onProfilingEnd;
+      this.onReportFinished = globalOnReportFinished == null ? onReportFinished : onReportFinished.andThen(globalOnReportFinished);
+      this.deadlineNano = timeSource.getAsLong() + TimeUnit.NANOSECONDS.convert(10L, TimeUnit.SECONDS);
       this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, () -> true);
       this.taskProfiler.enable();
    }
 
-   public static ActiveMetricsRecorder createStarted(MetricsSamplerProvider var0, LongSupplier var1, Executor var2, MetricsPersister var3, Consumer<ProfileResults> var4, Consumer<Path> var5) {
-      return new ActiveMetricsRecorder(var0, var1, var2, var3, var4, var5);
+   public static ActiveMetricsRecorder createStarted(final MetricsSamplerProvider metricsSamplerProvider, final LongSupplier timeSource, final Executor ioExecutor, final MetricsPersister metricsPersister, final Consumer<ProfileResults> onProfilingEnd, final Consumer<Path> onReportFinished) {
+      return new ActiveMetricsRecorder(metricsSamplerProvider, timeSource, ioExecutor, metricsPersister, onProfilingEnd, onReportFinished);
    }
 
    public synchronized void end() {
@@ -80,8 +80,8 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
       this.verifyStarted();
       this.thisTickSamplers = this.metricsSamplerProvider.samplers(() -> this.singleTickProfiler);
 
-      for(MetricSampler var2 : this.thisTickSamplers) {
-         var2.onStartTick();
+      for(MetricSampler sampler : this.thisTickSamplers) {
+         sampler.onStartTick();
       }
 
       ++this.currentTick;
@@ -90,11 +90,11 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
    public void endTick() {
       this.verifyStarted();
       if (this.currentTick != 0) {
-         for(MetricSampler var2 : this.thisTickSamplers) {
-            var2.onEndTick(this.currentTick);
-            if (var2.triggersThreshold()) {
-               RecordedDeviation var3 = new RecordedDeviation(Instant.now(), this.currentTick, this.singleTickProfiler.getResults());
-               ((List)this.deviationsBySampler.computeIfAbsent(var2, (var0) -> Lists.newArrayList())).add(var3);
+         for(MetricSampler sampler : this.thisTickSamplers) {
+            sampler.onEndTick(this.currentTick);
+            if (sampler.triggersThreshold()) {
+               RecordedDeviation recordedDeviation = new RecordedDeviation(Instant.now(), this.currentTick, this.singleTickProfiler.getResults());
+               ((List)this.deviationsBySampler.computeIfAbsent(sampler, (ignored) -> Lists.newArrayList())).add(recordedDeviation);
             }
          }
 
@@ -102,10 +102,10 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
             this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, () -> true);
          } else {
             this.killSwitch = false;
-            ProfileResults var4 = this.taskProfiler.getResults();
+            ProfileResults results = this.taskProfiler.getResults();
             this.singleTickProfiler = InactiveProfiler.INSTANCE;
-            this.onProfilingEnd.accept(var4);
-            this.scheduleSaveResults(var4);
+            this.onProfilingEnd.accept(results);
+            this.scheduleSaveResults(results);
          }
       }
    }
@@ -124,25 +124,25 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
       }
    }
 
-   private void scheduleSaveResults(ProfileResults var1) {
-      HashSet var2 = new HashSet(this.thisTickSamplers);
+   private void scheduleSaveResults(final ProfileResults profilerResults) {
+      HashSet<MetricSampler> metricSamplers = new HashSet(this.thisTickSamplers);
       this.ioExecutor.execute(() -> {
-         Path var3 = this.metricsPersister.saveReports(var2, this.deviationsBySampler, var1);
-         this.cleanup(var2);
-         this.onReportFinished.accept(var3);
+         Path pathToLogs = this.metricsPersister.saveReports(metricSamplers, this.deviationsBySampler, profilerResults);
+         this.cleanup(metricSamplers);
+         this.onReportFinished.accept(pathToLogs);
       });
    }
 
-   private void cleanup(Collection<MetricSampler> var1) {
-      for(MetricSampler var3 : var1) {
-         var3.onFinished();
+   private void cleanup(final Collection<MetricSampler> metricSamplers) {
+      for(MetricSampler sampler : metricSamplers) {
+         sampler.onFinished();
       }
 
       this.deviationsBySampler.clear();
       this.taskProfiler.disable();
    }
 
-   public static void registerGlobalCompletionCallback(Consumer<Path> var0) {
-      globalOnReportFinished = var0;
+   public static void registerGlobalCompletionCallback(final Consumer<Path> onFinished) {
+      globalOnReportFinished = onFinished;
    }
 }

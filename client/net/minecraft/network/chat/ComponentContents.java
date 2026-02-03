@@ -8,15 +8,15 @@ import net.minecraft.world.entity.Entity;
 import org.jspecify.annotations.Nullable;
 
 public interface ComponentContents {
-   default <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
+   default <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
       return Optional.empty();
    }
 
-   default <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
+   default <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
       return Optional.empty();
    }
 
-   default MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
+   default MutableComponent resolve(final @Nullable CommandSourceStack source, final @Nullable Entity entity, final int recursionDepth) throws CommandSyntaxException {
       return MutableComponent.create(this);
    }
 

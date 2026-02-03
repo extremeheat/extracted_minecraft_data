@@ -37,77 +37,77 @@ public class RealmsCreateWorldFlow {
       super();
    }
 
-   public static void createWorld(Minecraft var0, Screen var1, Screen var2, int var3, RealmsServer var4, @Nullable RealmCreationTask var5) {
-      CreateWorldScreen.openFresh(var0, () -> var0.setScreen(var1), (var6, var7, var8, var9) -> {
-         Path var10;
+   public static void createWorld(final Minecraft minecraft, final Screen returnScreen, final Screen lastScreen, final int slot, final RealmsServer realmsServer, final @Nullable RealmCreationTask realmCreationTask) {
+      CreateWorldScreen.openFresh(minecraft, () -> minecraft.setScreen(returnScreen), (createWorldScreen, finalLayers, worldData, tempDataPackDir) -> {
+         Path worldFolder;
          try {
-            var10 = createTemporaryWorldFolder(var7, var8, var9);
+            worldFolder = createTemporaryWorldFolder(finalLayers, worldData, tempDataPackDir);
          } catch (IOException var14) {
             LOGGER.warn("Failed to create temporary world folder.");
-            var0.setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), var2));
+            minecraft.setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), lastScreen));
             return true;
          }
 
-         RealmsWorldOptions var11 = RealmsWorldOptions.createFromSettings(var8.getLevelSettings(), SharedConstants.getCurrentVersion().name());
-         RealmsSlot var12 = new RealmsSlot(var3, var11, List.of(RealmsSetting.hardcoreSetting(var8.getLevelSettings().hardcore())));
-         RealmsWorldUpload var13 = new RealmsWorldUpload(var10, var12, var0.getUser(), var4.id, RealmsWorldUploadStatusTracker.noOp());
-         Objects.requireNonNull(var13);
-         var0.setScreenAndShow(new AlertScreen(var13::cancel, Component.translatable("mco.create.world.reset.title"), Component.empty(), CommonComponents.GUI_CANCEL, false));
-         if (var5 != null) {
-            var5.run();
+         RealmsWorldOptions realmsWorldOptions = RealmsWorldOptions.createFromSettings(worldData.getLevelSettings(), SharedConstants.getCurrentVersion().name());
+         RealmsSlot realmsSlot = new RealmsSlot(slot, realmsWorldOptions, List.of(RealmsSetting.hardcoreSetting(worldData.getLevelSettings().hardcore())));
+         RealmsWorldUpload realmsWorldUpload = new RealmsWorldUpload(worldFolder, realmsSlot, minecraft.getUser(), realmsServer.id, RealmsWorldUploadStatusTracker.noOp());
+         Objects.requireNonNull(realmsWorldUpload);
+         minecraft.setScreenAndShow(new AlertScreen(realmsWorldUpload::cancel, Component.translatable("mco.create.world.reset.title"), Component.empty(), CommonComponents.GUI_CANCEL, false));
+         if (realmCreationTask != null) {
+            realmCreationTask.run();
          }
 
-         var13.packAndUpload().handleAsync((var5x, var6x) -> {
-            if (var6x != null) {
-               if (var6x instanceof CompletionException) {
-                  CompletionException var7 = (CompletionException)var6x;
-                  var6x = var7.getCause();
+         realmsWorldUpload.packAndUpload().handleAsync((result, exception) -> {
+            if (exception != null) {
+               if (exception instanceof CompletionException) {
+                  CompletionException e = (CompletionException)exception;
+                  exception = e.getCause();
                }
 
-               if (var6x instanceof RealmsUploadCanceledException) {
-                  var0.setScreenAndShow(var2);
+               if (exception instanceof RealmsUploadCanceledException) {
+                  minecraft.setScreenAndShow(lastScreen);
                } else {
-                  if (var6x instanceof RealmsUploadFailedException) {
-                     RealmsUploadFailedException var8 = (RealmsUploadFailedException)var6x;
-                     LOGGER.warn("Failed to create realms world {}", var8.getStatusMessage());
+                  if (exception instanceof RealmsUploadFailedException) {
+                     RealmsUploadFailedException realmsUploadFailedException = (RealmsUploadFailedException)exception;
+                     LOGGER.warn("Failed to create realms world {}", realmsUploadFailedException.getStatusMessage());
                   } else {
-                     LOGGER.warn("Failed to create realms world {}", var6x.getMessage());
+                     LOGGER.warn("Failed to create realms world {}", exception.getMessage());
                   }
 
-                  var0.setScreenAndShow(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), var2));
+                  minecraft.setScreenAndShow(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), lastScreen));
                }
             } else {
-               if (var1 instanceof RealmsConfigureWorldScreen) {
-                  RealmsConfigureWorldScreen var9 = (RealmsConfigureWorldScreen)var1;
-                  var9.fetchServerData(var4.id);
+               if (returnScreen instanceof RealmsConfigureWorldScreen) {
+                  RealmsConfigureWorldScreen configureWorldScreen = (RealmsConfigureWorldScreen)returnScreen;
+                  configureWorldScreen.fetchServerData(realmsServer.id);
                }
 
-               if (var5 != null) {
-                  RealmsMainScreen.play(var4, var1, true);
+               if (realmCreationTask != null) {
+                  RealmsMainScreen.play(realmsServer, returnScreen, true);
                } else {
-                  var0.setScreenAndShow(var1);
+                  minecraft.setScreenAndShow(returnScreen);
                }
 
                RealmsMainScreen.refreshServerList();
             }
 
             return null;
-         }, var0);
+         }, minecraft);
          return true;
       });
    }
 
-   private static Path createTemporaryWorldFolder(LayeredRegistryAccess<RegistryLayer> var0, PrimaryLevelData var1, @Nullable Path var2) throws IOException {
-      Path var3 = Files.createTempDirectory("minecraft_realms_world_upload");
-      if (var2 != null) {
-         Files.move(var2, var3.resolve("datapacks"));
+   private static Path createTemporaryWorldFolder(final LayeredRegistryAccess<RegistryLayer> finalLayers, final PrimaryLevelData worldData, final @Nullable Path tempDataPackDir) throws IOException {
+      Path worldFolder = Files.createTempDirectory("minecraft_realms_world_upload");
+      if (tempDataPackDir != null) {
+         Files.move(tempDataPackDir, worldFolder.resolve("datapacks"));
       }
 
-      CompoundTag var4 = var1.createTag(var0.compositeAccess(), (CompoundTag)null);
-      CompoundTag var5 = new CompoundTag();
-      var5.put("Data", var4);
-      Path var6 = Files.createFile(var3.resolve("level.dat"));
-      NbtIo.writeCompressed(var5, var6);
-      return var3;
+      CompoundTag dataTag = worldData.createTag(finalLayers.compositeAccess(), (CompoundTag)null);
+      CompoundTag root = new CompoundTag();
+      root.put("Data", dataTag);
+      Path levelDat = Files.createFile(worldFolder.resolve("level.dat"));
+      NbtIo.writeCompressed(root, levelDat);
+      return worldFolder;
    }
 }

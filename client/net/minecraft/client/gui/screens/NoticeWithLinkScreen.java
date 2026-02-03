@@ -22,34 +22,34 @@ public class NoticeWithLinkScreen extends Screen {
    private final Runnable onClose;
    private final GridLayout layout = (new GridLayout()).rowSpacing(10);
 
-   public NoticeWithLinkScreen(Component var1, Component var2, URI var3, Runnable var4) {
-      super(var1);
-      this.message = var2;
-      this.uri = var3;
-      this.onClose = var4;
+   public NoticeWithLinkScreen(final Component title, final Component message, final URI uri, final Runnable onClose) {
+      super(title);
+      this.message = message;
+      this.uri = uri;
+      this.onClose = onClose;
    }
 
-   public static Screen createWorldSymlinkWarningScreen(Runnable var0) {
-      return new NoticeWithLinkScreen(SYMLINK_WORLD_TITLE, SYMLINK_WORLD_MESSAGE_TEXT, CommonLinks.SYMLINK_HELP, var0);
+   public static Screen createWorldSymlinkWarningScreen(final Runnable onClose) {
+      return new NoticeWithLinkScreen(SYMLINK_WORLD_TITLE, SYMLINK_WORLD_MESSAGE_TEXT, CommonLinks.SYMLINK_HELP, onClose);
    }
 
-   public static Screen createPackSymlinkWarningScreen(Runnable var0) {
-      return new NoticeWithLinkScreen(SYMLINK_PACK_TITLE, SYMLINK_PACK_MESSAGE_TEXT, CommonLinks.SYMLINK_HELP, var0);
+   public static Screen createPackSymlinkWarningScreen(final Runnable onClose) {
+      return new NoticeWithLinkScreen(SYMLINK_PACK_TITLE, SYMLINK_PACK_MESSAGE_TEXT, CommonLinks.SYMLINK_HELP, onClose);
    }
 
    protected void init() {
       super.init();
       this.layout.defaultCellSetting().alignHorizontallyCenter();
-      GridLayout.RowHelper var1 = this.layout.createRowHelper(1);
-      var1.addChild(new StringWidget(this.title, this.font));
-      var1.addChild((new MultiLineTextWidget(this.message, this.font)).setMaxWidth(this.width - 50).setCentered(true));
-      boolean var2 = true;
-      GridLayout var3 = (new GridLayout()).columnSpacing(5);
-      GridLayout.RowHelper var4 = var3.createRowHelper(3);
-      var4.addChild(Button.builder(CommonComponents.GUI_OPEN_IN_BROWSER, (var1x) -> Util.getPlatform().openUri(this.uri)).size(120, 20).build());
-      var4.addChild(Button.builder(CommonComponents.GUI_COPY_LINK_TO_CLIPBOARD, (var1x) -> this.minecraft.keyboardHandler.setClipboard(this.uri.toString())).size(120, 20).build());
-      var4.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).size(120, 20).build());
-      var1.addChild(var3);
+      GridLayout.RowHelper rowHelper = this.layout.createRowHelper(1);
+      rowHelper.addChild(new StringWidget(this.title, this.font));
+      rowHelper.addChild((new MultiLineTextWidget(this.message, this.font)).setMaxWidth(this.width - 50).setCentered(true));
+      int buttonWidth = 120;
+      GridLayout buttonGrid = (new GridLayout()).columnSpacing(5);
+      GridLayout.RowHelper buttonRow = buttonGrid.createRowHelper(3);
+      buttonRow.addChild(Button.builder(CommonComponents.GUI_OPEN_IN_BROWSER, (button) -> Util.getPlatform().openUri(this.uri)).size(120, 20).build());
+      buttonRow.addChild(Button.builder(CommonComponents.GUI_COPY_LINK_TO_CLIPBOARD, (button) -> this.minecraft.keyboardHandler.setClipboard(this.uri.toString())).size(120, 20).build());
+      buttonRow.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).size(120, 20).build());
+      rowHelper.addChild(buttonGrid);
       this.repositionElements();
       this.layout.visitWidgets(this::addRenderableWidget);
    }

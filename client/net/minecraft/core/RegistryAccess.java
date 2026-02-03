@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,27 +15,27 @@ public interface RegistryAccess extends HolderLookup.Provider {
    Logger LOGGER = LogUtils.getLogger();
    Frozen EMPTY = (new ImmutableRegistryAccess(Map.of())).freeze();
 
-   <E> Optional<Registry<E>> lookup(ResourceKey<? extends Registry<? extends E>> var1);
+   <E> Optional<Registry<E>> lookup(final ResourceKey<? extends Registry<? extends E>> registryKey);
 
-   default <E> Registry<E> lookupOrThrow(ResourceKey<? extends Registry<? extends E>> var1) {
-      return (Registry)this.lookup(var1).orElseThrow(() -> new IllegalStateException("Missing registry: " + String.valueOf(var1)));
+   default <E> Registry<E> lookupOrThrow(final ResourceKey<? extends Registry<? extends E>> name) {
+      return (Registry)this.lookup(name).orElseThrow(() -> new IllegalStateException("Missing registry: " + String.valueOf(name)));
    }
 
    Stream<RegistryEntry<?>> registries();
 
    default Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
-      return this.registries().map((var0) -> var0.key);
+      return this.registries().map((e) -> e.key);
    }
 
-   static Frozen fromRegistryOfRegistries(final Registry<? extends Registry<?>> var0) {
+   static Frozen fromRegistryOfRegistries(final Registry<? extends Registry<?>> registries) {
       return new Frozen() {
-         public <T> Optional<Registry<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-            Registry var2 = var0;
-            return var2.getOptional(var1);
+         public <T> Optional<Registry<T>> lookup(final ResourceKey<? extends Registry<? extends T>> registryKey) {
+            Registry<Registry<T>> registry = registries;
+            return registry.getOptional(registryKey);
          }
 
          public Stream<RegistryEntry<?>> registries() {
-            return var0.entrySet().stream().map(RegistryEntry::fromMapEntry);
+            return registries.entrySet().stream().map(RegistryEntry::fromMapEntry);
          }
 
          public Frozen freeze() {
@@ -44,40 +45,27 @@ public interface RegistryAccess extends HolderLookup.Provider {
    }
 
    default Frozen freeze() {
-      class 1FrozenAccess extends ImmutableRegistryAccess implements Frozen {
-         protected _FrozenAccess/* $FF was: 1FrozenAccess*/(final Stream<RegistryEntry<?>> var2) {
-            super(var2);
+      class FrozenAccess extends ImmutableRegistryAccess implements Frozen {
+         protected FrozenAccess(final Stream<RegistryEntry<?>> entries) {
+            Objects.requireNonNull(RegistryAccess.this);
+            super(entries);
          }
       }
 
-      return new 1FrozenAccess(this.registries().map(RegistryEntry::freeze));
-   }
-
-   // $FF: synthetic method
-   default HolderLookup.RegistryLookup lookupOrThrow(final ResourceKey var1) {
-      return this.lookupOrThrow(var1);
-   }
-
-   // $FF: synthetic method
-   default HolderGetter lookupOrThrow(final ResourceKey var1) {
-      return this.lookupOrThrow(var1);
+      return new FrozenAccess(this.registries().map(RegistryEntry::freeze));
    }
 
    public static record RegistryEntry<T>(ResourceKey<? extends Registry<T>> key, Registry<T> value) {
-      final ResourceKey<? extends Registry<T>> key;
-
-      public RegistryEntry(ResourceKey<? extends Registry<T>> var1, Registry<T> var2) {
+      public RegistryEntry {
          super();
-         this.key = var1;
-         this.value = var2;
       }
 
-      private static <T, R extends Registry<? extends T>> RegistryEntry<T> fromMapEntry(Map.Entry<? extends ResourceKey<? extends Registry<?>>, R> var0) {
-         return fromUntyped((ResourceKey)var0.getKey(), (Registry)var0.getValue());
+      private static <T, R extends Registry<? extends T>> RegistryEntry<T> fromMapEntry(final Map.Entry<? extends ResourceKey<? extends Registry<?>>, R> e) {
+         return fromUntyped((ResourceKey)e.getKey(), (Registry)e.getValue());
       }
 
-      private static <T> RegistryEntry<T> fromUntyped(ResourceKey<? extends Registry<?>> var0, Registry<?> var1) {
-         return new RegistryEntry<T>(var0, var1);
+      private static <T> RegistryEntry<T> fromUntyped(final ResourceKey<? extends Registry<?>> key, final Registry<?> value) {
+         return new RegistryEntry<T>(key, value);
       }
 
       private RegistryEntry<T> freeze() {
@@ -88,23 +76,23 @@ public interface RegistryAccess extends HolderLookup.Provider {
    public static class ImmutableRegistryAccess implements RegistryAccess {
       private final Map<? extends ResourceKey<? extends Registry<?>>, ? extends Registry<?>> registries;
 
-      public ImmutableRegistryAccess(List<? extends Registry<?>> var1) {
+      public ImmutableRegistryAccess(final List<? extends Registry<?>> registries) {
          super();
-         this.registries = (Map)var1.stream().collect(Collectors.toUnmodifiableMap(Registry::key, (var0) -> var0));
+         this.registries = (Map)registries.stream().collect(Collectors.toUnmodifiableMap(Registry::key, (v) -> v));
       }
 
-      public ImmutableRegistryAccess(Map<? extends ResourceKey<? extends Registry<?>>, ? extends Registry<?>> var1) {
+      public ImmutableRegistryAccess(final Map<? extends ResourceKey<? extends Registry<?>>, ? extends Registry<?>> registries) {
          super();
-         this.registries = Map.copyOf(var1);
+         this.registries = Map.copyOf(registries);
       }
 
-      public ImmutableRegistryAccess(Stream<RegistryEntry<?>> var1) {
+      public ImmutableRegistryAccess(final Stream<RegistryEntry<?>> entries) {
          super();
-         this.registries = (Map)var1.collect(ImmutableMap.toImmutableMap(RegistryEntry::key, RegistryEntry::value));
+         this.registries = (Map)entries.collect(ImmutableMap.toImmutableMap(RegistryEntry::key, RegistryEntry::value));
       }
 
-      public <E> Optional<Registry<E>> lookup(ResourceKey<? extends Registry<? extends E>> var1) {
-         return Optional.ofNullable((Registry)this.registries.get(var1)).map((var0) -> var0);
+      public <E> Optional<Registry<E>> lookup(final ResourceKey<? extends Registry<? extends E>> registryKey) {
+         return Optional.ofNullable((Registry)this.registries.get(registryKey)).map((r) -> r);
       }
 
       public Stream<RegistryEntry<?>> registries() {

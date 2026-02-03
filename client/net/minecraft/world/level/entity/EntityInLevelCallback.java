@@ -7,11 +7,11 @@ public interface EntityInLevelCallback {
       public void onMove() {
       }
 
-      public void onRemove(Entity.RemovalReason var1) {
+      public void onRemove(final Entity.RemovalReason reason) {
       }
    };
 
    void onMove();
 
-   void onRemove(Entity.RemovalReason var1);
+   void onRemove(final Entity.RemovalReason reason);
 }

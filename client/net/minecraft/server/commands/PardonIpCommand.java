@@ -20,20 +20,20 @@ public class PardonIpCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("pardon-ip").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.argument("target", StringArgumentType.word()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getIpBans().getUserList(), var1)).executes((var0x) -> unban((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target")))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("pardon-ip").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.argument("target", StringArgumentType.word()).suggests((c, p) -> SharedSuggestionProvider.suggest(((CommandSourceStack)c.getSource()).getServer().getPlayerList().getIpBans().getUserList(), p)).executes((c) -> unban((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "target")))));
    }
 
-   private static int unban(CommandSourceStack var0, String var1) throws CommandSyntaxException {
-      if (!InetAddresses.isInetAddress(var1)) {
+   private static int unban(final CommandSourceStack source, final String ip) throws CommandSyntaxException {
+      if (!InetAddresses.isInetAddress(ip)) {
          throw ERROR_INVALID.create();
       } else {
-         IpBanList var2 = var0.getServer().getPlayerList().getIpBans();
-         if (!var2.isBanned(var1)) {
+         IpBanList bans = source.getServer().getPlayerList().getIpBans();
+         if (!bans.isBanned(ip)) {
             throw ERROR_NOT_BANNED.create();
          } else {
-            var2.remove(var1);
-            var0.sendSuccess(() -> Component.translatable("commands.pardonip.success", var1), true);
+            bans.remove(ip);
+            source.sendSuccess(() -> Component.translatable("commands.pardonip.success", ip), true);
             return 1;
          }
       }

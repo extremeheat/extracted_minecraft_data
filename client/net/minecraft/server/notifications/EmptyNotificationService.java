@@ -12,10 +12,10 @@ public class EmptyNotificationService implements NotificationService {
       super();
    }
 
-   public void playerJoined(ServerPlayer var1) {
+   public void playerJoined(final ServerPlayer player) {
    }
 
-   public void playerLeft(ServerPlayer var1) {
+   public void playerLeft(final ServerPlayer player) {
    }
 
    public void serverStarted() {
@@ -33,31 +33,31 @@ public class EmptyNotificationService implements NotificationService {
    public void serverActivityOccured() {
    }
 
-   public void playerOped(ServerOpListEntry var1) {
+   public void playerOped(final ServerOpListEntry operator) {
    }
 
-   public void playerDeoped(ServerOpListEntry var1) {
+   public void playerDeoped(final ServerOpListEntry operator) {
    }
 
-   public void playerAddedToAllowlist(NameAndId var1) {
+   public void playerAddedToAllowlist(final NameAndId player) {
    }
 
-   public void playerRemovedFromAllowlist(NameAndId var1) {
+   public void playerRemovedFromAllowlist(final NameAndId player) {
    }
 
-   public void ipBanned(IpBanListEntry var1) {
+   public void ipBanned(final IpBanListEntry ban) {
    }
 
-   public void ipUnbanned(String var1) {
+   public void ipUnbanned(final String ip) {
    }
 
-   public void playerBanned(UserBanListEntry var1) {
+   public void playerBanned(final UserBanListEntry ban) {
    }
 
-   public void playerUnbanned(NameAndId var1) {
+   public void playerUnbanned(final NameAndId player) {
    }
 
-   public <T> void onGameRuleChanged(GameRule<T> var1, T var2) {
+   public <T> void onGameRuleChanged(final GameRule<T> gameRule, final T value) {
    }
 
    public void statusHeartbeat() {

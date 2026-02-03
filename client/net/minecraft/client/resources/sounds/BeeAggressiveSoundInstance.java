@@ -5,8 +5,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.animal.bee.Bee;
 
 public class BeeAggressiveSoundInstance extends BeeSoundInstance {
-   public BeeAggressiveSoundInstance(Bee var1) {
-      super(var1, SoundEvents.BEE_LOOP_AGGRESSIVE, SoundSource.NEUTRAL);
+   public BeeAggressiveSoundInstance(final Bee bee) {
+      super(bee, SoundEvents.BEE_LOOP_AGGRESSIVE, SoundSource.NEUTRAL);
       this.delay = 0;
    }
 

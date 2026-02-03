@@ -3,6 +3,7 @@ package net.minecraft.client.multiplayer;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -30,6 +31,7 @@ import net.minecraft.network.protocol.configuration.ServerboundAcceptCodeOfCondu
 import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket;
 import net.minecraft.network.protocol.configuration.ServerboundSelectKnownPacks;
 import net.minecraft.network.protocol.game.GameProtocols;
+import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -38,7 +40,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketListenerImpl implements ClientConfigurationPacketListener, TickablePacketListener {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final Component DISCONNECTED_MESSAGE = Component.translatable("multiplayer.disconnect.code_of_conduct");
    private final LevelLoadTracker levelLoadTracker;
    private final GameProfile localGameProfile;
@@ -49,80 +51,80 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
    protected ChatComponent.@Nullable State chatState;
    private boolean seenCodeOfConduct;
 
-   public ClientConfigurationPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {
-      super(var1, var2, var3);
-      this.levelLoadTracker = var3.levelLoadTracker();
-      this.localGameProfile = var3.localGameProfile();
-      this.receivedRegistries = var3.receivedRegistries();
-      this.enabledFeatures = var3.enabledFeatures();
-      this.chatState = var3.chatState();
+   public ClientConfigurationPacketListenerImpl(final Minecraft minecraft, final Connection connection, final CommonListenerCookie cookie) {
+      super(minecraft, connection, cookie);
+      this.levelLoadTracker = cookie.levelLoadTracker();
+      this.localGameProfile = cookie.localGameProfile();
+      this.receivedRegistries = cookie.receivedRegistries();
+      this.enabledFeatures = cookie.enabledFeatures();
+      this.chatState = cookie.chatState();
    }
 
    public boolean isAcceptingMessages() {
       return this.connection.isConnected();
    }
 
-   protected void handleCustomPayload(CustomPacketPayload var1) {
-      this.handleUnknownCustomPayload(var1);
+   protected void handleCustomPayload(final CustomPacketPayload payload) {
+      this.handleUnknownCustomPayload(payload);
    }
 
-   private void handleUnknownCustomPayload(CustomPacketPayload var1) {
-      LOGGER.warn("Unknown custom packet payload: {}", var1.type().id());
+   private void handleUnknownCustomPayload(final CustomPacketPayload payload) {
+      LOGGER.warn("Unknown custom packet payload: {}", payload.type().id());
    }
 
-   public void handleRegistryData(ClientboundRegistryDataPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.registryDataCollector.appendContents(var1.registry(), var1.entries());
+   public void handleRegistryData(final ClientboundRegistryDataPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
+      this.registryDataCollector.appendContents(packet.registry(), packet.entries());
    }
 
-   public void handleUpdateTags(ClientboundUpdateTagsPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.registryDataCollector.appendTags(var1.getTags());
+   public void handleUpdateTags(final ClientboundUpdateTagsPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
+      this.registryDataCollector.appendTags(packet.getTags());
    }
 
-   public void handleEnabledFeatures(ClientboundUpdateEnabledFeaturesPacket var1) {
-      this.enabledFeatures = FeatureFlags.REGISTRY.fromNames(var1.features());
+   public void handleEnabledFeatures(final ClientboundUpdateEnabledFeaturesPacket packet) {
+      this.enabledFeatures = FeatureFlags.REGISTRY.fromNames(packet.features());
    }
 
-   public void handleSelectKnownPacks(ClientboundSelectKnownPacks var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
+   public void handleSelectKnownPacks(final ClientboundSelectKnownPacks packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       if (this.knownPacks == null) {
          this.knownPacks = new KnownPacksManager();
       }
 
-      List var2 = this.knownPacks.trySelectingPacks(var1.knownPacks());
-      this.send(new ServerboundSelectKnownPacks(var2));
+      List<KnownPack> selected = this.knownPacks.trySelectingPacks(packet.knownPacks());
+      this.send(new ServerboundSelectKnownPacks(selected));
    }
 
-   public void handleResetChat(ClientboundResetChatPacket var1) {
+   public void handleResetChat(final ClientboundResetChatPacket packet) {
       this.chatState = null;
    }
 
-   private <T> T runWithResources(Function<ResourceProvider, T> var1) {
+   private <T> T runWithResources(final Function<ResourceProvider, T> operation) {
       if (this.knownPacks == null) {
-         return (T)var1.apply(ResourceProvider.EMPTY);
+         return (T)operation.apply(ResourceProvider.EMPTY);
       } else {
-         try (CloseableResourceManager var2 = this.knownPacks.createResourceManager()) {
-            return (T)var1.apply(var2);
+         try (CloseableResourceManager manager = this.knownPacks.createResourceManager()) {
+            return (T)operation.apply(manager);
          }
       }
    }
 
-   public void handleCodeOfConduct(ClientboundCodeOfConductPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
+   public void handleCodeOfConduct(final ClientboundCodeOfConductPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       if (this.seenCodeOfConduct) {
          throw new IllegalStateException("Server sent duplicate Code of Conduct");
       } else {
          this.seenCodeOfConduct = true;
-         String var2 = var1.codeOfConduct();
-         if (this.serverData != null && this.serverData.hasAcceptedCodeOfConduct(var2)) {
+         String codeOfConduct = packet.codeOfConduct();
+         if (this.serverData != null && this.serverData.hasAcceptedCodeOfConduct(codeOfConduct)) {
             this.send(ServerboundAcceptCodeOfConductPacket.INSTANCE);
          } else {
-            Screen var3 = this.minecraft.screen;
-            this.minecraft.setScreen(new CodeOfConductScreen(this.serverData, var3, var2, (var2x) -> {
-               if (var2x) {
+            Screen lastScreen = this.minecraft.screen;
+            this.minecraft.setScreen(new CodeOfConductScreen(this.serverData, lastScreen, codeOfConduct, (accepted) -> {
+               if (accepted) {
                   this.send(ServerboundAcceptCodeOfConductPacket.INSTANCE);
-                  this.minecraft.setScreen(var3);
+                  this.minecraft.setScreen(lastScreen);
                } else {
                   this.createDialogAccess().disconnect(DISCONNECTED_MESSAGE);
                }
@@ -133,12 +135,16 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
       }
    }
 
-   public void handleConfigurationFinished(ClientboundFinishConfigurationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
-      RegistryAccess.Frozen var2 = (RegistryAccess.Frozen)this.runWithResources((var1x) -> this.registryDataCollector.collectGameRegistries(var1x, this.receivedRegistries, this.connection.isMemoryConnection()));
-      this.connection.setupInboundProtocol(GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(var2)), new ClientPacketListener(this.minecraft, this.connection, new CommonListenerCookie(this.levelLoadTracker, this.localGameProfile, this.telemetryManager, var2, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, this.chatState, this.customReportDetails, this.serverLinks(), this.seenPlayers, this.seenInsecureChatWarning)));
+   public void handleConfigurationFinished(final ClientboundFinishConfigurationPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
+      RegistryAccess.Frozen registries = (RegistryAccess.Frozen)this.runWithResources((knownPacksProvider) -> this.registryDataCollector.collectGameRegistries(knownPacksProvider, this.receivedRegistries, this.connection.isMemoryConnection()));
+      this.connection.setupInboundProtocol(GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(registries)), new ClientPacketListener(this.minecraft, this.connection, new CommonListenerCookie(this.levelLoadTracker, this.localGameProfile, this.telemetryManager, registries, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, this.chatState, this.customReportDetails, this.serverLinks(), this.seenPlayers, this.seenInsecureChatWarning)));
       this.connection.send(ServerboundFinishConfigurationPacket.INSTANCE);
-      this.connection.setupOutboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(var2), new GameProtocols.Context() {
+      this.connection.setupOutboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(registries), new GameProtocols.Context() {
+         {
+            Objects.requireNonNull(ClientConfigurationPacketListenerImpl.this);
+         }
+
          public boolean hasInfiniteMaterials() {
             return true;
          }
@@ -149,15 +155,19 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
       this.sendDeferredPackets();
    }
 
-   public void onDisconnect(DisconnectionDetails var1) {
-      super.onDisconnect(var1);
+   public void onDisconnect(final DisconnectionDetails reason) {
+      super.onDisconnect(reason);
       this.minecraft.clearDownloadedResourcePacks();
    }
 
    protected DialogConnectionAccess createDialogAccess() {
       return new ClientCommonPacketListenerImpl.CommonDialogAccess() {
-         public void runCommand(String var1, @Nullable Screen var2) {
-            ClientConfigurationPacketListenerImpl.LOGGER.warn("Commands are not supported in configuration phase, trying to run '{}'", var1);
+         {
+            Objects.requireNonNull(ClientConfigurationPacketListenerImpl.this);
+         }
+
+         public void runCommand(final String command, final @Nullable Screen activeScreen) {
+            ClientConfigurationPacketListenerImpl.LOGGER.warn("Commands are not supported in configuration phase, trying to run '{}'", command);
          }
       };
    }

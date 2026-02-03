@@ -9,20 +9,20 @@ public class ConstantFloat extends FloatProvider {
    public static final MapCodec<ConstantFloat> CODEC;
    private final float value;
 
-   public static ConstantFloat of(float var0) {
-      return var0 == 0.0F ? ZERO : new ConstantFloat(var0);
+   public static ConstantFloat of(final float value) {
+      return value == 0.0F ? ZERO : new ConstantFloat(value);
    }
 
-   private ConstantFloat(float var1) {
+   private ConstantFloat(final float value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
    public float getValue() {
       return this.value;
    }
 
-   public float sample(RandomSource var1) {
+   public float sample(final RandomSource random) {
       return this.value;
    }
 

@@ -13,74 +13,74 @@ import net.minecraft.world.level.levelgen.Heightmap;
 /** @deprecated */
 @Deprecated
 public class CountOnEveryLayerPlacement extends PlacementModifier {
-   public static final MapCodec<CountOnEveryLayerPlacement> CODEC = IntProvider.codec(0, 256).fieldOf("count").xmap(CountOnEveryLayerPlacement::new, (var0) -> var0.count);
+   public static final MapCodec<CountOnEveryLayerPlacement> CODEC = IntProvider.codec(0, 256).fieldOf("count").xmap(CountOnEveryLayerPlacement::new, (c) -> c.count);
    private final IntProvider count;
 
-   private CountOnEveryLayerPlacement(IntProvider var1) {
+   private CountOnEveryLayerPlacement(final IntProvider count) {
       super();
-      this.count = var1;
+      this.count = count;
    }
 
-   public static CountOnEveryLayerPlacement of(IntProvider var0) {
-      return new CountOnEveryLayerPlacement(var0);
+   public static CountOnEveryLayerPlacement of(final IntProvider count) {
+      return new CountOnEveryLayerPlacement(count);
    }
 
-   public static CountOnEveryLayerPlacement of(int var0) {
-      return of(ConstantInt.of(var0));
+   public static CountOnEveryLayerPlacement of(final int count) {
+      return of(ConstantInt.of(count));
    }
 
-   public Stream<BlockPos> getPositions(PlacementContext var1, RandomSource var2, BlockPos var3) {
-      Stream.Builder var4 = Stream.builder();
-      int var6 = 0;
+   public Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
+      Stream.Builder<BlockPos> positions = Stream.builder();
+      int layer = 0;
 
-      boolean var5;
+      boolean foundAny;
       do {
-         var5 = false;
+         foundAny = false;
 
-         for(int var7 = 0; var7 < this.count.sample(var2); ++var7) {
-            int var8 = var2.nextInt(16) + var3.getX();
-            int var9 = var2.nextInt(16) + var3.getZ();
-            int var10 = var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var8, var9);
-            int var11 = findOnGroundYPosition(var1, var8, var10, var9, var6);
-            if (var11 != 2147483647) {
-               var4.add(new BlockPos(var8, var11, var9));
-               var5 = true;
+         for(int i = 0; i < this.count.sample(random); ++i) {
+            int x = random.nextInt(16) + origin.getX();
+            int z = random.nextInt(16) + origin.getZ();
+            int startY = context.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+            int y = findOnGroundYPosition(context, x, startY, z, layer);
+            if (y != 2147483647) {
+               positions.add(new BlockPos(x, y, z));
+               foundAny = true;
             }
          }
 
-         ++var6;
-      } while(var5);
+         ++layer;
+      } while(foundAny);
 
-      return var4.build();
+      return positions.build();
    }
 
    public PlacementModifierType<?> type() {
       return PlacementModifierType.COUNT_ON_EVERY_LAYER;
    }
 
-   private static int findOnGroundYPosition(PlacementContext var0, int var1, int var2, int var3, int var4) {
-      BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos(var1, var2, var3);
-      int var6 = 0;
-      BlockState var7 = var0.getBlockState(var5);
+   private static int findOnGroundYPosition(final PlacementContext context, final int xStart, final int yStart, final int zStart, final int layerToPlaceOn) {
+      BlockPos.MutableBlockPos currentPos = new BlockPos.MutableBlockPos(xStart, yStart, zStart);
+      int currentLayer = 0;
+      BlockState currentBlock = context.getBlockState(currentPos);
 
-      for(int var8 = var2; var8 >= var0.getMinY() + 1; --var8) {
-         var5.setY(var8 - 1);
-         BlockState var9 = var0.getBlockState(var5);
-         if (!isEmpty(var9) && isEmpty(var7) && !var9.is(Blocks.BEDROCK)) {
-            if (var6 == var4) {
-               return var5.getY() + 1;
+      for(int y = yStart; y >= context.getMinY() + 1; --y) {
+         currentPos.setY(y - 1);
+         BlockState belowBlock = context.getBlockState(currentPos);
+         if (!isEmpty(belowBlock) && isEmpty(currentBlock) && !belowBlock.is(Blocks.BEDROCK)) {
+            if (currentLayer == layerToPlaceOn) {
+               return currentPos.getY() + 1;
             }
 
-            ++var6;
+            ++currentLayer;
          }
 
-         var7 = var9;
+         currentBlock = belowBlock;
       }
 
       return 2147483647;
    }
 
-   private static boolean isEmpty(BlockState var0) {
-      return var0.isAir() || var0.is(Blocks.WATER) || var0.is(Blocks.LAVA);
+   private static boolean isEmpty(final BlockState blockState) {
+      return blockState.isAir() || blockState.is(Blocks.WATER) || blockState.is(Blocks.LAVA);
    }
 }

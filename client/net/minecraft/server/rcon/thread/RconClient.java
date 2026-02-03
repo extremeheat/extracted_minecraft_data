@@ -25,10 +25,10 @@ public class RconClient extends GenericThread {
    private final String rconPassword;
    private final ServerInterface serverInterface;
 
-   RconClient(ServerInterface var1, String var2, Socket var3) {
-      super("RCON Client " + String.valueOf(var3.getInetAddress()));
-      this.serverInterface = var1;
-      this.client = var3;
+   RconClient(final ServerInterface serverInterface, final String rconPassword, final Socket socket) {
+      super("RCON Client " + String.valueOf(socket.getInetAddress()));
+      this.serverInterface = serverInterface;
+      this.client = socket;
 
       try {
          this.client.setSoTimeout(0);
@@ -36,39 +36,39 @@ public class RconClient extends GenericThread {
          this.running = false;
       }
 
-      this.rconPassword = var2;
+      this.rconPassword = rconPassword;
    }
 
    public void run() {
       try {
          try {
             while(this.running) {
-               BufferedInputStream var1 = new BufferedInputStream(this.client.getInputStream());
-               int var2 = var1.read(this.buf, 0, 1460);
-               if (10 > var2) {
+               BufferedInputStream inputStream = new BufferedInputStream(this.client.getInputStream());
+               int read = inputStream.read(this.buf, 0, 1460);
+               if (10 > read) {
                   return;
                }
 
-               int var3 = 0;
-               int var4 = PktUtils.intFromByteArray(this.buf, 0, var2);
-               if (var4 != var2 - 4) {
+               int offset = 0;
+               int pktsize = PktUtils.intFromByteArray(this.buf, 0, read);
+               if (pktsize != read - 4) {
                   return;
                }
 
-               var3 += 4;
-               int var5 = PktUtils.intFromByteArray(this.buf, var3, var2);
-               var3 += 4;
-               int var6 = PktUtils.intFromByteArray(this.buf, var3);
-               var3 += 4;
-               switch (var6) {
+               offset += 4;
+               int requestid = PktUtils.intFromByteArray(this.buf, offset, read);
+               offset += 4;
+               int cmd = PktUtils.intFromByteArray(this.buf, offset);
+               offset += 4;
+               switch (cmd) {
                   case 2:
                      if (this.authed) {
-                        String var8 = PktUtils.stringFromByteArray(this.buf, var3, var2);
+                        String command = PktUtils.stringFromByteArray(this.buf, offset, read);
 
                         try {
-                           this.sendCmdResponse(var5, this.serverInterface.runCommand(var8));
-                        } catch (Exception var15) {
-                           this.sendCmdResponse(var5, "Error executing: " + var8 + " (" + var15.getMessage() + ")");
+                           this.sendCmdResponse(requestid, this.serverInterface.runCommand(command));
+                        } catch (Exception e) {
+                           this.sendCmdResponse(requestid, "Error executing: " + command + " (" + e.getMessage() + ")");
                         }
                         break;
                      }
@@ -76,11 +76,11 @@ public class RconClient extends GenericThread {
                      this.sendAuthFailure();
                      break;
                   case 3:
-                     String var7 = PktUtils.stringFromByteArray(this.buf, var3, var2);
-                     int var10000 = var3 + var7.length();
-                     if (!var7.isEmpty() && var7.equals(this.rconPassword)) {
+                     String password = PktUtils.stringFromByteArray(this.buf, offset, read);
+                     int var10000 = offset + password.length();
+                     if (!password.isEmpty() && password.equals(this.rconPassword)) {
                         this.authed = true;
-                        this.send(var5, 2, "");
+                        this.send(requestid, 2, "");
                         break;
                      }
 
@@ -88,14 +88,14 @@ public class RconClient extends GenericThread {
                      this.sendAuthFailure();
                      break;
                   default:
-                     this.sendCmdResponse(var5, String.format(Locale.ROOT, "Unknown request %s", Integer.toHexString(var6)));
+                     this.sendCmdResponse(requestid, String.format(Locale.ROOT, "Unknown request %s", Integer.toHexString(cmd)));
                }
             }
 
             return;
          } catch (IOException var16) {
-         } catch (Exception var17) {
-            LOGGER.error("Exception whilst parsing RCON input", var17);
+         } catch (Exception e) {
+            LOGGER.error("Exception whilst parsing RCON input", e);
          }
 
       } finally {
@@ -105,32 +105,32 @@ public class RconClient extends GenericThread {
       }
    }
 
-   private void send(int var1, int var2, String var3) throws IOException {
-      ByteArrayOutputStream var4 = new ByteArrayOutputStream(1248);
-      DataOutputStream var5 = new DataOutputStream(var4);
-      byte[] var6 = var3.getBytes(StandardCharsets.UTF_8);
-      var5.writeInt(Integer.reverseBytes(var6.length + 10));
-      var5.writeInt(Integer.reverseBytes(var1));
-      var5.writeInt(Integer.reverseBytes(var2));
-      var5.write(var6);
-      var5.write(0);
-      var5.write(0);
-      this.client.getOutputStream().write(var4.toByteArray());
+   private void send(final int requestid, final int cmd, final String str) throws IOException {
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1248);
+      DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+      byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
+      dataOutputStream.writeInt(Integer.reverseBytes(bytes.length + 10));
+      dataOutputStream.writeInt(Integer.reverseBytes(requestid));
+      dataOutputStream.writeInt(Integer.reverseBytes(cmd));
+      dataOutputStream.write(bytes);
+      dataOutputStream.write(0);
+      dataOutputStream.write(0);
+      this.client.getOutputStream().write(outputStream.toByteArray());
    }
 
    private void sendAuthFailure() throws IOException {
       this.send(-1, 2, "");
    }
 
-   private void sendCmdResponse(int var1, String var2) throws IOException {
-      int var3 = var2.length();
+   private void sendCmdResponse(final int requestid, String response) throws IOException {
+      int len = response.length();
 
       do {
-         int var4 = 4096 <= var3 ? 4096 : var3;
-         this.send(var1, 0, var2.substring(0, var4));
-         var2 = var2.substring(var4);
-         var3 = var2.length();
-      } while(0 != var3);
+         int dataLen = 4096 <= len ? 4096 : len;
+         this.send(requestid, 0, response.substring(0, dataLen));
+         response = response.substring(dataLen);
+         len = response.length();
+      } while(0 != len);
 
    }
 
@@ -143,8 +143,8 @@ public class RconClient extends GenericThread {
    private void closeSocket() {
       try {
          this.client.close();
-      } catch (IOException var2) {
-         LOGGER.warn("Failed to close socket", var2);
+      } catch (IOException e) {
+         LOGGER.warn("Failed to close socket", e);
       }
 
    }

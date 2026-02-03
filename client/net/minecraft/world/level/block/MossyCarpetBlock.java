@@ -46,62 +46,62 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       return CODEC;
    }
 
-   public MossyCarpetBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public MossyCarpetBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(BASE, true)).setValue(NORTH, WallSide.NONE)).setValue(EAST, WallSide.NONE)).setValue(SOUTH, WallSide.NONE)).setValue(WEST, WallSide.NONE));
       this.shapes = this.makeShapes();
    }
 
    public Function<BlockState, VoxelShape> makeShapes() {
-      Map var1 = Shapes.rotateHorizontal(Block.boxZ(16.0, 0.0, 10.0, 0.0, 1.0));
-      Map var2 = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
-      return this.getShapeForEachState((var2x) -> {
-         VoxelShape var3 = (Boolean)var2x.getValue(BASE) ? (VoxelShape)var2.get(Direction.DOWN) : Shapes.empty();
+      Map<Direction, VoxelShape> low = Shapes.rotateHorizontal(Block.boxZ(16.0, 0.0, 10.0, 0.0, 1.0));
+      Map<Direction, VoxelShape> tall = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
+      return this.getShapeForEachState((state) -> {
+         VoxelShape shape = (Boolean)state.getValue(BASE) ? (VoxelShape)tall.get(Direction.DOWN) : Shapes.empty();
 
-         for(Map.Entry var5 : PROPERTY_BY_DIRECTION.entrySet()) {
-            switch ((WallSide)var2x.getValue((Property)var5.getValue())) {
+         for(Map.Entry<Direction, EnumProperty<WallSide>> entry : PROPERTY_BY_DIRECTION.entrySet()) {
+            switch ((WallSide)state.getValue((Property)entry.getValue())) {
                case NONE:
                default:
                   break;
                case LOW:
-                  var3 = Shapes.or(var3, (VoxelShape)var1.get(var5.getKey()));
+                  shape = Shapes.or(shape, (VoxelShape)low.get(entry.getKey()));
                   break;
                case TALL:
-                  var3 = Shapes.or(var3, (VoxelShape)var2.get(var5.getKey()));
+                  shape = Shapes.or(shape, (VoxelShape)tall.get(entry.getKey()));
             }
          }
 
-         return var3.isEmpty() ? Shapes.block() : var3;
+         return shape.isEmpty() ? Shapes.block() : shape;
       });
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapes.apply(var1);
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)this.shapes.apply(state);
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(BASE) ? (VoxelShape)this.shapes.apply(this.defaultBlockState()) : Shapes.empty();
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (Boolean)state.getValue(BASE) ? (VoxelShape)this.shapes.apply(this.defaultBlockState()) : Shapes.empty();
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
+   protected boolean propagatesSkylightDown(final BlockState state) {
       return true;
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3.below());
-      if ((Boolean)var1.getValue(BASE)) {
-         return !var4.isAir();
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockState belowState = level.getBlockState(pos.below());
+      if ((Boolean)state.getValue(BASE)) {
+         return !belowState.isAir();
       } else {
-         return var4.is(this) && (Boolean)var4.getValue(BASE);
+         return belowState.is(this) && (Boolean)belowState.getValue(BASE);
       }
    }
 
-   private static boolean hasFaces(BlockState var0) {
-      if ((Boolean)var0.getValue(BASE)) {
+   private static boolean hasFaces(final BlockState blockState) {
+      if ((Boolean)blockState.getValue(BASE)) {
          return true;
       } else {
-         for(EnumProperty var2 : PROPERTY_BY_DIRECTION.values()) {
-            if (var0.getValue(var2) != WallSide.NONE) {
+         for(EnumProperty<WallSide> property : PROPERTY_BY_DIRECTION.values()) {
+            if (blockState.getValue(property) != WallSide.NONE) {
                return true;
             }
          }
@@ -110,91 +110,91 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       }
    }
 
-   private static boolean canSupportAtFace(BlockGetter var0, BlockPos var1, Direction var2) {
-      return var2 == Direction.UP ? false : MultifaceBlock.canAttachTo(var0, var1, var2);
+   private static boolean canSupportAtFace(final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return direction == Direction.UP ? false : MultifaceBlock.canAttachTo(level, pos, direction);
    }
 
-   private static BlockState getUpdatedState(BlockState var0, BlockGetter var1, BlockPos var2, boolean var3) {
-      BlockState var4 = null;
-      BlockState var5 = null;
-      var3 |= (Boolean)var0.getValue(BASE);
+   private static BlockState getUpdatedState(BlockState state, final BlockGetter level, final BlockPos pos, boolean createSides) {
+      BlockState aboveState = null;
+      BlockState belowState = null;
+      createSides |= (Boolean)state.getValue(BASE);
 
-      for(Direction var7 : Direction.Plane.HORIZONTAL) {
-         EnumProperty var8 = getPropertyForFace(var7);
-         WallSide var9 = canSupportAtFace(var1, var2, var7) ? (var3 ? WallSide.LOW : (WallSide)var0.getValue(var8)) : WallSide.NONE;
-         if (var9 == WallSide.LOW) {
-            if (var4 == null) {
-               var4 = var1.getBlockState(var2.above());
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         EnumProperty<WallSide> property = getPropertyForFace(direction);
+         WallSide side = canSupportAtFace(level, pos, direction) ? (createSides ? WallSide.LOW : (WallSide)state.getValue(property)) : WallSide.NONE;
+         if (side == WallSide.LOW) {
+            if (aboveState == null) {
+               aboveState = level.getBlockState(pos.above());
             }
 
-            if (var4.is(Blocks.PALE_MOSS_CARPET) && var4.getValue(var8) != WallSide.NONE && !(Boolean)var4.getValue(BASE)) {
-               var9 = WallSide.TALL;
+            if (aboveState.is(Blocks.PALE_MOSS_CARPET) && aboveState.getValue(property) != WallSide.NONE && !(Boolean)aboveState.getValue(BASE)) {
+               side = WallSide.TALL;
             }
 
-            if (!(Boolean)var0.getValue(BASE)) {
-               if (var5 == null) {
-                  var5 = var1.getBlockState(var2.below());
+            if (!(Boolean)state.getValue(BASE)) {
+               if (belowState == null) {
+                  belowState = level.getBlockState(pos.below());
                }
 
-               if (var5.is(Blocks.PALE_MOSS_CARPET) && var5.getValue(var8) == WallSide.NONE) {
-                  var9 = WallSide.NONE;
+               if (belowState.is(Blocks.PALE_MOSS_CARPET) && belowState.getValue(property) == WallSide.NONE) {
+                  side = WallSide.NONE;
                }
             }
          }
 
-         var0 = (BlockState)var0.setValue(var8, var9);
+         state = (BlockState)state.setValue(property, side);
       }
 
-      return var0;
+      return state;
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return getUpdatedState(this.defaultBlockState(), var1.getLevel(), var1.getClickedPos(), true);
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return getUpdatedState(this.defaultBlockState(), context.getLevel(), context.getClickedPos(), true);
    }
 
-   public static void placeAt(LevelAccessor var0, BlockPos var1, RandomSource var2, @Block.UpdateFlags int var3) {
-      BlockState var4 = Blocks.PALE_MOSS_CARPET.defaultBlockState();
-      BlockState var5 = getUpdatedState(var4, var0, var1, true);
-      var0.setBlock(var1, var5, var3);
-      Objects.requireNonNull(var2);
-      BlockState var6 = createTopperWithSideChance(var0, var1, var2::nextBoolean);
-      if (!var6.isAir()) {
-         var0.setBlock(var1.above(), var6, var3);
-         BlockState var7 = getUpdatedState(var5, var0, var1, true);
-         var0.setBlock(var1, var7, var3);
+   public static void placeAt(final LevelAccessor level, final BlockPos pos, final RandomSource random, final @Block.UpdateFlags int updateType) {
+      BlockState simpleCarpetLayer = Blocks.PALE_MOSS_CARPET.defaultBlockState();
+      BlockState adjustedCarpetLayer = getUpdatedState(simpleCarpetLayer, level, pos, true);
+      level.setBlock(pos, adjustedCarpetLayer, updateType);
+      Objects.requireNonNull(random);
+      BlockState state = createTopperWithSideChance(level, pos, random::nextBoolean);
+      if (!state.isAir()) {
+         level.setBlock(pos.above(), state, updateType);
+         BlockState updateBottomCarpet = getUpdatedState(adjustedCarpetLayer, level, pos, true);
+         level.setBlock(pos, updateBottomCarpet, updateType);
       }
 
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      if (!var1.isClientSide()) {
-         RandomSource var6 = var1.getRandom();
-         Objects.requireNonNull(var6);
-         BlockState var7 = createTopperWithSideChance(var1, var2, var6::nextBoolean);
-         if (!var7.isAir()) {
-            var1.setBlock(var2.above(), var7, 3);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      if (!level.isClientSide()) {
+         RandomSource random = level.getRandom();
+         Objects.requireNonNull(random);
+         BlockState topper = createTopperWithSideChance(level, pos, random::nextBoolean);
+         if (!topper.isAir()) {
+            level.setBlock(pos.above(), topper, 3);
          }
 
       }
    }
 
-   private static BlockState createTopperWithSideChance(BlockGetter var0, BlockPos var1, BooleanSupplier var2) {
-      BlockPos var3 = var1.above();
-      BlockState var4 = var0.getBlockState(var3);
-      boolean var5 = var4.is(Blocks.PALE_MOSS_CARPET);
-      if ((!var5 || !(Boolean)var4.getValue(BASE)) && (var5 || var4.canBeReplaced())) {
-         BlockState var6 = (BlockState)Blocks.PALE_MOSS_CARPET.defaultBlockState().setValue(BASE, false);
-         BlockState var7 = getUpdatedState(var6, var0, var1.above(), true);
+   private static BlockState createTopperWithSideChance(final BlockGetter level, final BlockPos pos, final BooleanSupplier sideSurvivalTest) {
+      BlockPos above = pos.above();
+      BlockState abovePreviousState = level.getBlockState(above);
+      boolean isMossyCarpetAbove = abovePreviousState.is(Blocks.PALE_MOSS_CARPET);
+      if ((!isMossyCarpetAbove || !(Boolean)abovePreviousState.getValue(BASE)) && (isMossyCarpetAbove || abovePreviousState.canBeReplaced())) {
+         BlockState noCarpetBaseState = (BlockState)Blocks.PALE_MOSS_CARPET.defaultBlockState().setValue(BASE, false);
+         BlockState aboveState = getUpdatedState(noCarpetBaseState, level, pos.above(), true);
 
-         for(Direction var9 : Direction.Plane.HORIZONTAL) {
-            EnumProperty var10 = getPropertyForFace(var9);
-            if (var7.getValue(var10) != WallSide.NONE && !var2.getAsBoolean()) {
-               var7 = (BlockState)var7.setValue(var10, WallSide.NONE);
+         for(Direction direction : Direction.Plane.HORIZONTAL) {
+            EnumProperty<WallSide> property = getPropertyForFace(direction);
+            if (aboveState.getValue(property) != WallSide.NONE && !sideSurvivalTest.getAsBoolean()) {
+               aboveState = (BlockState)aboveState.setValue(property, WallSide.NONE);
             }
          }
 
-         if (hasFaces(var7) && var7 != var4) {
-            return var7;
+         if (hasFaces(aboveState) && aboveState != abovePreviousState) {
+            return aboveState;
          } else {
             return Blocks.AIR.defaultBlockState();
          }
@@ -203,58 +203,58 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       }
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (!var1.canSurvive(var2, var4)) {
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (!state.canSurvive(level, pos)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         BlockState var9 = getUpdatedState(var1, var2, var4, false);
-         return !hasFaces(var9) ? Blocks.AIR.defaultBlockState() : var9;
+         BlockState blockState = getUpdatedState(state, level, pos, false);
+         return !hasFaces(blockState) ? Blocks.AIR.defaultBlockState() : blockState;
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(BASE, NORTH, EAST, SOUTH, WEST);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(BASE, NORTH, EAST, SOUTH, WEST);
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
       BlockState var10000;
-      switch (var2) {
-         case CLOCKWISE_180 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (WallSide)var1.getValue(SOUTH))).setValue(EAST, (WallSide)var1.getValue(WEST))).setValue(SOUTH, (WallSide)var1.getValue(NORTH))).setValue(WEST, (WallSide)var1.getValue(EAST));
-         case COUNTERCLOCKWISE_90 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (WallSide)var1.getValue(EAST))).setValue(EAST, (WallSide)var1.getValue(SOUTH))).setValue(SOUTH, (WallSide)var1.getValue(WEST))).setValue(WEST, (WallSide)var1.getValue(NORTH));
-         case CLOCKWISE_90 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (WallSide)var1.getValue(WEST))).setValue(EAST, (WallSide)var1.getValue(NORTH))).setValue(SOUTH, (WallSide)var1.getValue(EAST))).setValue(WEST, (WallSide)var1.getValue(SOUTH));
-         default -> var10000 = var1;
+      switch (rotation) {
+         case CLOCKWISE_180 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (WallSide)state.getValue(SOUTH))).setValue(EAST, (WallSide)state.getValue(WEST))).setValue(SOUTH, (WallSide)state.getValue(NORTH))).setValue(WEST, (WallSide)state.getValue(EAST));
+         case COUNTERCLOCKWISE_90 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (WallSide)state.getValue(EAST))).setValue(EAST, (WallSide)state.getValue(SOUTH))).setValue(SOUTH, (WallSide)state.getValue(WEST))).setValue(WEST, (WallSide)state.getValue(NORTH));
+         case CLOCKWISE_90 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (WallSide)state.getValue(WEST))).setValue(EAST, (WallSide)state.getValue(NORTH))).setValue(SOUTH, (WallSide)state.getValue(EAST))).setValue(WEST, (WallSide)state.getValue(SOUTH));
+         default -> var10000 = state;
       }
 
       return var10000;
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
       BlockState var10000;
-      switch (var2) {
-         case LEFT_RIGHT -> var10000 = (BlockState)((BlockState)var1.setValue(NORTH, (WallSide)var1.getValue(SOUTH))).setValue(SOUTH, (WallSide)var1.getValue(NORTH));
-         case FRONT_BACK -> var10000 = (BlockState)((BlockState)var1.setValue(EAST, (WallSide)var1.getValue(WEST))).setValue(WEST, (WallSide)var1.getValue(EAST));
-         default -> var10000 = super.mirror(var1, var2);
+      switch (mirror) {
+         case LEFT_RIGHT -> var10000 = (BlockState)((BlockState)state.setValue(NORTH, (WallSide)state.getValue(SOUTH))).setValue(SOUTH, (WallSide)state.getValue(NORTH));
+         case FRONT_BACK -> var10000 = (BlockState)((BlockState)state.setValue(EAST, (WallSide)state.getValue(WEST))).setValue(WEST, (WallSide)state.getValue(EAST));
+         default -> var10000 = super.mirror(state, mirror);
       }
 
       return var10000;
    }
 
-   public static @Nullable EnumProperty<WallSide> getPropertyForFace(Direction var0) {
-      return (EnumProperty)PROPERTY_BY_DIRECTION.get(var0);
+   public static @Nullable EnumProperty<WallSide> getPropertyForFace(final Direction direction) {
+      return (EnumProperty)PROPERTY_BY_DIRECTION.get(direction);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return (Boolean)var3.getValue(BASE) && !createTopperWithSideChance(var1, var2, () -> true).isAir();
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return (Boolean)state.getValue(BASE) && !createTopperWithSideChance(level, pos, () -> true).isAir();
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      BlockState var5 = createTopperWithSideChance(var1, var3, () -> true);
-      if (!var5.isAir()) {
-         var1.setBlock(var3.above(), var5, 3);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      BlockState topper = createTopperWithSideChance(level, pos, () -> true);
+      if (!topper.isAir()) {
+         level.setBlock(pos.above(), topper, 3);
       }
 
    }

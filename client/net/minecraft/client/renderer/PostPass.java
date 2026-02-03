@@ -35,40 +35,40 @@ public class PostPass implements AutoCloseable {
    private final MappableRingBuffer infoUbo;
    private final List<Input> inputs;
 
-   public PostPass(RenderPipeline var1, Identifier var2, Map<String, List<UniformValue>> var3, List<Input> var4) {
+   public PostPass(final RenderPipeline pipeline, final Identifier outputTargetId, final Map<String, List<UniformValue>> uniformGroups, final List<Input> inputs) {
       super();
-      this.pipeline = var1;
-      this.name = var1.getLocation().toString();
-      this.outputTargetId = var2;
-      this.inputs = var4;
+      this.pipeline = pipeline;
+      this.name = pipeline.getLocation().toString();
+      this.outputTargetId = outputTargetId;
+      this.inputs = inputs;
 
-      for(Map.Entry var6 : var3.entrySet()) {
-         List var7 = (List)var6.getValue();
-         if (!var7.isEmpty()) {
-            Std140SizeCalculator var8 = new Std140SizeCalculator();
+      for(Map.Entry<String, List<UniformValue>> uniformGroup : uniformGroups.entrySet()) {
+         List<UniformValue> uniforms = (List)uniformGroup.getValue();
+         if (!uniforms.isEmpty()) {
+            Std140SizeCalculator calculator = new Std140SizeCalculator();
 
-            for(UniformValue var10 : var7) {
-               var10.addSize(var8);
+            for(UniformValue uniform : uniforms) {
+               uniform.addSize(calculator);
             }
 
-            int var16 = var8.get();
-            MemoryStack var17 = MemoryStack.stackPush();
+            int size = calculator.get();
+            MemoryStack stack = MemoryStack.stackPush();
 
             try {
-               Std140Builder var11 = Std140Builder.onStack(var17, var16);
+               Std140Builder builder = Std140Builder.onStack(stack, size);
 
-               for(UniformValue var13 : var7) {
-                  var13.writeTo(var11);
+               for(UniformValue uniform : uniforms) {
+                  uniform.writeTo(builder);
                }
 
-               this.customUniforms.put((String)var6.getKey(), RenderSystem.getDevice().createBuffer(() -> {
+               this.customUniforms.put((String)uniformGroup.getKey(), RenderSystem.getDevice().createBuffer(() -> {
                   String var10000 = this.name;
-                  return var10000 + " / " + (String)var6.getKey();
-               }, 128, var11.get()));
+                  return var10000 + " / " + (String)uniformGroup.getKey();
+               }, 128, builder.get()));
             } catch (Throwable var15) {
-               if (var17 != null) {
+               if (stack != null) {
                   try {
-                     var17.close();
+                     stack.close();
                   } catch (Throwable var14) {
                      var15.addSuppressed(var14);
                   }
@@ -77,64 +77,64 @@ public class PostPass implements AutoCloseable {
                throw var15;
             }
 
-            if (var17 != null) {
-               var17.close();
+            if (stack != null) {
+               stack.close();
             }
          }
       }
 
-      this.infoUbo = new MappableRingBuffer(() -> this.name + " SamplerInfo", 130, (var4.size() + 1) * UBO_SIZE_PER_SAMPLER);
+      this.infoUbo = new MappableRingBuffer(() -> this.name + " SamplerInfo", 130, (inputs.size() + 1) * UBO_SIZE_PER_SAMPLER);
    }
 
-   public void addToFrame(FrameGraphBuilder var1, Map<Identifier, ResourceHandle<RenderTarget>> var2, GpuBufferSlice var3) {
-      FramePass var4 = var1.addPass(this.name);
+   public void addToFrame(final FrameGraphBuilder frame, final Map<Identifier, ResourceHandle<RenderTarget>> targets, final GpuBufferSlice shaderOrthoMatrix) {
+      FramePass pass = frame.addPass(this.name);
 
-      for(Input var6 : this.inputs) {
-         var6.addToPass(var4, var2);
+      for(Input input : this.inputs) {
+         input.addToPass(pass, targets);
       }
 
-      ResourceHandle var7 = (ResourceHandle)var2.computeIfPresent(this.outputTargetId, (var1x, var2x) -> var4.readsAndWrites(var2x));
-      if (var7 == null) {
+      ResourceHandle<RenderTarget> outputHandle = (ResourceHandle)targets.computeIfPresent(this.outputTargetId, (id, handle) -> pass.readsAndWrites(handle));
+      if (outputHandle == null) {
          throw new IllegalStateException("Missing handle for target " + String.valueOf(this.outputTargetId));
       } else {
-         var4.executes(() -> {
-            RenderTarget var4 = (RenderTarget)var7.get();
+         pass.executes(() -> {
+            RenderTarget outputTarget = outputHandle.get();
             RenderSystem.backupProjectionMatrix();
-            RenderSystem.setProjectionMatrix(var3, ProjectionType.ORTHOGRAPHIC);
-            CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
-            SamplerCache var6 = RenderSystem.getSamplerCache();
-            List var7x = this.inputs.stream().map((var2x) -> new InputTexture(var2x.samplerName(), var2x.texture(var2), var6.getClampToEdge(var2x.bilinear() ? FilterMode.LINEAR : FilterMode.NEAREST))).toList();
+            RenderSystem.setProjectionMatrix(shaderOrthoMatrix, ProjectionType.ORTHOGRAPHIC);
+            CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
+            SamplerCache samplerCache = RenderSystem.getSamplerCache();
+            List<InputTexture> inputTextures = this.inputs.stream().map((i) -> new InputTexture(i.samplerName(), i.texture(targets), samplerCache.getClampToEdge(i.bilinear() ? FilterMode.LINEAR : FilterMode.NEAREST))).toList();
 
-            try (GpuBuffer.MappedView var8 = var5.mapBuffer(this.infoUbo.currentBuffer(), false, true)) {
-               Std140Builder var9 = Std140Builder.intoBuffer(var8.data());
-               var9.putVec2((float)var4.width, (float)var4.height);
+            try (GpuBuffer.MappedView view = commandEncoder.mapBuffer(this.infoUbo.currentBuffer(), false, true)) {
+               Std140Builder builder = Std140Builder.intoBuffer(view.data());
+               builder.putVec2((float)outputTarget.width, (float)outputTarget.height);
 
-               for(InputTexture var11 : var7x) {
-                  var9.putVec2((float)var11.view.getWidth(0), (float)var11.view.getHeight(0));
+               for(InputTexture input : inputTextures) {
+                  builder.putVec2((float)input.view.getWidth(0), (float)input.view.getHeight(0));
                }
             }
 
-            try (RenderPass var16 = var5.createRenderPass(() -> "Post pass " + this.name, var4.getColorTextureView(), OptionalInt.empty(), var4.useDepth ? var4.getDepthTextureView() : null, OptionalDouble.empty())) {
-               var16.setPipeline(this.pipeline);
-               RenderSystem.bindDefaultUniforms(var16);
-               var16.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
+            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, outputTarget.getColorTextureView(), OptionalInt.empty(), outputTarget.useDepth ? outputTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
+               renderPass.setPipeline(this.pipeline);
+               RenderSystem.bindDefaultUniforms(renderPass);
+               renderPass.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
 
-               for(Map.Entry var21 : this.customUniforms.entrySet()) {
-                  var16.setUniform((String)var21.getKey(), (GpuBuffer)var21.getValue());
+               for(Map.Entry<String, GpuBuffer> entry : this.customUniforms.entrySet()) {
+                  renderPass.setUniform((String)entry.getKey(), (GpuBuffer)entry.getValue());
                }
 
-               for(InputTexture var22 : var7x) {
-                  var16.bindTexture(var22.samplerName() + "Sampler", var22.view(), var22.sampler());
+               for(InputTexture input : inputTextures) {
+                  renderPass.bindTexture(input.samplerName() + "Sampler", input.view(), input.sampler());
                }
 
-               var16.draw(0, 3);
+               renderPass.draw(0, 3);
             }
 
             this.infoUbo.rotate();
             RenderSystem.restoreProjectionMatrix();
 
-            for(Input var20 : this.inputs) {
-               var20.cleanup(var2);
+            for(Input input : this.inputs) {
+               input.cleanup(targets);
             }
 
          });
@@ -142,20 +142,20 @@ public class PostPass implements AutoCloseable {
    }
 
    public void close() {
-      for(GpuBuffer var2 : this.customUniforms.values()) {
-         var2.close();
+      for(GpuBuffer buffer : this.customUniforms.values()) {
+         buffer.close();
       }
 
       this.infoUbo.close();
    }
 
    public interface Input {
-      void addToPass(FramePass var1, Map<Identifier, ResourceHandle<RenderTarget>> var2);
+      void addToPass(FramePass pass, Map<Identifier, ResourceHandle<RenderTarget>> targets);
 
-      default void cleanup(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
+      default void cleanup(final Map<Identifier, ResourceHandle<RenderTarget>> targets) {
       }
 
-      GpuTextureView texture(Map<Identifier, ResourceHandle<RenderTarget>> var1);
+      GpuTextureView texture(final Map<Identifier, ResourceHandle<RenderTarget>> targets);
 
       String samplerName();
 
@@ -163,66 +163,52 @@ public class PostPass implements AutoCloseable {
    }
 
    public static record TextureInput(String samplerName, AbstractTexture texture, int width, int height, boolean bilinear) implements Input {
-      public TextureInput(String var1, AbstractTexture var2, int var3, int var4, boolean var5) {
+      public TextureInput {
          super();
-         this.samplerName = var1;
-         this.texture = var2;
-         this.width = var3;
-         this.height = var4;
-         this.bilinear = var5;
       }
 
-      public void addToPass(FramePass var1, Map<Identifier, ResourceHandle<RenderTarget>> var2) {
+      public void addToPass(final FramePass pass, final Map<Identifier, ResourceHandle<RenderTarget>> targets) {
       }
 
-      public GpuTextureView texture(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
+      public GpuTextureView texture(final Map<Identifier, ResourceHandle<RenderTarget>> targets) {
          return this.texture.getTextureView();
       }
    }
 
    public static record TargetInput(String samplerName, Identifier targetId, boolean depthBuffer, boolean bilinear) implements Input {
-      public TargetInput(String var1, Identifier var2, boolean var3, boolean var4) {
+      public TargetInput {
          super();
-         this.samplerName = var1;
-         this.targetId = var2;
-         this.depthBuffer = var3;
-         this.bilinear = var4;
       }
 
-      private ResourceHandle<RenderTarget> getHandle(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
-         ResourceHandle var2 = (ResourceHandle)var1.get(this.targetId);
-         if (var2 == null) {
+      private ResourceHandle<RenderTarget> getHandle(final Map<Identifier, ResourceHandle<RenderTarget>> targets) {
+         ResourceHandle<RenderTarget> handle = (ResourceHandle)targets.get(this.targetId);
+         if (handle == null) {
             throw new IllegalStateException("Missing handle for target " + String.valueOf(this.targetId));
          } else {
-            return var2;
+            return handle;
          }
       }
 
-      public void addToPass(FramePass var1, Map<Identifier, ResourceHandle<RenderTarget>> var2) {
-         var1.reads(this.getHandle(var2));
+      public void addToPass(final FramePass pass, final Map<Identifier, ResourceHandle<RenderTarget>> targets) {
+         pass.reads(this.getHandle(targets));
       }
 
-      public GpuTextureView texture(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
-         ResourceHandle var2 = this.getHandle(var1);
-         RenderTarget var3 = (RenderTarget)var2.get();
-         GpuTextureView var4 = this.depthBuffer ? var3.getDepthTextureView() : var3.getColorTextureView();
-         if (var4 == null) {
+      public GpuTextureView texture(final Map<Identifier, ResourceHandle<RenderTarget>> targets) {
+         ResourceHandle<RenderTarget> handle = this.getHandle(targets);
+         RenderTarget target = handle.get();
+         GpuTextureView textureView = this.depthBuffer ? target.getDepthTextureView() : target.getColorTextureView();
+         if (textureView == null) {
             String var10002 = this.depthBuffer ? "depth" : "color";
             throw new IllegalStateException("Missing " + var10002 + "texture for target " + String.valueOf(this.targetId));
          } else {
-            return var4;
+            return textureView;
          }
       }
    }
 
    static record InputTexture(String samplerName, GpuTextureView view, GpuSampler sampler) {
-      final GpuTextureView view;
-
-      InputTexture(String var1, GpuTextureView var2, GpuSampler var3) {
+      InputTexture {
          super();
-         this.samplerName = var1;
-         this.view = var2;
-         this.sampler = var3;
       }
    }
 }

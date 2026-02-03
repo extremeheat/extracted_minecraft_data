@@ -10,24 +10,22 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public record RaiderPredicate(boolean hasRaid, boolean isCaptain) implements EntitySubPredicate {
-   public static final MapCodec<RaiderPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("has_raid", false).forGetter(RaiderPredicate::hasRaid), Codec.BOOL.optionalFieldOf("is_captain", false).forGetter(RaiderPredicate::isCaptain)).apply(var0, RaiderPredicate::new));
+   public static final MapCodec<RaiderPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.optionalFieldOf("has_raid", false).forGetter(RaiderPredicate::hasRaid), Codec.BOOL.optionalFieldOf("is_captain", false).forGetter(RaiderPredicate::isCaptain)).apply(i, RaiderPredicate::new));
    public static final RaiderPredicate CAPTAIN_WITHOUT_RAID = new RaiderPredicate(false, true);
 
-   public RaiderPredicate(boolean var1, boolean var2) {
+   public RaiderPredicate {
       super();
-      this.hasRaid = var1;
-      this.isCaptain = var2;
    }
 
    public MapCodec<RaiderPredicate> codec() {
       return EntitySubPredicates.RAIDER;
    }
 
-   public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
-      if (!(var1 instanceof Raider var4)) {
+   public boolean matches(final Entity entity, final ServerLevel level, final @Nullable Vec3 position) {
+      if (!(entity instanceof Raider raider)) {
          return false;
       } else {
-         return var4.hasRaid() == this.hasRaid && var4.isCaptain() == this.isCaptain;
+         return raider.hasRaid() == this.hasRaid && raider.isCaptain() == this.isCaptain;
       }
    }
 }

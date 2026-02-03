@@ -8,15 +8,15 @@ public class DragonSittingAttackingPhase extends AbstractDragonSittingPhase {
    private static final int ROAR_DURATION = 40;
    private int attackingTicks;
 
-   public DragonSittingAttackingPhase(EnderDragon var1) {
-      super(var1);
+   public DragonSittingAttackingPhase(final EnderDragon dragon) {
+      super(dragon);
    }
 
    public void doClientTick() {
       this.dragon.level().playLocalSound(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ(), SoundEvents.ENDER_DRAGON_GROWL, this.dragon.getSoundSource(), 2.5F, 0.8F + this.dragon.getRandom().nextFloat() * 0.3F, false);
    }
 
-   public void doServerTick(ServerLevel var1) {
+   public void doServerTick(final ServerLevel level) {
       if (this.attackingTicks++ >= 40) {
          this.dragon.getPhaseManager().setPhase(EnderDragonPhase.SITTING_FLAMING);
       }

@@ -16,8 +16,8 @@ public class FallthroughTask<T extends ExecutionCommandSource<T>> implements Ent
       return INSTANCE;
    }
 
-   public void execute(ExecutionContext<T> var1, Frame var2) {
-      var2.returnFailure();
-      var2.discard();
+   public void execute(final ExecutionContext<T> context, final Frame frame) {
+      frame.returnFailure();
+      frame.discard();
    }
 }

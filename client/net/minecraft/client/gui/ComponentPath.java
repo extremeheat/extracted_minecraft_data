@@ -5,59 +5,51 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import org.jspecify.annotations.Nullable;
 
 public interface ComponentPath {
-   static ComponentPath leaf(GuiEventListener var0) {
-      return new Leaf(var0);
+   static ComponentPath leaf(final GuiEventListener component) {
+      return new Leaf(component);
    }
 
-   static @Nullable ComponentPath path(ContainerEventHandler var0, @Nullable ComponentPath var1) {
-      return var1 == null ? null : new Path(var0, var1);
+   static @Nullable ComponentPath path(final ContainerEventHandler container, final @Nullable ComponentPath childPath) {
+      return childPath == null ? null : new Path(container, childPath);
    }
 
-   static ComponentPath path(GuiEventListener var0, ContainerEventHandler... var1) {
-      ComponentPath var2 = leaf(var0);
+   static ComponentPath path(final GuiEventListener target, final ContainerEventHandler... containerPath) {
+      ComponentPath path = leaf(target);
 
-      for(ContainerEventHandler var6 : var1) {
-         var2 = path(var6, var2);
+      for(ContainerEventHandler container : containerPath) {
+         path = path(container, path);
       }
 
-      return var2;
+      return path;
    }
 
    GuiEventListener component();
 
-   void applyFocus(boolean var1);
+   void applyFocus(boolean focused);
 
    public static record Path(ContainerEventHandler component, ComponentPath childPath) implements ComponentPath {
-      public Path(ContainerEventHandler var1, ComponentPath var2) {
+      public Path {
          super();
-         this.component = var1;
-         this.childPath = var2;
       }
 
-      public void applyFocus(boolean var1) {
-         if (!var1) {
+      public void applyFocus(final boolean focused) {
+         if (!focused) {
             this.component.setFocused((GuiEventListener)null);
          } else {
             this.component.setFocused(this.childPath.component());
          }
 
-         this.childPath.applyFocus(var1);
-      }
-
-      // $FF: synthetic method
-      public GuiEventListener component() {
-         return this.component();
+         this.childPath.applyFocus(focused);
       }
    }
 
    public static record Leaf(GuiEventListener component) implements ComponentPath {
-      public Leaf(GuiEventListener var1) {
+      public Leaf {
          super();
-         this.component = var1;
       }
 
-      public void applyFocus(boolean var1) {
-         this.component.setFocused(var1);
+      public void applyFocus(final boolean focused) {
+         this.component.setFocused(focused);
       }
    }
 }

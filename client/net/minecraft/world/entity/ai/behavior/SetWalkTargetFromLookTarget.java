@@ -12,16 +12,16 @@ public class SetWalkTargetFromLookTarget {
       super();
    }
 
-   public static OneShot<LivingEntity> create(float var0, int var1) {
-      return create((var0x) -> true, (var1x) -> var0, var1);
+   public static OneShot<LivingEntity> create(final float speedModifier, final int closeEnoughDistance) {
+      return create((mob) -> true, (mob) -> speedModifier, closeEnoughDistance);
    }
 
-   public static OneShot<LivingEntity> create(Predicate<LivingEntity> var0, Function<LivingEntity, Float> var1, int var2) {
-      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.absent(MemoryModuleType.WALK_TARGET), var3.present(MemoryModuleType.LOOK_TARGET)).apply(var3, (var4, var5) -> (var6, var7, var8) -> {
-               if (!var0.test(var7)) {
+   public static OneShot<LivingEntity> create(final Predicate<LivingEntity> canSetWalkTargetPredicate, final Function<LivingEntity, Float> speedModifier, final int closeEnoughDistance) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.WALK_TARGET), i.present(MemoryModuleType.LOOK_TARGET)).apply(i, (walkTarget, lookTarget) -> (level, body, timestamp) -> {
+               if (!canSetWalkTargetPredicate.test(body)) {
                   return false;
                } else {
-                  var4.set(new WalkTarget((PositionTracker)var3.get(var5), (Float)var1.apply(var7), var2));
+                  walkTarget.set(new WalkTarget((PositionTracker)i.get(lookTarget), (Float)speedModifier.apply(body), closeEnoughDistance));
                   return true;
                }
             })));

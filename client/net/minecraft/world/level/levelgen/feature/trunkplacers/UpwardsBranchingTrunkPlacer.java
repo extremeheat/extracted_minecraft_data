@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -21,76 +20,76 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<UpwardsBranchingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> trunkPlacerParts(var0).and(var0.group(IntProvider.POSITIVE_CODEC.fieldOf("extra_branch_steps").forGetter((var0x) -> var0x.extraBranchSteps), Codec.floatRange(0.0F, 1.0F).fieldOf("place_branch_per_log_probability").forGetter((var0x) -> var0x.placeBranchPerLogProbability), IntProvider.NON_NEGATIVE_CODEC.fieldOf("extra_branch_length").forGetter((var0x) -> var0x.extraBranchLength), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_grow_through").forGetter((var0x) -> var0x.canGrowThrough))).apply(var0, UpwardsBranchingTrunkPlacer::new));
+   public static final MapCodec<UpwardsBranchingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> trunkPlacerParts(i).and(i.group(IntProvider.POSITIVE_CODEC.fieldOf("extra_branch_steps").forGetter((p) -> p.extraBranchSteps), Codec.floatRange(0.0F, 1.0F).fieldOf("place_branch_per_log_probability").forGetter((p) -> p.placeBranchPerLogProbability), IntProvider.NON_NEGATIVE_CODEC.fieldOf("extra_branch_length").forGetter((c) -> c.extraBranchLength), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_grow_through").forGetter((t) -> t.canGrowThrough))).apply(i, UpwardsBranchingTrunkPlacer::new));
    private final IntProvider extraBranchSteps;
    private final float placeBranchPerLogProbability;
    private final IntProvider extraBranchLength;
    private final HolderSet<Block> canGrowThrough;
 
-   public UpwardsBranchingTrunkPlacer(int var1, int var2, int var3, IntProvider var4, float var5, IntProvider var6, HolderSet<Block> var7) {
-      super(var1, var2, var3);
-      this.extraBranchSteps = var4;
-      this.placeBranchPerLogProbability = var5;
-      this.extraBranchLength = var6;
-      this.canGrowThrough = var7;
+   public UpwardsBranchingTrunkPlacer(final int baseHeight, final int heightRandA, final int heightRandB, final IntProvider extraBranchSteps, final float placeBranchPerLogProbability, final IntProvider extraBranchLength, final HolderSet<Block> canGrowThrough) {
+      super(baseHeight, heightRandA, heightRandB);
+      this.extraBranchSteps = extraBranchSteps;
+      this.placeBranchPerLogProbability = placeBranchPerLogProbability;
+      this.extraBranchLength = extraBranchLength;
+      this.canGrowThrough = canGrowThrough;
    }
 
    protected TrunkPlacerType<?> type() {
       return TrunkPlacerType.UPWARDS_BRANCHING_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6) {
-      ArrayList var7 = Lists.newArrayList();
-      BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+      List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
+      BlockPos.MutableBlockPos logPos = new BlockPos.MutableBlockPos();
 
-      for(int var9 = 0; var9 < var4; ++var9) {
-         int var10 = var5.getY() + var9;
-         if (this.placeLog(var1, var2, var3, var8.set(var5.getX(), var10, var5.getZ()), var6) && var9 < var4 - 1 && var3.nextFloat() < this.placeBranchPerLogProbability) {
-            Direction var11 = Direction.Plane.HORIZONTAL.getRandomDirection(var3);
-            int var12 = this.extraBranchLength.sample(var3);
-            int var13 = Math.max(0, var12 - this.extraBranchLength.sample(var3) - 1);
-            int var14 = this.extraBranchSteps.sample(var3);
-            this.placeBranch(var1, var2, var3, var4, var6, var7, var8, var10, var11, var13, var14);
+      for(int heightPos = 0; heightPos < treeHeight; ++heightPos) {
+         int currentHeight = origin.getY() + heightPos;
+         if (this.placeLog(level, trunkSetter, random, logPos.set(origin.getX(), currentHeight, origin.getZ()), config) && heightPos < treeHeight - 1 && random.nextFloat() < this.placeBranchPerLogProbability) {
+            Direction branchDir = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+            int branchLen = this.extraBranchLength.sample(random);
+            int branchPos = Math.max(0, branchLen - this.extraBranchLength.sample(random) - 1);
+            int branchSteps = this.extraBranchSteps.sample(random);
+            this.placeBranch(level, trunkSetter, random, treeHeight, config, attachments, logPos, currentHeight, branchDir, branchPos, branchSteps);
          }
 
-         if (var9 == var4 - 1) {
-            var7.add(new FoliagePlacer.FoliageAttachment(var8.set(var5.getX(), var10 + 1, var5.getZ()), 0, false));
+         if (heightPos == treeHeight - 1) {
+            attachments.add(new FoliagePlacer.FoliageAttachment(logPos.set(origin.getX(), currentHeight + 1, origin.getZ()), 0, false));
          }
       }
 
-      return var7;
+      return attachments;
    }
 
-   private void placeBranch(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, TreeConfiguration var5, List<FoliagePlacer.FoliageAttachment> var6, BlockPos.MutableBlockPos var7, int var8, Direction var9, int var10, int var11) {
-      int var12 = var8 + var10;
-      int var13 = var7.getX();
-      int var14 = var7.getZ();
+   private void placeBranch(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final TreeConfiguration config, final List<FoliagePlacer.FoliageAttachment> attachments, final BlockPos.MutableBlockPos logPos, final int currentHeight, final Direction branchDir, final int branchPos, int branchSteps) {
+      int heightAlongBranch = currentHeight + branchPos;
+      int logX = logPos.getX();
+      int logZ = logPos.getZ();
 
-      for(int var15 = var10; var15 < var4 && var11 > 0; --var11) {
-         if (var15 >= 1) {
-            int var16 = var8 + var15;
-            var13 += var9.getStepX();
-            var14 += var9.getStepZ();
-            var12 = var16;
-            if (this.placeLog(var1, var2, var3, var7.set(var13, var16, var14), var5)) {
-               var12 = var16 + 1;
+      for(int branchPlacementIndex = branchPos; branchPlacementIndex < treeHeight && branchSteps > 0; --branchSteps) {
+         if (branchPlacementIndex >= 1) {
+            int placementHeight = currentHeight + branchPlacementIndex;
+            logX += branchDir.getStepX();
+            logZ += branchDir.getStepZ();
+            heightAlongBranch = placementHeight;
+            if (this.placeLog(level, trunkSetter, random, logPos.set(logX, placementHeight, logZ), config)) {
+               heightAlongBranch = placementHeight + 1;
             }
 
-            var6.add(new FoliagePlacer.FoliageAttachment(var7.immutable(), 0, false));
+            attachments.add(new FoliagePlacer.FoliageAttachment(logPos.immutable(), 0, false));
          }
 
-         ++var15;
+         ++branchPlacementIndex;
       }
 
-      if (var12 - var8 > 1) {
-         BlockPos var17 = new BlockPos(var13, var12, var14);
-         var6.add(new FoliagePlacer.FoliageAttachment(var17, 0, false));
-         var6.add(new FoliagePlacer.FoliageAttachment(var17.below(2), 0, false));
+      if (heightAlongBranch - currentHeight > 1) {
+         BlockPos foliagePos = new BlockPos(logX, heightAlongBranch, logZ);
+         attachments.add(new FoliagePlacer.FoliageAttachment(foliagePos, 0, false));
+         attachments.add(new FoliagePlacer.FoliageAttachment(foliagePos.below(2), 0, false));
       }
 
    }
 
-   protected boolean validTreePos(LevelSimulatedReader var1, BlockPos var2) {
-      return super.validTreePos(var1, var2) || var1.isStateAtPosition(var2, (var1x) -> var1x.is(this.canGrowThrough));
+   protected boolean validTreePos(final LevelSimulatedReader level, final BlockPos pos) {
+      return super.validTreePos(level, pos) || level.isStateAtPosition(pos, (s) -> s.is(this.canGrowThrough));
    }
 }

@@ -13,18 +13,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundTestInstanceBlockStatus(Component status, Optional<Vec3i> size) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundTestInstanceBlockStatus> STREAM_CODEC;
 
-   public ClientboundTestInstanceBlockStatus(Component var1, Optional<Vec3i> var2) {
+   public ClientboundTestInstanceBlockStatus {
       super();
-      this.status = var1;
-      this.size = var2;
    }
 
    public PacketType<ClientboundTestInstanceBlockStatus> type() {
       return GamePacketTypes.CLIENTBOUND_TEST_INSTANCE_BLOCK_STATUS;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleTestInstanceBlockStatus(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleTestInstanceBlockStatus(this);
    }
 
    static {

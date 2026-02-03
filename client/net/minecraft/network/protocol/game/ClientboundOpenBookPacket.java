@@ -10,26 +10,26 @@ public class ClientboundOpenBookPacket implements Packet<ClientGamePacketListene
    public static final StreamCodec<FriendlyByteBuf, ClientboundOpenBookPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundOpenBookPacket>codec(ClientboundOpenBookPacket::write, ClientboundOpenBookPacket::new);
    private final InteractionHand hand;
 
-   public ClientboundOpenBookPacket(InteractionHand var1) {
+   public ClientboundOpenBookPacket(final InteractionHand hand) {
       super();
-      this.hand = var1;
+      this.hand = hand;
    }
 
-   private ClientboundOpenBookPacket(FriendlyByteBuf var1) {
+   private ClientboundOpenBookPacket(final FriendlyByteBuf input) {
       super();
-      this.hand = (InteractionHand)var1.readEnum(InteractionHand.class);
+      this.hand = (InteractionHand)input.readEnum(InteractionHand.class);
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeEnum(this.hand);
+   private void write(final FriendlyByteBuf output) {
+      output.writeEnum(this.hand);
    }
 
    public PacketType<ClientboundOpenBookPacket> type() {
       return GamePacketTypes.CLIENTBOUND_OPEN_BOOK;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleOpenBook(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleOpenBook(this);
    }
 
    public InteractionHand getHand() {

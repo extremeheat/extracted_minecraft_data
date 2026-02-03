@@ -12,29 +12,29 @@ import java.util.Set;
 public class EntityHealthFix extends DataFix {
    private static final Set<String> ENTITIES = Sets.newHashSet(new String[]{"ArmorStand", "Bat", "Blaze", "CaveSpider", "Chicken", "Cow", "Creeper", "EnderDragon", "Enderman", "Endermite", "EntityHorse", "Ghast", "Giant", "Guardian", "LavaSlime", "MushroomCow", "Ozelot", "Pig", "PigZombie", "Rabbit", "Sheep", "Shulker", "Silverfish", "Skeleton", "Slime", "SnowMan", "Spider", "Squid", "Villager", "VillagerGolem", "Witch", "WitherBoss", "Wolf", "Zombie"});
 
-   public EntityHealthFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public EntityHealthFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
-   public Dynamic<?> fixTag(Dynamic<?> var1) {
-      Optional var3 = var1.get("HealF").asNumber().result();
-      Optional var4 = var1.get("Health").asNumber().result();
-      float var2;
-      if (var3.isPresent()) {
-         var2 = ((Number)var3.get()).floatValue();
-         var1 = var1.remove("HealF");
+   public Dynamic<?> fixTag(Dynamic<?> input) {
+      Optional<Number> oldHealF = input.get("HealF").asNumber().result();
+      Optional<Number> oldHealth = input.get("Health").asNumber().result();
+      float health;
+      if (oldHealF.isPresent()) {
+         health = ((Number)oldHealF.get()).floatValue();
+         input = input.remove("HealF");
       } else {
-         if (!var4.isPresent()) {
-            return var1;
+         if (!oldHealth.isPresent()) {
+            return input;
          }
 
-         var2 = ((Number)var4.get()).floatValue();
+         health = ((Number)oldHealth.get()).floatValue();
       }
 
-      return var1.set("Health", var1.createFloat(var2));
+      return input.set("Health", input.createFloat(health));
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("EntityHealthFix", this.getInputSchema().getType(References.ENTITY), (var1) -> var1.update(DSL.remainderFinder(), this::fixTag));
+      return this.fixTypeEverywhereTyped("EntityHealthFix", this.getInputSchema().getType(References.ENTITY), (input) -> input.update(DSL.remainderFinder(), this::fixTag));
    }
 }

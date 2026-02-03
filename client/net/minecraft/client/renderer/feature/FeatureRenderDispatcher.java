@@ -29,36 +29,70 @@ public class FeatureRenderDispatcher implements AutoCloseable {
    private final BlockFeatureRenderer blockFeatureRenderer = new BlockFeatureRenderer();
    private final ParticleFeatureRenderer particleFeatureRenderer = new ParticleFeatureRenderer();
 
-   public FeatureRenderDispatcher(SubmitNodeStorage var1, BlockRenderDispatcher var2, MultiBufferSource.BufferSource var3, AtlasManager var4, OutlineBufferSource var5, MultiBufferSource.BufferSource var6, Font var7) {
+   public FeatureRenderDispatcher(final SubmitNodeStorage submitNodeStorage, final BlockRenderDispatcher blockRenderDispatcher, final MultiBufferSource.BufferSource bufferSource, final AtlasManager atlasManager, final OutlineBufferSource outlineBufferSource, final MultiBufferSource.BufferSource crumblingBufferSource, final Font font) {
       super();
-      this.submitNodeStorage = var1;
-      this.blockRenderDispatcher = var2;
-      this.bufferSource = var3;
-      this.atlasManager = var4;
-      this.outlineBufferSource = var5;
-      this.crumblingBufferSource = var6;
-      this.font = var7;
+      this.submitNodeStorage = submitNodeStorage;
+      this.blockRenderDispatcher = blockRenderDispatcher;
+      this.bufferSource = bufferSource;
+      this.atlasManager = atlasManager;
+      this.outlineBufferSource = outlineBufferSource;
+      this.crumblingBufferSource = crumblingBufferSource;
+      this.font = font;
    }
 
-   public void renderAllFeatures() {
+   public void renderSolidFeatures() {
       ObjectIterator var1 = this.submitNodeStorage.getSubmitsPerOrder().values().iterator();
 
       while(var1.hasNext()) {
-         SubmitNodeCollection var2 = (SubmitNodeCollection)var1.next();
-         this.shadowFeatureRenderer.render(var2, this.bufferSource);
-         this.modelFeatureRenderer.render(var2, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
-         this.modelPartFeatureRenderer.render(var2, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
-         this.flameFeatureRenderer.render(var2, this.bufferSource, this.atlasManager);
-         this.nameTagFeatureRenderer.render(var2, this.bufferSource, this.font);
-         this.textFeatureRenderer.render(var2, this.bufferSource);
-         this.leashFeatureRenderer.render(var2, this.bufferSource);
-         this.itemFeatureRenderer.render(var2, this.bufferSource, this.outlineBufferSource);
-         this.blockFeatureRenderer.render(var2, this.bufferSource, this.blockRenderDispatcher, this.outlineBufferSource);
-         this.customFeatureRenderer.render(var2, this.bufferSource);
-         this.particleFeatureRenderer.render(var2);
+         SubmitNodeCollection collection = (SubmitNodeCollection)var1.next();
+         this.modelFeatureRenderer.renderSolid(collection, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
+         this.modelPartFeatureRenderer.renderSolid(collection, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
+         this.flameFeatureRenderer.renderSolid(collection, this.bufferSource, this.atlasManager);
+         this.leashFeatureRenderer.renderSolid(collection, this.bufferSource);
+         this.itemFeatureRenderer.renderSolid(collection, this.bufferSource, this.outlineBufferSource);
+         this.blockFeatureRenderer.renderSolid(collection, this.bufferSource, this.blockRenderDispatcher, this.outlineBufferSource);
+         this.customFeatureRenderer.renderSolid(collection, this.bufferSource);
+         this.particleFeatureRenderer.renderSolid(collection);
       }
 
+   }
+
+   public void renderTranslucentFeatures() {
+      ObjectIterator var1 = this.submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+      while(var1.hasNext()) {
+         SubmitNodeCollection collection = (SubmitNodeCollection)var1.next();
+         this.shadowFeatureRenderer.renderTranslucent(collection, this.bufferSource);
+         this.modelFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
+         this.modelPartFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
+         this.nameTagFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.font);
+         this.textFeatureRenderer.renderTranslucent(collection, this.bufferSource);
+         this.itemFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.outlineBufferSource);
+         this.blockFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.blockRenderDispatcher, this.outlineBufferSource);
+         this.customFeatureRenderer.renderTranslucent(collection, this.bufferSource);
+      }
+
+   }
+
+   public void renderTranslucentParticles() {
+      ObjectIterator var1 = this.submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+      while(var1.hasNext()) {
+         SubmitNodeCollection collection = (SubmitNodeCollection)var1.next();
+         this.particleFeatureRenderer.renderTranslucent(collection);
+      }
+
+   }
+
+   public void clearSubmitNodes() {
       this.submitNodeStorage.clear();
+   }
+
+   public void renderAllFeatures() {
+      this.renderSolidFeatures();
+      this.renderTranslucentFeatures();
+      this.renderTranslucentParticles();
+      this.clearSubmitNodes();
    }
 
    public void endFrame() {

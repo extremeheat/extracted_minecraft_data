@@ -6,7 +6,7 @@ import net.minecraft.util.valueproviders.FloatProvider;
 import net.minecraft.util.valueproviders.IntProvider;
 
 public class DripstoneClusterConfiguration implements FeatureConfiguration {
-   public static final Codec<DripstoneClusterConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.intRange(1, 512).fieldOf("floor_to_ceiling_search_range").forGetter((var0x) -> var0x.floorToCeilingSearchRange), IntProvider.codec(1, 128).fieldOf("height").forGetter((var0x) -> var0x.height), IntProvider.codec(1, 128).fieldOf("radius").forGetter((var0x) -> var0x.radius), Codec.intRange(0, 64).fieldOf("max_stalagmite_stalactite_height_diff").forGetter((var0x) -> var0x.maxStalagmiteStalactiteHeightDiff), Codec.intRange(1, 64).fieldOf("height_deviation").forGetter((var0x) -> var0x.heightDeviation), IntProvider.codec(0, 128).fieldOf("dripstone_block_layer_thickness").forGetter((var0x) -> var0x.dripstoneBlockLayerThickness), FloatProvider.codec(0.0F, 2.0F).fieldOf("density").forGetter((var0x) -> var0x.density), FloatProvider.codec(0.0F, 2.0F).fieldOf("wetness").forGetter((var0x) -> var0x.wetness), Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_dripstone_column_at_max_distance_from_center").forGetter((var0x) -> var0x.chanceOfDripstoneColumnAtMaxDistanceFromCenter), Codec.intRange(1, 64).fieldOf("max_distance_from_edge_affecting_chance_of_dripstone_column").forGetter((var0x) -> var0x.maxDistanceFromEdgeAffectingChanceOfDripstoneColumn), Codec.intRange(1, 64).fieldOf("max_distance_from_center_affecting_height_bias").forGetter((var0x) -> var0x.maxDistanceFromCenterAffectingHeightBias)).apply(var0, DripstoneClusterConfiguration::new));
+   public static final Codec<DripstoneClusterConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.intRange(1, 512).fieldOf("floor_to_ceiling_search_range").forGetter((c) -> c.floorToCeilingSearchRange), IntProvider.codec(1, 128).fieldOf("height").forGetter((c) -> c.height), IntProvider.codec(1, 128).fieldOf("radius").forGetter((c) -> c.radius), Codec.intRange(0, 64).fieldOf("max_stalagmite_stalactite_height_diff").forGetter((c) -> c.maxStalagmiteStalactiteHeightDiff), Codec.intRange(1, 64).fieldOf("height_deviation").forGetter((c) -> c.heightDeviation), IntProvider.codec(0, 128).fieldOf("dripstone_block_layer_thickness").forGetter((c) -> c.dripstoneBlockLayerThickness), FloatProvider.codec(0.0F, 2.0F).fieldOf("density").forGetter((c) -> c.density), FloatProvider.codec(0.0F, 2.0F).fieldOf("wetness").forGetter((c) -> c.wetness), Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_dripstone_column_at_max_distance_from_center").forGetter((c) -> c.chanceOfDripstoneColumnAtMaxDistanceFromCenter), Codec.intRange(1, 64).fieldOf("max_distance_from_edge_affecting_chance_of_dripstone_column").forGetter((c) -> c.maxDistanceFromEdgeAffectingChanceOfDripstoneColumn), Codec.intRange(1, 64).fieldOf("max_distance_from_center_affecting_height_bias").forGetter((c) -> c.maxDistanceFromCenterAffectingHeightBias)).apply(i, DripstoneClusterConfiguration::new));
    public final int floorToCeilingSearchRange;
    public final IntProvider height;
    public final IntProvider radius;
@@ -19,18 +19,18 @@ public class DripstoneClusterConfiguration implements FeatureConfiguration {
    public final int maxDistanceFromEdgeAffectingChanceOfDripstoneColumn;
    public final int maxDistanceFromCenterAffectingHeightBias;
 
-   public DripstoneClusterConfiguration(int var1, IntProvider var2, IntProvider var3, int var4, int var5, IntProvider var6, FloatProvider var7, FloatProvider var8, float var9, int var10, int var11) {
+   public DripstoneClusterConfiguration(final int floorToCeilingSearchRange, final IntProvider height, final IntProvider radius, final int maxStalagmiteStalactiteHeightDiff, final int heightDeviation, final IntProvider dripstoneBlockLayerThickness, final FloatProvider density, final FloatProvider wetness, final float chanceOfDripstoneColumnAtMaxDistanceFromCenter, final int maxDistanceFromEdgeAffectingChanceOfDripstoneColumn, final int maxDistanceFromCenterAffectingHeightBias) {
       super();
-      this.floorToCeilingSearchRange = var1;
-      this.height = var2;
-      this.radius = var3;
-      this.maxStalagmiteStalactiteHeightDiff = var4;
-      this.heightDeviation = var5;
-      this.dripstoneBlockLayerThickness = var6;
-      this.density = var7;
-      this.wetness = var8;
-      this.chanceOfDripstoneColumnAtMaxDistanceFromCenter = var9;
-      this.maxDistanceFromEdgeAffectingChanceOfDripstoneColumn = var10;
-      this.maxDistanceFromCenterAffectingHeightBias = var11;
+      this.floorToCeilingSearchRange = floorToCeilingSearchRange;
+      this.height = height;
+      this.radius = radius;
+      this.maxStalagmiteStalactiteHeightDiff = maxStalagmiteStalactiteHeightDiff;
+      this.heightDeviation = heightDeviation;
+      this.dripstoneBlockLayerThickness = dripstoneBlockLayerThickness;
+      this.density = density;
+      this.wetness = wetness;
+      this.chanceOfDripstoneColumnAtMaxDistanceFromCenter = chanceOfDripstoneColumnAtMaxDistanceFromCenter;
+      this.maxDistanceFromEdgeAffectingChanceOfDripstoneColumn = maxDistanceFromEdgeAffectingChanceOfDripstoneColumn;
+      this.maxDistanceFromCenterAffectingHeightBias = maxDistanceFromCenterAffectingHeightBias;
    }
 }

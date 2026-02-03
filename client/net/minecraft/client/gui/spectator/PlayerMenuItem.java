@@ -12,13 +12,13 @@ public class PlayerMenuItem implements SpectatorMenuItem {
    private final PlayerInfo playerInfo;
    private final Component name;
 
-   public PlayerMenuItem(PlayerInfo var1) {
+   public PlayerMenuItem(final PlayerInfo playerInfo) {
       super();
-      this.playerInfo = var1;
-      this.name = Component.literal(var1.getProfile().name());
+      this.playerInfo = playerInfo;
+      this.name = Component.literal(playerInfo.getProfile().name());
    }
 
-   public void selectItem(SpectatorMenu var1) {
+   public void selectItem(final SpectatorMenu menu) {
       Minecraft.getInstance().getConnection().send(new ServerboundTeleportToEntityPacket(this.playerInfo.getProfile().id()));
    }
 
@@ -26,8 +26,8 @@ public class PlayerMenuItem implements SpectatorMenuItem {
       return this.name;
    }
 
-   public void renderIcon(GuiGraphics var1, float var2, float var3) {
-      PlayerFaceRenderer.draw(var1, this.playerInfo.getSkin(), 2, 2, 12, ARGB.white(var3));
+   public void renderIcon(final GuiGraphics graphics, final float brightness, final float alpha) {
+      PlayerFaceRenderer.draw(graphics, this.playerInfo.getSkin(), 2, 2, 12, ARGB.white(alpha));
    }
 
    public boolean isEnabled() {

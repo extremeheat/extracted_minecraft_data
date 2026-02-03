@@ -10,9 +10,9 @@ public class SingleThreadedRandomSource implements BitRandomSource {
    private long seed;
    private final MarsagliaPolarGaussian gaussianSource = new MarsagliaPolarGaussian(this);
 
-   public SingleThreadedRandomSource(long var1) {
+   public SingleThreadedRandomSource(final long seed) {
       super();
-      this.setSeed(var1);
+      this.setSeed(seed);
    }
 
    public RandomSource fork() {
@@ -23,15 +23,15 @@ public class SingleThreadedRandomSource implements BitRandomSource {
       return new LegacyRandomSource.LegacyPositionalRandomFactory(this.nextLong());
    }
 
-   public void setSeed(long var1) {
-      this.seed = (var1 ^ 25214903917L) & 281474976710655L;
+   public void setSeed(final long seed) {
+      this.seed = (seed ^ 25214903917L) & 281474976710655L;
       this.gaussianSource.reset();
    }
 
-   public int next(int var1) {
-      long var2 = this.seed * 25214903917L + 11L & 281474976710655L;
-      this.seed = var2;
-      return (int)(var2 >> 48 - var1);
+   public int next(final int bits) {
+      long newSeed = this.seed * 25214903917L + 11L & 281474976710655L;
+      this.seed = newSeed;
+      return (int)(newSeed >> 48 - bits);
    }
 
    public double nextGaussian() {

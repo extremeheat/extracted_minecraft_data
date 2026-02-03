@@ -15,27 +15,27 @@ public interface WaypointTransmitter extends Waypoint {
 
    boolean isTransmittingWaypoint();
 
-   Optional<Connection> makeWaypointConnectionWith(ServerPlayer var1);
+   Optional<Connection> makeWaypointConnectionWith(ServerPlayer player);
 
    Waypoint.Icon waypointIcon();
 
-   static boolean doesSourceIgnoreReceiver(LivingEntity var0, ServerPlayer var1) {
-      if (var1.isSpectator()) {
+   static boolean doesSourceIgnoreReceiver(final LivingEntity source, final ServerPlayer receiver) {
+      if (receiver.isSpectator()) {
          return false;
-      } else if (!var0.isSpectator() && !var0.hasIndirectPassenger(var1)) {
-         double var2 = Math.min(var0.getAttributeValue(Attributes.WAYPOINT_TRANSMIT_RANGE), var1.getAttributeValue(Attributes.WAYPOINT_RECEIVE_RANGE));
-         return (double)var0.distanceTo(var1) >= var2;
+      } else if (!source.isSpectator() && !source.hasIndirectPassenger(receiver)) {
+         double broadcastRange = Math.min(source.getAttributeValue(Attributes.WAYPOINT_TRANSMIT_RANGE), receiver.getAttributeValue(Attributes.WAYPOINT_RECEIVE_RANGE));
+         return (double)source.distanceTo(receiver) >= broadcastRange;
       } else {
          return true;
       }
    }
 
-   static boolean isChunkVisible(ChunkPos var0, ServerPlayer var1) {
-      return var1.getChunkTrackingView().isInViewDistance(var0.x, var0.z);
+   static boolean isChunkVisible(final ChunkPos chunkPos, final ServerPlayer receiver) {
+      return receiver.getChunkTrackingView().isInViewDistance(chunkPos.x(), chunkPos.z());
    }
 
-   static boolean isReallyFar(LivingEntity var0, ServerPlayer var1) {
-      return var0.distanceTo(var1) > 332.0F;
+   static boolean isReallyFar(final LivingEntity source, final ServerPlayer receiver) {
+      return source.distanceTo(receiver) > 332.0F;
    }
 
    public interface BlockConnection extends Connection {
@@ -52,12 +52,12 @@ public interface WaypointTransmitter extends Waypoint {
       private final ServerPlayer receiver;
       private BlockPos lastPosition;
 
-      public EntityBlockConnection(LivingEntity var1, Waypoint.Icon var2, ServerPlayer var3) {
+      public EntityBlockConnection(final LivingEntity source, final Waypoint.Icon icon, final ServerPlayer receiver) {
          super();
-         this.source = var1;
-         this.receiver = var3;
-         this.icon = var2;
-         this.lastPosition = var1.blockPosition();
+         this.source = source;
+         this.receiver = receiver;
+         this.icon = icon;
+         this.lastPosition = source.blockPosition();
       }
 
       public void connect() {
@@ -69,10 +69,10 @@ public interface WaypointTransmitter extends Waypoint {
       }
 
       public void update() {
-         BlockPos var1 = this.source.blockPosition();
-         if (var1.distManhattan(this.lastPosition) > 0) {
-            this.receiver.connection.send(ClientboundTrackedWaypointPacket.updateWaypointPosition(this.source.getUUID(), this.icon, var1));
-            this.lastPosition = var1;
+         BlockPos currentPosition = this.source.blockPosition();
+         if (currentPosition.distManhattan(this.lastPosition) > 0) {
+            this.receiver.connection.send(ClientboundTrackedWaypointPacket.updateWaypointPosition(this.source.getUUID(), this.icon, currentPosition));
+            this.lastPosition = currentPosition;
          }
 
       }
@@ -100,12 +100,12 @@ public interface WaypointTransmitter extends Waypoint {
       private final ServerPlayer receiver;
       private ChunkPos lastPosition;
 
-      public EntityChunkConnection(LivingEntity var1, Waypoint.Icon var2, ServerPlayer var3) {
+      public EntityChunkConnection(final LivingEntity source, final Waypoint.Icon icon, final ServerPlayer receiver) {
          super();
-         this.source = var1;
-         this.icon = var2;
-         this.receiver = var3;
-         this.lastPosition = var1.chunkPosition();
+         this.source = source;
+         this.icon = icon;
+         this.receiver = receiver;
+         this.lastPosition = source.chunkPosition();
       }
 
       public int distanceChessboard() {
@@ -121,10 +121,10 @@ public interface WaypointTransmitter extends Waypoint {
       }
 
       public void update() {
-         ChunkPos var1 = this.source.chunkPosition();
-         if (var1.getChessboardDistance(this.lastPosition) > 0) {
-            this.receiver.connection.send(ClientboundTrackedWaypointPacket.updateWaypointChunk(this.source.getUUID(), this.icon, var1));
-            this.lastPosition = var1;
+         ChunkPos currentPosition = this.source.chunkPosition();
+         if (currentPosition.getChessboardDistance(this.lastPosition) > 0) {
+            this.receiver.connection.send(ClientboundTrackedWaypointPacket.updateWaypointChunk(this.source.getUUID(), this.icon, currentPosition));
+            this.lastPosition = currentPosition;
          }
 
       }
@@ -140,13 +140,13 @@ public interface WaypointTransmitter extends Waypoint {
       private final ServerPlayer receiver;
       private float lastAngle;
 
-      public EntityAzimuthConnection(LivingEntity var1, Waypoint.Icon var2, ServerPlayer var3) {
+      public EntityAzimuthConnection(final LivingEntity source, final Waypoint.Icon icon, final ServerPlayer receiver) {
          super();
-         this.source = var1;
-         this.icon = var2;
-         this.receiver = var3;
-         Vec3 var4 = var3.position().subtract(var1.position()).rotateClockwise90();
-         this.lastAngle = (float)Mth.atan2(var4.z(), var4.x());
+         this.source = source;
+         this.icon = icon;
+         this.receiver = receiver;
+         Vec3 direction = receiver.position().subtract(source.position()).rotateClockwise90();
+         this.lastAngle = (float)Mth.atan2(direction.z(), direction.x());
       }
 
       public boolean isBroken() {
@@ -162,11 +162,11 @@ public interface WaypointTransmitter extends Waypoint {
       }
 
       public void update() {
-         Vec3 var1 = this.receiver.position().subtract(this.source.position()).rotateClockwise90();
-         float var2 = (float)Mth.atan2(var1.z(), var1.x());
-         if (Mth.abs(var2 - this.lastAngle) > 0.008726646F) {
-            this.receiver.connection.send(ClientboundTrackedWaypointPacket.updateWaypointAzimuth(this.source.getUUID(), this.icon, var2));
-            this.lastAngle = var2;
+         Vec3 direction = this.receiver.position().subtract(this.source.position()).rotateClockwise90();
+         float currentAngle = (float)Mth.atan2(direction.z(), direction.x());
+         if (Mth.abs(currentAngle - this.lastAngle) > 0.008726646F) {
+            this.receiver.connection.send(ClientboundTrackedWaypointPacket.updateWaypointAzimuth(this.source.getUUID(), this.icon, currentAngle));
+            this.lastAngle = currentAngle;
          }
 
       }

@@ -1,31 +1,31 @@
 package net.minecraft.client.gui.components;
 
 public interface SelectableEntry {
-   default boolean mouseOverIcon(int var1, int var2, int var3) {
-      return var1 >= 0 && var1 < var3 && var2 >= 0 && var2 < var3;
+   default boolean mouseOverIcon(final int relX, final int relY, final int size) {
+      return relX >= 0 && relX < size && relY >= 0 && relY < size;
    }
 
-   default boolean mouseOverLeftHalf(int var1, int var2, int var3) {
-      return var1 >= 0 && var1 < var3 / 2 && var2 >= 0 && var2 < var3;
+   default boolean mouseOverLeftHalf(final int relX, final int relY, final int size) {
+      return relX >= 0 && relX < size / 2 && relY >= 0 && relY < size;
    }
 
-   default boolean mouseOverRightHalf(int var1, int var2, int var3) {
-      return var1 >= var3 / 2 && var1 < var3 && var2 >= 0 && var2 < var3;
+   default boolean mouseOverRightHalf(final int relX, final int relY, final int size) {
+      return relX >= size / 2 && relX < size && relY >= 0 && relY < size;
    }
 
-   default boolean mouseOverTopRightQuarter(int var1, int var2, int var3) {
-      return var1 >= var3 / 2 && var1 < var3 && var2 >= 0 && var2 < var3 / 2;
+   default boolean mouseOverTopRightQuarter(final int relX, final int relY, final int size) {
+      return relX >= size / 2 && relX < size && relY >= 0 && relY < size / 2;
    }
 
-   default boolean mouseOverBottomRightQuarter(int var1, int var2, int var3) {
-      return var1 >= var3 / 2 && var1 < var3 && var2 >= var3 / 2 && var2 < var3;
+   default boolean mouseOverBottomRightQuarter(final int relX, final int relY, final int size) {
+      return relX >= size / 2 && relX < size && relY >= size / 2 && relY < size;
    }
 
-   default boolean mouseOverTopLeftQuarter(int var1, int var2, int var3) {
-      return var1 >= 0 && var1 < var3 / 2 && var2 >= 0 && var2 < var3 / 2;
+   default boolean mouseOverTopLeftQuarter(final int relX, final int relY, final int size) {
+      return relX >= 0 && relX < size / 2 && relY >= 0 && relY < size / 2;
    }
 
-   default boolean mouseOverBottomLeftQuarter(int var1, int var2, int var3) {
-      return var1 >= 0 && var1 < var3 / 2 && var2 >= var3 / 2 && var2 < var3;
+   default boolean mouseOverBottomLeftQuarter(final int relX, final int relY, final int size) {
+      return relX >= 0 && relX < size / 2 && relY >= size / 2 && relY < size;
    }
 }

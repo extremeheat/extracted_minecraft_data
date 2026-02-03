@@ -10,7 +10,7 @@ public class PlayerHeadBlock extends SkullBlock {
       return CODEC;
    }
 
-   protected PlayerHeadBlock(BlockBehaviour.Properties var1) {
-      super(SkullBlock.Types.PLAYER, var1);
+   protected PlayerHeadBlock(final BlockBehaviour.Properties properties) {
+      super(SkullBlock.Types.PLAYER, properties);
    }
 }

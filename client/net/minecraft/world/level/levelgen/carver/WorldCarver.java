@@ -39,18 +39,18 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
    protected Set<Fluid> liquids;
    private final MapCodec<ConfiguredWorldCarver<C>> configuredCodec;
 
-   private static <C extends CarverConfiguration, F extends WorldCarver<C>> F register(String var0, F var1) {
-      return (F)(Registry.register(BuiltInRegistries.CARVER, (String)var0, var1));
+   private static <C extends CarverConfiguration, F extends WorldCarver<C>> F register(final String name, final F carver) {
+      return (F)(Registry.register(BuiltInRegistries.CARVER, (String)name, carver));
    }
 
-   public WorldCarver(Codec<C> var1) {
+   public WorldCarver(final Codec<C> codec) {
       super();
       this.liquids = ImmutableSet.of(Fluids.WATER);
-      this.configuredCodec = var1.fieldOf("config").xmap(this::configured, ConfiguredWorldCarver::config);
+      this.configuredCodec = codec.fieldOf("config").xmap(this::configured, ConfiguredWorldCarver::config);
    }
 
-   public ConfiguredWorldCarver<C> configured(C var1) {
-      return new ConfiguredWorldCarver<C>(this, var1);
+   public ConfiguredWorldCarver<C> configured(final C configuration) {
+      return new ConfiguredWorldCarver<C>(this, configuration);
    }
 
    public MapCodec<ConfiguredWorldCarver<C>> configuredCodec() {
@@ -61,78 +61,78 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
       return 4;
    }
 
-   protected boolean carveEllipsoid(CarvingContext var1, C var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, Aquifer var5, double var6, double var8, double var10, double var12, double var14, CarvingMask var16, CarveSkipChecker var17) {
-      ChunkPos var18 = var3.getPos();
-      double var19 = (double)var18.getMiddleBlockX();
-      double var21 = (double)var18.getMiddleBlockZ();
-      double var23 = 16.0 + var12 * 2.0;
-      if (!(Math.abs(var6 - var19) > var23) && !(Math.abs(var10 - var21) > var23)) {
-         int var25 = var18.getMinBlockX();
-         int var26 = var18.getMinBlockZ();
-         int var27 = Math.max(Mth.floor(var6 - var12) - var25 - 1, 0);
-         int var28 = Math.min(Mth.floor(var6 + var12) - var25, 15);
-         int var29 = Math.max(Mth.floor(var8 - var14) - 1, var1.getMinGenY() + 1);
-         int var30 = var3.isUpgrading() ? 0 : 7;
-         int var31 = Math.min(Mth.floor(var8 + var14) + 1, var1.getMinGenY() + var1.getGenDepth() - 1 - var30);
-         int var32 = Math.max(Mth.floor(var10 - var12) - var26 - 1, 0);
-         int var33 = Math.min(Mth.floor(var10 + var12) - var26, 15);
-         boolean var34 = false;
-         BlockPos.MutableBlockPos var35 = new BlockPos.MutableBlockPos();
-         BlockPos.MutableBlockPos var36 = new BlockPos.MutableBlockPos();
+   protected boolean carveEllipsoid(final CarvingContext context, final C configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final Aquifer aquifer, final double x, final double y, final double z, final double horizontalRadius, final double verticalRadius, final CarvingMask mask, final CarveSkipChecker skipChecker) {
+      ChunkPos chunkPos = chunk.getPos();
+      double centerX = (double)chunkPos.getMiddleBlockX();
+      double centerZ = (double)chunkPos.getMiddleBlockZ();
+      double maxDelta = 16.0 + horizontalRadius * 2.0;
+      if (!(Math.abs(x - centerX) > maxDelta) && !(Math.abs(z - centerZ) > maxDelta)) {
+         int chunkMinX = chunkPos.getMinBlockX();
+         int chunkMinZ = chunkPos.getMinBlockZ();
+         int minXIndex = Math.max(Mth.floor(x - horizontalRadius) - chunkMinX - 1, 0);
+         int maxXIndex = Math.min(Mth.floor(x + horizontalRadius) - chunkMinX, 15);
+         int minY = Math.max(Mth.floor(y - verticalRadius) - 1, context.getMinGenY() + 1);
+         int protectedBlocksOnTop = chunk.isUpgrading() ? 0 : 7;
+         int maxY = Math.min(Mth.floor(y + verticalRadius) + 1, context.getMinGenY() + context.getGenDepth() - 1 - protectedBlocksOnTop);
+         int minZIndex = Math.max(Mth.floor(z - horizontalRadius) - chunkMinZ - 1, 0);
+         int maxZIndex = Math.min(Mth.floor(z + horizontalRadius) - chunkMinZ, 15);
+         boolean carved = false;
+         BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
+         BlockPos.MutableBlockPos helperPos = new BlockPos.MutableBlockPos();
 
-         for(int var37 = var27; var37 <= var28; ++var37) {
-            int var38 = var18.getBlockX(var37);
-            double var39 = ((double)var38 + 0.5 - var6) / var12;
+         for(int xIndex = minXIndex; xIndex <= maxXIndex; ++xIndex) {
+            int worldX = chunkPos.getBlockX(xIndex);
+            double xd = ((double)worldX + 0.5 - x) / horizontalRadius;
 
-            for(int var41 = var32; var41 <= var33; ++var41) {
-               int var42 = var18.getBlockZ(var41);
-               double var43 = ((double)var42 + 0.5 - var10) / var12;
-               if (!(var39 * var39 + var43 * var43 >= 1.0)) {
-                  MutableBoolean var45 = new MutableBoolean(false);
+            for(int zIndex = minZIndex; zIndex <= maxZIndex; ++zIndex) {
+               int worldZ = chunkPos.getBlockZ(zIndex);
+               double zd = ((double)worldZ + 0.5 - z) / horizontalRadius;
+               if (!(xd * xd + zd * zd >= 1.0)) {
+                  MutableBoolean hasGrass = new MutableBoolean(false);
 
-                  for(int var46 = var31; var46 > var29; --var46) {
-                     double var47 = ((double)var46 - 0.5 - var8) / var14;
-                     if (!var17.shouldSkip(var1, var39, var47, var43, var46) && (!var16.get(var37, var46, var41) || isDebugEnabled(var2))) {
-                        var16.set(var37, var46, var41);
-                        var35.set(var38, var46, var42);
-                        var34 |= this.carveBlock(var1, var2, var3, var4, var16, var35, var36, var5, var45);
+                  for(int worldY = maxY; worldY > minY; --worldY) {
+                     double yd = ((double)worldY - 0.5 - y) / verticalRadius;
+                     if (!skipChecker.shouldSkip(context, xd, yd, zd, worldY) && (!mask.get(xIndex, worldY, zIndex) || isDebugEnabled(configuration))) {
+                        mask.set(xIndex, worldY, zIndex);
+                        blockPos.set(worldX, worldY, worldZ);
+                        carved |= this.carveBlock(context, configuration, chunk, biomeGetter, mask, blockPos, helperPos, aquifer, hasGrass);
                      }
                   }
                }
             }
          }
 
-         return var34;
+         return carved;
       } else {
          return false;
       }
    }
 
-   protected boolean carveBlock(CarvingContext var1, C var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, CarvingMask var5, BlockPos.MutableBlockPos var6, BlockPos.MutableBlockPos var7, Aquifer var8, MutableBoolean var9) {
-      BlockState var10 = var3.getBlockState(var6);
-      if (var10.is(Blocks.GRASS_BLOCK) || var10.is(Blocks.MYCELIUM)) {
-         var9.setTrue();
+   protected boolean carveBlock(final CarvingContext context, final C configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final CarvingMask mask, final BlockPos.MutableBlockPos blockPos, final BlockPos.MutableBlockPos helperPos, final Aquifer aquifer, final MutableBoolean hasGrass) {
+      BlockState blockState = chunk.getBlockState(blockPos);
+      if (blockState.is(Blocks.GRASS_BLOCK) || blockState.is(Blocks.MYCELIUM)) {
+         hasGrass.setTrue();
       }
 
-      if (!this.canReplaceBlock(var2, var10) && !isDebugEnabled(var2)) {
+      if (!this.canReplaceBlock(configuration, blockState) && !isDebugEnabled(configuration)) {
          return false;
       } else {
-         BlockState var11 = this.getCarveState(var1, var2, var6, var8);
-         if (var11 == null) {
+         BlockState state = this.getCarveState(context, configuration, blockPos, aquifer);
+         if (state == null) {
             return false;
          } else {
-            var3.setBlockState(var6, var11);
-            if (var8.shouldScheduleFluidUpdate() && !var11.getFluidState().isEmpty()) {
-               var3.markPosForPostprocessing(var6);
+            chunk.setBlockState(blockPos, state);
+            if (aquifer.shouldScheduleFluidUpdate() && !state.getFluidState().isEmpty()) {
+               chunk.markPosForPostprocessing(blockPos);
             }
 
-            if (var9.isTrue()) {
-               var7.setWithOffset(var6, (Direction)Direction.DOWN);
-               if (var3.getBlockState(var7).is(Blocks.DIRT)) {
-                  var1.topMaterial(var4, var3, var7, !var11.getFluidState().isEmpty()).ifPresent((var2x) -> {
-                     var3.setBlockState(var7, var2x);
-                     if (!var2x.getFluidState().isEmpty()) {
-                        var3.markPosForPostprocessing(var7);
+            if (hasGrass.isTrue()) {
+               helperPos.setWithOffset(blockPos, (Direction)Direction.DOWN);
+               if (chunk.getBlockState(helperPos).is(Blocks.DIRT)) {
+                  context.topMaterial(biomeGetter, chunk, helperPos, !state.getFluidState().isEmpty()).ifPresent((topMaterial) -> {
+                     chunk.setBlockState(helperPos, topMaterial);
+                     if (!topMaterial.getFluidState().isEmpty()) {
+                        chunk.markPosForPostprocessing(helperPos);
                      }
 
                   });
@@ -144,50 +144,50 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
       }
    }
 
-   private @Nullable BlockState getCarveState(CarvingContext var1, C var2, BlockPos var3, Aquifer var4) {
-      if (var3.getY() <= var2.lavaLevel.resolveY(var1)) {
+   private @Nullable BlockState getCarveState(final CarvingContext context, final C configuration, final BlockPos blockPos, final Aquifer aquifer) {
+      if (blockPos.getY() <= configuration.lavaLevel.resolveY(context)) {
          return LAVA.createLegacyBlock();
       } else {
-         BlockState var5 = var4.computeSubstance(new DensityFunction.SinglePointContext(var3.getX(), var3.getY(), var3.getZ()), 0.0);
-         if (var5 == null) {
-            return isDebugEnabled(var2) ? var2.debugSettings.getBarrierState() : null;
+         BlockState state = aquifer.computeSubstance(new DensityFunction.SinglePointContext(blockPos.getX(), blockPos.getY(), blockPos.getZ()), 0.0);
+         if (state == null) {
+            return isDebugEnabled(configuration) ? configuration.debugSettings.getBarrierState() : null;
          } else {
-            return isDebugEnabled(var2) ? getDebugState(var2, var5) : var5;
+            return isDebugEnabled(configuration) ? getDebugState(configuration, state) : state;
          }
       }
    }
 
-   private static BlockState getDebugState(CarverConfiguration var0, BlockState var1) {
-      if (var1.is(Blocks.AIR)) {
-         return var0.debugSettings.getAirState();
-      } else if (var1.is(Blocks.WATER)) {
-         BlockState var2 = var0.debugSettings.getWaterState();
-         return var2.hasProperty(BlockStateProperties.WATERLOGGED) ? (BlockState)var2.setValue(BlockStateProperties.WATERLOGGED, true) : var2;
+   private static BlockState getDebugState(final CarverConfiguration configuration, final BlockState state) {
+      if (state.is(Blocks.AIR)) {
+         return configuration.debugSettings.getAirState();
+      } else if (state.is(Blocks.WATER)) {
+         BlockState debugState = configuration.debugSettings.getWaterState();
+         return debugState.hasProperty(BlockStateProperties.WATERLOGGED) ? (BlockState)debugState.setValue(BlockStateProperties.WATERLOGGED, true) : debugState;
       } else {
-         return var1.is(Blocks.LAVA) ? var0.debugSettings.getLavaState() : var1;
+         return state.is(Blocks.LAVA) ? configuration.debugSettings.getLavaState() : state;
       }
    }
 
-   public abstract boolean carve(CarvingContext var1, C var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, RandomSource var5, Aquifer var6, ChunkPos var7, CarvingMask var8);
+   public abstract boolean carve(final CarvingContext context, final C configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final RandomSource random, final Aquifer aquifer, final ChunkPos sourceChunkPos, CarvingMask mask);
 
-   public abstract boolean isStartChunk(C var1, RandomSource var2);
+   public abstract boolean isStartChunk(final C configuration, final RandomSource random);
 
-   protected boolean canReplaceBlock(C var1, BlockState var2) {
-      return var2.is(var1.replaceable);
+   protected boolean canReplaceBlock(final C configuration, final BlockState state) {
+      return state.is(configuration.replaceable);
    }
 
-   protected static boolean canReach(ChunkPos var0, double var1, double var3, int var5, int var6, float var7) {
-      double var8 = (double)var0.getMiddleBlockX();
-      double var10 = (double)var0.getMiddleBlockZ();
-      double var12 = var1 - var8;
-      double var14 = var3 - var10;
-      double var16 = (double)(var6 - var5);
-      double var18 = (double)(var7 + 2.0F + 16.0F);
-      return var12 * var12 + var14 * var14 - var16 * var16 <= var18 * var18;
+   protected static boolean canReach(final ChunkPos chunkPos, final double x, final double z, final int currentStep, final int totalSteps, final float thickness) {
+      double xMid = (double)chunkPos.getMiddleBlockX();
+      double zMid = (double)chunkPos.getMiddleBlockZ();
+      double xd = x - xMid;
+      double zd = z - zMid;
+      double remaining = (double)(totalSteps - currentStep);
+      double rr = (double)(thickness + 2.0F + 16.0F);
+      return xd * xd + zd * zd - remaining * remaining <= rr * rr;
    }
 
-   private static boolean isDebugEnabled(CarverConfiguration var0) {
-      return SharedConstants.DEBUG_CARVERS || var0.debugSettings.isDebugMode();
+   private static boolean isDebugEnabled(final CarverConfiguration configuration) {
+      return SharedConstants.DEBUG_CARVERS || configuration.debugSettings.isDebugMode();
    }
 
    static {
@@ -201,6 +201,6 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
    }
 
    public interface CarveSkipChecker {
-      boolean shouldSkip(CarvingContext var1, double var2, double var4, double var6, int var8);
+      boolean shouldSkip(CarvingContext context, double xd, double yd, double zd, int y);
    }
 }

@@ -46,16 +46,16 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private boolean hasBeenShot = false;
    private @Nullable Entity lastDeflectedBy;
 
-   protected Projectile(EntityType<? extends Projectile> var1, Level var2) {
-      super(var1, var2);
+   protected Projectile(final EntityType<? extends Projectile> type, final Level level) {
+      super(type, level);
    }
 
-   protected void setOwner(@Nullable EntityReference<Entity> var1) {
-      this.owner = var1;
+   protected void setOwner(final @Nullable EntityReference<Entity> owner) {
+      this.owner = owner;
    }
 
-   public void setOwner(@Nullable Entity var1) {
-      this.setOwner(EntityReference.of(var1));
+   public void setOwner(final @Nullable Entity owner) {
+      this.setOwner(EntityReference.of(owner));
    }
 
    public @Nullable Entity getOwner() {
@@ -66,29 +66,29 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return (Entity)MoreObjects.firstNonNull(this.getOwner(), this);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      EntityReference.store(this.owner, var1, "Owner");
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      EntityReference.store(this.owner, output, "Owner");
       if (this.leftOwner) {
-         var1.putBoolean("LeftOwner", true);
+         output.putBoolean("LeftOwner", true);
       }
 
-      var1.putBoolean("HasBeenShot", this.hasBeenShot);
+      output.putBoolean("HasBeenShot", this.hasBeenShot);
    }
 
-   protected boolean ownedBy(Entity var1) {
-      return this.owner != null && this.owner.matches(var1);
+   protected boolean ownedBy(final Entity entity) {
+      return this.owner != null && this.owner.matches(entity);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      this.setOwner(EntityReference.read(var1, "Owner"));
-      this.leftOwner = var1.getBooleanOr("LeftOwner", false);
-      this.hasBeenShot = var1.getBooleanOr("HasBeenShot", false);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      this.setOwner(EntityReference.read(input, "Owner"));
+      this.leftOwner = input.getBooleanOr("LeftOwner", false);
+      this.hasBeenShot = input.getBooleanOr("HasBeenShot", false);
    }
 
-   public void restoreFrom(Entity var1) {
-      super.restoreFrom(var1);
-      if (var1 instanceof Projectile var2) {
-         this.owner = var2.owner;
+   public void restoreFrom(final Entity oldEntity) {
+      super.restoreFrom(oldEntity);
+      if (oldEntity instanceof Projectile projectile) {
+         this.owner = projectile.owner;
       }
 
    }
@@ -113,112 +113,112 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    private boolean isOutsideOwnerCollisionRange() {
-      Entity var1 = this.getOwner();
-      if (var1 != null) {
-         AABB var2 = this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0);
-         return var1.getRootVehicle().getSelfAndPassengers().filter(EntitySelector.CAN_BE_PICKED).noneMatch((var1x) -> var2.intersects(var1x.getBoundingBox()));
+      Entity owner = this.getOwner();
+      if (owner != null) {
+         AABB aabb = this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0);
+         return owner.getRootVehicle().getSelfAndPassengers().filter(EntitySelector.CAN_BE_PICKED).noneMatch((entity) -> aabb.intersects(entity.getBoundingBox()));
       } else {
          return true;
       }
    }
 
-   public Vec3 getMovementToShoot(double var1, double var3, double var5, float var7, float var8) {
-      return (new Vec3(var1, var3, var5)).normalize().add(this.random.triangle(0.0, 0.0172275 * (double)var8), this.random.triangle(0.0, 0.0172275 * (double)var8), this.random.triangle(0.0, 0.0172275 * (double)var8)).scale((double)var7);
+   public Vec3 getMovementToShoot(final double xd, final double yd, final double zd, final float pow, final float uncertainty) {
+      return (new Vec3(xd, yd, zd)).normalize().add(this.random.triangle(0.0, 0.0172275 * (double)uncertainty), this.random.triangle(0.0, 0.0172275 * (double)uncertainty), this.random.triangle(0.0, 0.0172275 * (double)uncertainty)).scale((double)pow);
    }
 
-   public void shoot(double var1, double var3, double var5, float var7, float var8) {
-      Vec3 var9 = this.getMovementToShoot(var1, var3, var5, var7, var8);
-      this.setDeltaMovement(var9);
+   public void shoot(final double xd, final double yd, final double zd, final float pow, final float uncertainty) {
+      Vec3 movement = this.getMovementToShoot(xd, yd, zd, pow, uncertainty);
+      this.setDeltaMovement(movement);
       this.needsSync = true;
-      double var10 = var9.horizontalDistance();
-      this.setYRot((float)(Mth.atan2(var9.x, var9.z) * 57.2957763671875));
-      this.setXRot((float)(Mth.atan2(var9.y, var10) * 57.2957763671875));
+      double sd = movement.horizontalDistance();
+      this.setYRot((float)(Mth.atan2(movement.x, movement.z) * 57.2957763671875));
+      this.setXRot((float)(Mth.atan2(movement.y, sd) * 57.2957763671875));
       this.yRotO = this.getYRot();
       this.xRotO = this.getXRot();
    }
 
-   public void shootFromRotation(Entity var1, float var2, float var3, float var4, float var5, float var6) {
-      float var7 = -Mth.sin((double)(var3 * 0.017453292F)) * Mth.cos((double)(var2 * 0.017453292F));
-      float var8 = -Mth.sin((double)((var2 + var4) * 0.017453292F));
-      float var9 = Mth.cos((double)(var3 * 0.017453292F)) * Mth.cos((double)(var2 * 0.017453292F));
-      this.shoot((double)var7, (double)var8, (double)var9, var5, var6);
-      Vec3 var10 = var1.getKnownMovement();
-      this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
+   public void shootFromRotation(final Entity source, final float xRot, final float yRot, final float yOffset, final float pow, final float uncertainty) {
+      float xd = -Mth.sin((double)(yRot * 0.017453292F)) * Mth.cos((double)(xRot * 0.017453292F));
+      float yd = -Mth.sin((double)((xRot + yOffset) * 0.017453292F));
+      float zd = Mth.cos((double)(yRot * 0.017453292F)) * Mth.cos((double)(xRot * 0.017453292F));
+      this.shoot((double)xd, (double)yd, (double)zd, pow, uncertainty);
+      Vec3 sourceMovement = source.getKnownMovement();
+      this.setDeltaMovement(this.getDeltaMovement().add(sourceMovement.x, source.onGround() ? 0.0 : sourceMovement.y, sourceMovement.z));
    }
 
-   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
-      double var3 = var1 ? -0.03 : 0.1;
-      this.setDeltaMovement(this.getDeltaMovement().add(0.0, var3, 0.0));
-      sendBubbleColumnParticles(this.level(), var2);
+   public void onAboveBubbleColumn(final boolean dragDown, final BlockPos pos) {
+      double yd = dragDown ? -0.03 : 0.1;
+      this.setDeltaMovement(this.getDeltaMovement().add(0.0, yd, 0.0));
+      sendBubbleColumnParticles(this.level(), pos);
    }
 
-   public void onInsideBubbleColumn(boolean var1) {
-      double var2 = var1 ? -0.03 : 0.06;
-      this.setDeltaMovement(this.getDeltaMovement().add(0.0, var2, 0.0));
+   public void onInsideBubbleColumn(final boolean dragDown) {
+      double yd = dragDown ? -0.03 : 0.06;
+      this.setDeltaMovement(this.getDeltaMovement().add(0.0, yd, 0.0));
       this.resetFallDistance();
    }
 
-   public static <T extends Projectile> T spawnProjectileFromRotation(ProjectileFactory<T> var0, ServerLevel var1, ItemStack var2, LivingEntity var3, float var4, float var5, float var6) {
-      return (T)spawnProjectile(var0.create(var1, var3, var2), var1, var2, (var4x) -> var4x.shootFromRotation(var3, var3.getXRot(), var3.getYRot(), var4, var5, var6));
+   public static <T extends Projectile> T spawnProjectileFromRotation(final ProjectileFactory<T> creator, final ServerLevel serverLevel, final ItemStack itemStack, final LivingEntity source, final float yOffset, final float pow, final float uncertainty) {
+      return (T)spawnProjectile(creator.create(serverLevel, source, itemStack), serverLevel, itemStack, (projectile) -> projectile.shootFromRotation(source, source.getXRot(), source.getYRot(), yOffset, pow, uncertainty));
    }
 
-   public static <T extends Projectile> T spawnProjectileUsingShoot(ProjectileFactory<T> var0, ServerLevel var1, ItemStack var2, LivingEntity var3, double var4, double var6, double var8, float var10, float var11) {
-      return (T)spawnProjectile(var0.create(var1, var3, var2), var1, var2, (var8x) -> var8x.shoot(var4, var6, var8, var10, var11));
+   public static <T extends Projectile> T spawnProjectileUsingShoot(final ProjectileFactory<T> creator, final ServerLevel serverLevel, final ItemStack itemStack, final LivingEntity source, final double targetX, final double targetY, final double targetZ, final float pow, final float uncertainty) {
+      return (T)spawnProjectile(creator.create(serverLevel, source, itemStack), serverLevel, itemStack, (projectile) -> projectile.shoot(targetX, targetY, targetZ, pow, uncertainty));
    }
 
-   public static <T extends Projectile> T spawnProjectileUsingShoot(T var0, ServerLevel var1, ItemStack var2, double var3, double var5, double var7, float var9, float var10) {
-      return (T)spawnProjectile(var0, var1, var2, (var9x) -> var0.shoot(var3, var5, var7, var9, var10));
+   public static <T extends Projectile> T spawnProjectileUsingShoot(final T projectile, final ServerLevel serverLevel, final ItemStack itemStack, final double targetX, final double targetY, final double targetZ, final float pow, final float uncertainty) {
+      return (T)spawnProjectile(projectile, serverLevel, itemStack, (i) -> projectile.shoot(targetX, targetY, targetZ, pow, uncertainty));
    }
 
-   public static <T extends Projectile> T spawnProjectile(T var0, ServerLevel var1, ItemStack var2) {
-      return (T)spawnProjectile(var0, var1, var2, (var0x) -> {
+   public static <T extends Projectile> T spawnProjectile(final T projectile, final ServerLevel serverLevel, final ItemStack itemStack) {
+      return (T)spawnProjectile(projectile, serverLevel, itemStack, (ignored) -> {
       });
    }
 
-   public static <T extends Projectile> T spawnProjectile(T var0, ServerLevel var1, ItemStack var2, Consumer<T> var3) {
-      var3.accept(var0);
-      var1.addFreshEntity(var0);
-      var0.applyOnProjectileSpawned(var1, var2);
-      return (T)var0;
+   public static <T extends Projectile> T spawnProjectile(final T projectile, final ServerLevel serverLevel, final ItemStack itemStack, final Consumer<T> shootFunction) {
+      shootFunction.accept(projectile);
+      serverLevel.addFreshEntity(projectile);
+      projectile.applyOnProjectileSpawned(serverLevel, itemStack);
+      return projectile;
    }
 
-   public void applyOnProjectileSpawned(ServerLevel var1, ItemStack var2) {
-      EnchantmentHelper.onProjectileSpawned(var1, var2, this, (var0) -> {
+   public void applyOnProjectileSpawned(final ServerLevel serverLevel, final ItemStack pickupItemStack) {
+      EnchantmentHelper.onProjectileSpawned(serverLevel, pickupItemStack, this, (item) -> {
       });
-      if (this instanceof AbstractArrow var3) {
-         ItemStack var4 = var3.getWeaponItem();
-         if (var4 != null && !var4.isEmpty() && !var2.getItem().equals(var4.getItem())) {
-            Objects.requireNonNull(var3);
-            EnchantmentHelper.onProjectileSpawned(var1, var4, this, var3::onItemBreak);
+      if (this instanceof AbstractArrow arrow) {
+         ItemStack weapon = arrow.getWeaponItem();
+         if (weapon != null && !weapon.isEmpty() && !pickupItemStack.getItem().equals(weapon.getItem())) {
+            Objects.requireNonNull(arrow);
+            EnchantmentHelper.onProjectileSpawned(serverLevel, weapon, this, arrow::onItemBreak);
          }
       }
 
    }
 
-   protected ProjectileDeflection hitTargetOrDeflectSelf(HitResult var1) {
-      if (var1.getType() == HitResult.Type.ENTITY) {
-         EntityHitResult var3 = (EntityHitResult)var1;
-         Entity var4 = var3.getEntity();
-         ProjectileDeflection var5 = var4.deflection(this);
-         if (var5 != ProjectileDeflection.NONE) {
-            if (var4 != this.lastDeflectedBy && this.deflect(var5, var4, this.owner, false)) {
-               this.lastDeflectedBy = var4;
+   protected ProjectileDeflection hitTargetOrDeflectSelf(final HitResult hitResult) {
+      if (hitResult.getType() == HitResult.Type.ENTITY) {
+         EntityHitResult entityHitResult = (EntityHitResult)hitResult;
+         Entity entity = entityHitResult.getEntity();
+         ProjectileDeflection deflection = entity.deflection(this);
+         if (deflection != ProjectileDeflection.NONE) {
+            if (entity != this.lastDeflectedBy && this.deflect(deflection, entity, this.owner, false)) {
+               this.lastDeflectedBy = entity;
             }
 
-            return var5;
+            return deflection;
          }
-      } else if (this.shouldBounceOnWorldBorder() && var1 instanceof BlockHitResult) {
-         BlockHitResult var2 = (BlockHitResult)var1;
-         if (var2.isWorldBorderHit()) {
-            ProjectileDeflection var6 = ProjectileDeflection.REVERSE;
-            if (this.deflect(var6, (Entity)null, this.owner, false)) {
+      } else if (this.shouldBounceOnWorldBorder() && hitResult instanceof BlockHitResult) {
+         BlockHitResult blockHit = (BlockHitResult)hitResult;
+         if (blockHit.isWorldBorderHit()) {
+            ProjectileDeflection deflection = ProjectileDeflection.REVERSE;
+            if (this.deflect(deflection, (Entity)null, this.owner, false)) {
                this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
-               return var6;
+               return deflection;
             }
          }
       }
 
-      this.onHit(var1);
+      this.onHit(hitResult);
       return ProjectileDeflection.NONE;
    }
 
@@ -226,126 +226,126 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return false;
    }
 
-   public boolean deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable EntityReference<Entity> var3, boolean var4) {
-      var1.deflect(this, var2, this.random);
+   public boolean deflect(final ProjectileDeflection deflection, final @Nullable Entity deflectingEntity, final @Nullable EntityReference<Entity> newOwner, final boolean byAttack) {
+      deflection.deflect(this, deflectingEntity, this.random);
       if (!this.level().isClientSide()) {
-         this.setOwner(var3);
-         this.onDeflection(var4);
+         this.setOwner(newOwner);
+         this.onDeflection(byAttack);
       }
 
       return true;
    }
 
-   protected void onDeflection(boolean var1) {
+   protected void onDeflection(final boolean byAttack) {
    }
 
-   protected void onItemBreak(Item var1) {
+   protected void onItemBreak(final Item item) {
    }
 
-   protected void onHit(HitResult var1) {
-      HitResult.Type var2 = var1.getType();
-      if (var2 == HitResult.Type.ENTITY) {
-         EntityHitResult var3 = (EntityHitResult)var1;
-         Entity var4 = var3.getEntity();
-         if (var4.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && var4 instanceof Projectile) {
-            Projectile var5 = (Projectile)var4;
-            var5.deflect(ProjectileDeflection.AIM_DEFLECT, this.getOwner(), this.owner, true);
+   protected void onHit(final HitResult hitResult) {
+      HitResult.Type type = hitResult.getType();
+      if (type == HitResult.Type.ENTITY) {
+         EntityHitResult entityHitResult = (EntityHitResult)hitResult;
+         Entity entityHit = entityHitResult.getEntity();
+         if (entityHit.is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entityHit instanceof Projectile) {
+            Projectile projectile = (Projectile)entityHit;
+            projectile.deflect(ProjectileDeflection.AIM_DEFLECT, this.getOwner(), this.owner, true);
          }
 
-         this.onHitEntity(var3);
-         this.level().gameEvent(GameEvent.PROJECTILE_LAND, var1.getLocation(), GameEvent.Context.of(this, (BlockState)null));
-      } else if (var2 == HitResult.Type.BLOCK) {
-         BlockHitResult var6 = (BlockHitResult)var1;
-         this.onHitBlock(var6);
-         BlockPos var7 = var6.getBlockPos();
-         this.level().gameEvent(GameEvent.PROJECTILE_LAND, var7, GameEvent.Context.of(this, this.level().getBlockState(var7)));
+         this.onHitEntity(entityHitResult);
+         this.level().gameEvent(GameEvent.PROJECTILE_LAND, hitResult.getLocation(), GameEvent.Context.of(this, (BlockState)null));
+      } else if (type == HitResult.Type.BLOCK) {
+         BlockHitResult blockHit = (BlockHitResult)hitResult;
+         this.onHitBlock(blockHit);
+         BlockPos target = blockHit.getBlockPos();
+         this.level().gameEvent(GameEvent.PROJECTILE_LAND, target, GameEvent.Context.of(this, this.level().getBlockState(target)));
       }
 
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
+   protected void onHitEntity(final EntityHitResult hitResult) {
    }
 
-   protected void onHitBlock(BlockHitResult var1) {
-      BlockState var2 = this.level().getBlockState(var1.getBlockPos());
-      var2.onProjectileHit(this.level(), var2, var1, this);
+   protected void onHitBlock(final BlockHitResult hitResult) {
+      BlockState state = this.level().getBlockState(hitResult.getBlockPos());
+      state.onProjectileHit(this.level(), state, hitResult, this);
    }
 
-   protected boolean canHitEntity(Entity var1) {
-      if (!var1.canBeHitByProjectile()) {
+   protected boolean canHitEntity(final Entity entity) {
+      if (!entity.canBeHitByProjectile()) {
          return false;
       } else {
-         Entity var2 = this.getOwner();
-         return var2 == null || this.leftOwner || !var2.isPassengerOfSameVehicle(var1);
+         Entity owner = this.getOwner();
+         return owner == null || this.leftOwner || !owner.isPassengerOfSameVehicle(entity);
       }
    }
 
    protected void updateRotation() {
-      Vec3 var1 = this.getDeltaMovement();
-      double var2 = var1.horizontalDistance();
-      this.setXRot(lerpRotation(this.xRotO, (float)(Mth.atan2(var1.y, var2) * 57.2957763671875)));
-      this.setYRot(lerpRotation(this.yRotO, (float)(Mth.atan2(var1.x, var1.z) * 57.2957763671875)));
+      Vec3 movement = this.getDeltaMovement();
+      double sd = movement.horizontalDistance();
+      this.setXRot(lerpRotation(this.xRotO, (float)(Mth.atan2(movement.y, sd) * 57.2957763671875)));
+      this.setYRot(lerpRotation(this.yRotO, (float)(Mth.atan2(movement.x, movement.z) * 57.2957763671875)));
    }
 
-   protected static float lerpRotation(float var0, float var1) {
-      while(var1 - var0 < -180.0F) {
-         var0 -= 360.0F;
+   protected static float lerpRotation(float rotO, final float rot) {
+      while(rot - rotO < -180.0F) {
+         rotO -= 360.0F;
       }
 
-      while(var1 - var0 >= 180.0F) {
-         var0 += 360.0F;
+      while(rot - rotO >= 180.0F) {
+         rotO += 360.0F;
       }
 
-      return Mth.lerp(0.2F, var0, var1);
+      return Mth.lerp(0.2F, rotO, rot);
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
-      Entity var2 = this.getOwner();
-      return new ClientboundAddEntityPacket(this, var1, var2 == null ? 0 : var2.getId());
+   public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {
+      Entity owner = this.getOwner();
+      return new ClientboundAddEntityPacket(this, serverEntity, owner == null ? 0 : owner.getId());
    }
 
-   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
-      super.recreateFromPacket(var1);
-      Entity var2 = this.level().getEntity(var1.getData());
-      if (var2 != null) {
-         this.setOwner(var2);
+   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
+      super.recreateFromPacket(packet);
+      Entity owner = this.level().getEntity(packet.getData());
+      if (owner != null) {
+         this.setOwner(owner);
       }
 
    }
 
-   public boolean mayInteract(ServerLevel var1, BlockPos var2) {
-      Entity var3 = this.getOwner();
-      if (var3 instanceof Player) {
-         return var3.mayInteract(var1, var2);
+   public boolean mayInteract(final ServerLevel level, final BlockPos pos) {
+      Entity owner = this.getOwner();
+      if (owner instanceof Player) {
+         return owner.mayInteract(level, pos);
       } else {
-         return var3 == null || (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING);
+         return owner == null || (Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING);
       }
    }
 
-   public boolean mayBreak(ServerLevel var1) {
-      return this.getType().is(EntityTypeTags.IMPACT_PROJECTILES) && (Boolean)var1.getGameRules().get(GameRules.PROJECTILES_CAN_BREAK_BLOCKS);
+   public boolean mayBreak(final ServerLevel level) {
+      return this.is(EntityTypeTags.IMPACT_PROJECTILES) && (Boolean)level.getGameRules().get(GameRules.PROJECTILES_CAN_BREAK_BLOCKS);
    }
 
    public boolean isPickable() {
-      return this.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE);
+      return this.is(EntityTypeTags.REDIRECTABLE_PROJECTILE);
    }
 
    public float getPickRadius() {
       return this.isPickable() ? 1.0F : 0.0F;
    }
 
-   public DoubleDoubleImmutablePair calculateHorizontalHurtKnockbackDirection(LivingEntity var1, DamageSource var2) {
-      double var3 = this.getDeltaMovement().x;
-      double var5 = this.getDeltaMovement().z;
-      return DoubleDoubleImmutablePair.of(var3, var5);
+   public DoubleDoubleImmutablePair calculateHorizontalHurtKnockbackDirection(final LivingEntity hurtEntity, final DamageSource damageSource) {
+      double dx = this.getDeltaMovement().x;
+      double dz = this.getDeltaMovement().z;
+      return DoubleDoubleImmutablePair.of(dx, dz);
    }
 
    public int getDimensionChangingDelay() {
       return 2;
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      if (!this.isInvulnerableToBase(var2)) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      if (!this.isInvulnerableToBase(source)) {
          this.markHurt();
       }
 
@@ -354,6 +354,6 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    @FunctionalInterface
    public interface ProjectileFactory<T extends Projectile> {
-      T create(ServerLevel var1, LivingEntity var2, ItemStack var3);
+      T create(final ServerLevel level, LivingEntity entity, ItemStack itemStack);
    }
 }

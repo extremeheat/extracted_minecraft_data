@@ -23,39 +23,39 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public class BottleItem extends Item {
-   public BottleItem(Item.Properties var1) {
-      super(var1);
+   public BottleItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      List var4 = var1.getEntitiesOfClass(AreaEffectCloud.class, var2.getBoundingBox().inflate(2.0), (var0) -> var0.isAlive() && var0.getOwner() instanceof EnderDragon);
-      ItemStack var5 = var2.getItemInHand(var3);
-      if (!var4.isEmpty()) {
-         AreaEffectCloud var8 = (AreaEffectCloud)var4.get(0);
-         var8.setRadius(var8.getRadius() - 0.5F);
-         var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.BOTTLE_FILL_DRAGONBREATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
-         var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var2.position());
-         if (var2 instanceof ServerPlayer) {
-            ServerPlayer var9 = (ServerPlayer)var2;
-            CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger(var9, var5, var8);
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      List<AreaEffectCloud> clouds = level.getEntitiesOfClass(AreaEffectCloud.class, player.getBoundingBox().inflate(2.0), (input) -> input.isAlive() && input.getOwner() instanceof EnderDragon);
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (!clouds.isEmpty()) {
+         AreaEffectCloud cloud = (AreaEffectCloud)clouds.get(0);
+         cloud.setRadius(cloud.getRadius() - 0.5F);
+         level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.BOTTLE_FILL_DRAGONBREATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
+         level.gameEvent(player, GameEvent.FLUID_PICKUP, player.position());
+         if (player instanceof ServerPlayer) {
+            ServerPlayer serverPlayer = (ServerPlayer)player;
+            CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger(serverPlayer, itemStack, cloud);
          }
 
-         return InteractionResult.SUCCESS.heldItemTransformedTo(this.turnBottleIntoItem(var5, var2, new ItemStack(Items.DRAGON_BREATH)));
+         return InteractionResult.SUCCESS.heldItemTransformedTo(this.turnBottleIntoItem(itemStack, player, new ItemStack(Items.DRAGON_BREATH)));
       } else {
-         BlockHitResult var6 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.SOURCE_ONLY);
-         if (var6.getType() == HitResult.Type.MISS) {
+         BlockHitResult hitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
+         if (hitResult.getType() == HitResult.Type.MISS) {
             return InteractionResult.PASS;
          } else {
-            if (var6.getType() == HitResult.Type.BLOCK) {
-               BlockPos var7 = var6.getBlockPos();
-               if (!var1.mayInteract(var2, var7)) {
+            if (hitResult.getType() == HitResult.Type.BLOCK) {
+               BlockPos pos = hitResult.getBlockPos();
+               if (!level.mayInteract(player, pos)) {
                   return InteractionResult.PASS;
                }
 
-               if (var1.getFluidState(var7).is(FluidTags.WATER)) {
-                  var1.playSound(var2, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.NEUTRAL, 1.0F, 1.0F);
-                  var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var7);
-                  return InteractionResult.SUCCESS.heldItemTransformedTo(this.turnBottleIntoItem(var5, var2, PotionContents.createItemStack(Items.POTION, Potions.WATER)));
+               if (level.getFluidState(pos).is(FluidTags.WATER)) {
+                  level.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.NEUTRAL, 1.0F, 1.0F);
+                  level.gameEvent(player, GameEvent.FLUID_PICKUP, pos);
+                  return InteractionResult.SUCCESS.heldItemTransformedTo(this.turnBottleIntoItem(itemStack, player, PotionContents.createItemStack(Items.POTION, Potions.WATER)));
                }
             }
 
@@ -64,8 +64,8 @@ public class BottleItem extends Item {
       }
    }
 
-   protected ItemStack turnBottleIntoItem(ItemStack var1, Player var2, ItemStack var3) {
-      var2.awardStat(Stats.ITEM_USED.get(this));
-      return ItemUtils.createFilledResult(var1, var2, var3);
+   protected ItemStack turnBottleIntoItem(final ItemStack itemStack, final Player player, final ItemStack itemStackToTurnInto) {
+      player.awardStat(Stats.ITEM_USED.get(this));
+      return ItemUtils.createFilledResult(itemStack, player, itemStackToTurnInto);
    }
 }

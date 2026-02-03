@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.realmsclient.dto.RegionPingResult;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.net.SocketAddress;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.util.Util;
@@ -15,41 +15,41 @@ public class Ping {
       super();
    }
 
-   public static List<RegionPingResult> ping(Region... var0) {
-      for(Region var4 : var0) {
-         ping(var4.endpoint);
+   public static List<RegionPingResult> ping(final Region... regions) {
+      for(Region region : regions) {
+         ping(region.endpoint);
       }
 
-      ArrayList var6 = Lists.newArrayList();
+      List<RegionPingResult> results = Lists.newArrayList();
 
-      for(Region var5 : var0) {
-         var6.add(new RegionPingResult(var5.name, ping(var5.endpoint)));
+      for(Region region : regions) {
+         results.add(new RegionPingResult(region.name, ping(region.endpoint)));
       }
 
-      var6.sort(Comparator.comparingInt(RegionPingResult::ping));
-      return var6;
+      results.sort(Comparator.comparingInt(RegionPingResult::ping));
+      return results;
    }
 
-   private static int ping(String var0) {
-      boolean var1 = true;
-      long var2 = 0L;
-      Socket var4 = null;
+   private static int ping(final String host) {
+      int timeout = 700;
+      long sum = 0L;
+      Socket socket = null;
 
-      for(int var5 = 0; var5 < 5; ++var5) {
+      for(int i = 0; i < 5; ++i) {
          try {
-            InetSocketAddress var6 = new InetSocketAddress(var0, 80);
-            var4 = new Socket();
-            long var7 = now();
-            var4.connect(var6, 700);
-            var2 += now() - var7;
+            SocketAddress sockAddr = new InetSocketAddress(host, 80);
+            socket = new Socket();
+            long t1 = now();
+            socket.connect(sockAddr, 700);
+            sum += now() - t1;
          } catch (Exception var12) {
-            var2 += 700L;
+            sum += 700L;
          } finally {
-            IOUtils.closeQuietly(var4);
+            IOUtils.closeQuietly(socket);
          }
       }
 
-      return (int)((double)var2 / 5.0);
+      return (int)((double)sum / 5.0);
    }
 
    private static long now() {
@@ -70,12 +70,12 @@ public class Ping {
       AP_NORTHEAST_1("ap-northeast-1", "ec2.ap-northeast-1.amazonaws.com"),
       SA_EAST_1("sa-east-1", "ec2.sa-east-1.amazonaws.com");
 
-      final String name;
-      final String endpoint;
+      private final String name;
+      private final String endpoint;
 
-      private Region(final String var3, final String var4) {
-         this.name = var3;
-         this.endpoint = var4;
+      private Region(final String name, final String endpoint) {
+         this.name = name;
+         this.endpoint = endpoint;
       }
 
       // $FF: synthetic method

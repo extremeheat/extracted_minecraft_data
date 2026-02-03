@@ -11,19 +11,19 @@ public enum RandomSpreadType implements StringRepresentable {
    public static final Codec<RandomSpreadType> CODEC = StringRepresentable.<RandomSpreadType>fromEnum(RandomSpreadType::values);
    private final String id;
 
-   private RandomSpreadType(final String var3) {
-      this.id = var3;
+   private RandomSpreadType(final String id) {
+      this.id = id;
    }
 
    public String getSerializedName() {
       return this.id;
    }
 
-   public int evaluate(RandomSource var1, int var2) {
+   public int evaluate(final RandomSource random, final int limit) {
       int var10000;
       switch (this.ordinal()) {
-         case 0 -> var10000 = var1.nextInt(var2);
-         case 1 -> var10000 = (var1.nextInt(var2) + var1.nextInt(var2)) / 2;
+         case 0 -> var10000 = random.nextInt(limit);
+         case 1 -> var10000 = (random.nextInt(limit) + random.nextInt(limit)) / 2;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 

@@ -1,26 +1,24 @@
 package net.minecraft.client.gui.navigation;
 
 public record ScreenPosition(int x, int y) {
-   public ScreenPosition(int var1, int var2) {
+   public ScreenPosition {
       super();
-      this.x = var1;
-      this.y = var2;
    }
 
-   public static ScreenPosition of(ScreenAxis var0, int var1, int var2) {
+   public static ScreenPosition of(final ScreenAxis axis, final int primaryValue, final int secondaryValue) {
       ScreenPosition var10000;
-      switch (var0) {
-         case HORIZONTAL -> var10000 = new ScreenPosition(var1, var2);
-         case VERTICAL -> var10000 = new ScreenPosition(var2, var1);
+      switch (axis) {
+         case HORIZONTAL -> var10000 = new ScreenPosition(primaryValue, secondaryValue);
+         case VERTICAL -> var10000 = new ScreenPosition(secondaryValue, primaryValue);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   public ScreenPosition step(ScreenDirection var1) {
+   public ScreenPosition step(final ScreenDirection direction) {
       ScreenPosition var10000;
-      switch (var1) {
+      switch (direction) {
          case DOWN -> var10000 = new ScreenPosition(this.x, this.y + 1);
          case UP -> var10000 = new ScreenPosition(this.x, this.y - 1);
          case LEFT -> var10000 = new ScreenPosition(this.x - 1, this.y);
@@ -31,9 +29,9 @@ public record ScreenPosition(int x, int y) {
       return var10000;
    }
 
-   public int getCoordinate(ScreenAxis var1) {
+   public int getCoordinate(final ScreenAxis axis) {
       int var10000;
-      switch (var1) {
+      switch (axis) {
          case HORIZONTAL -> var10000 = this.x;
          case VERTICAL -> var10000 = this.y;
          default -> throw new MatchException((String)null, (Throwable)null);

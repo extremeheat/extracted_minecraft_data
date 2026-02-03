@@ -6,35 +6,35 @@ import net.minecraft.util.Mth;
 public abstract class BaseAshSmokeParticle extends SingleQuadParticle {
    private final SpriteSet sprites;
 
-   protected BaseAshSmokeParticle(ClientLevel var1, double var2, double var4, double var6, float var8, float var9, float var10, double var11, double var13, double var15, float var17, SpriteSet var18, float var19, int var20, float var21, boolean var22) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var18.first());
+   protected BaseAshSmokeParticle(final ClientLevel level, final double x, final double y, final double z, final float dirX, final float dirY, final float dirZ, final double xa, final double ya, final double za, final float scale, final SpriteSet sprites, final float colorRandom, final int maxLifetime, final float gravity, final boolean hasPhysics) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprites.first());
       this.friction = 0.96F;
-      this.gravity = var21;
+      this.gravity = gravity;
       this.speedUpWhenYMotionIsBlocked = true;
-      this.sprites = var18;
-      this.xd *= (double)var8;
-      this.yd *= (double)var9;
-      this.zd *= (double)var10;
-      this.xd += var11;
-      this.yd += var13;
-      this.zd += var15;
-      float var23 = this.random.nextFloat() * var19;
-      this.rCol = var23;
-      this.gCol = var23;
-      this.bCol = var23;
-      this.quadSize *= 0.75F * var17;
-      this.lifetime = (int)((double)var20 / ((double)this.random.nextFloat() * 0.8 + 0.2) * (double)var17);
+      this.sprites = sprites;
+      this.xd *= (double)dirX;
+      this.yd *= (double)dirY;
+      this.zd *= (double)dirZ;
+      this.xd += xa;
+      this.yd += ya;
+      this.zd += za;
+      float col = this.random.nextFloat() * colorRandom;
+      this.rCol = col;
+      this.gCol = col;
+      this.bCol = col;
+      this.quadSize *= 0.75F * scale;
+      this.lifetime = (int)((double)maxLifetime / ((double)this.random.nextFloat() * 0.8 + 0.2) * (double)scale);
       this.lifetime = Math.max(this.lifetime, 1);
-      this.setSpriteFromAge(var18);
-      this.hasPhysics = var22;
+      this.setSpriteFromAge(sprites);
+      this.hasPhysics = hasPhysics;
    }
 
    public SingleQuadParticle.Layer getLayer() {
       return SingleQuadParticle.Layer.OPAQUE;
    }
 
-   public float getQuadSize(float var1) {
-      return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
+   public float getQuadSize(final float a) {
+      return this.quadSize * Mth.clamp(((float)this.age + a) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
    }
 
    public void tick() {

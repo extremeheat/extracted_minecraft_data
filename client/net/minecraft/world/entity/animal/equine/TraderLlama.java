@@ -27,8 +27,8 @@ public class TraderLlama extends Llama {
    private static final int DEFAULT_DESPAWN_DELAY = 47999;
    private int despawnDelay = 47999;
 
-   public TraderLlama(EntityType<? extends TraderLlama> var1, Level var2) {
-      super(var1, var2);
+   public TraderLlama(final EntityType<? extends TraderLlama> type, final Level level) {
+      super(type, level);
    }
 
    public boolean isTraderLlama() {
@@ -39,32 +39,32 @@ public class TraderLlama extends Llama {
       return EntityType.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("DespawnDelay", this.despawnDelay);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("DespawnDelay", this.despawnDelay);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.despawnDelay = var1.getIntOr("DespawnDelay", 47999);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.despawnDelay = input.getIntOr("DespawnDelay", 47999);
    }
 
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(1, new PanicGoal(this, 2.0));
       this.targetSelector.addGoal(1, new TraderLlamaDefendWanderingTraderGoal(this));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Zombie.class, true, (var0, var1) -> var0.getType() != EntityType.ZOMBIFIED_PIGLIN));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Zombie.class, true, (target, level) -> !target.is(EntityType.ZOMBIFIED_PIGLIN)));
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, AbstractIllager.class, true));
    }
 
-   public void setDespawnDelay(int var1) {
-      this.despawnDelay = var1;
+   public void setDespawnDelay(final int despawnDelay) {
+      this.despawnDelay = despawnDelay;
    }
 
-   protected void doPlayerRide(Player var1) {
-      Entity var2 = this.getLeashHolder();
-      if (!(var2 instanceof WanderingTrader)) {
-         super.doPlayerRide(var1);
+   protected void doPlayerRide(final Player player) {
+      Entity leashHolder = this.getLeashHolder();
+      if (!(leashHolder instanceof WanderingTrader)) {
+         super.doPlayerRide(player);
       }
    }
 
@@ -99,16 +99,16 @@ public class TraderLlama extends Llama {
       return this.isLeashed() && !this.isLeashedToWanderingTrader();
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      if (var3 == EntitySpawnReason.EVENT) {
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
+      if (spawnReason == EntitySpawnReason.EVENT) {
          this.setAge(0);
       }
 
-      if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(false);
+      if (groupData == null) {
+         groupData = new AgeableMob.AgeableMobGroupData(false);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
    protected static class TraderLlamaDefendWanderingTraderGoal extends TargetGoal {
@@ -116,9 +116,9 @@ public class TraderLlama extends Llama {
       private LivingEntity ownerLastHurtBy;
       private int timestamp;
 
-      public TraderLlamaDefendWanderingTraderGoal(Llama var1) {
-         super(var1, false);
-         this.llama = var1;
+      public TraderLlamaDefendWanderingTraderGoal(final Llama tameAnimal) {
+         super(tameAnimal, false);
+         this.llama = tameAnimal;
          this.setFlags(EnumSet.of(Goal.Flag.TARGET));
       }
 
@@ -126,23 +126,23 @@ public class TraderLlama extends Llama {
          if (!this.llama.isLeashed()) {
             return false;
          } else {
-            Entity var1 = this.llama.getLeashHolder();
-            if (!(var1 instanceof WanderingTrader)) {
+            Entity leashHolder = this.llama.getLeashHolder();
+            if (!(leashHolder instanceof WanderingTrader)) {
                return false;
             } else {
-               WanderingTrader var2 = (WanderingTrader)var1;
-               this.ownerLastHurtBy = var2.getLastHurtByMob();
-               int var3 = var2.getLastHurtByMobTimestamp();
-               return var3 != this.timestamp && this.canAttack(this.ownerLastHurtBy, TargetingConditions.DEFAULT);
+               WanderingTrader owner = (WanderingTrader)leashHolder;
+               this.ownerLastHurtBy = owner.getLastHurtByMob();
+               int timeStamp = owner.getLastHurtByMobTimestamp();
+               return timeStamp != this.timestamp && this.canAttack(this.ownerLastHurtBy, TargetingConditions.DEFAULT);
             }
          }
       }
 
       public void start() {
          this.mob.setTarget(this.ownerLastHurtBy);
-         Entity var1 = this.llama.getLeashHolder();
-         if (var1 instanceof WanderingTrader) {
-            this.timestamp = ((WanderingTrader)var1).getLastHurtByMobTimestamp();
+         Entity leashHolder = this.llama.getLeashHolder();
+         if (leashHolder instanceof WanderingTrader) {
+            this.timestamp = ((WanderingTrader)leashHolder).getLastHurtByMobTimestamp();
          }
 
          super.start();

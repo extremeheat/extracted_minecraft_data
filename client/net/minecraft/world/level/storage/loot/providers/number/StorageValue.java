@@ -7,45 +7,44 @@ import java.util.List;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record StorageValue(Identifier storage, NbtPathArgument.NbtPath path) implements NumberProvider {
-   public static final MapCodec<StorageValue> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("storage").forGetter(StorageValue::storage), NbtPathArgument.NbtPath.CODEC.fieldOf("path").forGetter(StorageValue::path)).apply(var0, StorageValue::new));
+   public static final MapCodec<StorageValue> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("storage").forGetter(StorageValue::storage), NbtPathArgument.NbtPath.CODEC.fieldOf("path").forGetter(StorageValue::path)).apply(i, StorageValue::new));
 
-   public StorageValue(Identifier var1, NbtPathArgument.NbtPath var2) {
+   public StorageValue {
       super();
-      this.storage = var1;
-      this.path = var2;
    }
 
-   public LootNumberProviderType getType() {
-      return NumberProviders.STORAGE;
+   public MapCodec<StorageValue> codec() {
+      return MAP_CODEC;
    }
 
-   private Number getNumericTag(LootContext var1, Number var2) {
-      CompoundTag var3 = var1.getLevel().getServer().getCommandStorage().get(this.storage);
+   private Number getNumericTag(final LootContext context, final Number _default) {
+      CompoundTag value = context.getLevel().getServer().getCommandStorage().get(this.storage);
 
       try {
-         List var4 = this.path.get(var3);
-         if (var4.size() == 1) {
-            Object var6 = var4.getFirst();
+         List<Tag> selectedTags = this.path.get(value);
+         if (selectedTags.size() == 1) {
+            Object var6 = selectedTags.getFirst();
             if (var6 instanceof NumericTag) {
-               NumericTag var5 = (NumericTag)var6;
-               return var5.box();
+               NumericTag result = (NumericTag)var6;
+               return result.box();
             }
          }
       } catch (CommandSyntaxException var7) {
       }
 
-      return var2;
+      return _default;
    }
 
-   public float getFloat(LootContext var1) {
-      return this.getNumericTag(var1, 0.0F).floatValue();
+   public float getFloat(final LootContext context) {
+      return this.getNumericTag(context, 0.0F).floatValue();
    }
 
-   public int getInt(LootContext var1) {
-      return this.getNumericTag(var1, 0).intValue();
+   public int getInt(final LootContext context) {
+      return this.getNumericTag(context, 0).intValue();
    }
 }

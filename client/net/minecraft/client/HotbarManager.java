@@ -21,59 +21,59 @@ public class HotbarManager {
    private final Hotbar[] hotbars = new Hotbar[9];
    private boolean loaded;
 
-   public HotbarManager(Path var1, DataFixer var2) {
+   public HotbarManager(final Path workingDirectory, final DataFixer fixerUpper) {
       super();
-      this.optionsFile = var1.resolve("hotbar.nbt");
-      this.fixerUpper = var2;
+      this.optionsFile = workingDirectory.resolve("hotbar.nbt");
+      this.fixerUpper = fixerUpper;
 
-      for(int var3 = 0; var3 < 9; ++var3) {
-         this.hotbars[var3] = new Hotbar();
+      for(int i = 0; i < 9; ++i) {
+         this.hotbars[i] = new Hotbar();
       }
 
    }
 
    private void load() {
       try {
-         CompoundTag var1 = NbtIo.read(this.optionsFile);
-         if (var1 == null) {
+         CompoundTag tag = NbtIo.read(this.optionsFile);
+         if (tag == null) {
             return;
          }
 
-         int var2 = NbtUtils.getDataVersion(var1, 1343);
-         var1 = DataFixTypes.HOTBAR.updateToCurrentVersion(this.fixerUpper, var1, var2);
+         int version = NbtUtils.getDataVersion(tag, 1343);
+         tag = DataFixTypes.HOTBAR.updateToCurrentVersion(this.fixerUpper, tag, version);
 
-         for(int var3 = 0; var3 < 9; ++var3) {
-            this.hotbars[var3] = (Hotbar)Hotbar.CODEC.parse(NbtOps.INSTANCE, var1.get(String.valueOf(var3))).resultOrPartial((var0) -> LOGGER.warn("Failed to parse hotbar: {}", var0)).orElseGet(Hotbar::new);
+         for(int i = 0; i < 9; ++i) {
+            this.hotbars[i] = (Hotbar)Hotbar.CODEC.parse(NbtOps.INSTANCE, tag.get(String.valueOf(i))).resultOrPartial((error) -> LOGGER.warn("Failed to parse hotbar: {}", error)).orElseGet(Hotbar::new);
          }
-      } catch (Exception var4) {
-         LOGGER.error("Failed to load creative mode options", var4);
+      } catch (Exception e) {
+         LOGGER.error("Failed to load creative mode options", e);
       }
 
    }
 
    public void save() {
       try {
-         CompoundTag var1 = NbtUtils.addCurrentDataVersion(new CompoundTag());
+         CompoundTag tag = NbtUtils.addCurrentDataVersion(new CompoundTag());
 
-         for(int var2 = 0; var2 < 9; ++var2) {
-            Hotbar var3 = this.get(var2);
-            DataResult var4 = Hotbar.CODEC.encodeStart(NbtOps.INSTANCE, var3);
-            var1.put(String.valueOf(var2), (Tag)var4.getOrThrow());
+         for(int i = 0; i < 9; ++i) {
+            Hotbar hotbar = this.get(i);
+            DataResult<Tag> result = Hotbar.CODEC.encodeStart(NbtOps.INSTANCE, hotbar);
+            tag.put(String.valueOf(i), (Tag)result.getOrThrow());
          }
 
-         NbtIo.write(var1, this.optionsFile);
-      } catch (Exception var5) {
-         LOGGER.error("Failed to save creative mode options", var5);
+         NbtIo.write(tag, this.optionsFile);
+      } catch (Exception e) {
+         LOGGER.error("Failed to save creative mode options", e);
       }
 
    }
 
-   public Hotbar get(int var1) {
+   public Hotbar get(final int id) {
       if (!this.loaded) {
          this.load();
          this.loaded = true;
       }
 
-      return this.hotbars[var1];
+      return this.hotbars[id];
    }
 }

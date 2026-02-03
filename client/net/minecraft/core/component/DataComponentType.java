@@ -14,8 +14,8 @@ import org.jspecify.annotations.Nullable;
 
 public interface DataComponentType<T> {
    Codec<DataComponentType<?>> CODEC = Codec.lazyInitialized(() -> BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec());
-   StreamCodec<RegistryFriendlyByteBuf, DataComponentType<?>> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, DataComponentType<?>>recursive((var0) -> ByteBufCodecs.registry(Registries.DATA_COMPONENT_TYPE));
-   Codec<DataComponentType<?>> PERSISTENT_CODEC = CODEC.validate((var0) -> var0.isTransient() ? DataResult.error(() -> "Encountered transient component " + String.valueOf(BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var0))) : DataResult.success(var0));
+   StreamCodec<RegistryFriendlyByteBuf, DataComponentType<?>> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, DataComponentType<?>>recursive((c) -> ByteBufCodecs.registry(Registries.DATA_COMPONENT_TYPE));
+   Codec<DataComponentType<?>> PERSISTENT_CODEC = CODEC.validate((type) -> type.isTransient() ? DataResult.error(() -> "Encountered transient component " + String.valueOf(BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(type))) : DataResult.success(type));
    Codec<Map<DataComponentType<?>, Object>> VALUE_MAP_CODEC = Codec.dispatchedMap(PERSISTENT_CODEC, DataComponentType::codecOrThrow);
 
    static <T> Builder<T> builder() {
@@ -25,11 +25,11 @@ public interface DataComponentType<T> {
    @Nullable Codec<T> codec();
 
    default Codec<T> codecOrThrow() {
-      Codec var1 = this.codec();
-      if (var1 == null) {
+      Codec<T> codec = this.codec();
+      if (codec == null) {
          throw new IllegalStateException(String.valueOf(this) + " is not a persistent component");
       } else {
-         return var1;
+         return codec;
       }
    }
 
@@ -51,13 +51,13 @@ public interface DataComponentType<T> {
          super();
       }
 
-      public Builder<T> persistent(Codec<T> var1) {
-         this.codec = var1;
+      public Builder<T> persistent(final Codec<T> codec) {
+         this.codec = codec;
          return this;
       }
 
-      public Builder<T> networkSynchronized(StreamCodec<? super RegistryFriendlyByteBuf, T> var1) {
-         this.streamCodec = var1;
+      public Builder<T> networkSynchronized(final StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) {
+         this.streamCodec = streamCodec;
          return this;
       }
 
@@ -67,9 +67,9 @@ public interface DataComponentType<T> {
       }
 
       public DataComponentType<T> build() {
-         StreamCodec var1 = (StreamCodec)Objects.requireNonNullElseGet(this.streamCodec, () -> ByteBufCodecs.fromCodecWithRegistries((Codec)Objects.requireNonNull(this.codec, "Missing Codec for component")));
-         Codec var2 = this.cacheEncoding && this.codec != null ? DataComponents.ENCODER_CACHE.wrap(this.codec) : this.codec;
-         return new SimpleType<T>(var2, var1, this.ignoreSwapAnimation);
+         StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec = (StreamCodec)Objects.requireNonNullElseGet(this.streamCodec, () -> ByteBufCodecs.fromCodecWithRegistries((Codec)Objects.requireNonNull(this.codec, "Missing Codec for component")));
+         Codec<T> cachingCodec = this.cacheEncoding && this.codec != null ? DataComponents.ENCODER_CACHE.wrap(this.codec) : this.codec;
+         return new SimpleType<T>(cachingCodec, streamCodec, this.ignoreSwapAnimation);
       }
 
       public Builder<T> ignoreSwapAnimation() {
@@ -77,16 +77,16 @@ public interface DataComponentType<T> {
          return this;
       }
 
-      static class SimpleType<T> implements DataComponentType<T> {
+      private static class SimpleType<T> implements DataComponentType<T> {
          private final @Nullable Codec<T> codec;
          private final StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec;
          private final boolean ignoreSwapAnimation;
 
-         SimpleType(@Nullable Codec<T> var1, StreamCodec<? super RegistryFriendlyByteBuf, T> var2, boolean var3) {
+         private SimpleType(final @Nullable Codec<T> codec, final StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec, final boolean ignoreSwapAnimation) {
             super();
-            this.codec = var1;
-            this.streamCodec = var2;
-            this.ignoreSwapAnimation = var3;
+            this.codec = codec;
+            this.streamCodec = streamCodec;
+            this.ignoreSwapAnimation = ignoreSwapAnimation;
          }
 
          public boolean ignoreSwapAnimation() {

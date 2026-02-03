@@ -1,5 +1,5 @@
 package net.minecraft.client.telemetry;
 
 public interface TelemetryEventLogger {
-   void log(TelemetryEventInstance var1);
+   void log(TelemetryEventInstance event);
 }

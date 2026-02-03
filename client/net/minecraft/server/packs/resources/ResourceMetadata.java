@@ -1,5 +1,6 @@
 package net.minecraft.server.packs.resources;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.serialization.JsonOps;
@@ -11,6 +12,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,24 +21,25 @@ import net.minecraft.util.GsonHelper;
 
 public interface ResourceMetadata {
    ResourceMetadata EMPTY = new ResourceMetadata() {
-      public <T> Optional<T> getSection(MetadataSectionType<T> var1) {
+      public <T> Optional<T> getSection(final MetadataSectionType<T> serializer) {
          return Optional.empty();
       }
    };
    IoSupplier<ResourceMetadata> EMPTY_SUPPLIER = () -> EMPTY;
 
-   static ResourceMetadata fromJsonStream(InputStream var0) throws IOException {
-      BufferedReader var1 = new BufferedReader(new InputStreamReader(var0, StandardCharsets.UTF_8));
+   static ResourceMetadata fromJsonStream(final InputStream inputStream) throws IOException {
+      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
 
       ResourceMetadata var3;
       try {
-         final JsonObject var2 = GsonHelper.parse((Reader)var1);
+         final JsonObject metadata = GsonHelper.parse((Reader)reader);
          var3 = new ResourceMetadata() {
-            public <T> Optional<T> getSection(MetadataSectionType<T> var1) {
-               String var2x = var1.name();
-               if (var2.has(var2x)) {
-                  Object var3 = var1.codec().parse(JsonOps.INSTANCE, var2.get(var2x)).getOrThrow(JsonParseException::new);
-                  return Optional.of(var3);
+            public <T> Optional<T> getSection(final MetadataSectionType<T> serializer) {
+               String name = serializer.name();
+               JsonElement rawSection = metadata.get(name);
+               if (rawSection != null) {
+                  T section = (T)serializer.codec().parse(JsonOps.INSTANCE, rawSection).getOrThrow(JsonParseException::new);
+                  return Optional.of(section);
                } else {
                   return Optional.empty();
                }
@@ -44,7 +47,7 @@ public interface ResourceMetadata {
          };
       } catch (Throwable var5) {
          try {
-            var1.close();
+            reader.close();
          } catch (Throwable var4) {
             var5.addSuppressed(var4);
          }
@@ -52,19 +55,40 @@ public interface ResourceMetadata {
          throw var5;
       }
 
-      var1.close();
+      reader.close();
       return var3;
    }
 
-   <T> Optional<T> getSection(MetadataSectionType<T> var1);
+   <T> Optional<T> getSection(MetadataSectionType<T> serializer);
 
-   default <T> Optional<MetadataSectionType.WithValue<T>> getTypedSection(MetadataSectionType<T> var1) {
-      Optional var10000 = this.getSection(var1);
-      Objects.requireNonNull(var1);
-      return var10000.map(var1::withValue);
+   default <T> Optional<MetadataSectionType.WithValue<T>> getTypedSection(final MetadataSectionType<T> type) {
+      Optional var10000 = this.getSection(type);
+      Objects.requireNonNull(type);
+      return var10000.map(type::withValue);
    }
 
-   default List<MetadataSectionType.WithValue<?>> getTypedSections(Collection<MetadataSectionType<?>> var1) {
-      return (List)var1.stream().map(this::getTypedSection).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
+   static <T> ResourceMetadata of(final MetadataSectionType<T> k, final T v) {
+      return new MapBased(Map.of(k, v));
+   }
+
+   static <T1, T2> ResourceMetadata of(final MetadataSectionType<T1> k1, final T1 v1, final MetadataSectionType<T2> k2, final T2 v2) {
+      return new MapBased(Map.of(k1, v1, k2, v2));
+   }
+
+   default List<MetadataSectionType.WithValue<?>> getTypedSections(final Collection<MetadataSectionType<?>> types) {
+      return (List)types.stream().map(this::getTypedSection).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
+   }
+
+   public static class MapBased implements ResourceMetadata {
+      private final Map<MetadataSectionType<?>, ?> values;
+
+      private MapBased(final Map<MetadataSectionType<?>, ?> values) {
+         super();
+         this.values = values;
+      }
+
+      public <T> Optional<T> getSection(final MetadataSectionType<T> serializer) {
+         return Optional.ofNullable(this.values.get(serializer));
+      }
    }
 }

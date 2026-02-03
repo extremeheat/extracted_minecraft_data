@@ -16,67 +16,64 @@ public class ParallelMapTransform {
       super();
    }
 
-   public static <K, U, V> CompletableFuture<Map<K, V>> schedule(Map<K, U> var0, BiFunction<K, U, @Nullable V> var1, int var2, Executor var3) {
-      int var4 = var0.size();
-      if (var4 == 0) {
+   public static <K, U, V> CompletableFuture<Map<K, V>> schedule(final Map<K, U> input, final BiFunction<K, U, @Nullable V> operation, final int maxTaskCount, final Executor executor) {
+      int inputSize = input.size();
+      if (inputSize == 0) {
          return CompletableFuture.completedFuture(Map.of());
-      } else if (var4 == 1) {
-         Map.Entry var8 = (Map.Entry)var0.entrySet().iterator().next();
-         Object var6 = var8.getKey();
-         Object var7 = var8.getValue();
+      } else if (inputSize == 1) {
+         Map.Entry<K, U> element = (Map.Entry)input.entrySet().iterator().next();
+         K key = (K)element.getKey();
+         U value = (U)element.getValue();
          return CompletableFuture.supplyAsync(() -> {
-            Object var3 = var1.apply(var6, var7);
-            return var3 != null ? Map.of(var6, var3) : Map.of();
-         }, var3);
+            V result = (V)operation.apply(key, value);
+            return result != null ? Map.of(key, result) : Map.of();
+         }, executor);
       } else {
-         Object var5 = var4 <= var2 ? new SingleTaskSplitter(var1, var4) : new BatchedTaskSplitter(var1, var4, var2);
-         return ((SplitterBase)var5).scheduleTasks(var0, var3);
+         SplitterBase<K, U, V> splitter = (SplitterBase<K, U, V>)(inputSize <= maxTaskCount ? new SingleTaskSplitter(operation, inputSize) : new BatchedTaskSplitter(operation, inputSize, maxTaskCount));
+         return splitter.scheduleTasks(input, executor);
       }
    }
 
-   public static <K, U, V> CompletableFuture<Map<K, V>> schedule(Map<K, U> var0, BiFunction<K, U, @Nullable V> var1, Executor var2) {
-      int var3 = Util.maxAllowedExecutorThreads() * 16;
-      return schedule(var0, var1, var3, var2);
+   public static <K, U, V> CompletableFuture<Map<K, V>> schedule(final Map<K, U> input, final BiFunction<K, U, @Nullable V> operation, final Executor executor) {
+      int maxTaskCount = Util.maxAllowedExecutorThreads() * 16;
+      return schedule(input, operation, maxTaskCount, executor);
    }
 
-   static record Container<K, U, V>(BiFunction<K, U, V> operation, @Nullable Object[] keys, @Nullable Object[] values) {
-      public Container(BiFunction<K, U, V> var1, int var2) {
-         this(var1, new Object[var2], new Object[var2]);
+   private static record Container<K, U, V>(BiFunction<K, U, V> operation, @Nullable Object[] keys, @Nullable Object[] values) {
+      public Container(final BiFunction<K, U, V> operation, final int size) {
+         this(operation, new Object[size], new Object[size]);
       }
 
-      private Container(BiFunction<K, U, V> var1, @Nullable Object[] var2, @Nullable Object[] var3) {
+      private Container {
          super();
-         this.operation = var1;
-         this.keys = var2;
-         this.values = var3;
       }
 
-      public void put(int var1, K var2, U var3) {
-         this.keys[var1] = var2;
-         this.values[var1] = var3;
+      public void put(final int index, final K key, final U input) {
+         this.keys[index] = key;
+         this.values[index] = input;
       }
 
-      private @Nullable K key(int var1) {
-         return (K)this.keys[var1];
+      private @Nullable K key(final int index) {
+         return (K)this.keys[index];
       }
 
-      private @Nullable V output(int var1) {
-         return (V)this.values[var1];
+      private @Nullable V output(final int index) {
+         return (V)this.values[index];
       }
 
-      private @Nullable U input(int var1) {
-         return (U)this.values[var1];
+      private @Nullable U input(final int index) {
+         return (U)this.values[index];
       }
 
-      public void applyOperation(int var1) {
-         this.values[var1] = this.operation.apply(this.key(var1), this.input(var1));
+      public void applyOperation(final int index) {
+         this.values[index] = this.operation.apply(this.key(index), this.input(index));
       }
 
-      public void copyOut(int var1, Map<K, V> var2) {
-         Object var3 = this.output(var1);
-         if (var3 != null) {
-            Object var4 = this.key(var1);
-            var2.put(var4, var3);
+      public void copyOut(final int index, final Map<K, V> output) {
+         V value = (V)this.output(index);
+         if (value != null) {
+            K key = (K)this.key(index);
+            output.put(key, value);
          }
 
       }
@@ -86,28 +83,28 @@ public class ParallelMapTransform {
       }
    }
 
-   abstract static class SplitterBase<K, U, V> {
+   private abstract static class SplitterBase<K, U, V> {
       private int lastScheduledIndex;
       private int currentIndex;
       private final CompletableFuture<?>[] tasks;
       private int batchIndex;
       private final Container<K, U, V> container;
 
-      SplitterBase(BiFunction<K, U, V> var1, int var2, int var3) {
+      private SplitterBase(final BiFunction<K, U, V> operation, final int size, final int taskCount) {
          super();
-         this.container = new Container<K, U, V>(var1, var2);
-         this.tasks = new CompletableFuture[var3];
+         this.container = new Container<K, U, V>(operation, size);
+         this.tasks = new CompletableFuture[taskCount];
       }
 
       private int pendingBatchSize() {
          return this.currentIndex - this.lastScheduledIndex;
       }
 
-      public CompletableFuture<Map<K, V>> scheduleTasks(Map<K, U> var1, Executor var2) {
-         var1.forEach((var2x, var3) -> {
-            this.container.put(this.currentIndex++, var2x, var3);
+      public CompletableFuture<Map<K, V>> scheduleTasks(final Map<K, U> input, final Executor executor) {
+         input.forEach((key, inputValue) -> {
+            this.container.put(this.currentIndex++, key, inputValue);
             if (this.pendingBatchSize() == this.batchSize(this.batchIndex)) {
-               this.tasks[this.batchIndex++] = this.scheduleBatch(this.container, this.lastScheduledIndex, this.currentIndex, var2);
+               this.tasks[this.batchIndex++] = this.scheduleBatch(this.container, this.lastScheduledIndex, this.currentIndex, executor);
                this.lastScheduledIndex = this.currentIndex;
             }
 
@@ -122,87 +119,87 @@ public class ParallelMapTransform {
          return this.scheduleFinalOperation(CompletableFuture.allOf(this.tasks), this.container);
       }
 
-      protected abstract int batchSize(int var1);
+      protected abstract int batchSize(int index);
 
-      protected abstract CompletableFuture<?> scheduleBatch(Container<K, U, V> var1, int var2, int var3, Executor var4);
+      protected abstract CompletableFuture<?> scheduleBatch(Container<K, U, V> container, int startIndex, int endIndex, Executor executor);
 
-      protected abstract CompletableFuture<Map<K, V>> scheduleFinalOperation(CompletableFuture<?> var1, Container<K, U, V> var2);
+      protected abstract CompletableFuture<Map<K, V>> scheduleFinalOperation(CompletableFuture<?> allTasksDone, Container<K, U, V> container);
    }
 
-   static class SingleTaskSplitter<K, U, V> extends SplitterBase<K, U, V> {
-      SingleTaskSplitter(BiFunction<K, U, V> var1, int var2) {
-         super(var1, var2, var2);
+   private static class SingleTaskSplitter<K, U, V> extends SplitterBase<K, U, V> {
+      private SingleTaskSplitter(final BiFunction<K, U, V> operation, final int size) {
+         super(operation, size, size);
       }
 
-      protected int batchSize(int var1) {
+      protected int batchSize(final int index) {
          return 1;
       }
 
-      protected CompletableFuture<?> scheduleBatch(Container<K, U, V> var1, int var2, int var3, Executor var4) {
-         assert var2 + 1 == var3;
+      protected CompletableFuture<?> scheduleBatch(final Container<K, U, V> container, final int startIndex, final int endIndex, final Executor executor) {
+         assert startIndex + 1 == endIndex;
 
-         return CompletableFuture.runAsync(() -> var1.applyOperation(var2), var4);
+         return CompletableFuture.runAsync(() -> container.applyOperation(startIndex), executor);
       }
 
-      protected CompletableFuture<Map<K, V>> scheduleFinalOperation(CompletableFuture<?> var1, Container<K, U, V> var2) {
-         return var1.thenApply((var1x) -> {
-            HashMap var2x = new HashMap(var2.size());
+      protected CompletableFuture<Map<K, V>> scheduleFinalOperation(final CompletableFuture<?> allTasksDone, final Container<K, U, V> container) {
+         return allTasksDone.thenApply((ignored) -> {
+            Map<K, V> result = new HashMap(container.size());
 
-            for(int var3 = 0; var3 < var2.size(); ++var3) {
-               var2.copyOut(var3, var2x);
+            for(int i = 0; i < container.size(); ++i) {
+               container.copyOut(i, result);
             }
 
-            return var2x;
+            return result;
          });
       }
    }
 
-   static class BatchedTaskSplitter<K, U, V> extends SplitterBase<K, U, V> {
+   private static class BatchedTaskSplitter<K, U, V> extends SplitterBase<K, U, V> {
       private final Map<K, V> result;
       private final int batchSize;
       private final int firstUndersizedBatchIndex;
 
-      BatchedTaskSplitter(BiFunction<K, U, V> var1, int var2, int var3) {
-         super(var1, var2, var3);
-         this.result = new HashMap(var2);
-         this.batchSize = Mth.positiveCeilDiv(var2, var3);
-         int var4 = this.batchSize * var3;
-         int var5 = var4 - var2;
-         this.firstUndersizedBatchIndex = var3 - var5;
+      private BatchedTaskSplitter(final BiFunction<K, U, V> operation, final int size, final int maxTasks) {
+         super(operation, size, maxTasks);
+         this.result = new HashMap(size);
+         this.batchSize = Mth.positiveCeilDiv(size, maxTasks);
+         int fullCapacity = this.batchSize * maxTasks;
+         int leftoverCapacity = fullCapacity - size;
+         this.firstUndersizedBatchIndex = maxTasks - leftoverCapacity;
 
-         assert this.firstUndersizedBatchIndex > 0 && this.firstUndersizedBatchIndex <= var3;
+         assert this.firstUndersizedBatchIndex > 0 && this.firstUndersizedBatchIndex <= maxTasks;
       }
 
-      protected CompletableFuture<?> scheduleBatch(Container<K, U, V> var1, int var2, int var3, Executor var4) {
-         int var5 = var3 - var2;
+      protected CompletableFuture<?> scheduleBatch(final Container<K, U, V> container, final int startIndex, final int endIndex, final Executor executor) {
+         int batchSize = endIndex - startIndex;
 
-         assert var5 == this.batchSize || var5 == this.batchSize - 1;
+         assert batchSize == this.batchSize || batchSize == this.batchSize - 1;
 
-         return CompletableFuture.runAsync(createTask(this.result, var2, var3, var1), var4);
+         return CompletableFuture.runAsync(createTask(this.result, startIndex, endIndex, container), executor);
       }
 
-      protected int batchSize(int var1) {
-         return var1 < this.firstUndersizedBatchIndex ? this.batchSize : this.batchSize - 1;
+      protected int batchSize(final int index) {
+         return index < this.firstUndersizedBatchIndex ? this.batchSize : this.batchSize - 1;
       }
 
-      private static <K, U, V> Runnable createTask(Map<K, V> var0, int var1, int var2, Container<K, U, V> var3) {
+      private static <K, U, V> Runnable createTask(final Map<K, V> result, final int startIndex, final int endIndex, final Container<K, U, V> container) {
          return () -> {
-            for(int var4 = var1; var4 < var2; ++var4) {
-               var3.applyOperation(var4);
+            for(int i = startIndex; i < endIndex; ++i) {
+               container.applyOperation(i);
             }
 
-            synchronized(var0) {
-               for(int var5 = var1; var5 < var2; ++var5) {
-                  var3.copyOut(var5, var0);
+            synchronized(result) {
+               for(int i = startIndex; i < endIndex; ++i) {
+                  container.copyOut(i, result);
                }
 
             }
          };
       }
 
-      protected CompletableFuture<Map<K, V>> scheduleFinalOperation(CompletableFuture<?> var1, Container<K, U, V> var2) {
-         Map var3 = this.result;
-         return var1.thenApply((var1x) -> var3);
+      protected CompletableFuture<Map<K, V>> scheduleFinalOperation(final CompletableFuture<?> allTasksDone, final Container<K, U, V> container) {
+         Map<K, V> result = this.result;
+         return allTasksDone.thenApply((ignored) -> result);
       }
    }
 }

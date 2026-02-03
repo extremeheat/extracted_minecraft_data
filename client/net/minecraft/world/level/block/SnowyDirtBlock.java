@@ -22,26 +22,26 @@ public class SnowyDirtBlock extends Block {
       return CODEC;
    }
 
-   protected SnowyDirtBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected SnowyDirtBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(SNOWY, false));
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var5 == Direction.UP ? (BlockState)var1.setValue(SNOWY, isSnowySetting(var7)) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return directionToNeighbour == Direction.UP ? (BlockState)state.setValue(SNOWY, isSnowySetting(neighbourState)) : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos().above());
-      return (BlockState)this.defaultBlockState().setValue(SNOWY, isSnowySetting(var2));
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState aboveState = context.getLevel().getBlockState(context.getClickedPos().above());
+      return (BlockState)this.defaultBlockState().setValue(SNOWY, isSnowySetting(aboveState));
    }
 
-   protected static boolean isSnowySetting(BlockState var0) {
-      return var0.is(BlockTags.SNOW);
+   protected static boolean isSnowySetting(final BlockState aboveState) {
+      return aboveState.is(BlockTags.SNOW);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(SNOWY);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(SNOWY);
    }
 
    static {

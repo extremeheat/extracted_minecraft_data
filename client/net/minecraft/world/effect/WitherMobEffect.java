@@ -6,19 +6,19 @@ import net.minecraft.world.entity.LivingEntity;
 public class WitherMobEffect extends MobEffect {
    public static final int DAMAGE_INTERVAL = 40;
 
-   protected WitherMobEffect(MobEffectCategory var1, int var2) {
-      super(var1, var2);
+   protected WitherMobEffect(final MobEffectCategory category, final int color) {
+      super(category, color);
    }
 
-   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
-      var2.hurtServer(var1, var2.damageSources().wither(), 1.0F);
+   public boolean applyEffectTick(final ServerLevel level, final LivingEntity mob, final int amplification) {
+      mob.hurtServer(level, mob.damageSources().wither(), 1.0F);
       return true;
    }
 
-   public boolean shouldApplyEffectTickThisTick(int var1, int var2) {
-      int var3 = 40 >> var2;
-      if (var3 > 0) {
-         return var1 % var3 == 0;
+   public boolean shouldApplyEffectTickThisTick(final int tickCount, final int amplification) {
+      int interval = 40 >> amplification;
+      if (interval > 0) {
+         return tickCount % interval == 0;
       } else {
          return true;
       }

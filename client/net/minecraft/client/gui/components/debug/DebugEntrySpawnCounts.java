@@ -18,19 +18,19 @@ public class DebugEntrySpawnCounts implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      Entity var6 = var5.getCameraEntity();
-      ServerLevel var7 = var2 instanceof ServerLevel ? (ServerLevel)var2 : null;
-      if (var6 != null && var7 != null) {
-         ServerChunkCache var8 = var7.getChunkSource();
-         NaturalSpawner.SpawnState var9 = var8.getLastSpawnState();
-         if (var9 != null) {
-            Object2IntMap var10 = var9.getMobCategoryCounts();
-            int var11 = var9.getSpawnableChunkCount();
-            var1.addLine("SC: " + var11 + ", " + (String)Stream.of(MobCategory.values()).map((var1x) -> {
-               char var10000 = Character.toUpperCase(var1x.getName().charAt(0));
-               return var10000 + ": " + var10.getInt(var1x);
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      Entity entity = minecraft.getCameraEntity();
+      ServerLevel serverLevel = serverOrClientLevel instanceof ServerLevel ? (ServerLevel)serverOrClientLevel : null;
+      if (entity != null && serverLevel != null) {
+         ServerChunkCache chunkSource = serverLevel.getChunkSource();
+         NaturalSpawner.SpawnState lastSpawnState = chunkSource.getLastSpawnState();
+         if (lastSpawnState != null) {
+            Object2IntMap<MobCategory> mobCategoryCounts = lastSpawnState.getMobCategoryCounts();
+            int chunkCount = lastSpawnState.getSpawnableChunkCount();
+            displayer.addLine("SC: " + chunkCount + ", " + (String)Stream.of(MobCategory.values()).map((c) -> {
+               char var10000 = Character.toUpperCase(c.getName().charAt(0));
+               return var10000 + ": " + mobCategoryCounts.getInt(c);
             }).collect(Collectors.joining(", ")));
          }
 

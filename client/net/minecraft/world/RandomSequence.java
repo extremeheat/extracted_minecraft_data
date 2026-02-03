@@ -9,33 +9,33 @@ import net.minecraft.world.level.levelgen.RandomSupport;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 
 public class RandomSequence {
-   public static final Codec<RandomSequence> CODEC = RecordCodecBuilder.create((var0) -> var0.group(XoroshiroRandomSource.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source)).apply(var0, RandomSequence::new));
+   public static final Codec<RandomSequence> CODEC = RecordCodecBuilder.create((i) -> i.group(XoroshiroRandomSource.CODEC.fieldOf("source").forGetter((r) -> r.source)).apply(i, RandomSequence::new));
    private final XoroshiroRandomSource source;
 
-   public RandomSequence(XoroshiroRandomSource var1) {
+   public RandomSequence(final XoroshiroRandomSource source) {
       super();
-      this.source = var1;
+      this.source = source;
    }
 
-   public RandomSequence(long var1, Identifier var3) {
-      this(createSequence(var1, Optional.of(var3)));
+   public RandomSequence(final long seed, final Identifier key) {
+      this(createSequence(seed, Optional.of(key)));
    }
 
-   public RandomSequence(long var1, Optional<Identifier> var3) {
-      this(createSequence(var1, var3));
+   public RandomSequence(final long seed, final Optional<Identifier> key) {
+      this(createSequence(seed, key));
    }
 
-   private static XoroshiroRandomSource createSequence(long var0, Optional<Identifier> var2) {
-      RandomSupport.Seed128bit var3 = RandomSupport.upgradeSeedTo128bitUnmixed(var0);
-      if (var2.isPresent()) {
-         var3 = var3.xor(seedForKey((Identifier)var2.get()));
+   private static XoroshiroRandomSource createSequence(final long seed, final Optional<Identifier> key) {
+      RandomSupport.Seed128bit seed128bit = RandomSupport.upgradeSeedTo128bitUnmixed(seed);
+      if (key.isPresent()) {
+         seed128bit = seed128bit.xor(seedForKey((Identifier)key.get()));
       }
 
-      return new XoroshiroRandomSource(var3.mixed());
+      return new XoroshiroRandomSource(seed128bit.mixed());
    }
 
-   public static RandomSupport.Seed128bit seedForKey(Identifier var0) {
-      return RandomSupport.seedFromHashOf(var0.toString());
+   public static RandomSupport.Seed128bit seedForKey(final Identifier key) {
+      return RandomSupport.seedFromHashOf(key.toString());
    }
 
    public RandomSource random() {

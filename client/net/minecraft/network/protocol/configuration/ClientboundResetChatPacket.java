@@ -17,8 +17,8 @@ public class ClientboundResetChatPacket implements Packet<ClientConfigurationPac
       return ConfigurationPacketTypes.CLIENTBOUND_RESET_CHAT;
    }
 
-   public void handle(ClientConfigurationPacketListener var1) {
-      var1.handleResetChat(this);
+   public void handle(final ClientConfigurationPacketListener listener) {
+      listener.handleResetChat(this);
    }
 
    static {

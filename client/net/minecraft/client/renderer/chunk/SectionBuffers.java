@@ -10,12 +10,12 @@ public final class SectionBuffers implements AutoCloseable {
    private int indexCount;
    private VertexFormat.IndexType indexType;
 
-   public SectionBuffers(GpuBuffer var1, @Nullable GpuBuffer var2, int var3, VertexFormat.IndexType var4) {
+   public SectionBuffers(final GpuBuffer vertexBuffer, final @Nullable GpuBuffer indexBuffer, final int indexCount, final VertexFormat.IndexType indexType) {
       super();
-      this.vertexBuffer = var1;
-      this.indexBuffer = var2;
-      this.indexCount = var3;
-      this.indexType = var4;
+      this.vertexBuffer = vertexBuffer;
+      this.indexBuffer = indexBuffer;
+      this.indexCount = indexCount;
+      this.indexType = indexType;
    }
 
    public GpuBuffer getVertexBuffer() {
@@ -26,8 +26,8 @@ public final class SectionBuffers implements AutoCloseable {
       return this.indexBuffer;
    }
 
-   public void setIndexBuffer(@Nullable GpuBuffer var1) {
-      this.indexBuffer = var1;
+   public void setIndexBuffer(final @Nullable GpuBuffer indexBuffer) {
+      this.indexBuffer = indexBuffer;
    }
 
    public int getIndexCount() {
@@ -38,16 +38,16 @@ public final class SectionBuffers implements AutoCloseable {
       return this.indexType;
    }
 
-   public void setIndexType(VertexFormat.IndexType var1) {
-      this.indexType = var1;
+   public void setIndexType(final VertexFormat.IndexType indexType) {
+      this.indexType = indexType;
    }
 
-   public void setIndexCount(int var1) {
-      this.indexCount = var1;
+   public void setIndexCount(final int indexCount) {
+      this.indexCount = indexCount;
    }
 
-   public void setVertexBuffer(GpuBuffer var1) {
-      this.vertexBuffer = var1;
+   public void setVertexBuffer(final GpuBuffer vertexBuffer) {
+      this.vertexBuffer = vertexBuffer;
    }
 
    public void close() {

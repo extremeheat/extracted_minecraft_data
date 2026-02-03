@@ -6,18 +6,18 @@ import java.util.Optional;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class RemoveEmptyItemInBrushableBlockFix extends NamedEntityWriteReadFix {
-   public RemoveEmptyItemInBrushableBlockFix(Schema var1) {
-      super(var1, false, "RemoveEmptyItemInSuspiciousBlockFix", References.BLOCK_ENTITY, "minecraft:brushable_block");
+   public RemoveEmptyItemInBrushableBlockFix(final Schema outputSchema) {
+      super(outputSchema, false, "RemoveEmptyItemInSuspiciousBlockFix", References.BLOCK_ENTITY, "minecraft:brushable_block");
    }
 
-   protected <T> Dynamic<T> fix(Dynamic<T> var1) {
-      Optional var2 = var1.get("item").result();
-      return var2.isPresent() && isEmptyStack((Dynamic)var2.get()) ? var1.remove("item") : var1;
+   protected <T> Dynamic<T> fix(final Dynamic<T> input) {
+      Optional<Dynamic<T>> item = input.get("item").result();
+      return item.isPresent() && isEmptyStack((Dynamic)item.get()) ? input.remove("item") : input;
    }
 
-   private static boolean isEmptyStack(Dynamic<?> var0) {
-      String var1 = NamespacedSchema.ensureNamespaced(var0.get("id").asString("minecraft:air"));
-      int var2 = var0.get("count").asInt(0);
-      return var1.equals("minecraft:air") || var2 == 0;
+   private static boolean isEmptyStack(final Dynamic<?> item) {
+      String id = NamespacedSchema.ensureNamespaced(item.get("id").asString("minecraft:air"));
+      int count = item.get("count").asInt(0);
+      return id.equals("minecraft:air") || count == 0;
    }
 }

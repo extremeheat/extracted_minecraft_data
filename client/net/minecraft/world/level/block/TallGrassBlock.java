@@ -20,27 +20,27 @@ public class TallGrassBlock extends VegetationBlock implements BonemealableBlock
       return CODEC;
    }
 
-   protected TallGrassBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected TallGrassBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return getGrownBlock(var3).defaultBlockState().canSurvive(var1, var2) && var1.isEmptyBlock(var2.above());
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return getGrownBlock(state).defaultBlockState().canSurvive(level, pos) && level.isEmptyBlock(pos.above());
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      DoublePlantBlock.placeAt(var1, getGrownBlock(var4).defaultBlockState(), var3, 2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      DoublePlantBlock.placeAt(level, getGrownBlock(state).defaultBlockState(), pos, 2);
    }
 
-   private static DoublePlantBlock getGrownBlock(BlockState var0) {
-      return (DoublePlantBlock)(var0.is(Blocks.FERN) ? Blocks.LARGE_FERN : Blocks.TALL_GRASS);
+   private static DoublePlantBlock getGrownBlock(final BlockState state) {
+      return (DoublePlantBlock)(state.is(Blocks.FERN) ? Blocks.LARGE_FERN : Blocks.TALL_GRASS);
    }
 }

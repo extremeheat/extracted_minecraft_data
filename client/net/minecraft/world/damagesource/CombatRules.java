@@ -18,31 +18,31 @@ public class CombatRules {
       super();
    }
 
-   public static float getDamageAfterAbsorb(LivingEntity var0, float var1, DamageSource var2, float var3, float var4) {
-      float var8;
+   public static float getDamageAfterAbsorb(final LivingEntity victim, final float damage, final DamageSource source, final float totalArmor, final float armorToughness) {
+      float modifiedArmorFraction;
       label12: {
-         float var5 = 2.0F + var4 / 4.0F;
-         float var6 = Mth.clamp(var3 - var1 / var5, var3 * 0.2F, 20.0F);
-         float var7 = var6 / 25.0F;
-         ItemStack var9 = var2.getWeaponItem();
-         if (var9 != null) {
-            Level var11 = var0.level();
+         float toughness = 2.0F + armorToughness / 4.0F;
+         float realArmor = Mth.clamp(totalArmor - damage / toughness, totalArmor * 0.2F, 20.0F);
+         float armorFraction = realArmor / 25.0F;
+         ItemStack weaponItem = source.getWeaponItem();
+         if (weaponItem != null) {
+            Level var11 = victim.level();
             if (var11 instanceof ServerLevel) {
-               ServerLevel var10 = (ServerLevel)var11;
-               var8 = Mth.clamp(EnchantmentHelper.modifyArmorEffectiveness(var10, var9, var0, var2, var7), 0.0F, 1.0F);
+               ServerLevel level = (ServerLevel)var11;
+               modifiedArmorFraction = Mth.clamp(EnchantmentHelper.modifyArmorEffectiveness(level, weaponItem, victim, source, armorFraction), 0.0F, 1.0F);
                break label12;
             }
          }
 
-         var8 = var7;
+         modifiedArmorFraction = armorFraction;
       }
 
-      float var12 = 1.0F - var8;
-      return var1 * var12;
+      float damageMultiplier = 1.0F - modifiedArmorFraction;
+      return damage * damageMultiplier;
    }
 
-   public static float getDamageAfterMagicAbsorb(float var0, float var1) {
-      float var2 = Mth.clamp(var1, 0.0F, 20.0F);
-      return var0 * (1.0F - var2 / 25.0F);
+   public static float getDamageAfterMagicAbsorb(final float damage, final float totalMagicArmor) {
+      float realArmor = Mth.clamp(totalMagicArmor, 0.0F, 20.0F);
+      return damage * (1.0F - realArmor / 25.0F);
    }
 }

@@ -7,18 +7,18 @@ import java.util.Optional;
 import net.minecraft.util.Util;
 
 public class OminousBannerRenameFix extends ItemStackTagFix {
-   public OminousBannerRenameFix(Schema var1) {
-      super(var1, "OminousBannerRenameFix", (var0) -> var0.equals("minecraft:white_banner"));
+   public OminousBannerRenameFix(final Schema outputSchema) {
+      super(outputSchema, "OminousBannerRenameFix", (id) -> id.equals("minecraft:white_banner"));
    }
 
-   private <T> Dynamic<T> fixItemStackTag(Dynamic<T> var1) {
-      return var1.update("display", (var0) -> var0.update("Name", (var0x) -> {
-            Optional var1 = var0x.asString().result();
-            return var1.isPresent() ? var0x.createString(((String)var1.get()).replace("\"translate\":\"block.minecraft.illager_banner\"", "\"translate\":\"block.minecraft.ominous_banner\"")) : var0x;
+   private <T> Dynamic<T> fixItemStackTag(final Dynamic<T> tag) {
+      return tag.update("display", (display) -> display.update("Name", (name) -> {
+            Optional<String> string = name.asString().result();
+            return string.isPresent() ? name.createString(((String)string.get()).replace("\"translate\":\"block.minecraft.illager_banner\"", "\"translate\":\"block.minecraft.ominous_banner\"")) : name;
          }));
    }
 
-   protected Typed<?> fixItemStackTag(Typed<?> var1) {
-      return Util.writeAndReadTypedOrThrow(var1, var1.getType(), this::fixItemStackTag);
+   protected Typed<?> fixItemStackTag(final Typed<?> tag) {
+      return Util.writeAndReadTypedOrThrow(tag, tag.getType(), this::fixItemStackTag);
    }
 }

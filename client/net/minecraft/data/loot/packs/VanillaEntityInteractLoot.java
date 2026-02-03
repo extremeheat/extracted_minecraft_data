@@ -12,12 +12,11 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 public record VanillaEntityInteractLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
-   public VanillaEntityInteractLoot(HolderLookup.Provider var1) {
+   public VanillaEntityInteractLoot {
       super();
-      this.registries = var1;
    }
 
-   public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
-      var1.accept(BuiltInLootTables.ARMADILLO_BRUSH, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.ARMADILLO_SCUTE))));
+   public void generate(final BiConsumer<ResourceKey<LootTable>, LootTable.Builder> output) {
+      output.accept(BuiltInLootTables.ARMADILLO_BRUSH, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.ARMADILLO_SCUTE))));
    }
 }

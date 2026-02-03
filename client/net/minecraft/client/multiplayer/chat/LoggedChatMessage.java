@@ -17,12 +17,12 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Util;
 
 public interface LoggedChatMessage extends LoggedChatEvent {
-   static Player player(GameProfile var0, PlayerChatMessage var1, ChatTrustLevel var2) {
-      return new Player(var0, var1, var2);
+   static Player player(final GameProfile profile, final PlayerChatMessage message, final ChatTrustLevel trustLevel) {
+      return new Player(profile, message, trustLevel);
    }
 
-   static System system(Component var0, Instant var1) {
-      return new System(var0, var1);
+   static System system(final Component message, final Instant timeStamp) {
+      return new System(message, timeStamp);
    }
 
    Component toContentComponent();
@@ -31,46 +31,43 @@ public interface LoggedChatMessage extends LoggedChatEvent {
       return this.toContentComponent();
    }
 
-   boolean canReport(UUID var1);
+   boolean canReport(UUID reportedPlayerId);
 
    public static record Player(GameProfile profile, PlayerChatMessage message, ChatTrustLevel trustLevel) implements LoggedChatMessage {
-      public static final MapCodec<Player> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.AUTHLIB_GAME_PROFILE.fieldOf("profile").forGetter(Player::profile), PlayerChatMessage.MAP_CODEC.forGetter(Player::message), ChatTrustLevel.CODEC.optionalFieldOf("trust_level", ChatTrustLevel.SECURE).forGetter(Player::trustLevel)).apply(var0, Player::new));
+      public static final MapCodec<Player> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.AUTHLIB_GAME_PROFILE.fieldOf("profile").forGetter(Player::profile), PlayerChatMessage.MAP_CODEC.forGetter(Player::message), ChatTrustLevel.CODEC.optionalFieldOf("trust_level", ChatTrustLevel.SECURE).forGetter(Player::trustLevel)).apply(i, Player::new));
       private static final DateTimeFormatter TIME_FORMATTER;
 
-      public Player(GameProfile var1, PlayerChatMessage var2, ChatTrustLevel var3) {
+      public Player {
          super();
-         this.profile = var1;
-         this.message = var2;
-         this.trustLevel = var3;
       }
 
       public Component toContentComponent() {
          if (!this.message.filterMask().isEmpty()) {
-            Component var1 = this.message.filterMask().applyWithFormatting(this.message.signedContent());
-            return (Component)(var1 != null ? var1 : Component.empty());
+            Component filtered = this.message.filterMask().applyWithFormatting(this.message.signedContent());
+            return (Component)(filtered != null ? filtered : Component.empty());
          } else {
             return this.message.decoratedContent();
          }
       }
 
       public Component toNarrationComponent() {
-         Component var1 = this.toContentComponent();
-         Component var2 = this.getTimeComponent();
-         return Component.translatable("gui.chatSelection.message.narrate", this.profile.name(), var1, var2);
+         Component content = this.toContentComponent();
+         Component time = this.getTimeComponent();
+         return Component.translatable("gui.chatSelection.message.narrate", this.profile.name(), content, time);
       }
 
       public Component toHeadingComponent() {
-         Component var1 = this.getTimeComponent();
-         return Component.translatable("gui.chatSelection.heading", this.profile.name(), var1);
+         Component time = this.getTimeComponent();
+         return Component.translatable("gui.chatSelection.heading", this.profile.name(), time);
       }
 
       private Component getTimeComponent() {
-         ZonedDateTime var1 = ZonedDateTime.ofInstant(this.message.timeStamp(), ZoneId.systemDefault());
-         return Component.literal(var1.format(TIME_FORMATTER)).withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY);
+         ZonedDateTime dateTime = ZonedDateTime.ofInstant(this.message.timeStamp(), ZoneId.systemDefault());
+         return Component.literal(dateTime.format(TIME_FORMATTER)).withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY);
       }
 
-      public boolean canReport(UUID var1) {
-         return this.message.hasSignatureFrom(var1);
+      public boolean canReport(final UUID reportedPlayerId) {
+         return this.message.hasSignatureFrom(reportedPlayerId);
       }
 
       public UUID profileId() {
@@ -87,19 +84,17 @@ public interface LoggedChatMessage extends LoggedChatEvent {
    }
 
    public static record System(Component message, Instant timeStamp) implements LoggedChatMessage {
-      public static final MapCodec<System> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ComponentSerialization.CODEC.fieldOf("message").forGetter(System::message), ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(System::timeStamp)).apply(var0, System::new));
+      public static final MapCodec<System> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ComponentSerialization.CODEC.fieldOf("message").forGetter(System::message), ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(System::timeStamp)).apply(i, System::new));
 
-      public System(Component var1, Instant var2) {
+      public System {
          super();
-         this.message = var1;
-         this.timeStamp = var2;
       }
 
       public Component toContentComponent() {
          return this.message;
       }
 
-      public boolean canReport(UUID var1) {
+      public boolean canReport(final UUID reportedPlayerId) {
          return false;
       }
 

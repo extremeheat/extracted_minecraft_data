@@ -12,15 +12,15 @@ public enum DialogAction implements StringRepresentable {
    NONE(1, "none"),
    WAIT_FOR_RESPONSE(2, "wait_for_response");
 
-   public static final IntFunction<DialogAction> BY_ID = ByIdMap.<DialogAction>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final IntFunction<DialogAction> BY_ID = ByIdMap.<DialogAction>continuous((s) -> s.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final StringRepresentable.EnumCodec<DialogAction> CODEC = StringRepresentable.<DialogAction>fromEnum(DialogAction::values);
-   public static final StreamCodec<ByteBuf, DialogAction> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+   public static final StreamCodec<ByteBuf, DialogAction> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (s) -> s.id);
    private final int id;
    private final String name;
 
-   private DialogAction(final int var3, final String var4) {
-      this.id = var3;
-      this.name = var4;
+   private DialogAction(final int id, final String name) {
+      this.id = id;
+      this.name = name;
    }
 
    public String getSerializedName() {

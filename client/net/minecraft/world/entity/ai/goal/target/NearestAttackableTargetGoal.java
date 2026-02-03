@@ -16,26 +16,26 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
    protected final Class<T> targetType;
    protected final int randomInterval;
    protected @Nullable LivingEntity target;
-   protected TargetingConditions targetConditions;
+   protected final TargetingConditions targetConditions;
 
-   public NearestAttackableTargetGoal(Mob var1, Class<T> var2, boolean var3) {
-      this(var1, var2, 10, var3, false, (TargetingConditions.Selector)null);
+   public NearestAttackableTargetGoal(final Mob mob, final Class<T> targetType, final boolean mustSee) {
+      this(mob, targetType, 10, mustSee, false, (TargetingConditions.Selector)null);
    }
 
-   public NearestAttackableTargetGoal(Mob var1, Class<T> var2, boolean var3, TargetingConditions.Selector var4) {
-      this(var1, var2, 10, var3, false, var4);
+   public NearestAttackableTargetGoal(final Mob mob, final Class<T> targetType, final boolean mustSee, final TargetingConditions.Selector selector) {
+      this(mob, targetType, 10, mustSee, false, selector);
    }
 
-   public NearestAttackableTargetGoal(Mob var1, Class<T> var2, boolean var3, boolean var4) {
-      this(var1, var2, 10, var3, var4, (TargetingConditions.Selector)null);
+   public NearestAttackableTargetGoal(final Mob mob, final Class<T> targetType, final boolean mustSee, final boolean mustReach) {
+      this(mob, targetType, 10, mustSee, mustReach, (TargetingConditions.Selector)null);
    }
 
-   public NearestAttackableTargetGoal(Mob var1, Class<T> var2, int var3, boolean var4, boolean var5, TargetingConditions.@Nullable Selector var6) {
-      super(var1, var4, var5);
-      this.targetType = var2;
-      this.randomInterval = reducedTickDelay(var3);
+   public NearestAttackableTargetGoal(final Mob mob, final Class<T> targetType, final int randomInterval, final boolean mustSee, final boolean mustReach, final TargetingConditions.@Nullable Selector selector) {
+      super(mob, mustSee, mustReach);
+      this.targetType = targetType;
+      this.randomInterval = reducedTickDelay(randomInterval);
       this.setFlags(EnumSet.of(Goal.Flag.TARGET));
-      this.targetConditions = TargetingConditions.forCombat().range(this.getFollowDistance()).selector(var6);
+      this.targetConditions = TargetingConditions.forCombat().range(this.getFollowDistance()).selector(selector);
    }
 
    public boolean canUse() {
@@ -47,16 +47,16 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
       }
    }
 
-   protected AABB getTargetSearchArea(double var1) {
-      return this.mob.getBoundingBox().inflate(var1, var1, var1);
+   protected AABB getTargetSearchArea(final double followDistance) {
+      return this.mob.getBoundingBox().inflate(followDistance, followDistance, followDistance);
    }
 
    protected void findTarget() {
-      ServerLevel var1 = getServerLevel(this.mob);
+      ServerLevel level = getServerLevel(this.mob);
       if (this.targetType != Player.class && this.targetType != ServerPlayer.class) {
-         this.target = var1.getNearestEntity(this.mob.level().getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance()), (var0) -> true), this.getTargetConditions(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+         this.target = level.getNearestEntity(this.mob.level().getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance()), (entity) -> true), this.getTargetConditions(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
       } else {
-         this.target = var1.getNearestPlayer(this.getTargetConditions(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+         this.target = level.getNearestPlayer(this.getTargetConditions(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
       }
 
    }
@@ -66,8 +66,8 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
       super.start();
    }
 
-   public void setTarget(@Nullable LivingEntity var1) {
-      this.target = var1;
+   public void setTarget(final @Nullable LivingEntity target) {
+      this.target = target;
    }
 
    private TargetingConditions getTargetConditions() {

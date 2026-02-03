@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.CrashReport;
@@ -42,7 +43,6 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
@@ -66,7 +66,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LevelChunk extends ChunkAccess implements DebugValueSource {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final TickingBlockEntity NULL_TICKER = new TickingBlockEntity() {
       public void tick() {
       }
@@ -85,7 +85,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
    };
    private final Map<BlockPos, RebindableTickingBlockEntityWrapper> tickersInLevel;
    private boolean loaded;
-   final Level level;
+   private final Level level;
    private @Nullable Supplier<FullChunkStatus> fullStatus;
    private @Nullable PostLoadProcessor postLoad;
    private final Int2ObjectMap<GameEventListenerRegistry> gameEventListenerRegistrySections;
@@ -93,71 +93,71 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
    private final LevelChunkTicks<Fluid> fluidTicks;
    private UnsavedListener unsavedListener;
 
-   public LevelChunk(Level var1, ChunkPos var2) {
-      this(var1, var2, UpgradeData.EMPTY, new LevelChunkTicks(), new LevelChunkTicks(), 0L, (LevelChunkSection[])null, (PostLoadProcessor)null, (BlendingData)null);
+   public LevelChunk(final Level level, final ChunkPos pos) {
+      this(level, pos, UpgradeData.EMPTY, new LevelChunkTicks(), new LevelChunkTicks(), 0L, (LevelChunkSection[])null, (PostLoadProcessor)null, (BlendingData)null);
    }
 
-   public LevelChunk(Level var1, ChunkPos var2, UpgradeData var3, LevelChunkTicks<Block> var4, LevelChunkTicks<Fluid> var5, long var6, LevelChunkSection @Nullable [] var8, @Nullable PostLoadProcessor var9, @Nullable BlendingData var10) {
-      super(var2, var3, var1, var1.palettedContainerFactory(), var6, var8, var10);
+   public LevelChunk(final Level level, final ChunkPos pos, final UpgradeData upgradeData, final LevelChunkTicks<Block> blockTicks, final LevelChunkTicks<Fluid> fluidTicks, final long inhabitedTime, final LevelChunkSection @Nullable [] sections, final @Nullable PostLoadProcessor postLoad, final @Nullable BlendingData blendingData) {
+      super(pos, upgradeData, level, level.palettedContainerFactory(), inhabitedTime, sections, blendingData);
       this.tickersInLevel = Maps.newHashMap();
-      this.unsavedListener = (var0) -> {
+      this.unsavedListener = (chunkPos) -> {
       };
-      this.level = var1;
+      this.level = level;
       this.gameEventListenerRegistrySections = new Int2ObjectOpenHashMap();
 
-      for(Heightmap.Types var14 : Heightmap.Types.values()) {
-         if (ChunkStatus.FULL.heightmapsAfter().contains(var14)) {
-            this.heightmaps.put(var14, new Heightmap(this, var14));
+      for(Heightmap.Types type : Heightmap.Types.values()) {
+         if (ChunkStatus.FULL.heightmapsAfter().contains(type)) {
+            this.heightmaps.put(type, new Heightmap(this, type));
          }
       }
 
-      this.postLoad = var9;
-      this.blockTicks = var4;
-      this.fluidTicks = var5;
+      this.postLoad = postLoad;
+      this.blockTicks = blockTicks;
+      this.fluidTicks = fluidTicks;
    }
 
-   public LevelChunk(ServerLevel var1, ProtoChunk var2, @Nullable PostLoadProcessor var3) {
-      this(var1, var2.getPos(), var2.getUpgradeData(), var2.unpackBlockTicks(), var2.unpackFluidTicks(), var2.getInhabitedTime(), var2.getSections(), var3, var2.getBlendingData());
-      if (!Collections.disjoint(var2.pendingBlockEntities.keySet(), var2.blockEntities.keySet())) {
-         LOGGER.error("Chunk at {} contains duplicated block entities", var2.getPos());
+   public LevelChunk(final ServerLevel level, final ProtoChunk protoChunk, final @Nullable PostLoadProcessor postLoad) {
+      this(level, protoChunk.getPos(), protoChunk.getUpgradeData(), protoChunk.unpackBlockTicks(), protoChunk.unpackFluidTicks(), protoChunk.getInhabitedTime(), protoChunk.getSections(), postLoad, protoChunk.getBlendingData());
+      if (!Collections.disjoint(protoChunk.pendingBlockEntities.keySet(), protoChunk.blockEntities.keySet())) {
+         LOGGER.error("Chunk at {} contains duplicated block entities", protoChunk.getPos());
       }
 
-      for(BlockEntity var5 : var2.getBlockEntities().values()) {
-         this.setBlockEntity(var5);
+      for(BlockEntity blockEntity : protoChunk.getBlockEntities().values()) {
+         this.setBlockEntity(blockEntity);
       }
 
-      this.pendingBlockEntities.putAll(var2.getBlockEntityNbts());
+      this.pendingBlockEntities.putAll(protoChunk.getBlockEntityNbts());
 
-      for(int var6 = 0; var6 < var2.getPostProcessing().length; ++var6) {
-         this.postProcessing[var6] = var2.getPostProcessing()[var6];
+      for(int i = 0; i < protoChunk.getPostProcessing().length; ++i) {
+         this.postProcessing[i] = protoChunk.getPostProcessing()[i];
       }
 
-      this.setAllStarts(var2.getAllStarts());
-      this.setAllReferences(var2.getAllReferences());
+      this.setAllStarts(protoChunk.getAllStarts());
+      this.setAllReferences(protoChunk.getAllReferences());
 
-      for(Map.Entry var8 : var2.getHeightmaps()) {
-         if (ChunkStatus.FULL.heightmapsAfter().contains(var8.getKey())) {
-            this.setHeightmap((Heightmap.Types)var8.getKey(), ((Heightmap)var8.getValue()).getRawData());
+      for(Map.Entry<Heightmap.Types, Heightmap> entry : protoChunk.getHeightmaps()) {
+         if (ChunkStatus.FULL.heightmapsAfter().contains(entry.getKey())) {
+            this.setHeightmap((Heightmap.Types)entry.getKey(), ((Heightmap)entry.getValue()).getRawData());
          }
       }
 
-      this.skyLightSources = var2.skyLightSources;
-      this.setLightCorrect(var2.isLightCorrect());
+      this.skyLightSources = protoChunk.skyLightSources;
+      this.setLightCorrect(protoChunk.isLightCorrect());
       this.markUnsaved();
    }
 
-   public void setUnsavedListener(UnsavedListener var1) {
-      this.unsavedListener = var1;
+   public void setUnsavedListener(final UnsavedListener unsavedListener) {
+      this.unsavedListener = unsavedListener;
       if (this.isUnsaved()) {
-         var1.setUnsaved(this.chunkPos);
+         unsavedListener.setUnsaved(this.chunkPos);
       }
 
    }
 
    public void markUnsaved() {
-      boolean var1 = this.isUnsaved();
+      boolean wasUnsaved = this.isUnsaved();
       super.markUnsaved();
-      if (!var1) {
+      if (!wasUnsaved) {
          this.unsavedListener.setUnsaved(this.chunkPos);
       }
 
@@ -171,163 +171,163 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       return this.fluidTicks;
    }
 
-   public ChunkAccess.PackedTicks getTicksForSerialization(long var1) {
-      return new ChunkAccess.PackedTicks(this.blockTicks.pack(var1), this.fluidTicks.pack(var1));
+   public ChunkAccess.PackedTicks getTicksForSerialization(final long currentTick) {
+      return new ChunkAccess.PackedTicks(this.blockTicks.pack(currentTick), this.fluidTicks.pack(currentTick));
    }
 
-   public GameEventListenerRegistry getListenerRegistry(int var1) {
+   public GameEventListenerRegistry getListenerRegistry(final int section) {
       Level var3 = this.level;
-      if (var3 instanceof ServerLevel var2) {
-         return (GameEventListenerRegistry)this.gameEventListenerRegistrySections.computeIfAbsent(var1, (var3x) -> new EuclideanGameEventListenerRegistry(var2, var1, this::removeGameEventListenerRegistry));
+      if (var3 instanceof ServerLevel serverLevel) {
+         return (GameEventListenerRegistry)this.gameEventListenerRegistrySections.computeIfAbsent(section, (key) -> new EuclideanGameEventListenerRegistry(serverLevel, section, this::removeGameEventListenerRegistry));
       } else {
-         return super.getListenerRegistry(var1);
+         return super.getListenerRegistry(section);
       }
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      int var2 = var1.getX();
-      int var3 = var1.getY();
-      int var4 = var1.getZ();
+   public BlockState getBlockState(final BlockPos pos) {
+      int x = pos.getX();
+      int y = pos.getY();
+      int z = pos.getZ();
       if (this.level.isDebug()) {
-         BlockState var9 = null;
-         if (var3 == 60) {
-            var9 = Blocks.BARRIER.defaultBlockState();
+         BlockState blockState = null;
+         if (y == 60) {
+            blockState = Blocks.BARRIER.defaultBlockState();
          }
 
-         if (var3 == 70) {
-            var9 = DebugLevelSource.getBlockStateFor(var2, var4);
+         if (y == 70) {
+            blockState = DebugLevelSource.getBlockStateFor(x, z);
          }
 
-         return var9 == null ? Blocks.AIR.defaultBlockState() : var9;
+         return blockState == null ? Blocks.AIR.defaultBlockState() : blockState;
       } else {
          try {
-            int var5 = this.getSectionIndex(var3);
-            if (var5 >= 0 && var5 < this.sections.length) {
-               LevelChunkSection var10 = this.sections[var5];
-               if (!var10.hasOnlyAir()) {
-                  return var10.getBlockState(var2 & 15, var3 & 15, var4 & 15);
+            int sectionIndex = this.getSectionIndex(y);
+            if (sectionIndex >= 0 && sectionIndex < this.sections.length) {
+               LevelChunkSection currentSection = this.sections[sectionIndex];
+               if (!currentSection.hasOnlyAir()) {
+                  return currentSection.getBlockState(x & 15, y & 15, z & 15);
                }
             }
 
             return Blocks.AIR.defaultBlockState();
-         } catch (Throwable var8) {
-            CrashReport var6 = CrashReport.forThrowable(var8, "Getting block state");
-            CrashReportCategory var7 = var6.addCategory("Block being got");
-            var7.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, var2, var3, var4)));
-            throw new ReportedException(var6);
+         } catch (Throwable t) {
+            CrashReport report = CrashReport.forThrowable(t, "Getting block state");
+            CrashReportCategory category = report.addCategory("Block being got");
+            category.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, x, y, z)));
+            throw new ReportedException(report);
          }
       }
    }
 
-   public FluidState getFluidState(BlockPos var1) {
-      return this.getFluidState(var1.getX(), var1.getY(), var1.getZ());
+   public FluidState getFluidState(final BlockPos pos) {
+      return this.getFluidState(pos.getX(), pos.getY(), pos.getZ());
    }
 
-   public FluidState getFluidState(int var1, int var2, int var3) {
+   public FluidState getFluidState(final int x, final int y, final int z) {
       try {
-         int var4 = this.getSectionIndex(var2);
-         if (var4 >= 0 && var4 < this.sections.length) {
-            LevelChunkSection var8 = this.sections[var4];
-            if (!var8.hasOnlyAir()) {
-               return var8.getFluidState(var1 & 15, var2 & 15, var3 & 15);
+         int sectionIndex = this.getSectionIndex(y);
+         if (sectionIndex >= 0 && sectionIndex < this.sections.length) {
+            LevelChunkSection currentSection = this.sections[sectionIndex];
+            if (!currentSection.hasOnlyAir()) {
+               return currentSection.getFluidState(x & 15, y & 15, z & 15);
             }
          }
 
          return Fluids.EMPTY.defaultFluidState();
-      } catch (Throwable var7) {
-         CrashReport var5 = CrashReport.forThrowable(var7, "Getting fluid state");
-         CrashReportCategory var6 = var5.addCategory("Block being got");
-         var6.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, var1, var2, var3)));
-         throw new ReportedException(var5);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Getting fluid state");
+         CrashReportCategory category = report.addCategory("Block being got");
+         category.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, x, y, z)));
+         throw new ReportedException(report);
       }
    }
 
-   public @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
-      int var4 = var1.getY();
-      LevelChunkSection var5 = this.getSection(this.getSectionIndex(var4));
-      boolean var6 = var5.hasOnlyAir();
-      if (var6 && var2.isAir()) {
+   public @Nullable BlockState setBlockState(final BlockPos pos, final BlockState state, final @Block.UpdateFlags int flags) {
+      int y = pos.getY();
+      LevelChunkSection section = this.getSection(this.getSectionIndex(y));
+      boolean wasEmpty = section.hasOnlyAir();
+      if (wasEmpty && state.isAir()) {
          return null;
       } else {
-         int var7 = var1.getX() & 15;
-         int var8 = var4 & 15;
-         int var9 = var1.getZ() & 15;
-         BlockState var10 = var5.setBlockState(var7, var8, var9, var2);
-         if (var10 == var2) {
+         int localX = pos.getX() & 15;
+         int localY = y & 15;
+         int localZ = pos.getZ() & 15;
+         BlockState oldState = section.setBlockState(localX, localY, localZ, state);
+         if (oldState == state) {
             return null;
          } else {
-            Block var11 = var2.getBlock();
-            ((Heightmap)this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING)).update(var7, var4, var9, var2);
-            ((Heightmap)this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES)).update(var7, var4, var9, var2);
-            ((Heightmap)this.heightmaps.get(Heightmap.Types.OCEAN_FLOOR)).update(var7, var4, var9, var2);
-            ((Heightmap)this.heightmaps.get(Heightmap.Types.WORLD_SURFACE)).update(var7, var4, var9, var2);
-            boolean var12 = var5.hasOnlyAir();
-            if (var6 != var12) {
-               this.level.getChunkSource().getLightEngine().updateSectionStatus(var1, var12);
-               this.level.getChunkSource().onSectionEmptinessChanged(this.chunkPos.x, SectionPos.blockToSectionCoord(var4), this.chunkPos.z, var12);
+            Block newBlock = state.getBlock();
+            ((Heightmap)this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING)).update(localX, y, localZ, state);
+            ((Heightmap)this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES)).update(localX, y, localZ, state);
+            ((Heightmap)this.heightmaps.get(Heightmap.Types.OCEAN_FLOOR)).update(localX, y, localZ, state);
+            ((Heightmap)this.heightmaps.get(Heightmap.Types.WORLD_SURFACE)).update(localX, y, localZ, state);
+            boolean isEmpty = section.hasOnlyAir();
+            if (wasEmpty != isEmpty) {
+               this.level.getChunkSource().getLightEngine().updateSectionStatus(pos, isEmpty);
+               this.level.getChunkSource().onSectionEmptinessChanged(this.chunkPos.x(), SectionPos.blockToSectionCoord(y), this.chunkPos.z(), isEmpty);
             }
 
-            if (LightEngine.hasDifferentLightProperties(var10, var2)) {
-               ProfilerFiller var13 = Profiler.get();
-               var13.push("updateSkyLightSources");
-               this.skyLightSources.update(this, var7, var4, var9);
-               var13.popPush("queueCheckLight");
-               this.level.getChunkSource().getLightEngine().checkBlock(var1);
-               var13.pop();
+            if (LightEngine.hasDifferentLightProperties(oldState, state)) {
+               ProfilerFiller profiler = Profiler.get();
+               profiler.push("updateSkyLightSources");
+               this.skyLightSources.update(this, localX, y, localZ);
+               profiler.popPush("queueCheckLight");
+               this.level.getChunkSource().getLightEngine().checkBlock(pos);
+               profiler.pop();
             }
 
-            boolean var18 = !var10.is(var11);
-            boolean var14 = (var3 & 64) != 0;
-            boolean var15 = (var3 & 256) == 0;
-            if (var18 && var10.hasBlockEntity() && !var2.shouldChangedStateKeepBlockEntity(var10)) {
-               if (!this.level.isClientSide() && var15) {
-                  BlockEntity var16 = this.level.getBlockEntity(var1);
-                  if (var16 != null) {
-                     var16.preRemoveSideEffects(var1, var10);
+            boolean blockChanged = !oldState.is(newBlock);
+            boolean movedByPiston = (flags & 64) != 0;
+            boolean sideEffects = (flags & 256) == 0;
+            if (blockChanged && oldState.hasBlockEntity() && !state.shouldChangedStateKeepBlockEntity(oldState)) {
+               if (!this.level.isClientSide() && sideEffects) {
+                  BlockEntity blockEntity = this.level.getBlockEntity(pos);
+                  if (blockEntity != null) {
+                     blockEntity.preRemoveSideEffects(pos, oldState);
                   }
                }
 
-               this.removeBlockEntity(var1);
+               this.removeBlockEntity(pos);
             }
 
-            if (var18 || var11 instanceof BaseRailBlock) {
+            if (blockChanged || newBlock instanceof BaseRailBlock) {
                Level var17 = this.level;
                if (var17 instanceof ServerLevel) {
-                  ServerLevel var19 = (ServerLevel)var17;
-                  if ((var3 & 1) != 0 || var14) {
-                     var10.affectNeighborsAfterRemoval(var19, var1, var14);
+                  ServerLevel serverLevel = (ServerLevel)var17;
+                  if ((flags & 1) != 0 || movedByPiston) {
+                     oldState.affectNeighborsAfterRemoval(serverLevel, pos, movedByPiston);
                   }
                }
             }
 
-            if (!var5.getBlockState(var7, var8, var9).is(var11)) {
+            if (!section.getBlockState(localX, localY, localZ).is(newBlock)) {
                return null;
             } else {
-               if (!this.level.isClientSide() && (var3 & 512) == 0) {
-                  var2.onPlace(this.level, var1, var10, var14);
+               if (!this.level.isClientSide() && (flags & 512) == 0) {
+                  state.onPlace(this.level, pos, oldState, movedByPiston);
                }
 
-               if (var2.hasBlockEntity()) {
-                  BlockEntity var20 = this.getBlockEntity(var1, LevelChunk.EntityCreationType.CHECK);
-                  if (var20 != null && !var20.isValidBlockState(var2)) {
-                     LOGGER.warn("Found mismatched block entity @ {}: type = {}, state = {}", new Object[]{var1, var20.getType().builtInRegistryHolder().key().identifier(), var2});
-                     this.removeBlockEntity(var1);
-                     var20 = null;
+               if (state.hasBlockEntity()) {
+                  BlockEntity blockEntity = this.getBlockEntity(pos, LevelChunk.EntityCreationType.CHECK);
+                  if (blockEntity != null && !blockEntity.isValidBlockState(state)) {
+                     LOGGER.warn("Found mismatched block entity @ {}: type = {}, state = {}", new Object[]{pos, blockEntity.typeHolder().getRegisteredName(), state});
+                     this.removeBlockEntity(pos);
+                     blockEntity = null;
                   }
 
-                  if (var20 == null) {
-                     var20 = ((EntityBlock)var11).newBlockEntity(var1, var2);
-                     if (var20 != null) {
-                        this.addAndRegisterBlockEntity(var20);
+                  if (blockEntity == null) {
+                     blockEntity = ((EntityBlock)newBlock).newBlockEntity(pos, state);
+                     if (blockEntity != null) {
+                        this.addAndRegisterBlockEntity(blockEntity);
                      }
                   } else {
-                     var20.setBlockState(var2);
-                     this.updateBlockEntityTicker(var20);
+                     blockEntity.setBlockState(state);
+                     this.updateBlockEntityTicker(blockEntity);
                   }
                }
 
                this.markUnsaved();
-               return var10;
+               return oldState;
             }
          }
       }
@@ -335,56 +335,56 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
 
    /** @deprecated */
    @Deprecated
-   public void addEntity(Entity var1) {
+   public void addEntity(final Entity entity) {
    }
 
-   private @Nullable BlockEntity createBlockEntity(BlockPos var1) {
-      BlockState var2 = this.getBlockState(var1);
-      return !var2.hasBlockEntity() ? null : ((EntityBlock)var2.getBlock()).newBlockEntity(var1, var2);
+   private @Nullable BlockEntity createBlockEntity(final BlockPos pos) {
+      BlockState state = this.getBlockState(pos);
+      return !state.hasBlockEntity() ? null : ((EntityBlock)state.getBlock()).newBlockEntity(pos, state);
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
-      return this.getBlockEntity(var1, LevelChunk.EntityCreationType.CHECK);
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
+      return this.getBlockEntity(pos, LevelChunk.EntityCreationType.CHECK);
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1, EntityCreationType var2) {
-      BlockEntity var3 = (BlockEntity)this.blockEntities.get(var1);
-      if (var3 == null) {
-         CompoundTag var4 = (CompoundTag)this.pendingBlockEntities.remove(var1);
-         if (var4 != null) {
-            BlockEntity var5 = this.promotePendingBlockEntity(var1, var4);
-            if (var5 != null) {
-               return var5;
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos, final EntityCreationType creationType) {
+      BlockEntity blockEntity = (BlockEntity)this.blockEntities.get(pos);
+      if (blockEntity == null) {
+         CompoundTag tag = (CompoundTag)this.pendingBlockEntities.remove(pos);
+         if (tag != null) {
+            BlockEntity promoted = this.promotePendingBlockEntity(pos, tag);
+            if (promoted != null) {
+               return promoted;
             }
          }
       }
 
-      if (var3 == null) {
-         if (var2 == LevelChunk.EntityCreationType.IMMEDIATE) {
-            var3 = this.createBlockEntity(var1);
-            if (var3 != null) {
-               this.addAndRegisterBlockEntity(var3);
+      if (blockEntity == null) {
+         if (creationType == LevelChunk.EntityCreationType.IMMEDIATE) {
+            blockEntity = this.createBlockEntity(pos);
+            if (blockEntity != null) {
+               this.addAndRegisterBlockEntity(blockEntity);
             }
          }
-      } else if (var3.isRemoved()) {
-         this.blockEntities.remove(var1);
+      } else if (blockEntity.isRemoved()) {
+         this.blockEntities.remove(pos);
          return null;
       }
 
-      return var3;
+      return blockEntity;
    }
 
-   public void addAndRegisterBlockEntity(BlockEntity var1) {
-      this.setBlockEntity(var1);
+   public void addAndRegisterBlockEntity(final BlockEntity blockEntity) {
+      this.setBlockEntity(blockEntity);
       if (this.isInLevel()) {
          Level var3 = this.level;
          if (var3 instanceof ServerLevel) {
-            ServerLevel var2 = (ServerLevel)var3;
-            this.addGameEventListener(var1, var2);
+            ServerLevel serverLevel = (ServerLevel)var3;
+            this.addGameEventListener(blockEntity, serverLevel);
          }
 
-         this.level.onBlockEntityAdded(var1);
-         this.updateBlockEntityTicker(var1);
+         this.level.onBlockEntityAdded(blockEntity);
+         this.updateBlockEntityTicker(blockEntity);
       }
 
    }
@@ -393,106 +393,106 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       return this.loaded || this.level.isClientSide();
    }
 
-   boolean isTicking(BlockPos var1) {
-      if (!this.level.getWorldBorder().isWithinBounds(var1)) {
+   private boolean isTicking(final BlockPos pos) {
+      if (!this.level.getWorldBorder().isWithinBounds(pos)) {
          return false;
       } else {
          Level var3 = this.level;
          if (!(var3 instanceof ServerLevel)) {
             return true;
          } else {
-            ServerLevel var2 = (ServerLevel)var3;
-            return this.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING) && var2.areEntitiesLoaded(ChunkPos.asLong(var1));
+            ServerLevel serverLevel = (ServerLevel)var3;
+            return this.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING) && serverLevel.areEntitiesLoaded(ChunkPos.pack(pos));
          }
       }
    }
 
-   public void setBlockEntity(BlockEntity var1) {
-      BlockPos var2 = var1.getBlockPos();
-      BlockState var3 = this.getBlockState(var2);
-      if (!var3.hasBlockEntity()) {
-         LOGGER.warn("Trying to set block entity {} at position {}, but state {} does not allow it", new Object[]{var1, var2, var3});
+   public void setBlockEntity(final BlockEntity blockEntity) {
+      BlockPos pos = blockEntity.getBlockPos();
+      BlockState blockState = this.getBlockState(pos);
+      if (!blockState.hasBlockEntity()) {
+         LOGGER.warn("Trying to set block entity {} at position {}, but state {} does not allow it", new Object[]{blockEntity, pos, blockState});
       } else {
-         BlockState var4 = var1.getBlockState();
-         if (var3 != var4) {
-            if (!var1.getType().isValid(var3)) {
-               LOGGER.warn("Trying to set block entity {} at position {}, but state {} does not allow it", new Object[]{var1, var2, var3});
+         BlockState cachedBlockState = blockEntity.getBlockState();
+         if (blockState != cachedBlockState) {
+            if (!blockEntity.getType().isValid(blockState)) {
+               LOGGER.warn("Trying to set block entity {} at position {}, but state {} does not allow it", new Object[]{blockEntity, pos, blockState});
                return;
             }
 
-            if (var3.getBlock() != var4.getBlock()) {
-               LOGGER.warn("Block state mismatch on block entity {} in position {}, {} != {}, updating", new Object[]{var1, var2, var3, var4});
+            if (blockState.getBlock() != cachedBlockState.getBlock()) {
+               LOGGER.warn("Block state mismatch on block entity {} in position {}, {} != {}, updating", new Object[]{blockEntity, pos, blockState, cachedBlockState});
             }
 
-            var1.setBlockState(var3);
+            blockEntity.setBlockState(blockState);
          }
 
-         var1.setLevel(this.level);
-         var1.clearRemoved();
-         BlockEntity var5 = (BlockEntity)this.blockEntities.put(var2.immutable(), var1);
-         if (var5 != null && var5 != var1) {
-            var5.setRemoved();
+         blockEntity.setLevel(this.level);
+         blockEntity.clearRemoved();
+         BlockEntity previousEntry = (BlockEntity)this.blockEntities.put(pos.immutable(), blockEntity);
+         if (previousEntry != null && previousEntry != blockEntity) {
+            previousEntry.setRemoved();
          }
 
       }
    }
 
-   public @Nullable CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
-      BlockEntity var3 = this.getBlockEntity(var1);
-      if (var3 != null && !var3.isRemoved()) {
-         CompoundTag var5 = var3.saveWithFullMetadata((HolderLookup.Provider)this.level.registryAccess());
-         var5.putBoolean("keepPacked", false);
-         return var5;
+   public @Nullable CompoundTag getBlockEntityNbtForSaving(final BlockPos blockPos, final HolderLookup.Provider registryAccess) {
+      BlockEntity blockEntity = this.getBlockEntity(blockPos);
+      if (blockEntity != null && !blockEntity.isRemoved()) {
+         CompoundTag result = blockEntity.saveWithFullMetadata((HolderLookup.Provider)this.level.registryAccess());
+         result.putBoolean("keepPacked", false);
+         return result;
       } else {
-         CompoundTag var4 = (CompoundTag)this.pendingBlockEntities.get(var1);
-         if (var4 != null) {
-            var4 = var4.copy();
-            var4.putBoolean("keepPacked", true);
+         CompoundTag result = (CompoundTag)this.pendingBlockEntities.get(blockPos);
+         if (result != null) {
+            result = result.copy();
+            result.putBoolean("keepPacked", true);
          }
 
-         return var4;
+         return result;
       }
    }
 
-   public void removeBlockEntity(BlockPos var1) {
+   public void removeBlockEntity(final BlockPos pos) {
       if (this.isInLevel()) {
-         BlockEntity var2 = (BlockEntity)this.blockEntities.remove(var1);
-         if (var2 != null) {
+         BlockEntity removeThis = (BlockEntity)this.blockEntities.remove(pos);
+         if (removeThis != null) {
             Level var4 = this.level;
             if (var4 instanceof ServerLevel) {
-               ServerLevel var3 = (ServerLevel)var4;
-               this.removeGameEventListener(var2, var3);
-               var3.debugSynchronizers().dropBlockEntity(var1);
+               ServerLevel serverLevel = (ServerLevel)var4;
+               this.removeGameEventListener(removeThis, serverLevel);
+               serverLevel.debugSynchronizers().dropBlockEntity(pos);
             }
 
-            var2.setRemoved();
+            removeThis.setRemoved();
          }
       }
 
-      this.removeBlockEntityTicker(var1);
+      this.removeBlockEntityTicker(pos);
    }
 
-   private <T extends BlockEntity> void removeGameEventListener(T var1, ServerLevel var2) {
-      Block var3 = var1.getBlockState().getBlock();
-      if (var3 instanceof EntityBlock) {
-         GameEventListener var4 = ((EntityBlock)var3).getListener(var2, var1);
-         if (var4 != null) {
-            int var5 = SectionPos.blockToSectionCoord(var1.getBlockPos().getY());
-            GameEventListenerRegistry var6 = this.getListenerRegistry(var5);
-            var6.unregister(var4);
+   private <T extends BlockEntity> void removeGameEventListener(final T blockEntity, final ServerLevel level) {
+      Block block = blockEntity.getBlockState().getBlock();
+      if (block instanceof EntityBlock) {
+         GameEventListener listener = ((EntityBlock)block).getListener(level, blockEntity);
+         if (listener != null) {
+            int section = SectionPos.blockToSectionCoord(blockEntity.getBlockPos().getY());
+            GameEventListenerRegistry listenerRegistry = this.getListenerRegistry(section);
+            listenerRegistry.unregister(listener);
          }
       }
 
    }
 
-   private void removeGameEventListenerRegistry(int var1) {
-      this.gameEventListenerRegistrySections.remove(var1);
+   private void removeGameEventListenerRegistry(final int sectionY) {
+      this.gameEventListenerRegistrySections.remove(sectionY);
    }
 
-   private void removeBlockEntityTicker(BlockPos var1) {
-      RebindableTickingBlockEntityWrapper var2 = (RebindableTickingBlockEntityWrapper)this.tickersInLevel.remove(var1);
-      if (var2 != null) {
-         var2.rebind(NULL_TICKER);
+   private void removeBlockEntityTicker(final BlockPos pos) {
+      RebindableTickingBlockEntityWrapper ticker = (RebindableTickingBlockEntityWrapper)this.tickersInLevel.remove(pos);
+      if (ticker != null) {
+         ticker.rebind(NULL_TICKER);
       }
 
    }
@@ -509,21 +509,21 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       return false;
    }
 
-   public void replaceWithPacketData(FriendlyByteBuf var1, Map<Heightmap.Types, long[]> var2, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> var3) {
+   public void replaceWithPacketData(final FriendlyByteBuf buffer, final Map<Heightmap.Types, long[]> heightmaps, final Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> blockEntities) {
       this.clearAllBlockEntities();
 
-      for(LevelChunkSection var7 : this.sections) {
-         var7.read(var1);
+      for(LevelChunkSection section : this.sections) {
+         section.read(buffer);
       }
 
-      var2.forEach(this::setHeightmap);
+      heightmaps.forEach(this::setHeightmap);
       this.initializeLightSources();
 
-      try (ProblemReporter.ScopedCollector var10 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-         var3.accept((ClientboundLevelChunkPacketData.BlockEntityTagOutput)(var2x, var3x, var4) -> {
-            BlockEntity var5 = this.getBlockEntity(var2x, LevelChunk.EntityCreationType.IMMEDIATE);
-            if (var5 != null && var4 != null && var5.getType() == var3x) {
-               var5.loadWithComponents(TagValueInput.create(var10.forChild(var5.problemPath()), this.level.registryAccess(), var4));
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         blockEntities.accept((ClientboundLevelChunkPacketData.BlockEntityTagOutput)(pos, type, tag) -> {
+            BlockEntity blockEntity = this.getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE);
+            if (blockEntity != null && tag != null && blockEntity.getType() == type) {
+               blockEntity.loadWithComponents(TagValueInput.create(reporter.forChild(blockEntity.problemPath()), this.level.registryAccess(), tag));
             }
 
          });
@@ -531,15 +531,15 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
 
    }
 
-   public void replaceBiomes(FriendlyByteBuf var1) {
-      for(LevelChunkSection var5 : this.sections) {
-         var5.readBiomes(var1);
+   public void replaceBiomes(final FriendlyByteBuf buffer) {
+      for(LevelChunkSection section : this.sections) {
+         section.readBiomes(buffer);
       }
 
    }
 
-   public void setLoaded(boolean var1) {
-      this.loaded = var1;
+   public void setLoaded(final boolean loaded) {
+      this.loaded = loaded;
    }
 
    public Level getLevel() {
@@ -550,108 +550,108 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       return this.blockEntities;
    }
 
-   public void postProcessGeneration(ServerLevel var1) {
-      ChunkPos var2 = this.getPos();
+   public void postProcessGeneration(final ServerLevel level) {
+      ChunkPos chunkPos = this.getPos();
 
-      for(int var3 = 0; var3 < this.postProcessing.length; ++var3) {
-         ShortList var4 = this.postProcessing[var3];
-         if (var4 != null) {
-            ShortListIterator var5 = var4.iterator();
+      for(int sectionIndex = 0; sectionIndex < this.postProcessing.length; ++sectionIndex) {
+         ShortList postProcessingSection = this.postProcessing[sectionIndex];
+         if (postProcessingSection != null) {
+            ShortListIterator var5 = postProcessingSection.iterator();
 
             while(var5.hasNext()) {
-               Short var6 = (Short)var5.next();
-               BlockPos var7 = ProtoChunk.unpackOffsetCoordinates(var6, this.getSectionYFromSectionIndex(var3), var2);
-               BlockState var8 = this.getBlockState(var7);
-               FluidState var9 = var8.getFluidState();
-               if (!var9.isEmpty()) {
-                  var9.tick(var1, var7, var8);
+               Short packedOffset = (Short)var5.next();
+               BlockPos blockPos = ProtoChunk.unpackOffsetCoordinates(packedOffset, this.getSectionYFromSectionIndex(sectionIndex), chunkPos);
+               BlockState blockState = this.getBlockState(blockPos);
+               FluidState fluidState = blockState.getFluidState();
+               if (!fluidState.isEmpty()) {
+                  fluidState.tick(level, blockPos, blockState);
                }
 
-               if (!(var8.getBlock() instanceof LiquidBlock)) {
-                  BlockState var10 = Block.updateFromNeighbourShapes(var8, var1, var7);
-                  if (var10 != var8) {
-                     var1.setBlock(var7, var10, 276);
+               if (!(blockState.getBlock() instanceof LiquidBlock)) {
+                  BlockState blockStateNew = Block.updateFromNeighbourShapes(blockState, level, blockPos);
+                  if (blockStateNew != blockState) {
+                     level.setBlock(blockPos, blockStateNew, 276);
                   }
                }
             }
 
-            var4.clear();
+            postProcessingSection.clear();
          }
       }
 
       UnmodifiableIterator var11 = ImmutableList.copyOf(this.pendingBlockEntities.keySet()).iterator();
 
       while(var11.hasNext()) {
-         BlockPos var12 = (BlockPos)var11.next();
-         this.getBlockEntity(var12);
+         BlockPos pos = (BlockPos)var11.next();
+         this.getBlockEntity(pos);
       }
 
       this.pendingBlockEntities.clear();
       this.upgradeData.upgrade(this);
    }
 
-   private @Nullable BlockEntity promotePendingBlockEntity(BlockPos var1, CompoundTag var2) {
-      BlockState var4 = this.getBlockState(var1);
-      BlockEntity var3;
-      if ("DUMMY".equals(var2.getStringOr("id", ""))) {
-         if (var4.hasBlockEntity()) {
-            var3 = ((EntityBlock)var4.getBlock()).newBlockEntity(var1, var4);
+   private @Nullable BlockEntity promotePendingBlockEntity(final BlockPos pos, final CompoundTag tag) {
+      BlockState state = this.getBlockState(pos);
+      BlockEntity blockEntity;
+      if ("DUMMY".equals(tag.getStringOr("id", ""))) {
+         if (state.hasBlockEntity()) {
+            blockEntity = ((EntityBlock)state.getBlock()).newBlockEntity(pos, state);
          } else {
-            var3 = null;
-            LOGGER.warn("Tried to load a DUMMY block entity @ {} but found not block entity block {} at location", var1, var4);
+            blockEntity = null;
+            LOGGER.warn("Tried to load a DUMMY block entity @ {} but found not block entity block {} at location", pos, state);
          }
       } else {
-         var3 = BlockEntity.loadStatic(var1, var4, var2, this.level.registryAccess());
+         blockEntity = BlockEntity.loadStatic(pos, state, tag, this.level.registryAccess());
       }
 
-      if (var3 != null) {
-         var3.setLevel(this.level);
-         this.addAndRegisterBlockEntity(var3);
+      if (blockEntity != null) {
+         blockEntity.setLevel(this.level);
+         this.addAndRegisterBlockEntity(blockEntity);
       } else {
-         LOGGER.warn("Tried to load a block entity for block {} but failed at location {}", var4, var1);
+         LOGGER.warn("Tried to load a block entity for block {} but failed at location {}", state, pos);
       }
 
-      return var3;
+      return blockEntity;
    }
 
-   public void unpackTicks(long var1) {
-      this.blockTicks.unpack(var1);
-      this.fluidTicks.unpack(var1);
+   public void unpackTicks(final long currentTick) {
+      this.blockTicks.unpack(currentTick);
+      this.fluidTicks.unpack(currentTick);
    }
 
-   public void registerTickContainerInLevel(ServerLevel var1) {
-      var1.getBlockTicks().addContainer(this.chunkPos, this.blockTicks);
-      var1.getFluidTicks().addContainer(this.chunkPos, this.fluidTicks);
+   public void registerTickContainerInLevel(final ServerLevel level) {
+      level.getBlockTicks().addContainer(this.chunkPos, this.blockTicks);
+      level.getFluidTicks().addContainer(this.chunkPos, this.fluidTicks);
    }
 
-   public void unregisterTickContainerFromLevel(ServerLevel var1) {
-      var1.getBlockTicks().removeContainer(this.chunkPos);
-      var1.getFluidTicks().removeContainer(this.chunkPos);
+   public void unregisterTickContainerFromLevel(final ServerLevel level) {
+      level.getBlockTicks().removeContainer(this.chunkPos);
+      level.getFluidTicks().removeContainer(this.chunkPos);
    }
 
-   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
+   public void registerDebugValues(final ServerLevel level, final DebugValueSource.Registration registration) {
       if (!this.getAllStarts().isEmpty()) {
-         var2.register(DebugSubscriptions.STRUCTURES, () -> {
-            ArrayList var1 = new ArrayList();
+         registration.register(DebugSubscriptions.STRUCTURES, () -> {
+            List<DebugStructureInfo> structures = new ArrayList();
 
-            for(StructureStart var3 : this.getAllStarts().values()) {
-               BoundingBox var4 = var3.getBoundingBox();
-               List var5 = var3.getPieces();
-               ArrayList var6 = new ArrayList(var5.size());
+            for(StructureStart start : this.getAllStarts().values()) {
+               BoundingBox boundingBox = start.getBoundingBox();
+               List<StructurePiece> pieces = start.getPieces();
+               List<DebugStructureInfo.Piece> pieceInfos = new ArrayList(pieces.size());
 
-               for(int var7 = 0; var7 < var5.size(); ++var7) {
-                  boolean var8 = var7 == 0;
-                  var6.add(new DebugStructureInfo.Piece(((StructurePiece)var5.get(var7)).getBoundingBox(), var8));
+               for(int i = 0; i < pieces.size(); ++i) {
+                  boolean isStart = i == 0;
+                  pieceInfos.add(new DebugStructureInfo.Piece(((StructurePiece)pieces.get(i)).getBoundingBox(), isStart));
                }
 
-               var1.add(new DebugStructureInfo(var4, var6));
+               structures.add(new DebugStructureInfo(boundingBox, pieceInfos));
             }
 
-            return var1;
+            return structures;
          });
       }
 
-      var2.register(DebugSubscriptions.RAIDS, () -> var1.getRaids().getRaidCentersInChunk(this.chunkPos));
+      registration.register(DebugSubscriptions.RAIDS, () -> level.getRaids().getRaidCentersInChunk(this.chunkPos));
    }
 
    public ChunkStatus getPersistedStatus() {
@@ -662,55 +662,55 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       return this.fullStatus == null ? FullChunkStatus.FULL : (FullChunkStatus)this.fullStatus.get();
    }
 
-   public void setFullStatus(Supplier<FullChunkStatus> var1) {
-      this.fullStatus = var1;
+   public void setFullStatus(final Supplier<FullChunkStatus> fullStatus) {
+      this.fullStatus = fullStatus;
    }
 
    public void clearAllBlockEntities() {
       this.blockEntities.values().forEach(BlockEntity::setRemoved);
       this.blockEntities.clear();
-      this.tickersInLevel.values().forEach((var0) -> var0.rebind(NULL_TICKER));
+      this.tickersInLevel.values().forEach((ticker) -> ticker.rebind(NULL_TICKER));
       this.tickersInLevel.clear();
    }
 
    public void registerAllBlockEntitiesAfterLevelLoad() {
-      this.blockEntities.values().forEach((var1) -> {
-         Level var3 = this.level;
-         if (var3 instanceof ServerLevel var2) {
-            this.addGameEventListener(var1, var2);
+      this.blockEntities.values().forEach((blockEntity) -> {
+         Level patt0$temp = this.level;
+         if (patt0$temp instanceof ServerLevel serverLevel) {
+            this.addGameEventListener(blockEntity, serverLevel);
          }
 
-         this.level.onBlockEntityAdded(var1);
-         this.updateBlockEntityTicker(var1);
+         this.level.onBlockEntityAdded(blockEntity);
+         this.updateBlockEntityTicker(blockEntity);
       });
    }
 
-   private <T extends BlockEntity> void addGameEventListener(T var1, ServerLevel var2) {
-      Block var3 = var1.getBlockState().getBlock();
-      if (var3 instanceof EntityBlock) {
-         GameEventListener var4 = ((EntityBlock)var3).getListener(var2, var1);
-         if (var4 != null) {
-            this.getListenerRegistry(SectionPos.blockToSectionCoord(var1.getBlockPos().getY())).register(var4);
+   private <T extends BlockEntity> void addGameEventListener(final T blockEntity, final ServerLevel level) {
+      Block block = blockEntity.getBlockState().getBlock();
+      if (block instanceof EntityBlock) {
+         GameEventListener listener = ((EntityBlock)block).getListener(level, blockEntity);
+         if (listener != null) {
+            this.getListenerRegistry(SectionPos.blockToSectionCoord(blockEntity.getBlockPos().getY())).register(listener);
          }
       }
 
    }
 
-   private <T extends BlockEntity> void updateBlockEntityTicker(T var1) {
-      BlockState var2 = var1.getBlockState();
-      BlockEntityTicker var3 = var2.getTicker(this.level, var1.getType());
-      if (var3 == null) {
-         this.removeBlockEntityTicker(var1.getBlockPos());
+   private <T extends BlockEntity> void updateBlockEntityTicker(final T blockEntity) {
+      BlockState state = blockEntity.getBlockState();
+      BlockEntityTicker<T> ticker = state.getTicker(this.level, ((BlockEntity)blockEntity).getType());
+      if (ticker == null) {
+         this.removeBlockEntityTicker(blockEntity.getBlockPos());
       } else {
-         this.tickersInLevel.compute(var1.getBlockPos(), (var3x, var4) -> {
-            TickingBlockEntity var5 = this.createTicker(var1, var3);
-            if (var4 != null) {
-               var4.rebind(var5);
-               return var4;
+         this.tickersInLevel.compute(blockEntity.getBlockPos(), (blockPos, existingTicker) -> {
+            TickingBlockEntity actualTicker = this.createTicker(blockEntity, ticker);
+            if (existingTicker != null) {
+               existingTicker.rebind(actualTicker);
+               return existingTicker;
             } else if (this.isInLevel()) {
-               RebindableTickingBlockEntityWrapper var6 = new RebindableTickingBlockEntityWrapper(var5);
-               this.level.addBlockEntityTicker(var6);
-               return var6;
+               RebindableTickingBlockEntityWrapper result = new RebindableTickingBlockEntityWrapper(actualTicker);
+               this.level.addBlockEntityTicker(result);
+               return result;
             } else {
                return null;
             }
@@ -719,8 +719,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
 
    }
 
-   private <T extends BlockEntity> TickingBlockEntity createTicker(T var1, BlockEntityTicker<T> var2) {
-      return new BoundTickingBlockEntity(var1, var2);
+   private <T extends BlockEntity> TickingBlockEntity createTicker(final T blockEntity, final BlockEntityTicker<T> ticker) {
+      return new BoundTickingBlockEntity(blockEntity, ticker);
    }
 
    public static enum EntityCreationType {
@@ -737,39 +737,40 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       }
    }
 
-   class BoundTickingBlockEntity<T extends BlockEntity> implements TickingBlockEntity {
+   private class BoundTickingBlockEntity<T extends BlockEntity> implements TickingBlockEntity {
       private final T blockEntity;
       private final BlockEntityTicker<T> ticker;
       private boolean loggedInvalidBlockState;
 
-      BoundTickingBlockEntity(final T var2, final BlockEntityTicker<T> var3) {
+      private BoundTickingBlockEntity(final T blockEntity, final BlockEntityTicker<T> ticker) {
+         Objects.requireNonNull(LevelChunk.this);
          super();
-         this.blockEntity = var2;
-         this.ticker = var3;
+         this.blockEntity = blockEntity;
+         this.ticker = ticker;
       }
 
       public void tick() {
          if (!this.blockEntity.isRemoved() && this.blockEntity.hasLevel()) {
-            BlockPos var1 = this.blockEntity.getBlockPos();
-            if (LevelChunk.this.isTicking(var1)) {
+            BlockPos pos = this.blockEntity.getBlockPos();
+            if (LevelChunk.this.isTicking(pos)) {
                try {
-                  ProfilerFiller var2 = Profiler.get();
-                  var2.push(this::getType);
-                  BlockState var6 = LevelChunk.this.getBlockState(var1);
-                  if (this.blockEntity.getType().isValid(var6)) {
-                     this.ticker.tick(LevelChunk.this.level, this.blockEntity.getBlockPos(), var6, this.blockEntity);
+                  ProfilerFiller profiler = Profiler.get();
+                  profiler.push(this::getType);
+                  BlockState blockState = LevelChunk.this.getBlockState(pos);
+                  if (this.blockEntity.getType().isValid(blockState)) {
+                     this.ticker.tick(LevelChunk.this.level, this.blockEntity.getBlockPos(), blockState, this.blockEntity);
                      this.loggedInvalidBlockState = false;
                   } else if (!this.loggedInvalidBlockState) {
                      this.loggedInvalidBlockState = true;
-                     LevelChunk.LOGGER.warn("Block entity {} @ {} state {} invalid for ticking:", new Object[]{LogUtils.defer(this::getType), LogUtils.defer(this::getPos), var6});
+                     LevelChunk.LOGGER.warn("Block entity {} @ {} state {} invalid for ticking:", new Object[]{LogUtils.defer(this::getType), LogUtils.defer(this::getPos), blockState});
                   }
 
-                  var2.pop();
-               } catch (Throwable var5) {
-                  CrashReport var3 = CrashReport.forThrowable(var5, "Ticking block entity");
-                  CrashReportCategory var4 = var3.addCategory("Block entity being ticked");
-                  this.blockEntity.fillCrashReportCategory(var4);
-                  throw new ReportedException(var3);
+                  profiler.pop();
+               } catch (Throwable t) {
+                  CrashReport report = CrashReport.forThrowable(t, "Ticking block entity");
+                  CrashReportCategory category = report.addCategory("Block entity being ticked");
+                  this.blockEntity.fillCrashReportCategory(category);
+                  throw new ReportedException(report);
                }
             }
          }
@@ -785,7 +786,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       }
 
       public String getType() {
-         return BlockEntityType.getKey(this.blockEntity.getType()).toString();
+         return this.blockEntity.typeHolder().getRegisteredName();
       }
 
       public String toString() {
@@ -794,16 +795,16 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       }
    }
 
-   static class RebindableTickingBlockEntityWrapper implements TickingBlockEntity {
+   private static class RebindableTickingBlockEntityWrapper implements TickingBlockEntity {
       private TickingBlockEntity ticker;
 
-      RebindableTickingBlockEntityWrapper(TickingBlockEntity var1) {
+      private RebindableTickingBlockEntityWrapper(final TickingBlockEntity ticker) {
          super();
-         this.ticker = var1;
+         this.ticker = ticker;
       }
 
-      void rebind(TickingBlockEntity var1) {
-         this.ticker = var1;
+      private void rebind(final TickingBlockEntity ticker) {
+         this.ticker = ticker;
       }
 
       public void tick() {
@@ -829,11 +830,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
 
    @FunctionalInterface
    public interface PostLoadProcessor {
-      void run(LevelChunk var1);
+      void run(LevelChunk levelChunk);
    }
 
    @FunctionalInterface
    public interface UnsavedListener {
-      void setUnsaved(ChunkPos var1);
+      void setUnsaved(ChunkPos chunkPos);
    }
 }

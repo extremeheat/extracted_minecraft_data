@@ -71,38 +71,38 @@ public class MapColor {
    public final int col;
    public final int id;
 
-   private MapColor(int var1, int var2) {
+   private MapColor(final int id, final int col) {
       super();
-      if (var1 >= 0 && var1 <= 63) {
-         this.id = var1;
-         this.col = var2;
-         MATERIAL_COLORS[var1] = this;
+      if (id >= 0 && id <= 63) {
+         this.id = id;
+         this.col = col;
+         MATERIAL_COLORS[id] = this;
       } else {
          throw new IndexOutOfBoundsException("Map colour ID must be between 0 and 63 (inclusive)");
       }
    }
 
-   public int calculateARGBColor(Brightness var1) {
-      return this == NONE ? 0 : ARGB.scaleRGB(ARGB.opaque(this.col), var1.modifier);
+   public int calculateARGBColor(final Brightness brightness) {
+      return this == NONE ? 0 : ARGB.scaleRGB(ARGB.opaque(this.col), brightness.modifier);
    }
 
-   public static MapColor byId(int var0) {
-      Preconditions.checkPositionIndex(var0, MATERIAL_COLORS.length, "material id");
-      return byIdUnsafe(var0);
+   public static MapColor byId(final int id) {
+      Preconditions.checkPositionIndex(id, MATERIAL_COLORS.length, "material id");
+      return byIdUnsafe(id);
    }
 
-   private static MapColor byIdUnsafe(int var0) {
-      MapColor var1 = MATERIAL_COLORS[var0];
-      return var1 != null ? var1 : NONE;
+   private static MapColor byIdUnsafe(final int id) {
+      MapColor result = MATERIAL_COLORS[id];
+      return result != null ? result : NONE;
    }
 
-   public static int getColorFromPackedId(int var0) {
-      int var1 = var0 & 255;
-      return byIdUnsafe(var1 >> 2).calculateARGBColor(MapColor.Brightness.byIdUnsafe(var1 & 3));
+   public static int getColorFromPackedId(final int packedId) {
+      int val = packedId & 255;
+      return byIdUnsafe(val >> 2).calculateARGBColor(MapColor.Brightness.byIdUnsafe(val & 3));
    }
 
-   public byte getPackedId(Brightness var1) {
-      return (byte)(this.id << 2 | var1.id & 3);
+   public byte getPackedId(final Brightness brightness) {
+      return (byte)(this.id << 2 | brightness.id & 3);
    }
 
    public static enum Brightness {
@@ -115,18 +115,18 @@ public class MapColor {
       public final int id;
       public final int modifier;
 
-      private Brightness(final int var3, final int var4) {
-         this.id = var3;
-         this.modifier = var4;
+      private Brightness(final int id, final int modifier) {
+         this.id = id;
+         this.modifier = modifier;
       }
 
-      public static Brightness byId(int var0) {
-         Preconditions.checkPositionIndex(var0, VALUES.length, "brightness id");
-         return byIdUnsafe(var0);
+      public static Brightness byId(final int id) {
+         Preconditions.checkPositionIndex(id, VALUES.length, "brightness id");
+         return byIdUnsafe(id);
       }
 
-      static Brightness byIdUnsafe(int var0) {
-         return VALUES[var0];
+      private static Brightness byIdUnsafe(final int id) {
+         return VALUES[id];
       }
 
       // $FF: synthetic method

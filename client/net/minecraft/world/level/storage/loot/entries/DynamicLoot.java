@@ -11,23 +11,23 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class DynamicLoot extends LootPoolSingletonContainer {
-   public static final MapCodec<DynamicLoot> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("name").forGetter((var0x) -> var0x.name)).and(singletonFields(var0)).apply(var0, DynamicLoot::new));
+   public static final MapCodec<DynamicLoot> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("name").forGetter((e) -> e.name)).and(singletonFields(i)).apply(i, DynamicLoot::new));
    private final Identifier name;
 
-   private DynamicLoot(Identifier var1, int var2, int var3, List<LootItemCondition> var4, List<LootItemFunction> var5) {
-      super(var2, var3, var4, var5);
-      this.name = var1;
+   private DynamicLoot(final Identifier name, final int weight, final int quality, final List<LootItemCondition> conditions, final List<LootItemFunction> functions) {
+      super(weight, quality, conditions, functions);
+      this.name = name;
    }
 
-   public LootPoolEntryType getType() {
-      return LootPoolEntries.DYNAMIC;
+   public MapCodec<DynamicLoot> codec() {
+      return MAP_CODEC;
    }
 
-   public void createItemStack(Consumer<ItemStack> var1, LootContext var2) {
-      var2.addDynamicDrops(this.name, var1);
+   public void createItemStack(final Consumer<ItemStack> output, final LootContext context) {
+      context.addDynamicDrops(this.name, output);
    }
 
-   public static LootPoolSingletonContainer.Builder<?> dynamicEntry(Identifier var0) {
-      return simpleBuilder((var1, var2, var3, var4) -> new DynamicLoot(var0, var1, var2, var3, var4));
+   public static LootPoolSingletonContainer.Builder<?> dynamicEntry(final Identifier name) {
+      return simpleBuilder((weight, quality, conditions, functions) -> new DynamicLoot(name, weight, quality, conditions, functions));
    }
 }

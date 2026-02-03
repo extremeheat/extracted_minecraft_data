@@ -4,11 +4,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 
 public record DiscardedQueryPayload(Identifier id) implements CustomQueryPayload {
-   public DiscardedQueryPayload(Identifier var1) {
+   public DiscardedQueryPayload {
       super();
-      this.id = var1;
    }
 
-   public void write(FriendlyByteBuf var1) {
+   public void write(final FriendlyByteBuf output) {
    }
 }

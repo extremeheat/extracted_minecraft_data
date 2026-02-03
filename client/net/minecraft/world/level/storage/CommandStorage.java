@@ -18,87 +18,87 @@ public class CommandStorage {
    private final Map<String, Container> namespaces = new HashMap();
    private final DimensionDataStorage storage;
 
-   public CommandStorage(DimensionDataStorage var1) {
+   public CommandStorage(final DimensionDataStorage storage) {
       super();
-      this.storage = var1;
+      this.storage = storage;
    }
 
-   public CompoundTag get(Identifier var1) {
-      Container var2 = this.getContainer(var1.getNamespace());
-      return var2 != null ? var2.get(var1.getPath()) : new CompoundTag();
+   public CompoundTag get(final Identifier id) {
+      Container container = this.getContainer(id.getNamespace());
+      return container != null ? container.get(id.getPath()) : new CompoundTag();
    }
 
-   private @Nullable Container getContainer(String var1) {
-      Container var2 = (Container)this.namespaces.get(var1);
-      if (var2 != null) {
-         return var2;
+   private @Nullable Container getContainer(final String namespace) {
+      Container container = (Container)this.namespaces.get(namespace);
+      if (container != null) {
+         return container;
       } else {
-         Container var3 = (Container)this.storage.get(CommandStorage.Container.type(var1));
-         if (var3 != null) {
-            this.namespaces.put(var1, var3);
+         Container newContainer = (Container)this.storage.get(CommandStorage.Container.type(namespace));
+         if (newContainer != null) {
+            this.namespaces.put(namespace, newContainer);
          }
 
-         return var3;
+         return newContainer;
       }
    }
 
-   private Container getOrCreateContainer(String var1) {
-      Container var2 = (Container)this.namespaces.get(var1);
-      if (var2 != null) {
-         return var2;
+   private Container getOrCreateContainer(final String namespace) {
+      Container container = (Container)this.namespaces.get(namespace);
+      if (container != null) {
+         return container;
       } else {
-         Container var3 = (Container)this.storage.computeIfAbsent(CommandStorage.Container.type(var1));
-         this.namespaces.put(var1, var3);
-         return var3;
+         Container newContainer = (Container)this.storage.computeIfAbsent(CommandStorage.Container.type(namespace));
+         this.namespaces.put(namespace, newContainer);
+         return newContainer;
       }
    }
 
-   public void set(Identifier var1, CompoundTag var2) {
-      this.getOrCreateContainer(var1.getNamespace()).put(var1.getPath(), var2);
+   public void set(final Identifier id, final CompoundTag contents) {
+      this.getOrCreateContainer(id.getNamespace()).put(id.getPath(), contents);
    }
 
    public Stream<Identifier> keys() {
-      return this.namespaces.entrySet().stream().flatMap((var0) -> ((Container)var0.getValue()).getKeys((String)var0.getKey()));
+      return this.namespaces.entrySet().stream().flatMap((e) -> ((Container)e.getValue()).getKeys((String)e.getKey()));
    }
 
-   static String createId(String var0) {
-      return "command_storage_" + var0;
+   private static String createId(final String namespace) {
+      return "command_storage_" + namespace;
    }
 
-   static class Container extends SavedData {
-      public static final Codec<Container> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.unboundedMap(ExtraCodecs.RESOURCE_PATH_CODEC, CompoundTag.CODEC).fieldOf("contents").forGetter((var0x) -> var0x.storage)).apply(var0, Container::new));
+   private static class Container extends SavedData {
+      public static final Codec<Container> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.unboundedMap(ExtraCodecs.RESOURCE_PATH_CODEC, CompoundTag.CODEC).fieldOf("contents").forGetter((container) -> container.storage)).apply(i, Container::new));
       private final Map<String, CompoundTag> storage;
 
-      private Container(Map<String, CompoundTag> var1) {
+      private Container(final Map<String, CompoundTag> storage) {
          super();
-         this.storage = new HashMap(var1);
+         this.storage = new HashMap(storage);
       }
 
       private Container() {
          this(new HashMap());
       }
 
-      public static SavedDataType<Container> type(String var0) {
-         return new SavedDataType<Container>(CommandStorage.createId(var0), Container::new, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
+      public static SavedDataType<Container> type(final String namespace) {
+         return new SavedDataType<Container>(CommandStorage.createId(namespace), Container::new, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
       }
 
-      public CompoundTag get(String var1) {
-         CompoundTag var2 = (CompoundTag)this.storage.get(var1);
-         return var2 != null ? var2 : new CompoundTag();
+      public CompoundTag get(final String id) {
+         CompoundTag result = (CompoundTag)this.storage.get(id);
+         return result != null ? result : new CompoundTag();
       }
 
-      public void put(String var1, CompoundTag var2) {
-         if (var2.isEmpty()) {
-            this.storage.remove(var1);
+      public void put(final String id, final CompoundTag contents) {
+         if (contents.isEmpty()) {
+            this.storage.remove(id);
          } else {
-            this.storage.put(var1, var2);
+            this.storage.put(id, contents);
          }
 
          this.setDirty();
       }
 
-      public Stream<Identifier> getKeys(String var1) {
-         return this.storage.keySet().stream().map((var1x) -> Identifier.fromNamespaceAndPath(var1, var1x));
+      public Stream<Identifier> getKeys(final String namespace) {
+         return this.storage.keySet().stream().map((p) -> Identifier.fromNamespaceAndPath(namespace, p));
       }
    }
 }

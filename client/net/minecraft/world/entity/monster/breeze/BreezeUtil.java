@@ -15,24 +15,24 @@ public class BreezeUtil {
       super();
    }
 
-   public static Vec3 randomPointBehindTarget(LivingEntity var0, RandomSource var1) {
-      boolean var2 = true;
-      float var3 = var0.yHeadRot + 180.0F + (float)var1.nextGaussian() * 90.0F / 2.0F;
-      float var4 = Mth.lerp(var1.nextFloat(), 4.0F, 8.0F);
-      Vec3 var5 = Vec3.directionFromRotation(0.0F, var3).scale((double)var4);
-      return var0.position().add(var5);
+   public static Vec3 randomPointBehindTarget(final LivingEntity enemy, final RandomSource random) {
+      int spreadDegrees = 90;
+      float viewAngle = enemy.yHeadRot + 180.0F + (float)random.nextGaussian() * 90.0F / 2.0F;
+      float r = Mth.lerp(random.nextFloat(), 4.0F, 8.0F);
+      Vec3 direction = Vec3.directionFromRotation(0.0F, viewAngle).scale((double)r);
+      return enemy.position().add(direction);
    }
 
-   public static boolean hasLineOfSight(Breeze var0, Vec3 var1) {
-      Vec3 var2 = new Vec3(var0.getX(), var0.getY(), var0.getZ());
-      if (var1.distanceTo(var2) > getMaxLineOfSightTestRange(var0)) {
+   public static boolean hasLineOfSight(final Breeze breeze, final Vec3 target) {
+      Vec3 from = new Vec3(breeze.getX(), breeze.getY(), breeze.getZ());
+      if (target.distanceTo(from) > getMaxLineOfSightTestRange(breeze)) {
          return false;
       } else {
-         return var0.level().clip(new ClipContext(var2, var1, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var0)).getType() == HitResult.Type.MISS;
+         return breeze.level().clip(new ClipContext(from, target, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, breeze)).getType() == HitResult.Type.MISS;
       }
    }
 
-   private static double getMaxLineOfSightTestRange(Breeze var0) {
-      return Math.max(50.0, var0.getAttributeValue(Attributes.FOLLOW_RANGE));
+   private static double getMaxLineOfSightTestRange(final Breeze breeze) {
+      return Math.max(50.0, breeze.getAttributeValue(Attributes.FOLLOW_RANGE));
    }
 }

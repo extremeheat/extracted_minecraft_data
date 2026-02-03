@@ -11,16 +11,16 @@ public class LogTestReporter implements TestReporter {
       super();
    }
 
-   public void onTestFailed(GameTestInfo var1) {
-      String var2 = var1.getTestBlockPos().toShortString();
-      if (var1.isRequired()) {
-         LOGGER.error("{} failed at {}! {}", new Object[]{var1.id(), var2, Util.describeError(var1.getError())});
+   public void onTestFailed(final GameTestInfo testInfo) {
+      String testPosition = testInfo.getTestBlockPos().toShortString();
+      if (testInfo.isRequired()) {
+         LOGGER.error("{} failed at {}! {}", new Object[]{testInfo.id(), testPosition, Util.describeError(testInfo.getError())});
       } else {
-         LOGGER.warn("(optional) {} failed at {}. {}", new Object[]{var1.id(), var2, Util.describeError(var1.getError())});
+         LOGGER.warn("(optional) {} failed at {}. {}", new Object[]{testInfo.id(), testPosition, Util.describeError(testInfo.getError())});
       }
 
    }
 
-   public void onTestSuccess(GameTestInfo var1) {
+   public void onTestSuccess(final GameTestInfo testInfo) {
    }
 }

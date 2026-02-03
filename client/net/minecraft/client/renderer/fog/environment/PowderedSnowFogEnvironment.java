@@ -15,24 +15,24 @@ public class PowderedSnowFogEnvironment extends FogEnvironment {
       super();
    }
 
-   public int getBaseColor(ClientLevel var1, Camera var2, int var3, float var4) {
+   public int getBaseColor(final ClientLevel level, final Camera camera, final int renderDistance, final float partialTicks) {
       return -6308916;
    }
 
-   public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {
-      if (var2.entity().isSpectator()) {
-         var1.environmentalStart = -8.0F;
-         var1.environmentalEnd = var4 * 0.5F;
+   public void setupFog(final FogData fog, final Camera camera, final ClientLevel level, final float renderDistance, final DeltaTracker deltaTracker) {
+      if (camera.entity().isSpectator()) {
+         fog.environmentalStart = -8.0F;
+         fog.environmentalEnd = renderDistance * 0.5F;
       } else {
-         var1.environmentalStart = 0.0F;
-         var1.environmentalEnd = 2.0F;
+         fog.environmentalStart = 0.0F;
+         fog.environmentalEnd = 2.0F;
       }
 
-      var1.skyEnd = var1.environmentalEnd;
-      var1.cloudEnd = var1.environmentalEnd;
+      fog.skyEnd = fog.environmentalEnd;
+      fog.cloudEnd = fog.environmentalEnd;
    }
 
-   public boolean isApplicable(@Nullable FogType var1, Entity var2) {
-      return var1 == FogType.POWDER_SNOW;
+   public boolean isApplicable(final @Nullable FogType fogType, final Entity entity) {
+      return fogType == FogType.POWDER_SNOW;
    }
 }

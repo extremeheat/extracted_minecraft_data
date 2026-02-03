@@ -60,9 +60,9 @@ public class PauseScreen extends Screen {
    private final boolean showPauseMenu;
    private @Nullable Button disconnectButton;
 
-   public PauseScreen(boolean var1) {
-      super(var1 ? GAME : PAUSED);
-      this.showPauseMenu = var1;
+   public PauseScreen(final boolean showPauseMenu) {
+      super(showPauseMenu ? GAME : PAUSED);
+      this.showPauseMenu = showPauseMenu;
    }
 
    public boolean showsPauseMenu() {
@@ -74,72 +74,72 @@ public class PauseScreen extends Screen {
          this.createPauseMenu();
       }
 
-      int var1 = this.font.width((FormattedText)this.title);
-      int var10003 = this.width / 2 - var1 / 2;
+      int textWidth = this.font.width((FormattedText)this.title);
+      int var10003 = this.width / 2 - textWidth / 2;
       int var10004 = this.showPauseMenu ? 40 : 10;
       Objects.requireNonNull(this.font);
-      this.addRenderableWidget(new StringWidget(var10003, var10004, var1, 9, this.title, this.font));
+      this.addRenderableWidget(new StringWidget(var10003, var10004, textWidth, 9, this.title, this.font));
    }
 
    private void createPauseMenu() {
-      GridLayout var1 = new GridLayout();
-      var1.defaultCellSetting().padding(4, 4, 4, 0);
-      GridLayout.RowHelper var2 = var1.createRowHelper(2);
-      var2.addChild(Button.builder(RETURN_TO_GAME, (var1x) -> {
+      GridLayout gridLayout = new GridLayout();
+      gridLayout.defaultCellSetting().padding(4, 4, 4, 0);
+      GridLayout.RowHelper helper = gridLayout.createRowHelper(2);
+      helper.addChild(Button.builder(RETURN_TO_GAME, (button) -> {
          this.minecraft.setScreen((Screen)null);
          this.minecraft.mouseHandler.grabMouse();
-      }).width(204).build(), 2, var1.newCellSettings().paddingTop(50));
-      var2.addChild(this.openScreenButton(ADVANCEMENTS, () -> new AdvancementsScreen(this.minecraft.player.connection.getAdvancements(), this)));
-      var2.addChild(this.openScreenButton(STATS, () -> new StatsScreen(this, this.minecraft.player.getStats())));
-      Optional var3 = this.getCustomAdditions();
-      if (var3.isEmpty()) {
-         addFeedbackButtons(this, var2);
+      }).width(204).build(), 2, gridLayout.newCellSettings().paddingTop(50));
+      helper.addChild(this.openScreenButton(ADVANCEMENTS, () -> new AdvancementsScreen(this.minecraft.player.connection.getAdvancements(), this)));
+      helper.addChild(this.openScreenButton(STATS, () -> new StatsScreen(this, this.minecraft.player.getStats())));
+      Optional<? extends Holder<Dialog>> additions = this.getCustomAdditions();
+      if (additions.isEmpty()) {
+         addFeedbackButtons(this, helper);
       } else {
-         this.addFeedbackSubscreenAndCustomDialogButtons(this.minecraft, (Holder)var3.get(), var2);
+         this.addFeedbackSubscreenAndCustomDialogButtons(this.minecraft, (Holder)additions.get(), helper);
       }
 
-      var2.addChild(this.openScreenButton(OPTIONS, () -> new OptionsScreen(this, this.minecraft.options)));
+      helper.addChild(this.openScreenButton(OPTIONS, () -> new OptionsScreen(this, this.minecraft.options, true)));
       if (this.minecraft.hasSingleplayerServer() && !this.minecraft.getSingleplayerServer().isPublished()) {
-         var2.addChild(this.openScreenButton(SHARE_TO_LAN, () -> new ShareToLanScreen(this)));
+         helper.addChild(this.openScreenButton(SHARE_TO_LAN, () -> new ShareToLanScreen(this)));
       } else {
-         var2.addChild(this.openScreenButton(PLAYER_REPORTING, () -> new SocialInteractionsScreen(this)));
+         helper.addChild(this.openScreenButton(PLAYER_REPORTING, () -> new SocialInteractionsScreen(this)));
       }
 
-      this.disconnectButton = (Button)var2.addChild(Button.builder(CommonComponents.disconnectButtonLabel(this.minecraft.isLocalServer()), (var1x) -> {
-         var1x.active = false;
+      this.disconnectButton = (Button)helper.addChild(Button.builder(CommonComponents.disconnectButtonLabel(this.minecraft.isLocalServer()), (button) -> {
+         button.active = false;
          this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, () -> this.minecraft.disconnectFromWorld(ClientLevel.DEFAULT_QUIT_MESSAGE), true);
       }).width(204).build(), 2);
-      var1.arrangeElements();
-      FrameLayout.alignInRectangle(var1, 0, 0, this.width, this.height, 0.5F, 0.25F);
-      var1.visitWidgets(this::addRenderableWidget);
+      gridLayout.arrangeElements();
+      FrameLayout.alignInRectangle(gridLayout, 0, 0, this.width, this.height, 0.5F, 0.25F);
+      gridLayout.visitWidgets(this::addRenderableWidget);
    }
 
    private Optional<? extends Holder<Dialog>> getCustomAdditions() {
-      Registry var1 = this.minecraft.player.connection.registryAccess().lookupOrThrow(Registries.DIALOG);
-      Optional var2 = var1.get(DialogTags.PAUSE_SCREEN_ADDITIONS);
-      if (var2.isPresent()) {
-         HolderSet var3 = (HolderSet)var2.get();
-         if (var3.size() > 0) {
-            if (var3.size() == 1) {
-               return Optional.of(var3.get(0));
+      Registry<Dialog> dialogRegistry = this.minecraft.player.connection.registryAccess().lookupOrThrow(Registries.DIALOG);
+      Optional<? extends HolderSet<Dialog>> maybeCustomAdditions = dialogRegistry.get(DialogTags.PAUSE_SCREEN_ADDITIONS);
+      if (maybeCustomAdditions.isPresent()) {
+         HolderSet<Dialog> customAdditions = (HolderSet)maybeCustomAdditions.get();
+         if (customAdditions.size() > 0) {
+            if (customAdditions.size() == 1) {
+               return Optional.of(customAdditions.get(0));
             }
 
-            return var1.get(Dialogs.CUSTOM_OPTIONS);
+            return dialogRegistry.get(Dialogs.CUSTOM_OPTIONS);
          }
       }
 
-      ServerLinks var4 = this.minecraft.player.connection.serverLinks();
-      return !var4.isEmpty() ? var1.get(Dialogs.SERVER_LINKS) : Optional.empty();
+      ServerLinks serverLinks = this.minecraft.player.connection.serverLinks();
+      return !serverLinks.isEmpty() ? dialogRegistry.get(Dialogs.SERVER_LINKS) : Optional.empty();
    }
 
-   static void addFeedbackButtons(Screen var0, GridLayout.RowHelper var1) {
-      var1.addChild(openLinkButton(var0, SEND_FEEDBACK, SharedConstants.getCurrentVersion().stable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK));
-      ((Button)var1.addChild(openLinkButton(var0, REPORT_BUGS, CommonLinks.SNAPSHOT_BUGS_FEEDBACK))).active = !SharedConstants.getCurrentVersion().dataVersion().isSideSeries();
+   private static void addFeedbackButtons(final Screen screen, final GridLayout.RowHelper helper) {
+      helper.addChild(openLinkButton(screen, SEND_FEEDBACK, SharedConstants.getCurrentVersion().stable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK));
+      ((Button)helper.addChild(openLinkButton(screen, REPORT_BUGS, CommonLinks.SNAPSHOT_BUGS_FEEDBACK))).active = !SharedConstants.getCurrentVersion().dataVersion().isSideSeries();
    }
 
-   private void addFeedbackSubscreenAndCustomDialogButtons(Minecraft var1, Holder<Dialog> var2, GridLayout.RowHelper var3) {
-      var3.addChild(this.openScreenButton(FEEDBACK_SUBSCREEN, () -> new FeedbackSubScreen(this)));
-      var3.addChild(Button.builder(((Dialog)var2.value()).common().computeExternalTitle(), (var3x) -> var1.player.connection.showDialog(var2, this)).width(98).tooltip(CUSTOM_OPTIONS_TOOLTIP).build());
+   private void addFeedbackSubscreenAndCustomDialogButtons(final Minecraft minecraft, final Holder<Dialog> dialog, final GridLayout.RowHelper helper) {
+      helper.addChild(this.openScreenButton(FEEDBACK_SUBSCREEN, () -> new FeedbackSubScreen(this)));
+      helper.addChild(Button.builder(((Dialog)dialog.value()).common().computeExternalTitle(), (button) -> minecraft.player.connection.showDialog(dialog, this)).width(98).tooltip(CUSTOM_OPTIONS_TOOLTIP).build());
    }
 
    public void tick() {
@@ -149,55 +149,55 @@ public class PauseScreen extends Screen {
 
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
       if (this.rendersNowPlayingToast()) {
-         NowPlayingToast.renderToast(var1, this.font);
+         NowPlayingToast.renderToast(graphics, this.font);
       }
 
       if (this.showPauseMenu && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 15, 15);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 15, 15);
       }
 
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
       if (this.showPauseMenu) {
-         super.renderBackground(var1, var2, var3, var4);
+         super.renderBackground(graphics, mouseX, mouseY, a);
       }
 
    }
 
    public boolean rendersNowPlayingToast() {
-      Options var1 = this.minecraft.options;
-      return ((MusicToastDisplayState)var1.musicToast().get()).renderInPauseScreen() && var1.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F && this.showPauseMenu;
+      Options options = this.minecraft.options;
+      return ((MusicToastDisplayState)options.musicToast().get()).renderInPauseScreen() && options.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F && this.showPauseMenu;
    }
 
-   private Button openScreenButton(Component var1, Supplier<Screen> var2) {
-      return Button.builder(var1, (var2x) -> this.minecraft.setScreen((Screen)var2.get())).width(98).build();
+   private Button openScreenButton(final Component message, final Supplier<Screen> newScreen) {
+      return Button.builder(message, (button) -> this.minecraft.setScreen((Screen)newScreen.get())).width(98).build();
    }
 
-   private static Button openLinkButton(Screen var0, Component var1, URI var2) {
-      return Button.builder(var1, ConfirmLinkScreen.confirmLink(var0, var2)).width(98).build();
+   private static Button openLinkButton(final Screen screen, final Component message, final URI link) {
+      return Button.builder(message, ConfirmLinkScreen.confirmLink(screen, link)).width(98).build();
    }
 
-   static class FeedbackSubScreen extends Screen {
+   private static class FeedbackSubScreen extends Screen {
       private static final Component TITLE = Component.translatable("menu.feedback.title");
       public final Screen parent;
       private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
-      protected FeedbackSubScreen(Screen var1) {
+      protected FeedbackSubScreen(final Screen parent) {
          super(TITLE);
-         this.parent = var1;
+         this.parent = parent;
       }
 
       protected void init() {
          this.layout.addTitleHeader(TITLE, this.font);
-         GridLayout var1 = (GridLayout)this.layout.addToContents(new GridLayout());
-         var1.defaultCellSetting().padding(4, 4, 4, 0);
-         GridLayout.RowHelper var2 = var1.createRowHelper(2);
-         PauseScreen.addFeedbackButtons(this, var2);
-         this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).width(200).build());
+         GridLayout buttonContainer = (GridLayout)this.layout.addToContents(new GridLayout());
+         buttonContainer.defaultCellSetting().padding(4, 4, 4, 0);
+         GridLayout.RowHelper helper = buttonContainer.createRowHelper(2);
+         PauseScreen.addFeedbackButtons(this, helper);
+         this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).width(200).build());
          this.layout.visitWidgets(this::addRenderableWidget);
          this.repositionElements();
       }

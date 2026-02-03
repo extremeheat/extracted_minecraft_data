@@ -10,29 +10,29 @@ public class BlockModelShaper {
    private Map<BlockState, BlockStateModel> modelByStateCache = Map.of();
    private final ModelManager modelManager;
 
-   public BlockModelShaper(ModelManager var1) {
+   public BlockModelShaper(final ModelManager modelManager) {
       super();
-      this.modelManager = var1;
+      this.modelManager = modelManager;
    }
 
-   public TextureAtlasSprite getParticleIcon(BlockState var1) {
-      return this.getBlockModel(var1).particleIcon();
+   public TextureAtlasSprite getParticleIcon(final BlockState blockState) {
+      return this.getBlockModel(blockState).particleIcon();
    }
 
-   public BlockStateModel getBlockModel(BlockState var1) {
-      BlockStateModel var2 = (BlockStateModel)this.modelByStateCache.get(var1);
-      if (var2 == null) {
-         var2 = this.modelManager.getMissingBlockStateModel();
+   public BlockStateModel getBlockModel(final BlockState state) {
+      BlockStateModel model = (BlockStateModel)this.modelByStateCache.get(state);
+      if (model == null) {
+         model = this.modelManager.getMissingBlockStateModel();
       }
 
-      return var2;
+      return model;
    }
 
    public ModelManager getModelManager() {
       return this.modelManager;
    }
 
-   public void replaceCache(Map<BlockState, BlockStateModel> var1) {
-      this.modelByStateCache = var1;
+   public void replaceCache(final Map<BlockState, BlockStateModel> modelByStateCache) {
+      this.modelByStateCache = modelByStateCache;
    }
 }

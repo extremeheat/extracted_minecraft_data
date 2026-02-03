@@ -19,16 +19,16 @@ public class FreeTypeUtil {
    public static long getLibrary() {
       synchronized(LIBRARY_LOCK) {
          if (library == 0L) {
-            MemoryStack var1 = MemoryStack.stackPush();
+            MemoryStack stack = MemoryStack.stackPush();
 
             try {
-               PointerBuffer var2 = var1.mallocPointer(1);
-               assertError(FreeType.FT_Init_FreeType(var2), "Initializing FreeType library");
-               library = var2.get();
+               PointerBuffer libraryBuffer = stack.mallocPointer(1);
+               assertError(FreeType.FT_Init_FreeType(libraryBuffer), "Initializing FreeType library");
+               library = libraryBuffer.get();
             } catch (Throwable var6) {
-               if (var1 != null) {
+               if (stack != null) {
                   try {
-                     var1.close();
+                     stack.close();
                   } catch (Throwable var5) {
                      var6.addSuppressed(var5);
                   }
@@ -37,8 +37,8 @@ public class FreeTypeUtil {
                throw var6;
             }
 
-            if (var1 != null) {
-               var1.close();
+            if (stack != null) {
+               stack.close();
             }
          }
 
@@ -46,35 +46,35 @@ public class FreeTypeUtil {
       }
    }
 
-   public static void assertError(int var0, String var1) {
-      if (var0 != 0) {
-         String var10002 = describeError(var0);
-         throw new IllegalStateException("FreeType error: " + var10002 + " (" + var1 + ")");
+   public static void assertError(final int errorCode, final String type) {
+      if (errorCode != 0) {
+         String var10002 = describeError(errorCode);
+         throw new IllegalStateException("FreeType error: " + var10002 + " (" + type + ")");
       }
    }
 
-   public static boolean checkError(int var0, String var1) {
-      if (var0 != 0) {
-         LOGGER.error("FreeType error: {} ({})", describeError(var0), var1);
+   public static boolean checkError(final int errorCode, final String type) {
+      if (errorCode != 0) {
+         LOGGER.error("FreeType error: {} ({})", describeError(errorCode), type);
          return true;
       } else {
          return false;
       }
    }
 
-   private static String describeError(int var0) {
-      String var1 = FreeType.FT_Error_String(var0);
-      return var1 != null ? var1 : "Unrecognized error: 0x" + Integer.toHexString(var0);
+   private static String describeError(final int code) {
+      String string = FreeType.FT_Error_String(code);
+      return string != null ? string : "Unrecognized error: 0x" + Integer.toHexString(code);
    }
 
-   public static FT_Vector setVector(FT_Vector var0, float var1, float var2) {
-      long var3 = (long)Math.round(var1 * 64.0F);
-      long var5 = (long)Math.round(var2 * 64.0F);
-      return var0.set(var3, var5);
+   public static FT_Vector setVector(final FT_Vector vector, final float x, final float y) {
+      long fixedPointX = (long)Math.round(x * 64.0F);
+      long fixedPointY = (long)Math.round(y * 64.0F);
+      return vector.set(fixedPointX, fixedPointY);
    }
 
-   public static float x(FT_Vector var0) {
-      return (float)var0.x() / 64.0F;
+   public static float x(final FT_Vector vector) {
+      return (float)vector.x() / 64.0F;
    }
 
    public static void destroy() {

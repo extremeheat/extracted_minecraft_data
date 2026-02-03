@@ -16,23 +16,23 @@ public class PlacementContext extends WorldGenerationContext {
    private final ChunkGenerator generator;
    private final Optional<PlacedFeature> topFeature;
 
-   public PlacementContext(WorldGenLevel var1, ChunkGenerator var2, Optional<PlacedFeature> var3) {
-      super(var2, var1);
-      this.level = var1;
-      this.generator = var2;
-      this.topFeature = var3;
+   public PlacementContext(final WorldGenLevel level, final ChunkGenerator generator, final Optional<PlacedFeature> topFeature) {
+      super(generator, level);
+      this.level = level;
+      this.generator = generator;
+      this.topFeature = topFeature;
    }
 
-   public int getHeight(Heightmap.Types var1, int var2, int var3) {
-      return this.level.getHeight(var1, var2, var3);
+   public int getHeight(final Heightmap.Types type, final int x, final int z) {
+      return this.level.getHeight(type, x, z);
    }
 
-   public CarvingMask getCarvingMask(ChunkPos var1) {
-      return ((ProtoChunk)this.level.getChunk(var1.x, var1.z)).getOrCreateCarvingMask();
+   public CarvingMask getCarvingMask(final ChunkPos pos) {
+      return ((ProtoChunk)this.level.getChunk(pos.x(), pos.z())).getOrCreateCarvingMask();
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      return this.level.getBlockState(var1);
+   public BlockState getBlockState(final BlockPos pos) {
+      return this.level.getBlockState(pos);
    }
 
    public int getMinY() {

@@ -25,51 +25,47 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> loot, List<ResourceKey<Recipe<?>>> recipes, Optional<CacheableFunction> function) {
-   public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience), LootTable.KEY_CODEC.listOf().optionalFieldOf("loot", List.of()).forGetter(AdvancementRewards::loot), Recipe.KEY_CODEC.listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes), CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)).apply(var0, AdvancementRewards::new));
+   public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience), LootTable.KEY_CODEC.listOf().optionalFieldOf("loot", List.of()).forGetter(AdvancementRewards::loot), Recipe.KEY_CODEC.listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes), CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)).apply(i, AdvancementRewards::new));
    public static final AdvancementRewards EMPTY = new AdvancementRewards(0, List.of(), List.of(), Optional.empty());
 
-   public AdvancementRewards(int var1, List<ResourceKey<LootTable>> var2, List<ResourceKey<Recipe<?>>> var3, Optional<CacheableFunction> var4) {
+   public AdvancementRewards {
       super();
-      this.experience = var1;
-      this.loot = var2;
-      this.recipes = var3;
-      this.function = var4;
    }
 
-   public void grant(ServerPlayer var1) {
-      var1.giveExperiencePoints(this.experience);
-      ServerLevel var2 = var1.level();
-      MinecraftServer var3 = var2.getServer();
-      LootParams var4 = (new LootParams.Builder(var2)).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.ORIGIN, var1.position()).create(LootContextParamSets.ADVANCEMENT_REWARD);
-      boolean var5 = false;
+   public void grant(final ServerPlayer player) {
+      player.giveExperiencePoints(this.experience);
+      ServerLevel level = player.level();
+      MinecraftServer server = level.getServer();
+      LootParams params = (new LootParams.Builder(level)).withParameter(LootContextParams.THIS_ENTITY, player).withParameter(LootContextParams.ORIGIN, player.position()).create(LootContextParamSets.ADVANCEMENT_REWARD);
+      boolean changes = false;
 
-      for(ResourceKey var7 : this.loot) {
-         ObjectListIterator var8 = var3.reloadableRegistries().getLootTable(var7).getRandomItems(var4).iterator();
+      for(ResourceKey<LootTable> lootTable : this.loot) {
+         ObjectListIterator var8 = server.reloadableRegistries().getLootTable(lootTable).getRandomItems(params).iterator();
 
          while(var8.hasNext()) {
-            ItemStack var9 = (ItemStack)var8.next();
-            if (var1.addItem(var9)) {
-               var2.playSound((Entity)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
-               var5 = true;
+            ItemStack itemStack = (ItemStack)var8.next();
+            if (player.addItem(itemStack)) {
+               level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+               changes = true;
             } else {
-               ItemEntity var10 = var1.drop(var9, false);
-               if (var10 != null) {
-                  var10.setNoPickUpDelay();
-                  var10.setTarget(var1.getUUID());
+               ItemEntity drop = player.drop(itemStack, false);
+               if (drop != null) {
+                  drop.setNoPickUpDelay();
+                  drop.setTarget(player.getUUID());
                }
             }
          }
       }
 
-      if (var5) {
-         var1.containerMenu.broadcastChanges();
+      if (changes) {
+         player.containerMenu.broadcastChanges();
       }
 
       if (!this.recipes.isEmpty()) {
-         var1.awardRecipesByKey(this.recipes);
+         player.awardRecipesByKey(this.recipes);
       }
 
-      this.function.flatMap((var1x) -> var1x.get(var3.getFunctions())).ifPresent((var2x) -> var3.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(LevelBasedPermissionSet.GAMEMASTER)));
+      this.function.flatMap((function) -> function.get(server.getFunctions())).ifPresent((function) -> server.getFunctions().execute(function, player.createCommandSourceStack().withSuppressedOutput().withPermission(LevelBasedPermissionSet.GAMEMASTER)));
    }
 
    public static class Builder {
@@ -82,39 +78,39 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
          super();
       }
 
-      public static Builder experience(int var0) {
-         return (new Builder()).addExperience(var0);
+      public static Builder experience(final int amount) {
+         return (new Builder()).addExperience(amount);
       }
 
-      public Builder addExperience(int var1) {
-         this.experience += var1;
+      public Builder addExperience(final int amount) {
+         this.experience += amount;
          return this;
       }
 
-      public static Builder loot(ResourceKey<LootTable> var0) {
-         return (new Builder()).addLootTable(var0);
+      public static Builder loot(final ResourceKey<LootTable> id) {
+         return (new Builder()).addLootTable(id);
       }
 
-      public Builder addLootTable(ResourceKey<LootTable> var1) {
-         this.loot.add(var1);
+      public Builder addLootTable(final ResourceKey<LootTable> id) {
+         this.loot.add(id);
          return this;
       }
 
-      public static Builder recipe(ResourceKey<Recipe<?>> var0) {
-         return (new Builder()).addRecipe(var0);
+      public static Builder recipe(final ResourceKey<Recipe<?>> id) {
+         return (new Builder()).addRecipe(id);
       }
 
-      public Builder addRecipe(ResourceKey<Recipe<?>> var1) {
-         this.recipes.add(var1);
+      public Builder addRecipe(final ResourceKey<Recipe<?>> id) {
+         this.recipes.add(id);
          return this;
       }
 
-      public static Builder function(Identifier var0) {
-         return (new Builder()).runs(var0);
+      public static Builder function(final Identifier id) {
+         return (new Builder()).runs(id);
       }
 
-      public Builder runs(Identifier var1) {
-         this.function = Optional.of(var1);
+      public Builder runs(final Identifier function) {
+         this.function = Optional.of(function);
          return this;
       }
 

@@ -1,5 +1,6 @@
 package net.minecraft.world.level.storage.loot.functions;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -9,6 +10,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
@@ -17,64 +19,86 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class EnchantWithLevelsFunction extends LootItemConditionalFunction {
-   public static final MapCodec<EnchantWithLevelsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(NumberProviders.CODEC.fieldOf("levels").forGetter((var0x) -> var0x.levels), RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((var0x) -> var0x.options))).apply(var0, EnchantWithLevelsFunction::new));
+   public static final MapCodec<EnchantWithLevelsFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(NumberProviders.CODEC.fieldOf("levels").forGetter((f) -> f.levels), RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((f) -> f.options), Codec.BOOL.optionalFieldOf("include_additional_cost_component", false).forGetter((f) -> f.includeAdditionalCostComponent))).apply(i, EnchantWithLevelsFunction::new));
    private final NumberProvider levels;
    private final Optional<HolderSet<Enchantment>> options;
+   private final boolean includeAdditionalCostComponent;
 
-   EnchantWithLevelsFunction(List<LootItemCondition> var1, NumberProvider var2, Optional<HolderSet<Enchantment>> var3) {
-      super(var1);
-      this.levels = var2;
-      this.options = var3;
+   private EnchantWithLevelsFunction(final List<LootItemCondition> predicates, final NumberProvider levels, final Optional<HolderSet<Enchantment>> options, final boolean includeAdditionalCostComponent) {
+      super(predicates);
+      this.levels = levels;
+      this.options = options;
+      this.includeAdditionalCostComponent = includeAdditionalCostComponent;
    }
 
-   public LootItemFunctionType<EnchantWithLevelsFunction> getType() {
-      return LootItemFunctions.ENCHANT_WITH_LEVELS;
+   public MapCodec<EnchantWithLevelsFunction> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return this.levels.getReferencedContextParams();
+      return this.includeAdditionalCostComponent ? Set.of(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED) : Set.of();
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      RandomSource var3 = var2.getRandom();
-      RegistryAccess var4 = var2.getLevel().registryAccess();
-      return EnchantmentHelper.enchantItem(var3, var1, this.levels.getInt(var2), var4, this.options);
+   public void validate(final ValidationContext context) {
+      super.validate(context);
+      Validatable.validate(context, "levels", this.levels);
    }
 
-   public static Builder enchantWithLevels(HolderLookup.Provider var0, NumberProvider var1) {
-      return (new Builder(var1)).fromOptions(var0.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(EnchantmentTags.ON_RANDOM_LOOT));
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      RandomSource random = context.getRandom();
+      RegistryAccess registryAccess = context.getLevel().registryAccess();
+      int enchantmentCost = this.levels.getInt(context);
+      ItemStack result = EnchantmentHelper.enchantItem(random, itemStack, enchantmentCost, registryAccess, this.options);
+      if (this.includeAdditionalCostComponent && context.hasParameter(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED) && !result.isEmpty() && enchantmentCost > 0) {
+         result.set(DataComponents.ADDITIONAL_TRADE_COST, enchantmentCost);
+      }
+
+      return result;
+   }
+
+   public static Builder enchantWithLevels(final HolderLookup.Provider registries, final NumberProvider levels) {
+      return (new Builder(levels)).withOptions(registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(EnchantmentTags.ON_RANDOM_LOOT));
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
       private final NumberProvider levels;
       private Optional<HolderSet<Enchantment>> options = Optional.empty();
+      private boolean includeAdditionalCostComponent = false;
 
-      public Builder(NumberProvider var1) {
+      public Builder(final NumberProvider levels) {
          super();
-         this.levels = var1;
+         this.levels = levels;
       }
 
       protected Builder getThis() {
          return this;
       }
 
-      public Builder fromOptions(HolderSet<Enchantment> var1) {
-         this.options = Optional.of(var1);
+      public Builder withOptions(final HolderSet<Enchantment> tag) {
+         this.options = Optional.of(tag);
+         return this;
+      }
+
+      public Builder withOptions(final Optional<HolderSet<Enchantment>> options) {
+         this.options = options;
+         return this;
+      }
+
+      public Builder includeAdditionalCostComponent() {
+         this.includeAdditionalCostComponent = true;
          return this;
       }
 
       public LootItemFunction build() {
-         return new EnchantWithLevelsFunction(this.getConditions(), this.levels, this.options);
-      }
-
-      // $FF: synthetic method
-      protected LootItemConditionalFunction.Builder getThis() {
-         return this.getThis();
+         return new EnchantWithLevelsFunction(this.getConditions(), this.levels, this.options, this.includeAdditionalCostComponent);
       }
    }
 }

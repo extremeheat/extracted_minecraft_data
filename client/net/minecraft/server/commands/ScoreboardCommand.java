@@ -16,8 +16,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -37,7 +37,6 @@ import net.minecraft.network.chat.numbers.BlankFormat;
 import net.minecraft.network.chat.numbers.FixedFormat;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
-import net.minecraft.server.ServerScoreboard;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
@@ -53,378 +52,378 @@ public class ScoreboardCommand {
    private static final SimpleCommandExceptionType ERROR_DISPLAY_SLOT_ALREADY_SET = new SimpleCommandExceptionType(Component.translatable("commands.scoreboard.objectives.display.alreadySet"));
    private static final SimpleCommandExceptionType ERROR_TRIGGER_ALREADY_ENABLED = new SimpleCommandExceptionType(Component.translatable("commands.scoreboard.players.enable.failed"));
    private static final SimpleCommandExceptionType ERROR_NOT_TRIGGER = new SimpleCommandExceptionType(Component.translatable("commands.scoreboard.players.enable.invalid"));
-   private static final Dynamic2CommandExceptionType ERROR_NO_VALUE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.scoreboard.players.get.null", var0, var1));
+   private static final Dynamic2CommandExceptionType ERROR_NO_VALUE = new Dynamic2CommandExceptionType((objective, target) -> Component.translatableEscape("commands.scoreboard.players.get.null", objective, target));
 
    public ScoreboardCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("scoreboard").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("objectives").then(Commands.literal("list").executes((var0x) -> listObjectives((CommandSourceStack)var0x.getSource())))).then(Commands.literal("add").then(Commands.argument("objective", StringArgumentType.word()).then(((RequiredArgumentBuilder)Commands.argument("criteria", ObjectiveCriteriaArgument.criteria()).executes((var0x) -> addObjective((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "objective"), ObjectiveCriteriaArgument.getCriteria(var0x, "criteria"), Component.literal(StringArgumentType.getString(var0x, "objective"))))).then(Commands.argument("displayName", ComponentArgument.textComponent(var1)).executes((var0x) -> addObjective((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "objective"), ObjectiveCriteriaArgument.getCriteria(var0x, "criteria"), ComponentArgument.getResolvedComponent(var0x, "displayName")))))))).then(Commands.literal("modify").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("objective", ObjectiveArgument.objective()).then(Commands.literal("displayname").then(Commands.argument("displayName", ComponentArgument.textComponent(var1)).executes((var0x) -> setDisplayName((CommandSourceStack)var0x.getSource(), ObjectiveArgument.getObjective(var0x, "objective"), ComponentArgument.getResolvedComponent(var0x, "displayName")))))).then(createRenderTypeModify())).then(Commands.literal("displayautoupdate").then(Commands.argument("value", BoolArgumentType.bool()).executes((var0x) -> setDisplayAutoUpdate((CommandSourceStack)var0x.getSource(), ObjectiveArgument.getObjective(var0x, "objective"), BoolArgumentType.getBool(var0x, "value")))))).then(addNumberFormats(var1, Commands.literal("numberformat"), (var0x, var1x) -> setObjectiveFormat((CommandSourceStack)var0x.getSource(), ObjectiveArgument.getObjective(var0x, "objective"), var1x)))))).then(Commands.literal("remove").then(Commands.argument("objective", ObjectiveArgument.objective()).executes((var0x) -> removeObjective((CommandSourceStack)var0x.getSource(), ObjectiveArgument.getObjective(var0x, "objective")))))).then(Commands.literal("setdisplay").then(((RequiredArgumentBuilder)Commands.argument("slot", ScoreboardSlotArgument.displaySlot()).executes((var0x) -> clearDisplaySlot((CommandSourceStack)var0x.getSource(), ScoreboardSlotArgument.getDisplaySlot(var0x, "slot")))).then(Commands.argument("objective", ObjectiveArgument.objective()).executes((var0x) -> setDisplaySlot((CommandSourceStack)var0x.getSource(), ScoreboardSlotArgument.getDisplaySlot(var0x, "slot"), ObjectiveArgument.getObjective(var0x, "objective")))))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("players").then(((LiteralArgumentBuilder)Commands.literal("list").executes((var0x) -> listTrackedPlayers((CommandSourceStack)var0x.getSource()))).then(Commands.argument("target", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).executes((var0x) -> listTrackedPlayerScores((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getName(var0x, "target")))))).then(Commands.literal("set").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).then(Commands.argument("score", IntegerArgumentType.integer()).executes((var0x) -> setScore((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"), ObjectiveArgument.getWritableObjective(var0x, "objective"), IntegerArgumentType.getInteger(var0x, "score")))))))).then(Commands.literal("get").then(Commands.argument("target", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).executes((var0x) -> getScore((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getName(var0x, "target"), ObjectiveArgument.getObjective(var0x, "objective"))))))).then(Commands.literal("add").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).then(Commands.argument("score", IntegerArgumentType.integer(0)).executes((var0x) -> addScore((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"), ObjectiveArgument.getWritableObjective(var0x, "objective"), IntegerArgumentType.getInteger(var0x, "score")))))))).then(Commands.literal("remove").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).then(Commands.argument("score", IntegerArgumentType.integer(0)).executes((var0x) -> removeScore((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"), ObjectiveArgument.getWritableObjective(var0x, "objective"), IntegerArgumentType.getInteger(var0x, "score")))))))).then(Commands.literal("reset").then(((RequiredArgumentBuilder)Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).executes((var0x) -> resetScores((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets")))).then(Commands.argument("objective", ObjectiveArgument.objective()).executes((var0x) -> resetScore((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"), ObjectiveArgument.getObjective(var0x, "objective"))))))).then(Commands.literal("enable").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).suggests((var0x, var1x) -> suggestTriggers((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"), var1x)).executes((var0x) -> enableTrigger((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"), ObjectiveArgument.getObjective(var0x, "objective"))))))).then(((LiteralArgumentBuilder)Commands.literal("display").then(Commands.literal("name").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(((RequiredArgumentBuilder)Commands.argument("objective", ObjectiveArgument.objective()).then(Commands.argument("name", ComponentArgument.textComponent(var1)).executes((var0x) -> setScoreDisplay((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"), ObjectiveArgument.getObjective(var0x, "objective"), ComponentArgument.getResolvedComponent(var0x, "name"))))).executes((var0x) -> setScoreDisplay((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"), ObjectiveArgument.getObjective(var0x, "objective"), (Component)null)))))).then(Commands.literal("numberformat").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addNumberFormats(var1, Commands.argument("objective", ObjectiveArgument.objective()), (var0x, var1x) -> setScoreNumberFormat((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"), ObjectiveArgument.getObjective(var0x, "objective"), var1x))))))).then(Commands.literal("operation").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("targetObjective", ObjectiveArgument.objective()).then(Commands.argument("operation", OperationArgument.operation()).then(Commands.argument("source", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("sourceObjective", ObjectiveArgument.objective()).executes((var0x) -> performOperation((CommandSourceStack)var0x.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"), ObjectiveArgument.getWritableObjective(var0x, "targetObjective"), OperationArgument.getOperation(var0x, "operation"), ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "source"), ObjectiveArgument.getObjective(var0x, "sourceObjective")))))))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("scoreboard").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("objectives").then(Commands.literal("list").executes((c) -> listObjectives((CommandSourceStack)c.getSource())))).then(Commands.literal("add").then(Commands.argument("objective", StringArgumentType.word()).then(((RequiredArgumentBuilder)Commands.argument("criteria", ObjectiveCriteriaArgument.criteria()).executes((c) -> addObjective((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "objective"), ObjectiveCriteriaArgument.getCriteria(c, "criteria"), Component.literal(StringArgumentType.getString(c, "objective"))))).then(Commands.argument("displayName", ComponentArgument.textComponent(context)).executes((c) -> addObjective((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "objective"), ObjectiveCriteriaArgument.getCriteria(c, "criteria"), ComponentArgument.getResolvedComponent(c, "displayName")))))))).then(Commands.literal("modify").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("objective", ObjectiveArgument.objective()).then(Commands.literal("displayname").then(Commands.argument("displayName", ComponentArgument.textComponent(context)).executes((c) -> setDisplayName((CommandSourceStack)c.getSource(), ObjectiveArgument.getObjective(c, "objective"), ComponentArgument.getResolvedComponent(c, "displayName")))))).then(createRenderTypeModify())).then(Commands.literal("displayautoupdate").then(Commands.argument("value", BoolArgumentType.bool()).executes((c) -> setDisplayAutoUpdate((CommandSourceStack)c.getSource(), ObjectiveArgument.getObjective(c, "objective"), BoolArgumentType.getBool(c, "value")))))).then(addNumberFormats(context, Commands.literal("numberformat"), (c, numberFormat) -> setObjectiveFormat((CommandSourceStack)c.getSource(), ObjectiveArgument.getObjective(c, "objective"), numberFormat)))))).then(Commands.literal("remove").then(Commands.argument("objective", ObjectiveArgument.objective()).executes((c) -> removeObjective((CommandSourceStack)c.getSource(), ObjectiveArgument.getObjective(c, "objective")))))).then(Commands.literal("setdisplay").then(((RequiredArgumentBuilder)Commands.argument("slot", ScoreboardSlotArgument.displaySlot()).executes((c) -> clearDisplaySlot((CommandSourceStack)c.getSource(), ScoreboardSlotArgument.getDisplaySlot(c, "slot")))).then(Commands.argument("objective", ObjectiveArgument.objective()).executes((c) -> setDisplaySlot((CommandSourceStack)c.getSource(), ScoreboardSlotArgument.getDisplaySlot(c, "slot"), ObjectiveArgument.getObjective(c, "objective")))))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("players").then(((LiteralArgumentBuilder)Commands.literal("list").executes((c) -> listTrackedPlayers((CommandSourceStack)c.getSource()))).then(Commands.argument("target", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).executes((c) -> listTrackedPlayerScores((CommandSourceStack)c.getSource(), ScoreHolderArgument.getName(c, "target")))))).then(Commands.literal("set").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).then(Commands.argument("score", IntegerArgumentType.integer()).executes((c) -> setScore((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), ObjectiveArgument.getWritableObjective(c, "objective"), IntegerArgumentType.getInteger(c, "score")))))))).then(Commands.literal("get").then(Commands.argument("target", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).executes((c) -> getScore((CommandSourceStack)c.getSource(), ScoreHolderArgument.getName(c, "target"), ObjectiveArgument.getObjective(c, "objective"))))))).then(Commands.literal("add").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).then(Commands.argument("score", IntegerArgumentType.integer(0)).executes((c) -> addScore((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), ObjectiveArgument.getWritableObjective(c, "objective"), IntegerArgumentType.getInteger(c, "score")))))))).then(Commands.literal("remove").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).then(Commands.argument("score", IntegerArgumentType.integer(0)).executes((c) -> removeScore((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), ObjectiveArgument.getWritableObjective(c, "objective"), IntegerArgumentType.getInteger(c, "score")))))))).then(Commands.literal("reset").then(((RequiredArgumentBuilder)Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).executes((c) -> resetScores((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets")))).then(Commands.argument("objective", ObjectiveArgument.objective()).executes((c) -> resetScore((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), ObjectiveArgument.getObjective(c, "objective"))))))).then(Commands.literal("enable").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("objective", ObjectiveArgument.objective()).suggests((c, p) -> suggestTriggers((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), p)).executes((c) -> enableTrigger((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), ObjectiveArgument.getObjective(c, "objective"))))))).then(((LiteralArgumentBuilder)Commands.literal("display").then(Commands.literal("name").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(((RequiredArgumentBuilder)Commands.argument("objective", ObjectiveArgument.objective()).then(Commands.argument("name", ComponentArgument.textComponent(context)).executes((c) -> setScoreDisplay((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), ObjectiveArgument.getObjective(c, "objective"), ComponentArgument.getResolvedComponent(c, "name"))))).executes((c) -> setScoreDisplay((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), ObjectiveArgument.getObjective(c, "objective"), (Component)null)))))).then(Commands.literal("numberformat").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addNumberFormats(context, Commands.argument("objective", ObjectiveArgument.objective()), (c, format) -> setScoreNumberFormat((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), ObjectiveArgument.getObjective(c, "objective"), format))))))).then(Commands.literal("operation").then(Commands.argument("targets", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("targetObjective", ObjectiveArgument.objective()).then(Commands.argument("operation", OperationArgument.operation()).then(Commands.argument("source", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(Commands.argument("sourceObjective", ObjectiveArgument.objective()).executes((c) -> performOperation((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "targets"), ObjectiveArgument.getWritableObjective(c, "targetObjective"), OperationArgument.getOperation(c, "operation"), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "source"), ObjectiveArgument.getObjective(c, "sourceObjective")))))))))));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> addNumberFormats(CommandBuildContext var0, ArgumentBuilder<CommandSourceStack, ?> var1, NumberFormatCommandExecutor var2) {
-      return var1.then(Commands.literal("blank").executes((var1x) -> var2.run(var1x, BlankFormat.INSTANCE))).then(Commands.literal("fixed").then(Commands.argument("contents", ComponentArgument.textComponent(var0)).executes((var1x) -> {
-         Component var2x = ComponentArgument.getResolvedComponent(var1x, "contents");
-         return var2.run(var1x, new FixedFormat(var2x));
-      }))).then(Commands.literal("styled").then(Commands.argument("style", StyleArgument.style(var0)).executes((var1x) -> {
-         Style var2x = StyleArgument.getStyle(var1x, "style");
-         return var2.run(var1x, new StyledFormat(var2x));
-      }))).executes((var1x) -> var2.run(var1x, (NumberFormat)null));
+   private static ArgumentBuilder<CommandSourceStack, ?> addNumberFormats(final CommandBuildContext context, final ArgumentBuilder<CommandSourceStack, ?> top, final NumberFormatCommandExecutor callback) {
+      return top.then(Commands.literal("blank").executes((c) -> callback.run(c, BlankFormat.INSTANCE))).then(Commands.literal("fixed").then(Commands.argument("contents", ComponentArgument.textComponent(context)).executes((c) -> {
+         Component contents = ComponentArgument.getResolvedComponent(c, "contents");
+         return callback.run(c, new FixedFormat(contents));
+      }))).then(Commands.literal("styled").then(Commands.argument("style", StyleArgument.style(context)).executes((c) -> {
+         Style style = StyleArgument.getStyle(c, "style");
+         return callback.run(c, new StyledFormat(style));
+      }))).executes((c) -> callback.run(c, (NumberFormat)null));
    }
 
    private static LiteralArgumentBuilder<CommandSourceStack> createRenderTypeModify() {
-      LiteralArgumentBuilder var0 = Commands.literal("rendertype");
+      LiteralArgumentBuilder<CommandSourceStack> result = Commands.literal("rendertype");
 
-      for(ObjectiveCriteria.RenderType var4 : ObjectiveCriteria.RenderType.values()) {
-         var0.then(Commands.literal(var4.getId()).executes((var1) -> setRenderType((CommandSourceStack)var1.getSource(), ObjectiveArgument.getObjective(var1, "objective"), var4)));
+      for(ObjectiveCriteria.RenderType renderType : ObjectiveCriteria.RenderType.values()) {
+         result.then(Commands.literal(renderType.getId()).executes((c) -> setRenderType((CommandSourceStack)c.getSource(), ObjectiveArgument.getObjective(c, "objective"), renderType)));
       }
 
-      return var0;
+      return result;
    }
 
-   private static CompletableFuture<Suggestions> suggestTriggers(CommandSourceStack var0, Collection<ScoreHolder> var1, SuggestionsBuilder var2) {
-      ArrayList var3 = Lists.newArrayList();
-      ServerScoreboard var4 = var0.getServer().getScoreboard();
+   private static CompletableFuture<Suggestions> suggestTriggers(final CommandSourceStack source, final Collection<ScoreHolder> targets, final SuggestionsBuilder builder) {
+      List<String> result = Lists.newArrayList();
+      Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(Objective var6 : ((Scoreboard)var4).getObjectives()) {
-         if (var6.getCriteria() == ObjectiveCriteria.TRIGGER) {
-            boolean var7 = false;
+      for(Objective objective : scoreboard.getObjectives()) {
+         if (objective.getCriteria() == ObjectiveCriteria.TRIGGER) {
+            boolean available = false;
 
-            for(ScoreHolder var9 : var1) {
-               ReadOnlyScoreInfo var10 = ((Scoreboard)var4).getPlayerScoreInfo(var9, var6);
-               if (var10 == null || var10.isLocked()) {
-                  var7 = true;
+            for(ScoreHolder name : targets) {
+               ReadOnlyScoreInfo scoreInfo = scoreboard.getPlayerScoreInfo(name, objective);
+               if (scoreInfo == null || scoreInfo.isLocked()) {
+                  available = true;
                   break;
                }
             }
 
-            if (var7) {
-               var3.add(var6.getName());
+            if (available) {
+               result.add(objective.getName());
             }
          }
       }
 
-      return SharedSuggestionProvider.suggest(var3, var2);
+      return SharedSuggestionProvider.suggest(result, builder);
    }
 
-   private static int getScore(CommandSourceStack var0, ScoreHolder var1, Objective var2) throws CommandSyntaxException {
-      ServerScoreboard var3 = var0.getServer().getScoreboard();
-      ReadOnlyScoreInfo var4 = ((Scoreboard)var3).getPlayerScoreInfo(var1, var2);
-      if (var4 == null) {
-         throw ERROR_NO_VALUE.create(var2.getName(), var1.getFeedbackDisplayName());
+   private static int getScore(final CommandSourceStack source, final ScoreHolder target, final Objective objective) throws CommandSyntaxException {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
+      ReadOnlyScoreInfo score = scoreboard.getPlayerScoreInfo(target, objective);
+      if (score == null) {
+         throw ERROR_NO_VALUE.create(objective.getName(), target.getFeedbackDisplayName());
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.get.success", var1.getFeedbackDisplayName(), var4.value(), var2.getFormattedDisplayName()), false);
-         return var4.value();
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.get.success", target.getFeedbackDisplayName(), score.value(), objective.getFormattedDisplayName()), false);
+         return score.value();
       }
    }
 
-   private static Component getFirstTargetName(Collection<ScoreHolder> var0) {
-      return ((ScoreHolder)var0.iterator().next()).getFeedbackDisplayName();
+   private static Component getFirstTargetName(final Collection<ScoreHolder> names) {
+      return ((ScoreHolder)names.iterator().next()).getFeedbackDisplayName();
    }
 
-   private static int performOperation(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, OperationArgument.Operation var3, Collection<ScoreHolder> var4, Objective var5) throws CommandSyntaxException {
-      ServerScoreboard var6 = var0.getServer().getScoreboard();
-      int var7 = 0;
+   private static int performOperation(final CommandSourceStack source, final Collection<ScoreHolder> targets, final Objective targetObjective, final OperationArgument.Operation operation, final Collection<ScoreHolder> sources, final Objective sourceObjective) throws CommandSyntaxException {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
+      int result = 0;
 
-      for(ScoreHolder var9 : var1) {
-         ScoreAccess var10 = ((Scoreboard)var6).getOrCreatePlayerScore(var9, var2);
+      for(ScoreHolder target : targets) {
+         ScoreAccess score = scoreboard.getOrCreatePlayerScore(target, targetObjective);
 
-         for(ScoreHolder var12 : var4) {
-            ScoreAccess var13 = ((Scoreboard)var6).getOrCreatePlayerScore(var12, var5);
-            var3.apply(var10, var13);
+         for(ScoreHolder from : sources) {
+            ScoreAccess sourceScore = scoreboard.getOrCreatePlayerScore(from, sourceObjective);
+            operation.apply(score, sourceScore);
          }
 
-         var7 += var10.get();
+         result += score.get();
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.operation.success.single", var2.getFormattedDisplayName(), getFirstTargetName(var1), var7), true);
+      if (targets.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.operation.success.single", targetObjective.getFormattedDisplayName(), getFirstTargetName(targets), result), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.operation.success.multiple", var2.getFormattedDisplayName(), var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.operation.success.multiple", targetObjective.getFormattedDisplayName(), targets.size()), true);
       }
 
-      return var7;
+      return result;
    }
 
-   private static int enableTrigger(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2) throws CommandSyntaxException {
-      if (var2.getCriteria() != ObjectiveCriteria.TRIGGER) {
+   private static int enableTrigger(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective) throws CommandSyntaxException {
+      if (objective.getCriteria() != ObjectiveCriteria.TRIGGER) {
          throw ERROR_NOT_TRIGGER.create();
       } else {
-         ServerScoreboard var3 = var0.getServer().getScoreboard();
-         int var4 = 0;
+         Scoreboard scoreboard = source.getServer().getScoreboard();
+         int count = 0;
 
-         for(ScoreHolder var6 : var1) {
-            ScoreAccess var7 = ((Scoreboard)var3).getOrCreatePlayerScore(var6, var2);
-            if (var7.locked()) {
-               var7.unlock();
-               ++var4;
+         for(ScoreHolder name : names) {
+            ScoreAccess score = scoreboard.getOrCreatePlayerScore(name, objective);
+            if (score.locked()) {
+               score.unlock();
+               ++count;
             }
          }
 
-         if (var4 == 0) {
+         if (count == 0) {
             throw ERROR_TRIGGER_ALREADY_ENABLED.create();
          } else {
-            if (var1.size() == 1) {
-               var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.enable.success.single", var2.getFormattedDisplayName(), getFirstTargetName(var1)), true);
+            if (names.size() == 1) {
+               source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.enable.success.single", objective.getFormattedDisplayName(), getFirstTargetName(names)), true);
             } else {
-               var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.enable.success.multiple", var2.getFormattedDisplayName(), var1.size()), true);
+               source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.enable.success.multiple", objective.getFormattedDisplayName(), names.size()), true);
             }
 
-            return var4;
+            return count;
          }
       }
    }
 
-   private static int resetScores(CommandSourceStack var0, Collection<ScoreHolder> var1) {
-      ServerScoreboard var2 = var0.getServer().getScoreboard();
+   private static int resetScores(final CommandSourceStack source, final Collection<ScoreHolder> names) {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(ScoreHolder var4 : var1) {
-         ((Scoreboard)var2).resetAllPlayerScores(var4);
+      for(ScoreHolder name : names) {
+         scoreboard.resetAllPlayerScores(name);
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.all.single", getFirstTargetName(var1)), true);
+      if (names.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.all.single", getFirstTargetName(names)), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.all.multiple", var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.all.multiple", names.size()), true);
       }
 
-      return var1.size();
+      return names.size();
    }
 
-   private static int resetScore(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2) {
-      ServerScoreboard var3 = var0.getServer().getScoreboard();
+   private static int resetScore(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective) {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(ScoreHolder var5 : var1) {
-         ((Scoreboard)var3).resetSinglePlayerScore(var5, var2);
+      for(ScoreHolder name : names) {
+         scoreboard.resetSinglePlayerScore(name, objective);
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.specific.single", var2.getFormattedDisplayName(), getFirstTargetName(var1)), true);
+      if (names.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.specific.single", objective.getFormattedDisplayName(), getFirstTargetName(names)), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.specific.multiple", var2.getFormattedDisplayName(), var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.specific.multiple", objective.getFormattedDisplayName(), names.size()), true);
       }
 
-      return var1.size();
+      return names.size();
    }
 
-   private static int setScore(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, int var3) {
-      ServerScoreboard var4 = var0.getServer().getScoreboard();
+   private static int setScore(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final int value) {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(ScoreHolder var6 : var1) {
-         ((Scoreboard)var4).getOrCreatePlayerScore(var6, var2).set(var3);
+      for(ScoreHolder name : names) {
+         scoreboard.getOrCreatePlayerScore(name, objective).set(value);
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.set.success.single", var2.getFormattedDisplayName(), getFirstTargetName(var1), var3), true);
+      if (names.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.set.success.single", objective.getFormattedDisplayName(), getFirstTargetName(names), value), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.set.success.multiple", var2.getFormattedDisplayName(), var1.size(), var3), true);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.set.success.multiple", objective.getFormattedDisplayName(), names.size(), value), true);
       }
 
-      return var3 * var1.size();
+      return value * names.size();
    }
 
-   private static int setScoreDisplay(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, @Nullable Component var3) {
-      ServerScoreboard var4 = var0.getServer().getScoreboard();
+   private static int setScoreDisplay(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final @Nullable Component display) {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(ScoreHolder var6 : var1) {
-         ((Scoreboard)var4).getOrCreatePlayerScore(var6, var2).display(var3);
+      for(ScoreHolder name : names) {
+         scoreboard.getOrCreatePlayerScore(name, objective).display(display);
       }
 
-      if (var3 == null) {
-         if (var1.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.clear.success.single", getFirstTargetName(var1), var2.getFormattedDisplayName()), true);
+      if (display == null) {
+         if (names.size() == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.clear.success.single", getFirstTargetName(names), objective.getFormattedDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.clear.success.multiple", var1.size(), var2.getFormattedDisplayName()), true);
+            source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.clear.success.multiple", names.size(), objective.getFormattedDisplayName()), true);
          }
-      } else if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.set.success.single", var3, getFirstTargetName(var1), var2.getFormattedDisplayName()), true);
+      } else if (names.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.set.success.single", display, getFirstTargetName(names), objective.getFormattedDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.set.success.multiple", var3, var1.size(), var2.getFormattedDisplayName()), true);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.set.success.multiple", display, names.size(), objective.getFormattedDisplayName()), true);
       }
 
-      return var1.size();
+      return names.size();
    }
 
-   private static int setScoreNumberFormat(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, @Nullable NumberFormat var3) {
-      ServerScoreboard var4 = var0.getServer().getScoreboard();
+   private static int setScoreNumberFormat(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final @Nullable NumberFormat numberFormat) {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(ScoreHolder var6 : var1) {
-         ((Scoreboard)var4).getOrCreatePlayerScore(var6, var2).numberFormatOverride(var3);
+      for(ScoreHolder name : names) {
+         scoreboard.getOrCreatePlayerScore(name, objective).numberFormatOverride(numberFormat);
       }
 
-      if (var3 == null) {
-         if (var1.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.clear.success.single", getFirstTargetName(var1), var2.getFormattedDisplayName()), true);
+      if (numberFormat == null) {
+         if (names.size() == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.clear.success.single", getFirstTargetName(names), objective.getFormattedDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.clear.success.multiple", var1.size(), var2.getFormattedDisplayName()), true);
+            source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.clear.success.multiple", names.size(), objective.getFormattedDisplayName()), true);
          }
-      } else if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.set.success.single", getFirstTargetName(var1), var2.getFormattedDisplayName()), true);
+      } else if (names.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.set.success.single", getFirstTargetName(names), objective.getFormattedDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.set.success.multiple", var1.size(), var2.getFormattedDisplayName()), true);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.set.success.multiple", names.size(), objective.getFormattedDisplayName()), true);
       }
 
-      return var1.size();
+      return names.size();
    }
 
-   private static int addScore(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, int var3) {
-      ServerScoreboard var4 = var0.getServer().getScoreboard();
-      int var5 = 0;
+   private static int addScore(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final int value) {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
+      int result = 0;
 
-      for(ScoreHolder var7 : var1) {
-         ScoreAccess var8 = ((Scoreboard)var4).getOrCreatePlayerScore(var7, var2);
-         var8.set(var8.get() + var3);
-         var5 += var8.get();
+      for(ScoreHolder name : names) {
+         ScoreAccess score = scoreboard.getOrCreatePlayerScore(name, objective);
+         score.set(score.get() + value);
+         result += score.get();
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.add.success.single", var3, var2.getFormattedDisplayName(), getFirstTargetName(var1), var5), true);
+      if (names.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.add.success.single", value, objective.getFormattedDisplayName(), getFirstTargetName(names), result), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.add.success.multiple", var3, var2.getFormattedDisplayName(), var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.add.success.multiple", value, objective.getFormattedDisplayName(), names.size()), true);
       }
 
-      return var5;
+      return result;
    }
 
-   private static int removeScore(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, int var3) {
-      ServerScoreboard var4 = var0.getServer().getScoreboard();
-      int var5 = 0;
+   private static int removeScore(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final int value) {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
+      int result = 0;
 
-      for(ScoreHolder var7 : var1) {
-         ScoreAccess var8 = ((Scoreboard)var4).getOrCreatePlayerScore(var7, var2);
-         var8.set(var8.get() - var3);
-         var5 += var8.get();
+      for(ScoreHolder name : names) {
+         ScoreAccess score = scoreboard.getOrCreatePlayerScore(name, objective);
+         score.set(score.get() - value);
+         result += score.get();
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.remove.success.single", var3, var2.getFormattedDisplayName(), getFirstTargetName(var1), var5), true);
+      if (names.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.remove.success.single", value, objective.getFormattedDisplayName(), getFirstTargetName(names), result), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.remove.success.multiple", var3, var2.getFormattedDisplayName(), var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.remove.success.multiple", value, objective.getFormattedDisplayName(), names.size()), true);
       }
 
-      return var5;
+      return result;
    }
 
-   private static int listTrackedPlayers(CommandSourceStack var0) {
-      Collection var1 = var0.getServer().getScoreboard().getTrackedPlayers();
-      if (var1.isEmpty()) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.empty"), false);
+   private static int listTrackedPlayers(final CommandSourceStack source) {
+      Collection<ScoreHolder> entities = source.getServer().getScoreboard().getTrackedPlayers();
+      if (entities.isEmpty()) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.empty"), false);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.success", var1.size(), ComponentUtils.formatList(var1, ScoreHolder::getFeedbackDisplayName)), false);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.success", entities.size(), ComponentUtils.formatList(entities, ScoreHolder::getFeedbackDisplayName)), false);
       }
 
-      return var1.size();
+      return entities.size();
    }
 
-   private static int listTrackedPlayerScores(CommandSourceStack var0, ScoreHolder var1) {
-      Object2IntMap var2 = var0.getServer().getScoreboard().listPlayerScores(var1);
-      if (var2.isEmpty()) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.entity.empty", var1.getFeedbackDisplayName()), false);
+   private static int listTrackedPlayerScores(final CommandSourceStack source, final ScoreHolder entity) {
+      Object2IntMap<Objective> scores = source.getServer().getScoreboard().listPlayerScores(entity);
+      if (scores.isEmpty()) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.entity.empty", entity.getFeedbackDisplayName()), false);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.entity.success", var1.getFeedbackDisplayName(), var2.size()), false);
-         Object2IntMaps.fastForEach(var2, (var1x) -> var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.entity.entry", ((Objective)var1x.getKey()).getFormattedDisplayName(), var1x.getIntValue()), false));
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.entity.success", entity.getFeedbackDisplayName(), scores.size()), false);
+         Object2IntMaps.fastForEach(scores, (entry) -> source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.entity.entry", ((Objective)entry.getKey()).getFormattedDisplayName(), entry.getIntValue()), false));
       }
 
-      return var2.size();
+      return scores.size();
    }
 
-   private static int clearDisplaySlot(CommandSourceStack var0, DisplaySlot var1) throws CommandSyntaxException {
-      ServerScoreboard var2 = var0.getServer().getScoreboard();
-      if (((Scoreboard)var2).getDisplayObjective(var1) == null) {
+   private static int clearDisplaySlot(final CommandSourceStack source, final DisplaySlot slot) throws CommandSyntaxException {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
+      if (scoreboard.getDisplayObjective(slot) == null) {
          throw ERROR_DISPLAY_SLOT_ALREADY_EMPTY.create();
       } else {
-         ((Scoreboard)var2).setDisplayObjective(var1, (Objective)null);
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.display.cleared", var1.getSerializedName()), true);
+         scoreboard.setDisplayObjective(slot, (Objective)null);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.display.cleared", slot.getSerializedName()), true);
          return 0;
       }
    }
 
-   private static int setDisplaySlot(CommandSourceStack var0, DisplaySlot var1, Objective var2) throws CommandSyntaxException {
-      ServerScoreboard var3 = var0.getServer().getScoreboard();
-      if (((Scoreboard)var3).getDisplayObjective(var1) == var2) {
+   private static int setDisplaySlot(final CommandSourceStack source, final DisplaySlot slot, final Objective objective) throws CommandSyntaxException {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
+      if (scoreboard.getDisplayObjective(slot) == objective) {
          throw ERROR_DISPLAY_SLOT_ALREADY_SET.create();
       } else {
-         ((Scoreboard)var3).setDisplayObjective(var1, var2);
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.display.set", var1.getSerializedName(), var2.getDisplayName()), true);
+         scoreboard.setDisplayObjective(slot, objective);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.display.set", slot.getSerializedName(), objective.getDisplayName()), true);
          return 0;
       }
    }
 
-   private static int setDisplayName(CommandSourceStack var0, Objective var1, Component var2) {
-      if (!var1.getDisplayName().equals(var2)) {
-         var1.setDisplayName(var2);
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.displayname", var1.getName(), var1.getFormattedDisplayName()), true);
+   private static int setDisplayName(final CommandSourceStack source, final Objective objective, final Component displayName) {
+      if (!objective.getDisplayName().equals(displayName)) {
+         objective.setDisplayName(displayName);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.displayname", objective.getName(), objective.getFormattedDisplayName()), true);
       }
 
       return 0;
    }
 
-   private static int setDisplayAutoUpdate(CommandSourceStack var0, Objective var1, boolean var2) {
-      if (var1.displayAutoUpdate() != var2) {
-         var1.setDisplayAutoUpdate(var2);
-         if (var2) {
-            var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.displayAutoUpdate.enable", var1.getName(), var1.getFormattedDisplayName()), true);
+   private static int setDisplayAutoUpdate(final CommandSourceStack source, final Objective objective, final boolean displayAutoUpdate) {
+      if (objective.displayAutoUpdate() != displayAutoUpdate) {
+         objective.setDisplayAutoUpdate(displayAutoUpdate);
+         if (displayAutoUpdate) {
+            source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.displayAutoUpdate.enable", objective.getName(), objective.getFormattedDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.displayAutoUpdate.disable", var1.getName(), var1.getFormattedDisplayName()), true);
+            source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.displayAutoUpdate.disable", objective.getName(), objective.getFormattedDisplayName()), true);
          }
       }
 
       return 0;
    }
 
-   private static int setObjectiveFormat(CommandSourceStack var0, Objective var1, @Nullable NumberFormat var2) {
-      var1.setNumberFormat(var2);
-      if (var2 != null) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.objectiveFormat.set", var1.getName()), true);
+   private static int setObjectiveFormat(final CommandSourceStack source, final Objective objective, final @Nullable NumberFormat numberFormat) {
+      objective.setNumberFormat(numberFormat);
+      if (numberFormat != null) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.objectiveFormat.set", objective.getName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.objectiveFormat.clear", var1.getName()), true);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.objectiveFormat.clear", objective.getName()), true);
       }
 
       return 0;
    }
 
-   private static int setRenderType(CommandSourceStack var0, Objective var1, ObjectiveCriteria.RenderType var2) {
-      if (var1.getRenderType() != var2) {
-         var1.setRenderType(var2);
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.rendertype", var1.getFormattedDisplayName()), true);
+   private static int setRenderType(final CommandSourceStack source, final Objective objective, final ObjectiveCriteria.RenderType renderType) {
+      if (objective.getRenderType() != renderType) {
+         objective.setRenderType(renderType);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.rendertype", objective.getFormattedDisplayName()), true);
       }
 
       return 0;
    }
 
-   private static int removeObjective(CommandSourceStack var0, Objective var1) {
-      ServerScoreboard var2 = var0.getServer().getScoreboard();
-      ((Scoreboard)var2).removeObjective(var1);
-      var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.remove.success", var1.getFormattedDisplayName()), true);
-      return ((Scoreboard)var2).getObjectives().size();
+   private static int removeObjective(final CommandSourceStack source, final Objective objective) {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
+      scoreboard.removeObjective(objective);
+      source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.remove.success", objective.getFormattedDisplayName()), true);
+      return scoreboard.getObjectives().size();
    }
 
-   private static int addObjective(CommandSourceStack var0, String var1, ObjectiveCriteria var2, Component var3) throws CommandSyntaxException {
-      ServerScoreboard var4 = var0.getServer().getScoreboard();
-      if (((Scoreboard)var4).getObjective(var1) != null) {
+   private static int addObjective(final CommandSourceStack source, final String name, final ObjectiveCriteria criteria, final Component displayName) throws CommandSyntaxException {
+      Scoreboard scoreboard = source.getServer().getScoreboard();
+      if (scoreboard.getObjective(name) != null) {
          throw ERROR_OBJECTIVE_ALREADY_EXISTS.create();
       } else {
-         ((Scoreboard)var4).addObjective(var1, var2, var3, var2.getDefaultRenderType(), false, (NumberFormat)null);
-         Objective var5 = ((Scoreboard)var4).getObjective(var1);
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.add.success", var5.getFormattedDisplayName()), true);
-         return ((Scoreboard)var4).getObjectives().size();
+         scoreboard.addObjective(name, criteria, displayName, criteria.getDefaultRenderType(), false, (NumberFormat)null);
+         Objective objective = scoreboard.getObjective(name);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.add.success", objective.getFormattedDisplayName()), true);
+         return scoreboard.getObjectives().size();
       }
    }
 
-   private static int listObjectives(CommandSourceStack var0) {
-      Collection var1 = var0.getServer().getScoreboard().getObjectives();
-      if (var1.isEmpty()) {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.list.empty"), false);
+   private static int listObjectives(final CommandSourceStack source) {
+      Collection<Objective> objectives = source.getServer().getScoreboard().getObjectives();
+      if (objectives.isEmpty()) {
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.list.empty"), false);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.list.success", var1.size(), ComponentUtils.formatList(var1, Objective::getFormattedDisplayName)), false);
+         source.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.list.success", objectives.size(), ComponentUtils.formatList(objectives, Objective::getFormattedDisplayName)), false);
       }
 
-      return var1.size();
+      return objectives.size();
    }
 
    @FunctionalInterface
    public interface NumberFormatCommandExecutor {
-      int run(CommandContext<CommandSourceStack> var1, @Nullable NumberFormat var2) throws CommandSyntaxException;
+      int run(CommandContext<CommandSourceStack> context, @Nullable NumberFormat format) throws CommandSyntaxException;
    }
 }

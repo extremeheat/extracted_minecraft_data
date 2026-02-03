@@ -9,21 +9,21 @@ import net.minecraft.resources.Identifier;
 public class ImageButton extends Button {
    protected final WidgetSprites sprites;
 
-   public ImageButton(int var1, int var2, int var3, int var4, WidgetSprites var5, Button.OnPress var6) {
-      this(var1, var2, var3, var4, var5, var6, CommonComponents.EMPTY);
+   public ImageButton(final int x, final int y, final int width, final int height, final WidgetSprites sprites, final Button.OnPress onPress) {
+      this(x, y, width, height, sprites, onPress, CommonComponents.EMPTY);
    }
 
-   public ImageButton(int var1, int var2, WidgetSprites var3, Button.OnPress var4, Component var5) {
-      this(0, 0, var1, var2, var3, var4, var5);
+   public ImageButton(final int width, final int height, final WidgetSprites sprites, final Button.OnPress onPress, final Component message) {
+      this(0, 0, width, height, sprites, onPress, message);
    }
 
-   public ImageButton(int var1, int var2, int var3, int var4, WidgetSprites var5, Button.OnPress var6, Component var7) {
-      super(var1, var2, var3, var4, var7, var6, DEFAULT_NARRATION);
-      this.sprites = var5;
+   public ImageButton(final int x, final int y, final int width, final int height, final WidgetSprites sprites, final Button.OnPress onPress, final Component message) {
+      super(x, y, width, height, message, onPress, DEFAULT_NARRATION);
+      this.sprites = sprites;
    }
 
-   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
-      Identifier var5 = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.width, this.height);
+   public void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      Identifier sprite = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
    }
 }

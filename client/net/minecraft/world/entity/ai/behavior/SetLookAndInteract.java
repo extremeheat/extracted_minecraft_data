@@ -13,16 +13,16 @@ public class SetLookAndInteract {
       super();
    }
 
-   public static BehaviorControl<LivingEntity> create(EntityType<?> var0, int var1) {
-      int var2 = var1 * var1;
-      return BehaviorBuilder.create((Function)((var2x) -> var2x.group(var2x.registered(MemoryModuleType.LOOK_TARGET), var2x.absent(MemoryModuleType.INTERACTION_TARGET), var2x.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(var2x, (var3, var4, var5) -> (var6, var7, var8) -> {
-               Optional var10 = ((NearestVisibleLivingEntities)var2x.get(var5)).findClosest((var3x) -> var3x.distanceToSqr(var7) <= (double)var2 && var0.equals(var3x.getType()));
-               if (var10.isEmpty()) {
+   public static BehaviorControl<LivingEntity> create(final EntityType<?> type, final int interactionRange) {
+      int interactionRangeSqr = interactionRange * interactionRange;
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.LOOK_TARGET), i.absent(MemoryModuleType.INTERACTION_TARGET), i.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(i, (lookTarget, interactionTarget, nearestEntities) -> (level, body, timestamp) -> {
+               Optional<LivingEntity> closest = ((NearestVisibleLivingEntities)i.get(nearestEntities)).findClosest((e) -> e.distanceToSqr(body) <= (double)interactionRangeSqr && e.is(type));
+               if (closest.isEmpty()) {
                   return false;
                } else {
-                  LivingEntity var11 = (LivingEntity)var10.get();
-                  var4.set(var11);
-                  var3.set(new EntityTracker(var11, true));
+                  LivingEntity closestEntity = (LivingEntity)closest.get();
+                  interactionTarget.set(closestEntity);
+                  lookTarget.set(new EntityTracker(closestEntity, true));
                   return true;
                }
             })));

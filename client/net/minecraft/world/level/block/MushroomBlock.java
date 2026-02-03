@@ -20,7 +20,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MushroomBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((var0x) -> var0x.feature), propertiesCodec()).apply(var0, MushroomBlock::new));
+   public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((b) -> b.feature), propertiesCodec()).apply(i, MushroomBlock::new));
    private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 6.0);
    private final ResourceKey<ConfiguredFeature<?, ?>> feature;
 
@@ -28,84 +28,84 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
       return CODEC;
    }
 
-   public MushroomBlock(ResourceKey<ConfiguredFeature<?, ?>> var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.feature = var1;
+   public MushroomBlock(final ResourceKey<ConfiguredFeature<?, ?>> feature, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.feature = feature;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var4.nextInt(25) == 0) {
-         int var5 = 5;
-         boolean var6 = true;
+   protected void randomTick(final BlockState state, final ServerLevel level, BlockPos pos, final RandomSource random) {
+      if (random.nextInt(25) == 0) {
+         int max = 5;
+         int r = 4;
 
-         for(BlockPos var8 : BlockPos.betweenClosed(var3.offset(-4, -1, -4), var3.offset(4, 1, 4))) {
-            if (var2.getBlockState(var8).is(this)) {
-               --var5;
-               if (var5 <= 0) {
+         for(BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-4, -1, -4), pos.offset(4, 1, 4))) {
+            if (level.getBlockState(blockPos).is(this)) {
+               --max;
+               if (max <= 0) {
                   return;
                }
             }
          }
 
-         BlockPos var9 = var3.offset(var4.nextInt(3) - 1, var4.nextInt(2) - var4.nextInt(2), var4.nextInt(3) - 1);
+         BlockPos offset = pos.offset(random.nextInt(3) - 1, random.nextInt(2) - random.nextInt(2), random.nextInt(3) - 1);
 
-         for(int var10 = 0; var10 < 4; ++var10) {
-            if (var2.isEmptyBlock(var9) && var1.canSurvive(var2, var9)) {
-               var3 = var9;
+         for(int i = 0; i < 4; ++i) {
+            if (level.isEmptyBlock(offset) && state.canSurvive(level, offset)) {
+               pos = offset;
             }
 
-            var9 = var3.offset(var4.nextInt(3) - 1, var4.nextInt(2) - var4.nextInt(2), var4.nextInt(3) - 1);
+            offset = pos.offset(random.nextInt(3) - 1, random.nextInt(2) - random.nextInt(2), random.nextInt(3) - 1);
          }
 
-         if (var2.isEmptyBlock(var9) && var1.canSurvive(var2, var9)) {
-            var2.setBlock(var9, var1, 2);
+         if (level.isEmptyBlock(offset) && state.canSurvive(level, offset)) {
+            level.setBlock(offset, state, 2);
          }
       }
 
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.isSolidRender();
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.isSolidRender();
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockPos var4 = var3.below();
-      BlockState var5 = var2.getBlockState(var4);
-      if (var5.is(BlockTags.MUSHROOM_GROW_BLOCK)) {
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockPos belowPos = pos.below();
+      BlockState below = level.getBlockState(belowPos);
+      if (below.is(BlockTags.OVERRIDES_MUSHROOM_LIGHT_REQUIREMENT)) {
          return true;
       } else {
-         return var2.getRawBrightness(var3, 0) < 13 && this.mayPlaceOn(var5, var2, var4);
+         return level.getRawBrightness(pos, 0) < 13 && this.mayPlaceOn(below, level, belowPos);
       }
    }
 
-   public boolean growMushroom(ServerLevel var1, BlockPos var2, BlockState var3, RandomSource var4) {
-      Optional var5 = var1.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(this.feature);
-      if (var5.isEmpty()) {
+   public boolean growMushroom(final ServerLevel level, final BlockPos pos, final BlockState state, final RandomSource random) {
+      Optional<? extends Holder<ConfiguredFeature<?, ?>>> feature = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(this.feature);
+      if (feature.isEmpty()) {
          return false;
       } else {
-         var1.removeBlock(var2, false);
-         if (((ConfiguredFeature)((Holder)var5.get()).value()).place(var1, var1.getChunkSource().getGenerator(), var4, var2)) {
+         level.removeBlock(pos, false);
+         if (((ConfiguredFeature)((Holder)feature.get()).value()).place(level, level.getChunkSource().getGenerator(), random, pos)) {
             return true;
          } else {
-            var1.setBlock(var2, var3, 3);
+            level.setBlock(pos, state, 3);
             return false;
          }
       }
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      return (double)var2.nextFloat() < 0.4;
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      return (double)random.nextFloat() < 0.4;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      this.growMushroom(var1, var3, var4, var2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      this.growMushroom(level, pos, state, random);
    }
 }

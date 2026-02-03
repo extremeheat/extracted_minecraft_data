@@ -7,12 +7,12 @@ import com.mojang.datafixers.types.Type;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class NamedEntityConvertUncheckedFix extends NamedEntityFix {
-   public NamedEntityConvertUncheckedFix(Schema var1, String var2, DSL.TypeReference var3, String var4) {
-      super(var1, true, var2, var3, var4);
+   public NamedEntityConvertUncheckedFix(final Schema outputSchema, final String name, final DSL.TypeReference type, final String entityName) {
+      super(outputSchema, true, name, type, entityName);
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      Type var2 = this.getOutputSchema().getChoiceType(this.type, this.entityName);
-      return ExtraDataFixUtils.cast(var2, var1);
+   protected Typed<?> fix(final Typed<?> entity) {
+      Type<?> outputType = this.getOutputSchema().getChoiceType(this.type, this.entityName);
+      return ExtraDataFixUtils.cast(outputType, entity);
    }
 }

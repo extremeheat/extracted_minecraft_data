@@ -6,6 +6,7 @@ import java.util.UUID;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.clock.PackedClockStates;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.border.WorldBorder;
@@ -16,38 +17,38 @@ import org.jspecify.annotations.Nullable;
 public interface ServerLevelData extends WritableLevelData {
    String getLevelName();
 
-   void setThundering(boolean var1);
+   void setThundering(boolean thundering);
 
    int getRainTime();
 
-   void setRainTime(int var1);
+   void setRainTime(int rainTime);
 
-   void setThunderTime(int var1);
+   void setThunderTime(int thunderTime);
 
    int getThunderTime();
 
-   default void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
-      WritableLevelData.super.fillCrashReportCategory(var1, var2);
-      var1.setDetail("Level name", this::getLevelName);
-      var1.setDetail("Level game mode", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Game mode: %s (ID %d). Hardcore: %b. Commands: %b", this.getGameType().getName(), this.getGameType().getId(), this.isHardcore(), this.isAllowCommands())));
-      var1.setDetail("Level weather", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Rain time: %d (now: %b), thunder time: %d (now: %b)", this.getRainTime(), this.isRaining(), this.getThunderTime(), this.isThundering())));
+   default void fillCrashReportCategory(final CrashReportCategory category, final LevelHeightAccessor levelHeightAccessor) {
+      WritableLevelData.super.fillCrashReportCategory(category, levelHeightAccessor);
+      category.setDetail("Level name", this::getLevelName);
+      category.setDetail("Level game mode", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Game mode: %s (ID %d). Hardcore: %b. Commands: %b", this.getGameType().getName(), this.getGameType().getId(), this.isHardcore(), this.isAllowCommands())));
+      category.setDetail("Level weather", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Rain time: %d (now: %b), thunder time: %d (now: %b)", this.getRainTime(), this.isRaining(), this.getThunderTime(), this.isThundering())));
    }
 
    int getClearWeatherTime();
 
-   void setClearWeatherTime(int var1);
+   void setClearWeatherTime(int clearWeatherTime);
 
    int getWanderingTraderSpawnDelay();
 
-   void setWanderingTraderSpawnDelay(int var1);
+   void setWanderingTraderSpawnDelay(int wanderingTraderSpawnDelay);
 
    int getWanderingTraderSpawnChance();
 
-   void setWanderingTraderSpawnChance(int var1);
+   void setWanderingTraderSpawnChance(int wanderingTraderSpawnChance);
 
    @Nullable UUID getWanderingTraderId();
 
-   void setWanderingTraderId(UUID var1);
+   void setWanderingTraderId(final UUID wanderingTraderId);
 
    GameType getGameType();
 
@@ -57,21 +58,23 @@ public interface ServerLevelData extends WritableLevelData {
 
    /** @deprecated */
    @Deprecated
-   void setLegacyWorldBorderSettings(Optional<WorldBorder.Settings> var1);
+   void setLegacyWorldBorderSettings(final Optional<WorldBorder.Settings> settings);
 
    boolean isInitialized();
 
-   void setInitialized(boolean var1);
+   void setInitialized(boolean initialized);
 
    boolean isAllowCommands();
 
-   void setGameType(GameType var1);
+   void setGameType(GameType gameType);
 
    TimerQueue<MinecraftServer> getScheduledEvents();
 
-   void setGameTime(long var1);
+   void setGameTime(final long time);
 
-   void setDayTime(long var1);
+   void setClockStates(PackedClockStates packedClocks);
+
+   PackedClockStates clockStates();
 
    GameRules getGameRules();
 }

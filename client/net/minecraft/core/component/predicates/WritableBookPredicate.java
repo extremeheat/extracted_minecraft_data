@@ -12,36 +12,29 @@ import net.minecraft.server.network.Filterable;
 import net.minecraft.world.item.component.WritableBookContent;
 
 public record WritableBookPredicate(Optional<CollectionPredicate<Filterable<String>, PagePredicate>> pages) implements SingleComponentItemPredicate<WritableBookContent> {
-   public static final Codec<WritableBookPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CollectionPredicate.codec(WritableBookPredicate.PagePredicate.CODEC).optionalFieldOf("pages").forGetter(WritableBookPredicate::pages)).apply(var0, WritableBookPredicate::new));
+   public static final Codec<WritableBookPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(CollectionPredicate.codec(WritableBookPredicate.PagePredicate.CODEC).optionalFieldOf("pages").forGetter(WritableBookPredicate::pages)).apply(i, WritableBookPredicate::new));
 
-   public WritableBookPredicate(Optional<CollectionPredicate<Filterable<String>, PagePredicate>> var1) {
+   public WritableBookPredicate {
       super();
-      this.pages = var1;
    }
 
    public DataComponentType<WritableBookContent> componentType() {
       return DataComponents.WRITABLE_BOOK_CONTENT;
    }
 
-   public boolean matches(WritableBookContent var1) {
-      return !this.pages.isPresent() || ((CollectionPredicate)this.pages.get()).test(var1.pages());
+   public boolean matches(final WritableBookContent value) {
+      return !this.pages.isPresent() || ((CollectionPredicate)this.pages.get()).test(value.pages());
    }
 
    public static record PagePredicate(String contents) implements Predicate<Filterable<String>> {
       public static final Codec<PagePredicate> CODEC;
 
-      public PagePredicate(String var1) {
+      public PagePredicate {
          super();
-         this.contents = var1;
       }
 
-      public boolean test(Filterable<String> var1) {
-         return ((String)var1.raw()).equals(this.contents);
-      }
-
-      // $FF: synthetic method
-      public boolean test(final Object var1) {
-         return this.test((Filterable)var1);
+      public boolean test(final Filterable<String> value) {
+         return ((String)value.raw()).equals(this.contents);
       }
 
       static {

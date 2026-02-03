@@ -17,91 +17,91 @@ public class ScreenManager {
    private final Long2ObjectMap<Monitor> monitors = new Long2ObjectOpenHashMap();
    private final MonitorCreator monitorCreator;
 
-   public ScreenManager(MonitorCreator var1) {
+   public ScreenManager(final MonitorCreator monitorCreator) {
       super();
-      this.monitorCreator = var1;
+      this.monitorCreator = monitorCreator;
       GLFW.glfwSetMonitorCallback(this::onMonitorChange);
-      PointerBuffer var2 = GLFW.glfwGetMonitors();
-      if (var2 != null) {
-         for(int var3 = 0; var3 < var2.limit(); ++var3) {
-            long var4 = var2.get(var3);
-            this.monitors.put(var4, var1.createMonitor(var4));
+      PointerBuffer buffer = GLFW.glfwGetMonitors();
+      if (buffer != null) {
+         for(int i = 0; i < buffer.limit(); ++i) {
+            long monitor = buffer.get(i);
+            this.monitors.put(monitor, monitorCreator.createMonitor(monitor));
          }
       }
 
    }
 
-   private void onMonitorChange(long var1, int var3) {
+   private void onMonitorChange(final long monitor, final int event) {
       RenderSystem.assertOnRenderThread();
-      if (var3 == 262145) {
-         this.monitors.put(var1, this.monitorCreator.createMonitor(var1));
-         LOGGER.debug("Monitor {} connected. Current monitors: {}", var1, this.monitors);
-      } else if (var3 == 262146) {
-         this.monitors.remove(var1);
-         LOGGER.debug("Monitor {} disconnected. Current monitors: {}", var1, this.monitors);
+      if (event == 262145) {
+         this.monitors.put(monitor, this.monitorCreator.createMonitor(monitor));
+         LOGGER.debug("Monitor {} connected. Current monitors: {}", monitor, this.monitors);
+      } else if (event == 262146) {
+         this.monitors.remove(monitor);
+         LOGGER.debug("Monitor {} disconnected. Current monitors: {}", monitor, this.monitors);
       }
 
    }
 
-   public @Nullable Monitor getMonitor(long var1) {
-      return (Monitor)this.monitors.get(var1);
+   public @Nullable Monitor getMonitor(final long monitor) {
+      return (Monitor)this.monitors.get(monitor);
    }
 
-   public @Nullable Monitor findBestMonitor(Window var1) {
-      long var2 = GLFW.glfwGetWindowMonitor(var1.handle());
-      if (var2 != 0L) {
-         return this.getMonitor(var2);
+   public @Nullable Monitor findBestMonitor(final Window window) {
+      long windowMonitor = GLFW.glfwGetWindowMonitor(window.handle());
+      if (windowMonitor != 0L) {
+         return this.getMonitor(windowMonitor);
       } else {
-         int var4 = var1.getX();
-         int var5 = var4 + var1.getScreenWidth();
-         int var6 = var1.getY();
-         int var7 = var6 + var1.getScreenHeight();
-         int var8 = -1;
-         Monitor var9 = null;
-         long var10 = GLFW.glfwGetPrimaryMonitor();
-         LOGGER.debug("Selecting monitor - primary: {}, current monitors: {}", var10, this.monitors);
+         int winMinX = window.getX();
+         int winMaxX = winMinX + window.getScreenWidth();
+         int winMinY = window.getY();
+         int winMaxY = winMinY + window.getScreenHeight();
+         int maxArea = -1;
+         Monitor result = null;
+         long primaryMonitor = GLFW.glfwGetPrimaryMonitor();
+         LOGGER.debug("Selecting monitor - primary: {}, current monitors: {}", primaryMonitor, this.monitors);
          ObjectIterator var12 = this.monitors.values().iterator();
 
          while(var12.hasNext()) {
-            Monitor var13 = (Monitor)var12.next();
-            int var14 = var13.getX();
-            int var15 = var14 + var13.getCurrentMode().getWidth();
-            int var16 = var13.getY();
-            int var17 = var16 + var13.getCurrentMode().getHeight();
-            int var18 = clamp(var4, var14, var15);
-            int var19 = clamp(var5, var14, var15);
-            int var20 = clamp(var6, var16, var17);
-            int var21 = clamp(var7, var16, var17);
-            int var22 = Math.max(0, var19 - var18);
-            int var23 = Math.max(0, var21 - var20);
-            int var24 = var22 * var23;
-            if (var24 > var8) {
-               var9 = var13;
-               var8 = var24;
-            } else if (var24 == var8 && var10 == var13.getMonitor()) {
-               LOGGER.debug("Primary monitor {} is preferred to monitor {}", var13, var9);
-               var9 = var13;
+            Monitor monitor = (Monitor)var12.next();
+            int monMinX = monitor.getX();
+            int monMaxX = monMinX + monitor.getCurrentMode().getWidth();
+            int monMinY = monitor.getY();
+            int monMaxY = monMinY + monitor.getCurrentMode().getHeight();
+            int minX = clamp(winMinX, monMinX, monMaxX);
+            int maxX = clamp(winMaxX, monMinX, monMaxX);
+            int minY = clamp(winMinY, monMinY, monMaxY);
+            int maxY = clamp(winMaxY, monMinY, monMaxY);
+            int sx = Math.max(0, maxX - minX);
+            int sy = Math.max(0, maxY - minY);
+            int area = sx * sy;
+            if (area > maxArea) {
+               result = monitor;
+               maxArea = area;
+            } else if (area == maxArea && primaryMonitor == monitor.getMonitor()) {
+               LOGGER.debug("Primary monitor {} is preferred to monitor {}", monitor, result);
+               result = monitor;
             }
          }
 
-         LOGGER.debug("Selected monitor: {}", var9);
-         return var9;
+         LOGGER.debug("Selected monitor: {}", result);
+         return result;
       }
    }
 
-   public static int clamp(int var0, int var1, int var2) {
-      if (var0 < var1) {
-         return var1;
+   public static int clamp(final int value, final int min, final int max) {
+      if (value < min) {
+         return min;
       } else {
-         return var0 > var2 ? var2 : var0;
+         return value > max ? max : value;
       }
    }
 
    public void shutdown() {
       RenderSystem.assertOnRenderThread();
-      GLFWMonitorCallback var1 = GLFW.glfwSetMonitorCallback((GLFWMonitorCallbackI)null);
-      if (var1 != null) {
-         var1.free();
+      GLFWMonitorCallback callback = GLFW.glfwSetMonitorCallback((GLFWMonitorCallbackI)null);
+      if (callback != null) {
+         callback.free();
       }
 
    }

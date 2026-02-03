@@ -12,42 +12,35 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
 public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicate, LootContext.EntityTarget entityTarget) implements LootItemCondition {
-   public static final MapCodec<LootItemEntityPropertyCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(EntityPredicate.CODEC.optionalFieldOf("predicate").forGetter(LootItemEntityPropertyCondition::predicate), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(LootItemEntityPropertyCondition::entityTarget)).apply(var0, LootItemEntityPropertyCondition::new));
+   public static final MapCodec<LootItemEntityPropertyCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(EntityPredicate.CODEC.optionalFieldOf("predicate").forGetter(LootItemEntityPropertyCondition::predicate), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(LootItemEntityPropertyCondition::entityTarget)).apply(i, LootItemEntityPropertyCondition::new));
 
-   public LootItemEntityPropertyCondition(Optional<EntityPredicate> var1, LootContext.EntityTarget var2) {
+   public LootItemEntityPropertyCondition {
       super();
-      this.predicate = var1;
-      this.entityTarget = var2;
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.ENTITY_PROPERTIES;
+   public MapCodec<LootItemEntityPropertyCondition> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Set.of(LootContextParams.ORIGIN, this.entityTarget.contextParam());
    }
 
-   public boolean test(LootContext var1) {
-      Entity var2 = (Entity)var1.getOptionalParameter(this.entityTarget.contextParam());
-      Vec3 var3 = (Vec3)var1.getOptionalParameter(LootContextParams.ORIGIN);
-      return this.predicate.isEmpty() || ((EntityPredicate)this.predicate.get()).matches(var1.getLevel(), var3, var2);
+   public boolean test(final LootContext context) {
+      Entity entity = (Entity)context.getOptionalParameter(this.entityTarget.contextParam());
+      Vec3 pos = (Vec3)context.getOptionalParameter(LootContextParams.ORIGIN);
+      return this.predicate.isEmpty() || ((EntityPredicate)this.predicate.get()).matches(context.getLevel(), pos, entity);
    }
 
-   public static LootItemCondition.Builder entityPresent(LootContext.EntityTarget var0) {
-      return hasProperties(var0, EntityPredicate.Builder.entity());
+   public static LootItemCondition.Builder entityPresent(final LootContext.EntityTarget target) {
+      return hasProperties(target, EntityPredicate.Builder.entity());
    }
 
-   public static LootItemCondition.Builder hasProperties(LootContext.EntityTarget var0, EntityPredicate.Builder var1) {
-      return () -> new LootItemEntityPropertyCondition(Optional.of(var1.build()), var0);
+   public static LootItemCondition.Builder hasProperties(final LootContext.EntityTarget target, final EntityPredicate.Builder predicate) {
+      return () -> new LootItemEntityPropertyCondition(Optional.of(predicate.build()), target);
    }
 
-   public static LootItemCondition.Builder hasProperties(LootContext.EntityTarget var0, EntityPredicate var1) {
-      return () -> new LootItemEntityPropertyCondition(Optional.of(var1), var0);
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((LootContext)var1);
+   public static LootItemCondition.Builder hasProperties(final LootContext.EntityTarget target, final EntityPredicate predicate) {
+      return () -> new LootItemEntityPropertyCondition(Optional.of(predicate), target);
    }
 }

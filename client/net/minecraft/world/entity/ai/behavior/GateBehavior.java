@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import com.mojang.datafixers.util.Pair;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,25 +23,35 @@ public class GateBehavior<E extends LivingEntity> implements BehaviorControl<E> 
    private final ShufflingList<BehaviorControl<? super E>> behaviors = new ShufflingList<BehaviorControl<? super E>>();
    private Behavior.Status status;
 
-   public GateBehavior(Map<MemoryModuleType<?>, MemoryStatus> var1, Set<MemoryModuleType<?>> var2, OrderPolicy var3, RunningPolicy var4, List<Pair<? extends BehaviorControl<? super E>, Integer>> var5) {
+   public GateBehavior(final Map<MemoryModuleType<?>, MemoryStatus> entryCondition, final Set<MemoryModuleType<?>> exitErasedMemories, final OrderPolicy orderPolicy, final RunningPolicy runningPolicy, final List<Pair<? extends BehaviorControl<? super E>, Integer>> behaviors) {
       super();
       this.status = Behavior.Status.STOPPED;
-      this.entryCondition = var1;
-      this.exitErasedMemories = var2;
-      this.orderPolicy = var3;
-      this.runningPolicy = var4;
-      var5.forEach((var1x) -> this.behaviors.add((BehaviorControl)var1x.getFirst(), (Integer)var1x.getSecond()));
+      this.entryCondition = entryCondition;
+      this.exitErasedMemories = exitErasedMemories;
+      this.orderPolicy = orderPolicy;
+      this.runningPolicy = runningPolicy;
+      behaviors.forEach((entry) -> this.behaviors.add((BehaviorControl)entry.getFirst(), (Integer)entry.getSecond()));
    }
 
    public Behavior.Status getStatus() {
       return this.status;
    }
 
-   private boolean hasRequiredMemories(E var1) {
-      for(Map.Entry var3 : this.entryCondition.entrySet()) {
-         MemoryModuleType var4 = (MemoryModuleType)var3.getKey();
-         MemoryStatus var5 = (MemoryStatus)var3.getValue();
-         if (!var1.getBrain().checkMemory(var4, var5)) {
+   public Set<MemoryModuleType<?>> getRequiredMemories() {
+      Set<MemoryModuleType<?>> memories = new HashSet(this.entryCondition.keySet());
+
+      for(BehaviorControl<? super E> behavior : this.behaviors) {
+         memories.addAll(behavior.getRequiredMemories());
+      }
+
+      return memories;
+   }
+
+   private boolean hasRequiredMemories(final E body) {
+      for(Map.Entry<MemoryModuleType<?>, MemoryStatus> entry : this.entryCondition.entrySet()) {
+         MemoryModuleType<?> memoryType = (MemoryModuleType)entry.getKey();
+         MemoryStatus requiredStatus = (MemoryStatus)entry.getValue();
+         if (!body.getBrain().checkMemory(memoryType, requiredStatus)) {
             return false;
          }
       }
@@ -48,57 +59,53 @@ public class GateBehavior<E extends LivingEntity> implements BehaviorControl<E> 
       return true;
    }
 
-   public final boolean tryStart(ServerLevel var1, E var2, long var3) {
-      if (this.hasRequiredMemories(var2)) {
+   public final boolean tryStart(final ServerLevel level, final E body, final long timestamp) {
+      if (this.hasRequiredMemories(body)) {
          this.status = Behavior.Status.RUNNING;
          this.orderPolicy.apply(this.behaviors);
-         this.runningPolicy.apply(this.behaviors.stream(), var1, var2, var3);
+         this.runningPolicy.apply(this.behaviors.stream(), level, body, timestamp);
          return true;
       } else {
          return false;
       }
    }
 
-   public final void tickOrStop(ServerLevel var1, E var2, long var3) {
-      this.behaviors.stream().filter((var0) -> var0.getStatus() == Behavior.Status.RUNNING).forEach((var4) -> var4.tickOrStop(var1, var2, var3));
-      if (this.behaviors.stream().noneMatch((var0) -> var0.getStatus() == Behavior.Status.RUNNING)) {
-         this.doStop(var1, var2, var3);
+   public final void tickOrStop(final ServerLevel level, final E body, final long timestamp) {
+      this.behaviors.stream().filter((goal) -> goal.getStatus() == Behavior.Status.RUNNING).forEach((goal) -> goal.tickOrStop(level, body, timestamp));
+      if (this.behaviors.stream().noneMatch((g) -> g.getStatus() == Behavior.Status.RUNNING)) {
+         this.doStop(level, body, timestamp);
       }
 
    }
 
-   public final void doStop(ServerLevel var1, E var2, long var3) {
+   public final void doStop(final ServerLevel level, final E body, final long timestamp) {
       this.status = Behavior.Status.STOPPED;
-      this.behaviors.stream().filter((var0) -> var0.getStatus() == Behavior.Status.RUNNING).forEach((var4) -> var4.doStop(var1, var2, var3));
+      this.behaviors.stream().filter((goal) -> goal.getStatus() == Behavior.Status.RUNNING).forEach((goal) -> goal.doStop(level, body, timestamp));
       Set var10000 = this.exitErasedMemories;
-      Brain var10001 = var2.getBrain();
+      Brain var10001 = ((LivingEntity)body).getBrain();
       Objects.requireNonNull(var10001);
       var10000.forEach(var10001::eraseMemory);
    }
 
    public String debugString() {
-      return this.getClass().getSimpleName();
-   }
-
-   public String toString() {
-      Set var1 = (Set)this.behaviors.stream().filter((var0) -> var0.getStatus() == Behavior.Status.RUNNING).collect(Collectors.toSet());
+      Set<String> runningBehaviours = (Set)this.behaviors.stream().filter((goal) -> goal.getStatus() == Behavior.Status.RUNNING).map((b) -> b.getClass().getSimpleName()).collect(Collectors.toSet());
       String var10000 = this.getClass().getSimpleName();
-      return "(" + var10000 + "): " + String.valueOf(var1);
+      return var10000 + ": " + String.valueOf(runningBehaviours);
    }
 
    public static enum OrderPolicy {
-      ORDERED((var0) -> {
+      ORDERED((t) -> {
       }),
       SHUFFLED(ShufflingList::shuffle);
 
       private final Consumer<ShufflingList<?>> consumer;
 
-      private OrderPolicy(final Consumer<ShufflingList<?>> var3) {
-         this.consumer = var3;
+      private OrderPolicy(final Consumer<ShufflingList<?>> consumer) {
+         this.consumer = consumer;
       }
 
-      public void apply(ShufflingList<?> var1) {
-         this.consumer.accept(var1);
+      public void apply(final ShufflingList<?> list) {
+         this.consumer.accept(list);
       }
 
       // $FF: synthetic method
@@ -109,20 +116,20 @@ public class GateBehavior<E extends LivingEntity> implements BehaviorControl<E> 
 
    public static enum RunningPolicy {
       RUN_ONE {
-         public <E extends LivingEntity> void apply(Stream<BehaviorControl<? super E>> var1, ServerLevel var2, E var3, long var4) {
-            var1.filter((var0) -> var0.getStatus() == Behavior.Status.STOPPED).filter((var4x) -> var4x.tryStart(var2, var3, var4)).findFirst();
+         public <E extends LivingEntity> void apply(final Stream<BehaviorControl<? super E>> behaviors, final ServerLevel level, final E body, final long timestamp) {
+            behaviors.filter((goal) -> goal.getStatus() == Behavior.Status.STOPPED).filter((goal) -> goal.tryStart(level, body, timestamp)).findFirst();
          }
       },
       TRY_ALL {
-         public <E extends LivingEntity> void apply(Stream<BehaviorControl<? super E>> var1, ServerLevel var2, E var3, long var4) {
-            var1.filter((var0) -> var0.getStatus() == Behavior.Status.STOPPED).forEach((var4x) -> var4x.tryStart(var2, var3, var4));
+         public <E extends LivingEntity> void apply(final Stream<BehaviorControl<? super E>> behaviors, final ServerLevel level, final E body, final long timestamp) {
+            behaviors.filter((goal) -> goal.getStatus() == Behavior.Status.STOPPED).forEach((goal) -> goal.tryStart(level, body, timestamp));
          }
       };
 
-      RunningPolicy() {
+      private RunningPolicy() {
       }
 
-      public abstract <E extends LivingEntity> void apply(Stream<BehaviorControl<? super E>> var1, ServerLevel var2, E var3, long var4);
+      public abstract <E extends LivingEntity> void apply(final Stream<BehaviorControl<? super E>> behaviors, final ServerLevel level, final E body, final long timestamp);
 
       // $FF: synthetic method
       private static RunningPolicy[] $values() {

@@ -186,24 +186,24 @@ public class ModelTemplates {
       super();
    }
 
-   private static ModelTemplate create(TextureSlot... var0) {
-      return new ModelTemplate(Optional.empty(), Optional.empty(), var0);
+   private static ModelTemplate create(final TextureSlot... slots) {
+      return new ModelTemplate(Optional.empty(), Optional.empty(), slots);
    }
 
-   private static ModelTemplate create(String var0, TextureSlot... var1) {
-      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("block/" + var0)), Optional.empty(), var1);
+   private static ModelTemplate create(final String id, final TextureSlot... slots) {
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("block/" + id)), Optional.empty(), slots);
    }
 
-   private static ModelTemplate createItem(String var0, TextureSlot... var1) {
-      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("item/" + var0)), Optional.empty(), var1);
+   private static ModelTemplate createItem(final String id, final TextureSlot... slots) {
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("item/" + id)), Optional.empty(), slots);
    }
 
-   private static ModelTemplate createItem(String var0, String var1, TextureSlot... var2) {
-      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("item/" + var0)), Optional.of(var1), var2);
+   private static ModelTemplate createItem(final String id, final String suffix, final TextureSlot... slots) {
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("item/" + id)), Optional.of(suffix), slots);
    }
 
-   private static ModelTemplate create(String var0, String var1, TextureSlot... var2) {
-      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("block/" + var0)), Optional.of(var1), var2);
+   private static ModelTemplate create(final String id, final String suffix, final TextureSlot... slots) {
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("block/" + id)), Optional.of(suffix), slots);
    }
 
    static {
@@ -318,7 +318,7 @@ public class ModelTemplates {
       SHELF_CENTER = create("template_shelf_center", "_center", TextureSlot.ALL, TextureSlot.PARTICLE);
       SHELF_RIGHT = create("template_shelf_right", "_right", TextureSlot.ALL, TextureSlot.PARTICLE);
       ANVIL = create("template_anvil", TextureSlot.TOP);
-      STEMS = (ModelTemplate[])IntStream.range(0, 8).mapToObj((var0) -> create("stem_growth" + var0, "_stage" + var0, TextureSlot.STEM)).toArray((var0) -> new ModelTemplate[var0]);
+      STEMS = (ModelTemplate[])IntStream.range(0, 8).mapToObj((i) -> create("stem_growth" + i, "_stage" + i, TextureSlot.STEM)).toArray((x$0) -> new ModelTemplate[x$0]);
       ATTACHED_STEM = create("stem_fruit", TextureSlot.STEM, TextureSlot.UPPER_STEM);
       CROP = create("crop", TextureSlot.CROP);
       FARMLAND = create("template_farmland", TextureSlot.DIRT, TextureSlot.TOP);

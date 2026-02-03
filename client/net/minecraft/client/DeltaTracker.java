@@ -8,7 +8,7 @@ public interface DeltaTracker {
 
    float getGameTimeDeltaTicks();
 
-   float getGameTimeDeltaPartialTick(boolean var1);
+   float getGameTimeDeltaPartialTick(boolean ignoreFrozenGame);
 
    float getRealtimeDeltaTicks();
 
@@ -24,34 +24,34 @@ public interface DeltaTracker {
       private boolean paused;
       private boolean frozen;
 
-      public Timer(float var1, long var2, FloatUnaryOperator var4) {
+      public Timer(final float ticksPerSecond, final long currentMs, final FloatUnaryOperator targetMsptProvider) {
          super();
-         this.msPerTick = 1000.0F / var1;
-         this.lastUiMs = this.lastMs = var2;
-         this.targetMsptProvider = var4;
+         this.msPerTick = 1000.0F / ticksPerSecond;
+         this.lastUiMs = this.lastMs = currentMs;
+         this.targetMsptProvider = targetMsptProvider;
       }
 
-      public int advanceTime(long var1, boolean var3) {
-         this.advanceRealTime(var1);
-         return var3 ? this.advanceGameTime(var1) : 0;
+      public int advanceTime(final long currentMs, final boolean shouldAdvanceGameTime) {
+         this.advanceRealTime(currentMs);
+         return shouldAdvanceGameTime ? this.advanceGameTime(currentMs) : 0;
       }
 
-      private int advanceGameTime(long var1) {
-         this.deltaTicks = (float)(var1 - this.lastMs) / this.targetMsptProvider.apply(this.msPerTick);
-         this.lastMs = var1;
+      private int advanceGameTime(final long currentMs) {
+         this.deltaTicks = (float)(currentMs - this.lastMs) / this.targetMsptProvider.apply(this.msPerTick);
+         this.lastMs = currentMs;
          this.deltaTickResidual += this.deltaTicks;
-         int var3 = (int)this.deltaTickResidual;
-         this.deltaTickResidual -= (float)var3;
-         return var3;
+         int ticks = (int)this.deltaTickResidual;
+         this.deltaTickResidual -= (float)ticks;
+         return ticks;
       }
 
-      private void advanceRealTime(long var1) {
-         this.realtimeDeltaTicks = (float)(var1 - this.lastUiMs) / this.msPerTick;
-         this.lastUiMs = var1;
+      private void advanceRealTime(final long currentMs) {
+         this.realtimeDeltaTicks = (float)(currentMs - this.lastUiMs) / this.msPerTick;
+         this.lastUiMs = currentMs;
       }
 
-      public void updatePauseState(boolean var1) {
-         if (var1) {
+      public void updatePauseState(final boolean pauseState) {
+         if (pauseState) {
             this.pause();
          } else {
             this.unPause();
@@ -75,16 +75,16 @@ public interface DeltaTracker {
          this.paused = false;
       }
 
-      public void updateFrozenState(boolean var1) {
-         this.frozen = var1;
+      public void updateFrozenState(final boolean frozen) {
+         this.frozen = frozen;
       }
 
       public float getGameTimeDeltaTicks() {
          return this.deltaTicks;
       }
 
-      public float getGameTimeDeltaPartialTick(boolean var1) {
-         if (!var1 && this.frozen) {
+      public float getGameTimeDeltaPartialTick(final boolean ignoreFrozenGame) {
+         if (!ignoreFrozenGame && this.frozen) {
             return 1.0F;
          } else {
             return this.paused ? this.pausedDeltaTickResidual : this.deltaTickResidual;
@@ -99,16 +99,16 @@ public interface DeltaTracker {
    public static class DefaultValue implements DeltaTracker {
       private final float value;
 
-      DefaultValue(float var1) {
+      private DefaultValue(final float value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       public float getGameTimeDeltaTicks() {
          return this.value;
       }
 
-      public float getGameTimeDeltaPartialTick(boolean var1) {
+      public float getGameTimeDeltaPartialTick(final boolean ignored) {
          return this.value;
       }
 

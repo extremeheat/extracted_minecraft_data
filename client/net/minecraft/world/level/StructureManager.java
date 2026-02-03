@@ -34,124 +34,124 @@ public class StructureManager {
    private final WorldOptions worldOptions;
    private final StructureCheck structureCheck;
 
-   public StructureManager(LevelAccessor var1, WorldOptions var2, StructureCheck var3) {
+   public StructureManager(final LevelAccessor level, final WorldOptions worldOptions, final StructureCheck structureCheck) {
       super();
-      this.level = var1;
-      this.worldOptions = var2;
-      this.structureCheck = var3;
+      this.level = level;
+      this.worldOptions = worldOptions;
+      this.structureCheck = structureCheck;
    }
 
-   public StructureManager forWorldGenRegion(WorldGenRegion var1) {
-      if (var1.getLevel() != this.level) {
-         String var10002 = String.valueOf(var1.getLevel());
-         throw new IllegalStateException("Using invalid structure manager (source level: " + var10002 + ", region: " + String.valueOf(var1));
+   public StructureManager forWorldGenRegion(final WorldGenRegion region) {
+      if (region.getLevel() != this.level) {
+         String var10002 = String.valueOf(region.getLevel());
+         throw new IllegalStateException("Using invalid structure manager (source level: " + var10002 + ", region: " + String.valueOf(region));
       } else {
-         return new StructureManager(var1, this.worldOptions, this.structureCheck);
+         return new StructureManager(region, this.worldOptions, this.structureCheck);
       }
    }
 
-   public List<StructureStart> startsForStructure(ChunkPos var1, Predicate<Structure> var2) {
-      Map var3 = this.level.getChunk(var1.x, var1.z, ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
-      ImmutableList.Builder var4 = ImmutableList.builder();
+   public List<StructureStart> startsForStructure(final ChunkPos pos, final Predicate<Structure> matcher) {
+      Map<Structure, LongSet> allReferences = this.level.getChunk(pos.x(), pos.z(), ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
+      ImmutableList.Builder<StructureStart> result = ImmutableList.builder();
 
-      for(Map.Entry var6 : var3.entrySet()) {
-         Structure var7 = (Structure)var6.getKey();
-         if (var2.test(var7)) {
-            LongSet var10002 = (LongSet)var6.getValue();
-            Objects.requireNonNull(var4);
-            this.fillStartsForStructure(var7, var10002, var4::add);
+      for(Map.Entry<Structure, LongSet> entry : allReferences.entrySet()) {
+         Structure structure = (Structure)entry.getKey();
+         if (matcher.test(structure)) {
+            LongSet var10002 = (LongSet)entry.getValue();
+            Objects.requireNonNull(result);
+            this.fillStartsForStructure(structure, var10002, result::add);
          }
       }
 
-      return var4.build();
+      return result.build();
    }
 
-   public List<StructureStart> startsForStructure(SectionPos var1, Structure var2) {
-      LongSet var3 = this.level.getChunk(var1.x(), var1.z(), ChunkStatus.STRUCTURE_REFERENCES).getReferencesForStructure(var2);
-      ImmutableList.Builder var4 = ImmutableList.builder();
-      Objects.requireNonNull(var4);
-      this.fillStartsForStructure(var2, var3, var4::add);
-      return var4.build();
+   public List<StructureStart> startsForStructure(final SectionPos pos, final Structure structure) {
+      LongSet referencesForStructure = this.level.getChunk(pos.x(), pos.z(), ChunkStatus.STRUCTURE_REFERENCES).getReferencesForStructure(structure);
+      ImmutableList.Builder<StructureStart> result = ImmutableList.builder();
+      Objects.requireNonNull(result);
+      this.fillStartsForStructure(structure, referencesForStructure, result::add);
+      return result.build();
    }
 
-   public void fillStartsForStructure(Structure var1, LongSet var2, Consumer<StructureStart> var3) {
-      LongIterator var4 = var2.iterator();
+   public void fillStartsForStructure(final Structure structure, final LongSet referencesForStructure, final Consumer<StructureStart> consumer) {
+      LongIterator var4 = referencesForStructure.iterator();
 
       while(var4.hasNext()) {
-         long var5 = (Long)var4.next();
-         SectionPos var7 = SectionPos.of(new ChunkPos(var5), this.level.getMinSectionY());
-         StructureStart var8 = this.getStartForStructure(var7, var1, this.level.getChunk(var7.x(), var7.z(), ChunkStatus.STRUCTURE_STARTS));
-         if (var8 != null && var8.isValid()) {
-            var3.accept(var8);
+         long key = (Long)var4.next();
+         SectionPos sectionPos = SectionPos.of(ChunkPos.unpack(key), this.level.getMinSectionY());
+         StructureStart start = this.getStartForStructure(sectionPos, structure, this.level.getChunk(sectionPos.x(), sectionPos.z(), ChunkStatus.STRUCTURE_STARTS));
+         if (start != null && start.isValid()) {
+            consumer.accept(start);
          }
       }
 
    }
 
-   public @Nullable StructureStart getStartForStructure(SectionPos var1, Structure var2, StructureAccess var3) {
-      return var3.getStartForStructure(var2);
+   public @Nullable StructureStart getStartForStructure(final SectionPos pos, final Structure structure, final StructureAccess chunk) {
+      return chunk.getStartForStructure(structure);
    }
 
-   public void setStartForStructure(SectionPos var1, Structure var2, StructureStart var3, StructureAccess var4) {
-      var4.setStartForStructure(var2, var3);
+   public void setStartForStructure(final SectionPos pos, final Structure structure, final StructureStart start, final StructureAccess chunk) {
+      chunk.setStartForStructure(structure, start);
    }
 
-   public void addReferenceForStructure(SectionPos var1, Structure var2, long var3, StructureAccess var5) {
-      var5.addReferenceForStructure(var2, var3);
+   public void addReferenceForStructure(final SectionPos pos, final Structure structure, final long reference, final StructureAccess chunk) {
+      chunk.addReferenceForStructure(structure, reference);
    }
 
    public boolean shouldGenerateStructures() {
       return this.worldOptions.generateStructures();
    }
 
-   public StructureStart getStructureAt(BlockPos var1, Structure var2) {
-      for(StructureStart var4 : this.startsForStructure(SectionPos.of(var1), var2)) {
-         if (var4.getBoundingBox().isInside(var1)) {
-            return var4;
+   public StructureStart getStructureAt(final BlockPos blockPos, final Structure structure) {
+      for(StructureStart structureStart : this.startsForStructure(SectionPos.of(blockPos), structure)) {
+         if (structureStart.getBoundingBox().isInside(blockPos)) {
+            return structureStart;
          }
       }
 
       return StructureStart.INVALID_START;
    }
 
-   public StructureStart getStructureWithPieceAt(BlockPos var1, TagKey<Structure> var2) {
-      return this.getStructureWithPieceAt(var1, (Predicate)((var1x) -> var1x.is(var2)));
+   public StructureStart getStructureWithPieceAt(final BlockPos blockPos, final TagKey<Structure> structureTag) {
+      return this.getStructureWithPieceAt(blockPos, (Predicate)((structure) -> structure.is(structureTag)));
    }
 
-   public StructureStart getStructureWithPieceAt(BlockPos var1, HolderSet<Structure> var2) {
-      Objects.requireNonNull(var2);
-      return this.getStructureWithPieceAt(var1, var2::contains);
+   public StructureStart getStructureWithPieceAt(final BlockPos blockPos, final HolderSet<Structure> structures) {
+      Objects.requireNonNull(structures);
+      return this.getStructureWithPieceAt(blockPos, structures::contains);
    }
 
-   public StructureStart getStructureWithPieceAt(BlockPos var1, Predicate<Holder<Structure>> var2) {
-      Registry var3 = this.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+   public StructureStart getStructureWithPieceAt(final BlockPos blockPos, final Predicate<Holder<Structure>> predicate) {
+      Registry<Structure> structures = this.registryAccess().lookupOrThrow(Registries.STRUCTURE);
 
-      for(StructureStart var5 : this.startsForStructure((ChunkPos)(new ChunkPos(var1)), (Predicate)((var2x) -> {
-         Optional var10000 = var3.get(var3.getId(var2x));
-         Objects.requireNonNull(var2);
-         return (Boolean)var10000.map(var2::test).orElse(false);
+      for(StructureStart structureStart : this.startsForStructure((ChunkPos)ChunkPos.containing(blockPos), (Predicate)((s) -> {
+         Optional var10000 = structures.get(structures.getId(s));
+         Objects.requireNonNull(predicate);
+         return (Boolean)var10000.map(predicate::test).orElse(false);
       }))) {
-         if (this.structureHasPieceAt(var1, var5)) {
-            return var5;
+         if (this.structureHasPieceAt(blockPos, structureStart)) {
+            return structureStart;
          }
       }
 
       return StructureStart.INVALID_START;
    }
 
-   public StructureStart getStructureWithPieceAt(BlockPos var1, Structure var2) {
-      for(StructureStart var4 : this.startsForStructure(SectionPos.of(var1), var2)) {
-         if (this.structureHasPieceAt(var1, var4)) {
-            return var4;
+   public StructureStart getStructureWithPieceAt(final BlockPos blockPos, final Structure structure) {
+      for(StructureStart structureStart : this.startsForStructure(SectionPos.of(blockPos), structure)) {
+         if (this.structureHasPieceAt(blockPos, structureStart)) {
+            return structureStart;
          }
       }
 
       return StructureStart.INVALID_START;
    }
 
-   public boolean structureHasPieceAt(BlockPos var1, StructureStart var2) {
-      for(StructurePiece var4 : var2.getPieces()) {
-         if (var4.getBoundingBox().isInside(var1)) {
+   public boolean structureHasPieceAt(final BlockPos blockPos, final StructureStart structureStart) {
+      for(StructurePiece piece : structureStart.getPieces()) {
+         if (piece.getBoundingBox().isInside(blockPos)) {
             return true;
          }
       }
@@ -159,23 +159,23 @@ public class StructureManager {
       return false;
    }
 
-   public boolean hasAnyStructureAt(BlockPos var1) {
-      SectionPos var2 = SectionPos.of(var1);
-      return this.level.getChunk(var2.x(), var2.z(), ChunkStatus.STRUCTURE_REFERENCES).hasAnyStructureReferences();
+   public boolean hasAnyStructureAt(final BlockPos pos) {
+      SectionPos sectionPos = SectionPos.of(pos);
+      return this.level.getChunk(sectionPos.x(), sectionPos.z(), ChunkStatus.STRUCTURE_REFERENCES).hasAnyStructureReferences();
    }
 
-   public Map<Structure, LongSet> getAllStructuresAt(BlockPos var1) {
-      SectionPos var2 = SectionPos.of(var1);
-      return this.level.getChunk(var2.x(), var2.z(), ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
+   public Map<Structure, LongSet> getAllStructuresAt(final BlockPos pos) {
+      SectionPos sectionPos = SectionPos.of(pos);
+      return this.level.getChunk(sectionPos.x(), sectionPos.z(), ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
    }
 
-   public StructureCheckResult checkStructurePresence(ChunkPos var1, Structure var2, StructurePlacement var3, boolean var4) {
-      return this.structureCheck.checkStart(var1, var2, var3, var4);
+   public StructureCheckResult checkStructurePresence(final ChunkPos pos, final Structure structure, final StructurePlacement placement, final boolean createReference) {
+      return this.structureCheck.checkStart(pos, structure, placement, createReference);
    }
 
-   public void addReference(StructureStart var1) {
-      var1.addReference();
-      this.structureCheck.incrementReference(var1.getChunkPos(), var1.getStructure());
+   public void addReference(final StructureStart start) {
+      start.addReference();
+      this.structureCheck.incrementReference(start.getChunkPos(), start.getStructure());
    }
 
    public RegistryAccess registryAccess() {

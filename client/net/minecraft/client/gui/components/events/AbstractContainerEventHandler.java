@@ -14,25 +14,25 @@ public abstract class AbstractContainerEventHandler implements ContainerEventHan
       return this.isDragging;
    }
 
-   public final void setDragging(boolean var1) {
-      this.isDragging = var1;
+   public final void setDragging(final boolean dragging) {
+      this.isDragging = dragging;
    }
 
    public @Nullable GuiEventListener getFocused() {
       return this.focused;
    }
 
-   public void setFocused(@Nullable GuiEventListener var1) {
-      if (this.focused != var1) {
+   public void setFocused(final @Nullable GuiEventListener focused) {
+      if (this.focused != focused) {
          if (this.focused != null) {
             this.focused.setFocused(false);
          }
 
-         if (var1 != null) {
-            var1.setFocused(true);
+         if (focused != null) {
+            focused.setFocused(true);
          }
 
-         this.focused = var1;
+         this.focused = focused;
       }
    }
 }

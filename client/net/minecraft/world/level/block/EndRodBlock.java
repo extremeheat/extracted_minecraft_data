@@ -18,30 +18,30 @@ public class EndRodBlock extends RodBlock {
       return CODEC;
    }
 
-   protected EndRodBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected EndRodBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.UP));
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Direction var2 = var1.getClickedFace();
-      BlockState var3 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var2.getOpposite()));
-      return var3.is(this) && var3.getValue(FACING) == var2 ? (BlockState)this.defaultBlockState().setValue(FACING, var2.getOpposite()) : (BlockState)this.defaultBlockState().setValue(FACING, var2);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      Direction clickedFace = context.getClickedFace();
+      BlockState blockState = context.getLevel().getBlockState(context.getClickedPos().relative(clickedFace.getOpposite()));
+      return blockState.is(this) && blockState.getValue(FACING) == clickedFace ? (BlockState)this.defaultBlockState().setValue(FACING, clickedFace.getOpposite()) : (BlockState)this.defaultBlockState().setValue(FACING, clickedFace);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      Direction var5 = (Direction)var1.getValue(FACING);
-      double var6 = (double)var3.getX() + 0.55 - (double)(var4.nextFloat() * 0.1F);
-      double var8 = (double)var3.getY() + 0.55 - (double)(var4.nextFloat() * 0.1F);
-      double var10 = (double)var3.getZ() + 0.55 - (double)(var4.nextFloat() * 0.1F);
-      double var12 = (double)(0.4F - (var4.nextFloat() + var4.nextFloat()) * 0.4F);
-      if (var4.nextInt(5) == 0) {
-         var2.addParticle(ParticleTypes.END_ROD, var6 + (double)var5.getStepX() * var12, var8 + (double)var5.getStepY() * var12, var10 + (double)var5.getStepZ() * var12, var4.nextGaussian() * 0.005, var4.nextGaussian() * 0.005, var4.nextGaussian() * 0.005);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      Direction direction = (Direction)state.getValue(FACING);
+      double x = (double)pos.getX() + 0.55 - (double)(random.nextFloat() * 0.1F);
+      double y = (double)pos.getY() + 0.55 - (double)(random.nextFloat() * 0.1F);
+      double z = (double)pos.getZ() + 0.55 - (double)(random.nextFloat() * 0.1F);
+      double r = (double)(0.4F - (random.nextFloat() + random.nextFloat()) * 0.4F);
+      if (random.nextInt(5) == 0) {
+         level.addParticle(ParticleTypes.END_ROD, x + (double)direction.getStepX() * r, y + (double)direction.getStepY() * r, z + (double)direction.getStepZ() * r, random.nextGaussian() * 0.005, random.nextGaussian() * 0.005, random.nextGaussian() * 0.005);
       }
 
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING);
    }
 }

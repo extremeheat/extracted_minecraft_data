@@ -9,8 +9,8 @@ public class DialogBodyTypes {
       super();
    }
 
-   public static MapCodec<? extends DialogBody> bootstrap(Registry<MapCodec<? extends DialogBody>> var0) {
-      Registry.register(var0, (Identifier)Identifier.withDefaultNamespace("item"), ItemBody.MAP_CODEC);
-      return (MapCodec)Registry.register(var0, (Identifier)Identifier.withDefaultNamespace("plain_message"), PlainMessage.MAP_CODEC);
+   public static MapCodec<? extends DialogBody> bootstrap(final Registry<MapCodec<? extends DialogBody>> registry) {
+      Registry.register(registry, (Identifier)Identifier.withDefaultNamespace("item"), ItemBody.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (Identifier)Identifier.withDefaultNamespace("plain_message"), PlainMessage.MAP_CODEC);
    }
 }

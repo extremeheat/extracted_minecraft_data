@@ -13,35 +13,35 @@ public class ServerboundSeenAdvancementsPacket implements Packet<ServerGamePacke
    private final Action action;
    private final @Nullable Identifier tab;
 
-   public ServerboundSeenAdvancementsPacket(Action var1, @Nullable Identifier var2) {
+   public ServerboundSeenAdvancementsPacket(final Action action, final @Nullable Identifier tab) {
       super();
-      this.action = var1;
-      this.tab = var2;
+      this.action = action;
+      this.tab = tab;
    }
 
-   public static ServerboundSeenAdvancementsPacket openedTab(AdvancementHolder var0) {
-      return new ServerboundSeenAdvancementsPacket(ServerboundSeenAdvancementsPacket.Action.OPENED_TAB, var0.id());
+   public static ServerboundSeenAdvancementsPacket openedTab(final AdvancementHolder tab) {
+      return new ServerboundSeenAdvancementsPacket(ServerboundSeenAdvancementsPacket.Action.OPENED_TAB, tab.id());
    }
 
    public static ServerboundSeenAdvancementsPacket closedScreen() {
       return new ServerboundSeenAdvancementsPacket(ServerboundSeenAdvancementsPacket.Action.CLOSED_SCREEN, (Identifier)null);
    }
 
-   private ServerboundSeenAdvancementsPacket(FriendlyByteBuf var1) {
+   private ServerboundSeenAdvancementsPacket(final FriendlyByteBuf input) {
       super();
-      this.action = (Action)var1.readEnum(Action.class);
+      this.action = (Action)input.readEnum(Action.class);
       if (this.action == ServerboundSeenAdvancementsPacket.Action.OPENED_TAB) {
-         this.tab = var1.readIdentifier();
+         this.tab = input.readIdentifier();
       } else {
          this.tab = null;
       }
 
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeEnum(this.action);
+   private void write(final FriendlyByteBuf output) {
+      output.writeEnum(this.action);
       if (this.action == ServerboundSeenAdvancementsPacket.Action.OPENED_TAB) {
-         var1.writeIdentifier(this.tab);
+         output.writeIdentifier(this.tab);
       }
 
    }
@@ -50,8 +50,8 @@ public class ServerboundSeenAdvancementsPacket implements Packet<ServerGamePacke
       return GamePacketTypes.SERVERBOUND_SEEN_ADVANCEMENTS;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSeenAdvancements(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleSeenAdvancements(this);
    }
 
    public Action getAction() {

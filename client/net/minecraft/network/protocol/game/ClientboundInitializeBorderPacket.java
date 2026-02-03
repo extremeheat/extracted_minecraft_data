@@ -17,47 +17,47 @@ public class ClientboundInitializeBorderPacket implements Packet<ClientGamePacke
    private final int warningBlocks;
    private final int warningTime;
 
-   private ClientboundInitializeBorderPacket(FriendlyByteBuf var1) {
+   private ClientboundInitializeBorderPacket(final FriendlyByteBuf input) {
       super();
-      this.newCenterX = var1.readDouble();
-      this.newCenterZ = var1.readDouble();
-      this.oldSize = var1.readDouble();
-      this.newSize = var1.readDouble();
-      this.lerpTime = var1.readVarLong();
-      this.newAbsoluteMaxSize = var1.readVarInt();
-      this.warningBlocks = var1.readVarInt();
-      this.warningTime = var1.readVarInt();
+      this.newCenterX = input.readDouble();
+      this.newCenterZ = input.readDouble();
+      this.oldSize = input.readDouble();
+      this.newSize = input.readDouble();
+      this.lerpTime = input.readVarLong();
+      this.newAbsoluteMaxSize = input.readVarInt();
+      this.warningBlocks = input.readVarInt();
+      this.warningTime = input.readVarInt();
    }
 
-   public ClientboundInitializeBorderPacket(WorldBorder var1) {
+   public ClientboundInitializeBorderPacket(final WorldBorder border) {
       super();
-      this.newCenterX = var1.getCenterX();
-      this.newCenterZ = var1.getCenterZ();
-      this.oldSize = var1.getSize();
-      this.newSize = var1.getLerpTarget();
-      this.lerpTime = var1.getLerpTime();
-      this.newAbsoluteMaxSize = var1.getAbsoluteMaxSize();
-      this.warningBlocks = var1.getWarningBlocks();
-      this.warningTime = var1.getWarningTime();
+      this.newCenterX = border.getCenterX();
+      this.newCenterZ = border.getCenterZ();
+      this.oldSize = border.getSize();
+      this.newSize = border.getLerpTarget();
+      this.lerpTime = border.getLerpTime();
+      this.newAbsoluteMaxSize = border.getAbsoluteMaxSize();
+      this.warningBlocks = border.getWarningBlocks();
+      this.warningTime = border.getWarningTime();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeDouble(this.newCenterX);
-      var1.writeDouble(this.newCenterZ);
-      var1.writeDouble(this.oldSize);
-      var1.writeDouble(this.newSize);
-      var1.writeVarLong(this.lerpTime);
-      var1.writeVarInt(this.newAbsoluteMaxSize);
-      var1.writeVarInt(this.warningBlocks);
-      var1.writeVarInt(this.warningTime);
+   private void write(final FriendlyByteBuf output) {
+      output.writeDouble(this.newCenterX);
+      output.writeDouble(this.newCenterZ);
+      output.writeDouble(this.oldSize);
+      output.writeDouble(this.newSize);
+      output.writeVarLong(this.lerpTime);
+      output.writeVarInt(this.newAbsoluteMaxSize);
+      output.writeVarInt(this.warningBlocks);
+      output.writeVarInt(this.warningTime);
    }
 
    public PacketType<ClientboundInitializeBorderPacket> type() {
       return GamePacketTypes.CLIENTBOUND_INITIALIZE_BORDER;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleInitializeBorder(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleInitializeBorder(this);
    }
 
    public double getNewCenterX() {

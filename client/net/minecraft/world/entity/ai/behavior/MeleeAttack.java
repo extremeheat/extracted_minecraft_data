@@ -15,18 +15,18 @@ public class MeleeAttack {
       super();
    }
 
-   public static <T extends Mob> OneShot<T> create(int var0) {
-      return create((var0x) -> true, var0);
+   public static <T extends Mob> OneShot<T> create(final int cooldownBetweenAttacks) {
+      return create((body) -> true, cooldownBetweenAttacks);
    }
 
-   public static <T extends Mob> OneShot<T> create(Predicate<T> var0, int var1) {
-      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.registered(MemoryModuleType.LOOK_TARGET), var2.present(MemoryModuleType.ATTACK_TARGET), var2.absent(MemoryModuleType.ATTACK_COOLING_DOWN), var2.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(var2, (var3, var4, var5, var6) -> (var7, var8, var9) -> {
-               LivingEntity var11 = (LivingEntity)var2.get(var4);
-               if (var0.test(var8) && !isHoldingUsableNonMeleeWeapon(var8) && var8.isWithinMeleeAttackRange(var11) && ((NearestVisibleLivingEntities)var2.get(var6)).contains(var11)) {
-                  var3.set(new EntityTracker(var11, true));
-                  var8.swing(InteractionHand.MAIN_HAND);
-                  var8.doHurtTarget(var7, var11);
-                  var5.setWithExpiry(true, (long)var1);
+   public static <T extends Mob> OneShot<T> create(final Predicate<T> canAttackPredicate, final int cooldownBetweenAttacks) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.LOOK_TARGET), i.present(MemoryModuleType.ATTACK_TARGET), i.absent(MemoryModuleType.ATTACK_COOLING_DOWN), i.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(i, (lookTarget, attackTarget, attackCoolingDown, nearestEntities) -> (level, body, timestamp) -> {
+               LivingEntity target = (LivingEntity)i.get(attackTarget);
+               if (canAttackPredicate.test(body) && !isHoldingUsableNonMeleeWeapon(body) && body.isWithinMeleeAttackRange(target) && ((NearestVisibleLivingEntities)i.get(nearestEntities)).contains(target)) {
+                  lookTarget.set(new EntityTracker(target, true));
+                  body.swing(InteractionHand.MAIN_HAND);
+                  body.doHurtTarget(level, target);
+                  attackCoolingDown.setWithExpiry(true, (long)cooldownBetweenAttacks);
                   return true;
                } else {
                   return false;
@@ -34,8 +34,8 @@ public class MeleeAttack {
             })));
    }
 
-   private static boolean isHoldingUsableNonMeleeWeapon(Mob var0) {
-      Objects.requireNonNull(var0);
-      return var0.isHolding(var0::canUseNonMeleeWeapon);
+   private static boolean isHoldingUsableNonMeleeWeapon(final Mob body) {
+      Objects.requireNonNull(body);
+      return body.isHolding(body::canUseNonMeleeWeapon);
    }
 }

@@ -11,12 +11,12 @@ public class Divisor implements IntIterator {
    private int returnedParts;
    private int remainder;
 
-   public Divisor(int var1, int var2) {
+   public Divisor(final int numerator, final int denominator) {
       super();
-      this.denominator = var2;
-      if (var2 > 0) {
-         this.quotient = var1 / var2;
-         this.mod = var1 % var2;
+      this.denominator = denominator;
+      if (denominator > 0) {
+         this.quotient = numerator / denominator;
+         this.mod = numerator % denominator;
       } else {
          this.quotient = 0;
          this.mod = 0;
@@ -32,20 +32,20 @@ public class Divisor implements IntIterator {
       if (!this.hasNext()) {
          throw new NoSuchElementException();
       } else {
-         int var1 = this.quotient;
+         int next = this.quotient;
          this.remainder += this.mod;
          if (this.remainder >= this.denominator) {
             this.remainder -= this.denominator;
-            ++var1;
+            ++next;
          }
 
          ++this.returnedParts;
-         return var1;
+         return next;
       }
    }
 
    @VisibleForTesting
-   public static Iterable<Integer> asIterable(int var0, int var1) {
-      return () -> new Divisor(var0, var1);
+   public static Iterable<Integer> asIterable(final int numerator, final int denominator) {
+      return () -> new Divisor(numerator, denominator);
    }
 }

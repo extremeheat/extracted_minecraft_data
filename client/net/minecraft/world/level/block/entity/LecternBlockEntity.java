@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.Objects;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -37,6 +38,10 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    public static final int SLOT_BOOK = 0;
    public static final int NUM_SLOTS = 1;
    private final Container bookAccess = new Container() {
+      {
+         Objects.requireNonNull(LecternBlockEntity.this);
+      }
+
       public int getContainerSize() {
          return 1;
       }
@@ -45,35 +50,35 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
          return LecternBlockEntity.this.book.isEmpty();
       }
 
-      public ItemStack getItem(int var1) {
-         return var1 == 0 ? LecternBlockEntity.this.book : ItemStack.EMPTY;
+      public ItemStack getItem(final int slot) {
+         return slot == 0 ? LecternBlockEntity.this.book : ItemStack.EMPTY;
       }
 
-      public ItemStack removeItem(int var1, int var2) {
-         if (var1 == 0) {
-            ItemStack var3 = LecternBlockEntity.this.book.split(var2);
+      public ItemStack removeItem(final int slot, final int count) {
+         if (slot == 0) {
+            ItemStack result = LecternBlockEntity.this.book.split(count);
             if (LecternBlockEntity.this.book.isEmpty()) {
                LecternBlockEntity.this.onBookItemRemove();
             }
 
-            return var3;
+            return result;
          } else {
             return ItemStack.EMPTY;
          }
       }
 
-      public ItemStack removeItemNoUpdate(int var1) {
-         if (var1 == 0) {
-            ItemStack var2 = LecternBlockEntity.this.book;
+      public ItemStack removeItemNoUpdate(final int slot) {
+         if (slot == 0) {
+            ItemStack prev = LecternBlockEntity.this.book;
             LecternBlockEntity.this.book = ItemStack.EMPTY;
             LecternBlockEntity.this.onBookItemRemove();
-            return var2;
+            return prev;
          } else {
             return ItemStack.EMPTY;
          }
       }
 
-      public void setItem(int var1, ItemStack var2) {
+      public void setItem(final int slot, final ItemStack itemStack) {
       }
 
       public int getMaxStackSize() {
@@ -84,11 +89,11 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
          LecternBlockEntity.this.setChanged();
       }
 
-      public boolean stillValid(Player var1) {
-         return Container.stillValidBlockEntity(LecternBlockEntity.this, var1) && LecternBlockEntity.this.hasBook();
+      public boolean stillValid(final Player player) {
+         return Container.stillValidBlockEntity(LecternBlockEntity.this, player) && LecternBlockEntity.this.hasBook();
       }
 
-      public boolean canPlaceItem(int var1, ItemStack var2) {
+      public boolean canPlaceItem(final int slot, final ItemStack itemStack) {
          return false;
       }
 
@@ -96,13 +101,17 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       }
    };
    private final ContainerData dataAccess = new ContainerData() {
-      public int get(int var1) {
-         return var1 == 0 ? LecternBlockEntity.this.page : 0;
+      {
+         Objects.requireNonNull(LecternBlockEntity.this);
       }
 
-      public void set(int var1, int var2) {
-         if (var1 == 0) {
-            LecternBlockEntity.this.setPage(var2);
+      public int get(final int dataId) {
+         return dataId == 0 ? LecternBlockEntity.this.page : 0;
+      }
+
+      public void set(final int dataId, final int value) {
+         if (dataId == 0) {
+            LecternBlockEntity.this.setPage(value);
          }
 
       }
@@ -111,12 +120,12 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
          return 1;
       }
    };
-   ItemStack book;
-   int page;
+   private ItemStack book;
+   private int page;
    private int pageCount;
 
-   public LecternBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.LECTERN, var1, var2);
+   public LecternBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.LECTERN, worldPosition, blockState);
       this.book = ItemStack.EMPTY;
    }
 
@@ -128,27 +137,27 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       return this.book.has(DataComponents.WRITABLE_BOOK_CONTENT) || this.book.has(DataComponents.WRITTEN_BOOK_CONTENT);
    }
 
-   public void setBook(ItemStack var1) {
-      this.setBook(var1, (Player)null);
+   public void setBook(final ItemStack book) {
+      this.setBook(book, (Player)null);
    }
 
-   void onBookItemRemove() {
+   private void onBookItemRemove() {
       this.page = 0;
       this.pageCount = 0;
       LecternBlock.resetBookState((Entity)null, this.getLevel(), this.getBlockPos(), this.getBlockState(), false);
    }
 
-   public void setBook(ItemStack var1, @Nullable Player var2) {
-      this.book = this.resolveBook(var1, var2);
+   public void setBook(final ItemStack book, final @Nullable Player resolutionContext) {
+      this.book = this.resolveBook(book, resolutionContext);
       this.page = 0;
       this.pageCount = getPageCount(this.book);
       this.setChanged();
    }
 
-   void setPage(int var1) {
-      int var2 = Mth.clamp(var1, 0, this.pageCount - 1);
-      if (var2 != this.page) {
-         this.page = var2;
+   private void setPage(final int page) {
+      int newPage = Mth.clamp(page, 0, this.pageCount - 1);
+      if (newPage != this.page) {
+         this.page = newPage;
          this.setChanged();
          LecternBlock.signalPageChange(this.getLevel(), this.getBlockPos(), this.getBlockState());
       }
@@ -160,46 +169,46 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    public int getRedstoneSignal() {
-      float var1 = this.pageCount > 1 ? (float)this.getPage() / ((float)this.pageCount - 1.0F) : 1.0F;
-      return Mth.floor(var1 * 14.0F) + (this.hasBook() ? 1 : 0);
+      float pageProgress = this.pageCount > 1 ? (float)this.getPage() / ((float)this.pageCount - 1.0F) : 1.0F;
+      return Mth.floor(pageProgress * 14.0F) + (this.hasBook() ? 1 : 0);
    }
 
-   private ItemStack resolveBook(ItemStack var1, @Nullable Player var2) {
+   private ItemStack resolveBook(final ItemStack book, final @Nullable Player player) {
       Level var4 = this.level;
-      if (var4 instanceof ServerLevel var3) {
-         WrittenBookContent.resolveForItem(var1, this.createCommandSourceStack(var2, var3), var2);
+      if (var4 instanceof ServerLevel serverLevel) {
+         WrittenBookContent.resolveForItem(book, this.createCommandSourceStack(player, serverLevel), player);
       }
 
-      return var1;
+      return book;
    }
 
-   private CommandSourceStack createCommandSourceStack(@Nullable Player var1, ServerLevel var2) {
-      String var3;
-      Object var4;
-      if (var1 == null) {
-         var3 = "Lectern";
-         var4 = Component.literal("Lectern");
+   private CommandSourceStack createCommandSourceStack(final @Nullable Player player, final ServerLevel level) {
+      String textName;
+      Component displayName;
+      if (player == null) {
+         textName = "Lectern";
+         displayName = Component.literal("Lectern");
       } else {
-         var3 = var1.getPlainTextName();
-         var4 = var1.getDisplayName();
+         textName = player.getPlainTextName();
+         displayName = player.getDisplayName();
       }
 
-      Vec3 var5 = Vec3.atCenterOf(this.worldPosition);
-      return new CommandSourceStack(CommandSource.NULL, var5, Vec2.ZERO, var2, LevelBasedPermissionSet.GAMEMASTER, var3, (Component)var4, var2.getServer(), var1);
+      Vec3 pos = Vec3.atCenterOf(this.worldPosition);
+      return new CommandSourceStack(CommandSource.NULL, pos, Vec2.ZERO, level, LevelBasedPermissionSet.GAMEMASTER, textName, displayName, level.getServer(), player);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.book = (ItemStack)var1.read("Book", ItemStack.CODEC).map((var1x) -> this.resolveBook(var1x, (Player)null)).orElse(ItemStack.EMPTY);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.book = (ItemStack)input.read("Book", ItemStack.CODEC).map((book) -> this.resolveBook(book, (Player)null)).orElse(ItemStack.EMPTY);
       this.pageCount = getPageCount(this.book);
-      this.page = Mth.clamp(var1.getIntOr("Page", 0), 0, this.pageCount - 1);
+      this.page = Mth.clamp(input.getIntOr("Page", 0), 0, this.pageCount - 1);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
       if (!this.getBook().isEmpty()) {
-         var1.store("Book", ItemStack.CODEC, this.getBook());
-         var1.putInt("Page", this.page);
+         output.store("Book", ItemStack.CODEC, this.getBook());
+         output.putInt("Page", this.page);
       }
 
    }
@@ -208,34 +217,34 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       this.setBook(ItemStack.EMPTY);
    }
 
-   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
-      if ((Boolean)var2.getValue(LecternBlock.HAS_BOOK) && this.level != null) {
-         Direction var3 = (Direction)var2.getValue(LecternBlock.FACING);
-         ItemStack var4 = this.getBook().copy();
-         float var5 = 0.25F * (float)var3.getStepX();
-         float var6 = 0.25F * (float)var3.getStepZ();
-         ItemEntity var7 = new ItemEntity(this.level, (double)var1.getX() + 0.5 + (double)var5, (double)(var1.getY() + 1), (double)var1.getZ() + 0.5 + (double)var6, var4);
-         var7.setDefaultPickUpDelay();
-         this.level.addFreshEntity(var7);
+   public void preRemoveSideEffects(final BlockPos pos, final BlockState state) {
+      if ((Boolean)state.getValue(LecternBlock.HAS_BOOK) && this.level != null) {
+         Direction direction = (Direction)state.getValue(LecternBlock.FACING);
+         ItemStack book = this.getBook().copy();
+         float xo = 0.25F * (float)direction.getStepX();
+         float zo = 0.25F * (float)direction.getStepZ();
+         ItemEntity entity = new ItemEntity(this.level, (double)pos.getX() + 0.5 + (double)xo, (double)(pos.getY() + 1), (double)pos.getZ() + 0.5 + (double)zo, book);
+         entity.setDefaultPickUpDelay();
+         this.level.addFreshEntity(entity);
       }
 
    }
 
-   public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
-      return new LecternMenu(var1, this.bookAccess, this.dataAccess);
+   public AbstractContainerMenu createMenu(final int containerId, final Inventory inventory, final Player player) {
+      return new LecternMenu(containerId, this.bookAccess, this.dataAccess);
    }
 
    public Component getDisplayName() {
       return Component.translatable("container.lectern");
    }
 
-   private static int getPageCount(ItemStack var0) {
-      WrittenBookContent var1 = (WrittenBookContent)var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
-      if (var1 != null) {
-         return var1.pages().size();
+   private static int getPageCount(final ItemStack book) {
+      WrittenBookContent writtenContent = (WrittenBookContent)book.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      if (writtenContent != null) {
+         return writtenContent.pages().size();
       } else {
-         WritableBookContent var2 = (WritableBookContent)var0.get(DataComponents.WRITABLE_BOOK_CONTENT);
-         return var2 != null ? var2.pages().size() : 0;
+         WritableBookContent writableContent = (WritableBookContent)book.get(DataComponents.WRITABLE_BOOK_CONTENT);
+         return writableContent != null ? writableContent.pages().size() : 0;
       }
    }
 }

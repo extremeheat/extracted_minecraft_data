@@ -60,145 +60,145 @@ public class RedStoneWireBlock extends Block {
       return CODEC;
    }
 
-   public RedStoneWireBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public RedStoneWireBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, RedstoneSide.NONE)).setValue(EAST, RedstoneSide.NONE)).setValue(SOUTH, RedstoneSide.NONE)).setValue(WEST, RedstoneSide.NONE)).setValue(POWER, 0));
       this.shapes = this.makeShapes();
       this.crossState = (BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(NORTH, RedstoneSide.SIDE)).setValue(EAST, RedstoneSide.SIDE)).setValue(SOUTH, RedstoneSide.SIDE)).setValue(WEST, RedstoneSide.SIDE);
    }
 
    private Function<BlockState, VoxelShape> makeShapes() {
-      boolean var1 = true;
-      boolean var2 = true;
-      VoxelShape var3 = Block.column(10.0, 0.0, 1.0);
-      Map var4 = Shapes.rotateHorizontal(Block.boxZ(10.0, 0.0, 1.0, 0.0, 8.0));
-      Map var5 = Shapes.rotateHorizontal(Block.boxZ(10.0, 16.0, 0.0, 1.0));
-      return this.getShapeForEachState((var3x) -> {
-         VoxelShape var4x = var3;
+      int height = 1;
+      int width = 10;
+      VoxelShape dot = Block.column(10.0, 0.0, 1.0);
+      Map<Direction, VoxelShape> floor = Shapes.rotateHorizontal(Block.boxZ(10.0, 0.0, 1.0, 0.0, 8.0));
+      Map<Direction, VoxelShape> up = Shapes.rotateHorizontal(Block.boxZ(10.0, 16.0, 0.0, 1.0));
+      return this.getShapeForEachState((state) -> {
+         VoxelShape shape = dot;
 
-         for(Map.Entry var6 : PROPERTY_BY_DIRECTION.entrySet()) {
+         for(Map.Entry<Direction, EnumProperty<RedstoneSide>> entry : PROPERTY_BY_DIRECTION.entrySet()) {
             VoxelShape var10000;
-            switch ((RedstoneSide)var3x.getValue((Property)var6.getValue())) {
-               case UP -> var10000 = Shapes.or(var4x, (VoxelShape)var4.get(var6.getKey()), (VoxelShape)var5.get(var6.getKey()));
-               case SIDE -> var10000 = Shapes.or(var4x, (VoxelShape)var4.get(var6.getKey()));
-               case NONE -> var10000 = var4x;
+            switch ((RedstoneSide)state.getValue((Property)entry.getValue())) {
+               case UP -> var10000 = Shapes.or(shape, (VoxelShape)floor.get(entry.getKey()), (VoxelShape)up.get(entry.getKey()));
+               case SIDE -> var10000 = Shapes.or(shape, (VoxelShape)floor.get(entry.getKey()));
+               case NONE -> var10000 = shape;
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
-            var4x = var10000;
+            shape = var10000;
          }
 
-         return var4x;
+         return shape;
       }, new Property[]{POWER});
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapes.apply(var1);
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)this.shapes.apply(state);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.getConnectionState(var1.getLevel(), this.crossState, var1.getClickedPos());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return this.getConnectionState(context.getLevel(), this.crossState, context.getClickedPos());
    }
 
-   private BlockState getConnectionState(BlockGetter var1, BlockState var2, BlockPos var3) {
-      boolean var4 = isDot(var2);
-      var2 = this.getMissingConnections(var1, (BlockState)this.defaultBlockState().setValue(POWER, (Integer)var2.getValue(POWER)), var3);
-      if (var4 && isDot(var2)) {
-         return var2;
+   private BlockState getConnectionState(final BlockGetter level, BlockState state, final BlockPos pos) {
+      boolean wasDot = isDot(state);
+      state = this.getMissingConnections(level, (BlockState)this.defaultBlockState().setValue(POWER, (Integer)state.getValue(POWER)), pos);
+      if (wasDot && isDot(state)) {
+         return state;
       } else {
-         boolean var5 = ((RedstoneSide)var2.getValue(NORTH)).isConnected();
-         boolean var6 = ((RedstoneSide)var2.getValue(SOUTH)).isConnected();
-         boolean var7 = ((RedstoneSide)var2.getValue(EAST)).isConnected();
-         boolean var8 = ((RedstoneSide)var2.getValue(WEST)).isConnected();
-         boolean var9 = !var5 && !var6;
-         boolean var10 = !var7 && !var8;
-         if (!var8 && var9) {
-            var2 = (BlockState)var2.setValue(WEST, RedstoneSide.SIDE);
+         boolean north = ((RedstoneSide)state.getValue(NORTH)).isConnected();
+         boolean south = ((RedstoneSide)state.getValue(SOUTH)).isConnected();
+         boolean east = ((RedstoneSide)state.getValue(EAST)).isConnected();
+         boolean west = ((RedstoneSide)state.getValue(WEST)).isConnected();
+         boolean northSouthEmpty = !north && !south;
+         boolean eastWestEmpty = !east && !west;
+         if (!west && northSouthEmpty) {
+            state = (BlockState)state.setValue(WEST, RedstoneSide.SIDE);
          }
 
-         if (!var7 && var9) {
-            var2 = (BlockState)var2.setValue(EAST, RedstoneSide.SIDE);
+         if (!east && northSouthEmpty) {
+            state = (BlockState)state.setValue(EAST, RedstoneSide.SIDE);
          }
 
-         if (!var5 && var10) {
-            var2 = (BlockState)var2.setValue(NORTH, RedstoneSide.SIDE);
+         if (!north && eastWestEmpty) {
+            state = (BlockState)state.setValue(NORTH, RedstoneSide.SIDE);
          }
 
-         if (!var6 && var10) {
-            var2 = (BlockState)var2.setValue(SOUTH, RedstoneSide.SIDE);
+         if (!south && eastWestEmpty) {
+            state = (BlockState)state.setValue(SOUTH, RedstoneSide.SIDE);
          }
 
-         return var2;
+         return state;
       }
    }
 
-   private BlockState getMissingConnections(BlockGetter var1, BlockState var2, BlockPos var3) {
-      boolean var4 = !var1.getBlockState(var3.above()).isRedstoneConductor(var1, var3);
+   private BlockState getMissingConnections(final BlockGetter level, BlockState state, final BlockPos pos) {
+      boolean canConnectUp = !level.getBlockState(pos.above()).isRedstoneConductor(level, pos);
 
-      for(Direction var6 : Direction.Plane.HORIZONTAL) {
-         if (!((RedstoneSide)var2.getValue((Property)PROPERTY_BY_DIRECTION.get(var6))).isConnected()) {
-            RedstoneSide var7 = this.getConnectingSide(var1, var3, var6, var4);
-            var2 = (BlockState)var2.setValue((Property)PROPERTY_BY_DIRECTION.get(var6), var7);
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         if (!((RedstoneSide)state.getValue((Property)PROPERTY_BY_DIRECTION.get(direction))).isConnected()) {
+            RedstoneSide sideConnection = this.getConnectingSide(level, pos, direction, canConnectUp);
+            state = (BlockState)state.setValue((Property)PROPERTY_BY_DIRECTION.get(direction), sideConnection);
          }
       }
 
-      return var2;
+      return state;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (var5 == Direction.DOWN) {
-         return !this.canSurviveOn(var2, var6, var7) ? Blocks.AIR.defaultBlockState() : var1;
-      } else if (var5 == Direction.UP) {
-         return this.getConnectionState(var2, var1, var4);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (directionToNeighbour == Direction.DOWN) {
+         return !this.canSurviveOn(level, neighbourPos, neighbourState) ? Blocks.AIR.defaultBlockState() : state;
+      } else if (directionToNeighbour == Direction.UP) {
+         return this.getConnectionState(level, state, pos);
       } else {
-         RedstoneSide var9 = this.getConnectingSide(var2, var4, var5);
-         return var9.isConnected() == ((RedstoneSide)var1.getValue((Property)PROPERTY_BY_DIRECTION.get(var5))).isConnected() && !isCross(var1) ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var5), var9) : this.getConnectionState(var2, (BlockState)((BlockState)this.crossState.setValue(POWER, (Integer)var1.getValue(POWER))).setValue((Property)PROPERTY_BY_DIRECTION.get(var5), var9), var4);
+         RedstoneSide sideConnection = this.getConnectingSide(level, pos, directionToNeighbour);
+         return sideConnection.isConnected() == ((RedstoneSide)state.getValue((Property)PROPERTY_BY_DIRECTION.get(directionToNeighbour))).isConnected() && !isCross(state) ? (BlockState)state.setValue((Property)PROPERTY_BY_DIRECTION.get(directionToNeighbour), sideConnection) : this.getConnectionState(level, (BlockState)((BlockState)this.crossState.setValue(POWER, (Integer)state.getValue(POWER))).setValue((Property)PROPERTY_BY_DIRECTION.get(directionToNeighbour), sideConnection), pos);
       }
    }
 
-   private static boolean isCross(BlockState var0) {
-      return ((RedstoneSide)var0.getValue(NORTH)).isConnected() && ((RedstoneSide)var0.getValue(SOUTH)).isConnected() && ((RedstoneSide)var0.getValue(EAST)).isConnected() && ((RedstoneSide)var0.getValue(WEST)).isConnected();
+   private static boolean isCross(final BlockState state) {
+      return ((RedstoneSide)state.getValue(NORTH)).isConnected() && ((RedstoneSide)state.getValue(SOUTH)).isConnected() && ((RedstoneSide)state.getValue(EAST)).isConnected() && ((RedstoneSide)state.getValue(WEST)).isConnected();
    }
 
-   private static boolean isDot(BlockState var0) {
-      return !((RedstoneSide)var0.getValue(NORTH)).isConnected() && !((RedstoneSide)var0.getValue(SOUTH)).isConnected() && !((RedstoneSide)var0.getValue(EAST)).isConnected() && !((RedstoneSide)var0.getValue(WEST)).isConnected();
+   private static boolean isDot(final BlockState state) {
+      return !((RedstoneSide)state.getValue(NORTH)).isConnected() && !((RedstoneSide)state.getValue(SOUTH)).isConnected() && !((RedstoneSide)state.getValue(EAST)).isConnected() && !((RedstoneSide)state.getValue(WEST)).isConnected();
    }
 
-   protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, @Block.UpdateFlags int var4, int var5) {
-      BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+   protected void updateIndirectNeighbourShapes(final BlockState state, final LevelAccessor level, final BlockPos pos, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
+      BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
 
-      for(Direction var8 : Direction.Plane.HORIZONTAL) {
-         RedstoneSide var9 = (RedstoneSide)var1.getValue((Property)PROPERTY_BY_DIRECTION.get(var8));
-         if (var9 != RedstoneSide.NONE && !var2.getBlockState(var6.setWithOffset(var3, (Direction)var8)).is(this)) {
-            var6.move(Direction.DOWN);
-            BlockState var10 = var2.getBlockState(var6);
-            if (var10.is(this)) {
-               BlockPos var11 = var6.relative(var8.getOpposite());
-               var2.neighborShapeChanged(var8.getOpposite(), var6, var11, var2.getBlockState(var11), var4, var5);
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         RedstoneSide value = (RedstoneSide)state.getValue((Property)PROPERTY_BY_DIRECTION.get(direction));
+         if (value != RedstoneSide.NONE && !level.getBlockState(blockPos.setWithOffset(pos, (Direction)direction)).is(this)) {
+            blockPos.move(Direction.DOWN);
+            BlockState blockStateDown = level.getBlockState(blockPos);
+            if (blockStateDown.is(this)) {
+               BlockPos neighborPos = blockPos.relative(direction.getOpposite());
+               level.neighborShapeChanged(direction.getOpposite(), blockPos, neighborPos, level.getBlockState(neighborPos), updateFlags, updateLimit);
             }
 
-            var6.setWithOffset(var3, (Direction)var8).move(Direction.UP);
-            BlockState var13 = var2.getBlockState(var6);
-            if (var13.is(this)) {
-               BlockPos var12 = var6.relative(var8.getOpposite());
-               var2.neighborShapeChanged(var8.getOpposite(), var6, var12, var2.getBlockState(var12), var4, var5);
+            blockPos.setWithOffset(pos, (Direction)direction).move(Direction.UP);
+            BlockState blockStateUp = level.getBlockState(blockPos);
+            if (blockStateUp.is(this)) {
+               BlockPos neighborPos = blockPos.relative(direction.getOpposite());
+               level.neighborShapeChanged(direction.getOpposite(), blockPos, neighborPos, level.getBlockState(neighborPos), updateFlags, updateLimit);
             }
          }
       }
 
    }
 
-   private RedstoneSide getConnectingSide(BlockGetter var1, BlockPos var2, Direction var3) {
-      return this.getConnectingSide(var1, var2, var3, !var1.getBlockState(var2.above()).isRedstoneConductor(var1, var2));
+   private RedstoneSide getConnectingSide(final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return this.getConnectingSide(level, pos, direction, !level.getBlockState(pos.above()).isRedstoneConductor(level, pos));
    }
 
-   private RedstoneSide getConnectingSide(BlockGetter var1, BlockPos var2, Direction var3, boolean var4) {
-      BlockPos var5 = var2.relative(var3);
-      BlockState var6 = var1.getBlockState(var5);
-      if (var4) {
-         boolean var7 = var6.getBlock() instanceof TrapDoorBlock || this.canSurviveOn(var1, var5, var6);
-         if (var7 && shouldConnectTo(var1.getBlockState(var5.above()))) {
-            if (var6.isFaceSturdy(var1, var5, var3.getOpposite())) {
+   private RedstoneSide getConnectingSide(final BlockGetter level, final BlockPos pos, final Direction direction, final boolean canConnectUp) {
+      BlockPos relativePos = pos.relative(direction);
+      BlockState relativeState = level.getBlockState(relativePos);
+      if (canConnectUp) {
+         boolean isPlaceableAbove = relativeState.getBlock() instanceof TrapDoorBlock || this.canSurviveOn(level, relativePos, relativeState);
+         if (isPlaceableAbove && shouldConnectTo(level.getBlockState(relativePos.above()))) {
+            if (relativeState.isFaceSturdy(level, relativePos, direction.getOpposite())) {
                return RedstoneSide.UP;
             }
 
@@ -206,223 +206,223 @@ public class RedStoneWireBlock extends Block {
          }
       }
 
-      return !shouldConnectTo(var6, var3) && (var6.isRedstoneConductor(var1, var5) || !shouldConnectTo(var1.getBlockState(var5.below()))) ? RedstoneSide.NONE : RedstoneSide.SIDE;
+      return !shouldConnectTo(relativeState, direction) && (relativeState.isRedstoneConductor(level, relativePos) || !shouldConnectTo(level.getBlockState(relativePos.below()))) ? RedstoneSide.NONE : RedstoneSide.SIDE;
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockPos var4 = var3.below();
-      BlockState var5 = var2.getBlockState(var4);
-      return this.canSurviveOn(var2, var4, var5);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockPos below = pos.below();
+      BlockState belowState = level.getBlockState(below);
+      return this.canSurviveOn(level, below, belowState);
    }
 
-   private boolean canSurviveOn(BlockGetter var1, BlockPos var2, BlockState var3) {
-      return var3.isFaceSturdy(var1, var2, Direction.UP) || var3.is(Blocks.HOPPER);
+   private boolean canSurviveOn(final BlockGetter level, final BlockPos relativePos, final BlockState relativeState) {
+      return relativeState.isFaceSturdy(level, relativePos, Direction.UP) || relativeState.is(Blocks.HOPPER);
    }
 
-   private void updatePowerStrength(Level var1, BlockPos var2, BlockState var3, @Nullable Orientation var4, boolean var5) {
-      if (useExperimentalEvaluator(var1)) {
-         (new ExperimentalRedstoneWireEvaluator(this)).updatePowerStrength(var1, var2, var3, var4, var5);
+   private void updatePowerStrength(final Level level, final BlockPos pos, final BlockState state, final @Nullable Orientation orientation, final boolean shapeUpdateWiresAroundInitialPosition) {
+      if (useExperimentalEvaluator(level)) {
+         (new ExperimentalRedstoneWireEvaluator(this)).updatePowerStrength(level, pos, state, orientation, shapeUpdateWiresAroundInitialPosition);
       } else {
-         this.evaluator.updatePowerStrength(var1, var2, var3, var4, var5);
+         this.evaluator.updatePowerStrength(level, pos, state, orientation, shapeUpdateWiresAroundInitialPosition);
       }
 
    }
 
-   public int getBlockSignal(Level var1, BlockPos var2) {
+   public int getBlockSignal(final Level level, final BlockPos pos) {
       this.shouldSignal = false;
-      int var3 = var1.getBestNeighborSignal(var2);
+      int blockSignal = level.getBestNeighborSignal(pos);
       this.shouldSignal = true;
-      return var3;
+      return blockSignal;
    }
 
-   private void checkCornerChangeAt(Level var1, BlockPos var2) {
-      if (var1.getBlockState(var2).is(this)) {
-         var1.updateNeighborsAt(var2, this);
+   private void checkCornerChangeAt(final Level level, final BlockPos pos) {
+      if (level.getBlockState(pos).is(this)) {
+         level.updateNeighborsAt(pos, this);
 
-         for(Direction var6 : Direction.values()) {
-            var1.updateNeighborsAt(var2.relative(var6), this);
+         for(Direction direction : Direction.values()) {
+            level.updateNeighborsAt(pos.relative(direction), this);
          }
 
       }
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock()) && !var2.isClientSide()) {
-         this.updatePowerStrength(var2, var3, var1, (Orientation)null, true);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!oldState.is(state.getBlock()) && !level.isClientSide()) {
+         this.updatePowerStrength(level, pos, state, (Orientation)null, true);
 
-         for(Direction var7 : Direction.Plane.VERTICAL) {
-            var2.updateNeighborsAt(var3.relative(var7), this);
+         for(Direction direction : Direction.Plane.VERTICAL) {
+            level.updateNeighborsAt(pos.relative(direction), this);
          }
 
-         this.updateNeighborsOfNeighboringWires(var2, var3);
+         this.updateNeighborsOfNeighboringWires(level, pos);
       }
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      if (!var4) {
-         for(Direction var8 : Direction.values()) {
-            var2.updateNeighborsAt(var3.relative(var8), this);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      if (!movedByPiston) {
+         for(Direction direction : Direction.values()) {
+            level.updateNeighborsAt(pos.relative(direction), this);
          }
 
-         this.updatePowerStrength(var2, var3, var1, (Orientation)null, false);
-         this.updateNeighborsOfNeighboringWires(var2, var3);
+         this.updatePowerStrength(level, pos, state, (Orientation)null, false);
+         this.updateNeighborsOfNeighboringWires(level, pos);
       }
    }
 
-   private void updateNeighborsOfNeighboringWires(Level var1, BlockPos var2) {
-      for(Direction var4 : Direction.Plane.HORIZONTAL) {
-         this.checkCornerChangeAt(var1, var2.relative(var4));
+   private void updateNeighborsOfNeighboringWires(final Level level, final BlockPos pos) {
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         this.checkCornerChangeAt(level, pos.relative(direction));
       }
 
-      for(Direction var7 : Direction.Plane.HORIZONTAL) {
-         BlockPos var5 = var2.relative(var7);
-         if (var1.getBlockState(var5).isRedstoneConductor(var1, var5)) {
-            this.checkCornerChangeAt(var1, var5.above());
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         BlockPos target = pos.relative(direction);
+         if (level.getBlockState(target).isRedstoneConductor(level, target)) {
+            this.checkCornerChangeAt(level, target.above());
          } else {
-            this.checkCornerChangeAt(var1, var5.below());
+            this.checkCornerChangeAt(level, target.below());
          }
       }
 
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide()) {
-         if (var4 != this || !useExperimentalEvaluator(var2)) {
-            if (var1.canSurvive(var2, var3)) {
-               this.updatePowerStrength(var2, var3, var1, var5, false);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (!level.isClientSide()) {
+         if (block != this || !useExperimentalEvaluator(level)) {
+            if (state.canSurvive(level, pos)) {
+               this.updatePowerStrength(level, pos, state, orientation, false);
             } else {
-               dropResources(var1, var2, var3);
-               var2.removeBlock(var3, false);
+               dropResources(state, level, pos);
+               level.removeBlock(pos, false);
             }
 
          }
       }
    }
 
-   private static boolean useExperimentalEvaluator(Level var0) {
-      return var0.enabledFeatures().contains(FeatureFlags.REDSTONE_EXPERIMENTS);
+   private static boolean useExperimentalEvaluator(final Level level) {
+      return level.enabledFeatures().contains(FeatureFlags.REDSTONE_EXPERIMENTS);
    }
 
-   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return !this.shouldSignal ? 0 : var1.getSignal(var2, var3, var4);
+   protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return !this.shouldSignal ? 0 : state.getSignal(level, pos, direction);
    }
 
-   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      if (this.shouldSignal && var4 != Direction.DOWN) {
-         int var5 = (Integer)var1.getValue(POWER);
-         if (var5 == 0) {
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      if (this.shouldSignal && direction != Direction.DOWN) {
+         int power = (Integer)state.getValue(POWER);
+         if (power == 0) {
             return 0;
          } else {
-            return var4 != Direction.UP && !((RedstoneSide)this.getConnectionState(var2, var1, var3).getValue((Property)PROPERTY_BY_DIRECTION.get(var4.getOpposite()))).isConnected() ? 0 : var5;
+            return direction != Direction.UP && !((RedstoneSide)this.getConnectionState(level, state, pos).getValue((Property)PROPERTY_BY_DIRECTION.get(direction.getOpposite()))).isConnected() ? 0 : power;
          }
       } else {
          return 0;
       }
    }
 
-   protected static boolean shouldConnectTo(BlockState var0) {
-      return shouldConnectTo(var0, (Direction)null);
+   protected static boolean shouldConnectTo(final BlockState blockState) {
+      return shouldConnectTo(blockState, (Direction)null);
    }
 
-   protected static boolean shouldConnectTo(BlockState var0, @Nullable Direction var1) {
-      if (var0.is(Blocks.REDSTONE_WIRE)) {
+   protected static boolean shouldConnectTo(final BlockState blockState, final @Nullable Direction direction) {
+      if (blockState.is(Blocks.REDSTONE_WIRE)) {
          return true;
-      } else if (var0.is(Blocks.REPEATER)) {
-         Direction var2 = (Direction)var0.getValue(RepeaterBlock.FACING);
-         return var2 == var1 || var2.getOpposite() == var1;
-      } else if (var0.is(Blocks.OBSERVER)) {
-         return var1 == var0.getValue(ObserverBlock.FACING);
+      } else if (blockState.is(Blocks.REPEATER)) {
+         Direction repeaterDirection = (Direction)blockState.getValue(RepeaterBlock.FACING);
+         return repeaterDirection == direction || repeaterDirection.getOpposite() == direction;
+      } else if (blockState.is(Blocks.OBSERVER)) {
+         return direction == blockState.getValue(ObserverBlock.FACING);
       } else {
-         return var0.isSignalSource() && var1 != null;
+         return blockState.isSignalSource() && direction != null;
       }
    }
 
-   protected boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(final BlockState state) {
       return this.shouldSignal;
    }
 
-   public static int getColorForPower(int var0) {
-      return COLORS[var0];
+   public static int getColorForPower(final int power) {
+      return COLORS[power];
    }
 
-   private static void spawnParticlesAlongLine(Level var0, RandomSource var1, BlockPos var2, int var3, Direction var4, Direction var5, float var6, float var7) {
-      float var8 = var7 - var6;
-      if (!(var1.nextFloat() >= 0.2F * var8)) {
-         float var9 = 0.4375F;
-         float var10 = var6 + var8 * var1.nextFloat();
-         double var11 = 0.5 + (double)(0.4375F * (float)var4.getStepX()) + (double)(var10 * (float)var5.getStepX());
-         double var13 = 0.5 + (double)(0.4375F * (float)var4.getStepY()) + (double)(var10 * (float)var5.getStepY());
-         double var15 = 0.5 + (double)(0.4375F * (float)var4.getStepZ()) + (double)(var10 * (float)var5.getStepZ());
-         var0.addParticle(new DustParticleOptions(var3, 1.0F), (double)var2.getX() + var11, (double)var2.getY() + var13, (double)var2.getZ() + var15, 0.0, 0.0, 0.0);
+   private static void spawnParticlesAlongLine(final Level level, final RandomSource random, final BlockPos pos, final int color, final Direction side, final Direction along, final float from, final float to) {
+      float span = to - from;
+      if (!(random.nextFloat() >= 0.2F * span)) {
+         float sideOfBlock = 0.4375F;
+         float positionOnLine = from + span * random.nextFloat();
+         double x = 0.5 + (double)(0.4375F * (float)side.getStepX()) + (double)(positionOnLine * (float)along.getStepX());
+         double y = 0.5 + (double)(0.4375F * (float)side.getStepY()) + (double)(positionOnLine * (float)along.getStepY());
+         double z = 0.5 + (double)(0.4375F * (float)side.getStepZ()) + (double)(positionOnLine * (float)along.getStepZ());
+         level.addParticle(new DustParticleOptions(color, 1.0F), (double)pos.getX() + x, (double)pos.getY() + y, (double)pos.getZ() + z, 0.0, 0.0, 0.0);
       }
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      int var5 = (Integer)var1.getValue(POWER);
-      if (var5 != 0) {
-         for(Direction var7 : Direction.Plane.HORIZONTAL) {
-            RedstoneSide var8 = (RedstoneSide)var1.getValue((Property)PROPERTY_BY_DIRECTION.get(var7));
-            switch (var8) {
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      int power = (Integer)state.getValue(POWER);
+      if (power != 0) {
+         for(Direction horizontal : Direction.Plane.HORIZONTAL) {
+            RedstoneSide connection = (RedstoneSide)state.getValue((Property)PROPERTY_BY_DIRECTION.get(horizontal));
+            switch (connection) {
                case UP:
-                  spawnParticlesAlongLine(var2, var4, var3, COLORS[var5], var7, Direction.UP, -0.5F, 0.5F);
+                  spawnParticlesAlongLine(level, random, pos, COLORS[power], horizontal, Direction.UP, -0.5F, 0.5F);
                case SIDE:
-                  spawnParticlesAlongLine(var2, var4, var3, COLORS[var5], Direction.DOWN, var7, 0.0F, 0.5F);
+                  spawnParticlesAlongLine(level, random, pos, COLORS[power], Direction.DOWN, horizontal, 0.0F, 0.5F);
                   break;
                case NONE:
                default:
-                  spawnParticlesAlongLine(var2, var4, var3, COLORS[var5], Direction.DOWN, var7, 0.0F, 0.3F);
+                  spawnParticlesAlongLine(level, random, pos, COLORS[power], Direction.DOWN, horizontal, 0.0F, 0.3F);
             }
          }
 
       }
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      switch (var2) {
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      switch (rotation) {
          case CLOCKWISE_180 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (RedstoneSide)var1.getValue(SOUTH))).setValue(EAST, (RedstoneSide)var1.getValue(WEST))).setValue(SOUTH, (RedstoneSide)var1.getValue(NORTH))).setValue(WEST, (RedstoneSide)var1.getValue(EAST));
+            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (RedstoneSide)state.getValue(SOUTH))).setValue(EAST, (RedstoneSide)state.getValue(WEST))).setValue(SOUTH, (RedstoneSide)state.getValue(NORTH))).setValue(WEST, (RedstoneSide)state.getValue(EAST));
          }
          case COUNTERCLOCKWISE_90 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (RedstoneSide)var1.getValue(EAST))).setValue(EAST, (RedstoneSide)var1.getValue(SOUTH))).setValue(SOUTH, (RedstoneSide)var1.getValue(WEST))).setValue(WEST, (RedstoneSide)var1.getValue(NORTH));
+            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (RedstoneSide)state.getValue(EAST))).setValue(EAST, (RedstoneSide)state.getValue(SOUTH))).setValue(SOUTH, (RedstoneSide)state.getValue(WEST))).setValue(WEST, (RedstoneSide)state.getValue(NORTH));
          }
          case CLOCKWISE_90 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (RedstoneSide)var1.getValue(WEST))).setValue(EAST, (RedstoneSide)var1.getValue(NORTH))).setValue(SOUTH, (RedstoneSide)var1.getValue(EAST))).setValue(WEST, (RedstoneSide)var1.getValue(SOUTH));
+            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (RedstoneSide)state.getValue(WEST))).setValue(EAST, (RedstoneSide)state.getValue(NORTH))).setValue(SOUTH, (RedstoneSide)state.getValue(EAST))).setValue(WEST, (RedstoneSide)state.getValue(SOUTH));
          }
          default -> {
-            return var1;
+            return state;
          }
       }
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      switch (var2) {
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      switch (mirror) {
          case LEFT_RIGHT -> {
-            return (BlockState)((BlockState)var1.setValue(NORTH, (RedstoneSide)var1.getValue(SOUTH))).setValue(SOUTH, (RedstoneSide)var1.getValue(NORTH));
+            return (BlockState)((BlockState)state.setValue(NORTH, (RedstoneSide)state.getValue(SOUTH))).setValue(SOUTH, (RedstoneSide)state.getValue(NORTH));
          }
          case FRONT_BACK -> {
-            return (BlockState)((BlockState)var1.setValue(EAST, (RedstoneSide)var1.getValue(WEST))).setValue(WEST, (RedstoneSide)var1.getValue(EAST));
+            return (BlockState)((BlockState)state.setValue(EAST, (RedstoneSide)state.getValue(WEST))).setValue(WEST, (RedstoneSide)state.getValue(EAST));
          }
          default -> {
-            return super.mirror(var1, var2);
+            return super.mirror(state, mirror);
          }
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(NORTH, EAST, SOUTH, WEST, POWER);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(NORTH, EAST, SOUTH, WEST, POWER);
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var4.getAbilities().mayBuild) {
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!player.getAbilities().mayBuild) {
          return InteractionResult.PASS;
       } else {
-         if (isCross(var1) || isDot(var1)) {
-            BlockState var6 = isCross(var1) ? this.defaultBlockState() : this.crossState;
-            var6 = (BlockState)var6.setValue(POWER, (Integer)var1.getValue(POWER));
-            var6 = this.getConnectionState(var2, var6, var3);
-            if (var6 != var1) {
-               var2.setBlock(var3, var6, 3);
-               this.updatesOnShapeChange(var2, var3, var1, var6);
+         if (isCross(state) || isDot(state)) {
+            BlockState newState = isCross(state) ? this.defaultBlockState() : this.crossState;
+            newState = (BlockState)newState.setValue(POWER, (Integer)state.getValue(POWER));
+            newState = this.getConnectionState(level, newState, pos);
+            if (newState != state) {
+               level.setBlock(pos, newState, 3);
+               this.updatesOnShapeChange(level, pos, state, newState);
                return InteractionResult.SUCCESS;
             }
          }
@@ -431,13 +431,13 @@ public class RedStoneWireBlock extends Block {
       }
    }
 
-   private void updatesOnShapeChange(Level var1, BlockPos var2, BlockState var3, BlockState var4) {
-      Orientation var5 = ExperimentalRedstoneUtils.initialOrientation(var1, (Direction)null, Direction.UP);
+   private void updatesOnShapeChange(final Level level, final BlockPos pos, final BlockState oldState, final BlockState newState) {
+      Orientation orientation = ExperimentalRedstoneUtils.initialOrientation(level, (Direction)null, Direction.UP);
 
-      for(Direction var7 : Direction.Plane.HORIZONTAL) {
-         BlockPos var8 = var2.relative(var7);
-         if (((RedstoneSide)var3.getValue((Property)PROPERTY_BY_DIRECTION.get(var7))).isConnected() != ((RedstoneSide)var4.getValue((Property)PROPERTY_BY_DIRECTION.get(var7))).isConnected() && var1.getBlockState(var8).isRedstoneConductor(var1, var8)) {
-            var1.updateNeighborsAtExceptFromFacing(var8, var4.getBlock(), var7.getOpposite(), ExperimentalRedstoneUtils.withFront(var5, var7));
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         BlockPos relativePos = pos.relative(direction);
+         if (((RedstoneSide)oldState.getValue((Property)PROPERTY_BY_DIRECTION.get(direction))).isConnected() != ((RedstoneSide)newState.getValue((Property)PROPERTY_BY_DIRECTION.get(direction))).isConnected() && level.getBlockState(relativePos).isRedstoneConductor(level, relativePos)) {
+            level.updateNeighborsAtExceptFromFacing(relativePos, newState.getBlock(), direction.getOpposite(), ExperimentalRedstoneUtils.withFront(orientation, direction));
          }
       }
 
@@ -450,13 +450,13 @@ public class RedStoneWireBlock extends Block {
       WEST = BlockStateProperties.WEST_REDSTONE;
       POWER = BlockStateProperties.POWER;
       PROPERTY_BY_DIRECTION = ImmutableMap.copyOf(Maps.newEnumMap(Map.of(Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST)));
-      COLORS = (int[])Util.make(new int[16], (var0) -> {
-         for(int var1 = 0; var1 <= 15; ++var1) {
-            float var2 = (float)var1 / 15.0F;
-            float var3 = var2 * 0.6F + (var2 > 0.0F ? 0.4F : 0.3F);
-            float var4 = Mth.clamp(var2 * var2 * 0.7F - 0.5F, 0.0F, 1.0F);
-            float var5 = Mth.clamp(var2 * var2 * 0.6F - 0.7F, 0.0F, 1.0F);
-            var0[var1] = ARGB.colorFromFloat(1.0F, var3, var4, var5);
+      COLORS = (int[])Util.make(new int[16], (list) -> {
+         for(int i = 0; i <= 15; ++i) {
+            float power = (float)i / 15.0F;
+            float red = power * 0.6F + (power > 0.0F ? 0.4F : 0.3F);
+            float green = Mth.clamp(power * power * 0.7F - 0.5F, 0.0F, 1.0F);
+            float blue = Mth.clamp(power * power * 0.6F - 0.7F, 0.0F, 1.0F);
+            list[i] = ARGB.colorFromFloat(1.0F, red, green, blue);
          }
 
       });

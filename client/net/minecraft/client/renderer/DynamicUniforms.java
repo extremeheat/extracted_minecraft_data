@@ -34,46 +34,35 @@ public class DynamicUniforms implements AutoCloseable {
       this.chunkSections.close();
    }
 
-   public GpuBufferSlice writeTransform(Matrix4fc var1, Vector4fc var2, Vector3fc var3, Matrix4fc var4) {
-      return this.transforms.writeUniform(new Transform(new Matrix4f(var1), new Vector4f(var2), new Vector3f(var3), new Matrix4f(var4)));
+   public GpuBufferSlice writeTransform(final Matrix4fc modelView, final Vector4fc colorModulator, final Vector3fc modelOffset, final Matrix4fc textureMatrix) {
+      return this.transforms.writeUniform(new Transform(new Matrix4f(modelView), new Vector4f(colorModulator), new Vector3f(modelOffset), new Matrix4f(textureMatrix)));
    }
 
-   public GpuBufferSlice[] writeTransforms(Transform... var1) {
-      return this.transforms.writeUniforms(var1);
+   public GpuBufferSlice[] writeTransforms(final Transform... transforms) {
+      return this.transforms.writeUniforms(transforms);
    }
 
-   public GpuBufferSlice[] writeChunkSections(ChunkSectionInfo... var1) {
-      return this.chunkSections.writeUniforms(var1);
+   public GpuBufferSlice[] writeChunkSections(final ChunkSectionInfo... infos) {
+      return this.chunkSections.writeUniforms(infos);
    }
 
    public static record Transform(Matrix4fc modelView, Vector4fc colorModulator, Vector3fc modelOffset, Matrix4fc textureMatrix) implements DynamicUniformStorage.DynamicUniform {
-      public Transform(Matrix4fc var1, Vector4fc var2, Vector3fc var3, Matrix4fc var4) {
+      public Transform {
          super();
-         this.modelView = var1;
-         this.colorModulator = var2;
-         this.modelOffset = var3;
-         this.textureMatrix = var4;
       }
 
-      public void write(ByteBuffer var1) {
-         Std140Builder.intoBuffer(var1).putMat4f(this.modelView).putVec4(this.colorModulator).putVec3(this.modelOffset).putMat4f(this.textureMatrix);
+      public void write(final ByteBuffer buffer) {
+         Std140Builder.intoBuffer(buffer).putMat4f(this.modelView).putVec4(this.colorModulator).putVec3(this.modelOffset).putMat4f(this.textureMatrix);
       }
    }
 
    public static record ChunkSectionInfo(Matrix4fc modelView, int x, int y, int z, float visibility, int textureAtlasWidth, int textureAtlasHeight) implements DynamicUniformStorage.DynamicUniform {
-      public ChunkSectionInfo(Matrix4fc var1, int var2, int var3, int var4, float var5, int var6, int var7) {
+      public ChunkSectionInfo {
          super();
-         this.modelView = var1;
-         this.x = var2;
-         this.y = var3;
-         this.z = var4;
-         this.visibility = var5;
-         this.textureAtlasWidth = var6;
-         this.textureAtlasHeight = var7;
       }
 
-      public void write(ByteBuffer var1) {
-         Std140Builder.intoBuffer(var1).putMat4f(this.modelView).putFloat(this.visibility).putIVec2(this.textureAtlasWidth, this.textureAtlasHeight).putIVec3(this.x, this.y, this.z);
+      public void write(final ByteBuffer buffer) {
+         Std140Builder.intoBuffer(buffer).putMat4f(this.modelView).putFloat(this.visibility).putIVec2(this.textureAtlasWidth, this.textureAtlasHeight).putIVec3(this.x, this.y, this.z);
       }
    }
 }

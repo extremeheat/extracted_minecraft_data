@@ -16,13 +16,13 @@ public class ParticlesRenderState {
       this.particles.clear();
    }
 
-   public void add(ParticleGroupRenderState var1) {
-      this.particles.add(var1);
+   public void add(final ParticleGroupRenderState state) {
+      this.particles.add(state);
    }
 
-   public void submit(SubmitNodeStorage var1, CameraRenderState var2) {
-      for(ParticleGroupRenderState var4 : this.particles) {
-         var4.submit(var1, var2);
+   public void submit(final SubmitNodeStorage submitNodeStorage, final CameraRenderState camera) {
+      for(ParticleGroupRenderState particle : this.particles) {
+         particle.submit(submitNodeStorage, camera);
       }
 
    }

@@ -1,6 +1,7 @@
 package net.minecraft.advancements.criterion;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
@@ -11,21 +12,20 @@ import net.minecraft.world.entity.EntityType;
 public record EntityTypePredicate(HolderSet<EntityType<?>> types) {
    public static final Codec<EntityTypePredicate> CODEC;
 
-   public EntityTypePredicate(HolderSet<EntityType<?>> var1) {
+   public EntityTypePredicate {
       super();
-      this.types = var1;
    }
 
-   public static EntityTypePredicate of(HolderGetter<EntityType<?>> var0, EntityType<?> var1) {
-      return new EntityTypePredicate(HolderSet.direct(var1.builtInRegistryHolder()));
+   public static EntityTypePredicate of(final HolderGetter<EntityType<?>> lookup, final EntityType<?> type) {
+      return new EntityTypePredicate(HolderSet.direct(type.builtInRegistryHolder()));
    }
 
-   public static EntityTypePredicate of(HolderGetter<EntityType<?>> var0, TagKey<EntityType<?>> var1) {
-      return new EntityTypePredicate(var0.getOrThrow(var1));
+   public static EntityTypePredicate of(final HolderGetter<EntityType<?>> lookup, final TagKey<EntityType<?>> type) {
+      return new EntityTypePredicate(lookup.getOrThrow(type));
    }
 
-   public boolean matches(EntityType<?> var1) {
-      return var1.is(this.types);
+   public boolean matches(final Holder<EntityType<?>> type) {
+      return this.types.contains(type);
    }
 
    static {

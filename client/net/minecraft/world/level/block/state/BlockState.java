@@ -10,8 +10,8 @@ import net.minecraft.world.level.block.state.properties.Property;
 public class BlockState extends BlockBehaviour.BlockStateBase {
    public static final Codec<BlockState> CODEC;
 
-   public BlockState(Block var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<BlockState> var3) {
-      super(var1, var2, var3);
+   public BlockState(final Block owner, final Reference2ObjectArrayMap<Property<?>, Comparable<?>> values, final MapCodec<BlockState> propertiesCodec) {
+      super(owner, values, propertiesCodec);
    }
 
    protected BlockState asState() {

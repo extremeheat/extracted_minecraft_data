@@ -9,29 +9,29 @@ public interface AttributeRange<Value> {
 
    static <Value> AttributeRange<Value> any() {
       return new AttributeRange<Value>() {
-         public DataResult<Value> validate(Value var1) {
-            return DataResult.success(var1);
+         public DataResult<Value> validate(final Value value) {
+            return DataResult.success(value);
          }
 
-         public Value sanitize(Value var1) {
-            return var1;
+         public Value sanitize(final Value value) {
+            return value;
          }
       };
    }
 
-   static AttributeRange<Float> ofFloat(final float var0, final float var1) {
+   static AttributeRange<Float> ofFloat(final float minValue, final float maxValue) {
       return new AttributeRange<Float>() {
-         public DataResult<Float> validate(Float var1x) {
-            return var1x >= var0 && var1x <= var1 ? DataResult.success(var1x) : DataResult.error(() -> var1x + " is not in range [" + var0 + "; " + var1 + "]");
+         public DataResult<Float> validate(final Float value) {
+            return value >= minValue && value <= maxValue ? DataResult.success(value) : DataResult.error(() -> value + " is not in range [" + minValue + "; " + maxValue + "]");
          }
 
-         public Float sanitize(Float var1x) {
-            return var1x >= var0 && var1x <= var1 ? var1x : Mth.clamp(var1x, var0, var1);
+         public Float sanitize(final Float value) {
+            return value >= minValue && value <= maxValue ? value : Mth.clamp(value, minValue, maxValue);
          }
       };
    }
 
-   DataResult<Value> validate(Value var1);
+   DataResult<Value> validate(Value value);
 
-   Value sanitize(Value var1);
+   Value sanitize(Value value);
 }

@@ -44,9 +44,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class Ravager extends Raider {
-   private static final Predicate<Entity> ROAR_TARGET_WITH_GRIEFING = (var0) -> !(var0 instanceof Ravager) && var0.isAlive();
-   private static final Predicate<Entity> ROAR_TARGET_WITHOUT_GRIEFING = (var0) -> ROAR_TARGET_WITH_GRIEFING.test(var0) && !var0.getType().equals(EntityType.ARMOR_STAND);
-   private static final Predicate<LivingEntity> ROAR_TARGET_ON_CLIENT = (var0) -> !(var0 instanceof Ravager) && var0.isAlive() && var0.isLocalInstanceAuthoritative();
+   private static final Predicate<Entity> ROAR_TARGET_WITH_GRIEFING = (entity) -> !(entity instanceof Ravager) && entity.isAlive();
+   private static final Predicate<Entity> ROAR_TARGET_WITHOUT_GRIEFING = (entity) -> ROAR_TARGET_WITH_GRIEFING.test(entity) && !entity.is(EntityType.ARMOR_STAND);
+   private static final Predicate<LivingEntity> ROAR_TARGET_ON_CLIENT = (e) -> !(e instanceof Ravager) && e.isAlive() && e.isLocalInstanceAuthoritative();
    private static final double BASE_MOVEMENT_SPEED = 0.3;
    private static final double ATTACK_MOVEMENT_SPEED = 0.35;
    private static final int STUNNED_COLOR = 8356754;
@@ -62,8 +62,8 @@ public class Ravager extends Raider {
    private int stunnedTick = 0;
    private int roarTick = 0;
 
-   public Ravager(EntityType<? extends Ravager> var1, Level var2) {
-      super(var1, var2);
+   public Ravager(final EntityType<? extends Ravager> type, final Level level) {
+      super(type, level);
       this.xpReward = 20;
       this.setPathfindingMalus(PathType.LEAVES, 0.0F);
    }
@@ -77,35 +77,35 @@ public class Ravager extends Raider {
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
       this.targetSelector.addGoal(2, (new HurtByTargetGoal(this, new Class[]{Raider.class})).setAlertOthers());
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Player.class, true));
-      this.targetSelector.addGoal(4, new NearestAttackableTargetGoal(this, AbstractVillager.class, true, (var0, var1) -> !var0.isBaby()));
+      this.targetSelector.addGoal(4, new NearestAttackableTargetGoal(this, AbstractVillager.class, true, (target, level) -> !target.isBaby()));
       this.targetSelector.addGoal(4, new NearestAttackableTargetGoal(this, IronGolem.class, true));
    }
 
    protected void updateControlFlags() {
-      boolean var1 = !(this.getControllingPassenger() instanceof Mob) || this.getControllingPassenger().getType().is(EntityTypeTags.RAIDERS);
-      boolean var2 = !(this.getVehicle() instanceof AbstractBoat);
-      this.goalSelector.setControlFlag(Goal.Flag.MOVE, var1);
-      this.goalSelector.setControlFlag(Goal.Flag.JUMP, var1 && var2);
-      this.goalSelector.setControlFlag(Goal.Flag.LOOK, var1);
-      this.goalSelector.setControlFlag(Goal.Flag.TARGET, var1);
+      boolean noController = !(this.getControllingPassenger() instanceof Mob) || this.getControllingPassenger().is(EntityTypeTags.RAIDERS);
+      boolean notInBoat = !(this.getVehicle() instanceof AbstractBoat);
+      this.goalSelector.setControlFlag(Goal.Flag.MOVE, noController);
+      this.goalSelector.setControlFlag(Goal.Flag.JUMP, noController && notInBoat);
+      this.goalSelector.setControlFlag(Goal.Flag.LOOK, noController);
+      this.goalSelector.setControlFlag(Goal.Flag.TARGET, noController);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 100.0).add(Attributes.MOVEMENT_SPEED, 0.3).add(Attributes.KNOCKBACK_RESISTANCE, 0.75).add(Attributes.ATTACK_DAMAGE, 12.0).add(Attributes.ATTACK_KNOCKBACK, 1.5).add(Attributes.FOLLOW_RANGE, 32.0).add(Attributes.STEP_HEIGHT, 1.0);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("AttackTick", this.attackTick);
-      var1.putInt("StunTick", this.stunnedTick);
-      var1.putInt("RoarTick", this.roarTick);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("AttackTick", this.attackTick);
+      output.putInt("StunTick", this.stunnedTick);
+      output.putInt("RoarTick", this.roarTick);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.attackTick = var1.getIntOr("AttackTick", 0);
-      this.stunnedTick = var1.getIntOr("StunTick", 0);
-      this.roarTick = var1.getIntOr("RoarTick", 0);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.attackTick = input.getIntOr("AttackTick", 0);
+      this.stunnedTick = input.getIntOr("StunTick", 0);
+      this.roarTick = input.getIntOr("RoarTick", 0);
    }
 
    public SoundEvent getCelebrateSound() {
@@ -122,27 +122,27 @@ public class Ravager extends Raider {
          if (this.isImmobile()) {
             this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.0);
          } else {
-            double var1 = this.getTarget() != null ? 0.35 : 0.3;
-            double var3 = this.getAttribute(Attributes.MOVEMENT_SPEED).getBaseValue();
-            this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(Mth.lerp(0.1, var3, var1));
+            double maxSpeed = this.getTarget() != null ? 0.35 : 0.3;
+            double baseValue = this.getAttribute(Attributes.MOVEMENT_SPEED).getBaseValue();
+            this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(Mth.lerp(0.1, baseValue, maxSpeed));
          }
 
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
-            ServerLevel var8 = (ServerLevel)var2;
-            if (this.horizontalCollision && (Boolean)var8.getGameRules().get(GameRules.MOB_GRIEFING)) {
-               boolean var9 = false;
-               AABB var10 = this.getBoundingBox().inflate(0.2);
+            ServerLevel serverLevel = (ServerLevel)var2;
+            if (this.horizontalCollision && (Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
+               boolean destroyedBlock = false;
+               AABB bb = this.getBoundingBox().inflate(0.2);
 
-               for(BlockPos var5 : BlockPos.betweenClosed(Mth.floor(var10.minX), Mth.floor(var10.minY), Mth.floor(var10.minZ), Mth.floor(var10.maxX), Mth.floor(var10.maxY), Mth.floor(var10.maxZ))) {
-                  BlockState var6 = var8.getBlockState(var5);
-                  Block var7 = var6.getBlock();
-                  if (var7 instanceof LeavesBlock) {
-                     var9 = var8.destroyBlock(var5, true, this) || var9;
+               for(BlockPos pos : BlockPos.betweenClosed(Mth.floor(bb.minX), Mth.floor(bb.minY), Mth.floor(bb.minZ), Mth.floor(bb.maxX), Mth.floor(bb.maxY), Mth.floor(bb.maxZ))) {
+                  BlockState state = serverLevel.getBlockState(pos);
+                  Block block = state.getBlock();
+                  if (block instanceof LeavesBlock) {
+                     destroyedBlock = serverLevel.destroyBlock(pos, true, this) || destroyedBlock;
                   }
                }
 
-               if (!var9 && this.onGround()) {
+               if (!destroyedBlock && this.onGround()) {
                   this.jumpFromGround();
                }
             }
@@ -173,10 +173,10 @@ public class Ravager extends Raider {
 
    private void stunEffect() {
       if (this.random.nextInt(6) == 0) {
-         double var1 = this.getX() - (double)this.getBbWidth() * Math.sin((double)(this.yBodyRot * 0.017453292F)) + (this.random.nextDouble() * 0.6 - 0.3);
-         double var3 = this.getY() + (double)this.getBbHeight() - 0.3;
-         double var5 = this.getZ() + (double)this.getBbWidth() * Math.cos((double)(this.yBodyRot * 0.017453292F)) + (this.random.nextDouble() * 0.6 - 0.3);
-         this.level().addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.49803922F, 0.5137255F, 0.57254905F), var1, var3, var5, 0.0, 0.0, 0.0);
+         double headX = this.getX() - (double)this.getBbWidth() * Math.sin((double)(this.yBodyRot * 0.017453292F)) + (this.random.nextDouble() * 0.6 - 0.3);
+         double headY = this.getY() + (double)this.getBbHeight() - 0.3;
+         double headZ = this.getZ() + (double)this.getBbWidth() * Math.cos((double)(this.yBodyRot * 0.017453292F)) + (this.random.nextDouble() * 0.6 - 0.3);
+         this.level().addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.49803922F, 0.5137255F, 0.57254905F), headX, headY, headZ, 0.0, 0.0, 0.0);
       }
 
    }
@@ -185,22 +185,22 @@ public class Ravager extends Raider {
       return super.isImmobile() || this.attackTick > 0 || this.stunnedTick > 0 || this.roarTick > 0;
    }
 
-   public boolean hasLineOfSight(Entity var1) {
-      return this.stunnedTick <= 0 && this.roarTick <= 0 ? super.hasLineOfSight(var1) : false;
+   public boolean hasLineOfSight(final Entity target) {
+      return this.stunnedTick <= 0 && this.roarTick <= 0 ? super.hasLineOfSight(target) : false;
    }
 
-   protected void blockedByItem(LivingEntity var1) {
+   protected void blockedByItem(final LivingEntity defender) {
       if (this.roarTick == 0) {
          if (this.random.nextDouble() < 0.5) {
             this.stunnedTick = 40;
             this.playSound(SoundEvents.RAVAGER_STUNNED, 1.0F, 1.0F);
             this.level().broadcastEntityEvent(this, (byte)39);
-            var1.push(this);
+            defender.push(this);
          } else {
-            this.strongKnockback(var1);
+            this.strongKnockback(defender);
          }
 
-         var1.hurtMarked = true;
+         defender.hurtMarked = true;
       }
 
    }
@@ -209,62 +209,62 @@ public class Ravager extends Raider {
       if (this.isAlive()) {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
-            ServerLevel var1 = (ServerLevel)var2;
-            Predicate var6 = (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) ? ROAR_TARGET_WITH_GRIEFING : ROAR_TARGET_WITHOUT_GRIEFING;
+            ServerLevel level = (ServerLevel)var2;
+            Predicate<Entity> targetSelector = (Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING) ? ROAR_TARGET_WITH_GRIEFING : ROAR_TARGET_WITHOUT_GRIEFING;
 
-            for(LivingEntity var5 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), var6)) {
-               if (!(var5 instanceof AbstractIllager)) {
-                  var5.hurtServer(var1, this.damageSources().mobAttack(this), 6.0F);
+            for(LivingEntity entity : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), targetSelector)) {
+               if (!(entity instanceof AbstractIllager)) {
+                  entity.hurtServer(level, this.damageSources().mobAttack(this), 6.0F);
                }
 
-               if (!(var5 instanceof Player)) {
-                  this.strongKnockback(var5);
+               if (!(entity instanceof Player)) {
+                  this.strongKnockback(entity);
                }
             }
 
             this.gameEvent(GameEvent.ENTITY_ACTION);
-            var1.broadcastEntityEvent(this, (byte)69);
+            level.broadcastEntityEvent(this, (byte)69);
          }
       }
 
    }
 
    private void applyRoarKnockbackClient() {
-      for(LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), ROAR_TARGET_ON_CLIENT)) {
-         this.strongKnockback(var3);
+      for(LivingEntity entity : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), ROAR_TARGET_ON_CLIENT)) {
+         this.strongKnockback(entity);
       }
 
    }
 
-   private void strongKnockback(Entity var1) {
-      double var2 = var1.getX() - this.getX();
-      double var4 = var1.getZ() - this.getZ();
-      double var6 = Math.max(var2 * var2 + var4 * var4, 0.001);
-      var1.push(var2 / var6 * 4.0, 0.2, var4 / var6 * 4.0);
+   private void strongKnockback(final Entity entity) {
+      double xd = entity.getX() - this.getX();
+      double zd = entity.getZ() - this.getZ();
+      double dd = Math.max(xd * xd + zd * zd, 0.001);
+      entity.push(xd / dd * 4.0, 0.2, zd / dd * 4.0);
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 4) {
+   public void handleEntityEvent(final byte id) {
+      if (id == 4) {
          this.attackTick = 10;
          this.playSound(SoundEvents.RAVAGER_ATTACK, 1.0F, 1.0F);
-      } else if (var1 == 39) {
+      } else if (id == 39) {
          this.stunnedTick = 40;
-      } else if (var1 == 69) {
+      } else if (id == 69) {
          this.addRoarParticleEffects();
          this.applyRoarKnockbackClient();
       }
 
-      super.handleEntityEvent(var1);
+      super.handleEntityEvent(id);
    }
 
    private void addRoarParticleEffects() {
-      Vec3 var1 = this.getBoundingBox().getCenter();
+      Vec3 center = this.getBoundingBox().getCenter();
 
-      for(int var2 = 0; var2 < 40; ++var2) {
-         double var3 = this.random.nextGaussian() * 0.2;
-         double var5 = this.random.nextGaussian() * 0.2;
-         double var7 = this.random.nextGaussian() * 0.2;
-         this.level().addParticle(ParticleTypes.POOF, var1.x, var1.y, var1.z, var3, var5, var7);
+      for(int i = 0; i < 40; ++i) {
+         double velocityX = this.random.nextGaussian() * 0.2;
+         double velocityY = this.random.nextGaussian() * 0.2;
+         double velocityZ = this.random.nextGaussian() * 0.2;
+         this.level().addParticle(ParticleTypes.POOF, center.x, center.y, center.z, velocityX, velocityY, velocityZ);
       }
 
    }
@@ -281,18 +281,18 @@ public class Ravager extends Raider {
       return this.roarTick;
    }
 
-   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+   public boolean doHurtTarget(final ServerLevel level, final Entity target) {
       this.attackTick = 10;
-      var1.broadcastEntityEvent(this, (byte)4);
+      level.broadcastEntityEvent(this, (byte)4);
       this.playSound(SoundEvents.RAVAGER_ATTACK, 1.0F, 1.0F);
-      return super.doHurtTarget(var1, var2);
+      return super.doHurtTarget(level, target);
    }
 
    protected @Nullable SoundEvent getAmbientSound() {
       return SoundEvents.RAVAGER_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.RAVAGER_HURT;
    }
 
@@ -300,23 +300,23 @@ public class Ravager extends Raider {
       return SoundEvents.RAVAGER_DEATH;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(SoundEvents.RAVAGER_STEP, 0.15F, 1.0F);
    }
 
-   public boolean checkSpawnObstruction(LevelReader var1) {
-      return !var1.containsAnyLiquid(this.getBoundingBox());
+   public boolean checkSpawnObstruction(final LevelReader level) {
+      return !level.containsAnyLiquid(this.getBoundingBox());
    }
 
-   public void applyRaidBuffs(ServerLevel var1, int var2, boolean var3) {
+   public void applyRaidBuffs(final ServerLevel level, final int wave, final boolean isCaptain) {
    }
 
    public boolean canBeLeader() {
       return false;
    }
 
-   protected AABB getAttackBoundingBox(double var1) {
-      AABB var3 = super.getAttackBoundingBox(var1);
-      return var3.deflate(0.05, 0.0, 0.05);
+   protected AABB getAttackBoundingBox(final double horizontalExpansion) {
+      AABB defaultBB = super.getAttackBoundingBox(horizontalExpansion);
+      return defaultBB.deflate(0.05, 0.0, 0.05);
    }
 }

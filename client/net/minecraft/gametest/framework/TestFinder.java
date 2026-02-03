@@ -13,8 +13,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 
 public class TestFinder implements TestInstanceFinder, TestPosFinder {
-   static final TestInstanceFinder NO_FUNCTIONS = Stream::empty;
-   static final TestPosFinder NO_STRUCTURES = Stream::empty;
+   private static final TestInstanceFinder NO_FUNCTIONS = Stream::empty;
+   private static final TestPosFinder NO_STRUCTURES = Stream::empty;
    private final TestInstanceFinder testInstanceFinder;
    private final TestPosFinder testPosFinder;
    private final CommandSourceStack source;
@@ -27,11 +27,11 @@ public class TestFinder implements TestInstanceFinder, TestPosFinder {
       return new Builder();
    }
 
-   TestFinder(CommandSourceStack var1, TestInstanceFinder var2, TestPosFinder var3) {
+   private TestFinder(final CommandSourceStack source, final TestInstanceFinder testInstanceFinder, final TestPosFinder testPosFinder) {
       super();
-      this.source = var1;
-      this.testInstanceFinder = var2;
-      this.testPosFinder = var3;
+      this.source = source;
+      this.testInstanceFinder = testInstanceFinder;
+      this.testPosFinder = testPosFinder;
    }
 
    public CommandSourceStack source() {
@@ -48,82 +48,82 @@ public class TestFinder implements TestInstanceFinder, TestPosFinder {
 
       public Builder() {
          super();
-         this.testFinderWrapper = (var0) -> var0;
-         this.structureBlockPosFinderWrapper = (var0) -> var0;
+         this.testFinderWrapper = (f) -> f;
+         this.structureBlockPosFinderWrapper = (f) -> f;
       }
 
-      private Builder(UnaryOperator<Supplier<Stream<Holder.Reference<GameTestInstance>>>> var1, UnaryOperator<Supplier<Stream<BlockPos>>> var2) {
+      private Builder(final UnaryOperator<Supplier<Stream<Holder.Reference<GameTestInstance>>>> testFinderWrapper, final UnaryOperator<Supplier<Stream<BlockPos>>> structureBlockPosFinderWrapper) {
          super();
-         this.testFinderWrapper = var1;
-         this.structureBlockPosFinderWrapper = var2;
+         this.testFinderWrapper = testFinderWrapper;
+         this.structureBlockPosFinderWrapper = structureBlockPosFinderWrapper;
       }
 
-      public Builder createMultipleCopies(int var1) {
-         return new Builder(createCopies(var1), createCopies(var1));
+      public Builder createMultipleCopies(final int amount) {
+         return new Builder(createCopies(amount), createCopies(amount));
       }
 
-      private static <Q> UnaryOperator<Supplier<Stream<Q>>> createCopies(int var0) {
-         return (var1) -> {
-            LinkedList var2 = new LinkedList();
-            List var3 = ((Stream)var1.get()).toList();
+      private static <Q> UnaryOperator<Supplier<Stream<Q>>> createCopies(final int amount) {
+         return (source) -> {
+            List<Q> copyList = new LinkedList();
+            List<Q> sourceList = ((Stream)source.get()).toList();
 
-            for(int var4 = 0; var4 < var0; ++var4) {
-               var2.addAll(var3);
+            for(int i = 0; i < amount; ++i) {
+               copyList.addAll(sourceList);
             }
 
-            Objects.requireNonNull(var2);
-            return var2::stream;
+            Objects.requireNonNull(copyList);
+            return copyList::stream;
          };
       }
 
-      private TestFinder build(CommandSourceStack var1, TestInstanceFinder var2, TestPosFinder var3) {
+      private TestFinder build(final CommandSourceStack source, final TestInstanceFinder testInstanceFinder, final TestPosFinder testPosFinder) {
          UnaryOperator var10003 = this.testFinderWrapper;
-         Objects.requireNonNull(var2);
-         Supplier var4 = (Supplier)var10003.apply(var2::findTests);
+         Objects.requireNonNull(testInstanceFinder);
+         Supplier var4 = (Supplier)var10003.apply(testInstanceFinder::findTests);
          Objects.requireNonNull(var4);
          TestInstanceFinder var5 = var4::get;
          UnaryOperator var10004 = this.structureBlockPosFinderWrapper;
-         Objects.requireNonNull(var3);
-         Supplier var6 = (Supplier)var10004.apply(var3::findTestPos);
+         Objects.requireNonNull(testPosFinder);
+         Supplier var6 = (Supplier)var10004.apply(testPosFinder::findTestPos);
          Objects.requireNonNull(var6);
-         return new TestFinder(var1, var5, var6::get);
+         return new TestFinder(source, var5, var6::get);
       }
 
-      public TestFinder radius(CommandContext<CommandSourceStack> var1, int var2) {
-         CommandSourceStack var3 = (CommandSourceStack)var1.getSource();
-         BlockPos var4 = BlockPos.containing(var3.getPosition());
-         return this.build(var3, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findTestBlocks(var4, var2, var3.getLevel()));
+      public TestFinder radius(final CommandContext<CommandSourceStack> sourceStack, final int radius) {
+         CommandSourceStack source = (CommandSourceStack)sourceStack.getSource();
+         BlockPos pos = BlockPos.containing(source.getPosition());
+         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findTestBlocks(pos, radius, source.getLevel()));
       }
 
-      public TestFinder nearest(CommandContext<CommandSourceStack> var1) {
-         CommandSourceStack var2 = (CommandSourceStack)var1.getSource();
-         BlockPos var3 = BlockPos.containing(var2.getPosition());
-         return this.build(var2, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findNearestTest(var3, 15, var2.getLevel()).stream());
+      public TestFinder nearest(final CommandContext<CommandSourceStack> sourceStack) {
+         CommandSourceStack source = (CommandSourceStack)sourceStack.getSource();
+         BlockPos pos = BlockPos.containing(source.getPosition());
+         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findNearestTest(pos, 15, source.getLevel()).stream());
       }
 
-      public TestFinder allNearby(CommandContext<CommandSourceStack> var1) {
-         CommandSourceStack var2 = (CommandSourceStack)var1.getSource();
-         BlockPos var3 = BlockPos.containing(var2.getPosition());
-         return this.build(var2, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findTestBlocks(var3, 250, var2.getLevel()));
+      public TestFinder allNearby(final CommandContext<CommandSourceStack> sourceStack) {
+         CommandSourceStack source = (CommandSourceStack)sourceStack.getSource();
+         BlockPos pos = BlockPos.containing(source.getPosition());
+         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findTestBlocks(pos, 250, source.getLevel()));
       }
 
-      public TestFinder lookedAt(CommandContext<CommandSourceStack> var1) {
-         CommandSourceStack var2 = (CommandSourceStack)var1.getSource();
-         return this.build(var2, TestFinder.NO_FUNCTIONS, () -> StructureUtils.lookedAtTestPos(BlockPos.containing(var2.getPosition()), var2.getPlayer().getCamera(), var2.getLevel()));
+      public TestFinder lookedAt(final CommandContext<CommandSourceStack> sourceStack) {
+         CommandSourceStack source = (CommandSourceStack)sourceStack.getSource();
+         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.lookedAtTestPos(BlockPos.containing(source.getPosition()), source.getPlayer().getCamera(), source.getLevel()));
       }
 
-      public TestFinder failedTests(CommandContext<CommandSourceStack> var1, boolean var2) {
-         return this.build((CommandSourceStack)var1.getSource(), () -> FailedTestTracker.getLastFailedTests().filter((var1) -> !var2 || ((GameTestInstance)var1.value()).required()), TestFinder.NO_STRUCTURES);
+      public TestFinder failedTests(final CommandContext<CommandSourceStack> sourceStack, final boolean onlyRequiredTests) {
+         return this.build((CommandSourceStack)sourceStack.getSource(), () -> FailedTestTracker.getLastFailedTests().filter((test) -> !onlyRequiredTests || ((GameTestInstance)test.value()).required()), TestFinder.NO_STRUCTURES);
       }
 
-      public TestFinder byResourceSelection(CommandContext<CommandSourceStack> var1, Collection<Holder.Reference<GameTestInstance>> var2) {
-         CommandSourceStack var10001 = (CommandSourceStack)var1.getSource();
-         Objects.requireNonNull(var2);
-         return this.build(var10001, var2::stream, TestFinder.NO_STRUCTURES);
+      public TestFinder byResourceSelection(final CommandContext<CommandSourceStack> sourceStack, final Collection<Holder.Reference<GameTestInstance>> holders) {
+         CommandSourceStack var10001 = (CommandSourceStack)sourceStack.getSource();
+         Objects.requireNonNull(holders);
+         return this.build(var10001, holders::stream, TestFinder.NO_STRUCTURES);
       }
 
-      public TestFinder failedTests(CommandContext<CommandSourceStack> var1) {
-         return this.failedTests(var1, false);
+      public TestFinder failedTests(final CommandContext<CommandSourceStack> sourceStack) {
+         return this.failedTests(sourceStack, false);
       }
    }
 }

@@ -26,42 +26,37 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
    private final MaterialSet materials;
    private final ShieldModel model;
 
-   public ShieldSpecialRenderer(MaterialSet var1, ShieldModel var2) {
+   public ShieldSpecialRenderer(final MaterialSet materials, final ShieldModel model) {
       super();
-      this.materials = var1;
-      this.model = var2;
+      this.materials = materials;
+      this.model = model;
    }
 
-   public @Nullable DataComponentMap extractArgument(ItemStack var1) {
-      return var1.immutableComponents();
+   public @Nullable DataComponentMap extractArgument(final ItemStack stack) {
+      return stack.immutableComponents();
    }
 
-   public void submit(@Nullable DataComponentMap var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8) {
-      BannerPatternLayers var9 = var1 != null ? (BannerPatternLayers)var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY) : BannerPatternLayers.EMPTY;
-      DyeColor var10 = var1 != null ? (DyeColor)var1.get(DataComponents.BASE_COLOR) : null;
-      boolean var11 = !var9.layers().isEmpty() || var10 != null;
-      var3.pushPose();
-      var3.scale(1.0F, -1.0F, -1.0F);
-      Material var12 = var11 ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
-      var4.submitModelPart(this.model.handle(), var3, this.model.renderType(var12.atlasLocation()), var5, var6, this.materials.get(var12), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var8);
-      if (var11) {
-         BannerRenderer.submitPatterns(this.materials, var3, var4, var5, var6, this.model, Unit.INSTANCE, var12, false, (DyeColor)Objects.requireNonNullElse(var10, DyeColor.WHITE), var9, var7, (ModelFeatureRenderer.CrumblingOverlay)null, var8);
+   public void submit(final @Nullable DataComponentMap components, final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      BannerPatternLayers patterns = components != null ? (BannerPatternLayers)components.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY) : BannerPatternLayers.EMPTY;
+      DyeColor baseColor = components != null ? (DyeColor)components.get(DataComponents.BASE_COLOR) : null;
+      boolean hasPatterns = !patterns.layers().isEmpty() || baseColor != null;
+      poseStack.pushPose();
+      poseStack.scale(1.0F, -1.0F, -1.0F);
+      Material base = hasPatterns ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
+      submitNodeCollector.submitModelPart(this.model.handle(), poseStack, this.model.renderType(base.atlasLocation()), lightCoords, overlayCoords, this.materials.get(base), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      if (hasPatterns) {
+         BannerRenderer.submitPatterns(this.materials, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.model, Unit.INSTANCE, base, false, (DyeColor)Objects.requireNonNullElse(baseColor, DyeColor.WHITE), patterns, hasFoil, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
       } else {
-         var4.submitModelPart(this.model.plate(), var3, this.model.renderType(var12.atlasLocation()), var5, var6, this.materials.get(var12), false, var7, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var8);
+         submitNodeCollector.submitModelPart(this.model.plate(), poseStack, this.model.renderType(base.atlasLocation()), lightCoords, overlayCoords, this.materials.get(base), false, hasFoil, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
       }
 
-      var3.popPose();
+      poseStack.popPose();
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      PoseStack var2 = new PoseStack();
-      var2.scale(1.0F, -1.0F, -1.0F);
-      this.model.root().getExtentsForGui(var2, var1);
-   }
-
-   // $FF: synthetic method
-   public @Nullable Object extractArgument(final ItemStack var1) {
-      return this.extractArgument(var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
+      poseStack.scale(1.0F, -1.0F, -1.0F);
+      this.model.root().getExtentsForGui(poseStack, output);
    }
 
    public static record Unbaked() implements SpecialModelRenderer.Unbaked {
@@ -76,8 +71,8 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         return new ShieldSpecialRenderer(var1.materials(), new ShieldModel(var1.entityModelSet().bakeLayer(ModelLayers.SHIELD)));
+      public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+         return new ShieldSpecialRenderer(context.materials(), new ShieldModel(context.entityModelSet().bakeLayer(ModelLayers.SHIELD)));
       }
 
       static {

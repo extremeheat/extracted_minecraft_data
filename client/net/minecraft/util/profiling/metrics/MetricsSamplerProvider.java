@@ -5,5 +5,5 @@ import java.util.function.Supplier;
 import net.minecraft.util.profiling.ProfileCollector;
 
 public interface MetricsSamplerProvider {
-   Set<MetricSampler> samplers(Supplier<ProfileCollector> var1);
+   Set<MetricSampler> samplers(final Supplier<ProfileCollector> singleTickProfiler);
 }

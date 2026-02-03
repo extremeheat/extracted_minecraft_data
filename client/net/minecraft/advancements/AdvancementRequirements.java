@@ -14,37 +14,36 @@ public record AdvancementRequirements(List<List<String>> requirements) {
    public static final Codec<AdvancementRequirements> CODEC;
    public static final AdvancementRequirements EMPTY;
 
-   public AdvancementRequirements(FriendlyByteBuf var1) {
-      this(var1.readList((var0) -> var0.readList(FriendlyByteBuf::readUtf)));
+   public AdvancementRequirements(final FriendlyByteBuf input) {
+      this(input.readList((in) -> in.readList(FriendlyByteBuf::readUtf)));
    }
 
-   public AdvancementRequirements(List<List<String>> var1) {
+   public AdvancementRequirements {
       super();
-      this.requirements = var1;
    }
 
-   public void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.requirements, (var0, var1x) -> var0.writeCollection(var1x, FriendlyByteBuf::writeUtf));
+   public void write(final FriendlyByteBuf output) {
+      output.writeCollection(this.requirements, (out, set) -> out.writeCollection(set, FriendlyByteBuf::writeUtf));
    }
 
-   public static AdvancementRequirements allOf(Collection<String> var0) {
-      return new AdvancementRequirements(var0.stream().map(List::of).toList());
+   public static AdvancementRequirements allOf(final Collection<String> criteria) {
+      return new AdvancementRequirements(criteria.stream().map(List::of).toList());
    }
 
-   public static AdvancementRequirements anyOf(Collection<String> var0) {
-      return new AdvancementRequirements(List.of(List.copyOf(var0)));
+   public static AdvancementRequirements anyOf(final Collection<String> criteria) {
+      return new AdvancementRequirements(List.of(List.copyOf(criteria)));
    }
 
    public int size() {
       return this.requirements.size();
    }
 
-   public boolean test(Predicate<String> var1) {
+   public boolean test(final Predicate<String> predicate) {
       if (this.requirements.isEmpty()) {
          return false;
       } else {
-         for(List var3 : this.requirements) {
-            if (!anyMatch(var3, var1)) {
+         for(List<String> set : this.requirements) {
+            if (!anyMatch(set, predicate)) {
                return false;
             }
          }
@@ -53,21 +52,21 @@ public record AdvancementRequirements(List<List<String>> requirements) {
       }
    }
 
-   public int count(Predicate<String> var1) {
-      int var2 = 0;
+   public int count(final Predicate<String> predicate) {
+      int count = 0;
 
-      for(List var4 : this.requirements) {
-         if (anyMatch(var4, var1)) {
-            ++var2;
+      for(List<String> set : this.requirements) {
+         if (anyMatch(set, predicate)) {
+            ++count;
          }
       }
 
-      return var2;
+      return count;
    }
 
-   private static boolean anyMatch(List<String> var0, Predicate<String> var1) {
-      for(String var3 : var0) {
-         if (var1.test(var3)) {
+   private static boolean anyMatch(final List<String> criteria, final Predicate<String> predicate) {
+      for(String criterion : criteria) {
+         if (predicate.test(criterion)) {
             return true;
          }
       }
@@ -75,23 +74,23 @@ public record AdvancementRequirements(List<List<String>> requirements) {
       return false;
    }
 
-   public DataResult<AdvancementRequirements> validate(Set<String> var1) {
-      ObjectOpenHashSet var2 = new ObjectOpenHashSet();
+   public DataResult<AdvancementRequirements> validate(final Set<String> expectedCriteria) {
+      Set<String> referencedCriteria = new ObjectOpenHashSet();
 
-      for(List var4 : this.requirements) {
-         if (var4.isEmpty() && var1.isEmpty()) {
+      for(List<String> set : this.requirements) {
+         if (set.isEmpty() && expectedCriteria.isEmpty()) {
             return DataResult.error(() -> "Requirement entry cannot be empty");
          }
 
-         var2.addAll(var4);
+         referencedCriteria.addAll(set);
       }
 
-      if (!var1.equals(var2)) {
-         Sets.SetView var5 = Sets.difference(var1, var2);
-         Sets.SetView var6 = Sets.difference(var2, var1);
+      if (!expectedCriteria.equals(referencedCriteria)) {
+         Set<String> missingCriteria = Sets.difference(expectedCriteria, referencedCriteria);
+         Set<String> unknownCriteria = Sets.difference(referencedCriteria, expectedCriteria);
          return DataResult.error(() -> {
-            String var10000 = String.valueOf(var5);
-            return "Advancement completion requirements did not exactly match specified criteria. Missing: " + var10000 + ". Unknown: " + String.valueOf(var6);
+            String var10000 = String.valueOf(missingCriteria);
+            return "Advancement completion requirements did not exactly match specified criteria. Missing: " + var10000 + ". Unknown: " + String.valueOf(unknownCriteria);
          });
       } else {
          return DataResult.success(this);
@@ -107,13 +106,13 @@ public record AdvancementRequirements(List<List<String>> requirements) {
    }
 
    public Set<String> names() {
-      ObjectOpenHashSet var1 = new ObjectOpenHashSet();
+      Set<String> names = new ObjectOpenHashSet();
 
-      for(List var3 : this.requirements) {
-         var1.addAll(var3);
+      for(List<String> set : this.requirements) {
+         names.addAll(set);
       }
 
-      return var1;
+      return names;
    }
 
    static {
@@ -125,6 +124,6 @@ public record AdvancementRequirements(List<List<String>> requirements) {
       Strategy AND = AdvancementRequirements::allOf;
       Strategy OR = AdvancementRequirements::anyOf;
 
-      AdvancementRequirements create(Collection<String> var1);
+      AdvancementRequirements create(Collection<String> criteria);
    }
 }

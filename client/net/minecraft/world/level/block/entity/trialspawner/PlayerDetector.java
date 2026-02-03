@@ -22,49 +22,49 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public interface PlayerDetector {
-   PlayerDetector NO_CREATIVE_PLAYERS = (var0, var1, var2, var3, var5) -> var1.getPlayers(var0, (var3x) -> var3x.blockPosition().closerThan(var2, var3) && !var3x.isCreative() && !var3x.isSpectator()).stream().filter((var3x) -> !var5 || inLineOfSight(var0, var2.getCenter(), var3x.getEyePosition())).map(Entity::getUUID).toList();
-   PlayerDetector INCLUDING_CREATIVE_PLAYERS = (var0, var1, var2, var3, var5) -> var1.getPlayers(var0, (var3x) -> var3x.blockPosition().closerThan(var2, var3) && !var3x.isSpectator()).stream().filter((var3x) -> !var5 || inLineOfSight(var0, var2.getCenter(), var3x.getEyePosition())).map(Entity::getUUID).toList();
-   PlayerDetector SHEEP = (var0, var1, var2, var3, var5) -> {
-      AABB var6 = (new AABB(var2)).inflate(var3);
-      return var1.getEntities(var0, EntityType.SHEEP, var6, LivingEntity::isAlive).stream().filter((var3x) -> !var5 || inLineOfSight(var0, var2.getCenter(), var3x.getEyePosition())).map(Entity::getUUID).toList();
+   PlayerDetector NO_CREATIVE_PLAYERS = (level, selector, pos, requiredPlayerRange, requireLineOfSight) -> selector.getPlayers(level, (p) -> p.blockPosition().closerThan(pos, requiredPlayerRange) && !p.isCreative() && !p.isSpectator()).stream().filter((player) -> !requireLineOfSight || inLineOfSight(level, pos.getCenter(), player.getEyePosition())).map(Entity::getUUID).toList();
+   PlayerDetector INCLUDING_CREATIVE_PLAYERS = (level, selector, pos, requiredPlayerRange, requireLineOfSight) -> selector.getPlayers(level, (p) -> p.blockPosition().closerThan(pos, requiredPlayerRange) && !p.isSpectator()).stream().filter((player) -> !requireLineOfSight || inLineOfSight(level, pos.getCenter(), player.getEyePosition())).map(Entity::getUUID).toList();
+   PlayerDetector SHEEP = (level, selector, pos, requiredPlayerRange, requireLineOfSight) -> {
+      AABB area = (new AABB(pos)).inflate(requiredPlayerRange);
+      return selector.getEntities(level, EntityType.SHEEP, area, LivingEntity::isAlive).stream().filter((entity) -> !requireLineOfSight || inLineOfSight(level, pos.getCenter(), entity.getEyePosition())).map(Entity::getUUID).toList();
    };
 
-   List<UUID> detect(ServerLevel var1, EntitySelector var2, BlockPos var3, double var4, boolean var6);
+   List<UUID> detect(final ServerLevel level, final EntitySelector selector, final BlockPos spawnerPos, final double requiredPlayerRange, final boolean requireLineOfSight);
 
-   private static boolean inLineOfSight(Level var0, Vec3 var1, Vec3 var2) {
-      BlockHitResult var3 = var0.clip(new ClipContext(var2, var1, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty()));
-      return var3.getBlockPos().equals(BlockPos.containing(var1)) || var3.getType() == HitResult.Type.MISS;
+   private static boolean inLineOfSight(final Level level, final Vec3 origin, final Vec3 dest) {
+      BlockHitResult hitResult = level.clip(new ClipContext(dest, origin, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty()));
+      return hitResult.getBlockPos().equals(BlockPos.containing(origin)) || hitResult.getType() == HitResult.Type.MISS;
    }
 
    public interface EntitySelector {
       EntitySelector SELECT_FROM_LEVEL = new EntitySelector() {
-         public List<ServerPlayer> getPlayers(ServerLevel var1, Predicate<? super Player> var2) {
-            return var1.getPlayers(var2);
+         public List<ServerPlayer> getPlayers(final ServerLevel level, final Predicate<? super Player> selector) {
+            return level.getPlayers(selector);
          }
 
-         public <T extends Entity> List<T> getEntities(ServerLevel var1, EntityTypeTest<Entity, T> var2, AABB var3, Predicate<? super T> var4) {
-            return var1.getEntities(var2, var3, var4);
+         public <T extends Entity> List<T> getEntities(final ServerLevel level, final EntityTypeTest<Entity, T> type, final AABB aabb, final Predicate<? super T> selector) {
+            return level.getEntities(type, aabb, selector);
          }
       };
 
-      List<? extends Player> getPlayers(ServerLevel var1, Predicate<? super Player> var2);
+      List<? extends Player> getPlayers(final ServerLevel level, final Predicate<? super Player> selector);
 
-      <T extends Entity> List<T> getEntities(ServerLevel var1, EntityTypeTest<Entity, T> var2, AABB var3, Predicate<? super T> var4);
+      <T extends Entity> List<T> getEntities(final ServerLevel level, final EntityTypeTest<Entity, T> type, final AABB bb, final Predicate<? super T> selector);
 
-      static EntitySelector onlySelectPlayer(Player var0) {
-         return onlySelectPlayers(List.of(var0));
+      static EntitySelector onlySelectPlayer(final Player player) {
+         return onlySelectPlayers(List.of(player));
       }
 
-      static EntitySelector onlySelectPlayers(final List<Player> var0) {
+      static EntitySelector onlySelectPlayers(final List<Player> players) {
          return new EntitySelector() {
-            public List<Player> getPlayers(ServerLevel var1, Predicate<? super Player> var2) {
-               return var0.stream().filter(var2).toList();
+            public List<Player> getPlayers(final ServerLevel level, final Predicate<? super Player> selector) {
+               return players.stream().filter(selector).toList();
             }
 
-            public <T extends Entity> List<T> getEntities(ServerLevel var1, EntityTypeTest<Entity, T> var2, AABB var3, Predicate<? super T> var4) {
-               Stream var10000 = var0.stream();
-               Objects.requireNonNull(var2);
-               return var10000.map(var2::tryCast).filter(Objects::nonNull).filter(var4).toList();
+            public <T extends Entity> List<T> getEntities(final ServerLevel level, final EntityTypeTest<Entity, T> type, final AABB bb, final Predicate<? super T> selector) {
+               Stream var10000 = players.stream();
+               Objects.requireNonNull(type);
+               return var10000.map(type::tryCast).filter(Objects::nonNull).filter(selector).toList();
             }
          };
       }

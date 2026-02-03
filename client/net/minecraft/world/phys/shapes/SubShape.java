@@ -12,36 +12,36 @@ public final class SubShape extends DiscreteVoxelShape {
    private final int endY;
    private final int endZ;
 
-   protected SubShape(DiscreteVoxelShape var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-      super(var5 - var2, var6 - var3, var7 - var4);
-      this.parent = var1;
-      this.startX = var2;
-      this.startY = var3;
-      this.startZ = var4;
-      this.endX = var5;
-      this.endY = var6;
-      this.endZ = var7;
+   protected SubShape(final DiscreteVoxelShape parent, final int startX, final int startY, final int startZ, final int endX, final int endY, final int endZ) {
+      super(endX - startX, endY - startY, endZ - startZ);
+      this.parent = parent;
+      this.startX = startX;
+      this.startY = startY;
+      this.startZ = startZ;
+      this.endX = endX;
+      this.endY = endY;
+      this.endZ = endZ;
    }
 
-   public boolean isFull(int var1, int var2, int var3) {
-      return this.parent.isFull(this.startX + var1, this.startY + var2, this.startZ + var3);
+   public boolean isFull(final int x, final int y, final int z) {
+      return this.parent.isFull(this.startX + x, this.startY + y, this.startZ + z);
    }
 
-   public void fill(int var1, int var2, int var3) {
-      this.parent.fill(this.startX + var1, this.startY + var2, this.startZ + var3);
+   public void fill(final int x, final int y, final int z) {
+      this.parent.fill(this.startX + x, this.startY + y, this.startZ + z);
    }
 
-   public int firstFull(Direction.Axis var1) {
-      return this.clampToShape(var1, this.parent.firstFull(var1));
+   public int firstFull(final Direction.Axis axis) {
+      return this.clampToShape(axis, this.parent.firstFull(axis));
    }
 
-   public int lastFull(Direction.Axis var1) {
-      return this.clampToShape(var1, this.parent.lastFull(var1));
+   public int lastFull(final Direction.Axis axis) {
+      return this.clampToShape(axis, this.parent.lastFull(axis));
    }
 
-   private int clampToShape(Direction.Axis var1, int var2) {
-      int var3 = var1.choose(this.startX, this.startY, this.startZ);
-      int var4 = var1.choose(this.endX, this.endY, this.endZ);
-      return Mth.clamp(var2, var3, var4) - var3;
+   private int clampToShape(final Direction.Axis axis, final int parentResult) {
+      int start = axis.choose(this.startX, this.startY, this.startZ);
+      int end = axis.choose(this.endX, this.endY, this.endZ);
+      return Mth.clamp(parentResult, start, end) - start;
    }
 }

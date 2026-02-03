@@ -14,42 +14,37 @@ public class DragonFlightHistory {
       Arrays.fill(this.samples, new Sample(0.0, 0.0F));
    }
 
-   public void copyFrom(DragonFlightHistory var1) {
-      System.arraycopy(var1.samples, 0, this.samples, 0, 64);
-      this.head = var1.head;
+   public void copyFrom(final DragonFlightHistory history) {
+      System.arraycopy(history.samples, 0, this.samples, 0, 64);
+      this.head = history.head;
    }
 
-   public void record(double var1, float var3) {
-      Sample var4 = new Sample(var1, var3);
+   public void record(final double y, final float yRot) {
+      Sample sample = new Sample(y, yRot);
       if (this.head < 0) {
-         Arrays.fill(this.samples, var4);
+         Arrays.fill(this.samples, sample);
       }
 
       if (++this.head == 64) {
          this.head = 0;
       }
 
-      this.samples[this.head] = var4;
+      this.samples[this.head] = sample;
    }
 
-   public Sample get(int var1) {
-      return this.samples[this.head - var1 & 63];
+   public Sample get(final int delay) {
+      return this.samples[this.head - delay & 63];
    }
 
-   public Sample get(int var1, float var2) {
-      Sample var3 = this.get(var1);
-      Sample var4 = this.get(var1 + 1);
-      return new Sample(Mth.lerp((double)var2, var4.y, var3.y), Mth.rotLerp(var2, var4.yRot, var3.yRot));
+   public Sample get(final int delay, final float partialTicks) {
+      Sample sample = this.get(delay);
+      Sample sampleOld = this.get(delay + 1);
+      return new Sample(Mth.lerp((double)partialTicks, sampleOld.y, sample.y), Mth.rotLerp(partialTicks, sampleOld.yRot, sample.yRot));
    }
 
    public static record Sample(double y, float yRot) {
-      final double y;
-      final float yRot;
-
-      public Sample(double var1, float var3) {
+      public Sample {
          super();
-         this.y = var1;
-         this.yRot = var3;
       }
    }
 }

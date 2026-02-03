@@ -17,8 +17,8 @@ public record MainHand() implements SelectItemModelProperty<HumanoidArm> {
       super();
    }
 
-   public @Nullable HumanoidArm get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      return var3 == null ? null : var3.getMainArm();
+   public @Nullable HumanoidArm get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      return owner == null ? null : owner.getMainArm();
    }
 
    public SelectItemModelProperty.Type<MainHand, HumanoidArm> type() {
@@ -27,11 +27,6 @@ public record MainHand() implements SelectItemModelProperty<HumanoidArm> {
 
    public Codec<HumanoidArm> valueCodec() {
       return VALUE_CODEC;
-   }
-
-   // $FF: synthetic method
-   public @Nullable Object get(final ItemStack var1, final @Nullable ClientLevel var2, final @Nullable LivingEntity var3, final int var4, final ItemDisplayContext var5) {
-      return this.get(var1, var2, var3, var4, var5);
    }
 
    static {

@@ -9,7 +9,7 @@ public class LocalFrameEncoder extends ChannelOutboundHandlerAdapter {
       super();
    }
 
-   public void write(ChannelHandlerContext var1, Object var2, ChannelPromise var3) {
-      var1.write(HiddenByteBuf.pack(var2), var3);
+   public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) {
+      ctx.write(HiddenByteBuf.pack(msg), promise);
    }
 }

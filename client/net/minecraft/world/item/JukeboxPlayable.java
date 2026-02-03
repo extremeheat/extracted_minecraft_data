@@ -4,10 +4,9 @@ import com.mojang.serialization.Codec;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -25,43 +24,35 @@ import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-public record JukeboxPlayable(EitherHolder<JukeboxSong> song) implements TooltipProvider {
+public record JukeboxPlayable(Holder<JukeboxSong> song) implements TooltipProvider {
    public static final Codec<JukeboxPlayable> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, JukeboxPlayable> STREAM_CODEC;
 
-   public JukeboxPlayable(EitherHolder<JukeboxSong> var1) {
+   public JukeboxPlayable {
       super();
-      this.song = var1;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      HolderLookup.Provider var5 = var1.registries();
-      if (var5 != null) {
-         this.song.unwrap(var5).ifPresent((var1x) -> {
-            Component var2x = ComponentUtils.mergeStyles(((JukeboxSong)var1x.value()).description(), Style.EMPTY.withColor(ChatFormatting.GRAY));
-            var2.accept(var2x);
-         });
-      }
-
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      consumer.accept(ComponentUtils.mergeStyles(((JukeboxSong)this.song.value()).description(), Style.EMPTY.withColor(ChatFormatting.GRAY)));
    }
 
-   public static InteractionResult tryInsertIntoJukebox(Level var0, BlockPos var1, ItemStack var2, Player var3) {
-      JukeboxPlayable var4 = (JukeboxPlayable)var2.get(DataComponents.JUKEBOX_PLAYABLE);
-      if (var4 == null) {
+   public static InteractionResult tryInsertIntoJukebox(final Level level, final BlockPos pos, final ItemStack toInsert, final Player player) {
+      JukeboxPlayable jukeboxPlayable = (JukeboxPlayable)toInsert.get(DataComponents.JUKEBOX_PLAYABLE);
+      if (jukeboxPlayable == null) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
-         BlockState var5 = var0.getBlockState(var1);
-         if (var5.is(Blocks.JUKEBOX) && !(Boolean)var5.getValue(JukeboxBlock.HAS_RECORD)) {
-            if (!var0.isClientSide()) {
-               ItemStack var6 = var2.consumeAndReturn(1, var3);
-               BlockEntity var8 = var0.getBlockEntity(var1);
+         BlockState state = level.getBlockState(pos);
+         if (state.is(Blocks.JUKEBOX) && !(Boolean)state.getValue(JukeboxBlock.HAS_RECORD)) {
+            if (!level.isClientSide()) {
+               ItemStack inserted = toInsert.consumeAndReturn(1, player);
+               BlockEntity var8 = level.getBlockEntity(pos);
                if (var8 instanceof JukeboxBlockEntity) {
-                  JukeboxBlockEntity var7 = (JukeboxBlockEntity)var8;
-                  var7.setTheItem(var6);
-                  var0.gameEvent(GameEvent.BLOCK_CHANGE, var1, GameEvent.Context.of(var3, var5));
+                  JukeboxBlockEntity jukebox = (JukeboxBlockEntity)var8;
+                  jukebox.setTheItem(inserted);
+                  level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, state));
                }
 
-               var3.awardStat(Stats.PLAY_RECORD);
+               player.awardStat(Stats.PLAY_RECORD);
             }
 
             return InteractionResult.SUCCESS;
@@ -72,7 +63,7 @@ public record JukeboxPlayable(EitherHolder<JukeboxSong> song) implements Tooltip
    }
 
    static {
-      CODEC = EitherHolder.codec(Registries.JUKEBOX_SONG, JukeboxSong.CODEC).xmap(JukeboxPlayable::new, JukeboxPlayable::song);
-      STREAM_CODEC = StreamCodec.composite(EitherHolder.streamCodec(Registries.JUKEBOX_SONG, JukeboxSong.STREAM_CODEC), JukeboxPlayable::song, JukeboxPlayable::new);
+      CODEC = JukeboxSong.CODEC.xmap(JukeboxPlayable::new, JukeboxPlayable::song);
+      STREAM_CODEC = StreamCodec.composite(JukeboxSong.STREAM_CODEC, JukeboxPlayable::song, JukeboxPlayable::new);
    }
 }

@@ -5,10 +5,10 @@ public class TickThrottler {
    private final int threshold;
    private int count;
 
-   public TickThrottler(int var1, int var2) {
+   public TickThrottler(final int incrementStep, final int threshold) {
       super();
-      this.incrementStep = var1;
-      this.threshold = var2;
+      this.incrementStep = incrementStep;
+      this.threshold = threshold;
    }
 
    public void increment() {

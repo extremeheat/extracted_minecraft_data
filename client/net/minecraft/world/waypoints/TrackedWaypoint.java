@@ -20,64 +20,64 @@ import org.apache.commons.lang3.function.TriFunction;
 import org.slf4j.Logger;
 
 public abstract class TrackedWaypoint implements Waypoint {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final StreamCodec<ByteBuf, TrackedWaypoint> STREAM_CODEC = StreamCodec.<ByteBuf, TrackedWaypoint>ofMember(TrackedWaypoint::write, TrackedWaypoint::read);
    protected final Either<UUID, String> identifier;
    private final Waypoint.Icon icon;
    private final Type type;
 
-   TrackedWaypoint(Either<UUID, String> var1, Waypoint.Icon var2, Type var3) {
+   private TrackedWaypoint(final Either<UUID, String> identifier, final Waypoint.Icon icon, final Type type) {
       super();
-      this.identifier = var1;
-      this.icon = var2;
-      this.type = var3;
+      this.identifier = identifier;
+      this.icon = icon;
+      this.type = type;
    }
 
    public Either<UUID, String> id() {
       return this.identifier;
    }
 
-   public abstract void update(TrackedWaypoint var1);
+   public abstract void update(final TrackedWaypoint other);
 
-   public void write(ByteBuf var1) {
-      FriendlyByteBuf var2 = new FriendlyByteBuf(var1);
-      var2.writeEither(this.identifier, UUIDUtil.STREAM_CODEC, FriendlyByteBuf::writeUtf);
-      Waypoint.Icon.STREAM_CODEC.encode(var2, this.icon);
-      var2.writeEnum(this.type);
-      this.writeContents(var1);
+   public void write(final ByteBuf buf) {
+      FriendlyByteBuf byteBuf = new FriendlyByteBuf(buf);
+      byteBuf.writeEither(this.identifier, UUIDUtil.STREAM_CODEC, FriendlyByteBuf::writeUtf);
+      Waypoint.Icon.STREAM_CODEC.encode(byteBuf, this.icon);
+      byteBuf.writeEnum(this.type);
+      this.writeContents(buf);
    }
 
-   public abstract void writeContents(ByteBuf var1);
+   public abstract void writeContents(final ByteBuf buf);
 
-   private static TrackedWaypoint read(ByteBuf var0) {
-      FriendlyByteBuf var1 = new FriendlyByteBuf(var0);
-      Either var2 = var1.readEither(UUIDUtil.STREAM_CODEC, FriendlyByteBuf::readUtf);
-      Waypoint.Icon var3 = (Waypoint.Icon)Waypoint.Icon.STREAM_CODEC.decode(var1);
-      Type var4 = (Type)var1.readEnum(Type.class);
-      return (TrackedWaypoint)var4.constructor.apply(var2, var3, var1);
+   private static TrackedWaypoint read(final ByteBuf buf) {
+      FriendlyByteBuf byteBuf = new FriendlyByteBuf(buf);
+      Either<UUID, String> identifier = byteBuf.<UUID, String>readEither(UUIDUtil.STREAM_CODEC, FriendlyByteBuf::readUtf);
+      Waypoint.Icon icon = (Waypoint.Icon)Waypoint.Icon.STREAM_CODEC.decode(byteBuf);
+      Type type = (Type)byteBuf.readEnum(Type.class);
+      return (TrackedWaypoint)type.constructor.apply(identifier, icon, byteBuf);
    }
 
-   public static TrackedWaypoint setPosition(UUID var0, Waypoint.Icon var1, Vec3i var2) {
-      return new Vec3iWaypoint(var0, var1, var2);
+   public static TrackedWaypoint setPosition(final UUID identifier, final Waypoint.Icon icon, final Vec3i position) {
+      return new Vec3iWaypoint(identifier, icon, position);
    }
 
-   public static TrackedWaypoint setChunk(UUID var0, Waypoint.Icon var1, ChunkPos var2) {
-      return new ChunkWaypoint(var0, var1, var2);
+   public static TrackedWaypoint setChunk(final UUID identifier, final Waypoint.Icon icon, final ChunkPos chunk) {
+      return new ChunkWaypoint(identifier, icon, chunk);
    }
 
-   public static TrackedWaypoint setAzimuth(UUID var0, Waypoint.Icon var1, float var2) {
-      return new AzimuthWaypoint(var0, var1, var2);
+   public static TrackedWaypoint setAzimuth(final UUID identifier, final Waypoint.Icon icon, final float angle) {
+      return new AzimuthWaypoint(identifier, icon, angle);
    }
 
-   public static TrackedWaypoint empty(UUID var0) {
-      return new EmptyWaypoint(var0);
+   public static TrackedWaypoint empty(final UUID identifier) {
+      return new EmptyWaypoint(identifier);
    }
 
-   public abstract double yawAngleToCamera(Level var1, Camera var2, PartialTickSupplier var3);
+   public abstract double yawAngleToCamera(final Level level, final Camera camera, final PartialTickSupplier partialTickSupplier);
 
-   public abstract PitchDirection pitchDirectionToCamera(Level var1, Projector var2, PartialTickSupplier var3);
+   public abstract PitchDirection pitchDirectionToCamera(Level level, Projector projector, final PartialTickSupplier partialTickSupplier);
 
-   public abstract double distanceSquared(Entity var1);
+   public abstract double distanceSquared(final Entity fromEntity);
 
    public Waypoint.Icon icon() {
       return this.icon;
@@ -97,16 +97,16 @@ public abstract class TrackedWaypoint implements Waypoint {
       }
    }
 
-   static enum Type {
+   private static enum Type {
       EMPTY(EmptyWaypoint::new),
       VEC3I(Vec3iWaypoint::new),
       CHUNK(ChunkWaypoint::new),
       AZIMUTH(AzimuthWaypoint::new);
 
-      final TriFunction<Either<UUID, String>, Waypoint.Icon, FriendlyByteBuf, TrackedWaypoint> constructor;
+      private final TriFunction<Either<UUID, String>, Waypoint.Icon, FriendlyByteBuf, TrackedWaypoint> constructor;
 
-      private Type(final TriFunction<Either<UUID, String>, Waypoint.Icon, FriendlyByteBuf, TrackedWaypoint> var3) {
-         this.constructor = var3;
+      private Type(final TriFunction<Either<UUID, String>, Waypoint.Icon, FriendlyByteBuf, TrackedWaypoint> constructor) {
+         this.constructor = constructor;
       }
 
       // $FF: synthetic method
@@ -115,89 +115,89 @@ public abstract class TrackedWaypoint implements Waypoint {
       }
    }
 
-   static class EmptyWaypoint extends TrackedWaypoint {
-      private EmptyWaypoint(Either<UUID, String> var1, Waypoint.Icon var2, FriendlyByteBuf var3) {
-         super(var1, var2, TrackedWaypoint.Type.EMPTY);
+   private static class EmptyWaypoint extends TrackedWaypoint {
+      private EmptyWaypoint(final Either<UUID, String> identifier, final Waypoint.Icon icon, final FriendlyByteBuf byteBuf) {
+         super(identifier, icon, TrackedWaypoint.Type.EMPTY);
       }
 
-      EmptyWaypoint(UUID var1) {
-         super(Either.left(var1), Waypoint.Icon.NULL, TrackedWaypoint.Type.EMPTY);
+      private EmptyWaypoint(final UUID identifier) {
+         super(Either.left(identifier), Waypoint.Icon.NULL, TrackedWaypoint.Type.EMPTY);
       }
 
-      public void update(TrackedWaypoint var1) {
+      public void update(final TrackedWaypoint other) {
       }
 
-      public void writeContents(ByteBuf var1) {
+      public void writeContents(final ByteBuf buf) {
       }
 
-      public double yawAngleToCamera(Level var1, Camera var2, PartialTickSupplier var3) {
+      public double yawAngleToCamera(final Level level, final Camera camera, final PartialTickSupplier partialTickSupplier) {
          return 0.0 / 0.0;
       }
 
-      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2, PartialTickSupplier var3) {
+      public PitchDirection pitchDirectionToCamera(final Level level, final Projector projector, final PartialTickSupplier partialTickSupplier) {
          return TrackedWaypoint.PitchDirection.NONE;
       }
 
-      public double distanceSquared(Entity var1) {
+      public double distanceSquared(final Entity fromEntity) {
          return 1.0 / 0.0;
       }
    }
 
-   static class Vec3iWaypoint extends TrackedWaypoint {
+   private static class Vec3iWaypoint extends TrackedWaypoint {
       private Vec3i vector;
 
-      public Vec3iWaypoint(UUID var1, Waypoint.Icon var2, Vec3i var3) {
-         super(Either.left(var1), var2, TrackedWaypoint.Type.VEC3I);
-         this.vector = var3;
+      public Vec3iWaypoint(final UUID identifier, final Waypoint.Icon icon, final Vec3i vector) {
+         super(Either.left(identifier), icon, TrackedWaypoint.Type.VEC3I);
+         this.vector = vector;
       }
 
-      public Vec3iWaypoint(Either<UUID, String> var1, Waypoint.Icon var2, FriendlyByteBuf var3) {
-         super(var1, var2, TrackedWaypoint.Type.VEC3I);
-         this.vector = new Vec3i(var3.readVarInt(), var3.readVarInt(), var3.readVarInt());
+      public Vec3iWaypoint(final Either<UUID, String> identifier, final Waypoint.Icon icon, final FriendlyByteBuf byteBuf) {
+         super(identifier, icon, TrackedWaypoint.Type.VEC3I);
+         this.vector = new Vec3i(byteBuf.readVarInt(), byteBuf.readVarInt(), byteBuf.readVarInt());
       }
 
-      public void update(TrackedWaypoint var1) {
-         if (var1 instanceof Vec3iWaypoint var2) {
-            this.vector = var2.vector;
+      public void update(final TrackedWaypoint other) {
+         if (other instanceof Vec3iWaypoint vec3iWaypoint) {
+            this.vector = vec3iWaypoint.vector;
          } else {
-            TrackedWaypoint.LOGGER.warn("Unsupported Waypoint update operation: {}", var1.getClass());
+            TrackedWaypoint.LOGGER.warn("Unsupported Waypoint update operation: {}", other.getClass());
          }
 
       }
 
-      public void writeContents(ByteBuf var1) {
-         VarInt.write(var1, this.vector.getX());
-         VarInt.write(var1, this.vector.getY());
-         VarInt.write(var1, this.vector.getZ());
+      public void writeContents(final ByteBuf buf) {
+         VarInt.write(buf, this.vector.getX());
+         VarInt.write(buf, this.vector.getY());
+         VarInt.write(buf, this.vector.getZ());
       }
 
-      private Vec3 position(Level var1, PartialTickSupplier var2) {
+      private Vec3 position(final Level level, final PartialTickSupplier partialTick) {
          Optional var10000 = this.identifier.left();
-         Objects.requireNonNull(var1);
-         return (Vec3)var10000.map(var1::getEntity).map((var2x) -> var2x.blockPosition().distManhattan(this.vector) > 3 ? null : var2x.getEyePosition(var2.apply(var2x))).orElseGet(() -> Vec3.atCenterOf(this.vector));
+         Objects.requireNonNull(level);
+         return (Vec3)var10000.map(level::getEntity).map((e) -> e.blockPosition().distManhattan(this.vector) > 3 ? null : e.getEyePosition(partialTick.apply(e))).orElseGet(() -> Vec3.atCenterOf(this.vector));
       }
 
-      public double yawAngleToCamera(Level var1, Camera var2, PartialTickSupplier var3) {
-         Vec3 var4 = var2.position().subtract(this.position(var1, var3)).rotateClockwise90();
-         float var5 = (float)Mth.atan2(var4.z(), var4.x()) * 57.295776F;
-         return (double)Mth.degreesDifference(var2.yaw(), var5);
+      public double yawAngleToCamera(final Level level, final Camera camera, final PartialTickSupplier partialTickSupplier) {
+         Vec3 direction = camera.position().subtract(this.position(level, partialTickSupplier)).rotateClockwise90();
+         float waypointAngle = (float)Mth.atan2(direction.z(), direction.x()) * 57.295776F;
+         return (double)Mth.degreesDifference(camera.yaw(), waypointAngle);
       }
 
-      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2, PartialTickSupplier var3) {
-         Vec3 var4 = var2.projectPointToScreen(this.position(var1, var3));
-         boolean var5 = var4.z > 1.0;
-         double var6 = var5 ? -var4.y : var4.y;
-         if (var6 < -1.0) {
+      public PitchDirection pitchDirectionToCamera(final Level level, final Projector projector, final PartialTickSupplier partialTickSupplier) {
+         Vec3 pointOnScreen = projector.projectPointToScreen(this.position(level, partialTickSupplier));
+         boolean isBehindCamera = pointOnScreen.z > 1.0;
+         double yInFrontOfCamera = isBehindCamera ? -pointOnScreen.y : pointOnScreen.y;
+         if (yInFrontOfCamera < -1.0) {
             return TrackedWaypoint.PitchDirection.DOWN;
-         } else if (var6 > 1.0) {
+         } else if (yInFrontOfCamera > 1.0) {
             return TrackedWaypoint.PitchDirection.UP;
          } else {
-            if (var5) {
-               if (var4.y > 0.0) {
+            if (isBehindCamera) {
+               if (pointOnScreen.y > 0.0) {
                   return TrackedWaypoint.PitchDirection.UP;
                }
 
-               if (var4.y < 0.0) {
+               if (pointOnScreen.y < 0.0) {
                   return TrackedWaypoint.PitchDirection.DOWN;
                }
             }
@@ -206,103 +206,103 @@ public abstract class TrackedWaypoint implements Waypoint {
          }
       }
 
-      public double distanceSquared(Entity var1) {
-         return var1.distanceToSqr(Vec3.atCenterOf(this.vector));
+      public double distanceSquared(final Entity fromEntity) {
+         return fromEntity.distanceToSqr(Vec3.atCenterOf(this.vector));
       }
    }
 
-   static class ChunkWaypoint extends TrackedWaypoint {
+   private static class ChunkWaypoint extends TrackedWaypoint {
       private ChunkPos chunkPos;
 
-      public ChunkWaypoint(UUID var1, Waypoint.Icon var2, ChunkPos var3) {
-         super(Either.left(var1), var2, TrackedWaypoint.Type.CHUNK);
-         this.chunkPos = var3;
+      public ChunkWaypoint(final UUID identifier, final Waypoint.Icon icon, final ChunkPos chunkPos) {
+         super(Either.left(identifier), icon, TrackedWaypoint.Type.CHUNK);
+         this.chunkPos = chunkPos;
       }
 
-      public ChunkWaypoint(Either<UUID, String> var1, Waypoint.Icon var2, FriendlyByteBuf var3) {
-         super(var1, var2, TrackedWaypoint.Type.CHUNK);
-         this.chunkPos = new ChunkPos(var3.readVarInt(), var3.readVarInt());
+      public ChunkWaypoint(final Either<UUID, String> identifier, final Waypoint.Icon icon, final FriendlyByteBuf byteBuf) {
+         super(identifier, icon, TrackedWaypoint.Type.CHUNK);
+         this.chunkPos = new ChunkPos(byteBuf.readVarInt(), byteBuf.readVarInt());
       }
 
-      public void update(TrackedWaypoint var1) {
-         if (var1 instanceof ChunkWaypoint var2) {
-            this.chunkPos = var2.chunkPos;
+      public void update(final TrackedWaypoint other) {
+         if (other instanceof ChunkWaypoint chunkWaypoint) {
+            this.chunkPos = chunkWaypoint.chunkPos;
          } else {
-            TrackedWaypoint.LOGGER.warn("Unsupported Waypoint update operation: {}", var1.getClass());
+            TrackedWaypoint.LOGGER.warn("Unsupported Waypoint update operation: {}", other.getClass());
          }
 
       }
 
-      public void writeContents(ByteBuf var1) {
-         VarInt.write(var1, this.chunkPos.x);
-         VarInt.write(var1, this.chunkPos.z);
+      public void writeContents(final ByteBuf buf) {
+         VarInt.write(buf, this.chunkPos.x());
+         VarInt.write(buf, this.chunkPos.z());
       }
 
-      private Vec3 position(double var1) {
-         return Vec3.atCenterOf(this.chunkPos.getMiddleBlockPosition((int)var1));
+      private Vec3 position(final double positionY) {
+         return Vec3.atCenterOf(this.chunkPos.getMiddleBlockPosition((int)positionY));
       }
 
-      public double yawAngleToCamera(Level var1, Camera var2, PartialTickSupplier var3) {
-         Vec3 var4 = var2.position();
-         Vec3 var5 = var4.subtract(this.position(var4.y())).rotateClockwise90();
-         float var6 = (float)Mth.atan2(var5.z(), var5.x()) * 57.295776F;
-         return (double)Mth.degreesDifference(var2.yaw(), var6);
+      public double yawAngleToCamera(final Level level, final Camera camera, final PartialTickSupplier partialTickSupplier) {
+         Vec3 cameraPosition = camera.position();
+         Vec3 direction = cameraPosition.subtract(this.position(cameraPosition.y())).rotateClockwise90();
+         float waypointAngle = (float)Mth.atan2(direction.z(), direction.x()) * 57.295776F;
+         return (double)Mth.degreesDifference(camera.yaw(), waypointAngle);
       }
 
-      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2, PartialTickSupplier var3) {
-         double var4 = var2.projectHorizonToScreen();
-         if (var4 < -1.0) {
+      public PitchDirection pitchDirectionToCamera(final Level level, final Projector projector, final PartialTickSupplier partialTickSupplier) {
+         double onScreenHorizon = projector.projectHorizonToScreen();
+         if (onScreenHorizon < -1.0) {
             return TrackedWaypoint.PitchDirection.DOWN;
          } else {
-            return var4 > 1.0 ? TrackedWaypoint.PitchDirection.UP : TrackedWaypoint.PitchDirection.NONE;
+            return onScreenHorizon > 1.0 ? TrackedWaypoint.PitchDirection.UP : TrackedWaypoint.PitchDirection.NONE;
          }
       }
 
-      public double distanceSquared(Entity var1) {
-         return var1.distanceToSqr(Vec3.atCenterOf(this.chunkPos.getMiddleBlockPosition(var1.getBlockY())));
+      public double distanceSquared(final Entity fromEntity) {
+         return fromEntity.distanceToSqr(Vec3.atCenterOf(this.chunkPos.getMiddleBlockPosition(fromEntity.getBlockY())));
       }
    }
 
-   static class AzimuthWaypoint extends TrackedWaypoint {
+   private static class AzimuthWaypoint extends TrackedWaypoint {
       private float angle;
 
-      public AzimuthWaypoint(UUID var1, Waypoint.Icon var2, float var3) {
-         super(Either.left(var1), var2, TrackedWaypoint.Type.AZIMUTH);
-         this.angle = var3;
+      public AzimuthWaypoint(final UUID identifier, final Waypoint.Icon icon, final float angle) {
+         super(Either.left(identifier), icon, TrackedWaypoint.Type.AZIMUTH);
+         this.angle = angle;
       }
 
-      public AzimuthWaypoint(Either<UUID, String> var1, Waypoint.Icon var2, FriendlyByteBuf var3) {
-         super(var1, var2, TrackedWaypoint.Type.AZIMUTH);
-         this.angle = var3.readFloat();
+      public AzimuthWaypoint(final Either<UUID, String> identifier, final Waypoint.Icon icon, final FriendlyByteBuf byteBuf) {
+         super(identifier, icon, TrackedWaypoint.Type.AZIMUTH);
+         this.angle = byteBuf.readFloat();
       }
 
-      public void update(TrackedWaypoint var1) {
-         if (var1 instanceof AzimuthWaypoint var2) {
-            this.angle = var2.angle;
+      public void update(final TrackedWaypoint other) {
+         if (other instanceof AzimuthWaypoint azimuthWaypoint) {
+            this.angle = azimuthWaypoint.angle;
          } else {
-            TrackedWaypoint.LOGGER.warn("Unsupported Waypoint update operation: {}", var1.getClass());
+            TrackedWaypoint.LOGGER.warn("Unsupported Waypoint update operation: {}", other.getClass());
          }
 
       }
 
-      public void writeContents(ByteBuf var1) {
-         var1.writeFloat(this.angle);
+      public void writeContents(final ByteBuf buf) {
+         buf.writeFloat(this.angle);
       }
 
-      public double yawAngleToCamera(Level var1, Camera var2, PartialTickSupplier var3) {
-         return (double)Mth.degreesDifference(var2.yaw(), this.angle * 57.295776F);
+      public double yawAngleToCamera(final Level level, final Camera camera, final PartialTickSupplier partialTickSupplier) {
+         return (double)Mth.degreesDifference(camera.yaw(), this.angle * 57.295776F);
       }
 
-      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2, PartialTickSupplier var3) {
-         double var4 = var2.projectHorizonToScreen();
-         if (var4 < -1.0) {
+      public PitchDirection pitchDirectionToCamera(final Level level, final Projector projector, final PartialTickSupplier partialTickSupplier) {
+         double horizon = projector.projectHorizonToScreen();
+         if (horizon < -1.0) {
             return TrackedWaypoint.PitchDirection.DOWN;
          } else {
-            return var4 > 1.0 ? TrackedWaypoint.PitchDirection.UP : TrackedWaypoint.PitchDirection.NONE;
+            return horizon > 1.0 ? TrackedWaypoint.PitchDirection.UP : TrackedWaypoint.PitchDirection.NONE;
          }
       }
 
-      public double distanceSquared(Entity var1) {
+      public double distanceSquared(final Entity fromEntity) {
          return 1.0 / 0.0;
       }
    }
@@ -314,7 +314,7 @@ public abstract class TrackedWaypoint implements Waypoint {
    }
 
    public interface Projector {
-      Vec3 projectPointToScreen(Vec3 var1);
+      Vec3 projectPointToScreen(final Vec3 point);
 
       double projectHorizonToScreen();
    }

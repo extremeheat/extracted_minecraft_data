@@ -28,11 +28,11 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
    private float moodiness;
    private @Nullable Holder<SoundEvent> previousLoopSound;
 
-   public BiomeAmbientSoundsHandler(LocalPlayer var1, SoundManager var2) {
+   public BiomeAmbientSoundsHandler(final LocalPlayer player, final SoundManager soundManager) {
       super();
-      this.random = var1.level().getRandom();
-      this.player = var1;
-      this.soundManager = var2;
+      this.random = player.level().getRandom();
+      this.player = player;
+      this.soundManager = soundManager;
    }
 
    public float getMoodiness() {
@@ -41,53 +41,53 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
 
    public void tick() {
       this.loopSounds.values().removeIf(AbstractTickableSoundInstance::isStopped);
-      Level var1 = this.player.level();
-      EnvironmentAttributeSystem var2 = var1.environmentAttributes();
-      AmbientSounds var3 = (AmbientSounds)var2.getValue(EnvironmentAttributes.AMBIENT_SOUNDS, this.player.position());
-      Holder var4 = (Holder)var3.loop().orElse((Object)null);
-      if (!Objects.equals(var4, this.previousLoopSound)) {
-         this.previousLoopSound = var4;
+      Level level = this.player.level();
+      EnvironmentAttributeSystem environmentAttributes = level.environmentAttributes();
+      AmbientSounds ambientSounds = (AmbientSounds)environmentAttributes.getValue(EnvironmentAttributes.AMBIENT_SOUNDS, this.player.position());
+      Holder<SoundEvent> currentLoopSound = (Holder)ambientSounds.loop().orElse((Object)null);
+      if (!Objects.equals(currentLoopSound, this.previousLoopSound)) {
+         this.previousLoopSound = currentLoopSound;
          this.loopSounds.values().forEach(LoopSoundInstance::fadeOut);
-         if (var4 != null) {
-            this.loopSounds.compute(var4, (var2x, var3x) -> {
-               if (var3x == null) {
-                  var3x = new LoopSoundInstance((SoundEvent)var4.value());
-                  this.soundManager.play(var3x);
+         if (currentLoopSound != null) {
+            this.loopSounds.compute(currentLoopSound, (biomeKey, soundInstance) -> {
+               if (soundInstance == null) {
+                  soundInstance = new LoopSoundInstance(currentLoopSound.value());
+                  this.soundManager.play(soundInstance);
                }
 
-               var3x.fadeIn();
-               return var3x;
+               soundInstance.fadeIn();
+               return soundInstance;
             });
          }
       }
 
-      for(AmbientAdditionsSettings var6 : var3.additions()) {
-         if (this.random.nextDouble() < var6.tickChance()) {
-            this.soundManager.play(SimpleSoundInstance.forAmbientAddition((SoundEvent)var6.soundEvent().value()));
+      for(AmbientAdditionsSettings additions : ambientSounds.additions()) {
+         if (this.random.nextDouble() < additions.tickChance()) {
+            this.soundManager.play(SimpleSoundInstance.forAmbientAddition((SoundEvent)additions.soundEvent().value()));
          }
       }
 
-      var3.mood().ifPresent((var2x) -> {
-         int var3 = var2x.blockSearchExtent() * 2 + 1;
-         BlockPos var4 = BlockPos.containing(this.player.getX() + (double)this.random.nextInt(var3) - (double)var2x.blockSearchExtent(), this.player.getEyeY() + (double)this.random.nextInt(var3) - (double)var2x.blockSearchExtent(), this.player.getZ() + (double)this.random.nextInt(var3) - (double)var2x.blockSearchExtent());
-         int var5 = var1.getBrightness(LightLayer.SKY, var4);
-         if (var5 > 0) {
-            this.moodiness -= (float)var5 / 15.0F * 0.001F;
+      ambientSounds.mood().ifPresent((mood) -> {
+         int searchSpan = mood.blockSearchExtent() * 2 + 1;
+         BlockPos blockSamplingPos = BlockPos.containing(this.player.getX() + (double)this.random.nextInt(searchSpan) - (double)mood.blockSearchExtent(), this.player.getEyeY() + (double)this.random.nextInt(searchSpan) - (double)mood.blockSearchExtent(), this.player.getZ() + (double)this.random.nextInt(searchSpan) - (double)mood.blockSearchExtent());
+         int skyBrightness = level.getBrightness(LightLayer.SKY, blockSamplingPos);
+         if (skyBrightness > 0) {
+            this.moodiness -= (float)skyBrightness / 15.0F * 0.001F;
          } else {
-            this.moodiness -= (float)(var1.getBrightness(LightLayer.BLOCK, var4) - 1) / (float)var2x.tickDelay();
+            this.moodiness -= (float)(level.getBrightness(LightLayer.BLOCK, blockSamplingPos) - 1) / (float)mood.tickDelay();
          }
 
          if (this.moodiness >= 1.0F) {
-            double var6 = (double)var4.getX() + 0.5;
-            double var8 = (double)var4.getY() + 0.5;
-            double var10 = (double)var4.getZ() + 0.5;
-            double var12 = var6 - this.player.getX();
-            double var14 = var8 - this.player.getEyeY();
-            double var16 = var10 - this.player.getZ();
-            double var18 = Math.sqrt(var12 * var12 + var14 * var14 + var16 * var16);
-            double var20 = var18 + var2x.soundPositionOffset();
-            SimpleSoundInstance var22 = SimpleSoundInstance.forAmbientMood((SoundEvent)var2x.soundEvent().value(), this.random, this.player.getX() + var12 / var18 * var20, this.player.getEyeY() + var14 / var18 * var20, this.player.getZ() + var16 / var18 * var20);
-            this.soundManager.play(var22);
+            double blockSampleX = (double)blockSamplingPos.getX() + 0.5;
+            double blockSampleY = (double)blockSamplingPos.getY() + 0.5;
+            double blockSampleZ = (double)blockSamplingPos.getZ() + 0.5;
+            double blockDirectionX = blockSampleX - this.player.getX();
+            double blockDirectionY = blockSampleY - this.player.getEyeY();
+            double blockDirectionZ = blockSampleZ - this.player.getZ();
+            double blockDistance = Math.sqrt(blockDirectionX * blockDirectionX + blockDirectionY * blockDirectionY + blockDirectionZ * blockDirectionZ);
+            double soundSourceDistance = blockDistance + mood.soundPositionOffset();
+            SimpleSoundInstance moodSoundInstance = SimpleSoundInstance.forAmbientMood((SoundEvent)mood.soundEvent().value(), this.random, this.player.getX() + blockDirectionX / blockDistance * soundSourceDistance, this.player.getEyeY() + blockDirectionY / blockDistance * soundSourceDistance, this.player.getZ() + blockDirectionZ / blockDistance * soundSourceDistance);
+            this.soundManager.play(moodSoundInstance);
             this.moodiness = 0.0F;
          } else {
             this.moodiness = Math.max(this.moodiness, 0.0F);
@@ -100,8 +100,8 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
       private int fadeDirection;
       private int fade;
 
-      public LoopSoundInstance(SoundEvent var1) {
-         super(var1, SoundSource.AMBIENT, SoundInstance.createUnseededRandom());
+      public LoopSoundInstance(final SoundEvent soundEvent) {
+         super(soundEvent, SoundSource.AMBIENT, SoundInstance.createUnseededRandom());
          this.looping = true;
          this.delay = 0;
          this.volume = 1.0F;

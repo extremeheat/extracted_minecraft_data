@@ -10,17 +10,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundSetSubtitleTextPacket(Component text) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetSubtitleTextPacket> STREAM_CODEC;
 
-   public ClientboundSetSubtitleTextPacket(Component var1) {
+   public ClientboundSetSubtitleTextPacket {
       super();
-      this.text = var1;
    }
 
    public PacketType<ClientboundSetSubtitleTextPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_SUBTITLE_TEXT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.setSubtitleText(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.setSubtitleText(this);
    }
 
    static {

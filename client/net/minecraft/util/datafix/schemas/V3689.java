@@ -8,21 +8,21 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V3689 extends NamespacedSchema {
-   public V3689(int var1, Schema var2) {
-      super(var1, var2);
+   public V3689(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
-      Map var2 = super.registerEntities(var1);
-      var1.registerSimple(var2, "minecraft:breeze");
-      var1.registerSimple(var2, "minecraft:wind_charge");
-      var1.registerSimple(var2, "minecraft:breeze_wind_charge");
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerEntities(schema);
+      schema.registerSimple(map, "minecraft:breeze");
+      schema.registerSimple(map, "minecraft:wind_charge");
+      schema.registerSimple(map, "minecraft:breeze_wind_charge");
+      return map;
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
-      Map var2 = super.registerBlockEntities(var1);
-      var1.register(var2, "minecraft:trial_spawner", () -> DSL.optionalFields("spawn_potentials", DSL.list(DSL.fields("data", DSL.fields("entity", References.ENTITY_TREE.in(var1)))), "spawn_data", DSL.fields("entity", References.ENTITY_TREE.in(var1))));
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerBlockEntities(schema);
+      schema.register(map, "minecraft:trial_spawner", () -> DSL.optionalFields("spawn_potentials", DSL.list(DSL.fields("data", DSL.fields("entity", References.ENTITY_TREE.in(schema)))), "spawn_data", DSL.fields("entity", References.ENTITY_TREE.in(schema))));
+      return map;
    }
 }

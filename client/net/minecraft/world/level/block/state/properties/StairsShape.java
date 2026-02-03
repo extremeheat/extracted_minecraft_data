@@ -11,8 +11,8 @@ public enum StairsShape implements StringRepresentable {
 
    private final String name;
 
-   private StairsShape(final String var3) {
-      this.name = var3;
+   private StairsShape(final String name) {
+      this.name = name;
    }
 
    public String toString() {

@@ -7,11 +7,11 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import org.jspecify.annotations.Nullable;
 
 public interface Portal {
-   default int getPortalTransitionTime(ServerLevel var1, Entity var2) {
+   default int getPortalTransitionTime(final ServerLevel level, final Entity entity) {
       return 0;
    }
 
-   @Nullable TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3);
+   @Nullable TeleportTransition getPortalDestination(final ServerLevel currentLevel, final Entity entity, final BlockPos portalEntryPos);
 
    default Transition getLocalTransition() {
       return Portal.Transition.NONE;

@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,45 +25,45 @@ public class AdvancementTree {
       super();
    }
 
-   private void remove(AdvancementNode var1) {
-      for(AdvancementNode var3 : var1.children()) {
-         this.remove(var3);
+   private void remove(final AdvancementNode node) {
+      for(AdvancementNode child : node.children()) {
+         this.remove(child);
       }
 
-      LOGGER.info("Forgot about advancement {}", var1.holder());
-      this.nodes.remove(var1.holder().id());
-      if (var1.parent() == null) {
-         this.roots.remove(var1);
+      LOGGER.info("Forgot about advancement {}", node.holder());
+      this.nodes.remove(node.holder().id());
+      if (node.parent() == null) {
+         this.roots.remove(node);
          if (this.listener != null) {
-            this.listener.onRemoveAdvancementRoot(var1);
+            this.listener.onRemoveAdvancementRoot(node);
          }
       } else {
-         this.tasks.remove(var1);
+         this.tasks.remove(node);
          if (this.listener != null) {
-            this.listener.onRemoveAdvancementTask(var1);
+            this.listener.onRemoveAdvancementTask(node);
          }
       }
 
    }
 
-   public void remove(Set<Identifier> var1) {
-      for(Identifier var3 : var1) {
-         AdvancementNode var4 = (AdvancementNode)this.nodes.get(var3);
-         if (var4 == null) {
-            LOGGER.warn("Told to remove advancement {} but I don't know what that is", var3);
+   public void remove(final Set<Identifier> ids) {
+      for(Identifier id : ids) {
+         AdvancementNode advancement = (AdvancementNode)this.nodes.get(id);
+         if (advancement == null) {
+            LOGGER.warn("Told to remove advancement {} but I don't know what that is", id);
          } else {
-            this.remove(var4);
+            this.remove(advancement);
          }
       }
 
    }
 
-   public void addAll(Collection<AdvancementHolder> var1) {
-      ArrayList var2 = new ArrayList(var1);
+   public void addAll(final Collection<AdvancementHolder> advancements) {
+      List<AdvancementHolder> advancementsToAdd = new ArrayList(advancements);
 
-      while(!var2.isEmpty()) {
-         if (!var2.removeIf(this::tryInsert)) {
-            LOGGER.error("Couldn't load advancements: {}", var2);
+      while(!advancementsToAdd.isEmpty()) {
+         if (!advancementsToAdd.removeIf(this::tryInsert)) {
+            LOGGER.error("Couldn't load advancements: {}", advancementsToAdd);
             break;
          }
       }
@@ -70,29 +71,29 @@ public class AdvancementTree {
       LOGGER.info("Loaded {} advancements", this.nodes.size());
    }
 
-   private boolean tryInsert(AdvancementHolder var1) {
-      Optional var2 = var1.value().parent();
+   private boolean tryInsert(final AdvancementHolder holder) {
+      Optional<Identifier> parentId = holder.value().parent();
       Map var10001 = this.nodes;
       Objects.requireNonNull(var10001);
-      AdvancementNode var3 = (AdvancementNode)var2.map(var10001::get).orElse((Object)null);
-      if (var3 == null && var2.isPresent()) {
+      AdvancementNode parentNode = (AdvancementNode)parentId.map(var10001::get).orElse((Object)null);
+      if (parentNode == null && parentId.isPresent()) {
          return false;
       } else {
-         AdvancementNode var4 = new AdvancementNode(var1, var3);
-         if (var3 != null) {
-            var3.addChild(var4);
+         AdvancementNode node = new AdvancementNode(holder, parentNode);
+         if (parentNode != null) {
+            parentNode.addChild(node);
          }
 
-         this.nodes.put(var1.id(), var4);
-         if (var3 == null) {
-            this.roots.add(var4);
+         this.nodes.put(holder.id(), node);
+         if (parentNode == null) {
+            this.roots.add(node);
             if (this.listener != null) {
-               this.listener.onAddAdvancementRoot(var4);
+               this.listener.onAddAdvancementRoot(node);
             }
          } else {
-            this.tasks.add(var4);
+            this.tasks.add(node);
             if (this.listener != null) {
-               this.listener.onAddAdvancementTask(var4);
+               this.listener.onAddAdvancementTask(node);
             }
          }
 
@@ -118,36 +119,36 @@ public class AdvancementTree {
       return this.nodes.values();
    }
 
-   public @Nullable AdvancementNode get(Identifier var1) {
-      return (AdvancementNode)this.nodes.get(var1);
+   public @Nullable AdvancementNode get(final Identifier id) {
+      return (AdvancementNode)this.nodes.get(id);
    }
 
-   public @Nullable AdvancementNode get(AdvancementHolder var1) {
-      return (AdvancementNode)this.nodes.get(var1.id());
+   public @Nullable AdvancementNode get(final AdvancementHolder advancement) {
+      return (AdvancementNode)this.nodes.get(advancement.id());
    }
 
-   public void setListener(@Nullable Listener var1) {
-      this.listener = var1;
-      if (var1 != null) {
-         for(AdvancementNode var3 : this.roots) {
-            var1.onAddAdvancementRoot(var3);
+   public void setListener(final @Nullable Listener listener) {
+      this.listener = listener;
+      if (listener != null) {
+         for(AdvancementNode root : this.roots) {
+            listener.onAddAdvancementRoot(root);
          }
 
-         for(AdvancementNode var5 : this.tasks) {
-            var1.onAddAdvancementTask(var5);
+         for(AdvancementNode task : this.tasks) {
+            listener.onAddAdvancementTask(task);
          }
       }
 
    }
 
    public interface Listener {
-      void onAddAdvancementRoot(AdvancementNode var1);
+      void onAddAdvancementRoot(AdvancementNode root);
 
-      void onRemoveAdvancementRoot(AdvancementNode var1);
+      void onRemoveAdvancementRoot(AdvancementNode root);
 
-      void onAddAdvancementTask(AdvancementNode var1);
+      void onAddAdvancementTask(AdvancementNode task);
 
-      void onRemoveAdvancementTask(AdvancementNode var1);
+      void onRemoveAdvancementTask(AdvancementNode task);
 
       void onAdvancementsCleared();
    }

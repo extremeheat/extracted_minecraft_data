@@ -19,8 +19,8 @@ public record ContextDimension() implements SelectItemModelProperty<ResourceKey<
       super();
    }
 
-   public @Nullable ResourceKey<Level> get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      return var2 != null ? var2.dimension() : null;
+   public @Nullable ResourceKey<Level> get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      return level != null ? level.dimension() : null;
    }
 
    public SelectItemModelProperty.Type<ContextDimension, ResourceKey<Level>> type() {
@@ -29,11 +29,6 @@ public record ContextDimension() implements SelectItemModelProperty<ResourceKey<
 
    public Codec<ResourceKey<Level>> valueCodec() {
       return VALUE_CODEC;
-   }
-
-   // $FF: synthetic method
-   public @Nullable Object get(final ItemStack var1, final @Nullable ClientLevel var2, final @Nullable LivingEntity var3, final int var4, final ItemDisplayContext var5) {
-      return this.get(var1, var2, var3, var4, var5);
    }
 
    static {

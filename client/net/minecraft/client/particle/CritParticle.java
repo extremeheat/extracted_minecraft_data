@@ -7,28 +7,28 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class CritParticle extends SingleQuadParticle {
-   CritParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var14);
+   private CritParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprite);
       this.friction = 0.7F;
       this.gravity = 0.5F;
       this.xd *= 0.10000000149011612;
       this.yd *= 0.10000000149011612;
       this.zd *= 0.10000000149011612;
-      this.xd += var8 * 0.4;
-      this.yd += var10 * 0.4;
-      this.zd += var12 * 0.4;
-      float var15 = this.random.nextFloat() * 0.3F + 0.6F;
-      this.rCol = var15;
-      this.gCol = var15;
-      this.bCol = var15;
+      this.xd += xa * 0.4;
+      this.yd += ya * 0.4;
+      this.zd += za * 0.4;
+      float col = this.random.nextFloat() * 0.3F + 0.6F;
+      this.rCol = col;
+      this.gCol = col;
+      this.bCol = col;
       this.quadSize *= 0.75F;
       this.lifetime = Math.max((int)(6.0 / ((double)this.random.nextFloat() * 0.8 + 0.6)), 1);
       this.hasPhysics = false;
       this.tick();
    }
 
-   public float getQuadSize(float var1) {
-      return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
+   public float getQuadSize(final float a) {
+      return this.quadSize * Mth.clamp(((float)this.age + a) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
    }
 
    public void tick() {
@@ -44,45 +44,45 @@ public class CritParticle extends SingleQuadParticle {
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         CritParticle var16 = new CritParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         CritParticle particle = new CritParticle(level, x, y, z, xAux, yAux, zAux, this.sprite.get(random));
+         return particle;
       }
    }
 
    public static class MagicProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public MagicProvider(SpriteSet var1) {
+      public MagicProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         CritParticle var16 = new CritParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
-         var16.rCol *= 0.3F;
-         var16.gCol *= 0.8F;
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         CritParticle particle = new CritParticle(level, x, y, z, xAux, yAux, zAux, this.sprite.get(random));
+         particle.rCol *= 0.3F;
+         particle.gCol *= 0.8F;
+         return particle;
       }
    }
 
    public static class DamageIndicatorProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public DamageIndicatorProvider(SpriteSet var1) {
+      public DamageIndicatorProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         CritParticle var16 = new CritParticle(var2, var3, var5, var7, var9, var11 + 1.0, var13, this.sprite.get(var15));
-         var16.setLifetime(20);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         CritParticle particle = new CritParticle(level, x, y, z, xAux, yAux + 1.0, zAux, this.sprite.get(random));
+         particle.setLifetime(20);
+         return particle;
       }
    }
 }

@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,19 +45,19 @@ public final class NativeImage implements AutoCloseable {
    private long pixels;
    private final long size;
 
-   public NativeImage(int var1, int var2, boolean var3) {
-      this(NativeImage.Format.RGBA, var1, var2, var3);
+   public NativeImage(final int width, final int height, final boolean zero) {
+      this(NativeImage.Format.RGBA, width, height, zero);
    }
 
-   public NativeImage(Format var1, int var2, int var3, boolean var4) {
+   public NativeImage(final Format format, final int width, final int height, final boolean zero) {
       super();
-      if (var2 > 0 && var3 > 0) {
-         this.format = var1;
-         this.width = var2;
-         this.height = var3;
-         this.size = (long)var2 * (long)var3 * (long)var1.components();
+      if (width > 0 && height > 0) {
+         this.format = format;
+         this.width = width;
+         this.height = height;
+         this.size = (long)width * (long)height * (long)format.components();
          this.useStbFree = false;
-         if (var4) {
+         if (zero) {
             this.pixels = MemoryUtil.nmemCalloc(1L, this.size);
          } else {
             this.pixels = MemoryUtil.nmemAlloc(this.size);
@@ -66,24 +65,24 @@ public final class NativeImage implements AutoCloseable {
 
          MEMORY_POOL.malloc(this.pixels, (int)this.size);
          if (this.pixels == 0L) {
-            throw new IllegalStateException("Unable to allocate texture of size " + var2 + "x" + var3 + " (" + var1.components() + " channels)");
+            throw new IllegalStateException("Unable to allocate texture of size " + width + "x" + height + " (" + format.components() + " channels)");
          }
       } else {
-         throw new IllegalArgumentException("Invalid texture size: " + var2 + "x" + var3);
+         throw new IllegalArgumentException("Invalid texture size: " + width + "x" + height);
       }
    }
 
-   public NativeImage(Format var1, int var2, int var3, boolean var4, long var5) {
+   public NativeImage(final Format format, final int width, final int height, final boolean useStbFree, final long pixels) {
       super();
-      if (var2 > 0 && var3 > 0) {
-         this.format = var1;
-         this.width = var2;
-         this.height = var3;
-         this.useStbFree = var4;
-         this.pixels = var5;
-         this.size = (long)var2 * (long)var3 * (long)var1.components();
+      if (width > 0 && height > 0) {
+         this.format = format;
+         this.width = width;
+         this.height = height;
+         this.useStbFree = useStbFree;
+         this.pixels = pixels;
+         this.size = (long)width * (long)height * (long)format.components();
       } else {
-         throw new IllegalArgumentException("Invalid texture size: " + var2 + "x" + var3);
+         throw new IllegalArgumentException("Invalid texture size: " + width + "x" + height);
       }
    }
 
@@ -92,58 +91,58 @@ public final class NativeImage implements AutoCloseable {
       return "NativeImage[" + var10000 + " " + this.width + "x" + this.height + "@" + this.pixels + (this.useStbFree ? "S" : "N") + "]";
    }
 
-   private boolean isOutsideBounds(int var1, int var2) {
-      return var1 < 0 || var1 >= this.width || var2 < 0 || var2 >= this.height;
+   private boolean isOutsideBounds(final int x, final int y) {
+      return x < 0 || x >= this.width || y < 0 || y >= this.height;
    }
 
-   public static NativeImage read(InputStream var0) throws IOException {
-      return read(NativeImage.Format.RGBA, var0);
+   public static NativeImage read(final InputStream inputStream) throws IOException {
+      return read(NativeImage.Format.RGBA, inputStream);
    }
 
-   public static NativeImage read(@Nullable Format var0, InputStream var1) throws IOException {
-      ByteBuffer var2 = null;
+   public static NativeImage read(final @Nullable Format format, final InputStream inputStream) throws IOException {
+      ByteBuffer file = null;
 
       NativeImage var3;
       try {
-         var2 = TextureUtil.readResource(var1);
-         var3 = read(var0, var2);
+         file = TextureUtil.readResource(inputStream);
+         var3 = read(format, file);
       } finally {
-         MemoryUtil.memFree(var2);
-         IOUtils.closeQuietly(var1);
+         MemoryUtil.memFree(file);
+         IOUtils.closeQuietly(inputStream);
       }
 
       return var3;
    }
 
-   public static NativeImage read(ByteBuffer var0) throws IOException {
-      return read(NativeImage.Format.RGBA, var0);
+   public static NativeImage read(final ByteBuffer bytes) throws IOException {
+      return read(NativeImage.Format.RGBA, bytes);
    }
 
-   public static NativeImage read(byte[] var0) throws IOException {
-      MemoryStack var1 = MemoryStack.stackGet();
-      int var2 = var1.getPointer();
-      if (var2 < var0.length) {
-         ByteBuffer var12 = MemoryUtil.memAlloc(var0.length);
+   public static NativeImage read(final byte[] bytes) throws IOException {
+      MemoryStack memoryStack = MemoryStack.stackGet();
+      int bytesAvailable = memoryStack.getPointer();
+      if (bytesAvailable < bytes.length) {
+         ByteBuffer buffer = MemoryUtil.memAlloc(bytes.length);
 
          NativeImage var13;
          try {
-            var13 = putAndRead(var12, var0);
+            var13 = putAndRead(buffer, bytes);
          } finally {
-            MemoryUtil.memFree(var12);
+            MemoryUtil.memFree(buffer);
          }
 
          return var13;
       } else {
-         MemoryStack var3 = MemoryStack.stackPush();
+         MemoryStack stack = MemoryStack.stackPush();
 
          NativeImage var5;
          try {
-            ByteBuffer var4 = var3.malloc(var0.length);
-            var5 = putAndRead(var4, var0);
+            ByteBuffer buffer = stack.malloc(bytes.length);
+            var5 = putAndRead(buffer, bytes);
          } catch (Throwable var11) {
-            if (var3 != null) {
+            if (stack != null) {
                try {
-                  var3.close();
+                  stack.close();
                } catch (Throwable var9) {
                   var11.addSuppressed(var9);
                }
@@ -152,46 +151,46 @@ public final class NativeImage implements AutoCloseable {
             throw var11;
          }
 
-         if (var3 != null) {
-            var3.close();
+         if (stack != null) {
+            stack.close();
          }
 
          return var5;
       }
    }
 
-   private static NativeImage putAndRead(ByteBuffer var0, byte[] var1) throws IOException {
-      var0.put(var1);
-      var0.rewind();
-      return read(var0);
+   private static NativeImage putAndRead(final ByteBuffer nativeBuffer, final byte[] bytes) throws IOException {
+      nativeBuffer.put(bytes);
+      nativeBuffer.rewind();
+      return read(nativeBuffer);
    }
 
-   public static NativeImage read(@Nullable Format var0, ByteBuffer var1) throws IOException {
-      if (var0 != null && !var0.supportedByStb()) {
-         throw new UnsupportedOperationException("Don't know how to read format " + String.valueOf(var0));
-      } else if (MemoryUtil.memAddress(var1) == 0L) {
+   public static NativeImage read(final @Nullable Format format, final ByteBuffer bytes) throws IOException {
+      if (format != null && !format.supportedByStb()) {
+         throw new UnsupportedOperationException("Don't know how to read format " + String.valueOf(format));
+      } else if (MemoryUtil.memAddress(bytes) == 0L) {
          throw new IllegalArgumentException("Invalid buffer");
       } else {
-         PngInfo.validateHeader(var1);
-         MemoryStack var2 = MemoryStack.stackPush();
+         PngInfo.validateHeader(bytes);
+         MemoryStack stack = MemoryStack.stackPush();
 
          NativeImage var9;
          try {
-            IntBuffer var3 = var2.mallocInt(1);
-            IntBuffer var4 = var2.mallocInt(1);
-            IntBuffer var5 = var2.mallocInt(1);
-            ByteBuffer var6 = STBImage.stbi_load_from_memory(var1, var3, var4, var5, var0 == null ? 0 : var0.components);
-            if (var6 == null) {
+            IntBuffer w = stack.mallocInt(1);
+            IntBuffer h = stack.mallocInt(1);
+            IntBuffer comp = stack.mallocInt(1);
+            ByteBuffer pixels = STBImage.stbi_load_from_memory(bytes, w, h, comp, format == null ? 0 : format.components);
+            if (pixels == null) {
                throw new IOException("Could not load image: " + STBImage.stbi_failure_reason());
             }
 
-            long var7 = MemoryUtil.memAddress(var6);
-            MEMORY_POOL.malloc(var7, var6.limit());
-            var9 = new NativeImage(var0 == null ? NativeImage.Format.getStbFormat(var5.get(0)) : var0, var3.get(0), var4.get(0), true, var7);
+            long address = MemoryUtil.memAddress(pixels);
+            MEMORY_POOL.malloc(address, pixels.limit());
+            var9 = new NativeImage(format == null ? NativeImage.Format.getStbFormat(comp.get(0)) : format, w.get(0), h.get(0), true, address);
          } catch (Throwable var11) {
-            if (var2 != null) {
+            if (stack != null) {
                try {
-                  var2.close();
+                  stack.close();
                } catch (Throwable var10) {
                   var11.addSuppressed(var10);
                }
@@ -200,8 +199,8 @@ public final class NativeImage implements AutoCloseable {
             throw var11;
          }
 
-         if (var2 != null) {
-            var2.close();
+         if (stack != null) {
+            stack.close();
          }
 
          return var9;
@@ -228,6 +227,10 @@ public final class NativeImage implements AutoCloseable {
       this.pixels = 0L;
    }
 
+   public boolean isClosed() {
+      return this.pixels == 0L;
+   }
+
    public int getWidth() {
       return this.width;
    }
@@ -240,55 +243,55 @@ public final class NativeImage implements AutoCloseable {
       return this.format;
    }
 
-   private int getPixelABGR(int var1, int var2) {
+   private int getPixelABGR(final int x, final int y) {
       if (this.format != NativeImage.Format.RGBA) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "getPixelRGBA only works on RGBA images; have %s", this.format));
-      } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
+      } else if (this.isOutsideBounds(x, y)) {
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", x, y, this.width, this.height));
       } else {
          this.checkAllocated();
-         long var3 = ((long)var1 + (long)var2 * (long)this.width) * 4L;
-         return MemoryUtil.memGetInt(this.pixels + var3);
+         long offset = ((long)x + (long)y * (long)this.width) * 4L;
+         return MemoryUtil.memGetInt(this.pixels + offset);
       }
    }
 
-   public int getPixel(int var1, int var2) {
-      return ARGB.fromABGR(this.getPixelABGR(var1, var2));
+   public int getPixel(final int x, final int y) {
+      return ARGB.fromABGR(this.getPixelABGR(x, y));
    }
 
-   public void setPixelABGR(int var1, int var2, int var3) {
+   public void setPixelABGR(final int x, final int y, final int pixel) {
       if (this.format != NativeImage.Format.RGBA) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "setPixelRGBA only works on RGBA images; have %s", this.format));
-      } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
+      } else if (this.isOutsideBounds(x, y)) {
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", x, y, this.width, this.height));
       } else {
          this.checkAllocated();
-         long var4 = ((long)var1 + (long)var2 * (long)this.width) * 4L;
-         MemoryUtil.memPutInt(this.pixels + var4, var3);
+         long offset = ((long)x + (long)y * (long)this.width) * 4L;
+         MemoryUtil.memPutInt(this.pixels + offset, pixel);
       }
    }
 
-   public void setPixel(int var1, int var2, int var3) {
-      this.setPixelABGR(var1, var2, ARGB.toABGR(var3));
+   public void setPixel(final int x, final int y, final int pixel) {
+      this.setPixelABGR(x, y, ARGB.toABGR(pixel));
    }
 
-   public NativeImage mappedCopy(IntUnaryOperator var1) {
+   public NativeImage mappedCopy(final IntUnaryOperator function) {
       if (this.format != NativeImage.Format.RGBA) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "function application only works on RGBA images; have %s", this.format));
       } else {
          this.checkAllocated();
-         NativeImage var2 = new NativeImage(this.width, this.height, false);
-         int var3 = this.width * this.height;
-         IntBuffer var4 = MemoryUtil.memIntBuffer(this.pixels, var3);
-         IntBuffer var5 = MemoryUtil.memIntBuffer(var2.pixels, var3);
+         NativeImage result = new NativeImage(this.width, this.height, false);
+         int pixelCount = this.width * this.height;
+         IntBuffer sourceBuffer = MemoryUtil.memIntBuffer(this.pixels, pixelCount);
+         IntBuffer targetBuffer = MemoryUtil.memIntBuffer(result.pixels, pixelCount);
 
-         for(int var6 = 0; var6 < var3; ++var6) {
-            int var7 = ARGB.fromABGR(var4.get(var6));
-            int var8 = var1.applyAsInt(var7);
-            var5.put(var6, ARGB.toABGR(var8));
+         for(int i = 0; i < pixelCount; ++i) {
+            int pixel = ARGB.fromABGR(sourceBuffer.get(i));
+            int modified = function.applyAsInt(pixel);
+            targetBuffer.put(i, ARGB.toABGR(modified));
          }
 
-         return var2;
+         return result;
       }
    }
 
@@ -297,30 +300,30 @@ public final class NativeImage implements AutoCloseable {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "getPixels only works on RGBA images; have %s", this.format));
       } else {
          this.checkAllocated();
-         int[] var1 = new int[this.width * this.height];
-         MemoryUtil.memIntBuffer(this.pixels, this.width * this.height).get(var1);
-         return var1;
+         int[] result = new int[this.width * this.height];
+         MemoryUtil.memIntBuffer(this.pixels, this.width * this.height).get(result);
+         return result;
       }
    }
 
    public int[] getPixels() {
-      int[] var1 = this.getPixelsABGR();
+      int[] result = this.getPixelsABGR();
 
-      for(int var2 = 0; var2 < var1.length; ++var2) {
-         var1[var2] = ARGB.fromABGR(var1[var2]);
+      for(int i = 0; i < result.length; ++i) {
+         result[i] = ARGB.fromABGR(result[i]);
       }
 
-      return var1;
+      return result;
    }
 
-   public byte getLuminanceOrAlpha(int var1, int var2) {
+   public byte getLuminanceOrAlpha(final int x, final int y) {
       if (!this.format.hasLuminanceOrAlpha()) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "no luminance or alpha in %s", this.format));
-      } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
+      } else if (this.isOutsideBounds(x, y)) {
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", x, y, this.width, this.height));
       } else {
-         int var3 = (var1 + var2 * this.width) * this.format.components() + this.format.luminanceOrAlphaOffset() / 8;
-         return MemoryUtil.memGetByte(this.pixels + (long)var3);
+         int offset = (x + y * this.width) * this.format.components() + this.format.luminanceOrAlphaOffset() / 8;
+         return MemoryUtil.memGetByte(this.pixels + (long)offset);
       }
    }
 
@@ -331,59 +334,59 @@ public final class NativeImage implements AutoCloseable {
          throw new UnsupportedOperationException("can only call makePixelArray for RGBA images.");
       } else {
          this.checkAllocated();
-         int[] var1 = new int[this.getWidth() * this.getHeight()];
+         int[] pixels = new int[this.getWidth() * this.getHeight()];
 
-         for(int var2 = 0; var2 < this.getHeight(); ++var2) {
-            for(int var3 = 0; var3 < this.getWidth(); ++var3) {
-               var1[var3 + var2 * this.getWidth()] = this.getPixel(var3, var2);
+         for(int y = 0; y < this.getHeight(); ++y) {
+            for(int x = 0; x < this.getWidth(); ++x) {
+               pixels[x + y * this.getWidth()] = this.getPixel(x, y);
             }
          }
 
-         return var1;
+         return pixels;
       }
    }
 
-   public void writeToFile(File var1) throws IOException {
-      this.writeToFile(var1.toPath());
+   public void writeToFile(final File file) throws IOException {
+      this.writeToFile(file.toPath());
    }
 
-   public boolean copyFromFont(FT_Face var1, int var2) {
+   public boolean copyFromFont(final FT_Face face, final int index) {
       if (this.format.components() != 1) {
          throw new IllegalArgumentException("Can only write fonts into 1-component images.");
-      } else if (FreeTypeUtil.checkError(FreeType.FT_Load_Glyph(var1, var2, 4), "Loading glyph")) {
+      } else if (FreeTypeUtil.checkError(FreeType.FT_Load_Glyph(face, index, 4), "Loading glyph")) {
          return false;
       } else {
-         FT_GlyphSlot var3 = (FT_GlyphSlot)Objects.requireNonNull(var1.glyph(), "Glyph not initialized");
-         FT_Bitmap var4 = var3.bitmap();
-         if (var4.pixel_mode() != 2) {
+         FT_GlyphSlot glyph = (FT_GlyphSlot)Objects.requireNonNull(face.glyph(), "Glyph not initialized");
+         FT_Bitmap bitmap = glyph.bitmap();
+         if (bitmap.pixel_mode() != 2) {
             throw new IllegalStateException("Rendered glyph was not 8-bit grayscale");
-         } else if (var4.width() == this.getWidth() && var4.rows() == this.getHeight()) {
-            int var5 = var4.width() * var4.rows();
-            ByteBuffer var6 = (ByteBuffer)Objects.requireNonNull(var4.buffer(var5), "Glyph has no bitmap");
-            MemoryUtil.memCopy(MemoryUtil.memAddress(var6), this.pixels, (long)var5);
+         } else if (bitmap.width() == this.getWidth() && bitmap.rows() == this.getHeight()) {
+            int bufferSize = bitmap.width() * bitmap.rows();
+            ByteBuffer buffer = (ByteBuffer)Objects.requireNonNull(bitmap.buffer(bufferSize), "Glyph has no bitmap");
+            MemoryUtil.memCopy(MemoryUtil.memAddress(buffer), this.pixels, (long)bufferSize);
             return true;
          } else {
-            throw new IllegalArgumentException(String.format(Locale.ROOT, "Glyph bitmap of size %sx%s does not match image of size: %sx%s", var4.width(), var4.rows(), this.getWidth(), this.getHeight()));
+            throw new IllegalArgumentException(String.format(Locale.ROOT, "Glyph bitmap of size %sx%s does not match image of size: %sx%s", bitmap.width(), bitmap.rows(), this.getWidth(), this.getHeight()));
          }
       }
    }
 
-   public void writeToFile(Path var1) throws IOException {
+   public void writeToFile(final Path file) throws IOException {
       if (!this.format.supportedByStb()) {
          throw new UnsupportedOperationException("Don't know how to write format " + String.valueOf(this.format));
       } else {
          this.checkAllocated();
-         SeekableByteChannel var2 = Files.newByteChannel(var1, OPEN_OPTIONS);
+         WritableByteChannel out = Files.newByteChannel(file, OPEN_OPTIONS);
 
          try {
-            if (!this.writeToChannel(var2)) {
-               String var10002 = String.valueOf(var1.toAbsolutePath());
+            if (!this.writeToChannel(out)) {
+               String var10002 = String.valueOf(file.toAbsolutePath());
                throw new IOException("Could not write image to the PNG file \"" + var10002 + "\": " + STBImage.stbi_failure_reason());
             }
          } catch (Throwable var6) {
-            if (var2 != null) {
+            if (out != null) {
                try {
-                  var2.close();
+                  out.close();
                } catch (Throwable var5) {
                   var6.addSuppressed(var5);
                }
@@ -392,92 +395,92 @@ public final class NativeImage implements AutoCloseable {
             throw var6;
          }
 
-         if (var2 != null) {
-            var2.close();
+         if (out != null) {
+            out.close();
          }
 
       }
    }
 
-   private boolean writeToChannel(WritableByteChannel var1) throws IOException {
-      WriteCallback var2 = new WriteCallback(var1);
+   private boolean writeToChannel(final WritableByteChannel output) throws IOException {
+      WriteCallback writer = new WriteCallback(output);
 
       boolean var4;
       try {
-         int var3 = Math.min(this.getHeight(), 2147483647 / this.getWidth() / this.format.components());
-         if (var3 < this.getHeight()) {
-            LOGGER.warn("Dropping image height from {} to {} to fit the size into 32-bit signed int", this.getHeight(), var3);
+         int height = Math.min(this.getHeight(), 2147483647 / this.getWidth() / this.format.components());
+         if (height < this.getHeight()) {
+            LOGGER.warn("Dropping image height from {} to {} to fit the size into 32-bit signed int", this.getHeight(), height);
          }
 
-         if (STBImageWrite.nstbi_write_png_to_func(var2.address(), 0L, this.getWidth(), var3, this.format.components(), this.pixels, 0) != 0) {
-            var2.throwIfException();
+         if (STBImageWrite.nstbi_write_png_to_func(writer.address(), 0L, this.getWidth(), height, this.format.components(), this.pixels, 0) != 0) {
+            writer.throwIfException();
             var4 = true;
             return var4;
          }
 
          var4 = false;
       } finally {
-         var2.free();
+         writer.free();
       }
 
       return var4;
    }
 
-   public void copyFrom(NativeImage var1) {
-      if (var1.format() != this.format) {
+   public void copyFrom(final NativeImage from) {
+      if (from.format() != this.format) {
          throw new UnsupportedOperationException("Image formats don't match.");
       } else {
-         int var2 = this.format.components();
+         int components = this.format.components();
          this.checkAllocated();
-         var1.checkAllocated();
-         if (this.width == var1.width) {
-            MemoryUtil.memCopy(var1.pixels, this.pixels, Math.min(this.size, var1.size));
+         from.checkAllocated();
+         if (this.width == from.width) {
+            MemoryUtil.memCopy(from.pixels, this.pixels, Math.min(this.size, from.size));
          } else {
-            int var3 = Math.min(this.getWidth(), var1.getWidth());
-            int var4 = Math.min(this.getHeight(), var1.getHeight());
+            int minWidth = Math.min(this.getWidth(), from.getWidth());
+            int minHeight = Math.min(this.getHeight(), from.getHeight());
 
-            for(int var5 = 0; var5 < var4; ++var5) {
-               int var6 = var5 * var1.getWidth() * var2;
-               int var7 = var5 * this.getWidth() * var2;
-               MemoryUtil.memCopy(var1.pixels + (long)var6, this.pixels + (long)var7, (long)var3);
+            for(int y = 0; y < minHeight; ++y) {
+               int fromOffset = y * from.getWidth() * components;
+               int toOffset = y * this.getWidth() * components;
+               MemoryUtil.memCopy(from.pixels + (long)fromOffset, this.pixels + (long)toOffset, (long)minWidth);
             }
          }
 
       }
    }
 
-   public void fillRect(int var1, int var2, int var3, int var4, int var5) {
-      for(int var6 = var2; var6 < var2 + var4; ++var6) {
-         for(int var7 = var1; var7 < var1 + var3; ++var7) {
-            this.setPixel(var7, var6, var5);
+   public void fillRect(final int xs, final int ys, final int width, final int height, final int pixel) {
+      for(int y = ys; y < ys + height; ++y) {
+         for(int x = xs; x < xs + width; ++x) {
+            this.setPixel(x, y, pixel);
          }
       }
 
    }
 
-   public void copyRect(int var1, int var2, int var3, int var4, int var5, int var6, boolean var7, boolean var8) {
-      this.copyRect(this, var1, var2, var1 + var3, var2 + var4, var5, var6, var7, var8);
+   public void copyRect(final int startX, final int startY, final int offsetX, final int offsetY, final int sizeX, final int sizeY, final boolean swapX, final boolean swapY) {
+      this.copyRect(this, startX, startY, startX + offsetX, startY + offsetY, sizeX, sizeY, swapX, swapY);
    }
 
-   public void copyRect(NativeImage var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, boolean var9) {
-      for(int var10 = 0; var10 < var7; ++var10) {
-         for(int var11 = 0; var11 < var6; ++var11) {
-            int var12 = var8 ? var6 - 1 - var11 : var11;
-            int var13 = var9 ? var7 - 1 - var10 : var10;
-            int var14 = this.getPixelABGR(var2 + var11, var3 + var10);
-            var1.setPixelABGR(var4 + var12, var5 + var13, var14);
+   public void copyRect(final NativeImage target, final int sourceX, final int sourceY, final int targetX, final int targetY, final int sizeX, final int sizeY, final boolean swapX, final boolean swapY) {
+      for(int y = 0; y < sizeY; ++y) {
+         for(int x = 0; x < sizeX; ++x) {
+            int dx = swapX ? sizeX - 1 - x : x;
+            int dy = swapY ? sizeY - 1 - y : y;
+            int source = this.getPixelABGR(sourceX + x, sourceY + y);
+            target.setPixelABGR(targetX + dx, targetY + dy, source);
          }
       }
 
    }
 
-   public void resizeSubRectTo(int var1, int var2, int var3, int var4, NativeImage var5) {
+   public void resizeSubRectTo(final int sourceX, final int sourceY, final int sizeX, final int sizeY, final NativeImage to) {
       this.checkAllocated();
-      if (var5.format() != this.format) {
+      if (to.format() != this.format) {
          throw new UnsupportedOperationException("resizeSubRectTo only works for images of the same format.");
       } else {
-         int var6 = this.format.components();
-         STBImageResize.nstbir_resize_uint8(this.pixels + (long)((var1 + var2 * this.getWidth()) * var6), var3, var4, this.getWidth() * var6, var5.pixels, var5.getWidth(), var5.getHeight(), 0, var6);
+         int components = this.format.components();
+         STBImageResize.nstbir_resize_uint8(this.pixels + (long)((sourceX + sourceY * this.getWidth()) * components), sizeX, sizeY, this.getWidth() * components, to.pixels, to.getWidth(), to.getHeight(), 0, components);
       }
    }
 
@@ -493,22 +496,22 @@ public final class NativeImage implements AutoCloseable {
       OPEN_OPTIONS = EnumSet.of(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
    }
 
-   static class WriteCallback extends STBIWriteCallback {
+   private static class WriteCallback extends STBIWriteCallback {
       private final WritableByteChannel output;
       private @Nullable IOException exception;
 
-      WriteCallback(WritableByteChannel var1) {
+      private WriteCallback(final WritableByteChannel output) {
          super();
-         this.output = var1;
+         this.output = output;
       }
 
-      public void invoke(long var1, long var3, int var5) {
-         ByteBuffer var6 = getData(var3, var5);
+      public void invoke(final long context, final long data, final int size) {
+         ByteBuffer dataBuf = getData(data, size);
 
          try {
-            this.output.write(var6);
-         } catch (IOException var8) {
-            this.exception = var8;
+            this.output.write(dataBuf);
+         } catch (IOException e) {
+            this.exception = e;
          }
 
       }
@@ -526,7 +529,7 @@ public final class NativeImage implements AutoCloseable {
       LUMINANCE_ALPHA(2, false, false, false, true, true, 255, 255, 255, 0, 8, true),
       LUMINANCE(1, false, false, false, true, false, 0, 0, 0, 0, 255, true);
 
-      final int components;
+      private final int components;
       private final boolean hasRed;
       private final boolean hasGreen;
       private final boolean hasBlue;
@@ -539,19 +542,19 @@ public final class NativeImage implements AutoCloseable {
       private final int alphaOffset;
       private final boolean supportedByStb;
 
-      private Format(final int var3, final boolean var4, final boolean var5, final boolean var6, final boolean var7, final boolean var8, final int var9, final int var10, final int var11, final int var12, final int var13, final boolean var14) {
-         this.components = var3;
-         this.hasRed = var4;
-         this.hasGreen = var5;
-         this.hasBlue = var6;
-         this.hasLuminance = var7;
-         this.hasAlpha = var8;
-         this.redOffset = var9;
-         this.greenOffset = var10;
-         this.blueOffset = var11;
-         this.luminanceOffset = var12;
-         this.alphaOffset = var13;
-         this.supportedByStb = var14;
+      private Format(final int components, final boolean hasRed, final boolean hasGreen, final boolean hasBlue, final boolean hasLuminance, final boolean hasAlpha, final int redOffset, final int greenOffset, final int blueOffset, final int luminanceOffset, final int alphaOffset, final boolean supportedByStb) {
+         this.components = components;
+         this.hasRed = hasRed;
+         this.hasGreen = hasGreen;
+         this.hasBlue = hasBlue;
+         this.hasLuminance = hasLuminance;
+         this.hasAlpha = hasAlpha;
+         this.redOffset = redOffset;
+         this.greenOffset = greenOffset;
+         this.blueOffset = blueOffset;
+         this.luminanceOffset = luminanceOffset;
+         this.alphaOffset = alphaOffset;
+         this.supportedByStb = supportedByStb;
       }
 
       public int components() {
@@ -634,8 +637,8 @@ public final class NativeImage implements AutoCloseable {
          return this.supportedByStb;
       }
 
-      static Format getStbFormat(int var0) {
-         switch (var0) {
+      private static Format getStbFormat(final int i) {
+         switch (i) {
             case 1:
                return LUMINANCE;
             case 2:

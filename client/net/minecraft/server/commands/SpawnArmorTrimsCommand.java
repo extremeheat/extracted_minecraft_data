@@ -45,71 +45,71 @@ public class SpawnArmorTrimsCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawn_armor_trims").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("*_lag_my_game").executes((var0x) -> spawnAllArmorTrims((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getPlayerOrException())))).then(Commands.argument("pattern", ResourceKeyArgument.key(Registries.TRIM_PATTERN)).executes((var0x) -> spawnArmorTrim((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getPlayerOrException(), ResourceKeyArgument.getRegistryKey(var0x, "pattern", Registries.TRIM_PATTERN, ERROR_INVALID_PATTERN)))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawn_armor_trims").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("*_lag_my_game").executes((c) -> spawnAllArmorTrims((CommandSourceStack)c.getSource(), ((CommandSourceStack)c.getSource()).getPlayerOrException())))).then(Commands.argument("pattern", ResourceKeyArgument.key(Registries.TRIM_PATTERN)).executes((c) -> spawnArmorTrim((CommandSourceStack)c.getSource(), ((CommandSourceStack)c.getSource()).getPlayerOrException(), ResourceKeyArgument.getRegistryKey(c, "pattern", Registries.TRIM_PATTERN, ERROR_INVALID_PATTERN)))));
    }
 
-   private static int spawnAllArmorTrims(CommandSourceStack var0, Player var1) {
-      return spawnArmorTrims(var0, var1, var0.getServer().registryAccess().lookupOrThrow(Registries.TRIM_PATTERN).listElements());
+   private static int spawnAllArmorTrims(final CommandSourceStack source, final Player player) {
+      return spawnArmorTrims(source, player, source.getServer().registryAccess().lookupOrThrow(Registries.TRIM_PATTERN).listElements());
    }
 
-   private static int spawnArmorTrim(CommandSourceStack var0, Player var1, ResourceKey<TrimPattern> var2) {
-      return spawnArmorTrims(var0, var1, Stream.of((Holder.Reference)var0.getServer().registryAccess().lookupOrThrow(Registries.TRIM_PATTERN).get(var2).orElseThrow()));
+   private static int spawnArmorTrim(final CommandSourceStack source, final Player player, final ResourceKey<TrimPattern> pattern) {
+      return spawnArmorTrims(source, player, Stream.of((Holder.Reference)source.getServer().registryAccess().lookupOrThrow(Registries.TRIM_PATTERN).get(pattern).orElseThrow()));
    }
 
-   private static int spawnArmorTrims(CommandSourceStack var0, Player var1, Stream<Holder.Reference<TrimPattern>> var2) {
-      ServerLevel var3 = var0.getLevel();
-      List var4 = var2.sorted(Comparator.comparing((var0x) -> TRIM_PATTERN_ORDER.applyAsInt(var0x.key()))).toList();
-      List var5 = var3.registryAccess().lookupOrThrow(Registries.TRIM_MATERIAL).listElements().sorted(Comparator.comparing((var0x) -> TRIM_MATERIAL_ORDER.applyAsInt(var0x.key()))).toList();
-      List var6 = findEquippableItemsWithAssets(var3.registryAccess().lookupOrThrow(Registries.ITEM));
-      BlockPos var7 = var1.blockPosition().relative((Direction)var1.getDirection(), 5);
-      double var8 = 3.0;
+   private static int spawnArmorTrims(final CommandSourceStack source, final Player player, final Stream<Holder.Reference<TrimPattern>> patterns) {
+      ServerLevel level = source.getLevel();
+      List<Holder.Reference<TrimPattern>> sortedPatterns = patterns.sorted(Comparator.comparing((h) -> TRIM_PATTERN_ORDER.applyAsInt(h.key()))).toList();
+      List<Holder.Reference<TrimMaterial>> sortedMaterials = level.registryAccess().lookupOrThrow(Registries.TRIM_MATERIAL).listElements().sorted(Comparator.comparing((h) -> TRIM_MATERIAL_ORDER.applyAsInt(h.key()))).toList();
+      List<Holder.Reference<Item>> equippableItems = findEquippableItemsWithAssets(level.registryAccess().lookupOrThrow(Registries.ITEM));
+      BlockPos origin = player.blockPosition().relative((Direction)player.getDirection(), 5);
+      double padding = 3.0;
 
-      for(int var10 = 0; var10 < var5.size(); ++var10) {
-         Holder.Reference var11 = (Holder.Reference)var5.get(var10);
+      for(int materialIndex = 0; materialIndex < sortedMaterials.size(); ++materialIndex) {
+         Holder.Reference<TrimMaterial> material = (Holder.Reference)sortedMaterials.get(materialIndex);
 
-         for(int var12 = 0; var12 < var4.size(); ++var12) {
-            Holder.Reference var13 = (Holder.Reference)var4.get(var12);
-            ArmorTrim var14 = new ArmorTrim(var11, var13);
+         for(int patternIndex = 0; patternIndex < sortedPatterns.size(); ++patternIndex) {
+            Holder.Reference<TrimPattern> pattern = (Holder.Reference)sortedPatterns.get(patternIndex);
+            ArmorTrim trim = new ArmorTrim(material, pattern);
 
-            for(int var15 = 0; var15 < var6.size(); ++var15) {
-               Holder.Reference var16 = (Holder.Reference)var6.get(var15);
-               double var17 = (double)var7.getX() + 0.5 - (double)var15 * 3.0;
-               double var19 = (double)var7.getY() + 0.5 + (double)var10 * 3.0;
-               double var21 = (double)var7.getZ() + 0.5 + (double)(var12 * 10);
-               ArmorStand var23 = new ArmorStand(var3, var17, var19, var21);
-               var23.setYRot(180.0F);
-               var23.setNoGravity(true);
-               ItemStack var24 = new ItemStack(var16);
-               Equippable var25 = (Equippable)Objects.requireNonNull((Equippable)var24.get(DataComponents.EQUIPPABLE));
-               var24.set(DataComponents.TRIM, var14);
-               var23.setItemSlot(var25.slot(), var24);
-               if (var15 == 0) {
-                  var23.setCustomName(((TrimPattern)var14.pattern().value()).copyWithStyle(var14.material()).copy().append(" & ").append(((TrimMaterial)var14.material().value()).description()));
-                  var23.setCustomNameVisible(true);
+            for(int itemIndex = 0; itemIndex < equippableItems.size(); ++itemIndex) {
+               Holder.Reference<Item> equippableItem = (Holder.Reference)equippableItems.get(itemIndex);
+               double x = (double)origin.getX() + 0.5 - (double)itemIndex * 3.0;
+               double y = (double)origin.getY() + 0.5 + (double)materialIndex * 3.0;
+               double z = (double)origin.getZ() + 0.5 + (double)(patternIndex * 10);
+               ArmorStand armorStand = new ArmorStand(level, x, y, z);
+               armorStand.setYRot(180.0F);
+               armorStand.setNoGravity(true);
+               ItemStack stack = new ItemStack(equippableItem);
+               Equippable equippable = (Equippable)Objects.requireNonNull((Equippable)stack.get(DataComponents.EQUIPPABLE));
+               stack.set(DataComponents.TRIM, trim);
+               armorStand.setItemSlot(equippable.slot(), stack);
+               if (itemIndex == 0) {
+                  armorStand.setCustomName(((TrimPattern)trim.pattern().value()).copyWithStyle(trim.material()).copy().append(" & ").append(((TrimMaterial)trim.material().value()).description()));
+                  armorStand.setCustomNameVisible(true);
                } else {
-                  var23.setInvisible(true);
+                  armorStand.setInvisible(true);
                }
 
-               var3.addFreshEntity(var23);
+               level.addFreshEntity(armorStand);
             }
          }
       }
 
-      var0.sendSuccess(() -> Component.literal("Armorstands with trimmed armor spawned around you"), true);
+      source.sendSuccess(() -> Component.literal("Armorstands with trimmed armor spawned around you"), true);
       return 1;
    }
 
-   private static List<Holder.Reference<Item>> findEquippableItemsWithAssets(HolderLookup<Item> var0) {
-      ArrayList var1 = new ArrayList();
-      var0.listElements().forEach((var1x) -> {
-         Equippable var2 = (Equippable)((Item)var1x.value()).components().get(DataComponents.EQUIPPABLE);
-         if (var2 != null && var2.slot().getType() == EquipmentSlot.Type.HUMANOID_ARMOR && var2.assetId().isPresent()) {
-            var1.add(var1x);
+   private static List<Holder.Reference<Item>> findEquippableItemsWithAssets(final HolderLookup<Item> items) {
+      List<Holder.Reference<Item>> result = new ArrayList();
+      items.listElements().forEach((item) -> {
+         Equippable equippable = (Equippable)item.components().get(DataComponents.EQUIPPABLE);
+         if (equippable != null && equippable.slot().getType() == EquipmentSlot.Type.HUMANOID_ARMOR && equippable.assetId().isPresent()) {
+            result.add(item);
          }
 
       });
-      return var1;
+      return result;
    }
 
    static {
@@ -117,6 +117,6 @@ public class SpawnArmorTrimsCommand {
       VANILLA_TRIM_MATERIALS = List.of(TrimMaterials.QUARTZ, TrimMaterials.IRON, TrimMaterials.NETHERITE, TrimMaterials.REDSTONE, TrimMaterials.COPPER, TrimMaterials.GOLD, TrimMaterials.EMERALD, TrimMaterials.DIAMOND, TrimMaterials.LAPIS, TrimMaterials.AMETHYST, TrimMaterials.RESIN);
       TRIM_PATTERN_ORDER = Util.<ResourceKey<TrimPattern>>createIndexLookup(VANILLA_TRIM_PATTERNS);
       TRIM_MATERIAL_ORDER = Util.<ResourceKey<TrimMaterial>>createIndexLookup(VANILLA_TRIM_MATERIALS);
-      ERROR_INVALID_PATTERN = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("Invalid pattern", var0));
+      ERROR_INVALID_PATTERN = new DynamicCommandExceptionType((value) -> Component.translatableEscape("Invalid pattern", value));
    }
 }

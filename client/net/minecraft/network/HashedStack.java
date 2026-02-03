@@ -15,14 +15,14 @@ public interface HashedStack {
          return "<empty>";
       }
 
-      public boolean matches(ItemStack var1, HashedPatchMap.HashGenerator var2) {
-         return var1.isEmpty();
+      public boolean matches(final ItemStack stack, final HashedPatchMap.HashGenerator hasher) {
+         return stack.isEmpty();
       }
    };
-   StreamCodec<RegistryFriendlyByteBuf, HashedStack> STREAM_CODEC = ByteBufCodecs.optional(HashedStack.ActualItem.STREAM_CODEC).map((var0) -> (HashedStack)DataFixUtils.orElse(var0, EMPTY), (var0) -> {
+   StreamCodec<RegistryFriendlyByteBuf, HashedStack> STREAM_CODEC = ByteBufCodecs.optional(HashedStack.ActualItem.STREAM_CODEC).map((actualItem) -> (HashedStack)DataFixUtils.orElse(actualItem, EMPTY), (hashedStack) -> {
       Optional var10000;
-      if (var0 instanceof ActualItem var1) {
-         var10000 = Optional.of(var1);
+      if (hashedStack instanceof ActualItem actualItem) {
+         var10000 = Optional.of(actualItem);
       } else {
          var10000 = Optional.empty();
       }
@@ -30,27 +30,24 @@ public interface HashedStack {
       return var10000;
    });
 
-   boolean matches(ItemStack var1, HashedPatchMap.HashGenerator var2);
+   boolean matches(ItemStack stack, HashedPatchMap.HashGenerator hasher);
 
-   static HashedStack create(ItemStack var0, HashedPatchMap.HashGenerator var1) {
-      return (HashedStack)(var0.isEmpty() ? EMPTY : new ActualItem(var0.getItemHolder(), var0.getCount(), HashedPatchMap.create(var0.getComponentsPatch(), var1)));
+   static HashedStack create(final ItemStack itemStack, final HashedPatchMap.HashGenerator hasher) {
+      return (HashedStack)(itemStack.isEmpty() ? EMPTY : new ActualItem(itemStack.typeHolder(), itemStack.getCount(), HashedPatchMap.create(itemStack.getComponentsPatch(), hasher)));
    }
 
    public static record ActualItem(Holder<Item> item, int count, HashedPatchMap components) implements HashedStack {
       public static final StreamCodec<RegistryFriendlyByteBuf, ActualItem> STREAM_CODEC;
 
-      public ActualItem(Holder<Item> var1, int var2, HashedPatchMap var3) {
+      public ActualItem {
          super();
-         this.item = var1;
-         this.count = var2;
-         this.components = var3;
       }
 
-      public boolean matches(ItemStack var1, HashedPatchMap.HashGenerator var2) {
-         if (this.count != var1.getCount()) {
+      public boolean matches(final ItemStack itemStack, final HashedPatchMap.HashGenerator hasher) {
+         if (this.count != itemStack.getCount()) {
             return false;
          } else {
-            return !this.item.equals(var1.getItemHolder()) ? false : this.components.matches(var1.getComponentsPatch(), var2);
+            return !this.item.equals(itemStack.typeHolder()) ? false : this.components.matches(itemStack.getComponentsPatch(), hasher);
          }
       }
 

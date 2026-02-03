@@ -19,168 +19,168 @@ public class TerrainProvider {
       super();
    }
 
-   public static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> overworldOffset(I var0, I var1, I var2, boolean var3) {
-      BoundedFloatFunction var4 = var3 ? AMPLIFIED_OFFSET : NO_TRANSFORM;
-      CubicSpline var5 = buildErosionOffsetSpline(var1, var2, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, var4);
-      CubicSpline var6 = buildErosionOffsetSpline(var1, var2, -0.1F, 0.03F, 0.1F, 0.1F, 0.01F, -0.03F, false, false, var4);
-      CubicSpline var7 = buildErosionOffsetSpline(var1, var2, -0.1F, 0.03F, 0.1F, 0.7F, 0.01F, -0.03F, true, true, var4);
-      CubicSpline var8 = buildErosionOffsetSpline(var1, var2, -0.05F, 0.03F, 0.1F, 1.0F, 0.01F, 0.01F, true, true, var4);
-      return CubicSpline.<C, I>builder(var0, var4).addPoint(-1.1F, 0.044F).addPoint(-1.02F, -0.2222F).addPoint(-0.51F, -0.2222F).addPoint(-0.44F, -0.12F).addPoint(-0.18F, -0.12F).addPoint(-0.16F, var5).addPoint(-0.15F, var5).addPoint(-0.1F, var6).addPoint(0.25F, var7).addPoint(1.0F, var8).build();
+   public static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> overworldOffset(final I continents, final I erosion, final I ridges, final boolean amplified) {
+      BoundedFloatFunction<Float> offsetTransformer = amplified ? AMPLIFIED_OFFSET : NO_TRANSFORM;
+      CubicSpline<C, I> beachSpline = buildErosionOffsetSpline(erosion, ridges, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, offsetTransformer);
+      CubicSpline<C, I> lowSpline = buildErosionOffsetSpline(erosion, ridges, -0.1F, 0.03F, 0.1F, 0.1F, 0.01F, -0.03F, false, false, offsetTransformer);
+      CubicSpline<C, I> midSpline = buildErosionOffsetSpline(erosion, ridges, -0.1F, 0.03F, 0.1F, 0.7F, 0.01F, -0.03F, true, true, offsetTransformer);
+      CubicSpline<C, I> highSpline = buildErosionOffsetSpline(erosion, ridges, -0.05F, 0.03F, 0.1F, 1.0F, 0.01F, 0.01F, true, true, offsetTransformer);
+      return CubicSpline.<C, I>builder(continents, offsetTransformer).addPoint(-1.1F, 0.044F).addPoint(-1.02F, -0.2222F).addPoint(-0.51F, -0.2222F).addPoint(-0.44F, -0.12F).addPoint(-0.18F, -0.12F).addPoint(-0.16F, beachSpline).addPoint(-0.15F, beachSpline).addPoint(-0.1F, lowSpline).addPoint(0.25F, midSpline).addPoint(1.0F, highSpline).build();
    }
 
-   public static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> overworldFactor(I var0, I var1, I var2, I var3, boolean var4) {
-      BoundedFloatFunction var5 = var4 ? AMPLIFIED_FACTOR : NO_TRANSFORM;
-      return CubicSpline.<C, I>builder(var0, NO_TRANSFORM).addPoint(-0.19F, 3.95F).addPoint(-0.15F, getErosionFactor(var1, var2, var3, 6.25F, true, NO_TRANSFORM)).addPoint(-0.1F, getErosionFactor(var1, var2, var3, 5.47F, true, var5)).addPoint(0.03F, getErosionFactor(var1, var2, var3, 5.08F, true, var5)).addPoint(0.06F, getErosionFactor(var1, var2, var3, 4.69F, false, var5)).build();
+   public static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> overworldFactor(final I continents, final I erosion, final I weirdness, final I ridges, final boolean amplified) {
+      BoundedFloatFunction<Float> factorTransformer = amplified ? AMPLIFIED_FACTOR : NO_TRANSFORM;
+      return CubicSpline.<C, I>builder(continents, NO_TRANSFORM).addPoint(-0.19F, 3.95F).addPoint(-0.15F, getErosionFactor(erosion, weirdness, ridges, 6.25F, true, NO_TRANSFORM)).addPoint(-0.1F, getErosionFactor(erosion, weirdness, ridges, 5.47F, true, factorTransformer)).addPoint(0.03F, getErosionFactor(erosion, weirdness, ridges, 5.08F, true, factorTransformer)).addPoint(0.06F, getErosionFactor(erosion, weirdness, ridges, 4.69F, false, factorTransformer)).build();
    }
 
-   public static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> overworldJaggedness(I var0, I var1, I var2, I var3, boolean var4) {
-      BoundedFloatFunction var5 = var4 ? AMPLIFIED_JAGGEDNESS : NO_TRANSFORM;
-      float var6 = 0.65F;
-      return CubicSpline.<C, I>builder(var0, var5).addPoint(-0.11F, 0.0F).addPoint(0.03F, buildErosionJaggednessSpline(var1, var2, var3, 1.0F, 0.5F, 0.0F, 0.0F, var5)).addPoint(0.65F, buildErosionJaggednessSpline(var1, var2, var3, 1.0F, 1.0F, 1.0F, 0.0F, var5)).build();
+   public static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> overworldJaggedness(final I continents, final I erosion, final I weirdness, final I ridges, final boolean amplified) {
+      BoundedFloatFunction<Float> jaggednessTransformer = amplified ? AMPLIFIED_JAGGEDNESS : NO_TRANSFORM;
+      float farInlandMiddle = 0.65F;
+      return CubicSpline.<C, I>builder(continents, jaggednessTransformer).addPoint(-0.11F, 0.0F).addPoint(0.03F, buildErosionJaggednessSpline(erosion, weirdness, ridges, 1.0F, 0.5F, 0.0F, 0.0F, jaggednessTransformer)).addPoint(0.65F, buildErosionJaggednessSpline(erosion, weirdness, ridges, 1.0F, 1.0F, 1.0F, 0.0F, jaggednessTransformer)).build();
    }
 
-   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> buildErosionJaggednessSpline(I var0, I var1, I var2, float var3, float var4, float var5, float var6, BoundedFloatFunction<Float> var7) {
-      float var8 = -0.5775F;
-      CubicSpline var9 = buildRidgeJaggednessSpline(var1, var2, var3, var5, var7);
-      CubicSpline var10 = buildRidgeJaggednessSpline(var1, var2, var4, var6, var7);
-      return CubicSpline.<C, I>builder(var0, var7).addPoint(-1.0F, var9).addPoint(-0.78F, var10).addPoint(-0.5775F, var10).addPoint(-0.375F, 0.0F).build();
+   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> buildErosionJaggednessSpline(final I erosion, final I weirdness, final I ridges, final float jaggednessFactorAtPeakRidgeAndErosionIndex0, final float jaggednessFactorAtPeakRidgeAndErosionIndex1, final float jaggednessFactorAtHighRidgeAndErosionIndex0, final float jaggednessFactorAtHighRidgeAndErosionIndex1, final BoundedFloatFunction<Float> jaggednessTransformer) {
+      float erosionIndex1Middle = -0.5775F;
+      CubicSpline<C, I> ridgeJaggednessSplineAtErosion0 = buildRidgeJaggednessSpline(weirdness, ridges, jaggednessFactorAtPeakRidgeAndErosionIndex0, jaggednessFactorAtHighRidgeAndErosionIndex0, jaggednessTransformer);
+      CubicSpline<C, I> ridgeJaggednessSplineAtErosion1 = buildRidgeJaggednessSpline(weirdness, ridges, jaggednessFactorAtPeakRidgeAndErosionIndex1, jaggednessFactorAtHighRidgeAndErosionIndex1, jaggednessTransformer);
+      return CubicSpline.<C, I>builder(erosion, jaggednessTransformer).addPoint(-1.0F, ridgeJaggednessSplineAtErosion0).addPoint(-0.78F, ridgeJaggednessSplineAtErosion1).addPoint(-0.5775F, ridgeJaggednessSplineAtErosion1).addPoint(-0.375F, 0.0F).build();
    }
 
-   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> buildRidgeJaggednessSpline(I var0, I var1, float var2, float var3, BoundedFloatFunction<Float> var4) {
-      float var5 = NoiseRouterData.peaksAndValleys(0.4F);
-      float var6 = NoiseRouterData.peaksAndValleys(0.56666666F);
-      float var7 = (var5 + var6) / 2.0F;
-      CubicSpline.Builder var8 = CubicSpline.builder(var1, var4);
-      var8.addPoint(var5, 0.0F);
-      if (var3 > 0.0F) {
-         var8.addPoint(var7, buildWeirdnessJaggednessSpline(var0, var3, var4));
+   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> buildRidgeJaggednessSpline(final I weirdness, final I ridges, final float jaggednessFactorAtPeakRidge, final float jaggednessFactorAtHighRidge, final BoundedFloatFunction<Float> jaggednessTransformer) {
+      float highSliceStart = NoiseRouterData.peaksAndValleys(0.4F);
+      float highSliceEnd = NoiseRouterData.peaksAndValleys(0.56666666F);
+      float highSliceMiddle = (highSliceStart + highSliceEnd) / 2.0F;
+      CubicSpline.Builder<C, I> ridgeSpline = CubicSpline.<C, I>builder(ridges, jaggednessTransformer);
+      ridgeSpline.addPoint(highSliceStart, 0.0F);
+      if (jaggednessFactorAtHighRidge > 0.0F) {
+         ridgeSpline.addPoint(highSliceMiddle, buildWeirdnessJaggednessSpline(weirdness, jaggednessFactorAtHighRidge, jaggednessTransformer));
       } else {
-         var8.addPoint(var7, 0.0F);
+         ridgeSpline.addPoint(highSliceMiddle, 0.0F);
       }
 
-      if (var2 > 0.0F) {
-         var8.addPoint(1.0F, buildWeirdnessJaggednessSpline(var0, var2, var4));
+      if (jaggednessFactorAtPeakRidge > 0.0F) {
+         ridgeSpline.addPoint(1.0F, buildWeirdnessJaggednessSpline(weirdness, jaggednessFactorAtPeakRidge, jaggednessTransformer));
       } else {
-         var8.addPoint(1.0F, 0.0F);
+         ridgeSpline.addPoint(1.0F, 0.0F);
       }
 
-      return var8.build();
+      return ridgeSpline.build();
    }
 
-   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> buildWeirdnessJaggednessSpline(I var0, float var1, BoundedFloatFunction<Float> var2) {
-      float var3 = 0.63F * var1;
-      float var4 = 0.3F * var1;
-      return CubicSpline.<C, I>builder(var0, var2).addPoint(-0.01F, var3).addPoint(0.01F, var4).build();
+   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> buildWeirdnessJaggednessSpline(final I weirdness, final float jaggednessFactor, final BoundedFloatFunction<Float> jaggednessTransformer) {
+      float maxJaggednessAtNegativeWeirdness = 0.63F * jaggednessFactor;
+      float maxJaggednessAtPositiveWeirdness = 0.3F * jaggednessFactor;
+      return CubicSpline.<C, I>builder(weirdness, jaggednessTransformer).addPoint(-0.01F, maxJaggednessAtNegativeWeirdness).addPoint(0.01F, maxJaggednessAtPositiveWeirdness).build();
    }
 
-   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> getErosionFactor(I var0, I var1, I var2, float var3, boolean var4, BoundedFloatFunction<Float> var5) {
-      CubicSpline var6 = CubicSpline.builder(var1, var5).addPoint(-0.2F, 6.3F).addPoint(0.2F, var3).build();
-      CubicSpline.Builder var7 = CubicSpline.builder(var0, var5).addPoint(-0.6F, var6).addPoint(-0.5F, CubicSpline.builder(var1, var5).addPoint(-0.05F, 6.3F).addPoint(0.05F, 2.67F).build()).addPoint(-0.35F, var6).addPoint(-0.25F, var6).addPoint(-0.1F, CubicSpline.builder(var1, var5).addPoint(-0.05F, 2.67F).addPoint(0.05F, 6.3F).build()).addPoint(0.03F, var6);
-      if (var4) {
-         CubicSpline var8 = CubicSpline.builder(var1, var5).addPoint(0.0F, var3).addPoint(0.1F, 0.625F).build();
-         CubicSpline var9 = CubicSpline.builder(var2, var5).addPoint(-0.9F, var3).addPoint(-0.69F, var8).build();
-         var7.addPoint(0.35F, var3).addPoint(0.45F, var9).addPoint(0.55F, var9).addPoint(0.62F, var3);
+   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> getErosionFactor(final I erosion, final I weirdness, final I ridges, final float baseValue, final boolean shatteredTerrain, final BoundedFloatFunction<Float> factorTransformer) {
+      CubicSpline<C, I> baseSpline = CubicSpline.<C, I>builder(weirdness, factorTransformer).addPoint(-0.2F, 6.3F).addPoint(0.2F, baseValue).build();
+      CubicSpline.Builder<C, I> erosionPoints = CubicSpline.<C, I>builder(erosion, factorTransformer).addPoint(-0.6F, baseSpline).addPoint(-0.5F, CubicSpline.builder(weirdness, factorTransformer).addPoint(-0.05F, 6.3F).addPoint(0.05F, 2.67F).build()).addPoint(-0.35F, baseSpline).addPoint(-0.25F, baseSpline).addPoint(-0.1F, CubicSpline.builder(weirdness, factorTransformer).addPoint(-0.05F, 2.67F).addPoint(0.05F, 6.3F).build()).addPoint(0.03F, baseSpline);
+      if (shatteredTerrain) {
+         CubicSpline<C, I> weirdnessShattered = CubicSpline.<C, I>builder(weirdness, factorTransformer).addPoint(0.0F, baseValue).addPoint(0.1F, 0.625F).build();
+         CubicSpline<C, I> ridgesShattered = CubicSpline.<C, I>builder(ridges, factorTransformer).addPoint(-0.9F, baseValue).addPoint(-0.69F, weirdnessShattered).build();
+         erosionPoints.addPoint(0.35F, baseValue).addPoint(0.45F, ridgesShattered).addPoint(0.55F, ridgesShattered).addPoint(0.62F, baseValue);
       } else {
-         CubicSpline var10 = CubicSpline.builder(var2, var5).addPoint(-0.7F, var6).addPoint(-0.15F, 1.37F).build();
-         CubicSpline var11 = CubicSpline.builder(var2, var5).addPoint(0.45F, var6).addPoint(0.7F, 1.56F).build();
-         var7.addPoint(0.05F, var11).addPoint(0.4F, var11).addPoint(0.45F, var10).addPoint(0.55F, var10).addPoint(0.58F, var3);
+         CubicSpline<C, I> extremeHillsTerrainFromMidSliceAndUp = CubicSpline.<C, I>builder(ridges, factorTransformer).addPoint(-0.7F, baseSpline).addPoint(-0.15F, 1.37F).build();
+         CubicSpline<C, I> extra3dNoiseOnPeaksOnly = CubicSpline.<C, I>builder(ridges, factorTransformer).addPoint(0.45F, baseSpline).addPoint(0.7F, 1.56F).build();
+         erosionPoints.addPoint(0.05F, extra3dNoiseOnPeaksOnly).addPoint(0.4F, extra3dNoiseOnPeaksOnly).addPoint(0.45F, extremeHillsTerrainFromMidSliceAndUp).addPoint(0.55F, extremeHillsTerrainFromMidSliceAndUp).addPoint(0.58F, baseValue);
       }
 
-      return var7.build();
+      return erosionPoints.build();
    }
 
-   private static float calculateSlope(float var0, float var1, float var2, float var3) {
-      return (var1 - var0) / (var3 - var2);
+   private static float calculateSlope(final float y1, final float y2, final float x1, final float x2) {
+      return (y2 - y1) / (x2 - x1);
    }
 
-   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> buildMountainRidgeSplineWithPoints(I var0, float var1, boolean var2, BoundedFloatFunction<Float> var3) {
-      CubicSpline.Builder var4 = CubicSpline.builder(var0, var3);
-      float var5 = -0.7F;
-      float var6 = -1.0F;
-      float var7 = mountainContinentalness(-1.0F, var1, -0.7F);
-      float var8 = 1.0F;
-      float var9 = mountainContinentalness(1.0F, var1, -0.7F);
-      float var10 = calculateMountainRidgeZeroContinentalnessPoint(var1);
-      float var11 = -0.65F;
-      if (-0.65F < var10 && var10 < 1.0F) {
-         float var19 = mountainContinentalness(-0.65F, var1, -0.7F);
-         float var13 = -0.75F;
-         float var14 = mountainContinentalness(-0.75F, var1, -0.7F);
-         float var15 = calculateSlope(var7, var14, -1.0F, -0.75F);
-         var4.addPoint(-1.0F, var7, var15);
-         var4.addPoint(-0.75F, var14);
-         var4.addPoint(-0.65F, var19);
-         float var16 = mountainContinentalness(var10, var1, -0.7F);
-         float var17 = calculateSlope(var16, var9, var10, 1.0F);
-         float var18 = 0.01F;
-         var4.addPoint(var10 - 0.01F, var16);
-         var4.addPoint(var10, var16, var17);
-         var4.addPoint(1.0F, var9, var17);
+   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> buildMountainRidgeSplineWithPoints(final I ridges, final float modulation, final boolean saddle, final BoundedFloatFunction<Float> offsetTransformer) {
+      CubicSpline.Builder<C, I> build = CubicSpline.<C, I>builder(ridges, offsetTransformer);
+      float allowRiversBelow = -0.7F;
+      float minPoint = -1.0F;
+      float minPointContinentalness = mountainContinentalness(-1.0F, modulation, -0.7F);
+      float maxPoint = 1.0F;
+      float maxPointContinentalness = mountainContinentalness(1.0F, modulation, -0.7F);
+      float ridgeZeroPoint = calculateMountainRidgeZeroContinentalnessPoint(modulation);
+      float afterRiverPoint = -0.65F;
+      if (-0.65F < ridgeZeroPoint && ridgeZeroPoint < 1.0F) {
+         float afterRiverThresholdContinentalness = mountainContinentalness(-0.65F, modulation, -0.7F);
+         float beforeRiverPoint = -0.75F;
+         float beforeRiverThresholdContinentalness = mountainContinentalness(-0.75F, modulation, -0.7F);
+         float minPointDerivative = calculateSlope(minPointContinentalness, beforeRiverThresholdContinentalness, -1.0F, -0.75F);
+         build.addPoint(-1.0F, minPointContinentalness, minPointDerivative);
+         build.addPoint(-0.75F, beforeRiverThresholdContinentalness);
+         build.addPoint(-0.65F, afterRiverThresholdContinentalness);
+         float ridgeZeroPointContinentalness = mountainContinentalness(ridgeZeroPoint, modulation, -0.7F);
+         float maxPointDerivative = calculateSlope(ridgeZeroPointContinentalness, maxPointContinentalness, ridgeZeroPoint, 1.0F);
+         float smallOffset = 0.01F;
+         build.addPoint(ridgeZeroPoint - 0.01F, ridgeZeroPointContinentalness);
+         build.addPoint(ridgeZeroPoint, ridgeZeroPointContinentalness, maxPointDerivative);
+         build.addPoint(1.0F, maxPointContinentalness, maxPointDerivative);
       } else {
-         float var12 = calculateSlope(var7, var9, -1.0F, 1.0F);
-         if (var2) {
-            var4.addPoint(-1.0F, Math.max(0.2F, var7));
-            var4.addPoint(0.0F, Mth.lerp(0.5F, var7, var9), var12);
+         float simpleDerivative = calculateSlope(minPointContinentalness, maxPointContinentalness, -1.0F, 1.0F);
+         if (saddle) {
+            build.addPoint(-1.0F, Math.max(0.2F, minPointContinentalness));
+            build.addPoint(0.0F, Mth.lerp(0.5F, minPointContinentalness, maxPointContinentalness), simpleDerivative);
          } else {
-            var4.addPoint(-1.0F, var7, var12);
+            build.addPoint(-1.0F, minPointContinentalness, simpleDerivative);
          }
 
-         var4.addPoint(1.0F, var9, var12);
+         build.addPoint(1.0F, maxPointContinentalness, simpleDerivative);
       }
 
-      return var4.build();
+      return build.build();
    }
 
-   private static float mountainContinentalness(float var0, float var1, float var2) {
-      float var3 = 1.17F;
-      float var4 = 0.46082947F;
-      float var5 = 1.0F - (1.0F - var1) * 0.5F;
-      float var6 = 0.5F * (1.0F - var1);
-      float var7 = (var0 + 1.17F) * 0.46082947F;
-      float var8 = var7 * var5 - var6;
-      return var0 < var2 ? Math.max(var8, -0.2222F) : Math.max(var8, 0.0F);
+   private static float mountainContinentalness(final float ridge, final float modulation, final float allowRiversBelow) {
+      float ridgeOffset = 1.17F;
+      float ridgeAmplitude = 0.46082947F;
+      float ridgeSlope = 1.0F - (1.0F - modulation) * 0.5F;
+      float ridgeIntersect = 0.5F * (1.0F - modulation);
+      float adjustedRidgeHeight = (ridge + 1.17F) * 0.46082947F;
+      float continentalness = adjustedRidgeHeight * ridgeSlope - ridgeIntersect;
+      return ridge < allowRiversBelow ? Math.max(continentalness, -0.2222F) : Math.max(continentalness, 0.0F);
    }
 
-   private static float calculateMountainRidgeZeroContinentalnessPoint(float var0) {
-      float var1 = 1.17F;
-      float var2 = 0.46082947F;
-      float var3 = 1.0F - (1.0F - var0) * 0.5F;
-      float var4 = 0.5F * (1.0F - var0);
-      return var4 / (0.46082947F * var3) - 1.17F;
+   private static float calculateMountainRidgeZeroContinentalnessPoint(final float modulation) {
+      float ridgeOffset = 1.17F;
+      float ridgeAmplitude = 0.46082947F;
+      float ridgeSlope = 1.0F - (1.0F - modulation) * 0.5F;
+      float ridgeIntersect = 0.5F * (1.0F - modulation);
+      return ridgeIntersect / (0.46082947F * ridgeSlope) - 1.17F;
    }
 
-   public static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> buildErosionOffsetSpline(I var0, I var1, float var2, float var3, float var4, float var5, float var6, float var7, boolean var8, boolean var9, BoundedFloatFunction<Float> var10) {
-      float var11 = 0.6F;
-      float var12 = 0.5F;
-      float var13 = 0.5F;
-      CubicSpline var14 = buildMountainRidgeSplineWithPoints(var1, Mth.lerp(var5, 0.6F, 1.5F), var9, var10);
-      CubicSpline var15 = buildMountainRidgeSplineWithPoints(var1, Mth.lerp(var5, 0.6F, 1.0F), var9, var10);
-      CubicSpline var16 = buildMountainRidgeSplineWithPoints(var1, var5, var9, var10);
-      CubicSpline var17 = ridgeSpline(var1, var2 - 0.15F, 0.5F * var5, Mth.lerp(0.5F, 0.5F, 0.5F) * var5, 0.5F * var5, 0.6F * var5, 0.5F, var10);
-      CubicSpline var18 = ridgeSpline(var1, var2, var6 * var5, var3 * var5, 0.5F * var5, 0.6F * var5, 0.5F, var10);
-      CubicSpline var19 = ridgeSpline(var1, var2, var6, var6, var3, var4, 0.5F, var10);
-      CubicSpline var20 = ridgeSpline(var1, var2, var6, var6, var3, var4, 0.5F, var10);
-      CubicSpline var21 = CubicSpline.builder(var1, var10).addPoint(-1.0F, var2).addPoint(-0.4F, var19).addPoint(0.0F, var4 + 0.07F).build();
-      CubicSpline var22 = ridgeSpline(var1, -0.02F, var7, var7, var3, var4, 0.0F, var10);
-      CubicSpline.Builder var23 = CubicSpline.builder(var0, var10).addPoint(-0.85F, var14).addPoint(-0.7F, var15).addPoint(-0.4F, var16).addPoint(-0.35F, var17).addPoint(-0.1F, var18).addPoint(0.2F, var19);
-      if (var8) {
-         var23.addPoint(0.4F, var20).addPoint(0.45F, var21).addPoint(0.55F, var21).addPoint(0.58F, var20);
+   public static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> buildErosionOffsetSpline(final I erosion, final I ridges, final float lowValley, final float hill, final float tallHill, final float mountainFactor, final float plain, final float swamp, final boolean includeExtremeHills, final boolean saddle, final BoundedFloatFunction<Float> offsetTransformer) {
+      float lowPeaks = 0.6F;
+      float valleyPlateau = 0.5F;
+      float plateau = 0.5F;
+      CubicSpline<C, I> veryLowErosionMountains = buildMountainRidgeSplineWithPoints(ridges, Mth.lerp(mountainFactor, 0.6F, 1.5F), saddle, offsetTransformer);
+      CubicSpline<C, I> lowErosionMountains = buildMountainRidgeSplineWithPoints(ridges, Mth.lerp(mountainFactor, 0.6F, 1.0F), saddle, offsetTransformer);
+      CubicSpline<C, I> mountains = buildMountainRidgeSplineWithPoints(ridges, mountainFactor, saddle, offsetTransformer);
+      CubicSpline<C, I> widePlateau = ridgeSpline(ridges, lowValley - 0.15F, 0.5F * mountainFactor, Mth.lerp(0.5F, 0.5F, 0.5F) * mountainFactor, 0.5F * mountainFactor, 0.6F * mountainFactor, 0.5F, offsetTransformer);
+      CubicSpline<C, I> narrowPlateau = ridgeSpline(ridges, lowValley, plain * mountainFactor, hill * mountainFactor, 0.5F * mountainFactor, 0.6F * mountainFactor, 0.5F, offsetTransformer);
+      CubicSpline<C, I> plains = ridgeSpline(ridges, lowValley, plain, plain, hill, tallHill, 0.5F, offsetTransformer);
+      CubicSpline<C, I> plainsFarInland = ridgeSpline(ridges, lowValley, plain, plain, hill, tallHill, 0.5F, offsetTransformer);
+      CubicSpline<C, I> extremeHills = CubicSpline.<C, I>builder(ridges, offsetTransformer).addPoint(-1.0F, lowValley).addPoint(-0.4F, plains).addPoint(0.0F, tallHill + 0.07F).build();
+      CubicSpline<C, I> swamps = ridgeSpline(ridges, -0.02F, swamp, swamp, hill, tallHill, 0.0F, offsetTransformer);
+      CubicSpline.Builder<C, I> builder = CubicSpline.<C, I>builder(erosion, offsetTransformer).addPoint(-0.85F, veryLowErosionMountains).addPoint(-0.7F, lowErosionMountains).addPoint(-0.4F, mountains).addPoint(-0.35F, widePlateau).addPoint(-0.1F, narrowPlateau).addPoint(0.2F, plains);
+      if (includeExtremeHills) {
+         builder.addPoint(0.4F, plainsFarInland).addPoint(0.45F, extremeHills).addPoint(0.55F, extremeHills).addPoint(0.58F, plainsFarInland);
       }
 
-      var23.addPoint(0.7F, var22);
-      return var23.build();
+      builder.addPoint(0.7F, swamps);
+      return builder.build();
    }
 
-   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> ridgeSpline(I var0, float var1, float var2, float var3, float var4, float var5, float var6, BoundedFloatFunction<Float> var7) {
-      float var8 = Math.max(0.5F * (var2 - var1), var6);
-      float var9 = 5.0F * (var3 - var2);
-      return CubicSpline.<C, I>builder(var0, var7).addPoint(-1.0F, var1, var8).addPoint(-0.4F, var2, Math.min(var8, var9)).addPoint(0.0F, var3, var9).addPoint(0.4F, var4, 2.0F * (var4 - var3)).addPoint(1.0F, var5, 0.7F * (var5 - var4)).build();
+   private static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> ridgeSpline(final I ridges, final float valley, final float low, final float mid, final float high, final float peaks, final float minValleySteepness, final BoundedFloatFunction<Float> offsetTransformer) {
+      float d1 = Math.max(0.5F * (low - valley), minValleySteepness);
+      float d2 = 5.0F * (mid - low);
+      return CubicSpline.<C, I>builder(ridges, offsetTransformer).addPoint(-1.0F, valley, d1).addPoint(-0.4F, low, Math.min(d1, d2)).addPoint(0.0F, mid, d2).addPoint(0.4F, high, 2.0F * (high - mid)).addPoint(1.0F, peaks, 0.7F * (peaks - high)).build();
    }
 
    static {
       NO_TRANSFORM = BoundedFloatFunction.IDENTITY;
-      AMPLIFIED_OFFSET = BoundedFloatFunction.createUnlimited((var0) -> var0 < 0.0F ? var0 : var0 * 2.0F);
-      AMPLIFIED_FACTOR = BoundedFloatFunction.createUnlimited((var0) -> 1.25F - 6.25F / (var0 + 5.0F));
-      AMPLIFIED_JAGGEDNESS = BoundedFloatFunction.createUnlimited((var0) -> var0 * 2.0F);
+      AMPLIFIED_OFFSET = BoundedFloatFunction.createUnlimited((offset) -> offset < 0.0F ? offset : offset * 2.0F);
+      AMPLIFIED_FACTOR = BoundedFloatFunction.createUnlimited((factor) -> 1.25F - 6.25F / (factor + 5.0F));
+      AMPLIFIED_JAGGEDNESS = BoundedFloatFunction.createUnlimited((jaggedness) -> jaggedness * 2.0F);
    }
 }

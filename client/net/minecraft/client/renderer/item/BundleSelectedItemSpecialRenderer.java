@@ -7,20 +7,21 @@ import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import org.jspecify.annotations.Nullable;
 
 public class BundleSelectedItemSpecialRenderer implements ItemModel {
-   static final ItemModel INSTANCE = new BundleSelectedItemSpecialRenderer();
+   private static final ItemModel INSTANCE = new BundleSelectedItemSpecialRenderer();
 
    public BundleSelectedItemSpecialRenderer() {
       super();
    }
 
-   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
-      var1.appendModelIdentityElement(this);
-      ItemStack var8 = BundleItem.getSelectedItemStack(var2);
-      if (!var8.isEmpty()) {
-         var3.appendItemLayers(var1, var8, var4, var5, var6, var7);
+   public void update(final ItemStackRenderState output, final ItemStack item, final ItemModelResolver resolver, final ItemDisplayContext displayContext, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      output.appendModelIdentityElement(this);
+      ItemStackTemplate selectedItem = BundleItem.getSelectedItem(item);
+      if (selectedItem != null) {
+         resolver.appendItemLayers(output, selectedItem.create(), displayContext, level, owner, seed);
       }
 
    }
@@ -36,11 +37,11 @@ public class BundleSelectedItemSpecialRenderer implements ItemModel {
          return MAP_CODEC;
       }
 
-      public ItemModel bake(ItemModel.BakingContext var1) {
+      public ItemModel bake(final ItemModel.BakingContext context) {
          return BundleSelectedItemSpecialRenderer.INSTANCE;
       }
 
-      public void resolveDependencies(ResolvableModel.Resolver var1) {
+      public void resolveDependencies(final ResolvableModel.Resolver resolver) {
       }
    }
 }

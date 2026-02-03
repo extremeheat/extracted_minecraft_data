@@ -1,8 +1,5 @@
 package com.mojang.blaze3d.textures;
 
-import com.mojang.blaze3d.DontObfuscate;
-
-@DontObfuscate
 public enum TextureFormat {
    RGBA8(4),
    RED8(1),
@@ -11,8 +8,8 @@ public enum TextureFormat {
 
    private final int pixelSize;
 
-   private TextureFormat(final int var3) {
-      this.pixelSize = var3;
+   private TextureFormat(final int pixelSize) {
+      this.pixelSize = pixelSize;
    }
 
    public int pixelSize() {

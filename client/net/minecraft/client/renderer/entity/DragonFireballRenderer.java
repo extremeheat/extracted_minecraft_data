@@ -17,30 +17,30 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball, Entit
    private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon_fireball.png");
    private static final RenderType RENDER_TYPE;
 
-   public DragonFireballRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
+   public DragonFireballRenderer(final EntityRendererProvider.Context context) {
+      super(context);
    }
 
-   protected int getBlockLightLevel(DragonFireball var1, BlockPos var2) {
+   protected int getBlockLightLevel(final DragonFireball entity, final BlockPos blockPos) {
       return 15;
    }
 
-   public void submit(EntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      var2.pushPose();
-      var2.scale(2.0F, 2.0F, 2.0F);
-      var2.mulPose((Quaternionfc)var4.orientation);
-      var3.submitCustomGeometry(var2, RENDER_TYPE, (var1x, var2x) -> {
-         vertex(var2x, var1x, var1.lightCoords, 0.0F, 0, 0, 1);
-         vertex(var2x, var1x, var1.lightCoords, 1.0F, 0, 1, 1);
-         vertex(var2x, var1x, var1.lightCoords, 1.0F, 1, 1, 0);
-         vertex(var2x, var1x, var1.lightCoords, 0.0F, 1, 0, 0);
+   public void submit(final EntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      poseStack.pushPose();
+      poseStack.scale(2.0F, 2.0F, 2.0F);
+      poseStack.mulPose((Quaternionfc)camera.orientation);
+      submitNodeCollector.submitCustomGeometry(poseStack, RENDER_TYPE, (pose, buffer) -> {
+         vertex(buffer, pose, state.lightCoords, 0.0F, 0, 0, 1);
+         vertex(buffer, pose, state.lightCoords, 1.0F, 0, 1, 1);
+         vertex(buffer, pose, state.lightCoords, 1.0F, 1, 1, 0);
+         vertex(buffer, pose, state.lightCoords, 0.0F, 1, 0, 0);
       });
-      var2.popPose();
-      super.submit(var1, var2, var3, var4);
+      poseStack.popPose();
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
-   private static void vertex(VertexConsumer var0, PoseStack.Pose var1, int var2, float var3, int var4, int var5, int var6) {
-      var0.addVertex(var1, var3 - 0.5F, (float)var4 - 0.25F, 0.0F).setColor(-1).setUv((float)var5, (float)var6).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var2).setNormal(var1, 0.0F, 1.0F, 0.0F);
+   private static void vertex(final VertexConsumer builder, final PoseStack.Pose pose, final int lightCoords, final float x, final int y, final int u, final int v) {
+      builder.addVertex(pose, x - 0.5F, (float)y - 0.25F, 0.0F).setColor(-1).setUv((float)u, (float)v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(lightCoords).setNormal(pose, 0.0F, 1.0F, 0.0F);
    }
 
    public EntityRenderState createRenderState() {

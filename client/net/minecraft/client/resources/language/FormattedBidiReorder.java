@@ -5,7 +5,6 @@ import com.ibm.icu.lang.UCharacter;
 import com.ibm.icu.text.ArabicShaping;
 import com.ibm.icu.text.Bidi;
 import com.ibm.icu.text.BidiRun;
-import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.SubStringSource;
@@ -16,26 +15,26 @@ public class FormattedBidiReorder {
       super();
    }
 
-   public static FormattedCharSequence reorder(FormattedText var0, boolean var1) {
-      SubStringSource var2 = SubStringSource.create(var0, UCharacter::getMirror, FormattedBidiReorder::shape);
-      Bidi var3 = new Bidi(var2.getPlainText(), var1 ? 127 : 126);
-      var3.setReorderingMode(0);
-      ArrayList var4 = Lists.newArrayList();
-      int var5 = var3.countRuns();
+   public static FormattedCharSequence reorder(final FormattedText text, final boolean defaultRightToLeft) {
+      SubStringSource source = SubStringSource.create(text, UCharacter::getMirror, FormattedBidiReorder::shape);
+      Bidi bidi = new Bidi(source.getPlainText(), defaultRightToLeft ? 127 : 126);
+      bidi.setReorderingMode(0);
+      List<FormattedCharSequence> result = Lists.newArrayList();
+      int runCount = bidi.countRuns();
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         BidiRun var7 = var3.getVisualRun(var6);
-         var4.addAll(var2.substring(var7.getStart(), var7.getLength(), var7.isOddRun()));
+      for(int i = 0; i < runCount; ++i) {
+         BidiRun run = bidi.getVisualRun(i);
+         result.addAll(source.substring(run.getStart(), run.getLength(), run.isOddRun()));
       }
 
-      return FormattedCharSequence.composite((List)var4);
+      return FormattedCharSequence.composite(result);
    }
 
-   private static String shape(String var0) {
+   private static String shape(final String text) {
       try {
-         return (new ArabicShaping(8)).shape(var0);
+         return (new ArabicShaping(8)).shape(text);
       } catch (Exception var2) {
-         return var0;
+         return text;
       }
    }
 }

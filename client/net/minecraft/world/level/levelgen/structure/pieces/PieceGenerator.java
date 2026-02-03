@@ -9,18 +9,11 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 @FunctionalInterface
 public interface PieceGenerator<C extends FeatureConfiguration> {
-   void generatePieces(StructurePiecesBuilder var1, Context<C> var2);
+   void generatePieces(StructurePiecesBuilder builder, Context<C> context);
 
    public static record Context<C extends FeatureConfiguration>(C config, ChunkGenerator chunkGenerator, StructureTemplateManager structureTemplateManager, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, WorldgenRandom random, long seed) {
-      public Context(C var1, ChunkGenerator var2, StructureTemplateManager var3, ChunkPos var4, LevelHeightAccessor var5, WorldgenRandom var6, long var7) {
+      public Context {
          super();
-         this.config = var1;
-         this.chunkGenerator = var2;
-         this.structureTemplateManager = var3;
-         this.chunkPos = var4;
-         this.heightAccessor = var5;
-         this.random = var6;
-         this.seed = var7;
       }
    }
 }

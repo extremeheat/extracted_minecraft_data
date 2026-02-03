@@ -45,77 +45,77 @@ public class DimensionDataStorage implements AutoCloseable {
    private final Path dataFolder;
    private CompletableFuture<?> pendingWriteFuture = CompletableFuture.completedFuture((Object)null);
 
-   public DimensionDataStorage(Path var1, DataFixer var2, HolderLookup.Provider var3) {
+   public DimensionDataStorage(final Path dataFolder, final DataFixer fixerUpper, final HolderLookup.Provider registries) {
       super();
-      this.fixerUpper = var2;
-      this.dataFolder = var1;
-      this.registries = var3;
+      this.fixerUpper = fixerUpper;
+      this.dataFolder = dataFolder;
+      this.registries = registries;
    }
 
-   private Path getDataFile(String var1) {
-      return this.dataFolder.resolve(var1 + ".dat");
+   private Path getDataFile(final String id) {
+      return this.dataFolder.resolve(id + ".dat");
    }
 
-   public <T extends SavedData> T computeIfAbsent(SavedDataType<T> var1) {
-      SavedData var2 = this.get(var1);
-      if (var2 != null) {
-         return (T)var2;
+   public <T extends SavedData> T computeIfAbsent(final SavedDataType<T> type) {
+      T data = this.get(type);
+      if (data != null) {
+         return data;
       } else {
-         SavedData var3 = (SavedData)var1.constructor().get();
-         this.set(var1, var3);
-         return (T)var3;
+         T newData = (T)(type.constructor().get());
+         this.set(type, newData);
+         return newData;
       }
    }
 
-   public <T extends SavedData> @Nullable T get(SavedDataType<T> var1) {
-      Optional var2 = (Optional)this.cache.get(var1);
-      if (var2 == null) {
-         var2 = Optional.ofNullable(this.readSavedData(var1));
-         this.cache.put(var1, var2);
+   public <T extends SavedData> @Nullable T get(final SavedDataType<T> type) {
+      Optional<SavedData> data = (Optional)this.cache.get(type);
+      if (data == null) {
+         data = Optional.ofNullable(this.readSavedData(type));
+         this.cache.put(type, data);
       }
 
-      return (T)(var2.orElse((Object)null));
+      return (T)(data.orElse((Object)null));
    }
 
-   private <T extends SavedData> @Nullable T readSavedData(SavedDataType<T> var1) {
+   private <T extends SavedData> @Nullable T readSavedData(final SavedDataType<T> type) {
       try {
-         Path var2 = this.getDataFile(var1.id());
-         if (Files.exists(var2, new LinkOption[0])) {
-            CompoundTag var3 = this.readTagFromDisk(var1.id(), var1.dataFixType(), SharedConstants.getCurrentVersion().dataVersion().version());
-            RegistryOps var4 = this.registries.createSerializationContext(NbtOps.INSTANCE);
-            return (T)(var1.codec().parse(var4, var3.get("data")).resultOrPartial((var1x) -> LOGGER.error("Failed to parse saved data for '{}': {}", var1, var1x)).orElse((Object)null));
+         Path file = this.getDataFile(type.id());
+         if (Files.exists(file, new LinkOption[0])) {
+            CompoundTag tag = this.readTagFromDisk(type.id(), type.dataFixType(), SharedConstants.getCurrentVersion().dataVersion().version());
+            RegistryOps<Tag> ops = this.registries.<Tag>createSerializationContext(NbtOps.INSTANCE);
+            return (T)(type.codec().parse(ops, tag.get("data")).resultOrPartial((error) -> LOGGER.error("Failed to parse saved data for '{}': {}", type, error)).orElse((Object)null));
          }
-      } catch (Exception var5) {
-         LOGGER.error("Error loading saved data: {}", var1, var5);
+      } catch (Exception e) {
+         LOGGER.error("Error loading saved data: {}", type, e);
       }
 
       return null;
    }
 
-   public <T extends SavedData> void set(SavedDataType<T> var1, T var2) {
-      this.cache.put(var1, Optional.of(var2));
-      var2.setDirty();
+   public <T extends SavedData> void set(final SavedDataType<T> type, final T data) {
+      this.cache.put(type, Optional.of(data));
+      data.setDirty();
    }
 
-   public CompoundTag readTagFromDisk(String var1, DataFixTypes var2, int var3) throws IOException {
-      InputStream var4 = Files.newInputStream(this.getDataFile(var1));
+   public CompoundTag readTagFromDisk(final String id, final DataFixTypes type, final int newVersion) throws IOException {
+      InputStream in = Files.newInputStream(this.getDataFile(id));
 
       CompoundTag var8;
       try {
-         PushbackInputStream var5 = new PushbackInputStream(new FastBufferedInputStream(var4), 2);
+         PushbackInputStream inputStream = new PushbackInputStream(new FastBufferedInputStream(in), 2);
 
          try {
-            CompoundTag var6;
-            if (this.isGzip(var5)) {
-               var6 = NbtIo.readCompressed((InputStream)var5, NbtAccounter.unlimitedHeap());
+            CompoundTag tag;
+            if (this.isGzip(inputStream)) {
+               tag = NbtIo.readCompressed((InputStream)inputStream, NbtAccounter.unlimitedHeap());
             } else {
-               DataInputStream var7 = new DataInputStream(var5);
+               DataInputStream dis = new DataInputStream(inputStream);
 
                try {
-                  var6 = NbtIo.read((DataInput)var7);
+                  tag = NbtIo.read((DataInput)dis);
                } catch (Throwable var13) {
                   try {
-                     var7.close();
+                     dis.close();
                   } catch (Throwable var12) {
                      var13.addSuppressed(var12);
                   }
@@ -123,14 +123,14 @@ public class DimensionDataStorage implements AutoCloseable {
                   throw var13;
                }
 
-               var7.close();
+               dis.close();
             }
 
-            int var16 = NbtUtils.getDataVersion(var6, 1343);
-            var8 = var2.update(this.fixerUpper, var6, var16, var3);
+            int version = NbtUtils.getDataVersion(tag, 1343);
+            var8 = type.update(this.fixerUpper, tag, version, newVersion);
          } catch (Throwable var14) {
             try {
-               var5.close();
+               inputStream.close();
             } catch (Throwable var11) {
                var14.addSuppressed(var11);
             }
@@ -138,11 +138,11 @@ public class DimensionDataStorage implements AutoCloseable {
             throw var14;
          }
 
-         var5.close();
+         inputStream.close();
       } catch (Throwable var15) {
-         if (var4 != null) {
+         if (in != null) {
             try {
-               var4.close();
+               in.close();
             } catch (Throwable var10) {
                var15.addSuppressed(var10);
             }
@@ -151,56 +151,56 @@ public class DimensionDataStorage implements AutoCloseable {
          throw var15;
       }
 
-      if (var4 != null) {
-         var4.close();
+      if (in != null) {
+         in.close();
       }
 
       return var8;
    }
 
-   private boolean isGzip(PushbackInputStream var1) throws IOException {
-      byte[] var2 = new byte[2];
-      boolean var3 = false;
-      int var4 = var1.read(var2, 0, 2);
-      if (var4 == 2) {
-         int var5 = (var2[1] & 255) << 8 | var2[0] & 255;
-         if (var5 == 35615) {
-            var3 = true;
+   private boolean isGzip(final PushbackInputStream inputStream) throws IOException {
+      byte[] header = new byte[2];
+      boolean gzip = false;
+      int read = inputStream.read(header, 0, 2);
+      if (read == 2) {
+         int fullHeader = (header[1] & 255) << 8 | header[0] & 255;
+         if (fullHeader == 35615) {
+            gzip = true;
          }
       }
 
-      if (var4 != 0) {
-         var1.unread(var2, 0, var4);
+      if (read != 0) {
+         inputStream.unread(header, 0, read);
       }
 
-      return var3;
+      return gzip;
    }
 
    public CompletableFuture<?> scheduleSave() {
-      Map var1 = this.collectDirtyTagsToSave();
-      if (var1.isEmpty()) {
+      Map<SavedDataType<?>, CompoundTag> tagsToSave = this.collectDirtyTagsToSave();
+      if (tagsToSave.isEmpty()) {
          return CompletableFuture.completedFuture((Object)null);
       } else {
-         int var2 = Util.maxAllowedExecutorThreads();
-         int var3 = var1.size();
-         if (var3 > var2) {
-            this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((var4) -> {
-               ArrayList var5 = new ArrayList(var2);
-               int var6 = Mth.positiveCeilDiv(var3, var2);
+         int threads = Util.maxAllowedExecutorThreads();
+         int taskCount = tagsToSave.size();
+         if (taskCount > threads) {
+            this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((ignored) -> {
+               List<CompletableFuture<?>> tasks = new ArrayList(threads);
+               int bucketSize = Mth.positiveCeilDiv(taskCount, threads);
 
-               for(List var8 : Iterables.partition(var1.entrySet(), var6)) {
-                  var5.add(CompletableFuture.runAsync(() -> {
-                     for(Map.Entry var3 : var8) {
-                        this.tryWrite((SavedDataType)var3.getKey(), (CompoundTag)var3.getValue());
+               for(List<Map.Entry<SavedDataType<?>, CompoundTag>> entries : Iterables.partition(tagsToSave.entrySet(), bucketSize)) {
+                  tasks.add(CompletableFuture.runAsync(() -> {
+                     for(Map.Entry<SavedDataType<?>, CompoundTag> entry : entries) {
+                        this.tryWrite((SavedDataType)entry.getKey(), (CompoundTag)entry.getValue());
                      }
 
                   }, Util.ioPool()));
                }
 
-               return CompletableFuture.allOf((CompletableFuture[])var5.toArray((var0) -> new CompletableFuture[var0]));
+               return CompletableFuture.allOf((CompletableFuture[])tasks.toArray((x$0) -> new CompletableFuture[x$0]));
             });
          } else {
-            this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((var2x) -> CompletableFuture.allOf((CompletableFuture[])var1.entrySet().stream().map((var1x) -> CompletableFuture.runAsync(() -> this.tryWrite((SavedDataType)var1x.getKey(), (CompoundTag)var1x.getValue()), Util.ioPool())).toArray((var0) -> new CompletableFuture[var0])));
+            this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((ignored) -> CompletableFuture.allOf((CompletableFuture[])tagsToSave.entrySet().stream().map((entry) -> CompletableFuture.runAsync(() -> this.tryWrite((SavedDataType)entry.getKey(), (CompoundTag)entry.getValue()), Util.ioPool())).toArray((x$0) -> new CompletableFuture[x$0])));
          }
 
          return this.pendingWriteFuture;
@@ -208,30 +208,30 @@ public class DimensionDataStorage implements AutoCloseable {
    }
 
    private Map<SavedDataType<?>, CompoundTag> collectDirtyTagsToSave() {
-      Object2ObjectArrayMap var1 = new Object2ObjectArrayMap();
-      RegistryOps var2 = this.registries.createSerializationContext(NbtOps.INSTANCE);
-      this.cache.forEach((var3, var4) -> var4.filter(SavedData::isDirty).ifPresent((var4x) -> {
-            var1.put(var3, this.encodeUnchecked(var3, var4x, var2));
-            var4x.setDirty(false);
+      Map<SavedDataType<?>, CompoundTag> tagsToSave = new Object2ObjectArrayMap();
+      RegistryOps<Tag> ops = this.registries.<Tag>createSerializationContext(NbtOps.INSTANCE);
+      this.cache.forEach((type, optional) -> optional.filter(SavedData::isDirty).ifPresent((data) -> {
+            tagsToSave.put(type, this.encodeUnchecked(type, data, ops));
+            data.setDirty(false);
          }));
-      return var1;
+      return tagsToSave;
    }
 
-   private <T extends SavedData> CompoundTag encodeUnchecked(SavedDataType<T> var1, SavedData var2, RegistryOps<Tag> var3) {
-      Codec var4 = var1.codec();
-      CompoundTag var5 = new CompoundTag();
-      var5.put("data", (Tag)var4.encodeStart(var3, var2).getOrThrow());
-      NbtUtils.addCurrentDataVersion(var5);
-      return var5;
+   private <T extends SavedData> CompoundTag encodeUnchecked(final SavedDataType<T> type, final SavedData data, final RegistryOps<Tag> ops) {
+      Codec<T> codec = type.codec();
+      CompoundTag tag = new CompoundTag();
+      tag.put("data", (Tag)codec.encodeStart(ops, data).getOrThrow());
+      NbtUtils.addCurrentDataVersion(tag);
+      return tag;
    }
 
-   private void tryWrite(SavedDataType<?> var1, CompoundTag var2) {
-      Path var3 = this.getDataFile(var1.id());
+   private void tryWrite(final SavedDataType<?> type, final CompoundTag tag) {
+      Path path = this.getDataFile(type.id());
 
       try {
-         NbtIo.writeCompressed(var2, var3);
-      } catch (IOException var5) {
-         LOGGER.error("Could not save data to {}", var3.getFileName(), var5);
+         NbtIo.writeCompressed(tag, path);
+      } catch (IOException e) {
+         LOGGER.error("Could not save data to {}", path.getFileName(), e);
       }
 
    }

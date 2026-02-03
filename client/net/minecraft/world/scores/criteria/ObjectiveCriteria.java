@@ -35,46 +35,46 @@ public class ObjectiveCriteria {
    private final boolean readOnly;
    private final RenderType renderType;
 
-   private static ObjectiveCriteria registerCustom(String var0, boolean var1, RenderType var2) {
-      ObjectiveCriteria var3 = new ObjectiveCriteria(var0, var1, var2);
-      CUSTOM_CRITERIA.put(var0, var3);
-      return var3;
+   private static ObjectiveCriteria registerCustom(final String name, final boolean readOnly, final RenderType renderType) {
+      ObjectiveCriteria result = new ObjectiveCriteria(name, readOnly, renderType);
+      CUSTOM_CRITERIA.put(name, result);
+      return result;
    }
 
-   private static ObjectiveCriteria registerCustom(String var0) {
-      return registerCustom(var0, false, ObjectiveCriteria.RenderType.INTEGER);
+   private static ObjectiveCriteria registerCustom(final String name) {
+      return registerCustom(name, false, ObjectiveCriteria.RenderType.INTEGER);
    }
 
-   protected ObjectiveCriteria(String var1) {
-      this(var1, false, ObjectiveCriteria.RenderType.INTEGER);
+   protected ObjectiveCriteria(final String name) {
+      this(name, false, ObjectiveCriteria.RenderType.INTEGER);
    }
 
-   protected ObjectiveCriteria(String var1, boolean var2, RenderType var3) {
+   protected ObjectiveCriteria(final String name, final boolean readOnly, final RenderType renderType) {
       super();
-      this.name = var1;
-      this.readOnly = var2;
-      this.renderType = var3;
-      CRITERIA_CACHE.put(var1, this);
+      this.name = name;
+      this.readOnly = readOnly;
+      this.renderType = renderType;
+      CRITERIA_CACHE.put(name, this);
    }
 
    public static Set<String> getCustomCriteriaNames() {
       return ImmutableSet.copyOf(CUSTOM_CRITERIA.keySet());
    }
 
-   public static Optional<ObjectiveCriteria> byName(String var0) {
-      ObjectiveCriteria var1 = (ObjectiveCriteria)CRITERIA_CACHE.get(var0);
-      if (var1 != null) {
-         return Optional.of(var1);
+   public static Optional<ObjectiveCriteria> byName(final String name) {
+      ObjectiveCriteria value = (ObjectiveCriteria)CRITERIA_CACHE.get(name);
+      if (value != null) {
+         return Optional.of(value);
       } else {
-         int var2 = var0.indexOf(58);
-         return var2 < 0 ? Optional.empty() : BuiltInRegistries.STAT_TYPE.getOptional(Identifier.bySeparator(var0.substring(0, var2), '.')).flatMap((var2x) -> getStat(var2x, Identifier.bySeparator(var0.substring(var2 + 1), '.')));
+         int colonPos = name.indexOf(58);
+         return colonPos < 0 ? Optional.empty() : BuiltInRegistries.STAT_TYPE.getOptional(Identifier.bySeparator(name.substring(0, colonPos), '.')).flatMap((statType) -> getStat(statType, Identifier.bySeparator(name.substring(colonPos + 1), '.')));
       }
    }
 
-   private static <T> Optional<ObjectiveCriteria> getStat(StatType<T> var0, Identifier var1) {
-      Optional var10000 = var0.getRegistry().getOptional(var1);
-      Objects.requireNonNull(var0);
-      return var10000.map(var0::get);
+   private static <T> Optional<ObjectiveCriteria> getStat(final StatType<T> statType, final Identifier key) {
+      Optional var10000 = statType.getRegistry().getOptional(key);
+      Objects.requireNonNull(statType);
+      return var10000.map(statType::get);
    }
 
    public String getName() {
@@ -90,7 +90,7 @@ public class ObjectiveCriteria {
    }
 
    static {
-      CODEC = Codec.STRING.comapFlatMap((var0) -> (DataResult)byName(var0).map(DataResult::success).orElse(DataResult.error(() -> "No scoreboard criteria with name: " + var0)), ObjectiveCriteria::getName);
+      CODEC = Codec.STRING.comapFlatMap((name) -> (DataResult)byName(name).map(DataResult::success).orElse(DataResult.error(() -> "No scoreboard criteria with name: " + name)), ObjectiveCriteria::getName);
       DUMMY = registerCustom("dummy");
       TRIGGER = registerCustom("trigger");
       DEATH_COUNT = registerCustom("deathCount");
@@ -113,8 +113,8 @@ public class ObjectiveCriteria {
       private final String id;
       public static final StringRepresentable.EnumCodec<RenderType> CODEC = StringRepresentable.<RenderType>fromEnum(RenderType::values);
 
-      private RenderType(final String var3) {
-         this.id = var3;
+      private RenderType(final String id) {
+         this.id = id;
       }
 
       public String getId() {
@@ -125,8 +125,8 @@ public class ObjectiveCriteria {
          return this.id;
       }
 
-      public static RenderType byId(String var0) {
-         return (RenderType)CODEC.byName(var0, INTEGER);
+      public static RenderType byId(final String key) {
+         return (RenderType)CODEC.byName(key, INTEGER);
       }
 
       // $FF: synthetic method

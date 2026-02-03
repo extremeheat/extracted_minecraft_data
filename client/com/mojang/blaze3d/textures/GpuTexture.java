@@ -1,12 +1,10 @@
 package com.mojang.blaze3d.textures;
 
-import com.mojang.blaze3d.DontObfuscate;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@DontObfuscate
 public abstract class GpuTexture implements AutoCloseable {
    public static final int USAGE_COPY_DST = 1;
    public static final int USAGE_COPY_SRC = 2;
@@ -21,23 +19,23 @@ public abstract class GpuTexture implements AutoCloseable {
    private final @GpuTexture.Usage int usage;
    private final String label;
 
-   public GpuTexture(@GpuTexture.Usage int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
+   public GpuTexture(final @GpuTexture.Usage int usage, final String label, final TextureFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
       super();
-      this.usage = var1;
-      this.label = var2;
-      this.format = var3;
-      this.width = var4;
-      this.height = var5;
-      this.depthOrLayers = var6;
-      this.mipLevels = var7;
+      this.usage = usage;
+      this.label = label;
+      this.format = format;
+      this.width = width;
+      this.height = height;
+      this.depthOrLayers = depthOrLayers;
+      this.mipLevels = mipLevels;
    }
 
-   public int getWidth(int var1) {
-      return this.width >> var1;
+   public int getWidth(final int mipLevel) {
+      return this.width >> mipLevel;
    }
 
-   public int getHeight(int var1) {
-      return this.height >> var1;
+   public int getHeight(final int mipLevel) {
+      return this.height >> mipLevel;
    }
 
    public int getDepthOrLayers() {

@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.SkeletonRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
@@ -9,20 +8,15 @@ import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
 public class WitherSkeletonRenderer extends AbstractSkeletonRenderer<WitherSkeleton, SkeletonRenderState> {
    private static final Identifier WITHER_SKELETON_LOCATION = Identifier.withDefaultNamespace("textures/entity/skeleton/wither_skeleton.png");
 
-   public WitherSkeletonRenderer(EntityRendererProvider.Context var1) {
-      super(var1, ModelLayers.WITHER_SKELETON, ModelLayers.WITHER_SKELETON_ARMOR);
+   public WitherSkeletonRenderer(final EntityRendererProvider.Context context) {
+      super(context, ModelLayers.WITHER_SKELETON, ModelLayers.WITHER_SKELETON_ARMOR);
    }
 
-   public Identifier getTextureLocation(SkeletonRenderState var1) {
+   public Identifier getTextureLocation(final SkeletonRenderState state) {
       return WITHER_SKELETON_LOCATION;
    }
 
    public SkeletonRenderState createRenderState() {
       return new SkeletonRenderState();
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

@@ -12,40 +12,35 @@ public abstract class GreedyPredicateParseRule implements Rule<StringReader, Str
    private final int maxSize;
    private final DelayedException<CommandSyntaxException> error;
 
-   public GreedyPredicateParseRule(int var1, DelayedException<CommandSyntaxException> var2) {
-      this(var1, 2147483647, var2);
+   public GreedyPredicateParseRule(final int minSize, final DelayedException<CommandSyntaxException> error) {
+      this(minSize, 2147483647, error);
    }
 
-   public GreedyPredicateParseRule(int var1, int var2, DelayedException<CommandSyntaxException> var3) {
+   public GreedyPredicateParseRule(final int minSize, final int maxSize, final DelayedException<CommandSyntaxException> error) {
       super();
-      this.minSize = var1;
-      this.maxSize = var2;
-      this.error = var3;
+      this.minSize = minSize;
+      this.maxSize = maxSize;
+      this.error = error;
    }
 
-   public @Nullable String parse(ParseState<StringReader> var1) {
-      StringReader var2 = (StringReader)var1.input();
-      String var3 = var2.getString();
-      int var4 = var2.getCursor();
+   public @Nullable String parse(final ParseState<StringReader> state) {
+      StringReader input = state.input();
+      String fullString = input.getString();
+      int start = input.getCursor();
 
-      int var5;
-      for(var5 = var4; var5 < var3.length() && this.isAccepted(var3.charAt(var5)) && var5 - var4 < this.maxSize; ++var5) {
+      int pos;
+      for(pos = start; pos < fullString.length() && this.isAccepted(fullString.charAt(pos)) && pos - start < this.maxSize; ++pos) {
       }
 
-      int var6 = var5 - var4;
-      if (var6 < this.minSize) {
-         var1.errorCollector().store(var1.mark(), this.error);
+      int length = pos - start;
+      if (length < this.minSize) {
+         state.errorCollector().store(state.mark(), this.error);
          return null;
       } else {
-         var2.setCursor(var5);
-         return var3.substring(var4, var5);
+         input.setCursor(pos);
+         return fullString.substring(start, pos);
       }
    }
 
-   protected abstract boolean isAccepted(char var1);
-
-   // $FF: synthetic method
-   public @Nullable Object parse(final ParseState var1) {
-      return this.parse(var1);
-   }
+   protected abstract boolean isAccepted(char c);
 }

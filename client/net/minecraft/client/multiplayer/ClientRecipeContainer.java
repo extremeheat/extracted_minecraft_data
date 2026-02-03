@@ -11,14 +11,14 @@ public class ClientRecipeContainer implements RecipeAccess {
    private final Map<ResourceKey<RecipePropertySet>, RecipePropertySet> itemSets;
    private final SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes;
 
-   public ClientRecipeContainer(Map<ResourceKey<RecipePropertySet>, RecipePropertySet> var1, SelectableRecipe.SingleInputSet<StonecutterRecipe> var2) {
+   public ClientRecipeContainer(final Map<ResourceKey<RecipePropertySet>, RecipePropertySet> itemSets, final SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes) {
       super();
-      this.itemSets = var1;
-      this.stonecutterRecipes = var2;
+      this.itemSets = itemSets;
+      this.stonecutterRecipes = stonecutterRecipes;
    }
 
-   public RecipePropertySet propertySet(ResourceKey<RecipePropertySet> var1) {
-      return (RecipePropertySet)this.itemSets.getOrDefault(var1, RecipePropertySet.EMPTY);
+   public RecipePropertySet propertySet(final ResourceKey<RecipePropertySet> id) {
+      return (RecipePropertySet)this.itemSets.getOrDefault(id, RecipePropertySet.EMPTY);
    }
 
    public SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes() {

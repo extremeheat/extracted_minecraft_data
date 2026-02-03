@@ -8,16 +8,16 @@ public class SmoothSwimmingLookControl extends LookControl {
    private static final int HEAD_TILT_X = 10;
    private static final int HEAD_TILT_Y = 20;
 
-   public SmoothSwimmingLookControl(Mob var1, int var2) {
-      super(var1);
-      this.maxYRotFromCenter = var2;
+   public SmoothSwimmingLookControl(final Mob mob, final int maxYRotFromCenter) {
+      super(mob);
+      this.maxYRotFromCenter = maxYRotFromCenter;
    }
 
    public void tick() {
       if (this.lookAtCooldown > 0) {
          --this.lookAtCooldown;
-         this.getYRotD().ifPresent((var1x) -> this.mob.yHeadRot = this.rotateTowards(this.mob.yHeadRot, var1x + 20.0F, this.yMaxRotSpeed));
-         this.getXRotD().ifPresent((var1x) -> this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), var1x + 10.0F, this.xMaxRotAngle)));
+         this.getYRotD().ifPresent((yRotD) -> this.mob.yHeadRot = this.rotateTowards(this.mob.yHeadRot, yRotD + 20.0F, this.yMaxRotSpeed));
+         this.getXRotD().ifPresent((xRotD) -> this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), xRotD + 10.0F, this.xMaxRotAngle)));
       } else {
          if (this.mob.getNavigation().isDone()) {
             this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), 0.0F, 5.0F));
@@ -26,11 +26,11 @@ public class SmoothSwimmingLookControl extends LookControl {
          this.mob.yHeadRot = this.rotateTowards(this.mob.yHeadRot, this.mob.yBodyRot, this.yMaxRotSpeed);
       }
 
-      float var1 = Mth.wrapDegrees(this.mob.yHeadRot - this.mob.yBodyRot);
-      if (var1 < (float)(-this.maxYRotFromCenter)) {
+      float headDiffBody = Mth.wrapDegrees(this.mob.yHeadRot - this.mob.yBodyRot);
+      if (headDiffBody < (float)(-this.maxYRotFromCenter)) {
          Mob var10000 = this.mob;
          var10000.yBodyRot -= 4.0F;
-      } else if (var1 > (float)this.maxYRotFromCenter) {
+      } else if (headDiffBody > (float)this.maxYRotFromCenter) {
          Mob var2 = this.mob;
          var2.yBodyRot += 4.0F;
       }

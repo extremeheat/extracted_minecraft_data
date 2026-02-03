@@ -17,24 +17,24 @@ public class EquipmentDispenseItemBehavior extends DefaultDispenseItemBehavior {
       super();
    }
 
-   protected ItemStack execute(BlockSource var1, ItemStack var2) {
-      return dispenseEquipment(var1, var2) ? var2 : super.execute(var1, var2);
+   protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+      return dispenseEquipment(source, dispensed) ? dispensed : super.execute(source, dispensed);
    }
 
-   public static boolean dispenseEquipment(BlockSource var0, ItemStack var1) {
-      BlockPos var2 = var0.pos().relative((Direction)var0.state().getValue(DispenserBlock.FACING));
-      List var3 = var0.level().getEntitiesOfClass(LivingEntity.class, new AABB(var2), (var1x) -> var1x.canEquipWithDispenser(var1));
-      if (var3.isEmpty()) {
+   public static boolean dispenseEquipment(final BlockSource source, final ItemStack dispensed) {
+      BlockPos pos = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
+      List<LivingEntity> entities = source.level().getEntitiesOfClass(LivingEntity.class, new AABB(pos), (entity) -> entity.canEquipWithDispenser(dispensed));
+      if (entities.isEmpty()) {
          return false;
       } else {
-         LivingEntity var4 = (LivingEntity)var3.getFirst();
-         EquipmentSlot var5 = var4.getEquipmentSlotForItem(var1);
-         ItemStack var6 = var1.split(1);
-         var4.setItemSlot(var5, var6);
-         if (var4 instanceof Mob) {
-            Mob var7 = (Mob)var4;
-            var7.setGuaranteedDrop(var5);
-            var7.setPersistenceRequired();
+         LivingEntity target = (LivingEntity)entities.getFirst();
+         EquipmentSlot slot = target.getEquipmentSlotForItem(dispensed);
+         ItemStack equip = dispensed.split(1);
+         target.setItemSlot(slot, equip);
+         if (target instanceof Mob) {
+            Mob targetMob = (Mob)target;
+            targetMob.setGuaranteedDrop(slot);
+            targetMob.setPersistenceRequired();
          }
 
          return true;

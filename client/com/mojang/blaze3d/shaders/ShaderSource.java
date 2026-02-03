@@ -5,5 +5,5 @@ import org.jspecify.annotations.Nullable;
 
 @FunctionalInterface
 public interface ShaderSource {
-   @Nullable String get(Identifier var1, ShaderType var2);
+   @Nullable String get(Identifier id, ShaderType type);
 }

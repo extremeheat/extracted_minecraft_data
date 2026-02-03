@@ -12,18 +12,16 @@ import net.minecraft.world.effect.MobEffect;
 public record ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> primary, Optional<Holder<MobEffect>> secondary) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundSetBeaconPacket> STREAM_CODEC;
 
-   public ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> var1, Optional<Holder<MobEffect>> var2) {
+   public ServerboundSetBeaconPacket {
       super();
-      this.primary = var1;
-      this.secondary = var2;
    }
 
    public PacketType<ServerboundSetBeaconPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_BEACON;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSetBeaconPacket(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleSetBeaconPacket(this);
    }
 
    static {

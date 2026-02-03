@@ -10,13 +10,13 @@ public class ServerCodeOfConductConfigurationTask implements ConfigurationTask {
    public static final ConfigurationTask.Type TYPE = new ConfigurationTask.Type("server_code_of_conduct");
    private final Supplier<String> codeOfConduct;
 
-   public ServerCodeOfConductConfigurationTask(Supplier<String> var1) {
+   public ServerCodeOfConductConfigurationTask(final Supplier<String> codeOfConduct) {
       super();
-      this.codeOfConduct = var1;
+      this.codeOfConduct = codeOfConduct;
    }
 
-   public void start(Consumer<Packet<?>> var1) {
-      var1.accept(new ClientboundCodeOfConductPacket((String)this.codeOfConduct.get()));
+   public void start(final Consumer<Packet<?>> connection) {
+      connection.accept(new ClientboundCodeOfConductPacket((String)this.codeOfConduct.get()));
    }
 
    public ConfigurationTask.Type type() {

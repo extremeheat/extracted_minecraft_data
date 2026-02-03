@@ -17,7 +17,7 @@ import net.minecraft.network.chat.Component;
 
 public class ColorArgument implements ArgumentType<ChatFormatting> {
    private static final Collection<String> EXAMPLES = Arrays.asList("red", "green");
-   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.color.invalid", var0));
+   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.color.invalid", value));
 
    private ColorArgument() {
       super();
@@ -27,30 +27,25 @@ public class ColorArgument implements ArgumentType<ChatFormatting> {
       return new ColorArgument();
    }
 
-   public static ChatFormatting getColor(CommandContext<CommandSourceStack> var0, String var1) {
-      return (ChatFormatting)var0.getArgument(var1, ChatFormatting.class);
+   public static ChatFormatting getColor(final CommandContext<CommandSourceStack> context, final String name) {
+      return (ChatFormatting)context.getArgument(name, ChatFormatting.class);
    }
 
-   public ChatFormatting parse(StringReader var1) throws CommandSyntaxException {
-      String var2 = var1.readUnquotedString();
-      ChatFormatting var3 = ChatFormatting.getByName(var2);
-      if (var3 != null && !var3.isFormat()) {
-         return var3;
+   public ChatFormatting parse(final StringReader reader) throws CommandSyntaxException {
+      String id = reader.readUnquotedString();
+      ChatFormatting result = ChatFormatting.getByName(id);
+      if (result != null && !result.isFormat()) {
+         return result;
       } else {
-         throw ERROR_INVALID_VALUE.createWithContext(var1, var2);
+         throw ERROR_INVALID_VALUE.createWithContext(reader, id);
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggest(ChatFormatting.getNames(true, false), var2);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> contextBuilder, final SuggestionsBuilder builder) {
+      return SharedSuggestionProvider.suggest(ChatFormatting.getNames(true, false), builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

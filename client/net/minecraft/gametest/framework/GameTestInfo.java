@@ -47,41 +47,41 @@ public class GameTestInfo {
    private @Nullable GameTestException error;
    private @Nullable TestInstanceBlockEntity testInstanceBlockEntity;
 
-   public GameTestInfo(Holder.Reference<GameTestInstance> var1, Rotation var2, ServerLevel var3, RetryOptions var4) {
+   public GameTestInfo(final Holder.Reference<GameTestInstance> test, final Rotation extraRotation, final ServerLevel level, final RetryOptions retryOptions) {
       super();
-      this.test = var1;
-      this.level = var3;
-      this.retryOptions = var4;
-      this.timeoutTicks = ((GameTestInstance)var1.value()).maxTicks();
-      this.extraRotation = var2;
+      this.test = test;
+      this.level = level;
+      this.retryOptions = retryOptions;
+      this.timeoutTicks = ((GameTestInstance)test.value()).maxTicks();
+      this.extraRotation = extraRotation;
    }
 
-   public void setTestBlockPos(@Nullable BlockPos var1) {
-      this.testBlockPos = var1;
+   public void setTestBlockPos(final @Nullable BlockPos testBlockPos) {
+      this.testBlockPos = testBlockPos;
    }
 
-   public GameTestInfo startExecution(int var1) {
-      this.tickCount = -(((GameTestInstance)this.test.value()).setupTicks() + var1 + 1);
+   public GameTestInfo startExecution(final int tickDelay) {
+      this.tickCount = -(((GameTestInstance)this.test.value()).setupTicks() + tickDelay + 1);
       return this;
    }
 
    public void placeStructure() {
       if (!this.placedStructure) {
-         TestInstanceBlockEntity var1 = this.getTestInstanceBlockEntity();
-         if (!var1.placeStructure()) {
-            this.fail((Component)Component.translatable("test.error.structure.failure", var1.getTestName().getString()));
+         TestInstanceBlockEntity test = this.getTestInstanceBlockEntity();
+         if (!test.placeStructure()) {
+            this.fail((Component)Component.translatable("test.error.structure.failure", test.getTestName().getString()));
          }
 
          this.placedStructure = true;
-         var1.encaseStructure();
-         BoundingBox var2 = var1.getStructureBoundingBox();
-         this.level.getBlockTicks().clearArea(var2);
-         this.level.clearBlockEvents(var2);
-         this.listeners.forEach((var1x) -> var1x.testStructureLoaded(this));
+         test.encaseStructure();
+         BoundingBox boundingBox = test.getTestBoundingBox();
+         this.level.getBlockTicks().clearArea(boundingBox);
+         this.level.clearBlockEvents(boundingBox);
+         this.listeners.forEach((listener) -> listener.testStructureLoaded(this));
       }
    }
 
-   public void tick(GameTestRunner var1) {
+   public void tick(final GameTestRunner runner) {
       if (!this.isDone()) {
          if (!this.placedStructure) {
             this.fail((Component)Component.translatable("test.error.ticking_without_structure"));
@@ -108,9 +108,9 @@ public class GameTestInfo {
          this.tickInternal();
          if (this.isDone()) {
             if (this.error != null) {
-               this.listeners.forEach((var2) -> var2.testFailed(this, var1));
+               this.listeners.forEach((listener) -> listener.testFailed(this, runner));
             } else {
-               this.listeners.forEach((var2) -> var2.testPassed(this, var1));
+               this.listeners.forEach((listener) -> listener.testPassed(this, runner));
             }
          }
 
@@ -124,20 +124,20 @@ public class GameTestInfo {
             this.startTest();
          }
 
-         ObjectIterator var1 = this.runAtTickTimeMap.object2LongEntrySet().iterator();
+         ObjectIterator<Object2LongMap.Entry<Runnable>> it = this.runAtTickTimeMap.object2LongEntrySet().iterator();
 
-         while(var1.hasNext()) {
-            Object2LongMap.Entry var2 = (Object2LongMap.Entry)var1.next();
-            if (var2.getLongValue() <= (long)this.tickCount) {
+         while(it.hasNext()) {
+            Object2LongMap.Entry<Runnable> entry = (Object2LongMap.Entry)it.next();
+            if (entry.getLongValue() <= (long)this.tickCount) {
                try {
-                  ((Runnable)var2.getKey()).run();
-               } catch (GameTestException var4) {
-                  this.fail(var4);
-               } catch (Exception var5) {
-                  this.fail((GameTestException)(new UnknownGameTestException(var5)));
+                  ((Runnable)entry.getKey()).run();
+               } catch (GameTestException error) {
+                  this.fail(error);
+               } catch (Exception exception) {
+                  this.fail((GameTestException)(new UnknownGameTestException(exception)));
                }
 
-               var1.remove();
+               it.remove();
             }
          }
 
@@ -145,13 +145,13 @@ public class GameTestInfo {
             if (this.sequences.isEmpty()) {
                this.fail((GameTestException)(new GameTestTimeoutException(Component.translatable("test.error.timeout.no_result", ((GameTestInstance)this.test.value()).maxTicks()))));
             } else {
-               this.sequences.forEach((var1x) -> var1x.tickAndFailIfNotComplete(this.tickCount));
+               this.sequences.forEach((ticker) -> ticker.tickAndFailIfNotComplete(this.tickCount));
                if (this.error == null) {
                   this.fail((GameTestException)(new GameTestTimeoutException(Component.translatable("test.error.timeout.no_sequences_finished", ((GameTestInstance)this.test.value()).maxTicks()))));
                }
             }
          } else {
-            this.sequences.forEach((var1x) -> var1x.tickAndContinue(this.tickCount));
+            this.sequences.forEach((ticker) -> ticker.tickAndContinue(this.tickCount));
          }
 
       }
@@ -165,17 +165,17 @@ public class GameTestInfo {
 
          try {
             ((GameTestInstance)this.test.value()).run(new GameTestHelper(this));
-         } catch (GameTestException var2) {
-            this.fail(var2);
-         } catch (Exception var3) {
-            this.fail((GameTestException)(new UnknownGameTestException(var3)));
+         } catch (GameTestException e) {
+            this.fail(e);
+         } catch (Exception e) {
+            this.fail((GameTestException)(new UnknownGameTestException(e)));
          }
 
       }
    }
 
-   public void setRunAtTickTime(long var1, Runnable var3) {
-      this.runAtTickTimeMap.put(var3, var1);
+   public void setRunAtTickTime(final long time, final Runnable assertAtTickTime) {
+      this.runAtTickTimeMap.put(assertAtTickTime, time);
    }
 
    public Identifier id() {
@@ -191,8 +191,8 @@ public class GameTestInfo {
    }
 
    public AABB getStructureBounds() {
-      TestInstanceBlockEntity var1 = this.getTestInstanceBlockEntity();
-      return var1.getStructureBounds();
+      TestInstanceBlockEntity blockEntity = this.getTestInstanceBlockEntity();
+      return blockEntity.getStructureBounds();
    }
 
    public TestInstanceBlockEntity getTestInstanceBlockEntity() {
@@ -203,8 +203,8 @@ public class GameTestInfo {
 
          BlockEntity var2 = this.level.getBlockEntity(this.testBlockPos);
          if (var2 instanceof TestInstanceBlockEntity) {
-            TestInstanceBlockEntity var1 = (TestInstanceBlockEntity)var2;
-            this.testInstanceBlockEntity = var1;
+            TestInstanceBlockEntity blockEntity = (TestInstanceBlockEntity)var2;
+            this.testInstanceBlockEntity = blockEntity;
          }
 
          if (this.testInstanceBlockEntity == null) {
@@ -252,19 +252,19 @@ public class GameTestInfo {
    public void succeed() {
       if (this.error == null) {
          this.finish();
-         AABB var1 = this.getStructureBounds();
-         List var2 = this.getLevel().getEntitiesOfClass(Entity.class, var1.inflate(1.0), (var0) -> !(var0 instanceof Player));
-         var2.forEach((var0) -> var0.remove(Entity.RemovalReason.DISCARDED));
+         AABB bounds = this.getStructureBounds();
+         List<Entity> entities = this.getLevel().getEntitiesOfClass(Entity.class, bounds.inflate(1.0), (mob) -> !(mob instanceof Player));
+         entities.forEach((e) -> e.remove(Entity.RemovalReason.DISCARDED));
       }
 
    }
 
-   public void fail(Component var1) {
-      this.fail((GameTestException)(new GameTestAssertException(var1, this.tickCount)));
+   public void fail(final Component message) {
+      this.fail((GameTestException)(new GameTestAssertException(message, this.tickCount)));
    }
 
-   public void fail(GameTestException var1) {
-      this.error = var1;
+   public void fail(final GameTestException error) {
+      this.error = error;
    }
 
    public @Nullable GameTestException getError() {
@@ -275,14 +275,14 @@ public class GameTestInfo {
       return this.id().toString();
    }
 
-   public void addListener(GameTestListener var1) {
-      this.listeners.add(var1);
+   public void addListener(final GameTestListener listener) {
+      this.listeners.add(listener);
    }
 
    public @Nullable GameTestInfo prepareTestStructure() {
-      TestInstanceBlockEntity var1 = this.createTestInstanceBlock((BlockPos)Objects.requireNonNull(this.testBlockPos), this.extraRotation, this.level);
-      if (var1 != null) {
-         this.testInstanceBlockEntity = var1;
+      TestInstanceBlockEntity testInstanceBlock = this.createTestInstanceBlock((BlockPos)Objects.requireNonNull(this.testBlockPos), this.extraRotation, this.level);
+      if (testInstanceBlock != null) {
+         this.testInstanceBlockEntity = testInstanceBlock;
          this.placeStructure();
          return this;
       } else {
@@ -290,14 +290,14 @@ public class GameTestInfo {
       }
    }
 
-   private @Nullable TestInstanceBlockEntity createTestInstanceBlock(BlockPos var1, Rotation var2, ServerLevel var3) {
-      var3.setBlockAndUpdate(var1, Blocks.TEST_INSTANCE_BLOCK.defaultBlockState());
-      BlockEntity var5 = var3.getBlockEntity(var1);
-      if (var5 instanceof TestInstanceBlockEntity var4) {
-         ResourceKey var7 = this.getTestHolder().key();
-         Vec3i var6 = (Vec3i)TestInstanceBlockEntity.getStructureSize(var3, var7).orElse(new Vec3i(1, 1, 1));
-         var4.set(new TestInstanceBlockEntity.Data(Optional.of(var7), var6, var2, false, TestInstanceBlockEntity.Status.CLEARED, Optional.empty()));
-         return var4;
+   private @Nullable TestInstanceBlockEntity createTestInstanceBlock(final BlockPos testPos, final Rotation rotation, final ServerLevel level) {
+      level.setBlockAndUpdate(testPos, Blocks.TEST_INSTANCE_BLOCK.defaultBlockState());
+      BlockEntity var5 = level.getBlockEntity(testPos);
+      if (var5 instanceof TestInstanceBlockEntity blockEntity) {
+         ResourceKey<GameTestInstance> test = this.getTestHolder().key();
+         Vec3i size = (Vec3i)TestInstanceBlockEntity.getStructureSize(level, test).orElse(new Vec3i(1, 1, 1));
+         blockEntity.set(new TestInstanceBlockEntity.Data(Optional.of(test), size, rotation, false, TestInstanceBlockEntity.Status.CLEARED, Optional.empty()));
+         return blockEntity;
       } else {
          return null;
       }
@@ -308,9 +308,9 @@ public class GameTestInfo {
    }
 
    GameTestSequence createSequence() {
-      GameTestSequence var1 = new GameTestSequence(this);
-      this.sequences.add(var1);
-      return var1;
+      GameTestSequence sequence = new GameTestSequence(this);
+      this.sequences.add(sequence);
+      return sequence;
    }
 
    public boolean isRequired() {
@@ -362,11 +362,11 @@ public class GameTestInfo {
    }
 
    public GameTestInfo copyReset() {
-      GameTestInfo var1 = new GameTestInfo(this.test, this.extraRotation, this.level, this.retryOptions());
+      GameTestInfo i = new GameTestInfo(this.test, this.extraRotation, this.level, this.retryOptions());
       if (this.testBlockPos != null) {
-         var1.setTestBlockPos(this.testBlockPos);
+         i.setTestBlockPos(this.testBlockPos);
       }
 
-      return var1;
+      return i;
    }
 }

@@ -20,110 +20,110 @@ public class RandomPos {
       super();
    }
 
-   public static BlockPos generateRandomDirection(RandomSource var0, int var1, int var2) {
-      int var3 = var0.nextInt(2 * var1 + 1) - var1;
-      int var4 = var0.nextInt(2 * var2 + 1) - var2;
-      int var5 = var0.nextInt(2 * var1 + 1) - var1;
-      return new BlockPos(var3, var4, var5);
+   public static BlockPos generateRandomDirection(final RandomSource random, final int horizontalDist, final int verticalDist) {
+      int xt = random.nextInt(2 * horizontalDist + 1) - horizontalDist;
+      int yt = random.nextInt(2 * verticalDist + 1) - verticalDist;
+      int zt = random.nextInt(2 * horizontalDist + 1) - horizontalDist;
+      return new BlockPos(xt, yt, zt);
    }
 
-   public static @Nullable BlockPos generateRandomDirectionWithinRadians(RandomSource var0, double var1, double var3, int var5, int var6, double var7, double var9, double var11) {
-      double var13 = Mth.atan2(var9, var7) - 1.5707963705062866;
-      double var15 = var13 + (double)(2.0F * var0.nextFloat() - 1.0F) * var11;
-      double var17 = Mth.lerp(Math.sqrt(var0.nextDouble()), var1, var3) * (double)Mth.SQRT_OF_TWO;
-      double var19 = -var17 * Math.sin(var15);
-      double var21 = var17 * Math.cos(var15);
-      if (!(Math.abs(var19) > var3) && !(Math.abs(var21) > var3)) {
-         int var23 = var0.nextInt(2 * var5 + 1) - var5 + var6;
-         return BlockPos.containing(var19, (double)var23, var21);
+   public static @Nullable BlockPos generateRandomDirectionWithinRadians(final RandomSource random, final double minHorizontalDist, final double maxHorizontalDist, final int verticalDist, final int flyingHeight, final double xDir, final double zDir, final double maxXzRadiansFromDir) {
+      double yRadiansCenter = Mth.atan2(zDir, xDir) - 1.5707963705062866;
+      double yRadians = yRadiansCenter + (double)(2.0F * random.nextFloat() - 1.0F) * maxXzRadiansFromDir;
+      double dist = Mth.lerp(Math.sqrt(random.nextDouble()), minHorizontalDist, maxHorizontalDist) * (double)Mth.SQRT_OF_TWO;
+      double xt = -dist * Math.sin(yRadians);
+      double zt = dist * Math.cos(yRadians);
+      if (!(Math.abs(xt) > maxHorizontalDist) && !(Math.abs(zt) > maxHorizontalDist)) {
+         int yt = random.nextInt(2 * verticalDist + 1) - verticalDist + flyingHeight;
+         return BlockPos.containing(xt, (double)yt, zt);
       } else {
          return null;
       }
    }
 
    @VisibleForTesting
-   public static BlockPos moveUpOutOfSolid(BlockPos var0, int var1, Predicate<BlockPos> var2) {
-      if (!var2.test(var0)) {
-         return var0;
+   public static BlockPos moveUpOutOfSolid(final BlockPos pos, final int maxY, final Predicate<BlockPos> solidityTester) {
+      if (!solidityTester.test(pos)) {
+         return pos;
       } else {
-         BlockPos.MutableBlockPos var3 = var0.mutable().move(Direction.UP);
+         BlockPos.MutableBlockPos onGroundPos = pos.mutable().move(Direction.UP);
 
-         while(var3.getY() <= var1 && var2.test(var3)) {
-            var3.move(Direction.UP);
+         while(onGroundPos.getY() <= maxY && solidityTester.test(onGroundPos)) {
+            onGroundPos.move(Direction.UP);
          }
 
-         return var3.immutable();
+         return onGroundPos.immutable();
       }
    }
 
    @VisibleForTesting
-   public static BlockPos moveUpToAboveSolid(BlockPos var0, int var1, int var2, Predicate<BlockPos> var3) {
-      if (var1 < 0) {
-         throw new IllegalArgumentException("aboveSolidAmount was " + var1 + ", expected >= 0");
-      } else if (!var3.test(var0)) {
-         return var0;
+   public static BlockPos moveUpToAboveSolid(final BlockPos pos, final int aboveSolidAmount, final int maxY, final Predicate<BlockPos> solidityTester) {
+      if (aboveSolidAmount < 0) {
+         throw new IllegalArgumentException("aboveSolidAmount was " + aboveSolidAmount + ", expected >= 0");
+      } else if (!solidityTester.test(pos)) {
+         return pos;
       } else {
-         BlockPos.MutableBlockPos var4 = var0.mutable().move(Direction.UP);
+         BlockPos.MutableBlockPos mutablePos = pos.mutable().move(Direction.UP);
 
-         while(var4.getY() <= var2 && var3.test(var4)) {
-            var4.move(Direction.UP);
+         while(mutablePos.getY() <= maxY && solidityTester.test(mutablePos)) {
+            mutablePos.move(Direction.UP);
          }
 
-         int var5 = var4.getY();
+         int firstNonSolidY = mutablePos.getY();
 
-         while(var4.getY() <= var2 && var4.getY() - var5 < var1) {
-            var4.move(Direction.UP);
-            if (var3.test(var4)) {
-               var4.move(Direction.DOWN);
+         while(mutablePos.getY() <= maxY && mutablePos.getY() - firstNonSolidY < aboveSolidAmount) {
+            mutablePos.move(Direction.UP);
+            if (solidityTester.test(mutablePos)) {
+               mutablePos.move(Direction.DOWN);
                break;
             }
          }
 
-         return var4.immutable();
+         return mutablePos.immutable();
       }
    }
 
-   public static @Nullable Vec3 generateRandomPos(PathfinderMob var0, Supplier<@Nullable BlockPos> var1) {
-      Objects.requireNonNull(var0);
-      return generateRandomPos(var1, var0::getWalkTargetValue);
+   public static @Nullable Vec3 generateRandomPos(final PathfinderMob mob, final Supplier<@Nullable BlockPos> posSupplier) {
+      Objects.requireNonNull(mob);
+      return generateRandomPos(posSupplier, mob::getWalkTargetValue);
    }
 
-   public static @Nullable Vec3 generateRandomPos(Supplier<@Nullable BlockPos> var0, ToDoubleFunction<BlockPos> var1) {
-      double var2 = -1.0 / 0.0;
-      BlockPos var4 = null;
+   public static @Nullable Vec3 generateRandomPos(final Supplier<@Nullable BlockPos> posSupplier, final ToDoubleFunction<BlockPos> positionWeightFunction) {
+      double bestWeight = -1.0 / 0.0;
+      BlockPos bestPos = null;
 
-      for(int var5 = 0; var5 < 10; ++var5) {
-         BlockPos var6 = (BlockPos)var0.get();
-         if (var6 != null) {
-            double var7 = var1.applyAsDouble(var6);
-            if (var7 > var2) {
-               var2 = var7;
-               var4 = var6;
+      for(int i = 0; i < 10; ++i) {
+         BlockPos pos = (BlockPos)posSupplier.get();
+         if (pos != null) {
+            double value = positionWeightFunction.applyAsDouble(pos);
+            if (value > bestWeight) {
+               bestWeight = value;
+               bestPos = pos;
             }
          }
       }
 
-      return var4 != null ? Vec3.atBottomCenterOf(var4) : null;
+      return bestPos != null ? Vec3.atBottomCenterOf(bestPos) : null;
    }
 
-   public static BlockPos generateRandomPosTowardDirection(PathfinderMob var0, double var1, RandomSource var3, BlockPos var4) {
-      double var5 = (double)var4.getX();
-      double var7 = (double)var4.getZ();
-      if (var0.hasHome() && var1 > 1.0) {
-         BlockPos var9 = var0.getHomePosition();
-         if (var0.getX() > (double)var9.getX()) {
-            var5 -= var3.nextDouble() * var1 / 2.0;
+   public static BlockPos generateRandomPosTowardDirection(final PathfinderMob mob, final double xzDist, final RandomSource random, final BlockPos direction) {
+      double xt = (double)direction.getX();
+      double zt = (double)direction.getZ();
+      if (mob.hasHome() && xzDist > 1.0) {
+         BlockPos center = mob.getHomePosition();
+         if (mob.getX() > (double)center.getX()) {
+            xt -= random.nextDouble() * xzDist / 2.0;
          } else {
-            var5 += var3.nextDouble() * var1 / 2.0;
+            xt += random.nextDouble() * xzDist / 2.0;
          }
 
-         if (var0.getZ() > (double)var9.getZ()) {
-            var7 -= var3.nextDouble() * var1 / 2.0;
+         if (mob.getZ() > (double)center.getZ()) {
+            zt -= random.nextDouble() * xzDist / 2.0;
          } else {
-            var7 += var3.nextDouble() * var1 / 2.0;
+            zt += random.nextDouble() * xzDist / 2.0;
          }
       }
 
-      return BlockPos.containing(var5 + var0.getX(), (double)var4.getY() + var0.getY(), var7 + var0.getZ());
+      return BlockPos.containing(xt + mob.getX(), (double)direction.getY() + mob.getY(), zt + mob.getZ());
    }
 }

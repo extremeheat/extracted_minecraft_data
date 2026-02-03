@@ -10,23 +10,23 @@ public final class Graph {
       super();
    }
 
-   public static <T> boolean depthFirstSearch(Map<T, Set<T>> var0, Set<T> var1, Set<T> var2, Consumer<T> var3, T var4) {
-      if (var1.contains(var4)) {
+   public static <T> boolean depthFirstSearch(final Map<T, Set<T>> edges, final Set<T> discovered, final Set<T> currentlyVisiting, final Consumer<T> reverseTopologicalOrder, final T current) {
+      if (discovered.contains(current)) {
          return false;
-      } else if (var2.contains(var4)) {
+      } else if (currentlyVisiting.contains(current)) {
          return true;
       } else {
-         var2.add(var4);
+         currentlyVisiting.add(current);
 
-         for(Object var6 : (Set)var0.getOrDefault(var4, ImmutableSet.of())) {
-            if (depthFirstSearch(var0, var1, var2, var3, var6)) {
+         for(T next : (Set)edges.getOrDefault(current, ImmutableSet.of())) {
+            if (depthFirstSearch(edges, discovered, currentlyVisiting, reverseTopologicalOrder, next)) {
                return true;
             }
          }
 
-         var2.remove(var4);
-         var1.add(var4);
-         var3.accept(var4);
+         currentlyVisiting.remove(current);
+         discovered.add(current);
+         reverseTopologicalOrder.accept(current);
          return false;
       }
    }

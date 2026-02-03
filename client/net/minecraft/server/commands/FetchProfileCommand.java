@@ -30,43 +30,43 @@ public class FetchProfileCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fetchprofile").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("name").then(Commands.argument("name", StringArgumentType.greedyString()).executes((var0x) -> resolveName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "name")))))).then(Commands.literal("id").then(Commands.argument("id", UuidArgument.uuid()).executes((var0x) -> resolveId((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "id"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fetchprofile").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("name").then(Commands.argument("name", StringArgumentType.greedyString()).executes((c) -> resolveName((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "name")))))).then(Commands.literal("id").then(Commands.argument("id", UuidArgument.uuid()).executes((c) -> resolveId((CommandSourceStack)c.getSource(), UuidArgument.getUuid(c, "id"))))));
    }
 
-   private static void reportResolvedProfile(CommandSourceStack var0, GameProfile var1, String var2, Component var3) {
-      ResolvableProfile var4 = ResolvableProfile.createResolved(var1);
-      ResolvableProfile.CODEC.encodeStart(NbtOps.INSTANCE, var4).ifSuccess((var4x) -> {
-         String var5 = var4x.toString();
-         MutableComponent var6 = Component.object(new PlayerSprite(var4, true));
-         ComponentSerialization.CODEC.encodeStart(NbtOps.INSTANCE, var6).ifSuccess((var5x) -> {
-            String var6x = var5x.toString();
-            var0.sendSuccess(() -> {
-               MutableComponent var5x = ComponentUtils.formatList(List.of(Component.translatable("commands.fetchprofile.copy_component").withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.CopyToClipboard(var5)))), Component.translatable("commands.fetchprofile.give_item").withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.RunCommand("give @s minecraft:player_head[profile=" + var5 + "]")))), Component.translatable("commands.fetchprofile.summon_mannequin").withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.RunCommand("summon minecraft:mannequin ~ ~ ~ {profile:" + var5 + "}")))), Component.translatable("commands.fetchprofile.copy_text", var6.withStyle(ChatFormatting.WHITE)).withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.CopyToClipboard(var6x))))), CommonComponents.SPACE, (var0) -> ComponentUtils.wrapInSquareBrackets(var0.withStyle(ChatFormatting.GREEN)));
-               return Component.translatable(var2, var3, var5x);
+   private static void reportResolvedProfile(final CommandSourceStack sender, final GameProfile gameProfile, final String messageId, final Component argument) {
+      ResolvableProfile componentToWrite = ResolvableProfile.createResolved(gameProfile);
+      ResolvableProfile.CODEC.encodeStart(NbtOps.INSTANCE, componentToWrite).ifSuccess((encodedProfile) -> {
+         String encodedProfileAsString = encodedProfile.toString();
+         MutableComponent headComponent = Component.object(new PlayerSprite(componentToWrite, true));
+         ComponentSerialization.CODEC.encodeStart(NbtOps.INSTANCE, headComponent).ifSuccess((encodedComponent) -> {
+            String encodedComponentAsString = encodedComponent.toString();
+            sender.sendSuccess(() -> {
+               Component clickable = ComponentUtils.formatList(List.of(Component.translatable("commands.fetchprofile.copy_component").withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.CopyToClipboard(encodedProfileAsString)))), Component.translatable("commands.fetchprofile.give_item").withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.RunCommand("give @s minecraft:player_head[profile=" + encodedProfileAsString + "]")))), Component.translatable("commands.fetchprofile.summon_mannequin").withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.RunCommand("summon minecraft:mannequin ~ ~ ~ {profile:" + encodedProfileAsString + "}")))), Component.translatable("commands.fetchprofile.copy_text", headComponent.withStyle(ChatFormatting.WHITE)).withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.CopyToClipboard(encodedComponentAsString))))), CommonComponents.SPACE, (c) -> ComponentUtils.wrapInSquareBrackets(c.withStyle(ChatFormatting.GREEN)));
+               return Component.translatable(messageId, argument, clickable);
             }, false);
-         }).ifError((var1) -> var0.sendFailure(Component.translatable("commands.fetchprofile.failed_to_serialize", var1.message())));
-      }).ifError((var1x) -> var0.sendFailure(Component.translatable("commands.fetchprofile.failed_to_serialize", var1x.message())));
+         }).ifError((componentEncodingError) -> sender.sendFailure(Component.translatable("commands.fetchprofile.failed_to_serialize", componentEncodingError.message())));
+      }).ifError((error) -> sender.sendFailure(Component.translatable("commands.fetchprofile.failed_to_serialize", error.message())));
    }
 
-   private static int resolveName(CommandSourceStack var0, String var1) {
-      MinecraftServer var2 = var0.getServer();
-      ProfileResolver var3 = var2.services().profileResolver();
+   private static int resolveName(final CommandSourceStack source, final String name) {
+      MinecraftServer server = source.getServer();
+      ProfileResolver resolver = server.services().profileResolver();
       Util.nonCriticalIoPool().execute(() -> {
-         MutableComponent var4 = Component.literal(var1);
-         Optional var5 = var3.fetchByName(var1);
-         var2.execute(() -> var5.ifPresentOrElse((var2) -> reportResolvedProfile(var0, var2, "commands.fetchprofile.name.success", var4), () -> var0.sendFailure(Component.translatable("commands.fetchprofile.name.failure", var4))));
+         Component nameComponent = Component.literal(name);
+         Optional<GameProfile> result = resolver.fetchByName(name);
+         server.execute(() -> result.ifPresentOrElse((profile) -> reportResolvedProfile(source, profile, "commands.fetchprofile.name.success", nameComponent), () -> source.sendFailure(Component.translatable("commands.fetchprofile.name.failure", nameComponent))));
       });
       return 1;
    }
 
-   private static int resolveId(CommandSourceStack var0, UUID var1) {
-      MinecraftServer var2 = var0.getServer();
-      ProfileResolver var3 = var2.services().profileResolver();
+   private static int resolveId(final CommandSourceStack source, final UUID id) {
+      MinecraftServer server = source.getServer();
+      ProfileResolver resolver = server.services().profileResolver();
       Util.nonCriticalIoPool().execute(() -> {
-         Component var4 = Component.translationArg(var1);
-         Optional var5 = var3.fetchById(var1);
-         var2.execute(() -> var5.ifPresentOrElse((var2) -> reportResolvedProfile(var0, var2, "commands.fetchprofile.id.success", var4), () -> var0.sendFailure(Component.translatable("commands.fetchprofile.id.failure", var4))));
+         Component idComponent = Component.translationArg(id);
+         Optional<GameProfile> result = resolver.fetchById(id);
+         server.execute(() -> result.ifPresentOrElse((profile) -> reportResolvedProfile(source, profile, "commands.fetchprofile.id.success", idComponent), () -> source.sendFailure(Component.translatable("commands.fetchprofile.id.failure", idComponent))));
       });
       return 1;
    }

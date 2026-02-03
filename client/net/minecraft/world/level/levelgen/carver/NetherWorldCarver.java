@@ -15,8 +15,8 @@ import net.minecraft.world.level.material.Fluids;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public class NetherWorldCarver extends CaveWorldCarver {
-   public NetherWorldCarver(Codec<CaveCarverConfiguration> var1) {
-      super(var1);
+   public NetherWorldCarver(final Codec<CaveCarverConfiguration> configurationFactory) {
+      super(configurationFactory);
       this.liquids = ImmutableSet.of(Fluids.LAVA, Fluids.WATER);
    }
 
@@ -24,24 +24,24 @@ public class NetherWorldCarver extends CaveWorldCarver {
       return 10;
    }
 
-   protected float getThickness(RandomSource var1) {
-      return (var1.nextFloat() * 2.0F + var1.nextFloat()) * 2.0F;
+   protected float getThickness(final RandomSource random) {
+      return (random.nextFloat() * 2.0F + random.nextFloat()) * 2.0F;
    }
 
    protected double getYScale() {
       return 5.0;
    }
 
-   protected boolean carveBlock(CarvingContext var1, CaveCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, CarvingMask var5, BlockPos.MutableBlockPos var6, BlockPos.MutableBlockPos var7, Aquifer var8, MutableBoolean var9) {
-      if (this.canReplaceBlock(var2, var3.getBlockState(var6))) {
-         BlockState var10;
-         if (var6.getY() <= var1.getMinGenY() + 31) {
-            var10 = LAVA.createLegacyBlock();
+   protected boolean carveBlock(final CarvingContext context, final CaveCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final CarvingMask mask, final BlockPos.MutableBlockPos blockPos, final BlockPos.MutableBlockPos helperPos, final Aquifer aquifer, final MutableBoolean hasGrass) {
+      if (this.canReplaceBlock(configuration, chunk.getBlockState(blockPos))) {
+         BlockState state;
+         if (blockPos.getY() <= context.getMinGenY() + 31) {
+            state = LAVA.createLegacyBlock();
          } else {
-            var10 = CAVE_AIR;
+            state = CAVE_AIR;
          }
 
-         var3.setBlockState(var6, var10);
+         chunk.setBlockState(blockPos, state);
          return true;
       } else {
          return false;

@@ -15,24 +15,26 @@ import net.minecraft.world.entity.variant.SpawnCondition;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 
-public record CatVariant(ClientAsset.ResourceTexture assetInfo, SpawnPrioritySelectors spawnConditions) implements PriorityProvider<SpawnContext, SpawnCondition> {
-   public static final Codec<CatVariant> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClientAsset.ResourceTexture.DEFAULT_FIELD_CODEC.forGetter(CatVariant::assetInfo), SpawnPrioritySelectors.CODEC.fieldOf("spawn_conditions").forGetter(CatVariant::spawnConditions)).apply(var0, CatVariant::new));
-   public static final Codec<CatVariant> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClientAsset.ResourceTexture.DEFAULT_FIELD_CODEC.forGetter(CatVariant::assetInfo)).apply(var0, CatVariant::new));
+public record CatVariant(ClientAsset.ResourceTexture adultAssetInfo, ClientAsset.ResourceTexture babyAssetInfo, SpawnPrioritySelectors spawnConditions) implements PriorityProvider<SpawnContext, SpawnCondition> {
+   public static final Codec<CatVariant> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(ClientAsset.ResourceTexture.DEFAULT_FIELD_CODEC.forGetter(CatVariant::adultAssetInfo), ClientAsset.ResourceTexture.CODEC.fieldOf("baby_asset_id").forGetter(CatVariant::babyAssetInfo), SpawnPrioritySelectors.CODEC.fieldOf("spawn_conditions").forGetter(CatVariant::spawnConditions)).apply(i, CatVariant::new));
+   public static final Codec<CatVariant> NETWORK_CODEC = RecordCodecBuilder.create((i) -> i.group(ClientAsset.ResourceTexture.DEFAULT_FIELD_CODEC.forGetter(CatVariant::adultAssetInfo), ClientAsset.ResourceTexture.CODEC.fieldOf("baby_asset_id").forGetter(CatVariant::babyAssetInfo)).apply(i, CatVariant::new));
    public static final Codec<Holder<CatVariant>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<CatVariant>> STREAM_CODEC;
 
-   private CatVariant(ClientAsset.ResourceTexture var1) {
-      this(var1, SpawnPrioritySelectors.EMPTY);
+   private CatVariant(final ClientAsset.ResourceTexture adultAssetInfo, final ClientAsset.ResourceTexture babyAssetInfo) {
+      this(adultAssetInfo, babyAssetInfo, SpawnPrioritySelectors.EMPTY);
    }
 
-   public CatVariant(ClientAsset.ResourceTexture var1, SpawnPrioritySelectors var2) {
+   public CatVariant {
       super();
-      this.assetInfo = var1;
-      this.spawnConditions = var2;
    }
 
    public List<PriorityProvider.Selector<SpawnContext, SpawnCondition>> selectors() {
       return this.spawnConditions.selectors();
+   }
+
+   public ClientAsset.ResourceTexture assetInfo(final boolean isBaby) {
+      return isBaby ? this.babyAssetInfo : this.adultAssetInfo;
    }
 
    static {

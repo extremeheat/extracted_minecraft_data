@@ -15,50 +15,50 @@ import org.jspecify.annotations.Nullable;
 public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
    private static final Component USAGE_NARRATION = Component.translatable("narration.selection.usage");
 
-   public ObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5) {
-      super(var1, var2, var3, var4, var5);
+   public ObjectSelectionList(final Minecraft minecraft, final int width, final int height, final int y, final int itemHeight) {
+      super(minecraft, width, height, y, itemHeight);
    }
 
-   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
       if (this.getItemCount() == 0) {
          return null;
-      } else if (this.isFocused() && var1 instanceof FocusNavigationEvent.ArrowNavigation) {
-         FocusNavigationEvent.ArrowNavigation var4 = (FocusNavigationEvent.ArrowNavigation)var1;
-         Entry var3 = (Entry)this.nextEntry(var4.direction());
-         if (var3 != null) {
-            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(var3));
+      } else if (this.isFocused() && navigationEvent instanceof FocusNavigationEvent.ArrowNavigation) {
+         FocusNavigationEvent.ArrowNavigation arrowNavigation = (FocusNavigationEvent.ArrowNavigation)navigationEvent;
+         E entry = (E)(this.nextEntry(arrowNavigation.direction()));
+         if (entry != null) {
+            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(entry));
          } else {
             this.setFocused((GuiEventListener)null);
             this.setSelected((AbstractSelectionList.Entry)null);
             return null;
          }
       } else if (!this.isFocused()) {
-         Entry var2 = (Entry)this.getSelected();
-         if (var2 == null) {
-            var2 = (Entry)this.nextEntry(var1.getVerticalDirectionForInitialFocus());
+         E entry = (E)(this.getSelected());
+         if (entry == null) {
+            entry = (E)(this.nextEntry(navigationEvent.getVerticalDirectionForInitialFocus()));
          }
 
-         return var2 == null ? null : ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(var2));
+         return entry == null ? null : ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(entry));
       } else {
          return null;
       }
    }
 
-   public void updateWidgetNarration(NarrationElementOutput var1) {
-      Entry var2 = (Entry)this.getHovered();
-      if (var2 != null) {
-         this.narrateListElementPosition(var1.nest(), var2);
-         var2.updateNarration(var1);
+   public void updateWidgetNarration(final NarrationElementOutput output) {
+      E hovered = (E)(this.getHovered());
+      if (hovered != null) {
+         this.narrateListElementPosition(output.nest(), hovered);
+         hovered.updateNarration(output);
       } else {
-         Entry var3 = (Entry)this.getSelected();
-         if (var3 != null) {
-            this.narrateListElementPosition(var1.nest(), var3);
-            var3.updateNarration(var1);
+         E selected = (E)(this.getSelected());
+         if (selected != null) {
+            this.narrateListElementPosition(output.nest(), selected);
+            selected.updateNarration(output);
          }
       }
 
       if (this.isFocused()) {
-         var1.add(NarratedElementType.USAGE, USAGE_NARRATION);
+         output.add(NarratedElementType.USAGE, USAGE_NARRATION);
       }
 
    }
@@ -70,12 +70,12 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
 
       public abstract Component getNarration();
 
-      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
          return true;
       }
 
-      public void updateNarration(NarrationElementOutput var1) {
-         var1.add(NarratedElementType.TITLE, this.getNarration());
+      public void updateNarration(final NarrationElementOutput output) {
+         output.add(NarratedElementType.TITLE, this.getNarration());
       }
    }
 }

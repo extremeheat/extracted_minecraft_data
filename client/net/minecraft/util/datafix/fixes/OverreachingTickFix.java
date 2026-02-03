@@ -12,41 +12,41 @@ import java.util.List;
 import java.util.Optional;
 
 public class OverreachingTickFix extends DataFix {
-   public OverreachingTickFix(Schema var1) {
-      super(var1, false);
+   public OverreachingTickFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.CHUNK);
-      OpticFinder var2 = var1.findField("block_ticks");
-      return this.fixTypeEverywhereTyped("Handle ticks saved in the wrong chunk", var1, (var1x) -> {
-         Optional var2x = var1x.getOptionalTyped(var2);
-         Optional var3 = var2x.isPresent() ? ((Typed)var2x.get()).write().result() : Optional.empty();
-         return var1x.update(DSL.remainderFinder(), (var1) -> {
-            int var2 = var1.get("xPos").asInt(0);
-            int var3x = var1.get("zPos").asInt(0);
-            Optional var4 = var1.get("fluid_ticks").get().result();
-            var1 = extractOverreachingTicks(var1, var2, var3x, var3, "neighbor_block_ticks");
-            var1 = extractOverreachingTicks(var1, var2, var3x, var4, "neighbor_fluid_ticks");
-            return var1;
+      Type<?> chunkType = this.getInputSchema().getType(References.CHUNK);
+      OpticFinder<?> blockTicksFinder = chunkType.findField("block_ticks");
+      return this.fixTypeEverywhereTyped("Handle ticks saved in the wrong chunk", chunkType, (chunk) -> {
+         Optional<? extends Typed<?>> blockTicksOpt = chunk.getOptionalTyped(blockTicksFinder);
+         Optional<? extends Dynamic<?>> blockTicks = blockTicksOpt.isPresent() ? ((Typed)blockTicksOpt.get()).write().result() : Optional.empty();
+         return chunk.update(DSL.remainderFinder(), (remainder) -> {
+            int chunkX = remainder.get("xPos").asInt(0);
+            int chunkZ = remainder.get("zPos").asInt(0);
+            Optional<? extends Dynamic<?>> fluidTicks = remainder.get("fluid_ticks").get().result();
+            remainder = extractOverreachingTicks(remainder, chunkX, chunkZ, blockTicks, "neighbor_block_ticks");
+            remainder = extractOverreachingTicks(remainder, chunkX, chunkZ, fluidTicks, "neighbor_fluid_ticks");
+            return remainder;
          });
       });
    }
 
-   private static Dynamic<?> extractOverreachingTicks(Dynamic<?> var0, int var1, int var2, Optional<? extends Dynamic<?>> var3, String var4) {
-      if (var3.isPresent()) {
-         List var5 = ((Dynamic)var3.get()).asStream().filter((var2x) -> {
-            int var3 = var2x.get("x").asInt(0);
-            int var4 = var2x.get("z").asInt(0);
-            int var5 = Math.abs(var1 - (var3 >> 4));
-            int var6 = Math.abs(var2 - (var4 >> 4));
-            return (var5 != 0 || var6 != 0) && var5 <= 1 && var6 <= 1;
+   private static Dynamic<?> extractOverreachingTicks(Dynamic<?> remainder, final int chunkX, final int chunkZ, final Optional<? extends Dynamic<?>> ticks, final String nameInUpgradeData) {
+      if (ticks.isPresent()) {
+         List<? extends Dynamic<?>> overreachingTicks = ((Dynamic)ticks.get()).asStream().filter((tick) -> {
+            int x = tick.get("x").asInt(0);
+            int z = tick.get("z").asInt(0);
+            int distX = Math.abs(chunkX - (x >> 4));
+            int distZ = Math.abs(chunkZ - (z >> 4));
+            return (distX != 0 || distZ != 0) && distX <= 1 && distZ <= 1;
          }).toList();
-         if (!var5.isEmpty()) {
-            var0 = var0.set("UpgradeData", var0.get("UpgradeData").orElseEmptyMap().set(var4, var0.createList(var5.stream())));
+         if (!overreachingTicks.isEmpty()) {
+            remainder = remainder.set("UpgradeData", remainder.get("UpgradeData").orElseEmptyMap().set(nameInUpgradeData, remainder.createList(overreachingTicks.stream())));
          }
       }
 
-      return var0;
+      return remainder;
    }
 }

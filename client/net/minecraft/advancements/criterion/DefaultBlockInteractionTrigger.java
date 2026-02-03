@@ -9,6 +9,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
@@ -21,30 +23,28 @@ public class DefaultBlockInteractionTrigger extends SimpleCriterionTrigger<Trigg
       return DefaultBlockInteractionTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, BlockPos var2) {
-      ServerLevel var3 = var1.level();
-      BlockState var4 = var3.getBlockState(var2);
-      LootParams var5 = (new LootParams.Builder(var3)).withParameter(LootContextParams.ORIGIN, var2.getCenter()).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.BLOCK_STATE, var4).create(LootContextParamSets.BLOCK_USE);
-      LootContext var6 = (new LootContext.Builder(var5)).create(Optional.empty());
-      this.trigger(var1, (var1x) -> var1x.matches(var6));
+   public void trigger(final ServerPlayer player, final BlockPos pos) {
+      ServerLevel level = player.level();
+      BlockState state = level.getBlockState(pos);
+      LootParams params = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, pos.getCenter()).withParameter(LootContextParams.THIS_ENTITY, player).withParameter(LootContextParams.BLOCK_STATE, state).create(LootContextParamSets.BLOCK_USE);
+      LootContext context = (new LootContext.Builder(params)).create(Optional.empty());
+      this.trigger(player, (t) -> t.matches(context));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> location) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ContextAwarePredicate.CODEC.optionalFieldOf("location").forGetter(TriggerInstance::location)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ContextAwarePredicate.CODEC.optionalFieldOf("location").forGetter(TriggerInstance::location)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.location = var2;
       }
 
-      public boolean matches(LootContext var1) {
-         return this.location.isEmpty() || ((ContextAwarePredicate)this.location.get()).matches(var1);
+      public boolean matches(final LootContext locationContext) {
+         return this.location.isEmpty() || ((ContextAwarePredicate)this.location.get()).matches(locationContext);
       }
 
-      public void validate(CriterionValidator var1) {
-         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.BLOCK_USE, "location"));
+      public void validate(final ValidationContextSource validator) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
+         Validatable.validate(validator.context(LootContextParamSets.BLOCK_USE), "location", this.location);
       }
    }
 }

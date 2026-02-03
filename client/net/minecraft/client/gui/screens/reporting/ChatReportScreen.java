@@ -21,47 +21,47 @@ public class ChatReportScreen extends AbstractReportScreen<ChatReport.Builder> {
    private Button selectMessagesButton;
    private Button selectReasonButton;
 
-   private ChatReportScreen(Screen var1, ReportingContext var2, ChatReport.Builder var3) {
-      super(TITLE, var1, var2, var3);
+   private ChatReportScreen(final Screen lastScreen, final ReportingContext reportingContext, final ChatReport.Builder reportBuilder) {
+      super(TITLE, lastScreen, reportingContext, reportBuilder);
    }
 
-   public ChatReportScreen(Screen var1, ReportingContext var2, UUID var3) {
-      this(var1, var2, new ChatReport.Builder(var3, var2.sender().reportLimits()));
+   public ChatReportScreen(final Screen lastScreen, final ReportingContext reportingContext, final UUID playerId) {
+      this(lastScreen, reportingContext, new ChatReport.Builder(playerId, reportingContext.sender().reportLimits()));
    }
 
-   public ChatReportScreen(Screen var1, ReportingContext var2, ChatReport var3) {
-      this(var1, var2, new ChatReport.Builder(var3, var2.sender().reportLimits()));
+   public ChatReportScreen(final Screen lastScreen, final ReportingContext reportingContext, final ChatReport draft) {
+      this(lastScreen, reportingContext, new ChatReport.Builder(draft, reportingContext.sender().reportLimits()));
    }
 
    protected void addContent() {
-      this.selectMessagesButton = (Button)this.layout.addChild(Button.builder(SELECT_CHAT_MESSAGE, (var1) -> this.minecraft.setScreen(new ChatSelectionScreen(this, this.reportingContext, this.reportBuilder, (var1x) -> {
-            this.reportBuilder = var1x;
+      this.selectMessagesButton = (Button)this.layout.addChild(Button.builder(SELECT_CHAT_MESSAGE, (b) -> this.minecraft.setScreen(new ChatSelectionScreen(this, this.reportingContext, this.reportBuilder, (updatedReport) -> {
+            this.reportBuilder = updatedReport;
             this.onReportChanged();
          }))).width(280).build());
-      this.selectReasonButton = Button.builder(SELECT_REASON, (var1) -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, ((ChatReport.Builder)this.reportBuilder).reason(), ReportType.CHAT, (var1x) -> {
-            ((ChatReport.Builder)this.reportBuilder).setReason(var1x);
+      this.selectReasonButton = Button.builder(SELECT_REASON, (b) -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, ((ChatReport.Builder)this.reportBuilder).reason(), ReportType.CHAT, (reason) -> {
+            ((ChatReport.Builder)this.reportBuilder).setReason(reason);
             this.onReportChanged();
          }))).width(280).build();
       this.layout.addChild(CommonLayouts.labeledElement(this.font, this.selectReasonButton, OBSERVED_WHAT_LABEL));
       Objects.requireNonNull(this.font);
-      this.commentBox = this.createCommentBox(280, 9 * 8, (var1) -> {
-         ((ChatReport.Builder)this.reportBuilder).setComments(var1);
+      this.commentBox = this.createCommentBox(280, 9 * 8, (comments) -> {
+         ((ChatReport.Builder)this.reportBuilder).setComments(comments);
          this.onReportChanged();
       });
-      this.layout.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, MORE_COMMENTS_LABEL, (var0) -> var0.paddingBottom(12)));
+      this.layout.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, MORE_COMMENTS_LABEL, (s) -> s.paddingBottom(12)));
    }
 
    protected void onReportChanged() {
-      IntSet var1 = ((ChatReport.Builder)this.reportBuilder).reportedMessages();
-      if (var1.isEmpty()) {
+      IntSet reportedMessages = ((ChatReport.Builder)this.reportBuilder).reportedMessages();
+      if (reportedMessages.isEmpty()) {
          this.selectMessagesButton.setMessage(SELECT_CHAT_MESSAGE);
       } else {
-         this.selectMessagesButton.setMessage(Component.translatable("gui.chatReport.selected_chat", var1.size()));
+         this.selectMessagesButton.setMessage(Component.translatable("gui.chatReport.selected_chat", reportedMessages.size()));
       }
 
-      ReportReason var2 = ((ChatReport.Builder)this.reportBuilder).reason();
-      if (var2 != null) {
-         this.selectReasonButton.setMessage(var2.title());
+      ReportReason reportReason = ((ChatReport.Builder)this.reportBuilder).reason();
+      if (reportReason != null) {
+         this.selectReasonButton.setMessage(reportReason.title());
       } else {
          this.selectReasonButton.setMessage(SELECT_REASON);
       }
@@ -69,7 +69,7 @@ public class ChatReportScreen extends AbstractReportScreen<ChatReport.Builder> {
       super.onReportChanged();
    }
 
-   public boolean mouseReleased(MouseButtonEvent var1) {
-      return super.mouseReleased(var1) ? true : this.commentBox.mouseReleased(var1);
+   public boolean mouseReleased(final MouseButtonEvent event) {
+      return super.mouseReleased(event) ? true : this.commentBox.mouseReleased(event);
    }
 }

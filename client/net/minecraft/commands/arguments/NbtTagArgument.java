@@ -21,8 +21,8 @@ public class NbtTagArgument extends ParserBasedArgument<Tag> {
       return new NbtTagArgument();
    }
 
-   public static <S> Tag getNbtTag(CommandContext<S> var0, String var1) {
-      return (Tag)var0.getArgument(var1, Tag.class);
+   public static <S> Tag getNbtTag(final CommandContext<S> context, final String name) {
+      return (Tag)context.getArgument(name, Tag.class);
    }
 
    public Collection<String> getExamples() {

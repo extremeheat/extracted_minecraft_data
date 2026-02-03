@@ -15,47 +15,47 @@ public record VillagerData(Holder<VillagerType> type, Holder<VillagerProfession>
    public static final int MIN_VILLAGER_LEVEL = 1;
    public static final int MAX_VILLAGER_LEVEL = 5;
    private static final int[] NEXT_LEVEL_XP_THRESHOLDS = new int[]{0, 10, 70, 150, 250};
-   public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BuiltInRegistries.VILLAGER_TYPE.holderByNameCodec().fieldOf("type").orElseGet(() -> BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS)).forGetter((var0x) -> var0x.type), BuiltInRegistries.VILLAGER_PROFESSION.holderByNameCodec().fieldOf("profession").orElseGet(() -> BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE)).forGetter((var0x) -> var0x.profession), Codec.INT.fieldOf("level").orElse(1).forGetter((var0x) -> var0x.level)).apply(var0, VillagerData::new));
+   public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create((i) -> i.group(BuiltInRegistries.VILLAGER_TYPE.holderByNameCodec().fieldOf("type").orElseGet(() -> BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS)).forGetter((d) -> d.type), BuiltInRegistries.VILLAGER_PROFESSION.holderByNameCodec().fieldOf("profession").orElseGet(() -> BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE)).forGetter((d) -> d.profession), Codec.INT.fieldOf("level").orElse(1).forGetter((d) -> d.level)).apply(i, VillagerData::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, VillagerData> STREAM_CODEC;
 
-   public VillagerData(Holder<VillagerType> var1, Holder<VillagerProfession> var2, int var3) {
+   public VillagerData(Holder<VillagerType> type, Holder<VillagerProfession> profession, int level) {
       super();
-      var3 = Math.max(1, var3);
-      this.type = var1;
-      this.profession = var2;
-      this.level = var3;
+      level = Math.max(1, level);
+      this.type = type;
+      this.profession = profession;
+      this.level = level;
    }
 
-   public VillagerData withType(Holder<VillagerType> var1) {
-      return new VillagerData(var1, this.profession, this.level);
+   public VillagerData withType(final Holder<VillagerType> type) {
+      return new VillagerData(type, this.profession, this.level);
    }
 
-   public VillagerData withType(HolderGetter.Provider var1, ResourceKey<VillagerType> var2) {
-      return this.withType(var1.getOrThrow(var2));
+   public VillagerData withType(final HolderGetter.Provider registries, final ResourceKey<VillagerType> type) {
+      return this.withType(registries.getOrThrow(type));
    }
 
-   public VillagerData withProfession(Holder<VillagerProfession> var1) {
-      return new VillagerData(this.type, var1, this.level);
+   public VillagerData withProfession(final Holder<VillagerProfession> profession) {
+      return new VillagerData(this.type, profession, this.level);
    }
 
-   public VillagerData withProfession(HolderGetter.Provider var1, ResourceKey<VillagerProfession> var2) {
-      return this.withProfession(var1.getOrThrow(var2));
+   public VillagerData withProfession(final HolderGetter.Provider registries, final ResourceKey<VillagerProfession> profession) {
+      return this.withProfession(registries.getOrThrow(profession));
    }
 
-   public VillagerData withLevel(int var1) {
-      return new VillagerData(this.type, this.profession, var1);
+   public VillagerData withLevel(final int level) {
+      return new VillagerData(this.type, this.profession, level);
    }
 
-   public static int getMinXpPerLevel(int var0) {
-      return canLevelUp(var0) ? NEXT_LEVEL_XP_THRESHOLDS[var0 - 1] : 0;
+   public static int getMinXpPerLevel(final int level) {
+      return canLevelUp(level) ? NEXT_LEVEL_XP_THRESHOLDS[level - 1] : 0;
    }
 
-   public static int getMaxXpPerLevel(int var0) {
-      return canLevelUp(var0) ? NEXT_LEVEL_XP_THRESHOLDS[var0] : 0;
+   public static int getMaxXpPerLevel(final int level) {
+      return canLevelUp(level) ? NEXT_LEVEL_XP_THRESHOLDS[level] : 0;
    }
 
-   public static boolean canLevelUp(int var0) {
-      return var0 >= 1 && var0 < 5;
+   public static boolean canLevelUp(final int currentLevel) {
+      return currentLevel >= 1 && currentLevel < 5;
    }
 
    static {

@@ -9,8 +9,8 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 public abstract class DirectionalBlock extends Block {
    public static final EnumProperty<Direction> FACING;
 
-   protected DirectionalBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected DirectionalBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    protected abstract MapCodec<? extends DirectionalBlock> codec();

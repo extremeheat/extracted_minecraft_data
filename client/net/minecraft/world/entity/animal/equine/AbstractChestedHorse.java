@@ -35,21 +35,21 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
    private static final boolean DEFAULT_HAS_CHEST = false;
    private final EntityDimensions babyDimensions;
 
-   protected AbstractChestedHorse(EntityType<? extends AbstractChestedHorse> var1, Level var2) {
-      super(var1, var2);
+   protected AbstractChestedHorse(final EntityType<? extends AbstractChestedHorse> type, final Level level) {
+      super(type, level);
       this.canGallop = false;
-      this.babyDimensions = var1.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, var1.getHeight() - 0.15625F, 0.0F)).scale(0.5F);
+      this.babyDimensions = type.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, type.getHeight() - 0.15625F, 0.0F)).scale(0.5F);
    }
 
-   protected void randomizeAttributes(RandomSource var1) {
+   protected void randomizeAttributes(final RandomSource random) {
       AttributeInstance var10000 = this.getAttribute(Attributes.MAX_HEALTH);
-      Objects.requireNonNull(var1);
-      var10000.setBaseValue((double)generateMaxHealth(var1::nextInt));
+      Objects.requireNonNull(random);
+      var10000.setBaseValue((double)generateMaxHealth(random::nextInt));
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_ID_CHEST, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_ID_CHEST, false);
    }
 
    public static AttributeSupplier.Builder createBaseChestedHorseAttributes() {
@@ -60,68 +60,72 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       return (Boolean)this.entityData.get(DATA_ID_CHEST);
    }
 
-   public void setChest(boolean var1) {
-      this.entityData.set(DATA_ID_CHEST, var1);
+   public void setChest(final boolean flag) {
+      this.entityData.set(DATA_ID_CHEST, flag);
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return this.isBaby() ? this.babyDimensions : super.getDefaultDimensions(var1);
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? this.babyDimensions : super.getDefaultDimensions(pose);
    }
 
-   protected void dropEquipment(ServerLevel var1) {
-      super.dropEquipment(var1);
+   protected void dropEquipment(final ServerLevel level) {
+      super.dropEquipment(level);
       if (this.hasChest()) {
-         this.spawnAtLocation(var1, Blocks.CHEST);
+         this.spawnAtLocation(level, Blocks.CHEST);
          this.setChest(false);
       }
 
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("ChestedHorse", this.hasChest());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("ChestedHorse", this.hasChest());
       if (this.hasChest()) {
-         ValueOutput.TypedOutputList var2 = var1.list("Items", ItemStackWithSlot.CODEC);
+         ValueOutput.TypedOutputList<ItemStackWithSlot> items = output.<ItemStackWithSlot>list("Items", ItemStackWithSlot.CODEC);
 
-         for(int var3 = 0; var3 < this.inventory.getContainerSize(); ++var3) {
-            ItemStack var4 = this.inventory.getItem(var3);
-            if (!var4.isEmpty()) {
-               var2.add(new ItemStackWithSlot(var3, var4));
+         for(int i = 0; i < this.inventory.getContainerSize(); ++i) {
+            ItemStack stack = this.inventory.getItem(i);
+            if (!stack.isEmpty()) {
+               items.add(new ItemStackWithSlot(i, stack));
             }
          }
       }
 
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setChest(var1.getBooleanOr("ChestedHorse", false));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setChest(input.getBooleanOr("ChestedHorse", false));
       this.createInventory();
       if (this.hasChest()) {
-         for(ItemStackWithSlot var3 : var1.listOrEmpty("Items", ItemStackWithSlot.CODEC)) {
-            if (var3.isValidInContainer(this.inventory.getContainerSize())) {
-               this.inventory.setItem(var3.slot(), var3.stack());
+         for(ItemStackWithSlot item : input.listOrEmpty("Items", ItemStackWithSlot.CODEC)) {
+            if (item.isValidInContainer(this.inventory.getContainerSize())) {
+               this.inventory.setItem(item.slot(), item.stack());
             }
          }
       }
 
    }
 
-   public @Nullable SlotAccess getSlot(int var1) {
-      return var1 == 499 ? new SlotAccess() {
+   public @Nullable SlotAccess getSlot(final int slot) {
+      return slot == 499 ? new SlotAccess() {
+         {
+            Objects.requireNonNull(AbstractChestedHorse.this);
+         }
+
          public ItemStack get() {
             return AbstractChestedHorse.this.hasChest() ? new ItemStack(Items.CHEST) : ItemStack.EMPTY;
          }
 
-         public boolean set(ItemStack var1) {
-            if (var1.isEmpty()) {
+         public boolean set(final ItemStack itemStack) {
+            if (itemStack.isEmpty()) {
                if (AbstractChestedHorse.this.hasChest()) {
                   AbstractChestedHorse.this.setChest(false);
                   AbstractChestedHorse.this.createInventory();
                }
 
                return true;
-            } else if (var1.is(Items.CHEST)) {
+            } else if (itemStack.is(Items.CHEST)) {
                if (!AbstractChestedHorse.this.hasChest()) {
                   AbstractChestedHorse.this.setChest(true);
                   AbstractChestedHorse.this.createInventory();
@@ -132,16 +136,16 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
                return false;
             }
          }
-      } : super.getSlot(var1);
+      } : super.getSlot(slot);
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      boolean var3 = !this.isBaby() && this.isTamed() && var1.isSecondaryUseActive();
-      if (!this.isVehicle() && !var3) {
-         ItemStack var4 = var1.getItemInHand(var2);
-         if (!var4.isEmpty()) {
-            if (this.isFood(var4)) {
-               return this.fedFood(var1, var4);
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      boolean shouldOpenInventory = !this.isBaby() && this.isTamed() && player.isSecondaryUseActive();
+      if (!this.isVehicle() && !shouldOpenInventory && (!this.isBaby() || !player.isHolding(Items.GOLDEN_DANDELION))) {
+         ItemStack itemStack = player.getItemInHand(hand);
+         if (!itemStack.isEmpty()) {
+            if (this.isFood(itemStack)) {
+               return this.fedFood(player, itemStack);
             }
 
             if (!this.isTamed()) {
@@ -149,22 +153,22 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
                return InteractionResult.SUCCESS;
             }
 
-            if (!this.hasChest() && var4.is(Items.CHEST)) {
-               this.equipChest(var1, var4);
+            if (!this.hasChest() && itemStack.is(Items.CHEST)) {
+               this.equipChest(player, itemStack);
                return InteractionResult.SUCCESS;
             }
          }
 
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       } else {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
-   private void equipChest(Player var1, ItemStack var2) {
+   private void equipChest(final Player player, final ItemStack itemStack) {
       this.setChest(true);
       this.playChestEquipsSound();
-      var2.consume(1, var1);
+      itemStack.consume(1, player);
       this.createInventory();
    }
 

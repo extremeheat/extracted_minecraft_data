@@ -16,23 +16,23 @@ public abstract class IntProvider {
       super();
    }
 
-   public static Codec<IntProvider> codec(int var0, int var1) {
-      return validateCodec(var0, var1, CODEC);
+   public static Codec<IntProvider> codec(final int minValue, final int maxValue) {
+      return validateCodec(minValue, maxValue, CODEC);
    }
 
-   public static <T extends IntProvider> Codec<T> validateCodec(int var0, int var1, Codec<T> var2) {
-      return var2.validate((var2x) -> validate(var0, var1, var2x));
+   public static <T extends IntProvider> Codec<T> validateCodec(final int minValue, final int maxValue, final Codec<T> codec) {
+      return codec.validate((value) -> validate(minValue, maxValue, value));
    }
 
-   private static <T extends IntProvider> DataResult<T> validate(int var0, int var1, T var2) {
-      if (var2.getMinValue() < var0) {
-         return DataResult.error(() -> "Value provider too low: " + var0 + " [" + var2.getMinValue() + "-" + var2.getMaxValue() + "]");
+   private static <T extends IntProvider> DataResult<T> validate(final int minValue, final int maxValue, final T value) {
+      if (value.getMinValue() < minValue) {
+         return DataResult.error(() -> "Value provider too low: " + minValue + " [" + value.getMinValue() + "-" + value.getMaxValue() + "]");
       } else {
-         return var2.getMaxValue() > var1 ? DataResult.error(() -> "Value provider too high: " + var1 + " [" + var2.getMinValue() + "-" + var2.getMaxValue() + "]") : DataResult.success(var2);
+         return value.getMaxValue() > maxValue ? DataResult.error(() -> "Value provider too high: " + maxValue + " [" + value.getMinValue() + "-" + value.getMaxValue() + "]") : DataResult.success(value);
       }
    }
 
-   public abstract int sample(RandomSource var1);
+   public abstract int sample(final RandomSource random);
 
    public abstract int getMinValue();
 
@@ -42,7 +42,7 @@ public abstract class IntProvider {
 
    static {
       CONSTANT_OR_DISPATCH_CODEC = Codec.either(Codec.INT, BuiltInRegistries.INT_PROVIDER_TYPE.byNameCodec().dispatch(IntProvider::getType, IntProviderType::codec));
-      CODEC = CONSTANT_OR_DISPATCH_CODEC.xmap((var0) -> (IntProvider)var0.map(ConstantInt::of, (var0x) -> var0x), (var0) -> var0.getType() == IntProviderType.CONSTANT ? Either.left(((ConstantInt)var0).getValue()) : Either.right(var0));
+      CODEC = CONSTANT_OR_DISPATCH_CODEC.xmap((either) -> (IntProvider)either.map(ConstantInt::of, (f) -> f), (f) -> f.getType() == IntProviderType.CONSTANT ? Either.left(((ConstantInt)f).getValue()) : Either.right(f));
       NON_NEGATIVE_CODEC = codec(0, 2147483647);
       POSITIVE_CODEC = codec(1, 2147483647);
    }

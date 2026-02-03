@@ -21,48 +21,48 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
    private final Player player;
    private final CraftingContainer container;
 
-   public CrafterMenu(int var1, Inventory var2) {
-      super(MenuType.CRAFTER_3x3, var1);
-      this.player = var2.player;
+   public CrafterMenu(final int containerId, final Inventory inventory) {
+      super(MenuType.CRAFTER_3x3, containerId);
+      this.player = inventory.player;
       this.containerData = new SimpleContainerData(10);
       this.container = new TransientCraftingContainer(this, 3, 3);
-      this.addSlots(var2);
+      this.addSlots(inventory);
    }
 
-   public CrafterMenu(int var1, Inventory var2, CraftingContainer var3, ContainerData var4) {
-      super(MenuType.CRAFTER_3x3, var1);
-      this.player = var2.player;
-      this.containerData = var4;
-      this.container = var3;
-      checkContainerSize(var3, 9);
-      var3.startOpen(var2.player);
-      this.addSlots(var2);
+   public CrafterMenu(final int containerId, final Inventory inventory, final CraftingContainer container, final ContainerData containerData) {
+      super(MenuType.CRAFTER_3x3, containerId);
+      this.player = inventory.player;
+      this.containerData = containerData;
+      this.container = container;
+      checkContainerSize(container, 9);
+      container.startOpen(inventory.player);
+      this.addSlots(inventory);
       this.addSlotListener(this);
    }
 
-   private void addSlots(Inventory var1) {
-      for(int var2 = 0; var2 < 3; ++var2) {
-         for(int var3 = 0; var3 < 3; ++var3) {
-            int var4 = var3 + var2 * 3;
-            this.addSlot(new CrafterSlot(this.container, var4, 26 + var3 * 18, 17 + var2 * 18, this));
+   private void addSlots(final Inventory inventory) {
+      for(int y = 0; y < 3; ++y) {
+         for(int x = 0; x < 3; ++x) {
+            int slot = x + y * 3;
+            this.addSlot(new CrafterSlot(this.container, slot, 26 + x * 18, 17 + y * 18, this));
          }
       }
 
-      this.addStandardInventorySlots(var1, 8, 84);
+      this.addStandardInventorySlots(inventory, 8, 84);
       this.addSlot(new NonInteractiveResultSlot(this.resultContainer, 0, 134, 35));
       this.addDataSlots(this.containerData);
       this.refreshRecipeResult();
    }
 
-   public void setSlotState(int var1, boolean var2) {
-      CrafterSlot var3 = (CrafterSlot)this.getSlot(var1);
-      this.containerData.set(var3.index, var2 ? 0 : 1);
+   public void setSlotState(final int slotId, final boolean isEnabled) {
+      CrafterSlot slot = (CrafterSlot)this.getSlot(slotId);
+      this.containerData.set(slot.index, isEnabled ? 0 : 1);
       this.broadcastChanges();
    }
 
-   public boolean isSlotDisabled(int var1) {
-      if (var1 > -1 && var1 < 9) {
-         return this.containerData.get(var1) == 1;
+   public boolean isSlotDisabled(final int slotId) {
+      if (slotId > -1 && slotId < 9) {
+         return this.containerData.get(slotId) == 1;
       } else {
          return false;
       }
@@ -72,47 +72,47 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
       return this.containerData.get(9) == 1;
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4 != null && var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         var3 = var5.copy();
-         if (var2 < 9) {
-            if (!this.moveItemStackTo(var5, 9, 45, true)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot != null && slot.hasItem()) {
+         ItemStack stack = slot.getItem();
+         clicked = stack.copy();
+         if (slotIndex < 9) {
+            if (!this.moveItemStackTo(stack, 9, 45, true)) {
                return ItemStack.EMPTY;
             }
-         } else if (!this.moveItemStackTo(var5, 0, 9, false)) {
+         } else if (!this.moveItemStackTo(stack, 0, 9, false)) {
             return ItemStack.EMPTY;
          }
 
-         if (var5.isEmpty()) {
-            var4.set(ItemStack.EMPTY);
+         if (stack.isEmpty()) {
+            slot.set(ItemStack.EMPTY);
          } else {
-            var4.setChanged();
+            slot.setChanged();
          }
 
-         if (var5.getCount() == var3.getCount()) {
+         if (stack.getCount() == clicked.getCount()) {
             return ItemStack.EMPTY;
          }
 
-         var4.onTake(var1, var5);
+         slot.onTake(player, stack);
       }
 
-      return var3;
+      return clicked;
    }
 
-   public boolean stillValid(Player var1) {
-      return this.container.stillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.container.stillValid(player);
    }
 
    private void refreshRecipeResult() {
       Player var2 = this.player;
-      if (var2 instanceof ServerPlayer var1) {
-         ServerLevel var5 = var1.level();
-         CraftingInput var3 = this.container.asCraftInput();
-         ItemStack var4 = (ItemStack)CrafterBlock.getPotentialResults(var5, var3).map((var2x) -> ((CraftingRecipe)var2x.value()).assemble(var3, var5.registryAccess())).orElse(ItemStack.EMPTY);
-         this.resultContainer.setItem(0, var4);
+      if (var2 instanceof ServerPlayer serverPlayer) {
+         ServerLevel level = serverPlayer.level();
+         CraftingInput craftInput = this.container.asCraftInput();
+         ItemStack result = (ItemStack)CrafterBlock.getPotentialResults(level, craftInput).map((recipe) -> ((CraftingRecipe)recipe.value()).assemble(craftInput)).orElse(ItemStack.EMPTY);
+         this.resultContainer.setItem(0, result);
       }
 
    }
@@ -121,10 +121,10 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
       return this.container;
    }
 
-   public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
+   public void slotChanged(final AbstractContainerMenu container, final int slotIndex, final ItemStack itemStack) {
       this.refreshRecipeResult();
    }
 
-   public void dataChanged(AbstractContainerMenu var1, int var2, int var3) {
+   public void dataChanged(final AbstractContainerMenu container, final int id, final int value) {
    }
 }

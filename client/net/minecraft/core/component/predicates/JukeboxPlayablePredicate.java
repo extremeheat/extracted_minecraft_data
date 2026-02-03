@@ -10,36 +10,36 @@ import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.JukeboxPlayable;
 import net.minecraft.world.item.JukeboxSong;
 
 public record JukeboxPlayablePredicate(Optional<HolderSet<JukeboxSong>> song) implements SingleComponentItemPredicate<JukeboxPlayable> {
-   public static final Codec<JukeboxPlayablePredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.JUKEBOX_SONG).optionalFieldOf("song").forGetter(JukeboxPlayablePredicate::song)).apply(var0, JukeboxPlayablePredicate::new));
+   public static final Codec<JukeboxPlayablePredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.JUKEBOX_SONG).optionalFieldOf("song").forGetter(JukeboxPlayablePredicate::song)).apply(i, JukeboxPlayablePredicate::new));
 
-   public JukeboxPlayablePredicate(Optional<HolderSet<JukeboxSong>> var1) {
+   public JukeboxPlayablePredicate {
       super();
-      this.song = var1;
    }
 
    public DataComponentType<JukeboxPlayable> componentType() {
       return DataComponents.JUKEBOX_PLAYABLE;
    }
 
-   public boolean matches(JukeboxPlayable var1) {
+   public boolean matches(final JukeboxPlayable value) {
       if (!this.song.isPresent()) {
          return true;
       } else {
-         boolean var2 = false;
+         boolean songIsPresent = false;
 
-         for(Holder var4 : (HolderSet)this.song.get()) {
-            Optional var5 = var4.unwrapKey();
-            if (!var5.isEmpty() && var5.equals(var1.song().key())) {
-               var2 = true;
+         for(Holder<JukeboxSong> maybeSong : (HolderSet)this.song.get()) {
+            Optional<ResourceKey<JukeboxSong>> songId = maybeSong.unwrapKey();
+            if (!songId.isEmpty() && songId.equals(value.song().unwrapKey())) {
+               songIsPresent = true;
                break;
             }
          }
 
-         return var2;
+         return songIsPresent;
       }
    }
 

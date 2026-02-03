@@ -2,6 +2,7 @@ package net.minecraft.client.gui.components.debug;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
+import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +29,7 @@ import org.slf4j.Logger;
 public class DebugScreenEntryList {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_DEBUG_PROFILE_VERSION = 4649;
-   private Map<Identifier, DebugScreenEntryStatus> allStatuses;
+   private final Map<Identifier, DebugScreenEntryStatus> allStatuses = new HashMap();
    private final List<Identifier> currentlyEnabled = new ArrayList();
    private boolean isOverlayVisible = false;
    private @Nullable DebugScreenProfile profile;
@@ -35,98 +37,96 @@ public class DebugScreenEntryList {
    private long currentlyEnabledVersion;
    private final Codec<SerializedOptions> codec;
 
-   public DebugScreenEntryList(File var1) {
+   public DebugScreenEntryList(final File workingDirectory, final DataFixer dataFixer) {
       super();
-      this.debugProfileFile = new File(var1, "debug-profile.json");
-      this.codec = DataFixTypes.DEBUG_PROFILE.<SerializedOptions>wrapCodec(DebugScreenEntryList.SerializedOptions.CODEC, Minecraft.getInstance().getFixerUpper(), 4649);
+      this.debugProfileFile = new File(workingDirectory, "debug-profile.json");
+      this.codec = DataFixTypes.DEBUG_PROFILE.<SerializedOptions>wrapCodec(DebugScreenEntryList.SerializedOptions.CODEC, dataFixer, 4649);
       this.load();
    }
 
    public void load() {
       try {
          if (!this.debugProfileFile.isFile()) {
-            this.loadDefaultProfile();
+            this.resetToProfile(DebugScreenProfile.DEFAULT);
             this.rebuildCurrentList();
             return;
          }
 
-         Dynamic var1 = new Dynamic(JsonOps.INSTANCE, StrictJsonParser.parse(FileUtils.readFileToString(this.debugProfileFile, StandardCharsets.UTF_8)));
-         SerializedOptions var2 = (SerializedOptions)this.codec.parse(var1).getOrThrow((var0) -> new IOException("Could not parse debug profile JSON: " + var0));
-         if (var2.profile().isPresent()) {
-            this.loadProfile((DebugScreenProfile)var2.profile().get());
+         Dynamic<JsonElement> data = new Dynamic(JsonOps.INSTANCE, StrictJsonParser.parse(FileUtils.readFileToString(this.debugProfileFile, StandardCharsets.UTF_8)));
+         SerializedOptions serializedOptions = (SerializedOptions)this.codec.parse(data).getOrThrow((error) -> new IOException("Could not parse debug profile JSON: " + error));
+         if (serializedOptions.profile().isPresent()) {
+            this.resetToProfile((DebugScreenProfile)serializedOptions.profile().get());
          } else {
-            this.allStatuses = new HashMap();
-            if (var2.custom().isPresent()) {
-               this.allStatuses.putAll((Map)var2.custom().get());
-            }
-
+            this.resetStatuses((Map)serializedOptions.custom().orElse(Map.of()));
             this.profile = null;
          }
-      } catch (JsonSyntaxException | IOException var3) {
-         LOGGER.error("Couldn't read debug profile file {}, resetting to default", this.debugProfileFile, var3);
-         this.loadDefaultProfile();
+      } catch (JsonSyntaxException | IOException e) {
+         LOGGER.error("Couldn't read debug profile file {}, resetting to default", this.debugProfileFile, e);
+         this.resetToProfile(DebugScreenProfile.DEFAULT);
          this.save();
       }
 
       this.rebuildCurrentList();
    }
 
-   public void loadProfile(DebugScreenProfile var1) {
-      this.profile = var1;
-      Map var2 = (Map)DebugScreenEntries.PROFILES.get(var1);
-      this.allStatuses = new HashMap(var2);
+   private void resetStatuses(final Map<Identifier, DebugScreenEntryStatus> newEntries) {
+      this.allStatuses.clear();
+      this.allStatuses.putAll(newEntries);
+   }
+
+   private void resetToProfile(final DebugScreenProfile profile) {
+      this.profile = profile;
+      this.resetStatuses((Map)DebugScreenEntries.PROFILES.get(profile));
+   }
+
+   public void loadProfile(final DebugScreenProfile profile) {
+      this.resetToProfile(profile);
       this.rebuildCurrentList();
    }
 
-   private void loadDefaultProfile() {
-      this.profile = DebugScreenProfile.DEFAULT;
-      this.allStatuses = new HashMap((Map)DebugScreenEntries.PROFILES.get(DebugScreenProfile.DEFAULT));
+   public DebugScreenEntryStatus getStatus(final Identifier location) {
+      return (DebugScreenEntryStatus)this.allStatuses.getOrDefault(location, DebugScreenEntryStatus.NEVER);
    }
 
-   public DebugScreenEntryStatus getStatus(Identifier var1) {
-      DebugScreenEntryStatus var2 = (DebugScreenEntryStatus)this.allStatuses.get(var1);
-      return var2 == null ? DebugScreenEntryStatus.NEVER : var2;
+   public boolean isCurrentlyEnabled(final Identifier location) {
+      return this.currentlyEnabled.contains(location);
    }
 
-   public boolean isCurrentlyEnabled(Identifier var1) {
-      return this.currentlyEnabled.contains(var1);
-   }
-
-   public void setStatus(Identifier var1, DebugScreenEntryStatus var2) {
+   public void setStatus(final Identifier location, final DebugScreenEntryStatus status) {
       this.profile = null;
-      this.allStatuses.put(var1, var2);
+      this.allStatuses.put(location, status);
       this.rebuildCurrentList();
       this.save();
    }
 
-   public boolean toggleStatus(Identifier var1) {
-      DebugScreenEntryStatus var2 = (DebugScreenEntryStatus)this.allStatuses.get(var1);
+   public boolean toggleStatus(final Identifier location) {
+      DebugScreenEntryStatus status = (DebugScreenEntryStatus)this.allStatuses.get(location);
       byte var4 = 0;
       //$FF: var4->value
       //0->ALWAYS_ON
       //1->IN_OVERLAY
       //2->NEVER
-      switch (var2.enumSwitch<invokedynamic>(var2, var4)) {
+      switch (status.enumSwitch<invokedynamic>(status, var4)) {
          case -1:
          default:
-            this.setStatus(var1, DebugScreenEntryStatus.ALWAYS_ON);
+            this.setStatus(location, DebugScreenEntryStatus.ALWAYS_ON);
             return true;
          case 0:
-            this.setStatus(var1, DebugScreenEntryStatus.NEVER);
+            this.setStatus(location, DebugScreenEntryStatus.NEVER);
             return false;
          case 1:
             if (this.isOverlayVisible) {
-               this.setStatus(var1, DebugScreenEntryStatus.NEVER);
+               this.setStatus(location, DebugScreenEntryStatus.NEVER);
                return false;
             }
 
-            this.setStatus(var1, DebugScreenEntryStatus.ALWAYS_ON);
+            this.setStatus(location, DebugScreenEntryStatus.ALWAYS_ON);
             return true;
          case 2:
             if (this.isOverlayVisible) {
-               this.setStatus(var1, DebugScreenEntryStatus.IN_OVERLAY);
+               this.setStatus(location, DebugScreenEntryStatus.IN_OVERLAY);
             } else {
-               this.setStatus(var1, DebugScreenEntryStatus.ALWAYS_ON);
+               this.setStatus(location, DebugScreenEntryStatus.ALWAYS_ON);
             }
 
             return true;
@@ -141,9 +141,9 @@ public class DebugScreenEntryList {
       this.setOverlayVisible(!this.isOverlayVisible);
    }
 
-   public void setOverlayVisible(boolean var1) {
-      if (this.isOverlayVisible != var1) {
-         this.isOverlayVisible = var1;
+   public void setOverlayVisible(final boolean visible) {
+      if (this.isOverlayVisible != visible) {
+         this.isOverlayVisible = visible;
          this.rebuildCurrentList();
       }
 
@@ -155,18 +155,17 @@ public class DebugScreenEntryList {
 
    public void rebuildCurrentList() {
       this.currentlyEnabled.clear();
-      boolean var1 = Minecraft.getInstance().showOnlyReducedInfo();
-
-      for(Map.Entry var3 : this.allStatuses.entrySet()) {
-         if (var3.getValue() == DebugScreenEntryStatus.ALWAYS_ON || this.isOverlayVisible && var3.getValue() == DebugScreenEntryStatus.IN_OVERLAY) {
-            DebugScreenEntry var4 = DebugScreenEntries.getEntry((Identifier)var3.getKey());
-            if (var4 != null && var4.isAllowed(var1)) {
-               this.currentlyEnabled.add((Identifier)var3.getKey());
+      boolean isReducedDebugInfo = Minecraft.getInstance().showOnlyReducedInfo();
+      this.allStatuses.forEach((key, value) -> {
+         if (value == DebugScreenEntryStatus.ALWAYS_ON || this.isOverlayVisible && value == DebugScreenEntryStatus.IN_OVERLAY) {
+            DebugScreenEntry debug = DebugScreenEntries.getEntry(key);
+            if (debug != null && debug.isAllowed(isReducedDebugInfo)) {
+               this.currentlyEnabled.add(key);
             }
          }
-      }
 
-      this.currentlyEnabled.sort(Identifier::compareTo);
+      });
+      this.currentlyEnabled.sort(Comparator.naturalOrder());
       ++this.currentlyEnabledVersion;
    }
 
@@ -174,17 +173,17 @@ public class DebugScreenEntryList {
       return this.currentlyEnabledVersion;
    }
 
-   public boolean isUsingProfile(DebugScreenProfile var1) {
-      return this.profile == var1;
+   public boolean isUsingProfile(final DebugScreenProfile profile) {
+      return this.profile == profile;
    }
 
    public void save() {
-      SerializedOptions var1 = new SerializedOptions(Optional.ofNullable(this.profile), this.profile == null ? Optional.of(this.allStatuses) : Optional.empty());
+      SerializedOptions serializedOptions = new SerializedOptions(Optional.ofNullable(this.profile), this.profile == null ? Optional.of(this.allStatuses) : Optional.empty());
 
       try {
-         FileUtils.writeStringToFile(this.debugProfileFile, ((JsonElement)this.codec.encodeStart(JsonOps.INSTANCE, var1).getOrThrow()).toString(), StandardCharsets.UTF_8);
-      } catch (IOException var3) {
-         LOGGER.error("Failed to save debug profile file {}", this.debugProfileFile, var3);
+         FileUtils.writeStringToFile(this.debugProfileFile, ((JsonElement)this.codec.encodeStart(JsonOps.INSTANCE, serializedOptions).getOrThrow()).toString(), StandardCharsets.UTF_8);
+      } catch (IOException e) {
+         LOGGER.error("Failed to save debug profile file {}", this.debugProfileFile, e);
       }
 
    }
@@ -193,15 +192,13 @@ public class DebugScreenEntryList {
       private static final Codec<Map<Identifier, DebugScreenEntryStatus>> CUSTOM_ENTRIES_CODEC;
       public static final Codec<SerializedOptions> CODEC;
 
-      SerializedOptions(Optional<DebugScreenProfile> var1, Optional<Map<Identifier, DebugScreenEntryStatus>> var2) {
+      SerializedOptions {
          super();
-         this.profile = var1;
-         this.custom = var2;
       }
 
       static {
          CUSTOM_ENTRIES_CODEC = Codec.unboundedMap(Identifier.CODEC, DebugScreenEntryStatus.CODEC);
-         CODEC = RecordCodecBuilder.create((var0) -> var0.group(DebugScreenProfile.CODEC.optionalFieldOf("profile").forGetter(SerializedOptions::profile), CUSTOM_ENTRIES_CODEC.optionalFieldOf("custom").forGetter(SerializedOptions::custom)).apply(var0, SerializedOptions::new));
+         CODEC = RecordCodecBuilder.create((i) -> i.group(DebugScreenProfile.CODEC.optionalFieldOf("profile").forGetter(SerializedOptions::profile), CUSTOM_ENTRIES_CODEC.optionalFieldOf("custom").forGetter(SerializedOptions::custom)).apply(i, SerializedOptions::new));
       }
    }
 }

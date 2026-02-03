@@ -10,25 +10,25 @@ public class ServerboundPaddleBoatPacket implements Packet<ServerGamePacketListe
    private final boolean left;
    private final boolean right;
 
-   public ServerboundPaddleBoatPacket(boolean var1, boolean var2) {
+   public ServerboundPaddleBoatPacket(final boolean left, final boolean right) {
       super();
-      this.left = var1;
-      this.right = var2;
+      this.left = left;
+      this.right = right;
    }
 
-   private ServerboundPaddleBoatPacket(FriendlyByteBuf var1) {
+   private ServerboundPaddleBoatPacket(final FriendlyByteBuf input) {
       super();
-      this.left = var1.readBoolean();
-      this.right = var1.readBoolean();
+      this.left = input.readBoolean();
+      this.right = input.readBoolean();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBoolean(this.left);
-      var1.writeBoolean(this.right);
+   private void write(final FriendlyByteBuf output) {
+      output.writeBoolean(this.left);
+      output.writeBoolean(this.right);
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handlePaddleBoat(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handlePaddleBoat(this);
    }
 
    public PacketType<ServerboundPaddleBoatPacket> type() {

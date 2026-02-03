@@ -17,14 +17,14 @@ public class Cursor3D {
    private int y;
    private int z;
 
-   public Cursor3D(int var1, int var2, int var3, int var4, int var5, int var6) {
+   public Cursor3D(final int minX, final int minY, final int minZ, final int maxX, final int maxY, final int maxZ) {
       super();
-      this.originX = var1;
-      this.originY = var2;
-      this.originZ = var3;
-      this.width = var4 - var1 + 1;
-      this.height = var5 - var2 + 1;
-      this.depth = var6 - var3 + 1;
+      this.originX = minX;
+      this.originY = minY;
+      this.originZ = minZ;
+      this.width = maxX - minX + 1;
+      this.height = maxY - minY + 1;
+      this.depth = maxZ - minZ + 1;
       this.end = this.width * this.height * this.depth;
    }
 
@@ -33,9 +33,9 @@ public class Cursor3D {
          return false;
       } else {
          this.x = this.index % this.width;
-         int var1 = this.index / this.width;
-         this.y = var1 % this.height;
-         this.z = var1 / this.height;
+         int slice = this.index / this.width;
+         this.y = slice % this.height;
+         this.z = slice / this.height;
          ++this.index;
          return true;
       }
@@ -54,19 +54,19 @@ public class Cursor3D {
    }
 
    public int getNextType() {
-      int var1 = 0;
+      int type = 0;
       if (this.x == 0 || this.x == this.width - 1) {
-         ++var1;
+         ++type;
       }
 
       if (this.y == 0 || this.y == this.height - 1) {
-         ++var1;
+         ++type;
       }
 
       if (this.z == 0 || this.z == this.depth - 1) {
-         ++var1;
+         ++type;
       }
 
-      return var1;
+      return type;
    }
 }

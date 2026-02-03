@@ -11,30 +11,30 @@ import com.mojang.serialization.Dynamic;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class BeehiveFieldRenameFix extends DataFix {
-   public BeehiveFieldRenameFix(Schema var1) {
-      super(var1, true);
+   public BeehiveFieldRenameFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
-   private Dynamic<?> fixBeehive(Dynamic<?> var1) {
-      return var1.remove("Bees");
+   private Dynamic<?> fixBeehive(final Dynamic<?> beehive) {
+      return beehive.remove("Bees");
    }
 
-   private Dynamic<?> fixBee(Dynamic<?> var1) {
-      var1 = var1.remove("EntityData");
-      var1 = var1.renameField("TicksInHive", "ticks_in_hive");
-      var1 = var1.renameField("MinOccupationTicks", "min_ticks_in_hive");
-      return var1;
+   private Dynamic<?> fixBee(Dynamic<?> bee) {
+      bee = bee.remove("EntityData");
+      bee = bee.renameField("TicksInHive", "ticks_in_hive");
+      bee = bee.renameField("MinOccupationTicks", "min_ticks_in_hive");
+      return bee;
    }
 
    public TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getChoiceType(References.BLOCK_ENTITY, "minecraft:beehive");
-      OpticFinder var2 = DSL.namedChoice("minecraft:beehive", var1);
-      List.ListType var3 = (List.ListType)var1.findFieldType("Bees");
-      Type var4 = var3.getElement();
-      OpticFinder var5 = DSL.fieldFinder("Bees", var3);
-      OpticFinder var6 = DSL.typeFinder(var4);
-      Type var7 = this.getInputSchema().getType(References.BLOCK_ENTITY);
-      Type var8 = this.getOutputSchema().getType(References.BLOCK_ENTITY);
-      return this.fixTypeEverywhereTyped("BeehiveFieldRenameFix", var7, var8, (var5x) -> ExtraDataFixUtils.cast(var8, var5x.updateTyped(var2, (var3) -> var3.update(DSL.remainderFinder(), this::fixBeehive).updateTyped(var5, (var2) -> var2.updateTyped(var6, (var1) -> var1.update(DSL.remainderFinder(), this::fixBee))))));
+      Type<?> beehiveType = this.getInputSchema().getChoiceType(References.BLOCK_ENTITY, "minecraft:beehive");
+      OpticFinder<?> beehiveF = DSL.namedChoice("minecraft:beehive", beehiveType);
+      List.ListType<?> beesType = (List.ListType)beehiveType.findFieldType("Bees");
+      Type<?> beeType = beesType.getElement();
+      OpticFinder<?> beesF = DSL.fieldFinder("Bees", beesType);
+      OpticFinder<?> beeF = DSL.typeFinder(beeType);
+      Type<?> entityType = this.getInputSchema().getType(References.BLOCK_ENTITY);
+      Type<?> newEntityType = this.getOutputSchema().getType(References.BLOCK_ENTITY);
+      return this.fixTypeEverywhereTyped("BeehiveFieldRenameFix", entityType, newEntityType, (input) -> ExtraDataFixUtils.cast(newEntityType, input.updateTyped(beehiveF, (beehive) -> beehive.update(DSL.remainderFinder(), this::fixBeehive).updateTyped(beesF, (bees) -> bees.updateTyped(beeF, (bee) -> bee.update(DSL.remainderFinder(), this::fixBee))))));
    }
 }

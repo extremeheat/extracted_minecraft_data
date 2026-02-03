@@ -18,48 +18,48 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class FallingBlock extends Block implements Fallable {
-   public FallingBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public FallingBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    protected abstract MapCodec<? extends FallingBlock> codec();
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      var2.scheduleTick(var3, this, this.getDelayAfterPlace());
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      level.scheduleTick(pos, this, this.getDelayAfterPlace());
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      var3.scheduleTick(var4, (Block)this, this.getDelayAfterPlace());
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      ticks.scheduleTick(pos, (Block)this, this.getDelayAfterPlace());
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (isFree(var2.getBlockState(var3.below())) && var3.getY() >= var2.getMinY()) {
-         FallingBlockEntity var5 = FallingBlockEntity.fall(var2, var3, var1);
-         this.falling(var5);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (isFree(level.getBlockState(pos.below())) && pos.getY() >= level.getMinY()) {
+         FallingBlockEntity entity = FallingBlockEntity.fall(level, pos, state);
+         this.falling(entity);
       }
    }
 
-   protected void falling(FallingBlockEntity var1) {
+   protected void falling(final FallingBlockEntity entity) {
    }
 
    protected int getDelayAfterPlace() {
       return 2;
    }
 
-   public static boolean isFree(BlockState var0) {
-      return var0.isAir() || var0.is(BlockTags.FIRE) || var0.liquid() || var0.canBeReplaced();
+   public static boolean isFree(final BlockState state) {
+      return state.isAir() || state.is(BlockTags.FIRE) || state.liquid() || state.canBeReplaced();
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var4.nextInt(16) == 0) {
-         BlockPos var5 = var3.below();
-         if (isFree(var2.getBlockState(var5))) {
-            ParticleUtils.spawnParticleBelow(var2, var3, var4, new BlockParticleOption(ParticleTypes.FALLING_DUST, var1));
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if (random.nextInt(16) == 0) {
+         BlockPos below = pos.below();
+         if (isFree(level.getBlockState(below))) {
+            ParticleUtils.spawnParticleBelow(level, pos, random, new BlockParticleOption(ParticleTypes.FALLING_DUST, state));
          }
       }
 
    }
 
-   public abstract int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3);
+   public abstract int getDustColor(BlockState blockState, BlockGetter level, BlockPos pos);
 }

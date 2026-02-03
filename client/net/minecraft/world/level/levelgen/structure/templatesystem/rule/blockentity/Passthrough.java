@@ -13,8 +13,8 @@ public class Passthrough implements RuleBlockEntityModifier {
       super();
    }
 
-   public @Nullable CompoundTag apply(RandomSource var1, @Nullable CompoundTag var2) {
-      return var2;
+   public @Nullable CompoundTag apply(final RandomSource random, final @Nullable CompoundTag existingTag) {
+      return existingTag;
    }
 
    public RuleBlockEntityModifierType<?> getType() {

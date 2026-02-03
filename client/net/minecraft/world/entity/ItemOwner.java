@@ -15,15 +15,13 @@ public interface ItemOwner {
       return null;
    }
 
-   static ItemOwner offsetFromOwner(ItemOwner var0, Vec3 var1) {
-      return new OffsetFromOwner(var0, var1);
+   static ItemOwner offsetFromOwner(final ItemOwner owner, final Vec3 offset) {
+      return new OffsetFromOwner(owner, offset);
    }
 
    public static record OffsetFromOwner(ItemOwner owner, Vec3 offset) implements ItemOwner {
-      public OffsetFromOwner(ItemOwner var1, Vec3 var2) {
+      public OffsetFromOwner {
          super();
-         this.owner = var1;
-         this.offset = var2;
       }
 
       public Level level() {

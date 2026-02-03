@@ -1,6 +1,5 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -14,59 +13,62 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootContextUser;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetAttributesFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetAttributesFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(SetAttributesFunction.Modifier.CODEC.listOf().fieldOf("modifiers").forGetter((var0x) -> var0x.modifiers), Codec.BOOL.optionalFieldOf("replace", true).forGetter((var0x) -> var0x.replace))).apply(var0, SetAttributesFunction::new));
+   public static final MapCodec<SetAttributesFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(SetAttributesFunction.Modifier.CODEC.listOf().fieldOf("modifiers").forGetter((f) -> f.modifiers), Codec.BOOL.optionalFieldOf("replace", true).forGetter((f) -> f.replace))).apply(i, SetAttributesFunction::new));
    private final List<Modifier> modifiers;
    private final boolean replace;
 
-   SetAttributesFunction(List<LootItemCondition> var1, List<Modifier> var2, boolean var3) {
-      super(var1);
-      this.modifiers = List.copyOf(var2);
-      this.replace = var3;
+   private SetAttributesFunction(final List<LootItemCondition> predicates, final List<Modifier> modifiers, final boolean replace) {
+      super(predicates);
+      this.modifiers = List.copyOf(modifiers);
+      this.replace = replace;
    }
 
-   public LootItemFunctionType<SetAttributesFunction> getType() {
-      return LootItemFunctions.SET_ATTRIBUTES;
+   public MapCodec<SetAttributesFunction> codec() {
+      return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)this.modifiers.stream().flatMap((var0) -> var0.amount.getReferencedContextParams().stream()).collect(ImmutableSet.toImmutableSet());
+   public void validate(final ValidationContext context) {
+      super.validate(context);
+      Validatable.validate(context, "modifiers", this.modifiers);
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
       if (this.replace) {
-         var1.set(DataComponents.ATTRIBUTE_MODIFIERS, this.updateModifiers(var2, ItemAttributeModifiers.EMPTY));
+         itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, this.updateModifiers(context, ItemAttributeModifiers.EMPTY));
       } else {
-         var1.update(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY, (var2x) -> this.updateModifiers(var2, var2x));
+         itemStack.update(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY, (itemModifiers) -> this.updateModifiers(context, itemModifiers));
       }
 
-      return var1;
+      return itemStack;
    }
 
-   private ItemAttributeModifiers updateModifiers(LootContext var1, ItemAttributeModifiers var2) {
-      RandomSource var3 = var1.getRandom();
+   private ItemAttributeModifiers updateModifiers(final LootContext context, ItemAttributeModifiers itemModifiers) {
+      RandomSource random = context.getRandom();
 
-      for(Modifier var5 : this.modifiers) {
-         EquipmentSlotGroup var6 = (EquipmentSlotGroup)Util.getRandom(var5.slots, var3);
-         var2 = var2.withModifierAdded(var5.attribute, new AttributeModifier(var5.id, (double)var5.amount.getFloat(var1), var5.operation), var6);
+      for(Modifier modifier : this.modifiers) {
+         EquipmentSlotGroup slot = (EquipmentSlotGroup)Util.getRandom(modifier.slots, random);
+         itemModifiers = itemModifiers.withModifierAdded(modifier.attribute, new AttributeModifier(modifier.id, (double)modifier.amount.getFloat(context), modifier.operation), slot);
       }
 
-      return var2;
+      return itemModifiers;
    }
 
-   public static ModifierBuilder modifier(Identifier var0, Holder<Attribute> var1, AttributeModifier.Operation var2, NumberProvider var3) {
-      return new ModifierBuilder(var0, var1, var2, var3);
+   public static ModifierBuilder modifier(final Identifier id, final Holder<Attribute> attribute, final AttributeModifier.Operation operation, final NumberProvider amount) {
+      return new ModifierBuilder(id, attribute, operation, amount);
    }
 
    public static Builder setAttributes() {
@@ -80,16 +82,16 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       private final NumberProvider amount;
       private final Set<EquipmentSlotGroup> slots = EnumSet.noneOf(EquipmentSlotGroup.class);
 
-      public ModifierBuilder(Identifier var1, Holder<Attribute> var2, AttributeModifier.Operation var3, NumberProvider var4) {
+      public ModifierBuilder(final Identifier id, final Holder<Attribute> attribute, final AttributeModifier.Operation operation, final NumberProvider amount) {
          super();
-         this.id = var1;
-         this.attribute = var2;
-         this.operation = var3;
-         this.amount = var4;
+         this.id = id;
+         this.attribute = attribute;
+         this.operation = operation;
+         this.amount = amount;
       }
 
-      public ModifierBuilder forSlot(EquipmentSlotGroup var1) {
-         this.slots.add(var1);
+      public ModifierBuilder forSlot(final EquipmentSlotGroup slot) {
+         this.slots.add(slot);
          return this;
       }
 
@@ -102,10 +104,10 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       private final boolean replace;
       private final List<Modifier> modifiers;
 
-      public Builder(boolean var1) {
+      public Builder(final boolean replace) {
          super();
          this.modifiers = Lists.newArrayList();
-         this.replace = var1;
+         this.replace = replace;
       }
 
       public Builder() {
@@ -116,42 +118,32 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
          return this;
       }
 
-      public Builder withModifier(ModifierBuilder var1) {
-         this.modifiers.add(var1.build());
+      public Builder withModifier(final ModifierBuilder modifier) {
+         this.modifiers.add(modifier.build());
          return this;
       }
 
       public LootItemFunction build() {
          return new SetAttributesFunction(this.getConditions(), this.modifiers, this.replace);
       }
-
-      // $FF: synthetic method
-      protected LootItemConditionalFunction.Builder getThis() {
-         return this.getThis();
-      }
    }
 
-   static record Modifier(Identifier id, Holder<Attribute> attribute, AttributeModifier.Operation operation, NumberProvider amount, List<EquipmentSlotGroup> slots) {
-      final Identifier id;
-      final Holder<Attribute> attribute;
-      final AttributeModifier.Operation operation;
-      final NumberProvider amount;
-      final List<EquipmentSlotGroup> slots;
+   private static record Modifier(Identifier id, Holder<Attribute> attribute, AttributeModifier.Operation operation, NumberProvider amount, List<EquipmentSlotGroup> slots) implements LootContextUser {
       private static final Codec<List<EquipmentSlotGroup>> SLOTS_CODEC;
       public static final Codec<Modifier> CODEC;
 
-      Modifier(Identifier var1, Holder<Attribute> var2, AttributeModifier.Operation var3, NumberProvider var4, List<EquipmentSlotGroup> var5) {
+      private Modifier {
          super();
-         this.id = var1;
-         this.attribute = var2;
-         this.operation = var3;
-         this.amount = var4;
-         this.slots = var5;
+      }
+
+      public void validate(final ValidationContext context) {
+         LootContextUser.super.validate(context);
+         Validatable.validate(context, "amount", this.amount);
       }
 
       static {
          SLOTS_CODEC = ExtraCodecs.nonEmptyList(ExtraCodecs.compactListCodec(EquipmentSlotGroup.CODEC));
-         CODEC = RecordCodecBuilder.create((var0) -> var0.group(Identifier.CODEC.fieldOf("id").forGetter(Modifier::id), Attribute.CODEC.fieldOf("attribute").forGetter(Modifier::attribute), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(Modifier::operation), NumberProviders.CODEC.fieldOf("amount").forGetter(Modifier::amount), SLOTS_CODEC.fieldOf("slot").forGetter(Modifier::slots)).apply(var0, Modifier::new));
+         CODEC = RecordCodecBuilder.create((i) -> i.group(Identifier.CODEC.fieldOf("id").forGetter(Modifier::id), Attribute.CODEC.fieldOf("attribute").forGetter(Modifier::attribute), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(Modifier::operation), NumberProviders.CODEC.fieldOf("amount").forGetter(Modifier::amount), SLOTS_CODEC.fieldOf("slot").forGetter(Modifier::slots)).apply(i, Modifier::new));
       }
    }
 }

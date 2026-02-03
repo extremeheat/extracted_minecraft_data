@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -17,45 +16,35 @@ public class Sniffing<E extends Warden> extends Behavior<E> {
    private static final double ANGER_FROM_SNIFFING_MAX_DISTANCE_XZ = 6.0;
    private static final double ANGER_FROM_SNIFFING_MAX_DISTANCE_Y = 20.0;
 
-   public Sniffing(int var1) {
-      super(ImmutableMap.of(MemoryModuleType.IS_SNIFFING, MemoryStatus.VALUE_PRESENT, MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.NEAREST_ATTACKABLE, MemoryStatus.REGISTERED, MemoryModuleType.DISTURBANCE_LOCATION, MemoryStatus.REGISTERED, MemoryModuleType.SNIFF_COOLDOWN, MemoryStatus.REGISTERED), var1);
+   public Sniffing(final int ticks) {
+      super(ImmutableMap.of(MemoryModuleType.IS_SNIFFING, MemoryStatus.VALUE_PRESENT, MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.NEAREST_ATTACKABLE, MemoryStatus.REGISTERED, MemoryModuleType.DISTURBANCE_LOCATION, MemoryStatus.REGISTERED, MemoryModuleType.SNIFF_COOLDOWN, MemoryStatus.REGISTERED), ticks);
    }
 
-   protected boolean canStillUse(ServerLevel var1, E var2, long var3) {
+   protected boolean canStillUse(final ServerLevel level, final E body, final long timestamp) {
       return true;
    }
 
-   protected void start(ServerLevel var1, E var2, long var3) {
-      var2.playSound(SoundEvents.WARDEN_SNIFF, 5.0F, 1.0F);
+   protected void start(final ServerLevel level, final E body, final long timestamp) {
+      body.playSound(SoundEvents.WARDEN_SNIFF, 5.0F, 1.0F);
    }
 
-   protected void stop(ServerLevel var1, E var2, long var3) {
-      if (var2.hasPose(Pose.SNIFFING)) {
-         var2.setPose(Pose.STANDING);
+   protected void stop(final ServerLevel level, final E body, final long timestamp) {
+      if (body.hasPose(Pose.SNIFFING)) {
+         body.setPose(Pose.STANDING);
       }
 
-      var2.getBrain().eraseMemory(MemoryModuleType.IS_SNIFFING);
-      Optional var10000 = var2.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE);
-      Objects.requireNonNull(var2);
-      var10000.filter(var2::canTargetEntity).ifPresent((var1x) -> {
-         if (var2.closerThan(var1x, 6.0, 20.0)) {
-            var2.increaseAngerAt(var1x);
+      ((Warden)body).getBrain().eraseMemory(MemoryModuleType.IS_SNIFFING);
+      Optional var10000 = ((Warden)body).getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE);
+      Objects.requireNonNull(body);
+      var10000.filter(body::canTargetEntity).ifPresent((entity) -> {
+         if (body.closerThan(entity, 6.0, 20.0)) {
+            body.increaseAngerAt(entity);
          }
 
-         if (!var2.getBrain().hasMemoryValue(MemoryModuleType.DISTURBANCE_LOCATION)) {
-            WardenAi.setDisturbanceLocation(var2, var1x.blockPosition());
+         if (!body.getBrain().hasMemoryValue(MemoryModuleType.DISTURBANCE_LOCATION)) {
+            WardenAi.setDisturbanceLocation(body, entity.blockPosition());
          }
 
       });
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (Warden)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Warden)var2, var3);
    }
 }

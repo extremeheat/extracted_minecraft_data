@@ -73,82 +73,82 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    private final boolean seenInsecureChatWarning;
    private final AtomicReference<State> state;
 
-   public ClientHandshakePacketListenerImpl(Connection var1, Minecraft var2, @Nullable ServerData var3, @Nullable Screen var4, boolean var5, @Nullable Duration var6, Consumer<Component> var7, LevelLoadTracker var8, @Nullable TransferState var9) {
+   public ClientHandshakePacketListenerImpl(final Connection connection, final Minecraft minecraft, final @Nullable ServerData serverData, final @Nullable Screen parent, final boolean newWorld, final @Nullable Duration worldLoadDuration, final Consumer<Component> updateStatus, final LevelLoadTracker levelLoadTracker, final @Nullable TransferState transferState) {
       super();
       this.state = new AtomicReference(ClientHandshakePacketListenerImpl.State.CONNECTING);
-      this.connection = var1;
-      this.minecraft = var2;
-      this.serverData = var3;
-      this.parent = var4;
-      this.updateStatus = var7;
-      this.newWorld = var5;
-      this.worldLoadDuration = var6;
-      this.levelLoadTracker = var8;
-      this.cookies = var9 != null ? new HashMap(var9.cookies()) : new HashMap();
-      this.seenPlayers = var9 != null ? var9.seenPlayers() : Map.of();
-      this.seenInsecureChatWarning = var9 != null ? var9.seenInsecureChatWarning() : false;
-      this.wasTransferredTo = var9 != null;
+      this.connection = connection;
+      this.minecraft = minecraft;
+      this.serverData = serverData;
+      this.parent = parent;
+      this.updateStatus = updateStatus;
+      this.newWorld = newWorld;
+      this.worldLoadDuration = worldLoadDuration;
+      this.levelLoadTracker = levelLoadTracker;
+      this.cookies = transferState != null ? new HashMap(transferState.cookies()) : new HashMap();
+      this.seenPlayers = transferState != null ? transferState.seenPlayers() : Map.of();
+      this.seenInsecureChatWarning = transferState != null ? transferState.seenInsecureChatWarning() : false;
+      this.wasTransferredTo = transferState != null;
    }
 
-   private void switchState(State var1) {
-      State var2 = (State)this.state.updateAndGet((var1x) -> {
-         if (!var1.fromStates.contains(var1x)) {
-            String var10002 = String.valueOf(var1);
-            throw new IllegalStateException("Tried to switch to " + var10002 + " from " + String.valueOf(var1x) + ", but expected one of " + String.valueOf(var1.fromStates));
+   private void switchState(final State toState) {
+      State newState = (State)this.state.updateAndGet((lastState) -> {
+         if (!toState.fromStates.contains(lastState)) {
+            String var10002 = String.valueOf(toState);
+            throw new IllegalStateException("Tried to switch to " + var10002 + " from " + String.valueOf(lastState) + ", but expected one of " + String.valueOf(toState.fromStates));
          } else {
-            return var1;
+            return toState;
          }
       });
-      this.updateStatus.accept(var2.message);
+      this.updateStatus.accept(newState.message);
    }
 
-   public void handleHello(ClientboundHelloPacket var1) {
+   public void handleHello(final ClientboundHelloPacket packet) {
       this.switchState(ClientHandshakePacketListenerImpl.State.AUTHORIZING);
 
-      Cipher var2;
-      Cipher var3;
-      String var4;
-      ServerboundKeyPacket var5;
+      Cipher decryptCipher;
+      Cipher encryptCipher;
+      String digest;
+      ServerboundKeyPacket setKeyPacket;
       try {
-         SecretKey var6 = Crypt.generateSecretKey();
-         PublicKey var7 = var1.getPublicKey();
-         var4 = (new BigInteger(Crypt.digestData(var1.getServerId(), var7, var6))).toString(16);
-         var2 = Crypt.getCipher(2, var6);
-         var3 = Crypt.getCipher(1, var6);
-         byte[] var8 = var1.getChallenge();
-         var5 = new ServerboundKeyPacket(var6, var7, var8);
-      } catch (Exception var9) {
-         throw new IllegalStateException("Protocol error", var9);
+         SecretKey secretKey = Crypt.generateSecretKey();
+         PublicKey publicKey = packet.getPublicKey();
+         digest = (new BigInteger(Crypt.digestData(packet.getServerId(), publicKey, secretKey))).toString(16);
+         decryptCipher = Crypt.getCipher(2, secretKey);
+         encryptCipher = Crypt.getCipher(1, secretKey);
+         byte[] challenge = packet.getChallenge();
+         setKeyPacket = new ServerboundKeyPacket(secretKey, publicKey, challenge);
+      } catch (Exception e) {
+         throw new IllegalStateException("Protocol error", e);
       }
 
-      if (var1.shouldAuthenticate()) {
+      if (packet.shouldAuthenticate()) {
          Util.ioPool().execute(() -> {
-            Component var5x = this.authenticateServer(var4);
-            if (var5x != null) {
+            Component error = this.authenticateServer(digest);
+            if (error != null) {
                if (this.serverData == null || !this.serverData.isLan()) {
-                  this.connection.disconnect(var5x);
+                  this.connection.disconnect(error);
                   return;
                }
 
-               LOGGER.warn(var5x.getString());
+               LOGGER.warn(error.getString());
             }
 
-            this.setEncryption(var5, var2, var3);
+            this.setEncryption(setKeyPacket, decryptCipher, encryptCipher);
          });
       } else {
-         this.setEncryption(var5, var2, var3);
+         this.setEncryption(setKeyPacket, decryptCipher, encryptCipher);
       }
 
    }
 
-   private void setEncryption(ServerboundKeyPacket var1, Cipher var2, Cipher var3) {
+   private void setEncryption(final ServerboundKeyPacket setKeyPacket, final Cipher decryptCipher, final Cipher encryptCipher) {
       this.switchState(ClientHandshakePacketListenerImpl.State.ENCRYPTING);
-      this.connection.send(var1, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(var2, var3)));
+      this.connection.send(setKeyPacket, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(decryptCipher, encryptCipher)));
    }
 
-   private @Nullable Component authenticateServer(String var1) {
+   private @Nullable Component authenticateServer(final String digest) {
       try {
-         this.minecraft.services().sessionService().joinServer(this.minecraft.getUser().getProfileId(), this.minecraft.getUser().getAccessToken(), var1);
+         this.minecraft.services().sessionService().joinServer(this.minecraft.getUser().getProfileId(), this.minecraft.getUser().getAccessToken(), digest);
          return null;
       } catch (AuthenticationUnavailableException var3) {
          return Component.translatable("disconnect.loginFailedInfo", Component.translatable("disconnect.loginFailedInfo.serversUnavailable"));
@@ -158,27 +158,27 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
          return Component.translatable("disconnect.loginFailedInfo", Component.translatable("disconnect.loginFailedInfo.insufficientPrivileges"));
       } catch (ForcedUsernameChangeException | UserBannedException var6) {
          return Component.translatable("disconnect.loginFailedInfo", Component.translatable("disconnect.loginFailedInfo.userBanned"));
-      } catch (AuthenticationException var7) {
-         return Component.translatable("disconnect.loginFailedInfo", var7.getMessage());
+      } catch (AuthenticationException e) {
+         return Component.translatable("disconnect.loginFailedInfo", e.getMessage());
       }
    }
 
-   public void handleLoginFinished(ClientboundLoginFinishedPacket var1) {
+   public void handleLoginFinished(final ClientboundLoginFinishedPacket packet) {
       this.switchState(ClientHandshakePacketListenerImpl.State.JOINING);
-      GameProfile var2 = var1.gameProfile();
-      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.levelLoadTracker, var2, this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName), ClientRegistryLayer.createRegistryAccess().compositeAccess(), FeatureFlags.DEFAULT_FLAGS, (String)null, this.serverData, this.parent, this.cookies, (ChatComponent.State)null, Map.of(), ServerLinks.EMPTY, this.seenPlayers, false)));
+      GameProfile localGameProfile = packet.gameProfile();
+      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.levelLoadTracker, localGameProfile, this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName), ClientRegistryLayer.createRegistryAccess().compositeAccess(), FeatureFlags.DEFAULT_FLAGS, (String)null, this.serverData, this.parent, this.cookies, (ChatComponent.State)null, Map.of(), ServerLinks.EMPTY, this.seenPlayers, false)));
       this.connection.send(ServerboundLoginAcknowledgedPacket.INSTANCE);
       this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
       this.connection.send(new ServerboundCustomPayloadPacket(new BrandPayload(ClientBrandRetriever.getClientModName())));
       this.connection.send(new ServerboundClientInformationPacket(this.minecraft.options.buildPlayerInformation()));
    }
 
-   public void onDisconnect(DisconnectionDetails var1) {
-      Component var2 = this.wasTransferredTo ? CommonComponents.TRANSFER_CONNECT_FAILED : CommonComponents.CONNECT_FAILED;
+   public void onDisconnect(final DisconnectionDetails details) {
+      Component title = this.wasTransferredTo ? CommonComponents.TRANSFER_CONNECT_FAILED : CommonComponents.CONNECT_FAILED;
       if (this.serverData != null && this.serverData.isRealm()) {
-         this.minecraft.setScreen(new DisconnectedScreen(this.parent, var2, var1.reason(), CommonComponents.GUI_BACK));
+         this.minecraft.setScreen(new DisconnectedScreen(this.parent, title, details.reason(), CommonComponents.GUI_BACK));
       } else {
-         this.minecraft.setScreen(new DisconnectedScreen(this.parent, var2, var1));
+         this.minecraft.setScreen(new DisconnectedScreen(this.parent, title, details));
       }
 
    }
@@ -187,48 +187,48 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       return this.connection.isConnected();
    }
 
-   public void handleDisconnect(ClientboundLoginDisconnectPacket var1) {
-      this.connection.disconnect(var1.reason());
+   public void handleDisconnect(final ClientboundLoginDisconnectPacket packet) {
+      this.connection.disconnect(packet.reason());
    }
 
-   public void handleCompression(ClientboundLoginCompressionPacket var1) {
+   public void handleCompression(final ClientboundLoginCompressionPacket packet) {
       if (!this.connection.isMemoryConnection()) {
-         this.connection.setupCompression(var1.getCompressionThreshold(), false);
+         this.connection.setupCompression(packet.getCompressionThreshold(), false);
       }
 
    }
 
-   public void handleCustomQuery(ClientboundCustomQueryPacket var1) {
+   public void handleCustomQuery(final ClientboundCustomQueryPacket packet) {
       this.updateStatus.accept(Component.translatable("connect.negotiating"));
-      this.connection.send(new ServerboundCustomQueryAnswerPacket(var1.transactionId(), (CustomQueryAnswerPayload)null));
+      this.connection.send(new ServerboundCustomQueryAnswerPacket(packet.transactionId(), (CustomQueryAnswerPayload)null));
    }
 
-   public void setMinigameName(@Nullable String var1) {
-      this.minigameName = var1;
+   public void setMinigameName(final @Nullable String minigameName) {
+      this.minigameName = minigameName;
    }
 
-   public void handleRequestCookie(ClientboundCookieRequestPacket var1) {
-      this.connection.send(new ServerboundCookieResponsePacket(var1.key(), (byte[])this.cookies.get(var1.key())));
+   public void handleRequestCookie(final ClientboundCookieRequestPacket packet) {
+      this.connection.send(new ServerboundCookieResponsePacket(packet.key(), (byte[])this.cookies.get(packet.key())));
    }
 
-   public void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
-      var2.setDetail("Server type", (CrashReportDetail)(() -> this.serverData != null ? this.serverData.type().toString() : "<unknown>"));
-      var2.setDetail("Login phase", (CrashReportDetail)(() -> ((State)this.state.get()).toString()));
-      var2.setDetail("Is Local", (CrashReportDetail)(() -> String.valueOf(this.connection.isMemoryConnection())));
+   public void fillListenerSpecificCrashDetails(final CrashReport report, final CrashReportCategory connectionDetails) {
+      connectionDetails.setDetail("Server type", (CrashReportDetail)(() -> this.serverData != null ? this.serverData.type().toString() : "<unknown>"));
+      connectionDetails.setDetail("Login phase", (CrashReportDetail)(() -> ((State)this.state.get()).toString()));
+      connectionDetails.setDetail("Is Local", (CrashReportDetail)(() -> String.valueOf(this.connection.isMemoryConnection())));
    }
 
-   static enum State {
+   private static enum State {
       CONNECTING(Component.translatable("connect.connecting"), Set.of()),
       AUTHORIZING(Component.translatable("connect.authorizing"), Set.of(CONNECTING)),
       ENCRYPTING(Component.translatable("connect.encrypting"), Set.of(AUTHORIZING)),
       JOINING(Component.translatable("connect.joining"), Set.of(ENCRYPTING, CONNECTING));
 
-      final Component message;
-      final Set<State> fromStates;
+      private final Component message;
+      private final Set<State> fromStates;
 
-      private State(final Component var3, final Set<State> var4) {
-         this.message = var3;
-         this.fromStates = var4;
+      private State(final Component message, final Set<State> fromStates) {
+         this.message = message;
+         this.fromStates = fromStates;
       }
 
       // $FF: synthetic method

@@ -15,37 +15,37 @@ public class ItemDisplayWidget extends AbstractWidget {
    private final boolean decorations;
    private final boolean tooltip;
 
-   public ItemDisplayWidget(Minecraft var1, int var2, int var3, int var4, int var5, Component var6, ItemStack var7, boolean var8, boolean var9) {
-      super(0, 0, var4, var5, var6);
-      this.minecraft = var1;
-      this.offsetX = var2;
-      this.offsetY = var3;
-      this.itemStack = var7;
-      this.decorations = var8;
-      this.tooltip = var9;
+   public ItemDisplayWidget(final Minecraft minecraft, final int offsetX, final int offsetY, final int width, final int height, final Component message, final ItemStack itemStack, final boolean decorations, final boolean tooltip) {
+      super(0, 0, width, height, message);
+      this.minecraft = minecraft;
+      this.offsetX = offsetX;
+      this.offsetY = offsetY;
+      this.itemStack = itemStack;
+      this.decorations = decorations;
+      this.tooltip = tooltip;
    }
 
-   protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.renderItem(this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, 0);
+   protected void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      graphics.renderItem(this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, 0);
       if (this.decorations) {
-         var1.renderItemDecorations(this.minecraft.font, this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, (String)null);
+         graphics.renderItemDecorations(this.minecraft.font, this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, (String)null);
       }
 
       if (this.isFocused()) {
-         var1.renderOutline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), -1);
+         graphics.renderOutline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), -1);
       }
 
       if (this.tooltip && this.isHoveredOrFocused()) {
-         this.renderTooltip(var1, var2, var3);
+         this.renderTooltip(graphics, mouseX, mouseY);
       }
 
    }
 
-   protected void renderTooltip(GuiGraphics var1, int var2, int var3) {
-      var1.setTooltipForNextFrame(this.minecraft.font, this.itemStack, var2, var3);
+   protected void renderTooltip(final GuiGraphics graphics, final int x, final int y) {
+      graphics.setTooltipForNextFrame(this.minecraft.font, this.itemStack, x, y);
    }
 
-   protected void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, (Component)Component.translatable("narration.item", this.itemStack.getHoverName()));
+   protected void updateWidgetNarration(final NarrationElementOutput output) {
+      output.add(NarratedElementType.TITLE, (Component)Component.translatable("narration.item", this.itemStack.getHoverName()));
    }
 }

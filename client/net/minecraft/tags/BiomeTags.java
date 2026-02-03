@@ -78,7 +78,7 @@ public class BiomeTags {
       super();
    }
 
-   private static TagKey<Biome> create(String var0) {
-      return TagKey.<Biome>create(Registries.BIOME, Identifier.withDefaultNamespace(var0));
+   private static TagKey<Biome> create(final String name) {
+      return TagKey.<Biome>create(Registries.BIOME, Identifier.withDefaultNamespace(name));
    }
 }

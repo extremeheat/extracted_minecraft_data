@@ -26,8 +26,8 @@ public class BeetrootBlock extends CropBlock {
       return CODEC;
    }
 
-   public BeetrootBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public BeetrootBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    protected IntegerProperty getAgeProperty() {
@@ -42,27 +42,27 @@ public class BeetrootBlock extends CropBlock {
       return Items.BEETROOT_SEEDS;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var4.nextInt(3) != 0) {
-         super.randomTick(var1, var2, var3, var4);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (random.nextInt(3) != 0) {
+         super.randomTick(state, level, pos, random);
       }
 
    }
 
-   protected int getBonemealAgeIncrease(Level var1) {
-      return super.getBonemealAgeIncrease(var1) / 3;
+   protected int getBonemealAgeIncrease(final Level level) {
+      return super.getBonemealAgeIncrease(level) / 3;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPES[this.getAge(var1)];
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPES[this.getAge(state)];
    }
 
    static {
       AGE = BlockStateProperties.AGE_3;
-      SHAPES = Block.boxes(3, (var0) -> Block.column(16.0, 0.0, (double)(2 + var0 * 2)));
+      SHAPES = Block.boxes(3, (age) -> Block.column(16.0, 0.0, (double)(2 + age * 2)));
    }
 }

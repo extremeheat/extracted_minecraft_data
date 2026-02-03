@@ -17,84 +17,77 @@ import net.minecraft.util.Util;
 public interface PriorityProvider<Context, Condition extends PriorityProvider.SelectorCondition<Context>> {
    List<Selector<Context, Condition>> selectors();
 
-   static <C, T> Stream<T> select(Stream<T> var0, Function<T, PriorityProvider<C, ?>> var1, C var2) {
-      ArrayList var3 = new ArrayList();
-      var0.forEach((var2x) -> {
-         PriorityProvider var3x = (PriorityProvider)var1.apply(var2x);
+   static <C, T> Stream<T> select(final Stream<T> entries, final Function<T, PriorityProvider<C, ?>> extractor, final C context) {
+      List<UnpackedEntry<C, T>> unpackedEntries = new ArrayList();
+      entries.forEach((entryx) -> {
+         PriorityProvider<C, ?> provider = (PriorityProvider)extractor.apply(entryx);
 
-         for(Selector var5 : var3x.selectors()) {
-            var3.add(new UnpackedEntry(var2x, var5.priority(), (SelectorCondition)DataFixUtils.orElseGet(var5.condition(), SelectorCondition::alwaysTrue)));
+         for(Selector<C, ?> selector : provider.selectors()) {
+            unpackedEntries.add(new UnpackedEntry(entryx, selector.priority(), (SelectorCondition)DataFixUtils.orElseGet(selector.condition(), SelectorCondition::alwaysTrue)));
          }
 
       });
-      var3.sort(PriorityProvider.UnpackedEntry.HIGHEST_PRIORITY_FIRST);
-      Iterator var4 = var3.iterator();
-      int var5 = -2147483648;
+      unpackedEntries.sort(PriorityProvider.UnpackedEntry.HIGHEST_PRIORITY_FIRST);
+      Iterator<UnpackedEntry<C, T>> iterator = unpackedEntries.iterator();
+      int highestMatchedPriority = -2147483648;
 
-      while(var4.hasNext()) {
-         UnpackedEntry var6 = (UnpackedEntry)var4.next();
-         if (var6.priority < var5) {
-            var4.remove();
-         } else if (var6.condition.test(var2)) {
-            var5 = var6.priority;
+      while(iterator.hasNext()) {
+         UnpackedEntry<C, T> entry = (UnpackedEntry)iterator.next();
+         if (entry.priority < highestMatchedPriority) {
+            iterator.remove();
+         } else if (entry.condition.test(context)) {
+            highestMatchedPriority = entry.priority;
          } else {
-            var4.remove();
+            iterator.remove();
          }
       }
 
-      return var3.stream().map(UnpackedEntry::entry);
+      return unpackedEntries.stream().map(UnpackedEntry::entry);
    }
 
-   static <C, T> Optional<T> pick(Stream<T> var0, Function<T, PriorityProvider<C, ?>> var1, RandomSource var2, C var3) {
-      List var4 = select(var0, var1, var3).toList();
-      return Util.<T>getRandomSafe(var4, var2);
+   static <C, T> Optional<T> pick(final Stream<T> entries, final Function<T, PriorityProvider<C, ?>> extractor, final RandomSource randomSource, final C context) {
+      List<T> selected = select(entries, extractor, context).toList();
+      return Util.<T>getRandomSafe(selected, randomSource);
    }
 
-   static <Context, Condition extends SelectorCondition<Context>> List<Selector<Context, Condition>> single(Condition var0, int var1) {
-      return List.of(new Selector(var0, var1));
+   static <Context, Condition extends SelectorCondition<Context>> List<Selector<Context, Condition>> single(final Condition check, final int priority) {
+      return List.of(new Selector(check, priority));
    }
 
-   static <Context, Condition extends SelectorCondition<Context>> List<Selector<Context, Condition>> alwaysTrue(int var0) {
-      return List.of(new Selector(Optional.empty(), var0));
+   static <Context, Condition extends SelectorCondition<Context>> List<Selector<Context, Condition>> alwaysTrue(final int priority) {
+      return List.of(new Selector(Optional.empty(), priority));
    }
 
    public static record Selector<Context, Condition extends SelectorCondition<Context>>(Optional<Condition> condition, int priority) {
-      public Selector(Condition var1, int var2) {
-         this(Optional.of(var1), var2);
+      public Selector(final Condition condition, final int priority) {
+         this(Optional.of(condition), priority);
       }
 
-      public Selector(int var1) {
-         this(Optional.empty(), var1);
+      public Selector(final int priority) {
+         this(Optional.empty(), priority);
       }
 
-      public Selector(Optional<Condition> var1, int var2) {
+      public Selector {
          super();
-         this.condition = var1;
-         this.priority = var2;
       }
 
-      public static <Context, Condition extends SelectorCondition<Context>> Codec<Selector<Context, Condition>> codec(Codec<Condition> var0) {
-         return RecordCodecBuilder.create((var1) -> var1.group(var0.optionalFieldOf("condition").forGetter(Selector::condition), Codec.INT.fieldOf("priority").forGetter(Selector::priority)).apply(var1, Selector::new));
+      public static <Context, Condition extends SelectorCondition<Context>> Codec<Selector<Context, Condition>> codec(final Codec<Condition> conditionCodec) {
+         return RecordCodecBuilder.create((i) -> i.group(conditionCodec.optionalFieldOf("condition").forGetter(Selector::condition), Codec.INT.fieldOf("priority").forGetter(Selector::priority)).apply(i, Selector::new));
       }
    }
 
    @FunctionalInterface
    public interface SelectorCondition<C> extends Predicate<C> {
       static <C> SelectorCondition<C> alwaysTrue() {
-         return (var0) -> true;
+         return (context) -> true;
       }
    }
 
    public static record UnpackedEntry<C, T>(T entry, int priority, SelectorCondition<C> condition) {
-      final int priority;
-      final SelectorCondition<C> condition;
       public static final Comparator<UnpackedEntry<?, ?>> HIGHEST_PRIORITY_FIRST = Comparator.comparingInt(UnpackedEntry::priority).reversed();
 
-      public UnpackedEntry(T var1, int var2, SelectorCondition<C> var3) {
+      public UnpackedEntry {
          super();
-         this.entry = var1;
-         this.priority = var2;
-         this.condition = var3;
       }
    }
 }

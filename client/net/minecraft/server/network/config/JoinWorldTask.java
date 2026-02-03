@@ -12,8 +12,8 @@ public class JoinWorldTask implements ConfigurationTask {
       super();
    }
 
-   public void start(Consumer<Packet<?>> var1) {
-      var1.accept(ClientboundFinishConfigurationPacket.INSTANCE);
+   public void start(final Consumer<Packet<?>> connection) {
+      connection.accept(ClientboundFinishConfigurationPacket.INSTANCE);
    }
 
    public ConfigurationTask.Type type() {

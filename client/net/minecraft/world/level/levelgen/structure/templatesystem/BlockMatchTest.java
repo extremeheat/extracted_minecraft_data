@@ -10,13 +10,13 @@ public class BlockMatchTest extends RuleTest {
    public static final MapCodec<BlockMatchTest> CODEC;
    private final Block block;
 
-   public BlockMatchTest(Block var1) {
+   public BlockMatchTest(final Block block) {
       super();
-      this.block = var1;
+      this.block = block;
    }
 
-   public boolean test(BlockState var1, RandomSource var2) {
-      return var1.is(this.block);
+   public boolean test(final BlockState blockState, final RandomSource random) {
+      return blockState.is(this.block);
    }
 
    protected RuleTestType<?> getType() {
@@ -24,6 +24,6 @@ public class BlockMatchTest extends RuleTest {
    }
 
    static {
-      CODEC = BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").xmap(BlockMatchTest::new, (var0) -> var0.block);
+      CODEC = BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").xmap(BlockMatchTest::new, (t) -> t.block);
    }
 }

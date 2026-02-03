@@ -137,19 +137,19 @@ public class BuiltInLootTables {
       super();
    }
 
-   private static Map<DyeColor, ResourceKey<LootTable>> makeDyeKeyMap(String var0) {
-      return Util.<DyeColor, ResourceKey<LootTable>>makeEnumMap(DyeColor.class, (var1) -> register(var0 + "/" + var1.getName()));
+   private static Map<DyeColor, ResourceKey<LootTable>> makeDyeKeyMap(final String prefix) {
+      return Util.<DyeColor, ResourceKey<LootTable>>makeEnumMap(DyeColor.class, (dye) -> register(prefix + "/" + dye.getName()));
    }
 
-   private static ResourceKey<LootTable> register(String var0) {
-      return register(ResourceKey.create(Registries.LOOT_TABLE, Identifier.withDefaultNamespace(var0)));
+   private static ResourceKey<LootTable> register(final String location) {
+      return register(ResourceKey.create(Registries.LOOT_TABLE, Identifier.withDefaultNamespace(location)));
    }
 
-   private static ResourceKey<LootTable> register(ResourceKey<LootTable> var0) {
-      if (LOCATIONS.add(var0)) {
-         return var0;
+   private static ResourceKey<LootTable> register(final ResourceKey<LootTable> location) {
+      if (LOCATIONS.add(location)) {
+         return location;
       } else {
-         throw new IllegalArgumentException(String.valueOf(var0.identifier()) + " is already a registered built-in loot table");
+         throw new IllegalArgumentException(String.valueOf(location.identifier()) + " is already a registered built-in loot table");
       }
    }
 

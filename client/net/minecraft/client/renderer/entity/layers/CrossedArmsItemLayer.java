@@ -11,26 +11,26 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import org.joml.Quaternionfc;
 
-public class CrossedArmsItemLayer<S extends HoldingEntityRenderState, M extends EntityModel<S> & VillagerLikeModel> extends RenderLayer<S, M> {
-   public CrossedArmsItemLayer(RenderLayerParent<S, M> var1) {
-      super(var1);
+public class CrossedArmsItemLayer<S extends HoldingEntityRenderState, M extends EntityModel<S> & VillagerLikeModel<S>> extends RenderLayer<S, M> {
+   public CrossedArmsItemLayer(final RenderLayerParent<S, M> renderer) {
+      super(renderer);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, S var4, float var5, float var6) {
-      ItemStackRenderState var7 = var4.heldItem;
-      if (!var7.isEmpty()) {
-         var1.pushPose();
-         this.applyTranslation(var4, var1);
-         var7.submit(var1, var2, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
-         var1.popPose();
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final S state, final float yRot, final float xRot) {
+      ItemStackRenderState item = state.heldItem;
+      if (!item.isEmpty()) {
+         poseStack.pushPose();
+         this.applyTranslation(state, poseStack);
+         item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+         poseStack.popPose();
       }
    }
 
-   protected void applyTranslation(S var1, PoseStack var2) {
-      ((VillagerLikeModel)this.getParentModel()).translateToArms(var1, var2);
-      var2.mulPose((Quaternionfc)Axis.XP.rotation(0.75F));
-      var2.scale(1.07F, 1.07F, 1.07F);
-      var2.translate(0.0F, 0.13F, -0.34F);
-      var2.mulPose((Quaternionfc)Axis.XP.rotation(3.1415927F));
+   protected void applyTranslation(final S state, final PoseStack poseStack) {
+      ((VillagerLikeModel)this.getParentModel()).translateToArms(state, poseStack);
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotation(0.75F));
+      poseStack.scale(1.07F, 1.07F, 1.07F);
+      poseStack.translate(0.0F, 0.13F, -0.34F);
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotation(3.1415927F));
    }
 }

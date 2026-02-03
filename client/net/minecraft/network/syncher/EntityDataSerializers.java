@@ -88,16 +88,16 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<ResolvableProfile> RESOLVABLE_PROFILE;
    public static final EntityDataSerializer<HumanoidArm> HUMANOID_ARM;
 
-   public static void registerSerializer(EntityDataSerializer<?> var0) {
-      SERIALIZERS.add(var0);
+   public static void registerSerializer(final EntityDataSerializer<?> serializer) {
+      SERIALIZERS.add(serializer);
    }
 
-   public static @Nullable EntityDataSerializer<?> getSerializer(int var0) {
-      return SERIALIZERS.byId(var0);
+   public static @Nullable EntityDataSerializer<?> getSerializer(final int id) {
+      return SERIALIZERS.byId(id);
    }
 
-   public static int getSerializedId(EntityDataSerializer<?> var0) {
-      return SERIALIZERS.getId(var0);
+   public static int getSerializedId(final EntityDataSerializer<?> serializer) {
+      return SERIALIZERS.getId(serializer);
    }
 
    private EntityDataSerializers() {
@@ -117,39 +117,24 @@ public class EntityDataSerializers {
             return ItemStack.OPTIONAL_STREAM_CODEC;
          }
 
-         public ItemStack copy(ItemStack var1) {
-            return var1.copy();
-         }
-
-         // $FF: synthetic method
-         public Object copy(final Object var1) {
-            return this.copy((ItemStack)var1);
+         public ItemStack copy(final ItemStack value) {
+            return value.copy();
          }
       };
       BLOCK_STATE = EntityDataSerializer.<BlockState>forValueType(ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY));
       OPTIONAL_BLOCK_STATE_CODEC = new StreamCodec<ByteBuf, Optional<BlockState>>() {
-         public void encode(ByteBuf var1, Optional<BlockState> var2) {
-            if (var2.isPresent()) {
-               VarInt.write(var1, Block.getId((BlockState)var2.get()));
+         public void encode(final ByteBuf output, final Optional<BlockState> value) {
+            if (value.isPresent()) {
+               VarInt.write(output, Block.getId((BlockState)value.get()));
             } else {
-               VarInt.write(var1, 0);
+               VarInt.write(output, 0);
             }
 
          }
 
-         public Optional<BlockState> decode(ByteBuf var1) {
-            int var2 = VarInt.read(var1);
-            return var2 == 0 ? Optional.empty() : Optional.of(Block.stateById(var2));
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((ByteBuf)var1, (Optional)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((ByteBuf)var1);
+         public Optional<BlockState> decode(final ByteBuf input) {
+            int id = VarInt.read(input);
+            return id == 0 ? Optional.empty() : Optional.of(Block.stateById(id));
          }
       };
       OPTIONAL_BLOCK_STATE = EntityDataSerializer.<Optional<BlockState>>forValueType(OPTIONAL_BLOCK_STATE_CODEC);
@@ -164,23 +149,13 @@ public class EntityDataSerializers {
       OPTIONAL_GLOBAL_POS = EntityDataSerializer.<Optional<GlobalPos>>forValueType(GlobalPos.STREAM_CODEC.apply(ByteBufCodecs::optional));
       VILLAGER_DATA = EntityDataSerializer.<VillagerData>forValueType(VillagerData.STREAM_CODEC);
       OPTIONAL_UNSIGNED_INT_CODEC = new StreamCodec<ByteBuf, OptionalInt>() {
-         public OptionalInt decode(ByteBuf var1) {
-            int var2 = VarInt.read(var1);
-            return var2 == 0 ? OptionalInt.empty() : OptionalInt.of(var2 - 1);
+         public OptionalInt decode(final ByteBuf input) {
+            int v = VarInt.read(input);
+            return v == 0 ? OptionalInt.empty() : OptionalInt.of(v - 1);
          }
 
-         public void encode(ByteBuf var1, OptionalInt var2) {
-            VarInt.write(var1, var2.orElse(-1) + 1);
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((ByteBuf)var1, (OptionalInt)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((ByteBuf)var1);
+         public void encode(final ByteBuf output, final OptionalInt value) {
+            VarInt.write(output, value.orElse(-1) + 1);
          }
       };
       OPTIONAL_UNSIGNED_INT = EntityDataSerializer.<OptionalInt>forValueType(OPTIONAL_UNSIGNED_INT_CODEC);

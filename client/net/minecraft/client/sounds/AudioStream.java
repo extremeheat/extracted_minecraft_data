@@ -8,5 +8,5 @@ import javax.sound.sampled.AudioFormat;
 public interface AudioStream extends Closeable {
    AudioFormat getFormat();
 
-   ByteBuffer read(int var1) throws IOException;
+   ByteBuffer read(final int expectedSize) throws IOException;
 }

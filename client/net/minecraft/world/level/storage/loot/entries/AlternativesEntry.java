@@ -12,30 +12,30 @@ import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class AlternativesEntry extends CompositeEntryBase {
-   public static final MapCodec<AlternativesEntry> CODEC = createCodec(AlternativesEntry::new);
+   public static final MapCodec<AlternativesEntry> MAP_CODEC = createCodec(AlternativesEntry::new);
    public static final ProblemReporter.Problem UNREACHABLE_PROBLEM = new ProblemReporter.Problem() {
       public String description() {
          return "Unreachable entry!";
       }
    };
 
-   AlternativesEntry(List<LootPoolEntryContainer> var1, List<LootItemCondition> var2) {
-      super(var1, var2);
+   AlternativesEntry(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
+      super(children, conditions);
    }
 
-   public LootPoolEntryType getType() {
-      return LootPoolEntries.ALTERNATIVES;
+   public MapCodec<AlternativesEntry> codec() {
+      return MAP_CODEC;
    }
 
-   protected ComposableEntryContainer compose(List<? extends ComposableEntryContainer> var1) {
+   protected ComposableEntryContainer compose(final List<? extends ComposableEntryContainer> entries) {
       ComposableEntryContainer var10000;
-      switch (var1.size()) {
+      switch (entries.size()) {
          case 0 -> var10000 = ALWAYS_FALSE;
-         case 1 -> var10000 = (ComposableEntryContainer)var1.get(0);
-         case 2 -> var10000 = ((ComposableEntryContainer)var1.get(0)).or((ComposableEntryContainer)var1.get(1));
-         default -> var10000 = (var1x, var2) -> {
-   for(ComposableEntryContainer var4 : var1) {
-      if (var4.expand(var1x, var2)) {
+         case 1 -> var10000 = (ComposableEntryContainer)entries.get(0);
+         case 2 -> var10000 = ((ComposableEntryContainer)entries.get(0)).or((ComposableEntryContainer)entries.get(1));
+         default -> var10000 = (context, output) -> {
+   for(ComposableEntryContainer entry : entries) {
+      if (entry.expand(context, output)) {
          return true;
       }
    }
@@ -47,35 +47,35 @@ public class AlternativesEntry extends CompositeEntryBase {
       return var10000;
    }
 
-   public void validate(ValidationContext var1) {
-      super.validate(var1);
+   public void validate(final ValidationContext context) {
+      super.validate(context);
 
-      for(int var2 = 0; var2 < this.children.size() - 1; ++var2) {
-         if (((LootPoolEntryContainer)this.children.get(var2)).conditions.isEmpty()) {
-            var1.reportProblem(UNREACHABLE_PROBLEM);
+      for(int i = 0; i < this.children.size() - 1; ++i) {
+         if (((LootPoolEntryContainer)this.children.get(i)).conditions.isEmpty()) {
+            context.reportProblem(UNREACHABLE_PROBLEM);
          }
       }
 
    }
 
-   public static Builder alternatives(LootPoolEntryContainer.Builder<?>... var0) {
-      return new Builder(var0);
+   public static Builder alternatives(final LootPoolEntryContainer.Builder<?>... entries) {
+      return new Builder(entries);
    }
 
-   public static <E> Builder alternatives(Collection<E> var0, Function<E, LootPoolEntryContainer.Builder<?>> var1) {
-      Stream var10002 = var0.stream();
-      Objects.requireNonNull(var1);
-      return new Builder((LootPoolEntryContainer.Builder[])var10002.map(var1::apply).toArray((var0x) -> new LootPoolEntryContainer.Builder[var0x]));
+   public static <E> Builder alternatives(final Collection<E> items, final Function<E, LootPoolEntryContainer.Builder<?>> provider) {
+      Stream var10002 = items.stream();
+      Objects.requireNonNull(provider);
+      return new Builder((LootPoolEntryContainer.Builder[])var10002.map(provider::apply).toArray((x$0) -> new LootPoolEntryContainer.Builder[x$0]));
    }
 
    public static class Builder extends LootPoolEntryContainer.Builder<Builder> {
       private final ImmutableList.Builder<LootPoolEntryContainer> entries = ImmutableList.builder();
 
-      public Builder(LootPoolEntryContainer.Builder<?>... var1) {
+      public Builder(final LootPoolEntryContainer.Builder<?>... entries) {
          super();
 
-         for(LootPoolEntryContainer.Builder var5 : var1) {
-            this.entries.add(var5.build());
+         for(LootPoolEntryContainer.Builder<?> entry : entries) {
+            this.entries.add(entry.build());
          }
 
       }
@@ -84,18 +84,13 @@ public class AlternativesEntry extends CompositeEntryBase {
          return this;
       }
 
-      public Builder otherwise(LootPoolEntryContainer.Builder<?> var1) {
-         this.entries.add(var1.build());
+      public Builder otherwise(final LootPoolEntryContainer.Builder<?> other) {
+         this.entries.add(other.build());
          return this;
       }
 
       public LootPoolEntryContainer build() {
          return new AlternativesEntry(this.entries.build(), this.getConditions());
-      }
-
-      // $FF: synthetic method
-      protected LootPoolEntryContainer.Builder getThis() {
-         return this.getThis();
       }
    }
 }

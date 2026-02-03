@@ -9,7 +9,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.CrafterMenu;
 import net.minecraft.world.inventory.CrafterSlot;
 import net.minecraft.world.inventory.Slot;
@@ -23,9 +23,9 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
    private static final Component DISABLED_SLOT_TOOLTIP = Component.translatable("gui.togglable_slot");
    private final Player player;
 
-   public CrafterScreen(CrafterMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3);
-      this.player = var2.player;
+   public CrafterScreen(final CrafterMenu menu, final Inventory inventory, final Component title) {
+      super(menu, inventory, title);
+      this.player = inventory.player;
    }
 
    protected void init() {
@@ -33,91 +33,90 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
       this.titleLabelX = (this.imageWidth - this.font.width((FormattedText)this.title)) / 2;
    }
 
-   protected void slotClicked(Slot var1, int var2, int var3, ClickType var4) {
-      if (var1 instanceof CrafterSlot && !var1.hasItem() && !this.player.isSpectator()) {
-         switch (var4) {
+   protected void slotClicked(final Slot slot, final int slotId, final int buttonNum, final ContainerInput containerInput) {
+      if (slot instanceof CrafterSlot && !slot.hasItem() && !this.player.isSpectator()) {
+         switch (containerInput) {
             case PICKUP:
-               if (((CrafterMenu)this.menu).isSlotDisabled(var2)) {
-                  this.enableSlot(var2);
+               if (((CrafterMenu)this.menu).isSlotDisabled(slotId)) {
+                  this.enableSlot(slotId);
                } else if (((CrafterMenu)this.menu).getCarried().isEmpty()) {
-                  this.disableSlot(var2);
+                  this.disableSlot(slotId);
                }
                break;
             case SWAP:
-               ItemStack var5 = this.player.getInventory().getItem(var3);
-               if (((CrafterMenu)this.menu).isSlotDisabled(var2) && !var5.isEmpty()) {
-                  this.enableSlot(var2);
+               ItemStack playerInventoryItem = this.player.getInventory().getItem(buttonNum);
+               if (((CrafterMenu)this.menu).isSlotDisabled(slotId) && !playerInventoryItem.isEmpty()) {
+                  this.enableSlot(slotId);
                }
          }
       }
 
-      super.slotClicked(var1, var2, var3, var4);
+      super.slotClicked(slot, slotId, buttonNum, containerInput);
    }
 
-   private void enableSlot(int var1) {
-      this.updateSlotState(var1, true);
+   private void enableSlot(final int slotId) {
+      this.updateSlotState(slotId, true);
    }
 
-   private void disableSlot(int var1) {
-      this.updateSlotState(var1, false);
+   private void disableSlot(final int slotId) {
+      this.updateSlotState(slotId, false);
    }
 
-   private void updateSlotState(int var1, boolean var2) {
-      ((CrafterMenu)this.menu).setSlotState(var1, var2);
-      super.handleSlotStateChanged(var1, (this.menu).containerId, var2);
-      float var3 = var2 ? 1.0F : 0.75F;
-      this.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4F, var3);
+   private void updateSlotState(final int slotId, final boolean enabled) {
+      ((CrafterMenu)this.menu).setSlotState(slotId, enabled);
+      super.handleSlotStateChanged(slotId, (this.menu).containerId, enabled);
+      float pitch = enabled ? 1.0F : 0.75F;
+      this.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4F, pitch);
    }
 
-   public void renderSlot(GuiGraphics var1, Slot var2, int var3, int var4) {
-      if (var2 instanceof CrafterSlot var5) {
-         if (((CrafterMenu)this.menu).isSlotDisabled(var2.index)) {
-            this.renderDisabledSlot(var1, var5);
+   public void renderSlot(final GuiGraphics graphics, final Slot slot, final int mouseX, final int mouseY) {
+      if (slot instanceof CrafterSlot crafterSlot) {
+         if (((CrafterMenu)this.menu).isSlotDisabled(slot.index)) {
+            this.renderDisabledSlot(graphics, crafterSlot);
          } else {
-            super.renderSlot(var1, var2, var3, var4);
+            super.renderSlot(graphics, slot, mouseX, mouseY);
          }
 
-         int var6 = this.leftPos + var5.x - 2;
-         int var7 = this.topPos + var5.y - 2;
-         if (var3 > var6 && var4 > var7 && var3 < var6 + 19 && var4 < var7 + 19) {
-            var1.requestCursor(CursorTypes.POINTING_HAND);
+         int x0 = this.leftPos + crafterSlot.x - 2;
+         int y0 = this.topPos + crafterSlot.y - 2;
+         if (mouseX > x0 && mouseY > y0 && mouseX < x0 + 19 && mouseY < y0 + 19) {
+            graphics.requestCursor(CursorTypes.POINTING_HAND);
          }
       } else {
-         super.renderSlot(var1, var2, var3, var4);
+         super.renderSlot(graphics, slot, mouseX, mouseY);
       }
 
    }
 
-   private void renderDisabledSlot(GuiGraphics var1, CrafterSlot var2) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DISABLED_SLOT_LOCATION_SPRITE, var2.x - 1, var2.y - 1, 18, 18);
+   private void renderDisabledSlot(final GuiGraphics graphics, final CrafterSlot cs) {
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DISABLED_SLOT_LOCATION_SPRITE, cs.x - 1, cs.y - 1, 18, 18);
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.renderRedstone(var1);
-      this.renderTooltip(var1, var2, var3);
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
+      this.renderRedstone(graphics);
       if (this.hoveredSlot instanceof CrafterSlot && !((CrafterMenu)this.menu).isSlotDisabled(this.hoveredSlot.index) && ((CrafterMenu)this.menu).getCarried().isEmpty() && !this.hoveredSlot.hasItem() && !this.player.isSpectator()) {
-         var1.setTooltipForNextFrame(this.font, DISABLED_SLOT_TOOLTIP, var2, var3);
+         graphics.setTooltipForNextFrame(this.font, DISABLED_SLOT_TOOLTIP, mouseX, mouseY);
       }
 
    }
 
-   private void renderRedstone(GuiGraphics var1) {
-      int var2 = this.width / 2 + 9;
-      int var3 = this.height / 2 - 48;
-      Identifier var4;
+   private void renderRedstone(final GuiGraphics graphics) {
+      int xo = this.width / 2 + 9;
+      int yo = this.height / 2 - 48;
+      Identifier redstoneArrowTexture;
       if (((CrafterMenu)this.menu).isPowered()) {
-         var4 = POWERED_REDSTONE_LOCATION_SPRITE;
+         redstoneArrowTexture = POWERED_REDSTONE_LOCATION_SPRITE;
       } else {
-         var4 = UNPOWERED_REDSTONE_LOCATION_SPRITE;
+         redstoneArrowTexture = UNPOWERED_REDSTONE_LOCATION_SPRITE;
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var4, var2, var3, 16, 16);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)redstoneArrowTexture, xo, yo, 16, 16);
    }
 
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      int var5 = (this.width - this.imageWidth) / 2;
-      int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+      int xo = (this.width - this.imageWidth) / 2;
+      int yo = (this.height - this.imageHeight) / 2;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
    }
 }

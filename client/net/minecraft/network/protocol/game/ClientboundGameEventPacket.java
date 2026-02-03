@@ -31,29 +31,29 @@ public class ClientboundGameEventPacket implements Packet<ClientGamePacketListen
    private final Type event;
    private final float param;
 
-   public ClientboundGameEventPacket(Type var1, float var2) {
+   public ClientboundGameEventPacket(final Type event, final float param) {
       super();
-      this.event = var1;
-      this.param = var2;
+      this.event = event;
+      this.param = param;
    }
 
-   private ClientboundGameEventPacket(FriendlyByteBuf var1) {
+   private ClientboundGameEventPacket(final FriendlyByteBuf input) {
       super();
-      this.event = (Type)ClientboundGameEventPacket.Type.TYPES.get(var1.readUnsignedByte());
-      this.param = var1.readFloat();
+      this.event = (Type)ClientboundGameEventPacket.Type.TYPES.get(input.readUnsignedByte());
+      this.param = input.readFloat();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeByte(this.event.id);
-      var1.writeFloat(this.param);
+   private void write(final FriendlyByteBuf output) {
+      output.writeByte(this.event.id);
+      output.writeFloat(this.param);
    }
 
    public PacketType<ClientboundGameEventPacket> type() {
       return GamePacketTypes.CLIENTBOUND_GAME_EVENT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleGameEvent(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleGameEvent(this);
    }
 
    public Type getEvent() {
@@ -65,13 +65,13 @@ public class ClientboundGameEventPacket implements Packet<ClientGamePacketListen
    }
 
    public static class Type {
-      static final Int2ObjectMap<Type> TYPES = new Int2ObjectOpenHashMap();
-      final int id;
+      private static final Int2ObjectMap<Type> TYPES = new Int2ObjectOpenHashMap();
+      private final int id;
 
-      public Type(int var1) {
+      public Type(final int id) {
          super();
-         this.id = var1;
-         TYPES.put(var1, this);
+         this.id = id;
+         TYPES.put(id, this);
       }
    }
 }

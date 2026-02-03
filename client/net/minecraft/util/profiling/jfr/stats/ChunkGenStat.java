@@ -7,16 +7,11 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public record ChunkGenStat(Duration duration, ChunkPos chunkPos, ColumnPos worldPos, ChunkStatus status, String level) implements TimedStat {
-   public ChunkGenStat(Duration var1, ChunkPos var2, ColumnPos var3, ChunkStatus var4, String var5) {
+   public ChunkGenStat {
       super();
-      this.duration = var1;
-      this.chunkPos = var2;
-      this.worldPos = var3;
-      this.status = var4;
-      this.level = var5;
    }
 
-   public static ChunkGenStat from(RecordedEvent var0) {
-      return new ChunkGenStat(var0.getDuration(), new ChunkPos(var0.getInt("chunkPosX"), var0.getInt("chunkPosX")), new ColumnPos(var0.getInt("worldPosX"), var0.getInt("worldPosZ")), ChunkStatus.byName(var0.getString("status")), var0.getString("level"));
+   public static ChunkGenStat from(final RecordedEvent event) {
+      return new ChunkGenStat(event.getDuration(), new ChunkPos(event.getInt("chunkPosX"), event.getInt("chunkPosX")), new ColumnPos(event.getInt("worldPosX"), event.getInt("worldPosZ")), ChunkStatus.byName(event.getString("status")), event.getString("level"));
    }
 }

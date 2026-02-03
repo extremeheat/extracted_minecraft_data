@@ -17,33 +17,33 @@ import org.jspecify.annotations.Nullable;
 public class SolidBucketItem extends BlockItem implements DispensibleContainerItem {
    private final SoundEvent placeSound;
 
-   public SolidBucketItem(Block var1, SoundEvent var2, Item.Properties var3) {
-      super(var1, var3);
-      this.placeSound = var2;
+   public SolidBucketItem(final Block content, final SoundEvent placeSound, final Item.Properties properties) {
+      super(content, properties);
+      this.placeSound = placeSound;
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      InteractionResult var2 = super.useOn(var1);
-      Player var3 = var1.getPlayer();
-      if (var2.consumesAction() && var3 != null) {
-         var3.setItemInHand(var1.getHand(), BucketItem.getEmptySuccessItem(var1.getItemInHand(), var3));
+   public InteractionResult useOn(final UseOnContext context) {
+      InteractionResult placeResult = super.useOn(context);
+      Player player = context.getPlayer();
+      if (placeResult.consumesAction() && player != null) {
+         player.setItemInHand(context.getHand(), BucketItem.getEmptySuccessItem(context.getItemInHand(), player));
       }
 
-      return var2;
+      return placeResult;
    }
 
-   protected SoundEvent getPlaceSound(BlockState var1) {
+   protected SoundEvent getPlaceSound(final BlockState blockState) {
       return this.placeSound;
    }
 
-   public boolean emptyContents(@Nullable LivingEntity var1, Level var2, BlockPos var3, @Nullable BlockHitResult var4) {
-      if (var2.isInWorldBounds(var3) && var2.isEmptyBlock(var3)) {
-         if (!var2.isClientSide()) {
-            var2.setBlock(var3, this.getBlock().defaultBlockState(), 3);
+   public boolean emptyContents(final @Nullable LivingEntity user, final Level level, final BlockPos pos, final @Nullable BlockHitResult hitResult) {
+      if (level.isInWorldBounds(pos) && level.isEmptyBlock(pos)) {
+         if (!level.isClientSide()) {
+            level.setBlock(pos, this.getBlock().defaultBlockState(), 3);
          }
 
-         var2.gameEvent(var1, GameEvent.FLUID_PLACE, var3);
-         var2.playSound(var1, (BlockPos)var3, this.placeSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.gameEvent(user, GameEvent.FLUID_PLACE, pos);
+         level.playSound(user, (BlockPos)pos, this.placeSound, SoundSource.BLOCKS, 1.0F, 1.0F);
          return true;
       } else {
          return false;

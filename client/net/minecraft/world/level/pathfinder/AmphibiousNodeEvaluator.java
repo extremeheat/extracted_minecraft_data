@@ -12,18 +12,18 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
    private float oldWalkableCost;
    private float oldWaterBorderCost;
 
-   public AmphibiousNodeEvaluator(boolean var1) {
+   public AmphibiousNodeEvaluator(final boolean prefersShallowSwimming) {
       super();
-      this.prefersShallowSwimming = var1;
+      this.prefersShallowSwimming = prefersShallowSwimming;
    }
 
-   public void prepare(PathNavigationRegion var1, Mob var2) {
-      super.prepare(var1, var2);
-      var2.setPathfindingMalus(PathType.WATER, 0.0F);
-      this.oldWalkableCost = var2.getPathfindingMalus(PathType.WALKABLE);
-      var2.setPathfindingMalus(PathType.WALKABLE, 6.0F);
-      this.oldWaterBorderCost = var2.getPathfindingMalus(PathType.WATER_BORDER);
-      var2.setPathfindingMalus(PathType.WATER_BORDER, 4.0F);
+   public void prepare(final PathNavigationRegion level, final Mob entity) {
+      super.prepare(level, entity);
+      entity.setPathfindingMalus(PathType.WATER, 0.0F);
+      this.oldWalkableCost = entity.getPathfindingMalus(PathType.WALKABLE);
+      entity.setPathfindingMalus(PathType.WALKABLE, 6.0F);
+      this.oldWaterBorderCost = entity.getPathfindingMalus(PathType.WATER_BORDER);
+      entity.setPathfindingMalus(PathType.WATER_BORDER, 4.0F);
    }
 
    public void done() {
@@ -36,66 +36,66 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
       return !this.mob.isInWater() ? super.getStart() : this.getStartNode(new BlockPos(Mth.floor(this.mob.getBoundingBox().minX), Mth.floor(this.mob.getBoundingBox().minY + 0.5), Mth.floor(this.mob.getBoundingBox().minZ)));
    }
 
-   public Target getTarget(double var1, double var3, double var5) {
-      return this.getTargetNodeAt(var1, var3 + 0.5, var5);
+   public Target getTarget(final double x, final double y, final double z) {
+      return this.getTargetNodeAt(x, y + 0.5, z);
    }
 
-   public int getNeighbors(Node[] var1, Node var2) {
-      int var3 = super.getNeighbors(var1, var2);
-      PathType var5 = this.getCachedPathType(var2.x, var2.y + 1, var2.z);
-      PathType var6 = this.getCachedPathType(var2.x, var2.y, var2.z);
-      int var4;
-      if (this.mob.getPathfindingMalus(var5) >= 0.0F && var6 != PathType.STICKY_HONEY) {
-         var4 = Mth.floor(Math.max(1.0F, this.mob.maxUpStep()));
+   public int getNeighbors(final Node[] neighbors, final Node pos) {
+      int numValidNeighbors = super.getNeighbors(neighbors, pos);
+      PathType blockPathTypeAbove = this.getCachedPathType(pos.x, pos.y + 1, pos.z);
+      PathType blockPathTypeCurrent = this.getCachedPathType(pos.x, pos.y, pos.z);
+      int jumpSize;
+      if (this.mob.getPathfindingMalus(blockPathTypeAbove) >= 0.0F && blockPathTypeCurrent != PathType.STICKY_HONEY) {
+         jumpSize = Mth.floor(Math.max(1.0F, this.mob.maxUpStep()));
       } else {
-         var4 = 0;
+         jumpSize = 0;
       }
 
-      double var7 = this.getFloorLevel(new BlockPos(var2.x, var2.y, var2.z));
-      Node var9 = this.findAcceptedNode(var2.x, var2.y + 1, var2.z, Math.max(0, var4 - 1), var7, Direction.UP, var6);
-      Node var10 = this.findAcceptedNode(var2.x, var2.y - 1, var2.z, var4, var7, Direction.DOWN, var6);
-      if (this.isVerticalNeighborValid(var9, var2)) {
-         var1[var3++] = var9;
+      double posHeight = this.getFloorLevel(new BlockPos(pos.x, pos.y, pos.z));
+      Node upNode = this.findAcceptedNode(pos.x, pos.y + 1, pos.z, Math.max(0, jumpSize - 1), posHeight, Direction.UP, blockPathTypeCurrent);
+      Node downNode = this.findAcceptedNode(pos.x, pos.y - 1, pos.z, jumpSize, posHeight, Direction.DOWN, blockPathTypeCurrent);
+      if (this.isVerticalNeighborValid(upNode, pos)) {
+         neighbors[numValidNeighbors++] = upNode;
       }
 
-      if (this.isVerticalNeighborValid(var10, var2) && var6 != PathType.TRAPDOOR) {
-         var1[var3++] = var10;
+      if (this.isVerticalNeighborValid(downNode, pos) && blockPathTypeCurrent != PathType.TRAPDOOR) {
+         neighbors[numValidNeighbors++] = downNode;
       }
 
-      for(int var11 = 0; var11 < var3; ++var11) {
-         Node var12 = var1[var11];
-         if (var12.type == PathType.WATER && this.prefersShallowSwimming && var12.y < this.mob.level().getSeaLevel() - 10) {
-            ++var12.costMalus;
+      for(int i = 0; i < numValidNeighbors; ++i) {
+         Node neighbor = neighbors[i];
+         if (neighbor.type == PathType.WATER && this.prefersShallowSwimming && neighbor.y < this.mob.level().getSeaLevel() - 10) {
+            ++neighbor.costMalus;
          }
       }
 
-      return var3;
+      return numValidNeighbors;
    }
 
-   private boolean isVerticalNeighborValid(@Nullable Node var1, Node var2) {
-      return this.isNeighborValid(var1, var2) && var1.type == PathType.WATER;
+   private boolean isVerticalNeighborValid(final @Nullable Node verticalNode, final Node pos) {
+      return this.isNeighborValid(verticalNode, pos) && verticalNode.type == PathType.WATER;
    }
 
    protected boolean isAmphibious() {
       return true;
    }
 
-   public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {
-      PathType var5 = var1.getPathTypeFromState(var2, var3, var4);
-      if (var5 == PathType.WATER) {
-         BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+   public PathType getPathType(final PathfindingContext context, final int x, final int y, final int z) {
+      PathType blockPathType = context.getPathTypeFromState(x, y, z);
+      if (blockPathType == PathType.WATER) {
+         BlockPos.MutableBlockPos reusablePos = new BlockPos.MutableBlockPos();
 
-         for(Direction var10 : Direction.values()) {
-            var6.set(var2, var3, var4).move(var10);
-            PathType var11 = var1.getPathTypeFromState(var6.getX(), var6.getY(), var6.getZ());
-            if (var11 == PathType.BLOCKED) {
+         for(Direction direction : Direction.values()) {
+            reusablePos.set(x, y, z).move(direction);
+            PathType pathType = context.getPathTypeFromState(reusablePos.getX(), reusablePos.getY(), reusablePos.getZ());
+            if (pathType == PathType.BLOCKED) {
                return PathType.WATER_BORDER;
             }
          }
 
          return PathType.WATER;
       } else {
-         return super.getPathType(var1, var2, var3, var4);
+         return super.getPathType(context, x, y, z);
       }
    }
 }

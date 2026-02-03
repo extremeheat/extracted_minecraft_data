@@ -20,28 +20,24 @@ import net.minecraft.util.Mth;
 import org.slf4j.Logger;
 
 public record Unstitcher(Identifier resource, List<Region> regions, double xDivisor, double yDivisor) implements SpriteSource {
-   static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<Unstitcher> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("resource").forGetter(Unstitcher::resource), ExtraCodecs.nonEmptyList(Unstitcher.Region.CODEC.listOf()).fieldOf("regions").forGetter(Unstitcher::regions), Codec.DOUBLE.optionalFieldOf("divisor_x", 1.0).forGetter(Unstitcher::xDivisor), Codec.DOUBLE.optionalFieldOf("divisor_y", 1.0).forGetter(Unstitcher::yDivisor)).apply(var0, Unstitcher::new));
+   private static final Logger LOGGER = LogUtils.getLogger();
+   public static final MapCodec<Unstitcher> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("resource").forGetter(Unstitcher::resource), ExtraCodecs.nonEmptyList(Unstitcher.Region.CODEC.listOf()).fieldOf("regions").forGetter(Unstitcher::regions), Codec.DOUBLE.optionalFieldOf("divisor_x", 1.0).forGetter(Unstitcher::xDivisor), Codec.DOUBLE.optionalFieldOf("divisor_y", 1.0).forGetter(Unstitcher::yDivisor)).apply(i, Unstitcher::new));
 
-   public Unstitcher(Identifier var1, List<Region> var2, double var3, double var5) {
+   public Unstitcher {
       super();
-      this.resource = var1;
-      this.regions = var2;
-      this.xDivisor = var3;
-      this.yDivisor = var5;
    }
 
-   public void run(ResourceManager var1, SpriteSource.Output var2) {
-      Identifier var3 = TEXTURE_ID_CONVERTER.idToFile(this.resource);
-      Optional var4 = var1.getResource(var3);
-      if (var4.isPresent()) {
-         LazyLoadedImage var5 = new LazyLoadedImage(var3, (Resource)var4.get(), this.regions.size());
+   public void run(final ResourceManager resourceManager, final SpriteSource.Output output) {
+      Identifier resourceId = TEXTURE_ID_CONVERTER.idToFile(this.resource);
+      Optional<Resource> resource = resourceManager.getResource(resourceId);
+      if (resource.isPresent()) {
+         LazyLoadedImage image = new LazyLoadedImage(resourceId, (Resource)resource.get(), this.regions.size());
 
-         for(Region var7 : this.regions) {
-            var2.add(var7.sprite, (SpriteSource.DiscardableLoader)(new RegionInstance(var5, var7, this.xDivisor, this.yDivisor)));
+         for(Region region : this.regions) {
+            output.add(region.sprite, (SpriteSource.DiscardableLoader)(new RegionInstance(image, region, this.xDivisor, this.yDivisor)));
          }
       } else {
-         LOGGER.warn("Missing sprite: {}", var3);
+         LOGGER.warn("Missing sprite: {}", resourceId);
       }
 
    }
@@ -51,52 +47,42 @@ public record Unstitcher(Identifier resource, List<Region> regions, double xDivi
    }
 
    public static record Region(Identifier sprite, double x, double y, double width, double height) {
-      final Identifier sprite;
-      final double x;
-      final double y;
-      final double width;
-      final double height;
-      public static final Codec<Region> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Identifier.CODEC.fieldOf("sprite").forGetter(Region::sprite), Codec.DOUBLE.fieldOf("x").forGetter(Region::x), Codec.DOUBLE.fieldOf("y").forGetter(Region::y), Codec.DOUBLE.fieldOf("width").forGetter(Region::width), Codec.DOUBLE.fieldOf("height").forGetter(Region::height)).apply(var0, Region::new));
+      public static final Codec<Region> CODEC = RecordCodecBuilder.create((i) -> i.group(Identifier.CODEC.fieldOf("sprite").forGetter(Region::sprite), Codec.DOUBLE.fieldOf("x").forGetter(Region::x), Codec.DOUBLE.fieldOf("y").forGetter(Region::y), Codec.DOUBLE.fieldOf("width").forGetter(Region::width), Codec.DOUBLE.fieldOf("height").forGetter(Region::height)).apply(i, Region::new));
 
-      public Region(Identifier var1, double var2, double var4, double var6, double var8) {
+      public Region {
          super();
-         this.sprite = var1;
-         this.x = var2;
-         this.y = var4;
-         this.width = var6;
-         this.height = var8;
       }
    }
 
-   static class RegionInstance implements SpriteSource.DiscardableLoader {
+   private static class RegionInstance implements SpriteSource.DiscardableLoader {
       private final LazyLoadedImage image;
       private final Region region;
       private final double xDivisor;
       private final double yDivisor;
 
-      RegionInstance(LazyLoadedImage var1, Region var2, double var3, double var5) {
+      private RegionInstance(final LazyLoadedImage image, final Region region, final double xDivisor, final double yDivisor) {
          super();
-         this.image = var1;
-         this.region = var2;
-         this.xDivisor = var3;
-         this.yDivisor = var5;
+         this.image = image;
+         this.region = region;
+         this.xDivisor = xDivisor;
+         this.yDivisor = yDivisor;
       }
 
-      public SpriteContents get(SpriteResourceLoader var1) {
+      public SpriteContents get(final SpriteResourceLoader loader) {
          try {
-            NativeImage var2 = this.image.get();
-            double var3 = (double)var2.getWidth() / this.xDivisor;
-            double var5 = (double)var2.getHeight() / this.yDivisor;
-            int var7 = Mth.floor(this.region.x * var3);
-            int var8 = Mth.floor(this.region.y * var5);
-            int var9 = Mth.floor(this.region.width * var3);
-            int var10 = Mth.floor(this.region.height * var5);
-            NativeImage var11 = new NativeImage(NativeImage.Format.RGBA, var9, var10, false);
-            var2.copyRect(var11, var7, var8, 0, 0, var9, var10, false, false);
-            SpriteContents var12 = new SpriteContents(this.region.sprite, new FrameSize(var9, var10), var11);
+            NativeImage fullImage = this.image.get();
+            double xScale = (double)fullImage.getWidth() / this.xDivisor;
+            double yScale = (double)fullImage.getHeight() / this.yDivisor;
+            int x = Mth.floor(this.region.x * xScale);
+            int y = Mth.floor(this.region.y * yScale);
+            int width = Mth.floor(this.region.width * xScale);
+            int height = Mth.floor(this.region.height * yScale);
+            NativeImage target = new NativeImage(NativeImage.Format.RGBA, width, height, false);
+            fullImage.copyRect(target, x, y, 0, 0, width, height, false, false);
+            SpriteContents var12 = new SpriteContents(this.region.sprite, new FrameSize(width, height), target);
             return var12;
-         } catch (Exception var16) {
-            Unstitcher.LOGGER.error("Failed to unstitch region {}", this.region.sprite, var16);
+         } catch (Exception e) {
+            Unstitcher.LOGGER.error("Failed to unstitch region {}", this.region.sprite, e);
          } finally {
             this.image.release();
          }

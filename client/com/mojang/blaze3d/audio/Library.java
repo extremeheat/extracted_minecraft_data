@@ -24,7 +24,7 @@ import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 
 public class Library {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int NO_DEVICE = 0;
    private static final int DEFAULT_CHANNEL_COUNT = 30;
    private long currentDevice;
@@ -36,7 +36,7 @@ public class Library {
          return null;
       }
 
-      public boolean release(Channel var1) {
+      public boolean release(final Channel channel) {
          return false;
       }
 
@@ -63,24 +63,24 @@ public class Library {
       this.defaultDeviceName = getDefaultDeviceName();
    }
 
-   public void init(@Nullable String var1, boolean var2) {
-      this.currentDevice = openDeviceOrFallback(var1);
+   public void init(final @Nullable String preferredDevice, final boolean useHrtf) {
+      this.currentDevice = openDeviceOrFallback(preferredDevice);
       this.supportsDisconnections = false;
-      ALCCapabilities var3 = ALC.createCapabilities(this.currentDevice);
+      ALCCapabilities alcCapabilities = ALC.createCapabilities(this.currentDevice);
       if (OpenAlUtil.checkALCError(this.currentDevice, "Get capabilities")) {
          throw new IllegalStateException("Failed to get OpenAL capabilities");
-      } else if (!var3.OpenALC11) {
+      } else if (!alcCapabilities.OpenALC11) {
          throw new IllegalStateException("OpenAL 1.1 not supported");
       } else {
-         MemoryStack var4 = MemoryStack.stackPush();
+         MemoryStack stack = MemoryStack.stackPush();
 
          try {
-            IntBuffer var5 = this.createAttributes(var4, var3.ALC_SOFT_HRTF && var2);
-            this.context = ALC10.alcCreateContext(this.currentDevice, var5);
+            IntBuffer attr = this.createAttributes(stack, alcCapabilities.ALC_SOFT_HRTF && useHrtf);
+            this.context = ALC10.alcCreateContext(this.currentDevice, attr);
          } catch (Throwable var9) {
-            if (var4 != null) {
+            if (stack != null) {
                try {
-                  var4.close();
+                  stack.close();
                } catch (Throwable var8) {
                   var9.addSuppressed(var8);
                }
@@ -89,26 +89,26 @@ public class Library {
             throw var9;
          }
 
-         if (var4 != null) {
-            var4.close();
+         if (stack != null) {
+            stack.close();
          }
 
          if (OpenAlUtil.checkALCError(this.currentDevice, "Create context")) {
             throw new IllegalStateException("Unable to create OpenAL context");
          } else {
             ALC10.alcMakeContextCurrent(this.context);
-            int var10 = this.getChannelCount();
-            int var11 = Mth.clamp((int)Mth.sqrt((float)var10), 2, 8);
-            int var6 = Mth.clamp(var10 - var11, 8, 255);
-            this.staticChannels = new CountingChannelPool(var6);
-            this.streamingChannels = new CountingChannelPool(var11);
-            ALCapabilities var7 = AL.createCapabilities(var3);
+            int totalChannelCount = this.getChannelCount();
+            int streamingChannelCount = Mth.clamp((int)Mth.sqrt((float)totalChannelCount), 2, 8);
+            int staticChannelCount = Mth.clamp(totalChannelCount - streamingChannelCount, 8, 255);
+            this.staticChannels = new CountingChannelPool(staticChannelCount);
+            this.streamingChannels = new CountingChannelPool(streamingChannelCount);
+            ALCapabilities alCapabilities = AL.createCapabilities(alcCapabilities);
             OpenAlUtil.checkALError("Initialization");
-            if (!var7.AL_EXT_source_distance_model) {
+            if (!alCapabilities.AL_EXT_source_distance_model) {
                throw new IllegalStateException("AL_EXT_source_distance_model is not supported");
             } else {
                AL10.alEnable(512);
-               if (!var7.AL_EXT_LINEAR_DISTANCE) {
+               if (!alCapabilities.AL_EXT_LINEAR_DISTANCE) {
                   throw new IllegalStateException("AL_EXT_LINEAR_DISTANCE is not supported");
                } else {
                   OpenAlUtil.checkALError("Enable per-source distance models");
@@ -120,54 +120,54 @@ public class Library {
       }
    }
 
-   private IntBuffer createAttributes(MemoryStack var1, boolean var2) {
-      boolean var3 = true;
-      IntBuffer var4 = var1.callocInt(11);
-      int var5 = ALC10.alcGetInteger(this.currentDevice, 6548);
-      if (var5 > 0) {
-         var4.put(6546).put(var2 ? 1 : 0);
-         var4.put(6550).put(0);
+   private IntBuffer createAttributes(final MemoryStack stack, final boolean enableHrtf) {
+      int maxAttributes = 5;
+      IntBuffer attr = stack.callocInt(11);
+      int numHrtf = ALC10.alcGetInteger(this.currentDevice, 6548);
+      if (numHrtf > 0) {
+         attr.put(6546).put(enableHrtf ? 1 : 0);
+         attr.put(6550).put(0);
       }
 
-      var4.put(6554).put(1);
-      return var4.put(0).flip();
+      attr.put(6554).put(1);
+      return attr.put(0).flip();
    }
 
    private int getChannelCount() {
-      MemoryStack var1 = MemoryStack.stackPush();
+      MemoryStack stack = MemoryStack.stackPush();
 
       int var7;
       label58: {
          try {
-            int var2 = ALC10.alcGetInteger(this.currentDevice, 4098);
+            int size = ALC10.alcGetInteger(this.currentDevice, 4098);
             if (OpenAlUtil.checkALCError(this.currentDevice, "Get attributes size")) {
                throw new IllegalStateException("Failed to get OpenAL attributes");
             }
 
-            IntBuffer var3 = var1.mallocInt(var2);
-            ALC10.alcGetIntegerv(this.currentDevice, 4099, var3);
+            IntBuffer attributes = stack.mallocInt(size);
+            ALC10.alcGetIntegerv(this.currentDevice, 4099, attributes);
             if (OpenAlUtil.checkALCError(this.currentDevice, "Get attributes")) {
                throw new IllegalStateException("Failed to get OpenAL attributes");
             }
 
-            int var4 = 0;
+            int pos = 0;
 
-            while(var4 < var2) {
-               int var5 = var3.get(var4++);
-               if (var5 == 0) {
+            while(pos < size) {
+               int attribute = attributes.get(pos++);
+               if (attribute == 0) {
                   break;
                }
 
-               int var6 = var3.get(var4++);
-               if (var5 == 4112) {
-                  var7 = var6;
+               int attributeValue = attributes.get(pos++);
+               if (attribute == 4112) {
+                  var7 = attributeValue;
                   break label58;
                }
             }
          } catch (Throwable var9) {
-            if (var1 != null) {
+            if (stack != null) {
                try {
-                  var1.close();
+                  stack.close();
                } catch (Throwable var8) {
                   var9.addSuppressed(var8);
                }
@@ -176,15 +176,15 @@ public class Library {
             throw var9;
          }
 
-         if (var1 != null) {
-            var1.close();
+         if (stack != null) {
+            stack.close();
          }
 
          return 30;
       }
 
-      if (var1 != null) {
-         var1.close();
+      if (stack != null) {
+         stack.close();
       }
 
       return var7;
@@ -200,52 +200,52 @@ public class Library {
    }
 
    public String getCurrentDeviceName() {
-      String var1 = ALC10.alcGetString(this.currentDevice, 4115);
-      if (var1 == null) {
-         var1 = ALC10.alcGetString(this.currentDevice, 4101);
+      String name = ALC10.alcGetString(this.currentDevice, 4115);
+      if (name == null) {
+         name = ALC10.alcGetString(this.currentDevice, 4101);
       }
 
-      if (var1 == null) {
-         var1 = "Unknown";
+      if (name == null) {
+         name = "Unknown";
       }
 
-      return var1;
+      return name;
    }
 
    public synchronized boolean hasDefaultDeviceChanged() {
-      String var1 = getDefaultDeviceName();
-      if (Objects.equals(this.defaultDeviceName, var1)) {
+      String name = getDefaultDeviceName();
+      if (Objects.equals(this.defaultDeviceName, name)) {
          return false;
       } else {
-         this.defaultDeviceName = var1;
+         this.defaultDeviceName = name;
          return true;
       }
    }
 
-   private static long openDeviceOrFallback(@Nullable String var0) {
-      OptionalLong var1 = OptionalLong.empty();
-      if (var0 != null) {
-         var1 = tryOpenDevice(var0);
+   private static long openDeviceOrFallback(final @Nullable String preferredDevice) {
+      OptionalLong device = OptionalLong.empty();
+      if (preferredDevice != null) {
+         device = tryOpenDevice(preferredDevice);
       }
 
-      if (var1.isEmpty()) {
-         var1 = tryOpenDevice(getDefaultDeviceName());
+      if (device.isEmpty()) {
+         device = tryOpenDevice(getDefaultDeviceName());
       }
 
-      if (var1.isEmpty()) {
-         var1 = tryOpenDevice((String)null);
+      if (device.isEmpty()) {
+         device = tryOpenDevice((String)null);
       }
 
-      if (var1.isEmpty()) {
+      if (device.isEmpty()) {
          throw new IllegalStateException("Failed to open OpenAL device");
       } else {
-         return var1.getAsLong();
+         return device.getAsLong();
       }
    }
 
-   private static OptionalLong tryOpenDevice(@Nullable String var0) {
-      long var1 = ALC10.alcOpenDevice(var0);
-      return var1 != 0L && !OpenAlUtil.checkALCError(var1, "Open device") ? OptionalLong.of(var1) : OptionalLong.empty();
+   private static OptionalLong tryOpenDevice(final @Nullable String name) {
+      long device = ALC10.alcOpenDevice(name);
+      return device != 0L && !OpenAlUtil.checkALCError(device, "Open device") ? OptionalLong.of(device) : OptionalLong.empty();
    }
 
    public void cleanup() {
@@ -262,12 +262,12 @@ public class Library {
       return this.listener;
    }
 
-   public @Nullable Channel acquireChannel(Pool var1) {
-      return (var1 == Library.Pool.STREAMING ? this.streamingChannels : this.staticChannels).acquire();
+   public @Nullable Channel acquireChannel(final Pool pool) {
+      return (pool == Library.Pool.STREAMING ? this.streamingChannels : this.staticChannels).acquire();
    }
 
-   public void releaseChannel(Channel var1) {
-      if (!this.staticChannels.release(var1) && !this.streamingChannels.release(var1)) {
+   public void releaseChannel(final Channel channel) {
+      if (!this.staticChannels.release(channel) && !this.streamingChannels.release(channel)) {
          throw new IllegalStateException("Tried to release unknown channel");
       }
    }
@@ -277,8 +277,8 @@ public class Library {
    }
 
    public List<String> getAvailableSoundDevices() {
-      List var1 = ALUtil.getStringList(0L, 4115);
-      return var1 == null ? Collections.emptyList() : var1;
+      List<String> result = ALUtil.getStringList(0L, 4115);
+      return result == null ? Collections.emptyList() : result;
    }
 
    public boolean isCurrentDeviceDisconnected() {
@@ -298,13 +298,13 @@ public class Library {
       }
    }
 
-   static class CountingChannelPool implements ChannelPool {
+   private static class CountingChannelPool implements ChannelPool {
       private final int limit;
       private final Set<Channel> activeChannels = Sets.newIdentityHashSet();
 
-      public CountingChannelPool(int var1) {
+      public CountingChannelPool(final int limit) {
          super();
-         this.limit = var1;
+         this.limit = limit;
       }
 
       public @Nullable Channel acquire() {
@@ -315,20 +315,20 @@ public class Library {
 
             return null;
          } else {
-            Channel var1 = Channel.create();
-            if (var1 != null) {
-               this.activeChannels.add(var1);
+            Channel channel = Channel.create();
+            if (channel != null) {
+               this.activeChannels.add(channel);
             }
 
-            return var1;
+            return channel;
          }
       }
 
-      public boolean release(Channel var1) {
-         if (!this.activeChannels.remove(var1)) {
+      public boolean release(final Channel channel) {
+         if (!this.activeChannels.remove(channel)) {
             return false;
          } else {
-            var1.destroy();
+            channel.destroy();
             return true;
          }
       }
@@ -347,10 +347,10 @@ public class Library {
       }
    }
 
-   interface ChannelPool {
+   private interface ChannelPool {
       @Nullable Channel acquire();
 
-      boolean release(Channel var1);
+      boolean release(final Channel channel);
 
       void cleanup();
 

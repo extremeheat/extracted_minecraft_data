@@ -41,11 +41,11 @@ public class TicketStorage extends SavedData {
    private @Nullable ChunkUpdated loadingChunkUpdatedListener;
    private @Nullable ChunkUpdated simulationChunkUpdatedListener;
 
-   private TicketStorage(Long2ObjectOpenHashMap<List<Ticket>> var1, Long2ObjectOpenHashMap<List<Ticket>> var2) {
+   private TicketStorage(final Long2ObjectOpenHashMap<List<Ticket>> tickets, final Long2ObjectOpenHashMap<List<Ticket>> deactivatedTickets) {
       super();
       this.chunksWithForcedTickets = new LongOpenHashSet();
-      this.tickets = var1;
-      this.deactivatedTickets = var2;
+      this.tickets = tickets;
+      this.deactivatedTickets = deactivatedTickets;
       this.updateForcedChunks();
    }
 
@@ -53,43 +53,43 @@ public class TicketStorage extends SavedData {
       this(new Long2ObjectOpenHashMap(4), new Long2ObjectOpenHashMap());
    }
 
-   private static TicketStorage fromPacked(List<Pair<ChunkPos, Ticket>> var0) {
-      Long2ObjectOpenHashMap var1 = new Long2ObjectOpenHashMap();
+   private static TicketStorage fromPacked(final List<Pair<ChunkPos, Ticket>> tickets) {
+      Long2ObjectOpenHashMap<List<Ticket>> ticketsToLoad = new Long2ObjectOpenHashMap();
 
-      for(Pair var3 : var0) {
-         ChunkPos var4 = (ChunkPos)var3.getFirst();
-         List var5 = (List)var1.computeIfAbsent(var4.toLong(), (var0x) -> new ObjectArrayList(4));
-         var5.add((Ticket)var3.getSecond());
+      for(Pair<ChunkPos, Ticket> ticket : tickets) {
+         ChunkPos pos = (ChunkPos)ticket.getFirst();
+         List<Ticket> ticketsInChunk = (List)ticketsToLoad.computeIfAbsent(pos.pack(), (k) -> new ObjectArrayList(4));
+         ticketsInChunk.add((Ticket)ticket.getSecond());
       }
 
-      return new TicketStorage(new Long2ObjectOpenHashMap(4), var1);
+      return new TicketStorage(new Long2ObjectOpenHashMap(4), ticketsToLoad);
    }
 
    private List<Pair<ChunkPos, Ticket>> packTickets() {
-      ArrayList var1 = new ArrayList();
-      this.forEachTicket((var1x, var2) -> {
-         if (var2.getType().persist()) {
-            var1.add(new Pair(var1x, var2));
+      List<Pair<ChunkPos, Ticket>> tickets = new ArrayList();
+      this.forEachTicket((pos, ticket) -> {
+         if (ticket.getType().persist()) {
+            tickets.add(new Pair(pos, ticket));
          }
 
       });
-      return var1;
+      return tickets;
    }
 
-   private void forEachTicket(BiConsumer<ChunkPos, Ticket> var1) {
-      forEachTicket(var1, this.tickets);
-      forEachTicket(var1, this.deactivatedTickets);
+   private void forEachTicket(final BiConsumer<ChunkPos, Ticket> output) {
+      forEachTicket(output, this.tickets);
+      forEachTicket(output, this.deactivatedTickets);
    }
 
-   private static void forEachTicket(BiConsumer<ChunkPos, Ticket> var0, Long2ObjectOpenHashMap<List<Ticket>> var1) {
-      ObjectIterator var2 = Long2ObjectMaps.fastIterable(var1).iterator();
+   private static void forEachTicket(final BiConsumer<ChunkPos, Ticket> output, final Long2ObjectOpenHashMap<List<Ticket>> tickets) {
+      ObjectIterator var2 = Long2ObjectMaps.fastIterable(tickets).iterator();
 
       while(var2.hasNext()) {
-         Long2ObjectMap.Entry var3 = (Long2ObjectMap.Entry)var2.next();
-         ChunkPos var4 = new ChunkPos(var3.getLongKey());
+         Long2ObjectMap.Entry<List<Ticket>> entry = (Long2ObjectMap.Entry)var2.next();
+         ChunkPos chunkPos = ChunkPos.unpack(entry.getLongKey());
 
-         for(Ticket var6 : (List)var3.getValue()) {
-            var0.accept(var4, var6);
+         for(Ticket ticket : (List)entry.getValue()) {
+            output.accept(chunkPos, ticket);
          }
       }
 
@@ -99,22 +99,22 @@ public class TicketStorage extends SavedData {
       ObjectIterator var1 = Long2ObjectMaps.fastIterable(this.deactivatedTickets).iterator();
 
       while(var1.hasNext()) {
-         Long2ObjectMap.Entry var2 = (Long2ObjectMap.Entry)var1.next();
+         Long2ObjectMap.Entry<List<Ticket>> entry = (Long2ObjectMap.Entry)var1.next();
 
-         for(Ticket var4 : (List)var2.getValue()) {
-            this.addTicket(var2.getLongKey(), var4);
+         for(Ticket ticket : (List)entry.getValue()) {
+            this.addTicket(entry.getLongKey(), ticket);
          }
       }
 
       this.deactivatedTickets.clear();
    }
 
-   public void setLoadingChunkUpdatedListener(@Nullable ChunkUpdated var1) {
-      this.loadingChunkUpdatedListener = var1;
+   public void setLoadingChunkUpdatedListener(final @Nullable ChunkUpdated loadingChunkUpdatedListener) {
+      this.loadingChunkUpdatedListener = loadingChunkUpdatedListener;
    }
 
-   public void setSimulationChunkUpdatedListener(@Nullable ChunkUpdated var1) {
-      this.simulationChunkUpdatedListener = var1;
+   public void setSimulationChunkUpdatedListener(final @Nullable ChunkUpdated simulationChunkUpdatedListener) {
+      this.simulationChunkUpdatedListener = simulationChunkUpdatedListener;
    }
 
    public boolean hasTickets() {
@@ -125,10 +125,10 @@ public class TicketStorage extends SavedData {
       ObjectIterator var1 = this.tickets.values().iterator();
 
       while(var1.hasNext()) {
-         List var2 = (List)var1.next();
+         List<Ticket> group = (List)var1.next();
 
-         for(Ticket var4 : var2) {
-            if (var4.getType().shouldKeepDimensionActive()) {
+         for(Ticket ticket : group) {
+            if (ticket.getType().shouldKeepDimensionActive()) {
                return true;
             }
          }
@@ -137,136 +137,136 @@ public class TicketStorage extends SavedData {
       return false;
    }
 
-   public List<Ticket> getTickets(long var1) {
-      return (List)this.tickets.getOrDefault(var1, List.of());
+   public List<Ticket> getTickets(final long key) {
+      return (List)this.tickets.getOrDefault(key, List.of());
    }
 
-   private List<Ticket> getOrCreateTickets(long var1) {
-      return (List)this.tickets.computeIfAbsent(var1, (var0) -> new ObjectArrayList(4));
+   private List<Ticket> getOrCreateTickets(final long key) {
+      return (List)this.tickets.computeIfAbsent(key, (k) -> new ObjectArrayList(4));
    }
 
-   public void addTicketWithRadius(TicketType var1, ChunkPos var2, int var3) {
-      Ticket var4 = new Ticket(var1, ChunkLevel.byStatus(FullChunkStatus.FULL) - var3);
-      this.addTicket(var2.toLong(), var4);
+   public void addTicketWithRadius(final TicketType type, final ChunkPos chunkPos, final int radius) {
+      Ticket ticket = new Ticket(type, ChunkLevel.byStatus(FullChunkStatus.FULL) - radius);
+      this.addTicket(chunkPos.pack(), ticket);
    }
 
-   public void addTicket(Ticket var1, ChunkPos var2) {
-      this.addTicket(var2.toLong(), var1);
+   public void addTicket(final Ticket ticket, final ChunkPos chunkPos) {
+      this.addTicket(chunkPos.pack(), ticket);
    }
 
-   public boolean addTicket(long var1, Ticket var3) {
-      List var4 = this.getOrCreateTickets(var1);
+   public boolean addTicket(final long key, final Ticket ticket) {
+      List<Ticket> tickets = this.getOrCreateTickets(key);
 
-      for(Ticket var6 : var4) {
-         if (isTicketSameTypeAndLevel(var3, var6)) {
-            var6.resetTicksLeft();
+      for(Ticket t : tickets) {
+         if (isTicketSameTypeAndLevel(ticket, t)) {
+            t.resetTicksLeft();
             this.setDirty();
             return false;
          }
       }
 
-      int var7 = getTicketLevelAt(var4, true);
-      int var8 = getTicketLevelAt(var4, false);
-      var4.add(var3);
+      int oldSimulationTicketLevel = getTicketLevelAt(tickets, true);
+      int oldLoadingTicketLevel = getTicketLevelAt(tickets, false);
+      tickets.add(ticket);
       if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
-         LOGGER.debug("ATI {} {}", new ChunkPos(var1), var3);
+         LOGGER.debug("ATI {} {}", ChunkPos.unpack(key), ticket);
       }
 
-      if (var3.getType().doesSimulate() && var3.getTicketLevel() < var7 && this.simulationChunkUpdatedListener != null) {
-         this.simulationChunkUpdatedListener.update(var1, var3.getTicketLevel(), true);
+      if (ticket.getType().doesSimulate() && ticket.getTicketLevel() < oldSimulationTicketLevel && this.simulationChunkUpdatedListener != null) {
+         this.simulationChunkUpdatedListener.update(key, ticket.getTicketLevel(), true);
       }
 
-      if (var3.getType().doesLoad() && var3.getTicketLevel() < var8 && this.loadingChunkUpdatedListener != null) {
-         this.loadingChunkUpdatedListener.update(var1, var3.getTicketLevel(), true);
+      if (ticket.getType().doesLoad() && ticket.getTicketLevel() < oldLoadingTicketLevel && this.loadingChunkUpdatedListener != null) {
+         this.loadingChunkUpdatedListener.update(key, ticket.getTicketLevel(), true);
       }
 
-      if (var3.getType().equals(TicketType.FORCED)) {
-         this.chunksWithForcedTickets.add(var1);
+      if (ticket.getType().equals(TicketType.FORCED)) {
+         this.chunksWithForcedTickets.add(key);
       }
 
       this.setDirty();
       return true;
    }
 
-   private static boolean isTicketSameTypeAndLevel(Ticket var0, Ticket var1) {
-      return var1.getType() == var0.getType() && var1.getTicketLevel() == var0.getTicketLevel();
+   private static boolean isTicketSameTypeAndLevel(final Ticket ticket, final Ticket t) {
+      return t.getType() == ticket.getType() && t.getTicketLevel() == ticket.getTicketLevel();
    }
 
-   public int getTicketLevelAt(long var1, boolean var3) {
-      return getTicketLevelAt(this.getTickets(var1), var3);
+   public int getTicketLevelAt(final long key, final boolean simulation) {
+      return getTicketLevelAt(this.getTickets(key), simulation);
    }
 
-   private static int getTicketLevelAt(List<Ticket> var0, boolean var1) {
-      Ticket var2 = getLowestTicket(var0, var1);
-      return var2 == null ? ChunkLevel.MAX_LEVEL + 1 : var2.getTicketLevel();
+   private static int getTicketLevelAt(final List<Ticket> tickets, final boolean simulation) {
+      Ticket lowestTicket = getLowestTicket(tickets, simulation);
+      return lowestTicket == null ? ChunkLevel.MAX_LEVEL + 1 : lowestTicket.getTicketLevel();
    }
 
-   private static @Nullable Ticket getLowestTicket(@Nullable List<Ticket> var0, boolean var1) {
-      if (var0 == null) {
+   private static @Nullable Ticket getLowestTicket(final @Nullable List<Ticket> tickets, final boolean simulation) {
+      if (tickets == null) {
          return null;
       } else {
-         Ticket var2 = null;
+         Ticket t = null;
 
-         for(Ticket var4 : var0) {
-            if (var2 == null || var4.getTicketLevel() < var2.getTicketLevel()) {
-               if (var1 && var4.getType().doesSimulate()) {
-                  var2 = var4;
-               } else if (!var1 && var4.getType().doesLoad()) {
-                  var2 = var4;
+         for(Ticket ticket : tickets) {
+            if (t == null || ticket.getTicketLevel() < t.getTicketLevel()) {
+               if (simulation && ticket.getType().doesSimulate()) {
+                  t = ticket;
+               } else if (!simulation && ticket.getType().doesLoad()) {
+                  t = ticket;
                }
             }
          }
 
-         return var2;
+         return t;
       }
    }
 
-   public void removeTicketWithRadius(TicketType var1, ChunkPos var2, int var3) {
-      Ticket var4 = new Ticket(var1, ChunkLevel.byStatus(FullChunkStatus.FULL) - var3);
-      this.removeTicket(var2.toLong(), var4);
+   public void removeTicketWithRadius(final TicketType type, final ChunkPos chunkPos, final int radius) {
+      Ticket ticket = new Ticket(type, ChunkLevel.byStatus(FullChunkStatus.FULL) - radius);
+      this.removeTicket(chunkPos.pack(), ticket);
    }
 
-   public void removeTicket(Ticket var1, ChunkPos var2) {
-      this.removeTicket(var2.toLong(), var1);
+   public void removeTicket(final Ticket ticket, final ChunkPos chunkPos) {
+      this.removeTicket(chunkPos.pack(), ticket);
    }
 
-   public boolean removeTicket(long var1, Ticket var3) {
-      List var4 = (List)this.tickets.get(var1);
-      if (var4 == null) {
+   public boolean removeTicket(final long key, final Ticket ticket) {
+      List<Ticket> tickets = (List)this.tickets.get(key);
+      if (tickets == null) {
          return false;
       } else {
-         boolean var5 = false;
-         Iterator var6 = var4.iterator();
+         boolean found = false;
+         Iterator<Ticket> iterator = tickets.iterator();
 
-         while(var6.hasNext()) {
-            Ticket var7 = (Ticket)var6.next();
-            if (isTicketSameTypeAndLevel(var3, var7)) {
-               var6.remove();
+         while(iterator.hasNext()) {
+            Ticket t = (Ticket)iterator.next();
+            if (isTicketSameTypeAndLevel(ticket, t)) {
+               iterator.remove();
                if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
-                  LOGGER.debug("RTI {} {}", new ChunkPos(var1), var7);
+                  LOGGER.debug("RTI {} {}", ChunkPos.unpack(key), t);
                }
 
-               var5 = true;
+               found = true;
                break;
             }
          }
 
-         if (!var5) {
+         if (!found) {
             return false;
          } else {
-            if (var4.isEmpty()) {
-               this.tickets.remove(var1);
+            if (tickets.isEmpty()) {
+               this.tickets.remove(key);
             }
 
-            if (var3.getType().doesSimulate() && this.simulationChunkUpdatedListener != null) {
-               this.simulationChunkUpdatedListener.update(var1, getTicketLevelAt(var4, true), false);
+            if (ticket.getType().doesSimulate() && this.simulationChunkUpdatedListener != null) {
+               this.simulationChunkUpdatedListener.update(key, getTicketLevelAt(tickets, true), false);
             }
 
-            if (var3.getType().doesLoad() && this.loadingChunkUpdatedListener != null) {
-               this.loadingChunkUpdatedListener.update(var1, getTicketLevelAt(var4, false), false);
+            if (ticket.getType().doesLoad() && this.loadingChunkUpdatedListener != null) {
+               this.loadingChunkUpdatedListener.update(key, getTicketLevelAt(tickets, false), false);
             }
 
-            if (var3.getType().equals(TicketType.FORCED)) {
+            if (ticket.getType().equals(TicketType.FORCED)) {
                this.updateForcedChunks();
             }
 
@@ -277,20 +277,20 @@ public class TicketStorage extends SavedData {
    }
 
    private void updateForcedChunks() {
-      this.chunksWithForcedTickets = this.getAllChunksWithTicketThat((var0) -> var0.getType().equals(TicketType.FORCED));
+      this.chunksWithForcedTickets = this.getAllChunksWithTicketThat((t) -> t.getType().equals(TicketType.FORCED));
    }
 
-   public String getTicketDebugString(long var1, boolean var3) {
-      List var4 = this.getTickets(var1);
-      Ticket var5 = getLowestTicket(var4, var3);
-      return var5 == null ? "no_ticket" : var5.toString();
+   public String getTicketDebugString(final long key, final boolean simulation) {
+      List<Ticket> tickets = this.getTickets(key);
+      Ticket lowestTicket = getLowestTicket(tickets, simulation);
+      return lowestTicket == null ? "no_ticket" : lowestTicket.toString();
    }
 
-   public void purgeStaleTickets(ChunkMap var1) {
-      this.removeTicketIf((var2, var3) -> {
-         if (this.canTicketExpire(var1, var2, var3)) {
-            var2.decreaseTicksLeft();
-            return var2.isTimedOut();
+   public void purgeStaleTickets(final ChunkMap chunkMap) {
+      this.removeTicketIf((ticket, chunkPos) -> {
+         if (this.canTicketExpire(chunkMap, ticket, chunkPos)) {
+            ticket.decreaseTicksLeft();
+            return ticket.isTimedOut();
          } else {
             return false;
          }
@@ -298,140 +298,140 @@ public class TicketStorage extends SavedData {
       this.setDirty();
    }
 
-   private boolean canTicketExpire(ChunkMap var1, Ticket var2, long var3) {
-      if (!var2.getType().hasTimeout()) {
+   private boolean canTicketExpire(final ChunkMap chunkMap, final Ticket ticket, final long chunkPos) {
+      if (!ticket.getType().hasTimeout()) {
          return false;
-      } else if (var2.getType().canExpireIfUnloaded()) {
+      } else if (ticket.getType().canExpireIfUnloaded()) {
          return true;
       } else {
-         ChunkHolder var5 = var1.getUpdatingChunkIfPresent(var3);
-         return var5 == null || var5.isReadyForSaving();
+         ChunkHolder updatingChunk = chunkMap.getUpdatingChunkIfPresent(chunkPos);
+         return updatingChunk == null || updatingChunk.isReadyForSaving();
       }
    }
 
    public void deactivateTicketsOnClosing() {
-      this.removeTicketIf((var0, var1) -> var0.getType() != TicketType.UNKNOWN, this.deactivatedTickets);
+      this.removeTicketIf((ticket, chunkPos) -> ticket.getType() != TicketType.UNKNOWN, this.deactivatedTickets);
    }
 
-   public void removeTicketIf(TicketPredicate var1, @Nullable Long2ObjectOpenHashMap<List<Ticket>> var2) {
-      ObjectIterator var3 = this.tickets.long2ObjectEntrySet().fastIterator();
-      boolean var4 = false;
+   public void removeTicketIf(final TicketPredicate predicate, final @Nullable Long2ObjectOpenHashMap<List<Ticket>> removedTickets) {
+      ObjectIterator<Long2ObjectMap.Entry<List<Ticket>>> ticketsPerChunkIterator = this.tickets.long2ObjectEntrySet().fastIterator();
+      boolean removedForced = false;
 
-      while(var3.hasNext()) {
-         Long2ObjectMap.Entry var5 = (Long2ObjectMap.Entry)var3.next();
-         Iterator var6 = ((List)var5.getValue()).iterator();
-         long var7 = var5.getLongKey();
-         boolean var9 = false;
-         boolean var10 = false;
+      while(ticketsPerChunkIterator.hasNext()) {
+         Long2ObjectMap.Entry<List<Ticket>> entry = (Long2ObjectMap.Entry)ticketsPerChunkIterator.next();
+         Iterator<Ticket> chunkTicketsIterator = ((List)entry.getValue()).iterator();
+         long chunkPos = entry.getLongKey();
+         boolean removedSimulation = false;
+         boolean removedLoading = false;
 
-         while(var6.hasNext()) {
-            Ticket var11 = (Ticket)var6.next();
-            if (var1.test(var11, var7)) {
-               if (var2 != null) {
-                  List var12 = (List)var2.computeIfAbsent(var7, (var1x) -> new ObjectArrayList(((List)var5.getValue()).size()));
-                  var12.add(var11);
+         while(chunkTicketsIterator.hasNext()) {
+            Ticket ticket = (Ticket)chunkTicketsIterator.next();
+            if (predicate.test(ticket, chunkPos)) {
+               if (removedTickets != null) {
+                  List<Ticket> tickets = (List)removedTickets.computeIfAbsent(chunkPos, (k) -> new ObjectArrayList(((List)entry.getValue()).size()));
+                  tickets.add(ticket);
                }
 
-               var6.remove();
-               if (var11.getType().doesLoad()) {
-                  var10 = true;
+               chunkTicketsIterator.remove();
+               if (ticket.getType().doesLoad()) {
+                  removedLoading = true;
                }
 
-               if (var11.getType().doesSimulate()) {
-                  var9 = true;
+               if (ticket.getType().doesSimulate()) {
+                  removedSimulation = true;
                }
 
-               if (var11.getType().equals(TicketType.FORCED)) {
-                  var4 = true;
+               if (ticket.getType().equals(TicketType.FORCED)) {
+                  removedForced = true;
                }
             }
          }
 
-         if (var10 || var9) {
-            if (var10 && this.loadingChunkUpdatedListener != null) {
-               this.loadingChunkUpdatedListener.update(var7, getTicketLevelAt((List)var5.getValue(), false), false);
+         if (removedLoading || removedSimulation) {
+            if (removedLoading && this.loadingChunkUpdatedListener != null) {
+               this.loadingChunkUpdatedListener.update(chunkPos, getTicketLevelAt((List)entry.getValue(), false), false);
             }
 
-            if (var9 && this.simulationChunkUpdatedListener != null) {
-               this.simulationChunkUpdatedListener.update(var7, getTicketLevelAt((List)var5.getValue(), true), false);
+            if (removedSimulation && this.simulationChunkUpdatedListener != null) {
+               this.simulationChunkUpdatedListener.update(chunkPos, getTicketLevelAt((List)entry.getValue(), true), false);
             }
 
             this.setDirty();
-            if (((List)var5.getValue()).isEmpty()) {
-               var3.remove();
+            if (((List)entry.getValue()).isEmpty()) {
+               ticketsPerChunkIterator.remove();
             }
          }
       }
 
-      if (var4) {
+      if (removedForced) {
          this.updateForcedChunks();
       }
 
    }
 
-   public void replaceTicketLevelOfType(int var1, TicketType var2) {
-      ArrayList var3 = new ArrayList();
+   public void replaceTicketLevelOfType(final int newLevel, final TicketType ticketType) {
+      List<Pair<Ticket, Long>> affectedTickets = new ArrayList();
       ObjectIterator var4 = this.tickets.long2ObjectEntrySet().iterator();
 
       while(var4.hasNext()) {
-         Long2ObjectMap.Entry var5 = (Long2ObjectMap.Entry)var4.next();
+         Long2ObjectMap.Entry<List<Ticket>> entry = (Long2ObjectMap.Entry)var4.next();
 
-         for(Ticket var7 : (List)var5.getValue()) {
-            if (var7.getType() == var2) {
-               var3.add(Pair.of(var7, var5.getLongKey()));
+         for(Ticket ticket : (List)entry.getValue()) {
+            if (ticket.getType() == ticketType) {
+               affectedTickets.add(Pair.of(ticket, entry.getLongKey()));
             }
          }
       }
 
-      for(Pair var10 : var3) {
-         Long var11 = (Long)var10.getSecond();
-         Ticket var12 = (Ticket)var10.getFirst();
-         this.removeTicket(var11, var12);
-         TicketType var8 = var12.getType();
-         this.addTicket(var11, new Ticket(var8, var1));
+      for(Pair<Ticket, Long> pair : affectedTickets) {
+         Long key = (Long)pair.getSecond();
+         Ticket ticket = (Ticket)pair.getFirst();
+         this.removeTicket(key, ticket);
+         TicketType type = ticket.getType();
+         this.addTicket(key, new Ticket(type, newLevel));
       }
 
    }
 
-   public boolean updateChunkForced(ChunkPos var1, boolean var2) {
-      Ticket var3 = new Ticket(TicketType.FORCED, ChunkMap.FORCED_TICKET_LEVEL);
-      return var2 ? this.addTicket(var1.toLong(), var3) : this.removeTicket(var1.toLong(), var3);
+   public boolean updateChunkForced(final ChunkPos chunkPos, final boolean forced) {
+      Ticket ticket = new Ticket(TicketType.FORCED, ChunkMap.FORCED_TICKET_LEVEL);
+      return forced ? this.addTicket(chunkPos.pack(), ticket) : this.removeTicket(chunkPos.pack(), ticket);
    }
 
    public LongSet getForceLoadedChunks() {
       return this.chunksWithForcedTickets;
    }
 
-   private LongSet getAllChunksWithTicketThat(Predicate<Ticket> var1) {
-      LongOpenHashSet var2 = new LongOpenHashSet();
+   private LongSet getAllChunksWithTicketThat(final Predicate<Ticket> ticketCheck) {
+      LongOpenHashSet chunks = new LongOpenHashSet();
       ObjectIterator var3 = Long2ObjectMaps.fastIterable(this.tickets).iterator();
 
       while(var3.hasNext()) {
-         Long2ObjectMap.Entry var4 = (Long2ObjectMap.Entry)var3.next();
+         Long2ObjectMap.Entry<List<Ticket>> entry = (Long2ObjectMap.Entry)var3.next();
 
-         for(Ticket var6 : (List)var4.getValue()) {
-            if (var1.test(var6)) {
-               var2.add(var4.getLongKey());
+         for(Ticket ticket : (List)entry.getValue()) {
+            if (ticketCheck.test(ticket)) {
+               chunks.add(entry.getLongKey());
                break;
             }
          }
       }
 
-      return var2;
+      return chunks;
    }
 
    static {
       TICKET_ENTRY = Codec.mapPair(ChunkPos.CODEC.fieldOf("chunk_pos"), Ticket.CODEC).codec();
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(TICKET_ENTRY.listOf().optionalFieldOf("tickets", List.of()).forGetter(TicketStorage::packTickets)).apply(var0, TicketStorage::fromPacked));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(TICKET_ENTRY.listOf().optionalFieldOf("tickets", List.of()).forGetter(TicketStorage::packTickets)).apply(i, TicketStorage::fromPacked));
       TYPE = new SavedDataType<TicketStorage>("chunks", TicketStorage::new, CODEC, DataFixTypes.SAVED_DATA_FORCED_CHUNKS);
    }
 
    @FunctionalInterface
    public interface ChunkUpdated {
-      void update(long var1, int var3, boolean var4);
+      void update(final long node, final int newLevelFrom, final boolean onlyDecreased);
    }
 
    public interface TicketPredicate {
-      boolean test(Ticket var1, long var2);
+      boolean test(Ticket ticket, long chunkPos);
    }
 }

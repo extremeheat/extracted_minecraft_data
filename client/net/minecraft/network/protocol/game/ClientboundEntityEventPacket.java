@@ -13,33 +13,33 @@ public class ClientboundEntityEventPacket implements Packet<ClientGamePacketList
    private final int entityId;
    private final byte eventId;
 
-   public ClientboundEntityEventPacket(Entity var1, byte var2) {
+   public ClientboundEntityEventPacket(final Entity entity, final byte eventId) {
       super();
-      this.entityId = var1.getId();
-      this.eventId = var2;
+      this.entityId = entity.getId();
+      this.eventId = eventId;
    }
 
-   private ClientboundEntityEventPacket(FriendlyByteBuf var1) {
+   private ClientboundEntityEventPacket(final FriendlyByteBuf input) {
       super();
-      this.entityId = var1.readInt();
-      this.eventId = var1.readByte();
+      this.entityId = input.readInt();
+      this.eventId = input.readByte();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeInt(this.entityId);
-      var1.writeByte(this.eventId);
+   private void write(final FriendlyByteBuf output) {
+      output.writeInt(this.entityId);
+      output.writeByte(this.eventId);
    }
 
    public PacketType<ClientboundEntityEventPacket> type() {
       return GamePacketTypes.CLIENTBOUND_ENTITY_EVENT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleEntityEvent(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleEntityEvent(this);
    }
 
-   public @Nullable Entity getEntity(Level var1) {
-      return var1.getEntity(this.entityId);
+   public @Nullable Entity getEntity(final Level level) {
+      return level.getEntity(this.entityId);
    }
 
    public byte getEventId() {

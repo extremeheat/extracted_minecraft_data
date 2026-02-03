@@ -31,18 +31,18 @@ public class NbtIo {
       super();
    }
 
-   public static CompoundTag readCompressed(Path var0, NbtAccounter var1) throws IOException {
-      InputStream var2 = Files.newInputStream(var0);
+   public static CompoundTag readCompressed(final Path file, final NbtAccounter accounter) throws IOException {
+      InputStream rawInput = Files.newInputStream(file);
 
       CompoundTag var4;
       try {
-         FastBufferedInputStream var3 = new FastBufferedInputStream(var2);
+         InputStream input = new FastBufferedInputStream(rawInput);
 
          try {
-            var4 = readCompressed((InputStream)var3, var1);
+            var4 = readCompressed(input, accounter);
          } catch (Throwable var8) {
             try {
-               ((InputStream)var3).close();
+               input.close();
             } catch (Throwable var7) {
                var8.addSuppressed(var7);
             }
@@ -50,11 +50,11 @@ public class NbtIo {
             throw var8;
          }
 
-         ((InputStream)var3).close();
+         input.close();
       } catch (Throwable var9) {
-         if (var2 != null) {
+         if (rawInput != null) {
             try {
-               var2.close();
+               rawInput.close();
             } catch (Throwable var6) {
                var9.addSuppressed(var6);
             }
@@ -63,31 +63,31 @@ public class NbtIo {
          throw var9;
       }
 
-      if (var2 != null) {
-         var2.close();
+      if (rawInput != null) {
+         rawInput.close();
       }
 
       return var4;
    }
 
-   private static DataInputStream createDecompressorStream(InputStream var0) throws IOException {
-      return new DataInputStream(new FastBufferedInputStream(new GZIPInputStream(var0)));
+   private static DataInputStream createDecompressorStream(final InputStream in) throws IOException {
+      return new DataInputStream(new FastBufferedInputStream(new GZIPInputStream(in)));
    }
 
-   private static DataOutputStream createCompressorStream(OutputStream var0) throws IOException {
-      return new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(var0)));
+   private static DataOutputStream createCompressorStream(final OutputStream out) throws IOException {
+      return new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(out)));
    }
 
-   public static CompoundTag readCompressed(InputStream var0, NbtAccounter var1) throws IOException {
-      DataInputStream var2 = createDecompressorStream(var0);
+   public static CompoundTag readCompressed(final InputStream in, final NbtAccounter accounter) throws IOException {
+      DataInputStream dis = createDecompressorStream(in);
 
       CompoundTag var3;
       try {
-         var3 = read(var2, var1);
+         var3 = read(dis, accounter);
       } catch (Throwable var6) {
-         if (var2 != null) {
+         if (dis != null) {
             try {
-               var2.close();
+               dis.close();
             } catch (Throwable var5) {
                var6.addSuppressed(var5);
             }
@@ -96,24 +96,24 @@ public class NbtIo {
          throw var6;
       }
 
-      if (var2 != null) {
-         var2.close();
+      if (dis != null) {
+         dis.close();
       }
 
       return var3;
    }
 
-   public static void parseCompressed(Path var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
-      InputStream var3 = Files.newInputStream(var0);
+   public static void parseCompressed(final Path file, final StreamTagVisitor output, final NbtAccounter accounter) throws IOException {
+      InputStream rawInput = Files.newInputStream(file);
 
       try {
-         FastBufferedInputStream var4 = new FastBufferedInputStream(var3);
+         InputStream input = new FastBufferedInputStream(rawInput);
 
          try {
-            parseCompressed((InputStream)var4, var1, var2);
+            parseCompressed(input, output, accounter);
          } catch (Throwable var9) {
             try {
-               ((InputStream)var4).close();
+               input.close();
             } catch (Throwable var8) {
                var9.addSuppressed(var8);
             }
@@ -121,11 +121,11 @@ public class NbtIo {
             throw var9;
          }
 
-         ((InputStream)var4).close();
+         input.close();
       } catch (Throwable var10) {
-         if (var3 != null) {
+         if (rawInput != null) {
             try {
-               var3.close();
+               rawInput.close();
             } catch (Throwable var7) {
                var10.addSuppressed(var7);
             }
@@ -134,21 +134,21 @@ public class NbtIo {
          throw var10;
       }
 
-      if (var3 != null) {
-         var3.close();
+      if (rawInput != null) {
+         rawInput.close();
       }
 
    }
 
-   public static void parseCompressed(InputStream var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
-      DataInputStream var3 = createDecompressorStream(var0);
+   public static void parseCompressed(final InputStream in, final StreamTagVisitor output, final NbtAccounter accounter) throws IOException {
+      DataInputStream dis = createDecompressorStream(in);
 
       try {
-         parse(var3, var1, var2);
+         parse(dis, output, accounter);
       } catch (Throwable var7) {
-         if (var3 != null) {
+         if (dis != null) {
             try {
-               var3.close();
+               dis.close();
             } catch (Throwable var6) {
                var7.addSuppressed(var6);
             }
@@ -157,23 +157,23 @@ public class NbtIo {
          throw var7;
       }
 
-      if (var3 != null) {
-         var3.close();
+      if (dis != null) {
+         dis.close();
       }
 
    }
 
-   public static void writeCompressed(CompoundTag var0, Path var1) throws IOException {
-      OutputStream var2 = Files.newOutputStream(var1, SYNC_OUTPUT_OPTIONS);
+   public static void writeCompressed(final CompoundTag tag, final Path file) throws IOException {
+      OutputStream out = Files.newOutputStream(file, SYNC_OUTPUT_OPTIONS);
 
       try {
-         BufferedOutputStream var3 = new BufferedOutputStream(var2);
+         OutputStream bufferedOut = new BufferedOutputStream(out);
 
          try {
-            writeCompressed(var0, (OutputStream)var3);
+            writeCompressed(tag, bufferedOut);
          } catch (Throwable var8) {
             try {
-               ((OutputStream)var3).close();
+               bufferedOut.close();
             } catch (Throwable var7) {
                var8.addSuppressed(var7);
             }
@@ -181,11 +181,11 @@ public class NbtIo {
             throw var8;
          }
 
-         ((OutputStream)var3).close();
+         bufferedOut.close();
       } catch (Throwable var9) {
-         if (var2 != null) {
+         if (out != null) {
             try {
-               var2.close();
+               out.close();
             } catch (Throwable var6) {
                var9.addSuppressed(var6);
             }
@@ -194,21 +194,21 @@ public class NbtIo {
          throw var9;
       }
 
-      if (var2 != null) {
-         var2.close();
+      if (out != null) {
+         out.close();
       }
 
    }
 
-   public static void writeCompressed(CompoundTag var0, OutputStream var1) throws IOException {
-      DataOutputStream var2 = createCompressorStream(var1);
+   public static void writeCompressed(final CompoundTag tag, final OutputStream out) throws IOException {
+      DataOutputStream dos = createCompressorStream(out);
 
       try {
-         write(var0, (DataOutput)var2);
+         write(tag, (DataOutput)dos);
       } catch (Throwable var6) {
-         if (var2 != null) {
+         if (dos != null) {
             try {
-               var2.close();
+               dos.close();
             } catch (Throwable var5) {
                var6.addSuppressed(var5);
             }
@@ -217,26 +217,26 @@ public class NbtIo {
          throw var6;
       }
 
-      if (var2 != null) {
-         var2.close();
+      if (dos != null) {
+         dos.close();
       }
 
    }
 
-   public static void write(CompoundTag var0, Path var1) throws IOException {
-      OutputStream var2 = Files.newOutputStream(var1, SYNC_OUTPUT_OPTIONS);
+   public static void write(final CompoundTag tag, final Path file) throws IOException {
+      OutputStream out = Files.newOutputStream(file, SYNC_OUTPUT_OPTIONS);
 
       try {
-         BufferedOutputStream var3 = new BufferedOutputStream(var2);
+         OutputStream bufferedOut = new BufferedOutputStream(out);
 
          try {
-            DataOutputStream var4 = new DataOutputStream(var3);
+            DataOutputStream dos = new DataOutputStream(bufferedOut);
 
             try {
-               write(var0, (DataOutput)var4);
+               write(tag, (DataOutput)dos);
             } catch (Throwable var10) {
                try {
-                  var4.close();
+                  dos.close();
                } catch (Throwable var9) {
                   var10.addSuppressed(var9);
                }
@@ -244,10 +244,10 @@ public class NbtIo {
                throw var10;
             }
 
-            var4.close();
+            dos.close();
          } catch (Throwable var11) {
             try {
-               ((OutputStream)var3).close();
+               bufferedOut.close();
             } catch (Throwable var8) {
                var11.addSuppressed(var8);
             }
@@ -255,11 +255,11 @@ public class NbtIo {
             throw var11;
          }
 
-         ((OutputStream)var3).close();
+         bufferedOut.close();
       } catch (Throwable var12) {
-         if (var2 != null) {
+         if (out != null) {
             try {
-               var2.close();
+               out.close();
             } catch (Throwable var7) {
                var12.addSuppressed(var7);
             }
@@ -268,27 +268,27 @@ public class NbtIo {
          throw var12;
       }
 
-      if (var2 != null) {
-         var2.close();
+      if (out != null) {
+         out.close();
       }
 
    }
 
-   public static @Nullable CompoundTag read(Path var0) throws IOException {
-      if (!Files.exists(var0, new LinkOption[0])) {
+   public static @Nullable CompoundTag read(final Path file) throws IOException {
+      if (!Files.exists(file, new LinkOption[0])) {
          return null;
       } else {
-         InputStream var1 = Files.newInputStream(var0);
+         InputStream in = Files.newInputStream(file);
 
          CompoundTag var3;
          try {
-            DataInputStream var2 = new DataInputStream(var1);
+            DataInputStream dis = new DataInputStream(in);
 
             try {
-               var3 = read(var2, NbtAccounter.unlimitedHeap());
+               var3 = read(dis, NbtAccounter.unlimitedHeap());
             } catch (Throwable var7) {
                try {
-                  var2.close();
+                  dis.close();
                } catch (Throwable var6) {
                   var7.addSuppressed(var6);
                }
@@ -296,11 +296,11 @@ public class NbtIo {
                throw var7;
             }
 
-            var2.close();
+            dis.close();
          } catch (Throwable var8) {
-            if (var1 != null) {
+            if (in != null) {
                try {
-                  var1.close();
+                  in.close();
                } catch (Throwable var5) {
                   var8.addSuppressed(var5);
                }
@@ -309,98 +309,98 @@ public class NbtIo {
             throw var8;
          }
 
-         if (var1 != null) {
-            var1.close();
+         if (in != null) {
+            in.close();
          }
 
          return var3;
       }
    }
 
-   public static CompoundTag read(DataInput var0) throws IOException {
-      return read(var0, NbtAccounter.unlimitedHeap());
+   public static CompoundTag read(final DataInput input) throws IOException {
+      return read(input, NbtAccounter.unlimitedHeap());
    }
 
-   public static CompoundTag read(DataInput var0, NbtAccounter var1) throws IOException {
-      Tag var2 = readUnnamedTag(var0, var1);
-      if (var2 instanceof CompoundTag) {
-         return (CompoundTag)var2;
+   public static CompoundTag read(final DataInput input, final NbtAccounter accounter) throws IOException {
+      Tag tag = readUnnamedTag(input, accounter);
+      if (tag instanceof CompoundTag) {
+         return (CompoundTag)tag;
       } else {
          throw new IOException("Root tag must be a named compound tag");
       }
    }
 
-   public static void write(CompoundTag var0, DataOutput var1) throws IOException {
-      writeUnnamedTagWithFallback(var0, var1);
+   public static void write(final CompoundTag tag, final DataOutput output) throws IOException {
+      writeUnnamedTagWithFallback(tag, output);
    }
 
-   public static void parse(DataInput var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
-      TagType var3 = TagTypes.getType(var0.readByte());
-      if (var3 == EndTag.TYPE) {
-         if (var1.visitRootEntry(EndTag.TYPE) == StreamTagVisitor.ValueResult.CONTINUE) {
-            var1.visitEnd();
+   public static void parse(final DataInput input, final StreamTagVisitor output, final NbtAccounter accounter) throws IOException {
+      TagType<?> type = TagTypes.getType(input.readByte());
+      if (type == EndTag.TYPE) {
+         if (output.visitRootEntry(EndTag.TYPE) == StreamTagVisitor.ValueResult.CONTINUE) {
+            output.visitEnd();
          }
 
       } else {
-         switch (var1.visitRootEntry(var3)) {
+         switch (output.visitRootEntry(type)) {
             case HALT:
             default:
                break;
             case BREAK:
-               StringTag.skipString(var0);
-               var3.skip(var0, var2);
+               StringTag.skipString(input);
+               type.skip(input, accounter);
                break;
             case CONTINUE:
-               StringTag.skipString(var0);
-               var3.parse(var0, var1, var2);
+               StringTag.skipString(input);
+               type.parse(input, output, accounter);
          }
 
       }
    }
 
-   public static Tag readAnyTag(DataInput var0, NbtAccounter var1) throws IOException {
-      byte var2 = var0.readByte();
-      return (Tag)(var2 == 0 ? EndTag.INSTANCE : readTagSafe(var0, var1, var2));
+   public static Tag readAnyTag(final DataInput input, final NbtAccounter accounter) throws IOException {
+      byte type = input.readByte();
+      return (Tag)(type == 0 ? EndTag.INSTANCE : readTagSafe(input, accounter, type));
    }
 
-   public static void writeAnyTag(Tag var0, DataOutput var1) throws IOException {
-      var1.writeByte(var0.getId());
-      if (var0.getId() != 0) {
-         var0.write(var1);
+   public static void writeAnyTag(final Tag tag, final DataOutput output) throws IOException {
+      output.writeByte(tag.getId());
+      if (tag.getId() != 0) {
+         tag.write(output);
       }
    }
 
-   public static void writeUnnamedTag(Tag var0, DataOutput var1) throws IOException {
-      var1.writeByte(var0.getId());
-      if (var0.getId() != 0) {
-         var1.writeUTF("");
-         var0.write(var1);
+   public static void writeUnnamedTag(final Tag tag, final DataOutput output) throws IOException {
+      output.writeByte(tag.getId());
+      if (tag.getId() != 0) {
+         output.writeUTF("");
+         tag.write(output);
       }
    }
 
-   public static void writeUnnamedTagWithFallback(Tag var0, DataOutput var1) throws IOException {
-      writeUnnamedTag(var0, new StringFallbackDataOutput(var1));
+   public static void writeUnnamedTagWithFallback(final Tag tag, final DataOutput output) throws IOException {
+      writeUnnamedTag(tag, new StringFallbackDataOutput(output));
    }
 
    @VisibleForTesting
-   public static Tag readUnnamedTag(DataInput var0, NbtAccounter var1) throws IOException {
-      byte var2 = var0.readByte();
-      if (var2 == 0) {
+   public static Tag readUnnamedTag(final DataInput input, final NbtAccounter accounter) throws IOException {
+      byte type = input.readByte();
+      if (type == 0) {
          return EndTag.INSTANCE;
       } else {
-         StringTag.skipString(var0);
-         return readTagSafe(var0, var1, var2);
+         StringTag.skipString(input);
+         return readTagSafe(input, accounter, type);
       }
    }
 
-   private static Tag readTagSafe(DataInput var0, NbtAccounter var1, byte var2) {
+   private static Tag readTagSafe(final DataInput input, final NbtAccounter accounter, final byte type) {
       try {
-         return TagTypes.getType(var2).load(var0, var1);
-      } catch (IOException var6) {
-         CrashReport var4 = CrashReport.forThrowable(var6, "Loading NBT data");
-         CrashReportCategory var5 = var4.addCategory("NBT Tag");
-         var5.setDetail("Tag type", var2);
-         throw new ReportedNbtException(var4);
+         return TagTypes.getType(type).load(input, accounter);
+      } catch (IOException e) {
+         CrashReport report = CrashReport.forThrowable(e, "Loading NBT data");
+         CrashReportCategory category = report.addCategory("NBT Tag");
+         category.setDetail("Tag type", type);
+         throw new ReportedNbtException(report);
       }
    }
 
@@ -409,15 +409,15 @@ public class NbtIo {
    }
 
    public static class StringFallbackDataOutput extends DelegateDataOutput {
-      public StringFallbackDataOutput(DataOutput var1) {
-         super(var1);
+      public StringFallbackDataOutput(final DataOutput parent) {
+         super(parent);
       }
 
-      public void writeUTF(String var1) throws IOException {
+      public void writeUTF(final String s) throws IOException {
          try {
-            super.writeUTF(var1);
-         } catch (UTFDataFormatException var3) {
-            Util.logAndPauseIfInIde("Failed to write NBT String", var3);
+            super.writeUTF(s);
+         } catch (UTFDataFormatException exception) {
+            Util.logAndPauseIfInIde("Failed to write NBT String", exception);
             super.writeUTF("");
          }
 

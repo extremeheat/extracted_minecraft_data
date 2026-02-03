@@ -27,7 +27,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-public class SmallDripleafBlock extends DoublePlantBlock implements BonemealableBlock, SimpleWaterloggedBlock {
+public class SmallDripleafBlock extends DoublePlantBlock implements SimpleWaterloggedBlock, BonemealableBlock {
    public static final MapCodec<SmallDripleafBlock> CODEC = simpleCodec(SmallDripleafBlock::new);
    private static final BooleanProperty WATERLOGGED;
    public static final EnumProperty<Direction> FACING;
@@ -37,85 +37,85 @@ public class SmallDripleafBlock extends DoublePlantBlock implements Bonemealable
       return CODEC;
    }
 
-   public SmallDripleafBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public SmallDripleafBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(HALF, DoubleBlockHalf.LOWER)).setValue(WATERLOGGED, false)).setValue(FACING, Direction.NORTH));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(BlockTags.SMALL_DRIPLEAF_PLACEABLE) || var2.getFluidState(var3.above()).isSourceOfType(Fluids.WATER) && super.mayPlaceOn(var1, var2, var3);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.is(BlockTags.SUPPORTS_SMALL_DRIPLEAF) || level.getFluidState(pos.above()).isSourceOfType(Fluids.WATER) && super.mayPlaceOn(state, level, pos);
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = super.getStateForPlacement(var1);
-      return var2 != null ? copyWaterloggedFrom(var1.getLevel(), var1.getClickedPos(), (BlockState)var2.setValue(FACING, var1.getHorizontalDirection().getOpposite())) : null;
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState state = super.getStateForPlacement(context);
+      return state != null ? copyWaterloggedFrom(context.getLevel(), context.getClickedPos(), (BlockState)state.setValue(FACING, context.getHorizontalDirection().getOpposite())) : null;
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      if (!var1.isClientSide()) {
-         BlockPos var6 = var2.above();
-         BlockState var7 = DoublePlantBlock.copyWaterloggedFrom(var1, var6, (BlockState)((BlockState)this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER)).setValue(FACING, (Direction)var3.getValue(FACING)));
-         var1.setBlock(var6, var7, 3);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      if (!level.isClientSide()) {
+         BlockPos abovePos = pos.above();
+         BlockState blockState = DoublePlantBlock.copyWaterloggedFrom(level, abovePos, (BlockState)((BlockState)this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER)).setValue(FACING, (Direction)state.getValue(FACING)));
+         level.setBlock(abovePos, blockState, 3);
       }
 
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      if (var1.getValue(HALF) == DoubleBlockHalf.UPPER) {
-         return super.canSurvive(var1, var2, var3);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      if (state.getValue(HALF) == DoubleBlockHalf.UPPER) {
+         return super.canSurvive(state, level, pos);
       } else {
-         BlockPos var4 = var3.below();
-         BlockState var5 = var2.getBlockState(var4);
-         return this.mayPlaceOn(var5, var2, var4);
+         BlockPos belowPos = pos.below();
+         BlockState belowState = level.getBlockState(belowPos);
+         return this.mayPlaceOn(belowState, level, belowPos);
       }
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(HALF, WATERLOGGED, FACING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(HALF, WATERLOGGED, FACING);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      if (var4.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.LOWER) {
-         BlockPos var5 = var3.above();
-         var1.setBlock(var5, var1.getFluidState(var5).createLegacyBlock(), 18);
-         BigDripleafBlock.placeWithRandomHeight(var1, var2, var3, (Direction)var4.getValue(FACING));
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      if (state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.LOWER) {
+         BlockPos above = pos.above();
+         level.setBlock(above, level.getFluidState(above).createLegacyBlock(), 18);
+         BigDripleafBlock.placeWithRandomHeight(level, random, pos, (Direction)state.getValue(FACING));
       } else {
-         BlockPos var6 = var3.below();
-         this.performBonemeal(var1, var2, var6, var1.getBlockState(var6));
+         BlockPos belowPos = pos.below();
+         this.performBonemeal(level, random, belowPos, level.getBlockState(belowPos));
       }
 
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
    protected float getMaxVerticalOffset() {

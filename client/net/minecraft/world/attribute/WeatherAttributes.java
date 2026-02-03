@@ -18,30 +18,30 @@ public class WeatherAttributes {
       super();
    }
 
-   public static void addBuiltinLayers(EnvironmentAttributeSystem.Builder var0, WeatherAccess var1) {
-      for(EnvironmentAttribute var3 : WEATHER_ATTRIBUTES) {
-         addLayer(var0, var1, var3);
+   public static void addBuiltinLayers(final EnvironmentAttributeSystem.Builder system, final WeatherAccess weatherAccess) {
+      for(EnvironmentAttribute<?> attribute : WEATHER_ATTRIBUTES) {
+         addLayer(system, weatherAccess, attribute);
       }
 
    }
 
-   private static <Value> void addLayer(EnvironmentAttributeSystem.Builder var0, WeatherAccess var1, EnvironmentAttribute<Value> var2) {
-      EnvironmentAttributeMap.Entry var3 = RAIN.get(var2);
-      EnvironmentAttributeMap.Entry var4 = THUNDER.get(var2);
-      var0.addTimeBasedLayer(var2, (var4x, var5) -> {
-         float var6 = var1.thunderLevel();
-         float var7 = var1.rainLevel() - var6;
-         if (var3 != null && var7 > 0.0F) {
-            Object var8 = var3.applyModifier(var4x);
-            var4x = var2.type().stateChangeLerp().apply(var7, var4x, var8);
+   private static <Value> void addLayer(final EnvironmentAttributeSystem.Builder system, final WeatherAccess weatherAccess, final EnvironmentAttribute<Value> attribute) {
+      EnvironmentAttributeMap.Entry<Value, ?> rainEntry = RAIN.get(attribute);
+      EnvironmentAttributeMap.Entry<Value, ?> thunderEntry = THUNDER.get(attribute);
+      system.addTimeBasedLayer(attribute, (result, cacheTickId) -> {
+         float thunderLevel = weatherAccess.thunderLevel();
+         float rainLevel = weatherAccess.rainLevel() - thunderLevel;
+         if (rainEntry != null && rainLevel > 0.0F) {
+            Value rainValue = rainEntry.applyModifier(result);
+            result = attribute.type().stateChangeLerp().apply(rainLevel, result, rainValue);
          }
 
-         if (var4 != null && var6 > 0.0F) {
-            Object var9 = var4.applyModifier(var4x);
-            var4x = var2.type().stateChangeLerp().apply(var6, var4x, var9);
+         if (thunderEntry != null && thunderLevel > 0.0F) {
+            Value thunderValue = thunderEntry.applyModifier(result);
+            result = attribute.type().stateChangeLerp().apply(thunderLevel, result, thunderValue);
          }
 
-         return var4x;
+         return result;
       });
    }
 
@@ -52,14 +52,14 @@ public class WeatherAttributes {
    }
 
    public interface WeatherAccess {
-      static WeatherAccess from(final Level var0) {
+      static WeatherAccess from(final Level level) {
          return new WeatherAccess() {
             public float rainLevel() {
-               return var0.getRainLevel(1.0F);
+               return level.getRainLevel(1.0F);
             }
 
             public float thunderLevel() {
-               return var0.getThunderLevel(1.0F);
+               return level.getThunderLevel(1.0F);
             }
          };
       }

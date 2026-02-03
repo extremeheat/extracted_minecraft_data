@@ -21,44 +21,44 @@ import org.jspecify.annotations.Nullable;
 public class CompassItem extends Item {
    private static final Component LODESTONE_COMPASS_NAME = Component.translatable("item.minecraft.lodestone_compass");
 
-   public CompassItem(Item.Properties var1) {
-      super(var1);
+   public CompassItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public boolean isFoil(ItemStack var1) {
-      return var1.has(DataComponents.LODESTONE_TRACKER) || super.isFoil(var1);
+   public boolean isFoil(final ItemStack itemStack) {
+      return itemStack.has(DataComponents.LODESTONE_TRACKER) || super.isFoil(itemStack);
    }
 
-   public void inventoryTick(ItemStack var1, ServerLevel var2, Entity var3, @Nullable EquipmentSlot var4) {
-      LodestoneTracker var5 = (LodestoneTracker)var1.get(DataComponents.LODESTONE_TRACKER);
-      if (var5 != null) {
-         LodestoneTracker var6 = var5.tick(var2);
-         if (var6 != var5) {
-            var1.set(DataComponents.LODESTONE_TRACKER, var6);
+   public void inventoryTick(final ItemStack itemStack, final ServerLevel level, final Entity owner, final @Nullable EquipmentSlot slot) {
+      LodestoneTracker tracker = (LodestoneTracker)itemStack.get(DataComponents.LODESTONE_TRACKER);
+      if (tracker != null) {
+         LodestoneTracker newTracker = tracker.tick(level);
+         if (newTracker != tracker) {
+            itemStack.set(DataComponents.LODESTONE_TRACKER, newTracker);
          }
       }
 
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      BlockPos var2 = var1.getClickedPos();
-      Level var3 = var1.getLevel();
-      if (!var3.getBlockState(var2).is(Blocks.LODESTONE)) {
-         return super.useOn(var1);
+   public InteractionResult useOn(final UseOnContext context) {
+      BlockPos blockPos = context.getClickedPos();
+      Level level = context.getLevel();
+      if (!level.getBlockState(blockPos).is(Blocks.LODESTONE)) {
+         return super.useOn(context);
       } else {
-         var3.playSound((Entity)null, (BlockPos)var2, SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS, 1.0F, 1.0F);
-         Player var4 = var1.getPlayer();
-         ItemStack var5 = var1.getItemInHand();
-         boolean var6 = !var4.hasInfiniteMaterials() && var5.getCount() == 1;
-         LodestoneTracker var7 = new LodestoneTracker(Optional.of(GlobalPos.of(var3.dimension(), var2)), true);
-         if (var6) {
-            var5.set(DataComponents.LODESTONE_TRACKER, var7);
+         level.playSound((Entity)null, (BlockPos)blockPos, SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS, 1.0F, 1.0F);
+         Player player = context.getPlayer();
+         ItemStack itemStack = context.getItemInHand();
+         boolean replaceExistingStack = !player.hasInfiniteMaterials() && itemStack.getCount() == 1;
+         LodestoneTracker target = new LodestoneTracker(Optional.of(GlobalPos.of(level.dimension(), blockPos)), true);
+         if (replaceExistingStack) {
+            itemStack.set(DataComponents.LODESTONE_TRACKER, target);
          } else {
-            ItemStack var8 = var5.transmuteCopy(Items.COMPASS, 1);
-            var5.consume(1, var4);
-            var8.set(DataComponents.LODESTONE_TRACKER, var7);
-            if (!var4.getInventory().add(var8)) {
-               var4.drop(var8, false);
+            ItemStack lodestoneCompass = itemStack.transmuteCopy(Items.COMPASS, 1);
+            itemStack.consume(1, player);
+            lodestoneCompass.set(DataComponents.LODESTONE_TRACKER, target);
+            if (!player.getInventory().add(lodestoneCompass)) {
+               player.drop(lodestoneCompass, false);
             }
          }
 
@@ -66,7 +66,7 @@ public class CompassItem extends Item {
       }
    }
 
-   public Component getName(ItemStack var1) {
-      return var1.has(DataComponents.LODESTONE_TRACKER) ? LODESTONE_COMPASS_NAME : super.getName(var1);
+   public Component getName(final ItemStack itemStack) {
+      return itemStack.has(DataComponents.LODESTONE_TRACKER) ? LODESTONE_COMPASS_NAME : super.getName(itemStack);
    }
 }

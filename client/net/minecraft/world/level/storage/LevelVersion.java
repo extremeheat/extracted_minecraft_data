@@ -11,20 +11,20 @@ public class LevelVersion {
    private final DataVersion minecraftVersion;
    private final boolean snapshot;
 
-   private LevelVersion(int var1, long var2, String var4, int var5, String var6, boolean var7) {
+   private LevelVersion(final int levelDataVersion, final long lastPlayed, final String minecraftVersionName, final int minecraftVersion, final String series, final boolean snapshot) {
       super();
-      this.levelDataVersion = var1;
-      this.lastPlayed = var2;
-      this.minecraftVersionName = var4;
-      this.minecraftVersion = new DataVersion(var5, var6);
-      this.snapshot = var7;
+      this.levelDataVersion = levelDataVersion;
+      this.lastPlayed = lastPlayed;
+      this.minecraftVersionName = minecraftVersionName;
+      this.minecraftVersion = new DataVersion(minecraftVersion, series);
+      this.snapshot = snapshot;
    }
 
-   public static LevelVersion parse(Dynamic<?> var0) {
-      int var1 = var0.get("version").asInt(0);
-      long var2 = var0.get("LastPlayed").asLong(0L);
-      OptionalDynamic var4 = var0.get("Version");
-      return var4.result().isPresent() ? new LevelVersion(var1, var2, var4.get("Name").asString(SharedConstants.getCurrentVersion().name()), var4.get("Id").asInt(SharedConstants.getCurrentVersion().dataVersion().version()), var4.get("Series").asString("main"), var4.get("Snapshot").asBoolean(!SharedConstants.getCurrentVersion().stable())) : new LevelVersion(var1, var2, "", 0, "main", false);
+   public static LevelVersion parse(final Dynamic<?> input) {
+      int levelDataVersion = input.get("version").asInt(0);
+      long lastPlayed = input.get("LastPlayed").asLong(0L);
+      OptionalDynamic<?> version = input.get("Version");
+      return version.result().isPresent() ? new LevelVersion(levelDataVersion, lastPlayed, version.get("Name").asString(SharedConstants.getCurrentVersion().name()), version.get("Id").asInt(SharedConstants.getCurrentVersion().dataVersion().version()), version.get("Series").asString("main"), version.get("Snapshot").asBoolean(!SharedConstants.getCurrentVersion().stable())) : new LevelVersion(levelDataVersion, lastPlayed, "", 0, "main", false);
    }
 
    public int levelDataVersion() {

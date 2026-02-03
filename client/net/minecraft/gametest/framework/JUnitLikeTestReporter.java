@@ -21,40 +21,40 @@ public class JUnitLikeTestReporter implements TestReporter {
    private final Stopwatch stopwatch;
    private final File destination;
 
-   public JUnitLikeTestReporter(File var1) throws ParserConfigurationException {
+   public JUnitLikeTestReporter(final File destination) throws ParserConfigurationException {
       super();
-      this.destination = var1;
+      this.destination = destination;
       this.document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
       this.testSuite = this.document.createElement("testsuite");
-      Element var2 = this.document.createElement("testsuite");
-      var2.appendChild(this.testSuite);
-      this.document.appendChild(var2);
+      Element testSuites = this.document.createElement("testsuite");
+      testSuites.appendChild(this.testSuite);
+      this.document.appendChild(testSuites);
       this.testSuite.setAttribute("timestamp", DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
       this.stopwatch = Stopwatch.createStarted();
    }
 
-   private Element createTestCase(GameTestInfo var1, String var2) {
-      Element var3 = this.document.createElement("testcase");
-      var3.setAttribute("name", var2);
-      var3.setAttribute("classname", var1.getStructure().toString());
-      var3.setAttribute("time", String.valueOf((double)var1.getRunTime() / 1000.0));
-      this.testSuite.appendChild(var3);
-      return var3;
+   private Element createTestCase(final GameTestInfo testInfo, final String name) {
+      Element testCase = this.document.createElement("testcase");
+      testCase.setAttribute("name", name);
+      testCase.setAttribute("classname", testInfo.getStructure().toString());
+      testCase.setAttribute("time", String.valueOf((double)testInfo.getRunTime() / 1000.0));
+      this.testSuite.appendChild(testCase);
+      return testCase;
    }
 
-   public void onTestFailed(GameTestInfo var1) {
-      String var2 = var1.id().toString();
-      String var3 = var1.getError().getMessage();
-      Element var4 = this.document.createElement(var1.isRequired() ? "failure" : "skipped");
-      String var10002 = var1.getTestBlockPos().toShortString();
-      var4.setAttribute("message", "(" + var10002 + ") " + var3);
-      Element var5 = this.createTestCase(var1, var2);
-      var5.appendChild(var4);
+   public void onTestFailed(final GameTestInfo testInfo) {
+      String name = testInfo.id().toString();
+      String message = testInfo.getError().getMessage();
+      Element result = this.document.createElement(testInfo.isRequired() ? "failure" : "skipped");
+      String var10002 = testInfo.getTestBlockPos().toShortString();
+      result.setAttribute("message", "(" + var10002 + ") " + message);
+      Element testCase = this.createTestCase(testInfo, name);
+      testCase.appendChild(result);
    }
 
-   public void onTestSuccess(GameTestInfo var1) {
-      String var2 = var1.id().toString();
-      this.createTestCase(var1, var2);
+   public void onTestSuccess(final GameTestInfo testInfo) {
+      String name = testInfo.id().toString();
+      this.createTestCase(testInfo, name);
    }
 
    public void finish() {
@@ -63,16 +63,16 @@ public class JUnitLikeTestReporter implements TestReporter {
 
       try {
          this.save(this.destination);
-      } catch (TransformerException var2) {
-         throw new Error("Couldn't save test report", var2);
+      } catch (TransformerException exception) {
+         throw new Error("Couldn't save test report", exception);
       }
    }
 
-   public void save(File var1) throws TransformerException {
-      TransformerFactory var2 = TransformerFactory.newInstance();
-      Transformer var3 = var2.newTransformer();
-      DOMSource var4 = new DOMSource(this.document);
-      StreamResult var5 = new StreamResult(var1);
-      var3.transform(var4, var5);
+   public void save(final File file) throws TransformerException {
+      TransformerFactory transformerFactory = TransformerFactory.newInstance();
+      Transformer transformer = transformerFactory.newTransformer();
+      DOMSource source = new DOMSource(this.document);
+      StreamResult result = new StreamResult(file);
+      transformer.transform(source, result);
    }
 }

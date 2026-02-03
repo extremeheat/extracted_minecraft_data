@@ -8,17 +8,17 @@ public class EntityModelSet {
    public static final EntityModelSet EMPTY = new EntityModelSet(Map.of());
    private final Map<ModelLayerLocation, LayerDefinition> roots;
 
-   public EntityModelSet(Map<ModelLayerLocation, LayerDefinition> var1) {
+   public EntityModelSet(final Map<ModelLayerLocation, LayerDefinition> roots) {
       super();
-      this.roots = var1;
+      this.roots = roots;
    }
 
-   public ModelPart bakeLayer(ModelLayerLocation var1) {
-      LayerDefinition var2 = (LayerDefinition)this.roots.get(var1);
-      if (var2 == null) {
-         throw new IllegalArgumentException("No model for layer " + String.valueOf(var1));
+   public ModelPart bakeLayer(final ModelLayerLocation id) {
+      LayerDefinition result = (LayerDefinition)this.roots.get(id);
+      if (result == null) {
+         throw new IllegalArgumentException("No model for layer " + String.valueOf(id));
       } else {
-         return var2.bakeRoot();
+         return result.bakeRoot();
       }
    }
 

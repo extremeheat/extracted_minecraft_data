@@ -6,6 +6,7 @@ import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -25,61 +26,59 @@ public class PlayerSkinRenderCache {
    public static final Duration CACHE_DURATION = Duration.ofMinutes(5L);
    private final LoadingCache<ResolvableProfile, CompletableFuture<Optional<RenderInfo>>> renderInfoCache;
    private final LoadingCache<ResolvableProfile, RenderInfo> defaultSkinCache;
-   final TextureManager textureManager;
-   final SkinManager skinManager;
-   final ProfileResolver profileResolver;
+   private final TextureManager textureManager;
+   private final SkinManager skinManager;
+   private final ProfileResolver profileResolver;
 
-   public PlayerSkinRenderCache(TextureManager var1, SkinManager var2, ProfileResolver var3) {
+   public PlayerSkinRenderCache(final TextureManager textureManager, final SkinManager skinManager, final ProfileResolver profileResolver) {
       super();
       this.renderInfoCache = CacheBuilder.newBuilder().expireAfterAccess(CACHE_DURATION).build(new CacheLoader<ResolvableProfile, CompletableFuture<Optional<RenderInfo>>>() {
-         public CompletableFuture<Optional<RenderInfo>> load(ResolvableProfile var1) {
-            return var1.resolveProfile(PlayerSkinRenderCache.this.profileResolver).thenCompose((var2) -> PlayerSkinRenderCache.this.skinManager.get(var2).thenApply((var3) -> var3.map((var3x) -> PlayerSkinRenderCache.this.new RenderInfo(var2, var3x, var1.skinPatch()))));
+         {
+            Objects.requireNonNull(PlayerSkinRenderCache.this);
          }
 
-         // $FF: synthetic method
-         public Object load(final Object var1) throws Exception {
-            return this.load((ResolvableProfile)var1);
+         public CompletableFuture<Optional<RenderInfo>> load(final ResolvableProfile profile) {
+            return profile.resolveProfile(PlayerSkinRenderCache.this.profileResolver).thenCompose((resolvedProfile) -> PlayerSkinRenderCache.this.skinManager.get(resolvedProfile).thenApply((playerSkin) -> playerSkin.map((skin) -> PlayerSkinRenderCache.this.new RenderInfo(resolvedProfile, skin, profile.skinPatch()))));
          }
       });
       this.defaultSkinCache = CacheBuilder.newBuilder().expireAfterAccess(CACHE_DURATION).build(new CacheLoader<ResolvableProfile, RenderInfo>() {
-         public RenderInfo load(ResolvableProfile var1) {
-            GameProfile var2 = var1.partialProfile();
-            return PlayerSkinRenderCache.this.new RenderInfo(var2, DefaultPlayerSkin.get(var2), var1.skinPatch());
+         {
+            Objects.requireNonNull(PlayerSkinRenderCache.this);
          }
 
-         // $FF: synthetic method
-         public Object load(final Object var1) throws Exception {
-            return this.load((ResolvableProfile)var1);
+         public RenderInfo load(final ResolvableProfile profile) {
+            GameProfile temporaryProfile = profile.partialProfile();
+            return PlayerSkinRenderCache.this.new RenderInfo(temporaryProfile, DefaultPlayerSkin.get(temporaryProfile), profile.skinPatch());
          }
       });
-      this.textureManager = var1;
-      this.skinManager = var2;
-      this.profileResolver = var3;
+      this.textureManager = textureManager;
+      this.skinManager = skinManager;
+      this.profileResolver = profileResolver;
    }
 
-   public RenderInfo getOrDefault(ResolvableProfile var1) {
-      RenderInfo var2 = (RenderInfo)((Optional)this.lookup(var1).getNow(Optional.empty())).orElse((Object)null);
-      return var2 != null ? var2 : (RenderInfo)this.defaultSkinCache.getUnchecked(var1);
+   public RenderInfo getOrDefault(final ResolvableProfile profile) {
+      RenderInfo result = (RenderInfo)((Optional)this.lookup(profile).getNow(Optional.empty())).orElse((Object)null);
+      return result != null ? result : (RenderInfo)this.defaultSkinCache.getUnchecked(profile);
    }
 
-   public Supplier<RenderInfo> createLookup(ResolvableProfile var1) {
-      RenderInfo var2 = (RenderInfo)this.defaultSkinCache.getUnchecked(var1);
-      CompletableFuture var3 = (CompletableFuture)this.renderInfoCache.getUnchecked(var1);
-      Optional var4 = (Optional)var3.getNow((Object)null);
-      if (var4 != null) {
-         RenderInfo var5 = (RenderInfo)var4.orElse(var2);
-         return () -> var5;
+   public Supplier<RenderInfo> createLookup(final ResolvableProfile profile) {
+      RenderInfo defaultForProfile = (RenderInfo)this.defaultSkinCache.getUnchecked(profile);
+      CompletableFuture<Optional<RenderInfo>> future = (CompletableFuture)this.renderInfoCache.getUnchecked(profile);
+      Optional<RenderInfo> currentValue = (Optional)future.getNow((Object)null);
+      if (currentValue != null) {
+         RenderInfo finalValue = (RenderInfo)currentValue.orElse(defaultForProfile);
+         return () -> finalValue;
       } else {
-         return () -> (RenderInfo)((Optional)var3.getNow(Optional.empty())).orElse(var2);
+         return () -> (RenderInfo)((Optional)future.getNow(Optional.empty())).orElse(defaultForProfile);
       }
    }
 
-   public CompletableFuture<Optional<RenderInfo>> lookup(ResolvableProfile var1) {
-      return (CompletableFuture)this.renderInfoCache.getUnchecked(var1);
+   public CompletableFuture<Optional<RenderInfo>> lookup(final ResolvableProfile profile) {
+      return (CompletableFuture)this.renderInfoCache.getUnchecked(profile);
    }
 
-   static RenderType playerSkinRenderType(PlayerSkin var0) {
-      return SkullBlockRenderer.getPlayerSkinRenderType(var0.body().texturePath());
+   private static RenderType playerSkinRenderType(final PlayerSkin playerSkin) {
+      return SkullBlockRenderer.getPlayerSkinRenderType(playerSkin.body().texturePath());
    }
 
    public final class RenderInfo {
@@ -89,10 +88,11 @@ public class PlayerSkinRenderCache {
       private @Nullable GpuTextureView textureView;
       private @Nullable GlyphRenderTypes glyphRenderTypes;
 
-      public RenderInfo(final GameProfile var2, final PlayerSkin var3, final PlayerSkin.Patch var4) {
+      public RenderInfo(final GameProfile gameProfile, final PlayerSkin playerSkin, final PlayerSkin.Patch patch) {
+         Objects.requireNonNull(PlayerSkinRenderCache.this);
          super();
-         this.gameProfile = var2;
-         this.playerSkin = var3.with(var4);
+         this.gameProfile = gameProfile;
+         this.playerSkin = playerSkin.with(patch);
       }
 
       public GameProfile gameProfile() {
@@ -127,13 +127,13 @@ public class PlayerSkinRenderCache {
          return this.glyphRenderTypes;
       }
 
-      public boolean equals(Object var1) {
+      public boolean equals(final Object o) {
          boolean var10000;
-         if (this != var1) {
+         if (this != o) {
             label28: {
-               if (var1 instanceof RenderInfo) {
-                  RenderInfo var2 = (RenderInfo)var1;
-                  if (this.gameProfile.equals(var2.gameProfile) && this.playerSkin.equals(var2.playerSkin)) {
+               if (o instanceof RenderInfo) {
+                  RenderInfo that = (RenderInfo)o;
+                  if (this.gameProfile.equals(that.gameProfile) && this.playerSkin.equals(that.playerSkin)) {
                      break label28;
                   }
                }
@@ -148,10 +148,10 @@ public class PlayerSkinRenderCache {
       }
 
       public int hashCode() {
-         int var1 = 1;
-         var1 = 31 * var1 + this.gameProfile.hashCode();
-         var1 = 31 * var1 + this.playerSkin.hashCode();
-         return var1;
+         int result = 1;
+         result = 31 * result + this.gameProfile.hashCode();
+         result = 31 * result + this.playerSkin.hashCode();
+         return result;
       }
    }
 }

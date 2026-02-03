@@ -11,24 +11,24 @@ public class ChainedJsonException extends IOException {
    private final List<Entry> entries = Lists.newArrayList();
    private final String message;
 
-   public ChainedJsonException(String var1) {
+   public ChainedJsonException(final String message) {
       super();
       this.entries.add(new Entry());
-      this.message = var1;
+      this.message = message;
    }
 
-   public ChainedJsonException(String var1, Throwable var2) {
-      super(var2);
+   public ChainedJsonException(final String message, final Throwable cause) {
+      super(cause);
       this.entries.add(new Entry());
-      this.message = var1;
+      this.message = message;
    }
 
-   public void prependJsonKey(String var1) {
-      ((Entry)this.entries.get(0)).addJsonKey(var1);
+   public void prependJsonKey(final String key) {
+      ((Entry)this.entries.get(0)).addJsonKey(key);
    }
 
-   public void setFilenameAndFlush(String var1) {
-      ((Entry)this.entries.get(0)).filename = var1;
+   public void setFilenameAndFlush(final String filename) {
+      ((Entry)this.entries.get(0)).filename = filename;
       this.entries.add(0, new Entry());
    }
 
@@ -37,29 +37,29 @@ public class ChainedJsonException extends IOException {
       return "Invalid " + var10000 + ": " + this.message;
    }
 
-   public static ChainedJsonException forException(Exception var0) {
-      if (var0 instanceof ChainedJsonException) {
-         return (ChainedJsonException)var0;
+   public static ChainedJsonException forException(final Exception e) {
+      if (e instanceof ChainedJsonException) {
+         return (ChainedJsonException)e;
       } else {
-         String var1 = var0.getMessage();
-         if (var0 instanceof FileNotFoundException) {
-            var1 = "File not found";
+         String message = e.getMessage();
+         if (e instanceof FileNotFoundException) {
+            message = "File not found";
          }
 
-         return new ChainedJsonException(var1, var0);
+         return new ChainedJsonException(message, e);
       }
    }
 
    public static class Entry {
-      @Nullable String filename;
+      private @Nullable String filename;
       private final List<String> jsonKeys = Lists.newArrayList();
 
-      Entry() {
+      private Entry() {
          super();
       }
 
-      void addJsonKey(String var1) {
-         this.jsonKeys.add(0, var1);
+      private void addJsonKey(final String name) {
+         this.jsonKeys.add(0, name);
       }
 
       public @Nullable String getFilename() {

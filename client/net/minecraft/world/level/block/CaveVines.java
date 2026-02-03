@@ -8,7 +8,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -21,16 +21,16 @@ public interface CaveVines {
    VoxelShape SHAPE = Block.column(14.0, 0.0, 16.0);
    BooleanProperty BERRIES = BlockStateProperties.BERRIES;
 
-   static InteractionResult use(Entity var0, BlockState var1, Level var2, BlockPos var3) {
-      if ((Boolean)var1.getValue(BERRIES)) {
-         if (var2 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var2;
-            Block.dropFromBlockInteractLootTable(var4, BuiltInLootTables.HARVEST_CAVE_VINE, var1, var2.getBlockEntity(var3), (ItemStack)null, var0, (var1x, var2x) -> Block.popResource(var1x, var3, var2x));
-            float var5 = Mth.randomBetween(var4.random, 0.8F, 1.2F);
-            var4.playSound((Entity)null, var3, SoundEvents.CAVE_VINES_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, var5);
-            BlockState var6 = (BlockState)var1.setValue(BERRIES, false);
-            var4.setBlock(var3, var6, 2);
-            var4.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var0, var6));
+   static InteractionResult use(final Entity sourceEntity, final BlockState state, final Level level, final BlockPos pos) {
+      if ((Boolean)state.getValue(BERRIES)) {
+         if (level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
+            Block.dropFromBlockInteractLootTable(serverLevel, BuiltInLootTables.HARVEST_CAVE_VINE, state, level.getBlockEntity(pos), (ItemInstance)null, sourceEntity, (serverlvl, itemStack) -> Block.popResource(serverlvl, pos, itemStack));
+            float pitch = Mth.randomBetween(serverLevel.getRandom(), 0.8F, 1.2F);
+            serverLevel.playSound((Entity)null, pos, SoundEvents.CAVE_VINES_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, pitch);
+            BlockState newState = (BlockState)state.setValue(BERRIES, false);
+            serverLevel.setBlock(pos, newState, 2);
+            serverLevel.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
          }
 
          return InteractionResult.SUCCESS;
@@ -39,11 +39,11 @@ public interface CaveVines {
       }
    }
 
-   static boolean hasGlowBerries(BlockState var0) {
-      return var0.hasProperty(BERRIES) && (Boolean)var0.getValue(BERRIES);
+   static boolean hasGlowBerries(final BlockState state) {
+      return state.hasProperty(BERRIES) && (Boolean)state.getValue(BERRIES);
    }
 
-   static ToIntFunction<BlockState> emission(int var0) {
-      return (var1) -> (Boolean)var1.getValue(BlockStateProperties.BERRIES) ? var0 : 0;
+   static ToIntFunction<BlockState> emission(final int lightEmission) {
+      return (state) -> (Boolean)state.getValue(BlockStateProperties.BERRIES) ? lightEmission : 0;
    }
 }

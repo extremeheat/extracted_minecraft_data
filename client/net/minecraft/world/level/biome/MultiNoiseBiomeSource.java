@@ -22,21 +22,21 @@ public class MultiNoiseBiomeSource extends BiomeSource {
    public static final MapCodec<MultiNoiseBiomeSource> CODEC;
    private final Either<Climate.ParameterList<Holder<Biome>>, Holder<MultiNoiseBiomeSourceParameterList>> parameters;
 
-   private MultiNoiseBiomeSource(Either<Climate.ParameterList<Holder<Biome>>, Holder<MultiNoiseBiomeSourceParameterList>> var1) {
+   private MultiNoiseBiomeSource(final Either<Climate.ParameterList<Holder<Biome>>, Holder<MultiNoiseBiomeSourceParameterList>> parameters) {
       super();
-      this.parameters = var1;
+      this.parameters = parameters;
    }
 
-   public static MultiNoiseBiomeSource createFromList(Climate.ParameterList<Holder<Biome>> var0) {
-      return new MultiNoiseBiomeSource(Either.left(var0));
+   public static MultiNoiseBiomeSource createFromList(final Climate.ParameterList<Holder<Biome>> parameters) {
+      return new MultiNoiseBiomeSource(Either.left(parameters));
    }
 
-   public static MultiNoiseBiomeSource createFromPreset(Holder<MultiNoiseBiomeSourceParameterList> var0) {
-      return new MultiNoiseBiomeSource(Either.right(var0));
+   public static MultiNoiseBiomeSource createFromPreset(final Holder<MultiNoiseBiomeSourceParameterList> preset) {
+      return new MultiNoiseBiomeSource(Either.right(preset));
    }
 
    private Climate.ParameterList<Holder<Biome>> parameters() {
-      return (Climate.ParameterList)this.parameters.map((var0) -> var0, (var0) -> ((MultiNoiseBiomeSourceParameterList)var0.value()).parameters());
+      return (Climate.ParameterList)this.parameters.map((direct) -> direct, (preset) -> ((MultiNoiseBiomeSourceParameterList)preset.value()).parameters());
    }
 
    protected Stream<Holder<Biome>> collectPossibleBiomes() {
@@ -47,40 +47,40 @@ public class MultiNoiseBiomeSource extends BiomeSource {
       return CODEC;
    }
 
-   public boolean stable(ResourceKey<MultiNoiseBiomeSourceParameterList> var1) {
-      Optional var2 = this.parameters.right();
-      return var2.isPresent() && ((Holder)var2.get()).is(var1);
+   public boolean stable(final ResourceKey<MultiNoiseBiomeSourceParameterList> expected) {
+      Optional<Holder<MultiNoiseBiomeSourceParameterList>> preset = this.parameters.right();
+      return preset.isPresent() && ((Holder)preset.get()).is(expected);
    }
 
-   public Holder<Biome> getNoiseBiome(int var1, int var2, int var3, Climate.Sampler var4) {
-      return this.getNoiseBiome(var4.sample(var1, var2, var3));
+   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ, final Climate.Sampler sampler) {
+      return this.getNoiseBiome(sampler.sample(quartX, quartY, quartZ));
    }
 
    @VisibleForDebug
-   public Holder<Biome> getNoiseBiome(Climate.TargetPoint var1) {
-      return (Holder)this.parameters().findValue(var1);
+   public Holder<Biome> getNoiseBiome(final Climate.TargetPoint target) {
+      return (Holder)this.parameters().findValue(target);
    }
 
-   public void addDebugInfo(List<String> var1, BlockPos var2, Climate.Sampler var3) {
-      int var4 = QuartPos.fromBlock(var2.getX());
-      int var5 = QuartPos.fromBlock(var2.getY());
-      int var6 = QuartPos.fromBlock(var2.getZ());
-      Climate.TargetPoint var7 = var3.sample(var4, var5, var6);
-      float var8 = Climate.unquantizeCoord(var7.continentalness());
-      float var9 = Climate.unquantizeCoord(var7.erosion());
-      float var10 = Climate.unquantizeCoord(var7.temperature());
-      float var11 = Climate.unquantizeCoord(var7.humidity());
-      float var12 = Climate.unquantizeCoord(var7.weirdness());
-      double var13 = (double)NoiseRouterData.peaksAndValleys(var12);
-      OverworldBiomeBuilder var15 = new OverworldBiomeBuilder();
-      String var10001 = OverworldBiomeBuilder.getDebugStringForPeaksAndValleys(var13);
-      var1.add("Biome builder PV: " + var10001 + " C: " + var15.getDebugStringForContinentalness((double)var8) + " E: " + var15.getDebugStringForErosion((double)var9) + " T: " + var15.getDebugStringForTemperature((double)var10) + " H: " + var15.getDebugStringForHumidity((double)var11));
+   public void addDebugInfo(final List<String> result, final BlockPos feetPos, final Climate.Sampler sampler) {
+      int quartX = QuartPos.fromBlock(feetPos.getX());
+      int quartY = QuartPos.fromBlock(feetPos.getY());
+      int quartZ = QuartPos.fromBlock(feetPos.getZ());
+      Climate.TargetPoint sampleQuantized = sampler.sample(quartX, quartY, quartZ);
+      float continentalness = Climate.unquantizeCoord(sampleQuantized.continentalness());
+      float erosion = Climate.unquantizeCoord(sampleQuantized.erosion());
+      float temperature = Climate.unquantizeCoord(sampleQuantized.temperature());
+      float humidity = Climate.unquantizeCoord(sampleQuantized.humidity());
+      float weirdness = Climate.unquantizeCoord(sampleQuantized.weirdness());
+      double peaksAndValleys = (double)NoiseRouterData.peaksAndValleys(weirdness);
+      OverworldBiomeBuilder biomeBuilder = new OverworldBiomeBuilder();
+      String var10001 = OverworldBiomeBuilder.getDebugStringForPeaksAndValleys(peaksAndValleys);
+      result.add("Biome builder PV: " + var10001 + " C: " + biomeBuilder.getDebugStringForContinentalness((double)continentalness) + " E: " + biomeBuilder.getDebugStringForErosion((double)erosion) + " T: " + biomeBuilder.getDebugStringForTemperature((double)temperature) + " H: " + biomeBuilder.getDebugStringForHumidity((double)humidity));
    }
 
    static {
       ENTRY_CODEC = Biome.CODEC.fieldOf("biome");
       DIRECT_CODEC = Climate.ParameterList.codec(ENTRY_CODEC).fieldOf("biomes");
       PRESET_CODEC = MultiNoiseBiomeSourceParameterList.CODEC.fieldOf("preset").withLifecycle(Lifecycle.stable());
-      CODEC = Codec.mapEither(DIRECT_CODEC, PRESET_CODEC).xmap(MultiNoiseBiomeSource::new, (var0) -> var0.parameters);
+      CODEC = Codec.mapEither(DIRECT_CODEC, PRESET_CODEC).xmap(MultiNoiseBiomeSource::new, (o) -> o.parameters);
    }
 }

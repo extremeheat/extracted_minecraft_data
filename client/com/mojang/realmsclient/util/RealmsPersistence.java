@@ -25,32 +25,32 @@ public class RealmsPersistence {
       return readFile();
    }
 
-   public void save(RealmsPersistenceData var1) {
-      writeFile(var1);
+   public void save(final RealmsPersistenceData data) {
+      writeFile(data);
    }
 
    public static RealmsPersistenceData readFile() {
-      Path var0 = getPathToData();
+      Path file = getPathToData();
 
       try {
-         String var1 = Files.readString(var0, StandardCharsets.UTF_8);
-         RealmsPersistenceData var2 = (RealmsPersistenceData)GSON.fromJson(var1, RealmsPersistenceData.class);
-         if (var2 != null) {
-            return var2;
+         String contents = Files.readString(file, StandardCharsets.UTF_8);
+         RealmsPersistenceData realmsPersistenceData = (RealmsPersistenceData)GSON.fromJson(contents, RealmsPersistenceData.class);
+         if (realmsPersistenceData != null) {
+            return realmsPersistenceData;
          }
       } catch (NoSuchFileException var3) {
-      } catch (Exception var4) {
-         LOGGER.warn("Failed to read Realms storage {}", var0, var4);
+      } catch (Exception e) {
+         LOGGER.warn("Failed to read Realms storage {}", file, e);
       }
 
       return new RealmsPersistenceData();
    }
 
-   public static void writeFile(RealmsPersistenceData var0) {
-      Path var1 = getPathToData();
+   public static void writeFile(final RealmsPersistenceData data) {
+      Path file = getPathToData();
 
       try {
-         Files.writeString(var1, GSON.toJson((ReflectionBasedSerialization)var0), StandardCharsets.UTF_8);
+         Files.writeString(file, GSON.toJson((ReflectionBasedSerialization)data), StandardCharsets.UTF_8);
       } catch (Exception var3) {
       }
 

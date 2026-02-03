@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
@@ -27,104 +28,96 @@ public class BanlistService {
       super();
    }
 
-   public static List<UserBanDto> get(MinecraftApi var0) {
-      return var0.banListService().getUserBanEntries().stream().filter((var0x) -> var0x.getUser() != null).map(UserBan::from).map(UserBanDto::from).toList();
+   public static List<UserBanDto> get(final MinecraftApi minecraftApi) {
+      return minecraftApi.banListService().getUserBanEntries().stream().filter((p) -> p.getUser() != null).map(UserBan::from).map(UserBanDto::from).toList();
    }
 
-   public static List<UserBanDto> add(MinecraftApi var0, List<UserBanDto> var1, ClientInfo var2) {
-      List var3 = var1.stream().map((var1x) -> var0.playerListService().getUser(var1x.player().id(), var1x.player().name()).thenApply((var1) -> {
-            Objects.requireNonNull(var1x);
-            return var1.map(var1x::toUserBan);
+   public static List<UserBanDto> add(final MinecraftApi minecraftApi, final List<UserBanDto> bans, final ClientInfo clientInfo) {
+      List<CompletableFuture<Optional<UserBan>>> fetch = bans.stream().map((banx) -> minecraftApi.playerListService().getUser(banx.player().id(), banx.player().name()).thenApply((u) -> {
+            Objects.requireNonNull(banx);
+            return u.map(banx::toUserBan);
          })).toList();
 
-      for(Optional var5 : (List)Util.sequence(var3).join()) {
-         if (!var5.isEmpty()) {
-            UserBan var6 = (UserBan)var5.get();
-            var0.banListService().addUserBan(var6.toBanEntry(), var2);
-            ServerPlayer var7 = var0.playerListService().getPlayer(((UserBan)var5.get()).player().id());
-            if (var7 != null) {
-               var7.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));
+      for(Optional<UserBan> ban : (List)Util.sequence(fetch).join()) {
+         if (!ban.isEmpty()) {
+            UserBan userBan = (UserBan)ban.get();
+            minecraftApi.banListService().addUserBan(userBan.toBanEntry(), clientInfo);
+            ServerPlayer player = minecraftApi.playerListService().getPlayer(((UserBan)ban.get()).player().id());
+            if (player != null) {
+               player.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));
             }
          }
       }
 
-      return get(var0);
+      return get(minecraftApi);
    }
 
-   public static List<UserBanDto> clear(MinecraftApi var0, ClientInfo var1) {
-      var0.banListService().clearUserBans(var1);
-      return get(var0);
+   public static List<UserBanDto> clear(final MinecraftApi minecraftApi, final ClientInfo clientInfo) {
+      minecraftApi.banListService().clearUserBans(clientInfo);
+      return get(minecraftApi);
    }
 
-   public static List<UserBanDto> remove(MinecraftApi var0, List<PlayerDto> var1, ClientInfo var2) {
-      List var3 = var1.stream().map((var1x) -> var0.playerListService().getUser(var1x.id(), var1x.name())).toList();
+   public static List<UserBanDto> remove(final MinecraftApi minecraftApi, final List<PlayerDto> remove, final ClientInfo clientInfo) {
+      List<CompletableFuture<Optional<NameAndId>>> fetch = remove.stream().map((playerDto) -> minecraftApi.playerListService().getUser(playerDto.id(), playerDto.name())).toList();
 
-      for(Optional var5 : (List)Util.sequence(var3).join()) {
-         if (!var5.isEmpty()) {
-            var0.banListService().removeUserBan((NameAndId)var5.get(), var2);
+      for(Optional<NameAndId> user : (List)Util.sequence(fetch).join()) {
+         if (!user.isEmpty()) {
+            minecraftApi.banListService().removeUserBan((NameAndId)user.get(), clientInfo);
          }
       }
 
-      return get(var0);
+      return get(minecraftApi);
    }
 
-   public static List<UserBanDto> set(MinecraftApi var0, List<UserBanDto> var1, ClientInfo var2) {
-      List var3 = var1.stream().map((var1x) -> var0.playerListService().getUser(var1x.player().id(), var1x.player().name()).thenApply((var1) -> {
-            Objects.requireNonNull(var1x);
-            return var1.map(var1x::toUserBan);
+   public static List<UserBanDto> set(final MinecraftApi minecraftApi, final List<UserBanDto> bans, final ClientInfo clientInfo) {
+      List<CompletableFuture<Optional<UserBan>>> fetch = bans.stream().map((ban) -> minecraftApi.playerListService().getUser(ban.player().id(), ban.player().name()).thenApply((u) -> {
+            Objects.requireNonNull(ban);
+            return u.map(ban::toUserBan);
          })).toList();
-      Set var4 = (Set)((List)Util.sequence(var3).join()).stream().flatMap(Optional::stream).collect(Collectors.toSet());
-      Set var5 = (Set)var0.banListService().getUserBanEntries().stream().filter((var0x) -> var0x.getUser() != null).map(UserBan::from).collect(Collectors.toSet());
-      var5.stream().filter((var1x) -> !var4.contains(var1x)).forEach((var2x) -> var0.banListService().removeUserBan(var2x.player(), var2));
-      var4.stream().filter((var1x) -> !var5.contains(var1x)).forEach((var2x) -> {
-         var0.banListService().addUserBan(var2x.toBanEntry(), var2);
-         ServerPlayer var3 = var0.playerListService().getPlayer(var2x.player().id());
-         if (var3 != null) {
-            var3.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));
+      Set<UserBan> finalAllowList = (Set)((List)Util.sequence(fetch).join()).stream().flatMap(Optional::stream).collect(Collectors.toSet());
+      Set<UserBan> currentAllowList = (Set)minecraftApi.banListService().getUserBanEntries().stream().filter((entry) -> entry.getUser() != null).map(UserBan::from).collect(Collectors.toSet());
+      currentAllowList.stream().filter((ban) -> !finalAllowList.contains(ban)).forEach((ban) -> minecraftApi.banListService().removeUserBan(ban.player(), clientInfo));
+      finalAllowList.stream().filter((ban) -> !currentAllowList.contains(ban)).forEach((ban) -> {
+         minecraftApi.banListService().addUserBan(ban.toBanEntry(), clientInfo);
+         ServerPlayer player = minecraftApi.playerListService().getPlayer(ban.player().id());
+         if (player != null) {
+            player.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));
          }
 
       });
-      return get(var0);
+      return get(minecraftApi);
    }
 
    public static record UserBanDto(PlayerDto player, Optional<String> reason, Optional<String> source, Optional<Instant> expires) {
-      public static final MapCodec<UserBanDto> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PlayerDto.CODEC.codec().fieldOf("player").forGetter(UserBanDto::player), Codec.STRING.optionalFieldOf("reason").forGetter(UserBanDto::reason), Codec.STRING.optionalFieldOf("source").forGetter(UserBanDto::source), ExtraCodecs.INSTANT_ISO8601.optionalFieldOf("expires").forGetter(UserBanDto::expires)).apply(var0, UserBanDto::new));
+      public static final MapCodec<UserBanDto> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(PlayerDto.CODEC.codec().fieldOf("player").forGetter(UserBanDto::player), Codec.STRING.optionalFieldOf("reason").forGetter(UserBanDto::reason), Codec.STRING.optionalFieldOf("source").forGetter(UserBanDto::source), ExtraCodecs.INSTANT_ISO8601.optionalFieldOf("expires").forGetter(UserBanDto::expires)).apply(i, UserBanDto::new));
 
-      public UserBanDto(PlayerDto var1, Optional<String> var2, Optional<String> var3, Optional<Instant> var4) {
+      public UserBanDto {
          super();
-         this.player = var1;
-         this.reason = var2;
-         this.source = var3;
-         this.expires = var4;
       }
 
-      private static UserBanDto from(UserBan var0) {
-         return new UserBanDto(PlayerDto.from(var0.player()), Optional.ofNullable(var0.reason()), Optional.of(var0.source()), var0.expires());
+      private static UserBanDto from(final UserBan ban) {
+         return new UserBanDto(PlayerDto.from(ban.player()), Optional.ofNullable(ban.reason()), Optional.of(ban.source()), ban.expires());
       }
 
-      public static UserBanDto from(UserBanListEntry var0) {
-         return from(BanlistService.UserBan.from(var0));
+      public static UserBanDto from(final UserBanListEntry entry) {
+         return from(BanlistService.UserBan.from(entry));
       }
 
-      private UserBan toUserBan(NameAndId var1) {
-         return new UserBan(var1, (String)this.reason().orElse((Object)null), (String)this.source().orElse("Management server"), this.expires());
+      private UserBan toUserBan(final NameAndId nameAndId) {
+         return new UserBan(nameAndId, (String)this.reason().orElse((Object)null), (String)this.source().orElse("Management server"), this.expires());
       }
    }
 
-   static record UserBan(NameAndId player, @Nullable String reason, String source, Optional<Instant> expires) {
-      UserBan(NameAndId var1, @Nullable String var2, String var3, Optional<Instant> var4) {
+   private static record UserBan(NameAndId player, @Nullable String reason, String source, Optional<Instant> expires) {
+      private UserBan {
          super();
-         this.player = var1;
-         this.reason = var2;
-         this.source = var3;
-         this.expires = var4;
       }
 
-      static UserBan from(UserBanListEntry var0) {
-         return new UserBan((NameAndId)Objects.requireNonNull((NameAndId)var0.getUser()), var0.getReason(), var0.getSource(), Optional.ofNullable(var0.getExpires()).map(Date::toInstant));
+      private static UserBan from(final UserBanListEntry entry) {
+         return new UserBan((NameAndId)Objects.requireNonNull((NameAndId)entry.getUser()), entry.getReason(), entry.getSource(), Optional.ofNullable(entry.getExpires()).map(Date::toInstant));
       }
 
-      UserBanListEntry toBanEntry() {
+      private UserBanListEntry toBanEntry() {
          return new UserBanListEntry(new NameAndId(this.player().id(), this.player().name()), (Date)null, this.source(), (Date)this.expires().map(Date::from).orElse((Object)null), this.reason());
       }
    }

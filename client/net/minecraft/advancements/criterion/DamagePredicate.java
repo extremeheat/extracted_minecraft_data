@@ -7,28 +7,23 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 
 public record DamagePredicate(MinMaxBounds.Doubles dealtDamage, MinMaxBounds.Doubles takenDamage, Optional<EntityPredicate> sourceEntity, Optional<Boolean> blocked, Optional<DamageSourcePredicate> type) {
-   public static final Codec<DamagePredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MinMaxBounds.Doubles.CODEC.optionalFieldOf("dealt", MinMaxBounds.Doubles.ANY).forGetter(DamagePredicate::dealtDamage), MinMaxBounds.Doubles.CODEC.optionalFieldOf("taken", MinMaxBounds.Doubles.ANY).forGetter(DamagePredicate::takenDamage), EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamagePredicate::sourceEntity), Codec.BOOL.optionalFieldOf("blocked").forGetter(DamagePredicate::blocked), DamageSourcePredicate.CODEC.optionalFieldOf("type").forGetter(DamagePredicate::type)).apply(var0, DamagePredicate::new));
+   public static final Codec<DamagePredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(MinMaxBounds.Doubles.CODEC.optionalFieldOf("dealt", MinMaxBounds.Doubles.ANY).forGetter(DamagePredicate::dealtDamage), MinMaxBounds.Doubles.CODEC.optionalFieldOf("taken", MinMaxBounds.Doubles.ANY).forGetter(DamagePredicate::takenDamage), EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamagePredicate::sourceEntity), Codec.BOOL.optionalFieldOf("blocked").forGetter(DamagePredicate::blocked), DamageSourcePredicate.CODEC.optionalFieldOf("type").forGetter(DamagePredicate::type)).apply(i, DamagePredicate::new));
 
-   public DamagePredicate(MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2, Optional<EntityPredicate> var3, Optional<Boolean> var4, Optional<DamageSourcePredicate> var5) {
+   public DamagePredicate {
       super();
-      this.dealtDamage = var1;
-      this.takenDamage = var2;
-      this.sourceEntity = var3;
-      this.blocked = var4;
-      this.type = var5;
    }
 
-   public boolean matches(ServerPlayer var1, DamageSource var2, float var3, float var4, boolean var5) {
-      if (!this.dealtDamage.matches((double)var3)) {
+   public boolean matches(final ServerPlayer player, final DamageSource source, final float originalDamage, final float actualDamage, final boolean blocked) {
+      if (!this.dealtDamage.matches((double)originalDamage)) {
          return false;
-      } else if (!this.takenDamage.matches((double)var4)) {
+      } else if (!this.takenDamage.matches((double)actualDamage)) {
          return false;
-      } else if (this.sourceEntity.isPresent() && !((EntityPredicate)this.sourceEntity.get()).matches(var1, var2.getEntity())) {
+      } else if (this.sourceEntity.isPresent() && !((EntityPredicate)this.sourceEntity.get()).matches(player, source.getEntity())) {
          return false;
-      } else if (this.blocked.isPresent() && (Boolean)this.blocked.get() != var5) {
+      } else if (this.blocked.isPresent() && (Boolean)this.blocked.get() != blocked) {
          return false;
       } else {
-         return !this.type.isPresent() || ((DamageSourcePredicate)this.type.get()).matches(var1, var2);
+         return !this.type.isPresent() || ((DamageSourcePredicate)this.type.get()).matches(player, source);
       }
    }
 
@@ -52,33 +47,33 @@ public record DamagePredicate(MinMaxBounds.Doubles dealtDamage, MinMaxBounds.Dou
          return new Builder();
       }
 
-      public Builder dealtDamage(MinMaxBounds.Doubles var1) {
-         this.dealtDamage = var1;
+      public Builder dealtDamage(final MinMaxBounds.Doubles dealtDamage) {
+         this.dealtDamage = dealtDamage;
          return this;
       }
 
-      public Builder takenDamage(MinMaxBounds.Doubles var1) {
-         this.takenDamage = var1;
+      public Builder takenDamage(final MinMaxBounds.Doubles takenDamage) {
+         this.takenDamage = takenDamage;
          return this;
       }
 
-      public Builder sourceEntity(EntityPredicate var1) {
-         this.sourceEntity = Optional.of(var1);
+      public Builder sourceEntity(final EntityPredicate sourceEntity) {
+         this.sourceEntity = Optional.of(sourceEntity);
          return this;
       }
 
-      public Builder blocked(Boolean var1) {
-         this.blocked = Optional.of(var1);
+      public Builder blocked(final Boolean blocked) {
+         this.blocked = Optional.of(blocked);
          return this;
       }
 
-      public Builder type(DamageSourcePredicate var1) {
-         this.type = Optional.of(var1);
+      public Builder type(final DamageSourcePredicate type) {
+         this.type = Optional.of(type);
          return this;
       }
 
-      public Builder type(DamageSourcePredicate.Builder var1) {
-         this.type = Optional.of(var1.build());
+      public Builder type(final DamageSourcePredicate.Builder type) {
+         this.type = Optional.of(type.build());
          return this;
       }
 

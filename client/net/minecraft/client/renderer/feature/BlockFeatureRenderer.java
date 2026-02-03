@@ -10,6 +10,8 @@ import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,33 +24,59 @@ public class BlockFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2, BlockRenderDispatcher var3, OutlineBufferSource var4) {
-      for(SubmitNodeStorage.MovingBlockSubmit var6 : var1.getMovingBlockSubmits()) {
-         MovingBlockRenderState var7 = var6.movingBlockRenderState();
-         BlockState var8 = var7.blockState;
-         List var9 = var3.getBlockModel(var8).collectParts(RandomSource.create(var8.getSeed(var7.randomSeedPos)));
-         PoseStack var10 = new PoseStack();
-         var10.mulPose((Matrix4fc)var6.pose());
-         var3.getModelRenderer().tesselateBlock(var7, var9, var8, var7.blockPos, var10, var2.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(var8)), false, OverlayTexture.NO_OVERLAY);
-      }
+   public void renderSolid(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final BlockRenderDispatcher blockRenderDispatcher, final OutlineBufferSource outlineBufferSource) {
+      this.renderMovingBlockSubmits(nodeCollection, bufferSource, blockRenderDispatcher, false);
+      this.renderBlockSubmits(nodeCollection, bufferSource, blockRenderDispatcher, outlineBufferSource, false);
+      this.renderBlockModelSubmits(nodeCollection, bufferSource, outlineBufferSource, false);
+   }
 
-      for(SubmitNodeStorage.BlockSubmit var13 : var1.getBlockSubmits()) {
-         this.poseStack.pushPose();
-         this.poseStack.last().set(var13.pose());
-         var3.renderSingleBlock(var13.state(), this.poseStack, var2, var13.lightCoords(), var13.overlayCoords());
-         if (var13.outlineColor() != 0) {
-            var4.setColor(var13.outlineColor());
-            var3.renderSingleBlock(var13.state(), this.poseStack, var4, var13.lightCoords(), var13.overlayCoords());
+   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final BlockRenderDispatcher blockRenderDispatcher, final OutlineBufferSource outlineBufferSource) {
+      this.renderMovingBlockSubmits(nodeCollection, bufferSource, blockRenderDispatcher, true);
+      this.renderBlockSubmits(nodeCollection, bufferSource, blockRenderDispatcher, outlineBufferSource, true);
+      this.renderBlockModelSubmits(nodeCollection, bufferSource, outlineBufferSource, true);
+   }
+
+   private void renderMovingBlockSubmits(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final BlockRenderDispatcher blockRenderDispatcher, final boolean translucent) {
+      for(SubmitNodeStorage.MovingBlockSubmit submit : nodeCollection.getMovingBlockSubmits()) {
+         MovingBlockRenderState movingBlockRenderState = submit.movingBlockRenderState();
+         BlockState blockState = movingBlockRenderState.blockState;
+         RenderType renderType = ItemBlockRenderTypes.getMovingBlockRenderType(blockState);
+         if (renderType.hasBlending() == translucent) {
+            List<BlockModelPart> parts = blockRenderDispatcher.getBlockModel(blockState).collectParts(RandomSource.create(blockState.getSeed(movingBlockRenderState.randomSeedPos)));
+            PoseStack poseStack = new PoseStack();
+            poseStack.mulPose((Matrix4fc)submit.pose());
+            blockRenderDispatcher.getModelRenderer().tesselateBlock(movingBlockRenderState, parts, blockState, movingBlockRenderState.blockPos, poseStack, bufferSource.getBuffer(renderType), false, OverlayTexture.NO_OVERLAY);
          }
-
-         this.poseStack.popPose();
       }
 
-      for(SubmitNodeStorage.BlockModelSubmit var14 : var1.getBlockModelSubmits()) {
-         ModelBlockRenderer.renderModel(var14.pose(), var2.getBuffer(var14.renderType()), var14.model(), var14.r(), var14.g(), var14.b(), var14.lightCoords(), var14.overlayCoords());
-         if (var14.outlineColor() != 0) {
-            var4.setColor(var14.outlineColor());
-            ModelBlockRenderer.renderModel(var14.pose(), var4.getBuffer(var14.renderType()), var14.model(), var14.r(), var14.g(), var14.b(), var14.lightCoords(), var14.overlayCoords());
+   }
+
+   private void renderBlockSubmits(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final BlockRenderDispatcher blockRenderDispatcher, final OutlineBufferSource outlineBufferSource, final boolean translucent) {
+      for(SubmitNodeStorage.BlockSubmit submit : nodeCollection.getBlockSubmits()) {
+         RenderType renderType = ItemBlockRenderTypes.getRenderType(submit.state());
+         if (renderType.hasBlending() == translucent) {
+            this.poseStack.pushPose();
+            this.poseStack.last().set(submit.pose());
+            blockRenderDispatcher.renderSingleBlock(submit.state(), this.poseStack, bufferSource, submit.lightCoords(), submit.overlayCoords());
+            if (submit.outlineColor() != 0) {
+               outlineBufferSource.setColor(submit.outlineColor());
+               blockRenderDispatcher.renderSingleBlock(submit.state(), this.poseStack, outlineBufferSource, submit.lightCoords(), submit.overlayCoords());
+            }
+
+            this.poseStack.popPose();
+         }
+      }
+
+   }
+
+   private void renderBlockModelSubmits(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final OutlineBufferSource outlineBufferSource, final boolean translucent) {
+      for(SubmitNodeStorage.BlockModelSubmit submit : nodeCollection.getBlockModelSubmits()) {
+         if (submit.renderType().hasBlending() == translucent) {
+            ModelBlockRenderer.renderModel(submit.pose(), bufferSource.getBuffer(submit.renderType()), submit.model(), submit.r(), submit.g(), submit.b(), submit.lightCoords(), submit.overlayCoords());
+            if (submit.outlineColor() != 0) {
+               outlineBufferSource.setColor(submit.outlineColor());
+               ModelBlockRenderer.renderModel(submit.pose(), outlineBufferSource.getBuffer(submit.renderType()), submit.model(), submit.r(), submit.g(), submit.b(), submit.lightCoords(), submit.overlayCoords());
+            }
          }
       }
 

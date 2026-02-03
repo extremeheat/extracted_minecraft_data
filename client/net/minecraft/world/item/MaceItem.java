@@ -32,8 +32,8 @@ public class MaceItem extends Item {
    public static final float SMASH_ATTACK_KNOCKBACK_RADIUS = 3.5F;
    private static final float SMASH_ATTACK_KNOCKBACK_POWER = 0.7F;
 
-   public MaceItem(Item.Properties var1) {
-      super(var1);
+   public MaceItem(final Item.Properties properties) {
+      super(properties);
    }
 
    public static ItemAttributeModifiers createAttributes() {
@@ -44,69 +44,68 @@ public class MaceItem extends Item {
       return new Tool(List.of(), 1.0F, 2, false);
    }
 
-   public void hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      if (canSmashAttack(var3)) {
-         ServerLevel var4 = (ServerLevel)var3.level();
-         var3.setDeltaMovement(var3.getDeltaMovement().with(Direction.Axis.Y, 0.009999999776482582));
-         if (var3 instanceof ServerPlayer) {
-            ServerPlayer var5 = (ServerPlayer)var3;
-            var5.currentImpulseImpactPos = this.calculateImpactPosition(var5);
-            var5.setIgnoreFallDamageFromCurrentImpulse(true);
-            var5.connection.send(new ClientboundSetEntityMotionPacket(var5));
+   public void hurtEnemy(final ItemStack itemStack, final LivingEntity mob, final LivingEntity attacker) {
+      if (canSmashAttack(attacker)) {
+         ServerLevel level = (ServerLevel)attacker.level();
+         attacker.setDeltaMovement(attacker.getDeltaMovement().with(Direction.Axis.Y, 0.009999999776482582));
+         attacker.setIgnoreFallDamageFromCurrentImpulse(true, this.calculateImpactPosition(attacker));
+         if (attacker instanceof ServerPlayer) {
+            ServerPlayer player = (ServerPlayer)attacker;
+            player.connection.send(new ClientboundSetEntityMotionPacket(player));
          }
 
-         if (var2.onGround()) {
-            if (var3 instanceof ServerPlayer) {
-               ServerPlayer var6 = (ServerPlayer)var3;
-               var6.setSpawnExtraParticlesOnFall(true);
+         if (mob.onGround()) {
+            if (attacker instanceof ServerPlayer) {
+               ServerPlayer player = (ServerPlayer)attacker;
+               player.setSpawnExtraParticlesOnFall(true);
             }
 
-            SoundEvent var7 = var3.fallDistance > 5.0 ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
-            var4.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), var7, var3.getSoundSource(), 1.0F, 1.0F);
+            SoundEvent sound = attacker.fallDistance > 5.0 ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
+            level.playSound((Entity)null, attacker.getX(), attacker.getY(), attacker.getZ(), sound, attacker.getSoundSource(), 1.0F, 1.0F);
          } else {
-            var4.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.MACE_SMASH_AIR, var3.getSoundSource(), 1.0F, 1.0F);
+            level.playSound((Entity)null, attacker.getX(), attacker.getY(), attacker.getZ(), SoundEvents.MACE_SMASH_AIR, attacker.getSoundSource(), 1.0F, 1.0F);
          }
 
-         knockback(var4, var3, var2);
+         knockback(level, attacker, mob);
       }
 
    }
 
-   private Vec3 calculateImpactPosition(ServerPlayer var1) {
-      return var1.isIgnoringFallDamageFromCurrentImpulse() && var1.currentImpulseImpactPos != null && var1.currentImpulseImpactPos.y <= var1.position().y ? var1.currentImpulseImpactPos : var1.position();
+   private Vec3 calculateImpactPosition(final LivingEntity attacker) {
+      return attacker.isIgnoringFallDamageFromCurrentImpulse() && attacker.currentImpulseImpactPos.y <= attacker.position().y ? attacker.currentImpulseImpactPos : attacker.position();
    }
 
-   public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      if (canSmashAttack(var3)) {
-         var3.resetFallDistance();
+   public void postHurtEnemy(final ItemStack itemStack, final LivingEntity mob, final LivingEntity attacker) {
+      if (canSmashAttack(attacker)) {
+         attacker.resetFallDistance();
       }
 
    }
 
-   public float getAttackDamageBonus(Entity var1, float var2, DamageSource var3) {
-      Entity var5 = var3.getDirectEntity();
-      if (var5 instanceof LivingEntity var4) {
-         if (!canSmashAttack(var4)) {
+   public float getAttackDamageBonus(final Entity victim, final float ignoredDamage, final DamageSource damageSource) {
+      Entity var5 = damageSource.getDirectEntity();
+      if (var5 instanceof LivingEntity attacker) {
+         if (!canSmashAttack(attacker)) {
             return 0.0F;
          } else {
-            double var15 = 3.0;
-            double var7 = 8.0;
-            double var9 = var4.fallDistance;
-            double var11;
-            if (var9 <= 3.0) {
-               var11 = 4.0 * var9;
-            } else if (var9 <= 8.0) {
-               var11 = 12.0 + 2.0 * (var9 - 3.0);
+            double fallHeightThreshold1 = 3.0;
+            double fallHeightThreshold2 = 8.0;
+            double fallDistance = attacker.fallDistance;
+            double damage;
+            if (fallDistance <= 3.0) {
+               damage = 4.0 * fallDistance;
+            } else if (fallDistance <= 8.0) {
+               damage = 12.0 + 2.0 * (fallDistance - 3.0);
             } else {
-               var11 = 22.0 + var9 - 8.0;
+               damage = 22.0 + fallDistance - 8.0;
             }
 
-            Level var14 = var4.level();
+            Level var14 = attacker.level();
             if (var14 instanceof ServerLevel) {
-               ServerLevel var13 = (ServerLevel)var14;
-               return (float)(var11 + (double)EnchantmentHelper.modifyFallBasedDamage(var13, var4.getWeaponItem(), var1, var3, 0.0F) * var9);
+               ServerLevel level = (ServerLevel)var14;
+               return (float)(damage + (double)EnchantmentHelper.modifyFallBasedDamage(level, attacker.getWeaponItem(), victim, damageSource, 0.0F) * fallDistance);
             } else {
-               return (float)var11;
+               return (float)damage;
             }
          }
       } else {
@@ -114,36 +113,36 @@ public class MaceItem extends Item {
       }
    }
 
-   private static void knockback(Level var0, Entity var1, Entity var2) {
-      var0.levelEvent(2013, var2.getOnPos(), 750);
-      var0.getEntitiesOfClass(LivingEntity.class, var2.getBoundingBox().inflate(3.5), knockbackPredicate(var1, var2)).forEach((var2x) -> {
-         Vec3 var3 = var2x.position().subtract(var2.position());
-         double var4 = getKnockbackPower(var1, var2x, var3);
-         Vec3 var6 = var3.normalize().scale(var4);
-         if (var4 > 0.0) {
-            var2x.push(var6.x, 0.699999988079071, var6.z);
-            if (var2x instanceof ServerPlayer) {
-               ServerPlayer var7 = (ServerPlayer)var2x;
-               var7.connection.send(new ClientboundSetEntityMotionPacket(var7));
+   private static void knockback(final Level level, final Entity attacker, final Entity entity) {
+      level.levelEvent(2013, entity.getOnPos(), 750);
+      level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(3.5), knockbackPredicate(attacker, entity)).forEach((nearby) -> {
+         Vec3 direction = nearby.position().subtract(entity.position());
+         double knockbackPower = getKnockbackPower(attacker, nearby, direction);
+         Vec3 knockbackVector = direction.normalize().scale(knockbackPower);
+         if (knockbackPower > 0.0) {
+            nearby.push(knockbackVector.x, 0.699999988079071, knockbackVector.z);
+            if (nearby instanceof ServerPlayer) {
+               ServerPlayer otherPlayer = (ServerPlayer)nearby;
+               otherPlayer.connection.send(new ClientboundSetEntityMotionPacket(otherPlayer));
             }
          }
 
       });
    }
 
-   private static Predicate<LivingEntity> knockbackPredicate(Entity var0, Entity var1) {
-      return (var2) -> {
-         boolean var3;
-         boolean var4;
-         boolean var5;
+   private static Predicate<LivingEntity> knockbackPredicate(final Entity attacker, final Entity entity) {
+      return (nearby) -> {
+         boolean notSpectator;
+         boolean notPlayer;
+         boolean notAlliedToPlayer;
          boolean var10000;
          label82: {
-            var3 = !var2.isSpectator();
-            var4 = var2 != var0 && var2 != var1;
-            var5 = !var0.isAlliedTo((Entity)var2);
-            if (var2 instanceof TamableAnimal var8) {
-               if (var1 instanceof LivingEntity var7) {
-                  if (var8.isTame() && var8.isOwnedBy(var7)) {
+            notSpectator = !nearby.isSpectator();
+            notPlayer = nearby != attacker && nearby != entity;
+            notAlliedToPlayer = !attacker.isAlliedTo((Entity)nearby);
+            if (nearby instanceof TamableAnimal animal) {
+               if (entity instanceof LivingEntity livingAttacker) {
+                  if (animal.isTame() && animal.isOwnedBy(livingAttacker)) {
                      var10000 = true;
                      break label82;
                   }
@@ -153,11 +152,11 @@ public class MaceItem extends Item {
             var10000 = false;
          }
 
-         boolean var6;
+         boolean notTamedByPlayer;
          label74: {
-            var6 = !var10000;
-            if (var2 instanceof ArmorStand var12) {
-               if (var12.isMarker()) {
+            notTamedByPlayer = !var10000;
+            if (nearby instanceof ArmorStand armorStand) {
+               if (armorStand.isMarker()) {
                   var10000 = false;
                   break label74;
                }
@@ -166,13 +165,13 @@ public class MaceItem extends Item {
             var10000 = true;
          }
 
-         boolean var11;
-         boolean var13;
+         boolean notArmorStand;
+         boolean withinRange;
          label68: {
-            var11 = var10000;
-            var13 = var1.distanceToSqr((Entity)var2) <= Math.pow(3.5, 2.0);
-            if (var2 instanceof Player var10) {
-               if (var10.isCreative() && var10.getAbilities().flying) {
+            notArmorStand = var10000;
+            withinRange = entity.distanceToSqr((Entity)nearby) <= Math.pow(3.5, 2.0);
+            if (nearby instanceof Player player) {
+               if (player.isCreative() && player.getAbilities().flying) {
                   var10000 = true;
                   break label68;
                }
@@ -181,20 +180,20 @@ public class MaceItem extends Item {
             var10000 = false;
          }
 
-         boolean var9 = !var10000;
-         return var3 && var4 && var5 && var6 && var11 && var13 && var9;
+         boolean notFlyingInCreative = !var10000;
+         return notSpectator && notPlayer && notAlliedToPlayer && notTamedByPlayer && notArmorStand && withinRange && notFlyingInCreative;
       };
    }
 
-   private static double getKnockbackPower(Entity var0, LivingEntity var1, Vec3 var2) {
-      return (3.5 - var2.length()) * 0.699999988079071 * (double)(var0.fallDistance > 5.0 ? 2 : 1) * (1.0 - var1.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+   private static double getKnockbackPower(final Entity attacker, final LivingEntity nearby, final Vec3 direction) {
+      return (3.5 - direction.length()) * 0.699999988079071 * (double)(attacker.fallDistance > 5.0 ? 2 : 1) * (1.0 - nearby.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
    }
 
-   public static boolean canSmashAttack(LivingEntity var0) {
-      return var0.fallDistance > 1.5 && !var0.isFallFlying();
+   public static boolean canSmashAttack(final LivingEntity attacker) {
+      return attacker.fallDistance > 1.5 && !attacker.isFallFlying();
    }
 
-   public @Nullable DamageSource getItemDamageSource(LivingEntity var1) {
-      return canSmashAttack(var1) ? var1.damageSources().mace(var1) : super.getItemDamageSource(var1);
+   public @Nullable DamageSource getItemDamageSource(final LivingEntity attacker) {
+      return canSmashAttack(attacker) ? attacker.damageSources().mace(attacker) : super.getItemDamageSource(attacker);
    }
 }

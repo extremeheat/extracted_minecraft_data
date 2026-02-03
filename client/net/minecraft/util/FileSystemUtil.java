@@ -18,19 +18,19 @@ public class FileSystemUtil {
       super();
    }
 
-   public static Path safeGetPath(URI var0) throws IOException {
+   public static Path safeGetPath(final URI probeUri) throws IOException {
       try {
-         return Paths.get(var0);
+         return Paths.get(probeUri);
       } catch (FileSystemNotFoundException var3) {
-      } catch (Throwable var4) {
-         LOGGER.warn("Unable to get path for: {}", var0, var4);
+      } catch (Throwable t) {
+         LOGGER.warn("Unable to get path for: {}", probeUri, t);
       }
 
       try {
-         FileSystems.newFileSystem(var0, Collections.emptyMap());
+         FileSystems.newFileSystem(probeUri, Collections.emptyMap());
       } catch (FileSystemAlreadyExistsException var2) {
       }
 
-      return Paths.get(var0);
+      return Paths.get(probeUri);
    }
 }

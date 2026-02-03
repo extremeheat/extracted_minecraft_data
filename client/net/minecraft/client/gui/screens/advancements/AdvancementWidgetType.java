@@ -12,20 +12,20 @@ public enum AdvancementWidgetType {
    private final Identifier challengeFrameSprite;
    private final Identifier goalFrameSprite;
 
-   private AdvancementWidgetType(final Identifier var3, final Identifier var4, final Identifier var5, final Identifier var6) {
-      this.boxSprite = var3;
-      this.taskFrameSprite = var4;
-      this.challengeFrameSprite = var5;
-      this.goalFrameSprite = var6;
+   private AdvancementWidgetType(final Identifier boxSprite, final Identifier taskFrameSprite, final Identifier challengeFrameSprite, final Identifier goalFrameSprite) {
+      this.boxSprite = boxSprite;
+      this.taskFrameSprite = taskFrameSprite;
+      this.challengeFrameSprite = challengeFrameSprite;
+      this.goalFrameSprite = goalFrameSprite;
    }
 
    public Identifier boxSprite() {
       return this.boxSprite;
    }
 
-   public Identifier frameSprite(AdvancementType var1) {
+   public Identifier frameSprite(final AdvancementType type) {
       Identifier var10000;
-      switch (var1) {
+      switch (type) {
          case TASK -> var10000 = this.taskFrameSprite;
          case CHALLENGE -> var10000 = this.challengeFrameSprite;
          case GOAL -> var10000 = this.goalFrameSprite;

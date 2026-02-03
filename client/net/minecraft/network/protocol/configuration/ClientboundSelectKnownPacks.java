@@ -11,17 +11,16 @@ import net.minecraft.server.packs.repository.KnownPack;
 public record ClientboundSelectKnownPacks(List<KnownPack> knownPacks) implements Packet<ClientConfigurationPacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundSelectKnownPacks> STREAM_CODEC;
 
-   public ClientboundSelectKnownPacks(List<KnownPack> var1) {
+   public ClientboundSelectKnownPacks {
       super();
-      this.knownPacks = var1;
    }
 
    public PacketType<ClientboundSelectKnownPacks> type() {
       return ConfigurationPacketTypes.CLIENTBOUND_SELECT_KNOWN_PACKS;
    }
 
-   public void handle(ClientConfigurationPacketListener var1) {
-      var1.handleSelectKnownPacks(this);
+   public void handle(final ClientConfigurationPacketListener listener) {
+      listener.handleSelectKnownPacks(this);
    }
 
    static {

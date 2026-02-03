@@ -1,65 +1,133 @@
 package com.mojang.blaze3d.systems;
 
-import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
 
-@DontObfuscate
-public interface RenderPass extends AutoCloseable {
-   void pushDebugGroup(Supplier<String> var1);
+public class RenderPass implements AutoCloseable {
+   private static final Logger LOGGER = LogUtils.getLogger();
+   private final RenderPassBackend backend;
+   private final GpuDeviceBackend device;
+   private int pushedDebugGroups;
 
-   void popDebugGroup();
+   public RenderPass(final RenderPassBackend backend, final GpuDeviceBackend device) {
+      super();
+      this.backend = backend;
+      this.device = device;
+   }
 
-   void setPipeline(RenderPipeline var1);
+   public void pushDebugGroup(final Supplier<String> label) {
+      if (this.backend.isClosed()) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else {
+         ++this.pushedDebugGroups;
+         this.backend.pushDebugGroup(label);
+      }
+   }
 
-   void bindTexture(String var1, @Nullable GpuTextureView var2, @Nullable GpuSampler var3);
+   public void popDebugGroup() {
+      if (this.backend.isClosed()) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else if (this.pushedDebugGroups == 0) {
+         throw new IllegalStateException("Can't pop more debug groups than was pushed!");
+      } else {
+         --this.pushedDebugGroups;
+         this.backend.popDebugGroup();
+      }
+   }
 
-   void setUniform(String var1, GpuBuffer var2);
+   public void setPipeline(final RenderPipeline pipeline) {
+      this.backend.setPipeline(pipeline);
+   }
 
-   void setUniform(String var1, GpuBufferSlice var2);
+   public void bindTexture(final String name, final @Nullable GpuTextureView textureView, final @Nullable GpuSampler sampler) {
+      this.backend.bindTexture(name, textureView, sampler);
+   }
 
-   void enableScissor(int var1, int var2, int var3, int var4);
+   public void setUniform(final String name, final GpuBuffer value) {
+      this.backend.setUniform(name, value);
+   }
 
-   void disableScissor();
+   public void setUniform(final String name, final GpuBufferSlice value) {
+      int alignment = this.device.getUniformOffsetAlignment();
+      if (value.offset() % (long)alignment > 0L) {
+         throw new IllegalArgumentException("Uniform buffer offset must be aligned to " + alignment);
+      } else {
+         this.backend.setUniform(name, value);
+      }
+   }
 
-   void setVertexBuffer(int var1, GpuBuffer var2);
+   public void enableScissor(final int x, final int y, final int width, final int height) {
+      this.backend.enableScissor(x, y, width, height);
+   }
 
-   void setIndexBuffer(GpuBuffer var1, VertexFormat.IndexType var2);
+   public void disableScissor() {
+      this.backend.disableScissor();
+   }
 
-   void drawIndexed(int var1, int var2, int var3, int var4);
+   public void setVertexBuffer(final int slot, final GpuBuffer vertexBuffer) {
+      this.backend.setVertexBuffer(slot, vertexBuffer);
+   }
 
-   <T> void drawMultipleIndexed(Collection<Draw<T>> var1, @Nullable GpuBuffer var2, VertexFormat.@Nullable IndexType var3, Collection<String> var4, T var5);
+   public void setIndexBuffer(final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType) {
+      this.backend.setIndexBuffer(indexBuffer, indexType);
+   }
 
-   void draw(int var1, int var2);
+   public void drawIndexed(final int baseVertex, final int firstIndex, final int indexCount, final int instanceCount) {
+      if (this.backend.isClosed()) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else {
+         this.backend.drawIndexed(baseVertex, firstIndex, indexCount, instanceCount);
+      }
+   }
 
-   void close();
+   public <T> void drawMultipleIndexed(final Collection<Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final VertexFormat.@Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
+      if (this.backend.isClosed()) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else {
+         this.backend.drawMultipleIndexed(draws, defaultIndexBuffer, defaultIndexType, dynamicUniforms, uniformArgument);
+      }
+   }
 
-   public static record Draw<T>(int slot, GpuBuffer vertexBuffer, @Nullable GpuBuffer indexBuffer, VertexFormat.@Nullable IndexType indexType, int firstIndex, int indexCount, @Nullable BiConsumer<T, UniformUploader> uniformUploaderConsumer) {
-      public Draw(int var1, GpuBuffer var2, GpuBuffer var3, VertexFormat.IndexType var4, int var5, int var6) {
-         this(var1, var2, var3, var4, var5, var6, (BiConsumer)null);
+   public void draw(final int firstVertex, final int vertexCount) {
+      if (this.backend.isClosed()) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else {
+         this.backend.draw(firstVertex, vertexCount);
+      }
+   }
+
+   public void close() {
+      if (!this.backend.isClosed()) {
+         if (this.pushedDebugGroups > 0) {
+            throw new IllegalStateException("Render pass had debug groups left open!");
+         }
+
+         this.backend.close();
       }
 
-      public Draw(int var1, GpuBuffer var2, @Nullable GpuBuffer var3, VertexFormat.@Nullable IndexType var4, int var5, int var6, @Nullable BiConsumer<T, UniformUploader> var7) {
+   }
+
+   public static record Draw<T>(int slot, GpuBuffer vertexBuffer, @Nullable GpuBuffer indexBuffer, VertexFormat.@Nullable IndexType indexType, int firstIndex, int indexCount, @Nullable BiConsumer<T, UniformUploader> uniformUploaderConsumer) {
+      public Draw(final int slot, final GpuBuffer vertexBuffer, final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType, final int firstIndex, final int indexCount) {
+         this(slot, vertexBuffer, indexBuffer, indexType, firstIndex, indexCount, (BiConsumer)null);
+      }
+
+      public Draw {
          super();
-         this.slot = var1;
-         this.vertexBuffer = var2;
-         this.indexBuffer = var3;
-         this.indexType = var4;
-         this.firstIndex = var5;
-         this.indexCount = var6;
-         this.uniformUploaderConsumer = var7;
       }
    }
 
    public interface UniformUploader {
-      void upload(String var1, GpuBufferSlice var2);
+      void upload(String name, GpuBufferSlice buffer);
    }
 }

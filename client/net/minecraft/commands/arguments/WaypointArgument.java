@@ -16,10 +16,10 @@ public class WaypointArgument {
       super();
    }
 
-   public static WaypointTransmitter getWaypoint(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      Entity var2 = ((EntitySelector)var0.getArgument(var1, EntitySelector.class)).findSingleEntity((CommandSourceStack)var0.getSource());
-      if (var2 instanceof WaypointTransmitter var3) {
-         return var3;
+   public static WaypointTransmitter getWaypoint(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      Entity singleEntity = ((EntitySelector)context.getArgument(name, EntitySelector.class)).findSingleEntity((CommandSourceStack)context.getSource());
+      if (singleEntity instanceof WaypointTransmitter waypointTransmitter) {
+         return waypointTransmitter;
       } else {
          throw ERROR_NOT_A_WAYPOINT.create();
       }

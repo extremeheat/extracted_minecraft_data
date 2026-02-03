@@ -15,9 +15,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
 public class RideCommand {
-   private static final DynamicCommandExceptionType ERROR_NOT_RIDING = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.ride.not_riding", var0));
-   private static final Dynamic2CommandExceptionType ERROR_ALREADY_RIDING = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.ride.already_riding", var0, var1));
-   private static final Dynamic2CommandExceptionType ERROR_MOUNT_FAILED = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.ride.mount.failure.generic", var0, var1));
+   private static final DynamicCommandExceptionType ERROR_NOT_RIDING = new DynamicCommandExceptionType((entity) -> Component.translatableEscape("commands.ride.not_riding", entity));
+   private static final Dynamic2CommandExceptionType ERROR_ALREADY_RIDING = new Dynamic2CommandExceptionType((entity, vehicle) -> Component.translatableEscape("commands.ride.already_riding", entity, vehicle));
+   private static final Dynamic2CommandExceptionType ERROR_MOUNT_FAILED = new Dynamic2CommandExceptionType((entity, vehicle) -> Component.translatableEscape("commands.ride.mount.failure.generic", entity, vehicle));
    private static final SimpleCommandExceptionType ERROR_MOUNTING_PLAYER = new SimpleCommandExceptionType(Component.translatable("commands.ride.mount.failure.cant_ride_players"));
    private static final SimpleCommandExceptionType ERROR_MOUNTING_LOOP = new SimpleCommandExceptionType(Component.translatable("commands.ride.mount.failure.loop"));
    private static final SimpleCommandExceptionType ERROR_WRONG_DIMENSION = new SimpleCommandExceptionType(Component.translatable("commands.ride.mount.failure.wrong_dimension"));
@@ -26,35 +26,35 @@ public class RideCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ride").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.entity()).then(Commands.literal("mount").then(Commands.argument("vehicle", EntityArgument.entity()).executes((var0x) -> mount((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), EntityArgument.getEntity(var0x, "vehicle")))))).then(Commands.literal("dismount").executes((var0x) -> dismount((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ride").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.entity()).then(Commands.literal("mount").then(Commands.argument("vehicle", EntityArgument.entity()).executes((c) -> mount((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), EntityArgument.getEntity(c, "vehicle")))))).then(Commands.literal("dismount").executes((c) -> dismount((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"))))));
    }
 
-   private static int mount(CommandSourceStack var0, Entity var1, Entity var2) throws CommandSyntaxException {
-      Entity var3 = var1.getVehicle();
-      if (var3 != null) {
-         throw ERROR_ALREADY_RIDING.create(var1.getDisplayName(), var3.getDisplayName());
-      } else if (var2.getType() == EntityType.PLAYER) {
+   private static int mount(final CommandSourceStack source, final Entity target, final Entity vehicle) throws CommandSyntaxException {
+      Entity currentVehicle = target.getVehicle();
+      if (currentVehicle != null) {
+         throw ERROR_ALREADY_RIDING.create(target.getDisplayName(), currentVehicle.getDisplayName());
+      } else if (vehicle.is(EntityType.PLAYER)) {
          throw ERROR_MOUNTING_PLAYER.create();
-      } else if (var1.getSelfAndPassengers().anyMatch((var1x) -> var1x == var2)) {
+      } else if (target.getSelfAndPassengers().anyMatch((e) -> e == vehicle)) {
          throw ERROR_MOUNTING_LOOP.create();
-      } else if (var1.level() != var2.level()) {
+      } else if (target.level() != vehicle.level()) {
          throw ERROR_WRONG_DIMENSION.create();
-      } else if (!var1.startRiding(var2, true, true)) {
-         throw ERROR_MOUNT_FAILED.create(var1.getDisplayName(), var2.getDisplayName());
+      } else if (!target.startRiding(vehicle, true, true)) {
+         throw ERROR_MOUNT_FAILED.create(target.getDisplayName(), vehicle.getDisplayName());
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.ride.mount.success", var1.getDisplayName(), var2.getDisplayName()), true);
+         source.sendSuccess(() -> Component.translatable("commands.ride.mount.success", target.getDisplayName(), vehicle.getDisplayName()), true);
          return 1;
       }
    }
 
-   private static int dismount(CommandSourceStack var0, Entity var1) throws CommandSyntaxException {
-      Entity var2 = var1.getVehicle();
-      if (var2 == null) {
-         throw ERROR_NOT_RIDING.create(var1.getDisplayName());
+   private static int dismount(final CommandSourceStack source, final Entity target) throws CommandSyntaxException {
+      Entity vehicle = target.getVehicle();
+      if (vehicle == null) {
+         throw ERROR_NOT_RIDING.create(target.getDisplayName());
       } else {
-         var1.stopRiding();
-         var0.sendSuccess(() -> Component.translatable("commands.ride.dismount.success", var1.getDisplayName(), var2.getDisplayName()), true);
+         target.stopRiding();
+         source.sendSuccess(() -> Component.translatable("commands.ride.dismount.success", target.getDisplayName(), vehicle.getDisplayName()), true);
          return 1;
       }
    }

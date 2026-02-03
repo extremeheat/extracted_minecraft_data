@@ -21,21 +21,21 @@ public class GraphicsWorkarounds {
    private final boolean isGlOnDx12;
    private final boolean isAmd;
 
-   private GraphicsWorkarounds(GpuDevice var1) {
+   private GraphicsWorkarounds(final GpuDevice gpuDevice) {
       super();
-      this.gpuDevice = new WeakReference(var1);
-      this.alwaysCreateFreshImmediateBuffer = isIntelGen11(var1);
-      this.isGlOnDx12 = isGlOnDx12(var1);
-      this.isAmd = isAmd(var1);
+      this.gpuDevice = new WeakReference(gpuDevice);
+      this.alwaysCreateFreshImmediateBuffer = isIntelGen11(gpuDevice);
+      this.isGlOnDx12 = isGlOnDx12(gpuDevice);
+      this.isAmd = isAmd(gpuDevice);
    }
 
-   public static GraphicsWorkarounds get(GpuDevice var0) {
-      GraphicsWorkarounds var1 = instance;
-      if (var1 == null || var1.gpuDevice.get() != var0) {
-         instance = var1 = new GraphicsWorkarounds(var0);
+   public static GraphicsWorkarounds get(final GpuDevice gpuDevice) {
+      GraphicsWorkarounds instance = GraphicsWorkarounds.instance;
+      if (instance == null || instance.gpuDevice.get() != gpuDevice) {
+         GraphicsWorkarounds.instance = instance = new GraphicsWorkarounds(gpuDevice);
       }
 
-      return var1;
+      return instance;
    }
 
    public boolean alwaysCreateFreshImmediateBuffer() {
@@ -50,44 +50,44 @@ public class GraphicsWorkarounds {
       return this.isAmd;
    }
 
-   private static boolean isIntelGen11(GpuDevice var0) {
-      String var1 = GLX._getCpuInfo().toLowerCase(Locale.ROOT);
-      String var2 = var0.getRenderer().toLowerCase(Locale.ROOT);
-      if (var1.contains("intel") && var2.contains("intel") && !var2.contains("mesa")) {
-         if (var2.endsWith("gen11")) {
+   private static boolean isIntelGen11(final GpuDevice gpuDevice) {
+      String cpuInfo = GLX._getCpuInfo().toLowerCase(Locale.ROOT);
+      String renderer = gpuDevice.getRenderer().toLowerCase(Locale.ROOT);
+      if (cpuInfo.contains("intel") && renderer.contains("intel") && !renderer.contains("mesa")) {
+         if (renderer.endsWith("gen11")) {
             return true;
-         } else if (!var2.contains("uhd graphics") && !var2.contains("iris")) {
+         } else if (!renderer.contains("uhd graphics") && !renderer.contains("iris")) {
             return false;
          } else {
             boolean var6;
             label49: {
-               if (var1.contains("atom")) {
+               if (cpuInfo.contains("atom")) {
                   Stream var10000 = INTEL_GEN11_ATOM.stream();
-                  Objects.requireNonNull(var1);
-                  if (var10000.anyMatch(var1::contains)) {
+                  Objects.requireNonNull(cpuInfo);
+                  if (var10000.anyMatch(cpuInfo::contains)) {
                      break label49;
                   }
                }
 
-               if (var1.contains("celeron")) {
+               if (cpuInfo.contains("celeron")) {
                   Stream var3 = INTEL_GEN11_CELERON.stream();
-                  Objects.requireNonNull(var1);
-                  if (var3.anyMatch(var1::contains)) {
+                  Objects.requireNonNull(cpuInfo);
+                  if (var3.anyMatch(cpuInfo::contains)) {
                      break label49;
                   }
                }
 
-               if (var1.contains("pentium")) {
+               if (cpuInfo.contains("pentium")) {
                   Stream var4 = INTEL_GEN11_PENTIUM.stream();
-                  Objects.requireNonNull(var1);
-                  if (var4.anyMatch(var1::contains)) {
+                  Objects.requireNonNull(cpuInfo);
+                  if (var4.anyMatch(cpuInfo::contains)) {
                      break label49;
                   }
                }
 
                Stream var5 = INTEL_GEN11_CORE.stream();
-               Objects.requireNonNull(var1);
-               if (!var5.anyMatch(var1::contains)) {
+               Objects.requireNonNull(cpuInfo);
+               if (!var5.anyMatch(cpuInfo::contains)) {
                   var6 = false;
                   return var6;
                }
@@ -101,12 +101,12 @@ public class GraphicsWorkarounds {
       }
    }
 
-   private static boolean isGlOnDx12(GpuDevice var0) {
-      boolean var1 = Util.getPlatform() == Util.OS.WINDOWS && Util.isAarch64();
-      return var1 || var0.getRenderer().startsWith("D3D12");
+   private static boolean isGlOnDx12(final GpuDevice gpuDevice) {
+      boolean isWindowsArm64 = Util.getPlatform() == Util.OS.WINDOWS && Util.isAarch64();
+      return isWindowsArm64 || gpuDevice.getRenderer().startsWith("D3D12");
    }
 
-   private static boolean isAmd(GpuDevice var0) {
-      return var0.getRenderer().contains("AMD");
+   private static boolean isAmd(final GpuDevice gpuDevice) {
+      return gpuDevice.getRenderer().contains("AMD");
    }
 }

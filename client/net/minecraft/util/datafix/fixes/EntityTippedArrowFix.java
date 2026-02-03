@@ -4,11 +4,11 @@ import com.mojang.datafixers.schemas.Schema;
 import java.util.Objects;
 
 public class EntityTippedArrowFix extends SimplestEntityRenameFix {
-   public EntityTippedArrowFix(Schema var1, boolean var2) {
-      super("EntityTippedArrowFix", var1, var2);
+   public EntityTippedArrowFix(final Schema outputSchema, final boolean changesType) {
+      super("EntityTippedArrowFix", outputSchema, changesType);
    }
 
-   protected String rename(String var1) {
-      return Objects.equals(var1, "TippedArrow") ? "Arrow" : var1;
+   protected String rename(final String name) {
+      return Objects.equals(name, "TippedArrow") ? "Arrow" : name;
    }
 }

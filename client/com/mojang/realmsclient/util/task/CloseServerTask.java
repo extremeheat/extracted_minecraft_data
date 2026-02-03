@@ -14,41 +14,41 @@ public class CloseServerTask extends LongRunningTask {
    private final RealmsServer serverData;
    private final RealmsConfigureWorldScreen configureScreen;
 
-   public CloseServerTask(RealmsServer var1, RealmsConfigureWorldScreen var2) {
+   public CloseServerTask(final RealmsServer realmsServer, final RealmsConfigureWorldScreen configureWorldScreen) {
       super();
-      this.serverData = var1;
-      this.configureScreen = var2;
+      this.serverData = realmsServer;
+      this.configureScreen = configureWorldScreen;
    }
 
    public void run() {
-      RealmsClient var1 = RealmsClient.getOrCreate();
+      RealmsClient client = RealmsClient.getOrCreate();
 
-      for(int var2 = 0; var2 < 25; ++var2) {
+      for(int i = 0; i < 25; ++i) {
          if (this.aborted()) {
             return;
          }
 
          try {
-            boolean var3 = var1.close(this.serverData.id);
-            if (var3) {
+            boolean closeResult = client.close(this.serverData.id);
+            if (closeResult) {
                this.configureScreen.stateChanged();
                this.serverData.state = RealmsServer.State.CLOSED;
                setScreen(this.configureScreen);
                break;
             }
-         } catch (RetryCallException var4) {
+         } catch (RetryCallException e) {
             if (this.aborted()) {
                return;
             }
 
-            pause((long)var4.delaySeconds);
-         } catch (Exception var5) {
+            pause((long)e.delaySeconds);
+         } catch (Exception e) {
             if (this.aborted()) {
                return;
             }
 
-            LOGGER.error("Failed to close server", var5);
-            this.error(var5);
+            LOGGER.error("Failed to close server", e);
+            this.error(e);
          }
       }
 

@@ -12,7 +12,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -40,7 +39,7 @@ public class SocialInteractionsScreen extends Screen {
    private static final Component TAB_HIDDEN_SELECTED;
    private static final Component TAB_BLOCKED_SELECTED;
    private static final Component SEARCH_HINT;
-   static final Component EMPTY_SEARCH;
+   private static final Component EMPTY_SEARCH;
    private static final Component EMPTY_HIDDEN;
    private static final Component EMPTY_BLOCKED;
    private static final Component BLOCKING_HINT;
@@ -55,8 +54,8 @@ public class SocialInteractionsScreen extends Screen {
    private static final int ITEM_HEIGHT = 36;
    private final HeaderAndFooterLayout layout;
    private final @Nullable Screen lastScreen;
-   @Nullable SocialInteractionsPlayerList socialInteractionsPlayerList;
-   EditBox searchBox;
+   private @Nullable SocialInteractionsPlayerList socialInteractionsPlayerList;
+   private EditBox searchBox;
    private String lastSearch;
    private Page page;
    private Button allButton;
@@ -70,12 +69,12 @@ public class SocialInteractionsScreen extends Screen {
       this((Screen)null);
    }
 
-   public SocialInteractionsScreen(@Nullable Screen var1) {
+   public SocialInteractionsScreen(final @Nullable Screen lastScreen) {
       super(TITLE);
       this.layout = new HeaderAndFooterLayout(this);
       this.lastSearch = "";
       this.page = SocialInteractionsScreen.Page.ALL;
-      this.lastScreen = var1;
+      this.lastScreen = lastScreen;
       this.updateServerLabel(Minecraft.getInstance());
    }
 
@@ -98,14 +97,18 @@ public class SocialInteractionsScreen extends Screen {
    protected void init() {
       this.layout.addTitleHeader(TITLE, this.font);
       this.socialInteractionsPlayerList = new SocialInteractionsPlayerList(this, this.minecraft, this.width, this.listEnd() - 88, 88, 36);
-      int var1 = this.socialInteractionsPlayerList.getRowWidth() / 3;
-      int var2 = this.socialInteractionsPlayerList.getRowLeft();
-      int var3 = this.socialInteractionsPlayerList.getRowRight();
-      this.allButton = (Button)this.addRenderableWidget(Button.builder(TAB_ALL, (var1x) -> this.showPage(SocialInteractionsScreen.Page.ALL)).bounds(var2, 45, var1, 20).build());
-      this.hiddenButton = (Button)this.addRenderableWidget(Button.builder(TAB_HIDDEN, (var1x) -> this.showPage(SocialInteractionsScreen.Page.HIDDEN)).bounds((var2 + var3 - var1) / 2 + 1, 45, var1, 20).build());
-      this.blockedButton = (Button)this.addRenderableWidget(Button.builder(TAB_BLOCKED, (var1x) -> this.showPage(SocialInteractionsScreen.Page.BLOCKED)).bounds(var3 - var1 + 1, 45, var1, 20).build());
-      String var4 = this.searchBox != null ? this.searchBox.getValue() : "";
+      int buttonWidth = this.socialInteractionsPlayerList.getRowWidth() / 3;
+      int buttonLeft = this.socialInteractionsPlayerList.getRowLeft();
+      int buttonRight = this.socialInteractionsPlayerList.getRowRight();
+      this.allButton = (Button)this.addRenderableWidget(Button.builder(TAB_ALL, (button) -> this.showPage(SocialInteractionsScreen.Page.ALL)).bounds(buttonLeft, 45, buttonWidth, 20).build());
+      this.hiddenButton = (Button)this.addRenderableWidget(Button.builder(TAB_HIDDEN, (button) -> this.showPage(SocialInteractionsScreen.Page.HIDDEN)).bounds((buttonLeft + buttonRight - buttonWidth) / 2 + 1, 45, buttonWidth, 20).build());
+      this.blockedButton = (Button)this.addRenderableWidget(Button.builder(TAB_BLOCKED, (button) -> this.showPage(SocialInteractionsScreen.Page.BLOCKED)).bounds(buttonRight - buttonWidth + 1, 45, buttonWidth, 20).build());
+      String oldEdit = this.searchBox != null ? this.searchBox.getValue() : "";
       this.searchBox = (EditBox)this.addRenderableWidget(new EditBox(this.font, this.marginX() + 28, 74, 200, 15, SEARCH_HINT) {
+         {
+            Objects.requireNonNull(SocialInteractionsScreen.this);
+         }
+
          protected MutableComponent createNarrationMessage() {
             return !SocialInteractionsScreen.this.searchBox.getValue().isEmpty() && SocialInteractionsScreen.this.socialInteractionsPlayerList.isEmpty() ? super.createNarrationMessage().append(", ").append(SocialInteractionsScreen.EMPTY_SEARCH) : super.createNarrationMessage();
          }
@@ -113,16 +116,14 @@ public class SocialInteractionsScreen extends Screen {
       this.searchBox.setMaxLength(16);
       this.searchBox.setVisible(true);
       this.searchBox.setTextColor(-1);
-      this.searchBox.setValue(var4);
+      this.searchBox.setValue(oldEdit);
       this.searchBox.setHint(SEARCH_HINT);
       this.searchBox.setResponder(this::checkSearchStringUpdate);
       this.blockingHintButton = (Button)this.addRenderableWidget(Button.builder(BLOCKING_HINT, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.BLOCKING_HELP)).bounds(this.width / 2 - 100, 64 + this.windowHeight(), 200, 20).build());
       this.addWidget(this.socialInteractionsPlayerList);
       this.showPage(this.page);
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).width(200).build());
-      this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-      });
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
@@ -137,12 +138,12 @@ public class SocialInteractionsScreen extends Screen {
       this.layout.arrangeElements();
       this.socialInteractionsPlayerList.updateSizeAndPosition(this.width, this.listEnd() - 88, 88);
       this.searchBox.setPosition(this.marginX() + 28, 74);
-      int var1 = this.socialInteractionsPlayerList.getRowLeft();
-      int var2 = this.socialInteractionsPlayerList.getRowRight();
-      int var3 = this.socialInteractionsPlayerList.getRowWidth() / 3;
-      this.allButton.setPosition(var1, 45);
-      this.hiddenButton.setPosition((var1 + var2 - var3) / 2 + 1, 45);
-      this.blockedButton.setPosition(var2 - var3 + 1, 45);
+      int buttonLeft = this.socialInteractionsPlayerList.getRowLeft();
+      int buttonRight = this.socialInteractionsPlayerList.getRowRight();
+      int buttonWidth = this.socialInteractionsPlayerList.getRowWidth() / 3;
+      this.allButton.setPosition(buttonLeft, 45);
+      this.hiddenButton.setPosition((buttonLeft + buttonRight - buttonWidth) / 2 + 1, 45);
+      this.blockedButton.setPosition(buttonRight - buttonWidth + 1, 45);
       this.blockingHintButton.setPosition(this.width / 2 - 100, 64 + this.windowHeight());
    }
 
@@ -154,80 +155,80 @@ public class SocialInteractionsScreen extends Screen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   private void showPage(Page var1) {
-      this.page = var1;
+   private void showPage(final Page page) {
+      this.page = page;
       this.allButton.setMessage(TAB_ALL);
       this.hiddenButton.setMessage(TAB_HIDDEN);
       this.blockedButton.setMessage(TAB_BLOCKED);
-      boolean var2 = false;
-      switch (var1.ordinal()) {
+      boolean isEmpty = false;
+      switch (page.ordinal()) {
          case 0:
             this.allButton.setMessage(TAB_ALL_SELECTED);
-            Collection var6 = this.minecraft.player.connection.getOnlinePlayerIds();
-            this.socialInteractionsPlayerList.updatePlayerList(var6, this.socialInteractionsPlayerList.scrollAmount(), true);
+            Collection<UUID> onlinePlayerIds = this.minecraft.player.connection.getOnlinePlayerIds();
+            this.socialInteractionsPlayerList.updatePlayerList(onlinePlayerIds, this.socialInteractionsPlayerList.scrollAmount(), true);
             break;
          case 1:
             this.hiddenButton.setMessage(TAB_HIDDEN_SELECTED);
-            Set var5 = this.minecraft.getPlayerSocialManager().getHiddenPlayers();
-            var2 = var5.isEmpty();
-            this.socialInteractionsPlayerList.updatePlayerList(var5, this.socialInteractionsPlayerList.scrollAmount(), false);
+            Set<UUID> hiddenPlayers = this.minecraft.getPlayerSocialManager().getHiddenPlayers();
+            isEmpty = hiddenPlayers.isEmpty();
+            this.socialInteractionsPlayerList.updatePlayerList(hiddenPlayers, this.socialInteractionsPlayerList.scrollAmount(), false);
             break;
          case 2:
             this.blockedButton.setMessage(TAB_BLOCKED_SELECTED);
-            PlayerSocialManager var3 = this.minecraft.getPlayerSocialManager();
+            PlayerSocialManager socialManager = this.minecraft.getPlayerSocialManager();
             Stream var10000 = this.minecraft.player.connection.getOnlinePlayerIds().stream();
-            Objects.requireNonNull(var3);
-            Set var4 = (Set)var10000.filter(var3::isBlocked).collect(Collectors.toSet());
-            var2 = var4.isEmpty();
-            this.socialInteractionsPlayerList.updatePlayerList(var4, this.socialInteractionsPlayerList.scrollAmount(), false);
+            Objects.requireNonNull(socialManager);
+            Set<UUID> blockedPlayers = (Set)var10000.filter(socialManager::isBlocked).collect(Collectors.toSet());
+            isEmpty = blockedPlayers.isEmpty();
+            this.socialInteractionsPlayerList.updatePlayerList(blockedPlayers, this.socialInteractionsPlayerList.scrollAmount(), false);
       }
 
-      GameNarrator var7 = this.minecraft.getNarrator();
+      GameNarrator narrator = this.minecraft.getNarrator();
       if (!this.searchBox.getValue().isEmpty() && this.socialInteractionsPlayerList.isEmpty() && !this.searchBox.isFocused()) {
-         var7.saySystemNow(EMPTY_SEARCH);
-      } else if (var2) {
-         if (var1 == SocialInteractionsScreen.Page.HIDDEN) {
-            var7.saySystemNow(EMPTY_HIDDEN);
-         } else if (var1 == SocialInteractionsScreen.Page.BLOCKED) {
-            var7.saySystemNow(EMPTY_BLOCKED);
+         narrator.saySystemNow(EMPTY_SEARCH);
+      } else if (isEmpty) {
+         if (page == SocialInteractionsScreen.Page.HIDDEN) {
+            narrator.saySystemNow(EMPTY_HIDDEN);
+         } else if (page == SocialInteractionsScreen.Page.BLOCKED) {
+            narrator.saySystemNow(EMPTY_BLOCKED);
          }
       }
 
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      super.renderBackground(var1, var2, var3, var4);
-      int var5 = this.marginX() + 3;
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SEARCH_SPRITE, var5 + 10, 76, 12, 12);
+   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.renderBackground(graphics, mouseX, mouseY, a);
+      int marginX = this.marginX() + 3;
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, marginX, 64, 236, this.windowHeight() + 16);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SEARCH_SPRITE, marginX + 10, 76, 12, 12);
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
       this.updateServerLabel(this.minecraft);
       if (this.serverLabel != null) {
-         var1.drawString(this.minecraft.font, (Component)this.serverLabel, this.marginX() + 8, 35, -1);
+         graphics.drawString(this.minecraft.font, (Component)this.serverLabel, this.marginX() + 8, 35, -1);
       }
 
       if (!this.socialInteractionsPlayerList.isEmpty()) {
-         this.socialInteractionsPlayerList.render(var1, var2, var3, var4);
+         this.socialInteractionsPlayerList.render(graphics, mouseX, mouseY, a);
       } else if (!this.searchBox.getValue().isEmpty()) {
-         var1.drawCenteredString(this.minecraft.font, (Component)EMPTY_SEARCH, this.width / 2, (72 + this.listEnd()) / 2, -1);
+         graphics.drawCenteredString(this.minecraft.font, (Component)EMPTY_SEARCH, this.width / 2, (72 + this.listEnd()) / 2, -1);
       } else if (this.page == SocialInteractionsScreen.Page.HIDDEN) {
-         var1.drawCenteredString(this.minecraft.font, (Component)EMPTY_HIDDEN, this.width / 2, (72 + this.listEnd()) / 2, -1);
+         graphics.drawCenteredString(this.minecraft.font, (Component)EMPTY_HIDDEN, this.width / 2, (72 + this.listEnd()) / 2, -1);
       } else if (this.page == SocialInteractionsScreen.Page.BLOCKED) {
-         var1.drawCenteredString(this.minecraft.font, (Component)EMPTY_BLOCKED, this.width / 2, (72 + this.listEnd()) / 2, -1);
+         graphics.drawCenteredString(this.minecraft.font, (Component)EMPTY_BLOCKED, this.width / 2, (72 + this.listEnd()) / 2, -1);
       }
 
       this.blockingHintButton.visible = this.page == SocialInteractionsScreen.Page.BLOCKED;
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (!this.searchBox.isFocused() && this.minecraft.options.keySocialInteractions.matches(var1)) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (!this.searchBox.isFocused() && this.minecraft.options.keySocialInteractions.matches(event)) {
          this.onClose();
          return true;
       } else {
-         return super.keyPressed(var1);
+         return super.keyPressed(event);
       }
    }
 
@@ -235,44 +236,44 @@ public class SocialInteractionsScreen extends Screen {
       return false;
    }
 
-   private void checkSearchStringUpdate(String var1) {
-      var1 = var1.toLowerCase(Locale.ROOT);
-      if (!var1.equals(this.lastSearch)) {
-         this.socialInteractionsPlayerList.setFilter(var1);
-         this.lastSearch = var1;
+   private void checkSearchStringUpdate(String searchText) {
+      searchText = searchText.toLowerCase(Locale.ROOT);
+      if (!searchText.equals(this.lastSearch)) {
+         this.socialInteractionsPlayerList.setFilter(searchText);
+         this.lastSearch = searchText;
          this.showPage(this.page);
       }
 
    }
 
-   private void updateServerLabel(Minecraft var1) {
-      int var2 = var1.getConnection().getOnlinePlayers().size();
-      if (this.playerCount != var2) {
-         String var3 = "";
-         ServerData var4 = var1.getCurrentServer();
-         if (var1.isLocalServer()) {
-            var3 = var1.getSingleplayerServer().getMotd();
-         } else if (var4 != null) {
-            var3 = var4.name;
+   private void updateServerLabel(final Minecraft minecraft) {
+      int playerCount = minecraft.getConnection().getOnlinePlayers().size();
+      if (this.playerCount != playerCount) {
+         String serverName = "";
+         ServerData currentServer = minecraft.getCurrentServer();
+         if (minecraft.isLocalServer()) {
+            serverName = minecraft.getSingleplayerServer().getMotd();
+         } else if (currentServer != null) {
+            serverName = currentServer.name;
          }
 
-         if (var2 > 1) {
-            this.serverLabel = Component.translatable("gui.socialInteractions.server_label.multiple", var3, var2);
+         if (playerCount > 1) {
+            this.serverLabel = Component.translatable("gui.socialInteractions.server_label.multiple", serverName, playerCount);
          } else {
-            this.serverLabel = Component.translatable("gui.socialInteractions.server_label.single", var3, var2);
+            this.serverLabel = Component.translatable("gui.socialInteractions.server_label.single", serverName, playerCount);
          }
 
-         this.playerCount = var2;
+         this.playerCount = playerCount;
       }
 
    }
 
-   public void onAddPlayer(PlayerInfo var1) {
-      this.socialInteractionsPlayerList.addPlayer(var1, this.page);
+   public void onAddPlayer(final PlayerInfo info) {
+      this.socialInteractionsPlayerList.addPlayer(info, this.page);
    }
 
-   public void onRemovePlayer(UUID var1) {
-      this.socialInteractionsPlayerList.removePlayer(var1);
+   public void onRemovePlayer(final UUID id) {
+      this.socialInteractionsPlayerList.removePlayer(id);
    }
 
    static {

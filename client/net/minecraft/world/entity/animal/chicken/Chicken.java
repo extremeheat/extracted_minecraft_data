@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal.chicken;
 
-import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
@@ -39,7 +38,6 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.VariantUtils;
-import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -53,7 +51,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class Chicken extends Animal {
-   private static final EntityDimensions BABY_DIMENSIONS;
+   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.3F, 0.4F).withEyeHeight(0.28F);
    private static final EntityDataAccessor<Holder<ChickenVariant>> DATA_VARIANT_ID;
    private static final boolean DEFAULT_CHICKEN_JOCKEY = false;
    public float flap;
@@ -65,8 +63,8 @@ public class Chicken extends Animal {
    public int eggTime;
    public boolean isChickenJockey = false;
 
-   public Chicken(EntityType<? extends Chicken> var1, Level var2) {
-      super(var1, var2);
+   public Chicken(final EntityType<? extends Chicken> type, final Level level) {
+      super(type, level);
       this.eggTime = this.random.nextInt(6000) + 6000;
       this.setPathfindingMalus(PathType.WATER, 0.0F);
    }
@@ -75,15 +73,15 @@ public class Chicken extends Animal {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.4));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, (var0) -> var0.is(ItemTags.CHICKEN_FOOD), false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, (i) -> i.is(ItemTags.CHICKEN_FOOD), false));
       this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.1));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -101,16 +99,16 @@ public class Chicken extends Animal {
       }
 
       this.flapping *= 0.9F;
-      Vec3 var1 = this.getDeltaMovement();
-      if (!this.onGround() && var1.y < 0.0) {
-         this.setDeltaMovement(var1.multiply(1.0, 0.6, 1.0));
+      Vec3 movement = this.getDeltaMovement();
+      if (!this.onGround() && movement.y < 0.0) {
+         this.setDeltaMovement(movement.multiply(1.0, 0.6, 1.0));
       }
 
       this.flap += this.flapping * 2.0F;
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
+      if (var3 instanceof ServerLevel level) {
          if (this.isAlive() && !this.isBaby() && !this.isChickenJockey() && --this.eggTime <= 0) {
-            if (this.dropFromGiftLootTable(var2, BuiltInLootTables.CHICKEN_LAY, this::spawnAtLocation)) {
+            if (this.dropFromGiftLootTable(level, BuiltInLootTables.CHICKEN_LAY, this::spawnAtLocation)) {
                this.playSound(SoundEvents.CHICKEN_EGG, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
                this.gameEvent(GameEvent.ENTITY_PLACE);
             }
@@ -130,101 +128,96 @@ public class Chicken extends Animal {
    }
 
    protected SoundEvent getAmbientSound() {
-      return SoundEvents.CHICKEN_AMBIENT;
+      return this.isBaby() ? SoundEvents.CHICKEN_AMBIENT_BABY : SoundEvents.CHICKEN_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
-      return SoundEvents.CHICKEN_HURT;
+   protected SoundEvent getHurtSound(final DamageSource source) {
+      return this.isBaby() ? SoundEvents.CHICKEN_HURT_BABY : SoundEvents.CHICKEN_HURT;
    }
 
    protected SoundEvent getDeathSound() {
-      return SoundEvents.CHICKEN_DEATH;
+      return this.isBaby() ? SoundEvents.CHICKEN_DEATH_BABY : SoundEvents.CHICKEN_DEATH;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(SoundEvents.CHICKEN_STEP, 0.15F, 1.0F);
    }
 
-   public @Nullable Chicken getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Chicken var3 = EntityType.CHICKEN.create(var1, EntitySpawnReason.BREEDING);
-      if (var3 != null && var2 instanceof Chicken var4) {
-         var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
+   public @Nullable Chicken getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      Chicken baby = EntityType.CHICKEN.create(level, EntitySpawnReason.BREEDING);
+      if (baby != null && partner instanceof Chicken partnerChicken) {
+         baby.setVariant(this.random.nextBoolean() ? this.getVariant() : partnerChicken.getVariant());
       }
 
-      return var3;
+      return baby;
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.CHICKEN_VARIANT).ifPresent(this::setVariant);
-      return super.finalizeSpawn(var1, var2, var3, var4);
+   public SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      VariantUtils.selectVariantToSpawn(SpawnContext.create(level, this.blockPosition()), Registries.CHICKEN_VARIANT).ifPresent(this::setVariant);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.CHICKEN_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.CHICKEN_FOOD);
    }
 
-   protected int getBaseExperienceReward(ServerLevel var1) {
-      return this.isChickenJockey() ? 10 : super.getBaseExperienceReward(var1);
+   protected int getBaseExperienceReward(final ServerLevel level) {
+      return this.isChickenJockey() ? 10 : super.getBaseExperienceReward(level);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), ChickenVariants.TEMPERATE));
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), ChickenVariants.TEMPERATE));
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.isChickenJockey = var1.getBooleanOr("IsChickenJockey", false);
-      var1.getInt("EggLayTime").ifPresent((var1x) -> this.eggTime = var1x);
-      VariantUtils.readVariant(var1, Registries.CHICKEN_VARIANT).ifPresent(this::setVariant);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.isChickenJockey = input.getBooleanOr("IsChickenJockey", false);
+      input.getInt("EggLayTime").ifPresent((time) -> this.eggTime = time);
+      VariantUtils.readVariant(input, Registries.CHICKEN_VARIANT).ifPresent(this::setVariant);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("IsChickenJockey", this.isChickenJockey);
-      var1.putInt("EggLayTime", this.eggTime);
-      VariantUtils.writeVariant(var1, this.getVariant());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("IsChickenJockey", this.isChickenJockey);
+      output.putInt("EggLayTime", this.eggTime);
+      VariantUtils.writeVariant(output, this.getVariant());
    }
 
-   public void setVariant(Holder<ChickenVariant> var1) {
-      this.entityData.set(DATA_VARIANT_ID, var1);
+   public void setVariant(final Holder<ChickenVariant> variant) {
+      this.entityData.set(DATA_VARIANT_ID, variant);
    }
 
    public Holder<ChickenVariant> getVariant() {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.CHICKEN_VARIANT ? castComponentValue(var1, new EitherHolder(this.getVariant())) : super.get(var1));
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)(type == DataComponents.CHICKEN_VARIANT ? castComponentValue(type, this.getVariant()) : super.get(type));
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.CHICKEN_VARIANT);
-      super.applyImplicitComponents(var1);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.CHICKEN_VARIANT);
+      super.applyImplicitComponents(components);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.CHICKEN_VARIANT) {
-         Optional var3 = ((EitherHolder)castComponentValue(DataComponents.CHICKEN_VARIANT, var2)).unwrap(this.registryAccess());
-         if (var3.isPresent()) {
-            this.setVariant((Holder)var3.get());
-            return true;
-         } else {
-            return false;
-         }
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.CHICKEN_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.CHICKEN_VARIANT, value));
+         return true;
       } else {
-         return super.applyImplicitComponent(var1, var2);
+         return super.applyImplicitComponent(type, value);
       }
    }
 
-   public boolean removeWhenFarAway(double var1) {
+   public boolean removeWhenFarAway(final double distSqr) {
       return this.isChickenJockey();
    }
 
-   protected void positionRider(Entity var1, Entity.MoveFunction var2) {
-      super.positionRider(var1, var2);
-      if (var1 instanceof LivingEntity) {
-         ((LivingEntity)var1).yBodyRot = this.yBodyRot;
+   protected void positionRider(final Entity passenger, final Entity.MoveFunction moveFunction) {
+      super.positionRider(passenger, moveFunction);
+      if (passenger instanceof LivingEntity) {
+         ((LivingEntity)passenger).yBodyRot = this.yBodyRot;
       }
 
    }
@@ -233,17 +226,11 @@ public class Chicken extends Animal {
       return this.isChickenJockey;
    }
 
-   public void setChickenJockey(boolean var1) {
-      this.isChickenJockey = var1;
-   }
-
-   // $FF: synthetic method
-   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
+   public void setChickenJockey(final boolean isChickenJockey) {
+      this.isChickenJockey = isChickenJockey;
    }
 
    static {
-      BABY_DIMENSIONS = EntityType.CHICKEN.getDimensions().scale(0.5F).withEyeHeight(0.2975F);
       DATA_VARIANT_ID = SynchedEntityData.<Holder<ChickenVariant>>defineId(Chicken.class, EntityDataSerializers.CHICKEN_VARIANT);
    }
 }

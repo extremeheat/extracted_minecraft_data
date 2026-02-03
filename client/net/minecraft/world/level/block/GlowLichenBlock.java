@@ -19,28 +19,28 @@ public class GlowLichenBlock extends MultifaceSpreadeableBlock implements Boneme
       return CODEC;
    }
 
-   public GlowLichenBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public GlowLichenBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   public static ToIntFunction<BlockState> emission(int var0) {
-      return (var1) -> MultifaceBlock.hasAnyFace(var1) ? var0 : 0;
+   public static ToIntFunction<BlockState> emission(final int lightEmission) {
+      return (state) -> MultifaceBlock.hasAnyFace(state) ? lightEmission : 0;
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return Direction.stream().anyMatch((var4) -> this.spreader.canSpreadInAnyDirection(var3, var1, var2, var4.getOpposite()));
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return Direction.stream().anyMatch((face) -> this.spreader.canSpreadInAnyDirection(state, level, pos, face.getOpposite()));
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      this.spreader.spreadFromRandomFaceTowardRandomDirection(var4, var1, var3, var2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      this.spreader.spreadFromRandomFaceTowardRandomDirection(state, level, pos, random);
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
-      return var1.getFluidState().isEmpty();
+   protected boolean propagatesSkylightDown(final BlockState state) {
+      return state.getFluidState().isEmpty();
    }
 
    public MultifaceSpreader getSpreader() {

@@ -8,11 +8,11 @@ import java.util.Objects;
 public class EntityZombifiedPiglinRenameFix extends SimplestEntityRenameFix {
    public static final Map<String, String> RENAMED_IDS = ImmutableMap.builder().put("minecraft:zombie_pigman_spawn_egg", "minecraft:zombified_piglin_spawn_egg").build();
 
-   public EntityZombifiedPiglinRenameFix(Schema var1) {
-      super("EntityZombifiedPiglinRenameFix", var1, true);
+   public EntityZombifiedPiglinRenameFix(final Schema outputSchema) {
+      super("EntityZombifiedPiglinRenameFix", outputSchema, true);
    }
 
-   protected String rename(String var1) {
-      return Objects.equals("minecraft:zombie_pigman", var1) ? "minecraft:zombified_piglin" : var1;
+   protected String rename(final String name) {
+      return Objects.equals("minecraft:zombie_pigman", name) ? "minecraft:zombified_piglin" : name;
    }
 }

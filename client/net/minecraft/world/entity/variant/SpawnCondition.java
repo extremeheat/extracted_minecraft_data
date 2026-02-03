@@ -5,7 +5,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 public interface SpawnCondition extends PriorityProvider.SelectorCondition<SpawnContext> {
-   Codec<SpawnCondition> CODEC = BuiltInRegistries.SPAWN_CONDITION_TYPE.byNameCodec().dispatch(SpawnCondition::codec, (var0) -> var0);
+   Codec<SpawnCondition> CODEC = BuiltInRegistries.SPAWN_CONDITION_TYPE.byNameCodec().dispatch(SpawnCondition::codec, (c) -> c);
 
    MapCodec<? extends SpawnCondition> codec();
 }

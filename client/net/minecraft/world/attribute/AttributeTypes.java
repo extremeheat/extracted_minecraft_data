@@ -29,12 +29,12 @@ public interface AttributeTypes {
    AttributeType<AmbientSounds> AMBIENT_SOUNDS = register("ambient_sounds", AttributeType.ofNotInterpolated(AmbientSounds.CODEC));
    Codec<AttributeType<?>> CODEC = BuiltInRegistries.ATTRIBUTE_TYPE.byNameCodec();
 
-   static AttributeType<?> bootstrap(Registry<AttributeType<?>> var0) {
+   static AttributeType<?> bootstrap(final Registry<AttributeType<?>> registry) {
       return BOOLEAN;
    }
 
-   static <Value> AttributeType<Value> register(String var0, AttributeType<Value> var1) {
-      Registry.register(BuiltInRegistries.ATTRIBUTE_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), var1);
-      return var1;
+   static <Value> AttributeType<Value> register(final String name, final AttributeType<Value> type) {
+      Registry.register(BuiltInRegistries.ATTRIBUTE_TYPE, (Identifier)Identifier.withDefaultNamespace(name), type);
+      return type;
    }
 }

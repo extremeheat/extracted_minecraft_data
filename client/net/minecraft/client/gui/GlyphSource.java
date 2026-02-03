@@ -4,7 +4,7 @@ import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.util.RandomSource;
 
 public interface GlyphSource {
-   BakedGlyph getGlyph(int var1);
+   BakedGlyph getGlyph(int codepoint);
 
-   BakedGlyph getRandomGlyph(RandomSource var1, int var2);
+   BakedGlyph getRandomGlyph(RandomSource random, int width);
 }

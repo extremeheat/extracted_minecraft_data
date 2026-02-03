@@ -11,7 +11,6 @@ import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -33,7 +32,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
-public class TextureAtlas extends AbstractTexture implements Dumpable, TickableTexture {
+public class TextureAtlas extends AbstractTexture implements TickableTexture, Dumpable {
    private static final Logger LOGGER = LogUtils.getLogger();
    /** @deprecated */
    @Deprecated
@@ -57,83 +56,83 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
    private GpuTextureView[] mipViews = new GpuTextureView[0];
    private @Nullable GpuBuffer spriteUbos;
 
-   public TextureAtlas(Identifier var1) {
+   public TextureAtlas(final Identifier location) {
       super();
-      this.location = var1;
+      this.location = location;
       this.maxSupportedTextureSize = RenderSystem.getDevice().getMaxTextureSize();
    }
 
-   private void createTexture(int var1, int var2, int var3) {
-      LOGGER.info("Created: {}x{}x{} {}-atlas", new Object[]{var1, var2, var3, this.location});
-      GpuDevice var4 = RenderSystem.getDevice();
+   private void createTexture(final int newWidth, final int newHeight, final int newMipLevel) {
+      LOGGER.info("Created: {}x{}x{} {}-atlas", new Object[]{newWidth, newHeight, newMipLevel, this.location});
+      GpuDevice device = RenderSystem.getDevice();
       this.close();
       Identifier var10002 = this.location;
       Objects.requireNonNull(var10002);
-      this.texture = var4.createTexture(var10002::toString, 15, TextureFormat.RGBA8, var1, var2, 1, var3 + 1);
-      this.textureView = var4.createTextureView(this.texture);
-      this.width = var1;
-      this.height = var2;
-      this.maxMipLevel = var3;
-      this.mipLevelCount = var3 + 1;
+      this.texture = device.createTexture(var10002::toString, 15, TextureFormat.RGBA8, newWidth, newHeight, 1, newMipLevel + 1);
+      this.textureView = device.createTextureView(this.texture);
+      this.width = newWidth;
+      this.height = newHeight;
+      this.maxMipLevel = newMipLevel;
+      this.mipLevelCount = newMipLevel + 1;
       this.mipViews = new GpuTextureView[this.mipLevelCount];
 
-      for(int var5 = 0; var5 <= this.maxMipLevel; ++var5) {
-         this.mipViews[var5] = var4.createTextureView(this.texture, var5, 1);
+      for(int level = 0; level <= this.maxMipLevel; ++level) {
+         this.mipViews[level] = device.createTextureView(this.texture, level, 1);
       }
 
    }
 
-   public void upload(SpriteLoader.Preparations var1) {
-      this.createTexture(var1.width(), var1.height(), var1.mipLevel());
+   public void upload(final SpriteLoader.Preparations preparations) {
+      this.createTexture(preparations.width(), preparations.height(), preparations.mipLevel());
       this.clearTextureData();
       this.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
-      this.texturesByName = Map.copyOf(var1.regions());
+      this.texturesByName = Map.copyOf(preparations.regions());
       this.missingSprite = (TextureAtlasSprite)this.texturesByName.get(MissingTextureAtlasSprite.getLocation());
       if (this.missingSprite == null) {
          String var10002 = String.valueOf(this.location);
          throw new IllegalStateException("Atlas '" + var10002 + "' (" + this.texturesByName.size() + " sprites) has no missing texture sprite");
       } else {
-         ArrayList var2 = new ArrayList();
-         ArrayList var3 = new ArrayList();
-         int var4 = (int)var1.regions().values().stream().filter(TextureAtlasSprite::isAnimated).count();
-         int var5 = Mth.roundToward(SpriteContents.UBO_SIZE, RenderSystem.getDevice().getUniformOffsetAlignment());
-         int var6 = var5 * this.mipLevelCount;
-         ByteBuffer var7 = MemoryUtil.memAlloc(var4 * var6);
-         int var8 = 0;
+         List<TextureAtlasSprite> sprites = new ArrayList();
+         List<SpriteContents.AnimationState> animationStates = new ArrayList();
+         int animatedSpriteCount = (int)preparations.regions().values().stream().filter(TextureAtlasSprite::isAnimated).count();
+         int spriteUboSize = Mth.roundToward(SpriteContents.UBO_SIZE, RenderSystem.getDevice().getUniformOffsetAlignment());
+         int uboBlockSize = spriteUboSize * this.mipLevelCount;
+         ByteBuffer spriteUboBuffer = MemoryUtil.memAlloc(animatedSpriteCount * uboBlockSize);
+         int animationIndex = 0;
 
-         for(TextureAtlasSprite var10 : var1.regions().values()) {
-            if (var10.isAnimated()) {
-               var10.uploadSpriteUbo(var7, var8 * var6, this.maxMipLevel, this.width, this.height, var5);
-               ++var8;
+         for(TextureAtlasSprite sprite : preparations.regions().values()) {
+            if (sprite.isAnimated()) {
+               sprite.uploadSpriteUbo(spriteUboBuffer, animationIndex * uboBlockSize, this.maxMipLevel, this.width, this.height, spriteUboSize);
+               ++animationIndex;
             }
          }
 
-         GpuBuffer var15 = var8 > 0 ? RenderSystem.getDevice().createBuffer(() -> String.valueOf(this.location) + " sprite UBOs", 128, var7) : null;
-         var8 = 0;
+         GpuBuffer spriteUbos = animationIndex > 0 ? RenderSystem.getDevice().createBuffer(() -> String.valueOf(this.location) + " sprite UBOs", 128, spriteUboBuffer) : null;
+         animationIndex = 0;
 
-         for(TextureAtlasSprite var11 : var1.regions().values()) {
-            var2.add(var11);
-            if (var11.isAnimated() && var15 != null) {
-               SpriteContents.AnimationState var12 = var11.createAnimationState(var15.slice((long)(var8 * var6), (long)var6), var5);
-               ++var8;
-               if (var12 != null) {
-                  var3.add(var12);
+         for(TextureAtlasSprite sprite : preparations.regions().values()) {
+            sprites.add(sprite);
+            if (sprite.isAnimated() && spriteUbos != null) {
+               SpriteContents.AnimationState animationState = sprite.createAnimationState(spriteUbos.slice((long)(animationIndex * uboBlockSize), (long)uboBlockSize), spriteUboSize);
+               ++animationIndex;
+               if (animationState != null) {
+                  animationStates.add(animationState);
                }
             }
          }
 
-         this.spriteUbos = var15;
-         this.sprites = var2;
-         this.animatedTexturesStates = List.copyOf(var3);
+         this.spriteUbos = spriteUbos;
+         this.sprites = sprites;
+         this.animatedTexturesStates = List.copyOf(animationStates);
          this.uploadInitialContents();
          if (SharedConstants.DEBUG_DUMP_TEXTURE_ATLAS) {
-            Path var17 = TextureUtil.getDebugTexturePath();
+            Path dumpDir = TextureUtil.getDebugTexturePath();
 
             try {
-               Files.createDirectories(var17);
-               this.dumpContents(this.location, var17);
+               Files.createDirectories(dumpDir);
+               this.dumpContents(this.location, dumpDir);
             } catch (Exception var13) {
-               LOGGER.warn("Failed to dump atlas contents to {}", var17);
+               LOGGER.warn("Failed to dump atlas contents to {}", dumpDir);
             }
          }
 
@@ -141,74 +140,74 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
    }
 
    private void uploadInitialContents() {
-      GpuDevice var1 = RenderSystem.getDevice();
-      int var2 = Mth.roundToward(SpriteContents.UBO_SIZE, RenderSystem.getDevice().getUniformOffsetAlignment());
-      int var3 = var2 * this.mipLevelCount;
-      GpuSampler var4 = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST, true);
-      List var5 = this.sprites.stream().filter((var0) -> !var0.isAnimated()).toList();
-      ArrayList var6 = new ArrayList();
-      ByteBuffer var7 = MemoryUtil.memAlloc(var5.size() * var3);
+      GpuDevice device = RenderSystem.getDevice();
+      int spriteUboSize = Mth.roundToward(SpriteContents.UBO_SIZE, RenderSystem.getDevice().getUniformOffsetAlignment());
+      int uboBlockSize = spriteUboSize * this.mipLevelCount;
+      GpuSampler sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST, true);
+      List<TextureAtlasSprite> staticSprites = this.sprites.stream().filter((s) -> !s.isAnimated()).toList();
+      List<GpuTextureView[]> scratchTextures = new ArrayList();
+      ByteBuffer buffer = MemoryUtil.memAlloc(staticSprites.size() * uboBlockSize);
 
-      for(int var8 = 0; var8 < var5.size(); ++var8) {
-         TextureAtlasSprite var9 = (TextureAtlasSprite)var5.get(var8);
-         var9.uploadSpriteUbo(var7, var8 * var3, this.maxMipLevel, this.width, this.height, var2);
-         GpuTexture var10 = var1.createTexture((Supplier)(() -> var9.contents().name().toString()), 5, TextureFormat.RGBA8, var9.contents().width(), var9.contents().height(), 1, this.mipLevelCount);
-         GpuTextureView[] var11 = new GpuTextureView[this.mipLevelCount];
+      for(int i = 0; i < staticSprites.size(); ++i) {
+         TextureAtlasSprite sprite = (TextureAtlasSprite)staticSprites.get(i);
+         sprite.uploadSpriteUbo(buffer, i * uboBlockSize, this.maxMipLevel, this.width, this.height, spriteUboSize);
+         GpuTexture scratchTexture = device.createTexture((Supplier)(() -> sprite.contents().name().toString()), 5, TextureFormat.RGBA8, sprite.contents().width(), sprite.contents().height(), 1, this.mipLevelCount);
+         GpuTextureView[] views = new GpuTextureView[this.mipLevelCount];
 
-         for(int var12 = 0; var12 <= this.maxMipLevel; ++var12) {
-            var9.uploadFirstFrame(var10, var12);
-            var11[var12] = var1.createTextureView(var10);
+         for(int level = 0; level <= this.maxMipLevel; ++level) {
+            sprite.uploadFirstFrame(scratchTexture, level);
+            views[level] = device.createTextureView(scratchTexture);
          }
 
-         var6.add(var11);
+         scratchTextures.add(views);
       }
 
-      try (GpuBuffer var18 = var1.createBuffer(() -> "SpriteAnimationInfo", 128, var7)) {
-         for(int var20 = 0; var20 < this.mipLevelCount; ++var20) {
-            try (RenderPass var22 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[var20], OptionalInt.empty())) {
-               var22.setPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT);
+      try (GpuBuffer ubo = device.createBuffer(() -> "SpriteAnimationInfo", 128, buffer)) {
+         for(int level = 0; level < this.mipLevelCount; ++level) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], OptionalInt.empty())) {
+               renderPass.setPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT);
 
-               for(int var24 = 0; var24 < var5.size(); ++var24) {
-                  var22.bindTexture("Sprite", ((GpuTextureView[])var6.get(var24))[var20], var4);
-                  var22.setUniform("SpriteAnimationInfo", var18.slice((long)(var24 * var3 + var20 * var2), (long)SpriteContents.UBO_SIZE));
-                  var22.draw(0, 6);
+               for(int i = 0; i < staticSprites.size(); ++i) {
+                  renderPass.bindTexture("Sprite", ((GpuTextureView[])scratchTextures.get(i))[level], sampler);
+                  renderPass.setUniform("SpriteAnimationInfo", ubo.slice((long)(i * uboBlockSize + level * spriteUboSize), (long)SpriteContents.UBO_SIZE));
+                  renderPass.draw(0, 6);
                }
             }
          }
       }
 
-      for(GpuTextureView[] var21 : var6) {
-         for(GpuTextureView var13 : var21) {
-            var13.close();
-            var13.texture().close();
+      for(GpuTextureView[] views : scratchTextures) {
+         for(GpuTextureView view : views) {
+            view.close();
+            view.texture().close();
          }
       }
 
-      MemoryUtil.memFree(var7);
+      MemoryUtil.memFree(buffer);
       this.uploadAnimationFrames();
    }
 
-   public void dumpContents(Identifier var1, Path var2) throws IOException {
-      String var3 = var1.toDebugFileName();
-      TextureUtil.writeAsPNG(var2, var3, this.getTexture(), this.maxMipLevel, (var0) -> var0);
-      dumpSpriteNames(var2, var3, this.texturesByName);
+   public void dumpContents(final Identifier selfId, final Path dir) throws IOException {
+      String outputId = selfId.toDebugFileName();
+      TextureUtil.writeAsPNG(dir, outputId, this.getTexture(), this.maxMipLevel, (argb) -> argb);
+      dumpSpriteNames(dir, outputId, this.texturesByName);
    }
 
-   private static void dumpSpriteNames(Path var0, String var1, Map<Identifier, TextureAtlasSprite> var2) {
-      Path var3 = var0.resolve(var1 + ".txt");
+   private static void dumpSpriteNames(final Path dir, final String outputId, final Map<Identifier, TextureAtlasSprite> regions) {
+      Path outputPath = dir.resolve(outputId + ".txt");
 
       try {
-         BufferedWriter var4 = Files.newBufferedWriter(var3);
+         Writer output = Files.newBufferedWriter(outputPath);
 
          try {
-            for(Map.Entry var6 : var2.entrySet().stream().sorted(Entry.comparingByKey()).toList()) {
-               TextureAtlasSprite var7 = (TextureAtlasSprite)var6.getValue();
-               ((Writer)var4).write(String.format(Locale.ROOT, "%s\tx=%d\ty=%d\tw=%d\th=%d%n", var6.getKey(), var7.getX(), var7.getY(), var7.contents().width(), var7.contents().height()));
+            for(Map.Entry<Identifier, TextureAtlasSprite> e : regions.entrySet().stream().sorted(Entry.comparingByKey()).toList()) {
+               TextureAtlasSprite value = (TextureAtlasSprite)e.getValue();
+               output.write(String.format(Locale.ROOT, "%s\tx=%d\ty=%d\tw=%d\th=%d%n", e.getKey(), value.getX(), value.getY(), value.contents().width(), value.contents().height()));
             }
          } catch (Throwable var9) {
-            if (var4 != null) {
+            if (output != null) {
                try {
-                  ((Writer)var4).close();
+                  output.close();
                } catch (Throwable var8) {
                   var9.addSuppressed(var8);
                }
@@ -217,19 +216,19 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
             throw var9;
          }
 
-         if (var4 != null) {
-            ((Writer)var4).close();
+         if (output != null) {
+            output.close();
          }
-      } catch (IOException var10) {
-         LOGGER.warn("Failed to write file {}", var3, var10);
+      } catch (IOException e) {
+         LOGGER.warn("Failed to write file {}", outputPath, e);
       }
 
    }
 
    public void cycleAnimationFrames() {
       if (this.texture != null) {
-         for(SpriteContents.AnimationState var2 : this.animatedTexturesStates) {
-            var2.tick();
+         for(SpriteContents.AnimationState animationState : this.animatedTexturesStates) {
+            animationState.tick();
          }
 
          this.uploadAnimationFrames();
@@ -238,11 +237,11 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
 
    private void uploadAnimationFrames() {
       if (this.animatedTexturesStates.stream().anyMatch(SpriteContents.AnimationState::needsToDraw)) {
-         for(int var1 = 0; var1 <= this.maxMipLevel; ++var1) {
-            try (RenderPass var2 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[var1], OptionalInt.empty())) {
-               for(SpriteContents.AnimationState var4 : this.animatedTexturesStates) {
-                  if (var4.needsToDraw()) {
-                     var4.drawToAtlas(var2, var4.getDrawUbo(var1));
+         for(int level = 0; level <= this.maxMipLevel; ++level) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], OptionalInt.empty())) {
+               for(SpriteContents.AnimationState animationState : this.animatedTexturesStates) {
+                  if (animationState.needsToDraw()) {
+                     animationState.drawToAtlas(renderPass, animationState.getDrawUbo(level));
                   }
                }
             }
@@ -255,12 +254,12 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
       this.cycleAnimationFrames();
    }
 
-   public TextureAtlasSprite getSprite(Identifier var1) {
-      TextureAtlasSprite var2 = (TextureAtlasSprite)this.texturesByName.getOrDefault(var1, this.missingSprite);
-      if (var2 == null) {
+   public TextureAtlasSprite getSprite(final Identifier location) {
+      TextureAtlasSprite result = (TextureAtlasSprite)this.texturesByName.getOrDefault(location, this.missingSprite);
+      if (result == null) {
          throw new IllegalStateException("Tried to lookup sprite, but atlas is not initialized");
       } else {
-         return var2;
+         return result;
       }
    }
 
@@ -279,12 +278,12 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
    public void close() {
       super.close();
 
-      for(GpuTextureView var4 : this.mipViews) {
-         var4.close();
+      for(GpuTextureView view : this.mipViews) {
+         view.close();
       }
 
-      for(SpriteContents.AnimationState var6 : this.animatedTexturesStates) {
-         var6.close();
+      for(SpriteContents.AnimationState animationState : this.animatedTexturesStates) {
+         animationState.close();
       }
 
       if (this.spriteUbos != null) {

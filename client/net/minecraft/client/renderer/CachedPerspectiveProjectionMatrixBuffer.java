@@ -18,27 +18,27 @@ public class CachedPerspectiveProjectionMatrixBuffer implements AutoCloseable {
    private int height;
    private float fov;
 
-   public CachedPerspectiveProjectionMatrixBuffer(String var1, float var2, float var3) {
+   public CachedPerspectiveProjectionMatrixBuffer(final String name, final float zNear, final float zFar) {
       super();
-      this.zNear = var2;
-      this.zFar = var3;
-      GpuDevice var4 = RenderSystem.getDevice();
-      this.buffer = var4.createBuffer(() -> "Projection matrix UBO " + var1, 136, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
+      this.zNear = zNear;
+      this.zFar = zFar;
+      GpuDevice device = RenderSystem.getDevice();
+      this.buffer = device.createBuffer(() -> "Projection matrix UBO " + name, 136, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
       this.bufferSlice = this.buffer.slice(0L, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
    }
 
-   public GpuBufferSlice getBuffer(int var1, int var2, float var3) {
-      if (this.width != var1 || this.height != var2 || this.fov != var3) {
-         Matrix4f var4 = this.createProjectionMatrix(var1, var2, var3);
-         MemoryStack var5 = MemoryStack.stackPush();
+   public GpuBufferSlice getBuffer(final int width, final int height, final float fov) {
+      if (this.width != width || this.height != height || this.fov != fov) {
+         Matrix4f projectionMatrix = this.createProjectionMatrix(width, height, fov);
+         MemoryStack stack = MemoryStack.stackPush();
 
          try {
-            ByteBuffer var6 = Std140Builder.onStack(var5, RenderSystem.PROJECTION_MATRIX_UBO_SIZE).putMat4f(var4).get();
-            RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), var6);
+            ByteBuffer byteBuffer = Std140Builder.onStack(stack, RenderSystem.PROJECTION_MATRIX_UBO_SIZE).putMat4f(projectionMatrix).get();
+            RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), byteBuffer);
          } catch (Throwable var9) {
-            if (var5 != null) {
+            if (stack != null) {
                try {
-                  var5.close();
+                  stack.close();
                } catch (Throwable var8) {
                   var9.addSuppressed(var8);
                }
@@ -47,20 +47,20 @@ public class CachedPerspectiveProjectionMatrixBuffer implements AutoCloseable {
             throw var9;
          }
 
-         if (var5 != null) {
-            var5.close();
+         if (stack != null) {
+            stack.close();
          }
 
-         this.width = var1;
-         this.height = var2;
-         this.fov = var3;
+         this.width = width;
+         this.height = height;
+         this.fov = fov;
       }
 
       return this.bufferSlice;
    }
 
-   private Matrix4f createProjectionMatrix(int var1, int var2, float var3) {
-      return (new Matrix4f()).perspective(var3 * 0.017453292F, (float)var1 / (float)var2, this.zNear, this.zFar);
+   private Matrix4f createProjectionMatrix(final int width, final int height, final float fov) {
+      return (new Matrix4f()).perspective(fov * 0.017453292F, (float)width / (float)height, this.zNear, this.zFar, RenderSystem.getDevice().isZZeroToOne());
    }
 
    public void close() {

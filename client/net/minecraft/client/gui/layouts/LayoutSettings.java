@@ -1,29 +1,29 @@
 package net.minecraft.client.gui.layouts;
 
 public interface LayoutSettings {
-   LayoutSettings padding(int var1);
+   LayoutSettings padding(int padding);
 
-   LayoutSettings padding(int var1, int var2);
+   LayoutSettings padding(int horizontal, int vertical);
 
-   LayoutSettings padding(int var1, int var2, int var3, int var4);
+   LayoutSettings padding(int left, int top, int right, int bottom);
 
-   LayoutSettings paddingLeft(int var1);
+   LayoutSettings paddingLeft(int padding);
 
-   LayoutSettings paddingTop(int var1);
+   LayoutSettings paddingTop(int padding);
 
-   LayoutSettings paddingRight(int var1);
+   LayoutSettings paddingRight(int padding);
 
-   LayoutSettings paddingBottom(int var1);
+   LayoutSettings paddingBottom(int padding);
 
-   LayoutSettings paddingHorizontal(int var1);
+   LayoutSettings paddingHorizontal(int padding);
 
-   LayoutSettings paddingVertical(int var1);
+   LayoutSettings paddingVertical(int padding);
 
-   LayoutSettings align(float var1, float var2);
+   LayoutSettings align(float xAlignment, float yAlignment);
 
-   LayoutSettings alignHorizontally(float var1);
+   LayoutSettings alignHorizontally(float xAlignment);
 
-   LayoutSettings alignVertically(float var1);
+   LayoutSettings alignVertically(float yAlignment);
 
    default LayoutSettings alignHorizontallyLeft() {
       return this.alignHorizontally(0.0F);
@@ -69,69 +69,69 @@ public interface LayoutSettings {
          super();
       }
 
-      public LayoutSettingsImpl(LayoutSettingsImpl var1) {
+      public LayoutSettingsImpl(final LayoutSettingsImpl copy) {
          super();
-         this.paddingLeft = var1.paddingLeft;
-         this.paddingTop = var1.paddingTop;
-         this.paddingRight = var1.paddingRight;
-         this.paddingBottom = var1.paddingBottom;
-         this.xAlignment = var1.xAlignment;
-         this.yAlignment = var1.yAlignment;
+         this.paddingLeft = copy.paddingLeft;
+         this.paddingTop = copy.paddingTop;
+         this.paddingRight = copy.paddingRight;
+         this.paddingBottom = copy.paddingBottom;
+         this.xAlignment = copy.xAlignment;
+         this.yAlignment = copy.yAlignment;
       }
 
-      public LayoutSettingsImpl padding(int var1) {
-         return this.padding(var1, var1);
+      public LayoutSettingsImpl padding(final int padding) {
+         return this.padding(padding, padding);
       }
 
-      public LayoutSettingsImpl padding(int var1, int var2) {
-         return this.paddingHorizontal(var1).paddingVertical(var2);
+      public LayoutSettingsImpl padding(final int horizontal, final int vertical) {
+         return this.paddingHorizontal(horizontal).paddingVertical(vertical);
       }
 
-      public LayoutSettingsImpl padding(int var1, int var2, int var3, int var4) {
-         return this.paddingLeft(var1).paddingRight(var3).paddingTop(var2).paddingBottom(var4);
+      public LayoutSettingsImpl padding(final int left, final int top, final int right, final int bottom) {
+         return this.paddingLeft(left).paddingRight(right).paddingTop(top).paddingBottom(bottom);
       }
 
-      public LayoutSettingsImpl paddingLeft(int var1) {
-         this.paddingLeft = var1;
+      public LayoutSettingsImpl paddingLeft(final int padding) {
+         this.paddingLeft = padding;
          return this;
       }
 
-      public LayoutSettingsImpl paddingTop(int var1) {
-         this.paddingTop = var1;
+      public LayoutSettingsImpl paddingTop(final int padding) {
+         this.paddingTop = padding;
          return this;
       }
 
-      public LayoutSettingsImpl paddingRight(int var1) {
-         this.paddingRight = var1;
+      public LayoutSettingsImpl paddingRight(final int padding) {
+         this.paddingRight = padding;
          return this;
       }
 
-      public LayoutSettingsImpl paddingBottom(int var1) {
-         this.paddingBottom = var1;
+      public LayoutSettingsImpl paddingBottom(final int padding) {
+         this.paddingBottom = padding;
          return this;
       }
 
-      public LayoutSettingsImpl paddingHorizontal(int var1) {
-         return this.paddingLeft(var1).paddingRight(var1);
+      public LayoutSettingsImpl paddingHorizontal(final int padding) {
+         return this.paddingLeft(padding).paddingRight(padding);
       }
 
-      public LayoutSettingsImpl paddingVertical(int var1) {
-         return this.paddingTop(var1).paddingBottom(var1);
+      public LayoutSettingsImpl paddingVertical(final int padding) {
+         return this.paddingTop(padding).paddingBottom(padding);
       }
 
-      public LayoutSettingsImpl align(float var1, float var2) {
-         this.xAlignment = var1;
-         this.yAlignment = var2;
+      public LayoutSettingsImpl align(final float xAlignment, final float yAlignment) {
+         this.xAlignment = xAlignment;
+         this.yAlignment = yAlignment;
          return this;
       }
 
-      public LayoutSettingsImpl alignHorizontally(float var1) {
-         this.xAlignment = var1;
+      public LayoutSettingsImpl alignHorizontally(final float xAlignment) {
+         this.xAlignment = xAlignment;
          return this;
       }
 
-      public LayoutSettingsImpl alignVertically(float var1) {
-         this.yAlignment = var1;
+      public LayoutSettingsImpl alignVertically(final float yAlignment) {
+         this.yAlignment = yAlignment;
          return this;
       }
 
@@ -141,71 +141,6 @@ public interface LayoutSettings {
 
       public LayoutSettingsImpl getExposed() {
          return this;
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings copy() {
-         return this.copy();
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings alignVertically(final float var1) {
-         return this.alignVertically(var1);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings alignHorizontally(final float var1) {
-         return this.alignHorizontally(var1);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings align(final float var1, final float var2) {
-         return this.align(var1, var2);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings paddingVertical(final int var1) {
-         return this.paddingVertical(var1);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings paddingHorizontal(final int var1) {
-         return this.paddingHorizontal(var1);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings paddingBottom(final int var1) {
-         return this.paddingBottom(var1);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings paddingRight(final int var1) {
-         return this.paddingRight(var1);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings paddingTop(final int var1) {
-         return this.paddingTop(var1);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings paddingLeft(final int var1) {
-         return this.paddingLeft(var1);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings padding(final int var1, final int var2, final int var3, final int var4) {
-         return this.padding(var1, var2, var3, var4);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings padding(final int var1, final int var2) {
-         return this.padding(var1, var2);
-      }
-
-      // $FF: synthetic method
-      public LayoutSettings padding(final int var1) {
-         return this.padding(var1);
       }
    }
 }

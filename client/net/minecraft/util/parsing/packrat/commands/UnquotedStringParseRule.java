@@ -11,26 +11,21 @@ public class UnquotedStringParseRule implements Rule<StringReader, String> {
    private final int minSize;
    private final DelayedException<CommandSyntaxException> error;
 
-   public UnquotedStringParseRule(int var1, DelayedException<CommandSyntaxException> var2) {
+   public UnquotedStringParseRule(final int minSize, final DelayedException<CommandSyntaxException> error) {
       super();
-      this.minSize = var1;
-      this.error = var2;
+      this.minSize = minSize;
+      this.error = error;
    }
 
-   public @Nullable String parse(ParseState<StringReader> var1) {
-      ((StringReader)var1.input()).skipWhitespace();
-      int var2 = var1.mark();
-      String var3 = ((StringReader)var1.input()).readUnquotedString();
-      if (var3.length() < this.minSize) {
-         var1.errorCollector().store(var2, this.error);
+   public @Nullable String parse(final ParseState<StringReader> state) {
+      ((StringReader)state.input()).skipWhitespace();
+      int cursor = state.mark();
+      String value = ((StringReader)state.input()).readUnquotedString();
+      if (value.length() < this.minSize) {
+         state.errorCollector().store(cursor, this.error);
          return null;
       } else {
-         return var3;
+         return value;
       }
-   }
-
-   // $FF: synthetic method
-   public @Nullable Object parse(final ParseState var1) {
-      return this.parse(var1);
    }
 }

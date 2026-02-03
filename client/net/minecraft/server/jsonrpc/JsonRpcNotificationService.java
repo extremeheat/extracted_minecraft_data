@@ -20,18 +20,18 @@ public class JsonRpcNotificationService implements NotificationService {
    private final ManagementServer managementServer;
    private final MinecraftApi minecraftApi;
 
-   public JsonRpcNotificationService(MinecraftApi var1, ManagementServer var2) {
+   public JsonRpcNotificationService(final MinecraftApi minecraftApi, final ManagementServer managementServer) {
       super();
-      this.minecraftApi = var1;
-      this.managementServer = var2;
+      this.minecraftApi = minecraftApi;
+      this.managementServer = managementServer;
    }
 
-   public void playerJoined(ServerPlayer var1) {
-      this.broadcastNotification(OutgoingRpcMethods.PLAYER_JOINED, PlayerDto.from(var1));
+   public void playerJoined(final ServerPlayer player) {
+      this.broadcastNotification(OutgoingRpcMethods.PLAYER_JOINED, PlayerDto.from(player));
    }
 
-   public void playerLeft(ServerPlayer var1) {
-      this.broadcastNotification(OutgoingRpcMethods.PLAYER_LEFT, PlayerDto.from(var1));
+   public void playerLeft(final ServerPlayer player) {
+      this.broadcastNotification(OutgoingRpcMethods.PLAYER_LEFT, PlayerDto.from(player));
    }
 
    public void serverStarted() {
@@ -54,51 +54,51 @@ public class JsonRpcNotificationService implements NotificationService {
       this.broadcastNotification(OutgoingRpcMethods.SERVER_ACTIVITY_OCCURRED);
    }
 
-   public void playerOped(ServerOpListEntry var1) {
-      this.broadcastNotification(OutgoingRpcMethods.PLAYER_OPED, OperatorService.OperatorDto.from(var1));
+   public void playerOped(final ServerOpListEntry operator) {
+      this.broadcastNotification(OutgoingRpcMethods.PLAYER_OPED, OperatorService.OperatorDto.from(operator));
    }
 
-   public void playerDeoped(ServerOpListEntry var1) {
-      this.broadcastNotification(OutgoingRpcMethods.PLAYER_DEOPED, OperatorService.OperatorDto.from(var1));
+   public void playerDeoped(final ServerOpListEntry operator) {
+      this.broadcastNotification(OutgoingRpcMethods.PLAYER_DEOPED, OperatorService.OperatorDto.from(operator));
    }
 
-   public void playerAddedToAllowlist(NameAndId var1) {
-      this.broadcastNotification(OutgoingRpcMethods.PLAYER_ADDED_TO_ALLOWLIST, PlayerDto.from(var1));
+   public void playerAddedToAllowlist(final NameAndId player) {
+      this.broadcastNotification(OutgoingRpcMethods.PLAYER_ADDED_TO_ALLOWLIST, PlayerDto.from(player));
    }
 
-   public void playerRemovedFromAllowlist(NameAndId var1) {
-      this.broadcastNotification(OutgoingRpcMethods.PLAYER_REMOVED_FROM_ALLOWLIST, PlayerDto.from(var1));
+   public void playerRemovedFromAllowlist(final NameAndId player) {
+      this.broadcastNotification(OutgoingRpcMethods.PLAYER_REMOVED_FROM_ALLOWLIST, PlayerDto.from(player));
    }
 
-   public void ipBanned(IpBanListEntry var1) {
-      this.broadcastNotification(OutgoingRpcMethods.IP_BANNED, IpBanlistService.IpBanDto.from(var1));
+   public void ipBanned(final IpBanListEntry ban) {
+      this.broadcastNotification(OutgoingRpcMethods.IP_BANNED, IpBanlistService.IpBanDto.from(ban));
    }
 
-   public void ipUnbanned(String var1) {
-      this.broadcastNotification(OutgoingRpcMethods.IP_UNBANNED, var1);
+   public void ipUnbanned(final String ip) {
+      this.broadcastNotification(OutgoingRpcMethods.IP_UNBANNED, ip);
    }
 
-   public void playerBanned(UserBanListEntry var1) {
-      this.broadcastNotification(OutgoingRpcMethods.PLAYER_BANNED, BanlistService.UserBanDto.from(var1));
+   public void playerBanned(final UserBanListEntry ban) {
+      this.broadcastNotification(OutgoingRpcMethods.PLAYER_BANNED, BanlistService.UserBanDto.from(ban));
    }
 
-   public void playerUnbanned(NameAndId var1) {
-      this.broadcastNotification(OutgoingRpcMethods.PLAYER_UNBANNED, PlayerDto.from(var1));
+   public void playerUnbanned(final NameAndId player) {
+      this.broadcastNotification(OutgoingRpcMethods.PLAYER_UNBANNED, PlayerDto.from(player));
    }
 
-   public <T> void onGameRuleChanged(GameRule<T> var1, T var2) {
-      this.broadcastNotification(OutgoingRpcMethods.GAMERULE_CHANGED, GameRulesService.getTypedRule(this.minecraftApi, var1, var2));
+   public <T> void onGameRuleChanged(final GameRule<T> gameRule, final T value) {
+      this.broadcastNotification(OutgoingRpcMethods.GAMERULE_CHANGED, GameRulesService.getTypedRule(this.minecraftApi, gameRule, value));
    }
 
    public void statusHeartbeat() {
       this.broadcastNotification(OutgoingRpcMethods.STATUS_HEARTBEAT, ServerStateService.status(this.minecraftApi));
    }
 
-   private void broadcastNotification(Holder.Reference<? extends OutgoingRpcMethod<Void, ?>> var1) {
-      this.managementServer.forEachConnection((var1x) -> var1x.sendNotification(var1));
+   private void broadcastNotification(final Holder.Reference<? extends OutgoingRpcMethod<Void, ?>> method) {
+      this.managementServer.forEachConnection((connection) -> connection.sendNotification(method));
    }
 
-   private <Params> void broadcastNotification(Holder.Reference<? extends OutgoingRpcMethod<Params, ?>> var1, Params var2) {
-      this.managementServer.forEachConnection((var2x) -> var2x.sendNotification(var1, var2));
+   private <Params> void broadcastNotification(final Holder.Reference<? extends OutgoingRpcMethod<Params, ?>> method, final Params params) {
+      this.managementServer.forEachConnection((connection) -> connection.sendNotification(method, params));
    }
 }

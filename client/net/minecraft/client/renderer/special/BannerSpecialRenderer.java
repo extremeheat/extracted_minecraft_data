@@ -19,43 +19,37 @@ public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPattern
    private final BannerRenderer bannerRenderer;
    private final DyeColor baseColor;
 
-   public BannerSpecialRenderer(DyeColor var1, BannerRenderer var2) {
+   public BannerSpecialRenderer(final DyeColor baseColor, final BannerRenderer bannerRenderer) {
       super();
-      this.bannerRenderer = var2;
-      this.baseColor = var1;
+      this.bannerRenderer = bannerRenderer;
+      this.baseColor = baseColor;
    }
 
-   public @Nullable BannerPatternLayers extractArgument(ItemStack var1) {
-      return (BannerPatternLayers)var1.get(DataComponents.BANNER_PATTERNS);
+   public @Nullable BannerPatternLayers extractArgument(final ItemStack stack) {
+      return (BannerPatternLayers)stack.get(DataComponents.BANNER_PATTERNS);
    }
 
-   public void submit(@Nullable BannerPatternLayers var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8) {
-      this.bannerRenderer.submitSpecial(var3, var4, var5, var6, this.baseColor, (BannerPatternLayers)Objects.requireNonNullElse(var1, BannerPatternLayers.EMPTY), var8);
+   public void submit(final @Nullable BannerPatternLayers patterns, final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      this.bannerRenderer.submitSpecial(poseStack, submitNodeCollector, lightCoords, overlayCoords, this.baseColor, (BannerPatternLayers)Objects.requireNonNullElse(patterns, BannerPatternLayers.EMPTY), outlineColor);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      this.bannerRenderer.getExtents(var1);
-   }
-
-   // $FF: synthetic method
-   public @Nullable Object extractArgument(final ItemStack var1) {
-      return this.extractArgument(var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      this.bannerRenderer.getExtents(output);
    }
 
    public static record Unbaked(DyeColor baseColor) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(Unbaked::baseColor)).apply(var0, Unbaked::new));
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DyeColor.CODEC.fieldOf("color").forGetter(Unbaked::baseColor)).apply(i, Unbaked::new));
 
-      public Unbaked(DyeColor var1) {
+      public Unbaked {
          super();
-         this.baseColor = var1;
       }
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         return new BannerSpecialRenderer(this.baseColor, new BannerRenderer(var1));
+      public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+         return new BannerSpecialRenderer(this.baseColor, new BannerRenderer(context));
       }
    }
 }

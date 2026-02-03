@@ -38,11 +38,11 @@ public class ChaseClient {
    private @Nullable Socket socket;
    private @Nullable Thread thread;
 
-   public ChaseClient(String var1, int var2, MinecraftServer var3) {
+   public ChaseClient(final String serverHost, final int serverPort, final MinecraftServer server) {
       super();
-      this.serverHost = var1;
-      this.serverPort = var2;
-      this.server = var3;
+      this.serverHost = serverHost;
+      this.serverPort = serverPort;
+      this.server = server;
    }
 
    public void start() {
@@ -64,30 +64,30 @@ public class ChaseClient {
    }
 
    public void run() {
-      String var1 = this.serverHost + ":" + this.serverPort;
+      String serverAddress = this.serverHost + ":" + this.serverPort;
 
       while(this.wantsToRun) {
          try {
-            LOGGER.info("Connecting to remote control server {}", var1);
+            LOGGER.info("Connecting to remote control server {}", serverAddress);
             this.socket = new Socket(this.serverHost, this.serverPort);
             LOGGER.info("Connected to remote control server! Will continuously execute the command broadcasted by that server.");
 
             try {
-               BufferedReader var2 = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), StandardCharsets.US_ASCII));
+               BufferedReader input = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), StandardCharsets.US_ASCII));
 
                try {
                   while(this.wantsToRun) {
-                     String var3 = var2.readLine();
-                     if (var3 == null) {
-                        LOGGER.warn("Lost connection to remote control server {}. Will retry in {}s.", var1, 5);
+                     String message = input.readLine();
+                     if (message == null) {
+                        LOGGER.warn("Lost connection to remote control server {}. Will retry in {}s.", serverAddress, 5);
                         break;
                      }
 
-                     this.handleMessage(var3);
+                     this.handleMessage(message);
                   }
                } catch (Throwable var7) {
                   try {
-                     var2.close();
+                     input.close();
                   } catch (Throwable var6) {
                      var7.addSuppressed(var6);
                   }
@@ -95,12 +95,12 @@ public class ChaseClient {
                   throw var7;
                }
 
-               var2.close();
+               input.close();
             } catch (IOException var8) {
-               LOGGER.warn("Lost connection to remote control server {}. Will retry in {}s.", var1, 5);
+               LOGGER.warn("Lost connection to remote control server {}. Will retry in {}s.", serverAddress, 5);
             }
          } catch (IOException var9) {
-            LOGGER.warn("Failed to connect to remote control server {}. Will retry in {}s.", var1, 5);
+            LOGGER.warn("Failed to connect to remote control server {}. Will retry in {}s.", serverAddress, 5);
          }
 
          if (this.wantsToRun) {
@@ -113,21 +113,21 @@ public class ChaseClient {
 
    }
 
-   private void handleMessage(String var1) {
+   private void handleMessage(final String message) {
       try {
-         Scanner var2 = new Scanner(new StringReader(var1));
+         Scanner scanner = new Scanner(new StringReader(message));
 
          try {
-            var2.useLocale(Locale.ROOT);
-            String var3 = var2.next();
-            if ("t".equals(var3)) {
-               this.handleTeleport(var2);
+            scanner.useLocale(Locale.ROOT);
+            String head = scanner.next();
+            if ("t".equals(head)) {
+               this.handleTeleport(scanner);
             } else {
-               LOGGER.warn("Unknown message type '{}'", var3);
+               LOGGER.warn("Unknown message type '{}'", head);
             }
          } catch (Throwable var6) {
             try {
-               var2.close();
+               scanner.close();
             } catch (Throwable var5) {
                var6.addSuppressed(var5);
             }
@@ -135,54 +135,47 @@ public class ChaseClient {
             throw var6;
          }
 
-         var2.close();
+         scanner.close();
       } catch (NoSuchElementException var7) {
-         LOGGER.warn("Could not parse message '{}', ignoring", var1);
+         LOGGER.warn("Could not parse message '{}', ignoring", message);
       }
 
    }
 
-   private void handleTeleport(Scanner var1) {
-      this.parseTarget(var1).ifPresent((var1x) -> this.executeCommand(String.format(Locale.ROOT, "execute in %s run tp @s %.3f %.3f %.3f %.3f %.3f", var1x.level.identifier(), var1x.pos.x, var1x.pos.y, var1x.pos.z, var1x.rot.y, var1x.rot.x)));
+   private void handleTeleport(final Scanner scanner) {
+      this.parseTarget(scanner).ifPresent((target) -> this.executeCommand(String.format(Locale.ROOT, "execute in %s run tp @s %.3f %.3f %.3f %.3f %.3f", target.level.identifier(), target.pos.x, target.pos.y, target.pos.z, target.rot.y, target.rot.x)));
    }
 
-   private Optional<TeleportTarget> parseTarget(Scanner var1) {
-      ResourceKey var2 = (ResourceKey)ChaseCommand.DIMENSION_NAMES.get(var1.next());
-      if (var2 == null) {
+   private Optional<TeleportTarget> parseTarget(final Scanner scanner) {
+      ResourceKey<Level> levelType = (ResourceKey)ChaseCommand.DIMENSION_NAMES.get(scanner.next());
+      if (levelType == null) {
          return Optional.empty();
       } else {
-         float var3 = var1.nextFloat();
-         float var4 = var1.nextFloat();
-         float var5 = var1.nextFloat();
-         float var6 = var1.nextFloat();
-         float var7 = var1.nextFloat();
-         return Optional.of(new TeleportTarget(var2, new Vec3((double)var3, (double)var4, (double)var5), new Vec2(var7, var6)));
+         float x = scanner.nextFloat();
+         float y = scanner.nextFloat();
+         float z = scanner.nextFloat();
+         float yRot = scanner.nextFloat();
+         float xRot = scanner.nextFloat();
+         return Optional.of(new TeleportTarget(levelType, new Vec3((double)x, (double)y, (double)z), new Vec2(xRot, yRot)));
       }
    }
 
-   private void executeCommand(String var1) {
+   private void executeCommand(final String command) {
       this.server.execute(() -> {
-         List var2 = this.server.getPlayerList().getPlayers();
-         if (!var2.isEmpty()) {
-            ServerPlayer var3 = (ServerPlayer)var2.get(0);
-            ServerLevel var4 = this.server.overworld();
-            CommandSourceStack var5 = new CommandSourceStack(var3.commandSource(), Vec3.atLowerCornerOf(var4.getRespawnData().pos()), Vec2.ZERO, var4, LevelBasedPermissionSet.OWNER, "", CommonComponents.EMPTY, this.server, var3);
-            Commands var6 = this.server.getCommands();
-            var6.performPrefixedCommand(var5, var1);
+         List<ServerPlayer> players = this.server.getPlayerList().getPlayers();
+         if (!players.isEmpty()) {
+            ServerPlayer player = (ServerPlayer)players.get(0);
+            ServerLevel level = this.server.overworld();
+            CommandSourceStack commandSourceStack = new CommandSourceStack(player.commandSource(), Vec3.atLowerCornerOf(level.getRespawnData().pos()), Vec2.ZERO, level, LevelBasedPermissionSet.OWNER, "", CommonComponents.EMPTY, this.server, player);
+            Commands commands = this.server.getCommands();
+            commands.performPrefixedCommand(commandSourceStack, command);
          }
       });
    }
 
    static record TeleportTarget(ResourceKey<Level> level, Vec3 pos, Vec2 rot) {
-      final ResourceKey<Level> level;
-      final Vec3 pos;
-      final Vec2 rot;
-
-      TeleportTarget(ResourceKey<Level> var1, Vec3 var2, Vec2 var3) {
+      TeleportTarget {
          super();
-         this.level = var1;
-         this.pos = var2;
-         this.rot = var3;
       }
    }
 }

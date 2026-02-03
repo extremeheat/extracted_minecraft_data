@@ -11,25 +11,25 @@ public class ServerNameResolver {
    private final AddressCheck addressCheck;
 
    @VisibleForTesting
-   ServerNameResolver(ServerAddressResolver var1, ServerRedirectHandler var2, AddressCheck var3) {
+   ServerNameResolver(final ServerAddressResolver resolver, final ServerRedirectHandler redirectHandler, final AddressCheck addressCheck) {
       super();
-      this.resolver = var1;
-      this.redirectHandler = var2;
-      this.addressCheck = var3;
+      this.resolver = resolver;
+      this.redirectHandler = redirectHandler;
+      this.addressCheck = addressCheck;
    }
 
-   public Optional<ResolvedServerAddress> resolveAddress(ServerAddress var1) {
-      Optional var2 = this.resolver.resolve(var1);
-      if ((!var2.isPresent() || this.addressCheck.isAllowed((ResolvedServerAddress)var2.get())) && this.addressCheck.isAllowed(var1)) {
-         Optional var3 = this.redirectHandler.lookupRedirect(var1);
-         if (var3.isPresent()) {
-            Optional var10000 = this.resolver.resolve((ServerAddress)var3.get());
+   public Optional<ResolvedServerAddress> resolveAddress(final ServerAddress address) {
+      Optional<ResolvedServerAddress> resolvedAddress = this.resolver.resolve(address);
+      if ((!resolvedAddress.isPresent() || this.addressCheck.isAllowed((ResolvedServerAddress)resolvedAddress.get())) && this.addressCheck.isAllowed(address)) {
+         Optional<ServerAddress> redirectedAddress = this.redirectHandler.lookupRedirect(address);
+         if (redirectedAddress.isPresent()) {
+            Optional var10000 = this.resolver.resolve((ServerAddress)redirectedAddress.get());
             AddressCheck var10001 = this.addressCheck;
             Objects.requireNonNull(var10001);
-            var2 = var10000.filter(var10001::isAllowed);
+            resolvedAddress = var10000.filter(var10001::isAllowed);
          }
 
-         return var2;
+         return resolvedAddress;
       } else {
          return Optional.empty();
       }

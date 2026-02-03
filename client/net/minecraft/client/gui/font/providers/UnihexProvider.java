@@ -35,7 +35,7 @@ import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
 public class UnihexProvider implements GlyphProvider {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int GLYPH_HEIGHT = 16;
    private static final int DIGITS_PER_BYTE = 2;
    private static final int DIGITS_FOR_WIDTH_8 = 32;
@@ -44,13 +44,13 @@ public class UnihexProvider implements GlyphProvider {
    private static final int DIGITS_FOR_WIDTH_32 = 128;
    private final CodepointMap<Glyph> glyphs;
 
-   UnihexProvider(CodepointMap<Glyph> var1) {
+   private UnihexProvider(final CodepointMap<Glyph> glyphs) {
       super();
-      this.glyphs = var1;
+      this.glyphs = glyphs;
    }
 
-   public @Nullable UnbakedGlyph getGlyph(int var1) {
-      return this.glyphs.get(var1);
+   public @Nullable UnbakedGlyph getGlyph(final int codepoint) {
+      return this.glyphs.get(codepoint);
    }
 
    public IntSet getSupportedGlyphs() {
@@ -58,77 +58,77 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    @VisibleForTesting
-   static void unpackBitsToBytes(IntBuffer var0, int var1, int var2, int var3) {
-      int var4 = 32 - var2 - 1;
-      int var5 = 32 - var3 - 1;
+   static void unpackBitsToBytes(final IntBuffer output, final int value, final int left, final int right) {
+      int startBit = 32 - left - 1;
+      int endBit = 32 - right - 1;
 
-      for(int var6 = var4; var6 >= var5; --var6) {
-         if (var6 < 32 && var6 >= 0) {
-            boolean var7 = (var1 >> var6 & 1) != 0;
-            var0.put(var7 ? -1 : 0);
+      for(int i = startBit; i >= endBit; --i) {
+         if (i < 32 && i >= 0) {
+            boolean isSet = (value >> i & 1) != 0;
+            output.put(isSet ? -1 : 0);
          } else {
-            var0.put(0);
+            output.put(0);
          }
       }
 
    }
 
-   static void unpackBitsToBytes(IntBuffer var0, LineData var1, int var2, int var3) {
-      for(int var4 = 0; var4 < 16; ++var4) {
-         int var5 = var1.line(var4);
-         unpackBitsToBytes(var0, var5, var2, var3);
+   private static void unpackBitsToBytes(final IntBuffer output, final LineData data, final int left, final int right) {
+      for(int i = 0; i < 16; ++i) {
+         int line = data.line(i);
+         unpackBitsToBytes(output, line, left, right);
       }
 
    }
 
    @VisibleForTesting
-   static void readFromStream(InputStream var0, ReaderOutput var1) throws IOException {
-      int var2 = 0;
-      ByteArrayList var3 = new ByteArrayList(128);
+   static void readFromStream(final InputStream input, final ReaderOutput output) throws IOException {
+      int line = 0;
+      ByteList buffer = new ByteArrayList(128);
 
       while(true) {
-         boolean var4 = copyUntil(var0, var3, 58);
-         int var5 = var3.size();
-         if (var5 == 0 && !var4) {
+         boolean foundColon = copyUntil(input, buffer, 58);
+         int codepointDigitCount = buffer.size();
+         if (codepointDigitCount == 0 && !foundColon) {
             return;
          }
 
-         if (!var4 || var5 != 4 && var5 != 5 && var5 != 6) {
-            throw new IllegalArgumentException("Invalid entry at line " + var2 + ": expected 4, 5 or 6 hex digits followed by a colon");
+         if (!foundColon || codepointDigitCount != 4 && codepointDigitCount != 5 && codepointDigitCount != 6) {
+            throw new IllegalArgumentException("Invalid entry at line " + line + ": expected 4, 5 or 6 hex digits followed by a colon");
          }
 
-         int var6 = 0;
+         int codepoint = 0;
 
-         for(int var7 = 0; var7 < var5; ++var7) {
-            var6 = var6 << 4 | decodeHex(var2, var3.getByte(var7));
+         for(int i = 0; i < codepointDigitCount; ++i) {
+            codepoint = codepoint << 4 | decodeHex(line, buffer.getByte(i));
          }
 
-         var3.clear();
-         copyUntil(var0, var3, 10);
-         int var9 = var3.size();
+         buffer.clear();
+         copyUntil(input, buffer, 10);
+         int dataDigitCount = buffer.size();
          LineData var10000;
-         switch (var9) {
-            case 32 -> var10000 = UnihexProvider.ByteContents.read(var2, var3);
-            case 64 -> var10000 = UnihexProvider.ShortContents.read(var2, var3);
-            case 96 -> var10000 = UnihexProvider.IntContents.read24(var2, var3);
-            case 128 -> var10000 = UnihexProvider.IntContents.read32(var2, var3);
-            default -> throw new IllegalArgumentException("Invalid entry at line " + var2 + ": expected hex number describing (8,16,24,32) x 16 bitmap, followed by a new line");
+         switch (dataDigitCount) {
+            case 32 -> var10000 = UnihexProvider.ByteContents.read(line, buffer);
+            case 64 -> var10000 = UnihexProvider.ShortContents.read(line, buffer);
+            case 96 -> var10000 = UnihexProvider.IntContents.read24(line, buffer);
+            case 128 -> var10000 = UnihexProvider.IntContents.read32(line, buffer);
+            default -> throw new IllegalArgumentException("Invalid entry at line " + line + ": expected hex number describing (8,16,24,32) x 16 bitmap, followed by a new line");
          }
 
-         LineData var8 = var10000;
-         var1.accept(var6, var8);
-         ++var2;
-         var3.clear();
+         LineData contents = var10000;
+         output.accept(codepoint, contents);
+         ++line;
+         buffer.clear();
       }
    }
 
-   static int decodeHex(int var0, ByteList var1, int var2) {
-      return decodeHex(var0, var1.getByte(var2));
+   private static int decodeHex(final int line, final ByteList input, final int index) {
+      return decodeHex(line, input.getByte(index));
    }
 
-   private static int decodeHex(int var0, byte var1) {
+   private static int decodeHex(final int line, final byte b) {
       byte var10000;
-      switch (var1) {
+      switch (b) {
          case 48:
             var10000 = 0;
             break;
@@ -167,7 +167,7 @@ public class UnihexProvider implements GlyphProvider {
          case 63:
          case 64:
          default:
-            throw new IllegalArgumentException("Invalid entry at line " + var0 + ": expected hex digit, got " + (char)var1);
+            throw new IllegalArgumentException("Invalid entry at line " + line + ": expected hex digit, got " + (char)b);
          case 65:
             var10000 = 10;
             break;
@@ -190,66 +190,56 @@ public class UnihexProvider implements GlyphProvider {
       return var10000;
    }
 
-   private static boolean copyUntil(InputStream var0, ByteList var1, int var2) throws IOException {
+   private static boolean copyUntil(final InputStream input, final ByteList output, final int delimiter) throws IOException {
       while(true) {
-         int var3 = var0.read();
-         if (var3 == -1) {
+         int b = input.read();
+         if (b == -1) {
             return false;
          }
 
-         if (var3 == var2) {
+         if (b == delimiter) {
             return true;
          }
 
-         var1.add((byte)var3);
+         output.add((byte)b);
       }
    }
 
-   static record OverrideRange(int from, int to, Dimensions dimensions) {
-      final int from;
-      final int to;
-      final Dimensions dimensions;
-      private static final Codec<OverrideRange> RAW_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.CODEPOINT.fieldOf("from").forGetter(OverrideRange::from), ExtraCodecs.CODEPOINT.fieldOf("to").forGetter(OverrideRange::to), UnihexProvider.Dimensions.MAP_CODEC.forGetter(OverrideRange::dimensions)).apply(var0, OverrideRange::new));
+   private static record OverrideRange(int from, int to, Dimensions dimensions) {
+      private static final Codec<OverrideRange> RAW_CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.CODEPOINT.fieldOf("from").forGetter(OverrideRange::from), ExtraCodecs.CODEPOINT.fieldOf("to").forGetter(OverrideRange::to), UnihexProvider.Dimensions.MAP_CODEC.forGetter(OverrideRange::dimensions)).apply(i, OverrideRange::new));
       public static final Codec<OverrideRange> CODEC;
 
-      private OverrideRange(int var1, int var2, Dimensions var3) {
+      private OverrideRange {
          super();
-         this.from = var1;
-         this.to = var2;
-         this.dimensions = var3;
       }
 
       static {
-         CODEC = RAW_CODEC.validate((var0) -> var0.from >= var0.to ? DataResult.error(() -> "Invalid range: [" + var0.from + ";" + var0.to + "]") : DataResult.success(var0));
+         CODEC = RAW_CODEC.validate((o) -> o.from >= o.to ? DataResult.error(() -> "Invalid range: [" + o.from + ";" + o.to + "]") : DataResult.success(o));
       }
    }
 
    public static record Dimensions(int left, int right) {
-      final int left;
-      final int right;
-      public static final MapCodec<Dimensions> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.fieldOf("left").forGetter(Dimensions::left), Codec.INT.fieldOf("right").forGetter(Dimensions::right)).apply(var0, Dimensions::new));
+      public static final MapCodec<Dimensions> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.INT.fieldOf("left").forGetter(Dimensions::left), Codec.INT.fieldOf("right").forGetter(Dimensions::right)).apply(i, Dimensions::new));
       public static final Codec<Dimensions> CODEC;
 
-      public Dimensions(int var1, int var2) {
+      public Dimensions {
          super();
-         this.left = var1;
-         this.right = var2;
       }
 
       public int pack() {
          return pack(this.left, this.right);
       }
 
-      public static int pack(int var0, int var1) {
-         return (var0 & 255) << 8 | var1 & 255;
+      public static int pack(final int left, final int right) {
+         return (left & 255) << 8 | right & 255;
       }
 
-      public static int left(int var0) {
-         return (byte)(var0 >> 8);
+      public static int left(final int packed) {
+         return (byte)(packed >> 8);
       }
 
-      public static int right(int var0) {
-         return (byte)var0;
+      public static int right(final int packed) {
+         return (byte)packed;
       }
 
       static {
@@ -258,14 +248,14 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    public static class Definition implements GlyphProviderDefinition {
-      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("hex_file").forGetter((var0x) -> var0x.hexFile), UnihexProvider.OverrideRange.CODEC.listOf().optionalFieldOf("size_overrides", List.of()).forGetter((var0x) -> var0x.sizeOverrides)).apply(var0, Definition::new));
+      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("hex_file").forGetter((o) -> o.hexFile), UnihexProvider.OverrideRange.CODEC.listOf().optionalFieldOf("size_overrides", List.of()).forGetter((o) -> o.sizeOverrides)).apply(i, Definition::new));
       private final Identifier hexFile;
       private final List<OverrideRange> sizeOverrides;
 
-      private Definition(Identifier var1, List<OverrideRange> var2) {
+      private Definition(final Identifier hexFile, final List<OverrideRange> sizeOverrides) {
          super();
-         this.hexFile = var1;
-         this.sizeOverrides = var2;
+         this.hexFile = hexFile;
+         this.sizeOverrides = sizeOverrides;
       }
 
       public GlyphProviderType type() {
@@ -276,16 +266,16 @@ public class UnihexProvider implements GlyphProvider {
          return Either.left(this::load);
       }
 
-      private GlyphProvider load(ResourceManager var1) throws IOException {
-         InputStream var2 = var1.open(this.hexFile);
+      private GlyphProvider load(final ResourceManager resourceManager) throws IOException {
+         InputStream raw = resourceManager.open(this.hexFile);
 
          UnihexProvider var3;
          try {
-            var3 = this.loadData(var2);
+            var3 = this.loadData(raw);
          } catch (Throwable var6) {
-            if (var2 != null) {
+            if (raw != null) {
                try {
-                  var2.close();
+                  raw.close();
                } catch (Throwable var5) {
                   var6.addSuppressed(var5);
                }
@@ -294,55 +284,55 @@ public class UnihexProvider implements GlyphProvider {
             throw var6;
          }
 
-         if (var2 != null) {
-            var2.close();
+         if (raw != null) {
+            raw.close();
          }
 
          return var3;
       }
 
-      private UnihexProvider loadData(InputStream var1) throws IOException {
-         CodepointMap var2 = new CodepointMap((var0) -> new LineData[var0], (var0) -> new LineData[var0][]);
-         Objects.requireNonNull(var2);
-         ReaderOutput var3 = var2::put;
-         ZipInputStream var4 = new ZipInputStream(var1);
+      private UnihexProvider loadData(final InputStream zipFile) throws IOException {
+         CodepointMap<LineData> bits = new CodepointMap<LineData>((x$0) -> new LineData[x$0], (x$0) -> new LineData[x$0][]);
+         Objects.requireNonNull(bits);
+         ReaderOutput output = bits::put;
+         ZipInputStream zis = new ZipInputStream(zipFile);
 
          UnihexProvider var17;
          try {
-            ZipEntry var5;
-            while((var5 = var4.getNextEntry()) != null) {
-               String var6 = var5.getName();
-               if (var6.endsWith(".hex")) {
-                  UnihexProvider.LOGGER.info("Found {}, loading", var6);
-                  UnihexProvider.readFromStream(new FastBufferedInputStream(var4), var3);
+            ZipEntry entry;
+            while((entry = zis.getNextEntry()) != null) {
+               String name = entry.getName();
+               if (name.endsWith(".hex")) {
+                  UnihexProvider.LOGGER.info("Found {}, loading", name);
+                  UnihexProvider.readFromStream(new FastBufferedInputStream(zis), output);
                }
             }
 
-            CodepointMap var16 = new CodepointMap((var0) -> new Glyph[var0], (var0) -> new Glyph[var0][]);
+            CodepointMap<Glyph> glyphs = new CodepointMap<Glyph>((x$0) -> new Glyph[x$0], (x$0) -> new Glyph[x$0][]);
 
-            for(OverrideRange var8 : this.sizeOverrides) {
-               int var9 = var8.from;
-               int var10 = var8.to;
-               Dimensions var11 = var8.dimensions;
+            for(OverrideRange sizeOverride : this.sizeOverrides) {
+               int from = sizeOverride.from;
+               int to = sizeOverride.to;
+               Dimensions size = sizeOverride.dimensions;
 
-               for(int var12 = var9; var12 <= var10; ++var12) {
-                  LineData var13 = (LineData)var2.remove(var12);
-                  if (var13 != null) {
-                     var16.put(var12, new Glyph(var13, var11.left, var11.right));
+               for(int c = from; c <= to; ++c) {
+                  LineData codepointBits = bits.remove(c);
+                  if (codepointBits != null) {
+                     glyphs.put(c, new Glyph(codepointBits, size.left, size.right));
                   }
                }
             }
 
-            var2.forEach((var1x, var2x) -> {
-               int var3 = var2x.calculateWidth();
-               int var4 = UnihexProvider.Dimensions.left(var3);
-               int var5 = UnihexProvider.Dimensions.right(var3);
-               var16.put(var1x, new Glyph(var2x, var4, var5));
+            bits.forEach((codepoint, glyphBits) -> {
+               int packedSize = glyphBits.calculateWidth();
+               int left = UnihexProvider.Dimensions.left(packedSize);
+               int right = UnihexProvider.Dimensions.right(packedSize);
+               glyphs.put(codepoint, new Glyph(glyphBits, left, right));
             });
-            var17 = new UnihexProvider(var16);
+            var17 = new UnihexProvider(glyphs);
          } catch (Throwable var15) {
             try {
-               var4.close();
+               zis.close();
             } catch (Throwable var14) {
                var15.addSuppressed(var14);
             }
@@ -350,65 +340,64 @@ public class UnihexProvider implements GlyphProvider {
             throw var15;
          }
 
-         var4.close();
+         zis.close();
          return var17;
       }
    }
 
    public interface LineData {
-      int line(int var1);
+      int line(int index);
 
       int bitWidth();
 
       default int mask() {
-         int var1 = 0;
+         int mask = 0;
 
-         for(int var2 = 0; var2 < 16; ++var2) {
-            var1 |= this.line(var2);
+         for(int i = 0; i < 16; ++i) {
+            mask |= this.line(i);
          }
 
-         return var1;
+         return mask;
       }
 
       default int calculateWidth() {
-         int var1 = this.mask();
-         int var2 = this.bitWidth();
-         int var3;
-         int var4;
-         if (var1 == 0) {
-            var3 = 0;
-            var4 = var2;
+         int mask = this.mask();
+         int bitWidth = this.bitWidth();
+         int left;
+         int right;
+         if (mask == 0) {
+            left = 0;
+            right = bitWidth;
          } else {
-            var3 = Integer.numberOfLeadingZeros(var1);
-            var4 = 32 - Integer.numberOfTrailingZeros(var1) - 1;
+            left = Integer.numberOfLeadingZeros(mask);
+            right = 32 - Integer.numberOfTrailingZeros(mask) - 1;
          }
 
-         return UnihexProvider.Dimensions.pack(var3, var4);
+         return UnihexProvider.Dimensions.pack(left, right);
       }
    }
 
-   static record ByteContents(byte[] contents) implements LineData {
-      private ByteContents(byte[] var1) {
+   private static record ByteContents(byte[] contents) implements LineData {
+      private ByteContents {
          super();
-         this.contents = var1;
       }
 
-      public int line(int var1) {
-         return this.contents[var1] << 24;
+      public int line(final int index) {
+         return this.contents[index] << 24;
       }
 
-      static LineData read(int var0, ByteList var1) {
-         byte[] var2 = new byte[16];
-         int var3 = 0;
+      private static LineData read(final int line, final ByteList input) {
+         byte[] content = new byte[16];
+         int pos = 0;
 
-         for(int var4 = 0; var4 < 16; ++var4) {
-            int var5 = UnihexProvider.decodeHex(var0, var1, var3++);
-            int var6 = UnihexProvider.decodeHex(var0, var1, var3++);
-            byte var7 = (byte)(var5 << 4 | var6);
-            var2[var4] = var7;
+         for(int i = 0; i < 16; ++i) {
+            int n1 = UnihexProvider.decodeHex(line, input, pos++);
+            int n0 = UnihexProvider.decodeHex(line, input, pos++);
+            byte v = (byte)(n1 << 4 | n0);
+            content[i] = v;
          }
 
-         return new ByteContents(var2);
+         return new ByteContents(content);
       }
 
       public int bitWidth() {
@@ -416,30 +405,29 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   static record ShortContents(short[] contents) implements LineData {
-      private ShortContents(short[] var1) {
+   private static record ShortContents(short[] contents) implements LineData {
+      private ShortContents {
          super();
-         this.contents = var1;
       }
 
-      public int line(int var1) {
-         return this.contents[var1] << 16;
+      public int line(final int index) {
+         return this.contents[index] << 16;
       }
 
-      static LineData read(int var0, ByteList var1) {
-         short[] var2 = new short[16];
-         int var3 = 0;
+      private static LineData read(final int line, final ByteList input) {
+         short[] content = new short[16];
+         int pos = 0;
 
-         for(int var4 = 0; var4 < 16; ++var4) {
-            int var5 = UnihexProvider.decodeHex(var0, var1, var3++);
-            int var6 = UnihexProvider.decodeHex(var0, var1, var3++);
-            int var7 = UnihexProvider.decodeHex(var0, var1, var3++);
-            int var8 = UnihexProvider.decodeHex(var0, var1, var3++);
-            short var9 = (short)(var5 << 12 | var6 << 8 | var7 << 4 | var8);
-            var2[var4] = var9;
+         for(int i = 0; i < 16; ++i) {
+            int n3 = UnihexProvider.decodeHex(line, input, pos++);
+            int n2 = UnihexProvider.decodeHex(line, input, pos++);
+            int n1 = UnihexProvider.decodeHex(line, input, pos++);
+            int n0 = UnihexProvider.decodeHex(line, input, pos++);
+            short v = (short)(n3 << 12 | n2 << 8 | n1 << 4 | n0);
+            content[i] = v;
          }
 
-         return new ShortContents(var2);
+         return new ShortContents(content);
       }
 
       public int bitWidth() {
@@ -447,72 +435,63 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   static record IntContents(int[] contents, int bitWidth) implements LineData {
+   private static record IntContents(int[] contents, int bitWidth) implements LineData {
       private static final int SIZE_24 = 24;
 
-      private IntContents(int[] var1, int var2) {
+      private IntContents {
          super();
-         this.contents = var1;
-         this.bitWidth = var2;
       }
 
-      public int line(int var1) {
-         return this.contents[var1];
+      public int line(final int index) {
+         return this.contents[index];
       }
 
-      static LineData read24(int var0, ByteList var1) {
-         int[] var2 = new int[16];
-         int var3 = 0;
-         int var4 = 0;
+      private static LineData read24(final int line, final ByteList input) {
+         int[] content = new int[16];
+         int mask = 0;
+         int pos = 0;
 
-         for(int var5 = 0; var5 < 16; ++var5) {
-            int var6 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var7 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var8 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var9 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var10 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var11 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var12 = var6 << 20 | var7 << 16 | var8 << 12 | var9 << 8 | var10 << 4 | var11;
-            var2[var5] = var12 << 8;
-            var3 |= var12;
+         for(int i = 0; i < 16; ++i) {
+            int n5 = UnihexProvider.decodeHex(line, input, pos++);
+            int n4 = UnihexProvider.decodeHex(line, input, pos++);
+            int n3 = UnihexProvider.decodeHex(line, input, pos++);
+            int n2 = UnihexProvider.decodeHex(line, input, pos++);
+            int n1 = UnihexProvider.decodeHex(line, input, pos++);
+            int n0 = UnihexProvider.decodeHex(line, input, pos++);
+            int v = n5 << 20 | n4 << 16 | n3 << 12 | n2 << 8 | n1 << 4 | n0;
+            content[i] = v << 8;
+            mask |= v;
          }
 
-         return new IntContents(var2, 24);
+         return new IntContents(content, 24);
       }
 
-      public static LineData read32(int var0, ByteList var1) {
-         int[] var2 = new int[16];
-         int var3 = 0;
-         int var4 = 0;
+      public static LineData read32(final int line, final ByteList input) {
+         int[] content = new int[16];
+         int mask = 0;
+         int pos = 0;
 
-         for(int var5 = 0; var5 < 16; ++var5) {
-            int var6 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var7 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var8 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var9 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var10 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var11 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var12 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var13 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var14 = var6 << 28 | var7 << 24 | var8 << 20 | var9 << 16 | var10 << 12 | var11 << 8 | var12 << 4 | var13;
-            var2[var5] = var14;
-            var3 |= var14;
+         for(int i = 0; i < 16; ++i) {
+            int n7 = UnihexProvider.decodeHex(line, input, pos++);
+            int n6 = UnihexProvider.decodeHex(line, input, pos++);
+            int n5 = UnihexProvider.decodeHex(line, input, pos++);
+            int n4 = UnihexProvider.decodeHex(line, input, pos++);
+            int n3 = UnihexProvider.decodeHex(line, input, pos++);
+            int n2 = UnihexProvider.decodeHex(line, input, pos++);
+            int n1 = UnihexProvider.decodeHex(line, input, pos++);
+            int n0 = UnihexProvider.decodeHex(line, input, pos++);
+            int v = n7 << 28 | n6 << 24 | n5 << 20 | n4 << 16 | n3 << 12 | n2 << 8 | n1 << 4 | n0;
+            content[i] = v;
+            mask |= v;
          }
 
-         return new IntContents(var2, 32);
+         return new IntContents(content, 32);
       }
    }
 
-   static record Glyph(LineData contents, int left, int right) implements UnbakedGlyph {
-      final LineData contents;
-      final int left;
-      final int right;
-
-      Glyph(LineData var1, int var2, int var3) {
+   private static record Glyph(LineData contents, int left, int right) implements UnbakedGlyph {
+      private Glyph {
          super();
-         this.contents = var1;
-         this.left = var2;
-         this.right = var3;
       }
 
       public int width() {
@@ -521,6 +500,10 @@ public class UnihexProvider implements GlyphProvider {
 
       public GlyphInfo info() {
          return new GlyphInfo() {
+            {
+               Objects.requireNonNull(Glyph.this);
+            }
+
             public float getAdvance() {
                return (float)(Glyph.this.width() / 2 + 1);
             }
@@ -535,8 +518,12 @@ public class UnihexProvider implements GlyphProvider {
          };
       }
 
-      public BakedGlyph bake(UnbakedGlyph.Stitcher var1) {
-         return var1.stitch(this.info(), new GlyphBitmap() {
+      public BakedGlyph bake(final UnbakedGlyph.Stitcher stitcher) {
+         return stitcher.stitch(this.info(), new GlyphBitmap() {
+            {
+               Objects.requireNonNull(Glyph.this);
+            }
+
             public float getOversample() {
                return 2.0F;
             }
@@ -549,12 +536,12 @@ public class UnihexProvider implements GlyphProvider {
                return 16;
             }
 
-            public void upload(int var1, int var2, GpuTexture var3) {
-               IntBuffer var4 = MemoryUtil.memAllocInt(Glyph.this.width() * 16);
-               UnihexProvider.unpackBitsToBytes(var4, Glyph.this.contents, Glyph.this.left, Glyph.this.right);
-               var4.rewind();
-               RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, MemoryUtil.memByteBuffer(var4), NativeImage.Format.RGBA, 0, 0, var1, var2, Glyph.this.width(), 16);
-               MemoryUtil.memFree(var4);
+            public void upload(final int x, final int y, final GpuTexture texture) {
+               IntBuffer targetBuffer = MemoryUtil.memAllocInt(Glyph.this.width() * 16);
+               UnihexProvider.unpackBitsToBytes(targetBuffer, Glyph.this.contents, Glyph.this.left, Glyph.this.right);
+               targetBuffer.rewind();
+               RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, MemoryUtil.memByteBuffer(targetBuffer), NativeImage.Format.RGBA, 0, 0, x, y, Glyph.this.width(), 16);
+               MemoryUtil.memFree(targetBuffer);
             }
 
             public boolean isColored() {
@@ -566,6 +553,6 @@ public class UnihexProvider implements GlyphProvider {
 
    @FunctionalInterface
    public interface ReaderOutput {
-      void accept(int var1, LineData var2);
+      void accept(int codepoint, LineData glyph);
    }
 }

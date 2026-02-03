@@ -5,46 +5,51 @@ import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
+import java.util.Objects;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.font.GlyphStitcher;
 import org.jspecify.annotations.Nullable;
 
 public enum SpecialGlyphs implements GlyphInfo {
-   WHITE(() -> generate(5, 8, (var0, var1) -> -1)),
+   WHITE(() -> generate(5, 8, (x, y) -> -1)),
    MISSING(() -> {
-      boolean var0 = true;
-      boolean var1 = true;
-      return generate(5, 8, (var0x, var1x) -> {
-         boolean var2 = var0x == 0 || var0x + 1 == 5 || var1x == 0 || var1x + 1 == 8;
-         return var2 ? -1 : 0;
+      int width = 5;
+      int height = 8;
+      return generate(5, 8, (x, y) -> {
+         boolean edge = x == 0 || x + 1 == 5 || y == 0 || y + 1 == 8;
+         return edge ? -1 : 0;
       });
    });
 
-   final NativeImage image;
+   private final NativeImage image;
 
-   private static NativeImage generate(int var0, int var1, PixelProvider var2) {
-      NativeImage var3 = new NativeImage(NativeImage.Format.RGBA, var0, var1, false);
+   private static NativeImage generate(final int width, final int height, final PixelProvider pixelProvider) {
+      NativeImage result = new NativeImage(NativeImage.Format.RGBA, width, height, false);
 
-      for(int var4 = 0; var4 < var1; ++var4) {
-         for(int var5 = 0; var5 < var0; ++var5) {
-            var3.setPixel(var5, var4, var2.getColor(var5, var4));
+      for(int y = 0; y < height; ++y) {
+         for(int x = 0; x < width; ++x) {
+            result.setPixel(x, y, pixelProvider.getColor(x, y));
          }
       }
 
-      var3.untrack();
-      return var3;
+      result.untrack();
+      return result;
    }
 
-   private SpecialGlyphs(final Supplier<NativeImage> var3) {
-      this.image = (NativeImage)var3.get();
+   private SpecialGlyphs(final Supplier<NativeImage> image) {
+      this.image = (NativeImage)image.get();
    }
 
    public float getAdvance() {
       return (float)(this.image.getWidth() + 1);
    }
 
-   public @Nullable BakedSheetGlyph bake(GlyphStitcher var1) {
-      return var1.stitch(this, new GlyphBitmap() {
+   public @Nullable BakedSheetGlyph bake(final GlyphStitcher stitcher) {
+      return stitcher.stitch(this, new GlyphBitmap() {
+         {
+            Objects.requireNonNull(SpecialGlyphs.this);
+         }
+
          public int getPixelWidth() {
             return SpecialGlyphs.this.image.getWidth();
          }
@@ -57,8 +62,8 @@ public enum SpecialGlyphs implements GlyphInfo {
             return 1.0F;
          }
 
-         public void upload(int var1, int var2, GpuTexture var3) {
-            RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, SpecialGlyphs.this.image, 0, 0, var1, var2, SpecialGlyphs.this.image.getWidth(), SpecialGlyphs.this.image.getHeight(), 0, 0);
+         public void upload(final int x, final int y, final GpuTexture texture) {
+            RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, SpecialGlyphs.this.image, 0, 0, x, y, SpecialGlyphs.this.image.getWidth(), SpecialGlyphs.this.image.getHeight(), 0, 0);
          }
 
          public boolean isColored() {
@@ -73,7 +78,7 @@ public enum SpecialGlyphs implements GlyphInfo {
    }
 
    @FunctionalInterface
-   interface PixelProvider {
-      int getColor(int var1, int var2);
+   private interface PixelProvider {
+      int getColor(int x, int y);
    }
 }

@@ -3,8 +3,8 @@ package com.mojang.blaze3d.font;
 public interface GlyphInfo {
    float getAdvance();
 
-   default float getAdvance(boolean var1) {
-      return this.getAdvance() + (var1 ? this.getBoldOffset() : 0.0F);
+   default float getAdvance(final boolean bold) {
+      return this.getAdvance() + (bold ? this.getBoldOffset() : 0.0F);
    }
 
    default float getBoldOffset() {
@@ -15,7 +15,7 @@ public interface GlyphInfo {
       return 1.0F;
    }
 
-   static GlyphInfo simple(float var0) {
-      return () -> var0;
+   static GlyphInfo simple(final float advance) {
+      return () -> advance;
    }
 }

@@ -6,46 +6,46 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public class NonInteractiveResultSlot extends Slot {
-   public NonInteractiveResultSlot(Container var1, int var2, int var3, int var4) {
-      super(var1, var2, var3, var4);
+   public NonInteractiveResultSlot(final Container container, final int id, final int x, final int y) {
+      super(container, id, x, y);
    }
 
-   public void onQuickCraft(ItemStack var1, ItemStack var2) {
+   public void onQuickCraft(final ItemStack picked, final ItemStack original) {
    }
 
-   public boolean mayPickup(Player var1) {
+   public boolean mayPickup(final Player player) {
       return false;
    }
 
-   public Optional<ItemStack> tryRemove(int var1, int var2, Player var3) {
+   public Optional<ItemStack> tryRemove(final int amount, final int maxAmount, final Player player) {
       return Optional.empty();
    }
 
-   public ItemStack safeTake(int var1, int var2, Player var3) {
+   public ItemStack safeTake(final int amount, final int maxAmount, final Player player) {
       return ItemStack.EMPTY;
    }
 
-   public ItemStack safeInsert(ItemStack var1) {
-      return var1;
+   public ItemStack safeInsert(final ItemStack stack) {
+      return stack;
    }
 
-   public ItemStack safeInsert(ItemStack var1, int var2) {
-      return this.safeInsert(var1);
+   public ItemStack safeInsert(final ItemStack inputStack, final int inputAmount) {
+      return this.safeInsert(inputStack);
    }
 
-   public boolean allowModification(Player var1) {
+   public boolean allowModification(final Player player) {
       return false;
    }
 
-   public boolean mayPlace(ItemStack var1) {
+   public boolean mayPlace(final ItemStack itemStack) {
       return false;
    }
 
-   public ItemStack remove(int var1) {
+   public ItemStack remove(final int amount) {
       return ItemStack.EMPTY;
    }
 
-   public void onTake(Player var1, ItemStack var2) {
+   public void onTake(final Player player, final ItemStack carried) {
    }
 
    public boolean isHighlightable() {

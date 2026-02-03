@@ -8,11 +8,11 @@ import net.minecraft.server.dialog.Dialog;
 import net.minecraft.tags.DialogTags;
 
 public class DialogTagsProvider extends KeyTagProvider<Dialog> {
-   public DialogTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
-      super(var1, Registries.DIALOG, var2);
+   public DialogTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
+      super(output, Registries.DIALOG, lookupProvider);
    }
 
-   protected void addTags(HolderLookup.Provider var1) {
+   protected void addTags(final HolderLookup.Provider registries) {
       this.tag(DialogTags.PAUSE_SCREEN_ADDITIONS);
       this.tag(DialogTags.QUICK_ACTIONS);
    }

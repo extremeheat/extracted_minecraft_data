@@ -5,14 +5,14 @@ import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.core.BlockPos;
 
 public class BlockBreakingRenderState extends MovingBlockRenderState {
-   public int progress;
+   public final int progress;
 
-   public BlockBreakingRenderState(ClientLevel var1, BlockPos var2, int var3) {
+   public BlockBreakingRenderState(final ClientLevel level, final BlockPos pos, final int progress) {
       super();
-      this.level = var1;
-      this.blockPos = var2;
-      this.blockState = var1.getBlockState(var2);
-      this.progress = var3;
-      this.biome = var1.getBiome(var2);
+      this.level = level;
+      this.blockPos = pos;
+      this.blockState = level.getBlockState(pos);
+      this.progress = progress;
+      this.biome = level.getBiome(pos);
    }
 }

@@ -15,35 +15,35 @@ public class WorldLoadEvent {
    private @Nullable String serverBrand;
    private final @Nullable String minigameName;
 
-   public WorldLoadEvent(@Nullable String var1) {
+   public WorldLoadEvent(final @Nullable String minigameName) {
       super();
-      this.minigameName = var1;
+      this.minigameName = minigameName;
    }
 
-   public void addProperties(TelemetryPropertyMap.Builder var1) {
+   public void addProperties(final TelemetryPropertyMap.Builder properties) {
       if (this.serverBrand != null) {
-         var1.put(TelemetryProperty.SERVER_MODDED, !this.serverBrand.equals("vanilla"));
+         properties.put(TelemetryProperty.SERVER_MODDED, !this.serverBrand.equals("vanilla"));
       }
 
-      var1.put(TelemetryProperty.SERVER_TYPE, this.getServerType());
+      properties.put(TelemetryProperty.SERVER_TYPE, this.getServerType());
    }
 
    private TelemetryProperty.ServerType getServerType() {
-      ServerData var1 = Minecraft.getInstance().getCurrentServer();
-      if (var1 != null && var1.isRealm()) {
+      ServerData server = Minecraft.getInstance().getCurrentServer();
+      if (server != null && server.isRealm()) {
          return TelemetryProperty.ServerType.REALM;
       } else {
          return Minecraft.getInstance().hasSingleplayerServer() ? TelemetryProperty.ServerType.LOCAL : TelemetryProperty.ServerType.OTHER;
       }
    }
 
-   public boolean send(TelemetryEventSender var1) {
+   public boolean send(final TelemetryEventSender eventSender) {
       if (!this.eventSent && this.gameMode != null && this.serverBrand != null) {
          this.eventSent = true;
-         var1.send(TelemetryEventType.WORLD_LOADED, (var1x) -> {
-            var1x.put(TelemetryProperty.GAME_MODE, this.gameMode);
+         eventSender.send(TelemetryEventType.WORLD_LOADED, (properties) -> {
+            properties.put(TelemetryProperty.GAME_MODE, this.gameMode);
             if (this.minigameName != null) {
-               var1x.put(TelemetryProperty.REALMS_MAP_CONTENT, this.minigameName);
+               properties.put(TelemetryProperty.REALMS_MAP_CONTENT, this.minigameName);
             }
 
          });
@@ -53,10 +53,10 @@ public class WorldLoadEvent {
       }
    }
 
-   public void setGameMode(GameType var1, boolean var2) {
+   public void setGameMode(final GameType type, final boolean hardcore) {
       TelemetryProperty.GameMode var10001;
-      switch (var1) {
-         case SURVIVAL -> var10001 = var2 ? TelemetryProperty.GameMode.HARDCORE : TelemetryProperty.GameMode.SURVIVAL;
+      switch (type) {
+         case SURVIVAL -> var10001 = hardcore ? TelemetryProperty.GameMode.HARDCORE : TelemetryProperty.GameMode.SURVIVAL;
          case CREATIVE -> var10001 = TelemetryProperty.GameMode.CREATIVE;
          case ADVENTURE -> var10001 = TelemetryProperty.GameMode.ADVENTURE;
          case SPECTATOR -> var10001 = TelemetryProperty.GameMode.SPECTATOR;
@@ -66,7 +66,7 @@ public class WorldLoadEvent {
       this.gameMode = var10001;
    }
 
-   public void setServerBrand(String var1) {
-      this.serverBrand = var1;
+   public void setServerBrand(final String serverBrand) {
+      this.serverBrand = serverBrand;
    }
 }

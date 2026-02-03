@@ -25,8 +25,8 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
    private boolean enabled = true;
    private boolean consumedItemThisFrame = false;
 
-   public MinecartHopper(EntityType<? extends MinecartHopper> var1, Level var2) {
-      super(var1, var2);
+   public MinecartHopper(final EntityType<? extends MinecartHopper> type, final Level level) {
+      super(type, level);
    }
 
    public BlockState getDefaultDisplayBlockState() {
@@ -41,10 +41,10 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
       return 5;
    }
 
-   public void activateMinecart(ServerLevel var1, int var2, int var3, int var4, boolean var5) {
-      boolean var6 = !var5;
-      if (var6 != this.isEnabled()) {
-         this.setEnabled(var6);
+   public void activateMinecart(final ServerLevel level, final int xt, final int yt, final int zt, final boolean state) {
+      boolean newEnabled = !state;
+      if (newEnabled != this.isEnabled()) {
+         this.setEnabled(newEnabled);
       }
 
    }
@@ -53,8 +53,8 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
       return this.enabled;
    }
 
-   public void setEnabled(boolean var1) {
-      this.enabled = var1;
+   public void setEnabled(final boolean enabled) {
+      this.enabled = enabled;
    }
 
    public double getLevelX() {
@@ -79,10 +79,10 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
       this.tryConsumeItems();
    }
 
-   protected double makeStepAlongTrack(BlockPos var1, RailShape var2, double var3) {
-      double var5 = super.makeStepAlongTrack(var1, var2, var3);
+   protected double makeStepAlongTrack(final BlockPos pos, final RailShape shape, final double movementLeft) {
+      double left = super.makeStepAlongTrack(pos, shape, movementLeft);
       this.tryConsumeItems();
-      return var5;
+      return left;
    }
 
    private void tryConsumeItems() {
@@ -97,8 +97,8 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
       if (HopperBlockEntity.suckInItems(this.level(), this)) {
          return true;
       } else {
-         for(ItemEntity var3 : this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.25, 0.0, 0.25), EntitySelector.ENTITY_STILL_ALIVE)) {
-            if (HopperBlockEntity.addItem(this, var3)) {
+         for(ItemEntity entity : this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.25, 0.0, 0.25), EntitySelector.ENTITY_STILL_ALIVE)) {
+            if (HopperBlockEntity.addItem(this, entity)) {
                return true;
             }
          }
@@ -115,17 +115,17 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
       return new ItemStack(Items.HOPPER_MINECART);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("Enabled", this.enabled);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("Enabled", this.enabled);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.enabled = var1.getBooleanOr("Enabled", true);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.enabled = input.getBooleanOr("Enabled", true);
    }
 
-   public AbstractContainerMenu createMenu(int var1, Inventory var2) {
-      return new HopperMenu(var1, var2, this);
+   public AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
+      return new HopperMenu(containerId, inventory, this);
    }
 }

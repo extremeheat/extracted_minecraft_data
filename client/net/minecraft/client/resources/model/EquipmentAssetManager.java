@@ -20,11 +20,11 @@ public class EquipmentAssetManager extends SimpleJsonResourceReloadListener<Equi
       super(EquipmentClientInfo.CODEC, ASSET_LISTER);
    }
 
-   protected void apply(Map<Identifier, EquipmentClientInfo> var1, ResourceManager var2, ProfilerFiller var3) {
-      this.equipmentAssets = (Map)var1.entrySet().stream().collect(Collectors.toUnmodifiableMap((var0) -> ResourceKey.create(EquipmentAssets.ROOT_ID, (Identifier)var0.getKey()), Map.Entry::getValue));
+   protected void apply(final Map<Identifier, EquipmentClientInfo> preparations, final ResourceManager manager, final ProfilerFiller profiler) {
+      this.equipmentAssets = (Map)preparations.entrySet().stream().collect(Collectors.toUnmodifiableMap((e) -> ResourceKey.create(EquipmentAssets.ROOT_ID, (Identifier)e.getKey()), Map.Entry::getValue));
    }
 
-   public EquipmentClientInfo get(ResourceKey<EquipmentAsset> var1) {
-      return (EquipmentClientInfo)this.equipmentAssets.getOrDefault(var1, MISSING);
+   public EquipmentClientInfo get(final ResourceKey<EquipmentAsset> id) {
+      return (EquipmentClientInfo)this.equipmentAssets.getOrDefault(id, MISSING);
    }
 }

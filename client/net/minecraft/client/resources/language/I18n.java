@@ -11,21 +11,21 @@ public class I18n {
       super();
    }
 
-   static void setLanguage(Language var0) {
-      language = var0;
+   static void setLanguage(final Language locale) {
+      language = locale;
    }
 
-   public static String get(String var0, Object... var1) {
-      String var2 = language.getOrDefault(var0);
+   public static String get(final String id, final Object... args) {
+      String value = language.getOrDefault(id);
 
       try {
-         return String.format(Locale.ROOT, var2, var1);
+         return String.format(Locale.ROOT, value, args);
       } catch (IllegalFormatException var4) {
-         return "Format error: " + var2;
+         return "Format error: " + value;
       }
    }
 
-   public static boolean exists(String var0) {
-      return language.has(var0);
+   public static boolean exists(final String id) {
+      return language.has(id);
    }
 }

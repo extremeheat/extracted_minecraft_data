@@ -19,15 +19,15 @@ public final class SequencedPriorityIterator<T> extends AbstractIterator<T> {
       super();
    }
 
-   public void add(T var1, int var2) {
-      if (var2 == this.highestPrio && this.highestPrioQueue != null) {
-         this.highestPrioQueue.addLast(var1);
+   public void add(final T data, final int priority) {
+      if (priority == this.highestPrio && this.highestPrioQueue != null) {
+         this.highestPrioQueue.addLast(data);
       } else {
-         Deque var3 = (Deque)this.queuesByPriority.computeIfAbsent(var2, (var0) -> Queues.newArrayDeque());
-         var3.addLast(var1);
-         if (var2 >= this.highestPrio) {
-            this.highestPrioQueue = var3;
-            this.highestPrio = var2;
+         Deque<T> queue = (Deque)this.queuesByPriority.computeIfAbsent(priority, (order) -> Queues.newArrayDeque());
+         queue.addLast(data);
+         if (priority >= this.highestPrio) {
+            this.highestPrioQueue = queue;
+            this.highestPrio = priority;
          }
 
       }
@@ -37,38 +37,38 @@ public final class SequencedPriorityIterator<T> extends AbstractIterator<T> {
       if (this.highestPrioQueue == null) {
          return (T)this.endOfData();
       } else {
-         Object var1 = this.highestPrioQueue.removeFirst();
-         if (var1 == null) {
+         T result = (T)this.highestPrioQueue.removeFirst();
+         if (result == null) {
             return (T)this.endOfData();
          } else {
             if (this.highestPrioQueue.isEmpty()) {
                this.switchCacheToNextHighestPrioQueue();
             }
 
-            return (T)var1;
+            return result;
          }
       }
    }
 
    private void switchCacheToNextHighestPrioQueue() {
-      int var1 = -2147483648;
-      Deque var2 = null;
+      int foundHighestPrio = -2147483648;
+      Deque<T> foundHighestPrioQueue = null;
       ObjectIterator var3 = Int2ObjectMaps.fastIterable(this.queuesByPriority).iterator();
 
       while(var3.hasNext()) {
-         Int2ObjectMap.Entry var4 = (Int2ObjectMap.Entry)var3.next();
-         Deque var5 = (Deque)var4.getValue();
-         int var6 = var4.getIntKey();
-         if (var6 > var1 && !var5.isEmpty()) {
-            var1 = var6;
-            var2 = var5;
-            if (var6 == this.highestPrio - 1) {
+         Int2ObjectMap.Entry<Deque<T>> entry = (Int2ObjectMap.Entry)var3.next();
+         Deque<T> queue = (Deque)entry.getValue();
+         int prio = entry.getIntKey();
+         if (prio > foundHighestPrio && !queue.isEmpty()) {
+            foundHighestPrio = prio;
+            foundHighestPrioQueue = queue;
+            if (prio == this.highestPrio - 1) {
                break;
             }
          }
       }
 
-      this.highestPrio = var1;
-      this.highestPrioQueue = var2;
+      this.highestPrio = foundHighestPrio;
+      this.highestPrioQueue = foundHighestPrioQueue;
    }
 }

@@ -1,16 +1,18 @@
 package net.minecraft.server;
 
 import com.mojang.datafixers.util.Pair;
-import com.mojang.logging.LogUtils;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
+import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryDataLoader;
+import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
@@ -19,100 +21,80 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.world.level.WorldDataConfiguration;
-import org.slf4j.Logger;
 
 public class WorldLoader {
-   private static final Logger LOGGER = LogUtils.getLogger();
-
    public WorldLoader() {
       super();
    }
 
-   public static <D, R> CompletableFuture<R> load(InitConfig var0, WorldDataSupplier<D> var1, ResultFactory<D, R> var2, Executor var3, Executor var4) {
-      try {
-         Pair var5 = var0.packConfig.createResourceManager();
-         CloseableResourceManager var6 = (CloseableResourceManager)var5.getSecond();
-         LayeredRegistryAccess var7 = RegistryLayer.createRegistryAccess();
-         List var8 = TagLoader.loadTagsForExistingRegistries(var6, var7.getLayer(RegistryLayer.STATIC));
-         RegistryAccess.Frozen var9 = var7.getAccessForLoading(RegistryLayer.WORLDGEN);
-         List var10 = TagLoader.buildUpdatedLookups(var9, var8);
-         RegistryAccess.Frozen var11 = RegistryDataLoader.load((ResourceManager)var6, var10, RegistryDataLoader.WORLDGEN_REGISTRIES);
-         List var12 = Stream.concat(var10.stream(), var11.listRegistries()).toList();
-         RegistryAccess.Frozen var13 = RegistryDataLoader.load((ResourceManager)var6, var12, RegistryDataLoader.DIMENSION_REGISTRIES);
-         WorldDataConfiguration var14 = (WorldDataConfiguration)var5.getFirst();
-         HolderLookup.Provider var15 = HolderLookup.Provider.create(var12.stream());
-         DataLoadOutput var16 = var1.get(new DataLoadContext(var6, var14, var15, var13));
-         LayeredRegistryAccess var17 = var7.replaceFrom(RegistryLayer.WORLDGEN, var11, var16.finalDimensions);
-         return ReloadableServerResources.loadResources(var6, var17, var8, var14.enabledFeatures(), var0.commandSelection(), var0.functionCompilationPermissions(), var3, var4).whenComplete((var1x, var2x) -> {
-            if (var2x != null) {
-               var6.close();
-            }
+   public static <D, R> CompletableFuture<R> load(final InitConfig config, final WorldDataSupplier<D> worldDataSupplier, final ResultFactory<D, R> resultFactory, final Executor backgroundExecutor, final Executor mainThreadExecutor) {
+      PackConfig var10000 = config.packConfig;
+      Objects.requireNonNull(var10000);
+      return CompletableFuture.supplyAsync(var10000::createResourceManager, mainThreadExecutor).thenComposeAsync((packsAndResourceManager) -> {
+         CloseableResourceManager resources = (CloseableResourceManager)packsAndResourceManager.getSecond();
+         LayeredRegistryAccess<RegistryLayer> initialLayers = RegistryLayer.createRegistryAccess();
+         List<Registry.PendingTags<?>> staticLayerTags = TagLoader.loadTagsForExistingRegistries(resources, initialLayers.getLayer(RegistryLayer.STATIC));
+         RegistryAccess.Frozen worldgenLoadContext = initialLayers.getAccessForLoading(RegistryLayer.WORLDGEN);
+         List<HolderLookup.RegistryLookup<?>> worldgenContextRegistries = TagLoader.buildUpdatedLookups(worldgenLoadContext, staticLayerTags);
+         return RegistryDataLoader.load((ResourceManager)resources, worldgenContextRegistries, RegistryDataLoader.WORLDGEN_REGISTRIES, backgroundExecutor).thenComposeAsync((loadedWorldgenRegistries) -> {
+            List<HolderLookup.RegistryLookup<?>> dimensionContextRegistries = Stream.concat(worldgenContextRegistries.stream(), loadedWorldgenRegistries.listRegistries()).toList();
+            return RegistryDataLoader.load((ResourceManager)resources, dimensionContextRegistries, RegistryDataLoader.DIMENSION_REGISTRIES, backgroundExecutor).thenComposeAsync((initialWorldgenDimensions) -> {
+               WorldDataConfiguration worldDataConfiguration = (WorldDataConfiguration)packsAndResourceManager.getFirst();
+               HolderLookup.Provider dimensionContextProvider = HolderLookup.Provider.create(dimensionContextRegistries.stream());
+               DataLoadOutput<D> worldDataAndRegistries = worldDataSupplier.get(new DataLoadContext(resources, worldDataConfiguration, dimensionContextProvider, initialWorldgenDimensions));
+               LayeredRegistryAccess<RegistryLayer> resourcesLoadContext = initialLayers.replaceFrom(RegistryLayer.WORLDGEN, loadedWorldgenRegistries, worldDataAndRegistries.finalDimensions);
+               return ReloadableServerResources.loadResources(resources, resourcesLoadContext, staticLayerTags, worldDataConfiguration.enabledFeatures(), config.commandSelection(), config.functionCompilationPermissions(), backgroundExecutor, mainThreadExecutor).whenComplete((managers, throwable) -> {
+                  if (throwable != null) {
+                     resources.close();
+                  }
 
-         }).thenApplyAsync((var4x) -> {
-            var4x.updateStaticRegistryTags();
-            return var2.create(var6, var4x, var17, var16.cookie);
-         }, var4);
-      } catch (Exception var18) {
-         return CompletableFuture.failedFuture(var18);
-      }
+               }).thenApplyAsync((managers) -> {
+                  managers.updateComponentsAndStaticRegistryTags();
+                  return resultFactory.create(resources, managers, resourcesLoadContext, worldDataAndRegistries.cookie);
+               }, mainThreadExecutor);
+            }, backgroundExecutor);
+         }, backgroundExecutor);
+      }, backgroundExecutor);
    }
 
    public static record DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, HolderLookup.Provider datapackWorldgen, RegistryAccess.Frozen datapackDimensions) {
-      public DataLoadContext(ResourceManager var1, WorldDataConfiguration var2, HolderLookup.Provider var3, RegistryAccess.Frozen var4) {
+      public DataLoadContext {
          super();
-         this.resources = var1;
-         this.dataConfiguration = var2;
-         this.datapackWorldgen = var3;
-         this.datapackDimensions = var4;
       }
    }
 
    public static record DataLoadOutput<D>(D cookie, RegistryAccess.Frozen finalDimensions) {
-      final D cookie;
-      final RegistryAccess.Frozen finalDimensions;
-
-      public DataLoadOutput(D var1, RegistryAccess.Frozen var2) {
+      public DataLoadOutput {
          super();
-         this.cookie = var1;
-         this.finalDimensions = var2;
       }
    }
 
    public static record PackConfig(PackRepository packRepository, WorldDataConfiguration initialDataConfig, boolean safeMode, boolean initMode) {
-      public PackConfig(PackRepository var1, WorldDataConfiguration var2, boolean var3, boolean var4) {
+      public PackConfig {
          super();
-         this.packRepository = var1;
-         this.initialDataConfig = var2;
-         this.safeMode = var3;
-         this.initMode = var4;
       }
 
       public Pair<WorldDataConfiguration, CloseableResourceManager> createResourceManager() {
-         WorldDataConfiguration var1 = MinecraftServer.configurePackRepository(this.packRepository, this.initialDataConfig, this.initMode, this.safeMode);
-         List var2 = this.packRepository.openAllSelected();
-         MultiPackResourceManager var3 = new MultiPackResourceManager(PackType.SERVER_DATA, var2);
-         return Pair.of(var1, var3);
+         WorldDataConfiguration newPackConfig = MinecraftServer.configurePackRepository(this.packRepository, this.initialDataConfig, this.initMode, this.safeMode);
+         List<PackResources> openedPacks = this.packRepository.openAllSelected();
+         CloseableResourceManager resources = new MultiPackResourceManager(PackType.SERVER_DATA, openedPacks);
+         return Pair.of(newPackConfig, resources);
       }
    }
 
    public static record InitConfig(PackConfig packConfig, Commands.CommandSelection commandSelection, PermissionSet functionCompilationPermissions) {
-      final PackConfig packConfig;
-
-      public InitConfig(PackConfig var1, Commands.CommandSelection var2, PermissionSet var3) {
+      public InitConfig {
          super();
-         this.packConfig = var1;
-         this.commandSelection = var2;
-         this.functionCompilationPermissions = var3;
       }
    }
 
    @FunctionalInterface
    public interface ResultFactory<D, R> {
-      R create(CloseableResourceManager var1, ReloadableServerResources var2, LayeredRegistryAccess<RegistryLayer> var3, D var4);
+      R create(CloseableResourceManager resources, ReloadableServerResources managers, LayeredRegistryAccess<RegistryLayer> registries, D cookie);
    }
 
    @FunctionalInterface
    public interface WorldDataSupplier<D> {
-      DataLoadOutput<D> get(DataLoadContext var1);
+      DataLoadOutput<D> get(DataLoadContext context);
    }
 }

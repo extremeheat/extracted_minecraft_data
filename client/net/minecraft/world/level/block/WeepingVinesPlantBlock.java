@@ -13,8 +13,8 @@ public class WeepingVinesPlantBlock extends GrowingPlantBodyBlock {
       return CODEC;
    }
 
-   public WeepingVinesPlantBlock(BlockBehaviour.Properties var1) {
-      super(var1, Direction.DOWN, SHAPE, false);
+   public WeepingVinesPlantBlock(final BlockBehaviour.Properties properties) {
+      super(properties, Direction.DOWN, SHAPE, false);
    }
 
    protected GrowingPlantHeadBlock getHeadBlock() {

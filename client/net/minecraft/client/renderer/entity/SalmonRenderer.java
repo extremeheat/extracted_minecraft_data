@@ -5,8 +5,6 @@ import com.mojang.math.Axis;
 import net.minecraft.client.model.animal.fish.SalmonModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SalmonRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.Identifier;
@@ -20,19 +18,19 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, Salmo
    private final SalmonModel mediumSalmonModel;
    private final SalmonModel largeSalmonModel;
 
-   public SalmonRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new SalmonModel(var1.bakeLayer(ModelLayers.SALMON)), 0.4F);
-      this.smallSalmonModel = new SalmonModel(var1.bakeLayer(ModelLayers.SALMON_SMALL));
-      this.mediumSalmonModel = new SalmonModel(var1.bakeLayer(ModelLayers.SALMON));
-      this.largeSalmonModel = new SalmonModel(var1.bakeLayer(ModelLayers.SALMON_LARGE));
+   public SalmonRenderer(final EntityRendererProvider.Context context) {
+      super(context, new SalmonModel(context.bakeLayer(ModelLayers.SALMON)), 0.4F);
+      this.smallSalmonModel = new SalmonModel(context.bakeLayer(ModelLayers.SALMON_SMALL));
+      this.mediumSalmonModel = new SalmonModel(context.bakeLayer(ModelLayers.SALMON));
+      this.largeSalmonModel = new SalmonModel(context.bakeLayer(ModelLayers.SALMON_LARGE));
    }
 
-   public void extractRenderState(Salmon var1, SalmonRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.variant = var1.getVariant();
+   public void extractRenderState(final Salmon entity, final SalmonRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.variant = entity.getVariant();
    }
 
-   public Identifier getTextureLocation(SalmonRenderState var1) {
+   public Identifier getTextureLocation(final SalmonRenderState state) {
       return SALMON_LOCATION;
    }
 
@@ -40,27 +38,27 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, Salmo
       return new SalmonRenderState();
    }
 
-   protected void setupRotations(SalmonRenderState var1, PoseStack var2, float var3, float var4) {
-      super.setupRotations(var1, var2, var3, var4);
-      float var5 = 1.0F;
-      float var6 = 1.0F;
-      if (!var1.isInWater) {
-         var5 = 1.3F;
-         var6 = 1.7F;
+   protected void setupRotations(final SalmonRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
+      super.setupRotations(state, poseStack, bodyRot, entityScale);
+      float amplitudeMultiplier = 1.0F;
+      float angleMultiplier = 1.0F;
+      if (!state.isInWater) {
+         amplitudeMultiplier = 1.3F;
+         angleMultiplier = 1.7F;
       }
 
-      float var7 = var5 * 4.3F * Mth.sin((double)(var6 * 0.6F * var1.ageInTicks));
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var7));
-      if (!var1.isInWater) {
-         var2.translate(0.2F, 0.1F, 0.0F);
-         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
+      float bodyZRot = amplitudeMultiplier * 4.3F * Mth.sin((double)(angleMultiplier * 0.6F * state.ageInTicks));
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(bodyZRot));
+      if (!state.isInWater) {
+         poseStack.translate(0.2F, 0.1F, 0.0F);
+         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
       }
 
    }
 
-   public void submit(SalmonRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+   public void submit(final SalmonRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       SalmonModel var10001;
-      switch (var1.variant) {
+      switch (state.variant) {
          case SMALL -> var10001 = this.smallSalmonModel;
          case MEDIUM -> var10001 = this.mediumSalmonModel;
          case LARGE -> var10001 = this.largeSalmonModel;
@@ -68,16 +66,6 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, Salmo
       }
 
       this.model = var10001;
-      super.submit(var1, var2, var3, var4);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((SalmonRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 }

@@ -13,24 +13,24 @@ public class RealmCreationTask extends LongRunningTask {
    private final String motd;
    private final long realmId;
 
-   public RealmCreationTask(long var1, String var3, String var4) {
+   public RealmCreationTask(final long realmId, final String name, final String motd) {
       super();
-      this.realmId = var1;
-      this.name = var3;
-      this.motd = var4;
+      this.realmId = realmId;
+      this.name = name;
+      this.motd = motd;
    }
 
    public void run() {
-      RealmsClient var1 = RealmsClient.getOrCreate();
+      RealmsClient client = RealmsClient.getOrCreate();
 
       try {
-         var1.initializeRealm(this.realmId, this.name, this.motd);
-      } catch (RealmsServiceException var3) {
-         LOGGER.error("Couldn't create world", var3);
-         this.error(var3);
-      } catch (Exception var4) {
-         LOGGER.error("Could not create world", var4);
-         this.error(var4);
+         client.initializeRealm(this.realmId, this.name, this.motd);
+      } catch (RealmsServiceException e) {
+         LOGGER.error("Couldn't create world", e);
+         this.error(e);
+      } catch (Exception e) {
+         LOGGER.error("Could not create world", e);
+         this.error(e);
       }
 
    }

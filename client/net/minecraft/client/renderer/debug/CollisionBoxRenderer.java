@@ -18,24 +18,24 @@ public class CollisionBoxRenderer implements DebugRenderer.SimpleDebugRenderer {
    private double lastUpdateTime = 4.9E-324;
    private List<VoxelShape> shapes = Collections.emptyList();
 
-   public CollisionBoxRenderer(Minecraft var1) {
+   public CollisionBoxRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      double var10 = (double)Util.getNanos();
-      if (var10 - this.lastUpdateTime > 1.0E8) {
-         this.lastUpdateTime = var10;
-         Entity var12 = this.minecraft.gameRenderer.getMainCamera().entity();
-         this.shapes = ImmutableList.copyOf(var12.level().getCollisions(var12, var12.getBoundingBox().inflate(6.0)));
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      double time = (double)Util.getNanos();
+      if (time - this.lastUpdateTime > 1.0E8) {
+         this.lastUpdateTime = time;
+         Entity cameraEntity = this.minecraft.gameRenderer.getMainCamera().entity();
+         this.shapes = ImmutableList.copyOf(cameraEntity.level().getCollisions(cameraEntity, cameraEntity.getBoundingBox().inflate(6.0)));
       }
 
-      for(VoxelShape var13 : this.shapes) {
-         GizmoStyle var14 = GizmoStyle.stroke(-1);
+      for(VoxelShape shape : this.shapes) {
+         GizmoStyle style = GizmoStyle.stroke(-1);
 
-         for(AABB var16 : var13.toAabbs()) {
-            Gizmos.cuboid(var16, var14);
+         for(AABB aabb : shape.toAabbs()) {
+            Gizmos.cuboid(aabb, style);
          }
       }
 

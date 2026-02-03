@@ -12,17 +12,13 @@ import net.minecraft.server.dialog.Dialog;
 import net.minecraft.util.ExtraCodecs;
 
 public record SingleOptionInput(int width, List<Entry> entries, Component label, boolean labelVisible) implements InputControl {
-   public static final MapCodec<SingleOptionInput> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Dialog.WIDTH_CODEC.optionalFieldOf("width", 200).forGetter(SingleOptionInput::width), ExtraCodecs.nonEmptyList(SingleOptionInput.Entry.CODEC.listOf()).fieldOf("options").forGetter(SingleOptionInput::entries), ComponentSerialization.CODEC.fieldOf("label").forGetter(SingleOptionInput::label), Codec.BOOL.optionalFieldOf("label_visible", true).forGetter(SingleOptionInput::labelVisible)).apply(var0, SingleOptionInput::new)).validate((var0) -> {
-      long var1 = var0.entries.stream().filter(Entry::initial).count();
-      return var1 > 1L ? DataResult.error(() -> "Multiple initial values") : DataResult.success(var0);
+   public static final MapCodec<SingleOptionInput> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Dialog.WIDTH_CODEC.optionalFieldOf("width", 200).forGetter(SingleOptionInput::width), ExtraCodecs.nonEmptyList(SingleOptionInput.Entry.CODEC.listOf()).fieldOf("options").forGetter(SingleOptionInput::entries), ComponentSerialization.CODEC.fieldOf("label").forGetter(SingleOptionInput::label), Codec.BOOL.optionalFieldOf("label_visible", true).forGetter(SingleOptionInput::labelVisible)).apply(i, SingleOptionInput::new)).validate((o) -> {
+      long initialCount = o.entries.stream().filter(Entry::initial).count();
+      return initialCount > 1L ? DataResult.error(() -> "Multiple initial values") : DataResult.success(o);
    });
 
-   public SingleOptionInput(int var1, List<Entry> var2, Component var3, boolean var4) {
+   public SingleOptionInput {
       super();
-      this.width = var1;
-      this.entries = var2;
-      this.label = var3;
-      this.labelVisible = var4;
    }
 
    public MapCodec<SingleOptionInput> mapCodec() {
@@ -34,14 +30,11 @@ public record SingleOptionInput(int width, List<Entry> entries, Component label,
    }
 
    public static record Entry(String id, Optional<Component> display, boolean initial) {
-      public static final Codec<Entry> FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("id").forGetter(Entry::id), ComponentSerialization.CODEC.optionalFieldOf("display").forGetter(Entry::display), Codec.BOOL.optionalFieldOf("initial", false).forGetter(Entry::initial)).apply(var0, Entry::new));
+      public static final Codec<Entry> FULL_CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.STRING.fieldOf("id").forGetter(Entry::id), ComponentSerialization.CODEC.optionalFieldOf("display").forGetter(Entry::display), Codec.BOOL.optionalFieldOf("initial", false).forGetter(Entry::initial)).apply(i, Entry::new));
       public static final Codec<Entry> CODEC;
 
-      public Entry(String var1, Optional<Component> var2, boolean var3) {
+      public Entry {
          super();
-         this.id = var1;
-         this.display = var2;
-         this.initial = var3;
       }
 
       public Component displayOrDefault() {
@@ -49,7 +42,7 @@ public record SingleOptionInput(int width, List<Entry> entries, Component label,
       }
 
       static {
-         CODEC = Codec.withAlternative(FULL_CODEC, Codec.STRING, (var0) -> new Entry(var0, Optional.empty(), false));
+         CODEC = Codec.withAlternative(FULL_CODEC, Codec.STRING, (id) -> new Entry(id, Optional.empty(), false));
       }
    }
 }

@@ -17,12 +17,12 @@ public enum Direction8 {
    private final Set<Direction> directions;
    private final Vec3i step;
 
-   private Direction8(final Direction... var3) {
-      this.directions = Sets.immutableEnumSet(Arrays.asList(var3));
+   private Direction8(final Direction... directions) {
+      this.directions = Sets.immutableEnumSet(Arrays.asList(directions));
       this.step = new Vec3i(0, 0, 0);
 
-      for(Direction var7 : var3) {
-         this.step.setX(this.step.getX() + var7.getStepX()).setY(this.step.getY() + var7.getStepY()).setZ(this.step.getZ() + var7.getStepZ());
+      for(Direction direction : directions) {
+         this.step.setX(this.step.getX() + direction.getStepX()).setY(this.step.getY() + direction.getStepY()).setZ(this.step.getZ() + direction.getStepZ());
       }
 
    }

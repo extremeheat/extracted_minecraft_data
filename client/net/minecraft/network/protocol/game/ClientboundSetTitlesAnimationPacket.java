@@ -11,32 +11,32 @@ public class ClientboundSetTitlesAnimationPacket implements Packet<ClientGamePac
    private final int stay;
    private final int fadeOut;
 
-   public ClientboundSetTitlesAnimationPacket(int var1, int var2, int var3) {
+   public ClientboundSetTitlesAnimationPacket(final int fadeIn, final int stay, final int fadeOut) {
       super();
-      this.fadeIn = var1;
-      this.stay = var2;
-      this.fadeOut = var3;
+      this.fadeIn = fadeIn;
+      this.stay = stay;
+      this.fadeOut = fadeOut;
    }
 
-   private ClientboundSetTitlesAnimationPacket(FriendlyByteBuf var1) {
+   private ClientboundSetTitlesAnimationPacket(final FriendlyByteBuf input) {
       super();
-      this.fadeIn = var1.readInt();
-      this.stay = var1.readInt();
-      this.fadeOut = var1.readInt();
+      this.fadeIn = input.readInt();
+      this.stay = input.readInt();
+      this.fadeOut = input.readInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeInt(this.fadeIn);
-      var1.writeInt(this.stay);
-      var1.writeInt(this.fadeOut);
+   private void write(final FriendlyByteBuf output) {
+      output.writeInt(this.fadeIn);
+      output.writeInt(this.stay);
+      output.writeInt(this.fadeOut);
    }
 
    public PacketType<ClientboundSetTitlesAnimationPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_TITLES_ANIMATION;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.setTitlesAnimation(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.setTitlesAnimation(this);
    }
 
    public int getFadeIn() {

@@ -11,15 +11,15 @@ import net.minecraft.world.phys.Vec3;
 public class WaterBoundPathNavigation extends PathNavigation {
    private boolean allowBreaching;
 
-   public WaterBoundPathNavigation(Mob var1, Level var2) {
-      super(var1, var2);
+   public WaterBoundPathNavigation(final Mob mob, final Level level) {
+      super(mob, level);
    }
 
-   protected PathFinder createPathFinder(int var1) {
-      this.allowBreaching = this.mob.getType() == EntityType.DOLPHIN;
+   protected PathFinder createPathFinder(final int maxVisitedNodes) {
+      this.allowBreaching = this.mob.is(EntityType.DOLPHIN);
       this.nodeEvaluator = new SwimNodeEvaluator(this.allowBreaching);
       this.nodeEvaluator.setCanPassDoors(false);
-      return new PathFinder(this.nodeEvaluator, var1);
+      return new PathFinder(this.nodeEvaluator, maxVisitedNodes);
    }
 
    protected boolean canUpdatePath() {
@@ -30,19 +30,19 @@ public class WaterBoundPathNavigation extends PathNavigation {
       return new Vec3(this.mob.getX(), this.mob.getY(0.5), this.mob.getZ());
    }
 
-   protected double getGroundY(Vec3 var1) {
-      return var1.y;
+   protected double getGroundY(final Vec3 target) {
+      return target.y;
    }
 
-   protected boolean canMoveDirectly(Vec3 var1, Vec3 var2) {
-      return isClearForMovementBetween(this.mob, var1, var2, false);
+   protected boolean canMoveDirectly(final Vec3 startPos, final Vec3 stopPos) {
+      return isClearForMovementBetween(this.mob, startPos, stopPos, false);
    }
 
-   public boolean isStableDestination(BlockPos var1) {
-      return !this.level.getBlockState(var1).isSolidRender();
+   public boolean isStableDestination(final BlockPos pos) {
+      return !this.level.getBlockState(pos).isSolidRender();
    }
 
-   public void setCanFloat(boolean var1) {
+   public void setCanFloat(final boolean canFloat) {
    }
 
    public boolean canNavigateGround() {

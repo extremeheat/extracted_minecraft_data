@@ -15,19 +15,19 @@ public class MobSensor<T extends LivingEntity> extends Sensor<T> {
    private final MemoryModuleType<Boolean> toSet;
    private final int memoryTimeToLive;
 
-   public MobSensor(int var1, BiPredicate<T, LivingEntity> var2, Predicate<T> var3, MemoryModuleType<Boolean> var4, int var5) {
-      super(var1);
-      this.mobTest = var2;
-      this.readyTest = var3;
-      this.toSet = var4;
-      this.memoryTimeToLive = var5;
+   public MobSensor(final int scanRate, final BiPredicate<T, LivingEntity> mobTest, final Predicate<T> readyTest, final MemoryModuleType<Boolean> toSet, final int memoryTimeToLive) {
+      super(scanRate);
+      this.mobTest = mobTest;
+      this.readyTest = readyTest;
+      this.toSet = toSet;
+      this.memoryTimeToLive = memoryTimeToLive;
    }
 
-   protected void doTick(ServerLevel var1, T var2) {
-      if (!this.readyTest.test(var2)) {
-         this.clearMemory(var2);
+   protected void doTick(final ServerLevel level, final T body) {
+      if (!this.readyTest.test(body)) {
+         this.clearMemory(body);
       } else {
-         this.checkForMobsNearby(var2);
+         this.checkForMobsNearby(body);
       }
 
    }
@@ -36,22 +36,22 @@ public class MobSensor<T extends LivingEntity> extends Sensor<T> {
       return Set.of(MemoryModuleType.NEAREST_LIVING_ENTITIES);
    }
 
-   public void checkForMobsNearby(T var1) {
-      Optional var2 = var1.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
-      if (!var2.isEmpty()) {
-         boolean var3 = ((List)var2.get()).stream().anyMatch((var2x) -> this.mobTest.test(var1, var2x));
-         if (var3) {
-            this.mobDetected(var1);
+   public void checkForMobsNearby(final T body) {
+      Optional<List<LivingEntity>> livingEntitiesMemory = ((LivingEntity)body).getBrain().<List<LivingEntity>>getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
+      if (!livingEntitiesMemory.isEmpty()) {
+         boolean mobPresent = ((List)livingEntitiesMemory.get()).stream().anyMatch((entity) -> this.mobTest.test(body, entity));
+         if (mobPresent) {
+            this.mobDetected(body);
          }
 
       }
    }
 
-   public void mobDetected(T var1) {
-      var1.getBrain().setMemoryWithExpiry(this.toSet, true, (long)this.memoryTimeToLive);
+   public void mobDetected(final T body) {
+      ((LivingEntity)body).getBrain().setMemoryWithExpiry(this.toSet, true, (long)this.memoryTimeToLive);
    }
 
-   public void clearMemory(T var1) {
-      var1.getBrain().eraseMemory(this.toSet);
+   public void clearMemory(final T body) {
+      ((LivingEntity)body).getBrain().eraseMemory(this.toSet);
    }
 }

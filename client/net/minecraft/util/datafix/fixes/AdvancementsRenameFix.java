@@ -11,16 +11,16 @@ public class AdvancementsRenameFix extends DataFix {
    private final String name;
    private final Function<String, String> renamer;
 
-   public AdvancementsRenameFix(Schema var1, boolean var2, String var3, Function<String, String> var4) {
-      super(var1, var2);
-      this.name = var3;
-      this.renamer = var4;
+   public AdvancementsRenameFix(final Schema outputSchema, final boolean changesType, final String name, final Function<String, String> renamer) {
+      super(outputSchema, changesType);
+      this.name = name;
+      this.renamer = renamer;
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.ADVANCEMENTS), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> var1x.updateMapValues((var2) -> {
-               String var3 = ((Dynamic)var2.getFirst()).asString("");
-               return var2.mapFirst((var3x) -> var1x.createString((String)this.renamer.apply(var3)));
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.ADVANCEMENTS), (input) -> input.update(DSL.remainderFinder(), (tag) -> tag.updateMapValues((entry) -> {
+               String id = ((Dynamic)entry.getFirst()).asString("");
+               return entry.mapFirst((f) -> tag.createString((String)this.renamer.apply(id)));
             })));
    }
 }

@@ -17,40 +17,34 @@ import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
 
 public record SpawnParticlesEffect(ParticleOptions particle, PositionSource horizontalPosition, PositionSource verticalPosition, VelocitySource horizontalVelocity, VelocitySource verticalVelocity, FloatProvider speed) implements EnchantmentEntityEffect {
-   public static final MapCodec<SpawnParticlesEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ParticleTypes.CODEC.fieldOf("particle").forGetter(SpawnParticlesEffect::particle), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("horizontal_position").forGetter(SpawnParticlesEffect::horizontalPosition), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("vertical_position").forGetter(SpawnParticlesEffect::verticalPosition), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("horizontal_velocity").forGetter(SpawnParticlesEffect::horizontalVelocity), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("vertical_velocity").forGetter(SpawnParticlesEffect::verticalVelocity), FloatProvider.CODEC.optionalFieldOf("speed", ConstantFloat.ZERO).forGetter(SpawnParticlesEffect::speed)).apply(var0, SpawnParticlesEffect::new));
+   public static final MapCodec<SpawnParticlesEffect> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ParticleTypes.CODEC.fieldOf("particle").forGetter(SpawnParticlesEffect::particle), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("horizontal_position").forGetter(SpawnParticlesEffect::horizontalPosition), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("vertical_position").forGetter(SpawnParticlesEffect::verticalPosition), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("horizontal_velocity").forGetter(SpawnParticlesEffect::horizontalVelocity), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("vertical_velocity").forGetter(SpawnParticlesEffect::verticalVelocity), FloatProvider.CODEC.optionalFieldOf("speed", ConstantFloat.ZERO).forGetter(SpawnParticlesEffect::speed)).apply(i, SpawnParticlesEffect::new));
 
-   public SpawnParticlesEffect(ParticleOptions var1, PositionSource var2, PositionSource var3, VelocitySource var4, VelocitySource var5, FloatProvider var6) {
+   public SpawnParticlesEffect {
       super();
-      this.particle = var1;
-      this.horizontalPosition = var2;
-      this.verticalPosition = var3;
-      this.horizontalVelocity = var4;
-      this.verticalVelocity = var5;
-      this.speed = var6;
    }
 
-   public static PositionSource offsetFromEntityPosition(float var0) {
-      return new PositionSource(SpawnParticlesEffect.PositionSourceType.ENTITY_POSITION, var0, 1.0F);
+   public static PositionSource offsetFromEntityPosition(final float offset) {
+      return new PositionSource(SpawnParticlesEffect.PositionSourceType.ENTITY_POSITION, offset, 1.0F);
    }
 
    public static PositionSource inBoundingBox() {
       return new PositionSource(SpawnParticlesEffect.PositionSourceType.BOUNDING_BOX, 0.0F, 1.0F);
    }
 
-   public static VelocitySource movementScaled(float var0) {
-      return new VelocitySource(var0, ConstantFloat.ZERO);
+   public static VelocitySource movementScaled(final float scale) {
+      return new VelocitySource(scale, ConstantFloat.ZERO);
    }
 
-   public static VelocitySource fixedVelocity(FloatProvider var0) {
-      return new VelocitySource(0.0F, var0);
+   public static VelocitySource fixedVelocity(final FloatProvider provider) {
+      return new VelocitySource(0.0F, provider);
    }
 
-   public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-      RandomSource var6 = var4.getRandom();
-      Vec3 var7 = var4.getKnownMovement();
-      float var8 = var4.getBbWidth();
-      float var9 = var4.getBbHeight();
-      var1.sendParticles(this.particle, this.horizontalPosition.getCoordinate(var5.x(), var5.x(), var8, var6), this.verticalPosition.getCoordinate(var5.y(), var5.y() + (double)(var9 / 2.0F), var9, var6), this.horizontalPosition.getCoordinate(var5.z(), var5.z(), var8, var6), 0, this.horizontalVelocity.getVelocity(var7.x(), var6), this.verticalVelocity.getVelocity(var7.y(), var6), this.horizontalVelocity.getVelocity(var7.z(), var6), (double)this.speed.sample(var6));
+   public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
+      RandomSource random = entity.getRandom();
+      Vec3 movement = entity.getKnownMovement();
+      float bbWidth = entity.getBbWidth();
+      float bbHeight = entity.getBbHeight();
+      serverLevel.sendParticles(this.particle, this.horizontalPosition.getCoordinate(position.x(), position.x(), bbWidth, random), this.verticalPosition.getCoordinate(position.y(), position.y() + (double)(bbHeight / 2.0F), bbHeight, random), this.horizontalPosition.getCoordinate(position.z(), position.z(), bbWidth, random), 0, this.horizontalVelocity.getVelocity(movement.x(), random), this.verticalVelocity.getVelocity(movement.y(), random), this.horizontalVelocity.getVelocity(movement.z(), random), (double)this.speed.sample(random));
    }
 
    public MapCodec<SpawnParticlesEffect> codec() {
@@ -58,20 +52,20 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
    }
 
    public static enum PositionSourceType implements StringRepresentable {
-      ENTITY_POSITION("entity_position", (var0, var2, var4, var5) -> var0),
-      BOUNDING_BOX("in_bounding_box", (var0, var2, var4, var5) -> var2 + (var5.nextDouble() - 0.5) * (double)var4);
+      ENTITY_POSITION("entity_position", (pos, center, bbSpan, random) -> pos),
+      BOUNDING_BOX("in_bounding_box", (pos, center, bbSpan, random) -> center + (random.nextDouble() - 0.5) * (double)bbSpan);
 
       public static final Codec<PositionSourceType> CODEC = StringRepresentable.<PositionSourceType>fromEnum(PositionSourceType::values);
       private final String id;
       private final CoordinateSource source;
 
-      private PositionSourceType(final String var3, final CoordinateSource var4) {
-         this.id = var3;
-         this.source = var4;
+      private PositionSourceType(final String id, final CoordinateSource source) {
+         this.id = id;
+         this.source = source;
       }
 
-      public double getCoordinate(double var1, double var3, float var5, RandomSource var6) {
-         return this.source.getCoordinate(var1, var3, var5, var6);
+      public double getCoordinate(final double position, final double center, final float boundingBoxSpan, final RandomSource random) {
+         return this.source.getCoordinate(position, center, boundingBoxSpan, random);
       }
 
       public String getSerializedName() {
@@ -84,37 +78,32 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
       }
 
       @FunctionalInterface
-      interface CoordinateSource {
-         double getCoordinate(double var1, double var3, float var5, RandomSource var6);
+      private interface CoordinateSource {
+         double getCoordinate(double pos, double center, float boundingBoxSpan, RandomSource random);
       }
    }
 
    public static record PositionSource(PositionSourceType type, float offset, float scale) {
-      public static final MapCodec<PositionSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SpawnParticlesEffect.PositionSourceType.CODEC.fieldOf("type").forGetter(PositionSource::type), Codec.FLOAT.optionalFieldOf("offset", 0.0F).forGetter(PositionSource::offset), ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("scale", 1.0F).forGetter(PositionSource::scale)).apply(var0, PositionSource::new)).validate((var0) -> var0.type() == SpawnParticlesEffect.PositionSourceType.ENTITY_POSITION && var0.scale() != 1.0F ? DataResult.error(() -> "Cannot scale an entity position coordinate source") : DataResult.success(var0));
+      public static final MapCodec<PositionSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SpawnParticlesEffect.PositionSourceType.CODEC.fieldOf("type").forGetter(PositionSource::type), Codec.FLOAT.optionalFieldOf("offset", 0.0F).forGetter(PositionSource::offset), ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("scale", 1.0F).forGetter(PositionSource::scale)).apply(i, PositionSource::new)).validate((positioning) -> positioning.type() == SpawnParticlesEffect.PositionSourceType.ENTITY_POSITION && positioning.scale() != 1.0F ? DataResult.error(() -> "Cannot scale an entity position coordinate source") : DataResult.success(positioning));
 
-      public PositionSource(PositionSourceType var1, float var2, float var3) {
+      public PositionSource {
          super();
-         this.type = var1;
-         this.offset = var2;
-         this.scale = var3;
       }
 
-      public double getCoordinate(double var1, double var3, float var5, RandomSource var6) {
-         return this.type.getCoordinate(var1, var3, var5 * this.scale, var6) + (double)this.offset;
+      public double getCoordinate(final double position, final double center, final float boundingBoxSpan, final RandomSource random) {
+         return this.type.getCoordinate(position, center, boundingBoxSpan * this.scale, random) + (double)this.offset;
       }
    }
 
    public static record VelocitySource(float movementScale, FloatProvider base) {
-      public static final MapCodec<VelocitySource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.optionalFieldOf("movement_scale", 0.0F).forGetter(VelocitySource::movementScale), FloatProvider.CODEC.optionalFieldOf("base", ConstantFloat.ZERO).forGetter(VelocitySource::base)).apply(var0, VelocitySource::new));
+      public static final MapCodec<VelocitySource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.optionalFieldOf("movement_scale", 0.0F).forGetter(VelocitySource::movementScale), FloatProvider.CODEC.optionalFieldOf("base", ConstantFloat.ZERO).forGetter(VelocitySource::base)).apply(i, VelocitySource::new));
 
-      public VelocitySource(float var1, FloatProvider var2) {
+      public VelocitySource {
          super();
-         this.movementScale = var1;
-         this.base = var2;
       }
 
-      public double getVelocity(double var1, RandomSource var3) {
-         return var1 * (double)this.movementScale + (double)this.base.sample(var3);
+      public double getVelocity(final double movement, final RandomSource random) {
+         return movement * (double)this.movementScale + (double)this.base.sample(random);
       }
    }
 }

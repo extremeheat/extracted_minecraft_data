@@ -13,24 +13,24 @@ public class Varint21FrameDecoder extends ByteToMessageDecoder {
    private final ByteBuf helperBuf = Unpooled.directBuffer(3);
    private final @Nullable BandwidthDebugMonitor monitor;
 
-   public Varint21FrameDecoder(@Nullable BandwidthDebugMonitor var1) {
+   public Varint21FrameDecoder(final @Nullable BandwidthDebugMonitor monitor) {
       super();
-      this.monitor = var1;
+      this.monitor = monitor;
    }
 
-   protected void handlerRemoved0(ChannelHandlerContext var1) {
+   protected void handlerRemoved0(final ChannelHandlerContext ctx) {
       this.helperBuf.release();
    }
 
-   private static boolean copyVarint(ByteBuf var0, ByteBuf var1) {
-      for(int var2 = 0; var2 < 3; ++var2) {
-         if (!var0.isReadable()) {
+   private static boolean copyVarint(final ByteBuf in, final ByteBuf out) {
+      for(int i = 0; i < 3; ++i) {
+         if (!in.isReadable()) {
             return false;
          }
 
-         byte var3 = var0.readByte();
-         var1.writeByte(var3);
-         if (!VarInt.hasContinuationBit(var3)) {
+         byte b = in.readByte();
+         out.writeByte(b);
+         if (!VarInt.hasContinuationBit(b)) {
             return true;
          }
       }
@@ -38,23 +38,23 @@ public class Varint21FrameDecoder extends ByteToMessageDecoder {
       throw new CorruptedFrameException("length wider than 21-bit");
    }
 
-   protected void decode(ChannelHandlerContext var1, ByteBuf var2, List<Object> var3) {
-      var2.markReaderIndex();
+   protected void decode(final ChannelHandlerContext ctx, final ByteBuf in, final List<Object> out) {
+      in.markReaderIndex();
       this.helperBuf.clear();
-      if (!copyVarint(var2, this.helperBuf)) {
-         var2.resetReaderIndex();
+      if (!copyVarint(in, this.helperBuf)) {
+         in.resetReaderIndex();
       } else {
-         int var4 = VarInt.read(this.helperBuf);
-         if (var4 == 0) {
+         int length = VarInt.read(this.helperBuf);
+         if (length == 0) {
             throw new CorruptedFrameException("Frame length cannot be zero");
-         } else if (var2.readableBytes() < var4) {
-            var2.resetReaderIndex();
+         } else if (in.readableBytes() < length) {
+            in.resetReaderIndex();
          } else {
             if (this.monitor != null) {
-               this.monitor.onReceive(var4 + VarInt.getByteSize(var4));
+               this.monitor.onReceive(length + VarInt.getByteSize(length));
             }
 
-            var3.add(var2.readBytes(var4));
+            out.add(in.readBytes(length));
          }
       }
    }

@@ -5,50 +5,41 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.function.BiFunction;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public class SequenceFunction implements LootItemFunction {
-   public static final MapCodec<SequenceFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LootItemFunctions.TYPED_CODEC.listOf().fieldOf("functions").forGetter((var0x) -> var0x.functions)).apply(var0, SequenceFunction::new));
+   public static final MapCodec<SequenceFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LootItemFunctions.TYPED_CODEC.listOf().fieldOf("functions").forGetter((f) -> f.functions)).apply(i, SequenceFunction::new));
    public static final Codec<SequenceFunction> INLINE_CODEC;
    private final List<LootItemFunction> functions;
    private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
 
-   private SequenceFunction(List<LootItemFunction> var1) {
+   private SequenceFunction(final List<LootItemFunction> functions) {
       super();
-      this.functions = var1;
-      this.compositeFunction = LootItemFunctions.compose(var1);
+      this.functions = functions;
+      this.compositeFunction = LootItemFunctions.compose(functions);
    }
 
-   public static SequenceFunction of(List<LootItemFunction> var0) {
-      return new SequenceFunction(List.copyOf(var0));
+   public static SequenceFunction of(final List<LootItemFunction> functions) {
+      return new SequenceFunction(List.copyOf(functions));
    }
 
-   public ItemStack apply(ItemStack var1, LootContext var2) {
-      return (ItemStack)this.compositeFunction.apply(var1, var2);
+   public ItemStack apply(final ItemStack stack, final LootContext context) {
+      return (ItemStack)this.compositeFunction.apply(stack, context);
    }
 
-   public void validate(ValidationContext var1) {
-      LootItemFunction.super.validate(var1);
-
-      for(int var2 = 0; var2 < this.functions.size(); ++var2) {
-         ((LootItemFunction)this.functions.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("functions", var2)));
-      }
-
+   public void validate(final ValidationContext output) {
+      LootItemFunction.super.validate(output);
+      Validatable.validate(output, "functions", this.functions);
    }
 
-   public LootItemFunctionType<SequenceFunction> getType() {
-      return LootItemFunctions.SEQUENCE;
-   }
-
-   // $FF: synthetic method
-   public Object apply(final Object var1, final Object var2) {
-      return this.apply((ItemStack)var1, (LootContext)var2);
+   public MapCodec<SequenceFunction> codec() {
+      return MAP_CODEC;
    }
 
    static {
-      INLINE_CODEC = LootItemFunctions.TYPED_CODEC.listOf().xmap(SequenceFunction::new, (var0) -> var0.functions);
+      INLINE_CODEC = LootItemFunctions.TYPED_CODEC.listOf().xmap(SequenceFunction::new, (f) -> f.functions);
    }
 }

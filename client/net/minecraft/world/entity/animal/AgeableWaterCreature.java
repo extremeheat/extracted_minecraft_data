@@ -14,26 +14,26 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.PathType;
 
 public abstract class AgeableWaterCreature extends AgeableMob {
-   protected AgeableWaterCreature(EntityType<? extends AgeableWaterCreature> var1, Level var2) {
-      super(var1, var2);
+   protected AgeableWaterCreature(final EntityType<? extends AgeableWaterCreature> type, final Level level) {
+      super(type, level);
       this.setPathfindingMalus(PathType.WATER, 0.0F);
    }
 
-   public boolean checkSpawnObstruction(LevelReader var1) {
-      return var1.isUnobstructed(this);
+   public boolean checkSpawnObstruction(final LevelReader level) {
+      return level.isUnobstructed(this);
    }
 
    public int getAmbientSoundInterval() {
       return 120;
    }
 
-   public int getBaseExperienceReward(ServerLevel var1) {
+   public int getBaseExperienceReward(final ServerLevel level) {
       return 1 + this.random.nextInt(3);
    }
 
-   protected void handleAirSupply(int var1) {
+   protected void handleAirSupply(final int preTickAirSupply) {
       if (this.isAlive() && !this.isInWater()) {
-         this.setAirSupply(var1 - 1);
+         this.setAirSupply(preTickAirSupply - 1);
          if (this.shouldTakeDrowningDamage()) {
             this.setAirSupply(0);
             this.hurt(this.damageSources().drown(), 2.0F);
@@ -45,9 +45,9 @@ public abstract class AgeableWaterCreature extends AgeableMob {
    }
 
    public void baseTick() {
-      int var1 = this.getAirSupply();
+      int airSupply = this.getAirSupply();
       super.baseTick();
-      this.handleAirSupply(var1);
+      this.handleAirSupply(airSupply);
    }
 
    public boolean isPushedByFluid() {
@@ -58,9 +58,9 @@ public abstract class AgeableWaterCreature extends AgeableMob {
       return false;
    }
 
-   public static boolean checkSurfaceAgeableWaterCreatureSpawnRules(EntityType<? extends AgeableWaterCreature> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      int var5 = var1.getSeaLevel();
-      int var6 = var5 - 13;
-      return var3.getY() >= var6 && var3.getY() <= var5 && var1.getFluidState(var3.below()).is(FluidTags.WATER) && var1.getBlockState(var3.above()).is(Blocks.WATER);
+   public static boolean checkSurfaceAgeableWaterCreatureSpawnRules(final EntityType<? extends AgeableWaterCreature> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      int seaLevel = level.getSeaLevel();
+      int minSpawnLevel = seaLevel - 13;
+      return pos.getY() >= minSpawnLevel && pos.getY() <= seaLevel && level.getFluidState(pos.below()).is(FluidTags.WATER) && level.getBlockState(pos.above()).is(Blocks.WATER);
    }
 }

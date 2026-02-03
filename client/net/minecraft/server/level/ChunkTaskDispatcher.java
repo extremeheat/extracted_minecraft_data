@@ -22,11 +22,11 @@ public class ChunkTaskDispatcher implements ChunkHolder.LevelChangeListener, Aut
    private final PriorityConsecutiveExecutor dispatcher;
    protected boolean sleeping;
 
-   public ChunkTaskDispatcher(TaskScheduler<Runnable> var1, Executor var2) {
+   public ChunkTaskDispatcher(final TaskScheduler<Runnable> executor, final Executor dispatcherExecutor) {
       super();
-      this.queue = new ChunkTaskPriorityQueue(var1.name() + "_queue");
-      this.executor = var1;
-      this.dispatcher = new PriorityConsecutiveExecutor(4, var2, "dispatcher");
+      this.queue = new ChunkTaskPriorityQueue(executor.name() + "_queue");
+      this.executor = executor;
+      this.dispatcher = new PriorityConsecutiveExecutor(4, dispatcherExecutor, "dispatcher");
       this.sleeping = true;
    }
 
@@ -34,39 +34,39 @@ public class ChunkTaskDispatcher implements ChunkHolder.LevelChangeListener, Aut
       return this.dispatcher.hasWork() || this.queue.hasWork();
    }
 
-   public void onLevelChange(ChunkPos var1, IntSupplier var2, int var3, IntConsumer var4) {
+   public void onLevelChange(final ChunkPos pos, final IntSupplier oldLevel, final int newLevel, final IntConsumer setQueueLevel) {
       this.dispatcher.schedule(new StrictQueue.RunnableWithPriority(0, () -> {
-         int var5 = var2.getAsInt();
+         int oldTicketLevel = oldLevel.getAsInt();
          if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
-            LOGGER.debug("RES {} {} -> {}", new Object[]{var1, var5, var3});
+            LOGGER.debug("RES {} {} -> {}", new Object[]{pos, oldTicketLevel, newLevel});
          }
 
-         this.queue.resortChunkTasks(var5, var1, var3);
-         var4.accept(var3);
+         this.queue.resortChunkTasks(oldTicketLevel, pos, newLevel);
+         setQueueLevel.accept(newLevel);
       }));
    }
 
-   public void release(long var1, Runnable var3, boolean var4) {
+   public void release(final long pos, final Runnable whenReleased, final boolean clearQueue) {
       this.dispatcher.schedule(new StrictQueue.RunnableWithPriority(1, () -> {
-         this.queue.release(var1, var4);
-         this.onRelease(var1);
+         this.queue.release(pos, clearQueue);
+         this.onRelease(pos);
          if (this.sleeping) {
             this.sleeping = false;
             this.pollTask();
          }
 
-         var3.run();
+         whenReleased.run();
       }));
    }
 
-   public void submit(Runnable var1, long var2, IntSupplier var4) {
+   public void submit(final Runnable task, final long pos, final IntSupplier level) {
       this.dispatcher.schedule(new StrictQueue.RunnableWithPriority(2, () -> {
-         int var5 = var4.getAsInt();
+         int ticketLevel = level.getAsInt();
          if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
-            LOGGER.debug("SUB {} {} {} {}", new Object[]{new ChunkPos(var2), var5, this.executor, this.queue});
+            LOGGER.debug("SUB {} {} {} {}", new Object[]{ChunkPos.unpack(pos), ticketLevel, this.executor, this.queue});
          }
 
-         this.queue.submit(var1, var2, var5);
+         this.queue.submit(task, pos, ticketLevel);
          if (this.sleeping) {
             this.sleeping = false;
             this.pollTask();
@@ -77,24 +77,24 @@ public class ChunkTaskDispatcher implements ChunkHolder.LevelChangeListener, Aut
 
    protected void pollTask() {
       this.dispatcher.schedule(new StrictQueue.RunnableWithPriority(3, () -> {
-         ChunkTaskPriorityQueue.TasksForChunk var1 = this.popTasks();
-         if (var1 == null) {
+         ChunkTaskPriorityQueue.TasksForChunk tasksForChunk = this.popTasks();
+         if (tasksForChunk == null) {
             this.sleeping = true;
          } else {
-            this.scheduleForExecution(var1);
+            this.scheduleForExecution(tasksForChunk);
          }
 
       }));
    }
 
-   protected void scheduleForExecution(ChunkTaskPriorityQueue.TasksForChunk var1) {
-      CompletableFuture.allOf((CompletableFuture[])var1.tasks().stream().map((var1x) -> this.executor.scheduleWithResult((var1) -> {
-            var1x.run();
-            var1.complete(Unit.INSTANCE);
-         })).toArray((var0) -> new CompletableFuture[var0])).thenAccept((var1x) -> this.pollTask());
+   protected void scheduleForExecution(final ChunkTaskPriorityQueue.TasksForChunk tasksForChunk) {
+      CompletableFuture.allOf((CompletableFuture[])tasksForChunk.tasks().stream().map((message) -> this.executor.scheduleWithResult((future) -> {
+            message.run();
+            future.complete(Unit.INSTANCE);
+         })).toArray((x$0) -> new CompletableFuture[x$0])).thenAccept((r) -> this.pollTask());
    }
 
-   protected void onRelease(long var1) {
+   protected void onRelease(final long key) {
    }
 
    protected ChunkTaskPriorityQueue.@Nullable TasksForChunk popTasks() {

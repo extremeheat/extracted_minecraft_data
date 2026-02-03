@@ -24,18 +24,18 @@ public class CustomBossEvents {
       super();
    }
 
-   public @Nullable CustomBossEvent get(Identifier var1) {
-      return (CustomBossEvent)this.events.get(var1);
+   public @Nullable CustomBossEvent get(final Identifier id) {
+      return (CustomBossEvent)this.events.get(id);
    }
 
-   public CustomBossEvent create(Identifier var1, Component var2) {
-      CustomBossEvent var3 = new CustomBossEvent(var1, var2);
-      this.events.put(var1, var3);
-      return var3;
+   public CustomBossEvent create(final Identifier id, final Component name) {
+      CustomBossEvent result = new CustomBossEvent(id, name);
+      this.events.put(id, result);
+      return result;
    }
 
-   public void remove(CustomBossEvent var1) {
-      this.events.remove(var1.getTextId());
+   public void remove(final CustomBossEvent event) {
+      this.events.remove(event.getTextId());
    }
 
    public Collection<Identifier> getIds() {
@@ -46,26 +46,26 @@ public class CustomBossEvents {
       return this.events.values();
    }
 
-   public CompoundTag save(HolderLookup.Provider var1) {
-      Map var2 = Util.mapValues(this.events, CustomBossEvent::pack);
-      return (CompoundTag)EVENTS_CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow();
+   public CompoundTag save(final HolderLookup.Provider registries) {
+      Map<Identifier, CustomBossEvent.Packed> packedEvents = Util.mapValues(this.events, CustomBossEvent::pack);
+      return (CompoundTag)EVENTS_CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), packedEvents).getOrThrow();
    }
 
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      Map var3 = (Map)EVENTS_CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1).resultOrPartial((var0) -> LOGGER.error("Failed to parse boss bar events: {}", var0)).orElse(Map.of());
-      var3.forEach((var1x, var2x) -> this.events.put(var1x, CustomBossEvent.load(var1x, var2x)));
+   public void load(final CompoundTag tag, final HolderLookup.Provider registries) {
+      Map<Identifier, CustomBossEvent.Packed> events = (Map)EVENTS_CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag).resultOrPartial((error) -> LOGGER.error("Failed to parse boss bar events: {}", error)).orElse(Map.of());
+      events.forEach((id, packed) -> this.events.put(id, CustomBossEvent.load(id, packed)));
    }
 
-   public void onPlayerConnect(ServerPlayer var1) {
-      for(CustomBossEvent var3 : this.events.values()) {
-         var3.onPlayerConnect(var1);
+   public void onPlayerConnect(final ServerPlayer player) {
+      for(CustomBossEvent event : this.events.values()) {
+         event.onPlayerConnect(player);
       }
 
    }
 
-   public void onPlayerDisconnect(ServerPlayer var1) {
-      for(CustomBossEvent var3 : this.events.values()) {
-         var3.onPlayerDisconnect(var1);
+   public void onPlayerDisconnect(final ServerPlayer player) {
+      for(CustomBossEvent event : this.events.values()) {
+         event.onPlayerDisconnect(player);
       }
 
    }

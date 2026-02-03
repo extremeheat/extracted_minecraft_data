@@ -5,9 +5,9 @@ import net.minecraft.network.PacketListener;
 public abstract class BundlePacket<T extends PacketListener> implements Packet<T> {
    private final Iterable<Packet<? super T>> packets;
 
-   protected BundlePacket(Iterable<Packet<? super T>> var1) {
+   protected BundlePacket(final Iterable<Packet<? super T>> packets) {
       super();
-      this.packets = var1;
+      this.packets = packets;
    }
 
    public final Iterable<Packet<? super T>> subPackets() {

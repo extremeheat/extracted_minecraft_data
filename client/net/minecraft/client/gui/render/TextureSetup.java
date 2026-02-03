@@ -12,26 +12,20 @@ public record TextureSetup(@Nullable GpuTextureView texure0, @Nullable GpuTextur
    private static final TextureSetup NO_TEXTURE_SETUP = new TextureSetup((GpuTextureView)null, (GpuTextureView)null, (GpuTextureView)null, (GpuSampler)null, (GpuSampler)null, (GpuSampler)null);
    private static int sortKeySeed;
 
-   public TextureSetup(@Nullable GpuTextureView var1, @Nullable GpuTextureView var2, @Nullable GpuTextureView var3, @Nullable GpuSampler var4, @Nullable GpuSampler var5, @Nullable GpuSampler var6) {
+   public TextureSetup {
       super();
-      this.texure0 = var1;
-      this.texure1 = var2;
-      this.texure2 = var3;
-      this.sampler0 = var4;
-      this.sampler1 = var5;
-      this.sampler2 = var6;
    }
 
-   public static TextureSetup singleTexture(GpuTextureView var0, GpuSampler var1) {
-      return new TextureSetup(var0, (GpuTextureView)null, (GpuTextureView)null, var1, (GpuSampler)null, (GpuSampler)null);
+   public static TextureSetup singleTexture(final GpuTextureView texture, final GpuSampler sampler) {
+      return new TextureSetup(texture, (GpuTextureView)null, (GpuTextureView)null, sampler, (GpuSampler)null, (GpuSampler)null);
    }
 
-   public static TextureSetup singleTextureWithLightmap(GpuTextureView var0, GpuSampler var1) {
-      return new TextureSetup(var0, (GpuTextureView)null, Minecraft.getInstance().gameRenderer.lightTexture().getTextureView(), var1, (GpuSampler)null, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+   public static TextureSetup singleTextureWithLightmap(final GpuTextureView texture, final GpuSampler sampler) {
+      return new TextureSetup(texture, (GpuTextureView)null, Minecraft.getInstance().gameRenderer.lightmap(), sampler, (GpuSampler)null, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
    }
 
-   public static TextureSetup doubleTexture(GpuTextureView var0, GpuSampler var1, GpuTextureView var2, GpuSampler var3) {
-      return new TextureSetup(var0, var2, (GpuTextureView)null, var1, var3, (GpuSampler)null);
+   public static TextureSetup doubleTexture(final GpuTextureView texture0, final GpuSampler sampler0, final GpuTextureView texture1, final GpuSampler sampler1) {
+      return new TextureSetup(texture0, texture1, (GpuTextureView)null, sampler0, sampler1, (GpuSampler)null);
    }
 
    public static TextureSetup noTexture() {

@@ -43,30 +43,30 @@ public interface CauldronInteraction {
    InteractionMap LAVA;
    InteractionMap POWDER_SNOW;
 
-   static InteractionMap newInteractionMap(String var0) {
-      Object2ObjectOpenHashMap var1 = new Object2ObjectOpenHashMap();
-      var1.defaultReturnValue((CauldronInteraction)(var0x, var1x, var2x, var3, var4, var5) -> InteractionResult.TRY_WITH_EMPTY_HAND);
-      InteractionMap var2 = new InteractionMap(var0, var1);
-      INTERACTIONS.put(var0, var2);
-      return var2;
+   static InteractionMap newInteractionMap(final String name) {
+      Object2ObjectOpenHashMap<Item, CauldronInteraction> map = new Object2ObjectOpenHashMap();
+      map.defaultReturnValue((CauldronInteraction)(state, level, pos, player, hand, itemInHand) -> InteractionResult.TRY_WITH_EMPTY_HAND);
+      InteractionMap interactionMap = new InteractionMap(name, map);
+      INTERACTIONS.put(name, interactionMap);
+      return interactionMap;
    }
 
-   InteractionResult interact(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, ItemStack var6);
+   InteractionResult interact(final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand);
 
    static void bootStrap() {
-      Map var0 = EMPTY.map();
-      addDefaultInteractions(var0);
-      var0.put(Items.POTION, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> {
-         PotionContents var6 = (PotionContents)var5.get(DataComponents.POTION_CONTENTS);
-         if (var6 != null && var6.is(Potions.WATER)) {
-            if (!var1x.isClientSide()) {
-               Item var7 = var5.getItem();
-               var3x.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3x, new ItemStack(Items.GLASS_BOTTLE)));
-               var3x.awardStat(Stats.USE_CAULDRON);
-               var3x.awardStat(Stats.ITEM_USED.get(var7));
-               var1x.setBlockAndUpdate(var2x, Blocks.WATER_CAULDRON.defaultBlockState());
-               var1x.playSound((Entity)null, (BlockPos)var2x, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
-               var1x.gameEvent((Entity)null, GameEvent.FLUID_PLACE, var2x);
+      Map<Item, CauldronInteraction> empty = EMPTY.map();
+      addDefaultInteractions(empty);
+      empty.put(Items.POTION, (CauldronInteraction)(state, level, pos, player, hand, itemInHand) -> {
+         PotionContents potion = (PotionContents)itemInHand.get(DataComponents.POTION_CONTENTS);
+         if (potion != null && potion.is(Potions.WATER)) {
+            if (!level.isClientSide()) {
+               Item usedItem = itemInHand.getItem();
+               player.setItemInHand(hand, ItemUtils.createFilledResult(itemInHand, player, new ItemStack(Items.GLASS_BOTTLE)));
+               player.awardStat(Stats.USE_CAULDRON);
+               player.awardStat(Stats.ITEM_USED.get(usedItem));
+               level.setBlockAndUpdate(pos, Blocks.WATER_CAULDRON.defaultBlockState());
+               level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+               level.gameEvent((Entity)null, GameEvent.FLUID_PLACE, pos);
             }
 
             return InteractionResult.SUCCESS;
@@ -74,35 +74,35 @@ public interface CauldronInteraction {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
          }
       });
-      Map var1 = WATER.map();
-      addDefaultInteractions(var1);
-      var1.put(Items.BUCKET, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> fillBucket(var0x, var1x, var2x, var3x, var4, var5, new ItemStack(Items.WATER_BUCKET), (var0) -> (Integer)var0.getValue(LayeredCauldronBlock.LEVEL) == 3, SoundEvents.BUCKET_FILL));
-      var1.put(Items.GLASS_BOTTLE, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> {
-         if (!var1x.isClientSide()) {
-            Item var6 = var5.getItem();
-            var3x.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3x, PotionContents.createItemStack(Items.POTION, Potions.WATER)));
-            var3x.awardStat(Stats.USE_CAULDRON);
-            var3x.awardStat(Stats.ITEM_USED.get(var6));
-            LayeredCauldronBlock.lowerFillLevel(var0x, var1x, var2x);
-            var1x.playSound((Entity)null, (BlockPos)var2x, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
-            var1x.gameEvent((Entity)null, GameEvent.FLUID_PICKUP, var2x);
+      Map<Item, CauldronInteraction> water = WATER.map();
+      addDefaultInteractions(water);
+      water.put(Items.BUCKET, (CauldronInteraction)(state, level, pos, player, hand, itemInHand) -> fillBucket(state, level, pos, player, hand, itemInHand, new ItemStack(Items.WATER_BUCKET), (s) -> (Integer)s.getValue(LayeredCauldronBlock.LEVEL) == 3, SoundEvents.BUCKET_FILL));
+      water.put(Items.GLASS_BOTTLE, (CauldronInteraction)(state, level, pos, player, hand, itemInHand) -> {
+         if (!level.isClientSide()) {
+            Item usedItem = itemInHand.getItem();
+            player.setItemInHand(hand, ItemUtils.createFilledResult(itemInHand, player, PotionContents.createItemStack(Items.POTION, Potions.WATER)));
+            player.awardStat(Stats.USE_CAULDRON);
+            player.awardStat(Stats.ITEM_USED.get(usedItem));
+            LayeredCauldronBlock.lowerFillLevel(state, level, pos);
+            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.gameEvent((Entity)null, GameEvent.FLUID_PICKUP, pos);
          }
 
          return InteractionResult.SUCCESS;
       });
-      var1.put(Items.POTION, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> {
-         if ((Integer)var0x.getValue(LayeredCauldronBlock.LEVEL) == 3) {
+      water.put(Items.POTION, (CauldronInteraction)(state, level, pos, player, hand, itemInHand) -> {
+         if ((Integer)state.getValue(LayeredCauldronBlock.LEVEL) == 3) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
          } else {
-            PotionContents var6 = (PotionContents)var5.get(DataComponents.POTION_CONTENTS);
-            if (var6 != null && var6.is(Potions.WATER)) {
-               if (!var1x.isClientSide()) {
-                  var3x.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3x, new ItemStack(Items.GLASS_BOTTLE)));
-                  var3x.awardStat(Stats.USE_CAULDRON);
-                  var3x.awardStat(Stats.ITEM_USED.get(var5.getItem()));
-                  var1x.setBlockAndUpdate(var2x, (BlockState)var0x.cycle(LayeredCauldronBlock.LEVEL));
-                  var1x.playSound((Entity)null, (BlockPos)var2x, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  var1x.gameEvent((Entity)null, GameEvent.FLUID_PLACE, var2x);
+            PotionContents potion = (PotionContents)itemInHand.get(DataComponents.POTION_CONTENTS);
+            if (potion != null && potion.is(Potions.WATER)) {
+               if (!level.isClientSide()) {
+                  player.setItemInHand(hand, ItemUtils.createFilledResult(itemInHand, player, new ItemStack(Items.GLASS_BOTTLE)));
+                  player.awardStat(Stats.USE_CAULDRON);
+                  player.awardStat(Stats.ITEM_USED.get(itemInHand.getItem()));
+                  level.setBlockAndUpdate(pos, (BlockState)state.cycle(LayeredCauldronBlock.LEVEL));
+                  level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  level.gameEvent((Entity)null, GameEvent.FLUID_PLACE, pos);
                }
 
                return InteractionResult.SUCCESS;
@@ -111,154 +111,154 @@ public interface CauldronInteraction {
             }
          }
       });
-      var1.put(Items.LEATHER_BOOTS, CauldronInteraction::dyedItemIteration);
-      var1.put(Items.LEATHER_LEGGINGS, CauldronInteraction::dyedItemIteration);
-      var1.put(Items.LEATHER_CHESTPLATE, CauldronInteraction::dyedItemIteration);
-      var1.put(Items.LEATHER_HELMET, CauldronInteraction::dyedItemIteration);
-      var1.put(Items.LEATHER_HORSE_ARMOR, CauldronInteraction::dyedItemIteration);
-      var1.put(Items.WOLF_ARMOR, CauldronInteraction::dyedItemIteration);
-      var1.put(Items.WHITE_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.GRAY_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.BLACK_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.BLUE_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.BROWN_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.CYAN_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.GREEN_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.LIGHT_BLUE_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.LIGHT_GRAY_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.LIME_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.MAGENTA_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.ORANGE_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.PINK_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.PURPLE_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.RED_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.YELLOW_BANNER, CauldronInteraction::bannerInteraction);
-      var1.put(Items.WHITE_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.GRAY_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.BLACK_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.BLUE_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.BROWN_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.CYAN_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.GREEN_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.LIGHT_BLUE_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.LIGHT_GRAY_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.LIME_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.MAGENTA_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.ORANGE_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.PINK_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.PURPLE_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.RED_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      var1.put(Items.YELLOW_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
-      Map var2 = LAVA.map();
-      var2.put(Items.BUCKET, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> fillBucket(var0x, var1x, var2x, var3x, var4, var5, new ItemStack(Items.LAVA_BUCKET), (var0) -> true, SoundEvents.BUCKET_FILL_LAVA));
-      addDefaultInteractions(var2);
-      Map var3 = POWDER_SNOW.map();
-      var3.put(Items.BUCKET, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> fillBucket(var0x, var1x, var2x, var3x, var4, var5, new ItemStack(Items.POWDER_SNOW_BUCKET), (var0) -> (Integer)var0.getValue(LayeredCauldronBlock.LEVEL) == 3, SoundEvents.BUCKET_FILL_POWDER_SNOW));
-      addDefaultInteractions(var3);
+      water.put(Items.LEATHER_BOOTS, CauldronInteraction::dyedItemIteration);
+      water.put(Items.LEATHER_LEGGINGS, CauldronInteraction::dyedItemIteration);
+      water.put(Items.LEATHER_CHESTPLATE, CauldronInteraction::dyedItemIteration);
+      water.put(Items.LEATHER_HELMET, CauldronInteraction::dyedItemIteration);
+      water.put(Items.LEATHER_HORSE_ARMOR, CauldronInteraction::dyedItemIteration);
+      water.put(Items.WOLF_ARMOR, CauldronInteraction::dyedItemIteration);
+      water.put(Items.WHITE_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.GRAY_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.BLACK_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.BLUE_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.BROWN_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.CYAN_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.GREEN_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.LIGHT_BLUE_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.LIGHT_GRAY_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.LIME_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.MAGENTA_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.ORANGE_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.PINK_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.PURPLE_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.RED_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.YELLOW_BANNER, CauldronInteraction::bannerInteraction);
+      water.put(Items.WHITE_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.GRAY_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.BLACK_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.BLUE_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.BROWN_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.CYAN_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.GREEN_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.LIGHT_BLUE_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.LIGHT_GRAY_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.LIME_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.MAGENTA_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.ORANGE_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.PINK_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.PURPLE_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.RED_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      water.put(Items.YELLOW_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
+      Map<Item, CauldronInteraction> lava = LAVA.map();
+      lava.put(Items.BUCKET, (CauldronInteraction)(state, level, pos, player, hand, itemInHand) -> fillBucket(state, level, pos, player, hand, itemInHand, new ItemStack(Items.LAVA_BUCKET), (p) -> true, SoundEvents.BUCKET_FILL_LAVA));
+      addDefaultInteractions(lava);
+      Map<Item, CauldronInteraction> powderSnow = POWDER_SNOW.map();
+      powderSnow.put(Items.BUCKET, (CauldronInteraction)(state, level, pos, player, hand, itemInHand) -> fillBucket(state, level, pos, player, hand, itemInHand, new ItemStack(Items.POWDER_SNOW_BUCKET), (s) -> (Integer)s.getValue(LayeredCauldronBlock.LEVEL) == 3, SoundEvents.BUCKET_FILL_POWDER_SNOW));
+      addDefaultInteractions(powderSnow);
    }
 
-   static void addDefaultInteractions(Map<Item, CauldronInteraction> var0) {
-      var0.put(Items.LAVA_BUCKET, CauldronInteraction::fillLavaInteraction);
-      var0.put(Items.WATER_BUCKET, CauldronInteraction::fillWaterInteraction);
-      var0.put(Items.POWDER_SNOW_BUCKET, CauldronInteraction::fillPowderSnowInteraction);
+   static void addDefaultInteractions(final Map<Item, CauldronInteraction> interactionMap) {
+      interactionMap.put(Items.LAVA_BUCKET, CauldronInteraction::fillLavaInteraction);
+      interactionMap.put(Items.WATER_BUCKET, CauldronInteraction::fillWaterInteraction);
+      interactionMap.put(Items.POWDER_SNOW_BUCKET, CauldronInteraction::fillPowderSnowInteraction);
    }
 
-   static InteractionResult fillBucket(BlockState var0, Level var1, BlockPos var2, Player var3, InteractionHand var4, ItemStack var5, ItemStack var6, Predicate<BlockState> var7, SoundEvent var8) {
-      if (!var7.test(var0)) {
+   static InteractionResult fillBucket(final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand, final ItemStack newItem, final Predicate<BlockState> canFill, final SoundEvent soundEvent) {
+      if (!canFill.test(state)) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
-         if (!var1.isClientSide()) {
-            Item var9 = var5.getItem();
-            var3.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3, var6));
-            var3.awardStat(Stats.USE_CAULDRON);
-            var3.awardStat(Stats.ITEM_USED.get(var9));
-            var1.setBlockAndUpdate(var2, Blocks.CAULDRON.defaultBlockState());
-            var1.playSound((Entity)null, (BlockPos)var2, var8, SoundSource.BLOCKS, 1.0F, 1.0F);
-            var1.gameEvent((Entity)null, GameEvent.FLUID_PICKUP, var2);
+         if (!level.isClientSide()) {
+            Item itemUsed = itemInHand.getItem();
+            player.setItemInHand(hand, ItemUtils.createFilledResult(itemInHand, player, newItem));
+            player.awardStat(Stats.USE_CAULDRON);
+            player.awardStat(Stats.ITEM_USED.get(itemUsed));
+            level.setBlockAndUpdate(pos, Blocks.CAULDRON.defaultBlockState());
+            level.playSound((Entity)null, (BlockPos)pos, soundEvent, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.gameEvent((Entity)null, GameEvent.FLUID_PICKUP, pos);
          }
 
          return InteractionResult.SUCCESS;
       }
    }
 
-   static InteractionResult emptyBucket(Level var0, BlockPos var1, Player var2, InteractionHand var3, ItemStack var4, BlockState var5, SoundEvent var6) {
-      if (!var0.isClientSide()) {
-         Item var7 = var4.getItem();
-         var2.setItemInHand(var3, ItemUtils.createFilledResult(var4, var2, new ItemStack(Items.BUCKET)));
-         var2.awardStat(Stats.FILL_CAULDRON);
-         var2.awardStat(Stats.ITEM_USED.get(var7));
-         var0.setBlockAndUpdate(var1, var5);
-         var0.playSound((Entity)null, (BlockPos)var1, var6, SoundSource.BLOCKS, 1.0F, 1.0F);
-         var0.gameEvent((Entity)null, GameEvent.FLUID_PLACE, var1);
+   static InteractionResult emptyBucket(final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand, final BlockState newState, final SoundEvent soundEvent) {
+      if (!level.isClientSide()) {
+         Item itemUsed = itemInHand.getItem();
+         player.setItemInHand(hand, ItemUtils.createFilledResult(itemInHand, player, new ItemStack(Items.BUCKET)));
+         player.awardStat(Stats.FILL_CAULDRON);
+         player.awardStat(Stats.ITEM_USED.get(itemUsed));
+         level.setBlockAndUpdate(pos, newState);
+         level.playSound((Entity)null, (BlockPos)pos, soundEvent, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.gameEvent((Entity)null, GameEvent.FLUID_PLACE, pos);
       }
 
       return InteractionResult.SUCCESS;
    }
 
-   private static InteractionResult fillWaterInteraction(BlockState var0, Level var1, BlockPos var2, Player var3, InteractionHand var4, ItemStack var5) {
-      return emptyBucket(var1, var2, var3, var4, var5, (BlockState)Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3), SoundEvents.BUCKET_EMPTY);
+   private static InteractionResult fillWaterInteraction(final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand) {
+      return emptyBucket(level, pos, player, hand, itemInHand, (BlockState)Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3), SoundEvents.BUCKET_EMPTY);
    }
 
-   private static InteractionResult fillLavaInteraction(BlockState var0, Level var1, BlockPos var2, Player var3, InteractionHand var4, ItemStack var5) {
-      return (InteractionResult)(isUnderWater(var1, var2) ? InteractionResult.CONSUME : emptyBucket(var1, var2, var3, var4, var5, Blocks.LAVA_CAULDRON.defaultBlockState(), SoundEvents.BUCKET_EMPTY_LAVA));
+   private static InteractionResult fillLavaInteraction(final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand) {
+      return (InteractionResult)(isUnderWater(level, pos) ? InteractionResult.CONSUME : emptyBucket(level, pos, player, hand, itemInHand, Blocks.LAVA_CAULDRON.defaultBlockState(), SoundEvents.BUCKET_EMPTY_LAVA));
    }
 
-   private static InteractionResult fillPowderSnowInteraction(BlockState var0, Level var1, BlockPos var2, Player var3, InteractionHand var4, ItemStack var5) {
-      return (InteractionResult)(isUnderWater(var1, var2) ? InteractionResult.CONSUME : emptyBucket(var1, var2, var3, var4, var5, (BlockState)Blocks.POWDER_SNOW_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3), SoundEvents.BUCKET_EMPTY_POWDER_SNOW));
+   private static InteractionResult fillPowderSnowInteraction(final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand) {
+      return (InteractionResult)(isUnderWater(level, pos) ? InteractionResult.CONSUME : emptyBucket(level, pos, player, hand, itemInHand, (BlockState)Blocks.POWDER_SNOW_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3), SoundEvents.BUCKET_EMPTY_POWDER_SNOW));
    }
 
-   private static InteractionResult shulkerBoxInteraction(BlockState var0, Level var1, BlockPos var2, Player var3, InteractionHand var4, ItemStack var5) {
-      Block var6 = Block.byItem(var5.getItem());
-      if (!(var6 instanceof ShulkerBoxBlock)) {
+   private static InteractionResult shulkerBoxInteraction(final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand) {
+      Block block = Block.byItem(itemInHand.getItem());
+      if (!(block instanceof ShulkerBoxBlock)) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
-         if (!var1.isClientSide()) {
-            ItemStack var7 = var5.transmuteCopy(Blocks.SHULKER_BOX, 1);
-            var3.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3, var7, false));
-            var3.awardStat(Stats.CLEAN_SHULKER_BOX);
-            LayeredCauldronBlock.lowerFillLevel(var0, var1, var2);
+         if (!level.isClientSide()) {
+            ItemStack cleanedShulkerBox = itemInHand.transmuteCopy(Blocks.SHULKER_BOX, 1);
+            player.setItemInHand(hand, ItemUtils.createFilledResult(itemInHand, player, cleanedShulkerBox, false));
+            player.awardStat(Stats.CLEAN_SHULKER_BOX);
+            LayeredCauldronBlock.lowerFillLevel(state, level, pos);
          }
 
          return InteractionResult.SUCCESS;
       }
    }
 
-   private static InteractionResult bannerInteraction(BlockState var0, Level var1, BlockPos var2, Player var3, InteractionHand var4, ItemStack var5) {
-      BannerPatternLayers var6 = (BannerPatternLayers)var5.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
-      if (var6.layers().isEmpty()) {
+   private static InteractionResult bannerInteraction(final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand) {
+      BannerPatternLayers patterns = (BannerPatternLayers)itemInHand.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+      if (patterns.layers().isEmpty()) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
-         if (!var1.isClientSide()) {
-            ItemStack var7 = var5.copyWithCount(1);
-            var7.set(DataComponents.BANNER_PATTERNS, var6.removeLast());
-            var3.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3, var7, false));
-            var3.awardStat(Stats.CLEAN_BANNER);
-            LayeredCauldronBlock.lowerFillLevel(var0, var1, var2);
+         if (!level.isClientSide()) {
+            ItemStack cleanedBanner = itemInHand.copyWithCount(1);
+            cleanedBanner.set(DataComponents.BANNER_PATTERNS, patterns.removeLast());
+            player.setItemInHand(hand, ItemUtils.createFilledResult(itemInHand, player, cleanedBanner, false));
+            player.awardStat(Stats.CLEAN_BANNER);
+            LayeredCauldronBlock.lowerFillLevel(state, level, pos);
          }
 
          return InteractionResult.SUCCESS;
       }
    }
 
-   private static InteractionResult dyedItemIteration(BlockState var0, Level var1, BlockPos var2, Player var3, InteractionHand var4, ItemStack var5) {
-      if (!var5.is(ItemTags.DYEABLE)) {
+   private static InteractionResult dyedItemIteration(final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand) {
+      if (!itemInHand.is(ItemTags.CAULDRON_CAN_REMOVE_DYE)) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
-      } else if (!var5.has(DataComponents.DYED_COLOR)) {
+      } else if (!itemInHand.has(DataComponents.DYED_COLOR)) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
-         if (!var1.isClientSide()) {
-            var5.remove(DataComponents.DYED_COLOR);
-            var3.awardStat(Stats.CLEAN_ARMOR);
-            LayeredCauldronBlock.lowerFillLevel(var0, var1, var2);
+         if (!level.isClientSide()) {
+            itemInHand.remove(DataComponents.DYED_COLOR);
+            player.awardStat(Stats.CLEAN_ARMOR);
+            LayeredCauldronBlock.lowerFillLevel(state, level, pos);
          }
 
          return InteractionResult.SUCCESS;
       }
    }
 
-   private static boolean isUnderWater(Level var0, BlockPos var1) {
-      FluidState var2 = var0.getFluidState(var1.above());
-      return var2.is(FluidTags.WATER);
+   private static boolean isUnderWater(final Level level, final BlockPos pos) {
+      FluidState fluidState = level.getFluidState(pos.above());
+      return fluidState.is(FluidTags.WATER);
    }
 
    static {
@@ -273,10 +273,8 @@ public interface CauldronInteraction {
    }
 
    public static record InteractionMap(String name, Map<Item, CauldronInteraction> map) {
-      public InteractionMap(String var1, Map<Item, CauldronInteraction> var2) {
+      public InteractionMap {
          super();
-         this.name = var1;
-         this.map = var2;
       }
    }
 }

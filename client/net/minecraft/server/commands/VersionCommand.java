@@ -20,29 +20,29 @@ public class VersionCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, boolean var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("version").requires(Commands.hasPermission(var1 ? Commands.LEVEL_GAMEMASTERS : Commands.LEVEL_ALL))).executes((var0x) -> {
-         CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
-         var1.sendSystemMessage(HEADER);
-         Objects.requireNonNull(var1);
-         dumpVersion(var1::sendSystemMessage);
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final boolean checkPermissions) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("version").requires(Commands.hasPermission(checkPermissions ? Commands.LEVEL_GAMEMASTERS : Commands.LEVEL_ALL))).executes((c) -> {
+         CommandSourceStack source = (CommandSourceStack)c.getSource();
+         source.sendSystemMessage(HEADER);
+         Objects.requireNonNull(source);
+         dumpVersion(source::sendSystemMessage);
          return 1;
       }));
    }
 
-   public static void dumpVersion(Consumer<Component> var0) {
-      WorldVersion var1 = SharedConstants.getCurrentVersion();
-      var0.accept(Component.translatable("commands.version.id", var1.id()));
-      var0.accept(Component.translatable("commands.version.name", var1.name()));
-      var0.accept(Component.translatable("commands.version.data", var1.dataVersion().version()));
-      var0.accept(Component.translatable("commands.version.series", var1.dataVersion().series()));
-      Object[] var10002 = new Object[]{var1.protocolVersion(), null};
-      String var10005 = Integer.toHexString(var1.protocolVersion());
+   public static void dumpVersion(final Consumer<Component> output) {
+      WorldVersion version = SharedConstants.getCurrentVersion();
+      output.accept(Component.translatable("commands.version.id", version.id()));
+      output.accept(Component.translatable("commands.version.name", version.name()));
+      output.accept(Component.translatable("commands.version.data", version.dataVersion().version()));
+      output.accept(Component.translatable("commands.version.series", version.dataVersion().series()));
+      Object[] var10002 = new Object[]{version.protocolVersion(), null};
+      String var10005 = Integer.toHexString(version.protocolVersion());
       var10002[1] = "0x" + var10005;
-      var0.accept(Component.translatable("commands.version.protocol", var10002));
-      var0.accept(Component.translatable("commands.version.build_time", Component.translationArg(var1.buildTime())));
-      var0.accept(Component.translatable("commands.version.pack.resource", var1.packVersion(PackType.CLIENT_RESOURCES).toString()));
-      var0.accept(Component.translatable("commands.version.pack.data", var1.packVersion(PackType.SERVER_DATA).toString()));
-      var0.accept(var1.stable() ? STABLE : UNSTABLE);
+      output.accept(Component.translatable("commands.version.protocol", var10002));
+      output.accept(Component.translatable("commands.version.build_time", Component.translationArg(version.buildTime())));
+      output.accept(Component.translatable("commands.version.pack.resource", version.packVersion(PackType.CLIENT_RESOURCES).toString()));
+      output.accept(Component.translatable("commands.version.pack.data", version.packVersion(PackType.SERVER_DATA).toString()));
+      output.accept(version.stable() ? STABLE : UNSTABLE);
    }
 }

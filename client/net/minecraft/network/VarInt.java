@@ -12,43 +12,43 @@ public class VarInt {
       super();
    }
 
-   public static int getByteSize(int var0) {
-      for(int var1 = 1; var1 < 5; ++var1) {
-         if ((var0 & -1 << var1 * 7) == 0) {
-            return var1;
+   public static int getByteSize(final int value) {
+      for(int i = 1; i < 5; ++i) {
+         if ((value & -1 << i * 7) == 0) {
+            return i;
          }
       }
 
       return 5;
    }
 
-   public static boolean hasContinuationBit(byte var0) {
-      return (var0 & 128) == 128;
+   public static boolean hasContinuationBit(final byte in) {
+      return (in & 128) == 128;
    }
 
-   public static int read(ByteBuf var0) {
-      int var1 = 0;
-      int var2 = 0;
+   public static int read(final ByteBuf input) {
+      int out = 0;
+      int bytes = 0;
 
-      byte var3;
+      byte in;
       do {
-         var3 = var0.readByte();
-         var1 |= (var3 & 127) << var2++ * 7;
-         if (var2 > 5) {
+         in = input.readByte();
+         out |= (in & 127) << bytes++ * 7;
+         if (bytes > 5) {
             throw new RuntimeException("VarInt too big");
          }
-      } while(hasContinuationBit(var3));
+      } while(hasContinuationBit(in));
 
-      return var1;
+      return out;
    }
 
-   public static ByteBuf write(ByteBuf var0, int var1) {
-      while((var1 & -128) != 0) {
-         var0.writeByte(var1 & 127 | 128);
-         var1 >>>= 7;
+   public static ByteBuf write(final ByteBuf output, int value) {
+      while((value & -128) != 0) {
+         output.writeByte(value & 127 | 128);
+         value >>>= 7;
       }
 
-      var0.writeByte(var1);
-      return var0;
+      output.writeByte(value);
+      return output;
    }
 }

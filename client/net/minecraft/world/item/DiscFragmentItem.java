@@ -7,12 +7,12 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.component.TooltipDisplay;
 
 public class DiscFragmentItem extends Item {
-   public DiscFragmentItem(Item.Properties var1) {
-      super(var1);
+   public DiscFragmentItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, TooltipDisplay var3, Consumer<Component> var4, TooltipFlag var5) {
-      var4.accept(this.getDisplayName().withStyle(ChatFormatting.GRAY));
+   public void appendHoverText(final ItemStack itemStack, final Item.TooltipContext context, final TooltipDisplay display, final Consumer<Component> builder, final TooltipFlag tooltipFlag) {
+      builder.accept(this.getDisplayName().withStyle(ChatFormatting.GRAY));
    }
 
    public MutableComponent getDisplayName() {

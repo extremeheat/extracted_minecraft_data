@@ -11,21 +11,21 @@ public class OwnerHurtByTargetGoal extends TargetGoal {
    private LivingEntity ownerLastHurtBy;
    private int timestamp;
 
-   public OwnerHurtByTargetGoal(TamableAnimal var1) {
-      super(var1, false);
-      this.tameAnimal = var1;
+   public OwnerHurtByTargetGoal(final TamableAnimal tameAnimal) {
+      super(tameAnimal, false);
+      this.tameAnimal = tameAnimal;
       this.setFlags(EnumSet.of(Goal.Flag.TARGET));
    }
 
    public boolean canUse() {
       if (this.tameAnimal.isTame() && !this.tameAnimal.isOrderedToSit()) {
-         LivingEntity var1 = this.tameAnimal.getOwner();
-         if (var1 == null) {
+         LivingEntity owner = this.tameAnimal.getOwner();
+         if (owner == null) {
             return false;
          } else {
-            this.ownerLastHurtBy = var1.getLastHurtByMob();
-            int var2 = var1.getLastHurtByMobTimestamp();
-            return var2 != this.timestamp && this.canAttack(this.ownerLastHurtBy, TargetingConditions.DEFAULT) && this.tameAnimal.wantsToAttack(this.ownerLastHurtBy, var1);
+            this.ownerLastHurtBy = owner.getLastHurtByMob();
+            int ts = owner.getLastHurtByMobTimestamp();
+            return ts != this.timestamp && this.canAttack(this.ownerLastHurtBy, TargetingConditions.DEFAULT) && this.tameAnimal.wantsToAttack(this.ownerLastHurtBy, owner);
          }
       } else {
          return false;
@@ -34,9 +34,9 @@ public class OwnerHurtByTargetGoal extends TargetGoal {
 
    public void start() {
       this.mob.setTarget(this.ownerLastHurtBy);
-      LivingEntity var1 = this.tameAnimal.getOwner();
-      if (var1 != null) {
-         this.timestamp = var1.getLastHurtByMobTimestamp();
+      LivingEntity owner = this.tameAnimal.getOwner();
+      if (owner != null) {
+         this.timestamp = owner.getLastHurtByMobTimestamp();
       }
 
       super.start();

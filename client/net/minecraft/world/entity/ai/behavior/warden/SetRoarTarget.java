@@ -14,15 +14,15 @@ public class SetRoarTarget {
       super();
    }
 
-   public static <E extends Warden> BehaviorControl<E> create(Function<E, Optional<? extends LivingEntity>> var0) {
-      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.absent(MemoryModuleType.ROAR_TARGET), var1.absent(MemoryModuleType.ATTACK_TARGET), var1.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(var1, (var1x, var2, var3) -> (var3x, var4, var5) -> {
-               Optional var7 = (Optional)var0.apply(var4);
-               Objects.requireNonNull(var4);
-               if (var7.filter(var4::canTargetEntity).isEmpty()) {
+   public static <E extends Warden> BehaviorControl<E> create(final Function<E, Optional<? extends LivingEntity>> targetFinderFunction) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.ROAR_TARGET), i.absent(MemoryModuleType.ATTACK_TARGET), i.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(i, (roarTarget, attackTarget, cantReachSince) -> (level, body, timestamp) -> {
+               Optional<? extends LivingEntity> target = (Optional)targetFinderFunction.apply(body);
+               Objects.requireNonNull(body);
+               if (target.filter(body::canTargetEntity).isEmpty()) {
                   return false;
                } else {
-                  var1x.set((LivingEntity)var7.get());
-                  var3.erase();
+                  roarTarget.set((LivingEntity)target.get());
+                  cantReachSince.erase();
                   return true;
                }
             })));

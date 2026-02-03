@@ -12,17 +12,16 @@ public record ClientboundShowDialogPacket(Holder<Dialog> dialog) implements Pack
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundShowDialogPacket> STREAM_CODEC;
    public static final StreamCodec<ByteBuf, ClientboundShowDialogPacket> CONTEXT_FREE_STREAM_CODEC;
 
-   public ClientboundShowDialogPacket(Holder<Dialog> var1) {
+   public ClientboundShowDialogPacket {
       super();
-      this.dialog = var1;
    }
 
    public PacketType<ClientboundShowDialogPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_SHOW_DIALOG;
    }
 
-   public void handle(ClientCommonPacketListener var1) {
-      var1.handleShowDialog(this);
+   public void handle(final ClientCommonPacketListener listener) {
+      listener.handleShowDialog(this);
    }
 
    static {

@@ -18,29 +18,29 @@ public abstract class Report {
    protected @Nullable ReportReason reason;
    protected boolean attested;
 
-   public Report(UUID var1, Instant var2, UUID var3) {
+   public Report(final UUID reportId, final Instant createdAt, final UUID reportedProfileId) {
       super();
-      this.reportId = var1;
-      this.createdAt = var2;
-      this.reportedProfileId = var3;
+      this.reportId = reportId;
+      this.createdAt = createdAt;
+      this.reportedProfileId = reportedProfileId;
    }
 
-   public boolean isReportedPlayer(UUID var1) {
-      return var1.equals(this.reportedProfileId);
+   public boolean isReportedPlayer(final UUID playerId) {
+      return playerId.equals(this.reportedProfileId);
    }
 
    public abstract Report copy();
 
-   public abstract Screen createScreen(Screen var1, ReportingContext var2);
+   public abstract Screen createScreen(Screen lastScreen, ReportingContext context);
 
    public abstract static class Builder<R extends Report> {
       protected final R report;
       protected final AbuseReportLimits limits;
 
-      protected Builder(R var1, AbuseReportLimits var2) {
+      protected Builder(final R report, final AbuseReportLimits limits) {
          super();
-         this.report = var1;
-         this.limits = var2;
+         this.report = report;
+         this.limits = limits;
       }
 
       public R report() {
@@ -59,20 +59,20 @@ public abstract class Report {
          return this.report().attested;
       }
 
-      public void setComments(String var1) {
-         this.report.comments = var1;
+      public void setComments(final String comments) {
+         this.report.comments = comments;
       }
 
       public @Nullable ReportReason reason() {
          return this.report.reason;
       }
 
-      public void setReason(ReportReason var1) {
-         this.report.reason = var1;
+      public void setReason(final ReportReason reason) {
+         this.report.reason = reason;
       }
 
-      public void setAttested(boolean var1) {
-         this.report.attested = var1;
+      public void setAttested(final boolean attested) {
+         this.report.attested = attested;
       }
 
       public abstract boolean hasContent();
@@ -81,15 +81,12 @@ public abstract class Report {
          return !this.report().attested ? Report.CannotBuildReason.NOT_ATTESTED : null;
       }
 
-      public abstract Either<Result, CannotBuildReason> build(ReportingContext var1);
+      public abstract Either<Result, CannotBuildReason> build(ReportingContext reportingContext);
    }
 
    public static record Result(UUID id, ReportType reportType, AbuseReport report) {
-      public Result(UUID var1, ReportType var2, AbuseReport var3) {
+      public Result {
          super();
-         this.id = var1;
-         this.reportType = var2;
-         this.report = var3;
       }
    }
 
@@ -100,9 +97,8 @@ public abstract class Report {
       public static final CannotBuildReason COMMENT_TOO_LONG = new CannotBuildReason(Component.translatable("gui.abuseReport.send.comment_too_long"));
       public static final CannotBuildReason NOT_ATTESTED = new CannotBuildReason(Component.translatable("gui.abuseReport.send.not_attested"));
 
-      public CannotBuildReason(Component var1) {
+      public CannotBuildReason {
          super();
-         this.message = var1;
       }
 
       public Tooltip tooltip() {

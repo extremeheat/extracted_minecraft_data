@@ -17,33 +17,31 @@ import net.minecraft.world.entity.Entity;
 import org.jspecify.annotations.Nullable;
 
 public record SelectorContents(SelectorPattern selector, Optional<Component> separator) implements ComponentContents {
-   public static final MapCodec<SelectorContents> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SelectorPattern.CODEC.fieldOf("selector").forGetter(SelectorContents::selector), ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(SelectorContents::separator)).apply(var0, SelectorContents::new));
+   public static final MapCodec<SelectorContents> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SelectorPattern.CODEC.fieldOf("selector").forGetter(SelectorContents::selector), ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(SelectorContents::separator)).apply(i, SelectorContents::new));
 
-   public SelectorContents(SelectorPattern var1, Optional<Component> var2) {
+   public SelectorContents {
       super();
-      this.selector = var1;
-      this.separator = var2;
    }
 
    public MapCodec<SelectorContents> codec() {
       return MAP_CODEC;
    }
 
-   public MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
-      if (var1 == null) {
+   public MutableComponent resolve(final @Nullable CommandSourceStack source, final @Nullable Entity entity, final int recursionDepth) throws CommandSyntaxException {
+      if (source == null) {
          return Component.empty();
       } else {
-         Optional var4 = ComponentUtils.updateForEntity(var1, this.separator, var2, var3);
-         return ComponentUtils.formatList(this.selector.resolved().findEntities(var1), var4, Entity::getDisplayName);
+         Optional<? extends Component> resolvedSeparator = ComponentUtils.updateForEntity(source, this.separator, entity, recursionDepth);
+         return ComponentUtils.formatList(this.selector.resolved().findEntities(source), resolvedSeparator, Entity::getDisplayName);
       }
    }
 
-   public <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
-      return var1.accept(var2, this.selector.pattern());
+   public <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
+      return output.accept(currentStyle, this.selector.pattern());
    }
 
-   public <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
-      return var1.accept(this.selector.pattern());
+   public <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
+      return output.accept(this.selector.pattern());
    }
 
    public String toString() {

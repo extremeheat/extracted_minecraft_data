@@ -15,37 +15,37 @@ import net.minecraft.resources.Identifier;
 public class RegistryDumpReport implements DataProvider {
    private final PackOutput output;
 
-   public RegistryDumpReport(PackOutput var1) {
+   public RegistryDumpReport(final PackOutput output) {
       super();
-      this.output = var1;
+      this.output = output;
    }
 
-   public CompletableFuture<?> run(CachedOutput var1) {
-      JsonObject var2 = new JsonObject();
-      BuiltInRegistries.REGISTRY.listElements().forEach((var1x) -> var2.add(var1x.key().identifier().toString(), dumpRegistry((Registry)var1x.value())));
-      Path var3 = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("registries.json");
-      return DataProvider.saveStable(var1, var2, var3);
+   public CompletableFuture<?> run(final CachedOutput cache) {
+      JsonObject root = new JsonObject();
+      BuiltInRegistries.REGISTRY.listElements().forEach((e) -> root.add(e.key().identifier().toString(), dumpRegistry((Registry)e.value())));
+      Path path = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("registries.json");
+      return DataProvider.saveStable(cache, root, path);
    }
 
-   private static <T> JsonElement dumpRegistry(Registry<T> var0) {
-      JsonObject var1 = new JsonObject();
-      if (var0 instanceof DefaultedRegistry) {
-         Identifier var2 = ((DefaultedRegistry)var0).getDefaultKey();
-         var1.addProperty("default", var2.toString());
+   private static <T> JsonElement dumpRegistry(final Registry<T> registry) {
+      JsonObject result = new JsonObject();
+      if (registry instanceof DefaultedRegistry) {
+         Identifier defaultKey = ((DefaultedRegistry)registry).getDefaultKey();
+         result.addProperty("default", defaultKey.toString());
       }
 
-      int var4 = BuiltInRegistries.REGISTRY.getId(var0);
-      var1.addProperty("protocol_id", var4);
-      JsonObject var3 = new JsonObject();
-      var0.listElements().forEach((var2x) -> {
-         Object var3x = var2x.value();
-         int var4 = var0.getId(var3x);
-         JsonObject var5 = new JsonObject();
-         var5.addProperty("protocol_id", var4);
-         var3.add(var2x.key().identifier().toString(), var5);
+      int registryId = BuiltInRegistries.REGISTRY.getId(registry);
+      result.addProperty("protocol_id", registryId);
+      JsonObject entries = new JsonObject();
+      registry.listElements().forEach((holder) -> {
+         T value = (T)holder.value();
+         int protocolId = registry.getId(value);
+         JsonObject entry = new JsonObject();
+         entry.addProperty("protocol_id", protocolId);
+         entries.add(holder.key().identifier().toString(), entry);
       });
-      var1.add("entries", var3);
-      return var1;
+      result.add("entries", entries);
+      return result;
    }
 
    public final String getName() {

@@ -15,19 +15,19 @@ public class RealmsPopups {
       super();
    }
 
-   public static PopupScreen customPopupScreen(Screen var0, Component var1, Component var2, Consumer<PopupScreen> var3) {
-      return (new PopupScreen.Builder(var0, var1)).setMessage(var2).addButton(CommonComponents.GUI_CONTINUE, var3).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build();
+   public static PopupScreen customPopupScreen(final Screen backgroundScreen, final Component popupTitle, final Component popupMessage, final Consumer<PopupScreen> onContinue) {
+      return (new PopupScreen.Builder(backgroundScreen, popupTitle)).addMessage(popupMessage).addButton(CommonComponents.GUI_CONTINUE, onContinue).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build();
    }
 
-   public static PopupScreen infoPopupScreen(Screen var0, Component var1, Consumer<PopupScreen> var2) {
-      return (new PopupScreen.Builder(var0, INFO)).setMessage(var1).addButton(CommonComponents.GUI_CONTINUE, var2).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build();
+   public static PopupScreen infoPopupScreen(final Screen backgroundScreen, final Component popupMessage, final Consumer<PopupScreen> onContinue) {
+      return (new PopupScreen.Builder(backgroundScreen, INFO)).addMessage(popupMessage).addButton(CommonComponents.GUI_CONTINUE, onContinue).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build();
    }
 
-   public static PopupScreen warningPopupScreen(Screen var0, Component var1, Consumer<PopupScreen> var2) {
-      return (new PopupScreen.Builder(var0, WARNING)).setMessage(var1).addButton(CommonComponents.GUI_CONTINUE, var2).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build();
+   public static PopupScreen warningPopupScreen(final Screen backgroundScreen, final Component popupMessage, final Consumer<PopupScreen> onContinue) {
+      return (new PopupScreen.Builder(backgroundScreen, WARNING)).addMessage(popupMessage).addButton(CommonComponents.GUI_CONTINUE, onContinue).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build();
    }
 
-   public static PopupScreen warningAcknowledgePopupScreen(Screen var0, Component var1, Consumer<PopupScreen> var2) {
-      return (new PopupScreen.Builder(var0, WARNING)).setMessage(var1).addButton(CommonComponents.GUI_OK, var2).build();
+   public static PopupScreen warningAcknowledgePopupScreen(final Screen backgroundScreen, final Component popupMessage, final Consumer<PopupScreen> onContinue) {
+      return (new PopupScreen.Builder(backgroundScreen, WARNING)).addMessage(popupMessage).addButton(CommonComponents.GUI_OK, onContinue).build();
    }
 }

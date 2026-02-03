@@ -18,44 +18,44 @@ public final class DataComponentExactPredicate implements Predicate<DataComponen
    public static final DataComponentExactPredicate EMPTY;
    private final List<TypedDataComponent<?>> expectedComponents;
 
-   DataComponentExactPredicate(List<TypedDataComponent<?>> var1) {
+   private DataComponentExactPredicate(final List<TypedDataComponent<?>> expectedComponents) {
       super();
-      this.expectedComponents = var1;
+      this.expectedComponents = expectedComponents;
    }
 
    public static Builder builder() {
       return new Builder();
    }
 
-   public static <T> DataComponentExactPredicate expect(DataComponentType<T> var0, T var1) {
-      return new DataComponentExactPredicate(List.of(new TypedDataComponent(var0, var1)));
+   public static <T> DataComponentExactPredicate expect(final DataComponentType<T> type, final T value) {
+      return new DataComponentExactPredicate(List.of(new TypedDataComponent(type, value)));
    }
 
-   public static DataComponentExactPredicate allOf(DataComponentMap var0) {
-      return new DataComponentExactPredicate(ImmutableList.copyOf(var0));
+   public static DataComponentExactPredicate allOf(final DataComponentMap components) {
+      return new DataComponentExactPredicate(ImmutableList.copyOf(components));
    }
 
-   public static DataComponentExactPredicate someOf(DataComponentMap var0, DataComponentType<?>... var1) {
-      Builder var2 = new Builder();
+   public static DataComponentExactPredicate someOf(final DataComponentMap components, final DataComponentType<?>... types) {
+      Builder result = new Builder();
 
-      for(DataComponentType var6 : var1) {
-         TypedDataComponent var7 = var0.getTyped(var6);
-         if (var7 != null) {
-            var2.expect(var7);
+      for(DataComponentType<?> type : types) {
+         TypedDataComponent<?> value = components.getTyped(type);
+         if (value != null) {
+            result.expect(value);
          }
       }
 
-      return var2.build();
+      return result.build();
    }
 
    public boolean isEmpty() {
       return this.expectedComponents.isEmpty();
    }
 
-   public boolean equals(Object var1) {
+   public boolean equals(final Object obj) {
       boolean var10000;
-      if (var1 instanceof DataComponentExactPredicate var2) {
-         if (this.expectedComponents.equals(var2.expectedComponents)) {
+      if (obj instanceof DataComponentExactPredicate predicate) {
+         if (this.expectedComponents.equals(predicate.expectedComponents)) {
             var10000 = true;
             return var10000;
          }
@@ -73,10 +73,10 @@ public final class DataComponentExactPredicate implements Predicate<DataComponen
       return this.expectedComponents.toString();
    }
 
-   public boolean test(DataComponentGetter var1) {
-      for(TypedDataComponent var3 : this.expectedComponents) {
-         Object var4 = var1.get(var3.type());
-         if (!Objects.equals(var3.value(), var4)) {
+   public boolean test(final DataComponentGetter actualComponents) {
+      for(TypedDataComponent<?> expected : this.expectedComponents) {
+         Object actual = actualComponents.get(expected.type());
+         if (!Objects.equals(expected.value(), actual)) {
             return false;
          }
       }
@@ -89,45 +89,34 @@ public final class DataComponentExactPredicate implements Predicate<DataComponen
    }
 
    public DataComponentPatch asPatch() {
-      DataComponentPatch.Builder var1 = DataComponentPatch.builder();
-
-      for(TypedDataComponent var3 : this.expectedComponents) {
-         var1.set(var3);
-      }
-
-      return var1.build();
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((DataComponentGetter)var1);
+      return DataComponentPatch.builder().set(this.expectedComponents).build();
    }
 
    static {
-      CODEC = DataComponentType.VALUE_MAP_CODEC.xmap((var0) -> new DataComponentExactPredicate((List)var0.entrySet().stream().map(TypedDataComponent::fromEntryUnchecked).collect(Collectors.toList())), (var0) -> (Map)var0.expectedComponents.stream().filter((var0x) -> !var0x.type().isTransient()).collect(Collectors.toMap(TypedDataComponent::type, TypedDataComponent::value)));
-      STREAM_CODEC = TypedDataComponent.STREAM_CODEC.apply(ByteBufCodecs.list()).map(DataComponentExactPredicate::new, (var0) -> var0.expectedComponents);
+      CODEC = DataComponentType.VALUE_MAP_CODEC.xmap((map) -> new DataComponentExactPredicate((List)map.entrySet().stream().map(TypedDataComponent::fromEntryUnchecked).collect(Collectors.toList())), (predicate) -> (Map)predicate.expectedComponents.stream().filter((e) -> !e.type().isTransient()).collect(Collectors.toMap(TypedDataComponent::type, TypedDataComponent::value)));
+      STREAM_CODEC = TypedDataComponent.STREAM_CODEC.apply(ByteBufCodecs.list()).map(DataComponentExactPredicate::new, (predicate) -> predicate.expectedComponents);
       EMPTY = new DataComponentExactPredicate(List.of());
    }
 
    public static class Builder {
       private final List<TypedDataComponent<?>> expectedComponents = new ArrayList();
 
-      Builder() {
+      private Builder() {
          super();
       }
 
-      public <T> Builder expect(TypedDataComponent<T> var1) {
-         return this.expect(var1.type(), var1.value());
+      public <T> Builder expect(final TypedDataComponent<T> value) {
+         return this.expect(value.type(), value.value());
       }
 
-      public <T> Builder expect(DataComponentType<? super T> var1, T var2) {
-         for(TypedDataComponent var4 : this.expectedComponents) {
-            if (var4.type() == var1) {
-               throw new IllegalArgumentException("Predicate already has component of type: '" + String.valueOf(var1) + "'");
+      public <T> Builder expect(final DataComponentType<? super T> type, final T value) {
+         for(TypedDataComponent<?> component : this.expectedComponents) {
+            if (component.type() == type) {
+               throw new IllegalArgumentException("Predicate already has component of type: '" + String.valueOf(type) + "'");
             }
          }
 
-         this.expectedComponents.add(new TypedDataComponent(var1, var2));
+         this.expectedComponents.add(new TypedDataComponent(type, value));
          return this;
       }
 

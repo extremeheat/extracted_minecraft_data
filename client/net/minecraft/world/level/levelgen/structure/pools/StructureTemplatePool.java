@@ -27,49 +27,49 @@ import org.apache.commons.lang3.mutable.MutableObject;
 public class StructureTemplatePool {
    private static final int SIZE_UNSET = -2147483648;
    private static final MutableObject<Codec<Holder<StructureTemplatePool>>> CODEC_REFERENCE = new MutableObject();
-   public static final Codec<StructureTemplatePool> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.lazyInitialized(CODEC_REFERENCE).fieldOf("fallback").forGetter(StructureTemplatePool::getFallback), Codec.mapPair(StructurePoolElement.CODEC.fieldOf("element"), Codec.intRange(1, 150).fieldOf("weight")).codec().listOf().fieldOf("elements").forGetter((var0x) -> var0x.rawTemplates)).apply(var0, StructureTemplatePool::new));
+   public static final Codec<StructureTemplatePool> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.lazyInitialized(CODEC_REFERENCE).fieldOf("fallback").forGetter(StructureTemplatePool::getFallback), Codec.mapPair(StructurePoolElement.CODEC.fieldOf("element"), Codec.intRange(1, 150).fieldOf("weight")).codec().listOf().fieldOf("elements").forGetter((p) -> p.rawTemplates)).apply(i, StructureTemplatePool::new));
    public static final Codec<Holder<StructureTemplatePool>> CODEC;
    private final List<Pair<StructurePoolElement, Integer>> rawTemplates;
    private final ObjectArrayList<StructurePoolElement> templates;
    private final Holder<StructureTemplatePool> fallback;
    private int maxSize = -2147483648;
 
-   public StructureTemplatePool(Holder<StructureTemplatePool> var1, List<Pair<StructurePoolElement, Integer>> var2) {
+   public StructureTemplatePool(final Holder<StructureTemplatePool> fallback, final List<Pair<StructurePoolElement, Integer>> templates) {
       super();
-      this.rawTemplates = var2;
+      this.rawTemplates = templates;
       this.templates = new ObjectArrayList();
 
-      for(Pair var4 : var2) {
-         StructurePoolElement var5 = (StructurePoolElement)var4.getFirst();
+      for(Pair<StructurePoolElement, Integer> templateDef : templates) {
+         StructurePoolElement element = (StructurePoolElement)templateDef.getFirst();
 
-         for(int var6 = 0; var6 < (Integer)var4.getSecond(); ++var6) {
-            this.templates.add(var5);
+         for(int i = 0; i < (Integer)templateDef.getSecond(); ++i) {
+            this.templates.add(element);
          }
       }
 
-      this.fallback = var1;
+      this.fallback = fallback;
    }
 
-   public StructureTemplatePool(Holder<StructureTemplatePool> var1, List<Pair<Function<Projection, ? extends StructurePoolElement>, Integer>> var2, Projection var3) {
+   public StructureTemplatePool(final Holder<StructureTemplatePool> fallback, final List<Pair<Function<Projection, ? extends StructurePoolElement>, Integer>> templates, final Projection projection) {
       super();
       this.rawTemplates = Lists.newArrayList();
       this.templates = new ObjectArrayList();
 
-      for(Pair var5 : var2) {
-         StructurePoolElement var6 = (StructurePoolElement)((Function)var5.getFirst()).apply(var3);
-         this.rawTemplates.add(Pair.of(var6, (Integer)var5.getSecond()));
+      for(Pair<Function<Projection, ? extends StructurePoolElement>, Integer> templateDef : templates) {
+         StructurePoolElement element = (StructurePoolElement)((Function)templateDef.getFirst()).apply(projection);
+         this.rawTemplates.add(Pair.of(element, (Integer)templateDef.getSecond()));
 
-         for(int var7 = 0; var7 < (Integer)var5.getSecond(); ++var7) {
-            this.templates.add(var6);
+         for(int i = 0; i < (Integer)templateDef.getSecond(); ++i) {
+            this.templates.add(element);
          }
       }
 
-      this.fallback = var1;
+      this.fallback = fallback;
    }
 
-   public int getMaxSize(StructureTemplateManager var1) {
+   public int getMaxSize(final StructureTemplateManager manager) {
       if (this.maxSize == -2147483648) {
-         this.maxSize = this.templates.stream().filter((var0) -> var0 != EmptyPoolElement.INSTANCE).mapToInt((var1x) -> var1x.getBoundingBox(var1, BlockPos.ZERO, Rotation.NONE).getYSpan()).max().orElse(0);
+         this.maxSize = this.templates.stream().filter((t) -> t != EmptyPoolElement.INSTANCE).mapToInt((t) -> t.getBoundingBox(manager, BlockPos.ZERO, Rotation.NONE).getYSpan()).max().orElse(0);
       }
 
       return this.maxSize;
@@ -84,12 +84,12 @@ public class StructureTemplatePool {
       return this.fallback;
    }
 
-   public StructurePoolElement getRandomTemplate(RandomSource var1) {
-      return (StructurePoolElement)(this.templates.isEmpty() ? EmptyPoolElement.INSTANCE : (StructurePoolElement)this.templates.get(var1.nextInt(this.templates.size())));
+   public StructurePoolElement getRandomTemplate(final RandomSource random) {
+      return (StructurePoolElement)(this.templates.isEmpty() ? EmptyPoolElement.INSTANCE : (StructurePoolElement)this.templates.get(random.nextInt(this.templates.size())));
    }
 
-   public List<StructurePoolElement> getShuffledTemplates(RandomSource var1) {
-      return Util.shuffledCopy(this.templates, var1);
+   public List<StructurePoolElement> getShuffledTemplates(final RandomSource random) {
+      return Util.shuffledCopy(this.templates, random);
    }
 
    public int size() {
@@ -111,17 +111,17 @@ public class StructureTemplatePool {
       private final String name;
       private final ImmutableList<StructureProcessor> processors;
 
-      private Projection(final String var3, final ImmutableList<StructureProcessor> var4) {
-         this.name = var3;
-         this.processors = var4;
+      private Projection(final String name, final ImmutableList<StructureProcessor> processors) {
+         this.name = name;
+         this.processors = processors;
       }
 
       public String getName() {
          return this.name;
       }
 
-      public static Projection byName(String var0) {
-         return CODEC.byName(var0);
+      public static Projection byName(final String name) {
+         return CODEC.byName(name);
       }
 
       public ImmutableList<StructureProcessor> getProcessors() {

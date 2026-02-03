@@ -8,6 +8,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
@@ -21,35 +22,35 @@ public class StopSoundCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      RequiredArgumentBuilder var1 = (RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((var0x) -> stopSound((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), (SoundSource)null, (Identifier)null))).then(Commands.literal("*").then(Commands.argument("sound", IdentifierArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS)).executes((var0x) -> stopSound((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), (SoundSource)null, IdentifierArgument.getId(var0x, "sound")))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      RequiredArgumentBuilder<CommandSourceStack, EntitySelector> target = (RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((c) -> stopSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), (SoundSource)null, (Identifier)null))).then(Commands.literal("*").then(Commands.argument("sound", IdentifierArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS)).executes((c) -> stopSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), (SoundSource)null, IdentifierArgument.getId(c, "sound")))));
 
-      for(SoundSource var5 : SoundSource.values()) {
-         var1.then(((LiteralArgumentBuilder)Commands.literal(var5.getName()).executes((var1x) -> stopSound((CommandSourceStack)var1x.getSource(), EntityArgument.getPlayers(var1x, "targets"), var5, (Identifier)null))).then(Commands.argument("sound", IdentifierArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS)).executes((var1x) -> stopSound((CommandSourceStack)var1x.getSource(), EntityArgument.getPlayers(var1x, "targets"), var5, IdentifierArgument.getId(var1x, "sound")))));
+      for(SoundSource source : SoundSource.values()) {
+         target.then(((LiteralArgumentBuilder)Commands.literal(source.getName()).executes((c) -> stopSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), source, (Identifier)null))).then(Commands.argument("sound", IdentifierArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS)).executes((c) -> stopSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), source, IdentifierArgument.getId(c, "sound")))));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stopsound").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(var1));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stopsound").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(target));
    }
 
-   private static int stopSound(CommandSourceStack var0, Collection<ServerPlayer> var1, @Nullable SoundSource var2, @Nullable Identifier var3) {
-      ClientboundStopSoundPacket var4 = new ClientboundStopSoundPacket(var3, var2);
+   private static int stopSound(final CommandSourceStack source, final Collection<ServerPlayer> targets, final @Nullable SoundSource soundSource, final @Nullable Identifier sound) {
+      ClientboundStopSoundPacket packet = new ClientboundStopSoundPacket(sound, soundSource);
 
-      for(ServerPlayer var6 : var1) {
-         var6.connection.send(var4);
+      for(ServerPlayer player : targets) {
+         player.connection.send(packet);
       }
 
-      if (var2 != null) {
-         if (var3 != null) {
-            var0.sendSuccess(() -> Component.translatable("commands.stopsound.success.source.sound", Component.translationArg(var3), var2.getName()), true);
+      if (soundSource != null) {
+         if (sound != null) {
+            source.sendSuccess(() -> Component.translatable("commands.stopsound.success.source.sound", Component.translationArg(sound), soundSource.getName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.stopsound.success.source.any", var2.getName()), true);
+            source.sendSuccess(() -> Component.translatable("commands.stopsound.success.source.any", soundSource.getName()), true);
          }
-      } else if (var3 != null) {
-         var0.sendSuccess(() -> Component.translatable("commands.stopsound.success.sourceless.sound", Component.translationArg(var3)), true);
+      } else if (sound != null) {
+         source.sendSuccess(() -> Component.translatable("commands.stopsound.success.sourceless.sound", Component.translationArg(sound)), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.stopsound.success.sourceless.any"), true);
+         source.sendSuccess(() -> Component.translatable("commands.stopsound.success.sourceless.any"), true);
       }
 
-      return var1.size();
+      return targets.size();
    }
 }

@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -79,8 +78,8 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Options {
-   static final Logger LOGGER = LogUtils.getLogger();
-   static final Gson GSON = new Gson();
+   private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Gson GSON = new Gson();
    private static final TypeToken<List<String>> LIST_OF_STRINGS_TYPE = new TypeToken<List<String>>() {
    };
    public static final int RENDER_DISTANCE_SHORT = 4;
@@ -268,6 +267,7 @@ public class Options {
    public final KeyMapping keyDebugPofilingChart;
    public final KeyMapping keyDebugFpsCharts;
    public final KeyMapping keyDebugNetworkCharts;
+   public final KeyMapping keyDebugLightmapTexture;
    public final KeyMapping[] debugKeys;
    public final KeyMapping[] keyMappings;
    protected Minecraft minecraft;
@@ -306,10 +306,10 @@ public class Options {
    public boolean syncWrites;
    public boolean startedCleanly;
 
-   private static void operateOnLevelRenderer(Consumer<LevelRenderer> var0) {
-      LevelRenderer var1 = Minecraft.getInstance().levelRenderer;
-      if (var1 != null) {
-         var0.accept(var1);
+   private static void operateOnLevelRenderer(final Consumer<LevelRenderer> consumer) {
+      LevelRenderer levelRenderer = Minecraft.getInstance().levelRenderer;
+      if (levelRenderer != null) {
+         consumer.accept(levelRenderer);
       }
 
    }
@@ -346,9 +346,9 @@ public class Options {
       return this.framerateLimit;
    }
 
-   public void applyGraphicsPreset(GraphicsPreset var1) {
+   public void applyGraphicsPreset(final GraphicsPreset value) {
       this.isApplyingGraphicsPreset = true;
-      var1.apply(this.minecraft);
+      value.apply(this.minecraft);
       this.isApplyingGraphicsPreset = false;
    }
 
@@ -396,23 +396,23 @@ public class Options {
       return this.prioritizeChunkUpdates;
    }
 
-   public void updateResourcePacks(PackRepository var1) {
-      ImmutableList var2 = ImmutableList.copyOf(this.resourcePacks);
+   public void updateResourcePacks(final PackRepository packRepository) {
+      List<String> oldPacks = ImmutableList.copyOf(this.resourcePacks);
       this.resourcePacks.clear();
       this.incompatibleResourcePacks.clear();
 
-      for(Pack var4 : var1.getSelectedPacks()) {
-         if (!var4.isFixedPosition()) {
-            this.resourcePacks.add(var4.getId());
-            if (!var4.getCompatibility().isCompatible()) {
-               this.incompatibleResourcePacks.add(var4.getId());
+      for(Pack entry : packRepository.getSelectedPacks()) {
+         if (!entry.isFixedPosition()) {
+            this.resourcePacks.add(entry.getId());
+            if (!entry.getCompatibility().isCompatible()) {
+               this.incompatibleResourcePacks.add(entry.getId());
             }
          }
       }
 
       this.save();
-      ImmutableList var5 = ImmutableList.copyOf(this.resourcePacks);
-      if (!var5.equals(var2)) {
+      List<String> newPacks = ImmutableList.copyOf(this.resourcePacks);
+      if (!newPacks.equals(oldPacks)) {
          this.minecraft.reloadResourcePacks();
       }
 
@@ -510,12 +510,12 @@ public class Options {
       return this.biomeBlendRadius;
    }
 
-   private static double logMouse(int var0) {
-      return Math.pow(10.0, (double)var0 / 100.0);
+   private static double logMouse(final int value) {
+      return Math.pow(10.0, (double)value / 100.0);
    }
 
-   private static int unlogMouse(double var0) {
-      return Mth.floor(Math.log10(var0) * 100.0);
+   private static int unlogMouse(final double value) {
+      return Mth.floor(Math.log10(value) * 100.0);
    }
 
    public OptionInstance<Double> mouseWheelSensitivity() {
@@ -567,10 +567,10 @@ public class Options {
    }
 
    private static void updateFontOptions() {
-      Minecraft var0 = Minecraft.getInstance();
-      if (var0.getWindow() != null) {
-         var0.updateFontOptions();
-         var0.resizeDisplay();
+      Minecraft instance = Minecraft.getInstance();
+      if (instance.getWindow() != null) {
+         instance.updateFontOptions();
+         instance.resizeDisplay();
       }
 
    }
@@ -611,29 +611,29 @@ public class Options {
       return this.reducedDebugInfo;
    }
 
-   public final float getFinalSoundSourceVolume(SoundSource var1) {
-      return var1 == SoundSource.MASTER ? this.getSoundSourceVolume(var1) : this.getSoundSourceVolume(var1) * this.getSoundSourceVolume(SoundSource.MASTER);
+   public final float getFinalSoundSourceVolume(final SoundSource source) {
+      return source == SoundSource.MASTER ? this.getSoundSourceVolume(source) : this.getSoundSourceVolume(source) * this.getSoundSourceVolume(SoundSource.MASTER);
    }
 
-   public final float getSoundSourceVolume(SoundSource var1) {
-      return ((Double)this.getSoundSourceOptionInstance(var1).get()).floatValue();
+   public final float getSoundSourceVolume(final SoundSource source) {
+      return ((Double)this.getSoundSourceOptionInstance(source).get()).floatValue();
    }
 
-   public final OptionInstance<Double> getSoundSourceOptionInstance(SoundSource var1) {
-      return (OptionInstance)Objects.requireNonNull((OptionInstance)this.soundSourceVolumes.get(var1));
+   public final OptionInstance<Double> getSoundSourceOptionInstance(final SoundSource source) {
+      return (OptionInstance)Objects.requireNonNull((OptionInstance)this.soundSourceVolumes.get(source));
    }
 
-   private OptionInstance<Double> createSoundSliderOptionInstance(String var1, SoundSource var2) {
-      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var2x) -> {
-         Minecraft var3 = Minecraft.getInstance();
-         SoundManager var4 = var3.getSoundManager();
-         if ((var2 == SoundSource.MASTER || var2 == SoundSource.MUSIC) && this.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F) {
-            var3.getMusicManager().showNowPlayingToastIfNeeded();
+   private OptionInstance<Double> createSoundSliderOptionInstance(final String captionId, final SoundSource category) {
+      return new OptionInstance<Double>(captionId, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> {
+         Minecraft minecraft = Minecraft.getInstance();
+         SoundManager soundManager = minecraft.getSoundManager();
+         if ((category == SoundSource.MASTER || category == SoundSource.MUSIC) && this.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F) {
+            minecraft.getMusicManager().showNowPlayingToastIfNeeded();
          }
 
-         var4.refreshCategoryVolume(var2);
-         if (var3.level == null) {
-            SoundPreviewHandler.preview(var4, var2, var2x.floatValue());
+         soundManager.refreshCategoryVolume(category);
+         if (minecraft.level == null) {
+            SoundPreviewHandler.preview(soundManager, category, value.floatValue());
          }
 
       });
@@ -704,8 +704,8 @@ public class Options {
          this.graphicsPreset.set(GraphicsPreset.CUSTOM);
          Screen var2 = this.minecraft.screen;
          if (var2 instanceof OptionsSubScreen) {
-            OptionsSubScreen var1 = (OptionsSubScreen)var2;
-            var1.resetOption(this.graphicsPreset);
+            OptionsSubScreen optionsSubScreen = (OptionsSubScreen)var2;
+            optionsSubScreen.resetOption(this.graphicsPreset);
          }
 
       }
@@ -776,64 +776,64 @@ public class Options {
       return this.musicToast;
    }
 
-   public Options(Minecraft var1, File var2) {
+   public Options(final Minecraft minecraft, final File workingDirectory) {
       super();
       this.darkMojangStudiosBackground = OptionInstance.createBoolean("options.darkMojangStudiosBackgroundColor", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND), false);
       this.hideLightningFlash = OptionInstance.createBoolean("options.hideLightningFlashes", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_HIDE_LIGHTNING_FLASHES), false);
       this.hideSplashTexts = OptionInstance.createBoolean("options.hideSplashTexts", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_HIDE_SPLASH_TEXTS), false);
-      this.sensitivity = new OptionInstance<Double>("options.sensitivity", OptionInstance.noTooltip(), (var0, var1x) -> {
-         if (var1x == 0.0) {
-            return genericValueLabel(var0, Component.translatable("options.sensitivity.min"));
+      this.sensitivity = new OptionInstance<Double>("options.sensitivity", OptionInstance.noTooltip(), (caption, value) -> {
+         if (value == 0.0) {
+            return genericValueLabel(caption, Component.translatable("options.sensitivity.min"));
          } else {
-            return var1x == 1.0 ? genericValueLabel(var0, Component.translatable("options.sensitivity.max")) : percentValueLabel(var0, 2.0 * var1x);
+            return value == 1.0 ? genericValueLabel(caption, Component.translatable("options.sensitivity.max")) : percentValueLabel(caption, 2.0 * value);
          }
-      }, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
+      }, OptionInstance.UnitDouble.INSTANCE, 0.5, (value) -> {
       });
       this.serverRenderDistance = 0;
-      this.entityDistanceScaling = new OptionInstance<Double>("options.entityDistanceScaling", OptionInstance.noTooltip(), Options::percentValueLabel, (new OptionInstance.IntRange(2, 20)).xmap((var0) -> (double)var0 / 4.0, (var0) -> (int)(var0 * 4.0), true), Codec.doubleRange(0.5, 5.0), 1.0, (var1x) -> this.setGraphicsPresetToCustom());
-      this.framerateLimit = new OptionInstance<Integer>("options.framerateLimit", OptionInstance.noTooltip(), (var0, var1x) -> var1x == 260 ? genericValueLabel(var0, Component.translatable("options.framerateLimit.max")) : genericValueLabel(var0, Component.translatable("options.framerate", var1x)), (new OptionInstance.IntRange(1, 26)).xmap((var0) -> var0 * 10, (var0) -> var0 / 10, true), Codec.intRange(10, 260), 120, (var0) -> Minecraft.getInstance().getFramerateLimitTracker().setFramerateLimit(var0));
-      this.graphicsPreset = new OptionInstance<GraphicsPreset>("options.graphics.preset", OptionInstance.cachedConstantTooltip(Component.translatable("options.graphics.preset.tooltip")), (var0, var1x) -> genericValueLabel(var0, Component.translatable(var1x.getKey())), new OptionInstance.SliderableEnum(List.of(GraphicsPreset.values()), GraphicsPreset.CODEC), GraphicsPreset.CODEC, GraphicsPreset.FANCY, this::applyGraphicsPreset);
-      this.inactivityFpsLimit = new OptionInstance<InactivityFpsLimit>("options.inactivityFpsLimit", (var0) -> {
+      this.entityDistanceScaling = new OptionInstance<Double>("options.entityDistanceScaling", OptionInstance.noTooltip(), Options::percentValueLabel, (new OptionInstance.IntRange(2, 20)).xmap((value) -> (double)value / 4.0, (value) -> (int)(value * 4.0), true), Codec.doubleRange(0.5, 5.0), 1.0, (value) -> this.setGraphicsPresetToCustom());
+      this.framerateLimit = new OptionInstance<Integer>("options.framerateLimit", OptionInstance.noTooltip(), (caption, value) -> value == 260 ? genericValueLabel(caption, Component.translatable("options.framerateLimit.max")) : genericValueLabel(caption, Component.translatable("options.framerate", value)), (new OptionInstance.IntRange(1, 26)).xmap((value) -> value * 10, (value) -> value / 10, true), Codec.intRange(10, 260), 120, (value) -> Minecraft.getInstance().getFramerateLimitTracker().setFramerateLimit(value));
+      this.graphicsPreset = new OptionInstance<GraphicsPreset>("options.graphics.preset", OptionInstance.cachedConstantTooltip(Component.translatable("options.graphics.preset.tooltip")), (caption, value) -> genericValueLabel(caption, Component.translatable(value.getKey())), new OptionInstance.SliderableEnum(List.of(GraphicsPreset.values()), GraphicsPreset.CODEC), GraphicsPreset.CODEC, GraphicsPreset.FANCY, this::applyGraphicsPreset);
+      this.inactivityFpsLimit = new OptionInstance<InactivityFpsLimit>("options.inactivityFpsLimit", (value) -> {
          Tooltip var10000;
-         switch (var0) {
+         switch (value) {
             case MINIMIZED -> var10000 = Tooltip.create(INACTIVITY_FPS_LIMIT_TOOLTIP_MINIMIZED);
             case AFK -> var10000 = Tooltip.create(INACTIVITY_FPS_LIMIT_TOOLTIP_AFK);
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
          return var10000;
-      }, (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(InactivityFpsLimit.values()), InactivityFpsLimit.CODEC), InactivityFpsLimit.AFK, (var0) -> {
+      }, (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(InactivityFpsLimit.values()), InactivityFpsLimit.CODEC), InactivityFpsLimit.AFK, (value) -> {
       });
-      this.cloudStatus = new OptionInstance<CloudStatus>("options.renderClouds", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, (var0) -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)), CloudStatus.FANCY, (var1x) -> this.setGraphicsPresetToCustom());
-      this.cloudRange = new OptionInstance<Integer>("options.renderCloudsDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, 128, true), 128, (var1x) -> {
-         operateOnLevelRenderer((var0) -> var0.getCloudRenderer().markForRebuild());
+      this.cloudStatus = new OptionInstance<CloudStatus>("options.renderClouds", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, (b) -> b ? CloudStatus.FANCY : CloudStatus.OFF)), CloudStatus.FANCY, (value) -> this.setGraphicsPresetToCustom());
+      this.cloudRange = new OptionInstance<Integer>("options.renderCloudsDistance", OptionInstance.noTooltip(), (caption, value) -> genericValueLabel(caption, Component.translatable("options.chunks", value)), new OptionInstance.IntRange(2, 128, true), 128, (value) -> {
+         operateOnLevelRenderer((levelRenderer) -> levelRenderer.getCloudRenderer().markForRebuild());
          this.setGraphicsPresetToCustom();
       });
-      this.weatherRadius = new OptionInstance<Integer>("options.weatherRadius", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_WEATHER_RADIUS), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.blocks", var1x)), new OptionInstance.IntRange(3, 10, true), 10, (var1x) -> this.setGraphicsPresetToCustom());
-      this.cutoutLeaves = OptionInstance.createBoolean("options.cutoutLeaves", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_CUTOUT_LEAVES), true, (var1x) -> {
+      this.weatherRadius = new OptionInstance<Integer>("options.weatherRadius", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_WEATHER_RADIUS), (caption, value) -> genericValueLabel(caption, Component.translatable("options.blocks", value)), new OptionInstance.IntRange(3, 10, true), 10, (ignored) -> this.setGraphicsPresetToCustom());
+      this.cutoutLeaves = OptionInstance.createBoolean("options.cutoutLeaves", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_CUTOUT_LEAVES), true, (ignored) -> {
          operateOnLevelRenderer(LevelRenderer::allChanged);
          this.setGraphicsPresetToCustom();
       });
       this.vignette = OptionInstance.createBoolean("options.vignette", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_VIGNETTE), true);
-      this.improvedTransparency = OptionInstance.createBoolean("options.improvedTransparency", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY), false, (var1x) -> {
-         Minecraft var2 = Minecraft.getInstance();
-         GpuWarnlistManager var3 = var2.getGpuWarnlistManager();
-         if (var1x && var3.willShowWarning()) {
-            var3.showWarning();
+      this.improvedTransparency = OptionInstance.createBoolean("options.improvedTransparency", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY), false, (value) -> {
+         Minecraft minecraft = Minecraft.getInstance();
+         GpuWarnlistManager gpuWarnlistManager = minecraft.getGpuWarnlistManager();
+         if (value && gpuWarnlistManager.willShowWarning()) {
+            gpuWarnlistManager.showWarning();
          } else {
             operateOnLevelRenderer(LevelRenderer::allChanged);
             this.setGraphicsPresetToCustom();
          }
       });
-      this.ambientOcclusion = OptionInstance.createBoolean("options.ao", true, (var1x) -> {
+      this.ambientOcclusion = OptionInstance.createBoolean("options.ao", true, (value) -> {
          operateOnLevelRenderer(LevelRenderer::allChanged);
          this.setGraphicsPresetToCustom();
       });
-      this.chunkSectionFadeInTime = new OptionInstance<Double>("options.chunkFade", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_CHUNK_FADE), (var0, var1x) -> var1x <= 0.0 ? Component.translatable("options.chunkFade.none") : Component.translatable("options.chunkFade.seconds", String.format(Locale.ROOT, "%.2f", var1x)), (new OptionInstance.IntRange(0, 40)).xmap((var0) -> (double)var0 / 20.0, (var0) -> (int)(var0 * 20.0), true), Codec.doubleRange(0.0, 2.0), 0.75, (var0) -> {
+      this.chunkSectionFadeInTime = new OptionInstance<Double>("options.chunkFade", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_CHUNK_FADE), (caption, value) -> value <= 0.0 ? Component.translatable("options.chunkFade.none") : Component.translatable("options.chunkFade.seconds", String.format(Locale.ROOT, "%.2f", value)), (new OptionInstance.IntRange(0, 40)).xmap((value) -> (double)value / 20.0, (value) -> (int)(value * 20.0), true), Codec.doubleRange(0.0, 2.0), 0.75, (value) -> {
       });
-      this.prioritizeChunkUpdates = new OptionInstance<PrioritizeChunkUpdates>("options.prioritizeChunkUpdates", (var0) -> {
+      this.prioritizeChunkUpdates = new OptionInstance<PrioritizeChunkUpdates>("options.prioritizeChunkUpdates", (value) -> {
          Tooltip var10000;
-         switch (var0) {
+         switch (value) {
             case NONE -> var10000 = Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_NONE);
             case PLAYER_AFFECTED -> var10000 = Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_PLAYER_AFFECTED);
             case NEARBY -> var10000 = Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_NEARBY);
@@ -841,27 +841,27 @@ public class Options {
          }
 
          return var10000;
-      }, (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(PrioritizeChunkUpdates.values()), PrioritizeChunkUpdates.LEGACY_CODEC), PrioritizeChunkUpdates.NONE, (var1x) -> this.setGraphicsPresetToCustom());
+      }, (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(PrioritizeChunkUpdates.values()), PrioritizeChunkUpdates.LEGACY_CODEC), PrioritizeChunkUpdates.NONE, (value) -> this.setGraphicsPresetToCustom());
       this.resourcePacks = Lists.newArrayList();
       this.incompatibleResourcePacks = Lists.newArrayList();
-      this.chatVisibility = new OptionInstance<ChatVisiblity>("options.chat.visibility", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(ChatVisiblity.values()), ChatVisiblity.LEGACY_CODEC), ChatVisiblity.FULL, (var0) -> {
+      this.chatVisibility = new OptionInstance<ChatVisiblity>("options.chat.visibility", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(ChatVisiblity.values()), ChatVisiblity.LEGACY_CODEC), ChatVisiblity.FULL, (value) -> {
       });
-      this.chatOpacity = new OptionInstance<Double>("options.chat.opacity", OptionInstance.noTooltip(), (var0, var1x) -> percentValueLabel(var0, var1x * 0.9 + 0.1), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.chatLineSpacing = new OptionInstance<Double>("options.chat.line_spacing", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.0, (var0) -> {
+      this.chatOpacity = new OptionInstance<Double>("options.chat.opacity", OptionInstance.noTooltip(), (caption, value) -> percentValueLabel(caption, value * 0.9 + 0.1), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
+      this.chatLineSpacing = new OptionInstance<Double>("options.chat.line_spacing", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.0, (value) -> {
       });
-      this.menuBackgroundBlurriness = new OptionInstance<Integer>("options.accessibility.menu_background_blurriness", OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP), Options::genericValueOrOffLabel, new OptionInstance.IntRange(0, 10), 5, (var1x) -> this.setGraphicsPresetToCustom());
-      this.textBackgroundOpacity = new OptionInstance<Double>("options.accessibility.text_background_opacity", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.panoramaSpeed = new OptionInstance<Double>("options.accessibility.panorama_speed", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> {
+      this.menuBackgroundBlurriness = new OptionInstance<Integer>("options.accessibility.menu_background_blurriness", OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP), Options::genericValueOrOffLabel, new OptionInstance.IntRange(0, 10), 5, (value) -> this.setGraphicsPresetToCustom());
+      this.textBackgroundOpacity = new OptionInstance<Double>("options.accessibility.text_background_opacity", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
+      this.panoramaSpeed = new OptionInstance<Double>("options.accessibility.panorama_speed", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (v) -> {
       });
-      this.highContrast = OptionInstance.createBoolean("options.accessibility.high_contrast", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_CONTRAST_MODE), false, (var1x) -> {
-         PackRepository var2 = Minecraft.getInstance().getResourcePackRepository();
-         boolean var3 = var2.getSelectedIds().contains("high_contrast");
-         if (!var3 && var1x) {
-            if (var2.addPack("high_contrast")) {
-               this.updateResourcePacks(var2);
+      this.highContrast = OptionInstance.createBoolean("options.accessibility.high_contrast", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_CONTRAST_MODE), false, (value) -> {
+         PackRepository packRepo = Minecraft.getInstance().getResourcePackRepository();
+         boolean isSelected = packRepo.getSelectedIds().contains("high_contrast");
+         if (!isSelected && value) {
+            if (packRepo.addPack("high_contrast")) {
+               this.updateResourcePacks(packRepo);
             }
-         } else if (var3 && !var1x && var2.removePack("high_contrast")) {
-            this.updateResourcePacks(var2);
+         } else if (isSelected && !value && packRepo.removePack("high_contrast")) {
+            this.updateResourcePacks(packRepo);
          }
 
       });
@@ -869,23 +869,23 @@ public class Options {
       this.narratorHotkey = OptionInstance.createBoolean("options.accessibility.narrator_hotkey", OptionInstance.cachedConstantTooltip(InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY ? Component.translatable("options.accessibility.narrator_hotkey.mac.tooltip") : Component.translatable("options.accessibility.narrator_hotkey.tooltip")), true);
       this.pauseOnLostFocus = true;
       this.modelParts = EnumSet.allOf(PlayerModelPart.class);
-      this.mainHand = new OptionInstance<HumanoidArm>("options.mainHand", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(HumanoidArm.values()), HumanoidArm.CODEC), HumanoidArm.RIGHT, (var0) -> {
+      this.mainHand = new OptionInstance<HumanoidArm>("options.mainHand", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(HumanoidArm.values()), HumanoidArm.CODEC), HumanoidArm.RIGHT, (value) -> {
       });
-      this.chatScale = new OptionInstance<Double>("options.chat.scale", OptionInstance.noTooltip(), (var0, var1x) -> (Component)(var1x == 0.0 ? CommonComponents.optionStatus(var0, false) : percentValueLabel(var0, var1x)), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.chatWidth = new OptionInstance<Double>("options.chat.width", OptionInstance.noTooltip(), (var0, var1x) -> pixelValueLabel(var0, ChatComponent.getWidth(var1x)), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.chatHeightUnfocused = new OptionInstance<Double>("options.chat.height.unfocused", OptionInstance.noTooltip(), (var0, var1x) -> pixelValueLabel(var0, ChatComponent.getHeight(var1x)), OptionInstance.UnitDouble.INSTANCE, ChatComponent.defaultUnfocusedPct(), (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.chatHeightFocused = new OptionInstance<Double>("options.chat.height.focused", OptionInstance.noTooltip(), (var0, var1x) -> pixelValueLabel(var0, ChatComponent.getHeight(var1x)), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.chatDelay = new OptionInstance<Double>("options.chat.delay_instant", OptionInstance.noTooltip(), (var0, var1x) -> var1x <= 0.0 ? Component.translatable("options.chat.delay_none") : Component.translatable("options.chat.delay", String.format(Locale.ROOT, "%.1f", var1x)), (new OptionInstance.IntRange(0, 60)).xmap((var0) -> (double)var0 / 10.0, (var0) -> (int)(var0 * 10.0), true), Codec.doubleRange(0.0, 6.0), 0.0, (var0) -> Minecraft.getInstance().getChatListener().setMessageDelay(var0));
-      this.notificationDisplayTime = new OptionInstance<Double>("options.notifications.display_time", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.multiplier", var1x)), (new OptionInstance.IntRange(5, 100)).xmap((var0) -> (double)var0 / 10.0, (var0) -> (int)(var0 * 10.0), true), Codec.doubleRange(0.5, 10.0), 1.0, (var0) -> {
+      this.chatScale = new OptionInstance<Double>("options.chat.scale", OptionInstance.noTooltip(), (caption, value) -> (Component)(value == 0.0 ? CommonComponents.optionStatus(caption, false) : percentValueLabel(caption, value)), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
+      this.chatWidth = new OptionInstance<Double>("options.chat.width", OptionInstance.noTooltip(), (caption, value) -> pixelValueLabel(caption, ChatComponent.getWidth(value)), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
+      this.chatHeightUnfocused = new OptionInstance<Double>("options.chat.height.unfocused", OptionInstance.noTooltip(), (caption, value) -> pixelValueLabel(caption, ChatComponent.getHeight(value)), OptionInstance.UnitDouble.INSTANCE, ChatComponent.defaultUnfocusedPct(), (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
+      this.chatHeightFocused = new OptionInstance<Double>("options.chat.height.focused", OptionInstance.noTooltip(), (caption, value) -> pixelValueLabel(caption, ChatComponent.getHeight(value)), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
+      this.chatDelay = new OptionInstance<Double>("options.chat.delay_instant", OptionInstance.noTooltip(), (caption, value) -> value <= 0.0 ? Component.translatable("options.chat.delay_none") : Component.translatable("options.chat.delay", String.format(Locale.ROOT, "%.1f", value)), (new OptionInstance.IntRange(0, 60)).xmap((value) -> (double)value / 10.0, (value) -> (int)(value * 10.0), true), Codec.doubleRange(0.0, 6.0), 0.0, (value) -> Minecraft.getInstance().getChatListener().setMessageDelay(value));
+      this.notificationDisplayTime = new OptionInstance<Double>("options.notifications.display_time", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME), (caption, value) -> genericValueLabel(caption, Component.translatable("options.multiplier", value)), (new OptionInstance.IntRange(5, 100)).xmap((value) -> (double)value / 10.0, (value) -> (int)(value * 10.0), true), Codec.doubleRange(0.5, 10.0), 1.0, (value) -> {
       });
-      this.mipmapLevels = new OptionInstance<Integer>("options.mipmapLevels", OptionInstance.noTooltip(), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, var1x)), new OptionInstance.IntRange(0, 4), 4, (var1x) -> this.setGraphicsPresetToCustom());
-      this.maxAnisotropyBit = new OptionInstance<Integer>("options.maxAnisotropy", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_ANISOTROPIC_FILTERING), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, Component.translatable("options.multiplier", Integer.toString(1 << var1x)))), new OptionInstance.IntRange(1, 3), 2, (var1x) -> {
+      this.mipmapLevels = new OptionInstance<Integer>("options.mipmapLevels", OptionInstance.noTooltip(), (caption, value) -> (Component)(value == 0 ? CommonComponents.optionStatus(caption, false) : genericValueLabel(caption, value)), new OptionInstance.IntRange(0, 4), 4, (value) -> this.setGraphicsPresetToCustom());
+      this.maxAnisotropyBit = new OptionInstance<Integer>("options.maxAnisotropy", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_ANISOTROPIC_FILTERING), (caption, value) -> (Component)(value == 0 ? CommonComponents.optionStatus(caption, false) : genericValueLabel(caption, Component.translatable("options.multiplier", Integer.toString(1 << value)))), new OptionInstance.IntRange(1, 3), 2, (value) -> {
          this.setGraphicsPresetToCustom();
          operateOnLevelRenderer(LevelRenderer::resetSampler);
       });
-      this.textureFiltering = new OptionInstance<TextureFilteringMethod>("options.textureFiltering", (var0) -> {
+      this.textureFiltering = new OptionInstance<TextureFilteringMethod>("options.textureFiltering", (value) -> {
          Tooltip var10000;
-         switch (var0) {
+         switch (value) {
             case NONE -> var10000 = Tooltip.create(FILTERING_NONE_TOOLTIP);
             case RGSS -> var10000 = Tooltip.create(FILTERING_RGSS_TOOLTIP);
             case ANISOTROPIC -> var10000 = Tooltip.create(FILTERING_ANISOTROPIC_TOOLTIP);
@@ -893,35 +893,35 @@ public class Options {
          }
 
          return var10000;
-      }, (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(TextureFilteringMethod.values()), TextureFilteringMethod.LEGACY_CODEC), TextureFilteringMethod.NONE, (var1x) -> {
+      }, (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(TextureFilteringMethod.values()), TextureFilteringMethod.LEGACY_CODEC), TextureFilteringMethod.NONE, (value) -> {
          this.setGraphicsPresetToCustom();
          operateOnLevelRenderer(LevelRenderer::resetSampler);
       });
       this.useNativeTransport = true;
-      this.attackIndicator = new OptionInstance<AttackIndicatorStatus>("options.attackIndicator", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(AttackIndicatorStatus.values()), AttackIndicatorStatus.LEGACY_CODEC), AttackIndicatorStatus.CROSSHAIR, (var0) -> {
+      this.attackIndicator = new OptionInstance<AttackIndicatorStatus>("options.attackIndicator", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(AttackIndicatorStatus.values()), AttackIndicatorStatus.LEGACY_CODEC), AttackIndicatorStatus.CROSSHAIR, (value) -> {
       });
       this.tutorialStep = TutorialSteps.MOVEMENT;
       this.joinedFirstServer = false;
-      this.biomeBlendRadius = new OptionInstance<Integer>("options.biomeBlendRadius", OptionInstance.noTooltip(), (var0, var1x) -> {
-         int var2 = var1x * 2 + 1;
-         return genericValueLabel(var0, Component.translatable("options.biomeBlendRadius." + var2));
-      }, new OptionInstance.IntRange(0, 7, false), 2, (var1x) -> {
+      this.biomeBlendRadius = new OptionInstance<Integer>("options.biomeBlendRadius", OptionInstance.noTooltip(), (caption, value) -> {
+         int dist = value * 2 + 1;
+         return genericValueLabel(caption, Component.translatable("options.biomeBlendRadius." + dist));
+      }, new OptionInstance.IntRange(0, 7, false), 2, (value) -> {
          operateOnLevelRenderer(LevelRenderer::allChanged);
          this.setGraphicsPresetToCustom();
       });
-      this.mouseWheelSensitivity = new OptionInstance<Double>("options.mouseWheelSensitivity", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.literal(String.format(Locale.ROOT, "%.2f", var1x))), (new OptionInstance.IntRange(-200, 100)).xmap(Options::logMouse, Options::unlogMouse, false), Codec.doubleRange(logMouse(-200), logMouse(100)), logMouse(0), (var0) -> {
+      this.mouseWheelSensitivity = new OptionInstance<Double>("options.mouseWheelSensitivity", OptionInstance.noTooltip(), (caption, value) -> genericValueLabel(caption, Component.literal(String.format(Locale.ROOT, "%.2f", value))), (new OptionInstance.IntRange(-200, 100)).xmap(Options::logMouse, Options::unlogMouse, false), Codec.doubleRange(logMouse(-200), logMouse(100)), logMouse(0), (value) -> {
       });
-      this.rawMouseInput = OptionInstance.createBoolean("options.rawMouseInput", true, (var0) -> {
-         Window var1 = Minecraft.getInstance().getWindow();
-         if (var1 != null) {
-            var1.updateRawMouseInput(var0);
+      this.rawMouseInput = OptionInstance.createBoolean("options.rawMouseInput", true, (value) -> {
+         Window window = Minecraft.getInstance().getWindow();
+         if (window != null) {
+            window.updateRawMouseInput(value);
          }
 
       });
-      this.allowCursorChanges = OptionInstance.createBoolean("options.allowCursorChanges", OptionInstance.cachedConstantTooltip(ALLOW_CURSOR_CHANGES_TOOLTIP), true, (var0) -> {
-         Window var1 = Minecraft.getInstance().getWindow();
-         if (var1 != null) {
-            var1.setAllowCursorChanges(var0);
+      this.allowCursorChanges = OptionInstance.createBoolean("options.allowCursorChanges", OptionInstance.cachedConstantTooltip(ALLOW_CURSOR_CHANGES_TOOLTIP), true, (value) -> {
+         Window window = Minecraft.getInstance().getWindow();
+         if (window != null) {
+            window.setAllowCursorChanges(value);
          }
 
       });
@@ -933,50 +933,50 @@ public class Options {
       this.chatColors = OptionInstance.createBoolean("options.chat.color", true);
       this.chatLinks = OptionInstance.createBoolean("options.chat.links", true);
       this.chatLinksPrompt = OptionInstance.createBoolean("options.chat.links.prompt", true);
-      this.enableVsync = OptionInstance.createBoolean("options.vsync", true, (var0) -> {
+      this.enableVsync = OptionInstance.createBoolean("options.vsync", true, (value) -> {
          if (Minecraft.getInstance().getWindow() != null) {
-            Minecraft.getInstance().getWindow().updateVsync(var0);
+            Minecraft.getInstance().getWindow().updateVsync(value);
          }
 
       });
-      this.entityShadows = OptionInstance.createBoolean("options.entityShadows", OptionInstance.noTooltip(), true, (var1x) -> this.setGraphicsPresetToCustom());
-      this.forceUnicodeFont = OptionInstance.createBoolean("options.forceUnicodeFont", false, (var0) -> updateFontOptions());
-      this.japaneseGlyphVariants = OptionInstance.createBoolean("options.japaneseGlyphVariants", OptionInstance.cachedConstantTooltip(Component.translatable("options.japaneseGlyphVariants.tooltip")), japaneseGlyphVariantsDefault(), (var0) -> updateFontOptions());
+      this.entityShadows = OptionInstance.createBoolean("options.entityShadows", OptionInstance.noTooltip(), true, (value) -> this.setGraphicsPresetToCustom());
+      this.forceUnicodeFont = OptionInstance.createBoolean("options.forceUnicodeFont", false, (value) -> updateFontOptions());
+      this.japaneseGlyphVariants = OptionInstance.createBoolean("options.japaneseGlyphVariants", OptionInstance.cachedConstantTooltip(Component.translatable("options.japaneseGlyphVariants.tooltip")), japaneseGlyphVariantsDefault(), (value) -> updateFontOptions());
       this.invertXMouse = OptionInstance.createBoolean("options.invertMouseX", false);
       this.invertYMouse = OptionInstance.createBoolean("options.invertMouseY", false);
       this.discreteMouseScroll = OptionInstance.createBoolean("options.discrete_mouse_scroll", false);
       this.realmsNotifications = OptionInstance.createBoolean("options.realmsNotifications", OptionInstance.cachedConstantTooltip(REALMS_NOTIFICATIONS_TOOLTIP), true);
-      this.allowServerListing = OptionInstance.createBoolean("options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, (var0) -> {
+      this.allowServerListing = OptionInstance.createBoolean("options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, (value) -> {
       });
-      this.reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", OptionInstance.noTooltip(), false, (var0) -> Minecraft.getInstance().debugEntries.rebuildCurrentList());
-      this.soundSourceVolumes = Util.<SoundSource, OptionInstance<Double>>makeEnumMap(SoundSource.class, (var1x) -> this.createSoundSliderOptionInstance("soundCategory." + var1x.getName(), var1x));
+      this.reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", OptionInstance.noTooltip(), false, (ignored) -> Minecraft.getInstance().debugEntries.rebuildCurrentList());
+      this.soundSourceVolumes = Util.<SoundSource, OptionInstance<Double>>makeEnumMap(SoundSource.class, (source) -> this.createSoundSliderOptionInstance("soundCategory." + source.getName(), source));
       this.showSubtitles = OptionInstance.createBoolean("options.showSubtitles", OptionInstance.cachedConstantTooltip(CLOSED_CAPTIONS_TOOLTIP), false);
-      this.directionalAudio = OptionInstance.createBoolean("options.directionalAudio", (var0) -> var0 ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF), false, (var0) -> {
-         SoundManager var1 = Minecraft.getInstance().getSoundManager();
-         var1.reload();
-         var1.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
+      this.directionalAudio = OptionInstance.createBoolean("options.directionalAudio", (value) -> value ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF), false, (value) -> {
+         SoundManager soundManager = Minecraft.getInstance().getSoundManager();
+         soundManager.reload();
+         soundManager.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
-      this.backgroundForChatOnly = new OptionInstance<Boolean>("options.accessibility.text_background", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? Component.translatable("options.accessibility.text_background.chat") : Component.translatable("options.accessibility.text_background.everywhere"), OptionInstance.BOOLEAN_VALUES, true, (var0) -> {
+      this.backgroundForChatOnly = new OptionInstance<Boolean>("options.accessibility.text_background", OptionInstance.noTooltip(), (caption, value) -> value ? Component.translatable("options.accessibility.text_background.chat") : Component.translatable("options.accessibility.text_background.everywhere"), OptionInstance.BOOLEAN_VALUES, true, (value) -> {
       });
       this.touchscreen = OptionInstance.createBoolean("options.touchscreen", false);
-      this.fullscreen = OptionInstance.createBoolean("options.fullscreen", false, (var1x) -> {
-         Minecraft var2 = Minecraft.getInstance();
-         if (var2.getWindow() != null && var2.getWindow().isFullscreen() != var1x) {
-            var2.getWindow().toggleFullScreen();
-            this.fullscreen().set(var2.getWindow().isFullscreen());
+      this.fullscreen = OptionInstance.createBoolean("options.fullscreen", false, (value) -> {
+         Minecraft minecraft = Minecraft.getInstance();
+         if (minecraft.getWindow() != null && minecraft.getWindow().isFullscreen() != value) {
+            minecraft.getWindow().toggleFullScreen();
+            this.fullscreen().set(minecraft.getWindow().isFullscreen());
          }
 
       });
       this.bobView = OptionInstance.createBoolean("options.viewBobbing", true);
-      this.toggleCrouch = new OptionInstance<Boolean>("key.sneak", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (var0) -> {
+      this.toggleCrouch = new OptionInstance<Boolean>("key.sneak", OptionInstance.noTooltip(), (caption, value) -> value ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (value) -> {
       });
-      this.toggleSprint = new OptionInstance<Boolean>("key.sprint", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (var0) -> {
+      this.toggleSprint = new OptionInstance<Boolean>("key.sprint", OptionInstance.noTooltip(), (caption, value) -> value ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (value) -> {
       });
-      this.toggleAttack = new OptionInstance<Boolean>("key.attack", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (var0) -> {
+      this.toggleAttack = new OptionInstance<Boolean>("key.attack", OptionInstance.noTooltip(), (caption, value) -> value ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (value) -> {
       });
-      this.toggleUse = new OptionInstance<Boolean>("key.use", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (var0) -> {
+      this.toggleUse = new OptionInstance<Boolean>("key.use", OptionInstance.noTooltip(), (caption, value) -> value ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (value) -> {
       });
-      this.sprintWindow = new OptionInstance<Integer>("options.sprintWindow", OptionInstance.cachedConstantTooltip(SPRINT_WINDOW_TOOLTIP), (var0, var1x) -> var1x == 0 ? genericValueLabel(var0, Component.translatable("options.off")) : genericValueLabel(var0, Component.translatable("options.value", var1x)), new OptionInstance.IntRange(0, 10), 7, (var0) -> {
+      this.sprintWindow = new OptionInstance<Integer>("options.sprintWindow", OptionInstance.cachedConstantTooltip(SPRINT_WINDOW_TOOLTIP), (caption, value) -> value == 0 ? genericValueLabel(caption, Component.translatable("options.off")) : genericValueLabel(caption, Component.translatable("options.value", value)), new OptionInstance.IntRange(0, 10), 7, (value) -> {
       });
       this.hideMatchedNames = OptionInstance.createBoolean("options.hideMatchedNames", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_HIDE_MATCHED_NAMES), true);
       this.showAutosaveIndicator = OptionInstance.createBoolean("options.autosaveIndicator", true);
@@ -1047,236 +1047,237 @@ public class Options {
       this.keyDebugPofilingChart = new KeyMapping("key.debug.profilingChart", InputConstants.Type.KEYSYM, 49, KeyMapping.Category.DEBUG, 1);
       this.keyDebugFpsCharts = new KeyMapping("key.debug.fpsCharts", InputConstants.Type.KEYSYM, 50, KeyMapping.Category.DEBUG, 2);
       this.keyDebugNetworkCharts = new KeyMapping("key.debug.networkCharts", InputConstants.Type.KEYSYM, 51, KeyMapping.Category.DEBUG, 3);
-      this.debugKeys = new KeyMapping[]{this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts};
-      this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keySocialInteractions, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((var0) -> new KeyMapping[var0]);
+      this.keyDebugLightmapTexture = new KeyMapping("key.debug.lightmapTexture", InputConstants.Type.KEYSYM, 52, KeyMapping.Category.DEBUG, 4);
+      this.debugKeys = new KeyMapping[]{this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts, this.keyDebugLightmapTexture};
+      this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keySocialInteractions, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((x$0) -> new KeyMapping[x$0]);
       this.cameraType = CameraType.FIRST_PERSON;
       this.lastMpIp = "";
-      this.fov = new OptionInstance<Integer>("options.fov", OptionInstance.noTooltip(), (var0, var1x) -> {
+      this.fov = new OptionInstance<Integer>("options.fov", OptionInstance.noTooltip(), (caption, value) -> {
          Component var10000;
-         switch (var1x) {
-            case 70 -> var10000 = genericValueLabel(var0, Component.translatable("options.fov.min"));
-            case 110 -> var10000 = genericValueLabel(var0, Component.translatable("options.fov.max"));
-            default -> var10000 = genericValueLabel(var0, var1x);
+         switch (value) {
+            case 70 -> var10000 = genericValueLabel(caption, Component.translatable("options.fov.min"));
+            case 110 -> var10000 = genericValueLabel(caption, Component.translatable("options.fov.max"));
+            default -> var10000 = genericValueLabel(caption, value);
          }
 
          return var10000;
-      }, new OptionInstance.IntRange(30, 110), Codec.DOUBLE.xmap((var0) -> (int)(var0 * 40.0 + 70.0), (var0) -> ((double)var0 - 70.0) / 40.0), 70, (var0) -> operateOnLevelRenderer(LevelRenderer::needsUpdate));
-      this.telemetryOptInExtra = OptionInstance.createBoolean("options.telemetry.button", OptionInstance.cachedConstantTooltip(TELEMETRY_TOOLTIP), (var0, var1x) -> {
-         Minecraft var2 = Minecraft.getInstance();
-         if (!var2.allowsTelemetry()) {
+      }, new OptionInstance.IntRange(30, 110), Codec.DOUBLE.xmap((value) -> (int)(value * 40.0 + 70.0), (value) -> ((double)value - 70.0) / 40.0), 70, (value) -> operateOnLevelRenderer(LevelRenderer::needsUpdate));
+      this.telemetryOptInExtra = OptionInstance.createBoolean("options.telemetry.button", OptionInstance.cachedConstantTooltip(TELEMETRY_TOOLTIP), (caption, value) -> {
+         Minecraft minecraft = Minecraft.getInstance();
+         if (!minecraft.allowsTelemetry()) {
             return Component.translatable("options.telemetry.state.none");
          } else {
-            return var1x && var2.extraTelemetryAvailable() ? Component.translatable("options.telemetry.state.all") : Component.translatable("options.telemetry.state.minimal");
+            return value && minecraft.extraTelemetryAvailable() ? Component.translatable("options.telemetry.state.all") : Component.translatable("options.telemetry.state.minimal");
          }
-      }, false, (var0) -> {
+      }, false, (value) -> {
       });
-      this.screenEffectScale = new OptionInstance<Double>("options.screenEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> {
+      this.screenEffectScale = new OptionInstance<Double>("options.screenEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> {
       });
-      this.fovEffectScale = new OptionInstance<Double>("options.fovEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_FOV_EFFECT), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE.xmap(Mth::square, Math::sqrt), Codec.doubleRange(0.0, 1.0), 1.0, (var0) -> {
+      this.fovEffectScale = new OptionInstance<Double>("options.fovEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_FOV_EFFECT), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE.xmap(Mth::square, Math::sqrt), Codec.doubleRange(0.0, 1.0), 1.0, (value) -> {
       });
-      this.darknessEffectScale = new OptionInstance<Double>("options.darknessEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARKNESS_EFFECT), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE.xmap(Mth::square, Math::sqrt), 1.0, (var0) -> {
+      this.darknessEffectScale = new OptionInstance<Double>("options.darknessEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARKNESS_EFFECT), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE.xmap(Mth::square, Math::sqrt), 1.0, (value) -> {
       });
-      this.glintSpeed = new OptionInstance<Double>("options.glintSpeed", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_SPEED), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
+      this.glintSpeed = new OptionInstance<Double>("options.glintSpeed", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_SPEED), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (value) -> {
       });
-      this.glintStrength = new OptionInstance<Double>("options.glintStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.75, (var0) -> {
+      this.glintStrength = new OptionInstance<Double>("options.glintStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.75, (value) -> {
       });
-      this.damageTiltStrength = new OptionInstance<Double>("options.damageTiltStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> {
+      this.damageTiltStrength = new OptionInstance<Double>("options.damageTiltStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> {
       });
-      this.gamma = new OptionInstance<Double>("options.gamma", OptionInstance.noTooltip(), (var0, var1x) -> {
-         int var2 = (int)(var1x * 100.0);
-         if (var2 == 0) {
-            return genericValueLabel(var0, Component.translatable("options.gamma.min"));
-         } else if (var2 == 50) {
-            return genericValueLabel(var0, Component.translatable("options.gamma.default"));
+      this.gamma = new OptionInstance<Double>("options.gamma", OptionInstance.noTooltip(), (caption, value) -> {
+         int progressValueToDisplay = (int)(value * 100.0);
+         if (progressValueToDisplay == 0) {
+            return genericValueLabel(caption, Component.translatable("options.gamma.min"));
+         } else if (progressValueToDisplay == 50) {
+            return genericValueLabel(caption, Component.translatable("options.gamma.default"));
          } else {
-            return var2 == 100 ? genericValueLabel(var0, Component.translatable("options.gamma.max")) : genericValueLabel(var0, var2);
+            return progressValueToDisplay == 100 ? genericValueLabel(caption, Component.translatable("options.gamma.max")) : genericValueLabel(caption, progressValueToDisplay);
          }
-      }, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
+      }, OptionInstance.UnitDouble.INSTANCE, 0.5, (value) -> {
       });
-      this.guiScale = new OptionInstance<Integer>("options.guiScale", OptionInstance.noTooltip(), (var0, var1x) -> var1x == 0 ? Component.translatable("options.guiScale.auto") : Component.literal(Integer.toString(var1x)), new OptionInstance.ClampingLazyMaxIntRange(0, () -> {
-         Minecraft var0 = Minecraft.getInstance();
-         return !var0.isRunning() ? 2147483646 : var0.getWindow().calculateScale(0, var0.isEnforceUnicode());
-      }, 2147483646), 0, (var1x) -> this.minecraft.resizeDisplay());
-      this.particles = new OptionInstance<ParticleStatus>("options.particles", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(ParticleStatus.values()), ParticleStatus.LEGACY_CODEC), ParticleStatus.ALL, (var1x) -> this.setGraphicsPresetToCustom());
-      this.narrator = new OptionInstance<NarratorStatus>("options.narrator", OptionInstance.noTooltip(), (var1x, var2x) -> (Component)(this.minecraft.getNarrator().isActive() ? var2x.getName() : Component.translatable("options.narrator.notavailable")), new OptionInstance.Enum(Arrays.asList(NarratorStatus.values()), NarratorStatus.LEGACY_CODEC), NarratorStatus.OFF, (var1x) -> this.minecraft.getNarrator().updateNarratorStatus(var1x));
+      this.guiScale = new OptionInstance<Integer>("options.guiScale", OptionInstance.noTooltip(), (caption, value) -> value == 0 ? Component.translatable("options.guiScale.auto") : Component.literal(Integer.toString(value)), new OptionInstance.ClampingLazyMaxIntRange(0, () -> {
+         Minecraft minecraft = Minecraft.getInstance();
+         return !minecraft.isRunning() ? 2147483646 : minecraft.getWindow().calculateScale(0, minecraft.isEnforceUnicode());
+      }, 2147483646), 0, (value) -> this.minecraft.resizeDisplay());
+      this.particles = new OptionInstance<ParticleStatus>("options.particles", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(ParticleStatus.values()), ParticleStatus.LEGACY_CODEC), ParticleStatus.ALL, (value) -> this.setGraphicsPresetToCustom());
+      this.narrator = new OptionInstance<NarratorStatus>("options.narrator", OptionInstance.noTooltip(), (caption, value) -> (Component)(this.minecraft.getNarrator().isActive() ? value.getName() : Component.translatable("options.narrator.notavailable")), new OptionInstance.Enum(Arrays.asList(NarratorStatus.values()), NarratorStatus.LEGACY_CODEC), NarratorStatus.OFF, (value) -> this.minecraft.getNarrator().updateNarratorStatus(value));
       this.languageCode = "en_us";
-      this.soundDevice = new OptionInstance<String>("options.audioDevice", OptionInstance.noTooltip(), (var0, var1x) -> {
-         if ("".equals(var1x)) {
+      this.soundDevice = new OptionInstance<String>("options.audioDevice", OptionInstance.noTooltip(), (caption, value) -> {
+         if ("".equals(value)) {
             return Component.translatable("options.audioDevice.default");
          } else {
-            return var1x.startsWith("OpenAL Soft on ") ? Component.literal(var1x.substring(SoundEngine.OPEN_AL_SOFT_PREFIX_LENGTH)) : Component.literal(var1x);
+            return value.startsWith("OpenAL Soft on ") ? Component.literal(value.substring(SoundEngine.OPEN_AL_SOFT_PREFIX_LENGTH)) : Component.literal(value);
          }
-      }, new OptionInstance.LazyEnum(() -> Stream.concat(Stream.of(""), Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().stream()).toList(), (var0) -> Minecraft.getInstance().isRunning() && var0 != "" && !Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().contains(var0) ? Optional.empty() : Optional.of(var0), Codec.STRING), "", (var0) -> {
-         SoundManager var1 = Minecraft.getInstance().getSoundManager();
-         var1.reload();
-         var1.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
+      }, new OptionInstance.LazyEnum(() -> Stream.concat(Stream.of(""), Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().stream()).toList(), (device) -> Minecraft.getInstance().isRunning() && device != "" && !Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().contains(device) ? Optional.empty() : Optional.of(device), Codec.STRING), "", (value) -> {
+         SoundManager soundManager = Minecraft.getInstance().getSoundManager();
+         soundManager.reload();
+         soundManager.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
       this.onboardAccessibility = true;
-      this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (var0) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(var0));
-      this.musicToast = new OptionInstance<MusicToastDisplayState>("options.musicToast", (var0) -> Tooltip.create(var0.tooltip()), (var0, var1x) -> var1x.text(), new OptionInstance.Enum(Arrays.asList(MusicToastDisplayState.values()), MusicToastDisplayState.CODEC), MusicToastDisplayState.NEVER, (var1x) -> this.minecraft.getToastManager().setMusicToastDisplayState(var1x));
+      this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (value) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(value));
+      this.musicToast = new OptionInstance<MusicToastDisplayState>("options.musicToast", (value) -> Tooltip.create(value.tooltip()), (caption, value) -> value.text(), new OptionInstance.Enum(Arrays.asList(MusicToastDisplayState.values()), MusicToastDisplayState.CODEC), MusicToastDisplayState.NEVER, (value) -> this.minecraft.getToastManager().setMusicToastDisplayState(value));
       this.startedCleanly = true;
-      this.minecraft = var1;
-      this.optionsFile = new File(var2, "options.txt");
-      boolean var3 = Runtime.getRuntime().maxMemory() >= 1000000000L;
-      this.renderDistance = new OptionInstance<Integer>("options.renderDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, var3 ? 32 : 16, false), 12, (var1x) -> {
+      this.minecraft = minecraft;
+      this.optionsFile = new File(workingDirectory, "options.txt");
+      boolean largeDistances = Runtime.getRuntime().maxMemory() >= 1000000000L;
+      this.renderDistance = new OptionInstance<Integer>("options.renderDistance", OptionInstance.noTooltip(), (caption, value) -> genericValueLabel(caption, Component.translatable("options.chunks", value)), new OptionInstance.IntRange(2, largeDistances ? 32 : 16, false), 12, (value) -> {
          operateOnLevelRenderer(LevelRenderer::needsUpdate);
          this.setGraphicsPresetToCustom();
       });
-      this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(SharedConstants.DEBUG_ALLOW_LOW_SIM_DISTANCE ? 2 : 5, var3 ? 32 : 16, false), 12, (var1x) -> this.setGraphicsPresetToCustom());
+      this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (caption, value) -> genericValueLabel(caption, Component.translatable("options.chunks", value)), new OptionInstance.IntRange(SharedConstants.DEBUG_ALLOW_LOW_SIM_DISTANCE ? 2 : 5, largeDistances ? 32 : 16, false), 12, (value) -> this.setGraphicsPresetToCustom());
       this.syncWrites = Util.getPlatform() == Util.OS.WINDOWS;
       this.load();
    }
 
-   public float getBackgroundOpacity(float var1) {
-      return (Boolean)this.backgroundForChatOnly.get() ? var1 : ((Double)this.textBackgroundOpacity().get()).floatValue();
+   public float getBackgroundOpacity(final float defaultOpacity) {
+      return (Boolean)this.backgroundForChatOnly.get() ? defaultOpacity : ((Double)this.textBackgroundOpacity().get()).floatValue();
    }
 
-   public int getBackgroundColor(float var1) {
-      return ARGB.colorFromFloat(this.getBackgroundOpacity(var1), 0.0F, 0.0F, 0.0F);
+   public int getBackgroundColor(final float defaultOpacity) {
+      return ARGB.colorFromFloat(this.getBackgroundOpacity(defaultOpacity), 0.0F, 0.0F, 0.0F);
    }
 
-   public int getBackgroundColor(int var1) {
-      return (Boolean)this.backgroundForChatOnly.get() ? var1 : ARGB.colorFromFloat(((Double)this.textBackgroundOpacity.get()).floatValue(), 0.0F, 0.0F, 0.0F);
+   public int getBackgroundColor(final int defaultColor) {
+      return (Boolean)this.backgroundForChatOnly.get() ? defaultColor : ARGB.colorFromFloat(((Double)this.textBackgroundOpacity.get()).floatValue(), 0.0F, 0.0F, 0.0F);
    }
 
-   private void processDumpedOptions(OptionAccess var1) {
-      var1.process("ao", this.ambientOcclusion);
-      var1.process("biomeBlendRadius", this.biomeBlendRadius);
-      var1.process("chunkSectionFadeInTime", this.chunkSectionFadeInTime);
-      var1.process("cutoutLeaves", this.cutoutLeaves);
-      var1.process("enableVsync", this.enableVsync);
-      var1.process("entityDistanceScaling", this.entityDistanceScaling);
-      var1.process("entityShadows", this.entityShadows);
-      var1.process("forceUnicodeFont", this.forceUnicodeFont);
-      var1.process("japaneseGlyphVariants", this.japaneseGlyphVariants);
-      var1.process("fov", this.fov);
-      var1.process("fovEffectScale", this.fovEffectScale);
-      var1.process("darknessEffectScale", this.darknessEffectScale);
-      var1.process("glintSpeed", this.glintSpeed);
-      var1.process("glintStrength", this.glintStrength);
-      var1.process("graphicsPreset", this.graphicsPreset);
-      var1.process("prioritizeChunkUpdates", this.prioritizeChunkUpdates);
-      var1.process("fullscreen", this.fullscreen);
-      var1.process("gamma", this.gamma);
-      var1.process("guiScale", this.guiScale);
-      var1.process("maxAnisotropyBit", this.maxAnisotropyBit);
-      var1.process("textureFiltering", this.textureFiltering);
-      var1.process("maxFps", this.framerateLimit);
-      var1.process("improvedTransparency", this.improvedTransparency);
-      var1.process("inactivityFpsLimit", this.inactivityFpsLimit);
-      var1.process("mipmapLevels", this.mipmapLevels);
-      var1.process("narrator", this.narrator);
-      var1.process("particles", this.particles);
-      var1.process("reducedDebugInfo", this.reducedDebugInfo);
-      var1.process("renderClouds", this.cloudStatus);
-      var1.process("cloudRange", this.cloudRange);
-      var1.process("renderDistance", this.renderDistance);
-      var1.process("simulationDistance", this.simulationDistance);
-      var1.process("screenEffectScale", this.screenEffectScale);
-      var1.process("soundDevice", this.soundDevice);
-      var1.process("vignette", this.vignette);
-      var1.process("weatherRadius", this.weatherRadius);
+   private void processDumpedOptions(final OptionAccess access) {
+      access.process("ao", this.ambientOcclusion);
+      access.process("biomeBlendRadius", this.biomeBlendRadius);
+      access.process("chunkSectionFadeInTime", this.chunkSectionFadeInTime);
+      access.process("cutoutLeaves", this.cutoutLeaves);
+      access.process("enableVsync", this.enableVsync);
+      access.process("entityDistanceScaling", this.entityDistanceScaling);
+      access.process("entityShadows", this.entityShadows);
+      access.process("forceUnicodeFont", this.forceUnicodeFont);
+      access.process("japaneseGlyphVariants", this.japaneseGlyphVariants);
+      access.process("fov", this.fov);
+      access.process("fovEffectScale", this.fovEffectScale);
+      access.process("darknessEffectScale", this.darknessEffectScale);
+      access.process("glintSpeed", this.glintSpeed);
+      access.process("glintStrength", this.glintStrength);
+      access.process("graphicsPreset", this.graphicsPreset);
+      access.process("prioritizeChunkUpdates", this.prioritizeChunkUpdates);
+      access.process("fullscreen", this.fullscreen);
+      access.process("gamma", this.gamma);
+      access.process("guiScale", this.guiScale);
+      access.process("maxAnisotropyBit", this.maxAnisotropyBit);
+      access.process("textureFiltering", this.textureFiltering);
+      access.process("maxFps", this.framerateLimit);
+      access.process("improvedTransparency", this.improvedTransparency);
+      access.process("inactivityFpsLimit", this.inactivityFpsLimit);
+      access.process("mipmapLevels", this.mipmapLevels);
+      access.process("narrator", this.narrator);
+      access.process("particles", this.particles);
+      access.process("reducedDebugInfo", this.reducedDebugInfo);
+      access.process("renderClouds", this.cloudStatus);
+      access.process("cloudRange", this.cloudRange);
+      access.process("renderDistance", this.renderDistance);
+      access.process("simulationDistance", this.simulationDistance);
+      access.process("screenEffectScale", this.screenEffectScale);
+      access.process("soundDevice", this.soundDevice);
+      access.process("vignette", this.vignette);
+      access.process("weatherRadius", this.weatherRadius);
    }
 
-   private void processOptions(FieldAccess var1) {
-      this.processDumpedOptions(var1);
-      var1.process("autoJump", this.autoJump);
-      var1.process("rotateWithMinecart", this.rotateWithMinecart);
-      var1.process("operatorItemsTab", this.operatorItemsTab);
-      var1.process("autoSuggestions", this.autoSuggestions);
-      var1.process("chatColors", this.chatColors);
-      var1.process("chatLinks", this.chatLinks);
-      var1.process("chatLinksPrompt", this.chatLinksPrompt);
-      var1.process("discrete_mouse_scroll", this.discreteMouseScroll);
-      var1.process("invertXMouse", this.invertXMouse);
-      var1.process("invertYMouse", this.invertYMouse);
-      var1.process("realmsNotifications", this.realmsNotifications);
-      var1.process("showSubtitles", this.showSubtitles);
-      var1.process("directionalAudio", this.directionalAudio);
-      var1.process("touchscreen", this.touchscreen);
-      var1.process("bobView", this.bobView);
-      var1.process("toggleCrouch", this.toggleCrouch);
-      var1.process("toggleSprint", this.toggleSprint);
-      var1.process("toggleAttack", this.toggleAttack);
-      var1.process("toggleUse", this.toggleUse);
-      var1.process("sprintWindow", this.sprintWindow);
-      var1.process("darkMojangStudiosBackground", this.darkMojangStudiosBackground);
-      var1.process("hideLightningFlashes", this.hideLightningFlash);
-      var1.process("hideSplashTexts", this.hideSplashTexts);
-      var1.process("mouseSensitivity", this.sensitivity);
-      var1.process("damageTiltStrength", this.damageTiltStrength);
-      var1.process("highContrast", this.highContrast);
-      var1.process("highContrastBlockOutline", this.highContrastBlockOutline);
-      var1.process("narratorHotkey", this.narratorHotkey);
+   private void processOptions(final FieldAccess access) {
+      this.processDumpedOptions(access);
+      access.process("autoJump", this.autoJump);
+      access.process("rotateWithMinecart", this.rotateWithMinecart);
+      access.process("operatorItemsTab", this.operatorItemsTab);
+      access.process("autoSuggestions", this.autoSuggestions);
+      access.process("chatColors", this.chatColors);
+      access.process("chatLinks", this.chatLinks);
+      access.process("chatLinksPrompt", this.chatLinksPrompt);
+      access.process("discrete_mouse_scroll", this.discreteMouseScroll);
+      access.process("invertXMouse", this.invertXMouse);
+      access.process("invertYMouse", this.invertYMouse);
+      access.process("realmsNotifications", this.realmsNotifications);
+      access.process("showSubtitles", this.showSubtitles);
+      access.process("directionalAudio", this.directionalAudio);
+      access.process("touchscreen", this.touchscreen);
+      access.process("bobView", this.bobView);
+      access.process("toggleCrouch", this.toggleCrouch);
+      access.process("toggleSprint", this.toggleSprint);
+      access.process("toggleAttack", this.toggleAttack);
+      access.process("toggleUse", this.toggleUse);
+      access.process("sprintWindow", this.sprintWindow);
+      access.process("darkMojangStudiosBackground", this.darkMojangStudiosBackground);
+      access.process("hideLightningFlashes", this.hideLightningFlash);
+      access.process("hideSplashTexts", this.hideSplashTexts);
+      access.process("mouseSensitivity", this.sensitivity);
+      access.process("damageTiltStrength", this.damageTiltStrength);
+      access.process("highContrast", this.highContrast);
+      access.process("highContrastBlockOutline", this.highContrastBlockOutline);
+      access.process("narratorHotkey", this.narratorHotkey);
       List var10003 = this.resourcePacks;
       Function var10004 = Options::readListOfStrings;
       Gson var10005 = GSON;
       Objects.requireNonNull(var10005);
-      this.resourcePacks = (List)var1.process("resourcePacks", var10003, var10004, var10005::toJson);
+      this.resourcePacks = (List)access.process("resourcePacks", var10003, var10004, var10005::toJson);
       var10003 = this.incompatibleResourcePacks;
       var10004 = Options::readListOfStrings;
       var10005 = GSON;
       Objects.requireNonNull(var10005);
-      this.incompatibleResourcePacks = (List)var1.process("incompatibleResourcePacks", var10003, var10004, var10005::toJson);
-      this.lastMpIp = var1.process("lastServer", this.lastMpIp);
-      this.languageCode = var1.process("lang", this.languageCode);
-      var1.process("chatVisibility", this.chatVisibility);
-      var1.process("chatOpacity", this.chatOpacity);
-      var1.process("chatLineSpacing", this.chatLineSpacing);
-      var1.process("textBackgroundOpacity", this.textBackgroundOpacity);
-      var1.process("backgroundForChatOnly", this.backgroundForChatOnly);
-      this.hideServerAddress = var1.process("hideServerAddress", this.hideServerAddress);
-      this.advancedItemTooltips = var1.process("advancedItemTooltips", this.advancedItemTooltips);
-      this.pauseOnLostFocus = var1.process("pauseOnLostFocus", this.pauseOnLostFocus);
-      this.overrideWidth = var1.process("overrideWidth", this.overrideWidth);
-      this.overrideHeight = var1.process("overrideHeight", this.overrideHeight);
-      var1.process("chatHeightFocused", this.chatHeightFocused);
-      var1.process("chatDelay", this.chatDelay);
-      var1.process("chatHeightUnfocused", this.chatHeightUnfocused);
-      var1.process("chatScale", this.chatScale);
-      var1.process("chatWidth", this.chatWidth);
-      var1.process("notificationDisplayTime", this.notificationDisplayTime);
-      this.useNativeTransport = var1.process("useNativeTransport", this.useNativeTransport);
-      var1.process("mainHand", this.mainHand);
-      var1.process("attackIndicator", this.attackIndicator);
-      this.tutorialStep = (TutorialSteps)var1.process("tutorialStep", this.tutorialStep, TutorialSteps::getByName, TutorialSteps::getName);
-      var1.process("mouseWheelSensitivity", this.mouseWheelSensitivity);
-      var1.process("rawMouseInput", this.rawMouseInput);
-      var1.process("allowCursorChanges", this.allowCursorChanges);
-      this.glDebugVerbosity = var1.process("glDebugVerbosity", this.glDebugVerbosity);
-      this.skipMultiplayerWarning = var1.process("skipMultiplayerWarning", this.skipMultiplayerWarning);
-      var1.process("hideMatchedNames", this.hideMatchedNames);
-      this.joinedFirstServer = var1.process("joinedFirstServer", this.joinedFirstServer);
-      this.syncWrites = var1.process("syncChunkWrites", this.syncWrites);
-      var1.process("showAutosaveIndicator", this.showAutosaveIndicator);
-      var1.process("allowServerListing", this.allowServerListing);
-      var1.process("onlyShowSecureChat", this.onlyShowSecureChat);
-      var1.process("saveChatDrafts", this.saveChatDrafts);
-      var1.process("panoramaScrollSpeed", this.panoramaSpeed);
-      var1.process("telemetryOptInExtra", this.telemetryOptInExtra);
-      this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
-      var1.process("menuBackgroundBlurriness", this.menuBackgroundBlurriness);
-      this.startedCleanly = var1.process("startedCleanly", this.startedCleanly);
-      var1.process("musicToast", this.musicToast);
-      var1.process("musicFrequency", this.musicFrequency);
+      this.incompatibleResourcePacks = (List)access.process("incompatibleResourcePacks", var10003, var10004, var10005::toJson);
+      this.lastMpIp = access.process("lastServer", this.lastMpIp);
+      this.languageCode = access.process("lang", this.languageCode);
+      access.process("chatVisibility", this.chatVisibility);
+      access.process("chatOpacity", this.chatOpacity);
+      access.process("chatLineSpacing", this.chatLineSpacing);
+      access.process("textBackgroundOpacity", this.textBackgroundOpacity);
+      access.process("backgroundForChatOnly", this.backgroundForChatOnly);
+      this.hideServerAddress = access.process("hideServerAddress", this.hideServerAddress);
+      this.advancedItemTooltips = access.process("advancedItemTooltips", this.advancedItemTooltips);
+      this.pauseOnLostFocus = access.process("pauseOnLostFocus", this.pauseOnLostFocus);
+      this.overrideWidth = access.process("overrideWidth", this.overrideWidth);
+      this.overrideHeight = access.process("overrideHeight", this.overrideHeight);
+      access.process("chatHeightFocused", this.chatHeightFocused);
+      access.process("chatDelay", this.chatDelay);
+      access.process("chatHeightUnfocused", this.chatHeightUnfocused);
+      access.process("chatScale", this.chatScale);
+      access.process("chatWidth", this.chatWidth);
+      access.process("notificationDisplayTime", this.notificationDisplayTime);
+      this.useNativeTransport = access.process("useNativeTransport", this.useNativeTransport);
+      access.process("mainHand", this.mainHand);
+      access.process("attackIndicator", this.attackIndicator);
+      this.tutorialStep = (TutorialSteps)access.process("tutorialStep", this.tutorialStep, TutorialSteps::getByName, TutorialSteps::getName);
+      access.process("mouseWheelSensitivity", this.mouseWheelSensitivity);
+      access.process("rawMouseInput", this.rawMouseInput);
+      access.process("allowCursorChanges", this.allowCursorChanges);
+      this.glDebugVerbosity = access.process("glDebugVerbosity", this.glDebugVerbosity);
+      this.skipMultiplayerWarning = access.process("skipMultiplayerWarning", this.skipMultiplayerWarning);
+      access.process("hideMatchedNames", this.hideMatchedNames);
+      this.joinedFirstServer = access.process("joinedFirstServer", this.joinedFirstServer);
+      this.syncWrites = access.process("syncChunkWrites", this.syncWrites);
+      access.process("showAutosaveIndicator", this.showAutosaveIndicator);
+      access.process("allowServerListing", this.allowServerListing);
+      access.process("onlyShowSecureChat", this.onlyShowSecureChat);
+      access.process("saveChatDrafts", this.saveChatDrafts);
+      access.process("panoramaScrollSpeed", this.panoramaSpeed);
+      access.process("telemetryOptInExtra", this.telemetryOptInExtra);
+      this.onboardAccessibility = access.process("onboardAccessibility", this.onboardAccessibility);
+      access.process("menuBackgroundBlurriness", this.menuBackgroundBlurriness);
+      this.startedCleanly = access.process("startedCleanly", this.startedCleanly);
+      access.process("musicToast", this.musicToast);
+      access.process("musicFrequency", this.musicFrequency);
 
-      for(KeyMapping var5 : this.keyMappings) {
-         String var6 = var5.saveString();
-         String var7 = var1.process("key_" + var5.getName(), var6);
-         if (!var6.equals(var7)) {
-            var5.setKey(InputConstants.getKey(var7));
+      for(KeyMapping keyMapping : this.keyMappings) {
+         String currentValue = keyMapping.saveString();
+         String newValue = access.process("key_" + keyMapping.getName(), currentValue);
+         if (!currentValue.equals(newValue)) {
+            keyMapping.setKey(InputConstants.getKey(newValue));
          }
       }
 
-      for(SoundSource var14 : SoundSource.values()) {
-         var1.process("soundCategory_" + var14.getName(), (OptionInstance)this.soundSourceVolumes.get(var14));
+      for(SoundSource source : SoundSource.values()) {
+         access.process("soundCategory_" + source.getName(), (OptionInstance)this.soundSourceVolumes.get(source));
       }
 
-      for(PlayerModelPart var15 : PlayerModelPart.values()) {
-         boolean var16 = this.modelParts.contains(var15);
-         boolean var17 = var1.process("modelPart_" + var15.getId(), var16);
-         if (var17 != var16) {
-            this.setModelPart(var15, var17);
+      for(PlayerModelPart part : PlayerModelPart.values()) {
+         boolean wasEnabled = this.modelParts.contains(part);
+         boolean isEnabled = access.process("modelPart_" + part.getId(), wasEnabled);
+         if (isEnabled != wasEnabled) {
+            this.setModelPart(part, isEnabled);
          }
       }
 
@@ -1288,23 +1289,23 @@ public class Options {
             return;
          }
 
-         CompoundTag var1 = new CompoundTag();
-         BufferedReader var2 = Files.newReader(this.optionsFile, StandardCharsets.UTF_8);
+         CompoundTag rawOptions = new CompoundTag();
+         BufferedReader reader = Files.newReader(this.optionsFile, StandardCharsets.UTF_8);
 
          try {
-            var2.lines().forEach((var1x) -> {
+            reader.lines().forEach((line) -> {
                try {
-                  Iterator var2 = OPTION_SPLITTER.split(var1x).iterator();
-                  var1.putString((String)var2.next(), (String)var2.next());
+                  Iterator<String> iterator = OPTION_SPLITTER.split(line).iterator();
+                  rawOptions.putString((String)iterator.next(), (String)iterator.next());
                } catch (Exception var3) {
-                  LOGGER.warn("Skipping bad option: {}", var1x);
+                  LOGGER.warn("Skipping bad option: {}", line);
                }
 
             });
          } catch (Throwable var6) {
-            if (var2 != null) {
+            if (reader != null) {
                try {
-                  var2.close();
+                  reader.close();
                } catch (Throwable var5) {
                   var6.addSuppressed(var5);
                }
@@ -1313,18 +1314,22 @@ public class Options {
             throw var6;
          }
 
-         if (var2 != null) {
-            var2.close();
+         if (reader != null) {
+            reader.close();
          }
 
-         final CompoundTag var8 = this.dataFix(var1);
+         final CompoundTag options = this.dataFix(rawOptions);
          this.processOptions(new FieldAccess() {
-            private @Nullable String getValue(String var1) {
-               Tag var2 = var8.get(var1);
-               if (var2 == null) {
+            {
+               Objects.requireNonNull(Options.this);
+            }
+
+            private @Nullable String getValue(final String name) {
+               Tag tag = options.get(name);
+               if (tag == null) {
                   return null;
-               } else if (var2 instanceof StringTag) {
-                  StringTag var3 = (StringTag)var2;
+               } else if (tag instanceof StringTag) {
+                  StringTag var3 = (StringTag)tag;
                   StringTag var10000 = var3;
 
                   try {
@@ -1333,155 +1338,159 @@ public class Options {
                      throw new MatchException(var6.toString(), var6);
                   }
 
-                  String var5 = var7;
-                  return var5;
+                  String value = var7;
+                  return value;
                } else {
-                  throw new IllegalStateException("Cannot read field of wrong type, expected string: " + String.valueOf(var2));
+                  throw new IllegalStateException("Cannot read field of wrong type, expected string: " + String.valueOf(tag));
                }
             }
 
-            public <T> void process(String var1, OptionInstance<T> var2) {
-               String var3 = this.getValue(var1);
-               if (var3 != null) {
-                  JsonElement var4 = LenientJsonParser.parse(var3.isEmpty() ? "\"\"" : var3);
-                  DataResult var10000 = var2.codec().parse(JsonOps.INSTANCE, var4).ifError((var2x) -> Options.LOGGER.error("Error parsing option value {} for option {}: {}", new Object[]{var3, var2, var2x.message()}));
-                  Objects.requireNonNull(var2);
-                  var10000.ifSuccess(var2::set);
+            public <T> void process(final String name, final OptionInstance<T> option) {
+               String result = this.getValue(name);
+               if (result != null) {
+                  JsonElement element = LenientJsonParser.parse(result.isEmpty() ? "\"\"" : result);
+                  DataResult var10000 = option.codec().parse(JsonOps.INSTANCE, element).ifError((error) -> Options.LOGGER.error("Error parsing option value {} for option {}: {}", new Object[]{result, option, error.message()}));
+                  Objects.requireNonNull(option);
+                  var10000.ifSuccess(option::set);
                }
 
             }
 
-            public int process(String var1, int var2) {
-               String var3 = this.getValue(var1);
-               if (var3 != null) {
+            public int process(final String name, final int current) {
+               String result = this.getValue(name);
+               if (result != null) {
                   try {
-                     return Integer.parseInt(var3);
-                  } catch (NumberFormatException var5) {
-                     Options.LOGGER.warn("Invalid integer value for option {} = {}", new Object[]{var1, var3, var5});
+                     return Integer.parseInt(result);
+                  } catch (NumberFormatException e) {
+                     Options.LOGGER.warn("Invalid integer value for option {} = {}", new Object[]{name, result, e});
                   }
                }
 
-               return var2;
+               return current;
             }
 
-            public boolean process(String var1, boolean var2) {
-               String var3 = this.getValue(var1);
-               return var3 != null ? Options.isTrue(var3) : var2;
+            public boolean process(final String name, final boolean current) {
+               String result = this.getValue(name);
+               return result != null ? Options.isTrue(result) : current;
             }
 
-            public String process(String var1, String var2) {
-               return (String)MoreObjects.firstNonNull(this.getValue(var1), var2);
+            public String process(final String name, final String current) {
+               return (String)MoreObjects.firstNonNull(this.getValue(name), current);
             }
 
-            public float process(String var1, float var2) {
-               String var3 = this.getValue(var1);
-               if (var3 != null) {
-                  if (Options.isTrue(var3)) {
+            public float process(final String name, final float current) {
+               String result = this.getValue(name);
+               if (result != null) {
+                  if (Options.isTrue(result)) {
                      return 1.0F;
                   }
 
-                  if (Options.isFalse(var3)) {
+                  if (Options.isFalse(result)) {
                      return 0.0F;
                   }
 
                   try {
-                     return Float.parseFloat(var3);
-                  } catch (NumberFormatException var5) {
-                     Options.LOGGER.warn("Invalid floating point value for option {} = {}", new Object[]{var1, var3, var5});
+                     return Float.parseFloat(result);
+                  } catch (NumberFormatException e) {
+                     Options.LOGGER.warn("Invalid floating point value for option {} = {}", new Object[]{name, result, e});
                   }
                }
 
-               return var2;
+               return current;
             }
 
-            public <T> T process(String var1, T var2, Function<String, T> var3, Function<T, String> var4) {
-               String var5 = this.getValue(var1);
-               return var5 == null ? var2 : var3.apply(var5);
+            public <T> T process(final String name, final T current, final Function<String, T> reader, final Function<T, String> writer) {
+               String rawResult = this.getValue(name);
+               return (T)(rawResult == null ? current : reader.apply(rawResult));
             }
          });
-         var8.getString("fullscreenResolution").ifPresent((var1x) -> this.fullscreenVideoModeString = var1x);
+         options.getString("fullscreenResolution").ifPresent((fullscreenResolution) -> this.fullscreenVideoModeString = fullscreenResolution);
          KeyMapping.resetMapping();
-      } catch (Exception var7) {
-         LOGGER.error("Failed to load options", var7);
+      } catch (Exception e) {
+         LOGGER.error("Failed to load options", e);
       }
 
    }
 
-   static boolean isTrue(String var0) {
-      return "true".equals(var0);
+   private static boolean isTrue(final String value) {
+      return "true".equals(value);
    }
 
-   static boolean isFalse(String var0) {
-      return "false".equals(var0);
+   private static boolean isFalse(final String value) {
+      return "false".equals(value);
    }
 
-   private CompoundTag dataFix(CompoundTag var1) {
-      int var2 = 0;
+   private CompoundTag dataFix(final CompoundTag tag) {
+      int version = 0;
 
       try {
-         var2 = (Integer)var1.getString("version").map(Integer::parseInt).orElse(0);
+         version = (Integer)tag.getString("version").map(Integer::parseInt).orElse(0);
       } catch (RuntimeException var4) {
       }
 
-      return DataFixTypes.OPTIONS.updateToCurrentVersion(this.minecraft.getFixerUpper(), var1, var2);
+      return DataFixTypes.OPTIONS.updateToCurrentVersion(this.minecraft.getFixerUpper(), tag, version);
    }
 
    public void save() {
       try {
-         final PrintWriter var1 = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.optionsFile), StandardCharsets.UTF_8));
+         final PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.optionsFile), StandardCharsets.UTF_8));
 
          try {
-            var1.println("version:" + SharedConstants.getCurrentVersion().dataVersion().version());
+            writer.println("version:" + SharedConstants.getCurrentVersion().dataVersion().version());
             this.processOptions(new FieldAccess() {
-               public void writePrefix(String var1x) {
-                  var1.print(var1x);
-                  var1.print(':');
+               {
+                  Objects.requireNonNull(Options.this);
                }
 
-               public <T> void process(String var1x, OptionInstance<T> var2) {
-                  var2.codec().encodeStart(JsonOps.INSTANCE, var2.get()).ifError((var1xx) -> Options.LOGGER.error("Error saving option {}: {}", var2, var1xx.message())).ifSuccess((var3) -> {
-                     this.writePrefix(var1x);
-                     var1.println(Options.GSON.toJson(var3));
+               public void writePrefix(final String name) {
+                  writer.print(name);
+                  writer.print(':');
+               }
+
+               public <T> void process(final String name, final OptionInstance<T> option) {
+                  option.codec().encodeStart(JsonOps.INSTANCE, option.get()).ifError((error) -> Options.LOGGER.error("Error saving option {}: {}", option, error.message())).ifSuccess((element) -> {
+                     this.writePrefix(name);
+                     writer.println(Options.GSON.toJson(element));
                   });
                }
 
-               public int process(String var1x, int var2) {
-                  this.writePrefix(var1x);
-                  var1.println(var2);
-                  return var2;
+               public int process(final String name, final int value) {
+                  this.writePrefix(name);
+                  writer.println(value);
+                  return value;
                }
 
-               public boolean process(String var1x, boolean var2) {
-                  this.writePrefix(var1x);
-                  var1.println(var2);
-                  return var2;
+               public boolean process(final String name, final boolean value) {
+                  this.writePrefix(name);
+                  writer.println(value);
+                  return value;
                }
 
-               public String process(String var1x, String var2) {
-                  this.writePrefix(var1x);
-                  var1.println(var2);
-                  return var2;
+               public String process(final String name, final String value) {
+                  this.writePrefix(name);
+                  writer.println(value);
+                  return value;
                }
 
-               public float process(String var1x, float var2) {
-                  this.writePrefix(var1x);
-                  var1.println(var2);
-                  return var2;
+               public float process(final String name, final float value) {
+                  this.writePrefix(name);
+                  writer.println(value);
+                  return value;
                }
 
-               public <T> T process(String var1x, T var2, Function<String, T> var3, Function<T, String> var4) {
-                  this.writePrefix(var1x);
-                  var1.println((String)var4.apply(var2));
-                  return var2;
+               public <T> T process(final String name, final T value, final Function<String, T> reader, final Function<T, String> converter) {
+                  this.writePrefix(name);
+                  writer.println((String)converter.apply(value));
+                  return value;
                }
             });
-            String var2 = this.getFullscreenVideoModeString();
-            if (var2 != null) {
-               var1.println("fullscreenResolution:" + var2);
+            String fullscreenVideoModeString = this.getFullscreenVideoModeString();
+            if (fullscreenVideoModeString != null) {
+               writer.println("fullscreenResolution:" + fullscreenVideoModeString);
             }
          } catch (Throwable var5) {
             try {
-               var1.close();
+               writer.close();
             } catch (Throwable var4) {
                var5.addSuppressed(var4);
             }
@@ -1489,31 +1498,31 @@ public class Options {
             throw var5;
          }
 
-         var1.close();
-      } catch (Exception var6) {
-         LOGGER.error("Failed to save options", var6);
+         writer.close();
+      } catch (Exception e) {
+         LOGGER.error("Failed to save options", e);
       }
 
       this.broadcastOptions();
    }
 
    private @Nullable String getFullscreenVideoModeString() {
-      Window var1 = this.minecraft.getWindow();
-      if (var1 == null) {
+      Window window = this.minecraft.getWindow();
+      if (window == null) {
          return this.fullscreenVideoModeString;
       } else {
-         return var1.getPreferredFullscreenVideoMode().isPresent() ? ((VideoMode)var1.getPreferredFullscreenVideoMode().get()).write() : null;
+         return window.getPreferredFullscreenVideoMode().isPresent() ? ((VideoMode)window.getPreferredFullscreenVideoMode().get()).write() : null;
       }
    }
 
    public ClientInformation buildPlayerInformation() {
-      int var1 = 0;
+      int parts = 0;
 
-      for(PlayerModelPart var3 : this.modelParts) {
-         var1 |= var3.getMask();
+      for(PlayerModelPart part : this.modelParts) {
+         parts |= part.getMask();
       }
 
-      return new ClientInformation(this.languageCode, (Integer)this.renderDistance.get(), this.chatVisibility.get(), (Boolean)this.chatColors.get(), var1, this.mainHand.get(), this.minecraft.isTextFilteringEnabled(), (Boolean)this.allowServerListing.get(), this.particles.get());
+      return new ClientInformation(this.languageCode, (Integer)this.renderDistance.get(), this.chatVisibility.get(), (Boolean)this.chatColors.get(), parts, this.mainHand.get(), this.minecraft.isTextFilteringEnabled(), (Boolean)this.allowServerListing.get(), this.particles.get());
    }
 
    public void broadcastOptions() {
@@ -1523,17 +1532,17 @@ public class Options {
 
    }
 
-   public void setModelPart(PlayerModelPart var1, boolean var2) {
-      if (var2) {
-         this.modelParts.add(var1);
+   public void setModelPart(final PlayerModelPart part, final boolean visible) {
+      if (visible) {
+         this.modelParts.add(part);
       } else {
-         this.modelParts.remove(var1);
+         this.modelParts.remove(part);
       }
 
    }
 
-   public boolean isModelPartEnabled(PlayerModelPart var1) {
-      return this.modelParts.contains(var1);
+   public boolean isModelPartEnabled(final PlayerModelPart part) {
+      return this.modelParts.contains(part);
    }
 
    public CloudStatus getCloudsType() {
@@ -1544,45 +1553,45 @@ public class Options {
       return this.useNativeTransport;
    }
 
-   public void loadSelectedResourcePacks(PackRepository var1) {
-      LinkedHashSet var2 = Sets.newLinkedHashSet();
-      Iterator var3 = this.resourcePacks.iterator();
+   public void loadSelectedResourcePacks(final PackRepository repository) {
+      Set<String> selected = Sets.newLinkedHashSet();
+      Iterator<String> iterator = this.resourcePacks.iterator();
 
-      while(var3.hasNext()) {
-         String var4 = (String)var3.next();
-         Pack var5 = var1.getPack(var4);
-         if (var5 == null && !var4.startsWith("file/")) {
-            var5 = var1.getPack("file/" + var4);
+      while(iterator.hasNext()) {
+         String id = (String)iterator.next();
+         Pack pack = repository.getPack(id);
+         if (pack == null && !id.startsWith("file/")) {
+            pack = repository.getPack("file/" + id);
          }
 
-         if (var5 == null) {
-            LOGGER.warn("Removed resource pack {} from options because it doesn't seem to exist anymore", var4);
-            var3.remove();
-         } else if (!var5.getCompatibility().isCompatible() && !this.incompatibleResourcePacks.contains(var4)) {
-            LOGGER.warn("Removed resource pack {} from options because it is no longer compatible", var4);
-            var3.remove();
-         } else if (var5.getCompatibility().isCompatible() && this.incompatibleResourcePacks.contains(var4)) {
-            LOGGER.info("Removed resource pack {} from incompatibility list because it's now compatible", var4);
-            this.incompatibleResourcePacks.remove(var4);
+         if (pack == null) {
+            LOGGER.warn("Removed resource pack {} from options because it doesn't seem to exist anymore", id);
+            iterator.remove();
+         } else if (!pack.getCompatibility().isCompatible() && !this.incompatibleResourcePacks.contains(id)) {
+            LOGGER.warn("Removed resource pack {} from options because it is no longer compatible", id);
+            iterator.remove();
+         } else if (pack.getCompatibility().isCompatible() && this.incompatibleResourcePacks.contains(id)) {
+            LOGGER.info("Removed resource pack {} from incompatibility list because it's now compatible", id);
+            this.incompatibleResourcePacks.remove(id);
          } else {
-            var2.add(var5.getId());
+            selected.add(pack.getId());
          }
       }
 
-      var1.setSelected(var2);
+      repository.setSelected(selected);
    }
 
    public CameraType getCameraType() {
       return this.cameraType;
    }
 
-   public void setCameraType(CameraType var1) {
-      this.cameraType = var1;
+   public void setCameraType(final CameraType cameraType) {
+      this.cameraType = cameraType;
    }
 
-   private static List<String> readListOfStrings(String var0) {
-      List var1 = (List)GsonHelper.fromNullableJson(GSON, var0, LIST_OF_STRINGS_TYPE);
-      return (List<String>)(var1 != null ? var1 : Lists.newArrayList());
+   private static List<String> readListOfStrings(final String value) {
+      List<String> result = (List)GsonHelper.fromNullableJson(GSON, value, LIST_OF_STRINGS_TYPE);
+      return (List<String>)(result != null ? result : Lists.newArrayList());
    }
 
    public File getFile() {
@@ -1590,70 +1599,74 @@ public class Options {
    }
 
    public String dumpOptionsForReport() {
-      final ArrayList var1 = new ArrayList();
+      final List<Pair<String, Object>> optionsForReport = new ArrayList();
       this.processDumpedOptions(new OptionAccess() {
-         public <T> void process(String var1x, OptionInstance<T> var2) {
-            var1.add(Pair.of(var1x, var2.get()));
+         {
+            Objects.requireNonNull(Options.this);
+         }
+
+         public <T> void process(final String name, final OptionInstance<T> option) {
+            optionsForReport.add(Pair.of(name, option.get()));
          }
       });
-      var1.add(Pair.of("fullscreenResolution", String.valueOf(this.fullscreenVideoModeString)));
-      var1.add(Pair.of("glDebugVerbosity", this.glDebugVerbosity));
-      var1.add(Pair.of("overrideHeight", this.overrideHeight));
-      var1.add(Pair.of("overrideWidth", this.overrideWidth));
-      var1.add(Pair.of("syncChunkWrites", this.syncWrites));
-      var1.add(Pair.of("useNativeTransport", this.useNativeTransport));
-      var1.add(Pair.of("resourcePacks", this.resourcePacks));
-      return (String)var1.stream().sorted(Comparator.comparing(Pair::getFirst)).map((var0) -> {
-         String var10000 = (String)var0.getFirst();
-         return var10000 + ": " + String.valueOf(var0.getSecond());
+      optionsForReport.add(Pair.of("fullscreenResolution", String.valueOf(this.fullscreenVideoModeString)));
+      optionsForReport.add(Pair.of("glDebugVerbosity", this.glDebugVerbosity));
+      optionsForReport.add(Pair.of("overrideHeight", this.overrideHeight));
+      optionsForReport.add(Pair.of("overrideWidth", this.overrideWidth));
+      optionsForReport.add(Pair.of("syncChunkWrites", this.syncWrites));
+      optionsForReport.add(Pair.of("useNativeTransport", this.useNativeTransport));
+      optionsForReport.add(Pair.of("resourcePacks", this.resourcePacks));
+      return (String)optionsForReport.stream().sorted(Comparator.comparing(Pair::getFirst)).map((e) -> {
+         String var10000 = (String)e.getFirst();
+         return var10000 + ": " + String.valueOf(e.getSecond());
       }).collect(Collectors.joining(System.lineSeparator()));
    }
 
-   public void setServerRenderDistance(int var1) {
-      this.serverRenderDistance = var1;
+   public void setServerRenderDistance(final int serverRenderDistance) {
+      this.serverRenderDistance = serverRenderDistance;
    }
 
    public int getEffectiveRenderDistance() {
       return this.serverRenderDistance > 0 ? Math.min((Integer)this.renderDistance.get(), this.serverRenderDistance) : (Integer)this.renderDistance.get();
    }
 
-   private static Component pixelValueLabel(Component var0, int var1) {
-      return Component.translatable("options.pixel_value", var0, var1);
+   private static Component pixelValueLabel(final Component caption, final int value) {
+      return Component.translatable("options.pixel_value", caption, value);
    }
 
-   private static Component percentValueLabel(Component var0, double var1) {
-      return Component.translatable("options.percent_value", var0, (int)(var1 * 100.0));
+   private static Component percentValueLabel(final Component caption, final double value) {
+      return Component.translatable("options.percent_value", caption, (int)(value * 100.0));
    }
 
-   public static Component genericValueLabel(Component var0, Component var1) {
-      return Component.translatable("options.generic_value", var0, var1);
+   public static Component genericValueLabel(final Component caption, final Component value) {
+      return Component.translatable("options.generic_value", caption, value);
    }
 
-   public static Component genericValueLabel(Component var0, int var1) {
-      return genericValueLabel(var0, Component.literal(Integer.toString(var1)));
+   public static Component genericValueLabel(final Component caption, final int value) {
+      return genericValueLabel(caption, Component.literal(Integer.toString(value)));
    }
 
-   public static Component genericValueOrOffLabel(Component var0, int var1) {
-      return var1 == 0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : genericValueLabel(var0, var1);
+   public static Component genericValueOrOffLabel(final Component caption, final int value) {
+      return value == 0 ? genericValueLabel(caption, CommonComponents.OPTION_OFF) : genericValueLabel(caption, value);
    }
 
-   private static Component percentValueOrOffLabel(Component var0, double var1) {
-      return var1 == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1);
+   private static Component percentValueOrOffLabel(final Component caption, final double value) {
+      return value == 0.0 ? genericValueLabel(caption, CommonComponents.OPTION_OFF) : percentValueLabel(caption, value);
    }
 
-   interface FieldAccess extends OptionAccess {
-      int process(String var1, int var2);
+   private interface FieldAccess extends OptionAccess {
+      int process(String name, int value);
 
-      boolean process(String var1, boolean var2);
+      boolean process(String name, boolean value);
 
-      String process(String var1, String var2);
+      String process(String name, String value);
 
-      float process(String var1, float var2);
+      float process(String name, float value);
 
-      <T> T process(String var1, T var2, Function<String, T> var3, Function<T, String> var4);
+      <T> T process(String name, T value, Function<String, T> reader, Function<T, String> writer);
    }
 
-   interface OptionAccess {
-      <T> void process(String var1, OptionInstance<T> var2);
+   private interface OptionAccess {
+      <T> void process(String name, OptionInstance<T> option);
    }
 }

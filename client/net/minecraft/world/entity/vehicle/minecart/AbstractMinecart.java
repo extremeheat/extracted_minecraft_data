@@ -59,11 +59,11 @@ public abstract class AbstractMinecart extends VehicleEntity {
    private final MinecartBehavior behavior;
    private static final Map<RailShape, Pair<Vec3i, Vec3i>> EXITS;
 
-   protected AbstractMinecart(EntityType<?> var1, Level var2) {
-      super(var1, var2);
+   protected AbstractMinecart(final EntityType<?> type, final Level level) {
+      super(type, level);
       this.flipped = false;
       this.blocksBuilding = true;
-      if (useExperimentalMovement(var2)) {
+      if (useExperimentalMovement(level)) {
          this.behavior = new NewMinecartBehavior(this);
       } else {
          this.behavior = new OldMinecartBehavior(this);
@@ -71,33 +71,33 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
    }
 
-   protected AbstractMinecart(EntityType<?> var1, Level var2, double var3, double var5, double var7) {
-      this(var1, var2);
-      this.setInitialPos(var3, var5, var7);
+   protected AbstractMinecart(final EntityType<?> type, final Level level, final double x, final double y, final double z) {
+      this(type, level);
+      this.setInitialPos(x, y, z);
    }
 
-   public void setInitialPos(double var1, double var3, double var5) {
-      this.setPos(var1, var3, var5);
-      this.xo = var1;
-      this.yo = var3;
-      this.zo = var5;
+   public void setInitialPos(final double x, final double y, final double z) {
+      this.setPos(x, y, z);
+      this.xo = x;
+      this.yo = y;
+      this.zo = z;
    }
 
-   public static <T extends AbstractMinecart> @Nullable T createMinecart(Level var0, double var1, double var3, double var5, EntityType<T> var7, EntitySpawnReason var8, ItemStack var9, @Nullable Player var10) {
-      AbstractMinecart var11 = (AbstractMinecart)var7.create(var0, var8);
-      if (var11 != null) {
-         var11.setInitialPos(var1, var3, var5);
-         EntityType.createDefaultStackConfig(var0, var9, var10).accept(var11);
-         MinecartBehavior var13 = var11.getBehavior();
+   public static <T extends AbstractMinecart> @Nullable T createMinecart(final Level level, final double x, final double y, final double z, final EntityType<T> type, final EntitySpawnReason reason, final ItemStack itemStack, final @Nullable Player player) {
+      T entity = type.create(level, reason);
+      if (entity != null) {
+         entity.setInitialPos(x, y, z);
+         EntityType.createDefaultStackConfig(level, itemStack, player).accept(entity);
+         MinecartBehavior var13 = entity.getBehavior();
          if (var13 instanceof NewMinecartBehavior) {
-            NewMinecartBehavior var12 = (NewMinecartBehavior)var13;
-            BlockPos var15 = var11.getCurrentBlockPosOrRailBelow();
-            BlockState var14 = var0.getBlockState(var15);
-            var12.adjustToRails(var15, var14, true);
+            NewMinecartBehavior newMinecartBehavior = (NewMinecartBehavior)var13;
+            BlockPos currentPos = entity.getCurrentBlockPosOrRailBelow();
+            BlockState currentState = level.getBlockState(currentPos);
+            newMinecartBehavior.adjustToRails(currentPos, currentState, true);
          }
       }
 
-      return (T)var11;
+      return entity;
    }
 
    public MinecartBehavior getBehavior() {
@@ -108,89 +108,89 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return Entity.MovementEmission.EVENTS;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_ID_CUSTOM_DISPLAY_BLOCK, Optional.empty());
-      var1.define(DATA_ID_DISPLAY_OFFSET, this.getDefaultDisplayOffset());
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_ID_CUSTOM_DISPLAY_BLOCK, Optional.empty());
+      entityData.define(DATA_ID_DISPLAY_OFFSET, this.getDefaultDisplayOffset());
    }
 
-   public boolean canCollideWith(Entity var1) {
-      return AbstractBoat.canVehicleCollide(this, var1);
+   public boolean canCollideWith(final Entity entity) {
+      return AbstractBoat.canVehicleCollide(this, entity);
    }
 
    public boolean isPushable() {
       return true;
    }
 
-   public Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
-      return LivingEntity.resetForwardDirectionOfRelativePortalPosition(super.getRelativePortalPosition(var1, var2));
+   public Vec3 getRelativePortalPosition(final Direction.Axis axis, final BlockUtil.FoundRectangle portalArea) {
+      return LivingEntity.resetForwardDirectionOfRelativePortalPosition(super.getRelativePortalPosition(axis, portalArea));
    }
 
-   protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      boolean var4 = var1 instanceof Villager || var1 instanceof WanderingTrader;
-      return var4 ? LOWERED_PASSENGER_ATTACHMENT : super.getPassengerAttachmentPoint(var1, var2, var3);
+   protected Vec3 getPassengerAttachmentPoint(final Entity passenger, final EntityDimensions dimensions, final float scale) {
+      boolean shouldLowerAttachmentPoint = passenger instanceof Villager || passenger instanceof WanderingTrader;
+      return shouldLowerAttachmentPoint ? LOWERED_PASSENGER_ATTACHMENT : super.getPassengerAttachmentPoint(passenger, dimensions, scale);
    }
 
-   public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
-      Direction var2 = this.getMotionDirection();
-      if (var2.getAxis() == Direction.Axis.Y) {
-         return super.getDismountLocationForPassenger(var1);
+   public Vec3 getDismountLocationForPassenger(final LivingEntity passenger) {
+      Direction forward = this.getMotionDirection();
+      if (forward.getAxis() == Direction.Axis.Y) {
+         return super.getDismountLocationForPassenger(passenger);
       } else {
-         int[][] var3 = DismountHelper.offsetsForDirection(var2);
-         BlockPos var4 = this.blockPosition();
-         BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
-         ImmutableList var6 = var1.getDismountPoses();
-         UnmodifiableIterator var7 = var6.iterator();
+         int[][] offsets = DismountHelper.offsetsForDirection(forward);
+         BlockPos vehicleBlockPos = this.blockPosition();
+         BlockPos.MutableBlockPos targetBlockPos = new BlockPos.MutableBlockPos();
+         ImmutableList<Pose> dismountPoses = passenger.getDismountPoses();
+         UnmodifiableIterator var7 = dismountPoses.iterator();
 
          while(var7.hasNext()) {
-            Pose var8 = (Pose)var7.next();
-            EntityDimensions var9 = var1.getDimensions(var8);
-            float var10 = Math.min(var9.width(), 1.0F) / 2.0F;
-            UnmodifiableIterator var11 = ((ImmutableList)POSE_DISMOUNT_HEIGHTS.get(var8)).iterator();
+            Pose pose = (Pose)var7.next();
+            EntityDimensions passengerDimensions = passenger.getDimensions(pose);
+            float dismountAreaReach = Math.min(passengerDimensions.width(), 1.0F) / 2.0F;
+            UnmodifiableIterator var11 = ((ImmutableList)POSE_DISMOUNT_HEIGHTS.get(pose)).iterator();
 
             while(var11.hasNext()) {
-               int var12 = (Integer)var11.next();
+               int offsetY = (Integer)var11.next();
 
-               for(int[] var16 : var3) {
-                  var5.set(var4.getX() + var16[0], var4.getY() + var12, var4.getZ() + var16[1]);
-                  double var17 = this.level().getBlockFloorHeight(DismountHelper.nonClimbableShape(this.level(), var5), () -> DismountHelper.nonClimbableShape(this.level(), var5.below()));
-                  if (DismountHelper.isBlockFloorValid(var17)) {
-                     AABB var19 = new AABB((double)(-var10), 0.0, (double)(-var10), (double)var10, (double)var9.height(), (double)var10);
-                     Vec3 var20 = Vec3.upFromBottomCenterOf(var5, var17);
-                     if (DismountHelper.canDismountTo(this.level(), var1, var19.move(var20))) {
-                        var1.setPose(var8);
-                        return var20;
+               for(int[] offsetXZ : offsets) {
+                  targetBlockPos.set(vehicleBlockPos.getX() + offsetXZ[0], vehicleBlockPos.getY() + offsetY, vehicleBlockPos.getZ() + offsetXZ[1]);
+                  double blockFloorHeight = this.level().getBlockFloorHeight(DismountHelper.nonClimbableShape(this.level(), targetBlockPos), () -> DismountHelper.nonClimbableShape(this.level(), targetBlockPos.below()));
+                  if (DismountHelper.isBlockFloorValid(blockFloorHeight)) {
+                     AABB dismountCollisionBox = new AABB((double)(-dismountAreaReach), 0.0, (double)(-dismountAreaReach), (double)dismountAreaReach, (double)passengerDimensions.height(), (double)dismountAreaReach);
+                     Vec3 location = Vec3.upFromBottomCenterOf(targetBlockPos, blockFloorHeight);
+                     if (DismountHelper.canDismountTo(this.level(), passenger, dismountCollisionBox.move(location))) {
+                        passenger.setPose(pose);
+                        return location;
                      }
                   }
                }
             }
          }
 
-         double var21 = this.getBoundingBox().maxY;
-         var5.set((double)var4.getX(), var21, (double)var4.getZ());
-         UnmodifiableIterator var22 = var6.iterator();
+         double vehicleTop = this.getBoundingBox().maxY;
+         targetBlockPos.set((double)vehicleBlockPos.getX(), vehicleTop, (double)vehicleBlockPos.getZ());
+         UnmodifiableIterator var22 = dismountPoses.iterator();
 
          while(var22.hasNext()) {
-            Pose var23 = (Pose)var22.next();
-            double var24 = (double)var1.getDimensions(var23).height();
-            int var25 = Mth.ceil(var21 - (double)var5.getY() + var24);
-            double var26 = DismountHelper.findCeilingFrom(var5, var25, (var1x) -> this.level().getBlockState(var1x).getCollisionShape(this.level(), var1x));
-            if (var21 + var24 <= var26) {
-               var1.setPose(var23);
+            Pose pose = (Pose)var22.next();
+            double poseHeight = (double)passenger.getDimensions(pose).height();
+            int blockCoverageY = Mth.ceil(vehicleTop - (double)targetBlockPos.getY() + poseHeight);
+            double ceilingAboveVehicle = DismountHelper.findCeilingFrom(targetBlockPos, blockCoverageY, (pos) -> this.level().getBlockState(pos).getCollisionShape(this.level(), pos));
+            if (vehicleTop + poseHeight <= ceilingAboveVehicle) {
+               passenger.setPose(pose);
                break;
             }
          }
 
-         return super.getDismountLocationForPassenger(var1);
+         return super.getDismountLocationForPassenger(passenger);
       }
    }
 
    protected float getBlockSpeedFactor() {
-      BlockState var1 = this.level().getBlockState(this.blockPosition());
-      return var1.is(BlockTags.RAILS) ? 1.0F : super.getBlockSpeedFactor();
+      BlockState blockState = this.level().getBlockState(this.blockPosition());
+      return blockState.is(BlockTags.RAILS) ? 1.0F : super.getBlockSpeedFactor();
    }
 
-   public void animateHurt(float var1) {
+   public void animateHurt(final float yaw) {
       this.setHurtDir(-this.getHurtDir());
       this.setHurtTime(10);
       this.setDamage(this.getDamage() + this.getDamage() * 10.0F);
@@ -200,8 +200,8 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return !this.isRemoved();
    }
 
-   public static Pair<Vec3i, Vec3i> exits(RailShape var0) {
-      return (Pair)EXITS.get(var0);
+   public static Pair<Vec3i, Vec3i> exits(final RailShape shape) {
+      return (Pair)EXITS.get(shape);
    }
 
    public Direction getMotionDirection() {
@@ -240,30 +240,30 @@ public abstract class AbstractMinecart extends VehicleEntity {
    }
 
    public BlockPos getCurrentBlockPosOrRailBelow() {
-      int var1 = Mth.floor(this.getX());
-      int var2 = Mth.floor(this.getY());
-      int var3 = Mth.floor(this.getZ());
+      int xt = Mth.floor(this.getX());
+      int yt = Mth.floor(this.getY());
+      int zt = Mth.floor(this.getZ());
       if (useExperimentalMovement(this.level())) {
-         double var4 = this.getY() - 0.1 - 9.999999747378752E-6;
-         if (this.level().getBlockState(BlockPos.containing((double)var1, var4, (double)var3)).is(BlockTags.RAILS)) {
-            var2 = Mth.floor(var4);
+         double y = this.getY() - 0.1 - 9.999999747378752E-6;
+         if (this.level().getBlockState(BlockPos.containing((double)xt, y, (double)zt)).is(BlockTags.RAILS)) {
+            yt = Mth.floor(y);
          }
-      } else if (this.level().getBlockState(new BlockPos(var1, var2 - 1, var3)).is(BlockTags.RAILS)) {
-         --var2;
+      } else if (this.level().getBlockState(new BlockPos(xt, yt - 1, zt)).is(BlockTags.RAILS)) {
+         --yt;
       }
 
-      return new BlockPos(var1, var2, var3);
+      return new BlockPos(xt, yt, zt);
    }
 
-   protected double getMaxSpeed(ServerLevel var1) {
-      return this.behavior.getMaxSpeed(var1);
+   protected double getMaxSpeed(final ServerLevel level) {
+      return this.behavior.getMaxSpeed(level);
    }
 
-   public void activateMinecart(ServerLevel var1, int var2, int var3, int var4, boolean var5) {
+   public void activateMinecart(final ServerLevel level, final int xt, final int yt, final int zt, final boolean state) {
    }
 
-   public void lerpPositionAndRotationStep(int var1, double var2, double var4, double var6, double var8, double var10) {
-      super.lerpPositionAndRotationStep(var1, var2, var4, var6, var8, var10);
+   public void lerpPositionAndRotationStep(final int stepsToTarget, final double targetX, final double targetY, final double targetZ, final double targetYRot, final double targetXRot) {
+      super.lerpPositionAndRotationStep(stepsToTarget, targetX, targetY, targetZ, targetYRot, targetXRot);
    }
 
    public void applyGravity() {
@@ -286,23 +286,23 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return this.behavior.getInterpolation();
    }
 
-   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
-      super.recreateFromPacket(var1);
+   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
+      super.recreateFromPacket(packet);
       this.behavior.lerpMotion(this.getDeltaMovement());
    }
 
-   public void lerpMotion(Vec3 var1) {
-      this.behavior.lerpMotion(var1);
+   public void lerpMotion(final Vec3 movement) {
+      this.behavior.lerpMotion(movement);
    }
 
-   protected void moveAlongTrack(ServerLevel var1) {
-      this.behavior.moveAlongTrack(var1);
+   protected void moveAlongTrack(final ServerLevel level) {
+      this.behavior.moveAlongTrack(level);
    }
 
-   protected void comeOffTrack(ServerLevel var1) {
-      double var2 = this.getMaxSpeed(var1);
-      Vec3 var4 = this.getDeltaMovement();
-      this.setDeltaMovement(Mth.clamp(var4.x, -var2, var2), var4.y, Mth.clamp(var4.z, -var2, var2));
+   protected void comeOffTrack(final ServerLevel level) {
+      double maxSpeed = this.getMaxSpeed(level);
+      Vec3 movement = this.getDeltaMovement();
+      this.setDeltaMovement(Mth.clamp(movement.x, -maxSpeed, maxSpeed), movement.y, Mth.clamp(movement.z, -maxSpeed, maxSpeed));
       if (this.onGround()) {
          this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
       }
@@ -314,24 +314,24 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
    }
 
-   protected double makeStepAlongTrack(BlockPos var1, RailShape var2, double var3) {
-      return this.behavior.stepAlongTrack(var1, var2, var3);
+   protected double makeStepAlongTrack(final BlockPos pos, final RailShape shape, final double movementLeft) {
+      return this.behavior.stepAlongTrack(pos, shape, movementLeft);
    }
 
-   public void move(MoverType var1, Vec3 var2) {
+   public void move(final MoverType moverType, final Vec3 delta) {
       if (useExperimentalMovement(this.level())) {
-         Vec3 var3 = this.position().add(var2);
-         super.move(var1, var2);
-         boolean var4 = this.behavior.pushAndPickupEntities();
-         if (var4) {
-            super.move(var1, var3.subtract(this.position()));
+         Vec3 toPosition = this.position().add(delta);
+         super.move(moverType, delta);
+         boolean shouldContinue = this.behavior.pushAndPickupEntities();
+         if (shouldContinue) {
+            super.move(moverType, toPosition.subtract(this.position()));
          }
 
-         if (var1.equals(MoverType.PISTON)) {
+         if (moverType.equals(MoverType.PISTON)) {
             this.onRails = false;
          }
       } else {
-         super.move(var1, var2);
+         super.move(moverType, delta);
          this.applyEffectsFromBlocks();
       }
 
@@ -351,36 +351,36 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return this.onRails;
    }
 
-   public void setOnRails(boolean var1) {
-      this.onRails = var1;
+   public void setOnRails(final boolean onRails) {
+      this.onRails = onRails;
    }
 
    public boolean isFlipped() {
       return this.flipped;
    }
 
-   public void setFlipped(boolean var1) {
-      this.flipped = var1;
+   public void setFlipped(final boolean flipped) {
+      this.flipped = flipped;
    }
 
-   public Vec3 getRedstoneDirection(BlockPos var1) {
-      BlockState var2 = this.level().getBlockState(var1);
-      if (var2.is(Blocks.POWERED_RAIL) && (Boolean)var2.getValue(PoweredRailBlock.POWERED)) {
-         RailShape var3 = (RailShape)var2.getValue(((BaseRailBlock)var2.getBlock()).getShapeProperty());
-         if (var3 == RailShape.EAST_WEST) {
-            if (this.isRedstoneConductor(var1.west())) {
+   public Vec3 getRedstoneDirection(final BlockPos pos) {
+      BlockState state = this.level().getBlockState(pos);
+      if (state.is(Blocks.POWERED_RAIL) && (Boolean)state.getValue(PoweredRailBlock.POWERED)) {
+         RailShape shape = (RailShape)state.getValue(((BaseRailBlock)state.getBlock()).getShapeProperty());
+         if (shape == RailShape.EAST_WEST) {
+            if (this.isRedstoneConductor(pos.west())) {
                return new Vec3(1.0, 0.0, 0.0);
             }
 
-            if (this.isRedstoneConductor(var1.east())) {
+            if (this.isRedstoneConductor(pos.east())) {
                return new Vec3(-1.0, 0.0, 0.0);
             }
-         } else if (var3 == RailShape.NORTH_SOUTH) {
-            if (this.isRedstoneConductor(var1.north())) {
+         } else if (shape == RailShape.NORTH_SOUTH) {
+            if (this.isRedstoneConductor(pos.north())) {
                return new Vec3(0.0, 0.0, 1.0);
             }
 
-            if (this.isRedstoneConductor(var1.south())) {
+            if (this.isRedstoneConductor(pos.south())) {
                return new Vec3(0.0, 0.0, -1.0);
             }
          }
@@ -391,66 +391,66 @@ public abstract class AbstractMinecart extends VehicleEntity {
       }
    }
 
-   public boolean isRedstoneConductor(BlockPos var1) {
-      return this.level().getBlockState(var1).isRedstoneConductor(this.level(), var1);
+   public boolean isRedstoneConductor(final BlockPos pos) {
+      return this.level().getBlockState(pos).isRedstoneConductor(this.level(), pos);
    }
 
-   protected Vec3 applyNaturalSlowdown(Vec3 var1) {
-      double var2 = this.behavior.getSlowdownFactor();
-      Vec3 var4 = var1.multiply(var2, 0.0, var2);
+   protected Vec3 applyNaturalSlowdown(final Vec3 movement) {
+      double slowdownFactor = this.behavior.getSlowdownFactor();
+      Vec3 newMovement = movement.multiply(slowdownFactor, 0.0, slowdownFactor);
       if (this.isInWater()) {
-         var4 = var4.scale(0.949999988079071);
+         newMovement = newMovement.scale(0.949999988079071);
       }
 
-      return var4;
+      return newMovement;
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      this.setCustomDisplayBlockState(var1.read("DisplayState", BlockState.CODEC));
-      this.setDisplayOffset(var1.getIntOr("DisplayOffset", this.getDefaultDisplayOffset()));
-      this.flipped = var1.getBooleanOr("FlippedRotation", false);
-      this.firstTick = var1.getBooleanOr("HasTicked", false);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      this.setCustomDisplayBlockState(input.read("DisplayState", BlockState.CODEC));
+      this.setDisplayOffset(input.getIntOr("DisplayOffset", this.getDefaultDisplayOffset()));
+      this.flipped = input.getBooleanOr("FlippedRotation", false);
+      this.firstTick = input.getBooleanOr("HasTicked", false);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      this.getCustomDisplayBlockState().ifPresent((var1x) -> var1.store("DisplayState", BlockState.CODEC, var1x));
-      int var2 = this.getDisplayOffset();
-      if (var2 != this.getDefaultDisplayOffset()) {
-         var1.putInt("DisplayOffset", var2);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      this.getCustomDisplayBlockState().ifPresent((blockState) -> output.store("DisplayState", BlockState.CODEC, blockState));
+      int displayOffset = this.getDisplayOffset();
+      if (displayOffset != this.getDefaultDisplayOffset()) {
+         output.putInt("DisplayOffset", displayOffset);
       }
 
-      var1.putBoolean("FlippedRotation", this.flipped);
-      var1.putBoolean("HasTicked", this.firstTick);
+      output.putBoolean("FlippedRotation", this.flipped);
+      output.putBoolean("HasTicked", this.firstTick);
    }
 
-   public void push(Entity var1) {
+   public void push(final Entity entity) {
       if (!this.level().isClientSide()) {
-         if (!var1.noPhysics && !this.noPhysics) {
-            if (!this.hasPassenger(var1)) {
-               double var2 = var1.getX() - this.getX();
-               double var4 = var1.getZ() - this.getZ();
-               double var6 = var2 * var2 + var4 * var4;
-               if (var6 >= 9.999999747378752E-5) {
-                  var6 = Math.sqrt(var6);
-                  var2 /= var6;
-                  var4 /= var6;
-                  double var8 = 1.0 / var6;
-                  if (var8 > 1.0) {
-                     var8 = 1.0;
+         if (!entity.noPhysics && !this.noPhysics) {
+            if (!this.hasPassenger(entity)) {
+               double xa = entity.getX() - this.getX();
+               double za = entity.getZ() - this.getZ();
+               double dd = xa * xa + za * za;
+               if (dd >= 9.999999747378752E-5) {
+                  dd = Math.sqrt(dd);
+                  xa /= dd;
+                  za /= dd;
+                  double pow = 1.0 / dd;
+                  if (pow > 1.0) {
+                     pow = 1.0;
                   }
 
-                  var2 *= var8;
-                  var4 *= var8;
-                  var2 *= 0.10000000149011612;
-                  var4 *= 0.10000000149011612;
-                  var2 *= 0.5;
-                  var4 *= 0.5;
-                  if (var1 instanceof AbstractMinecart) {
-                     AbstractMinecart var10 = (AbstractMinecart)var1;
-                     this.pushOtherMinecart(var10, var2, var4);
+                  xa *= pow;
+                  za *= pow;
+                  xa *= 0.10000000149011612;
+                  za *= 0.10000000149011612;
+                  xa *= 0.5;
+                  za *= 0.5;
+                  if (entity instanceof AbstractMinecart) {
+                     AbstractMinecart otherMinecart = (AbstractMinecart)entity;
+                     this.pushOtherMinecart(otherMinecart, xa, za);
                   } else {
-                     this.push(-var2, 0.0, -var4);
-                     var1.push(var2 / 4.0, 0.0, var4 / 4.0);
+                     this.push(-xa, 0.0, -za);
+                     entity.push(xa / 4.0, 0.0, za / 4.0);
                   }
                }
 
@@ -459,38 +459,38 @@ public abstract class AbstractMinecart extends VehicleEntity {
       }
    }
 
-   private void pushOtherMinecart(AbstractMinecart var1, double var2, double var4) {
-      double var6;
-      double var8;
+   private void pushOtherMinecart(final AbstractMinecart otherMinecart, final double xa, final double za) {
+      double xo;
+      double zo;
       if (useExperimentalMovement(this.level())) {
-         var6 = this.getDeltaMovement().x;
-         var8 = this.getDeltaMovement().z;
+         xo = this.getDeltaMovement().x;
+         zo = this.getDeltaMovement().z;
       } else {
-         var6 = var1.getX() - this.getX();
-         var8 = var1.getZ() - this.getZ();
+         xo = otherMinecart.getX() - this.getX();
+         zo = otherMinecart.getZ() - this.getZ();
       }
 
-      Vec3 var10 = (new Vec3(var6, 0.0, var8)).normalize();
-      Vec3 var11 = (new Vec3((double)Mth.cos((double)(this.getYRot() * 0.017453292F)), 0.0, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)))).normalize();
-      double var12 = Math.abs(var10.dot(var11));
-      if (!(var12 < 0.800000011920929) || useExperimentalMovement(this.level())) {
-         Vec3 var14 = this.getDeltaMovement();
-         Vec3 var15 = var1.getDeltaMovement();
-         if (var1.isFurnace() && !this.isFurnace()) {
-            this.setDeltaMovement(var14.multiply(0.2, 1.0, 0.2));
-            this.push(var15.x - var2, 0.0, var15.z - var4);
-            var1.setDeltaMovement(var15.multiply(0.95, 1.0, 0.95));
-         } else if (!var1.isFurnace() && this.isFurnace()) {
-            var1.setDeltaMovement(var15.multiply(0.2, 1.0, 0.2));
-            var1.push(var14.x + var2, 0.0, var14.z + var4);
-            this.setDeltaMovement(var14.multiply(0.95, 1.0, 0.95));
+      Vec3 dir = (new Vec3(xo, 0.0, zo)).normalize();
+      Vec3 facing = (new Vec3((double)Mth.cos((double)(this.getYRot() * 0.017453292F)), 0.0, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)))).normalize();
+      double dot = Math.abs(dir.dot(facing));
+      if (!(dot < 0.800000011920929) || useExperimentalMovement(this.level())) {
+         Vec3 movement = this.getDeltaMovement();
+         Vec3 entityMovement = otherMinecart.getDeltaMovement();
+         if (otherMinecart.isFurnace() && !this.isFurnace()) {
+            this.setDeltaMovement(movement.multiply(0.2, 1.0, 0.2));
+            this.push(entityMovement.x - xa, 0.0, entityMovement.z - za);
+            otherMinecart.setDeltaMovement(entityMovement.multiply(0.95, 1.0, 0.95));
+         } else if (!otherMinecart.isFurnace() && this.isFurnace()) {
+            otherMinecart.setDeltaMovement(entityMovement.multiply(0.2, 1.0, 0.2));
+            otherMinecart.push(movement.x + xa, 0.0, movement.z + za);
+            this.setDeltaMovement(movement.multiply(0.95, 1.0, 0.95));
          } else {
-            double var16 = (var15.x + var14.x) / 2.0;
-            double var18 = (var15.z + var14.z) / 2.0;
-            this.setDeltaMovement(var14.multiply(0.2, 1.0, 0.2));
-            this.push(var16 - var2, 0.0, var18 - var4);
-            var1.setDeltaMovement(var15.multiply(0.2, 1.0, 0.2));
-            var1.push(var16 + var2, 0.0, var18 + var4);
+            double xdd = (entityMovement.x + movement.x) / 2.0;
+            double zdd = (entityMovement.z + movement.z) / 2.0;
+            this.setDeltaMovement(movement.multiply(0.2, 1.0, 0.2));
+            this.push(xdd - xa, 0.0, zdd - za);
+            otherMinecart.setDeltaMovement(entityMovement.multiply(0.2, 1.0, 0.2));
+            otherMinecart.push(xdd + xa, 0.0, zdd + za);
          }
 
       }
@@ -516,16 +516,16 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return 6;
    }
 
-   public void setCustomDisplayBlockState(Optional<BlockState> var1) {
-      this.getEntityData().set(DATA_ID_CUSTOM_DISPLAY_BLOCK, var1);
+   public void setCustomDisplayBlockState(final Optional<BlockState> state) {
+      this.getEntityData().set(DATA_ID_CUSTOM_DISPLAY_BLOCK, state);
    }
 
-   public void setDisplayOffset(int var1) {
-      this.getEntityData().set(DATA_ID_DISPLAY_OFFSET, var1);
+   public void setDisplayOffset(final int offset) {
+      this.getEntityData().set(DATA_ID_DISPLAY_OFFSET, offset);
    }
 
-   public static boolean useExperimentalMovement(Level var0) {
-      return var0.enabledFeatures().contains(FeatureFlags.MINECART_IMPROVEMENTS);
+   public static boolean useExperimentalMovement(final Level level) {
+      return level.enabledFeatures().contains(FeatureFlags.MINECART_IMPROVEMENTS);
    }
 
    public abstract ItemStack getPickResult();
@@ -543,15 +543,15 @@ public abstract class AbstractMinecart extends VehicleEntity {
       DATA_ID_DISPLAY_OFFSET = SynchedEntityData.<Integer>defineId(AbstractMinecart.class, EntityDataSerializers.INT);
       POSE_DISMOUNT_HEIGHTS = ImmutableMap.of(Pose.STANDING, ImmutableList.of(0, 1, -1), Pose.CROUCHING, ImmutableList.of(0, 1, -1), Pose.SWIMMING, ImmutableList.of(0, 1));
       EXITS = Maps.newEnumMap((Map)Util.make(() -> {
-         Vec3i var0 = Direction.WEST.getUnitVec3i();
-         Vec3i var1 = Direction.EAST.getUnitVec3i();
-         Vec3i var2 = Direction.NORTH.getUnitVec3i();
-         Vec3i var3 = Direction.SOUTH.getUnitVec3i();
-         Vec3i var4 = var0.below();
-         Vec3i var5 = var1.below();
-         Vec3i var6 = var2.below();
-         Vec3i var7 = var3.below();
-         return ImmutableMap.of(RailShape.NORTH_SOUTH, Pair.of(var2, var3), RailShape.EAST_WEST, Pair.of(var0, var1), RailShape.ASCENDING_EAST, Pair.of(var4, var1), RailShape.ASCENDING_WEST, Pair.of(var0, var5), RailShape.ASCENDING_NORTH, Pair.of(var2, var7), RailShape.ASCENDING_SOUTH, Pair.of(var6, var3), RailShape.SOUTH_EAST, Pair.of(var3, var1), RailShape.SOUTH_WEST, Pair.of(var3, var0), RailShape.NORTH_WEST, Pair.of(var2, var0), RailShape.NORTH_EAST, Pair.of(var2, var1));
+         Vec3i xNeg = Direction.WEST.getUnitVec3i();
+         Vec3i xPos = Direction.EAST.getUnitVec3i();
+         Vec3i zNeg = Direction.NORTH.getUnitVec3i();
+         Vec3i zPos = Direction.SOUTH.getUnitVec3i();
+         Vec3i xNegBelow = xNeg.below();
+         Vec3i xPosBelow = xPos.below();
+         Vec3i zNegBelow = zNeg.below();
+         Vec3i zPosBelow = zPos.below();
+         return ImmutableMap.of(RailShape.NORTH_SOUTH, Pair.of(zNeg, zPos), RailShape.EAST_WEST, Pair.of(xNeg, xPos), RailShape.ASCENDING_EAST, Pair.of(xNegBelow, xPos), RailShape.ASCENDING_WEST, Pair.of(xNeg, xPosBelow), RailShape.ASCENDING_NORTH, Pair.of(zNeg, zPosBelow), RailShape.ASCENDING_SOUTH, Pair.of(zNegBelow, zPos), RailShape.SOUTH_EAST, Pair.of(zPos, xPos), RailShape.SOUTH_WEST, Pair.of(zPos, xNeg), RailShape.NORTH_WEST, Pair.of(zNeg, xNeg), RailShape.NORTH_EAST, Pair.of(zNeg, xPos));
       }));
    }
 }

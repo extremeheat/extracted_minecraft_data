@@ -15,11 +15,11 @@ public class GameEventTagsProvider extends KeyTagProvider<GameEvent> {
    @VisibleForTesting
    static final List<ResourceKey<GameEvent>> VIBRATIONS_EXCEPT_FLAP;
 
-   public GameEventTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
-      super(var1, Registries.GAME_EVENT, var2);
+   public GameEventTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
+      super(output, Registries.GAME_EVENT, lookupProvider);
    }
 
-   protected void addTags(HolderLookup.Provider var1) {
+   protected void addTags(final HolderLookup.Provider registries) {
       this.tag(GameEventTags.VIBRATIONS).addAll(VIBRATIONS_EXCEPT_FLAP).addAll(VibrationSystem.RESONANCE_EVENTS).add(GameEvent.FLAP.key());
       this.tag(GameEventTags.SHRIEKER_CAN_LISTEN).add(GameEvent.SCULK_SENSOR_TENDRILS_CLICKING.key());
       this.tag(GameEventTags.WARDEN_CAN_LISTEN).addAll(VIBRATIONS_EXCEPT_FLAP).addAll(VibrationSystem.RESONANCE_EVENTS).add(GameEvent.SHRIEK.key()).addTag(GameEventTags.SHRIEKER_CAN_LISTEN);

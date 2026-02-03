@@ -19,19 +19,19 @@ public class CommandHistory {
    private final Path commandsPath;
    private final ArrayListDeque<String> lastCommands = new ArrayListDeque<String>(50);
 
-   public CommandHistory(Path var1) {
+   public CommandHistory(final Path gameFolder) {
       super();
-      this.commandsPath = var1.resolve("command_history.txt");
+      this.commandsPath = gameFolder.resolve("command_history.txt");
       if (Files.exists(this.commandsPath, new LinkOption[0])) {
          try {
-            BufferedReader var2 = Files.newBufferedReader(this.commandsPath, StandardCharsets.UTF_8);
+            BufferedReader reader = Files.newBufferedReader(this.commandsPath, StandardCharsets.UTF_8);
 
             try {
-               this.lastCommands.addAll(var2.lines().toList());
+               this.lastCommands.addAll(reader.lines().toList());
             } catch (Throwable var6) {
-               if (var2 != null) {
+               if (reader != null) {
                   try {
-                     var2.close();
+                     reader.close();
                   } catch (Throwable var5) {
                      var6.addSuppressed(var5);
                   }
@@ -40,23 +40,23 @@ public class CommandHistory {
                throw var6;
             }
 
-            if (var2 != null) {
-               var2.close();
+            if (reader != null) {
+               reader.close();
             }
-         } catch (Exception var7) {
-            LOGGER.error("Failed to read {}, command history will be missing", "command_history.txt", var7);
+         } catch (Exception exception) {
+            LOGGER.error("Failed to read {}, command history will be missing", "command_history.txt", exception);
          }
       }
 
    }
 
-   public void addCommand(String var1) {
-      if (!var1.equals(this.lastCommands.peekLast())) {
+   public void addCommand(final String command) {
+      if (!command.equals(this.lastCommands.peekLast())) {
          if (this.lastCommands.size() >= 50) {
             this.lastCommands.removeFirst();
          }
 
-         this.lastCommands.addLast(var1);
+         this.lastCommands.addLast(command);
          this.save();
       }
 
@@ -64,17 +64,17 @@ public class CommandHistory {
 
    private void save() {
       try {
-         BufferedWriter var1 = Files.newBufferedWriter(this.commandsPath, StandardCharsets.UTF_8);
+         BufferedWriter writer = Files.newBufferedWriter(this.commandsPath, StandardCharsets.UTF_8);
 
          try {
-            for(String var3 : this.lastCommands) {
-               var1.write(var3);
-               var1.newLine();
+            for(String command : this.lastCommands) {
+               writer.write(command);
+               writer.newLine();
             }
          } catch (Throwable var5) {
-            if (var1 != null) {
+            if (writer != null) {
                try {
-                  var1.close();
+                  writer.close();
                } catch (Throwable var4) {
                   var5.addSuppressed(var4);
                }
@@ -83,11 +83,11 @@ public class CommandHistory {
             throw var5;
          }
 
-         if (var1 != null) {
-            var1.close();
+         if (writer != null) {
+            writer.close();
          }
-      } catch (IOException var6) {
-         LOGGER.error("Failed to write {}, command history will be missing", "command_history.txt", var6);
+      } catch (IOException exception) {
+         LOGGER.error("Failed to write {}, command history will be missing", "command_history.txt", exception);
       }
 
    }

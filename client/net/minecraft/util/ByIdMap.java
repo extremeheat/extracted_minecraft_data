@@ -1,6 +1,7 @@
 package net.minecraft.util;
 
 import [Ljava.lang.Object;;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Arrays;
 import java.util.Objects;
@@ -12,75 +13,75 @@ public class ByIdMap {
       super();
    }
 
-   private static <T> IntFunction<T> createMap(ToIntFunction<T> var0, T[] var1) {
-      if (var1.length == 0) {
+   private static <T> IntFunction<T> createMap(final ToIntFunction<T> idGetter, final T[] values) {
+      if (values.length == 0) {
          throw new IllegalArgumentException("Empty value list");
       } else {
-         Int2ObjectOpenHashMap var2 = new Int2ObjectOpenHashMap();
+         Int2ObjectMap<T> result = new Int2ObjectOpenHashMap();
 
-         for(Object var6 : var1) {
-            int var7 = var0.applyAsInt(var6);
-            Object var8 = var2.put(var7, var6);
-            if (var8 != null) {
-               throw new IllegalArgumentException("Duplicate entry on id " + var7 + ": current=" + String.valueOf(var6) + ", previous=" + String.valueOf(var8));
+         for(T value : values) {
+            int id = idGetter.applyAsInt(value);
+            T previous = (T)result.put(id, value);
+            if (previous != null) {
+               throw new IllegalArgumentException("Duplicate entry on id " + id + ": current=" + String.valueOf(value) + ", previous=" + String.valueOf(previous));
             }
          }
 
-         return var2;
+         return result;
       }
    }
 
-   public static <T> IntFunction<T> sparse(ToIntFunction<T> var0, T[] var1, T var2) {
-      IntFunction var3 = createMap(var0, var1);
-      return (var2x) -> Objects.requireNonNullElse(var3.apply(var2x), var2);
+   public static <T> IntFunction<T> sparse(final ToIntFunction<T> idGetter, final T[] values, final T _default) {
+      IntFunction<T> idToObject = createMap(idGetter, values);
+      return (id) -> Objects.requireNonNullElse(idToObject.apply(id), _default);
    }
 
-   private static <T> T[] createSortedArray(ToIntFunction<T> var0, T[] var1) {
-      int var2 = var1.length;
-      if (var2 == 0) {
+   private static <T> T[] createSortedArray(final ToIntFunction<T> idGetter, final T[] values) {
+      int length = values.length;
+      if (length == 0) {
          throw new IllegalArgumentException("Empty value list");
       } else {
-         Object[] var3 = ((Object;)var1).clone();
-         Arrays.fill(var3, (Object)null);
+         T[] result = (T[])((Object[])((Object;)values).clone());
+         Arrays.fill(result, (Object)null);
 
-         for(Object var7 : var1) {
-            int var8 = var0.applyAsInt(var7);
-            if (var8 < 0 || var8 >= var2) {
-               throw new IllegalArgumentException("Values are not continous, found index " + var8 + " for value " + String.valueOf(var7));
+         for(T value : values) {
+            int id = idGetter.applyAsInt(value);
+            if (id < 0 || id >= length) {
+               throw new IllegalArgumentException("Values are not continous, found index " + id + " for value " + String.valueOf(value));
             }
 
-            Object var9 = var3[var8];
-            if (var9 != null) {
-               throw new IllegalArgumentException("Duplicate entry on id " + var8 + ": current=" + String.valueOf(var7) + ", previous=" + String.valueOf(var9));
+            T previous = (T)result[id];
+            if (previous != null) {
+               throw new IllegalArgumentException("Duplicate entry on id " + id + ": current=" + String.valueOf(value) + ", previous=" + String.valueOf(previous));
             }
 
-            var3[var8] = var7;
+            result[id] = value;
          }
 
-         for(int var10 = 0; var10 < var2; ++var10) {
-            if (var3[var10] == null) {
-               throw new IllegalArgumentException("Missing value at index: " + var10);
+         for(int i = 0; i < length; ++i) {
+            if (result[i] == null) {
+               throw new IllegalArgumentException("Missing value at index: " + i);
             }
          }
 
-         return (T[])var3;
+         return result;
       }
    }
 
-   public static <T> IntFunction<T> continuous(ToIntFunction<T> var0, T[] var1, OutOfBoundsStrategy var2) {
-      Object[] var3 = createSortedArray(var0, var1);
-      int var4 = var3.length;
+   public static <T> IntFunction<T> continuous(final ToIntFunction<T> idGetter, final T[] values, final OutOfBoundsStrategy strategy) {
+      T[] sortedValues = (T[])createSortedArray(idGetter, values);
+      int length = sortedValues.length;
       IntFunction var10000;
-      switch (var2.ordinal()) {
+      switch (strategy.ordinal()) {
          case 0:
-            Object var5 = var3[0];
-            var10000 = (var3x) -> var3x >= 0 && var3x < var4 ? var3[var3x] : var5;
+            T zeroValue = (T)sortedValues[0];
+            var10000 = (id) -> id >= 0 && id < length ? sortedValues[id] : zeroValue;
             break;
          case 1:
-            var10000 = (var2x) -> var3[Mth.positiveModulo(var2x, var4)];
+            var10000 = (id) -> sortedValues[Mth.positiveModulo(id, length)];
             break;
          case 2:
-            var10000 = (var2x) -> var3[Mth.clamp(var2x, 0, var4 - 1)];
+            var10000 = (id) -> sortedValues[Mth.clamp(id, 0, length - 1)];
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);

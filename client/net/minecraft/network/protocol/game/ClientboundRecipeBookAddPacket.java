@@ -11,18 +11,16 @@ import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
 public record ClientboundRecipeBookAddPacket(List<Entry> entries, boolean replace) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundRecipeBookAddPacket> STREAM_CODEC;
 
-   public ClientboundRecipeBookAddPacket(List<Entry> var1, boolean var2) {
+   public ClientboundRecipeBookAddPacket {
       super();
-      this.entries = var1;
-      this.replace = var2;
    }
 
    public PacketType<ClientboundRecipeBookAddPacket> type() {
       return GamePacketTypes.CLIENTBOUND_RECIPE_BOOK_ADD;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleRecipeBookAdd(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleRecipeBookAdd(this);
    }
 
    static {
@@ -34,14 +32,12 @@ public record ClientboundRecipeBookAddPacket(List<Entry> entries, boolean replac
       public static final byte FLAG_HIGHLIGHT = 2;
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
-      public Entry(RecipeDisplayEntry var1, boolean var2, boolean var3) {
-         this(var1, (byte)((var2 ? 1 : 0) | (var3 ? 2 : 0)));
+      public Entry(final RecipeDisplayEntry contents, final boolean notification, final boolean highlight) {
+         this(contents, (byte)((notification ? 1 : 0) | (highlight ? 2 : 0)));
       }
 
-      public Entry(RecipeDisplayEntry var1, byte var2) {
+      public Entry {
          super();
-         this.contents = var1;
-         this.flags = var2;
       }
 
       public boolean notification() {

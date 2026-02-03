@@ -13,8 +13,8 @@ public class TwistingVinesPlantBlock extends GrowingPlantBodyBlock {
       return CODEC;
    }
 
-   public TwistingVinesPlantBlock(BlockBehaviour.Properties var1) {
-      super(var1, Direction.UP, SHAPE, false);
+   public TwistingVinesPlantBlock(final BlockBehaviour.Properties properties) {
+      super(properties, Direction.UP, SHAPE, false);
    }
 
    protected GrowingPlantHeadBlock getHeadBlock() {

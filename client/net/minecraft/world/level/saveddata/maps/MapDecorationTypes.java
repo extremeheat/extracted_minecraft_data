@@ -50,18 +50,18 @@ public class MapDecorationTypes {
       super();
    }
 
-   public static Holder<MapDecorationType> bootstrap(Registry<MapDecorationType> var0) {
+   public static Holder<MapDecorationType> bootstrap(final Registry<MapDecorationType> registry) {
       return PLAYER;
    }
 
-   private static Holder<MapDecorationType> register(String var0, String var1, boolean var2, boolean var3) {
-      return register(var0, var1, var2, -1, var3, false);
+   private static Holder<MapDecorationType> register(final String name, final String assetName, final boolean showOnItemFrame, final boolean trackCount) {
+      return register(name, assetName, showOnItemFrame, -1, trackCount, false);
    }
 
-   private static Holder<MapDecorationType> register(String var0, String var1, boolean var2, int var3, boolean var4, boolean var5) {
-      ResourceKey var6 = ResourceKey.create(Registries.MAP_DECORATION_TYPE, Identifier.withDefaultNamespace(var0));
-      MapDecorationType var7 = new MapDecorationType(Identifier.withDefaultNamespace(var1), var2, var3, var5, var4);
-      return Registry.registerForHolder(BuiltInRegistries.MAP_DECORATION_TYPE, var6, var7);
+   private static Holder<MapDecorationType> register(final String name, final String assetName, final boolean showOnItemFrame, final int mapColor, final boolean trackCount, final boolean explorationMapElement) {
+      ResourceKey<MapDecorationType> key = ResourceKey.create(Registries.MAP_DECORATION_TYPE, Identifier.withDefaultNamespace(name));
+      MapDecorationType type = new MapDecorationType(Identifier.withDefaultNamespace(assetName), showOnItemFrame, mapColor, explorationMapElement, trackCount);
+      return Registry.registerForHolder(BuiltInRegistries.MAP_DECORATION_TYPE, key, type);
    }
 
    static {

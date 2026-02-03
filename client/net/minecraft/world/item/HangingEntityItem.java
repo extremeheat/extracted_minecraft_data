@@ -9,7 +9,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.GlowItemFrame;
 import net.minecraft.world.entity.decoration.HangingEntity;
@@ -26,48 +25,48 @@ public class HangingEntityItem extends Item {
    private static final Component TOOLTIP_RANDOM_VARIANT;
    private final EntityType<? extends HangingEntity> type;
 
-   public HangingEntityItem(EntityType<? extends HangingEntity> var1, Item.Properties var2) {
-      super(var2);
-      this.type = var1;
+   public HangingEntityItem(final EntityType<? extends HangingEntity> type, final Item.Properties properties) {
+      super(properties);
+      this.type = type;
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      BlockPos var2 = var1.getClickedPos();
-      Direction var3 = var1.getClickedFace();
-      BlockPos var4 = var2.relative(var3);
-      Player var5 = var1.getPlayer();
-      ItemStack var6 = var1.getItemInHand();
-      if (var5 != null && !this.mayPlace(var5, var3, var6, var4)) {
+   public InteractionResult useOn(final UseOnContext context) {
+      BlockPos pos = context.getClickedPos();
+      Direction clickedFace = context.getClickedFace();
+      BlockPos blockPos = pos.relative(clickedFace);
+      Player player = context.getPlayer();
+      ItemStack itemInHand = context.getItemInHand();
+      if (player != null && !this.mayPlace(player, clickedFace, itemInHand, blockPos)) {
          return InteractionResult.FAIL;
       } else {
-         Level var7 = var1.getLevel();
-         Object var8;
+         Level level = context.getLevel();
+         HangingEntity entity;
          if (this.type == EntityType.PAINTING) {
-            Optional var9 = Painting.create(var7, var4, var3);
-            if (var9.isEmpty()) {
+            Optional<Painting> painting = Painting.create(level, blockPos, clickedFace);
+            if (painting.isEmpty()) {
                return InteractionResult.CONSUME;
             }
 
-            var8 = (HangingEntity)var9.get();
+            entity = (HangingEntity)painting.get();
          } else if (this.type == EntityType.ITEM_FRAME) {
-            var8 = new ItemFrame(var7, var4, var3);
+            entity = new ItemFrame(level, blockPos, clickedFace);
          } else {
             if (this.type != EntityType.GLOW_ITEM_FRAME) {
                return InteractionResult.SUCCESS;
             }
 
-            var8 = new GlowItemFrame(var7, var4, var3);
+            entity = new GlowItemFrame(level, blockPos, clickedFace);
          }
 
-         EntityType.createDefaultStackConfig(var7, var6, var5).accept(var8);
-         if (((HangingEntity)var8).survives()) {
-            if (!var7.isClientSide()) {
-               ((HangingEntity)var8).playPlacementSound();
-               var7.gameEvent(var5, GameEvent.ENTITY_PLACE, ((HangingEntity)var8).position());
-               var7.addFreshEntity((Entity)var8);
+         EntityType.createDefaultStackConfig(level, itemInHand, player).accept(entity);
+         if (entity.survives()) {
+            if (!level.isClientSide()) {
+               entity.playPlacementSound();
+               level.gameEvent(player, GameEvent.ENTITY_PLACE, entity.position());
+               level.addFreshEntity(entity);
             }
 
-            var6.shrink(1);
+            itemInHand.shrink(1);
             return InteractionResult.SUCCESS;
          } else {
             return InteractionResult.CONSUME;
@@ -75,19 +74,19 @@ public class HangingEntityItem extends Item {
       }
    }
 
-   protected boolean mayPlace(Player var1, Direction var2, ItemStack var3, BlockPos var4) {
-      return !var2.getAxis().isVertical() && var1.mayUseItemAt(var4, var2, var3);
+   protected boolean mayPlace(final Player player, final Direction direction, final ItemStack itemStack, final BlockPos blockPos) {
+      return !direction.getAxis().isVertical() && player.mayUseItemAt(blockPos, direction, itemStack);
    }
 
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, TooltipDisplay var3, Consumer<Component> var4, TooltipFlag var5) {
-      if (this.type == EntityType.PAINTING && var3.shows(DataComponents.PAINTING_VARIANT)) {
-         Holder var6 = (Holder)var1.get(DataComponents.PAINTING_VARIANT);
-         if (var6 != null) {
-            ((PaintingVariant)var6.value()).title().ifPresent(var4);
-            ((PaintingVariant)var6.value()).author().ifPresent(var4);
-            var4.accept(Component.translatable("painting.dimensions", ((PaintingVariant)var6.value()).width(), ((PaintingVariant)var6.value()).height()));
-         } else if (var5.isCreative()) {
-            var4.accept(TOOLTIP_RANDOM_VARIANT);
+   public void appendHoverText(final ItemStack itemStack, final Item.TooltipContext context, final TooltipDisplay display, final Consumer<Component> builder, final TooltipFlag tooltipFlag) {
+      if (this.type == EntityType.PAINTING && display.shows(DataComponents.PAINTING_VARIANT)) {
+         Holder<PaintingVariant> variant = (Holder)itemStack.get(DataComponents.PAINTING_VARIANT);
+         if (variant != null) {
+            ((PaintingVariant)variant.value()).title().ifPresent(builder);
+            ((PaintingVariant)variant.value()).author().ifPresent(builder);
+            builder.accept(Component.translatable("painting.dimensions", ((PaintingVariant)variant.value()).width(), ((PaintingVariant)variant.value()).height()));
+         } else if (tooltipFlag.isCreative()) {
+            builder.accept(TOOLTIP_RANDOM_VARIANT);
          }
       }
 

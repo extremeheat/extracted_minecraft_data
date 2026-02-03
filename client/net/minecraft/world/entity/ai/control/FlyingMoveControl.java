@@ -8,41 +8,41 @@ public class FlyingMoveControl extends MoveControl {
    private final int maxTurn;
    private final boolean hoversInPlace;
 
-   public FlyingMoveControl(Mob var1, int var2, boolean var3) {
-      super(var1);
-      this.maxTurn = var2;
-      this.hoversInPlace = var3;
+   public FlyingMoveControl(final Mob mob, final int maxTurn, final boolean hoversInPlace) {
+      super(mob);
+      this.maxTurn = maxTurn;
+      this.hoversInPlace = hoversInPlace;
    }
 
    public void tick() {
       if (this.operation == MoveControl.Operation.MOVE_TO) {
          this.operation = MoveControl.Operation.WAIT;
          this.mob.setNoGravity(true);
-         double var1 = this.wantedX - this.mob.getX();
-         double var3 = this.wantedY - this.mob.getY();
-         double var5 = this.wantedZ - this.mob.getZ();
-         double var7 = var1 * var1 + var3 * var3 + var5 * var5;
-         if (var7 < 2.500000277905201E-7) {
+         double xd = this.wantedX - this.mob.getX();
+         double yd = this.wantedY - this.mob.getY();
+         double zd = this.wantedZ - this.mob.getZ();
+         double dd = xd * xd + yd * yd + zd * zd;
+         if (dd < 2.500000277905201E-7) {
             this.mob.setYya(0.0F);
             this.mob.setZza(0.0F);
             return;
          }
 
-         float var9 = (float)(Mth.atan2(var5, var1) * 57.2957763671875) - 90.0F;
-         this.mob.setYRot(this.rotlerp(this.mob.getYRot(), var9, 90.0F));
-         float var10;
+         float yRotD = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
+         this.mob.setYRot(this.rotlerp(this.mob.getYRot(), yRotD, 90.0F));
+         float speed;
          if (this.mob.onGround()) {
-            var10 = (float)(this.speedModifier * this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            speed = (float)(this.speedModifier * this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED));
          } else {
-            var10 = (float)(this.speedModifier * this.mob.getAttributeValue(Attributes.FLYING_SPEED));
+            speed = (float)(this.speedModifier * this.mob.getAttributeValue(Attributes.FLYING_SPEED));
          }
 
-         this.mob.setSpeed(var10);
-         double var11 = Math.sqrt(var1 * var1 + var5 * var5);
-         if (Math.abs(var3) > 9.999999747378752E-6 || Math.abs(var11) > 9.999999747378752E-6) {
-            float var13 = (float)(-(Mth.atan2(var3, var11) * 57.2957763671875));
-            this.mob.setXRot(this.rotlerp(this.mob.getXRot(), var13, (float)this.maxTurn));
-            this.mob.setYya(var3 > 0.0 ? var10 : -var10);
+         this.mob.setSpeed(speed);
+         double sd = Math.sqrt(xd * xd + zd * zd);
+         if (Math.abs(yd) > 9.999999747378752E-6 || Math.abs(sd) > 9.999999747378752E-6) {
+            float xRotD = (float)(-(Mth.atan2(yd, sd) * 57.2957763671875));
+            this.mob.setXRot(this.rotlerp(this.mob.getXRot(), xRotD, (float)this.maxTurn));
+            this.mob.setYya(yd > 0.0 ? speed : -speed);
          }
       } else {
          if (!this.hoversInPlace) {

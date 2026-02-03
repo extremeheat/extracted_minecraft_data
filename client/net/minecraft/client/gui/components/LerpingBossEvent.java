@@ -11,25 +11,25 @@ public class LerpingBossEvent extends BossEvent {
    protected float targetPercent;
    protected long setTime;
 
-   public LerpingBossEvent(UUID var1, Component var2, float var3, BossEvent.BossBarColor var4, BossEvent.BossBarOverlay var5, boolean var6, boolean var7, boolean var8) {
-      super(var1, var2, var4, var5);
-      this.targetPercent = var3;
-      this.progress = var3;
+   public LerpingBossEvent(final UUID id, final Component name, final float progress, final BossEvent.BossBarColor color, final BossEvent.BossBarOverlay overlay, final boolean darkenScreen, final boolean playMusic, final boolean createWorldFog) {
+      super(id, name, color, overlay);
+      this.targetPercent = progress;
+      this.progress = progress;
       this.setTime = Util.getMillis();
-      this.setDarkenScreen(var6);
-      this.setPlayBossMusic(var7);
-      this.setCreateWorldFog(var8);
+      this.setDarkenScreen(darkenScreen);
+      this.setPlayBossMusic(playMusic);
+      this.setCreateWorldFog(createWorldFog);
    }
 
-   public void setProgress(float var1) {
+   public void setProgress(final float progress) {
       this.progress = this.getProgress();
-      this.targetPercent = var1;
+      this.targetPercent = progress;
       this.setTime = Util.getMillis();
    }
 
    public float getProgress() {
-      long var1 = Util.getMillis() - this.setTime;
-      float var3 = Mth.clamp((float)var1 / 100.0F, 0.0F, 1.0F);
-      return Mth.lerp(var3, this.progress, this.targetPercent);
+      long timeSinceSet = Util.getMillis() - this.setTime;
+      float lerpPercent = Mth.clamp((float)timeSinceSet / 100.0F, 0.0F, 1.0F);
+      return Mth.lerp(lerpPercent, this.progress, this.targetPercent);
    }
 }

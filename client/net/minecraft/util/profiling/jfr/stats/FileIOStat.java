@@ -9,27 +9,18 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 
 public record FileIOStat(Duration duration, @Nullable String path, long bytes) {
-   public FileIOStat(Duration var1, @Nullable String var2, long var3) {
+   public FileIOStat {
       super();
-      this.duration = var1;
-      this.path = var2;
-      this.bytes = var3;
    }
 
-   public static Summary summary(Duration var0, List<FileIOStat> var1) {
-      long var2 = var1.stream().mapToLong((var0x) -> var0x.bytes).sum();
-      return new Summary(var2, (double)var2 / (double)var0.getSeconds(), (long)var1.size(), (double)var1.size() / (double)var0.getSeconds(), (Duration)var1.stream().map(FileIOStat::duration).reduce(Duration.ZERO, Duration::plus), ((Map)var1.stream().filter((var0x) -> var0x.path != null).collect(Collectors.groupingBy((var0x) -> var0x.path, Collectors.summingLong((var0x) -> var0x.bytes)))).entrySet().stream().sorted(Entry.comparingByValue().reversed()).map((var0x) -> Pair.of((String)var0x.getKey(), (Long)var0x.getValue())).limit(10L).toList());
+   public static Summary summary(final Duration recordingDuration, final List<FileIOStat> ioStats) {
+      long totalBytes = ioStats.stream().mapToLong((it) -> it.bytes).sum();
+      return new Summary(totalBytes, (double)totalBytes / (double)recordingDuration.getSeconds(), (long)ioStats.size(), (double)ioStats.size() / (double)recordingDuration.getSeconds(), (Duration)ioStats.stream().map(FileIOStat::duration).reduce(Duration.ZERO, Duration::plus), ((Map)ioStats.stream().filter((it) -> it.path != null).collect(Collectors.groupingBy((stat) -> stat.path, Collectors.summingLong((it) -> it.bytes)))).entrySet().stream().sorted(Entry.comparingByValue().reversed()).map((e) -> Pair.of((String)e.getKey(), (Long)e.getValue())).limit(10L).toList());
    }
 
    public static record Summary(long totalBytes, double bytesPerSecond, long counts, double countsPerSecond, Duration timeSpentInIO, List<Pair<String, Long>> topTenContributorsByTotalBytes) {
-      public Summary(long var1, double var3, long var5, double var7, Duration var9, List<Pair<String, Long>> var10) {
+      public Summary {
          super();
-         this.totalBytes = var1;
-         this.bytesPerSecond = var3;
-         this.counts = var5;
-         this.countsPerSecond = var7;
-         this.timeSpentInIO = var9;
-         this.topTenContributorsByTotalBytes = var10;
       }
    }
 }

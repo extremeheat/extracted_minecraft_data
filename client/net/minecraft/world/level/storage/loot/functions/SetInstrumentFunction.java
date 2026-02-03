@@ -16,29 +16,29 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetInstrumentFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetInstrumentFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(TagKey.hashedCodec(Registries.INSTRUMENT).fieldOf("options").forGetter((var0x) -> var0x.options)).apply(var0, SetInstrumentFunction::new));
+   public static final MapCodec<SetInstrumentFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(TagKey.hashedCodec(Registries.INSTRUMENT).fieldOf("options").forGetter((f) -> f.options)).apply(i, SetInstrumentFunction::new));
    private final TagKey<Instrument> options;
 
-   private SetInstrumentFunction(List<LootItemCondition> var1, TagKey<Instrument> var2) {
-      super(var1);
-      this.options = var2;
+   private SetInstrumentFunction(final List<LootItemCondition> predicates, final TagKey<Instrument> options) {
+      super(predicates);
+      this.options = options;
    }
 
-   public LootItemFunctionType<SetInstrumentFunction> getType() {
-      return LootItemFunctions.SET_INSTRUMENT;
+   public MapCodec<SetInstrumentFunction> codec() {
+      return MAP_CODEC;
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      Registry var3 = var2.getLevel().registryAccess().lookupOrThrow(Registries.INSTRUMENT);
-      Optional var4 = var3.getRandomElementOf(this.options, var2.getRandom());
-      if (var4.isPresent()) {
-         var1.set(DataComponents.INSTRUMENT, new InstrumentComponent((Holder)var4.get()));
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      Registry<Instrument> instruments = context.getLevel().registryAccess().lookupOrThrow(Registries.INSTRUMENT);
+      Optional<Holder<Instrument>> instrument = instruments.getRandomElementOf(this.options, context.getRandom());
+      if (instrument.isPresent()) {
+         itemStack.set(DataComponents.INSTRUMENT, new InstrumentComponent((Holder)instrument.get()));
       }
 
-      return var1;
+      return itemStack;
    }
 
-   public static LootItemConditionalFunction.Builder<?> setInstrumentOptions(TagKey<Instrument> var0) {
-      return simpleBuilder((var1) -> new SetInstrumentFunction(var1, var0));
+   public static LootItemConditionalFunction.Builder<?> setInstrumentOptions(final TagKey<Instrument> options) {
+      return simpleBuilder((conditions) -> new SetInstrumentFunction(conditions, options));
    }
 }

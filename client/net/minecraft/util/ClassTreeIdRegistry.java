@@ -5,23 +5,23 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class ClassTreeIdRegistry {
    public static final int NO_ID_VALUE = -1;
-   private final Object2IntMap<Class<?>> classToLastIdCache = (Object2IntMap)Util.make(new Object2IntOpenHashMap(), (var0) -> var0.defaultReturnValue(-1));
+   private final Object2IntMap<Class<?>> classToLastIdCache = (Object2IntMap)Util.make(new Object2IntOpenHashMap(), (map) -> map.defaultReturnValue(-1));
 
    public ClassTreeIdRegistry() {
       super();
    }
 
-   public int getLastIdFor(Class<?> var1) {
-      int var2 = this.classToLastIdCache.getInt(var1);
-      if (var2 != -1) {
-         return var2;
+   public int getLastIdFor(final Class<?> clazz) {
+      int id = this.classToLastIdCache.getInt(clazz);
+      if (id != -1) {
+         return id;
       } else {
-         Class var3 = var1;
+         Class<?> superclass = clazz;
 
-         while((var3 = var3.getSuperclass()) != Object.class) {
-            int var4 = this.classToLastIdCache.getInt(var3);
-            if (var4 != -1) {
-               return var4;
+         while((superclass = superclass.getSuperclass()) != Object.class) {
+            int newId = this.classToLastIdCache.getInt(superclass);
+            if (newId != -1) {
+               return newId;
             }
          }
 
@@ -29,14 +29,14 @@ public class ClassTreeIdRegistry {
       }
    }
 
-   public int getCount(Class<?> var1) {
-      return this.getLastIdFor(var1) + 1;
+   public int getCount(final Class<?> clazz) {
+      return this.getLastIdFor(clazz) + 1;
    }
 
-   public int define(Class<?> var1) {
-      int var2 = this.getLastIdFor(var1);
-      int var3 = var2 == -1 ? 0 : var2 + 1;
-      this.classToLastIdCache.put(var1, var3);
-      return var3;
+   public int define(final Class<?> clazz) {
+      int id = this.getLastIdFor(clazz);
+      int nextId = id == -1 ? 0 : id + 1;
+      this.classToLastIdCache.put(clazz, nextId);
+      return nextId;
    }
 }

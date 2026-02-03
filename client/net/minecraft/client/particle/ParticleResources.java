@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -50,8 +50,8 @@ public class ParticleResources implements PreparableReloadListener {
       this.registerProviders();
    }
 
-   public void onReload(Runnable var1) {
-      this.onReload = var1;
+   public void onReload(final Runnable onReload) {
+      this.onReload = onReload;
    }
 
    private void registerProviders() {
@@ -172,96 +172,94 @@ public class ParticleResources implements PreparableReloadListener {
       this.register(ParticleTypes.FIREFLY, FireflyParticle.FireflyProvider::new);
    }
 
-   private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider<T> var2) {
-      this.providers.put(BuiltInRegistries.PARTICLE_TYPE.getId(var1), var2);
+   private <T extends ParticleOptions> void register(final ParticleType<T> type, final ParticleProvider<T> provider) {
+      this.providers.put(BuiltInRegistries.PARTICLE_TYPE.getId(type), provider);
    }
 
-   private <T extends ParticleOptions> void register(ParticleType<T> var1, SpriteParticleRegistration<T> var2) {
-      MutableSpriteSet var3 = new MutableSpriteSet();
-      this.spriteSets.put(BuiltInRegistries.PARTICLE_TYPE.getKey(var1), var3);
-      this.providers.put(BuiltInRegistries.PARTICLE_TYPE.getId(var1), var2.create(var3));
+   private <T extends ParticleOptions> void register(final ParticleType<T> type, final SpriteParticleRegistration<T> provider) {
+      MutableSpriteSet spriteSet = new MutableSpriteSet();
+      this.spriteSets.put(BuiltInRegistries.PARTICLE_TYPE.getKey(type), spriteSet);
+      this.providers.put(BuiltInRegistries.PARTICLE_TYPE.getId(type), provider.create(spriteSet));
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
-      ResourceManager var5 = var1.resourceManager();
-      CompletableFuture var6 = CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(var5), var2).thenCompose((var2x) -> {
-         ArrayList var3 = new ArrayList(var2x.size());
-         var2x.forEach((var3x, var4) -> {
-            Identifier var5 = PARTICLE_LISTER.fileToId(var3x);
-            var3.add(CompletableFuture.supplyAsync(() -> {
-               record 1ParticleDefinition(Identifier id, Optional<List<Identifier>> sprites) {
-                  _ParticleDefinition/* $FF was: 1ParticleDefinition*/(Identifier var1, Optional<List<Identifier>> var2) {
+   public CompletableFuture<Void> reload(final PreparableReloadListener.SharedState currentReload, final Executor taskExecutor, final PreparableReloadListener.PreparationBarrier preparationBarrier, final Executor reloadExecutor) {
+      ResourceManager manager = currentReload.resourceManager();
+      CompletableFuture<List<ParticleDefinition>> spriteSetsToLoad = CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(manager), taskExecutor).thenCompose((definitionsToScan) -> {
+         List<CompletableFuture<ParticleDefinition>> loadTasks = new ArrayList(definitionsToScan.size());
+         definitionsToScan.forEach((resourceId, resource) -> {
+            Identifier particleId = PARTICLE_LISTER.fileToId(resourceId);
+            loadTasks.add(CompletableFuture.supplyAsync(() -> {
+               record ParticleDefinition(Identifier id, Optional<List<Identifier>> sprites) {
+                  ParticleDefinition {
                      super();
-                     this.id = var1;
-                     this.sprites = var2;
                   }
                }
 
-               return new 1ParticleDefinition(var5, this.loadParticleDescription(var5, var4));
-            }, var2));
+               return new ParticleDefinition(particleId, this.loadParticleDescription(particleId, resource));
+            }, taskExecutor));
          });
-         return Util.sequence(var3);
+         return Util.sequence(loadTasks);
       });
-      CompletableFuture var7 = ((AtlasManager.PendingStitchResults)var1.get(AtlasManager.PENDING_STITCH)).get(AtlasIds.PARTICLES);
-      CompletableFuture var10000 = CompletableFuture.allOf(var6, var7);
-      Objects.requireNonNull(var3);
-      return var10000.thenCompose(var3::wait).thenAcceptAsync((var3x) -> {
+      CompletableFuture<SpriteLoader.Preparations> pendingSprites = ((AtlasManager.PendingStitchResults)currentReload.get(AtlasManager.PENDING_STITCH)).get(AtlasIds.PARTICLES);
+      CompletableFuture var10000 = CompletableFuture.allOf(spriteSetsToLoad, pendingSprites);
+      Objects.requireNonNull(preparationBarrier);
+      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((unused) -> {
          if (this.onReload != null) {
             this.onReload.run();
          }
 
-         ProfilerFiller var4 = Profiler.get();
-         var4.push("upload");
-         SpriteLoader.Preparations var5 = (SpriteLoader.Preparations)var7.join();
-         var4.popPush("bindSpriteSets");
-         HashSet var6x = new HashSet();
-         TextureAtlasSprite var7x = var5.missing();
-         ((List)var6.join()).forEach((var4x) -> {
-            Optional var5x = var4x.sprites();
-            if (!var5x.isEmpty()) {
-               ArrayList var6 = new ArrayList();
+         ProfilerFiller reloadProfiler = Profiler.get();
+         reloadProfiler.push("upload");
+         SpriteLoader.Preparations sprites = (SpriteLoader.Preparations)pendingSprites.join();
+         reloadProfiler.popPush("bindSpriteSets");
+         Set<Identifier> missingSprites = new HashSet();
+         TextureAtlasSprite missingSprite = sprites.missing();
+         ((List)spriteSetsToLoad.join()).forEach((p) -> {
+            Optional<List<Identifier>> spriteIds = p.sprites();
+            if (!spriteIds.isEmpty()) {
+               List<TextureAtlasSprite> contents = new ArrayList();
 
-               for(Identifier var8 : (List)var5x.get()) {
-                  TextureAtlasSprite var9 = var5.getSprite(var8);
-                  if (var9 == null) {
-                     var6x.add(var8);
-                     var6.add(var7x);
+               for(Identifier spriteId : (List)spriteIds.get()) {
+                  TextureAtlasSprite sprite = sprites.getSprite(spriteId);
+                  if (sprite == null) {
+                     missingSprites.add(spriteId);
+                     contents.add(missingSprite);
                   } else {
-                     var6.add(var9);
+                     contents.add(sprite);
                   }
                }
 
-               if (var6.isEmpty()) {
-                  var6.add(var7x);
+               if (contents.isEmpty()) {
+                  contents.add(missingSprite);
                }
 
-               ((MutableSpriteSet)this.spriteSets.get(var4x.id())).rebind(var6);
+               ((MutableSpriteSet)this.spriteSets.get(p.id())).rebind(contents);
             }
          });
-         if (!var6x.isEmpty()) {
-            LOGGER.warn("Missing particle sprites: {}", var6x.stream().sorted().map(Identifier::toString).collect(Collectors.joining(",")));
+         if (!missingSprites.isEmpty()) {
+            LOGGER.warn("Missing particle sprites: {}", missingSprites.stream().sorted().map(Identifier::toString).collect(Collectors.joining(",")));
          }
 
-         var4.pop();
-      }, var4);
+         reloadProfiler.pop();
+      }, reloadExecutor);
    }
 
-   private Optional<List<Identifier>> loadParticleDescription(Identifier var1, Resource var2) {
-      if (!this.spriteSets.containsKey(var1)) {
-         LOGGER.debug("Redundant texture list for particle: {}", var1);
+   private Optional<List<Identifier>> loadParticleDescription(final Identifier id, final Resource resource) {
+      if (!this.spriteSets.containsKey(id)) {
+         LOGGER.debug("Redundant texture list for particle: {}", id);
          return Optional.empty();
       } else {
          try {
-            BufferedReader var3 = var2.openAsReader();
+            Reader reader = resource.openAsReader();
 
             Optional var5;
             try {
-               ParticleDescription var4 = ParticleDescription.fromJson(GsonHelper.parse((Reader)var3));
-               var5 = Optional.of(var4.getTextures());
+               ParticleDescription description = ParticleDescription.fromJson(GsonHelper.parse(reader));
+               var5 = Optional.of(description.getTextures());
             } catch (Throwable var7) {
-               if (var3 != null) {
+               if (reader != null) {
                   try {
-                     ((Reader)var3).close();
+                     reader.close();
                   } catch (Throwable var6) {
                      var7.addSuppressed(var6);
                   }
@@ -270,13 +268,13 @@ public class ParticleResources implements PreparableReloadListener {
                throw var7;
             }
 
-            if (var3 != null) {
-               ((Reader)var3).close();
+            if (reader != null) {
+               reader.close();
             }
 
             return var5;
-         } catch (IOException var8) {
-            throw new IllegalStateException("Failed to load description for particle " + String.valueOf(var1), var8);
+         } catch (IOException e) {
+            throw new IllegalStateException("Failed to load description for particle " + String.valueOf(id), e);
          }
       }
    }
@@ -285,32 +283,32 @@ public class ParticleResources implements PreparableReloadListener {
       return this.providers;
    }
 
-   static class MutableSpriteSet implements SpriteSet {
+   private static class MutableSpriteSet implements SpriteSet {
       private List<TextureAtlasSprite> sprites;
 
-      MutableSpriteSet() {
+      private MutableSpriteSet() {
          super();
       }
 
-      public TextureAtlasSprite get(int var1, int var2) {
-         return (TextureAtlasSprite)this.sprites.get(var1 * (this.sprites.size() - 1) / var2);
+      public TextureAtlasSprite get(final int index, final int max) {
+         return (TextureAtlasSprite)this.sprites.get(index * (this.sprites.size() - 1) / max);
       }
 
-      public TextureAtlasSprite get(RandomSource var1) {
-         return (TextureAtlasSprite)this.sprites.get(var1.nextInt(this.sprites.size()));
+      public TextureAtlasSprite get(final RandomSource random) {
+         return (TextureAtlasSprite)this.sprites.get(random.nextInt(this.sprites.size()));
       }
 
       public TextureAtlasSprite first() {
          return (TextureAtlasSprite)this.sprites.getFirst();
       }
 
-      public void rebind(List<TextureAtlasSprite> var1) {
-         this.sprites = ImmutableList.copyOf(var1);
+      public void rebind(final List<TextureAtlasSprite> ids) {
+         this.sprites = ImmutableList.copyOf(ids);
       }
    }
 
    @FunctionalInterface
-   interface SpriteParticleRegistration<T extends ParticleOptions> {
-      ParticleProvider<T> create(SpriteSet var1);
+   private interface SpriteParticleRegistration<T extends ParticleOptions> {
+      ParticleProvider<T> create(SpriteSet spriteSet);
    }
 }

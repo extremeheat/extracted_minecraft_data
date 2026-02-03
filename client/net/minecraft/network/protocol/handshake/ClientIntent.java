@@ -12,13 +12,13 @@ public enum ClientIntent {
    private ClientIntent() {
    }
 
-   public static ClientIntent byId(int var0) {
+   public static ClientIntent byId(final int id) {
       ClientIntent var10000;
-      switch (var0) {
+      switch (id) {
          case 1 -> var10000 = STATUS;
          case 2 -> var10000 = LOGIN;
          case 3 -> var10000 = TRANSFER;
-         default -> throw new IllegalArgumentException("Unknown connection intent: " + var0);
+         default -> throw new IllegalArgumentException("Unknown connection intent: " + id);
       }
 
       return var10000;

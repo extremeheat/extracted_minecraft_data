@@ -17,49 +17,49 @@ import org.jspecify.annotations.Nullable;
 
 public final class EnvironmentAttributeMap {
    public static final EnvironmentAttributeMap EMPTY = new EnvironmentAttributeMap(Map.of());
-   public static final Codec<EnvironmentAttributeMap> CODEC = Codec.lazyInitialized(() -> Codec.dispatchedMap(EnvironmentAttributes.CODEC, Util.memoize(Entry::createCodec)).xmap(EnvironmentAttributeMap::new, (var0) -> var0.entries));
+   public static final Codec<EnvironmentAttributeMap> CODEC = Codec.lazyInitialized(() -> Codec.dispatchedMap(EnvironmentAttributes.CODEC, Util.memoize(Entry::createCodec)).xmap(EnvironmentAttributeMap::new, (v) -> v.entries));
    public static final Codec<EnvironmentAttributeMap> NETWORK_CODEC;
    public static final Codec<EnvironmentAttributeMap> CODEC_ONLY_POSITIONAL;
-   final Map<EnvironmentAttribute<?>, Entry<?, ?>> entries;
+   private final Map<EnvironmentAttribute<?>, Entry<?, ?>> entries;
 
-   private static EnvironmentAttributeMap filterSyncable(EnvironmentAttributeMap var0) {
-      return new EnvironmentAttributeMap(Map.copyOf(Maps.filterKeys(var0.entries, EnvironmentAttribute::isSyncable)));
+   private static EnvironmentAttributeMap filterSyncable(final EnvironmentAttributeMap attributes) {
+      return new EnvironmentAttributeMap(Map.copyOf(Maps.filterKeys(attributes.entries, EnvironmentAttribute::isSyncable)));
    }
 
-   EnvironmentAttributeMap(Map<EnvironmentAttribute<?>, Entry<?, ?>> var1) {
+   private EnvironmentAttributeMap(final Map<EnvironmentAttribute<?>, Entry<?, ?>> entries) {
       super();
-      this.entries = var1;
+      this.entries = entries;
    }
 
    public static Builder builder() {
       return new Builder();
    }
 
-   public <Value> @Nullable Entry<Value, ?> get(EnvironmentAttribute<Value> var1) {
-      return (Entry)this.entries.get(var1);
+   public <Value> @Nullable Entry<Value, ?> get(final EnvironmentAttribute<Value> attribute) {
+      return (Entry)this.entries.get(attribute);
    }
 
-   public <Value> Value applyModifier(EnvironmentAttribute<Value> var1, Value var2) {
-      Entry var3 = this.get(var1);
-      return var3 != null ? var3.applyModifier(var2) : var2;
+   public <Value> Value applyModifier(final EnvironmentAttribute<Value> attribute, final Value baseValue) {
+      Entry<Value, ?> entry = this.get(attribute);
+      return (Value)(entry != null ? entry.applyModifier(baseValue) : baseValue);
    }
 
-   public boolean contains(EnvironmentAttribute<?> var1) {
-      return this.entries.containsKey(var1);
+   public boolean contains(final EnvironmentAttribute<?> attribute) {
+      return this.entries.containsKey(attribute);
    }
 
    public Set<EnvironmentAttribute<?>> keySet() {
       return this.entries.keySet();
    }
 
-   public boolean equals(Object var1) {
-      if (var1 == this) {
+   public boolean equals(final Object obj) {
+      if (obj == this) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof EnvironmentAttributeMap) {
-            EnvironmentAttributeMap var2 = (EnvironmentAttributeMap)var1;
-            if (this.entries.equals(var2.entries)) {
+         if (obj instanceof EnvironmentAttributeMap) {
+            EnvironmentAttributeMap attributes = (EnvironmentAttributeMap)obj;
+            if (this.entries.equals(attributes.entries)) {
                var10000 = true;
                return var10000;
             }
@@ -80,53 +80,51 @@ public final class EnvironmentAttributeMap {
 
    static {
       NETWORK_CODEC = CODEC.xmap(EnvironmentAttributeMap::filterSyncable, EnvironmentAttributeMap::filterSyncable);
-      CODEC_ONLY_POSITIONAL = CODEC.validate((var0) -> {
-         List var1 = var0.keySet().stream().filter((var0x) -> !var0x.isPositional()).toList();
-         return !var1.isEmpty() ? DataResult.error(() -> "The following attributes cannot be positional: " + String.valueOf(var1)) : DataResult.success(var0);
+      CODEC_ONLY_POSITIONAL = CODEC.validate((map) -> {
+         List<EnvironmentAttribute<?>> illegalAttributes = map.keySet().stream().filter((attribute) -> !attribute.isPositional()).toList();
+         return !illegalAttributes.isEmpty() ? DataResult.error(() -> "The following attributes cannot be positional: " + String.valueOf(illegalAttributes)) : DataResult.success(map);
       });
    }
 
    public static record Entry<Value, Argument>(Argument argument, AttributeModifier<Value, Argument> modifier) {
-      public Entry(Argument var1, AttributeModifier<Value, Argument> var2) {
+      public Entry {
          super();
-         this.argument = var1;
-         this.modifier = var2;
       }
 
-      private static <Value> Codec<Entry<Value, ?>> createCodec(EnvironmentAttribute<Value> var0) {
-         Codec var1 = var0.type().modifierCodec().dispatch("modifier", Entry::modifier, Util.memoize((Function)((var1x) -> createFullCodec(var0, var1x))));
-         return Codec.either(var0.valueCodec(), var1).xmap((var0x) -> (Entry)var0x.map((var0) -> new Entry(var0, AttributeModifier.override()), (var0) -> var0), (var0x) -> var0x.modifier == AttributeModifier.override() ? Either.left(var0x.argument()) : Either.right(var0x));
+      private static <Value> Codec<Entry<Value, ?>> createCodec(final EnvironmentAttribute<Value> attribute) {
+         Codec<Entry<Value, ?>> fullCodec = attribute.type().modifierCodec().dispatch("modifier", Entry::modifier, Util.memoize((Function)((modifier) -> createFullCodec(attribute, modifier))));
+         return Codec.either(attribute.valueCodec(), fullCodec).xmap((either) -> (Entry)either.map((value) -> new Entry(value, AttributeModifier.override()), (e) -> e), (entry) -> entry.modifier == AttributeModifier.override() ? Either.left(entry.argument()) : Either.right(entry));
       }
 
-      private static <Value, Argument> MapCodec<Entry<Value, Argument>> createFullCodec(EnvironmentAttribute<Value> var0, AttributeModifier<Value, Argument> var1) {
-         return RecordCodecBuilder.mapCodec((var2) -> var2.group(var1.argumentCodec(var0).fieldOf("argument").forGetter(Entry::argument)).apply(var2, (var1x) -> new Entry(var1x, var1)));
+      private static <Value, Argument> MapCodec<Entry<Value, Argument>> createFullCodec(final EnvironmentAttribute<Value> attribute, final AttributeModifier<Value, Argument> modifier) {
+         return RecordCodecBuilder.mapCodec((i) -> i.group(modifier.argumentCodec(attribute).fieldOf("argument").forGetter(Entry::argument)).apply(i, (value) -> new Entry(value, modifier)));
       }
 
-      public Value applyModifier(Value var1) {
-         return this.modifier.apply(var1, this.argument);
+      public Value applyModifier(final Value subject) {
+         return this.modifier.apply(subject, this.argument);
       }
    }
 
    public static class Builder {
       private final Map<EnvironmentAttribute<?>, Entry<?, ?>> entries = new HashMap();
 
-      Builder() {
+      private Builder() {
          super();
       }
 
-      public Builder putAll(EnvironmentAttributeMap var1) {
-         this.entries.putAll(var1.entries);
+      public Builder putAll(final EnvironmentAttributeMap map) {
+         this.entries.putAll(map.entries);
          return this;
       }
 
-      public <Value, Parameter> Builder modify(EnvironmentAttribute<Value> var1, AttributeModifier<Value, Parameter> var2, Parameter var3) {
-         var1.type().checkAllowedModifier(var2);
-         this.entries.put(var1, new Entry(var3, var2));
+      public <Value, Parameter> Builder modify(final EnvironmentAttribute<Value> attribute, final AttributeModifier<Value, Parameter> modifier, final Parameter value) {
+         attribute.type().checkAllowedModifier(modifier);
+         this.entries.put(attribute, new Entry(value, modifier));
          return this;
       }
 
-      public <Value> Builder set(EnvironmentAttribute<Value> var1, Value var2) {
-         return this.modify(var1, AttributeModifier.override(), var2);
+      public <Value> Builder set(final EnvironmentAttribute<Value> attribute, final Value value) {
+         return this.modify(attribute, AttributeModifier.override(), value);
       }
 
       public EnvironmentAttributeMap build() {

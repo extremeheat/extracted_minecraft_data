@@ -9,18 +9,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ServerboundPickItemFromEntityPacket(int id, boolean includeData) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<ByteBuf, ServerboundPickItemFromEntityPacket> STREAM_CODEC;
 
-   public ServerboundPickItemFromEntityPacket(int var1, boolean var2) {
+   public ServerboundPickItemFromEntityPacket {
       super();
-      this.id = var1;
-      this.includeData = var2;
    }
 
    public PacketType<ServerboundPickItemFromEntityPacket> type() {
       return GamePacketTypes.SERVERBOUND_PICK_ITEM_FROM_ENTITY;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handlePickItemFromEntity(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handlePickItemFromEntity(this);
    }
 
    static {

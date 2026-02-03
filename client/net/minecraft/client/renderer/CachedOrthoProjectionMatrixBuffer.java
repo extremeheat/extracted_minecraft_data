@@ -18,28 +18,28 @@ public class CachedOrthoProjectionMatrixBuffer implements AutoCloseable {
    private float width;
    private float height;
 
-   public CachedOrthoProjectionMatrixBuffer(String var1, float var2, float var3, boolean var4) {
+   public CachedOrthoProjectionMatrixBuffer(final String name, final float zNear, final float zFar, final boolean invertY) {
       super();
-      this.zNear = var2;
-      this.zFar = var3;
-      this.invertY = var4;
-      GpuDevice var5 = RenderSystem.getDevice();
-      this.buffer = var5.createBuffer(() -> "Projection matrix UBO " + var1, 136, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
+      this.zNear = zNear;
+      this.zFar = zFar;
+      this.invertY = invertY;
+      GpuDevice device = RenderSystem.getDevice();
+      this.buffer = device.createBuffer(() -> "Projection matrix UBO " + name, 136, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
       this.bufferSlice = this.buffer.slice(0L, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
    }
 
-   public GpuBufferSlice getBuffer(float var1, float var2) {
-      if (this.width != var1 || this.height != var2) {
-         Matrix4f var3 = this.createProjectionMatrix(var1, var2);
-         MemoryStack var4 = MemoryStack.stackPush();
+   public GpuBufferSlice getBuffer(final float width, final float height) {
+      if (this.width != width || this.height != height) {
+         Matrix4f projectionMatrix = this.createProjectionMatrix(width, height);
+         MemoryStack stack = MemoryStack.stackPush();
 
          try {
-            ByteBuffer var5 = Std140Builder.onStack(var4, RenderSystem.PROJECTION_MATRIX_UBO_SIZE).putMat4f(var3).get();
-            RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), var5);
+            ByteBuffer byteBuffer = Std140Builder.onStack(stack, RenderSystem.PROJECTION_MATRIX_UBO_SIZE).putMat4f(projectionMatrix).get();
+            RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), byteBuffer);
          } catch (Throwable var8) {
-            if (var4 != null) {
+            if (stack != null) {
                try {
-                  var4.close();
+                  stack.close();
                } catch (Throwable var7) {
                   var8.addSuppressed(var7);
                }
@@ -48,19 +48,19 @@ public class CachedOrthoProjectionMatrixBuffer implements AutoCloseable {
             throw var8;
          }
 
-         if (var4 != null) {
-            var4.close();
+         if (stack != null) {
+            stack.close();
          }
 
-         this.width = var1;
-         this.height = var2;
+         this.width = width;
+         this.height = height;
       }
 
       return this.bufferSlice;
    }
 
-   private Matrix4f createProjectionMatrix(float var1, float var2) {
-      return (new Matrix4f()).setOrtho(0.0F, var1, this.invertY ? var2 : 0.0F, this.invertY ? 0.0F : var2, this.zNear, this.zFar);
+   private Matrix4f createProjectionMatrix(final float width, final float height) {
+      return (new Matrix4f()).setOrtho(0.0F, width, this.invertY ? height : 0.0F, this.invertY ? 0.0F : height, this.zNear, this.zFar, RenderSystem.getDevice().isZZeroToOne());
    }
 
    public void close() {

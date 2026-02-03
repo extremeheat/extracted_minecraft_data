@@ -17,34 +17,34 @@ public class TrunkVineDecorator extends TreeDecorator {
       return TreeDecoratorType.TRUNK_VINE;
    }
 
-   public void place(TreeDecorator.Context var1) {
-      RandomSource var2 = var1.random();
-      var1.logs().forEach((var2x) -> {
-         if (var2.nextInt(3) > 0) {
-            BlockPos var3 = var2x.west();
-            if (var1.isAir(var3)) {
-               var1.placeVine(var3, VineBlock.EAST);
+   public void place(final TreeDecorator.Context context) {
+      RandomSource random = context.random();
+      context.logs().forEach((pos) -> {
+         if (random.nextInt(3) > 0) {
+            BlockPos west = pos.west();
+            if (context.isAir(west)) {
+               context.placeVine(west, VineBlock.EAST);
             }
          }
 
-         if (var2.nextInt(3) > 0) {
-            BlockPos var4 = var2x.east();
-            if (var1.isAir(var4)) {
-               var1.placeVine(var4, VineBlock.WEST);
+         if (random.nextInt(3) > 0) {
+            BlockPos east = pos.east();
+            if (context.isAir(east)) {
+               context.placeVine(east, VineBlock.WEST);
             }
          }
 
-         if (var2.nextInt(3) > 0) {
-            BlockPos var5 = var2x.north();
-            if (var1.isAir(var5)) {
-               var1.placeVine(var5, VineBlock.SOUTH);
+         if (random.nextInt(3) > 0) {
+            BlockPos north = pos.north();
+            if (context.isAir(north)) {
+               context.placeVine(north, VineBlock.SOUTH);
             }
          }
 
-         if (var2.nextInt(3) > 0) {
-            BlockPos var6 = var2x.south();
-            if (var1.isAir(var6)) {
-               var1.placeVine(var6, VineBlock.NORTH);
+         if (random.nextInt(3) > 0) {
+            BlockPos south = pos.south();
+            if (context.isAir(south)) {
+               context.placeVine(south, VineBlock.NORTH);
             }
          }
 

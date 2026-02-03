@@ -17,30 +17,30 @@ import org.slf4j.Logger;
 public class UnflattenTextComponentFix extends DataFix {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public UnflattenTextComponentFix(Schema var1) {
-      super(var1, true);
+   public UnflattenTextComponentFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.TEXT_COMPONENT);
-      Type var2 = this.getOutputSchema().getType(References.TEXT_COMPONENT);
-      return this.createFixer(var1, var2);
+      Type<Pair<String, String>> textComponentType = this.getInputSchema().getType(References.TEXT_COMPONENT);
+      Type<?> newTextComponentType = this.getOutputSchema().getType(References.TEXT_COMPONENT);
+      return this.createFixer(textComponentType, newTextComponentType);
    }
 
-   private <T> TypeRewriteRule createFixer(Type<Pair<String, String>> var1, Type<T> var2) {
-      return this.fixTypeEverywhere("UnflattenTextComponentFix", var1, var2, (var1x) -> (var2x) -> Util.readTypedOrThrow(var2, unflattenJson(var1x, (String)var2x.getSecond()), true).getValue());
+   private <T> TypeRewriteRule createFixer(final Type<Pair<String, String>> textComponentType, final Type<T> newTextComponentType) {
+      return this.fixTypeEverywhere("UnflattenTextComponentFix", textComponentType, newTextComponentType, (ops) -> (input) -> Util.readTypedOrThrow(newTextComponentType, unflattenJson(ops, (String)input.getSecond()), true).getValue());
    }
 
-   private static <T> Dynamic<T> unflattenJson(DynamicOps<T> var0, String var1) {
+   private static <T> Dynamic<T> unflattenJson(final DynamicOps<T> ops, final String jsonString) {
       try {
-         JsonElement var2 = LenientJsonParser.parse(var1);
-         if (!var2.isJsonNull()) {
-            return new Dynamic(var0, JsonOps.INSTANCE.convertTo(var0, var2));
+         JsonElement json = LenientJsonParser.parse(jsonString);
+         if (!json.isJsonNull()) {
+            return new Dynamic(ops, JsonOps.INSTANCE.convertTo(ops, json));
          }
-      } catch (Exception var3) {
-         LOGGER.error("Failed to unflatten text component json: {}", var1, var3);
+      } catch (Exception e) {
+         LOGGER.error("Failed to unflatten text component json: {}", jsonString, e);
       }
 
-      return new Dynamic(var0, var0.createString(var1));
+      return new Dynamic(ops, ops.createString(jsonString));
    }
 }

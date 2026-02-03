@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.ConnectScreen;
@@ -25,7 +26,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket;
 import net.minecraft.network.protocol.status.ClientStatusPacketListener;
@@ -48,149 +48,157 @@ public class ServerStatusPinger {
       super();
    }
 
-   public void pingServer(final ServerData var1, final Runnable var2, final Runnable var3, final EventLoopGroupHolder var4) throws UnknownHostException {
-      final ServerAddress var5 = ServerAddress.parseString(var1.ip);
-      Optional var6 = ServerNameResolver.DEFAULT.resolveAddress(var5).map(ResolvedServerAddress::asInetSocketAddress);
-      if (var6.isEmpty()) {
-         this.onPingFailed(ConnectScreen.UNKNOWN_HOST_MESSAGE, var1);
+   public void pingServer(final ServerData data, final Runnable onPersistentDataChange, final Runnable onPongResponse, final EventLoopGroupHolder eventLoopGroupHolder) throws UnknownHostException {
+      final ServerAddress rawAddress = ServerAddress.parseString(data.ip);
+      Optional<InetSocketAddress> resolvedAddress = ServerNameResolver.DEFAULT.resolveAddress(rawAddress).map(ResolvedServerAddress::asInetSocketAddress);
+      if (resolvedAddress.isEmpty()) {
+         this.onPingFailed(ConnectScreen.UNKNOWN_HOST_MESSAGE, data);
       } else {
-         final InetSocketAddress var7 = (InetSocketAddress)var6.get();
-         final Connection var8 = Connection.connectToServer(var7, var4, (LocalSampleLogger)null);
-         this.connections.add(var8);
-         var1.motd = Component.translatable("multiplayer.status.pinging");
-         var1.playerList = Collections.emptyList();
-         ClientStatusPacketListener var9 = new ClientStatusPacketListener() {
+         final InetSocketAddress address = (InetSocketAddress)resolvedAddress.get();
+         final Connection connection = Connection.connectToServer(address, eventLoopGroupHolder, (LocalSampleLogger)null);
+         this.connections.add(connection);
+         data.motd = Component.translatable("multiplayer.status.pinging");
+         data.playerList = Collections.emptyList();
+         ClientStatusPacketListener listener = new ClientStatusPacketListener() {
             private boolean success;
             private boolean receivedPing;
             private long pingStart;
 
-            public void handleStatusResponse(ClientboundStatusResponsePacket var1x) {
+            {
+               Objects.requireNonNull(ServerStatusPinger.this);
+            }
+
+            public void handleStatusResponse(final ClientboundStatusResponsePacket packet) {
                if (this.receivedPing) {
-                  var8.disconnect((Component)Component.translatable("multiplayer.status.unrequested"));
+                  connection.disconnect((Component)Component.translatable("multiplayer.status.unrequested"));
                } else {
                   this.receivedPing = true;
-                  ServerStatus var2x = var1x.status();
-                  var1.motd = var2x.description();
-                  var2x.version().ifPresentOrElse((var1xx) -> {
-                     var1.version = Component.literal(var1xx.name());
-                     var1.protocol = var1xx.protocol();
+                  ServerStatus status = packet.status();
+                  data.motd = status.description();
+                  status.version().ifPresentOrElse((version) -> {
+                     data.version = Component.literal(version.name());
+                     data.protocol = version.protocol();
                   }, () -> {
-                     var1.version = Component.translatable("multiplayer.status.old");
-                     var1.protocol = 0;
+                     data.version = Component.translatable("multiplayer.status.old");
+                     data.protocol = 0;
                   });
-                  var2x.players().ifPresentOrElse((var1xx) -> {
-                     var1.status = ServerStatusPinger.formatPlayerCount(var1xx.online(), var1xx.max());
-                     var1.players = var1xx;
-                     if (!var1xx.sample().isEmpty()) {
-                        ArrayList var2x = new ArrayList(var1xx.sample().size());
+                  status.players().ifPresentOrElse((players) -> {
+                     data.status = ServerStatusPinger.formatPlayerCount(players.online(), players.max());
+                     data.players = players;
+                     if (!players.sample().isEmpty()) {
+                        List<Component> playerNames = new ArrayList(players.sample().size());
 
-                        for(NameAndId var4x : var1xx.sample()) {
-                           MutableComponent var5x;
-                           if (var4x.equals(MinecraftServer.ANONYMOUS_PLAYER_PROFILE)) {
-                              var5x = Component.translatable("multiplayer.status.anonymous_player");
+                        for(NameAndId profile : players.sample()) {
+                           Component playerName;
+                           if (profile.equals(MinecraftServer.ANONYMOUS_PLAYER_PROFILE)) {
+                              playerName = Component.translatable("multiplayer.status.anonymous_player");
                            } else {
-                              var5x = Component.literal(var4x.name());
+                              playerName = Component.literal(profile.name());
                            }
 
-                           var2x.add(var5x);
+                           playerNames.add(playerName);
                         }
 
-                        if (var1xx.sample().size() < var1xx.online()) {
-                           var2x.add(Component.translatable("multiplayer.status.and_more", var1xx.online() - var1xx.sample().size()));
+                        if (players.sample().size() < players.online()) {
+                           playerNames.add(Component.translatable("multiplayer.status.and_more", players.online() - players.sample().size()));
                         }
 
-                        var1.playerList = var2x;
+                        data.playerList = playerNames;
                      } else {
-                        var1.playerList = List.of();
+                        data.playerList = List.of();
                      }
 
-                  }, () -> var1.status = Component.translatable("multiplayer.status.unknown").withStyle(ChatFormatting.DARK_GRAY));
-                  var2x.favicon().ifPresent((var2xx) -> {
-                     if (!Arrays.equals(var2xx.iconBytes(), var1.getIconBytes())) {
-                        var1.setIconBytes(ServerData.validateIcon(var2xx.iconBytes()));
-                        var2.run();
+                  }, () -> data.status = Component.translatable("multiplayer.status.unknown").withStyle(ChatFormatting.DARK_GRAY));
+                  status.favicon().ifPresent((newIcon) -> {
+                     if (!Arrays.equals(newIcon.iconBytes(), data.getIconBytes())) {
+                        data.setIconBytes(ServerData.validateIcon(newIcon.iconBytes()));
+                        onPersistentDataChange.run();
                      }
 
                   });
                   this.pingStart = Util.getMillis();
-                  var8.send(new ServerboundPingRequestPacket(this.pingStart));
+                  connection.send(new ServerboundPingRequestPacket(this.pingStart));
                   this.success = true;
                }
             }
 
-            public void handlePongResponse(ClientboundPongResponsePacket var1x) {
-               long var2x = this.pingStart;
-               long var4x = Util.getMillis();
-               var1.ping = var4x - var2x;
-               var8.disconnect((Component)Component.translatable("multiplayer.status.finished"));
-               var3.run();
+            public void handlePongResponse(final ClientboundPongResponsePacket packet) {
+               long then = this.pingStart;
+               long now = Util.getMillis();
+               data.ping = now - then;
+               connection.disconnect((Component)Component.translatable("multiplayer.status.finished"));
+               onPongResponse.run();
             }
 
-            public void onDisconnect(DisconnectionDetails var1x) {
+            public void onDisconnect(final DisconnectionDetails details) {
                if (!this.success) {
-                  ServerStatusPinger.this.onPingFailed(var1x.reason(), var1);
-                  ServerStatusPinger.this.pingLegacyServer(var7, var5, var1, var4);
+                  ServerStatusPinger.this.onPingFailed(details.reason(), data);
+                  ServerStatusPinger.this.pingLegacyServer(address, rawAddress, data, eventLoopGroupHolder);
                }
 
             }
 
             public boolean isAcceptingMessages() {
-               return var8.isConnected();
+               return connection.isConnected();
             }
          };
 
          try {
-            var8.initiateServerboundStatusConnection(var5.getHost(), var5.getPort(), var9);
-            var8.send(ServerboundStatusRequestPacket.INSTANCE);
-         } catch (Throwable var11) {
-            LOGGER.error("Failed to ping server {}", var5, var11);
+            connection.initiateServerboundStatusConnection(rawAddress.getHost(), rawAddress.getPort(), listener);
+            connection.send(ServerboundStatusRequestPacket.INSTANCE);
+         } catch (Throwable t) {
+            LOGGER.error("Failed to ping server {}", rawAddress, t);
          }
 
       }
    }
 
-   void onPingFailed(Component var1, ServerData var2) {
-      LOGGER.error("Can't ping {}: {}", var2.ip, var1.getString());
-      var2.motd = CANT_CONNECT_MESSAGE;
-      var2.status = CommonComponents.EMPTY;
+   private void onPingFailed(final Component reason, final ServerData data) {
+      LOGGER.error("Can't ping {}: {}", data.ip, reason.getString());
+      data.motd = CANT_CONNECT_MESSAGE;
+      data.status = CommonComponents.EMPTY;
    }
 
-   void pingLegacyServer(InetSocketAddress var1, final ServerAddress var2, final ServerData var3, EventLoopGroupHolder var4) {
-      ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group(var4.eventLoopGroup())).handler(new ChannelInitializer<Channel>() {
-         protected void initChannel(Channel var1) {
+   private void pingLegacyServer(final InetSocketAddress resolvedAddress, final ServerAddress rawAddress, final ServerData data, final EventLoopGroupHolder eventLoopGroupHolder) {
+      ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group(eventLoopGroupHolder.eventLoopGroup())).handler(new ChannelInitializer<Channel>() {
+         {
+            Objects.requireNonNull(ServerStatusPinger.this);
+         }
+
+         protected void initChannel(final Channel channel) {
             try {
-               var1.config().setOption(ChannelOption.TCP_NODELAY, true);
-            } catch (ChannelException var3x) {
+               channel.config().setOption(ChannelOption.TCP_NODELAY, true);
+            } catch (ChannelException var3) {
             }
 
-            var1.pipeline().addLast(new ChannelHandler[]{new LegacyServerPinger(var2, (var1x, var2x, var3xx, var4, var5) -> {
-               var3.setState(ServerData.State.INCOMPATIBLE);
-               var3.version = Component.literal(var2x);
-               var3.motd = Component.literal(var3xx);
-               var3.status = ServerStatusPinger.formatPlayerCount(var4, var5);
-               var3.players = new ServerStatus.Players(var5, var4, List.of());
+            channel.pipeline().addLast(new ChannelHandler[]{new LegacyServerPinger(rawAddress, (protocolVersion, gameVersion, motd, players, maxPlayers) -> {
+               data.setState(ServerData.State.INCOMPATIBLE);
+               data.version = Component.literal(gameVersion);
+               data.motd = Component.literal(motd);
+               data.status = ServerStatusPinger.formatPlayerCount(players, maxPlayers);
+               data.players = new ServerStatus.Players(maxPlayers, players, List.of());
             })});
          }
-      })).channel(var4.channelCls())).connect(var1.getAddress(), var1.getPort());
+      })).channel(eventLoopGroupHolder.channelCls())).connect(resolvedAddress.getAddress(), resolvedAddress.getPort());
    }
 
-   public static Component formatPlayerCount(int var0, int var1) {
-      MutableComponent var2 = Component.literal(Integer.toString(var0)).withStyle(ChatFormatting.GRAY);
-      MutableComponent var3 = Component.literal(Integer.toString(var1)).withStyle(ChatFormatting.GRAY);
-      return Component.translatable("multiplayer.status.player_count", var2, var3).withStyle(ChatFormatting.DARK_GRAY);
+   public static Component formatPlayerCount(final int curPlayers, final int maxPlayers) {
+      Component current = Component.literal(Integer.toString(curPlayers)).withStyle(ChatFormatting.GRAY);
+      Component max = Component.literal(Integer.toString(maxPlayers)).withStyle(ChatFormatting.GRAY);
+      return Component.translatable("multiplayer.status.player_count", current, max).withStyle(ChatFormatting.DARK_GRAY);
    }
 
    public void tick() {
       synchronized(this.connections) {
-         Iterator var2 = this.connections.iterator();
+         Iterator<Connection> iterator = this.connections.iterator();
 
-         while(var2.hasNext()) {
-            Connection var3 = (Connection)var2.next();
-            if (var3.isConnected()) {
-               var3.tick();
+         while(iterator.hasNext()) {
+            Connection connection = (Connection)iterator.next();
+            if (connection.isConnected()) {
+               connection.tick();
             } else {
-               var2.remove();
-               var3.handleDisconnection();
+               iterator.remove();
+               connection.handleDisconnection();
             }
          }
 
@@ -199,13 +207,13 @@ public class ServerStatusPinger {
 
    public void removeAll() {
       synchronized(this.connections) {
-         Iterator var2 = this.connections.iterator();
+         Iterator<Connection> iterator = this.connections.iterator();
 
-         while(var2.hasNext()) {
-            Connection var3 = (Connection)var2.next();
-            if (var3.isConnected()) {
-               var2.remove();
-               var3.disconnect((Component)Component.translatable("multiplayer.status.cancelled"));
+         while(iterator.hasNext()) {
+            Connection connection = (Connection)iterator.next();
+            if (connection.isConnected()) {
+               iterator.remove();
+               connection.disconnect((Component)Component.translatable("multiplayer.status.cancelled"));
             }
          }
 

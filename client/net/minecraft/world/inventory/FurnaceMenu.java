@@ -6,11 +6,11 @@ import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.RecipeType;
 
 public class FurnaceMenu extends AbstractFurnaceMenu {
-   public FurnaceMenu(int var1, Inventory var2) {
-      super(MenuType.FURNACE, RecipeType.SMELTING, RecipePropertySet.FURNACE_INPUT, RecipeBookType.FURNACE, var1, var2);
+   public FurnaceMenu(final int containerId, final Inventory inventory) {
+      super(MenuType.FURNACE, RecipeType.SMELTING, RecipePropertySet.FURNACE_INPUT, RecipeBookType.FURNACE, containerId, inventory);
    }
 
-   public FurnaceMenu(int var1, Inventory var2, Container var3, ContainerData var4) {
-      super(MenuType.FURNACE, RecipeType.SMELTING, RecipePropertySet.FURNACE_INPUT, RecipeBookType.FURNACE, var1, var2, var3, var4);
+   public FurnaceMenu(final int containerId, final Inventory inventory, final Container container, final ContainerData data) {
+      super(MenuType.FURNACE, RecipeType.SMELTING, RecipePropertySet.FURNACE_INPUT, RecipeBookType.FURNACE, containerId, inventory, container, data);
    }
 }

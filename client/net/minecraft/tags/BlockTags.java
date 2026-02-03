@@ -93,7 +93,6 @@ public final class BlockTags {
    public static final TagKey<Block> WALL_CORALS = create("wall_corals");
    public static final TagKey<Block> CORAL_PLANTS = create("coral_plants");
    public static final TagKey<Block> CORALS = create("corals");
-   public static final TagKey<Block> BAMBOO_PLANTABLE_ON = create("bamboo_plantable_on");
    public static final TagKey<Block> WALL_SIGNS = create("wall_signs");
    public static final TagKey<Block> SIGNS = create("signs");
    public static final TagKey<Block> WALL_HANGING_SIGNS = create("wall_hanging_signs");
@@ -120,7 +119,6 @@ public final class BlockTags {
    public static final TagKey<Block> GUARDED_BY_PIGLINS = create("guarded_by_piglins");
    public static final TagKey<Block> PREVENT_MOB_SPAWNING_INSIDE = create("prevent_mob_spawning_inside");
    public static final TagKey<Block> UNSTABLE_BOTTOM_CENTER = create("unstable_bottom_center");
-   public static final TagKey<Block> MUSHROOM_GROW_BLOCK = create("mushroom_grow_block");
    public static final TagKey<Block> EDIBLE_FOR_SHEEP = create("edible_for_sheep");
    public static final TagKey<Block> CAN_GLIDE_THROUGH = create("can_glide_through");
    public static final TagKey<Block> INFINIBURN_OVERWORLD = create("infiniburn_overworld");
@@ -145,8 +143,6 @@ public final class BlockTags {
    public static final TagKey<Block> MOSS_REPLACEABLE = create("moss_replaceable");
    public static final TagKey<Block> LUSH_GROUND_REPLACEABLE = create("lush_ground_replaceable");
    public static final TagKey<Block> AZALEA_ROOT_REPLACEABLE = create("azalea_root_replaceable");
-   public static final TagKey<Block> SMALL_DRIPLEAF_PLACEABLE = create("small_dripleaf_placeable");
-   public static final TagKey<Block> BIG_DRIPLEAF_PLACEABLE = create("big_dripleaf_placeable");
    public static final TagKey<Block> SNOW = create("snow");
    public static final TagKey<Block> MINEABLE_WITH_AXE = create("mineable/axe");
    public static final TagKey<Block> MINEABLE_WITH_HOE = create("mineable/hoe");
@@ -189,12 +185,48 @@ public final class BlockTags {
    public static final TagKey<Block> CONVERTABLE_TO_MUD = create("convertable_to_mud");
    public static final TagKey<Block> MANGROVE_LOGS_CAN_GROW_THROUGH = create("mangrove_logs_can_grow_through");
    public static final TagKey<Block> MANGROVE_ROOTS_CAN_GROW_THROUGH = create("mangrove_roots_can_grow_through");
-   public static final TagKey<Block> DRY_VEGETATION_MAY_PLACE_ON = create("dry_vegetation_may_place_on");
    public static final TagKey<Block> SNAPS_GOAT_HORN = create("snaps_goat_horn");
    public static final TagKey<Block> REPLACEABLE_BY_TREES = create("replaceable_by_trees");
    public static final TagKey<Block> REPLACEABLE_BY_MUSHROOMS = create("replaceable_by_mushrooms");
-   public static final TagKey<Block> SNOW_LAYER_CANNOT_SURVIVE_ON = create("snow_layer_cannot_survive_on");
-   public static final TagKey<Block> SNOW_LAYER_CAN_SURVIVE_ON = create("snow_layer_can_survive_on");
+   public static final TagKey<Block> ENABLES_BUBBLE_COLUMN_DRAG_DOWN = create("enables_bubble_column_drag_down");
+   public static final TagKey<Block> ENABLES_BUBBLE_COLUMN_PUSH_UP = create("enables_bubble_column_push_up");
+   public static final TagKey<Block> SUPPORTS_VEGETATION = create("supports_vegetation");
+   public static final TagKey<Block> SUPPORTS_DRY_VEGETATION = create("supports_dry_vegetation");
+   public static final TagKey<Block> SUPPORTS_CROPS = create("supports_crops");
+   public static final TagKey<Block> SUPPORTS_STEM_CROPS = create("supports_stem_crops");
+   public static final TagKey<Block> SUPPORTS_STEM_FRUIT = create("supports_stem_fruit");
+   public static final TagKey<Block> SUPPORTS_PUMPKIN_STEM = create("supports_pumpkin_stem");
+   public static final TagKey<Block> SUPPORTS_MELON_STEM = create("supports_melon_stem");
+   public static final TagKey<Block> SUPPORTS_PUMPKIN_STEM_FRUIT = create("supports_pumpkin_stem_fruit");
+   public static final TagKey<Block> SUPPORTS_MELON_STEM_FRUIT = create("supports_melon_stem_fruit");
+   public static final TagKey<Block> SUPPORTS_SUGAR_CANE = create("supports_sugar_cane");
+   public static final TagKey<Block> SUPPORTS_SUGAR_CANE_ADJACENTLY = create("supports_sugar_cane_adjacently");
+   public static final TagKey<Block> SUPPORTS_BAMBOO = create("supports_bamboo");
+   public static final TagKey<Block> SUPPORTS_SMALL_DRIPLEAF = create("supports_small_dripleaf");
+   public static final TagKey<Block> SUPPORTS_BIG_DRIPLEAF = create("supports_big_dripleaf");
+   public static final TagKey<Block> SUPPORTS_CACTUS = create("supports_cactus");
+   public static final TagKey<Block> SUPPORTS_CHORUS_PLANT = create("supports_chorus_plant");
+   public static final TagKey<Block> SUPPORTS_CHORUS_FLOWER = create("supports_chorus_flower");
+   public static final TagKey<Block> SUPPORTS_NETHER_SPROUTS = create("supports_nether_sprouts");
+   public static final TagKey<Block> SUPPORTS_AZALEA = create("supports_azalea");
+   public static final TagKey<Block> SUPPORTS_WARPED_FUNGUS = create("supports_warped_fungus");
+   public static final TagKey<Block> SUPPORTS_CRIMSON_FUNGUS = create("supports_crimson_fungus");
+   public static final TagKey<Block> SUPPORTS_MANGROVE_PROPAGULE = create("supports_mangrove_propagule");
+   public static final TagKey<Block> SUPPORTS_HANGING_MANGROVE_PROPAGULE = create("supports_hanging_mangrove_propagule");
+   public static final TagKey<Block> SUPPORTS_NETHER_WART = create("supports_nether_wart");
+   public static final TagKey<Block> SUPPORTS_CRIMSON_ROOTS = create("supports_crimson_roots");
+   public static final TagKey<Block> SUPPORTS_WARPED_ROOTS = create("supports_warped_roots");
+   public static final TagKey<Block> SUPPORTS_WITHER_ROSE = create("supports_wither_rose");
+   public static final TagKey<Block> SUPPORTS_COCOA = create("supports_cocoa");
+   public static final TagKey<Block> SUPPORTS_LILY_PAD = create("supports_lily_pad");
+   public static final TagKey<Block> SUPPORTS_FROGSPAWN = create("supports_frogspawn");
+   public static final TagKey<Block> SUPPORT_OVERRIDE_CACTUS_FLOWER = create("support_override_cactus_flower");
+   public static final TagKey<Block> SUPPORT_OVERRIDE_SNOW_LAYER = create("support_override_snow_layer");
+   public static final TagKey<Block> CANNOT_SUPPORT_SNOW_LAYER = create("cannot_support_snow_layer");
+   public static final TagKey<Block> CANNOT_SUPPORT_SEAGRASS = create("cannot_support_seagrass");
+   public static final TagKey<Block> CANNOT_SUPPORT_KELP = create("cannot_support_kelp");
+   public static final TagKey<Block> OVERRIDES_MUSHROOM_LIGHT_REQUIREMENT = create("overrides_mushroom_light_requirement");
+   public static final TagKey<Block> GROWS_CROPS = create("grows_crops");
    public static final TagKey<Block> INVALID_SPAWN_INSIDE = create("invalid_spawn_inside");
    public static final TagKey<Block> SNIFFER_DIGGABLE_BLOCK = create("sniffer_diggable_block");
    public static final TagKey<Block> SNIFFER_EGG_HATCH_BOOST = create("sniffer_egg_hatch_boost");
@@ -214,7 +246,7 @@ public final class BlockTags {
       super();
    }
 
-   private static TagKey<Block> create(String var0) {
-      return TagKey.<Block>create(Registries.BLOCK, Identifier.withDefaultNamespace(var0));
+   private static TagKey<Block> create(final String name) {
+      return TagKey.<Block>create(Registries.BLOCK, Identifier.withDefaultNamespace(name));
    }
 }

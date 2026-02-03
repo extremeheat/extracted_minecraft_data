@@ -1,9 +1,9 @@
 package com.mojang.blaze3d.vertex;
 
 import net.minecraft.client.model.geom.builders.UVPair;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.LightCoordsUtil;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -12,95 +12,95 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 public interface VertexConsumer {
-   VertexConsumer addVertex(float var1, float var2, float var3);
+   VertexConsumer addVertex(float x, float y, float z);
 
-   VertexConsumer setColor(int var1, int var2, int var3, int var4);
+   VertexConsumer setColor(int r, int g, int b, int a);
 
-   VertexConsumer setColor(int var1);
+   VertexConsumer setColor(int color);
 
-   VertexConsumer setUv(float var1, float var2);
+   VertexConsumer setUv(float u, float v);
 
-   VertexConsumer setUv1(int var1, int var2);
+   VertexConsumer setUv1(int u, int v);
 
-   VertexConsumer setUv2(int var1, int var2);
+   VertexConsumer setUv2(int u, int v);
 
-   VertexConsumer setNormal(float var1, float var2, float var3);
+   VertexConsumer setNormal(float x, float y, float z);
 
-   VertexConsumer setLineWidth(float var1);
+   VertexConsumer setLineWidth(float width);
 
-   default void addVertex(float var1, float var2, float var3, int var4, float var5, float var6, int var7, int var8, float var9, float var10, float var11) {
-      this.addVertex(var1, var2, var3);
-      this.setColor(var4);
-      this.setUv(var5, var6);
-      this.setOverlay(var7);
-      this.setLight(var8);
-      this.setNormal(var9, var10, var11);
+   default void addVertex(final float x, final float y, final float z, final int color, final float u, final float v, final int overlayCoords, final int lightCoords, final float nx, final float ny, final float nz) {
+      this.addVertex(x, y, z);
+      this.setColor(color);
+      this.setUv(u, v);
+      this.setOverlay(overlayCoords);
+      this.setLight(lightCoords);
+      this.setNormal(nx, ny, nz);
    }
 
-   default VertexConsumer setColor(float var1, float var2, float var3, float var4) {
-      return this.setColor((int)(var1 * 255.0F), (int)(var2 * 255.0F), (int)(var3 * 255.0F), (int)(var4 * 255.0F));
+   default VertexConsumer setColor(final float r, final float g, final float b, final float a) {
+      return this.setColor((int)(r * 255.0F), (int)(g * 255.0F), (int)(b * 255.0F), (int)(a * 255.0F));
    }
 
-   default VertexConsumer setLight(int var1) {
-      return this.setUv2(var1 & '\uffff', var1 >> 16 & '\uffff');
+   default VertexConsumer setLight(final int packedLightCoords) {
+      return this.setUv2(packedLightCoords & '\uffff', packedLightCoords >> 16 & '\uffff');
    }
 
-   default VertexConsumer setOverlay(int var1) {
-      return this.setUv1(var1 & '\uffff', var1 >> 16 & '\uffff');
+   default VertexConsumer setOverlay(final int packedOverlayCoords) {
+      return this.setUv1(packedOverlayCoords & '\uffff', packedOverlayCoords >> 16 & '\uffff');
    }
 
-   default void putBulkData(PoseStack.Pose var1, BakedQuad var2, float var3, float var4, float var5, float var6, int var7, int var8) {
-      this.putBulkData(var1, var2, new float[]{1.0F, 1.0F, 1.0F, 1.0F}, var3, var4, var5, var6, new int[]{var7, var7, var7, var7}, var8);
+   default void putBulkData(final PoseStack.Pose pose, final BakedQuad quad, final float r, final float g, final float b, final float a, final int lightCoords, final int overlayCoords) {
+      this.putBulkData(pose, quad, new float[]{1.0F, 1.0F, 1.0F, 1.0F}, r, g, b, a, new int[]{lightCoords, lightCoords, lightCoords, lightCoords}, overlayCoords);
    }
 
-   default void putBulkData(PoseStack.Pose var1, BakedQuad var2, float[] var3, float var4, float var5, float var6, float var7, int[] var8, int var9) {
-      Vector3fc var10 = var2.direction().getUnitVec3f();
-      Matrix4f var11 = var1.pose();
-      Vector3f var12 = var1.transformNormal(var10, new Vector3f());
-      int var13 = var2.lightEmission();
+   default void putBulkData(final PoseStack.Pose pose, final BakedQuad quad, final float[] brightness, final float r, final float g, final float b, final float a, final int[] lightmapCoord, final int overlayCoords) {
+      Vector3fc normalVec = quad.direction().getUnitVec3f();
+      Matrix4f matrix = pose.pose();
+      Vector3f normal = pose.transformNormal(normalVec, new Vector3f());
+      int lightEmission = quad.lightEmission();
 
-      for(int var14 = 0; var14 < 4; ++var14) {
-         Vector3fc var15 = var2.position(var14);
-         long var16 = var2.packedUV(var14);
-         float var18 = var3[var14];
-         int var19 = ARGB.colorFromFloat(var7, var18 * var4, var18 * var5, var18 * var6);
-         int var20 = LightTexture.lightCoordsWithEmission(var8[var14], var13);
-         Vector3f var21 = var11.transformPosition(var15, new Vector3f());
-         float var22 = UVPair.unpackU(var16);
-         float var23 = UVPair.unpackV(var16);
-         this.addVertex(var21.x(), var21.y(), var21.z(), var19, var22, var23, var9, var20, var12.x(), var12.y(), var12.z());
+      for(int vertex = 0; vertex < 4; ++vertex) {
+         Vector3fc position = quad.position(vertex);
+         long packedUv = quad.packedUV(vertex);
+         float brightnessForVertex = brightness[vertex];
+         int color = ARGB.colorFromFloat(a, brightnessForVertex * r, brightnessForVertex * g, brightnessForVertex * b);
+         int light = LightCoordsUtil.lightCoordsWithEmission(lightmapCoord[vertex], lightEmission);
+         Vector3f pos = matrix.transformPosition(position, new Vector3f());
+         float u = UVPair.unpackU(packedUv);
+         float v = UVPair.unpackV(packedUv);
+         this.addVertex(pos.x(), pos.y(), pos.z(), color, u, v, overlayCoords, light, normal.x(), normal.y(), normal.z());
       }
 
    }
 
-   default VertexConsumer addVertex(Vector3fc var1) {
-      return this.addVertex(var1.x(), var1.y(), var1.z());
+   default VertexConsumer addVertex(final Vector3fc position) {
+      return this.addVertex(position.x(), position.y(), position.z());
    }
 
-   default VertexConsumer addVertex(PoseStack.Pose var1, Vector3f var2) {
-      return this.addVertex(var1, var2.x(), var2.y(), var2.z());
+   default VertexConsumer addVertex(final PoseStack.Pose pose, final Vector3f position) {
+      return this.addVertex(pose, position.x(), position.y(), position.z());
    }
 
-   default VertexConsumer addVertex(PoseStack.Pose var1, float var2, float var3, float var4) {
-      return this.addVertex((Matrix4fc)var1.pose(), var2, var3, var4);
+   default VertexConsumer addVertex(final PoseStack.Pose pose, final float x, final float y, final float z) {
+      return this.addVertex((Matrix4fc)pose.pose(), x, y, z);
    }
 
-   default VertexConsumer addVertex(Matrix4fc var1, float var2, float var3, float var4) {
-      Vector3f var5 = var1.transformPosition(var2, var3, var4, new Vector3f());
-      return this.addVertex(var5.x(), var5.y(), var5.z());
+   default VertexConsumer addVertex(final Matrix4fc pose, final float x, final float y, final float z) {
+      Vector3f pos = pose.transformPosition(x, y, z, new Vector3f());
+      return this.addVertex(pos.x(), pos.y(), pos.z());
    }
 
-   default VertexConsumer addVertexWith2DPose(Matrix3x2fc var1, float var2, float var3) {
-      Vector2f var4 = var1.transformPosition(var2, var3, new Vector2f());
-      return this.addVertex(var4.x(), var4.y(), 0.0F);
+   default VertexConsumer addVertexWith2DPose(final Matrix3x2fc pose, final float x, final float y) {
+      Vector2f pos = pose.transformPosition(x, y, new Vector2f());
+      return this.addVertex(pos.x(), pos.y(), 0.0F);
    }
 
-   default VertexConsumer setNormal(PoseStack.Pose var1, float var2, float var3, float var4) {
-      Vector3f var5 = var1.transformNormal(var2, var3, var4, new Vector3f());
-      return this.setNormal(var5.x(), var5.y(), var5.z());
+   default VertexConsumer setNormal(final PoseStack.Pose pose, final float x, final float y, final float z) {
+      Vector3f normal = pose.transformNormal(x, y, z, new Vector3f());
+      return this.setNormal(normal.x(), normal.y(), normal.z());
    }
 
-   default VertexConsumer setNormal(PoseStack.Pose var1, Vector3f var2) {
-      return this.setNormal(var1, var2.x(), var2.y(), var2.z());
+   default VertexConsumer setNormal(final PoseStack.Pose pose, final Vector3f normal) {
+      return this.setNormal(pose, normal.x(), normal.y(), normal.z());
    }
 }

@@ -33,126 +33,126 @@ public class RaidCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("raid").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("start").then(Commands.argument("omenlvl", IntegerArgumentType.integer(0)).executes((var0x) -> start((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "omenlvl")))))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(Commands.literal("check").executes((var0x) -> check((CommandSourceStack)var0x.getSource())))).then(Commands.literal("sound").then(Commands.argument("type", ComponentArgument.textComponent(var1)).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), ComponentArgument.getResolvedComponent(var0x, "type")))))).then(Commands.literal("spawnleader").executes((var0x) -> spawnLeader((CommandSourceStack)var0x.getSource())))).then(Commands.literal("setomen").then(Commands.argument("level", IntegerArgumentType.integer(0)).executes((var0x) -> setRaidOmenLevel((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "level")))))).then(Commands.literal("glow").executes((var0x) -> glow((CommandSourceStack)var0x.getSource()))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("raid").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("start").then(Commands.argument("omenlvl", IntegerArgumentType.integer(0)).executes((c) -> start((CommandSourceStack)c.getSource(), IntegerArgumentType.getInteger(c, "omenlvl")))))).then(Commands.literal("stop").executes((c) -> stop((CommandSourceStack)c.getSource())))).then(Commands.literal("check").executes((c) -> check((CommandSourceStack)c.getSource())))).then(Commands.literal("sound").then(Commands.argument("type", ComponentArgument.textComponent(context)).executes((c) -> playSound((CommandSourceStack)c.getSource(), ComponentArgument.getResolvedComponent(c, "type")))))).then(Commands.literal("spawnleader").executes((c) -> spawnLeader((CommandSourceStack)c.getSource())))).then(Commands.literal("setomen").then(Commands.argument("level", IntegerArgumentType.integer(0)).executes((c) -> setRaidOmenLevel((CommandSourceStack)c.getSource(), IntegerArgumentType.getInteger(c, "level")))))).then(Commands.literal("glow").executes((c) -> glow((CommandSourceStack)c.getSource()))));
    }
 
-   private static int glow(CommandSourceStack var0) throws CommandSyntaxException {
-      Raid var1 = getRaid(var0.getPlayerOrException());
-      if (var1 != null) {
-         for(Raider var4 : var1.getAllRaiders()) {
-            var4.addEffect(new MobEffectInstance(MobEffects.GLOWING, 1000, 1));
+   private static int glow(final CommandSourceStack source) throws CommandSyntaxException {
+      Raid raid = getRaid(source.getPlayerOrException());
+      if (raid != null) {
+         for(Raider raider : raid.getAllRaiders()) {
+            raider.addEffect(new MobEffectInstance(MobEffects.GLOWING, 1000, 1));
          }
       }
 
       return 1;
    }
 
-   private static int setRaidOmenLevel(CommandSourceStack var0, int var1) throws CommandSyntaxException {
-      Raid var2 = getRaid(var0.getPlayerOrException());
-      if (var2 != null) {
-         int var3 = var2.getMaxRaidOmenLevel();
-         if (var1 > var3) {
-            var0.sendFailure(Component.literal("Sorry, the max raid omen level you can set is " + var3));
+   private static int setRaidOmenLevel(final CommandSourceStack source, final int level) throws CommandSyntaxException {
+      Raid raid = getRaid(source.getPlayerOrException());
+      if (raid != null) {
+         int max = raid.getMaxRaidOmenLevel();
+         if (level > max) {
+            source.sendFailure(Component.literal("Sorry, the max raid omen level you can set is " + max));
          } else {
-            int var4 = var2.getRaidOmenLevel();
-            var2.setRaidOmenLevel(var1);
-            var0.sendSuccess(() -> Component.literal("Changed village's raid omen level from " + var4 + " to " + var1), false);
+            int before = raid.getRaidOmenLevel();
+            raid.setRaidOmenLevel(level);
+            source.sendSuccess(() -> Component.literal("Changed village's raid omen level from " + before + " to " + level), false);
          }
       } else {
-         var0.sendFailure(Component.literal("No raid found here"));
+         source.sendFailure(Component.literal("No raid found here"));
       }
 
       return 1;
    }
 
-   private static int spawnLeader(CommandSourceStack var0) {
-      var0.sendSuccess(() -> Component.literal("Spawned a raid captain"), false);
-      Raider var1 = EntityType.PILLAGER.create(var0.getLevel(), EntitySpawnReason.COMMAND);
-      if (var1 == null) {
-         var0.sendFailure(Component.literal("Pillager failed to spawn"));
+   private static int spawnLeader(final CommandSourceStack source) {
+      source.sendSuccess(() -> Component.literal("Spawned a raid captain"), false);
+      Raider raider = EntityType.PILLAGER.create(source.getLevel(), EntitySpawnReason.COMMAND);
+      if (raider == null) {
+         source.sendFailure(Component.literal("Pillager failed to spawn"));
          return 0;
       } else {
-         var1.setPatrolLeader(true);
-         var1.setItemSlot(EquipmentSlot.HEAD, Raid.getOminousBannerInstance(var0.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
-         var1.setPos(var0.getPosition().x, var0.getPosition().y, var0.getPosition().z);
-         var1.finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(BlockPos.containing(var0.getPosition())), EntitySpawnReason.COMMAND, (SpawnGroupData)null);
-         var0.getLevel().addFreshEntityWithPassengers(var1);
+         raider.setPatrolLeader(true);
+         raider.setItemSlot(EquipmentSlot.HEAD, Raid.getOminousBannerInstance(source.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
+         raider.setPos(source.getPosition().x, source.getPosition().y, source.getPosition().z);
+         raider.finalizeSpawn(source.getLevel(), source.getLevel().getCurrentDifficultyAt(BlockPos.containing(source.getPosition())), EntitySpawnReason.COMMAND, (SpawnGroupData)null);
+         source.getLevel().addFreshEntityWithPassengers(raider);
          return 1;
       }
    }
 
-   private static int playSound(CommandSourceStack var0, @Nullable Component var1) {
-      if (var1 != null && var1.getString().equals("local")) {
-         ServerLevel var2 = var0.getLevel();
-         Vec3 var3 = var0.getPosition().add(5.0, 0.0, 0.0);
-         var2.playSeededSound((Entity)null, var3.x, var3.y, var3.z, SoundEvents.RAID_HORN, SoundSource.NEUTRAL, 2.0F, 1.0F, var2.random.nextLong());
+   private static int playSound(final CommandSourceStack source, final @Nullable Component type) {
+      if (type != null && type.getString().equals("local")) {
+         ServerLevel level = source.getLevel();
+         Vec3 pos = source.getPosition().add(5.0, 0.0, 0.0);
+         level.playSeededSound((Entity)null, pos.x, pos.y, pos.z, SoundEvents.RAID_HORN, SoundSource.NEUTRAL, 2.0F, 1.0F, level.getRandom().nextLong());
       }
 
       return 1;
    }
 
-   private static int start(CommandSourceStack var0, int var1) throws CommandSyntaxException {
-      ServerPlayer var2 = var0.getPlayerOrException();
-      BlockPos var3 = var2.blockPosition();
-      if (var2.level().isRaided(var3)) {
-         var0.sendFailure(Component.literal("Raid already started close by"));
+   private static int start(final CommandSourceStack source, final int raidOmenLevel) throws CommandSyntaxException {
+      ServerPlayer player = source.getPlayerOrException();
+      BlockPos pos = player.blockPosition();
+      if (player.level().isRaided(pos)) {
+         source.sendFailure(Component.literal("Raid already started close by"));
          return -1;
       } else {
-         Raids var4 = var2.level().getRaids();
-         Raid var5 = var4.createOrExtendRaid(var2, var2.blockPosition());
-         if (var5 != null) {
-            var5.setRaidOmenLevel(var1);
-            var4.setDirty();
-            var0.sendSuccess(() -> Component.literal("Created a raid in your local village"), false);
+         Raids raids = player.level().getRaids();
+         Raid raid = raids.createOrExtendRaid(player, player.blockPosition());
+         if (raid != null) {
+            raid.setRaidOmenLevel(raidOmenLevel);
+            raids.setDirty();
+            source.sendSuccess(() -> Component.literal("Created a raid in your local village"), false);
          } else {
-            var0.sendFailure(Component.literal("Failed to create a raid in your local village"));
+            source.sendFailure(Component.literal("Failed to create a raid in your local village"));
          }
 
          return 1;
       }
    }
 
-   private static int stop(CommandSourceStack var0) throws CommandSyntaxException {
-      ServerPlayer var1 = var0.getPlayerOrException();
-      BlockPos var2 = var1.blockPosition();
-      Raid var3 = var1.level().getRaidAt(var2);
-      if (var3 != null) {
-         var3.stop();
-         var0.sendSuccess(() -> Component.literal("Stopped raid"), false);
+   private static int stop(final CommandSourceStack source) throws CommandSyntaxException {
+      ServerPlayer player = source.getPlayerOrException();
+      BlockPos pos = player.blockPosition();
+      Raid raid = player.level().getRaidAt(pos);
+      if (raid != null) {
+         raid.stop();
+         source.sendSuccess(() -> Component.literal("Stopped raid"), false);
          return 1;
       } else {
-         var0.sendFailure(Component.literal("No raid here"));
+         source.sendFailure(Component.literal("No raid here"));
          return -1;
       }
    }
 
-   private static int check(CommandSourceStack var0) throws CommandSyntaxException {
-      Raid var1 = getRaid(var0.getPlayerOrException());
-      if (var1 != null) {
-         StringBuilder var2 = new StringBuilder();
-         var2.append("Found a started raid! ");
-         var0.sendSuccess(() -> Component.literal(var2.toString()), false);
-         StringBuilder var3 = new StringBuilder();
-         var3.append("Num groups spawned: ");
-         var3.append(var1.getGroupsSpawned());
-         var3.append(" Raid omen level: ");
-         var3.append(var1.getRaidOmenLevel());
-         var3.append(" Num mobs: ");
-         var3.append(var1.getTotalRaidersAlive());
-         var3.append(" Raid health: ");
-         var3.append(var1.getHealthOfLivingRaiders());
-         var3.append(" / ");
-         var3.append(var1.getTotalHealth());
-         var0.sendSuccess(() -> Component.literal(var3.toString()), false);
+   private static int check(final CommandSourceStack source) throws CommandSyntaxException {
+      Raid raid = getRaid(source.getPlayerOrException());
+      if (raid != null) {
+         StringBuilder status = new StringBuilder();
+         status.append("Found a started raid! ");
+         source.sendSuccess(() -> Component.literal(status.toString()), false);
+         StringBuilder status2 = new StringBuilder();
+         status2.append("Num groups spawned: ");
+         status2.append(raid.getGroupsSpawned());
+         status2.append(" Raid omen level: ");
+         status2.append(raid.getRaidOmenLevel());
+         status2.append(" Num mobs: ");
+         status2.append(raid.getTotalRaidersAlive());
+         status2.append(" Raid health: ");
+         status2.append(raid.getHealthOfLivingRaiders());
+         status2.append(" / ");
+         status2.append(raid.getTotalHealth());
+         source.sendSuccess(() -> Component.literal(status2.toString()), false);
          return 1;
       } else {
-         var0.sendFailure(Component.literal("Found no started raids"));
+         source.sendFailure(Component.literal("Found no started raids"));
          return 0;
       }
    }
 
-   private static @Nullable Raid getRaid(ServerPlayer var0) {
-      return var0.level().getRaidAt(var0.blockPosition());
+   private static @Nullable Raid getRaid(final ServerPlayer player) {
+      return player.level().getRaidAt(player.blockPosition());
    }
 }

@@ -12,33 +12,33 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class SnowAndFreezeFeature extends Feature<NoneFeatureConfiguration> {
-   public SnowAndFreezeFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public SnowAndFreezeFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      WorldGenLevel var2 = var1.level();
-      BlockPos var3 = var1.origin();
-      BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
-      BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
+      BlockPos.MutableBlockPos topPos = new BlockPos.MutableBlockPos();
+      BlockPos.MutableBlockPos belowPos = new BlockPos.MutableBlockPos();
 
-      for(int var6 = 0; var6 < 16; ++var6) {
-         for(int var7 = 0; var7 < 16; ++var7) {
-            int var8 = var3.getX() + var6;
-            int var9 = var3.getZ() + var7;
-            int var10 = var2.getHeight(Heightmap.Types.MOTION_BLOCKING, var8, var9);
-            var4.set(var8, var10, var9);
-            var5.set(var4).move(Direction.DOWN, 1);
-            Biome var11 = (Biome)var2.getBiome(var4).value();
-            if (var11.shouldFreeze(var2, var5, false)) {
-               var2.setBlock(var5, Blocks.ICE.defaultBlockState(), 2);
+      for(int dx = 0; dx < 16; ++dx) {
+         for(int dz = 0; dz < 16; ++dz) {
+            int x = origin.getX() + dx;
+            int z = origin.getZ() + dz;
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+            topPos.set(x, y, z);
+            belowPos.set(topPos).move(Direction.DOWN, 1);
+            Biome biome = (Biome)level.getBiome(topPos).value();
+            if (biome.shouldFreeze(level, belowPos, false)) {
+               level.setBlock(belowPos, Blocks.ICE.defaultBlockState(), 2);
             }
 
-            if (var11.shouldSnow(var2, var4)) {
-               var2.setBlock(var4, Blocks.SNOW.defaultBlockState(), 2);
-               BlockState var12 = var2.getBlockState(var5);
-               if (var12.hasProperty(SnowyDirtBlock.SNOWY)) {
-                  var2.setBlock(var5, (BlockState)var12.setValue(SnowyDirtBlock.SNOWY, true), 2);
+            if (biome.shouldSnow(level, topPos)) {
+               level.setBlock(topPos, Blocks.SNOW.defaultBlockState(), 2);
+               BlockState belowState = level.getBlockState(belowPos);
+               if (belowState.hasProperty(SnowyDirtBlock.SNOWY)) {
+                  level.setBlock(belowPos, (BlockState)belowState.setValue(SnowyDirtBlock.SNOWY, true), 2);
                }
             }
          }

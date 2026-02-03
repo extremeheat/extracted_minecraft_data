@@ -11,8 +11,8 @@ import net.minecraft.util.RandomSource;
 public class WaterCurrentDownParticle extends SingleQuadParticle {
    private float angle;
 
-   WaterCurrentDownParticle(ClientLevel var1, double var2, double var4, double var6, TextureAtlasSprite var8) {
-      super(var1, var2, var4, var6, var8);
+   private WaterCurrentDownParticle(final ClientLevel level, final double x, final double y, final double z, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, sprite);
       this.lifetime = (int)(this.random.nextFloat() * 60.0F) + 30;
       this.hasPhysics = false;
       this.xd = 0.0;
@@ -34,7 +34,7 @@ public class WaterCurrentDownParticle extends SingleQuadParticle {
       if (this.age++ >= this.lifetime) {
          this.remove();
       } else {
-         float var1 = 0.6F;
+         float radius = 0.6F;
          this.xd += (double)(0.6F * Mth.cos((double)this.angle));
          this.zd += (double)(0.6F * Mth.sin((double)this.angle));
          this.xd *= 0.07;
@@ -51,13 +51,13 @@ public class WaterCurrentDownParticle extends SingleQuadParticle {
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new WaterCurrentDownParticle(var2, var3, var5, var7, this.sprite.get(var15));
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new WaterCurrentDownParticle(level, x, y, z, this.sprite.get(random));
       }
    }
 }

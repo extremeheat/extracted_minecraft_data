@@ -17,38 +17,38 @@ public class BlendingDataFix extends DataFix {
    private final String name;
    private static final Set<String> STATUSES_TO_SKIP_BLENDING = Set.of("minecraft:empty", "minecraft:structure_starts", "minecraft:structure_references", "minecraft:biomes");
 
-   public BlendingDataFix(Schema var1) {
-      super(var1, false);
-      this.name = "Blending Data Fix v" + var1.getVersionKey();
+   public BlendingDataFix(final Schema outputSchema) {
+      super(outputSchema, false);
+      this.name = "Blending Data Fix v" + outputSchema.getVersionKey();
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getOutputSchema().getType(References.CHUNK);
-      return this.fixTypeEverywhereTyped(this.name, var1, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> updateChunkTag(var0x, var0x.get("__context"))));
+      Type<?> chunkType = this.getOutputSchema().getType(References.CHUNK);
+      return this.fixTypeEverywhereTyped(this.name, chunkType, (chunk) -> chunk.update(DSL.remainderFinder(), (chunkTag) -> updateChunkTag(chunkTag, chunkTag.get("__context"))));
    }
 
-   private static Dynamic<?> updateChunkTag(Dynamic<?> var0, OptionalDynamic<?> var1) {
-      var0 = var0.remove("blending_data");
-      boolean var2 = "minecraft:overworld".equals(var1.get("dimension").asString().result().orElse(""));
-      Optional var3 = var0.get("Status").result();
-      if (var2 && var3.isPresent()) {
-         String var4 = NamespacedSchema.ensureNamespaced(((Dynamic)var3.get()).asString("empty"));
-         Optional var5 = var0.get("below_zero_retrogen").result();
-         if (!STATUSES_TO_SKIP_BLENDING.contains(var4)) {
-            var0 = updateBlendingData(var0, 384, -64);
-         } else if (var5.isPresent()) {
-            Dynamic var6 = (Dynamic)var5.get();
-            String var7 = NamespacedSchema.ensureNamespaced(var6.get("target_status").asString("empty"));
-            if (!STATUSES_TO_SKIP_BLENDING.contains(var7)) {
-               var0 = updateBlendingData(var0, 256, 0);
+   private static Dynamic<?> updateChunkTag(Dynamic<?> chunkTag, final OptionalDynamic<?> contextTag) {
+      chunkTag = chunkTag.remove("blending_data");
+      boolean isOverworld = "minecraft:overworld".equals(contextTag.get("dimension").asString().result().orElse(""));
+      Optional<? extends Dynamic<?>> statusOpt = chunkTag.get("Status").result();
+      if (isOverworld && statusOpt.isPresent()) {
+         String status = NamespacedSchema.ensureNamespaced(((Dynamic)statusOpt.get()).asString("empty"));
+         Optional<? extends Dynamic<?>> belowZeroRetrogenOpt = chunkTag.get("below_zero_retrogen").result();
+         if (!STATUSES_TO_SKIP_BLENDING.contains(status)) {
+            chunkTag = updateBlendingData(chunkTag, 384, -64);
+         } else if (belowZeroRetrogenOpt.isPresent()) {
+            Dynamic<?> belowZeroRetrogen = (Dynamic)belowZeroRetrogenOpt.get();
+            String targetStatus = NamespacedSchema.ensureNamespaced(belowZeroRetrogen.get("target_status").asString("empty"));
+            if (!STATUSES_TO_SKIP_BLENDING.contains(targetStatus)) {
+               chunkTag = updateBlendingData(chunkTag, 256, 0);
             }
          }
       }
 
-      return var0;
+      return chunkTag;
    }
 
-   private static Dynamic<?> updateBlendingData(Dynamic<?> var0, int var1, int var2) {
-      return var0.set("blending_data", var0.createMap(Map.of(var0.createString("min_section"), var0.createInt(SectionPos.blockToSectionCoord(var2)), var0.createString("max_section"), var0.createInt(SectionPos.blockToSectionCoord(var2 + var1)))));
+   private static Dynamic<?> updateBlendingData(final Dynamic<?> chunkTag, final int height, final int minY) {
+      return chunkTag.set("blending_data", chunkTag.createMap(Map.of(chunkTag.createString("min_section"), chunkTag.createInt(SectionPos.blockToSectionCoord(minY)), chunkTag.createString("max_section"), chunkTag.createInt(SectionPos.blockToSectionCoord(minY + height)))));
    }
 }

@@ -16,47 +16,47 @@ import java.util.stream.Stream;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemBannerColorFix extends DataFix {
-   public ItemBannerColorFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public ItemBannerColorFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    public TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
-      OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      OpticFinder var3 = var1.findField("tag");
-      OpticFinder var4 = var3.type().findField("BlockEntityTag");
-      return this.fixTypeEverywhereTyped("ItemBannerColorFix", var1, (var3x) -> {
-         Optional var4x = var3x.getOptional(var2);
-         if (var4x.isPresent() && Objects.equals(((Pair)var4x.get()).getSecond(), "minecraft:banner")) {
-            Dynamic var5 = (Dynamic)var3x.get(DSL.remainderFinder());
-            Optional var6 = var3x.getOptionalTyped(var3);
-            if (var6.isPresent()) {
-               Typed var7 = (Typed)var6.get();
-               Optional var8 = var7.getOptionalTyped(var4);
-               if (var8.isPresent()) {
-                  Typed var9 = (Typed)var8.get();
-                  Dynamic var10 = (Dynamic)var7.get(DSL.remainderFinder());
-                  Dynamic var11 = (Dynamic)var9.getOrCreate(DSL.remainderFinder());
-                  if (var11.get("Base").asNumber().result().isPresent()) {
-                     var5 = var5.set("Damage", var5.createShort((short)(var11.get("Base").asInt(0) & 15)));
-                     Optional var12 = var10.get("display").result();
-                     if (var12.isPresent()) {
-                        Dynamic var13 = (Dynamic)var12.get();
-                        Dynamic var14 = var13.createMap(ImmutableMap.of(var13.createString("Lore"), var13.createList(Stream.of(var13.createString("(+NBT")))));
-                        if (Objects.equals(var13, var14)) {
-                           return var3x.set(DSL.remainderFinder(), var5);
+      Type<?> itemStackType = this.getInputSchema().getType(References.ITEM_STACK);
+      OpticFinder<Pair<String, String>> idF = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      OpticFinder<?> tagF = itemStackType.findField("tag");
+      OpticFinder<?> blockEntityF = tagF.type().findField("BlockEntityTag");
+      return this.fixTypeEverywhereTyped("ItemBannerColorFix", itemStackType, (input) -> {
+         Optional<Pair<String, String>> id = input.getOptional(idF);
+         if (id.isPresent() && Objects.equals(((Pair)id.get()).getSecond(), "minecraft:banner")) {
+            Dynamic<?> rest = (Dynamic)input.get(DSL.remainderFinder());
+            Optional<? extends Typed<?>> tagOpt = input.getOptionalTyped(tagF);
+            if (tagOpt.isPresent()) {
+               Typed<?> tag = (Typed)tagOpt.get();
+               Optional<? extends Typed<?>> blockEntityOpt = tag.getOptionalTyped(blockEntityF);
+               if (blockEntityOpt.isPresent()) {
+                  Typed<?> blockEntity = (Typed)blockEntityOpt.get();
+                  Dynamic<?> tagRest = (Dynamic)tag.get(DSL.remainderFinder());
+                  Dynamic<?> blockEntityRest = (Dynamic)blockEntity.getOrCreate(DSL.remainderFinder());
+                  if (blockEntityRest.get("Base").asNumber().result().isPresent()) {
+                     rest = rest.set("Damage", rest.createShort((short)(blockEntityRest.get("Base").asInt(0) & 15)));
+                     Optional<? extends Dynamic<?>> displayOptional = tagRest.get("display").result();
+                     if (displayOptional.isPresent()) {
+                        Dynamic<?> display = (Dynamic)displayOptional.get();
+                        Dynamic<?> pickMarker = display.createMap(ImmutableMap.of(display.createString("Lore"), display.createList(Stream.of(display.createString("(+NBT")))));
+                        if (Objects.equals(display, pickMarker)) {
+                           return input.set(DSL.remainderFinder(), rest);
                         }
                      }
 
-                     var11.remove("Base");
-                     return var3x.set(DSL.remainderFinder(), var5).set(var3, var7.set(var4, var9.set(DSL.remainderFinder(), var11)));
+                     blockEntityRest.remove("Base");
+                     return input.set(DSL.remainderFinder(), rest).set(tagF, tag.set(blockEntityF, blockEntity.set(DSL.remainderFinder(), blockEntityRest)));
                   }
                }
             }
 
-            return var3x.set(DSL.remainderFinder(), var5);
+            return input.set(DSL.remainderFinder(), rest);
          } else {
-            return var3x;
+            return input;
          }
       });
    }

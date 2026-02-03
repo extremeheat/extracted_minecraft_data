@@ -14,16 +14,16 @@ public class TellRawCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("tellraw").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("message", ComponentArgument.textComponent(var1)).executes((var0x) -> {
-         int var1 = 0;
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("tellraw").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("message", ComponentArgument.textComponent(context)).executes((c) -> {
+         int result = 0;
 
-         for(ServerPlayer var3 : EntityArgument.getPlayers(var0x, "targets")) {
-            var3.sendSystemMessage(ComponentArgument.getResolvedComponent(var0x, "message", var3), false);
-            ++var1;
+         for(ServerPlayer player : EntityArgument.getPlayers(c, "targets")) {
+            player.sendSystemMessage(ComponentArgument.getResolvedComponent(c, "message", player), false);
+            ++result;
          }
 
-         return var1;
+         return result;
       }))));
    }
 }

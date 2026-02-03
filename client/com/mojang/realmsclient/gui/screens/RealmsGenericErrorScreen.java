@@ -21,27 +21,27 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
    private final Component detail;
    private MultiLineLabel splitDetail;
 
-   public RealmsGenericErrorScreen(RealmsServiceException var1, Screen var2) {
-      this(RealmsGenericErrorScreen.ErrorMessage.forServiceError(var1), var2);
+   public RealmsGenericErrorScreen(final RealmsServiceException realmsServiceException, final Screen nextScreen) {
+      this(RealmsGenericErrorScreen.ErrorMessage.forServiceError(realmsServiceException), nextScreen);
    }
 
-   public RealmsGenericErrorScreen(Component var1, Screen var2) {
-      this(new ErrorMessage(GENERIC_TITLE, var1), var2);
+   public RealmsGenericErrorScreen(final Component message, final Screen nextScreen) {
+      this(new ErrorMessage(GENERIC_TITLE, message), nextScreen);
    }
 
-   public RealmsGenericErrorScreen(Component var1, Component var2, Screen var3) {
-      this(new ErrorMessage(var1, var2), var3);
+   public RealmsGenericErrorScreen(final Component title, final Component message, final Screen nextScreen) {
+      this(new ErrorMessage(title, message), nextScreen);
    }
 
-   private RealmsGenericErrorScreen(ErrorMessage var1, Screen var2) {
-      super(var1.title);
+   private RealmsGenericErrorScreen(final ErrorMessage message, final Screen nextScreen) {
+      super(message.title);
       this.splitDetail = MultiLineLabel.EMPTY;
-      this.nextScreen = var2;
-      this.detail = ComponentUtils.mergeStyles(var1.detail, Style.EMPTY.withColor(-2142128));
+      this.nextScreen = nextScreen;
+      this.detail = ComponentUtils.mergeStyles(message.detail, Style.EMPTY.withColor(-2142128));
    }
 
    public void init() {
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_OK, (var1) -> this.onClose()).bounds(this.width / 2 - 100, this.height - 52, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_OK, (button) -> this.onClose()).bounds(this.width / 2 - 100, this.height - 52, 200, 20).build());
       this.splitDetail = MultiLineLabel.create(this.font, this.detail, this.width * 3 / 4);
    }
 
@@ -53,30 +53,25 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
       return CommonComponents.joinForNarration(super.getNarrationMessage(), this.detail);
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 80, -1);
-      ActiveTextCollector var5 = var1.textRenderer();
+   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
+      super.render(graphics, xm, ym, a);
+      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 80, -1);
+      ActiveTextCollector textRenderer = graphics.textRenderer();
       MultiLineLabel var10000 = this.splitDetail;
       TextAlignment var10001 = TextAlignment.CENTER;
       int var10002 = this.width / 2;
       Objects.requireNonNull(this.minecraft.font);
-      var10000.visitLines(var10001, var10002, 100, 9, var5);
+      var10000.visitLines(var10001, var10002, 100, 9, textRenderer);
    }
 
-   static record ErrorMessage(Component title, Component detail) {
-      final Component title;
-      final Component detail;
-
-      ErrorMessage(Component var1, Component var2) {
+   private static record ErrorMessage(Component title, Component detail) {
+      private ErrorMessage {
          super();
-         this.title = var1;
-         this.detail = var2;
       }
 
-      static ErrorMessage forServiceError(RealmsServiceException var0) {
-         RealmsError var1 = var0.realmsError;
-         return new ErrorMessage(Component.translatable("mco.errorMessage.realmsService.realmsError", var1.errorCode()), var1.errorMessage());
+      private static ErrorMessage forServiceError(final RealmsServiceException realmsServiceException) {
+         RealmsError errorDetails = realmsServiceException.realmsError;
+         return new ErrorMessage(Component.translatable("mco.errorMessage.realmsService.realmsError", errorDetails.errorCode()), errorDetails.errorMessage());
       }
    }
 }

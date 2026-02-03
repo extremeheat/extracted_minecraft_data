@@ -19,28 +19,28 @@ public class ClientboundBlockEntityDataPacket implements Packet<ClientGamePacket
    private final BlockEntityType<?> type;
    private final CompoundTag tag;
 
-   public static ClientboundBlockEntityDataPacket create(BlockEntity var0, BiFunction<BlockEntity, RegistryAccess, CompoundTag> var1) {
-      RegistryAccess var2 = var0.getLevel().registryAccess();
-      return new ClientboundBlockEntityDataPacket(var0.getBlockPos(), var0.getType(), (CompoundTag)var1.apply(var0, var2));
+   public static ClientboundBlockEntityDataPacket create(final BlockEntity blockEntity, final BiFunction<BlockEntity, RegistryAccess, CompoundTag> updateTagSaver) {
+      RegistryAccess registryAccess = blockEntity.getLevel().registryAccess();
+      return new ClientboundBlockEntityDataPacket(blockEntity.getBlockPos(), blockEntity.getType(), (CompoundTag)updateTagSaver.apply(blockEntity, registryAccess));
    }
 
-   public static ClientboundBlockEntityDataPacket create(BlockEntity var0) {
-      return create(var0, BlockEntity::getUpdateTag);
+   public static ClientboundBlockEntityDataPacket create(final BlockEntity blockEntity) {
+      return create(blockEntity, BlockEntity::getUpdateTag);
    }
 
-   private ClientboundBlockEntityDataPacket(BlockPos var1, BlockEntityType<?> var2, CompoundTag var3) {
+   private ClientboundBlockEntityDataPacket(final BlockPos pos, final BlockEntityType<?> type, final CompoundTag tag) {
       super();
-      this.pos = var1;
-      this.type = var2;
-      this.tag = var3;
+      this.pos = pos;
+      this.type = type;
+      this.tag = tag;
    }
 
    public PacketType<ClientboundBlockEntityDataPacket> type() {
       return GamePacketTypes.CLIENTBOUND_BLOCK_ENTITY_DATA;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleBlockEntityData(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleBlockEntityData(this);
    }
 
    public BlockPos getPos() {

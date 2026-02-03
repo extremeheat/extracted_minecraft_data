@@ -9,26 +9,26 @@ public class ServerboundSelectTradePacket implements Packet<ServerGamePacketList
    public static final StreamCodec<FriendlyByteBuf, ServerboundSelectTradePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSelectTradePacket>codec(ServerboundSelectTradePacket::write, ServerboundSelectTradePacket::new);
    private final int item;
 
-   public ServerboundSelectTradePacket(int var1) {
+   public ServerboundSelectTradePacket(final int item) {
       super();
-      this.item = var1;
+      this.item = item;
    }
 
-   private ServerboundSelectTradePacket(FriendlyByteBuf var1) {
+   private ServerboundSelectTradePacket(final FriendlyByteBuf input) {
       super();
-      this.item = var1.readVarInt();
+      this.item = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.item);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.item);
    }
 
    public PacketType<ServerboundSelectTradePacket> type() {
       return GamePacketTypes.SERVERBOUND_SELECT_TRADE;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSelectTrade(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleSelectTrade(this);
    }
 
    public int getItem() {

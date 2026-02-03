@@ -8,5 +8,5 @@ import org.jspecify.annotations.Nullable;
 public interface BakedGlyph {
    GlyphInfo info();
 
-   TextRenderable.@Nullable Styled createGlyph(float var1, float var2, int var3, int var4, Style var5, float var6, float var7);
+   TextRenderable.@Nullable Styled createGlyph(float x, float y, int color, int shadowColor, Style style, float boldOffset, float shadowOffset);
 }

@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import net.minecraft.data.CachedOutput;
@@ -29,76 +30,76 @@ public class NbtToSnbt implements DataProvider {
    private final Iterable<Path> inputFolders;
    private final PackOutput output;
 
-   public NbtToSnbt(PackOutput var1, Collection<Path> var2) {
+   public NbtToSnbt(final PackOutput output, final Collection<Path> inputFolders) {
       super();
-      this.inputFolders = var2;
-      this.output = var1;
+      this.inputFolders = inputFolders;
+      this.output = output;
    }
 
-   public CompletableFuture<?> run(CachedOutput var1) {
-      Path var2 = this.output.getOutputFolder();
-      ArrayList var3 = new ArrayList();
+   public CompletableFuture<?> run(final CachedOutput cache) {
+      Path output = this.output.getOutputFolder();
+      List<CompletableFuture<?>> tasks = new ArrayList();
 
-      for(Path var5 : this.inputFolders) {
-         var3.add(CompletableFuture.supplyAsync(() -> {
+      for(Path input : this.inputFolders) {
+         tasks.add(CompletableFuture.supplyAsync(() -> {
             try {
-               Stream var3 = Files.walk(var5);
+               Stream<Path> walk = Files.walk(input);
 
                CompletableFuture var4;
                try {
-                  var4 = CompletableFuture.allOf((CompletableFuture[])var3.filter((var0) -> var0.toString().endsWith(".nbt")).map((var3x) -> CompletableFuture.runAsync(() -> convertStructure(var1, var3x, getName(var5, var3x), var2), Util.ioPool())).toArray((var0) -> new CompletableFuture[var0]));
+                  var4 = CompletableFuture.allOf((CompletableFuture[])walk.filter((path) -> path.toString().endsWith(".nbt")).map((path) -> CompletableFuture.runAsync(() -> convertStructure(cache, path, getName(input, path), output), Util.ioPool())).toArray((x$0) -> new CompletableFuture[x$0]));
                } catch (Throwable var7) {
-                  if (var3 != null) {
+                  if (walk != null) {
                      try {
-                        var3.close();
-                     } catch (Throwable var6) {
-                        var7.addSuppressed(var6);
+                        walk.close();
+                     } catch (Throwable x2) {
+                        var7.addSuppressed(x2);
                      }
                   }
 
                   throw var7;
                }
 
-               if (var3 != null) {
-                  var3.close();
+               if (walk != null) {
+                  walk.close();
                }
 
                return var4;
-            } catch (IOException var8) {
-               LOGGER.error("Failed to read structure input directory", var8);
+            } catch (IOException e) {
+               LOGGER.error("Failed to read structure input directory", e);
                return CompletableFuture.completedFuture((Object)null);
             }
-         }, Util.backgroundExecutor().forName("NbtToSnbt")).thenCompose((var0) -> var0));
+         }, Util.backgroundExecutor().forName("NbtToSnbt")).thenCompose((v) -> v));
       }
 
-      return CompletableFuture.allOf((CompletableFuture[])var3.toArray((var0) -> new CompletableFuture[var0]));
+      return CompletableFuture.allOf((CompletableFuture[])tasks.toArray((x$0) -> new CompletableFuture[x$0]));
    }
 
    public final String getName() {
       return "NBT -> SNBT";
    }
 
-   private static String getName(Path var0, Path var1) {
-      String var2 = var0.relativize(var1).toString().replaceAll("\\\\", "/");
-      return var2.substring(0, var2.length() - ".nbt".length());
+   private static String getName(final Path root, final Path path) {
+      String name = root.relativize(path).toString().replaceAll("\\\\", "/");
+      return name.substring(0, name.length() - ".nbt".length());
    }
 
-   public static @Nullable Path convertStructure(CachedOutput var0, Path var1, String var2, Path var3) {
+   public static @Nullable Path convertStructure(final CachedOutput cache, final Path path, final String name, final Path output) {
       try {
-         InputStream var4 = Files.newInputStream(var1);
+         InputStream rawInput = Files.newInputStream(path);
 
          Path var7;
          try {
-            FastBufferedInputStream var5 = new FastBufferedInputStream(var4);
+            InputStream input = new FastBufferedInputStream(rawInput);
 
             try {
-               Path var6 = var3.resolve(var2 + ".snbt");
-               writeSnbt(var0, var6, NbtUtils.structureToSnbt(NbtIo.readCompressed((InputStream)var5, NbtAccounter.unlimitedHeap())));
-               LOGGER.info("Converted {} from NBT to SNBT", var2);
-               var7 = var6;
+               Path resultPath = output.resolve(name + ".snbt");
+               writeSnbt(cache, resultPath, NbtUtils.structureToSnbt(NbtIo.readCompressed(input, NbtAccounter.unlimitedHeap())));
+               LOGGER.info("Converted {} from NBT to SNBT", name);
+               var7 = resultPath;
             } catch (Throwable var10) {
                try {
-                  ((InputStream)var5).close();
+                  input.close();
                } catch (Throwable var9) {
                   var10.addSuppressed(var9);
                }
@@ -106,11 +107,11 @@ public class NbtToSnbt implements DataProvider {
                throw var10;
             }
 
-            ((InputStream)var5).close();
+            input.close();
          } catch (Throwable var11) {
-            if (var4 != null) {
+            if (rawInput != null) {
                try {
-                  var4.close();
+                  rawInput.close();
                } catch (Throwable var8) {
                   var11.addSuppressed(var8);
                }
@@ -119,22 +120,22 @@ public class NbtToSnbt implements DataProvider {
             throw var11;
          }
 
-         if (var4 != null) {
-            var4.close();
+         if (rawInput != null) {
+            rawInput.close();
          }
 
          return var7;
-      } catch (IOException var12) {
-         LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", new Object[]{var2, var1, var12});
+      } catch (IOException e) {
+         LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", new Object[]{name, path, e});
          return null;
       }
    }
 
-   public static void writeSnbt(CachedOutput var0, Path var1, String var2) throws IOException {
-      ByteArrayOutputStream var3 = new ByteArrayOutputStream();
-      HashingOutputStream var4 = new HashingOutputStream(Hashing.sha1(), var3);
-      var4.write(var2.getBytes(StandardCharsets.UTF_8));
-      var4.write(10);
-      var0.writeIfNeeded(var1, var3.toByteArray(), var4.hash());
+   public static void writeSnbt(final CachedOutput cache, final Path destination, final String text) throws IOException {
+      ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+      HashingOutputStream hashedBytes = new HashingOutputStream(Hashing.sha1(), bytes);
+      hashedBytes.write(text.getBytes(StandardCharsets.UTF_8));
+      hashedBytes.write(10);
+      cache.writeIfNeeded(destination, bytes.toByteArray(), hashedBytes.hash());
    }
 }

@@ -12,24 +12,24 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetPotionFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetPotionFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(Potion.CODEC.fieldOf("id").forGetter((var0x) -> var0x.potion)).apply(var0, SetPotionFunction::new));
+   public static final MapCodec<SetPotionFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(Potion.CODEC.fieldOf("id").forGetter((f) -> f.potion)).apply(i, SetPotionFunction::new));
    private final Holder<Potion> potion;
 
-   private SetPotionFunction(List<LootItemCondition> var1, Holder<Potion> var2) {
-      super(var1);
-      this.potion = var2;
+   private SetPotionFunction(final List<LootItemCondition> predicates, final Holder<Potion> potion) {
+      super(predicates);
+      this.potion = potion;
    }
 
-   public LootItemFunctionType<SetPotionFunction> getType() {
-      return LootItemFunctions.SET_POTION;
+   public MapCodec<SetPotionFunction> codec() {
+      return MAP_CODEC;
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      var1.update(DataComponents.POTION_CONTENTS, PotionContents.EMPTY, this.potion, PotionContents::withPotion);
-      return var1;
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      itemStack.update(DataComponents.POTION_CONTENTS, PotionContents.EMPTY, this.potion, PotionContents::withPotion);
+      return itemStack;
    }
 
-   public static LootItemConditionalFunction.Builder<?> setPotion(Holder<Potion> var0) {
-      return simpleBuilder((var1) -> new SetPotionFunction(var1, var0));
+   public static LootItemConditionalFunction.Builder<?> setPotion(final Holder<Potion> value) {
+      return simpleBuilder((conditions) -> new SetPotionFunction(conditions, value));
    }
 }

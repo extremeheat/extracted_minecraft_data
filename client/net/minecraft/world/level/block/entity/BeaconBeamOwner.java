@@ -9,9 +9,9 @@ public interface BeaconBeamOwner {
       private final int color;
       private int height;
 
-      public Section(int var1) {
+      public Section(final int color) {
          super();
-         this.color = var1;
+         this.color = color;
          this.height = 1;
       }
 

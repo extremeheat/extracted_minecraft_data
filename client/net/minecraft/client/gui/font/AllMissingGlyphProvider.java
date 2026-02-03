@@ -15,8 +15,8 @@ public class AllMissingGlyphProvider implements GlyphProvider {
          return SpecialGlyphs.MISSING;
       }
 
-      public BakedGlyph bake(UnbakedGlyph.Stitcher var1) {
-         return var1.getMissing();
+      public BakedGlyph bake(final UnbakedGlyph.Stitcher stitcher) {
+         return stitcher.getMissing();
       }
    };
 
@@ -24,7 +24,7 @@ public class AllMissingGlyphProvider implements GlyphProvider {
       super();
    }
 
-   public @Nullable UnbakedGlyph getGlyph(int var1) {
+   public @Nullable UnbakedGlyph getGlyph(final int codepoint) {
       return MISSING_INSTANCE;
    }
 

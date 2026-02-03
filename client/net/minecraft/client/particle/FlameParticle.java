@@ -3,68 +3,58 @@ package net.minecraft.client.particle;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.util.Mth;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.RandomSource;
 
 public class FlameParticle extends RisingParticle {
-   FlameParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
-      super(var1, var2, var4, var6, var8, var10, var12, var14);
+   private FlameParticle(final ClientLevel level, final double x, final double y, final double z, final double xd, final double yd, final double zd, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, xd, yd, zd, sprite);
    }
 
    public SingleQuadParticle.Layer getLayer() {
       return SingleQuadParticle.Layer.OPAQUE;
    }
 
-   public void move(double var1, double var3, double var5) {
-      this.setBoundingBox(this.getBoundingBox().move(var1, var3, var5));
+   public void move(final double xa, final double ya, final double za) {
+      this.setBoundingBox(this.getBoundingBox().move(xa, ya, za));
       this.setLocationFromBoundingbox();
    }
 
-   public float getQuadSize(float var1) {
-      float var2 = ((float)this.age + var1) / (float)this.lifetime;
-      return this.quadSize * (1.0F - var2 * var2 * 0.5F);
+   public float getQuadSize(final float a) {
+      float s = ((float)this.age + a) / (float)this.lifetime;
+      return this.quadSize * (1.0F - s * s * 0.5F);
    }
 
-   public int getLightColor(float var1) {
-      float var2 = ((float)this.age + var1) / (float)this.lifetime;
-      var2 = Mth.clamp(var2, 0.0F, 1.0F);
-      int var3 = super.getLightColor(var1);
-      int var4 = var3 & 255;
-      int var5 = var3 >> 16 & 255;
-      var4 += (int)(var2 * 15.0F * 16.0F);
-      if (var4 > 240) {
-         var4 = 240;
-      }
-
-      return var4 | var5 << 16;
+   public int getLightCoords(final float a) {
+      return LightCoordsUtil.addSmoothBlockEmission(super.getLightCoords(a), ((float)this.age + a) / (float)this.lifetime);
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         FlameParticle var16 = new FlameParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         FlameParticle particle = new FlameParticle(level, x, y, z, xAux, yAux, zAux, this.sprite.get(random));
+         return particle;
       }
    }
 
    public static class SmallFlameProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public SmallFlameProvider(SpriteSet var1) {
+      public SmallFlameProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         FlameParticle var16 = new FlameParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
-         var16.scale(0.5F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         FlameParticle particle = new FlameParticle(level, x, y, z, xAux, yAux, zAux, this.sprite.get(random));
+         particle.scale(0.5F);
+         return particle;
       }
    }
 }

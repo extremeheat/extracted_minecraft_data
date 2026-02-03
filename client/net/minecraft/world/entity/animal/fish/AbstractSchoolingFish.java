@@ -16,8 +16,8 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
    private @Nullable AbstractSchoolingFish leader;
    private int schoolSize = 1;
 
-   public AbstractSchoolingFish(EntityType<? extends AbstractSchoolingFish> var1, Level var2) {
-      super(var1, var2);
+   public AbstractSchoolingFish(final EntityType<? extends AbstractSchoolingFish> type, final Level level) {
+      super(type, level);
    }
 
    protected void registerGoals() {
@@ -41,10 +41,10 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
       return this.leader != null && this.leader.isAlive();
    }
 
-   public AbstractSchoolingFish startFollowing(AbstractSchoolingFish var1) {
-      this.leader = var1;
-      var1.addFollower();
-      return var1;
+   public AbstractSchoolingFish startFollowing(final AbstractSchoolingFish leader) {
+      this.leader = leader;
+      leader.addFollower();
+      return leader;
    }
 
    public void stopFollowing() {
@@ -66,9 +66,9 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
 
    public void tick() {
       super.tick();
-      if (this.hasFollowers() && this.level().random.nextInt(200) == 1) {
-         List var1 = this.level().getEntitiesOfClass(this.getClass(), this.getBoundingBox().inflate(8.0, 8.0, 8.0));
-         if (var1.size() <= 1) {
+      if (this.hasFollowers() && this.level().getRandom().nextInt(200) == 1) {
+         List<? extends AbstractFish> neighbors = this.level().getEntitiesOfClass(this.getClass(), this.getBoundingBox().inflate(8.0, 8.0, 8.0));
+         if (neighbors.size() <= 1) {
             this.schoolSize = 1;
          }
       }
@@ -90,27 +90,27 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
 
    }
 
-   public void addFollowers(Stream<? extends AbstractSchoolingFish> var1) {
-      var1.limit((long)(this.getMaxSchoolSize() - this.schoolSize)).filter((var1x) -> var1x != this).forEach((var1x) -> var1x.startFollowing(this));
+   public void addFollowers(final Stream<? extends AbstractSchoolingFish> abstractSchoolingFishStream) {
+      abstractSchoolingFishStream.limit((long)(this.getMaxSchoolSize() - this.schoolSize)).filter((f) -> f != this).forEach((otherFish) -> otherFish.startFollowing(this));
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
-      if (var4 == null) {
-         var4 = new SchoolSpawnGroupData(this);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
+      super.finalizeSpawn(level, difficulty, spawnReason, groupData);
+      if (groupData == null) {
+         groupData = new SchoolSpawnGroupData(this);
       } else {
-         this.startFollowing(((SchoolSpawnGroupData)var4).leader);
+         this.startFollowing(((SchoolSpawnGroupData)groupData).leader);
       }
 
-      return (SpawnGroupData)var4;
+      return groupData;
    }
 
    public static class SchoolSpawnGroupData implements SpawnGroupData {
       public final AbstractSchoolingFish leader;
 
-      public SchoolSpawnGroupData(AbstractSchoolingFish var1) {
+      public SchoolSpawnGroupData(final AbstractSchoolingFish leader) {
          super();
-         this.leader = var1;
+         this.leader = leader;
       }
    }
 }

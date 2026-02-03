@@ -9,14 +9,14 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 
 public class DisplayInfo {
-   public static final Codec<DisplayInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ItemStack.STRICT_CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon), ComponentSerialization.CODEC.fieldOf("title").forGetter(DisplayInfo::getTitle), ComponentSerialization.CODEC.fieldOf("description").forGetter(DisplayInfo::getDescription), ClientAsset.ResourceTexture.CODEC.optionalFieldOf("background").forGetter(DisplayInfo::getBackground), AdvancementType.CODEC.optionalFieldOf("frame", AdvancementType.TASK).forGetter(DisplayInfo::getType), Codec.BOOL.optionalFieldOf("show_toast", true).forGetter(DisplayInfo::shouldShowToast), Codec.BOOL.optionalFieldOf("announce_to_chat", true).forGetter(DisplayInfo::shouldAnnounceChat), Codec.BOOL.optionalFieldOf("hidden", false).forGetter(DisplayInfo::isHidden)).apply(var0, DisplayInfo::new));
+   public static final Codec<DisplayInfo> CODEC = RecordCodecBuilder.create((i) -> i.group(ItemStackTemplate.CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon), ComponentSerialization.CODEC.fieldOf("title").forGetter(DisplayInfo::getTitle), ComponentSerialization.CODEC.fieldOf("description").forGetter(DisplayInfo::getDescription), ClientAsset.ResourceTexture.CODEC.optionalFieldOf("background").forGetter(DisplayInfo::getBackground), AdvancementType.CODEC.optionalFieldOf("frame", AdvancementType.TASK).forGetter(DisplayInfo::getType), Codec.BOOL.optionalFieldOf("show_toast", true).forGetter(DisplayInfo::shouldShowToast), Codec.BOOL.optionalFieldOf("announce_to_chat", true).forGetter(DisplayInfo::shouldAnnounceChat), Codec.BOOL.optionalFieldOf("hidden", false).forGetter(DisplayInfo::isHidden)).apply(i, DisplayInfo::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, DisplayInfo> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, DisplayInfo>ofMember(DisplayInfo::serializeToNetwork, DisplayInfo::fromNetwork);
    private final Component title;
    private final Component description;
-   private final ItemStack icon;
+   private final ItemStackTemplate icon;
    private final Optional<ClientAsset.ResourceTexture> background;
    private final AdvancementType type;
    private final boolean showToast;
@@ -25,21 +25,21 @@ public class DisplayInfo {
    private float x;
    private float y;
 
-   public DisplayInfo(ItemStack var1, Component var2, Component var3, Optional<ClientAsset.ResourceTexture> var4, AdvancementType var5, boolean var6, boolean var7, boolean var8) {
+   public DisplayInfo(final ItemStackTemplate icon, final Component title, final Component description, final Optional<ClientAsset.ResourceTexture> background, final AdvancementType type, final boolean showToast, final boolean announceChat, final boolean hidden) {
       super();
-      this.title = var2;
-      this.description = var3;
-      this.icon = var1;
-      this.background = var4;
-      this.type = var5;
-      this.showToast = var6;
-      this.announceChat = var7;
-      this.hidden = var8;
+      this.title = title;
+      this.description = description;
+      this.icon = icon;
+      this.background = background;
+      this.type = type;
+      this.showToast = showToast;
+      this.announceChat = announceChat;
+      this.hidden = hidden;
    }
 
-   public void setLocation(float var1, float var2) {
-      this.x = var1;
-      this.y = var2;
+   public void setLocation(final float x, final float y) {
+      this.x = x;
+      this.y = y;
    }
 
    public Component getTitle() {
@@ -50,7 +50,7 @@ public class DisplayInfo {
       return this.description;
    }
 
-   public ItemStack getIcon() {
+   public ItemStackTemplate getIcon() {
       return this.icon;
    }
 
@@ -82,43 +82,43 @@ public class DisplayInfo {
       return this.hidden;
    }
 
-   private void serializeToNetwork(RegistryFriendlyByteBuf var1) {
-      ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.title);
-      ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.description);
-      ItemStack.STREAM_CODEC.encode(var1, this.icon);
-      var1.writeEnum(this.type);
-      int var2 = 0;
+   private void serializeToNetwork(final RegistryFriendlyByteBuf output) {
+      ComponentSerialization.TRUSTED_STREAM_CODEC.encode(output, this.title);
+      ComponentSerialization.TRUSTED_STREAM_CODEC.encode(output, this.description);
+      ItemStackTemplate.STREAM_CODEC.encode(output, this.icon);
+      output.writeEnum(this.type);
+      int flags = 0;
       if (this.background.isPresent()) {
-         var2 |= 1;
+         flags |= 1;
       }
 
       if (this.showToast) {
-         var2 |= 2;
+         flags |= 2;
       }
 
       if (this.hidden) {
-         var2 |= 4;
+         flags |= 4;
       }
 
-      var1.writeInt(var2);
+      output.writeInt(flags);
       Optional var10000 = this.background.map(ClientAsset::id);
-      Objects.requireNonNull(var1);
-      var10000.ifPresent(var1::writeIdentifier);
-      var1.writeFloat(this.x);
-      var1.writeFloat(this.y);
+      Objects.requireNonNull(output);
+      var10000.ifPresent(output::writeIdentifier);
+      output.writeFloat(this.x);
+      output.writeFloat(this.y);
    }
 
-   private static DisplayInfo fromNetwork(RegistryFriendlyByteBuf var0) {
-      Component var1 = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var0);
-      Component var2 = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var0);
-      ItemStack var3 = (ItemStack)ItemStack.STREAM_CODEC.decode(var0);
-      AdvancementType var4 = (AdvancementType)var0.readEnum(AdvancementType.class);
-      int var5 = var0.readInt();
-      Optional var6 = (var5 & 1) != 0 ? Optional.of(new ClientAsset.ResourceTexture(var0.readIdentifier())) : Optional.empty();
-      boolean var7 = (var5 & 2) != 0;
-      boolean var8 = (var5 & 4) != 0;
-      DisplayInfo var9 = new DisplayInfo(var3, var1, var2, var6, var4, var7, false, var8);
-      var9.setLocation(var0.readFloat(), var0.readFloat());
-      return var9;
+   private static DisplayInfo fromNetwork(final RegistryFriendlyByteBuf input) {
+      Component title = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(input);
+      Component description = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(input);
+      ItemStackTemplate icon = (ItemStackTemplate)ItemStackTemplate.STREAM_CODEC.decode(input);
+      AdvancementType frame = (AdvancementType)input.readEnum(AdvancementType.class);
+      int flags = input.readInt();
+      Optional<ClientAsset.ResourceTexture> background = (flags & 1) != 0 ? Optional.of(new ClientAsset.ResourceTexture(input.readIdentifier())) : Optional.empty();
+      boolean showToast = (flags & 2) != 0;
+      boolean hidden = (flags & 4) != 0;
+      DisplayInfo info = new DisplayInfo(icon, title, description, background, frame, showToast, false, hidden);
+      info.setLocation(input.readFloat(), input.readFloat());
+      return info;
    }
 }

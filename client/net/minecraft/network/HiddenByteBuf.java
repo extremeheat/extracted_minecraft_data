@@ -5,24 +5,24 @@ import io.netty.buffer.ByteBufUtil;
 import io.netty.util.ReferenceCounted;
 
 public record HiddenByteBuf(ByteBuf contents) implements ReferenceCounted {
-   public HiddenByteBuf(final ByteBuf var1) {
+   public HiddenByteBuf(final ByteBuf contents) {
       super();
-      this.contents = ByteBufUtil.ensureAccessible(var1);
+      this.contents = ByteBufUtil.ensureAccessible(contents);
    }
 
-   public static Object pack(Object var0) {
-      if (var0 instanceof ByteBuf var1) {
-         return new HiddenByteBuf(var1);
+   public static Object pack(final Object msg) {
+      if (msg instanceof ByteBuf buf) {
+         return new HiddenByteBuf(buf);
       } else {
-         return var0;
+         return msg;
       }
    }
 
-   public static Object unpack(Object var0) {
-      if (var0 instanceof HiddenByteBuf var1) {
-         return ByteBufUtil.ensureAccessible(var1.contents);
+   public static Object unpack(final Object msg) {
+      if (msg instanceof HiddenByteBuf buf) {
+         return ByteBufUtil.ensureAccessible(buf.contents);
       } else {
-         return var0;
+         return msg;
       }
    }
 
@@ -35,8 +35,8 @@ public record HiddenByteBuf(ByteBuf contents) implements ReferenceCounted {
       return this;
    }
 
-   public HiddenByteBuf retain(int var1) {
-      this.contents.retain(var1);
+   public HiddenByteBuf retain(final int increment) {
+      this.contents.retain(increment);
       return this;
    }
 
@@ -45,8 +45,8 @@ public record HiddenByteBuf(ByteBuf contents) implements ReferenceCounted {
       return this;
    }
 
-   public HiddenByteBuf touch(Object var1) {
-      this.contents.touch(var1);
+   public HiddenByteBuf touch(final Object hint) {
+      this.contents.touch(hint);
       return this;
    }
 
@@ -54,27 +54,7 @@ public record HiddenByteBuf(ByteBuf contents) implements ReferenceCounted {
       return this.contents.release();
    }
 
-   public boolean release(int var1) {
-      return this.contents.release(var1);
-   }
-
-   // $FF: synthetic method
-   public ReferenceCounted touch(final Object var1) {
-      return this.touch(var1);
-   }
-
-   // $FF: synthetic method
-   public ReferenceCounted touch() {
-      return this.touch();
-   }
-
-   // $FF: synthetic method
-   public ReferenceCounted retain(final int var1) {
-      return this.retain(var1);
-   }
-
-   // $FF: synthetic method
-   public ReferenceCounted retain() {
-      return this.retain();
+   public boolean release(final int decrement) {
+      return this.contents.release(decrement);
    }
 }

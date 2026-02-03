@@ -60,8 +60,8 @@ public class Slime extends Mob implements Enemy {
    public float oSquish;
    private boolean wasOnGround = false;
 
-   public Slime(EntityType<? extends Slime> var1, Level var2) {
-      super(var1, var2);
+   public Slime(final EntityType<? extends Slime> type, final Level level) {
+      super(type, level);
       this.fixupDimensions();
       this.moveControl = new SlimeMoveControl(this);
    }
@@ -71,7 +71,7 @@ public class Slime extends Mob implements Enemy {
       this.goalSelector.addGoal(2, new SlimeAttackGoal(this));
       this.goalSelector.addGoal(3, new SlimeRandomDirectionGoal(this));
       this.goalSelector.addGoal(5, new SlimeKeepOnJumpingGoal(this));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1, var2) -> Math.abs(var1.getY() - this.getY()) <= 4.0));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (target, level) -> Math.abs(target.getY() - this.getY()) <= 4.0));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
    }
 
@@ -79,41 +79,41 @@ public class Slime extends Mob implements Enemy {
       return SoundSource.HOSTILE;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(ID_SIZE, 1);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(ID_SIZE, 1);
    }
 
    @VisibleForTesting
-   public void setSize(int var1, boolean var2) {
-      int var3 = Mth.clamp(var1, 1, 127);
-      this.entityData.set(ID_SIZE, var3);
+   public void setSize(final int size, final boolean updateHealth) {
+      int actualSize = Mth.clamp(size, 1, 127);
+      this.entityData.set(ID_SIZE, actualSize);
       this.reapplyPosition();
       this.refreshDimensions();
-      this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double)(var3 * var3));
-      this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)(0.2F + 0.1F * (float)var3));
-      this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue((double)var3);
-      if (var2) {
+      this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double)(actualSize * actualSize));
+      this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)(0.2F + 0.1F * (float)actualSize));
+      this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue((double)actualSize);
+      if (updateHealth) {
          this.setHealth(this.getMaxHealth());
       }
 
-      this.xpReward = var3;
+      this.xpReward = actualSize;
    }
 
    public int getSize() {
       return (Integer)this.entityData.get(ID_SIZE);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("Size", this.getSize() - 1);
-      var1.putBoolean("wasOnGround", this.wasOnGround);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("Size", this.getSize() - 1);
+      output.putBoolean("wasOnGround", this.wasOnGround);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      this.setSize(var1.getIntOr("Size", 0) + 1, false);
-      super.readAdditionalSaveData(var1);
-      this.wasOnGround = var1.getBooleanOr("wasOnGround", false);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      this.setSize(input.getIntOr("Size", 0) + 1, false);
+      super.readAdditionalSaveData(input);
+      this.wasOnGround = input.getBooleanOr("wasOnGround", false);
    }
 
    public boolean isTiny() {
@@ -129,15 +129,15 @@ public class Slime extends Mob implements Enemy {
       this.squish += (this.targetSquish - this.squish) * 0.5F;
       super.tick();
       if (this.onGround() && !this.wasOnGround) {
-         float var1 = this.getDimensions(this.getPose()).width() * 2.0F;
-         float var2 = var1 / 2.0F;
+         float size = this.getDimensions(this.getPose()).width() * 2.0F;
+         float radius = size / 2.0F;
 
-         for(int var3 = 0; (float)var3 < var1 * 16.0F; ++var3) {
-            float var4 = this.random.nextFloat() * 6.2831855F;
-            float var5 = this.random.nextFloat() * 0.5F + 0.5F;
-            float var6 = Mth.sin((double)var4) * var2 * var5;
-            float var7 = Mth.cos((double)var4) * var2 * var5;
-            this.level().addParticle(this.getParticleType(), this.getX() + (double)var6, this.getY(), this.getZ() + (double)var7, 0.0, 0.0, 0.0);
+         for(int i = 0; (float)i < size * 16.0F; ++i) {
+            float dir = this.random.nextFloat() * 6.2831855F;
+            float d = this.random.nextFloat() * 0.5F + 0.5F;
+            float xd = Mth.sin((double)dir) * radius * d;
+            float zd = Mth.cos((double)dir) * radius * d;
+            this.level().addParticle(this.getParticleType(), this.getX() + (double)xd, this.getY(), this.getZ() + (double)zd, 0.0, 0.0, 0.0);
          }
 
          this.playSound(this.getSquishSound(), this.getSoundVolume(), ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) / 0.8F);
@@ -159,15 +159,15 @@ public class Slime extends Mob implements Enemy {
    }
 
    public void refreshDimensions() {
-      double var1 = this.getX();
-      double var3 = this.getY();
-      double var5 = this.getZ();
+      double oldX = this.getX();
+      double oldY = this.getY();
+      double oldZ = this.getZ();
       super.refreshDimensions();
-      this.setPos(var1, var3, var5);
+      this.setPos(oldX, oldY, oldZ);
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (ID_SIZE.equals(var1)) {
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      if (ID_SIZE.equals(accessor)) {
          this.refreshDimensions();
          this.setYRot(this.yHeadRot);
          this.yBodyRot = this.yHeadRot;
@@ -176,66 +176,66 @@ public class Slime extends Mob implements Enemy {
          }
       }
 
-      super.onSyncedDataUpdated(var1);
+      super.onSyncedDataUpdated(accessor);
    }
 
    public EntityType<? extends Slime> getType() {
       return super.getType();
    }
 
-   public void remove(Entity.RemovalReason var1) {
-      int var2 = this.getSize();
-      if (!this.level().isClientSide() && var2 > 1 && this.isDeadOrDying()) {
-         float var3 = this.getDimensions(this.getPose()).width();
-         float var4 = var3 / 2.0F;
-         int var5 = var2 / 2;
-         int var6 = 2 + this.random.nextInt(3);
-         PlayerTeam var7 = this.getTeam();
+   public void remove(final Entity.RemovalReason reason) {
+      int size = this.getSize();
+      if (!this.level().isClientSide() && size > 1 && this.isDeadOrDying()) {
+         float width = this.getDimensions(this.getPose()).width();
+         float xzSlimeSpawnOffset = width / 2.0F;
+         int halfSize = size / 2;
+         int count = 2 + this.random.nextInt(3);
+         PlayerTeam team = this.getTeam();
 
-         for(int var8 = 0; var8 < var6; ++var8) {
-            float var9 = ((float)(var8 % 2) - 0.5F) * var4;
-            float var10 = ((float)(var8 / 2) - 0.5F) * var4;
-            this.convertTo(this.getType(), new ConversionParams(ConversionType.SPLIT_ON_DEATH, false, false, var7), EntitySpawnReason.TRIGGERED, (var4x) -> {
-               var4x.setSize(var5, true);
-               var4x.snapTo(this.getX() + (double)var9, this.getY() + 0.5, this.getZ() + (double)var10, this.random.nextFloat() * 360.0F, 0.0F);
+         for(int i = 0; i < count; ++i) {
+            float xd = ((float)(i % 2) - 0.5F) * xzSlimeSpawnOffset;
+            float zd = ((float)(i / 2) - 0.5F) * xzSlimeSpawnOffset;
+            this.convertTo(this.getType(), new ConversionParams(ConversionType.SPLIT_ON_DEATH, false, false, team), EntitySpawnReason.TRIGGERED, (slime) -> {
+               slime.setSize(halfSize, true);
+               slime.snapTo(this.getX() + (double)xd, this.getY() + 0.5, this.getZ() + (double)zd, this.random.nextFloat() * 360.0F, 0.0F);
             });
          }
       }
 
-      super.remove(var1);
+      super.remove(reason);
    }
 
-   public void push(Entity var1) {
-      super.push(var1);
-      if (var1 instanceof IronGolem && this.isDealsDamage()) {
-         this.dealDamage((LivingEntity)var1);
+   public void push(final Entity entity) {
+      super.push(entity);
+      if (entity instanceof IronGolem && this.isDealsDamage()) {
+         this.dealDamage((LivingEntity)entity);
       }
 
    }
 
-   public void playerTouch(Player var1) {
+   public void playerTouch(final Player player) {
       if (this.isDealsDamage()) {
-         this.dealDamage(var1);
+         this.dealDamage(player);
       }
 
    }
 
-   protected void dealDamage(LivingEntity var1) {
+   protected void dealDamage(final LivingEntity target) {
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         if (this.isAlive() && this.isWithinMeleeAttackRange(var1) && this.hasLineOfSight(var1)) {
-            DamageSource var4 = this.damageSources().mobAttack(this);
-            if (var1.hurtServer(var2, var4, this.getAttackDamage())) {
+      if (var3 instanceof ServerLevel level) {
+         if (this.isAlive() && this.isWithinMeleeAttackRange(target) && this.hasLineOfSight(target)) {
+            DamageSource damageSource = this.damageSources().mobAttack(this);
+            if (target.hurtServer(level, damageSource, this.getAttackDamage())) {
                this.playSound(SoundEvents.SLIME_ATTACK, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
-               EnchantmentHelper.doPostAttackEffects(var2, var1, var4);
+               EnchantmentHelper.doPostAttackEffects(level, target, damageSource);
             }
          }
       }
 
    }
 
-   protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vec3(0.0, (double)var2.height() - 0.015625 * (double)this.getSize() * (double)var3, 0.0);
+   protected Vec3 getPassengerAttachmentPoint(final Entity passenger, final EntityDimensions dimensions, final float scale) {
+      return new Vec3(0.0, (double)dimensions.height() - 0.015625 * (double)this.getSize() * (double)scale, 0.0);
    }
 
    protected boolean isDealsDamage() {
@@ -246,7 +246,7 @@ public class Slime extends Mob implements Enemy {
       return (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return this.isTiny() ? SoundEvents.SLIME_HURT_SMALL : SoundEvents.SLIME_HURT;
    }
 
@@ -258,27 +258,27 @@ public class Slime extends Mob implements Enemy {
       return this.isTiny() ? SoundEvents.SLIME_SQUISH_SMALL : SoundEvents.SLIME_SQUISH;
    }
 
-   public static boolean checkSlimeSpawnRules(EntityType<Slime> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      if (var1.getDifficulty() != Difficulty.PEACEFUL) {
-         if (EntitySpawnReason.isSpawner(var2)) {
-            return checkMobSpawnRules(var0, var1, var2, var3, var4);
+   public static boolean checkSlimeSpawnRules(final EntityType<Slime> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      if (level.getDifficulty() != Difficulty.PEACEFUL) {
+         if (EntitySpawnReason.isSpawner(spawnReason)) {
+            return checkMobSpawnRules(type, level, spawnReason, pos, random);
          }
 
-         if (var1.getBiome(var3).is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS) && var3.getY() > 50 && var3.getY() < 70) {
-            float var5 = (Float)var1.environmentAttributes().getValue(EnvironmentAttributes.SURFACE_SLIME_SPAWN_CHANCE, var3);
-            if (var4.nextFloat() < var5 && var1.getMaxLocalRawBrightness(var3) <= var4.nextInt(8)) {
-               return checkMobSpawnRules(var0, var1, var2, var3, var4);
+         if (level.getBiome(pos).is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS) && pos.getY() > 50 && pos.getY() < 70) {
+            float surfaceSlimeSpawnChance = (Float)level.environmentAttributes().getValue(EnvironmentAttributes.SURFACE_SLIME_SPAWN_CHANCE, pos);
+            if (random.nextFloat() < surfaceSlimeSpawnChance && level.getMaxLocalRawBrightness(pos) <= random.nextInt(8)) {
+               return checkMobSpawnRules(type, level, spawnReason, pos, random);
             }
          }
 
-         if (!(var1 instanceof WorldGenLevel)) {
+         if (!(level instanceof WorldGenLevel)) {
             return false;
          }
 
-         ChunkPos var7 = new ChunkPos(var3);
-         boolean var6 = WorldgenRandom.seedSlimeChunk(var7.x, var7.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
-         if (var4.nextInt(10) == 0 && var6 && var3.getY() < 40) {
-            return checkMobSpawnRules(var0, var1, var2, var3, var4);
+         ChunkPos chunkPos = ChunkPos.containing(pos);
+         boolean slimeChunk = WorldgenRandom.seedSlimeChunk(chunkPos.x(), chunkPos.z(), ((WorldGenLevel)level).getSeed(), 987234911L).nextInt(10) == 0;
+         if (random.nextInt(10) == 0 && slimeChunk && pos.getY() < 40) {
+            return checkMobSpawnRules(type, level, spawnReason, pos, random);
          }
       }
 
@@ -298,59 +298,59 @@ public class Slime extends Mob implements Enemy {
    }
 
    public void jumpFromGround() {
-      Vec3 var1 = this.getDeltaMovement();
-      this.setDeltaMovement(var1.x, (double)this.getJumpPower(), var1.z);
+      Vec3 movement = this.getDeltaMovement();
+      this.setDeltaMovement(movement.x, (double)this.getJumpPower(), movement.z);
       this.needsSync = true;
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      RandomSource var5 = var1.getRandom();
-      int var6 = var5.nextInt(3);
-      if (var6 < 2 && var5.nextFloat() < 0.5F * var2.getSpecialMultiplier()) {
-         ++var6;
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      RandomSource random = level.getRandom();
+      int sizeScale = random.nextInt(3);
+      if (sizeScale < 2 && random.nextFloat() < 0.5F * difficulty.getSpecialMultiplier()) {
+         ++sizeScale;
       }
 
-      int var7 = 1 << var6;
-      this.setSize(var7, true);
-      return super.finalizeSpawn(var1, var2, var3, var4);
+      int size = 1 << sizeScale;
+      this.setSize(size, true);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   float getSoundPitch() {
-      float var1 = this.isTiny() ? 1.4F : 0.8F;
-      return ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * var1;
+   private float getSoundPitch() {
+      float pitchAdjuster = this.isTiny() ? 1.4F : 0.8F;
+      return ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * pitchAdjuster;
    }
 
    protected SoundEvent getJumpSound() {
       return this.isTiny() ? SoundEvents.SLIME_JUMP_SMALL : SoundEvents.SLIME_JUMP;
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return super.getDefaultDimensions(var1).scale((float)this.getSize());
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return super.getDefaultDimensions(pose).scale((float)this.getSize());
    }
 
    static {
       ID_SIZE = SynchedEntityData.<Integer>defineId(Slime.class, EntityDataSerializers.INT);
    }
 
-   static class SlimeMoveControl extends MoveControl {
+   private static class SlimeMoveControl extends MoveControl {
       private float yRot;
       private int jumpDelay;
       private final Slime slime;
       private boolean isAggressive;
 
-      public SlimeMoveControl(Slime var1) {
-         super(var1);
-         this.slime = var1;
-         this.yRot = 180.0F * var1.getYRot() / 3.1415927F;
+      public SlimeMoveControl(final Slime slime) {
+         super(slime);
+         this.slime = slime;
+         this.yRot = 180.0F * slime.getYRot() / 3.1415927F;
       }
 
-      public void setDirection(float var1, boolean var2) {
-         this.yRot = var1;
-         this.isAggressive = var2;
+      public void setDirection(final float yRot, final boolean isAggressive) {
+         this.yRot = yRot;
+         this.isAggressive = isAggressive;
       }
 
-      public void setWantedMovement(double var1) {
-         this.speedModifier = var1;
+      public void setWantedMovement(final double speedModifier) {
+         this.speedModifier = speedModifier;
          this.operation = MoveControl.Operation.MOVE_TO;
       }
 
@@ -387,22 +387,22 @@ public class Slime extends Mob implements Enemy {
       }
    }
 
-   static class SlimeAttackGoal extends Goal {
+   private static class SlimeAttackGoal extends Goal {
       private final Slime slime;
       private int growTiredTimer;
 
-      public SlimeAttackGoal(Slime var1) {
+      public SlimeAttackGoal(final Slime slime) {
          super();
-         this.slime = var1;
+         this.slime = slime;
          this.setFlags(EnumSet.of(Goal.Flag.LOOK));
       }
 
       public boolean canUse() {
-         LivingEntity var1 = this.slime.getTarget();
-         if (var1 == null) {
+         LivingEntity target = this.slime.getTarget();
+         if (target == null) {
             return false;
          } else {
-            return !this.slime.canAttack(var1) ? false : this.slime.getMoveControl() instanceof SlimeMoveControl;
+            return !this.slime.canAttack(target) ? false : this.slime.getMoveControl() instanceof SlimeMoveControl;
          }
       }
 
@@ -412,10 +412,10 @@ public class Slime extends Mob implements Enemy {
       }
 
       public boolean canContinueToUse() {
-         LivingEntity var1 = this.slime.getTarget();
-         if (var1 == null) {
+         LivingEntity target = this.slime.getTarget();
+         if (target == null) {
             return false;
-         } else if (!this.slime.canAttack(var1)) {
+         } else if (!this.slime.canAttack(target)) {
             return false;
          } else {
             return --this.growTiredTimer > 0;
@@ -427,27 +427,27 @@ public class Slime extends Mob implements Enemy {
       }
 
       public void tick() {
-         LivingEntity var1 = this.slime.getTarget();
-         if (var1 != null) {
-            this.slime.lookAt(var1, 10.0F, 10.0F);
+         LivingEntity target = this.slime.getTarget();
+         if (target != null) {
+            this.slime.lookAt(target, 10.0F, 10.0F);
          }
 
          MoveControl var3 = this.slime.getMoveControl();
-         if (var3 instanceof SlimeMoveControl var2) {
-            var2.setDirection(this.slime.getYRot(), this.slime.isDealsDamage());
+         if (var3 instanceof SlimeMoveControl slimeMoveControl) {
+            slimeMoveControl.setDirection(this.slime.getYRot(), this.slime.isDealsDamage());
          }
 
       }
    }
 
-   static class SlimeRandomDirectionGoal extends Goal {
+   private static class SlimeRandomDirectionGoal extends Goal {
       private final Slime slime;
       private float chosenDegrees;
       private int nextRandomizeTime;
 
-      public SlimeRandomDirectionGoal(Slime var1) {
+      public SlimeRandomDirectionGoal(final Slime slime) {
          super();
-         this.slime = var1;
+         this.slime = slime;
          this.setFlags(EnumSet.of(Goal.Flag.LOOK));
       }
 
@@ -462,21 +462,21 @@ public class Slime extends Mob implements Enemy {
          }
 
          MoveControl var2 = this.slime.getMoveControl();
-         if (var2 instanceof SlimeMoveControl var1) {
-            var1.setDirection(this.chosenDegrees, false);
+         if (var2 instanceof SlimeMoveControl slimeMoveControl) {
+            slimeMoveControl.setDirection(this.chosenDegrees, false);
          }
 
       }
    }
 
-   static class SlimeFloatGoal extends Goal {
+   private static class SlimeFloatGoal extends Goal {
       private final Slime slime;
 
-      public SlimeFloatGoal(Slime var1) {
+      public SlimeFloatGoal(final Slime mob) {
          super();
-         this.slime = var1;
+         this.slime = mob;
          this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
-         var1.getNavigation().setCanFloat(true);
+         mob.getNavigation().setCanFloat(true);
       }
 
       public boolean canUse() {
@@ -493,19 +493,19 @@ public class Slime extends Mob implements Enemy {
          }
 
          MoveControl var2 = this.slime.getMoveControl();
-         if (var2 instanceof SlimeMoveControl var1) {
-            var1.setWantedMovement(1.2);
+         if (var2 instanceof SlimeMoveControl slimeMoveControl) {
+            slimeMoveControl.setWantedMovement(1.2);
          }
 
       }
    }
 
-   static class SlimeKeepOnJumpingGoal extends Goal {
+   private static class SlimeKeepOnJumpingGoal extends Goal {
       private final Slime slime;
 
-      public SlimeKeepOnJumpingGoal(Slime var1) {
+      public SlimeKeepOnJumpingGoal(final Slime mob) {
          super();
-         this.slime = var1;
+         this.slime = mob;
          this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
       }
 
@@ -515,8 +515,8 @@ public class Slime extends Mob implements Enemy {
 
       public void tick() {
          MoveControl var2 = this.slime.getMoveControl();
-         if (var2 instanceof SlimeMoveControl var1) {
-            var1.setWantedMovement(1.0);
+         if (var2 instanceof SlimeMoveControl slimeMoveControl) {
+            slimeMoveControl.setWantedMovement(1.0);
          }
 
       }

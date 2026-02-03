@@ -14,7 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 public class TelemetryEventType {
-   static final Map<String, TelemetryEventType> REGISTRY = new Object2ObjectLinkedOpenHashMap();
+   private static final Map<String, TelemetryEventType> REGISTRY = new Object2ObjectLinkedOpenHashMap();
    public static final Codec<TelemetryEventType> CODEC;
    private static final List<TelemetryProperty<?>> GLOBAL_PROPERTIES;
    private static final List<TelemetryProperty<?>> WORLD_SESSION_PROPERTIES;
@@ -30,17 +30,17 @@ public class TelemetryEventType {
    private final boolean isOptIn;
    private final MapCodec<TelemetryEventInstance> codec;
 
-   TelemetryEventType(String var1, String var2, List<TelemetryProperty<?>> var3, boolean var4) {
+   private TelemetryEventType(final String id, final String exportKey, final List<TelemetryProperty<?>> properties, final boolean isOptIn) {
       super();
-      this.id = var1;
-      this.exportKey = var2;
-      this.properties = var3;
-      this.isOptIn = var4;
-      this.codec = TelemetryPropertyMap.createCodec(var3).xmap((var1x) -> new TelemetryEventInstance(this, var1x), TelemetryEventInstance::properties);
+      this.id = id;
+      this.exportKey = exportKey;
+      this.properties = properties;
+      this.isOptIn = isOptIn;
+      this.codec = TelemetryPropertyMap.createCodec(properties).xmap((map) -> new TelemetryEventInstance(this, map), TelemetryEventInstance::properties);
    }
 
-   public static Builder builder(String var0, String var1) {
-      return new Builder(var0, var1);
+   public static Builder builder(final String id, final String exportKey) {
+      return new Builder(id, exportKey);
    }
 
    public String id() {
@@ -59,18 +59,18 @@ public class TelemetryEventType {
       return this.isOptIn;
    }
 
-   public TelemetryEvent export(TelemetrySession var1, TelemetryPropertyMap var2) {
-      TelemetryEvent var3 = var1.createNewEvent(this.exportKey);
+   public TelemetryEvent export(final TelemetrySession session, final TelemetryPropertyMap input) {
+      TelemetryEvent output = session.createNewEvent(this.exportKey);
 
-      for(TelemetryProperty var5 : this.properties) {
-         var5.export(var2, var3);
+      for(TelemetryProperty<?> property : this.properties) {
+         property.export(input, output);
       }
 
-      return var3;
+      return output;
    }
 
-   public <T> boolean contains(TelemetryProperty<T> var1) {
-      return this.properties.contains(var1);
+   public <T> boolean contains(final TelemetryProperty<T> property) {
+      return this.properties.contains(property);
    }
 
    public String toString() {
@@ -85,8 +85,8 @@ public class TelemetryEventType {
       return this.makeTranslation("description");
    }
 
-   private MutableComponent makeTranslation(String var1) {
-      return Component.translatable("telemetry.event." + this.id + "." + var1);
+   private MutableComponent makeTranslation(final String suffix) {
+      return Component.translatable("telemetry.event." + this.id + "." + suffix);
    }
 
    public static List<TelemetryEventType> values() {
@@ -94,9 +94,9 @@ public class TelemetryEventType {
    }
 
    static {
-      CODEC = Codec.STRING.comapFlatMap((var0) -> {
-         TelemetryEventType var1 = (TelemetryEventType)REGISTRY.get(var0);
-         return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "No TelemetryEventType with key: '" + var0 + "'");
+      CODEC = Codec.STRING.comapFlatMap((key) -> {
+         TelemetryEventType type = (TelemetryEventType)REGISTRY.get(key);
+         return type != null ? DataResult.success(type) : DataResult.error(() -> "No TelemetryEventType with key: '" + key + "'");
       }, TelemetryEventType::id);
       GLOBAL_PROPERTIES = List.of(TelemetryProperty.USER_ID, TelemetryProperty.CLIENT_ID, TelemetryProperty.MINECRAFT_SESSION_ID, TelemetryProperty.GAME_VERSION, TelemetryProperty.OPERATING_SYSTEM, TelemetryProperty.PLATFORM, TelemetryProperty.CLIENT_MODDED, TelemetryProperty.LAUNCHER_NAME, TelemetryProperty.EVENT_TIMESTAMP_UTC, TelemetryProperty.OPT_IN);
       WORLD_SESSION_PROPERTIES = Stream.concat(GLOBAL_PROPERTIES.stream(), Stream.of(TelemetryProperty.WORLD_SESSION_ID, TelemetryProperty.SERVER_MODDED, TelemetryProperty.SERVER_TYPE)).toList();
@@ -114,19 +114,19 @@ public class TelemetryEventType {
       private final List<TelemetryProperty<?>> properties = new ArrayList();
       private boolean isOptIn;
 
-      Builder(String var1, String var2) {
+      private Builder(final String id, final String exportKey) {
          super();
-         this.id = var1;
-         this.exportKey = var2;
+         this.id = id;
+         this.exportKey = exportKey;
       }
 
-      public Builder defineAll(List<TelemetryProperty<?>> var1) {
-         this.properties.addAll(var1);
+      public Builder defineAll(final List<TelemetryProperty<?>> properties) {
+         this.properties.addAll(properties);
          return this;
       }
 
-      public <T> Builder define(TelemetryProperty<T> var1) {
-         this.properties.add(var1);
+      public <T> Builder define(final TelemetryProperty<T> property) {
+         this.properties.add(property);
          return this;
       }
 
@@ -136,11 +136,11 @@ public class TelemetryEventType {
       }
 
       public TelemetryEventType register() {
-         TelemetryEventType var1 = new TelemetryEventType(this.id, this.exportKey, List.copyOf(this.properties), this.isOptIn);
-         if (TelemetryEventType.REGISTRY.putIfAbsent(this.id, var1) != null) {
+         TelemetryEventType type = new TelemetryEventType(this.id, this.exportKey, List.copyOf(this.properties), this.isOptIn);
+         if (TelemetryEventType.REGISTRY.putIfAbsent(this.id, type) != null) {
             throw new IllegalStateException("Duplicate TelemetryEventType with key: '" + this.id + "'");
          } else {
-            return var1;
+            return type;
          }
       }
    }

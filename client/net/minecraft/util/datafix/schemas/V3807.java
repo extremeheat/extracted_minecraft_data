@@ -8,13 +8,13 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V3807 extends NamespacedSchema {
-   public V3807(int var1, Schema var2) {
-      super(var1, var2);
+   public V3807(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
-      Map var2 = super.registerBlockEntities(var1);
-      var1.register(var2, "minecraft:vault", () -> DSL.optionalFields("config", DSL.optionalFields("key_item", References.ITEM_STACK.in(var1)), "server_data", DSL.optionalFields("items_to_eject", DSL.list(References.ITEM_STACK.in(var1))), "shared_data", DSL.optionalFields("display_item", References.ITEM_STACK.in(var1))));
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerBlockEntities(schema);
+      schema.register(map, "minecraft:vault", () -> DSL.optionalFields("config", DSL.optionalFields("key_item", References.ITEM_STACK.in(schema)), "server_data", DSL.optionalFields("items_to_eject", DSL.list(References.ITEM_STACK.in(schema))), "shared_data", DSL.optionalFields("display_item", References.ITEM_STACK.in(schema))));
+      return map;
    }
 }

@@ -8,24 +8,23 @@ import net.minecraft.network.protocol.PacketType;
 public record ServerboundChunkBatchReceivedPacket(float desiredChunksPerTick) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundChunkBatchReceivedPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChunkBatchReceivedPacket>codec(ServerboundChunkBatchReceivedPacket::write, ServerboundChunkBatchReceivedPacket::new);
 
-   private ServerboundChunkBatchReceivedPacket(FriendlyByteBuf var1) {
-      this(var1.readFloat());
+   private ServerboundChunkBatchReceivedPacket(final FriendlyByteBuf input) {
+      this(input.readFloat());
    }
 
-   public ServerboundChunkBatchReceivedPacket(float var1) {
+   public ServerboundChunkBatchReceivedPacket {
       super();
-      this.desiredChunksPerTick = var1;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeFloat(this.desiredChunksPerTick);
+   private void write(final FriendlyByteBuf output) {
+      output.writeFloat(this.desiredChunksPerTick);
    }
 
    public PacketType<ServerboundChunkBatchReceivedPacket> type() {
       return GamePacketTypes.SERVERBOUND_CHUNK_BATCH_RECEIVED;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleChunkBatchReceived(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleChunkBatchReceived(this);
    }
 }

@@ -11,16 +11,16 @@ import java.util.stream.Stream;
 public class PoiTypeRenameFix extends AbstractPoiSectionFix {
    private final Function<String, String> renamer;
 
-   public PoiTypeRenameFix(Schema var1, String var2, Function<String, String> var3) {
-      super(var1, var2);
-      this.renamer = var3;
+   public PoiTypeRenameFix(final Schema outputSchema, final String name, final Function<String, String> renamer) {
+      super(outputSchema, name);
+      this.renamer = renamer;
    }
 
-   protected <T> Stream<Dynamic<T>> processRecords(Stream<Dynamic<T>> var1) {
-      return var1.map((var1x) -> var1x.update("type", (var1) -> {
-            DataResult var10000 = var1.asString().map(this.renamer);
-            Objects.requireNonNull(var1);
-            return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createString).result(), var1);
+   protected <T> Stream<Dynamic<T>> processRecords(final Stream<Dynamic<T>> stream) {
+      return stream.map((element) -> element.update("type", (type) -> {
+            DataResult var10000 = type.asString().map(this.renamer);
+            Objects.requireNonNull(type);
+            return (Dynamic)DataFixUtils.orElse(var10000.map(type::createString).result(), type);
          }));
    }
 }

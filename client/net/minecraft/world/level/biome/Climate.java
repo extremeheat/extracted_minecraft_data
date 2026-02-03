@@ -33,33 +33,33 @@ public class Climate {
       super();
    }
 
-   public static TargetPoint target(float var0, float var1, float var2, float var3, float var4, float var5) {
-      return new TargetPoint(quantizeCoord(var0), quantizeCoord(var1), quantizeCoord(var2), quantizeCoord(var3), quantizeCoord(var4), quantizeCoord(var5));
+   public static TargetPoint target(final float temperature, final float humidity, final float continentalness, final float erosion, final float depth, final float weirdness) {
+      return new TargetPoint(quantizeCoord(temperature), quantizeCoord(humidity), quantizeCoord(continentalness), quantizeCoord(erosion), quantizeCoord(depth), quantizeCoord(weirdness));
    }
 
-   public static ParameterPoint parameters(float var0, float var1, float var2, float var3, float var4, float var5, float var6) {
-      return new ParameterPoint(Climate.Parameter.point(var0), Climate.Parameter.point(var1), Climate.Parameter.point(var2), Climate.Parameter.point(var3), Climate.Parameter.point(var4), Climate.Parameter.point(var5), quantizeCoord(var6));
+   public static ParameterPoint parameters(final float temperature, final float humidity, final float continentalness, final float erosion, final float depth, final float weirdness, final float offset) {
+      return new ParameterPoint(Climate.Parameter.point(temperature), Climate.Parameter.point(humidity), Climate.Parameter.point(continentalness), Climate.Parameter.point(erosion), Climate.Parameter.point(depth), Climate.Parameter.point(weirdness), quantizeCoord(offset));
    }
 
-   public static ParameterPoint parameters(Parameter var0, Parameter var1, Parameter var2, Parameter var3, Parameter var4, Parameter var5, float var6) {
-      return new ParameterPoint(var0, var1, var2, var3, var4, var5, quantizeCoord(var6));
+   public static ParameterPoint parameters(final Parameter temperature, final Parameter humidity, final Parameter continentalness, final Parameter erosion, final Parameter depth, final Parameter weirdness, final float offset) {
+      return new ParameterPoint(temperature, humidity, continentalness, erosion, depth, weirdness, quantizeCoord(offset));
    }
 
-   public static long quantizeCoord(float var0) {
-      return (long)(var0 * 10000.0F);
+   public static long quantizeCoord(final float coord) {
+      return (long)(coord * 10000.0F);
    }
 
-   public static float unquantizeCoord(long var0) {
-      return (float)var0 / 10000.0F;
+   public static float unquantizeCoord(final long coord) {
+      return (float)coord / 10000.0F;
    }
 
    public static Sampler empty() {
-      DensityFunction var0 = DensityFunctions.zero();
-      return new Sampler(var0, var0, var0, var0, var0, var0, List.of());
+      DensityFunction zero = DensityFunctions.zero();
+      return new Sampler(zero, zero, zero, zero, zero, zero, List.of());
    }
 
-   public static BlockPos findSpawnPosition(List<ParameterPoint> var0, Sampler var1) {
-      return (new SpawnFinder(var0, var1)).result.location();
+   public static BlockPos findSpawnPosition(final List<ParameterPoint> targetClimates, final Sampler sampler) {
+      return (new SpawnFinder(targetClimates, sampler)).result.location();
    }
 
    protected static final class RTree<T> {
@@ -67,162 +67,162 @@ public class Climate {
       private final Node<T> root;
       private final ThreadLocal<@Nullable Leaf<T>> lastResult = new ThreadLocal();
 
-      private RTree(Node<T> var1) {
+      private RTree(final Node<T> root) {
          super();
-         this.root = var1;
+         this.root = root;
       }
 
-      public static <T> RTree<T> create(List<Pair<ParameterPoint, T>> var0) {
-         if (var0.isEmpty()) {
+      public static <T> RTree<T> create(final List<Pair<ParameterPoint, T>> values) {
+         if (values.isEmpty()) {
             throw new IllegalArgumentException("Need at least one value to build the search tree.");
          } else {
-            int var1 = ((ParameterPoint)((Pair)var0.get(0)).getFirst()).parameterSpace().size();
-            if (var1 != 7) {
-               throw new IllegalStateException("Expecting parameter space to be 7, got " + var1);
+            int dimensions = ((ParameterPoint)((Pair)values.get(0)).getFirst()).parameterSpace().size();
+            if (dimensions != 7) {
+               throw new IllegalStateException("Expecting parameter space to be 7, got " + dimensions);
             } else {
-               List var2 = (List)var0.stream().map((var0x) -> new Leaf((ParameterPoint)var0x.getFirst(), var0x.getSecond())).collect(Collectors.toCollection(ArrayList::new));
-               return new RTree<T>(build(var1, var2));
+               List<Leaf<T>> leaves = (List)values.stream().map((p) -> new Leaf((ParameterPoint)p.getFirst(), p.getSecond())).collect(Collectors.toCollection(ArrayList::new));
+               return new RTree<T>(build(dimensions, leaves));
             }
          }
       }
 
-      private static <T> Node<T> build(int var0, List<? extends Node<T>> var1) {
-         if (var1.isEmpty()) {
+      private static <T> Node<T> build(final int dimensions, final List<? extends Node<T>> children) {
+         if (children.isEmpty()) {
             throw new IllegalStateException("Need at least one child to build a node");
-         } else if (var1.size() == 1) {
-            return (Node)var1.get(0);
-         } else if (var1.size() <= 6) {
-            var1.sort(Comparator.comparingLong((var1x) -> {
-               long var2 = 0L;
+         } else if (children.size() == 1) {
+            return (Node)children.get(0);
+         } else if (children.size() <= 6) {
+            children.sort(Comparator.comparingLong((leaf) -> {
+               long totalMagnitude = 0L;
 
-               for(int var4 = 0; var4 < var0; ++var4) {
-                  Parameter var5 = var1x.parameterSpace[var4];
-                  var2 += Math.abs((var5.min() + var5.max()) / 2L);
+               for(int d = 0; d < dimensions; ++d) {
+                  Parameter parameter = leaf.parameterSpace[d];
+                  totalMagnitude += Math.abs((parameter.min() + parameter.max()) / 2L);
                }
 
-               return var2;
+               return totalMagnitude;
             }));
-            return new SubTree<T>(var1);
+            return new SubTree<T>(children);
          } else {
-            long var2 = 9223372036854775807L;
-            int var4 = -1;
-            List var5 = null;
+            long minCost = 9223372036854775807L;
+            int minDimension = -1;
+            List<SubTree<T>> minBuckets = null;
 
-            for(int var6 = 0; var6 < var0; ++var6) {
-               sort(var1, var0, var6, false);
-               List var7 = bucketize(var1);
-               long var8 = 0L;
+            for(int d = 0; d < dimensions; ++d) {
+               sort(children, dimensions, d, false);
+               List<SubTree<T>> buckets = bucketize(children);
+               long totalCost = 0L;
 
-               for(SubTree var11 : var7) {
-                  var8 += cost(var11.parameterSpace);
+               for(SubTree<T> bucket : buckets) {
+                  totalCost += cost(bucket.parameterSpace);
                }
 
-               if (var2 > var8) {
-                  var2 = var8;
-                  var4 = var6;
-                  var5 = var7;
+               if (minCost > totalCost) {
+                  minCost = totalCost;
+                  minDimension = d;
+                  minBuckets = buckets;
                }
             }
 
-            sort(var5, var0, var4, true);
-            return new SubTree<T>((List)var5.stream().map((var1x) -> build(var0, Arrays.asList(var1x.children))).collect(Collectors.toList()));
+            sort(minBuckets, dimensions, minDimension, true);
+            return new SubTree<T>((List)minBuckets.stream().map((b) -> build(dimensions, Arrays.asList(b.children))).collect(Collectors.toList()));
          }
       }
 
-      private static <T> void sort(List<? extends Node<T>> var0, int var1, int var2, boolean var3) {
-         Comparator var4 = comparator(var2, var3);
+      private static <T> void sort(final List<? extends Node<T>> children, final int dimensions, final int dimension, final boolean absolute) {
+         Comparator<Node<T>> comparator = comparator(dimension, absolute);
 
-         for(int var5 = 1; var5 < var1; ++var5) {
-            var4 = var4.thenComparing(comparator((var2 + var5) % var1, var3));
+         for(int d = 1; d < dimensions; ++d) {
+            comparator = comparator.thenComparing(comparator((dimension + d) % dimensions, absolute));
          }
 
-         var0.sort(var4);
+         children.sort(comparator);
       }
 
-      private static <T> Comparator<Node<T>> comparator(int var0, boolean var1) {
-         return Comparator.comparingLong((var2) -> {
-            Parameter var3 = var2.parameterSpace[var0];
-            long var4 = (var3.min() + var3.max()) / 2L;
-            return var1 ? Math.abs(var4) : var4;
+      private static <T> Comparator<Node<T>> comparator(final int dimension, final boolean absolute) {
+         return Comparator.comparingLong((leaf) -> {
+            Parameter parameter = leaf.parameterSpace[dimension];
+            long center = (parameter.min() + parameter.max()) / 2L;
+            return absolute ? Math.abs(center) : center;
          });
       }
 
-      private static <T> List<SubTree<T>> bucketize(List<? extends Node<T>> var0) {
-         ArrayList var1 = Lists.newArrayList();
-         ArrayList var2 = Lists.newArrayList();
-         int var3 = (int)Math.pow(6.0, Math.floor(Math.log((double)var0.size() - 0.01) / Math.log(6.0)));
+      private static <T> List<SubTree<T>> bucketize(final List<? extends Node<T>> nodes) {
+         List<SubTree<T>> buckets = Lists.newArrayList();
+         List<Node<T>> children = Lists.newArrayList();
+         int expectedChildrenCount = (int)Math.pow(6.0, Math.floor(Math.log((double)nodes.size() - 0.01) / Math.log(6.0)));
 
-         for(Node var5 : var0) {
-            var2.add(var5);
-            if (var2.size() >= var3) {
-               var1.add(new SubTree(var2));
-               var2 = Lists.newArrayList();
+         for(Node<T> child : nodes) {
+            children.add(child);
+            if (children.size() >= expectedChildrenCount) {
+               buckets.add(new SubTree(children));
+               children = Lists.newArrayList();
             }
          }
 
-         if (!var2.isEmpty()) {
-            var1.add(new SubTree(var2));
+         if (!children.isEmpty()) {
+            buckets.add(new SubTree(children));
          }
 
-         return var1;
+         return buckets;
       }
 
-      private static long cost(Parameter[] var0) {
-         long var1 = 0L;
+      private static long cost(final Parameter[] parameterSpace) {
+         long result = 0L;
 
-         for(Parameter var6 : var0) {
-            var1 += Math.abs(var6.max() - var6.min());
+         for(Parameter parameter : parameterSpace) {
+            result += Math.abs(parameter.max() - parameter.min());
          }
 
-         return var1;
+         return result;
       }
 
-      static <T> List<Parameter> buildParameterSpace(List<? extends Node<T>> var0) {
-         if (var0.isEmpty()) {
+      private static <T> List<Parameter> buildParameterSpace(final List<? extends Node<T>> children) {
+         if (children.isEmpty()) {
             throw new IllegalArgumentException("SubTree needs at least one child");
          } else {
-            boolean var1 = true;
-            ArrayList var2 = Lists.newArrayList();
+            int dimensions = 7;
+            List<Parameter> bounds = Lists.newArrayList();
 
-            for(int var3 = 0; var3 < 7; ++var3) {
-               var2.add((Object)null);
+            for(int d = 0; d < 7; ++d) {
+               bounds.add((Object)null);
             }
 
-            for(Node var4 : var0) {
-               for(int var5 = 0; var5 < 7; ++var5) {
-                  var2.set(var5, var4.parameterSpace[var5].span((Parameter)var2.get(var5)));
+            for(Node<T> child : children) {
+               for(int d = 0; d < 7; ++d) {
+                  bounds.set(d, child.parameterSpace[d].span((Parameter)bounds.get(d)));
                }
             }
 
-            return var2;
+            return bounds;
          }
       }
 
-      public T search(TargetPoint var1, DistanceMetric<T> var2) {
-         long[] var3 = var1.toParameterArray();
-         Leaf var4 = this.root.search(var3, (Leaf)this.lastResult.get(), var2);
-         this.lastResult.set(var4);
-         return var4.value;
+      public T search(final TargetPoint target, final DistanceMetric<T> distanceMetric) {
+         long[] targetArray = target.toParameterArray();
+         Leaf<T> leaf = this.root.search(targetArray, (Leaf)this.lastResult.get(), distanceMetric);
+         this.lastResult.set(leaf);
+         return leaf.value;
       }
 
       abstract static class Node<T> {
          protected final Parameter[] parameterSpace;
 
-         protected Node(List<Parameter> var1) {
+         protected Node(final List<Parameter> parameterSpace) {
             super();
-            this.parameterSpace = (Parameter[])var1.toArray(new Parameter[0]);
+            this.parameterSpace = (Parameter[])parameterSpace.toArray(new Parameter[0]);
          }
 
-         protected abstract Leaf<T> search(long[] var1, @Nullable Leaf<T> var2, DistanceMetric<T> var3);
+         protected abstract Leaf<T> search(final long[] target, final @Nullable Leaf<T> candidate, final DistanceMetric<T> distanceMetric);
 
-         protected long distance(long[] var1) {
-            long var2 = 0L;
+         protected long distance(final long[] target) {
+            long distance = 0L;
 
-            for(int var4 = 0; var4 < 7; ++var4) {
-               var2 += Mth.square(this.parameterSpace[var4].distance(var1[var4]));
+            for(int i = 0; i < 7; ++i) {
+               distance += Mth.square(this.parameterSpace[i].distance(target[i]));
             }
 
-            return var2;
+            return distance;
          }
 
          public String toString() {
@@ -230,48 +230,48 @@ public class Climate {
          }
       }
 
-      static final class Leaf<T> extends Node<T> {
-         final T value;
+      private static final class Leaf<T> extends Node<T> {
+         private final T value;
 
-         Leaf(ParameterPoint var1, T var2) {
-            super(var1.parameterSpace());
-            this.value = var2;
+         private Leaf(final ParameterPoint parameterPoint, final T value) {
+            super(parameterPoint.parameterSpace());
+            this.value = value;
          }
 
-         protected Leaf<T> search(long[] var1, @Nullable Leaf<T> var2, DistanceMetric<T> var3) {
+         protected Leaf<T> search(final long[] target, final @Nullable Leaf<T> candidate, final DistanceMetric<T> distanceMetric) {
             return this;
          }
       }
 
-      static final class SubTree<T> extends Node<T> {
-         final Node<T>[] children;
+      private static final class SubTree<T> extends Node<T> {
+         private final Node<T>[] children;
 
-         protected SubTree(List<? extends Node<T>> var1) {
-            this(Climate.RTree.buildParameterSpace(var1), var1);
+         protected SubTree(final List<? extends Node<T>> children) {
+            this(Climate.RTree.buildParameterSpace(children), children);
          }
 
-         protected SubTree(List<Parameter> var1, List<? extends Node<T>> var2) {
-            super(var1);
-            this.children = (Node[])var2.toArray(new Node[0]);
+         protected SubTree(final List<Parameter> parameterSpace, final List<? extends Node<T>> children) {
+            super(parameterSpace);
+            this.children = (Node[])children.toArray(new Node[0]);
          }
 
-         protected Leaf<T> search(long[] var1, @Nullable Leaf<T> var2, DistanceMetric<T> var3) {
-            long var4 = var2 == null ? 9223372036854775807L : var3.distance(var2, var1);
-            Leaf var6 = var2;
+         protected Leaf<T> search(final long[] target, final @Nullable Leaf<T> candidate, final DistanceMetric<T> distanceMetric) {
+            long minDistance = candidate == null ? 9223372036854775807L : distanceMetric.distance(candidate, target);
+            Leaf<T> closestLeaf = candidate;
 
-            for(Node var10 : this.children) {
-               long var11 = var3.distance(var10, var1);
-               if (var4 > var11) {
-                  Leaf var13 = var10.search(var1, var6, var3);
-                  long var14 = var10 == var13 ? var11 : var3.distance(var13, var1);
-                  if (var4 > var14) {
-                     var4 = var14;
-                     var6 = var13;
+            for(Node<T> child : this.children) {
+               long childDistance = distanceMetric.distance(child, target);
+               if (minDistance > childDistance) {
+                  Leaf<T> leaf = child.search(target, closestLeaf, distanceMetric);
+                  long leafDistance = child == leaf ? childDistance : distanceMetric.distance(leaf, target);
+                  if (minDistance > leafDistance) {
+                     minDistance = leafDistance;
+                     closestLeaf = leaf;
                   }
                }
             }
 
-            return var6;
+            return closestLeaf;
          }
       }
    }
@@ -280,68 +280,55 @@ public class Climate {
       private final List<Pair<ParameterPoint, T>> values;
       private final RTree<T> index;
 
-      public static <T> Codec<ParameterList<T>> codec(MapCodec<T> var0) {
-         return ExtraCodecs.nonEmptyList(RecordCodecBuilder.create((var1) -> var1.group(Climate.ParameterPoint.CODEC.fieldOf("parameters").forGetter(Pair::getFirst), var0.forGetter(Pair::getSecond)).apply(var1, Pair::of)).listOf()).xmap(ParameterList::new, ParameterList::values);
+      public static <T> Codec<ParameterList<T>> codec(final MapCodec<T> valueCodec) {
+         return ExtraCodecs.nonEmptyList(RecordCodecBuilder.create((i) -> i.group(Climate.ParameterPoint.CODEC.fieldOf("parameters").forGetter(Pair::getFirst), valueCodec.forGetter(Pair::getSecond)).apply(i, Pair::of)).listOf()).xmap(ParameterList::new, ParameterList::values);
       }
 
-      public ParameterList(List<Pair<ParameterPoint, T>> var1) {
+      public ParameterList(final List<Pair<ParameterPoint, T>> values) {
          super();
-         this.values = var1;
-         this.index = Climate.RTree.<T>create(var1);
+         this.values = values;
+         this.index = Climate.RTree.<T>create(values);
       }
 
       public List<Pair<ParameterPoint, T>> values() {
          return this.values;
       }
 
-      public T findValue(TargetPoint var1) {
-         return (T)this.findValueIndex(var1);
+      public T findValue(final TargetPoint target) {
+         return (T)this.findValueIndex(target);
       }
 
       @VisibleForTesting
-      public T findValueBruteForce(TargetPoint var1) {
-         Iterator var2 = this.values().iterator();
-         Pair var3 = (Pair)var2.next();
-         long var4 = ((ParameterPoint)var3.getFirst()).fitness(var1);
-         Object var6 = var3.getSecond();
+      public T findValueBruteForce(final TargetPoint target) {
+         Iterator<Pair<ParameterPoint, T>> iterator = this.values().iterator();
+         Pair<ParameterPoint, T> first = (Pair)iterator.next();
+         long bestFitness = ((ParameterPoint)first.getFirst()).fitness(target);
+         T best = (T)first.getSecond();
 
-         while(var2.hasNext()) {
-            Pair var7 = (Pair)var2.next();
-            long var8 = ((ParameterPoint)var7.getFirst()).fitness(var1);
-            if (var8 < var4) {
-               var4 = var8;
-               var6 = var7.getSecond();
+         while(iterator.hasNext()) {
+            Pair<ParameterPoint, T> parameter = (Pair)iterator.next();
+            long fitness = ((ParameterPoint)parameter.getFirst()).fitness(target);
+            if (fitness < bestFitness) {
+               bestFitness = fitness;
+               best = (T)parameter.getSecond();
             }
          }
 
-         return (T)var6;
+         return best;
       }
 
-      public T findValueIndex(TargetPoint var1) {
-         return (T)this.findValueIndex(var1, RTree.Node::distance);
+      public T findValueIndex(final TargetPoint target) {
+         return (T)this.findValueIndex(target, RTree.Node::distance);
       }
 
-      protected T findValueIndex(TargetPoint var1, DistanceMetric<T> var2) {
-         return this.index.search(var1, var2);
+      protected T findValueIndex(final TargetPoint target, final DistanceMetric<T> distanceMetric) {
+         return this.index.search(target, distanceMetric);
       }
    }
 
    public static record TargetPoint(long temperature, long humidity, long continentalness, long erosion, long depth, long weirdness) {
-      final long temperature;
-      final long humidity;
-      final long continentalness;
-      final long erosion;
-      final long depth;
-      final long weirdness;
-
-      public TargetPoint(long var1, long var3, long var5, long var7, long var9, long var11) {
+      public TargetPoint {
          super();
-         this.temperature = var1;
-         this.humidity = var3;
-         this.continentalness = var5;
-         this.erosion = var7;
-         this.depth = var9;
-         this.weirdness = var11;
       }
 
       @VisibleForTesting
@@ -351,21 +338,14 @@ public class Climate {
    }
 
    public static record ParameterPoint(Parameter temperature, Parameter humidity, Parameter continentalness, Parameter erosion, Parameter depth, Parameter weirdness, long offset) {
-      public static final Codec<ParameterPoint> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Climate.Parameter.CODEC.fieldOf("temperature").forGetter((var0x) -> var0x.temperature), Climate.Parameter.CODEC.fieldOf("humidity").forGetter((var0x) -> var0x.humidity), Climate.Parameter.CODEC.fieldOf("continentalness").forGetter((var0x) -> var0x.continentalness), Climate.Parameter.CODEC.fieldOf("erosion").forGetter((var0x) -> var0x.erosion), Climate.Parameter.CODEC.fieldOf("depth").forGetter((var0x) -> var0x.depth), Climate.Parameter.CODEC.fieldOf("weirdness").forGetter((var0x) -> var0x.weirdness), Codec.floatRange(0.0F, 1.0F).fieldOf("offset").xmap(Climate::quantizeCoord, Climate::unquantizeCoord).forGetter((var0x) -> var0x.offset)).apply(var0, ParameterPoint::new));
+      public static final Codec<ParameterPoint> CODEC = RecordCodecBuilder.create((i) -> i.group(Climate.Parameter.CODEC.fieldOf("temperature").forGetter((p) -> p.temperature), Climate.Parameter.CODEC.fieldOf("humidity").forGetter((p) -> p.humidity), Climate.Parameter.CODEC.fieldOf("continentalness").forGetter((p) -> p.continentalness), Climate.Parameter.CODEC.fieldOf("erosion").forGetter((p) -> p.erosion), Climate.Parameter.CODEC.fieldOf("depth").forGetter((p) -> p.depth), Climate.Parameter.CODEC.fieldOf("weirdness").forGetter((p) -> p.weirdness), Codec.floatRange(0.0F, 1.0F).fieldOf("offset").xmap(Climate::quantizeCoord, Climate::unquantizeCoord).forGetter((p) -> p.offset)).apply(i, ParameterPoint::new));
 
-      public ParameterPoint(Parameter var1, Parameter var2, Parameter var3, Parameter var4, Parameter var5, Parameter var6, long var7) {
+      public ParameterPoint {
          super();
-         this.temperature = var1;
-         this.humidity = var2;
-         this.continentalness = var3;
-         this.erosion = var4;
-         this.depth = var5;
-         this.weirdness = var6;
-         this.offset = var7;
       }
 
-      long fitness(TargetPoint var1) {
-         return Mth.square(this.temperature.distance(var1.temperature)) + Mth.square(this.humidity.distance(var1.humidity)) + Mth.square(this.continentalness.distance(var1.continentalness)) + Mth.square(this.erosion.distance(var1.erosion)) + Mth.square(this.depth.distance(var1.depth)) + Mth.square(this.weirdness.distance(var1.weirdness)) + Mth.square(this.offset);
+      private long fitness(final TargetPoint target) {
+         return Mth.square(this.temperature.distance(target.temperature)) + Mth.square(this.humidity.distance(target.humidity)) + Mth.square(this.continentalness.distance(target.continentalness)) + Mth.square(this.erosion.distance(target.erosion)) + Mth.square(this.depth.distance(target.depth)) + Mth.square(this.weirdness.distance(target.weirdness)) + Mth.square(this.offset);
       }
 
       protected List<Parameter> parameterSpace() {
@@ -374,32 +354,30 @@ public class Climate {
    }
 
    public static record Parameter(long min, long max) {
-      public static final Codec<Parameter> CODEC = ExtraCodecs.intervalCodec(Codec.floatRange(-2.0F, 2.0F), "min", "max", (var0, var1) -> var0.compareTo(var1) > 0 ? DataResult.error(() -> "Cannon construct interval, min > max (" + var0 + " > " + var1 + ")") : DataResult.success(new Parameter(Climate.quantizeCoord(var0), Climate.quantizeCoord(var1))), (var0) -> Climate.unquantizeCoord(var0.min()), (var0) -> Climate.unquantizeCoord(var0.max()));
+      public static final Codec<Parameter> CODEC = ExtraCodecs.intervalCodec(Codec.floatRange(-2.0F, 2.0F), "min", "max", (min, max) -> min.compareTo(max) > 0 ? DataResult.error(() -> "Cannon construct interval, min > max (" + min + " > " + max + ")") : DataResult.success(new Parameter(Climate.quantizeCoord(min), Climate.quantizeCoord(max))), (p) -> Climate.unquantizeCoord(p.min()), (p) -> Climate.unquantizeCoord(p.max()));
 
-      public Parameter(long var1, long var3) {
+      public Parameter {
          super();
-         this.min = var1;
-         this.max = var3;
       }
 
-      public static Parameter point(float var0) {
-         return span(var0, var0);
+      public static Parameter point(final float min) {
+         return span(min, min);
       }
 
-      public static Parameter span(float var0, float var1) {
-         if (var0 > var1) {
-            throw new IllegalArgumentException("min > max: " + var0 + " " + var1);
+      public static Parameter span(final float min, final float max) {
+         if (min > max) {
+            throw new IllegalArgumentException("min > max: " + min + " " + max);
          } else {
-            return new Parameter(Climate.quantizeCoord(var0), Climate.quantizeCoord(var1));
+            return new Parameter(Climate.quantizeCoord(min), Climate.quantizeCoord(max));
          }
       }
 
-      public static Parameter span(Parameter var0, Parameter var1) {
-         if (var0.min() > var1.max()) {
-            String var10002 = String.valueOf(var0);
-            throw new IllegalArgumentException("min > max: " + var10002 + " " + String.valueOf(var1));
+      public static Parameter span(final Parameter min, final Parameter max) {
+         if (min.min() > max.max()) {
+            String var10002 = String.valueOf(min);
+            throw new IllegalArgumentException("min > max: " + var10002 + " " + String.valueOf(max));
          } else {
-            return new Parameter(var0.min(), var1.max());
+            return new Parameter(min.min(), max.max());
          }
       }
 
@@ -407,41 +385,34 @@ public class Climate {
          return this.min == this.max ? String.format(Locale.ROOT, "%d", this.min) : String.format(Locale.ROOT, "[%d-%d]", this.min, this.max);
       }
 
-      public long distance(long var1) {
-         long var3 = var1 - this.max;
-         long var5 = this.min - var1;
-         return var3 > 0L ? var3 : Math.max(var5, 0L);
+      public long distance(final long target) {
+         long above = target - this.max;
+         long below = this.min - target;
+         return above > 0L ? above : Math.max(below, 0L);
       }
 
-      public long distance(Parameter var1) {
-         long var2 = var1.min() - this.max;
-         long var4 = this.min - var1.max();
-         return var2 > 0L ? var2 : Math.max(var4, 0L);
+      public long distance(final Parameter target) {
+         long above = target.min() - this.max;
+         long below = this.min - target.max();
+         return above > 0L ? above : Math.max(below, 0L);
       }
 
-      public Parameter span(@Nullable Parameter var1) {
-         return var1 == null ? this : new Parameter(Math.min(this.min, var1.min()), Math.max(this.max, var1.max()));
+      public Parameter span(final @Nullable Parameter other) {
+         return other == null ? this : new Parameter(Math.min(this.min, other.min()), Math.max(this.max, other.max()));
       }
    }
 
    public static record Sampler(DensityFunction temperature, DensityFunction humidity, DensityFunction continentalness, DensityFunction erosion, DensityFunction depth, DensityFunction weirdness, List<ParameterPoint> spawnTarget) {
-      public Sampler(DensityFunction var1, DensityFunction var2, DensityFunction var3, DensityFunction var4, DensityFunction var5, DensityFunction var6, List<ParameterPoint> var7) {
+      public Sampler {
          super();
-         this.temperature = var1;
-         this.humidity = var2;
-         this.continentalness = var3;
-         this.erosion = var4;
-         this.depth = var5;
-         this.weirdness = var6;
-         this.spawnTarget = var7;
       }
 
-      public TargetPoint sample(int var1, int var2, int var3) {
-         int var4 = QuartPos.toBlock(var1);
-         int var5 = QuartPos.toBlock(var2);
-         int var6 = QuartPos.toBlock(var3);
-         DensityFunction.SinglePointContext var7 = new DensityFunction.SinglePointContext(var4, var5, var6);
-         return Climate.target((float)this.temperature.compute(var7), (float)this.humidity.compute(var7), (float)this.continentalness.compute(var7), (float)this.erosion.compute(var7), (float)this.depth.compute(var7), (float)this.weirdness.compute(var7));
+      public TargetPoint sample(final int quartX, final int quartY, final int quartZ) {
+         int blockX = QuartPos.toBlock(quartX);
+         int blockY = QuartPos.toBlock(quartY);
+         int blockZ = QuartPos.toBlock(quartZ);
+         DensityFunction.SinglePointContext context = new DensityFunction.SinglePointContext(blockX, blockY, blockZ);
+         return Climate.target((float)this.temperature.compute(context), (float)this.humidity.compute(context), (float)this.continentalness.compute(context), (float)this.erosion.compute(context), (float)this.depth.compute(context), (float)this.weirdness.compute(context));
       }
 
       public BlockPos findSpawnPosition() {
@@ -449,63 +420,61 @@ public class Climate {
       }
    }
 
-   static class SpawnFinder {
+   private static class SpawnFinder {
       private static final long MAX_RADIUS = 2048L;
-      Result result;
+      private Result result;
 
-      SpawnFinder(List<ParameterPoint> var1, Sampler var2) {
+      private SpawnFinder(final List<ParameterPoint> targetClimates, final Sampler sampler) {
          super();
-         this.result = getSpawnPositionAndFitness(var1, var2, 0, 0);
-         this.radialSearch(var1, var2, 2048.0F, 512.0F);
-         this.radialSearch(var1, var2, 512.0F, 32.0F);
+         this.result = getSpawnPositionAndFitness(targetClimates, sampler, 0, 0);
+         this.radialSearch(targetClimates, sampler, 2048.0F, 512.0F);
+         this.radialSearch(targetClimates, sampler, 512.0F, 32.0F);
       }
 
-      private void radialSearch(List<ParameterPoint> var1, Sampler var2, float var3, float var4) {
-         float var5 = 0.0F;
-         float var6 = var4;
-         BlockPos var7 = this.result.location();
+      private void radialSearch(final List<ParameterPoint> targetClimates, final Sampler sampler, final float maxRadius, final float radiusIncrement) {
+         float angle = 0.0F;
+         float radius = radiusIncrement;
+         BlockPos searchOrigin = this.result.location();
 
-         while(var6 <= var3) {
-            int var8 = var7.getX() + (int)(Math.sin((double)var5) * (double)var6);
-            int var9 = var7.getZ() + (int)(Math.cos((double)var5) * (double)var6);
-            Result var10 = getSpawnPositionAndFitness(var1, var2, var8, var9);
-            if (var10.fitness() < this.result.fitness()) {
-               this.result = var10;
+         while(radius <= maxRadius) {
+            int x = searchOrigin.getX() + (int)(Math.sin((double)angle) * (double)radius);
+            int z = searchOrigin.getZ() + (int)(Math.cos((double)angle) * (double)radius);
+            Result candidate = getSpawnPositionAndFitness(targetClimates, sampler, x, z);
+            if (candidate.fitness() < this.result.fitness()) {
+               this.result = candidate;
             }
 
-            var5 += var4 / var6;
-            if ((double)var5 > 6.283185307179586) {
-               var5 = 0.0F;
-               var6 += var4;
+            angle += radiusIncrement / radius;
+            if ((double)angle > 6.283185307179586) {
+               angle = 0.0F;
+               radius += radiusIncrement;
             }
          }
 
       }
 
-      private static Result getSpawnPositionAndFitness(List<ParameterPoint> var0, Sampler var1, int var2, int var3) {
-         TargetPoint var4 = var1.sample(QuartPos.fromBlock(var2), 0, QuartPos.fromBlock(var3));
-         TargetPoint var5 = new TargetPoint(var4.temperature(), var4.humidity(), var4.continentalness(), var4.erosion(), 0L, var4.weirdness());
-         long var6 = 9223372036854775807L;
+      private static Result getSpawnPositionAndFitness(final List<ParameterPoint> targetClimates, final Sampler sampler, final int blockX, final int blockZ) {
+         TargetPoint targetPoint = sampler.sample(QuartPos.fromBlock(blockX), 0, QuartPos.fromBlock(blockZ));
+         TargetPoint zeroDepthTargetPoint = new TargetPoint(targetPoint.temperature(), targetPoint.humidity(), targetPoint.continentalness(), targetPoint.erosion(), 0L, targetPoint.weirdness());
+         long minFitness = 9223372036854775807L;
 
-         for(ParameterPoint var9 : var0) {
-            var6 = Math.min(var6, var9.fitness(var5));
+         for(ParameterPoint point : targetClimates) {
+            minFitness = Math.min(minFitness, point.fitness(zeroDepthTargetPoint));
          }
 
-         long var12 = Mth.square((long)var2) + Mth.square((long)var3);
-         long var10 = var6 * Mth.square(2048L) + var12;
-         return new Result(new BlockPos(var2, 0, var3), var10);
+         long distanceBiasToWorldOrigin = Mth.square((long)blockX) + Mth.square((long)blockZ);
+         long fitnessWithDistance = minFitness * Mth.square(2048L) + distanceBiasToWorldOrigin;
+         return new Result(new BlockPos(blockX, 0, blockZ), fitnessWithDistance);
       }
 
-      static record Result(BlockPos location, long fitness) {
-         Result(BlockPos var1, long var2) {
+      private static record Result(BlockPos location, long fitness) {
+         private Result {
             super();
-            this.location = var1;
-            this.fitness = var2;
          }
       }
    }
 
    interface DistanceMetric<T> {
-      long distance(RTree.Node<T> var1, long[] var2);
+      long distance(RTree.Node<T> node, long[] target);
    }
 }

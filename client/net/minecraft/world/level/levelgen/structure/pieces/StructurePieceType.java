@@ -81,33 +81,33 @@ public interface StructurePieceType {
    StructurePieceType NETHER_FOSSIL = setTemplatePieceId(NetherFossilPieces.NetherFossilPiece::new, "NeFos");
    StructurePieceType JIGSAW = setFullContextPieceId(PoolElementStructurePiece::new, "jigsaw");
 
-   StructurePiece load(StructurePieceSerializationContext var1, CompoundTag var2);
+   StructurePiece load(final StructurePieceSerializationContext context, final CompoundTag tag);
 
-   private static StructurePieceType setFullContextPieceId(StructurePieceType var0, String var1) {
-      return (StructurePieceType)Registry.register(BuiltInRegistries.STRUCTURE_PIECE, (String)var1.toLowerCase(Locale.ROOT), var0);
+   private static StructurePieceType setFullContextPieceId(final StructurePieceType type, final String id) {
+      return (StructurePieceType)Registry.register(BuiltInRegistries.STRUCTURE_PIECE, (String)id.toLowerCase(Locale.ROOT), type);
    }
 
-   private static StructurePieceType setPieceId(ContextlessType var0, String var1) {
-      return setFullContextPieceId(var0, var1);
+   private static StructurePieceType setPieceId(final ContextlessType type, final String id) {
+      return setFullContextPieceId(type, id);
    }
 
-   private static StructurePieceType setTemplatePieceId(StructureTemplateType var0, String var1) {
-      return setFullContextPieceId(var0, var1);
+   private static StructurePieceType setTemplatePieceId(final StructureTemplateType type, final String id) {
+      return setFullContextPieceId(type, id);
    }
 
    public interface ContextlessType extends StructurePieceType {
-      StructurePiece load(CompoundTag var1);
+      StructurePiece load(final CompoundTag tag);
 
-      default StructurePiece load(StructurePieceSerializationContext var1, CompoundTag var2) {
-         return this.load(var2);
+      default StructurePiece load(final StructurePieceSerializationContext context, final CompoundTag tag) {
+         return this.load(tag);
       }
    }
 
    public interface StructureTemplateType extends StructurePieceType {
-      StructurePiece load(StructureTemplateManager var1, CompoundTag var2);
+      StructurePiece load(final StructureTemplateManager structureTemplateManager, final CompoundTag tag);
 
-      default StructurePiece load(StructurePieceSerializationContext var1, CompoundTag var2) {
-         return this.load(var1.structureTemplateManager(), var2);
+      default StructurePiece load(final StructurePieceSerializationContext context, final CompoundTag tag) {
+         return this.load(context.structureTemplateManager(), tag);
       }
    }
 }

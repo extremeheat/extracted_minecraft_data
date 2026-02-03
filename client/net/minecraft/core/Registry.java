@@ -9,10 +9,12 @@ import com.mojang.serialization.Lifecycle;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import net.minecraft.core.component.DataComponentLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
@@ -21,72 +23,72 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
-public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, IdMap<T> {
+public interface Registry<T> extends IdMap<T>, Keyable, HolderLookup.RegistryLookup<T> {
    ResourceKey<? extends Registry<T>> key();
 
    default Codec<T> byNameCodec() {
-      return this.referenceHolderWithLifecycle().flatComapMap(Holder.Reference::value, (var1) -> this.safeCastToReference(this.wrapAsHolder(var1)));
+      return this.referenceHolderWithLifecycle().flatComapMap(Holder.Reference::value, (value) -> this.safeCastToReference(this.wrapAsHolder(value)));
    }
 
    default Codec<Holder<T>> holderByNameCodec() {
-      return this.referenceHolderWithLifecycle().flatComapMap((var0) -> var0, this::safeCastToReference);
+      return this.referenceHolderWithLifecycle().flatComapMap((holder) -> holder, this::safeCastToReference);
    }
 
    private Codec<Holder.Reference<T>> referenceHolderWithLifecycle() {
-      Codec var1 = Identifier.CODEC.comapFlatMap((var1x) -> (DataResult)this.get(var1x).map(DataResult::success).orElseGet(() -> DataResult.error(() -> {
+      Codec<Holder.Reference<T>> referenceCodec = Identifier.CODEC.comapFlatMap((name) -> (DataResult)this.get(name).map(DataResult::success).orElseGet(() -> DataResult.error(() -> {
                String var10000 = String.valueOf(this.key());
-               return "Unknown registry key in " + var10000 + ": " + String.valueOf(var1x);
-            })), (var0) -> var0.key().identifier());
-      return ExtraCodecs.<Holder.Reference<T>>overrideLifecycle(var1, (var1x) -> (Lifecycle)this.registrationInfo(var1x.key()).map(RegistrationInfo::lifecycle).orElse(Lifecycle.experimental()));
+               return "Unknown registry key in " + var10000 + ": " + String.valueOf(name);
+            })), (holder) -> holder.key().identifier());
+      return ExtraCodecs.<Holder.Reference<T>>overrideLifecycle(referenceCodec, (e) -> (Lifecycle)this.registrationInfo(e.key()).map(RegistrationInfo::lifecycle).orElse(Lifecycle.experimental()));
    }
 
-   private DataResult<Holder.Reference<T>> safeCastToReference(Holder<T> var1) {
+   private DataResult<Holder.Reference<T>> safeCastToReference(final Holder<T> holder) {
       DataResult var10000;
-      if (var1 instanceof Holder.Reference var2) {
-         var10000 = DataResult.success(var2);
+      if (holder instanceof Holder.Reference<T> reference) {
+         var10000 = DataResult.success(reference);
       } else {
          var10000 = DataResult.error(() -> {
             String var10000 = String.valueOf(this.key());
-            return "Unregistered holder in " + var10000 + ": " + String.valueOf(var1);
+            return "Unregistered holder in " + var10000 + ": " + String.valueOf(holder);
          });
       }
 
       return var10000;
    }
 
-   default <U> Stream<U> keys(DynamicOps<U> var1) {
-      return this.keySet().stream().map((var1x) -> var1.createString(var1x.toString()));
+   default <U> Stream<U> keys(final DynamicOps<U> ops) {
+      return this.keySet().stream().map((k) -> ops.createString(k.toString()));
    }
 
-   @Nullable Identifier getKey(T var1);
+   @Nullable Identifier getKey(T thing);
 
-   Optional<ResourceKey<T>> getResourceKey(T var1);
+   Optional<ResourceKey<T>> getResourceKey(T thing);
 
-   int getId(@Nullable T var1);
+   int getId(@Nullable T thing);
 
-   @Nullable T getValue(@Nullable ResourceKey<T> var1);
+   @Nullable T getValue(@Nullable ResourceKey<T> key);
 
-   @Nullable T getValue(@Nullable Identifier var1);
+   @Nullable T getValue(@Nullable Identifier key);
 
-   Optional<RegistrationInfo> registrationInfo(ResourceKey<T> var1);
+   Optional<RegistrationInfo> registrationInfo(ResourceKey<T> element);
 
-   default Optional<T> getOptional(@Nullable Identifier var1) {
-      return Optional.ofNullable(this.getValue(var1));
+   default Optional<T> getOptional(final @Nullable Identifier key) {
+      return Optional.ofNullable(this.getValue(key));
    }
 
-   default Optional<T> getOptional(@Nullable ResourceKey<T> var1) {
-      return Optional.ofNullable(this.getValue(var1));
+   default Optional<T> getOptional(final @Nullable ResourceKey<T> key) {
+      return Optional.ofNullable(this.getValue(key));
    }
 
    Optional<Holder.Reference<T>> getAny();
 
-   default T getValueOrThrow(ResourceKey<T> var1) {
-      Object var2 = this.getValue(var1);
-      if (var2 == null) {
+   default T getValueOrThrow(final ResourceKey<T> key) {
+      T value = (T)this.getValue(key);
+      if (value == null) {
          String var10002 = String.valueOf(this.key());
-         throw new IllegalStateException("Missing key in " + var10002 + ": " + String.valueOf(var1));
+         throw new IllegalStateException("Missing key in " + var10002 + ": " + String.valueOf(key));
       } else {
-         return (T)var2;
+         return value;
       }
    }
 
@@ -96,61 +98,65 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
 
    Set<ResourceKey<T>> registryKeySet();
 
-   Optional<Holder.Reference<T>> getRandom(RandomSource var1);
+   Optional<Holder.Reference<T>> getRandom(RandomSource random);
 
    default Stream<T> stream() {
       return StreamSupport.stream(this.spliterator(), false);
    }
 
-   boolean containsKey(Identifier var1);
+   boolean containsKey(Identifier key);
 
-   boolean containsKey(ResourceKey<T> var1);
+   boolean containsKey(ResourceKey<T> key);
 
-   static <T> T register(Registry<? super T> var0, String var1, T var2) {
-      return (T)register(var0, (Identifier)Identifier.parse(var1), var2);
+   static <T> T register(final Registry<? super T> registry, final String name, final T value) {
+      return (T)register(registry, Identifier.parse(name), value);
    }
 
-   static <V, T extends V> T register(Registry<V> var0, Identifier var1, T var2) {
-      return (T)register(var0, (ResourceKey)ResourceKey.create(var0.key(), var1), var2);
+   static <V, T extends V> T register(final Registry<V> registry, final Identifier location, final T value) {
+      return (T)register(registry, ResourceKey.create(registry.key(), location), value);
    }
 
-   static <V, T extends V> T register(Registry<V> var0, ResourceKey<V> var1, T var2) {
-      ((WritableRegistry)var0).register(var1, var2, RegistrationInfo.BUILT_IN);
-      return var2;
+   static <V, T extends V> T register(final Registry<V> registry, final ResourceKey<V> key, final T value) {
+      ((WritableRegistry)registry).register(key, value, RegistrationInfo.BUILT_IN);
+      return value;
    }
 
-   static <R, T extends R> Holder.Reference<T> registerForHolder(Registry<R> var0, ResourceKey<R> var1, T var2) {
-      return ((WritableRegistry)var0).register(var1, var2, RegistrationInfo.BUILT_IN);
+   static <R, T extends R> Holder.Reference<T> registerForHolder(final Registry<R> registry, final ResourceKey<R> key, final T value) {
+      return ((WritableRegistry)registry).register(key, value, RegistrationInfo.BUILT_IN);
    }
 
-   static <R, T extends R> Holder.Reference<T> registerForHolder(Registry<R> var0, Identifier var1, T var2) {
-      return registerForHolder(var0, ResourceKey.create(var0.key(), var1), var2);
+   static <R, T extends R> Holder.Reference<T> registerForHolder(final Registry<R> registry, final Identifier location, final T value) {
+      return registerForHolder(registry, ResourceKey.create(registry.key(), location), value);
    }
 
    Registry<T> freeze();
 
-   Holder.Reference<T> createIntrusiveHolder(T var1);
+   Holder.Reference<T> createIntrusiveHolder(T value);
 
-   Optional<Holder.Reference<T>> get(int var1);
+   Optional<Holder.Reference<T>> get(int id);
 
-   Optional<Holder.Reference<T>> get(Identifier var1);
+   Optional<Holder.Reference<T>> get(Identifier id);
 
-   Holder<T> wrapAsHolder(T var1);
+   Holder<T> wrapAsHolder(T value);
 
-   default Iterable<Holder<T>> getTagOrEmpty(TagKey<T> var1) {
-      return (Iterable)DataFixUtils.orElse(this.get(var1), List.of());
+   default Iterable<Holder<T>> getTagOrEmpty(final TagKey<T> id) {
+      return (Iterable)DataFixUtils.orElse(this.get(id), List.of());
    }
 
    Stream<HolderSet.Named<T>> getTags();
 
    default IdMap<Holder<T>> asHolderIdMap() {
       return new IdMap<Holder<T>>() {
-         public int getId(Holder<T> var1) {
-            return Registry.this.getId(var1.value());
+         {
+            Objects.requireNonNull(Registry.this);
          }
 
-         public @Nullable Holder<T> byId(int var1) {
-            return (Holder)Registry.this.get(var1).orElse((Object)null);
+         public int getId(final Holder<T> thing) {
+            return Registry.this.getId(thing.value());
+         }
+
+         public @Nullable Holder<T> byId(final int id) {
+            return (Holder)Registry.this.get(id).orElse((Object)null);
          }
 
          public int size() {
@@ -158,17 +164,14 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
          }
 
          public Iterator<Holder<T>> iterator() {
-            return Registry.this.listElements().map((var0) -> var0).iterator();
-         }
-
-         // $FF: synthetic method
-         public @Nullable Object byId(final int var1) {
-            return this.byId(var1);
+            return Registry.this.listElements().map((e) -> e).iterator();
          }
       };
    }
 
-   PendingTags<T> prepareTagReload(TagLoader.LoadResult<T> var1);
+   PendingTags<T> prepareTagReload(TagLoader.LoadResult<T> tags);
+
+   DataComponentLookup<T> componentLookup();
 
    public interface PendingTags<T> {
       ResourceKey<? extends Registry<? extends T>> key();

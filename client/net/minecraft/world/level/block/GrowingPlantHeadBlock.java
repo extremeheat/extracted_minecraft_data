@@ -22,99 +22,99 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
    public static final int MAX_AGE = 25;
    private final double growPerTickProbability;
 
-   protected GrowingPlantHeadBlock(BlockBehaviour.Properties var1, Direction var2, VoxelShape var3, boolean var4, double var5) {
-      super(var1, var2, var3, var4);
-      this.growPerTickProbability = var5;
+   protected GrowingPlantHeadBlock(final BlockBehaviour.Properties properties, final Direction growthDirection, final VoxelShape shape, final boolean scheduleFluidTicks, final double growPerTickProbability) {
+      super(properties, growthDirection, shape, scheduleFluidTicks);
+      this.growPerTickProbability = growPerTickProbability;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
 
    protected abstract MapCodec<? extends GrowingPlantHeadBlock> codec();
 
-   public BlockState getStateForPlacement(RandomSource var1) {
-      return (BlockState)this.defaultBlockState().setValue(AGE, var1.nextInt(25));
+   public BlockState getStateForPlacement(final RandomSource random) {
+      return (BlockState)this.defaultBlockState().setValue(AGE, random.nextInt(25));
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return (Integer)var1.getValue(AGE) < 25;
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return (Integer)state.getValue(AGE) < 25;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((Integer)var1.getValue(AGE) < 25 && var4.nextDouble() < this.growPerTickProbability) {
-         BlockPos var5 = var3.relative(this.growthDirection);
-         if (this.canGrowInto(var2.getBlockState(var5))) {
-            var2.setBlockAndUpdate(var5, this.getGrowIntoState(var1, var2.random));
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if ((Integer)state.getValue(AGE) < 25 && random.nextDouble() < this.growPerTickProbability) {
+         BlockPos growthPos = pos.relative(this.growthDirection);
+         if (this.canGrowInto(level.getBlockState(growthPos))) {
+            level.setBlockAndUpdate(growthPos, this.getGrowIntoState(state, level.getRandom()));
          }
       }
 
    }
 
-   protected BlockState getGrowIntoState(BlockState var1, RandomSource var2) {
-      return (BlockState)var1.cycle(AGE);
+   protected BlockState getGrowIntoState(final BlockState growFromState, final RandomSource random) {
+      return (BlockState)growFromState.cycle(AGE);
    }
 
-   public BlockState getMaxAgeState(BlockState var1) {
-      return (BlockState)var1.setValue(AGE, 25);
+   public BlockState getMaxAgeState(final BlockState fromState) {
+      return (BlockState)fromState.setValue(AGE, 25);
    }
 
-   public boolean isMaxAge(BlockState var1) {
-      return (Integer)var1.getValue(AGE) == 25;
+   public boolean isMaxAge(final BlockState state) {
+      return (Integer)state.getValue(AGE) == 25;
    }
 
-   protected BlockState updateBodyAfterConvertedFromHead(BlockState var1, BlockState var2) {
-      return var2;
+   protected BlockState updateBodyAfterConvertedFromHead(final BlockState headState, final BlockState bodyState) {
+      return bodyState;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (var5 == this.growthDirection.getOpposite()) {
-         if (!var1.canSurvive(var2, var4)) {
-            var3.scheduleTick(var4, (Block)this, 1);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (directionToNeighbour == this.growthDirection.getOpposite()) {
+         if (!state.canSurvive(level, pos)) {
+            ticks.scheduleTick(pos, (Block)this, 1);
          } else {
-            BlockState var9 = var2.getBlockState(var4.relative(this.growthDirection));
-            if (var9.is(this) || var9.is(this.getBodyBlock())) {
-               return this.updateBodyAfterConvertedFromHead(var1, this.getBodyBlock().defaultBlockState());
+            BlockState neighborInGrowthDirection = level.getBlockState(pos.relative(this.growthDirection));
+            if (neighborInGrowthDirection.is(this) || neighborInGrowthDirection.is(this.getBodyBlock())) {
+               return this.updateBodyAfterConvertedFromHead(state, this.getBodyBlock().defaultBlockState());
             }
          }
       }
 
-      if (var5 != this.growthDirection || !var7.is(this) && !var7.is(this.getBodyBlock())) {
+      if (directionToNeighbour != this.growthDirection || !neighbourState.is(this) && !neighbourState.is(this.getBodyBlock())) {
          if (this.scheduleFluidTicks) {
-            var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+            ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
          }
 
-         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+         return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
       } else {
-         return this.updateBodyAfterConvertedFromHead(var1, this.getBodyBlock().defaultBlockState());
+         return this.updateBodyAfterConvertedFromHead(state, this.getBodyBlock().defaultBlockState());
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return this.canGrowInto(var1.getBlockState(var2.relative(this.growthDirection)));
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return this.canGrowInto(level.getBlockState(pos.relative(this.growthDirection)));
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      BlockPos var5 = var3.relative(this.growthDirection);
-      int var6 = Math.min((Integer)var4.getValue(AGE) + 1, 25);
-      int var7 = this.getBlocksToGrowWhenBonemealed(var2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      BlockPos forwardPos = pos.relative(this.growthDirection);
+      int nextAge = Math.min((Integer)state.getValue(AGE) + 1, 25);
+      int blocksToGrow = this.getBlocksToGrowWhenBonemealed(random);
 
-      for(int var8 = 0; var8 < var7 && this.canGrowInto(var1.getBlockState(var5)); ++var8) {
-         var1.setBlockAndUpdate(var5, (BlockState)var4.setValue(AGE, var6));
-         var5 = var5.relative(this.growthDirection);
-         var6 = Math.min(var6 + 1, 25);
+      for(int i = 0; i < blocksToGrow && this.canGrowInto(level.getBlockState(forwardPos)); ++i) {
+         level.setBlockAndUpdate(forwardPos, (BlockState)state.setValue(AGE, nextAge));
+         forwardPos = forwardPos.relative(this.growthDirection);
+         nextAge = Math.min(nextAge + 1, 25);
       }
 
    }
 
-   protected abstract int getBlocksToGrowWhenBonemealed(RandomSource var1);
+   protected abstract int getBlocksToGrowWhenBonemealed(final RandomSource random);
 
-   protected abstract boolean canGrowInto(BlockState var1);
+   protected abstract boolean canGrowInto(final BlockState state);
 
    protected GrowingPlantHeadBlock getHeadBlock() {
       return this;

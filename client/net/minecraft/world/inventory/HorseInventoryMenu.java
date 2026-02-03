@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.Objects;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.Container;
@@ -13,34 +14,42 @@ public class HorseInventoryMenu extends AbstractMountInventoryMenu {
    private static final Identifier LLAMA_ARMOR_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/llama_armor");
    private static final Identifier ARMOR_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/horse_armor");
 
-   public HorseInventoryMenu(int var1, Inventory var2, Container var3, final AbstractHorse var4, int var5) {
-      super(var1, var2, var3, var4);
-      Container var6 = var4.createEquipmentSlotContainer(EquipmentSlot.SADDLE);
-      this.addSlot(new ArmorSlot(var6, var4, EquipmentSlot.SADDLE, 0, 8, 18, SADDLE_SLOT_SPRITE) {
+   public HorseInventoryMenu(final int containerId, final Inventory playerInventory, final Container horseInventory, final AbstractHorse horse, final int inventoryColumns) {
+      super(containerId, playerInventory, horseInventory, horse);
+      Container saddleContainer = horse.createEquipmentSlotContainer(EquipmentSlot.SADDLE);
+      this.addSlot(new ArmorSlot(saddleContainer, horse, EquipmentSlot.SADDLE, 0, 8, 18, SADDLE_SLOT_SPRITE) {
+         {
+            Objects.requireNonNull(HorseInventoryMenu.this);
+         }
+
          public boolean isActive() {
-            return var4.canUseSlot(EquipmentSlot.SADDLE) && var4.getType().is(EntityTypeTags.CAN_EQUIP_SADDLE);
+            return horse.canUseSlot(EquipmentSlot.SADDLE) && horse.is(EntityTypeTags.CAN_EQUIP_SADDLE);
          }
       });
-      final boolean var7 = var4 instanceof Llama;
-      Identifier var8 = var7 ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
-      Container var9 = var4.createEquipmentSlotContainer(EquipmentSlot.BODY);
-      this.addSlot(new ArmorSlot(var9, var4, EquipmentSlot.BODY, 0, 8, 36, var8) {
+      final boolean isLlama = horse instanceof Llama;
+      Identifier armorSprite = isLlama ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
+      Container armorContainer = horse.createEquipmentSlotContainer(EquipmentSlot.BODY);
+      this.addSlot(new ArmorSlot(armorContainer, horse, EquipmentSlot.BODY, 0, 8, 36, armorSprite) {
+         {
+            Objects.requireNonNull(HorseInventoryMenu.this);
+         }
+
          public boolean isActive() {
-            return var4.canUseSlot(EquipmentSlot.BODY) && (var4.getType().is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR) || var7);
+            return horse.canUseSlot(EquipmentSlot.BODY) && (horse.is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR) || isLlama);
          }
       });
-      if (var5 > 0) {
-         for(int var10 = 0; var10 < 3; ++var10) {
-            for(int var11 = 0; var11 < var5; ++var11) {
-               this.addSlot(new Slot(var3, var11 + var10 * var5, 80 + var11 * 18, 18 + var10 * 18));
+      if (inventoryColumns > 0) {
+         for(int y = 0; y < 3; ++y) {
+            for(int x = 0; x < inventoryColumns; ++x) {
+               this.addSlot(new Slot(horseInventory, x + y * inventoryColumns, 80 + x * 18, 18 + y * 18));
             }
          }
       }
 
-      this.addStandardInventorySlots(var2, 8, 84);
+      this.addStandardInventorySlots(playerInventory, 8, 84);
    }
 
-   protected boolean hasInventoryChanged(Container var1) {
-      return ((AbstractHorse)this.mount).hasInventoryChanged(var1);
+   protected boolean hasInventoryChanged(final Container container) {
+      return ((AbstractHorse)this.mount).hasInventoryChanged(container);
    }
 }

@@ -14,39 +14,39 @@ public class ServerboundPlayerActionPacket implements Packet<ServerGamePacketLis
    private final Action action;
    private final int sequence;
 
-   public ServerboundPlayerActionPacket(Action var1, BlockPos var2, Direction var3, int var4) {
+   public ServerboundPlayerActionPacket(final Action action, final BlockPos pos, final Direction direction, final int sequence) {
       super();
-      this.action = var1;
-      this.pos = var2.immutable();
-      this.direction = var3;
-      this.sequence = var4;
+      this.action = action;
+      this.pos = pos.immutable();
+      this.direction = direction;
+      this.sequence = sequence;
    }
 
-   public ServerboundPlayerActionPacket(Action var1, BlockPos var2, Direction var3) {
-      this(var1, var2, var3, 0);
+   public ServerboundPlayerActionPacket(final Action action, final BlockPos pos, final Direction direction) {
+      this(action, pos, direction, 0);
    }
 
-   private ServerboundPlayerActionPacket(FriendlyByteBuf var1) {
+   private ServerboundPlayerActionPacket(final FriendlyByteBuf input) {
       super();
-      this.action = (Action)var1.readEnum(Action.class);
-      this.pos = var1.readBlockPos();
-      this.direction = Direction.from3DDataValue(var1.readUnsignedByte());
-      this.sequence = var1.readVarInt();
+      this.action = (Action)input.readEnum(Action.class);
+      this.pos = input.readBlockPos();
+      this.direction = Direction.from3DDataValue(input.readUnsignedByte());
+      this.sequence = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeEnum(this.action);
-      var1.writeBlockPos(this.pos);
-      var1.writeByte(this.direction.get3DDataValue());
-      var1.writeVarInt(this.sequence);
+   private void write(final FriendlyByteBuf output) {
+      output.writeEnum(this.action);
+      output.writeBlockPos(this.pos);
+      output.writeByte(this.direction.get3DDataValue());
+      output.writeVarInt(this.sequence);
    }
 
    public PacketType<ServerboundPlayerActionPacket> type() {
       return GamePacketTypes.SERVERBOUND_PLAYER_ACTION;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handlePlayerAction(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handlePlayerAction(this);
    }
 
    public BlockPos getPos() {

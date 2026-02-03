@@ -52,7 +52,7 @@ import org.slf4j.Logger;
 
 public abstract class Screen extends AbstractContainerEventHandler implements Renderable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Component USAGE_NARRATION = Component.translatable("narrator.screen.usage");
+   private static final Component SCREEN_USAGE_NARRATION = Component.translatable("narrator.screen.usage");
    public static final Identifier MENU_BACKGROUND = Identifier.withDefaultNamespace("textures/gui/menu_background.png");
    public static final Identifier HEADER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/header_separator.png");
    public static final Identifier FOOTER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/footer_separator.png");
@@ -81,11 +81,11 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private @Nullable NarratableEntry lastNarratable;
    protected final Executor screenExecutor;
 
-   protected Screen(Component var1) {
-      this(Minecraft.getInstance(), Minecraft.getInstance().font, var1);
+   protected Screen(final Component title) {
+      this(Minecraft.getInstance(), Minecraft.getInstance().font, title);
    }
 
-   protected Screen(Minecraft var1, Font var2, Component var3) {
+   protected Screen(final Minecraft minecraft, final Font font, final Component title) {
       super();
       this.children = Lists.newArrayList();
       this.narratables = Lists.newArrayList();
@@ -93,12 +93,12 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.narrationState = new ScreenNarrationCollector();
       this.narrationSuppressTime = -9223372036854775808L;
       this.nextNarrationTime = 9223372036854775807L;
-      this.minecraft = var1;
-      this.font = var2;
-      this.title = var3;
-      this.screenExecutor = (var2x) -> var1.execute(() -> {
-            if (var1.screen == this) {
-               var2x.run();
+      this.minecraft = minecraft;
+      this.font = font;
+      this.title = title;
+      this.screenExecutor = (runnable) -> minecraft.execute(() -> {
+            if (minecraft.screen == this) {
+               runnable.run();
             }
 
          });
@@ -112,32 +112,32 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return this.getTitle();
    }
 
-   public final void renderWithTooltipAndSubtitles(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.nextStratum();
-      this.renderBackground(var1, var2, var3, var4);
-      var1.nextStratum();
-      this.render(var1, var2, var3, var4);
-      var1.renderDeferredElements();
+   public final void renderWithTooltipAndSubtitles(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      graphics.nextStratum();
+      this.renderBackground(graphics, mouseX, mouseY, a);
+      graphics.nextStratum();
+      this.render(graphics, mouseX, mouseY, a);
+      graphics.renderDeferredElements();
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      for(Renderable var6 : this.renderables) {
-         var6.render(var1, var2, var3, var4);
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      for(Renderable renderable : this.renderables) {
+         renderable.render(graphics, mouseX, mouseY, a);
       }
 
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (var1.isEscape() && this.shouldCloseOnEsc()) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (event.isEscape() && this.shouldCloseOnEsc()) {
          this.onClose();
          return true;
-      } else if (super.keyPressed(var1)) {
+      } else if (super.keyPressed(event)) {
          return true;
       } else {
          Object var10000;
-         switch (var1.key()) {
+         switch (event.key()) {
             case 258:
-               var10000 = this.createTabEvent(!var1.hasShiftDown());
+               var10000 = this.createTabEvent(!event.hasShiftDown());
                break;
             case 259:
             case 260:
@@ -158,16 +158,16 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
                var10000 = this.createArrowEvent(ScreenDirection.UP);
          }
 
-         Object var2 = var10000;
-         if (var2 != null) {
-            ComponentPath var3 = super.nextFocusPath((FocusNavigationEvent)var2);
-            if (var3 == null && var2 instanceof FocusNavigationEvent.TabNavigation) {
+         FocusNavigationEvent navigationEvent = (FocusNavigationEvent)var10000;
+         if (navigationEvent != null) {
+            ComponentPath focusPath = super.nextFocusPath(navigationEvent);
+            if (focusPath == null && navigationEvent instanceof FocusNavigationEvent.TabNavigation) {
                this.clearFocus();
-               var3 = super.nextFocusPath((FocusNavigationEvent)var2);
+               focusPath = super.nextFocusPath(navigationEvent);
             }
 
-            if (var3 != null) {
-               this.changeFocus(var3);
+            if (focusPath != null) {
+               this.changeFocus(focusPath);
             }
          }
 
@@ -175,45 +175,45 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       }
    }
 
-   private FocusNavigationEvent.TabNavigation createTabEvent(boolean var1) {
-      return new FocusNavigationEvent.TabNavigation(var1);
+   private FocusNavigationEvent.TabNavigation createTabEvent(final boolean forward) {
+      return new FocusNavigationEvent.TabNavigation(forward);
    }
 
-   private FocusNavigationEvent.ArrowNavigation createArrowEvent(ScreenDirection var1) {
-      return new FocusNavigationEvent.ArrowNavigation(var1);
+   private FocusNavigationEvent.ArrowNavigation createArrowEvent(final ScreenDirection direction) {
+      return new FocusNavigationEvent.ArrowNavigation(direction);
    }
 
    protected void setInitialFocus() {
       if (this.minecraft.getLastInputType().isKeyboard()) {
-         FocusNavigationEvent.TabNavigation var1 = new FocusNavigationEvent.TabNavigation(true);
-         ComponentPath var2 = super.nextFocusPath(var1);
-         if (var2 != null) {
-            this.changeFocus(var2);
+         FocusNavigationEvent.TabNavigation forwardTabEvent = new FocusNavigationEvent.TabNavigation(true);
+         ComponentPath focusPath = super.nextFocusPath(forwardTabEvent);
+         if (focusPath != null) {
+            this.changeFocus(focusPath);
          }
       }
 
    }
 
-   protected void setInitialFocus(GuiEventListener var1) {
-      ComponentPath var2 = ComponentPath.path((ContainerEventHandler)this, (ComponentPath)var1.nextFocusPath(new FocusNavigationEvent.InitialFocus()));
-      if (var2 != null) {
-         this.changeFocus(var2);
+   protected void setInitialFocus(final GuiEventListener target) {
+      ComponentPath path = ComponentPath.path((ContainerEventHandler)this, (ComponentPath)target.nextFocusPath(new FocusNavigationEvent.InitialFocus()));
+      if (path != null) {
+         this.changeFocus(path);
       }
 
    }
 
    public void clearFocus() {
-      ComponentPath var1 = this.getCurrentFocusPath();
-      if (var1 != null) {
-         var1.applyFocus(false);
+      ComponentPath componentPath = this.getCurrentFocusPath();
+      if (componentPath != null) {
+         componentPath.applyFocus(false);
       }
 
    }
 
    @VisibleForTesting
-   protected void changeFocus(ComponentPath var1) {
+   protected void changeFocus(final ComponentPath componentPath) {
       this.clearFocus();
-      var1.applyFocus(true);
+      componentPath.applyFocus(true);
    }
 
    public boolean shouldCloseOnEsc() {
@@ -224,36 +224,36 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.minecraft.setScreen((Screen)null);
    }
 
-   protected <T extends GuiEventListener & Renderable & NarratableEntry> T addRenderableWidget(T var1) {
-      this.renderables.add((Renderable)var1);
-      return (T)this.addWidget(var1);
+   protected <T extends GuiEventListener & Renderable & NarratableEntry> T addRenderableWidget(final T widget) {
+      this.renderables.add(widget);
+      return (T)this.addWidget(widget);
    }
 
-   protected <T extends Renderable> T addRenderableOnly(T var1) {
-      this.renderables.add(var1);
-      return (T)var1;
+   protected <T extends Renderable> T addRenderableOnly(final T renderable) {
+      this.renderables.add(renderable);
+      return renderable;
    }
 
-   protected <T extends GuiEventListener & NarratableEntry> T addWidget(T var1) {
-      this.children.add(var1);
-      this.narratables.add((NarratableEntry)var1);
-      return (T)var1;
+   protected <T extends GuiEventListener & NarratableEntry> T addWidget(final T widget) {
+      this.children.add(widget);
+      this.narratables.add(widget);
+      return widget;
    }
 
-   protected void removeWidget(GuiEventListener var1) {
-      if (var1 instanceof Renderable) {
-         this.renderables.remove((Renderable)var1);
+   protected void removeWidget(final GuiEventListener widget) {
+      if (widget instanceof Renderable) {
+         this.renderables.remove((Renderable)widget);
       }
 
-      if (var1 instanceof NarratableEntry) {
-         this.narratables.remove((NarratableEntry)var1);
+      if (widget instanceof NarratableEntry) {
+         this.narratables.remove((NarratableEntry)widget);
       }
 
-      if (this.getFocused() == var1) {
+      if (this.getFocused() == widget) {
          this.clearFocus();
       }
 
-      this.children.remove(var1);
+      this.children.remove(widget);
    }
 
    protected void clearWidgets() {
@@ -262,24 +262,24 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.narratables.clear();
    }
 
-   public static List<Component> getTooltipFromItem(Minecraft var0, ItemStack var1) {
-      return var1.getTooltipLines(Item.TooltipContext.of((Level)var0.level), var0.player, var0.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL);
+   public static List<Component> getTooltipFromItem(final Minecraft minecraft, final ItemStack itemStack) {
+      return itemStack.getTooltipLines(Item.TooltipContext.of((Level)minecraft.level), minecraft.player, minecraft.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL);
    }
 
-   protected void insertText(String var1, boolean var2) {
+   protected void insertText(final String text, final boolean replace) {
    }
 
-   protected static void defaultHandleGameClickEvent(ClickEvent var0, Minecraft var1, @Nullable Screen var2) {
-      LocalPlayer var3 = (LocalPlayer)Objects.requireNonNull(var1.player, "Player not available");
-      Objects.requireNonNull(var0);
+   protected static void defaultHandleGameClickEvent(final ClickEvent event, final Minecraft minecraft, final @Nullable Screen activeScreen) {
+      LocalPlayer player = (LocalPlayer)Objects.requireNonNull(minecraft.player, "Player not available");
+      Objects.requireNonNull(event);
       byte var5 = 0;
       //$FF: var5->value
       //0->net/minecraft/network/chat/ClickEvent$RunCommand
       //1->net/minecraft/network/chat/ClickEvent$ShowDialog
       //2->net/minecraft/network/chat/ClickEvent$Custom
-      switch (var0.typeSwitch<invokedynamic>(var0, var5)) {
+      switch (event.typeSwitch<invokedynamic>(event, var5)) {
          case 0:
-            ClickEvent.RunCommand var6 = (ClickEvent.RunCommand)var0;
+            ClickEvent.RunCommand var6 = (ClickEvent.RunCommand)event;
             ClickEvent.RunCommand var10000 = var6;
 
             try {
@@ -288,28 +288,28 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
                throw new MatchException(var10.toString(), var10);
             }
 
-            String var11 = var12;
-            clickCommandAction(var3, var11, var2);
+            String command = var12;
+            clickCommandAction(player, command, activeScreen);
             break;
          case 1:
-            ClickEvent.ShowDialog var8 = (ClickEvent.ShowDialog)var0;
-            var3.connection.showDialog(var8.dialog(), var2);
+            ClickEvent.ShowDialog dialog = (ClickEvent.ShowDialog)event;
+            player.connection.showDialog(dialog.dialog(), activeScreen);
             break;
          case 2:
-            ClickEvent.Custom var9 = (ClickEvent.Custom)var0;
-            var3.connection.send(new ServerboundCustomClickActionPacket(var9.id(), var9.payload()));
-            if (var1.screen != var2) {
-               var1.setScreen(var2);
+            ClickEvent.Custom custom = (ClickEvent.Custom)event;
+            player.connection.send(new ServerboundCustomClickActionPacket(custom.id(), custom.payload()));
+            if (minecraft.screen != activeScreen) {
+               minecraft.setScreen(activeScreen);
             }
             break;
          default:
-            defaultHandleClickEvent(var0, var1, var2);
+            defaultHandleClickEvent(event, minecraft, activeScreen);
       }
 
    }
 
-   protected static void defaultHandleClickEvent(ClickEvent var0, Minecraft var1, @Nullable Screen var2) {
-      Objects.requireNonNull(var0);
+   protected static void defaultHandleClickEvent(final ClickEvent event, final Minecraft minecraft, final @Nullable Screen activeScreen) {
+      Objects.requireNonNull(event);
       byte var5 = 0;
       boolean var20;
       //$FF: var5->value
@@ -317,9 +317,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       //1->net/minecraft/network/chat/ClickEvent$OpenFile
       //2->net/minecraft/network/chat/ClickEvent$SuggestCommand
       //3->net/minecraft/network/chat/ClickEvent$CopyToClipboard
-      switch (var0.typeSwitch<invokedynamic>(var0, var5)) {
+      switch (event.typeSwitch<invokedynamic>(event, var5)) {
          case 0:
-            ClickEvent.OpenUrl var6 = (ClickEvent.OpenUrl)var0;
+            ClickEvent.OpenUrl var6 = (ClickEvent.OpenUrl)event;
             ClickEvent.OpenUrl var23 = var6;
 
             try {
@@ -328,17 +328,17 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
                throw new MatchException(var16.toString(), var16);
             }
 
-            URI var17 = var24;
-            clickUrlAction(var1, var2, var17);
+            URI uri = var24;
+            clickUrlAction(minecraft, activeScreen, uri);
             var20 = false;
             break;
          case 1:
-            ClickEvent.OpenFile var8 = (ClickEvent.OpenFile)var0;
-            Util.getPlatform().openFile(var8.file());
+            ClickEvent.OpenFile openFile = (ClickEvent.OpenFile)event;
+            Util.getPlatform().openFile(openFile.file());
             var20 = true;
             break;
          case 2:
-            ClickEvent.SuggestCommand var9 = (ClickEvent.SuggestCommand)var0;
+            ClickEvent.SuggestCommand var9 = (ClickEvent.SuggestCommand)event;
             ClickEvent.SuggestCommand var21 = var9;
 
             try {
@@ -347,16 +347,16 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
                throw new MatchException(var15.toString(), var15);
             }
 
-            String var18 = var22;
-            if (var2 != null) {
-               var2.insertText(var18, true);
+            String command = var22;
+            if (activeScreen != null) {
+               activeScreen.insertText(command, true);
             }
 
             var20 = true;
             break;
          case 3:
-            ClickEvent.CopyToClipboard var11 = (ClickEvent.CopyToClipboard)var0;
-            ClickEvent.CopyToClipboard var10000 = var11;
+            ClickEvent.CopyToClipboard command = (ClickEvent.CopyToClipboard)event;
+            ClickEvent.CopyToClipboard var10000 = command;
 
             try {
                var19 = var10000.value();
@@ -364,49 +364,49 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
                throw new MatchException(var14.toString(), var14);
             }
 
-            String var13 = var19;
-            var1.keyboardHandler.setClipboard(var13);
+            String value = var19;
+            minecraft.keyboardHandler.setClipboard(value);
             var20 = true;
             break;
          default:
-            LOGGER.error("Don't know how to handle {}", var0);
+            LOGGER.error("Don't know how to handle {}", event);
             var20 = true;
       }
 
-      boolean var3 = var20;
-      if (var3 && var1.screen != var2) {
-         var1.setScreen(var2);
+      boolean shouldActivateScreen = var20;
+      if (shouldActivateScreen && minecraft.screen != activeScreen) {
+         minecraft.setScreen(activeScreen);
       }
 
    }
 
-   protected static boolean clickUrlAction(Minecraft var0, @Nullable Screen var1, URI var2) {
-      if (!(Boolean)var0.options.chatLinks().get()) {
+   protected static boolean clickUrlAction(final Minecraft minecraft, final @Nullable Screen screen, final URI uri) {
+      if (!(Boolean)minecraft.options.chatLinks().get()) {
          return false;
       } else {
-         if ((Boolean)var0.options.chatLinksPrompt().get()) {
-            var0.setScreen(new ConfirmLinkScreen((var3) -> {
-               if (var3) {
-                  Util.getPlatform().openUri(var2);
+         if ((Boolean)minecraft.options.chatLinksPrompt().get()) {
+            minecraft.setScreen(new ConfirmLinkScreen((result) -> {
+               if (result) {
+                  Util.getPlatform().openUri(uri);
                }
 
-               var0.setScreen(var1);
-            }, var2.toString(), false));
+               minecraft.setScreen(screen);
+            }, uri.toString(), false));
          } else {
-            Util.getPlatform().openUri(var2);
+            Util.getPlatform().openUri(uri);
          }
 
          return true;
       }
    }
 
-   protected static void clickCommandAction(LocalPlayer var0, String var1, @Nullable Screen var2) {
-      var0.connection.sendUnattendedCommand(Commands.trimOptionalPrefix(var1), var2);
+   protected static void clickCommandAction(final LocalPlayer player, final String command, final @Nullable Screen screenAfterCommand) {
+      player.connection.sendUnattendedCommand(Commands.trimOptionalPrefix(command), screenAfterCommand);
    }
 
-   public final void init(int var1, int var2) {
-      this.width = var1;
-      this.height = var2;
+   public final void init(final int width, final int height) {
+      this.width = width;
+      this.height = height;
       if (!this.initialized) {
          this.init();
          this.setInitialFocus();
@@ -431,10 +431,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.setInitialFocus();
    }
 
-   protected void fadeWidgets(float var1) {
-      for(GuiEventListener var3 : this.children()) {
-         if (var3 instanceof AbstractWidget var4) {
-            var4.setAlpha(var1);
+   protected void fadeWidgets(final float widgetFade) {
+      for(GuiEventListener button : this.children()) {
+         if (button instanceof AbstractWidget widget) {
+            widget.setAlpha(widgetFade);
          }
       }
 
@@ -456,48 +456,48 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public void added() {
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
       if (this.isInGameUi()) {
-         this.renderTransparentBackground(var1);
+         this.renderTransparentBackground(graphics);
       } else {
          if (this.minecraft.level == null) {
-            this.renderPanorama(var1, var4);
+            this.renderPanorama(graphics, a);
          }
 
-         this.renderBlurredBackground(var1);
-         this.renderMenuBackground(var1);
+         this.renderBlurredBackground(graphics);
+         this.renderMenuBackground(graphics);
       }
 
       this.minecraft.gui.renderDeferredSubtitles();
    }
 
-   protected void renderBlurredBackground(GuiGraphics var1) {
-      float var2 = (float)this.minecraft.options.getMenuBackgroundBlurriness();
-      if (var2 >= 1.0F) {
-         var1.blurBeforeThisStratum();
+   protected void renderBlurredBackground(final GuiGraphics graphics) {
+      float blurRadius = (float)this.minecraft.options.getMenuBackgroundBlurriness();
+      if (blurRadius >= 1.0F) {
+         graphics.blurBeforeThisStratum();
       }
 
    }
 
-   protected void renderPanorama(GuiGraphics var1, float var2) {
-      this.minecraft.gameRenderer.getPanorama().render(var1, this.width, this.height, this.panoramaShouldSpin());
+   protected void renderPanorama(final GuiGraphics graphics, final float a) {
+      this.minecraft.gameRenderer.getPanorama().render(graphics, this.width, this.height, this.panoramaShouldSpin());
    }
 
-   protected void renderMenuBackground(GuiGraphics var1) {
-      this.renderMenuBackground(var1, 0, 0, this.width, this.height);
+   protected void renderMenuBackground(final GuiGraphics graphics) {
+      this.renderMenuBackground(graphics, 0, 0, this.width, this.height);
    }
 
-   protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      renderMenuBackgroundTexture(var1, this.minecraft.level == null ? MENU_BACKGROUND : INWORLD_MENU_BACKGROUND, var2, var3, 0.0F, 0.0F, var4, var5);
+   protected void renderMenuBackground(final GuiGraphics graphics, final int x, final int y, final int width, final int height) {
+      renderMenuBackgroundTexture(graphics, this.minecraft.level == null ? MENU_BACKGROUND : INWORLD_MENU_BACKGROUND, x, y, 0.0F, 0.0F, width, height);
    }
 
-   public static void renderMenuBackgroundTexture(GuiGraphics var0, Identifier var1, int var2, int var3, float var4, float var5, int var6, int var7) {
-      boolean var8 = true;
-      var0.blit(RenderPipelines.GUI_TEXTURED, var1, var2, var3, var4, var5, var6, var7, 32, 32);
+   public static void renderMenuBackgroundTexture(final GuiGraphics graphics, final Identifier menuBackground, final int x, final int y, final float u, final float v, final int width, final int height) {
+      int size = 32;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, menuBackground, x, y, u, v, width, height, 32, 32);
    }
 
-   public void renderTransparentBackground(GuiGraphics var1) {
-      var1.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
+   public void renderTransparentBackground(final GuiGraphics graphics) {
+      graphics.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
    }
 
    public boolean isPauseScreen() {
@@ -520,50 +520,50 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.rebuildWidgets();
    }
 
-   public void resize(int var1, int var2) {
-      this.width = var1;
-      this.height = var2;
+   public void resize(final int width, final int height) {
+      this.width = width;
+      this.height = height;
       this.repositionElements();
    }
 
-   public void fillCrashDetails(CrashReport var1) {
-      CrashReportCategory var2 = var1.addCategory("Affected screen", 1);
-      var2.setDetail("Screen name", (CrashReportDetail)(() -> this.getClass().getCanonicalName()));
+   public void fillCrashDetails(final CrashReport report) {
+      CrashReportCategory category = report.addCategory("Affected screen", 1);
+      category.setDetail("Screen name", (CrashReportDetail)(() -> this.getClass().getCanonicalName()));
    }
 
-   protected boolean isValidCharacterForName(String var1, int var2, int var3) {
-      int var4 = var1.indexOf(58);
-      int var5 = var1.indexOf(47);
-      if (var2 == 58) {
-         return (var5 == -1 || var3 <= var5) && var4 == -1;
-      } else if (var2 == 47) {
-         return var3 > var4;
+   protected boolean isValidCharacterForName(final String currentName, final int newChar, final int cursorPos) {
+      int colonPos = currentName.indexOf(58);
+      int slashPos = currentName.indexOf(47);
+      if (newChar == 58) {
+         return (slashPos == -1 || cursorPos <= slashPos) && colonPos == -1;
+      } else if (newChar == 47) {
+         return cursorPos > colonPos;
       } else {
-         return var2 == 95 || var2 == 45 || var2 >= 97 && var2 <= 122 || var2 >= 48 && var2 <= 57 || var2 == 46;
+         return newChar == 95 || newChar == 45 || newChar >= 97 && newChar <= 122 || newChar >= 48 && newChar <= 57 || newChar == 46;
       }
    }
 
-   public boolean isMouseOver(double var1, double var3) {
+   public boolean isMouseOver(final double mouseX, final double mouseY) {
       return true;
    }
 
-   public void onFilesDrop(List<Path> var1) {
+   public void onFilesDrop(final List<Path> files) {
    }
 
-   private void scheduleNarration(long var1, boolean var3) {
-      this.nextNarrationTime = Util.getMillis() + var1;
-      if (var3) {
+   private void scheduleNarration(final long delay, final boolean ignoreSuppression) {
+      this.nextNarrationTime = Util.getMillis() + delay;
+      if (ignoreSuppression) {
          this.narrationSuppressTime = -9223372036854775808L;
       }
 
    }
 
-   private void suppressNarration(long var1) {
-      this.setNarrationSuppressTime(Util.getMillis() + var1);
+   private void suppressNarration(final long duration) {
+      this.setNarrationSuppressTime(Util.getMillis() + duration);
    }
 
-   private void setNarrationSuppressTime(long var1) {
-      this.narrationSuppressTime = var1;
+   private void setNarrationSuppressTime(final long narrationSuppressTime) {
+      this.narrationSuppressTime = narrationSuppressTime;
    }
 
    public void afterMouseMove() {
@@ -584,8 +584,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public void handleDelayedNarration() {
       if (this.shouldRunNarration()) {
-         long var1 = Util.getMillis();
-         if (var1 > this.nextNarrationTime && var1 > this.narrationSuppressTime) {
+         long currentTime = Util.getMillis();
+         if (currentTime > this.nextNarrationTime && currentTime > this.narrationSuppressTime) {
             this.runNarration(true);
             this.nextNarrationTime = 9223372036854775807L;
          }
@@ -593,18 +593,18 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    }
 
-   public void triggerImmediateNarration(boolean var1) {
+   public void triggerImmediateNarration(final boolean onlyChanged) {
       if (this.shouldRunNarration()) {
-         this.runNarration(var1);
+         this.runNarration(onlyChanged);
       }
 
    }
 
-   private void runNarration(boolean var1) {
+   private void runNarration(final boolean onlyChanged) {
       this.narrationState.update(this::updateNarrationState);
-      String var2 = this.narrationState.collectNarrationText(!var1);
-      if (!var2.isEmpty()) {
-         this.minecraft.getNarrator().saySystemNow(var2);
+      String narration = this.narrationState.collectNarrationText(!onlyChanged);
+      if (!narration.isEmpty()) {
+         this.minecraft.getNarrator().saySystemNow(narration);
       }
 
    }
@@ -613,31 +613,29 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return true;
    }
 
-   protected void updateNarrationState(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, this.getNarrationMessage());
-      if (this.shouldNarrateNavigation()) {
-         var1.add(NarratedElementType.USAGE, USAGE_NARRATION);
-      }
-
-      this.updateNarratedWidget(var1);
+   protected void updateNarrationState(final NarrationElementOutput output) {
+      output.add(NarratedElementType.TITLE, this.getNarrationMessage());
+      this.updateNarratedWidget(output);
    }
 
-   protected void updateNarratedWidget(NarrationElementOutput var1) {
-      List var2 = this.narratables.stream().flatMap((var0) -> var0.getNarratables().stream()).filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
-      NarratableSearchResult var3 = findNarratableWidget(var2, this.lastNarratable);
-      if (var3 != null) {
-         if (var3.priority.isTerminal()) {
-            this.lastNarratable = var3.entry;
+   protected void updateNarratedWidget(final NarrationElementOutput output) {
+      List<? extends NarratableEntry> activeNarratables = this.narratables.stream().flatMap((narratableEntry) -> narratableEntry.getNarratables().stream()).filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
+      NarratableSearchResult result = findNarratableWidget(activeNarratables, this.lastNarratable);
+      if (result != null) {
+         if (result.priority.isTerminal()) {
+            this.lastNarratable = result.entry;
          }
 
-         if (var2.size() > 1) {
-            var1.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.screen", var3.index + 1, var2.size()));
-            if (var3.priority == NarratableEntry.NarrationPriority.FOCUSED) {
-               var1.add(NarratedElementType.USAGE, this.getUsageNarration());
+         if (activeNarratables.size() > 1) {
+            output.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.screen", result.index + 1, activeNarratables.size()));
+            if (result.priority == NarratableEntry.NarrationPriority.FOCUSED) {
+               output.add(NarratedElementType.USAGE, this.getUsageNarration());
             }
          }
 
-         var3.entry.updateNarration(var1.nest());
+         result.entry.updateNarration(output.nest());
+      } else if (this.shouldNarrateNavigation()) {
+         output.add(NarratedElementType.USAGE, SCREEN_USAGE_NARRATION);
       }
 
    }
@@ -646,30 +644,30 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return Component.translatable("narration.component_list.usage");
    }
 
-   public static @Nullable NarratableSearchResult findNarratableWidget(List<? extends NarratableEntry> var0, @Nullable NarratableEntry var1) {
-      NarratableSearchResult var2 = null;
-      NarratableSearchResult var3 = null;
-      int var4 = 0;
+   public static @Nullable NarratableSearchResult findNarratableWidget(final List<? extends NarratableEntry> narratableEntries, final @Nullable NarratableEntry lastNarratable) {
+      NarratableSearchResult result = null;
+      NarratableSearchResult lowPrioNarratable = null;
+      int i = 0;
 
-      for(int var5 = var0.size(); var4 < var5; ++var4) {
-         NarratableEntry var6 = (NarratableEntry)var0.get(var4);
-         NarratableEntry.NarrationPriority var7 = var6.narrationPriority();
-         if (var7.isTerminal()) {
-            if (var6 != var1) {
-               return new NarratableSearchResult(var6, var4, var7);
+      for(int narratablesSize = narratableEntries.size(); i < narratablesSize; ++i) {
+         NarratableEntry narratable = (NarratableEntry)narratableEntries.get(i);
+         NarratableEntry.NarrationPriority priority = narratable.narrationPriority();
+         if (priority.isTerminal()) {
+            if (narratable != lastNarratable) {
+               return new NarratableSearchResult(narratable, i, priority);
             }
 
-            var3 = new NarratableSearchResult(var6, var4, var7);
-         } else if (var7.compareTo(var2 != null ? var2.priority : NarratableEntry.NarrationPriority.NONE) > 0) {
-            var2 = new NarratableSearchResult(var6, var4, var7);
+            lowPrioNarratable = new NarratableSearchResult(narratable, i, priority);
+         } else if (priority.compareTo(result != null ? result.priority : NarratableEntry.NarrationPriority.NONE) > 0) {
+            result = new NarratableSearchResult(narratable, i, priority);
          }
       }
 
-      return var2 != null ? var2 : var3;
+      return result != null ? result : lowPrioNarratable;
    }
 
-   public void updateNarratorStatus(boolean var1) {
-      if (var1) {
+   public void updateNarratorStatus(final boolean wasDisabled) {
+      if (wasDisabled) {
          this.scheduleNarration(NARRATE_DELAY_NARRATOR_ENABLED, false);
       }
 
@@ -705,15 +703,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public static record NarratableSearchResult(NarratableEntry entry, int index, NarratableEntry.NarrationPriority priority) {
-      final NarratableEntry entry;
-      final int index;
-      final NarratableEntry.NarrationPriority priority;
-
-      public NarratableSearchResult(NarratableEntry var1, int var2, NarratableEntry.NarrationPriority var3) {
+      public NarratableSearchResult {
          super();
-         this.entry = var1;
-         this.index = var2;
-         this.priority = var3;
       }
    }
 }

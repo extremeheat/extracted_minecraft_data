@@ -6,15 +6,15 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class RemoveGolemGossipFix extends NamedEntityFix {
-   public RemoveGolemGossipFix(Schema var1, boolean var2) {
-      super(var1, var2, "Remove Golem Gossip Fix", References.ENTITY, "minecraft:villager");
+   public RemoveGolemGossipFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType, "Remove Golem Gossip Fix", References.ENTITY, "minecraft:villager");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), RemoveGolemGossipFix::fixValue);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), RemoveGolemGossipFix::fixValue);
    }
 
-   private static Dynamic<?> fixValue(Dynamic<?> var0) {
-      return var0.update("Gossips", (var1) -> var0.createList(var1.asStream().filter((var0x) -> !var0x.get("Type").asString("").equals("golem"))));
+   private static Dynamic<?> fixValue(final Dynamic<?> tag) {
+      return tag.update("Gossips", (gossips) -> tag.createList(gossips.asStream().filter((attribute) -> !attribute.get("Type").asString("").equals("golem"))));
    }
 }

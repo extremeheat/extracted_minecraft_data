@@ -21,24 +21,24 @@ public class DisconnectedScreen extends Screen {
    private final Component buttonText;
    private final LinearLayout layout;
 
-   public DisconnectedScreen(Screen var1, Component var2, Component var3) {
-      this(var1, var2, new DisconnectionDetails(var3));
+   public DisconnectedScreen(final Screen parent, final Component title, final Component reason) {
+      this(parent, title, new DisconnectionDetails(reason));
    }
 
-   public DisconnectedScreen(Screen var1, Component var2, Component var3, Component var4) {
-      this(var1, var2, new DisconnectionDetails(var3), var4);
+   public DisconnectedScreen(final Screen parent, final Component title, final Component reason, final Component buttonText) {
+      this(parent, title, new DisconnectionDetails(reason), buttonText);
    }
 
-   public DisconnectedScreen(Screen var1, Component var2, DisconnectionDetails var3) {
-      this(var1, var2, var3, TO_SERVER_LIST);
+   public DisconnectedScreen(final Screen parent, final Component title, final DisconnectionDetails details) {
+      this(parent, title, details, TO_SERVER_LIST);
    }
 
-   public DisconnectedScreen(Screen var1, Component var2, DisconnectionDetails var3, Component var4) {
-      super(var2);
+   public DisconnectedScreen(final Screen parent, final Component title, final DisconnectionDetails details, final Component buttonText) {
+      super(title);
       this.layout = LinearLayout.vertical();
-      this.parent = var1;
-      this.details = var3;
-      this.buttonText = var4;
+      this.parent = parent;
+      this.details = details;
+      this.buttonText = buttonText;
    }
 
    protected void init() {
@@ -46,16 +46,16 @@ public class DisconnectedScreen extends Screen {
       this.layout.addChild(new StringWidget(this.title, this.font));
       this.layout.addChild((new MultiLineTextWidget(this.details.reason(), this.font)).setMaxWidth(this.width - 50).setCentered(true));
       this.layout.defaultCellSetting().padding(2);
-      this.details.bugReportLink().ifPresent((var1x) -> this.layout.addChild(Button.builder(REPORT_TO_SERVER_TITLE, ConfirmLinkScreen.confirmLink(this, (URI)var1x, false)).width(200).build()));
-      this.details.report().ifPresent((var1x) -> this.layout.addChild(Button.builder(OPEN_REPORT_DIR_TITLE, (var1) -> Util.getPlatform().openPath(var1x.getParent())).width(200).build()));
-      Button var1;
+      this.details.bugReportLink().ifPresent((bugReportLink) -> this.layout.addChild(Button.builder(REPORT_TO_SERVER_TITLE, ConfirmLinkScreen.confirmLink(this, (URI)bugReportLink, false)).width(200).build()));
+      this.details.report().ifPresent((report) -> this.layout.addChild(Button.builder(OPEN_REPORT_DIR_TITLE, (button) -> Util.getPlatform().openPath(report.getParent())).width(200).build()));
+      Button backButton;
       if (this.minecraft.allowsMultiplayer()) {
-         var1 = Button.builder(this.buttonText, (var1x) -> this.minecraft.setScreen(this.parent)).width(200).build();
+         backButton = Button.builder(this.buttonText, (button) -> this.minecraft.setScreen(this.parent)).width(200).build();
       } else {
-         var1 = Button.builder(TO_TITLE, (var1x) -> this.minecraft.setScreen(new TitleScreen())).width(200).build();
+         backButton = Button.builder(TO_TITLE, (button) -> this.minecraft.setScreen(new TitleScreen())).width(200).build();
       }
 
-      this.layout.addChild(var1);
+      this.layout.addChild(backButton);
       this.layout.arrangeElements();
       this.layout.visitWidgets(this::addRenderableWidget);
       this.repositionElements();

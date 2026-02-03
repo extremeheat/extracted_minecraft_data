@@ -5,5 +5,5 @@ import net.minecraft.network.protocol.game.ServerGamePacketListener;
 
 @FunctionalInterface
 public interface PredictiveAction {
-   Packet<ServerGamePacketListener> predict(int var1);
+   Packet<ServerGamePacketListener> predict(int sequence);
 }

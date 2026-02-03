@@ -45,8 +45,8 @@ public class ZombieHorse extends AbstractHorse {
    private static final double PER_RANDOM_SPEED = 1.0;
    private static final EntityDimensions BABY_DIMENSIONS;
 
-   public ZombieHorse(EntityType<? extends ZombieHorse> var1, Level var2) {
-      super(var1, var2);
+   public ZombieHorse(final EntityType<? extends ZombieHorse> type, final Level level) {
+      super(type, level);
       this.setPathfindingMalus(PathType.DANGER_OTHER, -1.0F);
       this.setPathfindingMalus(PathType.DAMAGE_OTHER, -1.0F);
    }
@@ -55,12 +55,12 @@ public class ZombieHorse extends AbstractHorse {
       return createBaseHorseAttributes().add(Attributes.MAX_HEALTH, 25.0);
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
+   public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
       this.setPersistenceRequired();
-      return super.interact(var1, var2);
+      return super.interact(player, hand, location);
    }
 
-   public boolean removeWhenFarAway(double var1) {
+   public boolean removeWhenFarAway(final double distSqr) {
       return true;
    }
 
@@ -68,21 +68,21 @@ public class ZombieHorse extends AbstractHorse {
       return this.getFirstPassenger() instanceof Mob;
    }
 
-   protected void randomizeAttributes(RandomSource var1) {
+   protected void randomizeAttributes(final RandomSource random) {
       AttributeInstance var10000 = this.getAttribute(Attributes.JUMP_STRENGTH);
-      Objects.requireNonNull(var1);
-      var10000.setBaseValue(generateZombieHorseJumpStrength(var1::nextDouble));
+      Objects.requireNonNull(random);
+      var10000.setBaseValue(generateZombieHorseJumpStrength(random::nextDouble));
       var10000 = this.getAttribute(Attributes.MOVEMENT_SPEED);
-      Objects.requireNonNull(var1);
-      var10000.setBaseValue(generateZombieHorseSpeed(var1::nextDouble));
+      Objects.requireNonNull(random);
+      var10000.setBaseValue(generateZombieHorseSpeed(random::nextDouble));
    }
 
-   private static double generateZombieHorseJumpStrength(DoubleSupplier var0) {
-      return 0.5 + var0.getAsDouble() * 0.06666666666666667 + var0.getAsDouble() * 0.06666666666666667 + var0.getAsDouble() * 0.06666666666666667;
+   private static double generateZombieHorseJumpStrength(final DoubleSupplier probabilityProvider) {
+      return 0.5 + probabilityProvider.getAsDouble() * 0.06666666666666667 + probabilityProvider.getAsDouble() * 0.06666666666666667 + probabilityProvider.getAsDouble() * 0.06666666666666667;
    }
 
-   private static double generateZombieHorseSpeed(DoubleSupplier var0) {
-      return (9.0 + var0.getAsDouble() * 1.0 + var0.getAsDouble() * 1.0 + var0.getAsDouble() * 1.0) / 42.15999984741211;
+   private static double generateZombieHorseSpeed(final DoubleSupplier probabilityProvider) {
+      return (9.0 + probabilityProvider.getAsDouble() * 1.0 + probabilityProvider.getAsDouble() * 1.0 + probabilityProvider.getAsDouble() * 1.0) / 42.15999984741211;
    }
 
    protected SoundEvent getAmbientSound() {
@@ -93,7 +93,7 @@ public class ZombieHorse extends AbstractHorse {
       return SoundEvents.ZOMBIE_HORSE_DEATH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.ZOMBIE_HORSE_HURT;
    }
 
@@ -105,8 +105,8 @@ public class ZombieHorse extends AbstractHorse {
       return SoundEvents.ZOMBIE_HORSE_EAT;
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return null;
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      return EntityType.ZOMBIE_HORSE.create(level, EntitySpawnReason.BREEDING);
    }
 
    public boolean canFallInLove() {
@@ -115,30 +115,30 @@ public class ZombieHorse extends AbstractHorse {
 
    protected void addBehaviourGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (var0) -> var0.is(ItemTags.ZOMBIE_HORSE_FOOD), false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (i) -> i.is(ItemTags.ZOMBIE_HORSE_FOOD), false));
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      if (var3 == EntitySpawnReason.NATURAL) {
-         Zombie var5 = EntityType.ZOMBIE.create(this.level(), EntitySpawnReason.JOCKEY);
-         if (var5 != null) {
-            var5.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-            var5.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);
-            var5.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SPEAR));
-            var5.startRiding(this, false, false);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      if (spawnReason == EntitySpawnReason.NATURAL) {
+         Zombie zombie = EntityType.ZOMBIE.create(this.level(), EntitySpawnReason.JOCKEY);
+         if (zombie != null) {
+            zombie.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+            zombie.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);
+            zombie.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SPEAR));
+            zombie.startRiding(this, false, false);
          }
       }
 
-      return super.finalizeSpawn(var1, var2, var3, var4);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      boolean var3 = !this.isBaby() && this.isTamed() && var1.isSecondaryUseActive();
-      if (!this.isVehicle() && !var3) {
-         ItemStack var4 = var1.getItemInHand(var2);
-         if (!var4.isEmpty()) {
-            if (this.isFood(var4)) {
-               return this.fedFood(var1, var4);
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      boolean shouldOpenInventory = !this.isBaby() && this.isTamed() && player.isSecondaryUseActive();
+      if (!this.isVehicle() && !shouldOpenInventory) {
+         ItemStack itemStack = player.getItemInHand(hand);
+         if (!itemStack.isEmpty()) {
+            if (this.isFood(itemStack)) {
+               return this.fedFood(player, itemStack);
             }
 
             if (!this.isTamed()) {
@@ -147,13 +147,13 @@ public class ZombieHorse extends AbstractHorse {
             }
          }
 
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       } else {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
-   public boolean canUseSlot(EquipmentSlot var1) {
+   public boolean canUseSlot(final EquipmentSlot slot) {
       return true;
    }
 
@@ -161,8 +161,8 @@ public class ZombieHorse extends AbstractHorse {
       return this.isTamed() || !this.isMobControlled();
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.ZOMBIE_HORSE_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.ZOMBIE_HORSE_FOOD);
    }
 
    protected EquipmentSlot sunProtectionSlot() {
@@ -173,8 +173,8 @@ public class ZombieHorse extends AbstractHorse {
       return Leashable.createQuadLeashOffsets(this, 0.04, 0.41, 0.18, 0.73);
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    public float chargeSpeedModifier() {
@@ -182,6 +182,6 @@ public class ZombieHorse extends AbstractHorse {
    }
 
    static {
-      BABY_DIMENSIONS = EntityType.ZOMBIE_HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.ZOMBIE_HORSE.getHeight() - 0.03125F, 0.0F)).scale(0.5F);
+      BABY_DIMENSIONS = EntityType.ZOMBIE_HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.ZOMBIE_HORSE.getHeight() - 0.03125F, 0.0F)).scale(0.7F);
    }
 }

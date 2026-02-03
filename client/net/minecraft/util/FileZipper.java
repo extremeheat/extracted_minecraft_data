@@ -24,59 +24,59 @@ public class FileZipper implements Closeable {
    private final Path tempFile;
    private final FileSystem fs;
 
-   public FileZipper(Path var1) {
+   public FileZipper(final Path outputFile) {
       super();
-      this.outputFile = var1;
-      this.tempFile = var1.resolveSibling(var1.getFileName().toString() + "_tmp");
+      this.outputFile = outputFile;
+      this.tempFile = outputFile.resolveSibling(outputFile.getFileName().toString() + "_tmp");
 
       try {
          this.fs = Util.ZIP_FILE_SYSTEM_PROVIDER.newFileSystem(this.tempFile, ImmutableMap.of("create", "true"));
-      } catch (IOException var3) {
-         throw new UncheckedIOException(var3);
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
       }
    }
 
-   public void add(Path var1, String var2) {
+   public void add(final Path destinationRelativePath, final String content) {
       try {
-         Path var3 = this.fs.getPath(File.separator);
-         Path var4 = var3.resolve(var1.toString());
-         Files.createDirectories(var4.getParent());
-         Files.write(var4, var2.getBytes(StandardCharsets.UTF_8), new OpenOption[0]);
-      } catch (IOException var5) {
-         throw new UncheckedIOException(var5);
+         Path root = this.fs.getPath(File.separator);
+         Path path = root.resolve(destinationRelativePath.toString());
+         Files.createDirectories(path.getParent());
+         Files.write(path, content.getBytes(StandardCharsets.UTF_8), new OpenOption[0]);
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
       }
    }
 
-   public void add(Path var1, File var2) {
+   public void add(final Path destinationRelativePath, final File file) {
       try {
-         Path var3 = this.fs.getPath(File.separator);
-         Path var4 = var3.resolve(var1.toString());
-         Files.createDirectories(var4.getParent());
-         Files.copy(var2.toPath(), var4);
-      } catch (IOException var5) {
-         throw new UncheckedIOException(var5);
+         Path root = this.fs.getPath(File.separator);
+         Path path = root.resolve(destinationRelativePath.toString());
+         Files.createDirectories(path.getParent());
+         Files.copy(file.toPath(), path);
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
       }
    }
 
-   public void add(Path var1) {
+   public void add(final Path path) {
       try {
-         Path var2 = this.fs.getPath(File.separator);
-         if (Files.isRegularFile(var1, new LinkOption[0])) {
-            Path var10 = var2.resolve(var1.getParent().relativize(var1).toString());
-            Files.copy(var10, var1);
+         Path root = this.fs.getPath(File.separator);
+         if (Files.isRegularFile(path, new LinkOption[0])) {
+            Path targetFile = root.resolve(path.getParent().relativize(path).toString());
+            Files.copy(targetFile, path);
          } else {
-            Stream var3 = Files.find(var1, 2147483647, (var0, var1x) -> var1x.isRegularFile(), new FileVisitOption[0]);
+            Stream<Path> sourceFiles = Files.find(path, 2147483647, (p, a) -> a.isRegularFile(), new FileVisitOption[0]);
 
             try {
-               for(Path var5 : (List)var3.collect(Collectors.toList())) {
-                  Path var6 = var2.resolve(var1.relativize(var5).toString());
-                  Files.createDirectories(var6.getParent());
-                  Files.copy(var5, var6);
+               for(Path sourceFile : (List)sourceFiles.collect(Collectors.toList())) {
+                  Path targetFile = root.resolve(path.relativize(sourceFile).toString());
+                  Files.createDirectories(targetFile.getParent());
+                  Files.copy(sourceFile, targetFile);
                }
             } catch (Throwable var8) {
-               if (var3 != null) {
+               if (sourceFiles != null) {
                   try {
-                     var3.close();
+                     sourceFiles.close();
                   } catch (Throwable var7) {
                      var8.addSuppressed(var7);
                   }
@@ -85,13 +85,13 @@ public class FileZipper implements Closeable {
                throw var8;
             }
 
-            if (var3 != null) {
-               var3.close();
+            if (sourceFiles != null) {
+               sourceFiles.close();
             }
 
          }
-      } catch (IOException var9) {
-         throw new UncheckedIOException(var9);
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
       }
    }
 
@@ -100,8 +100,8 @@ public class FileZipper implements Closeable {
          this.fs.close();
          Files.move(this.tempFile, this.outputFile);
          LOGGER.info("Compressed to {}", this.outputFile);
-      } catch (IOException var2) {
-         throw new UncheckedIOException(var2);
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
       }
    }
 }

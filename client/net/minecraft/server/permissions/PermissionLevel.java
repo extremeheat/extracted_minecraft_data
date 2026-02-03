@@ -15,22 +15,22 @@ public enum PermissionLevel implements StringRepresentable {
    OWNERS("owners", 4);
 
    public static final Codec<PermissionLevel> CODEC = StringRepresentable.<PermissionLevel>fromEnum(PermissionLevel::values);
-   private static final IntFunction<PermissionLevel> BY_ID = ByIdMap.<PermissionLevel>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+   private static final IntFunction<PermissionLevel> BY_ID = ByIdMap.<PermissionLevel>continuous((level) -> level.id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
    public static final Codec<PermissionLevel> INT_CODEC;
    private final String name;
    private final int id;
 
-   private PermissionLevel(final String var3, final int var4) {
-      this.name = var3;
-      this.id = var4;
+   private PermissionLevel(final String name, final int id) {
+      this.name = name;
+      this.id = id;
    }
 
-   public boolean isEqualOrHigherThan(PermissionLevel var1) {
-      return this.id >= var1.id;
+   public boolean isEqualOrHigherThan(final PermissionLevel other) {
+      return this.id >= other.id;
    }
 
-   public static PermissionLevel byId(int var0) {
-      return (PermissionLevel)BY_ID.apply(var0);
+   public static PermissionLevel byId(final int level) {
+      return (PermissionLevel)BY_ID.apply(level);
    }
 
    public int id() {
@@ -50,6 +50,6 @@ public enum PermissionLevel implements StringRepresentable {
       PrimitiveCodec var10000 = Codec.INT;
       IntFunction var10001 = BY_ID;
       Objects.requireNonNull(var10001);
-      INT_CODEC = var10000.xmap(var10001::apply, (var0) -> var0.id);
+      INT_CODEC = var10000.xmap(var10001::apply, (level) -> level.id);
    }
 }

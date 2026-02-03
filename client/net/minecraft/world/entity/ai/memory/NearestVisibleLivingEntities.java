@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 
@@ -18,46 +19,51 @@ public class NearestVisibleLivingEntities {
    private NearestVisibleLivingEntities() {
       super();
       this.nearbyEntities = List.of();
-      this.lineOfSightTest = (var0) -> false;
+      this.lineOfSightTest = (ignored) -> false;
    }
 
-   public NearestVisibleLivingEntities(ServerLevel var1, LivingEntity var2, List<LivingEntity> var3) {
+   public NearestVisibleLivingEntities(final ServerLevel level, final LivingEntity body, final List<LivingEntity> livingEntities) {
       super();
-      this.nearbyEntities = var3;
-      Object2BooleanOpenHashMap var4 = new Object2BooleanOpenHashMap(var3.size());
-      Predicate var5 = (var2x) -> Sensor.isEntityTargetable(var1, var2, var2x);
-      this.lineOfSightTest = (var2x) -> var4.computeIfAbsent(var2x, var5);
+      this.nearbyEntities = livingEntities;
+      Object2BooleanOpenHashMap<LivingEntity> cache = new Object2BooleanOpenHashMap(livingEntities.size());
+      Predicate<LivingEntity> targetTest = (targetEntity) -> Sensor.isEntityTargetable(level, body, targetEntity);
+      this.lineOfSightTest = (otherEntity) -> cache.computeIfAbsent(otherEntity, targetTest);
    }
 
    public static NearestVisibleLivingEntities empty() {
       return EMPTY;
    }
 
-   public Optional<LivingEntity> findClosest(Predicate<LivingEntity> var1) {
-      for(LivingEntity var3 : this.nearbyEntities) {
-         if (var1.test(var3) && this.lineOfSightTest.test(var3)) {
-            return Optional.of(var3);
+   @VisibleForDebug
+   public List<LivingEntity> nearbyEntities() {
+      return this.nearbyEntities;
+   }
+
+   public Optional<LivingEntity> findClosest(final Predicate<LivingEntity> filter) {
+      for(LivingEntity nearbyEntity : this.nearbyEntities) {
+         if (filter.test(nearbyEntity) && this.lineOfSightTest.test(nearbyEntity)) {
+            return Optional.of(nearbyEntity);
          }
       }
 
       return Optional.empty();
    }
 
-   public Iterable<LivingEntity> findAll(Predicate<LivingEntity> var1) {
-      return Iterables.filter(this.nearbyEntities, (var2) -> var1.test(var2) && this.lineOfSightTest.test(var2));
+   public Iterable<LivingEntity> findAll(final Predicate<LivingEntity> filter) {
+      return Iterables.filter(this.nearbyEntities, (entity) -> filter.test(entity) && this.lineOfSightTest.test(entity));
    }
 
-   public Stream<LivingEntity> find(Predicate<LivingEntity> var1) {
-      return this.nearbyEntities.stream().filter((var2) -> var1.test(var2) && this.lineOfSightTest.test(var2));
+   public Stream<LivingEntity> find(final Predicate<LivingEntity> filter) {
+      return this.nearbyEntities.stream().filter((entity) -> filter.test(entity) && this.lineOfSightTest.test(entity));
    }
 
-   public boolean contains(LivingEntity var1) {
-      return this.nearbyEntities.contains(var1) && this.lineOfSightTest.test(var1);
+   public boolean contains(final LivingEntity targetEntity) {
+      return this.nearbyEntities.contains(targetEntity) && this.lineOfSightTest.test(targetEntity);
    }
 
-   public boolean contains(Predicate<LivingEntity> var1) {
-      for(LivingEntity var3 : this.nearbyEntities) {
-         if (var1.test(var3) && this.lineOfSightTest.test(var3)) {
+   public boolean contains(final Predicate<LivingEntity> filter) {
+      for(LivingEntity nearbyEntity : this.nearbyEntities) {
+         if (filter.test(nearbyEntity) && this.lineOfSightTest.test(nearbyEntity)) {
             return true;
          }
       }

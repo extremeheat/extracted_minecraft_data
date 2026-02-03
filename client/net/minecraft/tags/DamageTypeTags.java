@@ -40,7 +40,7 @@ public interface DamageTypeTags {
    TagKey<DamageType> PANIC_ENVIRONMENTAL_CAUSES = create("panic_environmental_causes");
    TagKey<DamageType> IS_MACE_SMASH = create("mace_smash");
 
-   private static TagKey<DamageType> create(String var0) {
-      return TagKey.<DamageType>create(Registries.DAMAGE_TYPE, Identifier.withDefaultNamespace(var0));
+   private static TagKey<DamageType> create(final String name) {
+      return TagKey.<DamageType>create(Registries.DAMAGE_TYPE, Identifier.withDefaultNamespace(name));
    }
 }

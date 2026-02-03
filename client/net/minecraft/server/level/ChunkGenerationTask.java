@@ -24,25 +24,25 @@ public class ChunkGenerationTask {
    private final StaticCache2D<GenerationChunkHolder> cache;
    private boolean needsGeneration;
 
-   private ChunkGenerationTask(GeneratingChunkMap var1, ChunkStatus var2, ChunkPos var3, StaticCache2D<GenerationChunkHolder> var4) {
+   private ChunkGenerationTask(final GeneratingChunkMap chunkMap, final ChunkStatus targetStatus, final ChunkPos pos, final StaticCache2D<GenerationChunkHolder> cache) {
       super();
-      this.chunkMap = var1;
-      this.targetStatus = var2;
-      this.pos = var3;
-      this.cache = var4;
+      this.chunkMap = chunkMap;
+      this.targetStatus = targetStatus;
+      this.pos = pos;
+      this.cache = cache;
    }
 
-   public static ChunkGenerationTask create(GeneratingChunkMap var0, ChunkStatus var1, ChunkPos var2) {
-      int var3 = ChunkPyramid.GENERATION_PYRAMID.getStepTo(var1).getAccumulatedRadiusOf(ChunkStatus.EMPTY);
-      StaticCache2D var4 = StaticCache2D.create(var2.x, var2.z, var3, (var1x, var2x) -> var0.acquireGeneration(ChunkPos.asLong(var1x, var2x)));
-      return new ChunkGenerationTask(var0, var1, var2, var4);
+   public static ChunkGenerationTask create(final GeneratingChunkMap chunkMap, final ChunkStatus targetStatus, final ChunkPos pos) {
+      int worstCaseRadius = ChunkPyramid.GENERATION_PYRAMID.getStepTo(targetStatus).getAccumulatedRadiusOf(ChunkStatus.EMPTY);
+      StaticCache2D<GenerationChunkHolder> cache = StaticCache2D.<GenerationChunkHolder>create(pos.x(), pos.z(), worstCaseRadius, (x, z) -> chunkMap.acquireGeneration(ChunkPos.pack(x, z)));
+      return new ChunkGenerationTask(chunkMap, targetStatus, pos, cache);
    }
 
    public @Nullable CompletableFuture<?> runUntilWait() {
       while(true) {
-         CompletableFuture var1 = this.waitForScheduledLayer();
-         if (var1 != null) {
-            return var1;
+         CompletableFuture<?> waitingFor = this.waitForScheduledLayer();
+         if (waitingFor != null) {
+            return waitingFor;
          }
 
          if (this.markedForCancellation || this.scheduledStatus == this.targetStatus) {
@@ -55,18 +55,18 @@ public class ChunkGenerationTask {
    }
 
    private void scheduleNextLayer() {
-      ChunkStatus var1;
+      ChunkStatus statusToSchedule;
       if (this.scheduledStatus == null) {
-         var1 = ChunkStatus.EMPTY;
+         statusToSchedule = ChunkStatus.EMPTY;
       } else if (!this.needsGeneration && this.scheduledStatus == ChunkStatus.EMPTY && !this.canLoadWithoutGeneration()) {
          this.needsGeneration = true;
-         var1 = ChunkStatus.EMPTY;
+         statusToSchedule = ChunkStatus.EMPTY;
       } else {
-         var1 = (ChunkStatus)ChunkStatus.getStatusList().get(this.scheduledStatus.getIndex() + 1);
+         statusToSchedule = (ChunkStatus)ChunkStatus.getStatusList().get(this.scheduledStatus.getIndex() + 1);
       }
 
-      this.scheduleLayer(var1, this.needsGeneration);
-      this.scheduledStatus = var1;
+      this.scheduleLayer(statusToSchedule, this.needsGeneration);
+      this.scheduledStatus = statusToSchedule;
    }
 
    public void markForCancellation() {
@@ -74,8 +74,8 @@ public class ChunkGenerationTask {
    }
 
    private void releaseClaim() {
-      GenerationChunkHolder var1 = this.cache.get(this.pos.x, this.pos.z);
-      var1.removeTask(this);
+      GenerationChunkHolder chunkHolder = this.cache.get(this.pos.x(), this.pos.z());
+      chunkHolder.removeTask(this);
       StaticCache2D var10000 = this.cache;
       GeneratingChunkMap var10001 = this.chunkMap;
       Objects.requireNonNull(var10001);
@@ -86,17 +86,17 @@ public class ChunkGenerationTask {
       if (this.targetStatus == ChunkStatus.EMPTY) {
          return true;
       } else {
-         ChunkStatus var1 = ((GenerationChunkHolder)this.cache.get(this.pos.x, this.pos.z)).getPersistedStatus();
-         if (var1 != null && !var1.isBefore(this.targetStatus)) {
-            ChunkDependencies var2 = ChunkPyramid.LOADING_PYRAMID.getStepTo(this.targetStatus).accumulatedDependencies();
-            int var3 = var2.getRadius();
+         ChunkStatus highestGeneratedStatus = ((GenerationChunkHolder)this.cache.get(this.pos.x(), this.pos.z())).getPersistedStatus();
+         if (highestGeneratedStatus != null && !highestGeneratedStatus.isBefore(this.targetStatus)) {
+            ChunkDependencies dependencies = ChunkPyramid.LOADING_PYRAMID.getStepTo(this.targetStatus).accumulatedDependencies();
+            int range = dependencies.getRadius();
 
-            for(int var4 = this.pos.x - var3; var4 <= this.pos.x + var3; ++var4) {
-               for(int var5 = this.pos.z - var3; var5 <= this.pos.z + var3; ++var5) {
-                  int var6 = this.pos.getChessboardDistance(var4, var5);
-                  ChunkStatus var7 = var2.get(var6);
-                  ChunkStatus var8 = ((GenerationChunkHolder)this.cache.get(var4, var5)).getPersistedStatus();
-                  if (var8 == null || var8.isBefore(var7)) {
+            for(int x = this.pos.x() - range; x <= this.pos.x() + range; ++x) {
+               for(int z = this.pos.z() - range; z <= this.pos.z() + range; ++z) {
+                  int distance = this.pos.getChessboardDistance(x, z);
+                  ChunkStatus requiredStatus = dependencies.get(distance);
+                  ChunkStatus persistedStatus = ((GenerationChunkHolder)this.cache.get(x, z)).getPersistedStatus();
+                  if (persistedStatus == null || persistedStatus.isBefore(requiredStatus)) {
                      return false;
                   }
                }
@@ -110,19 +110,19 @@ public class ChunkGenerationTask {
    }
 
    public GenerationChunkHolder getCenter() {
-      return this.cache.get(this.pos.x, this.pos.z);
+      return this.cache.get(this.pos.x(), this.pos.z());
    }
 
-   private void scheduleLayer(ChunkStatus var1, boolean var2) {
-      try (Zone var3 = Profiler.get().zone("scheduleLayer")) {
-         Objects.requireNonNull(var1);
-         var3.addText(var1::getName);
-         int var4 = this.getRadiusForLayer(var1, var2);
+   private void scheduleLayer(final ChunkStatus status, final boolean needsGeneration) {
+      try (Zone zone = Profiler.get().zone("scheduleLayer")) {
+         Objects.requireNonNull(status);
+         zone.addText(status::getName);
+         int radius = this.getRadiusForLayer(status, needsGeneration);
 
-         for(int var5 = this.pos.x - var4; var5 <= this.pos.x + var4; ++var5) {
-            for(int var6 = this.pos.z - var4; var6 <= this.pos.z + var4; ++var6) {
-               GenerationChunkHolder var7 = this.cache.get(var5, var6);
-               if (this.markedForCancellation || !this.scheduleChunkInLayer(var1, var2, var7)) {
+         for(int x = this.pos.x() - radius; x <= this.pos.x() + radius; ++x) {
+            for(int z = this.pos.z() - radius; z <= this.pos.z() + radius; ++z) {
+               GenerationChunkHolder chunkHolder = this.cache.get(x, z);
+               if (this.markedForCancellation || !this.scheduleChunkInLayer(status, needsGeneration, chunkHolder)) {
                   return;
                }
             }
@@ -131,24 +131,24 @@ public class ChunkGenerationTask {
 
    }
 
-   private int getRadiusForLayer(ChunkStatus var1, boolean var2) {
-      ChunkPyramid var3 = var2 ? ChunkPyramid.GENERATION_PYRAMID : ChunkPyramid.LOADING_PYRAMID;
-      return var3.getStepTo(this.targetStatus).getAccumulatedRadiusOf(var1);
+   private int getRadiusForLayer(final ChunkStatus status, final boolean needsGeneration) {
+      ChunkPyramid pyramid = needsGeneration ? ChunkPyramid.GENERATION_PYRAMID : ChunkPyramid.LOADING_PYRAMID;
+      return pyramid.getStepTo(this.targetStatus).getAccumulatedRadiusOf(status);
    }
 
-   private boolean scheduleChunkInLayer(ChunkStatus var1, boolean var2, GenerationChunkHolder var3) {
-      ChunkStatus var4 = var3.getPersistedStatus();
-      boolean var5 = var4 != null && var1.isAfter(var4);
-      ChunkPyramid var6 = var5 ? ChunkPyramid.GENERATION_PYRAMID : ChunkPyramid.LOADING_PYRAMID;
-      if (var5 && !var2) {
+   private boolean scheduleChunkInLayer(final ChunkStatus status, final boolean needsGeneration, final GenerationChunkHolder chunkHolder) {
+      ChunkStatus persistedStatus = chunkHolder.getPersistedStatus();
+      boolean generate = persistedStatus != null && status.isAfter(persistedStatus);
+      ChunkPyramid pyramid = generate ? ChunkPyramid.GENERATION_PYRAMID : ChunkPyramid.LOADING_PYRAMID;
+      if (generate && !needsGeneration) {
          throw new IllegalStateException("Can't load chunk, but didn't expect to need to generate");
       } else {
-         CompletableFuture var7 = var3.applyStep(var6.getStepTo(var1), this.chunkMap, this.cache);
-         ChunkResult var8 = (ChunkResult)var7.getNow((Object)null);
-         if (var8 == null) {
-            this.scheduledLayer.add(var7);
+         CompletableFuture<ChunkResult<ChunkAccess>> future = chunkHolder.applyStep(pyramid.getStepTo(status), this.chunkMap, this.cache);
+         ChunkResult<ChunkAccess> now = (ChunkResult)future.getNow((Object)null);
+         if (now == null) {
+            this.scheduledLayer.add(future);
             return true;
-         } else if (var8.isSuccess()) {
+         } else if (now.isSuccess()) {
             return true;
          } else {
             this.markForCancellation();
@@ -159,14 +159,14 @@ public class ChunkGenerationTask {
 
    private @Nullable CompletableFuture<?> waitForScheduledLayer() {
       while(!this.scheduledLayer.isEmpty()) {
-         CompletableFuture var1 = (CompletableFuture)this.scheduledLayer.getLast();
-         ChunkResult var2 = (ChunkResult)var1.getNow((Object)null);
-         if (var2 == null) {
-            return var1;
+         CompletableFuture<ChunkResult<ChunkAccess>> lastFuture = (CompletableFuture)this.scheduledLayer.getLast();
+         ChunkResult<ChunkAccess> resultNow = (ChunkResult)lastFuture.getNow((Object)null);
+         if (resultNow == null) {
+            return lastFuture;
          }
 
          this.scheduledLayer.removeLast();
-         if (!var2.isSuccess()) {
+         if (!resultNow.isSuccess()) {
             this.markForCancellation();
          }
       }

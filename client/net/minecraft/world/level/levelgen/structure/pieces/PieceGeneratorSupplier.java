@@ -17,38 +17,28 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 @FunctionalInterface
 public interface PieceGeneratorSupplier<C extends FeatureConfiguration> {
-   Optional<PieceGenerator<C>> createGenerator(Context<C> var1);
+   Optional<PieceGenerator<C>> createGenerator(Context<C> context);
 
-   static <C extends FeatureConfiguration> PieceGeneratorSupplier<C> simple(Predicate<Context<C>> var0, PieceGenerator<C> var1) {
-      Optional var2 = Optional.of(var1);
-      return (var2x) -> var0.test(var2x) ? var2 : Optional.empty();
+   static <C extends FeatureConfiguration> PieceGeneratorSupplier<C> simple(final Predicate<Context<C>> check, final PieceGenerator<C> generator) {
+      Optional<PieceGenerator<C>> result = Optional.of(generator);
+      return (context) -> check.test(context) ? result : Optional.empty();
    }
 
-   static <C extends FeatureConfiguration> Predicate<Context<C>> checkForBiomeOnTop(Heightmap.Types var0) {
-      return (var1) -> var1.validBiomeOnTop(var0);
+   static <C extends FeatureConfiguration> Predicate<Context<C>> checkForBiomeOnTop(final Heightmap.Types type) {
+      return (context) -> context.validBiomeOnTop(type);
    }
 
    public static record Context<C extends FeatureConfiguration>(ChunkGenerator chunkGenerator, BiomeSource biomeSource, RandomState randomState, long seed, ChunkPos chunkPos, C config, LevelHeightAccessor heightAccessor, Predicate<Holder<Biome>> validBiome, StructureTemplateManager structureTemplateManager, RegistryAccess registryAccess) {
-      public Context(ChunkGenerator var1, BiomeSource var2, RandomState var3, long var4, ChunkPos var6, C var7, LevelHeightAccessor var8, Predicate<Holder<Biome>> var9, StructureTemplateManager var10, RegistryAccess var11) {
+      public Context {
          super();
-         this.chunkGenerator = var1;
-         this.biomeSource = var2;
-         this.randomState = var3;
-         this.seed = var4;
-         this.chunkPos = var6;
-         this.config = var7;
-         this.heightAccessor = var8;
-         this.validBiome = var9;
-         this.structureTemplateManager = var10;
-         this.registryAccess = var11;
       }
 
-      public boolean validBiomeOnTop(Heightmap.Types var1) {
-         int var2 = this.chunkPos.getMiddleBlockX();
-         int var3 = this.chunkPos.getMiddleBlockZ();
-         int var4 = this.chunkGenerator.getFirstOccupiedHeight(var2, var3, var1, this.heightAccessor, this.randomState);
-         Holder var5 = this.chunkGenerator.getBiomeSource().getNoiseBiome(QuartPos.fromBlock(var2), QuartPos.fromBlock(var4), QuartPos.fromBlock(var3), this.randomState.sampler());
-         return this.validBiome.test(var5);
+      public boolean validBiomeOnTop(final Heightmap.Types type) {
+         int blockX = this.chunkPos.getMiddleBlockX();
+         int blockZ = this.chunkPos.getMiddleBlockZ();
+         int blockY = this.chunkGenerator.getFirstOccupiedHeight(blockX, blockZ, type, this.heightAccessor, this.randomState);
+         Holder<Biome> biome = this.chunkGenerator.getBiomeSource().getNoiseBiome(QuartPos.fromBlock(blockX), QuartPos.fromBlock(blockY), QuartPos.fromBlock(blockZ), this.randomState.sampler());
+         return this.validBiome.test(biome);
       }
    }
 }

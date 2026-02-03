@@ -6,6 +6,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -36,64 +37,64 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       this.threadingDetector.checkAndUnlock();
    }
 
-   public static <T> Codec<PalettedContainer<T>> codecRW(Codec<T> var0, Strategy<T> var1, T var2) {
-      PalettedContainerRO.Unpacker var3 = PalettedContainer::unpack;
-      return codec(var0, var1, var2, var3);
+   public static <T> Codec<PalettedContainer<T>> codecRW(final Codec<T> elementCodec, final Strategy<T> strategy, final T defaultValue) {
+      PalettedContainerRO.Unpacker<T, PalettedContainer<T>> unpacker = PalettedContainer::unpack;
+      return codec(elementCodec, strategy, defaultValue, unpacker);
    }
 
-   public static <T> Codec<PalettedContainerRO<T>> codecRO(Codec<T> var0, Strategy<T> var1, T var2) {
-      PalettedContainerRO.Unpacker var3 = (var0x, var1x) -> unpack(var0x, var1x).map((var0) -> var0);
-      return codec(var0, var1, var2, var3);
+   public static <T> Codec<PalettedContainerRO<T>> codecRO(final Codec<T> elementCodec, final Strategy<T> strategy, final T defaultValue) {
+      PalettedContainerRO.Unpacker<T, PalettedContainerRO<T>> unpacker = (s, data) -> unpack(s, data).map((e) -> e);
+      return codec(elementCodec, strategy, defaultValue, unpacker);
    }
 
-   private static <T, C extends PalettedContainerRO<T>> Codec<C> codec(Codec<T> var0, Strategy<T> var1, T var2, PalettedContainerRO.Unpacker<T, C> var3) {
-      return RecordCodecBuilder.create((var2x) -> var2x.group(var0.mapResult(ExtraCodecs.orElsePartial(var2)).listOf().fieldOf("palette").forGetter(PalettedContainerRO.PackedData::paletteEntries), Codec.LONG_STREAM.lenientOptionalFieldOf("data").forGetter(PalettedContainerRO.PackedData::storage)).apply(var2x, PalettedContainerRO.PackedData::new)).comapFlatMap((var2x) -> var3.read(var1, var2x), (var1x) -> var1x.pack(var1));
+   private static <T, C extends PalettedContainerRO<T>> Codec<C> codec(final Codec<T> elementCodec, final Strategy<T> strategy, final T defaultValue, final PalettedContainerRO.Unpacker<T, C> unpacker) {
+      return RecordCodecBuilder.create((i) -> i.group(elementCodec.mapResult(ExtraCodecs.orElsePartial(defaultValue)).listOf().fieldOf("palette").forGetter(PalettedContainerRO.PackedData::paletteEntries), Codec.LONG_STREAM.lenientOptionalFieldOf("data").forGetter(PalettedContainerRO.PackedData::storage)).apply(i, PalettedContainerRO.PackedData::new)).comapFlatMap((discData) -> unpacker.read(strategy, discData), (palettedContainer) -> palettedContainer.pack(strategy));
    }
 
-   private PalettedContainer(Strategy<T> var1, Configuration var2, BitStorage var3, Palette<T> var4) {
+   private PalettedContainer(final Strategy<T> strategy, final Configuration dataConfiguration, final BitStorage storage, final Palette<T> palette) {
       super();
-      this.strategy = var1;
-      this.data = new Data<T>(var2, var3, var4);
+      this.strategy = strategy;
+      this.data = new Data<T>(dataConfiguration, storage, palette);
    }
 
-   private PalettedContainer(PalettedContainer<T> var1) {
+   private PalettedContainer(final PalettedContainer<T> source) {
       super();
-      this.strategy = var1.strategy;
-      this.data = var1.data.copy();
+      this.strategy = source.strategy;
+      this.data = source.data.copy();
    }
 
-   public PalettedContainer(T var1, Strategy<T> var2) {
+   public PalettedContainer(final T initialValue, final Strategy<T> strategy) {
       super();
-      this.strategy = var2;
+      this.strategy = strategy;
       this.data = this.createOrReuseData((Data)null, 0);
-      this.data.palette.idFor(var1, this);
+      this.data.palette.idFor(initialValue, this);
    }
 
-   private Data<T> createOrReuseData(@Nullable Data<T> var1, int var2) {
-      Configuration var3 = this.strategy.getConfigurationForBitCount(var2);
-      if (var1 != null && var3.equals(var1.configuration())) {
-         return var1;
+   private Data<T> createOrReuseData(final @Nullable Data<T> oldData, final int targetBits) {
+      Configuration dataConfiguration = this.strategy.getConfigurationForBitCount(targetBits);
+      if (oldData != null && dataConfiguration.equals(oldData.configuration())) {
+         return oldData;
       } else {
-         Object var4 = var3.bitsInMemory() == 0 ? new ZeroBitStorage(this.strategy.entryCount()) : new SimpleBitStorage(var3.bitsInMemory(), this.strategy.entryCount());
-         Palette var5 = var3.createPalette(this.strategy, List.of());
-         return new Data<T>(var3, (BitStorage)var4, var5);
+         BitStorage storage = (BitStorage)(dataConfiguration.bitsInMemory() == 0 ? new ZeroBitStorage(this.strategy.entryCount()) : new SimpleBitStorage(dataConfiguration.bitsInMemory(), this.strategy.entryCount()));
+         Palette<T> palette = dataConfiguration.<T>createPalette(this.strategy, List.of());
+         return new Data<T>(dataConfiguration, storage, palette);
       }
    }
 
-   public int onResize(int var1, T var2) {
-      Data var3 = this.data;
-      Data var4 = this.createOrReuseData(var3, var1);
-      var4.copyFrom(var3.palette, var3.storage);
-      this.data = var4;
-      return var4.palette.idFor(var2, PaletteResize.noResizeExpected());
+   public int onResize(final int bits, final T lastAddedValue) {
+      Data<T> oldData = this.data;
+      Data<T> newData = this.createOrReuseData(oldData, bits);
+      newData.copyFrom(oldData.palette, oldData.storage);
+      this.data = newData;
+      return newData.palette.idFor(lastAddedValue, PaletteResize.noResizeExpected());
    }
 
-   public T getAndSet(int var1, int var2, int var3, T var4) {
+   public T getAndSet(final int x, final int y, final int z, final T value) {
       this.acquire();
 
       Object var5;
       try {
-         var5 = this.getAndSet(this.strategy.getIndex(var1, var2, var3), var4);
+         var5 = this.getAndSet(this.strategy.getIndex(x, y, z), value);
       } finally {
          this.release();
       }
@@ -101,70 +102,70 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       return (T)var5;
    }
 
-   public T getAndSetUnchecked(int var1, int var2, int var3, T var4) {
-      return (T)this.getAndSet(this.strategy.getIndex(var1, var2, var3), var4);
+   public T getAndSetUnchecked(final int x, final int y, final int z, final T value) {
+      return (T)this.getAndSet(this.strategy.getIndex(x, y, z), value);
    }
 
-   private T getAndSet(int var1, T var2) {
-      int var3 = this.data.palette.idFor(var2, this);
-      int var4 = this.data.storage.getAndSet(var1, var3);
-      return this.data.palette.valueFor(var4);
+   private T getAndSet(final int index, final T value) {
+      int id = this.data.palette.idFor(value, this);
+      int oldId = this.data.storage.getAndSet(index, id);
+      return this.data.palette.valueFor(oldId);
    }
 
-   public void set(int var1, int var2, int var3, T var4) {
+   public void set(final int x, final int y, final int z, final T value) {
       this.acquire();
 
       try {
-         this.set(this.strategy.getIndex(var1, var2, var3), var4);
+         this.set(this.strategy.getIndex(x, y, z), value);
       } finally {
          this.release();
       }
 
    }
 
-   private void set(int var1, T var2) {
-      int var3 = this.data.palette.idFor(var2, this);
-      this.data.storage.set(var1, var3);
+   private void set(final int index, final T value) {
+      int id = this.data.palette.idFor(value, this);
+      this.data.storage.set(index, id);
    }
 
-   public T get(int var1, int var2, int var3) {
-      return (T)this.get(this.strategy.getIndex(var1, var2, var3));
+   public T get(final int x, final int y, final int z) {
+      return (T)this.get(this.strategy.getIndex(x, y, z));
    }
 
-   protected T get(int var1) {
-      Data var2 = this.data;
-      return var2.palette.valueFor(var2.storage.get(var1));
+   protected T get(final int index) {
+      Data<T> data = this.data;
+      return data.palette.valueFor(data.storage.get(index));
    }
 
-   public void getAll(Consumer<T> var1) {
-      Palette var2 = this.data.palette();
-      IntArraySet var3 = new IntArraySet();
+   public void getAll(final Consumer<T> consumer) {
+      Palette<T> palette = this.data.palette();
+      IntSet allExistingEntries = new IntArraySet();
       BitStorage var10000 = this.data.storage;
-      Objects.requireNonNull(var3);
-      var10000.getAll(var3::add);
-      var3.forEach((var2x) -> var1.accept(var2.valueFor(var2x)));
+      Objects.requireNonNull(allExistingEntries);
+      var10000.getAll(allExistingEntries::add);
+      allExistingEntries.forEach((state) -> consumer.accept(palette.valueFor(state)));
    }
 
-   public void read(FriendlyByteBuf var1) {
+   public void read(final FriendlyByteBuf buffer) {
       this.acquire();
 
       try {
-         byte var2 = var1.readByte();
-         Data var3 = this.createOrReuseData(this.data, var2);
-         var3.palette.read(var1, this.strategy.globalMap());
-         var1.readFixedSizeLongArray(var3.storage.getRaw());
-         this.data = var3;
+         int newBits = buffer.readByte();
+         Data<T> newData = this.createOrReuseData(this.data, newBits);
+         newData.palette.read(buffer, this.strategy.globalMap());
+         buffer.readFixedSizeLongArray(newData.storage.getRaw());
+         this.data = newData;
       } finally {
          this.release();
       }
 
    }
 
-   public void write(FriendlyByteBuf var1) {
+   public void write(final FriendlyByteBuf buffer) {
       this.acquire();
 
       try {
-         this.data.write(var1, this.strategy.globalMap());
+         this.data.write(buffer, this.strategy.globalMap());
       } finally {
          this.release();
       }
@@ -172,69 +173,69 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
    }
 
    @VisibleForTesting
-   public static <T> DataResult<PalettedContainer<T>> unpack(Strategy<T> var0, PalettedContainerRO.PackedData<T> var1) {
-      List var2 = var1.paletteEntries();
-      int var3 = var0.entryCount();
-      Configuration var4 = var0.getConfigurationForPaletteSize(var2.size());
-      int var5 = var4.bitsInStorage();
-      if (var1.bitsPerEntry() != -1 && var5 != var1.bitsPerEntry()) {
-         return DataResult.error(() -> "Invalid bit count, calculated " + var5 + ", but container declared " + var1.bitsPerEntry());
+   public static <T> DataResult<PalettedContainer<T>> unpack(final Strategy<T> strategy, final PalettedContainerRO.PackedData<T> discData) {
+      List<T> paletteEntries = discData.paletteEntries();
+      int entryCount = strategy.entryCount();
+      Configuration storedConfiguration = strategy.getConfigurationForPaletteSize(paletteEntries.size());
+      int bitsOnDisc = storedConfiguration.bitsInStorage();
+      if (discData.bitsPerEntry() != -1 && bitsOnDisc != discData.bitsPerEntry()) {
+         return DataResult.error(() -> "Invalid bit count, calculated " + bitsOnDisc + ", but container declared " + discData.bitsPerEntry());
       } else {
-         Object var6;
-         Palette var7;
-         if (var4.bitsInMemory() == 0) {
-            var7 = var4.createPalette(var0, var2);
-            var6 = new ZeroBitStorage(var3);
+         BitStorage storage;
+         Palette<T> palette;
+         if (storedConfiguration.bitsInMemory() == 0) {
+            palette = storedConfiguration.<T>createPalette(strategy, paletteEntries);
+            storage = new ZeroBitStorage(entryCount);
          } else {
-            Optional var8 = var1.storage();
-            if (var8.isEmpty()) {
+            Optional<LongStream> dataOpt = discData.storage();
+            if (dataOpt.isEmpty()) {
                return DataResult.error(() -> "Missing values for non-zero storage");
             }
 
-            long[] var9 = ((LongStream)var8.get()).toArray();
+            long[] data = ((LongStream)dataOpt.get()).toArray();
 
             try {
-               if (!var4.alwaysRepack() && var4.bitsInMemory() == var5) {
-                  var7 = var4.createPalette(var0, var2);
-                  var6 = new SimpleBitStorage(var4.bitsInMemory(), var3, var9);
+               if (!storedConfiguration.alwaysRepack() && storedConfiguration.bitsInMemory() == bitsOnDisc) {
+                  palette = storedConfiguration.<T>createPalette(strategy, paletteEntries);
+                  storage = new SimpleBitStorage(storedConfiguration.bitsInMemory(), entryCount, data);
                } else {
-                  HashMapPalette var10 = new HashMapPalette(var5, var2);
-                  SimpleBitStorage var11 = new SimpleBitStorage(var5, var3, var9);
-                  Palette var12 = var4.createPalette(var0, var2);
-                  int[] var13 = reencodeContents(var11, var10, var12);
-                  var7 = var12;
-                  var6 = new SimpleBitStorage(var4.bitsInMemory(), var3, var13);
+                  Palette<T> oldPalette = new HashMapPalette<T>(bitsOnDisc, paletteEntries);
+                  SimpleBitStorage oldStorage = new SimpleBitStorage(bitsOnDisc, entryCount, data);
+                  Palette<T> newPalette = storedConfiguration.<T>createPalette(strategy, paletteEntries);
+                  int[] newContents = reencodeContents(oldStorage, oldPalette, newPalette);
+                  palette = newPalette;
+                  storage = new SimpleBitStorage(storedConfiguration.bitsInMemory(), entryCount, newContents);
                }
-            } catch (SimpleBitStorage.InitializationException var14) {
-               return DataResult.error(() -> "Failed to read PalettedContainer: " + var14.getMessage());
+            } catch (SimpleBitStorage.InitializationException exception) {
+               return DataResult.error(() -> "Failed to read PalettedContainer: " + exception.getMessage());
             }
          }
 
-         return DataResult.success(new PalettedContainer(var0, var4, (BitStorage)var6, var7));
+         return DataResult.success(new PalettedContainer(strategy, storedConfiguration, storage, palette));
       }
    }
 
-   public PalettedContainerRO.PackedData<T> pack(Strategy<T> var1) {
+   public PalettedContainerRO.PackedData<T> pack(final Strategy<T> strategy) {
       this.acquire();
 
       PalettedContainerRO.PackedData var14;
       try {
-         BitStorage var2 = this.data.storage;
-         Palette var3 = this.data.palette;
-         HashMapPalette var4 = new HashMapPalette(var2.getBits());
-         int var5 = var1.entryCount();
-         int[] var6 = reencodeContents(var2, var3, var4);
-         Configuration var7 = var1.getConfigurationForPaletteSize(var4.getSize());
-         int var9 = var7.bitsInStorage();
-         Optional var8;
-         if (var9 != 0) {
-            SimpleBitStorage var10 = new SimpleBitStorage(var9, var5, var6);
-            var8 = Optional.of(Arrays.stream(var10.getRaw()));
+         BitStorage currentStorage = this.data.storage;
+         Palette<T> currentPalette = this.data.palette;
+         HashMapPalette<T> newPalette = new HashMapPalette<T>(currentStorage.getBits());
+         int entryCount = strategy.entryCount();
+         int[] newContents = reencodeContents(currentStorage, currentPalette, newPalette);
+         Configuration storedConfiguration = strategy.getConfigurationForPaletteSize(newPalette.getSize());
+         int bitsOnDisc = storedConfiguration.bitsInStorage();
+         Optional<LongStream> values;
+         if (bitsOnDisc != 0) {
+            SimpleBitStorage storage = new SimpleBitStorage(bitsOnDisc, entryCount, newContents);
+            values = Optional.of(Arrays.stream(storage.getRaw()));
          } else {
-            var8 = Optional.empty();
+            values = Optional.empty();
          }
 
-         var14 = new PalettedContainerRO.PackedData(var4.getEntries(), var8, var9);
+         var14 = new PalettedContainerRO.PackedData(newPalette.getEntries(), values, bitsOnDisc);
       } finally {
          this.release();
       }
@@ -242,24 +243,24 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       return var14;
    }
 
-   private static <T> int[] reencodeContents(BitStorage var0, Palette<T> var1, Palette<T> var2) {
-      int[] var3 = new int[var0.getSize()];
-      var0.unpack(var3);
-      PaletteResize var4 = PaletteResize.noResizeExpected();
-      int var5 = -1;
-      int var6 = -1;
+   private static <T> int[] reencodeContents(final BitStorage storage, final Palette<T> oldPalette, final Palette<T> newPalette) {
+      int[] buffer = new int[storage.getSize()];
+      storage.unpack(buffer);
+      PaletteResize<T> dummyResizer = PaletteResize.<T>noResizeExpected();
+      int lastReadId = -1;
+      int lastWrittenId = -1;
 
-      for(int var7 = 0; var7 < var3.length; ++var7) {
-         int var8 = var3[var7];
-         if (var8 != var5) {
-            var5 = var8;
-            var6 = var2.idFor(var1.valueFor(var8), var4);
+      for(int index = 0; index < buffer.length; ++index) {
+         int id = buffer[index];
+         if (id != lastReadId) {
+            lastReadId = id;
+            lastWrittenId = newPalette.idFor(oldPalette.valueFor(id), dummyResizer);
          }
 
-         var3[var7] = var6;
+         buffer[index] = lastWrittenId;
       }
 
-      return var3;
+      return buffer;
    }
 
    public int getSerializedSize() {
@@ -270,8 +271,8 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       return this.data.storage().getBits();
    }
 
-   public boolean maybeHas(Predicate<T> var1) {
-      return this.data.palette.maybeHas(var1);
+   public boolean maybeHas(final Predicate<T> predicate) {
+      return this.data.palette.maybeHas(predicate);
    }
 
    public PalettedContainer<T> copy() {
@@ -282,45 +283,39 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       return new PalettedContainer<T>(this.data.palette.valueFor(0), this.strategy);
    }
 
-   public void count(CountConsumer<T> var1) {
+   public void count(final CountConsumer<T> output) {
       if (this.data.palette.getSize() == 1) {
-         var1.accept(this.data.palette.valueFor(0), this.data.storage.getSize());
+         output.accept(this.data.palette.valueFor(0), this.data.storage.getSize());
       } else {
-         Int2IntOpenHashMap var2 = new Int2IntOpenHashMap();
-         this.data.storage.getAll((var1x) -> var2.addTo(var1x, 1));
-         var2.int2IntEntrySet().forEach((var2x) -> var1.accept(this.data.palette.valueFor(var2x.getIntKey()), var2x.getIntValue()));
+         Int2IntOpenHashMap counts = new Int2IntOpenHashMap();
+         this.data.storage.getAll((state) -> counts.addTo(state, 1));
+         counts.int2IntEntrySet().forEach((entry) -> output.accept(this.data.palette.valueFor(entry.getIntKey()), entry.getIntValue()));
       }
    }
 
-   static record Data<T>(Configuration configuration, BitStorage storage, Palette<T> palette) {
-      final BitStorage storage;
-      final Palette<T> palette;
-
-      Data(Configuration var1, BitStorage var2, Palette<T> var3) {
+   private static record Data<T>(Configuration configuration, BitStorage storage, Palette<T> palette) {
+      private Data {
          super();
-         this.configuration = var1;
-         this.storage = var2;
-         this.palette = var3;
       }
 
-      public void copyFrom(Palette<T> var1, BitStorage var2) {
-         PaletteResize var3 = PaletteResize.noResizeExpected();
+      public void copyFrom(final Palette<T> oldPalette, final BitStorage oldStorage) {
+         PaletteResize<T> dummyResizer = PaletteResize.<T>noResizeExpected();
 
-         for(int var4 = 0; var4 < var2.getSize(); ++var4) {
-            Object var5 = var1.valueFor(var2.get(var4));
-            this.storage.set(var4, this.palette.idFor(var5, var3));
+         for(int i = 0; i < oldStorage.getSize(); ++i) {
+            T value = oldPalette.valueFor(oldStorage.get(i));
+            this.storage.set(i, this.palette.idFor(value, dummyResizer));
          }
 
       }
 
-      public int getSerializedSize(IdMap<T> var1) {
-         return 1 + this.palette.getSerializedSize(var1) + this.storage.getRaw().length * 8;
+      public int getSerializedSize(final IdMap<T> globalMap) {
+         return 1 + this.palette.getSerializedSize(globalMap) + this.storage.getRaw().length * 8;
       }
 
-      public void write(FriendlyByteBuf var1, IdMap<T> var2) {
-         var1.writeByte(this.storage.getBits());
-         this.palette.write(var1, var2);
-         var1.writeFixedSizeLongArray(this.storage.getRaw());
+      public void write(final FriendlyByteBuf buffer, final IdMap<T> globalMap) {
+         buffer.writeByte(this.storage.getBits());
+         this.palette.write(buffer, globalMap);
+         buffer.writeFixedSizeLongArray(this.storage.getRaw());
       }
 
       public Data<T> copy() {
@@ -330,6 +325,6 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
 
    @FunctionalInterface
    public interface CountConsumer<T> {
-      void accept(T var1, int var2);
+      void accept(final T entry, final int count);
    }
 }

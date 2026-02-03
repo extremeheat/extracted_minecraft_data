@@ -39,33 +39,33 @@ public class SessionSearchTrees {
       super();
    }
 
-   private void register(Key var1, Runnable var2) {
-      var2.run();
-      this.reloaders.put(var1, var2);
+   private void register(final Key location, final Runnable updater) {
+      updater.run();
+      this.reloaders.put(location, updater);
    }
 
    public void rebuildAfterLanguageChange() {
-      for(Runnable var2 : this.reloaders.values()) {
-         var2.run();
+      for(Runnable value : this.reloaders.values()) {
+         value.run();
       }
 
    }
 
-   private static Stream<String> getTooltipLines(Stream<ItemStack> var0, Item.TooltipContext var1, TooltipFlag var2) {
-      return var0.flatMap((var2x) -> var2x.getTooltipLines(var1, (Player)null, var2).stream()).map((var0x) -> ChatFormatting.stripFormatting(var0x.getString()).trim()).filter((var0x) -> !var0x.isEmpty());
+   private static Stream<String> getTooltipLines(final Stream<ItemStack> items, final Item.TooltipContext context, final TooltipFlag flag) {
+      return items.flatMap((item) -> item.getTooltipLines(context, (Player)null, flag).stream()).map((l) -> ChatFormatting.stripFormatting(l.getString()).trim()).filter((s) -> !s.isEmpty());
    }
 
-   public void updateRecipes(ClientRecipeBook var1, Level var2) {
+   public void updateRecipes(final ClientRecipeBook recipeBook, final Level level) {
       this.register(RECIPE_COLLECTIONS, () -> {
-         List var3 = var1.getCollections();
-         RegistryAccess var4 = var2.registryAccess();
-         Registry var5 = var4.lookupOrThrow(Registries.ITEM);
-         Item.TooltipContext var6 = Item.TooltipContext.of((HolderLookup.Provider)var4);
-         ContextMap var7 = SlotDisplayContext.fromLevel(var2);
-         TooltipFlag.Default var8 = TooltipFlag.Default.NORMAL;
-         CompletableFuture var9 = this.recipeSearch;
-         this.recipeSearch = CompletableFuture.supplyAsync(() -> new FullTextSearchTree((var3x) -> getTooltipLines(var3x.getRecipes().stream().flatMap((var1) -> var1.resultItems(var7).stream()), var6, var8), (var2) -> var2.getRecipes().stream().flatMap((var1) -> var1.resultItems(var7).stream()).map((var1) -> var5.getKey(var1.getItem())), var3), Util.backgroundExecutor());
-         var9.cancel(true);
+         List<RecipeCollection> recipes = recipeBook.getCollections();
+         RegistryAccess registryAccess = level.registryAccess();
+         Registry<Item> itemRegistries = registryAccess.lookupOrThrow(Registries.ITEM);
+         Item.TooltipContext tooltipContext = Item.TooltipContext.of((HolderLookup.Provider)registryAccess);
+         ContextMap recipeContext = SlotDisplayContext.fromLevel(level);
+         TooltipFlag tooltipFlag = TooltipFlag.Default.NORMAL;
+         CompletableFuture<?> previous = this.recipeSearch;
+         this.recipeSearch = CompletableFuture.supplyAsync(() -> new FullTextSearchTree((collection) -> getTooltipLines(collection.getRecipes().stream().flatMap((e) -> e.resultItems(recipeContext).stream()), tooltipContext, tooltipFlag), (collection) -> collection.getRecipes().stream().flatMap((e) -> e.resultItems(recipeContext).stream()).map((stack) -> itemRegistries.getKey(stack.getItem())), recipes), Util.backgroundExecutor());
+         previous.cancel(true);
       });
    }
 
@@ -73,11 +73,11 @@ public class SessionSearchTrees {
       return (SearchTree)this.recipeSearch.join();
    }
 
-   public void updateCreativeTags(List<ItemStack> var1) {
+   public void updateCreativeTags(final List<ItemStack> items) {
       this.register(CREATIVE_TAGS, () -> {
-         CompletableFuture var2 = this.creativeByTagSearch;
-         this.creativeByTagSearch = CompletableFuture.supplyAsync(() -> new IdSearchTree((var0) -> var0.getTags().map(TagKey::location), var1), Util.backgroundExecutor());
-         var2.cancel(true);
+         CompletableFuture<?> previous = this.creativeByTagSearch;
+         this.creativeByTagSearch = CompletableFuture.supplyAsync(() -> new IdSearchTree((itemStack) -> itemStack.tags().map(TagKey::location), items), Util.backgroundExecutor());
+         previous.cancel(true);
       });
    }
 
@@ -85,13 +85,13 @@ public class SessionSearchTrees {
       return (SearchTree)this.creativeByTagSearch.join();
    }
 
-   public void updateCreativeTooltips(HolderLookup.Provider var1, List<ItemStack> var2) {
+   public void updateCreativeTooltips(final HolderLookup.Provider registries, final List<ItemStack> itemStacks) {
       this.register(CREATIVE_NAMES, () -> {
-         Item.TooltipContext var3 = Item.TooltipContext.of(var1);
-         TooltipFlag.Default var4 = TooltipFlag.Default.NORMAL.asCreative();
-         CompletableFuture var5 = this.creativeByNameSearch;
-         this.creativeByNameSearch = CompletableFuture.supplyAsync(() -> new FullTextSearchTree((var2x) -> getTooltipLines(Stream.of(var2x), var3, var4), (var0) -> var0.getItemHolder().unwrapKey().map(ResourceKey::identifier).stream(), var2), Util.backgroundExecutor());
-         var5.cancel(true);
+         Item.TooltipContext tooltipContext = Item.TooltipContext.of(registries);
+         TooltipFlag tooltipFlag = TooltipFlag.Default.NORMAL.asCreative();
+         CompletableFuture<?> previous = this.creativeByNameSearch;
+         this.creativeByNameSearch = CompletableFuture.supplyAsync(() -> new FullTextSearchTree((itemStack) -> getTooltipLines(Stream.of(itemStack), tooltipContext, tooltipFlag), (itemStack) -> itemStack.typeHolder().unwrapKey().map(ResourceKey::identifier).stream(), itemStacks), Util.backgroundExecutor());
+         previous.cancel(true);
       });
    }
 
@@ -99,8 +99,8 @@ public class SessionSearchTrees {
       return (SearchTree)this.creativeByNameSearch.join();
    }
 
-   static class Key {
-      Key() {
+   private static class Key {
+      private Key() {
          super();
       }
    }

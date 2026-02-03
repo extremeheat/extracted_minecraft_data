@@ -19,55 +19,55 @@ public class DownloadTask extends LongRunningTask {
    private final Screen lastScreen;
    private final String downloadName;
 
-   public DownloadTask(long var1, int var3, String var4, Screen var5) {
+   public DownloadTask(final long realmId, final int slot, final String downloadName, final Screen lastScreen) {
       super();
-      this.realmId = var1;
-      this.slot = var3;
-      this.lastScreen = var5;
-      this.downloadName = var4;
+      this.realmId = realmId;
+      this.slot = slot;
+      this.lastScreen = lastScreen;
+      this.downloadName = downloadName;
    }
 
    public void run() {
-      RealmsClient var1 = RealmsClient.getOrCreate();
-      int var2 = 0;
+      RealmsClient client = RealmsClient.getOrCreate();
+      int i = 0;
 
-      while(var2 < 25) {
+      while(i < 25) {
          try {
             if (this.aborted()) {
                return;
             }
 
-            WorldDownload var3 = var1.requestDownloadInfo(this.realmId, this.slot);
+            WorldDownload worldDownload = client.requestDownloadInfo(this.realmId, this.slot);
             pause(1L);
             if (this.aborted()) {
                return;
             }
 
-            setScreen(new RealmsDownloadLatestWorldScreen(this.lastScreen, var3, this.downloadName, (var0) -> {
+            setScreen(new RealmsDownloadLatestWorldScreen(this.lastScreen, worldDownload, this.downloadName, (result) -> {
             }));
             return;
-         } catch (RetryCallException var4) {
+         } catch (RetryCallException e) {
             if (this.aborted()) {
                return;
             }
 
-            pause((long)var4.delaySeconds);
-            ++var2;
-         } catch (RealmsServiceException var5) {
+            pause((long)e.delaySeconds);
+            ++i;
+         } catch (RealmsServiceException e) {
             if (this.aborted()) {
                return;
             }
 
-            LOGGER.error("Couldn't download world data", var5);
-            setScreen(new RealmsGenericErrorScreen(var5, this.lastScreen));
+            LOGGER.error("Couldn't download world data", e);
+            setScreen(new RealmsGenericErrorScreen(e, this.lastScreen));
             return;
-         } catch (Exception var6) {
+         } catch (Exception e) {
             if (this.aborted()) {
                return;
             }
 
-            LOGGER.error("Couldn't download world data", var6);
-            this.error(var6);
+            LOGGER.error("Couldn't download world data", e);
+            this.error(e);
             return;
          }
       }

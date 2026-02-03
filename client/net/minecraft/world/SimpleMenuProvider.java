@@ -10,17 +10,17 @@ public final class SimpleMenuProvider implements MenuProvider {
    private final Component title;
    private final MenuConstructor menuConstructor;
 
-   public SimpleMenuProvider(MenuConstructor var1, Component var2) {
+   public SimpleMenuProvider(final MenuConstructor menuConstructor, final Component title) {
       super();
-      this.menuConstructor = var1;
-      this.title = var2;
+      this.menuConstructor = menuConstructor;
+      this.title = title;
    }
 
    public Component getDisplayName() {
       return this.title;
    }
 
-   public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
-      return this.menuConstructor.createMenu(var1, var2, var3);
+   public AbstractContainerMenu createMenu(final int containerId, final Inventory inventory, final Player player) {
+      return this.menuConstructor.createMenu(containerId, inventory, player);
    }
 }

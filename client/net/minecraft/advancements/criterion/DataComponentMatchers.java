@@ -17,18 +17,16 @@ public record DataComponentMatchers(DataComponentExactPredicate exact, Map<DataC
    public static final MapCodec<DataComponentMatchers> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, DataComponentMatchers> STREAM_CODEC;
 
-   public DataComponentMatchers(DataComponentExactPredicate var1, Map<DataComponentPredicate.Type<?>, DataComponentPredicate> var2) {
+   public DataComponentMatchers {
       super();
-      this.exact = var1;
-      this.partial = var2;
    }
 
-   public boolean test(DataComponentGetter var1) {
-      if (!this.exact.test(var1)) {
+   public boolean test(final DataComponentGetter values) {
+      if (!this.exact.test(values)) {
          return false;
       } else {
-         for(DataComponentPredicate var3 : this.partial.values()) {
-            if (!var3.matches(var1)) {
+         for(DataComponentPredicate predicate : this.partial.values()) {
+            if (!predicate.matches(values)) {
                return false;
             }
          }
@@ -41,14 +39,9 @@ public record DataComponentMatchers(DataComponentExactPredicate exact, Map<DataC
       return this.exact.isEmpty() && this.partial.isEmpty();
    }
 
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((DataComponentGetter)var1);
-   }
-
    static {
       ANY = new DataComponentMatchers(DataComponentExactPredicate.EMPTY, Map.of());
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(DataComponentMatchers::exact), DataComponentPredicate.CODEC.optionalFieldOf("predicates", Map.of()).forGetter(DataComponentMatchers::partial)).apply(var0, DataComponentMatchers::new));
+      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(DataComponentMatchers::exact), DataComponentPredicate.CODEC.optionalFieldOf("predicates", Map.of()).forGetter(DataComponentMatchers::partial)).apply(i, DataComponentMatchers::new));
       STREAM_CODEC = StreamCodec.composite(DataComponentExactPredicate.STREAM_CODEC, DataComponentMatchers::exact, DataComponentPredicate.STREAM_CODEC, DataComponentMatchers::partial, DataComponentMatchers::new);
    }
 
@@ -66,19 +59,19 @@ public record DataComponentMatchers(DataComponentExactPredicate exact, Map<DataC
          return new Builder();
       }
 
-      public <T extends DataComponentType<?>> Builder any(DataComponentType<?> var1) {
-         DataComponentPredicate.AnyValueType var2 = DataComponentPredicate.AnyValueType.create(var1);
-         this.partial.put(var2, var2.predicate());
+      public <T extends DataComponentType<?>> Builder any(final DataComponentType<?> type) {
+         DataComponentPredicate.AnyValueType predicateType = DataComponentPredicate.AnyValueType.create(type);
+         this.partial.put(predicateType, predicateType.predicate());
          return this;
       }
 
-      public <T extends DataComponentPredicate> Builder partial(DataComponentPredicate.Type<T> var1, T var2) {
-         this.partial.put(var1, var2);
+      public <T extends DataComponentPredicate> Builder partial(final DataComponentPredicate.Type<T> type, final T predicate) {
+         this.partial.put(type, predicate);
          return this;
       }
 
-      public Builder exact(DataComponentExactPredicate var1) {
-         this.exact = var1;
+      public Builder exact(final DataComponentExactPredicate exact) {
+         this.exact = exact;
          return this;
       }
 

@@ -24,45 +24,45 @@ public class NormalNoise {
 
    /** @deprecated */
    @Deprecated
-   public static NormalNoise createLegacyNetherBiome(RandomSource var0, NoiseParameters var1) {
-      return new NormalNoise(var0, var1, false);
+   public static NormalNoise createLegacyNetherBiome(final RandomSource random, final NoiseParameters parameters) {
+      return new NormalNoise(random, parameters, false);
    }
 
-   public static NormalNoise create(RandomSource var0, int var1, double... var2) {
-      return create(var0, new NoiseParameters(var1, new DoubleArrayList(var2)));
+   public static NormalNoise create(final RandomSource random, final int firstOctave, final double... amplitudes) {
+      return create(random, new NoiseParameters(firstOctave, new DoubleArrayList(amplitudes)));
    }
 
-   public static NormalNoise create(RandomSource var0, NoiseParameters var1) {
-      return new NormalNoise(var0, var1, true);
+   public static NormalNoise create(final RandomSource random, final NoiseParameters parameters) {
+      return new NormalNoise(random, parameters, true);
    }
 
-   private NormalNoise(RandomSource var1, NoiseParameters var2, boolean var3) {
+   private NormalNoise(final RandomSource random, final NoiseParameters parameters, final boolean useNewInitialization) {
       super();
-      int var4 = var2.firstOctave;
-      DoubleList var5 = var2.amplitudes;
-      this.parameters = var2;
-      if (var3) {
-         this.first = PerlinNoise.create(var1, var4, var5);
-         this.second = PerlinNoise.create(var1, var4, var5);
+      int firstOctave = parameters.firstOctave;
+      DoubleList amplitudes = parameters.amplitudes;
+      this.parameters = parameters;
+      if (useNewInitialization) {
+         this.first = PerlinNoise.create(random, firstOctave, amplitudes);
+         this.second = PerlinNoise.create(random, firstOctave, amplitudes);
       } else {
-         this.first = PerlinNoise.createLegacyForLegacyNetherBiome(var1, var4, var5);
-         this.second = PerlinNoise.createLegacyForLegacyNetherBiome(var1, var4, var5);
+         this.first = PerlinNoise.createLegacyForLegacyNetherBiome(random, firstOctave, amplitudes);
+         this.second = PerlinNoise.createLegacyForLegacyNetherBiome(random, firstOctave, amplitudes);
       }
 
-      int var6 = 2147483647;
-      int var7 = -2147483648;
-      DoubleListIterator var8 = var5.iterator();
+      int minOctave = 2147483647;
+      int maxOctave = -2147483648;
+      DoubleListIterator iterator = amplitudes.iterator();
 
-      while(var8.hasNext()) {
-         int var9 = var8.nextIndex();
-         double var10 = var8.nextDouble();
-         if (var10 != 0.0) {
-            var6 = Math.min(var6, var9);
-            var7 = Math.max(var7, var9);
+      while(iterator.hasNext()) {
+         int i = iterator.nextIndex();
+         double amplitude = iterator.nextDouble();
+         if (amplitude != 0.0) {
+            minOctave = Math.min(minOctave, i);
+            maxOctave = Math.max(maxOctave, i);
          }
       }
 
-      this.valueFactor = 0.16666666666666666 / expectedDeviation(var7 - var6);
+      this.valueFactor = 0.16666666666666666 / expectedDeviation(maxOctave - minOctave);
       this.maxValue = (this.first.maxValue() + this.second.maxValue()) * this.valueFactor;
    }
 
@@ -70,15 +70,15 @@ public class NormalNoise {
       return this.maxValue;
    }
 
-   private static double expectedDeviation(int var0) {
-      return 0.1 * (1.0 + 1.0 / (double)(var0 + 1));
+   private static double expectedDeviation(final int octaveSpan) {
+      return 0.1 * (1.0 + 1.0 / (double)(octaveSpan + 1));
    }
 
-   public double getValue(double var1, double var3, double var5) {
-      double var7 = var1 * 1.0181268882175227;
-      double var9 = var3 * 1.0181268882175227;
-      double var11 = var5 * 1.0181268882175227;
-      return (this.first.getValue(var1, var3, var5) + this.second.getValue(var7, var9, var11)) * this.valueFactor;
+   public double getValue(final double x, final double y, final double z) {
+      double x2 = x * 1.0181268882175227;
+      double y2 = y * 1.0181268882175227;
+      double z2 = z * 1.0181268882175227;
+      return (this.first.getValue(x, y, z) + this.second.getValue(x2, y2, z2)) * this.valueFactor;
    }
 
    public NoiseParameters parameters() {
@@ -86,33 +86,29 @@ public class NormalNoise {
    }
 
    @VisibleForTesting
-   public void parityConfigString(StringBuilder var1) {
-      var1.append("NormalNoise {");
-      var1.append("first: ");
-      this.first.parityConfigString(var1);
-      var1.append(", second: ");
-      this.second.parityConfigString(var1);
-      var1.append("}");
+   public void parityConfigString(final StringBuilder sb) {
+      sb.append("NormalNoise {");
+      sb.append("first: ");
+      this.first.parityConfigString(sb);
+      sb.append(", second: ");
+      this.second.parityConfigString(sb);
+      sb.append("}");
    }
 
    public static record NoiseParameters(int firstOctave, DoubleList amplitudes) {
-      final int firstOctave;
-      final DoubleList amplitudes;
-      public static final Codec<NoiseParameters> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("firstOctave").forGetter(NoiseParameters::firstOctave), Codec.DOUBLE.listOf().fieldOf("amplitudes").forGetter(NoiseParameters::amplitudes)).apply(var0, NoiseParameters::new));
+      public static final Codec<NoiseParameters> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.INT.fieldOf("firstOctave").forGetter(NoiseParameters::firstOctave), Codec.DOUBLE.listOf().fieldOf("amplitudes").forGetter(NoiseParameters::amplitudes)).apply(i, NoiseParameters::new));
       public static final Codec<Holder<NoiseParameters>> CODEC;
 
-      public NoiseParameters(int var1, List<Double> var2) {
-         this(var1, new DoubleArrayList(var2));
+      public NoiseParameters(final int firstOctave, final List<Double> amplitudes) {
+         this(firstOctave, new DoubleArrayList(amplitudes));
       }
 
-      public NoiseParameters(int var1, double var2, double... var4) {
-         this(var1, (DoubleList)Util.make(new DoubleArrayList(var4), (var2x) -> var2x.add(0, var2)));
+      public NoiseParameters(final int firstOctave, final double firstAmplitude, final double... amplitudes) {
+         this(firstOctave, (DoubleList)Util.make(new DoubleArrayList(amplitudes), (list) -> list.add(0, firstAmplitude)));
       }
 
-      public NoiseParameters(int var1, DoubleList var2) {
+      public NoiseParameters {
          super();
-         this.firstOctave = var1;
-         this.amplitudes = var2;
       }
 
       static {

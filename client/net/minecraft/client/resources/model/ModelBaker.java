@@ -6,7 +6,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 public interface ModelBaker {
-   ResolvedModel getModel(Identifier var1);
+   ResolvedModel getModel(Identifier location);
 
    BlockModelPart missingBlockModelPart();
 
@@ -14,18 +14,18 @@ public interface ModelBaker {
 
    PartCache parts();
 
-   <T> T compute(SharedOperationKey<T> var1);
+   <T> T compute(SharedOperationKey<T> key);
 
    public interface PartCache {
-      default Vector3fc vector(float var1, float var2, float var3) {
-         return this.vector(new Vector3f(var1, var2, var3));
+      default Vector3fc vector(final float x, final float y, final float z) {
+         return this.vector(new Vector3f(x, y, z));
       }
 
-      Vector3fc vector(Vector3fc var1);
+      Vector3fc vector(Vector3fc vector);
    }
 
    @FunctionalInterface
    public interface SharedOperationKey<T> {
-      T compute(ModelBaker var1);
+      T compute(ModelBaker modelBakery);
    }
 }

@@ -20,43 +20,43 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
    private final short[] positions;
    private final BlockState[] states;
 
-   public ClientboundSectionBlocksUpdatePacket(SectionPos var1, ShortSet var2, LevelChunkSection var3) {
+   public ClientboundSectionBlocksUpdatePacket(final SectionPos sectionPos, final ShortSet changes, final LevelChunkSection section) {
       super();
-      this.sectionPos = var1;
-      int var4 = var2.size();
-      this.positions = new short[var4];
-      this.states = new BlockState[var4];
-      int var5 = 0;
+      this.sectionPos = sectionPos;
+      int count = changes.size();
+      this.positions = new short[count];
+      this.states = new BlockState[count];
+      int i = 0;
 
-      for(ShortIterator var6 = var2.iterator(); var6.hasNext(); ++var5) {
-         short var7 = (Short)var6.next();
-         this.positions[var5] = var7;
-         this.states[var5] = var3.getBlockState(SectionPos.sectionRelativeX(var7), SectionPos.sectionRelativeY(var7), SectionPos.sectionRelativeZ(var7));
+      for(ShortIterator var6 = changes.iterator(); var6.hasNext(); ++i) {
+         short packedPos = (Short)var6.next();
+         this.positions[i] = packedPos;
+         this.states[i] = section.getBlockState(SectionPos.sectionRelativeX(packedPos), SectionPos.sectionRelativeY(packedPos), SectionPos.sectionRelativeZ(packedPos));
       }
 
    }
 
-   private ClientboundSectionBlocksUpdatePacket(FriendlyByteBuf var1) {
+   private ClientboundSectionBlocksUpdatePacket(final FriendlyByteBuf input) {
       super();
-      this.sectionPos = (SectionPos)SectionPos.STREAM_CODEC.decode(var1);
-      int var2 = var1.readVarInt();
-      this.positions = new short[var2];
-      this.states = new BlockState[var2];
+      this.sectionPos = (SectionPos)SectionPos.STREAM_CODEC.decode(input);
+      int count = input.readVarInt();
+      this.positions = new short[count];
+      this.states = new BlockState[count];
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         long var4 = var1.readVarLong();
-         this.positions[var3] = (short)((int)(var4 & 4095L));
-         this.states[var3] = Block.BLOCK_STATE_REGISTRY.byId((int)(var4 >>> 12));
+      for(int i = 0; i < count; ++i) {
+         long packedChange = input.readVarLong();
+         this.positions[i] = (short)((int)(packedChange & 4095L));
+         this.states[i] = Block.BLOCK_STATE_REGISTRY.byId((int)(packedChange >>> 12));
       }
 
    }
 
-   private void write(FriendlyByteBuf var1) {
-      SectionPos.STREAM_CODEC.encode(var1, this.sectionPos);
-      var1.writeVarInt(this.positions.length);
+   private void write(final FriendlyByteBuf output) {
+      SectionPos.STREAM_CODEC.encode(output, this.sectionPos);
+      output.writeVarInt(this.positions.length);
 
-      for(int var2 = 0; var2 < this.positions.length; ++var2) {
-         var1.writeVarLong((long)Block.getId(this.states[var2]) << 12 | (long)this.positions[var2]);
+      for(int i = 0; i < this.positions.length; ++i) {
+         output.writeVarLong((long)Block.getId(this.states[i]) << 12 | (long)this.positions[i]);
       }
 
    }
@@ -65,17 +65,17 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
       return GamePacketTypes.CLIENTBOUND_SECTION_BLOCKS_UPDATE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleChunkBlocksUpdate(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleChunkBlocksUpdate(this);
    }
 
-   public void runUpdates(BiConsumer<BlockPos, BlockState> var1) {
-      BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
+   public void runUpdates(final BiConsumer<BlockPos, BlockState> updateFunction) {
+      BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
 
-      for(int var3 = 0; var3 < this.positions.length; ++var3) {
-         short var4 = this.positions[var3];
-         var2.set(this.sectionPos.relativeToBlockX(var4), this.sectionPos.relativeToBlockY(var4), this.sectionPos.relativeToBlockZ(var4));
-         var1.accept(var2, this.states[var3]);
+      for(int i = 0; i < this.positions.length; ++i) {
+         short packedPos = this.positions[i];
+         cursor.set(this.sectionPos.relativeToBlockX(packedPos), this.sectionPos.relativeToBlockY(packedPos), this.sectionPos.relativeToBlockZ(packedPos));
+         updateFunction.accept(cursor, this.states[i]);
       }
 
    }

@@ -2,6 +2,9 @@ package net.minecraft.world.level.dimension;
 
 public class DimensionDefaults {
    public static final int CLOUD_THICKNESS = 4;
+   public static final int BLOCK_LIGHT_TINT = -10100;
+   public static final int NIGHT_VISION_COLOR = -6710887;
+   public static final float TURTLE_EGG_HATCH_CHANCE = 0.002F;
    public static final int OVERWORLD_MIN_Y = -64;
    public static final int OVERWORLD_LEVEL_HEIGHT = 384;
    public static final int OVERWORLD_GENERATION_HEIGHT = 384;

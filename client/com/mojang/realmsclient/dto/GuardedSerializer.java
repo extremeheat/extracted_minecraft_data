@@ -8,31 +8,31 @@ import com.google.gson.JsonElement;
 import org.jspecify.annotations.Nullable;
 
 public class GuardedSerializer {
-   ExclusionStrategy strategy = new ExclusionStrategy() {
-      public boolean shouldSkipClass(Class<?> var1) {
+   private static final ExclusionStrategy STRATEGY = new ExclusionStrategy() {
+      public boolean shouldSkipClass(final Class<?> clazz) {
          return false;
       }
 
-      public boolean shouldSkipField(FieldAttributes var1) {
-         return var1.getAnnotation(Exclude.class) != null;
+      public boolean shouldSkipField(final FieldAttributes field) {
+         return field.getAnnotation(Exclude.class) != null;
       }
    };
    private final Gson gson;
 
    public GuardedSerializer() {
       super();
-      this.gson = (new GsonBuilder()).addSerializationExclusionStrategy(this.strategy).addDeserializationExclusionStrategy(this.strategy).create();
+      this.gson = (new GsonBuilder()).addSerializationExclusionStrategy(STRATEGY).addDeserializationExclusionStrategy(STRATEGY).create();
    }
 
-   public String toJson(ReflectionBasedSerialization var1) {
-      return this.gson.toJson(var1);
+   public String toJson(final ReflectionBasedSerialization object) {
+      return this.gson.toJson(object);
    }
 
-   public String toJson(JsonElement var1) {
-      return this.gson.toJson(var1);
+   public String toJson(final JsonElement jsonElement) {
+      return this.gson.toJson(jsonElement);
    }
 
-   public <T extends ReflectionBasedSerialization> @Nullable T fromJson(String var1, Class<T> var2) {
-      return (T)(this.gson.fromJson(var1, var2));
+   public <T extends ReflectionBasedSerialization> @Nullable T fromJson(final String contents, final Class<T> cls) {
+      return (T)(this.gson.fromJson(contents, cls));
    }
 }

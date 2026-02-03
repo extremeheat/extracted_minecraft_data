@@ -20,40 +20,42 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class UnderwaterMagmaFeature extends Feature<UnderwaterMagmaConfiguration> {
-   public UnderwaterMagmaFeature(Codec<UnderwaterMagmaConfiguration> var1) {
-      super(var1);
+   public UnderwaterMagmaFeature(final Codec<UnderwaterMagmaConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<UnderwaterMagmaConfiguration> var1) {
-      WorldGenLevel var2 = var1.level();
-      BlockPos var3 = var1.origin();
-      UnderwaterMagmaConfiguration var4 = (UnderwaterMagmaConfiguration)var1.config();
-      RandomSource var5 = var1.random();
-      OptionalInt var6 = getFloorY(var2, var3, var4);
-      if (var6.isEmpty()) {
+   public boolean place(final FeaturePlaceContext<UnderwaterMagmaConfiguration> context) {
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
+      UnderwaterMagmaConfiguration config = context.config();
+      RandomSource random = context.random();
+      OptionalInt floorY = getFloorY(level, origin, config);
+      if (floorY.isEmpty()) {
          return false;
       } else {
-         BlockPos var7 = var3.atY(var6.getAsInt());
-         Vec3i var8 = new Vec3i(var4.placementRadiusAroundFloor, var4.placementRadiusAroundFloor, var4.placementRadiusAroundFloor);
-         BoundingBox var9 = BoundingBox.fromCorners(var7.subtract(var8), var7.offset(var8));
-         return BlockPos.betweenClosedStream(var9).filter((var2x) -> var5.nextFloat() < var4.placementProbabilityPerValidPosition).filter((var2x) -> this.isValidPlacement(var2, var2x)).mapToInt((var1x) -> {
-            var2.setBlock(var1x, Blocks.MAGMA_BLOCK.defaultBlockState(), 2);
+         BlockPos floorPos = origin.atY(floorY.getAsInt());
+         Vec3i radius = new Vec3i(config.placementRadiusAroundFloor, config.placementRadiusAroundFloor, config.placementRadiusAroundFloor);
+         BoundingBox bounds = BoundingBox.fromCorners(floorPos.subtract(radius), floorPos.offset(radius));
+         return BlockPos.betweenClosedStream(bounds).filter((pos) -> random.nextFloat() < config.placementProbabilityPerValidPosition).filter((pos) -> this.isValidPlacement(level, pos)).mapToInt((pos) -> {
+            BlockState state = Blocks.MAGMA_BLOCK.defaultBlockState();
+            level.setBlock(pos, state, 2);
+            level.neighborShapeChanged(Direction.DOWN, pos.above(), pos, state, 3, 512);
             return 1;
          }).sum() > 0;
       }
    }
 
-   private static OptionalInt getFloorY(WorldGenLevel var0, BlockPos var1, UnderwaterMagmaConfiguration var2) {
-      Predicate var3 = (var0x) -> var0x.is(Blocks.WATER);
-      Predicate var4 = (var0x) -> !var0x.is(Blocks.WATER);
-      Optional var5 = Column.scan(var0, var1, var2.floorSearchRange, var3, var4);
-      return (OptionalInt)var5.map(Column::getFloor).orElseGet(OptionalInt::empty);
+   private static OptionalInt getFloorY(final WorldGenLevel level, final BlockPos origin, final UnderwaterMagmaConfiguration config) {
+      Predicate<BlockState> insideColumn = (state) -> state.is(Blocks.WATER);
+      Predicate<BlockState> validEdge = (state) -> !state.is(Blocks.WATER);
+      Optional<Column> waterColumn = Column.scan(level, origin, config.floorSearchRange, insideColumn, validEdge);
+      return (OptionalInt)waterColumn.map(Column::getFloor).orElseGet(OptionalInt::empty);
    }
 
-   private boolean isValidPlacement(WorldGenLevel var1, BlockPos var2) {
-      if (!isWaterOrAir(var1.getBlockState(var2)) && !this.isVisibleFromOutside(var1, var2.below(), Direction.UP)) {
-         for(Direction var4 : Direction.Plane.HORIZONTAL) {
-            if (this.isVisibleFromOutside(var1, var2.relative(var4), var4.getOpposite())) {
+   private boolean isValidPlacement(final WorldGenLevel level, final BlockPos pos) {
+      if (!isWaterOrAir(level.getBlockState(pos)) && !this.isVisibleFromOutside(level, pos.below(), Direction.UP)) {
+         for(Direction neighbourDir : Direction.Plane.HORIZONTAL) {
+            if (this.isVisibleFromOutside(level, pos.relative(neighbourDir), neighbourDir.getOpposite())) {
                return false;
             }
          }
@@ -64,13 +66,13 @@ public class UnderwaterMagmaFeature extends Feature<UnderwaterMagmaConfiguration
       }
    }
 
-   private static boolean isWaterOrAir(BlockState var0) {
-      return var0.is(Blocks.WATER) || var0.isAir();
+   private static boolean isWaterOrAir(final BlockState state) {
+      return state.is(Blocks.WATER) || state.isAir();
    }
 
-   private boolean isVisibleFromOutside(LevelAccessor var1, BlockPos var2, Direction var3) {
-      BlockState var4 = var1.getBlockState(var2);
-      VoxelShape var5 = var4.getFaceOcclusionShape(var3);
-      return var5 == Shapes.empty() || !Block.isShapeFullBlock(var5);
+   private boolean isVisibleFromOutside(final LevelAccessor level, final BlockPos pos, final Direction coveredDirection) {
+      BlockState state = level.getBlockState(pos);
+      VoxelShape faceOcclusionShape = state.getFaceOcclusionShape(coveredDirection);
+      return faceOcclusionShape == Shapes.empty() || !Block.isShapeFullBlock(faceOcclusionShape);
    }
 }

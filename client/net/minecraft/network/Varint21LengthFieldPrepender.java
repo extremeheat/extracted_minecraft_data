@@ -14,20 +14,15 @@ public class Varint21LengthFieldPrepender extends MessageToByteEncoder<ByteBuf> 
       super();
    }
 
-   protected void encode(ChannelHandlerContext var1, ByteBuf var2, ByteBuf var3) {
-      int var4 = var2.readableBytes();
-      int var5 = VarInt.getByteSize(var4);
-      if (var5 > 3) {
-         throw new EncoderException("Packet too large: size " + var4 + " is over 8");
+   protected void encode(final ChannelHandlerContext ctx, final ByteBuf msg, final ByteBuf out) {
+      int bodyLength = msg.readableBytes();
+      int headerLength = VarInt.getByteSize(bodyLength);
+      if (headerLength > 3) {
+         throw new EncoderException("Packet too large: size " + bodyLength + " is over 8");
       } else {
-         var3.ensureWritable(var5 + var4);
-         VarInt.write(var3, var4);
-         var3.writeBytes(var2, var2.readerIndex(), var4);
+         out.ensureWritable(headerLength + bodyLength);
+         VarInt.write(out, bodyLength);
+         out.writeBytes(msg, msg.readerIndex(), bodyLength);
       }
-   }
-
-   // $FF: synthetic method
-   protected void encode(final ChannelHandlerContext var1, final Object var2, final ByteBuf var3) throws Exception {
-      this.encode(var1, (ByteBuf)var2, var3);
    }
 }

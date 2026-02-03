@@ -6,14 +6,13 @@ import net.minecraft.client.Minecraft;
 
 public enum ChunkSectionLayerGroup {
    OPAQUE(new ChunkSectionLayer[]{ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT}),
-   TRANSLUCENT(new ChunkSectionLayer[]{ChunkSectionLayer.TRANSLUCENT}),
-   TRIPWIRE(new ChunkSectionLayer[]{ChunkSectionLayer.TRIPWIRE});
+   TRANSLUCENT(new ChunkSectionLayer[]{ChunkSectionLayer.TRANSLUCENT});
 
    private final String label;
    private final ChunkSectionLayer[] layers;
 
-   private ChunkSectionLayerGroup(final ChunkSectionLayer... var3) {
-      this.layers = var3;
+   private ChunkSectionLayerGroup(final ChunkSectionLayer... layers) {
+      this.layers = layers;
       this.label = this.toString().toLowerCase(Locale.ROOT);
    }
 
@@ -26,20 +25,19 @@ public enum ChunkSectionLayerGroup {
    }
 
    public RenderTarget outputTarget() {
-      Minecraft var1 = Minecraft.getInstance();
+      Minecraft minecraft = Minecraft.getInstance();
       RenderTarget var10000;
       switch (this.ordinal()) {
-         case 1 -> var10000 = var1.levelRenderer.getTranslucentTarget();
-         case 2 -> var10000 = var1.levelRenderer.getWeatherTarget();
-         default -> var10000 = var1.getMainRenderTarget();
+         case 1 -> var10000 = minecraft.levelRenderer.getTranslucentTarget();
+         default -> var10000 = minecraft.getMainRenderTarget();
       }
 
-      RenderTarget var2 = var10000;
-      return var2 != null ? var2 : var1.getMainRenderTarget();
+      RenderTarget renderTarget = var10000;
+      return renderTarget != null ? renderTarget : minecraft.getMainRenderTarget();
    }
 
    // $FF: synthetic method
    private static ChunkSectionLayerGroup[] $values() {
-      return new ChunkSectionLayerGroup[]{OPAQUE, TRANSLUCENT, TRIPWIRE};
+      return new ChunkSectionLayerGroup[]{OPAQUE, TRANSLUCENT};
    }
 }

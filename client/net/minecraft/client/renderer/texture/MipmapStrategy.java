@@ -13,8 +13,8 @@ public enum MipmapStrategy implements StringRepresentable {
    public static final Codec<MipmapStrategy> CODEC = StringRepresentable.<MipmapStrategy>fromValues(MipmapStrategy::values);
    private final String name;
 
-   private MipmapStrategy(final String var3) {
-      this.name = var3;
+   private MipmapStrategy(final String name) {
+      this.name = name;
    }
 
    public String getSerializedName() {

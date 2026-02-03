@@ -10,17 +10,16 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public record Count(boolean normalize) implements RangeSelectItemModelProperty {
-   public static final MapCodec<Count> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("normalize", true).forGetter(Count::normalize)).apply(var0, Count::new));
+   public static final MapCodec<Count> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.optionalFieldOf("normalize", true).forGetter(Count::normalize)).apply(i, Count::new));
 
-   public Count(boolean var1) {
+   public Count {
       super();
-      this.normalize = var1;
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
-      float var5 = (float)var1.getCount();
-      float var6 = (float)var1.getMaxStackSize();
-      return this.normalize ? Mth.clamp(var5 / var6, 0.0F, 1.0F) : Mth.clamp(var5, 0.0F, var6);
+   public float get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      float count = (float)itemStack.getCount();
+      float maxCount = (float)itemStack.getMaxStackSize();
+      return this.normalize ? Mth.clamp(count / maxCount, 0.0F, 1.0F) : Mth.clamp(count, 0.0F, maxCount);
    }
 
    public MapCodec<Count> type() {

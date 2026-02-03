@@ -6,14 +6,14 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class V3438 extends NamespacedSchema {
-   public V3438(int var1, Schema var2) {
-      super(var1, var2);
+   public V3438(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
-      Map var2 = super.registerBlockEntities(var1);
-      var2.put("minecraft:brushable_block", (Supplier)var2.remove("minecraft:suspicious_sand"));
-      var1.registerSimple(var2, "minecraft:calibrated_sculk_sensor");
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerBlockEntities(schema);
+      map.put("minecraft:brushable_block", (Supplier)map.remove("minecraft:suspicious_sand"));
+      schema.registerSimple(map, "minecraft:calibrated_sculk_sensor");
+      return map;
    }
 }

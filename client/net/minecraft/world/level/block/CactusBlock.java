@@ -38,87 +38,87 @@ public class CactusBlock extends Block {
       return CODEC;
    }
 
-   protected CactusBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected CactusBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!var1.canSurvive(var2, var3)) {
-         var2.destroyBlock(var3, true);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!state.canSurvive(level, pos)) {
+         level.destroyBlock(pos, true);
       }
 
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      BlockPos var5 = var3.above();
-      if (var2.isEmptyBlock(var5)) {
-         int var6 = 1;
-         int var7 = (Integer)var1.getValue(AGE);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      BlockPos above = pos.above();
+      if (level.isEmptyBlock(above)) {
+         int height = 1;
+         int age = (Integer)state.getValue(AGE);
 
-         while(var2.getBlockState(var3.below(var6)).is(this)) {
-            ++var6;
-            if (var6 == 3 && var7 == 15) {
+         while(level.getBlockState(pos.below(height)).is(this)) {
+            ++height;
+            if (height == 3 && age == 15) {
                return;
             }
          }
 
-         if (var7 == 8 && this.canSurvive(this.defaultBlockState(), var2, var3.above())) {
-            double var10 = var6 >= 3 ? 0.25 : 0.1;
-            if (var4.nextDouble() <= var10) {
-               var2.setBlockAndUpdate(var5, Blocks.CACTUS_FLOWER.defaultBlockState());
+         if (age == 8 && this.canSurvive(this.defaultBlockState(), level, pos.above())) {
+            double chanceToGrowFlower = height >= 3 ? 0.25 : 0.1;
+            if (random.nextDouble() <= chanceToGrowFlower) {
+               level.setBlockAndUpdate(above, Blocks.CACTUS_FLOWER.defaultBlockState());
             }
-         } else if (var7 == 15 && var6 < 3) {
-            var2.setBlockAndUpdate(var5, this.defaultBlockState());
-            BlockState var8 = (BlockState)var1.setValue(AGE, 0);
-            var2.setBlock(var3, var8, 260);
-            var2.neighborChanged(var8, var5, this, (Orientation)null, false);
+         } else if (age == 15 && height < 3) {
+            level.setBlockAndUpdate(above, this.defaultBlockState());
+            BlockState aboveBlock = (BlockState)state.setValue(AGE, 0);
+            level.setBlock(pos, aboveBlock, 260);
+            level.neighborChanged(aboveBlock, above, this, (Orientation)null, false);
          }
 
-         if (var7 < 15) {
-            var2.setBlock(var3, (BlockState)var1.setValue(AGE, var7 + 1), 260);
+         if (age < 15) {
+            level.setBlock(pos, (BlockState)state.setValue(AGE, age + 1), 260);
          }
 
       }
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE_COLLISION;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (!var1.canSurvive(var2, var4)) {
-         var3.scheduleTick(var4, (Block)this, 1);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (!state.canSurvive(level, pos)) {
+         ticks.scheduleTick(pos, (Block)this, 1);
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      for(Direction var5 : Direction.Plane.HORIZONTAL) {
-         BlockState var6 = var2.getBlockState(var3.relative(var5));
-         if (var6.isSolid() || var2.getFluidState(var3.relative(var5)).is(FluidTags.LAVA)) {
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         BlockState neighbor = level.getBlockState(pos.relative(direction));
+         if (neighbor.isSolid() || level.getFluidState(pos.relative(direction)).is(FluidTags.LAVA)) {
             return false;
          }
       }
 
-      BlockState var7 = var2.getBlockState(var3.below());
-      return (var7.is(Blocks.CACTUS) || var7.is(BlockTags.SAND)) && !var2.getBlockState(var3.above()).liquid();
+      BlockState belowState = level.getBlockState(pos.below());
+      return (belowState.is(this) || belowState.is(BlockTags.SUPPORTS_CACTUS)) && !level.getBlockState(pos.above()).liquid();
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      var4.hurt(var2.damageSources().cactus(), 1.0F);
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      entity.hurt(level.damageSources().cactus(), 1.0F);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 

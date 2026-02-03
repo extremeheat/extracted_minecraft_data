@@ -8,11 +8,11 @@ public class DialogTypes {
       super();
    }
 
-   public static MapCodec<? extends Dialog> bootstrap(Registry<MapCodec<? extends Dialog>> var0) {
-      Registry.register(var0, (String)"notice", NoticeDialog.MAP_CODEC);
-      Registry.register(var0, (String)"server_links", ServerLinksDialog.MAP_CODEC);
-      Registry.register(var0, (String)"dialog_list", DialogListDialog.MAP_CODEC);
-      Registry.register(var0, (String)"multi_action", MultiActionDialog.MAP_CODEC);
-      return (MapCodec)Registry.register(var0, (String)"confirmation", ConfirmationDialog.MAP_CODEC);
+   public static MapCodec<? extends Dialog> bootstrap(final Registry<MapCodec<? extends Dialog>> registry) {
+      Registry.register(registry, (String)"notice", NoticeDialog.MAP_CODEC);
+      Registry.register(registry, (String)"server_links", ServerLinksDialog.MAP_CODEC);
+      Registry.register(registry, (String)"dialog_list", DialogListDialog.MAP_CODEC);
+      Registry.register(registry, (String)"multi_action", MultiActionDialog.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (String)"confirmation", ConfirmationDialog.MAP_CODEC);
    }
 }

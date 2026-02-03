@@ -12,15 +12,13 @@ import net.minecraft.world.level.storage.loot.LootTable;
 
 public record SeededContainerLoot(ResourceKey<LootTable> lootTable, long seed) implements TooltipProvider {
    private static final Component UNKNOWN_CONTENTS = Component.translatable("item.container.loot_table.unknown");
-   public static final Codec<SeededContainerLoot> CODEC = RecordCodecBuilder.create((var0) -> var0.group(LootTable.KEY_CODEC.fieldOf("loot_table").forGetter(SeededContainerLoot::lootTable), Codec.LONG.optionalFieldOf("seed", 0L).forGetter(SeededContainerLoot::seed)).apply(var0, SeededContainerLoot::new));
+   public static final Codec<SeededContainerLoot> CODEC = RecordCodecBuilder.create((i) -> i.group(LootTable.KEY_CODEC.fieldOf("loot_table").forGetter(SeededContainerLoot::lootTable), Codec.LONG.optionalFieldOf("seed", 0L).forGetter(SeededContainerLoot::seed)).apply(i, SeededContainerLoot::new));
 
-   public SeededContainerLoot(ResourceKey<LootTable> var1, long var2) {
+   public SeededContainerLoot {
       super();
-      this.lootTable = var1;
-      this.seed = var2;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      var2.accept(UNKNOWN_CONTENTS);
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      consumer.accept(UNKNOWN_CONTENTS);
    }
 }

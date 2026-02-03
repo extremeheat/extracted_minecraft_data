@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 public interface ServerPacketListener extends ServerboundPacketListener {
    Logger LOGGER = LogUtils.getLogger();
 
-   default void onPacketError(Packet var1, Exception var2) throws ReportedException {
-      LOGGER.error("Failed to handle packet {}, suppressing error", var1, var2);
+   default void onPacketError(final Packet packet, final Exception e) throws ReportedException {
+      LOGGER.error("Failed to handle packet {}, suppressing error", packet, e);
    }
 }

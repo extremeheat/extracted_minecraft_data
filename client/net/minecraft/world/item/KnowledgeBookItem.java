@@ -10,6 +10,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
@@ -18,33 +19,33 @@ import org.slf4j.Logger;
 public class KnowledgeBookItem extends Item {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public KnowledgeBookItem(Item.Properties var1) {
-      super(var1);
+   public KnowledgeBookItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      List var5 = (List)var4.getOrDefault(DataComponents.RECIPES, List.of());
-      var4.consume(1, var2);
-      if (var5.isEmpty()) {
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      List<ResourceKey<Recipe<?>>> recipeIds = (List)itemStack.getOrDefault(DataComponents.RECIPES, List.of());
+      itemStack.consume(1, player);
+      if (recipeIds.isEmpty()) {
          return InteractionResult.FAIL;
       } else {
-         if (!var1.isClientSide()) {
-            RecipeManager var6 = var1.getServer().getRecipeManager();
-            ArrayList var7 = new ArrayList(var5.size());
+         if (!level.isClientSide()) {
+            RecipeManager recipeManager = level.getServer().getRecipeManager();
+            List<RecipeHolder<?>> recipes = new ArrayList(recipeIds.size());
 
-            for(ResourceKey var9 : var5) {
-               Optional var10 = var6.byKey(var9);
-               if (!var10.isPresent()) {
-                  LOGGER.error("Invalid recipe: {}", var9);
+            for(ResourceKey<Recipe<?>> recipeId : recipeIds) {
+               Optional<RecipeHolder<?>> recipe = recipeManager.byKey(recipeId);
+               if (!recipe.isPresent()) {
+                  LOGGER.error("Invalid recipe: {}", recipeId);
                   return InteractionResult.FAIL;
                }
 
-               var7.add((RecipeHolder)var10.get());
+               recipes.add((RecipeHolder)recipe.get());
             }
 
-            var2.awardRecipes(var7);
-            var2.awardStat(Stats.ITEM_USED.get(this));
+            player.awardRecipes(recipes);
+            player.awardStat(Stats.ITEM_USED.get(this));
          }
 
          return InteractionResult.SUCCESS;

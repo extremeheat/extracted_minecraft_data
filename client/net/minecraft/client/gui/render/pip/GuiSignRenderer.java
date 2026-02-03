@@ -16,25 +16,25 @@ import net.minecraft.client.resources.model.MaterialSet;
 public class GuiSignRenderer extends PictureInPictureRenderer<GuiSignRenderState> {
    private final MaterialSet materials;
 
-   public GuiSignRenderer(MultiBufferSource.BufferSource var1, MaterialSet var2) {
-      super(var1);
-      this.materials = var2;
+   public GuiSignRenderer(final MultiBufferSource.BufferSource bufferSource, final MaterialSet materials) {
+      super(bufferSource);
+      this.materials = materials;
    }
 
    public Class<GuiSignRenderState> getRenderStateClass() {
       return GuiSignRenderState.class;
    }
 
-   protected void renderToTexture(GuiSignRenderState var1, PoseStack var2) {
+   protected void renderToTexture(final GuiSignRenderState renderState, final PoseStack poseStack) {
       Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_FLAT);
-      var2.translate(0.0F, -0.75F, 0.0F);
-      Material var3 = Sheets.getSignMaterial(var1.woodType());
-      Model.Simple var4 = var1.signModel();
+      poseStack.translate(0.0F, -0.75F, 0.0F);
+      Material material = Sheets.getSignMaterial(renderState.woodType());
+      Model.Simple model = renderState.signModel();
       MaterialSet var10001 = this.materials;
       MultiBufferSource.BufferSource var10002 = this.bufferSource;
-      Objects.requireNonNull(var4);
-      VertexConsumer var5 = var3.buffer(var10001, var10002, var4::renderType);
-      var4.renderToBuffer(var2, var5, 15728880, OverlayTexture.NO_OVERLAY);
+      Objects.requireNonNull(model);
+      VertexConsumer buffer = material.buffer(var10001, var10002, model::renderType);
+      model.renderToBuffer(poseStack, buffer, 15728880, OverlayTexture.NO_OVERLAY);
    }
 
    protected String getTextureLabel() {

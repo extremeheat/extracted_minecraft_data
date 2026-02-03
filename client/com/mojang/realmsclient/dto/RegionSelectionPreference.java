@@ -16,9 +16,9 @@ public enum RegionSelectionPreference {
    public final int id;
    public final String translationKey;
 
-   private RegionSelectionPreference(final int var3, final String var4) {
-      this.id = var3;
-      this.translationKey = var4;
+   private RegionSelectionPreference(final int id, final String translationKey) {
+      this.id = id;
+      this.translationKey = translationKey;
    }
 
    // $FF: synthetic method
@@ -33,31 +33,21 @@ public enum RegionSelectionPreference {
          super();
       }
 
-      public void write(JsonWriter var1, RegionSelectionPreference var2) throws IOException {
-         var1.value((long)var2.id);
+      public void write(final JsonWriter jsonWriter, final RegionSelectionPreference regionSelectionPreference) throws IOException {
+         jsonWriter.value((long)regionSelectionPreference.id);
       }
 
-      public RegionSelectionPreference read(JsonReader var1) throws IOException {
-         int var2 = var1.nextInt();
+      public RegionSelectionPreference read(final JsonReader jsonReader) throws IOException {
+         int id = jsonReader.nextInt();
 
-         for(RegionSelectionPreference var6 : RegionSelectionPreference.values()) {
-            if (var6.id == var2) {
-               return var6;
+         for(RegionSelectionPreference value : RegionSelectionPreference.values()) {
+            if (value.id == id) {
+               return value;
             }
          }
 
-         LOGGER.warn("Unsupported RegionSelectionPreference {}", var2);
+         LOGGER.warn("Unsupported RegionSelectionPreference {}", id);
          return RegionSelectionPreference.DEFAULT_SELECTION;
-      }
-
-      // $FF: synthetic method
-      public Object read(final JsonReader var1) throws IOException {
-         return this.read(var1);
-      }
-
-      // $FF: synthetic method
-      public void write(final JsonWriter var1, final Object var2) throws IOException {
-         this.write(var1, (RegionSelectionPreference)var2);
       }
    }
 }

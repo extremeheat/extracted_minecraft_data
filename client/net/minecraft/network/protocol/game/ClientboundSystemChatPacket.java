@@ -11,18 +11,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundSystemChatPacket(Component content, boolean overlay) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSystemChatPacket> STREAM_CODEC;
 
-   public ClientboundSystemChatPacket(Component var1, boolean var2) {
+   public ClientboundSystemChatPacket {
       super();
-      this.content = var1;
-      this.overlay = var2;
    }
 
    public PacketType<ClientboundSystemChatPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SYSTEM_CHAT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSystemChat(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSystemChat(this);
    }
 
    public boolean isSkippable() {

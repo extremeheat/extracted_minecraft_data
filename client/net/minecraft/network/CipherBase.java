@@ -10,37 +10,37 @@ public class CipherBase {
    private byte[] heapIn = new byte[0];
    private byte[] heapOut = new byte[0];
 
-   protected CipherBase(Cipher var1) {
+   protected CipherBase(final Cipher cipher) {
       super();
-      this.cipher = var1;
+      this.cipher = cipher;
    }
 
-   private byte[] bufToByte(ByteBuf var1) {
-      int var2 = var1.readableBytes();
-      if (this.heapIn.length < var2) {
-         this.heapIn = new byte[var2];
+   private byte[] bufToByte(final ByteBuf in) {
+      int readableBytes = in.readableBytes();
+      if (this.heapIn.length < readableBytes) {
+         this.heapIn = new byte[readableBytes];
       }
 
-      var1.readBytes(this.heapIn, 0, var2);
+      in.readBytes(this.heapIn, 0, readableBytes);
       return this.heapIn;
    }
 
-   protected ByteBuf decipher(ChannelHandlerContext var1, ByteBuf var2) throws ShortBufferException {
-      int var3 = var2.readableBytes();
-      byte[] var4 = this.bufToByte(var2);
-      ByteBuf var5 = var1.alloc().heapBuffer(this.cipher.getOutputSize(var3));
-      var5.writerIndex(this.cipher.update(var4, 0, var3, var5.array(), var5.arrayOffset()));
-      return var5;
+   protected ByteBuf decipher(final ChannelHandlerContext ctx, final ByteBuf in) throws ShortBufferException {
+      int readableBytes = in.readableBytes();
+      byte[] heapIn = this.bufToByte(in);
+      ByteBuf heapOut = ctx.alloc().heapBuffer(this.cipher.getOutputSize(readableBytes));
+      heapOut.writerIndex(this.cipher.update(heapIn, 0, readableBytes, heapOut.array(), heapOut.arrayOffset()));
+      return heapOut;
    }
 
-   protected void encipher(ByteBuf var1, ByteBuf var2) throws ShortBufferException {
-      int var3 = var1.readableBytes();
-      byte[] var4 = this.bufToByte(var1);
-      int var5 = this.cipher.getOutputSize(var3);
-      if (this.heapOut.length < var5) {
-         this.heapOut = new byte[var5];
+   protected void encipher(final ByteBuf in, final ByteBuf out) throws ShortBufferException {
+      int readableBytes = in.readableBytes();
+      byte[] heapIn = this.bufToByte(in);
+      int outputSize = this.cipher.getOutputSize(readableBytes);
+      if (this.heapOut.length < outputSize) {
+         this.heapOut = new byte[outputSize];
       }
 
-      var2.writeBytes(this.heapOut, 0, this.cipher.update(var4, 0, var3, this.heapOut));
+      out.writeBytes(this.heapOut, 0, this.cipher.update(heapIn, 0, readableBytes, this.heapOut));
    }
 }

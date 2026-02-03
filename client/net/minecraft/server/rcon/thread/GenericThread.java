@@ -14,9 +14,9 @@ public abstract class GenericThread implements Runnable {
    protected final String name;
    protected @Nullable Thread thread;
 
-   protected GenericThread(String var1) {
+   protected GenericThread(final String name) {
       super();
-      this.name = var1;
+      this.name = name;
    }
 
    public synchronized boolean start() {
@@ -36,16 +36,16 @@ public abstract class GenericThread implements Runnable {
    public synchronized void stop() {
       this.running = false;
       if (null != this.thread) {
-         int var1 = 0;
+         int waited = 0;
 
          while(this.thread.isAlive()) {
             try {
                this.thread.join(1000L);
-               ++var1;
-               if (var1 >= 5) {
-                  LOGGER.warn("Waited {} seconds attempting force stop!", var1);
+               ++waited;
+               if (waited >= 5) {
+                  LOGGER.warn("Waited {} seconds attempting force stop!", waited);
                } else if (this.thread.isAlive()) {
-                  LOGGER.warn("Thread {} ({}) failed to exit after {} second(s)", new Object[]{this, this.thread.getState(), var1, new Exception("Stack:")});
+                  LOGGER.warn("Thread {} ({}) failed to exit after {} second(s)", new Object[]{this, this.thread.getState(), waited, new Exception("Stack:")});
                   this.thread.interrupt();
                }
             } catch (InterruptedException var3) {

@@ -13,38 +13,34 @@ import jdk.jfr.consumer.RecordedThread;
 public record ThreadAllocationStat(Instant timestamp, String threadName, long totalBytes) {
    private static final String UNKNOWN_THREAD = "unknown";
 
-   public ThreadAllocationStat(Instant var1, String var2, long var3) {
+   public ThreadAllocationStat {
       super();
-      this.timestamp = var1;
-      this.threadName = var2;
-      this.totalBytes = var3;
    }
 
-   public static ThreadAllocationStat from(RecordedEvent var0) {
-      RecordedThread var1 = var0.getThread("thread");
-      String var2 = var1 == null ? "unknown" : (String)MoreObjects.firstNonNull(var1.getJavaName(), "unknown");
-      return new ThreadAllocationStat(var0.getStartTime(), var2, var0.getLong("allocated"));
+   public static ThreadAllocationStat from(final RecordedEvent event) {
+      RecordedThread recoredThread = event.getThread("thread");
+      String threadName = recoredThread == null ? "unknown" : (String)MoreObjects.firstNonNull(recoredThread.getJavaName(), "unknown");
+      return new ThreadAllocationStat(event.getStartTime(), threadName, event.getLong("allocated"));
    }
 
-   public static Summary summary(List<ThreadAllocationStat> var0) {
-      TreeMap var1 = new TreeMap();
-      Map var2 = (Map)var0.stream().collect(Collectors.groupingBy((var0x) -> var0x.threadName));
-      var2.forEach((var1x, var2x) -> {
-         if (var2x.size() >= 2) {
-            ThreadAllocationStat var3 = (ThreadAllocationStat)var2x.get(0);
-            ThreadAllocationStat var4 = (ThreadAllocationStat)var2x.get(var2x.size() - 1);
-            long var5 = Duration.between(var3.timestamp, var4.timestamp).getSeconds();
-            long var7 = var4.totalBytes - var3.totalBytes;
-            var1.put(var1x, (double)var7 / (double)var5);
+   public static Summary summary(final List<ThreadAllocationStat> stats) {
+      Map<String, Double> allocationsPerSecondByThread = new TreeMap();
+      Map<String, List<ThreadAllocationStat>> byThread = (Map)stats.stream().collect(Collectors.groupingBy((it) -> it.threadName));
+      byThread.forEach((thread, threadStats) -> {
+         if (threadStats.size() >= 2) {
+            ThreadAllocationStat first = (ThreadAllocationStat)threadStats.get(0);
+            ThreadAllocationStat last = (ThreadAllocationStat)threadStats.get(threadStats.size() - 1);
+            long duration = Duration.between(first.timestamp, last.timestamp).getSeconds();
+            long diff = last.totalBytes - first.totalBytes;
+            allocationsPerSecondByThread.put(thread, (double)diff / (double)duration);
          }
       });
-      return new Summary(var1);
+      return new Summary(allocationsPerSecondByThread);
    }
 
    public static record Summary(Map<String, Double> allocationsPerSecondByThread) {
-      public Summary(Map<String, Double> var1) {
+      public Summary {
          super();
-         this.allocationsPerSecondByThread = var1;
       }
    }
 }

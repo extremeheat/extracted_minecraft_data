@@ -12,33 +12,32 @@ import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
 
 public interface AllOf {
-   static <T, A extends T> MapCodec<A> codec(Codec<T> var0, Function<List<T>, A> var1, Function<A, List<T>> var2) {
-      return RecordCodecBuilder.mapCodec((var3) -> var3.group(var0.listOf().fieldOf("effects").forGetter(var2)).apply(var3, var1));
+   static <T, A extends T> MapCodec<A> codec(final Codec<T> topLevelCodec, final Function<List<T>, A> constructor, final Function<A, List<T>> accessor) {
+      return RecordCodecBuilder.mapCodec((i) -> i.group(topLevelCodec.listOf().fieldOf("effects").forGetter(accessor)).apply(i, constructor));
    }
 
-   static EntityEffects entityEffects(EnchantmentEntityEffect... var0) {
-      return new EntityEffects(List.of(var0));
+   static EntityEffects entityEffects(final EnchantmentEntityEffect... effects) {
+      return new EntityEffects(List.of(effects));
    }
 
-   static LocationBasedEffects locationBasedEffects(EnchantmentLocationBasedEffect... var0) {
-      return new LocationBasedEffects(List.of(var0));
+   static LocationBasedEffects locationBasedEffects(final EnchantmentLocationBasedEffect... effects) {
+      return new LocationBasedEffects(List.of(effects));
    }
 
-   static ValueEffects valueEffects(EnchantmentValueEffect... var0) {
-      return new ValueEffects(List.of(var0));
+   static ValueEffects valueEffects(final EnchantmentValueEffect... effects) {
+      return new ValueEffects(List.of(effects));
    }
 
    public static record EntityEffects(List<EnchantmentEntityEffect> effects) implements EnchantmentEntityEffect {
       public static final MapCodec<EntityEffects> CODEC;
 
-      public EntityEffects(List<EnchantmentEntityEffect> var1) {
+      public EntityEffects {
          super();
-         this.effects = var1;
       }
 
-      public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-         for(EnchantmentEntityEffect var7 : this.effects) {
-            var7.apply(var1, var2, var3, var4, var5);
+      public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
+         for(EnchantmentEntityEffect effect : this.effects) {
+            effect.apply(serverLevel, enchantmentLevel, item, entity, position);
          }
 
       }
@@ -55,21 +54,20 @@ public interface AllOf {
    public static record LocationBasedEffects(List<EnchantmentLocationBasedEffect> effects) implements EnchantmentLocationBasedEffect {
       public static final MapCodec<LocationBasedEffects> CODEC;
 
-      public LocationBasedEffects(List<EnchantmentLocationBasedEffect> var1) {
+      public LocationBasedEffects {
          super();
-         this.effects = var1;
       }
 
-      public void onChangedBlock(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5, boolean var6) {
-         for(EnchantmentLocationBasedEffect var8 : this.effects) {
-            var8.onChangedBlock(var1, var2, var3, var4, var5, var6);
+      public void onChangedBlock(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position, final boolean becameActive) {
+         for(EnchantmentLocationBasedEffect effect : this.effects) {
+            effect.onChangedBlock(serverLevel, enchantmentLevel, item, entity, position, becameActive);
          }
 
       }
 
-      public void onDeactivated(EnchantedItemInUse var1, Entity var2, Vec3 var3, int var4) {
-         for(EnchantmentLocationBasedEffect var6 : this.effects) {
-            var6.onDeactivated(var1, var2, var3, var4);
+      public void onDeactivated(final EnchantedItemInUse item, final Entity entity, final Vec3 position, final int level) {
+         for(EnchantmentLocationBasedEffect effect : this.effects) {
+            effect.onDeactivated(item, entity, position, level);
          }
 
       }
@@ -86,17 +84,16 @@ public interface AllOf {
    public static record ValueEffects(List<EnchantmentValueEffect> effects) implements EnchantmentValueEffect {
       public static final MapCodec<ValueEffects> CODEC;
 
-      public ValueEffects(List<EnchantmentValueEffect> var1) {
+      public ValueEffects {
          super();
-         this.effects = var1;
       }
 
-      public float process(int var1, RandomSource var2, float var3) {
-         for(EnchantmentValueEffect var5 : this.effects) {
-            var3 = var5.process(var1, var2, var3);
+      public float process(final int enchantmentLevel, final RandomSource random, float value) {
+         for(EnchantmentValueEffect effect : this.effects) {
+            value = effect.process(enchantmentLevel, random, value);
          }
 
-         return var3;
+         return value;
       }
 
       public MapCodec<ValueEffects> codec() {

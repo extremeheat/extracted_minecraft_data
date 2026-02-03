@@ -16,13 +16,13 @@ public class GameConfig {
    public final GameData game;
    public final QuickPlayData quickPlay;
 
-   public GameConfig(UserData var1, DisplayData var2, FolderData var3, GameData var4, QuickPlayData var5) {
+   public GameConfig(final UserData userData, final DisplayData displayData, final FolderData folderData, final GameData gameData, final QuickPlayData quickPlayData) {
       super();
-      this.user = var1;
-      this.display = var2;
-      this.location = var3;
-      this.game = var4;
-      this.quickPlay = var5;
+      this.user = userData;
+      this.display = displayData;
+      this.location = folderData;
+      this.game = gameData;
+      this.quickPlay = quickPlayData;
    }
 
    public static class GameData {
@@ -35,16 +35,16 @@ public class GameConfig {
       public final boolean renderDebugLabels;
       public final boolean offlineDeveloperMode;
 
-      public GameData(boolean var1, String var2, String var3, boolean var4, boolean var5, boolean var6, boolean var7, boolean var8) {
+      public GameData(final boolean demo, final String launchVersion, final String versionType, final boolean disableMultiplayer, final boolean disableChat, final boolean captureTracyImages, final boolean renderDebugLabels, final boolean offlineDeveloperMode) {
          super();
-         this.demo = var1;
-         this.launchVersion = var2;
-         this.versionType = var3;
-         this.disableMultiplayer = var4;
-         this.disableChat = var5;
-         this.captureTracyImages = var6;
-         this.renderDebugLabels = var7;
-         this.offlineDeveloperMode = var8;
+         this.demo = demo;
+         this.launchVersion = launchVersion;
+         this.versionType = versionType;
+         this.disableMultiplayer = disableMultiplayer;
+         this.disableChat = disableChat;
+         this.captureTracyImages = captureTracyImages;
+         this.renderDebugLabels = renderDebugLabels;
+         this.offlineDeveloperMode = offlineDeveloperMode;
       }
    }
 
@@ -52,10 +52,10 @@ public class GameConfig {
       public final User user;
       public final Proxy proxy;
 
-      public UserData(User var1, Proxy var2) {
+      public UserData(final User user, final Proxy proxy) {
          super();
-         this.user = var1;
-         this.proxy = var2;
+         this.user = user;
+         this.proxy = proxy;
       }
    }
 
@@ -65,12 +65,12 @@ public class GameConfig {
       public final File assetDirectory;
       public final @Nullable String assetIndex;
 
-      public FolderData(File var1, File var2, File var3, @Nullable String var4) {
+      public FolderData(final File gameDirectory, final File resourcePackDirectory, final File assetDirectory, final @Nullable String assetIndex) {
          super();
-         this.gameDirectory = var1;
-         this.resourcePackDirectory = var2;
-         this.assetDirectory = var3;
-         this.assetIndex = var4;
+         this.gameDirectory = gameDirectory;
+         this.resourcePackDirectory = resourcePackDirectory;
+         this.assetDirectory = assetDirectory;
+         this.assetIndex = assetIndex;
       }
 
       public Path getExternalAssetSource() {
@@ -85,9 +85,8 @@ public class GameConfig {
    }
 
    public static record QuickPlaySinglePlayerData(@Nullable String worldId) implements QuickPlayVariant {
-      public QuickPlaySinglePlayerData(@Nullable String var1) {
+      public QuickPlaySinglePlayerData {
          super();
-         this.worldId = var1;
       }
 
       public boolean isEnabled() {
@@ -96,9 +95,8 @@ public class GameConfig {
    }
 
    public static record QuickPlayMultiplayerData(String serverAddress) implements QuickPlayVariant {
-      public QuickPlayMultiplayerData(String var1) {
+      public QuickPlayMultiplayerData {
          super();
-         this.serverAddress = var1;
       }
 
       public boolean isEnabled() {
@@ -107,9 +105,8 @@ public class GameConfig {
    }
 
    public static record QuickPlayRealmsData(String realmId) implements QuickPlayVariant {
-      public QuickPlayRealmsData(String var1) {
+      public QuickPlayRealmsData {
          super();
-         this.realmId = var1;
       }
 
       public boolean isEnabled() {
@@ -128,10 +125,8 @@ public class GameConfig {
    }
 
    public static record QuickPlayData(@Nullable String logPath, QuickPlayVariant variant) {
-      public QuickPlayData(@Nullable String var1, QuickPlayVariant var2) {
+      public QuickPlayData {
          super();
-         this.logPath = var1;
-         this.variant = var2;
       }
 
       public boolean isEnabled() {

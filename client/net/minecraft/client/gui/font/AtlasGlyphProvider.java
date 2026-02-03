@@ -6,6 +6,7 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GlyphSource;
@@ -19,68 +20,63 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
 public class AtlasGlyphProvider {
-   static final GlyphInfo GLYPH_INFO = GlyphInfo.simple(8.0F);
-   final TextureAtlas atlas;
-   final GlyphRenderTypes renderTypes;
+   private static final GlyphInfo GLYPH_INFO = GlyphInfo.simple(8.0F);
+   private final TextureAtlas atlas;
+   private final GlyphRenderTypes renderTypes;
    private final GlyphSource missingWrapper;
    private final Map<Identifier, GlyphSource> wrapperCache = new HashMap();
    private final Function<Identifier, GlyphSource> spriteResolver;
 
-   public AtlasGlyphProvider(TextureAtlas var1) {
+   public AtlasGlyphProvider(final TextureAtlas atlas) {
       super();
-      this.atlas = var1;
-      this.renderTypes = GlyphRenderTypes.createForColorTexture(var1.location());
-      TextureAtlasSprite var2 = var1.missingSprite();
-      this.missingWrapper = this.createSprite(var2);
-      this.spriteResolver = (var3) -> {
-         TextureAtlasSprite var4 = var1.getSprite(var3);
-         return var4 == var2 ? this.missingWrapper : this.createSprite(var4);
+      this.atlas = atlas;
+      this.renderTypes = GlyphRenderTypes.createForColorTexture(atlas.location());
+      TextureAtlasSprite missingSprite = atlas.missingSprite();
+      this.missingWrapper = this.createSprite(missingSprite);
+      this.spriteResolver = (id) -> {
+         TextureAtlasSprite sprite = atlas.getSprite(id);
+         return sprite == missingSprite ? this.missingWrapper : this.createSprite(sprite);
       };
    }
 
-   public GlyphSource sourceForSprite(Identifier var1) {
-      return (GlyphSource)this.wrapperCache.computeIfAbsent(var1, this.spriteResolver);
+   public GlyphSource sourceForSprite(final Identifier spriteId) {
+      return (GlyphSource)this.wrapperCache.computeIfAbsent(spriteId, this.spriteResolver);
    }
 
-   private GlyphSource createSprite(final TextureAtlasSprite var1) {
+   private GlyphSource createSprite(final TextureAtlasSprite sprite) {
       return new SingleSpriteSource(new BakedGlyph() {
+         {
+            Objects.requireNonNull(AtlasGlyphProvider.this);
+         }
+
          public GlyphInfo info() {
             return AtlasGlyphProvider.GLYPH_INFO;
          }
 
-         public TextRenderable.Styled createGlyph(float var1x, float var2, int var3, int var4, Style var5, float var6, float var7) {
-            return new Instance(AtlasGlyphProvider.this.renderTypes, AtlasGlyphProvider.this.atlas.getTextureView(), var1, var1x, var2, var3, var4, var7, var5);
+         public TextRenderable.Styled createGlyph(final float x, final float y, final int color, final int shadowColor, final Style style, final float boldOffset, final float shadowOffset) {
+            return new Instance(AtlasGlyphProvider.this.renderTypes, AtlasGlyphProvider.this.atlas.getTextureView(), sprite, x, y, color, shadowColor, shadowOffset, style);
          }
       });
    }
 
-   static record Instance(GlyphRenderTypes renderTypes, GpuTextureView textureView, TextureAtlasSprite sprite, float x, float y, int color, int shadowColor, float shadowOffset, Style style) implements PlainTextRenderable {
-      Instance(GlyphRenderTypes var1, GpuTextureView var2, TextureAtlasSprite var3, float var4, float var5, int var6, int var7, float var8, Style var9) {
+   private static record Instance(GlyphRenderTypes renderTypes, GpuTextureView textureView, TextureAtlasSprite sprite, float x, float y, int color, int shadowColor, float shadowOffset, Style style) implements PlainTextRenderable {
+      private Instance {
          super();
-         this.renderTypes = var1;
-         this.textureView = var2;
-         this.sprite = var3;
-         this.x = var4;
-         this.y = var5;
-         this.color = var6;
-         this.shadowColor = var7;
-         this.shadowOffset = var8;
-         this.style = var9;
       }
 
-      public void renderSprite(Matrix4f var1, VertexConsumer var2, int var3, float var4, float var5, float var6, int var7) {
-         float var8 = var4 + this.left();
-         float var9 = var4 + this.right();
-         float var10 = var5 + this.top();
-         float var11 = var5 + this.bottom();
-         var2.addVertex((Matrix4fc)var1, var8, var10, var6).setUv(this.sprite.getU0(), this.sprite.getV0()).setColor(var7).setLight(var3);
-         var2.addVertex((Matrix4fc)var1, var8, var11, var6).setUv(this.sprite.getU0(), this.sprite.getV1()).setColor(var7).setLight(var3);
-         var2.addVertex((Matrix4fc)var1, var9, var11, var6).setUv(this.sprite.getU1(), this.sprite.getV1()).setColor(var7).setLight(var3);
-         var2.addVertex((Matrix4fc)var1, var9, var10, var6).setUv(this.sprite.getU1(), this.sprite.getV0()).setColor(var7).setLight(var3);
+      public void renderSprite(final Matrix4f pose, final VertexConsumer buffer, final int packedLightCoords, final float offsetX, final float offsetY, final float z, final int color) {
+         float x0 = offsetX + this.left();
+         float x1 = offsetX + this.right();
+         float y0 = offsetY + this.top();
+         float y1 = offsetY + this.bottom();
+         buffer.addVertex((Matrix4fc)pose, x0, y0, z).setUv(this.sprite.getU0(), this.sprite.getV0()).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex((Matrix4fc)pose, x0, y1, z).setUv(this.sprite.getU0(), this.sprite.getV1()).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex((Matrix4fc)pose, x1, y1, z).setUv(this.sprite.getU1(), this.sprite.getV1()).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex((Matrix4fc)pose, x1, y0, z).setUv(this.sprite.getU1(), this.sprite.getV0()).setColor(color).setLight(packedLightCoords);
       }
 
-      public RenderType renderType(Font.DisplayMode var1) {
-         return this.renderTypes.select(var1);
+      public RenderType renderType(final Font.DisplayMode displayMode) {
+         return this.renderTypes.select(displayMode);
       }
 
       public RenderPipeline guiPipeline() {

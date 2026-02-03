@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.sensing;
 
-import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -17,30 +16,30 @@ public class GolemSensor extends Sensor<LivingEntity> {
       this(200);
    }
 
-   public GolemSensor(int var1) {
-      super(var1);
+   public GolemSensor(final int scanRate) {
+      super(scanRate);
    }
 
-   protected void doTick(ServerLevel var1, LivingEntity var2) {
-      checkForNearbyGolem(var2);
+   protected void doTick(final ServerLevel level, final LivingEntity body) {
+      checkForNearbyGolem(body);
    }
 
    public Set<MemoryModuleType<?>> requires() {
-      return ImmutableSet.of(MemoryModuleType.NEAREST_LIVING_ENTITIES);
+      return Set.of(MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.GOLEM_DETECTED_RECENTLY);
    }
 
-   public static void checkForNearbyGolem(LivingEntity var0) {
-      Optional var1 = var0.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
-      if (!var1.isEmpty()) {
-         boolean var2 = ((List)var1.get()).stream().anyMatch((var0x) -> var0x.getType().equals(EntityType.IRON_GOLEM));
-         if (var2) {
-            golemDetected(var0);
+   public static void checkForNearbyGolem(final LivingEntity body) {
+      Optional<List<LivingEntity>> livingEntitiesMemory = body.getBrain().<List<LivingEntity>>getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
+      if (!livingEntitiesMemory.isEmpty()) {
+         boolean golemPresent = ((List)livingEntitiesMemory.get()).stream().anyMatch((entity) -> entity.is(EntityType.IRON_GOLEM));
+         if (golemPresent) {
+            golemDetected(body);
          }
 
       }
    }
 
-   public static void golemDetected(LivingEntity var0) {
-      var0.getBrain().setMemoryWithExpiry(MemoryModuleType.GOLEM_DETECTED_RECENTLY, true, 599L);
+   public static void golemDetected(final LivingEntity body) {
+      body.getBrain().setMemoryWithExpiry(MemoryModuleType.GOLEM_DETECTED_RECENTLY, true, 599L);
    }
 }

@@ -16,29 +16,29 @@ public interface AttributeModifier<Subject, Argument> {
       return AttributeModifier.OverrideModifier.INSTANCE;
    }
 
-   Subject apply(Subject var1, Argument var2);
+   Subject apply(Subject subject, Argument argument);
 
-   Codec<Argument> argumentCodec(EnvironmentAttribute<Subject> var1);
+   Codec<Argument> argumentCodec(EnvironmentAttribute<Subject> attribute);
 
-   LerpFunction<Argument> argumentKeyframeLerp(EnvironmentAttribute<Subject> var1);
+   LerpFunction<Argument> argumentKeyframeLerp(EnvironmentAttribute<Subject> attribute);
 
    public static record OverrideModifier<Value>() implements AttributeModifier<Value, Value> {
-      static final OverrideModifier<?> INSTANCE = new OverrideModifier();
+      private static final OverrideModifier<?> INSTANCE = new OverrideModifier();
 
       public OverrideModifier() {
          super();
       }
 
-      public Value apply(Value var1, Value var2) {
-         return var2;
+      public Value apply(final Value subject, final Value argument) {
+         return argument;
       }
 
-      public Codec<Value> argumentCodec(EnvironmentAttribute<Value> var1) {
-         return var1.valueCodec();
+      public Codec<Value> argumentCodec(final EnvironmentAttribute<Value> attribute) {
+         return attribute.valueCodec();
       }
 
-      public LerpFunction<Value> argumentKeyframeLerp(EnvironmentAttribute<Value> var1) {
-         return var1.type().keyframeLerp();
+      public LerpFunction<Value> argumentKeyframeLerp(final EnvironmentAttribute<Value> attribute) {
+         return attribute.type().keyframeLerp();
       }
    }
 
@@ -61,8 +61,8 @@ public interface AttributeModifier<Subject, Argument> {
       public static final Codec<OperationId> CODEC = StringRepresentable.<OperationId>fromEnum(OperationId::values);
       private final String name;
 
-      private OperationId(final String var3) {
-         this.name = var3;
+      private OperationId(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {

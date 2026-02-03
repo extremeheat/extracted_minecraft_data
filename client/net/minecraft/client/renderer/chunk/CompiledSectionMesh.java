@@ -16,12 +16,12 @@ import org.jspecify.annotations.Nullable;
 
 public class CompiledSectionMesh implements SectionMesh {
    public static final SectionMesh UNCOMPILED = new SectionMesh() {
-      public boolean facesCanSeeEachother(Direction var1, Direction var2) {
+      public boolean facesCanSeeEachother(final Direction direction1, final Direction direction2) {
          return false;
       }
    };
    public static final SectionMesh EMPTY = new SectionMesh() {
-      public boolean facesCanSeeEachother(Direction var1, Direction var2) {
+      public boolean facesCanSeeEachother(final Direction direction1, final Direction direction2) {
          return true;
       }
    };
@@ -31,107 +31,107 @@ public class CompiledSectionMesh implements SectionMesh {
    private @Nullable TranslucencyPointOfView translucencyPointOfView;
    private final Map<ChunkSectionLayer, SectionBuffers> buffers = new EnumMap(ChunkSectionLayer.class);
 
-   public CompiledSectionMesh(TranslucencyPointOfView var1, SectionCompiler.Results var2) {
+   public CompiledSectionMesh(final TranslucencyPointOfView translucencyPointOfView, final SectionCompiler.Results results) {
       super();
-      this.translucencyPointOfView = var1;
-      this.visibilitySet = var2.visibilitySet;
-      this.renderableBlockEntities = var2.blockEntities;
-      this.transparencyState = var2.transparencyState;
+      this.translucencyPointOfView = translucencyPointOfView;
+      this.visibilitySet = results.visibilitySet;
+      this.renderableBlockEntities = results.blockEntities;
+      this.transparencyState = results.transparencyState;
    }
 
-   public void setTranslucencyPointOfView(TranslucencyPointOfView var1) {
-      this.translucencyPointOfView = var1;
+   public void setTranslucencyPointOfView(final TranslucencyPointOfView translucencyPointOfView) {
+      this.translucencyPointOfView = translucencyPointOfView;
    }
 
-   public boolean isDifferentPointOfView(TranslucencyPointOfView var1) {
-      return !var1.equals(this.translucencyPointOfView);
+   public boolean isDifferentPointOfView(final TranslucencyPointOfView pointOfView) {
+      return !pointOfView.equals(this.translucencyPointOfView);
    }
 
    public boolean hasRenderableLayers() {
       return !this.buffers.isEmpty();
    }
 
-   public boolean isEmpty(ChunkSectionLayer var1) {
-      return !this.buffers.containsKey(var1);
+   public boolean isEmpty(final ChunkSectionLayer layer) {
+      return !this.buffers.containsKey(layer);
    }
 
    public List<BlockEntity> getRenderableBlockEntities() {
       return this.renderableBlockEntities;
    }
 
-   public boolean facesCanSeeEachother(Direction var1, Direction var2) {
-      return this.visibilitySet.visibilityBetween(var1, var2);
+   public boolean facesCanSeeEachother(final Direction direction1, final Direction direction2) {
+      return this.visibilitySet.visibilityBetween(direction1, direction2);
    }
 
-   public @Nullable SectionBuffers getBuffers(ChunkSectionLayer var1) {
-      return (SectionBuffers)this.buffers.get(var1);
+   public @Nullable SectionBuffers getBuffers(final ChunkSectionLayer layer) {
+      return (SectionBuffers)this.buffers.get(layer);
    }
 
-   public void uploadMeshLayer(ChunkSectionLayer var1, MeshData var2, long var3) {
-      CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
-      SectionBuffers var6 = this.getBuffers(var1);
-      if (var6 != null) {
-         if (var6.getVertexBuffer().size() < (long)var2.vertexBuffer().remaining()) {
-            var6.getVertexBuffer().close();
-            var6.setVertexBuffer(RenderSystem.getDevice().createBuffer(() -> {
-               String var10000 = var1.label();
-               return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(var3) + ", " + SectionPos.y(var3) + ", " + SectionPos.z(var3);
-            }, 40, var2.vertexBuffer()));
-         } else if (!var6.getVertexBuffer().isClosed()) {
-            var5.writeToBuffer(var6.getVertexBuffer().slice(), var2.vertexBuffer());
+   public void uploadMeshLayer(final ChunkSectionLayer layer, final MeshData mesh, final long sectionNode) {
+      CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
+      SectionBuffers sectionBuffers = this.getBuffers(layer);
+      if (sectionBuffers != null) {
+         if (sectionBuffers.getVertexBuffer().size() < (long)mesh.vertexBuffer().remaining()) {
+            sectionBuffers.getVertexBuffer().close();
+            sectionBuffers.setVertexBuffer(RenderSystem.getDevice().createBuffer(() -> {
+               String var10000 = layer.label();
+               return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(sectionNode) + ", " + SectionPos.y(sectionNode) + ", " + SectionPos.z(sectionNode);
+            }, 40, mesh.vertexBuffer()));
+         } else if (!sectionBuffers.getVertexBuffer().isClosed()) {
+            commandEncoder.writeToBuffer(sectionBuffers.getVertexBuffer().slice(), mesh.vertexBuffer());
          }
 
-         ByteBuffer var7 = var2.indexBuffer();
-         if (var7 != null) {
-            if (var6.getIndexBuffer() != null && var6.getIndexBuffer().size() >= (long)var7.remaining()) {
-               if (!var6.getIndexBuffer().isClosed()) {
-                  var5.writeToBuffer(var6.getIndexBuffer().slice(), var7);
+         ByteBuffer indexByteBuffer = mesh.indexBuffer();
+         if (indexByteBuffer != null) {
+            if (sectionBuffers.getIndexBuffer() != null && sectionBuffers.getIndexBuffer().size() >= (long)indexByteBuffer.remaining()) {
+               if (!sectionBuffers.getIndexBuffer().isClosed()) {
+                  commandEncoder.writeToBuffer(sectionBuffers.getIndexBuffer().slice(), indexByteBuffer);
                }
             } else {
-               if (var6.getIndexBuffer() != null) {
-                  var6.getIndexBuffer().close();
+               if (sectionBuffers.getIndexBuffer() != null) {
+                  sectionBuffers.getIndexBuffer().close();
                }
 
-               var6.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
-                  String var10000 = var1.label();
-                  return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(var3) + ", " + SectionPos.y(var3) + ", " + SectionPos.z(var3);
-               }, 72, var7));
+               sectionBuffers.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
+                  String var10000 = layer.label();
+                  return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(sectionNode) + ", " + SectionPos.y(sectionNode) + ", " + SectionPos.z(sectionNode);
+               }, 72, indexByteBuffer));
             }
-         } else if (var6.getIndexBuffer() != null) {
-            var6.getIndexBuffer().close();
-            var6.setIndexBuffer((GpuBuffer)null);
+         } else if (sectionBuffers.getIndexBuffer() != null) {
+            sectionBuffers.getIndexBuffer().close();
+            sectionBuffers.setIndexBuffer((GpuBuffer)null);
          }
 
-         var6.setIndexCount(var2.drawState().indexCount());
-         var6.setIndexType(var2.drawState().indexType());
+         sectionBuffers.setIndexCount(mesh.drawState().indexCount());
+         sectionBuffers.setIndexType(mesh.drawState().indexType());
       } else {
-         GpuBuffer var11 = RenderSystem.getDevice().createBuffer(() -> {
-            String var10000 = var1.label();
-            return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(var3) + ", " + SectionPos.y(var3) + ", " + SectionPos.z(var3);
-         }, 40, var2.vertexBuffer());
-         ByteBuffer var8 = var2.indexBuffer();
-         GpuBuffer var9 = var8 != null ? RenderSystem.getDevice().createBuffer(() -> {
-            String var10000 = var1.label();
-            return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(var3) + ", " + SectionPos.y(var3) + ", " + SectionPos.z(var3);
-         }, 72, var8) : null;
-         SectionBuffers var10 = new SectionBuffers(var11, var9, var2.drawState().indexCount(), var2.drawState().indexType());
-         this.buffers.put(var1, var10);
+         GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> {
+            String var10000 = layer.label();
+            return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(sectionNode) + ", " + SectionPos.y(sectionNode) + ", " + SectionPos.z(sectionNode);
+         }, 40, mesh.vertexBuffer());
+         ByteBuffer indexByteBuffer = mesh.indexBuffer();
+         GpuBuffer indexBuffer = indexByteBuffer != null ? RenderSystem.getDevice().createBuffer(() -> {
+            String var10000 = layer.label();
+            return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(sectionNode) + ", " + SectionPos.y(sectionNode) + ", " + SectionPos.z(sectionNode);
+         }, 72, indexByteBuffer) : null;
+         SectionBuffers newSectionBuffers = new SectionBuffers(vertexBuffer, indexBuffer, mesh.drawState().indexCount(), mesh.drawState().indexType());
+         this.buffers.put(layer, newSectionBuffers);
       }
 
    }
 
-   public void uploadLayerIndexBuffer(ChunkSectionLayer var1, ByteBufferBuilder.Result var2, long var3) {
-      SectionBuffers var5 = this.getBuffers(var1);
-      if (var5 != null) {
-         if (var5.getIndexBuffer() == null) {
-            var5.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
-               String var10000 = var1.label();
-               return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(var3) + ", " + SectionPos.y(var3) + ", " + SectionPos.z(var3);
-            }, 72, var2.byteBuffer()));
+   public void uploadLayerIndexBuffer(final ChunkSectionLayer layer, final ByteBufferBuilder.Result indexBuffer, final long sectionNode) {
+      SectionBuffers target = this.getBuffers(layer);
+      if (target != null) {
+         if (target.getIndexBuffer() == null) {
+            target.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
+               String var10000 = layer.label();
+               return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(sectionNode) + ", " + SectionPos.y(sectionNode) + ", " + SectionPos.z(sectionNode);
+            }, 72, indexBuffer.byteBuffer()));
          } else {
-            CommandEncoder var6 = RenderSystem.getDevice().createCommandEncoder();
-            if (!var5.getIndexBuffer().isClosed()) {
-               var6.writeToBuffer(var5.getIndexBuffer().slice(), var2.byteBuffer());
+            CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
+            if (!target.getIndexBuffer().isClosed()) {
+               commandEncoder.writeToBuffer(target.getIndexBuffer().slice(), indexBuffer.byteBuffer());
             }
          }
 

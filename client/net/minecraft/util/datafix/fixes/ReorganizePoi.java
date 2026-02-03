@@ -7,39 +7,40 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 public class ReorganizePoi extends DataFix {
-   public ReorganizePoi(Schema var1, boolean var2) {
-      super(var1, var2);
+   public ReorganizePoi(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = DSL.named(References.POI_CHUNK.typeName(), DSL.remainderType());
-      if (!Objects.equals(var1, this.getInputSchema().getType(References.POI_CHUNK))) {
+      Type<Pair<String, Dynamic<?>>> poiChunkType = DSL.named(References.POI_CHUNK.typeName(), DSL.remainderType());
+      if (!Objects.equals(poiChunkType, this.getInputSchema().getType(References.POI_CHUNK))) {
          throw new IllegalStateException("Poi type is not what was expected.");
       } else {
-         return this.fixTypeEverywhere("POI reorganization", var1, (var0) -> (var0x) -> var0x.mapSecond(ReorganizePoi::cap));
+         return this.fixTypeEverywhere("POI reorganization", poiChunkType, (ops) -> (input) -> input.mapSecond(ReorganizePoi::cap));
       }
    }
 
-   private static <T> Dynamic<T> cap(Dynamic<T> var0) {
-      HashMap var1 = Maps.newHashMap();
+   private static <T> Dynamic<T> cap(Dynamic<T> input) {
+      Map<Dynamic<T>, Dynamic<T>> sections = Maps.newHashMap();
 
-      for(int var2 = 0; var2 < 16; ++var2) {
-         String var3 = String.valueOf(var2);
-         Optional var4 = var0.get(var3).result();
-         if (var4.isPresent()) {
-            Dynamic var5 = (Dynamic)var4.get();
-            Dynamic var6 = var0.createMap(ImmutableMap.of(var0.createString("Records"), var5));
-            var1.put(var0.createString(Integer.toString(var2)), var6);
-            var0 = var0.remove(var3);
+      for(int i = 0; i < 16; ++i) {
+         String key = String.valueOf(i);
+         Optional<Dynamic<T>> section = input.get(key).result();
+         if (section.isPresent()) {
+            Dynamic<T> sectionRecords = (Dynamic)section.get();
+            Dynamic<T> newSection = input.createMap(ImmutableMap.of(input.createString("Records"), sectionRecords));
+            sections.put(input.createString(Integer.toString(i)), newSection);
+            input = input.remove(key);
          }
       }
 
-      return var0.set("Sections", var0.createMap(var1));
+      return input.set("Sections", input.createMap(sections));
    }
 }

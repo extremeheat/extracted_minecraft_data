@@ -12,23 +12,23 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class TransparentBlock extends HalfTransparentBlock {
    public static final MapCodec<TransparentBlock> CODEC = simpleCodec(TransparentBlock::new);
 
-   protected TransparentBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected TransparentBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    protected MapCodec<? extends TransparentBlock> codec() {
       return CODEC;
    }
 
-   protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getVisualShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return Shapes.empty();
    }
 
-   protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected float getShadeBrightness(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return 1.0F;
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
+   protected boolean propagatesSkylightDown(final BlockState state) {
       return true;
    }
 }

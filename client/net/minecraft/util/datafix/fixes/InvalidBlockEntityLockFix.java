@@ -8,18 +8,18 @@ import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 
 public class InvalidBlockEntityLockFix extends DataFix {
-   public InvalidBlockEntityLockFix(Schema var1) {
-      super(var1, false);
+   public InvalidBlockEntityLockFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("BlockEntityLockToComponentFix", this.getInputSchema().getType(References.BLOCK_ENTITY), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> {
-            Optional var1 = var0x.get("lock").result();
-            if (var1.isEmpty()) {
-               return var0x;
+      return this.fixTypeEverywhereTyped("BlockEntityLockToComponentFix", this.getInputSchema().getType(References.BLOCK_ENTITY), (blockEntity) -> blockEntity.update(DSL.remainderFinder(), (remainder) -> {
+            Optional<? extends Dynamic<?>> lock = remainder.get("lock").result();
+            if (lock.isEmpty()) {
+               return remainder;
             } else {
-               Dynamic var2 = InvalidLockComponentFix.fixLock((Dynamic)var1.get());
-               return var2 != null ? var0x.set("lock", var2) : var0x.remove("lock");
+               Dynamic<?> newLock = InvalidLockComponentFix.fixLock((Dynamic)lock.get());
+               return newLock != null ? remainder.set("lock", newLock) : remainder.remove("lock");
             }
          }));
    }

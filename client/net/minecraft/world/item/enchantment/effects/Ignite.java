@@ -9,15 +9,14 @@ import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record Ignite(LevelBasedValue duration) implements EnchantmentEntityEffect {
-   public static final MapCodec<Ignite> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LevelBasedValue.CODEC.fieldOf("duration").forGetter((var0x) -> var0x.duration)).apply(var0, Ignite::new));
+   public static final MapCodec<Ignite> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LevelBasedValue.CODEC.fieldOf("duration").forGetter((e) -> e.duration)).apply(i, Ignite::new));
 
-   public Ignite(LevelBasedValue var1) {
+   public Ignite {
       super();
-      this.duration = var1;
    }
 
-   public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-      var4.igniteForSeconds(this.duration.calculate(var2));
+   public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
+      entity.igniteForSeconds(this.duration.calculate(enchantmentLevel));
    }
 
    public MapCodec<Ignite> codec() {

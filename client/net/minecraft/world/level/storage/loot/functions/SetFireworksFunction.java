@@ -14,29 +14,29 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetFireworksFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetFireworksFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ListOperation.StandAlone.codec(FireworkExplosion.CODEC, 256).optionalFieldOf("explosions").forGetter((var0x) -> var0x.explosions), ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("flight_duration").forGetter((var0x) -> var0x.flightDuration))).apply(var0, SetFireworksFunction::new));
+   public static final MapCodec<SetFireworksFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ListOperation.StandAlone.codec(FireworkExplosion.CODEC, 256).optionalFieldOf("explosions").forGetter((f) -> f.explosions), ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("flight_duration").forGetter((f) -> f.flightDuration))).apply(i, SetFireworksFunction::new));
    public static final Fireworks DEFAULT_VALUE = new Fireworks(0, List.of());
    private final Optional<ListOperation.StandAlone<FireworkExplosion>> explosions;
    private final Optional<Integer> flightDuration;
 
-   protected SetFireworksFunction(List<LootItemCondition> var1, Optional<ListOperation.StandAlone<FireworkExplosion>> var2, Optional<Integer> var3) {
-      super(var1);
-      this.explosions = var2;
-      this.flightDuration = var3;
+   protected SetFireworksFunction(final List<LootItemCondition> predicates, final Optional<ListOperation.StandAlone<FireworkExplosion>> explosions, final Optional<Integer> flightDuration) {
+      super(predicates);
+      this.explosions = explosions;
+      this.flightDuration = flightDuration;
    }
 
-   protected ItemStack run(ItemStack var1, LootContext var2) {
-      var1.update(DataComponents.FIREWORKS, DEFAULT_VALUE, this::apply);
-      return var1;
+   protected ItemStack run(final ItemStack itemStack, final LootContext context) {
+      itemStack.update(DataComponents.FIREWORKS, DEFAULT_VALUE, this::apply);
+      return itemStack;
    }
 
-   private Fireworks apply(Fireworks var1) {
+   private Fireworks apply(final Fireworks old) {
       Optional var10002 = this.flightDuration;
-      Objects.requireNonNull(var1);
-      return new Fireworks((Integer)var10002.orElseGet(var1::flightDuration), (List)this.explosions.map((var1x) -> var1x.apply(var1.explosions())).orElse(var1.explosions()));
+      Objects.requireNonNull(old);
+      return new Fireworks((Integer)var10002.orElseGet(old::flightDuration), (List)this.explosions.map((operation) -> operation.apply(old.explosions())).orElse(old.explosions()));
    }
 
-   public LootItemFunctionType<SetFireworksFunction> getType() {
-      return LootItemFunctions.SET_FIREWORKS;
+   public MapCodec<SetFireworksFunction> codec() {
+      return MAP_CODEC;
    }
 }

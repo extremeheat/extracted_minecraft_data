@@ -9,26 +9,26 @@ public class ClientboundLoginCompressionPacket implements Packet<ClientLoginPack
    public static final StreamCodec<FriendlyByteBuf, ClientboundLoginCompressionPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundLoginCompressionPacket>codec(ClientboundLoginCompressionPacket::write, ClientboundLoginCompressionPacket::new);
    private final int compressionThreshold;
 
-   public ClientboundLoginCompressionPacket(int var1) {
+   public ClientboundLoginCompressionPacket(final int compressionThreshold) {
       super();
-      this.compressionThreshold = var1;
+      this.compressionThreshold = compressionThreshold;
    }
 
-   private ClientboundLoginCompressionPacket(FriendlyByteBuf var1) {
+   private ClientboundLoginCompressionPacket(final FriendlyByteBuf input) {
       super();
-      this.compressionThreshold = var1.readVarInt();
+      this.compressionThreshold = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.compressionThreshold);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.compressionThreshold);
    }
 
    public PacketType<ClientboundLoginCompressionPacket> type() {
       return LoginPacketTypes.CLIENTBOUND_LOGIN_COMPRESSION;
    }
 
-   public void handle(ClientLoginPacketListener var1) {
-      var1.handleCompression(this);
+   public void handle(final ClientLoginPacketListener listener) {
+      listener.handleCompression(this);
    }
 
    public int getCompressionThreshold() {

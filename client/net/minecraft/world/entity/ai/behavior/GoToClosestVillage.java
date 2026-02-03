@@ -16,32 +16,32 @@ public class GoToClosestVillage {
       super();
    }
 
-   public static BehaviorControl<Villager> create(float var0, int var1) {
-      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.absent(MemoryModuleType.WALK_TARGET)).apply(var2, (var2x) -> (var3, var4, var5) -> {
-               if (var3.isVillage(var4.blockPosition())) {
+   public static BehaviorControl<Villager> create(final float speedModifier, final int closeEnoughDistance) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.WALK_TARGET)).apply(i, (walkTarget) -> (level, body, timestamp) -> {
+               if (level.isVillage(body.blockPosition())) {
                   return false;
                } else {
-                  PoiManager var7 = var3.getPoiManager();
-                  int var8 = var7.sectionsToVillage(SectionPos.of(var4.blockPosition()));
-                  Vec3 var9 = null;
+                  PoiManager poiManager = level.getPoiManager();
+                  int sectionsToVillage = poiManager.sectionsToVillage(SectionPos.of(body.blockPosition()));
+                  Vec3 targetPos = null;
 
-                  for(int var10 = 0; var10 < 5; ++var10) {
-                     Vec3 var11 = LandRandomPos.getPos(var4, 15, 7, (var1x) -> (double)(-var7.sectionsToVillage(SectionPos.of(var1x))));
-                     if (var11 != null) {
-                        int var12 = var7.sectionsToVillage(SectionPos.of(BlockPos.containing(var11)));
-                        if (var12 < var8) {
-                           var9 = var11;
+                  for(int j = 0; j < 5; ++j) {
+                     Vec3 landPos = LandRandomPos.getPos(body, 15, 7, (p) -> (double)(-poiManager.sectionsToVillage(SectionPos.of(p))));
+                     if (landPos != null) {
+                        int landPosSectionsToVillage = poiManager.sectionsToVillage(SectionPos.of(BlockPos.containing(landPos)));
+                        if (landPosSectionsToVillage < sectionsToVillage) {
+                           targetPos = landPos;
                            break;
                         }
 
-                        if (var12 == var8) {
-                           var9 = var11;
+                        if (landPosSectionsToVillage == sectionsToVillage) {
+                           targetPos = landPos;
                         }
                      }
                   }
 
-                  if (var9 != null) {
-                     var2x.set(new WalkTarget(var9, var0, var1));
+                  if (targetPos != null) {
+                     walkTarget.set(new WalkTarget(targetPos, speedModifier, closeEnoughDistance));
                   }
 
                   return true;

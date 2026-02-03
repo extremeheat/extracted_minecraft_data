@@ -13,34 +13,34 @@ public class RenderRegionCache {
       super();
    }
 
-   public RenderSectionRegion createRegion(Level var1, long var2) {
-      int var4 = SectionPos.x(var2);
-      int var5 = SectionPos.y(var2);
-      int var6 = SectionPos.z(var2);
-      int var7 = var4 - 1;
-      int var8 = var5 - 1;
-      int var9 = var6 - 1;
-      int var10 = var4 + 1;
-      int var11 = var5 + 1;
-      int var12 = var6 + 1;
-      SectionCopy[] var13 = new SectionCopy[27];
+   public RenderSectionRegion createRegion(final Level level, final long sectionNode) {
+      int sectionX = SectionPos.x(sectionNode);
+      int sectionY = SectionPos.y(sectionNode);
+      int sectionZ = SectionPos.z(sectionNode);
+      int minSectionX = sectionX - 1;
+      int minSectionY = sectionY - 1;
+      int minSectionZ = sectionZ - 1;
+      int maxSectionX = sectionX + 1;
+      int maxSectionY = sectionY + 1;
+      int maxSectionZ = sectionZ + 1;
+      SectionCopy[] regionSections = new SectionCopy[27];
 
-      for(int var14 = var9; var14 <= var12; ++var14) {
-         for(int var15 = var8; var15 <= var11; ++var15) {
-            for(int var16 = var7; var16 <= var10; ++var16) {
-               int var17 = RenderSectionRegion.index(var7, var8, var9, var16, var15, var14);
-               var13[var17] = this.getSectionDataCopy(var1, var16, var15, var14);
+      for(int regionSectionZ = minSectionZ; regionSectionZ <= maxSectionZ; ++regionSectionZ) {
+         for(int regionSectionY = minSectionY; regionSectionY <= maxSectionY; ++regionSectionY) {
+            for(int regionSectionX = minSectionX; regionSectionX <= maxSectionX; ++regionSectionX) {
+               int index = RenderSectionRegion.index(minSectionX, minSectionY, minSectionZ, regionSectionX, regionSectionY, regionSectionZ);
+               regionSections[index] = this.getSectionDataCopy(level, regionSectionX, regionSectionY, regionSectionZ);
             }
          }
       }
 
-      return new RenderSectionRegion(var1, var7, var8, var9, var13);
+      return new RenderSectionRegion(level, minSectionX, minSectionY, minSectionZ, regionSections);
    }
 
-   private SectionCopy getSectionDataCopy(Level var1, int var2, int var3, int var4) {
-      return (SectionCopy)this.sectionCopyCache.computeIfAbsent(SectionPos.asLong(var2, var3, var4), (var4x) -> {
-         LevelChunk var6 = var1.getChunk(var2, var4);
-         return new SectionCopy(var6, var6.getSectionIndexFromSectionY(var3));
+   private SectionCopy getSectionDataCopy(final Level level, final int sectionX, final int sectionY, final int sectionZ) {
+      return (SectionCopy)this.sectionCopyCache.computeIfAbsent(SectionPos.asLong(sectionX, sectionY, sectionZ), (k) -> {
+         LevelChunk chunk = level.getChunk(sectionX, sectionZ);
+         return new SectionCopy(chunk, chunk.getSectionIndexFromSectionY(sectionY));
       });
    }
 }

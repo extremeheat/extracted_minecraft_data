@@ -6,13 +6,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 
 public class LayerConfiguration implements FeatureConfiguration {
-   public static final Codec<LayerConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.intRange(0, DimensionType.Y_SIZE).fieldOf("height").forGetter((var0x) -> var0x.height), BlockState.CODEC.fieldOf("state").forGetter((var0x) -> var0x.state)).apply(var0, LayerConfiguration::new));
+   public static final Codec<LayerConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.intRange(0, DimensionType.Y_SIZE).fieldOf("height").forGetter((c) -> c.height), BlockState.CODEC.fieldOf("state").forGetter((c) -> c.state)).apply(i, LayerConfiguration::new));
    public final int height;
    public final BlockState state;
 
-   public LayerConfiguration(int var1, BlockState var2) {
+   public LayerConfiguration(final int height, final BlockState state) {
       super();
-      this.height = var1;
-      this.state = var2;
+      this.height = height;
+      this.state = state;
    }
 }

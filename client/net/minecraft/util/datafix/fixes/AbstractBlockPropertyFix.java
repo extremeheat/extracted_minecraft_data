@@ -11,21 +11,21 @@ import net.minecraft.util.datafix.schemas.NamespacedSchema;
 public abstract class AbstractBlockPropertyFix extends DataFix {
    private final String name;
 
-   public AbstractBlockPropertyFix(Schema var1, String var2) {
-      super(var1, false);
-      this.name = var2;
+   public AbstractBlockPropertyFix(final Schema outputSchema, final String name) {
+      super(outputSchema, false);
+      this.name = name;
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.BLOCK_STATE), (var1) -> var1.update(DSL.remainderFinder(), this::fixBlockState));
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.BLOCK_STATE), (input) -> input.update(DSL.remainderFinder(), this::fixBlockState));
    }
 
-   private Dynamic<?> fixBlockState(Dynamic<?> var1) {
-      Optional var2 = var1.get("Name").asString().result().map(NamespacedSchema::ensureNamespaced);
-      return var2.isPresent() && this.shouldFix((String)var2.get()) ? var1.update("Properties", (var2x) -> this.fixProperties((String)var2.get(), var2x)) : var1;
+   private Dynamic<?> fixBlockState(final Dynamic<?> tag) {
+      Optional<String> blockId = tag.get("Name").asString().result().map(NamespacedSchema::ensureNamespaced);
+      return blockId.isPresent() && this.shouldFix((String)blockId.get()) ? tag.update("Properties", (properties) -> this.fixProperties((String)blockId.get(), properties)) : tag;
    }
 
-   protected abstract boolean shouldFix(String var1);
+   protected abstract boolean shouldFix(String blockId);
 
-   protected abstract <T> Dynamic<T> fixProperties(String var1, Dynamic<T> var2);
+   protected abstract <T> Dynamic<T> fixProperties(String blockId, Dynamic<T> properties);
 }

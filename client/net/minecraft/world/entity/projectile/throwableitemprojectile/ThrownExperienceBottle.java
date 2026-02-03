@@ -13,16 +13,16 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class ThrownExperienceBottle extends ThrowableItemProjectile {
-   public ThrownExperienceBottle(EntityType<? extends ThrownExperienceBottle> var1, Level var2) {
-      super(var1, var2);
+   public ThrownExperienceBottle(final EntityType<? extends ThrownExperienceBottle> type, final Level level) {
+      super(type, level);
    }
 
-   public ThrownExperienceBottle(Level var1, LivingEntity var2, ItemStack var3) {
-      super(EntityType.EXPERIENCE_BOTTLE, var2, var1, var3);
+   public ThrownExperienceBottle(final Level level, final LivingEntity mob, final ItemStack itemStack) {
+      super(EntityType.EXPERIENCE_BOTTLE, mob, level, itemStack);
    }
 
-   public ThrownExperienceBottle(Level var1, double var2, double var4, double var6, ItemStack var8) {
-      super(EntityType.EXPERIENCE_BOTTLE, var2, var4, var6, var1, var8);
+   public ThrownExperienceBottle(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
+      super(EntityType.EXPERIENCE_BOTTLE, x, y, z, level, itemStack);
    }
 
    protected Item getDefaultItem() {
@@ -33,17 +33,17 @@ public class ThrownExperienceBottle extends ThrowableItemProjectile {
       return 0.07;
    }
 
-   protected void onHit(HitResult var1) {
-      super.onHit(var1);
+   protected void onHit(final HitResult hitResult) {
+      super.onHit(hitResult);
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         var2.levelEvent(2002, this.blockPosition(), -13083194);
-         int var6 = 3 + var2.random.nextInt(5) + var2.random.nextInt(5);
-         if (var1 instanceof BlockHitResult var4) {
-            Vec3 var5 = var4.getDirection().getUnitVec3();
-            ExperienceOrb.awardWithDirection(var2, var1.getLocation(), var5, var6);
+      if (var3 instanceof ServerLevel level) {
+         level.levelEvent(2002, this.blockPosition(), -13083194);
+         int xpCount = 3 + this.random.nextInt(5) + this.random.nextInt(5);
+         if (hitResult instanceof BlockHitResult blockHitResult) {
+            Vec3 blockNormalHit = blockHitResult.getDirection().getUnitVec3();
+            ExperienceOrb.awardWithDirection(level, hitResult.getLocation(), blockNormalHit, xpCount);
          } else {
-            ExperienceOrb.awardWithDirection(var2, var1.getLocation(), this.getDeltaMovement().scale(-1.0), var6);
+            ExperienceOrb.awardWithDirection(level, hitResult.getLocation(), this.getDeltaMovement().scale(-1.0), xpCount);
          }
 
          this.discard();

@@ -12,35 +12,35 @@ public class SpyglassItem extends Item {
    public static final int USE_DURATION = 1200;
    public static final float ZOOM_FOV_MODIFIER = 0.1F;
 
-   public SpyglassItem(Item.Properties var1) {
-      super(var1);
+   public SpyglassItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public int getUseDuration(ItemStack var1, LivingEntity var2) {
+   public int getUseDuration(final ItemStack itemStack, final LivingEntity user) {
       return 1200;
    }
 
-   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+   public ItemUseAnimation getUseAnimation(final ItemStack itemStack) {
       return ItemUseAnimation.SPYGLASS;
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      var2.playSound(SoundEvents.SPYGLASS_USE, 1.0F, 1.0F);
-      var2.awardStat(Stats.ITEM_USED.get(this));
-      return ItemUtils.startUsingInstantly(var1, var2, var3);
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      player.playSound(SoundEvents.SPYGLASS_USE, 1.0F, 1.0F);
+      player.awardStat(Stats.ITEM_USED.get(this));
+      return ItemUtils.startUsingInstantly(level, player, hand);
    }
 
-   public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
-      this.stopUsing(var3);
-      return var1;
+   public ItemStack finishUsingItem(final ItemStack itemStack, final Level level, final LivingEntity entity) {
+      this.stopUsing(entity);
+      return itemStack;
    }
 
-   public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
-      this.stopUsing(var3);
+   public boolean releaseUsing(final ItemStack itemStack, final Level level, final LivingEntity entity, final int remainingTime) {
+      this.stopUsing(entity);
       return true;
    }
 
-   private void stopUsing(LivingEntity var1) {
-      var1.playSound(SoundEvents.SPYGLASS_STOP_USING, 1.0F, 1.0F);
+   private void stopUsing(final LivingEntity entity) {
+      entity.playSound(SoundEvents.SPYGLASS_STOP_USING, 1.0F, 1.0F);
    }
 }

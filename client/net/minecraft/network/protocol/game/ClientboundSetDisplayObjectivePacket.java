@@ -14,34 +14,34 @@ public class ClientboundSetDisplayObjectivePacket implements Packet<ClientGamePa
    private final DisplaySlot slot;
    private final String objectiveName;
 
-   public ClientboundSetDisplayObjectivePacket(DisplaySlot var1, @Nullable Objective var2) {
+   public ClientboundSetDisplayObjectivePacket(final DisplaySlot slot, final @Nullable Objective objective) {
       super();
-      this.slot = var1;
-      if (var2 == null) {
+      this.slot = slot;
+      if (objective == null) {
          this.objectiveName = "";
       } else {
-         this.objectiveName = var2.getName();
+         this.objectiveName = objective.getName();
       }
 
    }
 
-   private ClientboundSetDisplayObjectivePacket(FriendlyByteBuf var1) {
+   private ClientboundSetDisplayObjectivePacket(final FriendlyByteBuf input) {
       super();
-      this.slot = (DisplaySlot)var1.readById(DisplaySlot.BY_ID);
-      this.objectiveName = var1.readUtf();
+      this.slot = (DisplaySlot)input.readById(DisplaySlot.BY_ID);
+      this.objectiveName = input.readUtf();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeById(DisplaySlot::id, this.slot);
-      var1.writeUtf(this.objectiveName);
+   private void write(final FriendlyByteBuf output) {
+      output.writeById(DisplaySlot::id, this.slot);
+      output.writeUtf(this.objectiveName);
    }
 
    public PacketType<ClientboundSetDisplayObjectivePacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_DISPLAY_OBJECTIVE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetDisplayObjective(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetDisplayObjective(this);
    }
 
    public DisplaySlot getSlot() {

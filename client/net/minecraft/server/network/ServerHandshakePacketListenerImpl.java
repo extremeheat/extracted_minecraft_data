@@ -4,7 +4,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.network.protocol.handshake.ServerHandshakePacketListener;
 import net.minecraft.network.protocol.login.ClientboundLoginDisconnectPacket;
@@ -18,22 +17,22 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
    private final MinecraftServer server;
    private final Connection connection;
 
-   public ServerHandshakePacketListenerImpl(MinecraftServer var1, Connection var2) {
+   public ServerHandshakePacketListenerImpl(final MinecraftServer server, final Connection connection) {
       super();
-      this.server = var1;
-      this.connection = var2;
+      this.server = server;
+      this.connection = connection;
    }
 
-   public void handleIntention(ClientIntentionPacket var1) {
-      switch (var1.intention()) {
+   public void handleIntention(final ClientIntentionPacket packet) {
+      switch (packet.intention()) {
          case LOGIN:
-            this.beginLogin(var1, false);
+            this.beginLogin(packet, false);
             break;
          case STATUS:
-            ServerStatus var3 = this.server.getStatus();
+            ServerStatus status = this.server.getStatus();
             this.connection.setupOutboundProtocol(StatusProtocols.CLIENTBOUND);
-            if (this.server.repliesToStatus() && var3 != null) {
-               this.connection.setupInboundProtocol(StatusProtocols.SERVERBOUND, new ServerStatusPacketListenerImpl(var3, this.connection));
+            if (this.server.repliesToStatus() && status != null) {
+               this.connection.setupInboundProtocol(StatusProtocols.SERVERBOUND, new ServerStatusPacketListenerImpl(status, this.connection));
             } else {
                this.connection.disconnect(IGNORE_STATUS_REASON);
             }
@@ -41,38 +40,38 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
          case TRANSFER:
             if (!this.server.acceptsTransfers()) {
                this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
-               MutableComponent var2 = Component.translatable("multiplayer.disconnect.transfers_disabled");
-               this.connection.send(new ClientboundLoginDisconnectPacket(var2));
-               this.connection.disconnect((Component)var2);
+               Component reason = Component.translatable("multiplayer.disconnect.transfers_disabled");
+               this.connection.send(new ClientboundLoginDisconnectPacket(reason));
+               this.connection.disconnect(reason);
             } else {
-               this.beginLogin(var1, true);
+               this.beginLogin(packet, true);
             }
             break;
          default:
-            throw new UnsupportedOperationException("Invalid intention " + String.valueOf(var1.intention()));
+            throw new UnsupportedOperationException("Invalid intention " + String.valueOf(packet.intention()));
       }
 
    }
 
-   private void beginLogin(ClientIntentionPacket var1, boolean var2) {
+   private void beginLogin(final ClientIntentionPacket packet, final boolean transfer) {
       this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
-      if (var1.protocolVersion() != SharedConstants.getCurrentVersion().protocolVersion()) {
-         MutableComponent var3;
-         if (var1.protocolVersion() < 754) {
-            var3 = Component.translatable("multiplayer.disconnect.outdated_client", SharedConstants.getCurrentVersion().name());
+      if (packet.protocolVersion() != SharedConstants.getCurrentVersion().protocolVersion()) {
+         Component reason;
+         if (packet.protocolVersion() < 754) {
+            reason = Component.translatable("multiplayer.disconnect.outdated_client", SharedConstants.getCurrentVersion().name());
          } else {
-            var3 = Component.translatable("multiplayer.disconnect.incompatible", SharedConstants.getCurrentVersion().name());
+            reason = Component.translatable("multiplayer.disconnect.incompatible", SharedConstants.getCurrentVersion().name());
          }
 
-         this.connection.send(new ClientboundLoginDisconnectPacket(var3));
-         this.connection.disconnect((Component)var3);
+         this.connection.send(new ClientboundLoginDisconnectPacket(reason));
+         this.connection.disconnect(reason);
       } else {
-         this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(this.server, this.connection, var2));
+         this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(this.server, this.connection, transfer));
       }
 
    }
 
-   public void onDisconnect(DisconnectionDetails var1) {
+   public void onDisconnect(final DisconnectionDetails details) {
    }
 
    public boolean isAcceptingMessages() {

@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import net.minecraft.network.protocol.Packet;
 
 public interface ConfigurationTask {
-   void start(Consumer<Packet<?>> var1);
+   void start(Consumer<Packet<?>> connection);
 
    default boolean tick() {
       return false;
@@ -13,9 +13,8 @@ public interface ConfigurationTask {
    Type type();
 
    public static record Type(String id) {
-      public Type(String var1) {
+      public Type {
          super();
-         this.id = var1;
       }
 
       public String toString() {

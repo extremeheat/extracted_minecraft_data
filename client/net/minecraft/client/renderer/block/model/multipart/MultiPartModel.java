@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
@@ -22,139 +23,131 @@ public class MultiPartModel implements BlockStateModel {
    private final BlockState blockState;
    private @Nullable List<BlockStateModel> models;
 
-   MultiPartModel(SharedBakedState var1, BlockState var2) {
+   private MultiPartModel(final SharedBakedState shared, final BlockState blockState) {
       super();
-      this.shared = var1;
-      this.blockState = var2;
+      this.shared = shared;
+      this.blockState = blockState;
    }
 
    public TextureAtlasSprite particleIcon() {
       return this.shared.particleIcon;
    }
 
-   public void collectParts(RandomSource var1, List<BlockModelPart> var2) {
+   public void collectParts(final RandomSource random, final List<BlockModelPart> output) {
       if (this.models == null) {
          this.models = this.shared.selectModels(this.blockState);
       }
 
-      long var3 = var1.nextLong();
+      long seed = random.nextLong();
 
-      for(BlockStateModel var6 : this.models) {
-         var1.setSeed(var3);
-         var6.collectParts(var1, var2);
+      for(BlockStateModel model : this.models) {
+         random.setSeed(seed);
+         model.collectParts(random, output);
       }
 
    }
 
    public static record Selector<T>(Predicate<BlockState> condition, T model) {
-      final Predicate<BlockState> condition;
-      final T model;
-
-      public Selector(Predicate<BlockState> var1, T var2) {
+      public Selector {
          super();
-         this.condition = var1;
-         this.model = var2;
       }
 
-      public <S> Selector<S> with(S var1) {
-         return new Selector<S>(this.condition, var1);
+      public <S> Selector<S> with(final S newModel) {
+         return new Selector<S>(this.condition, newModel);
       }
    }
 
-   static final class SharedBakedState {
+   private static final class SharedBakedState {
       private final List<Selector<BlockStateModel>> selectors;
-      final TextureAtlasSprite particleIcon;
+      private final TextureAtlasSprite particleIcon;
       private final Map<BitSet, List<BlockStateModel>> subsets = new ConcurrentHashMap();
 
-      private static BlockStateModel getFirstModel(List<Selector<BlockStateModel>> var0) {
-         if (var0.isEmpty()) {
+      private static BlockStateModel getFirstModel(final List<Selector<BlockStateModel>> selectors) {
+         if (selectors.isEmpty()) {
             throw new IllegalArgumentException("Model must have at least one selector");
          } else {
-            return (BlockStateModel)((Selector)var0.getFirst()).model();
+            return (BlockStateModel)((Selector)selectors.getFirst()).model();
          }
       }
 
-      public SharedBakedState(List<Selector<BlockStateModel>> var1) {
+      public SharedBakedState(final List<Selector<BlockStateModel>> selectors) {
          super();
-         this.selectors = var1;
-         BlockStateModel var2 = getFirstModel(var1);
-         this.particleIcon = var2.particleIcon();
+         this.selectors = selectors;
+         BlockStateModel firstModel = getFirstModel(selectors);
+         this.particleIcon = firstModel.particleIcon();
       }
 
-      public List<BlockStateModel> selectModels(BlockState var1) {
-         BitSet var2 = new BitSet();
+      public List<BlockStateModel> selectModels(final BlockState state) {
+         BitSet selectedModels = new BitSet();
 
-         for(int var3 = 0; var3 < this.selectors.size(); ++var3) {
-            if (((Selector)this.selectors.get(var3)).condition.test(var1)) {
-               var2.set(var3);
+         for(int i = 0; i < this.selectors.size(); ++i) {
+            if (((Selector)this.selectors.get(i)).condition.test(state)) {
+               selectedModels.set(i);
             }
          }
 
-         return (List)this.subsets.computeIfAbsent(var2, (var1x) -> {
-            ImmutableList.Builder var2 = ImmutableList.builder();
+         return (List)this.subsets.computeIfAbsent(selectedModels, (selected) -> {
+            ImmutableList.Builder<BlockStateModel> result = ImmutableList.builder();
 
-            for(int var3 = 0; var3 < this.selectors.size(); ++var3) {
-               if (var1x.get(var3)) {
-                  var2.add((BlockStateModel)((Selector)this.selectors.get(var3)).model);
+            for(int i = 0; i < this.selectors.size(); ++i) {
+               if (selected.get(i)) {
+                  result.add((BlockStateModel)((Selector)this.selectors.get(i)).model);
                }
             }
 
-            return var2.build();
+            return result.build();
          });
       }
    }
 
    public static class Unbaked implements BlockStateModel.UnbakedRoot {
-      final List<Selector<BlockStateModel.Unbaked>> selectors;
+      private final List<Selector<BlockStateModel.Unbaked>> selectors;
       private final ModelBaker.SharedOperationKey<SharedBakedState> sharedStateKey = new ModelBaker.SharedOperationKey<SharedBakedState>() {
-         public SharedBakedState compute(ModelBaker var1) {
-            ImmutableList.Builder var2 = ImmutableList.builderWithExpectedSize(Unbaked.this.selectors.size());
-
-            for(Selector var4 : Unbaked.this.selectors) {
-               var2.add(var4.with(((BlockStateModel.Unbaked)var4.model).bake(var1)));
-            }
-
-            return new SharedBakedState(var2.build());
+         {
+            Objects.requireNonNull(Unbaked.this);
          }
 
-         // $FF: synthetic method
-         public Object compute(final ModelBaker var1) {
-            return this.compute(var1);
+         public SharedBakedState compute(final ModelBaker modelBakery) {
+            ImmutableList.Builder<Selector<BlockStateModel>> selectors = ImmutableList.builderWithExpectedSize(Unbaked.this.selectors.size());
+
+            for(Selector<BlockStateModel.Unbaked> selector : Unbaked.this.selectors) {
+               selectors.add(selector.with(((BlockStateModel.Unbaked)selector.model).bake(modelBakery)));
+            }
+
+            return new SharedBakedState(selectors.build());
          }
       };
 
-      public Unbaked(List<Selector<BlockStateModel.Unbaked>> var1) {
+      public Unbaked(final List<Selector<BlockStateModel.Unbaked>> selectors) {
          super();
-         this.selectors = var1;
+         this.selectors = selectors;
       }
 
-      public Object visualEqualityGroup(BlockState var1) {
-         IntArrayList var2 = new IntArrayList();
+      public Object visualEqualityGroup(final BlockState blockState) {
+         IntList triggeredSelectors = new IntArrayList();
 
-         for(int var3 = 0; var3 < this.selectors.size(); ++var3) {
-            if (((Selector)this.selectors.get(var3)).condition.test(var1)) {
-               var2.add(var3);
+         for(int i = 0; i < this.selectors.size(); ++i) {
+            if (((Selector)this.selectors.get(i)).condition.test(blockState)) {
+               triggeredSelectors.add(i);
             }
          }
 
-         record 1Key(Unbaked model, IntList selectors) {
-            _Key/* $FF was: 1Key*/(Unbaked var1, IntList var2) {
+         record Key(Unbaked model, IntList selectors) {
+            Key {
                super();
-               this.model = var1;
-               this.selectors = var2;
             }
          }
 
-         return new 1Key(this, var2);
+         return new Key(this, triggeredSelectors);
       }
 
-      public void resolveDependencies(ResolvableModel.Resolver var1) {
-         this.selectors.forEach((var1x) -> ((BlockStateModel.Unbaked)var1x.model).resolveDependencies(var1));
+      public void resolveDependencies(final ResolvableModel.Resolver resolver) {
+         this.selectors.forEach((s) -> ((BlockStateModel.Unbaked)s.model).resolveDependencies(resolver));
       }
 
-      public BlockStateModel bake(BlockState var1, ModelBaker var2) {
-         SharedBakedState var3 = (SharedBakedState)var2.compute(this.sharedStateKey);
-         return new MultiPartModel(var3, var1);
+      public BlockStateModel bake(final BlockState blockState, final ModelBaker modelBakery) {
+         SharedBakedState shared = (SharedBakedState)modelBakery.compute(this.sharedStateKey);
+         return new MultiPartModel(shared, blockState);
       }
    }
 }

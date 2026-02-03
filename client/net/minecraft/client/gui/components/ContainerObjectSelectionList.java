@@ -18,63 +18,63 @@ import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
 public abstract class ContainerObjectSelectionList<E extends ContainerObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
-   public ContainerObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5) {
-      super(var1, var2, var3, var4, var5);
+   public ContainerObjectSelectionList(final Minecraft minecraft, final int width, final int height, final int y, final int itemHeight) {
+      super(minecraft, width, height, y, itemHeight);
    }
 
-   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
       if (this.getItemCount() == 0) {
          return null;
-      } else if (!(var1 instanceof FocusNavigationEvent.ArrowNavigation)) {
-         return super.nextFocusPath(var1);
+      } else if (!(navigationEvent instanceof FocusNavigationEvent.ArrowNavigation)) {
+         return super.nextFocusPath(navigationEvent);
       } else {
-         FocusNavigationEvent.ArrowNavigation var2 = (FocusNavigationEvent.ArrowNavigation)var1;
-         Entry var3 = (Entry)this.getFocused();
-         if (var2.direction().getAxis() == ScreenAxis.HORIZONTAL && var3 != null) {
-            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)var3.nextFocusPath(var1));
+         FocusNavigationEvent.ArrowNavigation arrowNavigation = (FocusNavigationEvent.ArrowNavigation)navigationEvent;
+         E focused = (E)(this.getFocused());
+         if (arrowNavigation.direction().getAxis() == ScreenAxis.HORIZONTAL && focused != null) {
+            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)focused.nextFocusPath(navigationEvent));
          } else {
-            int var4 = -1;
-            ScreenDirection var5 = var2.direction();
-            if (var3 != null) {
-               var4 = var3.children().indexOf(var3.getFocused());
+            int index = -1;
+            ScreenDirection direction = arrowNavigation.direction();
+            if (focused != null) {
+               index = focused.children().indexOf(focused.getFocused());
             }
 
-            if (var4 == -1) {
-               switch (var5) {
+            if (index == -1) {
+               switch (direction) {
                   case LEFT:
-                     var4 = 2147483647;
-                     var5 = ScreenDirection.DOWN;
+                     index = 2147483647;
+                     direction = ScreenDirection.DOWN;
                      break;
                   case RIGHT:
-                     var4 = 0;
-                     var5 = ScreenDirection.DOWN;
+                     index = 0;
+                     direction = ScreenDirection.DOWN;
                      break;
                   default:
-                     var4 = 0;
+                     index = 0;
                }
             }
 
-            Entry var6 = var3;
+            E entry = focused;
 
-            ComponentPath var7;
+            ComponentPath componentPath;
             do {
-               var6 = (Entry)this.nextEntry(var5, (var0) -> !var0.children().isEmpty(), var6);
-               if (var6 == null) {
+               entry = (E)(this.nextEntry(direction, (e) -> !e.children().isEmpty(), entry));
+               if (entry == null) {
                   return null;
                }
 
-               var7 = var6.focusPathAtIndex(var2, var4);
-            } while(var7 == null);
+               componentPath = entry.focusPathAtIndex(arrowNavigation, index);
+            } while(componentPath == null);
 
-            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)var7);
+            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)componentPath);
          }
       }
    }
 
-   public void setFocused(@Nullable GuiEventListener var1) {
-      if (this.getFocused() != var1) {
-         super.setFocused(var1);
-         if (var1 == null) {
+   public void setFocused(final @Nullable GuiEventListener focused) {
+      if (this.getFocused() != focused) {
+         super.setFocused(focused);
+         if (focused == null) {
             this.setSelected((AbstractSelectionList.Entry)null);
          }
 
@@ -89,16 +89,16 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
       return false;
    }
 
-   public void updateWidgetNarration(NarrationElementOutput var1) {
+   public void updateWidgetNarration(final NarrationElementOutput output) {
       AbstractSelectionList.Entry var4 = this.getHovered();
-      if (var4 instanceof Entry var2) {
-         var2.updateNarration(var1.nest());
-         this.narrateListElementPosition(var1, var2);
+      if (var4 instanceof E hovered) {
+         hovered.updateNarration(output.nest());
+         this.narrateListElementPosition(output, hovered);
       } else {
          var4 = this.getFocused();
-         if (var4 instanceof Entry var3) {
-            var3.updateNarration(var1.nest());
-            this.narrateListElementPosition(var1, var3);
+         if (var4 instanceof E focused) {
+            focused.updateNarration(output.nest());
+            this.narrateListElementPosition(output, focused);
          }
       }
 
@@ -117,44 +117,44 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
          return this.dragging;
       }
 
-      public void setDragging(boolean var1) {
-         this.dragging = var1;
+      public void setDragging(final boolean dragging) {
+         this.dragging = dragging;
       }
 
-      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-         return ContainerEventHandler.super.mouseClicked(var1, var2);
+      public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+         return ContainerEventHandler.super.mouseClicked(event, doubleClick);
       }
 
-      public void setFocused(@Nullable GuiEventListener var1) {
+      public void setFocused(final @Nullable GuiEventListener focused) {
          if (this.focused != null) {
             this.focused.setFocused(false);
          }
 
-         if (var1 != null) {
-            var1.setFocused(true);
+         if (focused != null) {
+            focused.setFocused(true);
          }
 
-         this.focused = var1;
+         this.focused = focused;
       }
 
       public @Nullable GuiEventListener getFocused() {
          return this.focused;
       }
 
-      public @Nullable ComponentPath focusPathAtIndex(FocusNavigationEvent var1, int var2) {
+      public @Nullable ComponentPath focusPathAtIndex(final FocusNavigationEvent navigationEvent, final int currentIndex) {
          if (this.children().isEmpty()) {
             return null;
          } else {
-            ComponentPath var3 = ((GuiEventListener)this.children().get(Math.min(var2, this.children().size() - 1))).nextFocusPath(var1);
-            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)var3);
+            ComponentPath componentPath = ((GuiEventListener)this.children().get(Math.min(currentIndex, this.children().size() - 1))).nextFocusPath(navigationEvent);
+            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)componentPath);
          }
       }
 
-      public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
-         if (var1 instanceof FocusNavigationEvent.ArrowNavigation) {
-            FocusNavigationEvent.ArrowNavigation var2 = (FocusNavigationEvent.ArrowNavigation)var1;
+      public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
+         if (navigationEvent instanceof FocusNavigationEvent.ArrowNavigation) {
+            FocusNavigationEvent.ArrowNavigation arrowNavigation = (FocusNavigationEvent.ArrowNavigation)navigationEvent;
             byte var10000;
-            switch (var2.direction()) {
+            switch (arrowNavigation.direction()) {
                case LEFT:
                   var10000 = -1;
                   break;
@@ -169,40 +169,40 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
                   throw new MatchException((String)null, (Throwable)null);
             }
 
-            byte var3 = var10000;
-            if (var3 == 0) {
+            int delta = var10000;
+            if (delta == 0) {
                return null;
             }
 
-            int var4 = Mth.clamp(var3 + this.children().indexOf(this.getFocused()), 0, this.children().size() - 1);
+            int index = Mth.clamp(delta + this.children().indexOf(this.getFocused()), 0, this.children().size() - 1);
 
-            for(int var5 = var4; var5 >= 0 && var5 < this.children().size(); var5 += var3) {
-               GuiEventListener var6 = (GuiEventListener)this.children().get(var5);
-               ComponentPath var7 = var6.nextFocusPath(var1);
-               if (var7 != null) {
-                  return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)var7);
+            for(int i = index; i >= 0 && i < this.children().size(); i += delta) {
+               GuiEventListener child = (GuiEventListener)this.children().get(i);
+               ComponentPath componentPath = child.nextFocusPath(navigationEvent);
+               if (componentPath != null) {
+                  return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)componentPath);
                }
             }
          }
 
-         return ContainerEventHandler.super.nextFocusPath(var1);
+         return ContainerEventHandler.super.nextFocusPath(navigationEvent);
       }
 
       public abstract List<? extends NarratableEntry> narratables();
 
-      void updateNarration(NarrationElementOutput var1) {
-         List var2 = this.narratables();
-         Screen.NarratableSearchResult var3 = Screen.findNarratableWidget(var2, this.lastNarratable);
-         if (var3 != null) {
-            if (var3.priority().isTerminal()) {
-               this.lastNarratable = var3.entry();
+      void updateNarration(final NarrationElementOutput output) {
+         List<? extends NarratableEntry> narratables = this.narratables();
+         Screen.NarratableSearchResult result = Screen.findNarratableWidget(narratables, this.lastNarratable);
+         if (result != null) {
+            if (result.priority().isTerminal()) {
+               this.lastNarratable = result.entry();
             }
 
-            if (var2.size() > 1) {
-               var1.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.object_list", var3.index() + 1, var2.size()));
+            if (narratables.size() > 1) {
+               output.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.object_list", result.index() + 1, narratables.size()));
             }
 
-            var3.entry().updateNarration(var1.nest());
+            result.entry().updateNarration(output.nest());
          }
 
       }

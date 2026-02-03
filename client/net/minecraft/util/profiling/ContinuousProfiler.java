@@ -10,12 +10,12 @@ public class ContinuousProfiler {
    private final BooleanSupplier suppressWarnings;
    private ProfileCollector profiler;
 
-   public ContinuousProfiler(LongSupplier var1, IntSupplier var2, BooleanSupplier var3) {
+   public ContinuousProfiler(final LongSupplier realTime, final IntSupplier tickCount, final BooleanSupplier suppressWarnings) {
       super();
       this.profiler = InactiveProfiler.INSTANCE;
-      this.realTime = var1;
-      this.tickCount = var2;
-      this.suppressWarnings = var3;
+      this.realTime = realTime;
+      this.tickCount = tickCount;
+      this.suppressWarnings = suppressWarnings;
    }
 
    public boolean isEnabled() {

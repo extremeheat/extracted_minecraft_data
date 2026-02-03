@@ -5,9 +5,9 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 
 public interface LayoutElement {
-   void setX(int var1);
+   void setX(int x);
 
-   void setY(int var1);
+   void setY(int y);
 
    int getX();
 
@@ -21,10 +21,10 @@ public interface LayoutElement {
       return new ScreenRectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
    }
 
-   default void setPosition(int var1, int var2) {
-      this.setX(var1);
-      this.setY(var2);
+   default void setPosition(final int x, final int y) {
+      this.setX(x);
+      this.setY(y);
    }
 
-   void visitWidgets(Consumer<AbstractWidget> var1);
+   void visitWidgets(final Consumer<AbstractWidget> widgetVisitor);
 }

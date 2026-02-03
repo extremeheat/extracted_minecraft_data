@@ -24,39 +24,47 @@ public class ModelPartFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2, OutlineBufferSource var3, MultiBufferSource.BufferSource var4) {
-      Storage var5 = var1.getModelPartSubmits();
+   public void renderSolid(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final OutlineBufferSource outlineBufferSource, final MultiBufferSource.BufferSource crumblingBufferSource) {
+      Storage storage = nodeCollection.getModelPartSubmits();
+      this.render(storage.solidModelPartSubmits, bufferSource, outlineBufferSource, crumblingBufferSource);
+   }
 
-      for(Map.Entry var7 : var5.modelPartSubmits.entrySet()) {
-         RenderType var8 = (RenderType)var7.getKey();
-         List var9 = (List)var7.getValue();
-         VertexConsumer var10 = var2.getBuffer(var8);
+   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final OutlineBufferSource outlineBufferSource, final MultiBufferSource.BufferSource crumblingBufferSource) {
+      Storage storage = nodeCollection.getModelPartSubmits();
+      this.render(storage.translucentModelPartSubmits, bufferSource, outlineBufferSource, crumblingBufferSource);
+   }
 
-         for(SubmitNodeStorage.ModelPartSubmit var12 : var9) {
-            VertexConsumer var13;
-            if (var12.sprite() != null) {
-               if (var12.hasFoil()) {
-                  var13 = var12.sprite().wrap(ItemRenderer.getFoilBuffer(var2, var8, var12.sheeted(), true));
+   private void render(final Map<RenderType, List<SubmitNodeStorage.ModelPartSubmit>> modelPartSubmitsMap, final MultiBufferSource.BufferSource bufferSource, final OutlineBufferSource outlineBufferSource, final MultiBufferSource.BufferSource crumblingBufferSource) {
+      for(Map.Entry<RenderType, List<SubmitNodeStorage.ModelPartSubmit>> entry : modelPartSubmitsMap.entrySet()) {
+         RenderType renderType = (RenderType)entry.getKey();
+         List<SubmitNodeStorage.ModelPartSubmit> modelPartSubmits = (List)entry.getValue();
+         VertexConsumer buffer = bufferSource.getBuffer(renderType);
+
+         for(SubmitNodeStorage.ModelPartSubmit modelPartSubmit : modelPartSubmits) {
+            VertexConsumer actualBuffer;
+            if (modelPartSubmit.sprite() != null) {
+               if (modelPartSubmit.hasFoil()) {
+                  actualBuffer = modelPartSubmit.sprite().wrap(ItemRenderer.getFoilBuffer(bufferSource, renderType, modelPartSubmit.sheeted(), true));
                } else {
-                  var13 = var12.sprite().wrap(var10);
+                  actualBuffer = modelPartSubmit.sprite().wrap(buffer);
                }
-            } else if (var12.hasFoil()) {
-               var13 = ItemRenderer.getFoilBuffer(var2, var8, var12.sheeted(), true);
+            } else if (modelPartSubmit.hasFoil()) {
+               actualBuffer = ItemRenderer.getFoilBuffer(bufferSource, renderType, modelPartSubmit.sheeted(), true);
             } else {
-               var13 = var10;
+               actualBuffer = buffer;
             }
 
-            this.poseStack.last().set(var12.pose());
-            var12.modelPart().render(this.poseStack, var13, var12.lightCoords(), var12.overlayCoords(), var12.tintedColor());
-            if (var12.outlineColor() != 0 && (var8.outline().isPresent() || var8.isOutline())) {
-               var3.setColor(var12.outlineColor());
-               VertexConsumer var14 = var3.getBuffer(var8);
-               var12.modelPart().render(this.poseStack, var12.sprite() == null ? var14 : var12.sprite().wrap(var14), var12.lightCoords(), var12.overlayCoords(), var12.tintedColor());
+            this.poseStack.last().set(modelPartSubmit.pose());
+            modelPartSubmit.modelPart().render(this.poseStack, actualBuffer, modelPartSubmit.lightCoords(), modelPartSubmit.overlayCoords(), modelPartSubmit.tintedColor());
+            if (modelPartSubmit.outlineColor() != 0 && (renderType.outline().isPresent() || renderType.isOutline())) {
+               outlineBufferSource.setColor(modelPartSubmit.outlineColor());
+               VertexConsumer outlineBuffer = outlineBufferSource.getBuffer(renderType);
+               modelPartSubmit.modelPart().render(this.poseStack, modelPartSubmit.sprite() == null ? outlineBuffer : modelPartSubmit.sprite().wrap(outlineBuffer), modelPartSubmit.lightCoords(), modelPartSubmit.overlayCoords(), modelPartSubmit.tintedColor());
             }
 
-            if (var12.crumblingOverlay() != null) {
-               SheetedDecalTextureGenerator var15 = new SheetedDecalTextureGenerator(var4.getBuffer((RenderType)ModelBakery.DESTROY_TYPES.get(var12.crumblingOverlay().progress())), var12.crumblingOverlay().cameraPose(), 1.0F);
-               var12.modelPart().render(this.poseStack, var15, var12.lightCoords(), var12.overlayCoords(), var12.tintedColor());
+            if (modelPartSubmit.crumblingOverlay() != null) {
+               VertexConsumer breakingBuffer = new SheetedDecalTextureGenerator(crumblingBufferSource.getBuffer((RenderType)ModelBakery.DESTROY_TYPES.get(modelPartSubmit.crumblingOverlay().progress())), modelPartSubmit.crumblingOverlay().cameraPose(), 1.0F);
+               modelPartSubmit.modelPart().render(this.poseStack, breakingBuffer, modelPartSubmit.lightCoords(), modelPartSubmit.overlayCoords(), modelPartSubmit.tintedColor());
             }
          }
       }
@@ -64,30 +72,46 @@ public class ModelPartFeatureRenderer {
    }
 
    public static class Storage {
-      final Map<RenderType, List<SubmitNodeStorage.ModelPartSubmit>> modelPartSubmits = new HashMap();
-      private final Set<RenderType> modelPartSubmitsUsage = new ObjectOpenHashSet();
+      private final Map<RenderType, List<SubmitNodeStorage.ModelPartSubmit>> solidModelPartSubmits = new HashMap();
+      private final Map<RenderType, List<SubmitNodeStorage.ModelPartSubmit>> translucentModelPartSubmits = new HashMap();
+      private final Set<RenderType> solidModelPartSubmitsUsage = new ObjectOpenHashSet();
+      private final Set<RenderType> translucentModelPartSubmitsUsage = new ObjectOpenHashSet();
 
       public Storage() {
          super();
       }
 
-      public void add(RenderType var1, SubmitNodeStorage.ModelPartSubmit var2) {
-         ((List)this.modelPartSubmits.computeIfAbsent(var1, (var0) -> new ArrayList())).add(var2);
+      public void add(final RenderType renderType, final SubmitNodeStorage.ModelPartSubmit submit) {
+         if (!renderType.hasBlending()) {
+            ((List)this.solidModelPartSubmits.computeIfAbsent(renderType, (ignored) -> new ArrayList())).add(submit);
+         } else {
+            ((List)this.translucentModelPartSubmits.computeIfAbsent(renderType, (ignored) -> new ArrayList())).add(submit);
+         }
+
       }
 
       public void clear() {
-         for(Map.Entry var2 : this.modelPartSubmits.entrySet()) {
-            if (!((List)var2.getValue()).isEmpty()) {
-               this.modelPartSubmitsUsage.add((RenderType)var2.getKey());
-               ((List)var2.getValue()).clear();
+         for(Map.Entry<RenderType, List<SubmitNodeStorage.ModelPartSubmit>> entry : this.solidModelPartSubmits.entrySet()) {
+            if (!((List)entry.getValue()).isEmpty()) {
+               this.solidModelPartSubmitsUsage.add((RenderType)entry.getKey());
+               ((List)entry.getValue()).clear();
+            }
+         }
+
+         for(Map.Entry<RenderType, List<SubmitNodeStorage.ModelPartSubmit>> entry : this.translucentModelPartSubmits.entrySet()) {
+            if (!((List)entry.getValue()).isEmpty()) {
+               this.translucentModelPartSubmitsUsage.add((RenderType)entry.getKey());
+               ((List)entry.getValue()).clear();
             }
          }
 
       }
 
       public void endFrame() {
-         this.modelPartSubmits.keySet().removeIf((var1) -> !this.modelPartSubmitsUsage.contains(var1));
-         this.modelPartSubmitsUsage.clear();
+         this.solidModelPartSubmits.keySet().removeIf((renderType) -> !this.solidModelPartSubmitsUsage.contains(renderType));
+         this.solidModelPartSubmitsUsage.clear();
+         this.translucentModelPartSubmits.keySet().removeIf((renderType) -> !this.translucentModelPartSubmitsUsage.contains(renderType));
+         this.translucentModelPartSubmitsUsage.clear();
       }
    }
 }

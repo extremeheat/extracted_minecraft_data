@@ -10,18 +10,16 @@ import net.minecraft.world.item.crafting.display.RecipeDisplay;
 public record ClientboundPlaceGhostRecipePacket(int containerId, RecipeDisplay recipeDisplay) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlaceGhostRecipePacket> STREAM_CODEC;
 
-   public ClientboundPlaceGhostRecipePacket(int var1, RecipeDisplay var2) {
+   public ClientboundPlaceGhostRecipePacket {
       super();
-      this.containerId = var1;
-      this.recipeDisplay = var2;
    }
 
    public PacketType<ClientboundPlaceGhostRecipePacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLACE_GHOST_RECIPE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handlePlaceRecipe(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handlePlaceRecipe(this);
    }
 
    static {

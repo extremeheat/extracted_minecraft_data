@@ -20,37 +20,37 @@ public interface StringRepresentable {
 
    String getSerializedName();
 
-   static <E extends Enum<E> & StringRepresentable> EnumCodec<E> fromEnum(Supplier<E[]> var0) {
-      return fromEnumWithMapping(var0, (var0x) -> var0x);
+   static <E extends Enum<E> & StringRepresentable> EnumCodec<E> fromEnum(final Supplier<E[]> values) {
+      return fromEnumWithMapping(values, (s) -> s);
    }
 
-   static <E extends Enum<E> & StringRepresentable> EnumCodec<E> fromEnumWithMapping(Supplier<E[]> var0, Function<String, String> var1) {
-      Enum[] var2 = (Enum[])var0.get();
-      Function var3 = createNameLookup(var2, (var1x) -> (String)var1.apply(((StringRepresentable)var1x).getSerializedName()));
-      return new EnumCodec<E>(var2, var3);
+   static <E extends Enum<E> & StringRepresentable> EnumCodec<E> fromEnumWithMapping(final Supplier<E[]> values, final Function<String, String> converter) {
+      E[] valueArray = (Enum[])values.get();
+      Function<String, E> lookupFunction = createNameLookup(valueArray, (e) -> (String)converter.apply(((StringRepresentable)e).getSerializedName()));
+      return new EnumCodec<E>(valueArray, lookupFunction);
    }
 
-   static <T extends StringRepresentable> Codec<T> fromValues(Supplier<T[]> var0) {
-      StringRepresentable[] var1 = (StringRepresentable[])var0.get();
-      Function var2 = createNameLookup(var1);
-      ToIntFunction var3 = Util.createIndexLookup(Arrays.asList(var1));
-      return new StringRepresentableCodec<T>(var1, var2, var3);
+   static <T extends StringRepresentable> Codec<T> fromValues(final Supplier<T[]> values) {
+      T[] valueArray = (StringRepresentable[])values.get();
+      Function<String, T> lookupFunction = createNameLookup(valueArray);
+      ToIntFunction<T> indexLookup = Util.<T>createIndexLookup(Arrays.asList(valueArray));
+      return new StringRepresentableCodec<T>(valueArray, lookupFunction, indexLookup);
    }
 
-   static <T extends StringRepresentable> Function<String, @Nullable T> createNameLookup(T[] var0) {
-      return createNameLookup(var0, StringRepresentable::getSerializedName);
+   static <T extends StringRepresentable> Function<String, @Nullable T> createNameLookup(final T[] valueArray) {
+      return createNameLookup(valueArray, StringRepresentable::getSerializedName);
    }
 
-   static <T> Function<String, @Nullable T> createNameLookup(T[] var0, Function<T, String> var1) {
-      if (var0.length > 16) {
-         Map var2 = (Map)Arrays.stream(var0).collect(Collectors.toMap(var1, (var0x) -> var0x));
-         Objects.requireNonNull(var2);
-         return var2::get;
+   static <T> Function<String, @Nullable T> createNameLookup(final T[] valueArray, final Function<T, String> converter) {
+      if (valueArray.length > 16) {
+         Map<String, T> byName = (Map)Arrays.stream(valueArray).collect(Collectors.toMap(converter, (d) -> d));
+         Objects.requireNonNull(byName);
+         return byName::get;
       } else {
-         return (var2x) -> {
-            for(Object var6 : var0) {
-               if (((String)var1.apply(var6)).equals(var2x)) {
-                  return var6;
+         return (id) -> {
+            for(T value : valueArray) {
+               if (((String)converter.apply(value)).equals(id)) {
+                  return value;
                }
             }
 
@@ -59,12 +59,12 @@ public interface StringRepresentable {
       }
    }
 
-   static Keyable keys(final StringRepresentable[] var0) {
+   static Keyable keys(final StringRepresentable[] values) {
       return new Keyable() {
-         public <T> Stream<T> keys(DynamicOps<T> var1) {
-            Stream var10000 = Arrays.stream(var0).map(StringRepresentable::getSerializedName);
-            Objects.requireNonNull(var1);
-            return var10000.map(var1::createString);
+         public <T> Stream<T> keys(final DynamicOps<T> ops) {
+            Stream var10000 = Arrays.stream(values).map(StringRepresentable::getSerializedName);
+            Objects.requireNonNull(ops);
+            return var10000.map(ops::createString);
          }
       };
    }
@@ -72,43 +72,38 @@ public interface StringRepresentable {
    public static class StringRepresentableCodec<S extends StringRepresentable> implements Codec<S> {
       private final Codec<S> codec;
 
-      public StringRepresentableCodec(S[] var1, Function<String, @Nullable S> var2, ToIntFunction<S> var3) {
+      public StringRepresentableCodec(final S[] valueArray, final Function<String, @Nullable S> nameResolver, final ToIntFunction<S> idResolver) {
          super();
-         this.codec = ExtraCodecs.orCompressed(Codec.stringResolver(StringRepresentable::getSerializedName, var2), ExtraCodecs.idResolverCodec(var3, (var1x) -> var1x >= 0 && var1x < var1.length ? var1[var1x] : null, -1));
+         this.codec = ExtraCodecs.orCompressed(Codec.stringResolver(StringRepresentable::getSerializedName, nameResolver), ExtraCodecs.idResolverCodec(idResolver, (i) -> i >= 0 && i < valueArray.length ? valueArray[i] : null, -1));
       }
 
-      public <T> DataResult<Pair<S, T>> decode(DynamicOps<T> var1, T var2) {
-         return this.codec.decode(var1, var2);
+      public <T> DataResult<Pair<S, T>> decode(final DynamicOps<T> ops, final T input) {
+         return this.codec.decode(ops, input);
       }
 
-      public <T> DataResult<T> encode(S var1, DynamicOps<T> var2, T var3) {
-         return this.codec.encode(var1, var2, var3);
-      }
-
-      // $FF: synthetic method
-      public DataResult encode(final Object var1, final DynamicOps var2, final Object var3) {
-         return this.encode((StringRepresentable)var1, var2, var3);
+      public <T> DataResult<T> encode(final S input, final DynamicOps<T> ops, final T prefix) {
+         return this.codec.encode(input, ops, prefix);
       }
    }
 
    public static class EnumCodec<E extends Enum<E> & StringRepresentable> extends StringRepresentableCodec<E> {
       private final Function<String, @Nullable E> resolver;
 
-      public EnumCodec(E[] var1, Function<String, E> var2) {
-         super(var1, var2, (var0) -> ((Enum)var0).ordinal());
-         this.resolver = var2;
+      public EnumCodec(final E[] valueArray, final Function<String, E> nameResolver) {
+         super(valueArray, nameResolver, (rec$) -> rec$.ordinal());
+         this.resolver = nameResolver;
       }
 
-      public @Nullable E byName(String var1) {
-         return (E)(this.resolver.apply(var1));
+      public @Nullable E byName(final String name) {
+         return (E)(this.resolver.apply(name));
       }
 
-      public E byName(String var1, E var2) {
-         return (E)(Objects.requireNonNullElse(this.byName(var1), var2));
+      public E byName(final String name, final E _default) {
+         return (E)(Objects.requireNonNullElse(this.byName(name), _default));
       }
 
-      public E byName(String var1, Supplier<? extends E> var2) {
-         return (E)(Objects.requireNonNullElseGet(this.byName(var1), var2));
+      public E byName(final String name, final Supplier<? extends E> defaultSupplier) {
+         return (E)(Objects.requireNonNullElseGet(this.byName(name), defaultSupplier));
       }
    }
 }

@@ -14,70 +14,70 @@ public class Optionull {
 
    /** @deprecated */
    @Deprecated
-   public static <T> T orElse(@Nullable T var0, T var1) {
-      return (T)Objects.requireNonNullElse(var0, var1);
+   public static <T> T orElse(final @Nullable T t, final T defaultValue) {
+      return (T)Objects.requireNonNullElse(t, defaultValue);
    }
 
-   public static <T, R> @Nullable R map(@Nullable T var0, Function<T, R> var1) {
-      return (R)(var0 == null ? null : var1.apply(var0));
+   public static <T, R> @Nullable R map(final @Nullable T t, final Function<T, R> map) {
+      return (R)(t == null ? null : map.apply(t));
    }
 
-   public static <T, R> R mapOrDefault(@Nullable T var0, Function<T, R> var1, R var2) {
-      return var0 == null ? var2 : var1.apply(var0);
+   public static <T, R> R mapOrDefault(final @Nullable T t, final Function<T, R> map, final R defaultValue) {
+      return (R)(t == null ? defaultValue : map.apply(t));
    }
 
-   public static <T, R> R mapOrElse(@Nullable T var0, Function<T, R> var1, Supplier<R> var2) {
-      return (R)(var0 == null ? var2.get() : var1.apply(var0));
+   public static <T, R> R mapOrElse(final @Nullable T t, final Function<T, R> map, final Supplier<R> elseSupplier) {
+      return (R)(t == null ? elseSupplier.get() : map.apply(t));
    }
 
-   public static <T> @Nullable T first(Collection<T> var0) {
-      Iterator var1 = var0.iterator();
-      return (T)(var1.hasNext() ? var1.next() : null);
+   public static <T> @Nullable T first(final Collection<T> collection) {
+      Iterator<T> iterator = collection.iterator();
+      return (T)(iterator.hasNext() ? iterator.next() : null);
    }
 
-   public static <T> T firstOrDefault(Collection<T> var0, T var1) {
-      Iterator var2 = var0.iterator();
-      return var2.hasNext() ? var2.next() : var1;
+   public static <T> T firstOrDefault(final Collection<T> collection, final T defaultValue) {
+      Iterator<T> iterator = collection.iterator();
+      return (T)(iterator.hasNext() ? iterator.next() : defaultValue);
    }
 
-   public static <T> T firstOrElse(Collection<T> var0, Supplier<T> var1) {
-      Iterator var2 = var0.iterator();
-      return (T)(var2.hasNext() ? var2.next() : var1.get());
+   public static <T> T firstOrElse(final Collection<T> collection, final Supplier<T> elseSupplier) {
+      Iterator<T> iterator = collection.iterator();
+      return (T)(iterator.hasNext() ? iterator.next() : elseSupplier.get());
    }
 
-   public static <T> boolean isNullOrEmpty(T @Nullable [] var0) {
-      return var0 == null || var0.length == 0;
+   public static <T> boolean isNullOrEmpty(final T @Nullable [] t) {
+      return t == null || t.length == 0;
    }
 
-   public static boolean isNullOrEmpty(boolean @Nullable [] var0) {
-      return var0 == null || var0.length == 0;
+   public static boolean isNullOrEmpty(final boolean @Nullable [] t) {
+      return t == null || t.length == 0;
    }
 
-   public static boolean isNullOrEmpty(byte @Nullable [] var0) {
-      return var0 == null || var0.length == 0;
+   public static boolean isNullOrEmpty(final byte @Nullable [] t) {
+      return t == null || t.length == 0;
    }
 
-   public static boolean isNullOrEmpty(char @Nullable [] var0) {
-      return var0 == null || var0.length == 0;
+   public static boolean isNullOrEmpty(final char @Nullable [] t) {
+      return t == null || t.length == 0;
    }
 
-   public static boolean isNullOrEmpty(short @Nullable [] var0) {
-      return var0 == null || var0.length == 0;
+   public static boolean isNullOrEmpty(final short @Nullable [] t) {
+      return t == null || t.length == 0;
    }
 
-   public static boolean isNullOrEmpty(int @Nullable [] var0) {
-      return var0 == null || var0.length == 0;
+   public static boolean isNullOrEmpty(final int @Nullable [] t) {
+      return t == null || t.length == 0;
    }
 
-   public static boolean isNullOrEmpty(long @Nullable [] var0) {
-      return var0 == null || var0.length == 0;
+   public static boolean isNullOrEmpty(final long @Nullable [] t) {
+      return t == null || t.length == 0;
    }
 
-   public static boolean isNullOrEmpty(float @Nullable [] var0) {
-      return var0 == null || var0.length == 0;
+   public static boolean isNullOrEmpty(final float @Nullable [] t) {
+      return t == null || t.length == 0;
    }
 
-   public static boolean isNullOrEmpty(double @Nullable [] var0) {
-      return var0 == null || var0.length == 0;
+   public static boolean isNullOrEmpty(final double @Nullable [] t) {
+      return t == null || t.length == 0;
    }
 }

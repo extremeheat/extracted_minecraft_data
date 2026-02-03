@@ -4,8 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.renderer.entity.layers.WitherArmorLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.WitherRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -16,49 +14,39 @@ public class WitherBossRenderer extends MobRenderer<WitherBoss, WitherRenderStat
    private static final Identifier WITHER_INVULNERABLE_LOCATION = Identifier.withDefaultNamespace("textures/entity/wither/wither_invulnerable.png");
    private static final Identifier WITHER_LOCATION = Identifier.withDefaultNamespace("textures/entity/wither/wither.png");
 
-   public WitherBossRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new WitherBossModel(var1.bakeLayer(ModelLayers.WITHER)), 1.0F);
-      this.addLayer(new WitherArmorLayer(this, var1.getModelSet()));
+   public WitherBossRenderer(final EntityRendererProvider.Context context) {
+      super(context, new WitherBossModel(context.bakeLayer(ModelLayers.WITHER)), 1.0F);
+      this.addLayer(new WitherArmorLayer(this, context.getModelSet()));
    }
 
-   protected int getBlockLightLevel(WitherBoss var1, BlockPos var2) {
+   protected int getBlockLightLevel(final WitherBoss entity, final BlockPos blockPos) {
       return 15;
    }
 
-   public Identifier getTextureLocation(WitherRenderState var1) {
-      int var2 = Mth.floor(var1.invulnerableTicks);
-      return var2 > 0 && (var2 > 80 || var2 / 5 % 2 != 1) ? WITHER_INVULNERABLE_LOCATION : WITHER_LOCATION;
+   public Identifier getTextureLocation(final WitherRenderState state) {
+      int invulnerableTicks = Mth.floor(state.invulnerableTicks);
+      return invulnerableTicks > 0 && (invulnerableTicks > 80 || invulnerableTicks / 5 % 2 != 1) ? WITHER_INVULNERABLE_LOCATION : WITHER_LOCATION;
    }
 
    public WitherRenderState createRenderState() {
       return new WitherRenderState();
    }
 
-   protected void scale(WitherRenderState var1, PoseStack var2) {
-      float var3 = 2.0F;
-      if (var1.invulnerableTicks > 0.0F) {
-         var3 -= var1.invulnerableTicks / 220.0F * 0.5F;
+   protected void scale(final WitherRenderState state, final PoseStack poseStack) {
+      float scale = 2.0F;
+      if (state.invulnerableTicks > 0.0F) {
+         scale -= state.invulnerableTicks / 220.0F * 0.5F;
       }
 
-      var2.scale(var3, var3, var3);
+      poseStack.scale(scale, scale, scale);
    }
 
-   public void extractRenderState(WitherBoss var1, WitherRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      int var4 = var1.getInvulnerableTicks();
-      var2.invulnerableTicks = var4 > 0 ? (float)var4 - var3 : 0.0F;
-      System.arraycopy(var1.getHeadXRots(), 0, var2.xHeadRots, 0, var2.xHeadRots.length);
-      System.arraycopy(var1.getHeadYRots(), 0, var2.yHeadRots, 0, var2.yHeadRots.length);
-      var2.isPowered = var1.isPowered();
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((WitherRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final WitherBoss entity, final WitherRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      int invulnerableTicks = entity.getInvulnerableTicks();
+      state.invulnerableTicks = invulnerableTicks > 0 ? (float)invulnerableTicks - partialTicks : 0.0F;
+      System.arraycopy(entity.getHeadXRots(), 0, state.xHeadRots, 0, state.xHeadRots.length);
+      System.arraycopy(entity.getHeadYRots(), 0, state.yHeadRots, 0, state.yHeadRots.length);
+      state.isPowered = entity.isPowered();
    }
 }

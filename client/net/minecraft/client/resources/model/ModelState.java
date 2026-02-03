@@ -12,11 +12,11 @@ public interface ModelState {
       return Transformation.identity();
    }
 
-   default Matrix4fc faceTransformation(Direction var1) {
+   default Matrix4fc faceTransformation(final Direction face) {
       return NO_TRANSFORM;
    }
 
-   default Matrix4fc inverseFaceTransformation(Direction var1) {
+   default Matrix4fc inverseFaceTransformation(final Direction face) {
       return NO_TRANSFORM;
    }
 }

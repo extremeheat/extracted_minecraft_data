@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.feature.rootplacers;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -19,53 +18,53 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class MangroveRootPlacer extends RootPlacer {
    public static final int ROOT_WIDTH_LIMIT = 8;
    public static final int ROOT_LENGTH_LIMIT = 15;
-   public static final MapCodec<MangroveRootPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> rootPlacerParts(var0).and(MangroveRootPlacement.CODEC.fieldOf("mangrove_root_placement").forGetter((var0x) -> var0x.mangroveRootPlacement)).apply(var0, MangroveRootPlacer::new));
+   public static final MapCodec<MangroveRootPlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> rootPlacerParts(i).and(MangroveRootPlacement.CODEC.fieldOf("mangrove_root_placement").forGetter((c) -> c.mangroveRootPlacement)).apply(i, MangroveRootPlacer::new));
    private final MangroveRootPlacement mangroveRootPlacement;
 
-   public MangroveRootPlacer(IntProvider var1, BlockStateProvider var2, Optional<AboveRootPlacement> var3, MangroveRootPlacement var4) {
-      super(var1, var2, var3);
-      this.mangroveRootPlacement = var4;
+   public MangroveRootPlacer(final IntProvider trunkOffsetY, final BlockStateProvider rootProvider, final Optional<AboveRootPlacement> aboveRootPlacement, final MangroveRootPlacement mangroveRootPlacement) {
+      super(trunkOffsetY, rootProvider, aboveRootPlacement);
+      this.mangroveRootPlacement = mangroveRootPlacement;
    }
 
-   public boolean placeRoots(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, BlockPos var4, BlockPos var5, TreeConfiguration var6) {
-      ArrayList var7 = Lists.newArrayList();
-      BlockPos.MutableBlockPos var8 = var4.mutable();
+   public boolean placeRoots(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos origin, final BlockPos trunkOrigin, final TreeConfiguration config) {
+      List<BlockPos> rootPositions = Lists.newArrayList();
+      BlockPos.MutableBlockPos columnPos = origin.mutable();
 
-      while(var8.getY() < var5.getY()) {
-         if (!this.canPlaceRoot(var1, var8)) {
+      while(columnPos.getY() < trunkOrigin.getY()) {
+         if (!this.canPlaceRoot(level, columnPos)) {
             return false;
          }
 
-         var8.move(Direction.UP);
+         columnPos.move(Direction.UP);
       }
 
-      var7.add(var5.below());
+      rootPositions.add(trunkOrigin.below());
 
-      for(Direction var10 : Direction.Plane.HORIZONTAL) {
-         BlockPos var11 = var5.relative(var10);
-         ArrayList var12 = Lists.newArrayList();
-         if (!this.simulateRoots(var1, var3, var11, var10, var5, var12, 0)) {
+      for(Direction dir : Direction.Plane.HORIZONTAL) {
+         BlockPos pos = trunkOrigin.relative(dir);
+         List<BlockPos> positionsInDirection = Lists.newArrayList();
+         if (!this.simulateRoots(level, random, pos, dir, trunkOrigin, positionsInDirection, 0)) {
             return false;
          }
 
-         var7.addAll(var12);
-         var7.add(var5.relative(var10));
+         rootPositions.addAll(positionsInDirection);
+         rootPositions.add(trunkOrigin.relative(dir));
       }
 
-      for(BlockPos var14 : var7) {
-         this.placeRoot(var1, var2, var3, var14, var6);
+      for(BlockPos rootPos : rootPositions) {
+         this.placeRoot(level, rootSetter, random, rootPos, config);
       }
 
       return true;
    }
 
-   private boolean simulateRoots(LevelSimulatedReader var1, RandomSource var2, BlockPos var3, Direction var4, BlockPos var5, List<BlockPos> var6, int var7) {
-      int var8 = this.mangroveRootPlacement.maxRootLength();
-      if (var7 != var8 && var6.size() <= var8) {
-         for(BlockPos var11 : this.potentialRootPositions(var3, var4, var2, var5)) {
-            if (this.canPlaceRoot(var1, var11)) {
-               var6.add(var11);
-               if (!this.simulateRoots(var1, var2, var11, var4, var5, var6, var7 + 1)) {
+   private boolean simulateRoots(final LevelSimulatedReader level, final RandomSource random, final BlockPos rootPos, final Direction dir, final BlockPos rootOrigin, final List<BlockPos> rootPositions, final int layer) {
+      int maxRootLength = this.mangroveRootPlacement.maxRootLength();
+      if (layer != maxRootLength && rootPositions.size() <= maxRootLength) {
+         for(BlockPos pos : this.potentialRootPositions(rootPos, dir, random, rootOrigin)) {
+            if (this.canPlaceRoot(level, pos)) {
+               rootPositions.add(pos);
+               if (!this.simulateRoots(level, random, pos, dir, rootOrigin, rootPositions, layer + 1)) {
                   return false;
                }
             }
@@ -77,33 +76,33 @@ public class MangroveRootPlacer extends RootPlacer {
       }
    }
 
-   protected List<BlockPos> potentialRootPositions(BlockPos var1, Direction var2, RandomSource var3, BlockPos var4) {
-      BlockPos var5 = var1.below();
-      BlockPos var6 = var1.relative(var2);
-      int var7 = var1.distManhattan(var4);
-      int var8 = this.mangroveRootPlacement.maxRootWidth();
-      float var9 = this.mangroveRootPlacement.randomSkewChance();
-      if (var7 > var8 - 3 && var7 <= var8) {
-         return var3.nextFloat() < var9 ? List.of(var5, var6.below()) : List.of(var5);
-      } else if (var7 > var8) {
-         return List.of(var5);
-      } else if (var3.nextFloat() < var9) {
-         return List.of(var5);
+   protected List<BlockPos> potentialRootPositions(final BlockPos pos, final Direction prevDir, final RandomSource random, final BlockPos rootOrigin) {
+      BlockPos below = pos.below();
+      BlockPos nextTo = pos.relative(prevDir);
+      int width = pos.distManhattan(rootOrigin);
+      int maxRootWidth = this.mangroveRootPlacement.maxRootWidth();
+      float randomSkewChance = this.mangroveRootPlacement.randomSkewChance();
+      if (width > maxRootWidth - 3 && width <= maxRootWidth) {
+         return random.nextFloat() < randomSkewChance ? List.of(below, nextTo.below()) : List.of(below);
+      } else if (width > maxRootWidth) {
+         return List.of(below);
+      } else if (random.nextFloat() < randomSkewChance) {
+         return List.of(below);
       } else {
-         return var3.nextBoolean() ? List.of(var6) : List.of(var5);
+         return random.nextBoolean() ? List.of(nextTo) : List.of(below);
       }
    }
 
-   protected boolean canPlaceRoot(LevelSimulatedReader var1, BlockPos var2) {
-      return super.canPlaceRoot(var1, var2) || var1.isStateAtPosition(var2, (var1x) -> var1x.is(this.mangroveRootPlacement.canGrowThrough()));
+   protected boolean canPlaceRoot(final LevelSimulatedReader level, final BlockPos pos) {
+      return super.canPlaceRoot(level, pos) || level.isStateAtPosition(pos, (state) -> state.is(this.mangroveRootPlacement.canGrowThrough()));
    }
 
-   protected void placeRoot(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, BlockPos var4, TreeConfiguration var5) {
-      if (var1.isStateAtPosition(var4, (var1x) -> var1x.is(this.mangroveRootPlacement.muddyRootsIn()))) {
-         BlockState var6 = this.mangroveRootPlacement.muddyRootsProvider().getState(var3, var4);
-         var2.accept(var4, this.getPotentiallyWaterloggedState(var1, var4, var6));
+   protected void placeRoot(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos pos, final TreeConfiguration config) {
+      if (level.isStateAtPosition(pos, (s) -> s.is(this.mangroveRootPlacement.muddyRootsIn()))) {
+         BlockState muddyRoots = this.mangroveRootPlacement.muddyRootsProvider().getState(random, pos);
+         rootSetter.accept(pos, this.getPotentiallyWaterloggedState(level, pos, muddyRoots));
       } else {
-         super.placeRoot(var1, var2, var3, var4, var5);
+         super.placeRoot(level, rootSetter, random, pos, config);
       }
 
    }

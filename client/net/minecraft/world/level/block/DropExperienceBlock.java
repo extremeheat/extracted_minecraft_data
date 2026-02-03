@@ -10,22 +10,22 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class DropExperienceBlock extends Block {
-   public static final MapCodec<DropExperienceBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(IntProvider.codec(0, 10).fieldOf("experience").forGetter((var0x) -> var0x.xpRange), propertiesCodec()).apply(var0, DropExperienceBlock::new));
+   public static final MapCodec<DropExperienceBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(IntProvider.codec(0, 10).fieldOf("experience").forGetter((b) -> b.xpRange), propertiesCodec()).apply(i, DropExperienceBlock::new));
    private final IntProvider xpRange;
 
    public MapCodec<? extends DropExperienceBlock> codec() {
       return CODEC;
    }
 
-   public DropExperienceBlock(IntProvider var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.xpRange = var1;
+   public DropExperienceBlock(final IntProvider xpRange, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.xpRange = xpRange;
    }
 
-   protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
-      super.spawnAfterBreak(var1, var2, var3, var4, var5);
-      if (var5) {
-         this.tryDropExperience(var2, var3, var4, this.xpRange);
+   protected void spawnAfterBreak(final BlockState state, final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience) {
+      super.spawnAfterBreak(state, level, pos, tool, dropExperience);
+      if (dropExperience) {
+         this.tryDropExperience(level, pos, tool, this.xpRange);
       }
 
    }

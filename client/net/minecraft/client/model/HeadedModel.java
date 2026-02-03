@@ -6,7 +6,7 @@ import net.minecraft.client.model.geom.ModelPart;
 public interface HeadedModel {
    ModelPart getHead();
 
-   default void translateToHead(PoseStack var1) {
-      this.getHead().translateAndRotate(var1);
+   default void translateToHead(final PoseStack poseStack) {
+      this.getHead().translateAndRotate(poseStack);
    }
 }

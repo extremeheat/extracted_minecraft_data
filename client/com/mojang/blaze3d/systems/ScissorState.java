@@ -11,12 +11,12 @@ public class ScissorState {
       super();
    }
 
-   public void enable(int var1, int var2, int var3, int var4) {
+   public void enable(final int x, final int y, final int width, final int height) {
       this.enabled = true;
-      this.x = var1;
-      this.y = var2;
-      this.width = var3;
-      this.height = var4;
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
    }
 
    public void disable() {

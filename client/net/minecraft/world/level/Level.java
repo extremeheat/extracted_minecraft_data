@@ -3,11 +3,12 @@ package net.minecraft.world.level;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -41,9 +42,11 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.TickRateManager;
-import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.clock.ClockManager;
+import net.minecraft.world.clock.WorldClock;
+import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
@@ -115,7 +118,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    protected float rainLevel;
    protected float oThunderLevel;
    protected float thunderLevel;
-   public final RandomSource random = RandomSource.create();
+   protected final RandomSource random = RandomSource.create();
    /** @deprecated */
    @Deprecated
    private final RandomSource threadSafeRandom = RandomSource.createThreadSafe();
@@ -129,19 +132,19 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final PalettedContainerFactory palettedContainerFactory;
    private long subTickCount;
 
-   protected Level(WritableLevelData var1, ResourceKey<Level> var2, RegistryAccess var3, Holder<DimensionType> var4, boolean var5, boolean var6, long var7, int var9) {
+   protected Level(final WritableLevelData levelData, final ResourceKey<Level> dimension, final RegistryAccess registryAccess, final Holder<DimensionType> dimensionTypeRegistration, final boolean isClientSide, final boolean isDebug, final long biomeZoomSeed, final int maxChainedNeighborUpdates) {
       super();
-      this.levelData = var1;
-      this.dimensionTypeRegistration = var4;
-      this.dimension = var2;
-      this.isClientSide = var5;
+      this.levelData = levelData;
+      this.dimensionTypeRegistration = dimensionTypeRegistration;
+      this.dimension = dimension;
+      this.isClientSide = isClientSide;
       this.thread = Thread.currentThread();
-      this.biomeManager = new BiomeManager(this, var7);
-      this.isDebug = var6;
-      this.neighborUpdater = new CollectingNeighborUpdater(this, var9);
-      this.registryAccess = var3;
-      this.palettedContainerFactory = PalettedContainerFactory.create(var3);
-      this.damageSources = new DamageSources(var3);
+      this.biomeManager = new BiomeManager(this, biomeZoomSeed);
+      this.isDebug = isDebug;
+      this.neighborUpdater = new CollectingNeighborUpdater(this, maxChainedNeighborUpdates);
+      this.registryAccess = registryAccess;
+      this.palettedContainerFactory = PalettedContainerFactory.create(registryAccess);
+      this.damageSources = new DamageSources(registryAccess);
    }
 
    public boolean isClientSide() {
@@ -152,90 +155,90 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return null;
    }
 
-   public boolean isInWorldBounds(BlockPos var1) {
-      return !this.isOutsideBuildHeight(var1) && isInWorldBoundsHorizontal(var1);
+   public boolean isInWorldBounds(final BlockPos pos) {
+      return !this.isOutsideBuildHeight(pos) && isInWorldBoundsHorizontal(pos);
    }
 
-   public boolean isInValidBounds(BlockPos var1) {
-      return !this.isOutsideBuildHeight(var1) && isInValidBoundsHorizontal(var1);
+   public boolean isInValidBounds(final BlockPos pos) {
+      return !this.isOutsideBuildHeight(pos) && isInValidBoundsHorizontal(pos);
    }
 
-   public static boolean isInSpawnableBounds(BlockPos var0) {
-      return !isOutsideSpawnableHeight(var0.getY()) && isInWorldBoundsHorizontal(var0);
+   public static boolean isInSpawnableBounds(final BlockPos pos) {
+      return !isOutsideSpawnableHeight(pos.getY()) && isInWorldBoundsHorizontal(pos);
    }
 
-   private static boolean isInWorldBoundsHorizontal(BlockPos var0) {
-      return var0.getX() >= -30000000 && var0.getZ() >= -30000000 && var0.getX() < 30000000 && var0.getZ() < 30000000;
+   private static boolean isInWorldBoundsHorizontal(final BlockPos pos) {
+      return pos.getX() >= -30000000 && pos.getZ() >= -30000000 && pos.getX() < 30000000 && pos.getZ() < 30000000;
    }
 
-   private static boolean isInValidBoundsHorizontal(BlockPos var0) {
-      int var1 = SectionPos.blockToSectionCoord(var0.getX());
-      int var2 = SectionPos.blockToSectionCoord(var0.getZ());
-      return ChunkPos.isValid(var1, var2);
+   private static boolean isInValidBoundsHorizontal(final BlockPos pos) {
+      int chunkX = SectionPos.blockToSectionCoord(pos.getX());
+      int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
+      return ChunkPos.isValid(chunkX, chunkZ);
    }
 
-   private static boolean isOutsideSpawnableHeight(int var0) {
-      return var0 < -20000000 || var0 >= 20000000;
+   private static boolean isOutsideSpawnableHeight(final int y) {
+      return y < -20000000 || y >= 20000000;
    }
 
-   public LevelChunk getChunkAt(BlockPos var1) {
-      return this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
+   public LevelChunk getChunkAt(final BlockPos pos) {
+      return this.getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
    }
 
-   public LevelChunk getChunk(int var1, int var2) {
-      return (LevelChunk)this.getChunk(var1, var2, ChunkStatus.FULL);
+   public LevelChunk getChunk(final int chunkX, final int chunkZ) {
+      return (LevelChunk)this.getChunk(chunkX, chunkZ, ChunkStatus.FULL);
    }
 
-   public @Nullable ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
-      ChunkAccess var5 = this.getChunkSource().getChunk(var1, var2, var3, var4);
-      if (var5 == null && var4) {
+   public @Nullable ChunkAccess getChunk(final int chunkX, final int chunkZ, final ChunkStatus status, final boolean loadOrGenerate) {
+      ChunkAccess chunk = this.getChunkSource().getChunk(chunkX, chunkZ, status, loadOrGenerate);
+      if (chunk == null && loadOrGenerate) {
          throw new IllegalStateException("Should always be able to create a chunk!");
       } else {
-         return var5;
+         return chunk;
       }
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
-      return this.setBlock(var1, var2, var3, 512);
+   public boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags) {
+      return this.setBlock(pos, blockState, updateFlags, 512);
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3, int var4) {
-      if (!this.isInValidBounds(var1)) {
+   public boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
+      if (!this.isInValidBounds(pos)) {
          return false;
       } else if (!this.isClientSide() && this.isDebug()) {
          return false;
       } else {
-         LevelChunk var5 = this.getChunkAt(var1);
-         Block var6 = var2.getBlock();
-         BlockState var7 = var5.setBlockState(var1, var2, var3);
-         if (var7 == null) {
+         LevelChunk chunk = this.getChunkAt(pos);
+         Block block = blockState.getBlock();
+         BlockState oldState = chunk.setBlockState(pos, blockState, updateFlags);
+         if (oldState == null) {
             return false;
          } else {
-            BlockState var8 = this.getBlockState(var1);
-            if (var8 == var2) {
-               if (var7 != var8) {
-                  this.setBlocksDirty(var1, var7, var8);
+            BlockState newState = this.getBlockState(pos);
+            if (newState == blockState) {
+               if (oldState != newState) {
+                  this.setBlocksDirty(pos, oldState, newState);
                }
 
-               if ((var3 & 2) != 0 && (!this.isClientSide() || (var3 & 4) == 0) && (this.isClientSide() || var5.getFullStatus() != null && var5.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING))) {
-                  this.sendBlockUpdated(var1, var7, var2, var3);
+               if ((updateFlags & 2) != 0 && (!this.isClientSide() || (updateFlags & 4) == 0) && (this.isClientSide() || chunk.getFullStatus() != null && chunk.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING))) {
+                  this.sendBlockUpdated(pos, oldState, blockState, updateFlags);
                }
 
-               if ((var3 & 1) != 0) {
-                  this.updateNeighborsAt(var1, var7.getBlock());
-                  if (!this.isClientSide() && var2.hasAnalogOutputSignal()) {
-                     this.updateNeighbourForOutputSignal(var1, var6);
+               if ((updateFlags & 1) != 0) {
+                  this.updateNeighborsAt(pos, oldState.getBlock());
+                  if (!this.isClientSide() && blockState.hasAnalogOutputSignal()) {
+                     this.updateNeighbourForOutputSignal(pos, block);
                   }
                }
 
-               if ((var3 & 16) == 0 && var4 > 0) {
-                  int var9 = var3 & -34;
-                  var7.updateIndirectNeighbourShapes(this, var1, var9, var4 - 1);
-                  var2.updateNeighbourShapes(this, var1, var9, var4 - 1);
-                  var2.updateIndirectNeighbourShapes(this, var1, var9, var4 - 1);
+               if ((updateFlags & 16) == 0 && updateLimit > 0) {
+                  int neighbourUpdateFlags = updateFlags & -34;
+                  oldState.updateIndirectNeighbourShapes(this, pos, neighbourUpdateFlags, updateLimit - 1);
+                  blockState.updateNeighbourShapes(this, pos, neighbourUpdateFlags, updateLimit - 1);
+                  blockState.updateIndirectNeighbourShapes(this, pos, neighbourUpdateFlags, updateLimit - 1);
                }
 
-               this.updatePOIOnBlockStateChange(var1, var7, var8);
+               this.updatePOIOnBlockStateChange(pos, oldState, newState);
             }
 
             return true;
@@ -243,100 +246,100 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
    }
 
-   public void updatePOIOnBlockStateChange(BlockPos var1, BlockState var2, BlockState var3) {
+   public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
    }
 
-   public boolean removeBlock(BlockPos var1, boolean var2) {
-      FluidState var3 = this.getFluidState(var1);
-      return this.setBlock(var1, var3.createLegacyBlock(), 3 | (var2 ? 64 : 0));
+   public boolean removeBlock(final BlockPos pos, final boolean movedByPiston) {
+      FluidState fluidState = this.getFluidState(pos);
+      return this.setBlock(pos, fluidState.createLegacyBlock(), 3 | (movedByPiston ? 64 : 0));
    }
 
-   public boolean destroyBlock(BlockPos var1, boolean var2, @Nullable Entity var3, int var4) {
-      BlockState var5 = this.getBlockState(var1);
-      if (var5.isAir()) {
+   public boolean destroyBlock(final BlockPos pos, final boolean dropResources, final @Nullable Entity breaker, final int updateLimit) {
+      BlockState blockState = this.getBlockState(pos);
+      if (blockState.isAir()) {
          return false;
       } else {
-         FluidState var6 = this.getFluidState(var1);
-         if (!(var5.getBlock() instanceof BaseFireBlock)) {
-            this.levelEvent(2001, var1, Block.getId(var5));
+         FluidState fluidState = this.getFluidState(pos);
+         if (!(blockState.getBlock() instanceof BaseFireBlock)) {
+            this.levelEvent(2001, pos, Block.getId(blockState));
          }
 
-         if (var2) {
-            BlockEntity var7 = var5.hasBlockEntity() ? this.getBlockEntity(var1) : null;
-            Block.dropResources(var5, this, var1, var7, var3, ItemStack.EMPTY);
+         if (dropResources) {
+            BlockEntity blockEntity = blockState.hasBlockEntity() ? this.getBlockEntity(pos) : null;
+            Block.dropResources(blockState, this, pos, blockEntity, breaker, ItemStack.EMPTY);
          }
 
-         boolean var8 = this.setBlock(var1, var6.createLegacyBlock(), 3, var4);
-         if (var8) {
-            this.gameEvent(GameEvent.BLOCK_DESTROY, var1, GameEvent.Context.of(var3, var5));
+         boolean destroyed = this.setBlock(pos, fluidState.createLegacyBlock(), 3, updateLimit);
+         if (destroyed) {
+            this.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(breaker, blockState));
          }
 
-         return var8;
+         return destroyed;
       }
    }
 
-   public void addDestroyBlockEffect(BlockPos var1, BlockState var2) {
+   public void addDestroyBlockEffect(final BlockPos pos, final BlockState blockState) {
    }
 
-   public boolean setBlockAndUpdate(BlockPos var1, BlockState var2) {
-      return this.setBlock(var1, var2, 3);
+   public boolean setBlockAndUpdate(final BlockPos pos, final BlockState blockState) {
+      return this.setBlock(pos, blockState, 3);
    }
 
-   public abstract void sendBlockUpdated(BlockPos var1, BlockState var2, BlockState var3, @Block.UpdateFlags int var4);
+   public abstract void sendBlockUpdated(BlockPos pos, BlockState old, BlockState current, @Block.UpdateFlags int updateFlags);
 
-   public void setBlocksDirty(BlockPos var1, BlockState var2, BlockState var3) {
+   public void setBlocksDirty(final BlockPos pos, final BlockState oldState, final BlockState newState) {
    }
 
-   public void updateNeighborsAt(BlockPos var1, Block var2, @Nullable Orientation var3) {
+   public void updateNeighborsAt(final BlockPos pos, final Block sourceBlock, final @Nullable Orientation orientation) {
    }
 
-   public void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, Direction var3, @Nullable Orientation var4) {
+   public void updateNeighborsAtExceptFromFacing(final BlockPos pos, final Block blockObject, final Direction skipDirection, final @Nullable Orientation orientation) {
    }
 
-   public void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3) {
+   public void neighborChanged(final BlockPos pos, final Block changedBlock, final @Nullable Orientation orientation) {
    }
 
-   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
+   public void neighborChanged(final BlockState state, final BlockPos pos, final Block changedBlock, final @Nullable Orientation orientation, final boolean movedByPiston) {
    }
 
-   public void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, @Block.UpdateFlags int var5, int var6) {
-      this.neighborUpdater.shapeUpdate(var1, var4, var2, var3, var5, var6);
+   public void neighborShapeChanged(final Direction direction, final BlockPos pos, final BlockPos neighborPos, final BlockState neighborState, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
+      this.neighborUpdater.shapeUpdate(direction, neighborState, pos, neighborPos, updateFlags, updateLimit);
    }
 
-   public int getHeight(Heightmap.Types var1, int var2, int var3) {
-      int var4;
-      if (var2 >= -30000000 && var3 >= -30000000 && var2 < 30000000 && var3 < 30000000) {
-         if (this.hasChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3))) {
-            var4 = this.getChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3)).getHeight(var1, var2 & 15, var3 & 15) + 1;
+   public int getHeight(final Heightmap.Types type, final int x, final int z) {
+      int y;
+      if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000) {
+         if (this.hasChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z))) {
+            y = this.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z)).getHeight(type, x & 15, z & 15) + 1;
          } else {
-            var4 = this.getMinY();
+            y = this.getMinY();
          }
       } else {
-         var4 = this.getSeaLevel() + 1;
+         y = this.getSeaLevel() + 1;
       }
 
-      return var4;
+      return y;
    }
 
    public LevelLightEngine getLightEngine() {
       return this.getChunkSource().getLightEngine();
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      if (!this.isInValidBounds(var1)) {
+   public BlockState getBlockState(final BlockPos pos) {
+      if (!this.isInValidBounds(pos)) {
          return Blocks.VOID_AIR.defaultBlockState();
       } else {
-         LevelChunk var2 = this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
-         return var2.getBlockState(var1);
+         LevelChunk chunk = this.getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
+         return chunk.getBlockState(pos);
       }
    }
 
-   public FluidState getFluidState(BlockPos var1) {
-      if (!this.isInValidBounds(var1)) {
+   public FluidState getFluidState(final BlockPos pos) {
+      if (!this.isInValidBounds(pos)) {
          return Fluids.EMPTY.defaultFluidState();
       } else {
-         LevelChunk var2 = this.getChunkAt(var1);
-         return var2.getFluidState(var1);
+         LevelChunk chunk = this.getChunkAt(pos);
+         return chunk.getFluidState(pos);
       }
    }
 
@@ -348,61 +351,61 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return !this.dimensionType().hasFixedTime() && !this.isBrightOutside();
    }
 
-   public void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
-      this.playSound(var1, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, var3, var4, var5, var6);
+   public void playSound(final @Nullable Entity except, final BlockPos pos, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
+      this.playSound(except, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, sound, source, volume, pitch);
    }
 
-   public abstract void playSeededSound(@Nullable Entity var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12);
+   public abstract void playSeededSound(final @Nullable Entity except, final double x, final double y, final double z, final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch, final long seed);
 
-   public void playSeededSound(@Nullable Entity var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11, long var12) {
-      this.playSeededSound(var1, var2, var4, var6, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(var8), var9, var10, var11, var12);
+   public void playSeededSound(final @Nullable Entity except, final double x, final double y, final double z, final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final long seed) {
+      this.playSeededSound(except, x, y, z, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound), source, volume, pitch, seed);
    }
 
-   public abstract void playSeededSound(@Nullable Entity var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7);
+   public abstract void playSeededSound(final @Nullable Entity except, final Entity sourceEntity, final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch, final long seed);
 
-   public void playSound(@Nullable Entity var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9) {
-      this.playSound(var1, var2, var4, var6, var8, var9, 1.0F, 1.0F);
+   public void playSound(final @Nullable Entity except, final double x, final double y, final double z, final SoundEvent sound, final SoundSource source) {
+      this.playSound(except, x, y, z, sound, source, 1.0F, 1.0F);
    }
 
-   public void playSound(@Nullable Entity var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11) {
-      this.playSeededSound(var1, var2, var4, var6, var8, var9, var10, var11, this.threadSafeRandom.nextLong());
+   public void playSound(final @Nullable Entity except, final double x, final double y, final double z, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
+      this.playSeededSound(except, x, y, z, sound, source, volume, pitch, this.threadSafeRandom.nextLong());
    }
 
-   public void playSound(@Nullable Entity var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11) {
-      this.playSeededSound(var1, var2, var4, var6, var8, var9, var10, var11, this.threadSafeRandom.nextLong());
+   public void playSound(final @Nullable Entity except, final double x, final double y, final double z, final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch) {
+      this.playSeededSound(except, x, y, z, sound, source, volume, pitch, this.threadSafeRandom.nextLong());
    }
 
-   public void playSound(@Nullable Entity var1, Entity var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
-      this.playSeededSound(var1, var2, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(var3), var4, var5, var6, this.threadSafeRandom.nextLong());
+   public void playSound(final @Nullable Entity except, final Entity sourceEntity, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
+      this.playSeededSound(except, sourceEntity, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound), source, volume, pitch, this.threadSafeRandom.nextLong());
    }
 
-   public void playLocalSound(BlockPos var1, SoundEvent var2, SoundSource var3, float var4, float var5, boolean var6) {
-      this.playLocalSound((double)var1.getX() + 0.5, (double)var1.getY() + 0.5, (double)var1.getZ() + 0.5, var2, var3, var4, var5, var6);
+   public void playLocalSound(final BlockPos pos, final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final boolean distanceDelay) {
+      this.playLocalSound((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, sound, source, volume, pitch, distanceDelay);
    }
 
-   public void playLocalSound(Entity var1, SoundEvent var2, SoundSource var3, float var4, float var5) {
+   public void playLocalSound(final Entity sourceEntity, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
    }
 
-   public void playLocalSound(double var1, double var3, double var5, SoundEvent var7, SoundSource var8, float var9, float var10, boolean var11) {
+   public void playLocalSound(final double x, final double y, final double z, final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final boolean distanceDelay) {
    }
 
-   public void playPlayerSound(SoundEvent var1, SoundSource var2, float var3, float var4) {
+   public void playPlayerSound(final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
    }
 
-   public void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
+   public void addParticle(final ParticleOptions particle, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
    }
 
-   public void addParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
+   public void addParticle(final ParticleOptions particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
    }
 
-   public void addAlwaysVisibleParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
+   public void addAlwaysVisibleParticle(final ParticleOptions particle, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
    }
 
-   public void addAlwaysVisibleParticle(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+   public void addAlwaysVisibleParticle(final ParticleOptions particle, final boolean overrideLimiter, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
    }
 
-   public void addBlockEntityTicker(TickingBlockEntity var1) {
-      (this.tickingBlockEntities ? this.pendingBlockEntityTickers : this.blockEntityTickers).add(var1);
+   public void addBlockEntityTicker(final TickingBlockEntity ticker) {
+      (this.tickingBlockEntities ? this.pendingBlockEntityTickers : this.blockEntityTickers).add(ticker);
    }
 
    public void tickBlockEntities() {
@@ -412,121 +415,121 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          this.pendingBlockEntityTickers.clear();
       }
 
-      Iterator var1 = this.blockEntityTickers.iterator();
-      boolean var2 = this.tickRateManager().runsNormally();
+      Iterator<TickingBlockEntity> iterator = this.blockEntityTickers.iterator();
+      boolean tickBlockEntities = this.tickRateManager().runsNormally();
 
-      while(var1.hasNext()) {
-         TickingBlockEntity var3 = (TickingBlockEntity)var1.next();
-         if (var3.isRemoved()) {
-            var1.remove();
-         } else if (var2 && this.shouldTickBlocksAt(var3.getPos())) {
-            var3.tick();
+      while(iterator.hasNext()) {
+         TickingBlockEntity ticker = (TickingBlockEntity)iterator.next();
+         if (ticker.isRemoved()) {
+            iterator.remove();
+         } else if (tickBlockEntities && this.shouldTickBlocksAt(ticker.getPos())) {
+            ticker.tick();
          }
       }
 
       this.tickingBlockEntities = false;
    }
 
-   public <T extends Entity> void guardEntityTick(Consumer<T> var1, T var2) {
+   public <T extends Entity> void guardEntityTick(final Consumer<T> tick, final T entity) {
       try {
-         var1.accept(var2);
-      } catch (Throwable var6) {
-         CrashReport var4 = CrashReport.forThrowable(var6, "Ticking entity");
-         CrashReportCategory var5 = var4.addCategory("Entity being ticked");
-         var2.fillCrashReportCategory(var5);
-         throw new ReportedException(var4);
+         tick.accept(entity);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Ticking entity");
+         CrashReportCategory category = report.addCategory("Entity being ticked");
+         entity.fillCrashReportCategory(category);
+         throw new ReportedException(report);
       }
    }
 
-   public boolean shouldTickDeath(Entity var1) {
+   public boolean shouldTickDeath(final Entity entity) {
       return true;
    }
 
-   public boolean shouldTickBlocksAt(long var1) {
+   public boolean shouldTickBlocksAt(final long chunkPos) {
       return true;
    }
 
-   public boolean shouldTickBlocksAt(BlockPos var1) {
-      return this.shouldTickBlocksAt(ChunkPos.asLong(var1));
+   public boolean shouldTickBlocksAt(final BlockPos pos) {
+      return this.shouldTickBlocksAt(ChunkPos.pack(pos));
    }
 
-   public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, ExplosionInteraction var9) {
-      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, false, var9, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
+   public void explode(final @Nullable Entity source, final double x, final double y, final double z, final float r, final ExplosionInteraction blockInteraction) {
+      this.explode(source, Explosion.getDefaultDamageSource(this, source), (ExplosionDamageCalculator)null, x, y, z, r, false, blockInteraction, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, boolean var9, ExplosionInteraction var10) {
-      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, var9, var10, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
+   public void explode(final @Nullable Entity source, final double x, final double y, final double z, final float r, final boolean fire, final ExplosionInteraction blockInteraction) {
+      this.explode(source, Explosion.getDefaultDamageSource(this, source), (ExplosionDamageCalculator)null, x, y, z, r, fire, blockInteraction, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, Vec3 var4, float var5, boolean var6, ExplosionInteraction var7) {
-      this.explode(var1, var2, var3, var4.x(), var4.y(), var4.z(), var5, var6, var7, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
+   public void explode(final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final Vec3 boomPos, final float r, final boolean fire, final ExplosionInteraction blockInteraction) {
+      this.explode(source, damageSource, damageCalculator, boomPos.x(), boomPos.y(), boomPos.z(), r, fire, blockInteraction, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12) {
-      this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
+   public void explode(final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final double x, final double y, final double z, final float r, final boolean fire, final ExplosionInteraction interactionType) {
+      this.explode(source, damageSource, damageCalculator, x, y, z, r, fire, interactionType, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public abstract void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, WeightedList<ExplosionParticleInfo> var15, Holder<SoundEvent> var16);
+   public abstract void explode(final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final double x, final double y, final double z, final float r, final boolean fire, final ExplosionInteraction interactionType, final ParticleOptions smallExplosionParticles, final ParticleOptions largeExplosionParticles, final WeightedList<ExplosionParticleInfo> blockParticles, final Holder<SoundEvent> explosionSound);
 
    public abstract String gatherChunkSourceStats();
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
-      if (!this.isInValidBounds(var1)) {
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
+      if (!this.isInValidBounds(pos)) {
          return null;
       } else {
-         return !this.isClientSide() && Thread.currentThread() != this.thread ? null : this.getChunkAt(var1).getBlockEntity(var1, LevelChunk.EntityCreationType.IMMEDIATE);
+         return !this.isClientSide() && Thread.currentThread() != this.thread ? null : this.getChunkAt(pos).getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE);
       }
    }
 
-   public void setBlockEntity(BlockEntity var1) {
-      BlockPos var2 = var1.getBlockPos();
-      if (this.isInValidBounds(var2)) {
-         this.getChunkAt(var2).addAndRegisterBlockEntity(var1);
+   public void setBlockEntity(final BlockEntity blockEntity) {
+      BlockPos pos = blockEntity.getBlockPos();
+      if (this.isInValidBounds(pos)) {
+         this.getChunkAt(pos).addAndRegisterBlockEntity(blockEntity);
       }
    }
 
-   public void removeBlockEntity(BlockPos var1) {
-      if (this.isInValidBounds(var1)) {
-         this.getChunkAt(var1).removeBlockEntity(var1);
+   public void removeBlockEntity(final BlockPos pos) {
+      if (this.isInValidBounds(pos)) {
+         this.getChunkAt(pos).removeBlockEntity(pos);
       }
    }
 
-   public boolean isLoaded(BlockPos var1) {
-      return !this.isInValidBounds(var1) ? false : this.getChunkSource().hasChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
+   public boolean isLoaded(final BlockPos pos) {
+      return !this.isInValidBounds(pos) ? false : this.getChunkSource().hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
    }
 
-   public boolean loadedAndEntityCanStandOnFace(BlockPos var1, Entity var2, Direction var3) {
-      if (!this.isInValidBounds(var1)) {
+   public boolean loadedAndEntityCanStandOnFace(final BlockPos pos, final Entity entity, final Direction faceDirection) {
+      if (!this.isInValidBounds(pos)) {
          return false;
       } else {
-         ChunkAccess var4 = this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()), ChunkStatus.FULL, false);
-         return var4 == null ? false : var4.getBlockState(var1).entityCanStandOnFace(this, var1, var2, var3);
+         ChunkAccess chunk = this.getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()), ChunkStatus.FULL, false);
+         return chunk == null ? false : chunk.getBlockState(pos).entityCanStandOnFace(this, pos, entity, faceDirection);
       }
    }
 
-   public boolean loadedAndEntityCanStandOn(BlockPos var1, Entity var2) {
-      return this.loadedAndEntityCanStandOnFace(var1, var2, Direction.UP);
+   public boolean loadedAndEntityCanStandOn(final BlockPos pos, final Entity entity) {
+      return this.loadedAndEntityCanStandOnFace(pos, entity, Direction.UP);
    }
 
    public void updateSkyBrightness() {
       this.skyDarken = (int)(15.0F - (Float)this.environmentAttributes().getDimensionValue(EnvironmentAttributes.SKY_LIGHT_LEVEL));
    }
 
-   public void setSpawnSettings(boolean var1) {
-      this.getChunkSource().setSpawnSettings(var1);
+   public void setSpawnSettings(final boolean spawnEnemies) {
+      this.getChunkSource().setSpawnSettings(spawnEnemies);
    }
 
-   public abstract void setRespawnData(LevelData.RespawnData var1);
+   public abstract void setRespawnData(final LevelData.RespawnData respawnData);
 
    public abstract LevelData.RespawnData getRespawnData();
 
-   public LevelData.RespawnData getWorldBorderAdjustedRespawnData(LevelData.RespawnData var1) {
-      WorldBorder var2 = this.getWorldBorder();
-      if (!var2.isWithinBounds(var1.pos())) {
-         BlockPos var3 = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(var2.getCenterX(), 0.0, var2.getCenterZ()));
-         return LevelData.RespawnData.of(var1.dimension(), var3, var1.yaw(), var1.pitch());
+   public LevelData.RespawnData getWorldBorderAdjustedRespawnData(final LevelData.RespawnData respawnData) {
+      WorldBorder worldBorder = this.getWorldBorder();
+      if (!worldBorder.isWithinBounds(respawnData.pos())) {
+         BlockPos newPos = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(worldBorder.getCenterX(), 0.0, worldBorder.getCenterZ()));
+         return LevelData.RespawnData.of(respawnData.dimension(), newPos, respawnData.yaw(), respawnData.pitch());
       } else {
-         return var1;
+         return respawnData;
       }
    }
 
@@ -544,55 +547,55 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.getChunkSource().close();
    }
 
-   public @Nullable BlockGetter getChunkForCollisions(int var1, int var2) {
-      return this.getChunk(var1, var2, ChunkStatus.FULL, false);
+   public @Nullable BlockGetter getChunkForCollisions(final int chunkX, final int chunkZ) {
+      return this.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false);
    }
 
-   public List<Entity> getEntities(@Nullable Entity var1, AABB var2, Predicate<? super Entity> var3) {
+   public List<Entity> getEntities(final @Nullable Entity except, final AABB bb, final Predicate<? super Entity> selector) {
       Profiler.get().incrementCounter("getEntities");
-      ArrayList var4 = Lists.newArrayList();
-      this.getEntities().get(var2, (Consumer)((var3x) -> {
-         if (var3x != var1 && var3.test(var3x)) {
-            var4.add(var3x);
+      List<Entity> output = Lists.newArrayList();
+      this.getEntities().get(bb, (Consumer)((entity) -> {
+         if (entity != except && selector.test(entity)) {
+            output.add(entity);
          }
 
       }));
 
-      for(EnderDragonPart var6 : this.dragonParts()) {
-         if (var6 != var1 && var6.parentMob != var1 && var3.test(var6) && var2.intersects(var6.getBoundingBox())) {
-            var4.add(var6);
+      for(EnderDragonPart dragonPart : this.dragonParts()) {
+         if (dragonPart != except && dragonPart.parentMob != except && selector.test(dragonPart) && bb.intersects(dragonPart.getBoundingBox())) {
+            output.add(dragonPart);
          }
       }
 
-      return var4;
+      return output;
    }
 
-   public <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3) {
-      ArrayList var4 = Lists.newArrayList();
-      this.getEntities(var1, var2, var3, var4);
-      return var4;
+   public <T extends Entity> List<T> getEntities(final EntityTypeTest<Entity, T> type, final AABB bb, final Predicate<? super T> selector) {
+      List<T> output = Lists.newArrayList();
+      this.getEntities(type, bb, selector, output);
+      return output;
    }
 
-   public <T extends Entity> void getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3, List<? super T> var4) {
-      this.getEntities(var1, var2, var3, var4, 2147483647);
+   public <T extends Entity> void getEntities(final EntityTypeTest<Entity, T> type, final AABB bb, final Predicate<? super T> selector, final List<? super T> output) {
+      this.getEntities(type, bb, selector, output, 2147483647);
    }
 
-   public <T extends Entity> void getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3, List<? super T> var4, int var5) {
+   public <T extends Entity> void getEntities(final EntityTypeTest<Entity, T> type, final AABB bb, final Predicate<? super T> selector, final List<? super T> output, final int maxResults) {
       Profiler.get().incrementCounter("getEntities");
-      this.getEntities().get(var1, var2, (var4x) -> {
-         if (var3.test(var4x)) {
-            var4.add(var4x);
-            if (var4.size() >= var5) {
+      this.getEntities().get(type, bb, (e) -> {
+         if (selector.test(e)) {
+            output.add(e);
+            if (output.size() >= maxResults) {
                return AbortableIterationConsumer.Continuation.ABORT;
             }
          }
 
-         if (var4x instanceof EnderDragon var5x) {
-            for(EnderDragonPart var9 : var5x.getSubEntities()) {
-               Entity var10 = (Entity)var1.tryCast(var9);
-               if (var10 != null && var3.test(var10)) {
-                  var4.add(var10);
-                  if (var4.size() >= var5) {
+         if (e instanceof EnderDragon enderDragon) {
+            for(EnderDragonPart subEntity : enderDragon.getSubEntities()) {
+               T castSubPart = type.tryCast(subEntity);
+               if (castSubPart != null && selector.test(castSubPart)) {
+                  output.add(castSubPart);
+                  if (output.size() >= maxResults) {
                      return AbortableIterationConsumer.Continuation.ABORT;
                   }
                }
@@ -603,21 +606,21 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       });
    }
 
-   public <T extends Entity> boolean hasEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3) {
+   public <T extends Entity> boolean hasEntities(final EntityTypeTest<Entity, T> type, final AABB bb, final Predicate<? super T> selector) {
       Profiler.get().incrementCounter("hasEntities");
-      MutableBoolean var4 = new MutableBoolean();
-      this.getEntities().get(var1, var2, (var3x) -> {
-         if (var3.test(var3x)) {
-            var4.setTrue();
+      MutableBoolean hasEntities = new MutableBoolean();
+      this.getEntities().get(type, bb, (e) -> {
+         if (selector.test(e)) {
+            hasEntities.setTrue();
             return AbortableIterationConsumer.Continuation.ABORT;
          } else {
-            if (var3x instanceof EnderDragon) {
-               EnderDragon var4x = (EnderDragon)var3x;
+            if (e instanceof EnderDragon) {
+               EnderDragon enderDragon = (EnderDragon)e;
 
-               for(EnderDragonPart var8 : var4x.getSubEntities()) {
-                  Entity var9 = (Entity)var1.tryCast(var8);
-                  if (var9 != null && var3.test(var9)) {
-                     var4.setTrue();
+               for(EnderDragonPart subEntity : enderDragon.getSubEntities()) {
+                  T castSubPart = type.tryCast(subEntity);
+                  if (castSubPart != null && selector.test(castSubPart)) {
+                     hasEntities.setTrue();
                      return AbortableIterationConsumer.Continuation.ABORT;
                   }
                }
@@ -626,55 +629,63 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
             return AbortableIterationConsumer.Continuation.CONTINUE;
          }
       });
-      return var4.isTrue();
+      return hasEntities.isTrue();
    }
 
-   public List<Entity> getPushableEntities(Entity var1, AABB var2) {
-      return this.getEntities(var1, var2, EntitySelector.pushableBy(var1));
+   public List<Entity> getPushableEntities(final Entity pusher, final AABB boundingBox) {
+      return this.getEntities(pusher, boundingBox, EntitySelector.pushableBy(pusher));
    }
 
-   public abstract @Nullable Entity getEntity(int var1);
+   public abstract @Nullable Entity getEntity(int id);
 
-   public @Nullable Entity getEntity(UUID var1) {
-      return (Entity)this.getEntities().get(var1);
+   public @Nullable Entity getEntity(final UUID uuid) {
+      return (Entity)this.getEntities().get(uuid);
    }
 
-   public @Nullable Entity getEntityInAnyDimension(UUID var1) {
-      return this.getEntity(var1);
+   public @Nullable Entity getEntityInAnyDimension(final UUID uuid) {
+      return this.getEntity(uuid);
    }
 
-   public @Nullable Player getPlayerInAnyDimension(UUID var1) {
-      return this.getPlayerByUUID(var1);
+   public @Nullable Player getPlayerInAnyDimension(final UUID uuid) {
+      return this.getPlayerByUUID(uuid);
    }
 
    public abstract Collection<EnderDragonPart> dragonParts();
 
-   public void blockEntityChanged(BlockPos var1) {
-      if (this.hasChunkAt(var1)) {
-         this.getChunkAt(var1).markUnsaved();
+   public void blockEntityChanged(final BlockPos pos) {
+      if (this.hasChunkAt(pos)) {
+         this.getChunkAt(pos).markUnsaved();
       }
 
    }
 
-   public void onBlockEntityAdded(BlockEntity var1) {
+   public void onBlockEntityAdded(final BlockEntity blockEntity) {
    }
 
-   public long getDayTime() {
-      return this.levelData.getDayTime();
+   public long getOverworldClockTime() {
+      return this.getClockTimeTicks(this.registryAccess().get(WorldClocks.OVERWORLD));
    }
 
-   public boolean mayInteract(Entity var1, BlockPos var2) {
+   public long getDefaultClockTime() {
+      return this.getClockTimeTicks(this.dimensionType().defaultClock());
+   }
+
+   private long getClockTimeTicks(final Optional<? extends Holder<WorldClock>> clock) {
+      return (Long)clock.map((holder) -> this.clockManager().getTotalTicks(holder)).orElse(0L);
+   }
+
+   public boolean mayInteract(final Entity entity, final BlockPos pos) {
       return true;
    }
 
-   public void broadcastEntityEvent(Entity var1, byte var2) {
+   public void broadcastEntityEvent(final Entity entity, final byte event) {
    }
 
-   public void broadcastDamageEvent(Entity var1, DamageSource var2) {
+   public void broadcastDamageEvent(final Entity entity, final DamageSource source) {
    }
 
-   public void blockEvent(BlockPos var1, Block var2, int var3, int var4) {
-      this.getBlockState(var1).triggerEvent(this, var1, var3, var4);
+   public void blockEvent(final BlockPos pos, final Block block, final int b0, final int b1) {
+      this.getBlockState(pos).triggerEvent(this, pos, b0, b1);
    }
 
    public LevelData getLevelData() {
@@ -683,24 +694,24 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract TickRateManager tickRateManager();
 
-   public float getThunderLevel(float var1) {
-      return Mth.lerp(var1, this.oThunderLevel, this.thunderLevel) * this.getRainLevel(var1);
+   public float getThunderLevel(final float a) {
+      return Mth.lerp(a, this.oThunderLevel, this.thunderLevel) * this.getRainLevel(a);
    }
 
-   public void setThunderLevel(float var1) {
-      float var2 = Mth.clamp(var1, 0.0F, 1.0F);
-      this.oThunderLevel = var2;
-      this.thunderLevel = var2;
+   public void setThunderLevel(final float thunderLevel) {
+      float clampedThunderLevel = Mth.clamp(thunderLevel, 0.0F, 1.0F);
+      this.oThunderLevel = clampedThunderLevel;
+      this.thunderLevel = clampedThunderLevel;
    }
 
-   public float getRainLevel(float var1) {
-      return Mth.lerp(var1, this.oRainLevel, this.rainLevel);
+   public float getRainLevel(final float a) {
+      return Mth.lerp(a, this.oRainLevel, this.rainLevel);
    }
 
-   public void setRainLevel(float var1) {
-      float var2 = Mth.clamp(var1, 0.0F, 1.0F);
-      this.oRainLevel = var2;
-      this.rainLevel = var2;
+   public void setRainLevel(final float rainLevel) {
+      float clampedRainLevel = Mth.clamp(rainLevel, 0.0F, 1.0F);
+      this.oRainLevel = clampedRainLevel;
+      this.rainLevel = clampedRainLevel;
    }
 
    public boolean canHaveWeather() {
@@ -715,68 +726,69 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.canHaveWeather() && (double)this.getRainLevel(1.0F) > 0.2;
    }
 
-   public boolean isRainingAt(BlockPos var1) {
-      return this.precipitationAt(var1) == Biome.Precipitation.RAIN;
+   public boolean isRainingAt(final BlockPos pos) {
+      return this.precipitationAt(pos) == Biome.Precipitation.RAIN;
    }
 
-   public Biome.Precipitation precipitationAt(BlockPos var1) {
+   public Biome.Precipitation precipitationAt(final BlockPos pos) {
       if (!this.isRaining()) {
          return Biome.Precipitation.NONE;
-      } else if (!this.canSeeSky(var1)) {
+      } else if (!this.canSeeSky(pos)) {
          return Biome.Precipitation.NONE;
-      } else if (this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var1).getY() > var1.getY()) {
+      } else if (this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos).getY() > pos.getY()) {
          return Biome.Precipitation.NONE;
       } else {
-         Biome var2 = (Biome)this.getBiome(var1).value();
-         return var2.getPrecipitationAt(var1, this.getSeaLevel());
+         Biome biome = (Biome)this.getBiome(pos).value();
+         return biome.getPrecipitationAt(pos, this.getSeaLevel());
       }
    }
 
-   public abstract @Nullable MapItemSavedData getMapData(MapId var1);
+   public abstract @Nullable MapItemSavedData getMapData(MapId id);
 
-   public void globalLevelEvent(int var1, BlockPos var2, int var3) {
+   public void globalLevelEvent(final int type, final BlockPos pos, final int data) {
    }
 
-   public CrashReportCategory fillReportDetails(CrashReport var1) {
-      CrashReportCategory var2 = var1.addCategory("Affected level", 1);
-      var2.setDetail("All players", (CrashReportDetail)(() -> {
-         List var1 = this.players();
-         int var10000 = var1.size();
-         return var10000 + " total; " + (String)var1.stream().map(Player::debugInfo).collect(Collectors.joining(", "));
+   public CrashReportCategory fillReportDetails(final CrashReport report) {
+      CrashReportCategory category = report.addCategory("Affected level", 1);
+      category.setDetail("All players", (CrashReportDetail)(() -> {
+         List<? extends Player> players = this.players();
+         int var10000 = players.size();
+         return var10000 + " total; " + (String)players.stream().map(Player::debugInfo).collect(Collectors.joining(", "));
       }));
       ChunkSource var10002 = this.getChunkSource();
       Objects.requireNonNull(var10002);
-      var2.setDetail("Chunk stats", var10002::gatherStats);
-      var2.setDetail("Level dimension", (CrashReportDetail)(() -> this.dimension().identifier().toString()));
+      category.setDetail("Chunk stats", var10002::gatherStats);
+      category.setDetail("Level dimension", (CrashReportDetail)(() -> this.dimension().identifier().toString()));
+      category.setDetail("Level time", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%d game time, %d day time", this.getGameTime(), this.getOverworldClockTime())));
 
       try {
-         this.levelData.fillCrashReportCategory(var2, this);
-      } catch (Throwable var4) {
-         var2.setDetailError("Level Data Unobtainable", var4);
+         this.levelData.fillCrashReportCategory(category, this);
+      } catch (Throwable t) {
+         category.setDetailError("Level Data Unobtainable", t);
       }
 
-      return var2;
+      return category;
    }
 
-   public abstract void destroyBlockProgress(int var1, BlockPos var2, int var3);
+   public abstract void destroyBlockProgress(final int id, final BlockPos blockPos, final int progress);
 
-   public void createFireworks(double var1, double var3, double var5, double var7, double var9, double var11, List<FireworkExplosion> var13) {
+   public void createFireworks(final double x, final double y, final double z, final double xd, final double yd, final double zd, final List<FireworkExplosion> explosions) {
    }
 
    public abstract Scoreboard getScoreboard();
 
-   public void updateNeighbourForOutputSignal(BlockPos var1, Block var2) {
-      for(Direction var4 : Direction.Plane.HORIZONTAL) {
-         BlockPos var5 = var1.relative(var4);
-         if (this.hasChunkAt(var5)) {
-            BlockState var6 = this.getBlockState(var5);
-            if (var6.is(Blocks.COMPARATOR)) {
-               this.neighborChanged(var6, var5, var2, (Orientation)null, false);
-            } else if (var6.isRedstoneConductor(this, var5)) {
-               var5 = var5.relative(var4);
-               var6 = this.getBlockState(var5);
-               if (var6.is(Blocks.COMPARATOR)) {
-                  this.neighborChanged(var6, var5, var2, (Orientation)null, false);
+   public void updateNeighbourForOutputSignal(final BlockPos pos, final Block changedBlock) {
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         BlockPos relativePos = pos.relative(direction);
+         if (this.hasChunkAt(relativePos)) {
+            BlockState state = this.getBlockState(relativePos);
+            if (state.is(Blocks.COMPARATOR)) {
+               this.neighborChanged(state, relativePos, changedBlock, (Orientation)null, false);
+            } else if (state.isRedstoneConductor(this, relativePos)) {
+               relativePos = relativePos.relative(direction);
+               state = this.getBlockState(relativePos);
+               if (state.is(Blocks.COMPARATOR)) {
+                  this.neighborChanged(state, relativePos, changedBlock, (Orientation)null, false);
                }
             }
          }
@@ -788,10 +800,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.skyDarken;
    }
 
-   public void setSkyFlashTime(int var1) {
+   public void setSkyFlashTime(final int skyFlashTime) {
    }
 
-   public void sendPacketToServer(Packet<?> var1) {
+   public void sendPacketToServer(final Packet<?> packet) {
       throw new UnsupportedOperationException("Can't send packets to server unless you're on the client.");
    }
 
@@ -811,20 +823,20 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.random;
    }
 
-   public boolean isStateAtPosition(BlockPos var1, Predicate<BlockState> var2) {
-      return var2.test(this.getBlockState(var1));
+   public boolean isStateAtPosition(final BlockPos pos, final Predicate<BlockState> predicate) {
+      return predicate.test(this.getBlockState(pos));
    }
 
-   public boolean isFluidAtPosition(BlockPos var1, Predicate<FluidState> var2) {
-      return var2.test(this.getFluidState(var1));
+   public boolean isFluidAtPosition(final BlockPos pos, final Predicate<FluidState> predicate) {
+      return predicate.test(this.getFluidState(pos));
    }
 
    public abstract RecipeAccess recipeAccess();
 
-   public BlockPos getBlockRandomPos(int var1, int var2, int var3, int var4) {
+   public BlockPos getBlockRandomPos(final int xo, final int yo, final int zo, final int yMask) {
       this.randValue = this.randValue * 3 + 1013904223;
-      int var5 = this.randValue >> 2;
-      return new BlockPos(var1 + (var5 & 15), var2 + (var5 >> 16 & var4), var3 + (var5 >> 8 & 15));
+      int val = this.randValue >> 2;
+      return new BlockPos(xo + (val & 15), yo + (val >> 16 & yMask), zo + (val >> 8 & 15));
    }
 
    public boolean noSave() {
@@ -853,28 +865,20 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.damageSources;
    }
 
+   public abstract ClockManager clockManager();
+
    public abstract EnvironmentAttributeSystem environmentAttributes();
 
    public abstract PotionBrewing potionBrewing();
 
    public abstract FuelValues fuelValues();
 
-   public int getClientLeafTintColor(BlockPos var1) {
+   public int getClientLeafTintColor(final BlockPos pos) {
       return 0;
    }
 
    public PalettedContainerFactory palettedContainerFactory() {
       return this.palettedContainerFactory;
-   }
-
-   // $FF: synthetic method
-   public EnvironmentAttributeReader environmentAttributes() {
-      return this.environmentAttributes();
-   }
-
-   // $FF: synthetic method
-   public ChunkAccess getChunk(final int var1, final int var2) {
-      return this.getChunk(var1, var2);
    }
 
    static {
@@ -895,8 +899,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       public static final Codec<ExplosionInteraction> CODEC = StringRepresentable.<ExplosionInteraction>fromEnum(ExplosionInteraction::values);
       private final String id;
 
-      private ExplosionInteraction(final String var3) {
-         this.id = var3;
+      private ExplosionInteraction(final String id) {
+         this.id = id;
       }
 
       public String getSerializedName() {

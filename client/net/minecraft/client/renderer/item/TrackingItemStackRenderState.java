@@ -10,8 +10,8 @@ public class TrackingItemStackRenderState extends ItemStackRenderState {
       super();
    }
 
-   public void appendModelIdentityElement(Object var1) {
-      this.modelIdentityElements.add(var1);
+   public void appendModelIdentityElement(final Object element) {
+      this.modelIdentityElements.add(element);
    }
 
    public Object getModelIdentity() {

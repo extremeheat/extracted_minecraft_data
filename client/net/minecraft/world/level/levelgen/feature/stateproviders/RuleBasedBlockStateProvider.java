@@ -11,39 +11,35 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 
 public record RuleBasedBlockStateProvider(BlockStateProvider fallback, List<Rule> rules) {
-   public static final Codec<RuleBasedBlockStateProvider> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockStateProvider.CODEC.fieldOf("fallback").forGetter(RuleBasedBlockStateProvider::fallback), RuleBasedBlockStateProvider.Rule.CODEC.listOf().fieldOf("rules").forGetter(RuleBasedBlockStateProvider::rules)).apply(var0, RuleBasedBlockStateProvider::new));
+   public static final Codec<RuleBasedBlockStateProvider> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("fallback").forGetter(RuleBasedBlockStateProvider::fallback), RuleBasedBlockStateProvider.Rule.CODEC.listOf().fieldOf("rules").forGetter(RuleBasedBlockStateProvider::rules)).apply(i, RuleBasedBlockStateProvider::new));
 
-   public RuleBasedBlockStateProvider(BlockStateProvider var1, List<Rule> var2) {
+   public RuleBasedBlockStateProvider {
       super();
-      this.fallback = var1;
-      this.rules = var2;
    }
 
-   public static RuleBasedBlockStateProvider simple(BlockStateProvider var0) {
-      return new RuleBasedBlockStateProvider(var0, List.of());
+   public static RuleBasedBlockStateProvider simple(final BlockStateProvider provider) {
+      return new RuleBasedBlockStateProvider(provider, List.of());
    }
 
-   public static RuleBasedBlockStateProvider simple(Block var0) {
-      return simple((BlockStateProvider)BlockStateProvider.simple(var0));
+   public static RuleBasedBlockStateProvider simple(final Block block) {
+      return simple((BlockStateProvider)BlockStateProvider.simple(block));
    }
 
-   public BlockState getState(WorldGenLevel var1, RandomSource var2, BlockPos var3) {
-      for(Rule var5 : this.rules) {
-         if (var5.ifTrue().test(var1, var3)) {
-            return var5.then().getState(var2, var3);
+   public BlockState getState(final WorldGenLevel level, final RandomSource random, final BlockPos pos) {
+      for(Rule rule : this.rules) {
+         if (rule.ifTrue().test(level, pos)) {
+            return rule.then().getState(random, pos);
          }
       }
 
-      return this.fallback.getState(var2, var3);
+      return this.fallback.getState(random, pos);
    }
 
    public static record Rule(BlockPredicate ifTrue, BlockStateProvider then) {
-      public static final Codec<Rule> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPredicate.CODEC.fieldOf("if_true").forGetter(Rule::ifTrue), BlockStateProvider.CODEC.fieldOf("then").forGetter(Rule::then)).apply(var0, Rule::new));
+      public static final Codec<Rule> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockPredicate.CODEC.fieldOf("if_true").forGetter(Rule::ifTrue), BlockStateProvider.CODEC.fieldOf("then").forGetter(Rule::then)).apply(i, Rule::new));
 
-      public Rule(BlockPredicate var1, BlockStateProvider var2) {
+      public Rule {
          super();
-         this.ifTrue = var1;
-         this.then = var2;
       }
    }
 }

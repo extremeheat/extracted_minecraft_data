@@ -19,15 +19,15 @@ public class AttributeMap {
    private final Set<AttributeInstance> attributesToUpdate = new ObjectOpenHashSet();
    private final AttributeSupplier supplier;
 
-   public AttributeMap(AttributeSupplier var1) {
+   public AttributeMap(final AttributeSupplier supplier) {
       super();
-      this.supplier = var1;
+      this.supplier = supplier;
    }
 
-   private void onAttributeModified(AttributeInstance var1) {
-      this.attributesToUpdate.add(var1);
-      if (((Attribute)var1.getAttribute().value()).isClientSyncable()) {
-         this.attributesToSync.add(var1);
+   private void onAttributeModified(final AttributeInstance attributeInstance) {
+      this.attributesToUpdate.add(attributeInstance);
+      if (((Attribute)attributeInstance.getAttribute().value()).isClientSyncable()) {
+         this.attributesToSync.add(attributeInstance);
       }
 
    }
@@ -41,95 +41,95 @@ public class AttributeMap {
    }
 
    public Collection<AttributeInstance> getSyncableAttributes() {
-      return (Collection)this.attributes.values().stream().filter((var0) -> ((Attribute)var0.getAttribute().value()).isClientSyncable()).collect(Collectors.toList());
+      return (Collection)this.attributes.values().stream().filter((instance) -> ((Attribute)instance.getAttribute().value()).isClientSyncable()).collect(Collectors.toList());
    }
 
-   public @Nullable AttributeInstance getInstance(Holder<Attribute> var1) {
-      return (AttributeInstance)this.attributes.computeIfAbsent(var1, (var1x) -> this.supplier.createInstance(this::onAttributeModified, var1x));
+   public @Nullable AttributeInstance getInstance(final Holder<Attribute> attribute) {
+      return (AttributeInstance)this.attributes.computeIfAbsent(attribute, (key) -> this.supplier.createInstance(this::onAttributeModified, key));
    }
 
-   public boolean hasAttribute(Holder<Attribute> var1) {
-      return this.attributes.get(var1) != null || this.supplier.hasAttribute(var1);
+   public boolean hasAttribute(final Holder<Attribute> attribute) {
+      return this.attributes.get(attribute) != null || this.supplier.hasAttribute(attribute);
    }
 
-   public boolean hasModifier(Holder<Attribute> var1, Identifier var2) {
-      AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
-      return var3 != null ? var3.getModifier(var2) != null : this.supplier.hasModifier(var1, var2);
+   public boolean hasModifier(final Holder<Attribute> attribute, final Identifier id) {
+      AttributeInstance attributeInstance = (AttributeInstance)this.attributes.get(attribute);
+      return attributeInstance != null ? attributeInstance.getModifier(id) != null : this.supplier.hasModifier(attribute, id);
    }
 
-   public double getValue(Holder<Attribute> var1) {
-      AttributeInstance var2 = (AttributeInstance)this.attributes.get(var1);
-      return var2 != null ? var2.getValue() : this.supplier.getValue(var1);
+   public double getValue(final Holder<Attribute> attribute) {
+      AttributeInstance ownAttribute = (AttributeInstance)this.attributes.get(attribute);
+      return ownAttribute != null ? ownAttribute.getValue() : this.supplier.getValue(attribute);
    }
 
-   public double getBaseValue(Holder<Attribute> var1) {
-      AttributeInstance var2 = (AttributeInstance)this.attributes.get(var1);
-      return var2 != null ? var2.getBaseValue() : this.supplier.getBaseValue(var1);
+   public double getBaseValue(final Holder<Attribute> attribute) {
+      AttributeInstance ownAttribute = (AttributeInstance)this.attributes.get(attribute);
+      return ownAttribute != null ? ownAttribute.getBaseValue() : this.supplier.getBaseValue(attribute);
    }
 
-   public double getModifierValue(Holder<Attribute> var1, Identifier var2) {
-      AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
-      return var3 != null ? var3.getModifier(var2).amount() : this.supplier.getModifierValue(var1, var2);
+   public double getModifierValue(final Holder<Attribute> attribute, final Identifier id) {
+      AttributeInstance attributeInstance = (AttributeInstance)this.attributes.get(attribute);
+      return attributeInstance != null ? attributeInstance.getModifier(id).amount() : this.supplier.getModifierValue(attribute, id);
    }
 
-   public void addTransientAttributeModifiers(Multimap<Holder<Attribute>, AttributeModifier> var1) {
-      var1.forEach((var1x, var2) -> {
-         AttributeInstance var3 = this.getInstance(var1x);
-         if (var3 != null) {
-            var3.removeModifier(var2.id());
-            var3.addTransientModifier(var2);
+   public void addTransientAttributeModifiers(final Multimap<Holder<Attribute>, AttributeModifier> modifiers) {
+      modifiers.forEach((attribute, attributeModifier) -> {
+         AttributeInstance instance = this.getInstance(attribute);
+         if (instance != null) {
+            instance.removeModifier(attributeModifier.id());
+            instance.addTransientModifier(attributeModifier);
          }
 
       });
    }
 
-   public void removeAttributeModifiers(Multimap<Holder<Attribute>, AttributeModifier> var1) {
-      var1.asMap().forEach((var1x, var2) -> {
-         AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1x);
-         if (var3 != null) {
-            var2.forEach((var1) -> var3.removeModifier(var1.id()));
+   public void removeAttributeModifiers(final Multimap<Holder<Attribute>, AttributeModifier> modifiers) {
+      modifiers.asMap().forEach((attribute, attributeModifiers) -> {
+         AttributeInstance instance = (AttributeInstance)this.attributes.get(attribute);
+         if (instance != null) {
+            attributeModifiers.forEach((attributeModifier) -> instance.removeModifier(attributeModifier.id()));
          }
 
       });
    }
 
-   public void assignAllValues(AttributeMap var1) {
-      var1.attributes.values().forEach((var1x) -> {
-         AttributeInstance var2 = this.getInstance(var1x.getAttribute());
-         if (var2 != null) {
-            var2.replaceFrom(var1x);
+   public void assignAllValues(final AttributeMap other) {
+      other.attributes.values().forEach((otherInstance) -> {
+         AttributeInstance selfInstance = this.getInstance(otherInstance.getAttribute());
+         if (selfInstance != null) {
+            selfInstance.replaceFrom(otherInstance);
          }
 
       });
    }
 
-   public void assignBaseValues(AttributeMap var1) {
-      var1.attributes.values().forEach((var1x) -> {
-         AttributeInstance var2 = this.getInstance(var1x.getAttribute());
-         if (var2 != null) {
-            var2.setBaseValue(var1x.getBaseValue());
+   public void assignBaseValues(final AttributeMap other) {
+      other.attributes.values().forEach((otherInstance) -> {
+         AttributeInstance selfInstance = this.getInstance(otherInstance.getAttribute());
+         if (selfInstance != null) {
+            selfInstance.setBaseValue(otherInstance.getBaseValue());
          }
 
       });
    }
 
-   public void assignPermanentModifiers(AttributeMap var1) {
-      var1.attributes.values().forEach((var1x) -> {
-         AttributeInstance var2 = this.getInstance(var1x.getAttribute());
-         if (var2 != null) {
-            var2.addPermanentModifiers(var1x.getPermanentModifiers());
+   public void assignPermanentModifiers(final AttributeMap other) {
+      other.attributes.values().forEach((otherInstance) -> {
+         AttributeInstance selfInstance = this.getInstance(otherInstance.getAttribute());
+         if (selfInstance != null) {
+            selfInstance.addPermanentModifiers(otherInstance.getPermanentModifiers());
          }
 
       });
    }
 
-   public boolean resetBaseValue(Holder<Attribute> var1) {
-      if (!this.supplier.hasAttribute(var1)) {
+   public boolean resetBaseValue(final Holder<Attribute> attribute) {
+      if (!this.supplier.hasAttribute(attribute)) {
          return false;
       } else {
-         AttributeInstance var2 = (AttributeInstance)this.attributes.get(var1);
-         if (var2 != null) {
-            var2.setBaseValue(this.supplier.getBaseValue(var1));
+         AttributeInstance instance = (AttributeInstance)this.attributes.get(attribute);
+         if (instance != null) {
+            instance.setBaseValue(this.supplier.getBaseValue(attribute));
          }
 
          return true;
@@ -137,20 +137,20 @@ public class AttributeMap {
    }
 
    public List<AttributeInstance.Packed> pack() {
-      ArrayList var1 = new ArrayList(this.attributes.values().size());
+      List<AttributeInstance.Packed> result = new ArrayList(this.attributes.values().size());
 
-      for(AttributeInstance var3 : this.attributes.values()) {
-         var1.add(var3.pack());
+      for(AttributeInstance attribute : this.attributes.values()) {
+         result.add(attribute.pack());
       }
 
-      return var1;
+      return result;
    }
 
-   public void apply(List<AttributeInstance.Packed> var1) {
-      for(AttributeInstance.Packed var3 : var1) {
-         AttributeInstance var4 = this.getInstance(var3.attribute());
-         if (var4 != null) {
-            var4.apply(var3);
+   public void apply(final List<AttributeInstance.Packed> packedAttributes) {
+      for(AttributeInstance.Packed packedAttribute : packedAttributes) {
+         AttributeInstance instance = this.getInstance(packedAttribute.attribute());
+         if (instance != null) {
+            instance.apply(packedAttribute);
          }
       }
 

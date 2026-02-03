@@ -18,18 +18,18 @@ public class ShieldModel extends Model<Unit> {
    private final ModelPart plate;
    private final ModelPart handle;
 
-   public ShieldModel(ModelPart var1) {
-      super(var1, RenderTypes::entitySolid);
-      this.plate = var1.getChild("plate");
-      this.handle = var1.getChild("handle");
+   public ShieldModel(final ModelPart root) {
+      super(root, RenderTypes::entitySolid);
+      this.plate = root.getChild("plate");
+      this.handle = root.getChild("handle");
    }
 
    public static LayerDefinition createLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("plate", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, -11.0F, -2.0F, 12.0F, 22.0F, 1.0F), PartPose.ZERO);
-      var1.addOrReplaceChild("handle", CubeListBuilder.create().texOffs(26, 0).addBox(-1.0F, -3.0F, -1.0F, 2.0F, 6.0F, 6.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 64, 64);
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      root.addOrReplaceChild("plate", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, -11.0F, -2.0F, 12.0F, 22.0F, 1.0F), PartPose.ZERO);
+      root.addOrReplaceChild("handle", CubeListBuilder.create().texOffs(26, 0).addBox(-1.0F, -3.0F, -1.0F, 2.0F, 6.0F, 6.0F), PartPose.ZERO);
+      return LayerDefinition.create(mesh, 64, 64);
    }
 
    public ModelPart plate() {

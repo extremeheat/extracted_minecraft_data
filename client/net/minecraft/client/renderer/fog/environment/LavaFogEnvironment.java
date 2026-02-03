@@ -17,36 +17,36 @@ public class LavaFogEnvironment extends FogEnvironment {
       super();
    }
 
-   public int getBaseColor(ClientLevel var1, Camera var2, int var3, float var4) {
+   public int getBaseColor(final ClientLevel level, final Camera camera, final int renderDistance, final float partialTicks) {
       return -6743808;
    }
 
-   public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {
-      if (var2.entity().isSpectator()) {
-         var1.environmentalStart = -8.0F;
-         var1.environmentalEnd = var4 * 0.5F;
+   public void setupFog(final FogData fog, final Camera camera, final ClientLevel level, final float renderDistance, final DeltaTracker deltaTracker) {
+      if (camera.entity().isSpectator()) {
+         fog.environmentalStart = -8.0F;
+         fog.environmentalEnd = renderDistance * 0.5F;
       } else {
          label14: {
-            Entity var7 = var2.entity();
+            Entity var7 = camera.entity();
             if (var7 instanceof LivingEntity) {
-               LivingEntity var6 = (LivingEntity)var7;
-               if (var6.hasEffect(MobEffects.FIRE_RESISTANCE)) {
-                  var1.environmentalStart = 0.0F;
-                  var1.environmentalEnd = 5.0F;
+               LivingEntity livingEntity = (LivingEntity)var7;
+               if (livingEntity.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+                  fog.environmentalStart = 0.0F;
+                  fog.environmentalEnd = 5.0F;
                   break label14;
                }
             }
 
-            var1.environmentalStart = 0.25F;
-            var1.environmentalEnd = 1.0F;
+            fog.environmentalStart = 0.25F;
+            fog.environmentalEnd = 1.0F;
          }
       }
 
-      var1.skyEnd = var1.environmentalEnd;
-      var1.cloudEnd = var1.environmentalEnd;
+      fog.skyEnd = fog.environmentalEnd;
+      fog.cloudEnd = fog.environmentalEnd;
    }
 
-   public boolean isApplicable(@Nullable FogType var1, Entity var2) {
-      return var1 == FogType.LAVA;
+   public boolean isApplicable(final @Nullable FogType fogType, final Entity entity) {
+      return fogType == FogType.LAVA;
    }
 }

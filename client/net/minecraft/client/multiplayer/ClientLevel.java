@@ -8,20 +8,19 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Camera;
+import net.minecraft.client.ClientClockManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.client.gui.screens.WinScreen;
@@ -62,13 +61,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.AmbientParticle;
-import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
@@ -99,7 +98,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
-import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityTickList;
@@ -128,7 +126,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private static final double FLUID_PARTICLE_SPAWN_OFFSET = 0.05;
    private static final int NORMAL_LIGHT_UPDATES_PER_FRAME = 10;
    private static final int LIGHT_UPDATE_QUEUE_SIZE_THRESHOLD = 1000;
-   final EntityTickList tickingEntities = new EntityTickList();
+   private final EntityTickList tickingEntities = new EntityTickList();
    private final TransientEntitySectionManager<Entity> entityStorage = new TransientEntitySectionManager<Entity>(Entity.class, new EntityCallbacks());
    private final ClientPacketListener connection;
    private final LevelRenderer levelRenderer;
@@ -137,15 +135,15 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final TickRateManager tickRateManager;
    private final @Nullable EndFlashState endFlashState;
    private final Minecraft minecraft = Minecraft.getInstance();
-   final List<AbstractClientPlayer> players = Lists.newArrayList();
-   final List<EnderDragonPart> dragonParts = Lists.newArrayList();
+   private final List<AbstractClientPlayer> players = Lists.newArrayList();
+   private final List<EnderDragonPart> dragonParts = Lists.newArrayList();
    private final Map<MapId, MapItemSavedData> mapData = Maps.newHashMap();
    private int skyFlashTime;
-   private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = (Object2ObjectArrayMap)Util.make(new Object2ObjectArrayMap(3), (var1x) -> {
-      var1x.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.GRASS_COLOR_RESOLVER)));
-      var1x.put(BiomeColors.FOLIAGE_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.FOLIAGE_COLOR_RESOLVER)));
-      var1x.put(BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER)));
-      var1x.put(BiomeColors.WATER_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.WATER_COLOR_RESOLVER)));
+   private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = (Object2ObjectArrayMap)Util.make(new Object2ObjectArrayMap(3), (cache) -> {
+      cache.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache((pos) -> this.calculateBlockTint(pos, BiomeColors.GRASS_COLOR_RESOLVER)));
+      cache.put(BiomeColors.FOLIAGE_COLOR_RESOLVER, new BlockTintCache((pos) -> this.calculateBlockTint(pos, BiomeColors.FOLIAGE_COLOR_RESOLVER)));
+      cache.put(BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER, new BlockTintCache((pos) -> this.calculateBlockTint(pos, BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER)));
+      cache.put(BiomeColors.WATER_COLOR_RESOLVER, new BlockTintCache((pos) -> this.calculateBlockTint(pos, BiomeColors.WATER_COLOR_RESOLVER)));
    });
    private final ClientChunkCache chunkSource;
    private final Deque<Runnable> lightUpdateQueue = Queues.newArrayDeque();
@@ -156,21 +154,20 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final WorldBorder worldBorder = new WorldBorder();
    private final EnvironmentAttributeSystem environmentAttributes;
    private final int seaLevel;
-   private boolean tickDayTime;
    private static final Set<Item> MARKER_PARTICLE_ITEMS;
 
-   public void handleBlockChangedAck(int var1) {
+   public void handleBlockChangedAck(final int sequence) {
       if (SharedConstants.DEBUG_BLOCK_BREAK) {
-         LOGGER.debug("ACK {}", var1);
+         LOGGER.debug("ACK {}", sequence);
       }
 
-      this.blockStatePredictionHandler.endPredictionsUpTo(var1, this);
+      this.blockStatePredictionHandler.endPredictionsUpTo(sequence, this);
    }
 
-   public void onBlockEntityAdded(BlockEntity var1) {
-      BlockEntityRenderer var2 = this.minecraft.getBlockEntityRenderDispatcher().getRenderer(var1);
-      if (var2 != null && var2.shouldRenderOffScreen()) {
-         this.globallyRenderedBlockEntities.add(var1);
+   public void onBlockEntityAdded(final BlockEntity blockEntity) {
+      BlockEntityRenderer<BlockEntity, ?> renderer = this.minecraft.getBlockEntityRenderDispatcher().getRenderer(blockEntity);
+      if (renderer != null && renderer.shouldRenderOffScreen()) {
+         this.globallyRenderedBlockEntities.add(blockEntity);
       }
 
    }
@@ -179,20 +176,20 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.globallyRenderedBlockEntities;
    }
 
-   public void setServerVerifiedBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
-      if (!this.blockStatePredictionHandler.updateKnownServerState(var1, var2)) {
-         super.setBlock(var1, var2, var3, 512);
+   public void setServerVerifiedBlockState(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlag) {
+      if (!this.blockStatePredictionHandler.updateKnownServerState(pos, blockState)) {
+         super.setBlock(pos, blockState, updateFlag, 512);
       }
 
    }
 
-   public void syncBlockState(BlockPos var1, BlockState var2, Vec3 var3) {
-      BlockState var4 = this.getBlockState(var1);
-      if (var4 != var2) {
-         this.setBlock(var1, var2, 19);
-         LocalPlayer var5 = this.minecraft.player;
-         if (this == ((Player)var5).level() && ((Player)var5).isColliding(var1, var2)) {
-            ((Player)var5).absSnapTo(var3.x, var3.y, var3.z);
+   public void syncBlockState(final BlockPos pos, final BlockState state, final Vec3 playerPos) {
+      BlockState oldState = this.getBlockState(pos);
+      if (oldState != state) {
+         this.setBlock(pos, state, 19);
+         Player player = this.minecraft.player;
+         if (this == player.level() && player.isColliding(pos, state)) {
+            player.absSnapTo(playerPos.x, playerPos.y, playerPos.z);
          }
       }
 
@@ -202,32 +199,32 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.blockStatePredictionHandler;
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3, int var4) {
+   public boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
       if (this.blockStatePredictionHandler.isPredicting()) {
-         BlockState var5 = this.getBlockState(var1);
-         boolean var6 = super.setBlock(var1, var2, var3, var4);
-         if (var6) {
-            this.blockStatePredictionHandler.retainKnownServerState(var1, var5, this.minecraft.player);
+         BlockState oldState = this.getBlockState(pos);
+         boolean success = super.setBlock(pos, blockState, updateFlags, updateLimit);
+         if (success) {
+            this.blockStatePredictionHandler.retainKnownServerState(pos, oldState, this.minecraft.player);
          }
 
-         return var6;
+         return success;
       } else {
-         return super.setBlock(var1, var2, var3, var4);
+         return super.setBlock(pos, blockState, updateFlags, updateLimit);
       }
    }
 
-   public ClientLevel(ClientPacketListener var1, ClientLevelData var2, ResourceKey<Level> var3, Holder<DimensionType> var4, int var5, int var6, LevelRenderer var7, boolean var8, long var9, int var11) {
-      super(var2, var3, var1.registryAccess(), var4, true, var8, var9, 1000000);
-      this.connection = var1;
-      this.chunkSource = new ClientChunkCache(this, var5);
+   public ClientLevel(final ClientPacketListener connection, final ClientLevelData levelData, final ResourceKey<Level> dimension, final Holder<DimensionType> dimensionType, final int serverChunkRadius, final int serverSimulationDistance, final LevelRenderer levelRenderer, final boolean isDebug, final long biomeZoomSeed, final int seaLevel) {
+      super(levelData, dimension, connection.registryAccess(), dimensionType, true, isDebug, biomeZoomSeed, 1000000);
+      this.connection = connection;
+      this.chunkSource = new ClientChunkCache(this, serverChunkRadius);
       this.tickRateManager = new TickRateManager();
-      this.clientLevelData = var2;
-      this.levelRenderer = var7;
-      this.seaLevel = var11;
+      this.clientLevelData = levelData;
+      this.levelRenderer = levelRenderer;
+      this.seaLevel = seaLevel;
       this.levelEventHandler = new LevelEventHandler(this.minecraft, this);
-      this.endFlashState = ((DimensionType)var4.value()).hasEndFlashes() ? new EndFlashState() : null;
-      this.setRespawnData(LevelData.RespawnData.of(var3, new BlockPos(8, 64, 8), 0.0F, 0.0F));
-      this.serverSimulationDistance = var6;
+      this.endFlashState = ((DimensionType)dimensionType.value()).hasEndFlashes() ? new EndFlashState() : null;
+      this.setRespawnData(LevelData.RespawnData.of(dimension, new BlockPos(8, 64, 8), 0.0F, 0.0F));
+      this.serverSimulationDistance = serverSimulationDistance;
       this.environmentAttributes = this.addEnvironmentAttributeLayers(EnvironmentAttributeSystem.builder()).build();
       this.updateSkyBrightness();
       if (this.canHaveWeather()) {
@@ -236,29 +233,29 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    }
 
-   private EnvironmentAttributeSystem.Builder addEnvironmentAttributeLayers(EnvironmentAttributeSystem.Builder var1) {
-      var1.addDefaultLayers(this);
-      int var2 = ARGB.color(204, 204, 255);
-      var1.addTimeBasedLayer(EnvironmentAttributes.SKY_COLOR, (var2x, var3) -> this.getSkyFlashTime() > 0 ? ARGB.srgbLerp(0.22F, var2x, var2) : var2x);
-      var1.addTimeBasedLayer(EnvironmentAttributes.SKY_LIGHT_FACTOR, (var1x, var2x) -> this.getSkyFlashTime() > 0 ? 1.0F : var1x);
-      return var1;
+   private EnvironmentAttributeSystem.Builder addEnvironmentAttributeLayers(final EnvironmentAttributeSystem.Builder environmentAttributes) {
+      environmentAttributes.addDefaultLayers(this);
+      int flashColor = ARGB.color(204, 204, 255);
+      environmentAttributes.addTimeBasedLayer(EnvironmentAttributes.SKY_COLOR, (skyColor, cacheTickId) -> this.getSkyFlashTime() > 0 ? ARGB.srgbLerp(0.22F, skyColor, flashColor) : skyColor);
+      environmentAttributes.addTimeBasedLayer(EnvironmentAttributes.SKY_LIGHT_FACTOR, (skyFactor, cacheTickId) -> this.getSkyFlashTime() > 0 ? 1.0F : skyFactor);
+      return environmentAttributes;
    }
 
-   public void queueLightUpdate(Runnable var1) {
-      this.lightUpdateQueue.add(var1);
+   public void queueLightUpdate(final Runnable update) {
+      this.lightUpdateQueue.add(update);
    }
 
    public void pollLightUpdates() {
-      int var1 = this.lightUpdateQueue.size();
-      int var2 = var1 < 1000 ? Math.max(10, var1 / 10) : var1;
+      int size = this.lightUpdateQueue.size();
+      int lightUpdatesPerFrame = size < 1000 ? Math.max(10, size / 10) : size;
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         Runnable var4 = (Runnable)this.lightUpdateQueue.poll();
-         if (var4 == null) {
+      for(int i = 0; i < lightUpdatesPerFrame; ++i) {
+         Runnable update = (Runnable)this.lightUpdateQueue.poll();
+         if (update == null) {
             break;
          }
 
-         var4.run();
+         update.run();
       }
 
    }
@@ -267,7 +264,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.endFlashState;
    }
 
-   public void tick(BooleanSupplier var1) {
+   public void tick(final BooleanSupplier haveTime) {
       this.updateSkyBrightness();
       if (this.tickRateManager().runsNormally()) {
          this.getWorldBorder().tick();
@@ -279,7 +276,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       }
 
       if (this.endFlashState != null) {
-         this.endFlashState.tick(this.getGameTime());
+         this.endFlashState.tick(this.getDefaultClockTime());
          if (this.endFlashState.flashStartedThisTick() && !(this.minecraft.screen instanceof WinScreen)) {
             this.minecraft.getSoundManager().playDelayed(new DirectionalSoundInstance(SoundEvents.WEATHER_END_FLASH, SoundSource.WEATHER, this.random, this.minecraft.gameRenderer.getMainCamera(), this.endFlashState.getXAngle(), this.endFlashState.getYAngle()), 30);
          }
@@ -287,8 +284,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
       this.explosionTracker.tick(this);
 
-      try (Zone var2 = Profiler.get().zone("blocks")) {
-         this.chunkSource.tick(var1, true);
+      try (Zone ignored = Profiler.get().zone("blocks")) {
+         this.chunkSource.tick(haveTime, true);
       }
 
       JvmProfiler.INSTANCE.onClientTick(this.minecraft.getFps());
@@ -297,16 +294,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    private void tickTime() {
       this.clientLevelData.setGameTime(this.clientLevelData.getGameTime() + 1L);
-      if (this.tickDayTime) {
-         this.clientLevelData.setDayTime(this.clientLevelData.getDayTime() + 1L);
-      }
-
    }
 
-   public void setTimeFromServer(long var1, long var3, boolean var5) {
-      this.clientLevelData.setGameTime(var1);
-      this.clientLevelData.setDayTime(var3);
-      this.tickDayTime = var5;
+   public void setTimeFromServer(final long gameTime) {
+      this.clientLevelData.setGameTime(gameTime);
    }
 
    public Iterable<Entity> entitiesForRendering() {
@@ -314,71 +305,74 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    public void tickEntities() {
-      this.tickingEntities.forEach((var1) -> {
-         if (!var1.isRemoved() && !var1.isPassenger() && !this.tickRateManager.isEntityFrozen(var1)) {
-            this.guardEntityTick(this::tickNonPassenger, var1);
+      this.tickingEntities.forEach((entity) -> {
+         if (!entity.isRemoved() && !entity.isPassenger() && !this.tickRateManager.isEntityFrozen(entity)) {
+            this.guardEntityTick(this::tickNonPassenger, entity);
          }
       });
    }
 
-   public boolean isTickingEntity(Entity var1) {
-      return this.tickingEntities.contains(var1);
+   public boolean isTickingEntity(final Entity entity) {
+      return this.tickingEntities.contains(entity);
    }
 
-   public boolean shouldTickDeath(Entity var1) {
-      return var1.chunkPosition().getChessboardDistance(this.minecraft.player.chunkPosition()) <= this.serverSimulationDistance;
+   public boolean shouldTickDeath(final Entity entity) {
+      return entity.chunkPosition().getChessboardDistance(this.minecraft.player.chunkPosition()) <= this.serverSimulationDistance;
    }
 
-   public void tickNonPassenger(Entity var1) {
-      var1.setOldPosAndRot();
-      ++var1.tickCount;
-      Profiler.get().push((Supplier)(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString()));
-      var1.tick();
+   public void tickNonPassenger(final Entity entity) {
+      entity.setOldPosAndRot();
+      ++entity.tickCount;
+      ProfilerFiller var10000 = Profiler.get();
+      Holder var10001 = entity.typeHolder();
+      Objects.requireNonNull(var10001);
+      var10000.push(var10001::getRegisteredName);
+      entity.tick();
       Profiler.get().pop();
 
-      for(Entity var3 : var1.getPassengers()) {
-         this.tickPassenger(var1, var3);
+      for(Entity passenger : entity.getPassengers()) {
+         this.tickPassenger(entity, passenger);
       }
 
    }
 
-   private void tickPassenger(Entity var1, Entity var2) {
-      if (!var2.isRemoved() && var2.getVehicle() == var1) {
-         if (var2 instanceof Player || this.tickingEntities.contains(var2)) {
-            var2.setOldPosAndRot();
-            ++var2.tickCount;
-            var2.rideTick();
+   private void tickPassenger(final Entity vehicle, final Entity entity) {
+      if (!entity.isRemoved() && entity.getVehicle() == vehicle) {
+         if (entity instanceof Player || this.tickingEntities.contains(entity)) {
+            entity.setOldPosAndRot();
+            ++entity.tickCount;
+            entity.rideTick();
 
-            for(Entity var4 : var2.getPassengers()) {
-               this.tickPassenger(var2, var4);
+            for(Entity passenger : entity.getPassengers()) {
+               this.tickPassenger(entity, passenger);
             }
 
          }
       } else {
-         var2.stopRiding();
+         entity.stopRiding();
       }
    }
 
-   public void unload(LevelChunk var1) {
-      var1.clearAllBlockEntities();
-      this.chunkSource.getLightEngine().setLightEnabled(var1.getPos(), false);
-      this.entityStorage.stopTicking(var1.getPos());
+   public void unload(final LevelChunk levelChunk) {
+      levelChunk.clearAllBlockEntities();
+      this.chunkSource.getLightEngine().setLightEnabled(levelChunk.getPos(), false);
+      this.entityStorage.stopTicking(levelChunk.getPos());
    }
 
-   public void onChunkLoaded(ChunkPos var1) {
-      this.tintCaches.forEach((var1x, var2) -> var2.invalidateForChunk(var1.x, var1.z));
-      this.entityStorage.startTicking(var1);
+   public void onChunkLoaded(final ChunkPos pos) {
+      this.tintCaches.forEach((resolver, cache) -> cache.invalidateForChunk(pos.x(), pos.z()));
+      this.entityStorage.startTicking(pos);
    }
 
-   public void onSectionBecomingNonEmpty(long var1) {
-      this.levelRenderer.onSectionBecomingNonEmpty(var1);
+   public void onSectionBecomingNonEmpty(final long sectionNode) {
+      this.levelRenderer.onSectionBecomingNonEmpty(sectionNode);
    }
 
    public void clearTintCaches() {
-      this.tintCaches.forEach((var0, var1) -> var1.invalidateAll());
+      this.tintCaches.forEach((resolver, cache) -> cache.invalidateAll());
    }
 
-   public boolean hasChunk(int var1, int var2) {
+   public boolean hasChunk(final int chunkX, final int chunkZ) {
       return true;
    }
 
@@ -386,110 +380,110 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.entityStorage.count();
    }
 
-   public void addEntity(Entity var1) {
-      this.removeEntity(var1.getId(), Entity.RemovalReason.DISCARDED);
-      this.entityStorage.addEntity(var1);
+   public void addEntity(final Entity entity) {
+      this.removeEntity(entity.getId(), Entity.RemovalReason.DISCARDED);
+      this.entityStorage.addEntity(entity);
    }
 
-   public void removeEntity(int var1, Entity.RemovalReason var2) {
-      Entity var3 = (Entity)this.getEntities().get(var1);
-      if (var3 != null) {
-         var3.setRemoved(var2);
-         var3.onClientRemoval();
+   public void removeEntity(final int id, final Entity.RemovalReason reason) {
+      Entity entity = (Entity)this.getEntities().get(id);
+      if (entity != null) {
+         entity.setRemoved(reason);
+         entity.onClientRemoval();
       }
 
    }
 
-   public List<Entity> getPushableEntities(Entity var1, AABB var2) {
-      LocalPlayer var3 = this.minecraft.player;
-      return var3 != null && var3 != var1 && var3.getBoundingBox().intersects(var2) && EntitySelector.pushableBy(var1).test(var3) ? List.of(var3) : List.of();
+   public List<Entity> getPushableEntities(final Entity pusher, final AABB boundingBox) {
+      LocalPlayer player = this.minecraft.player;
+      return player != null && player != pusher && player.getBoundingBox().intersects(boundingBox) && EntitySelector.pushableBy(pusher).test(player) ? List.of(player) : List.of();
    }
 
-   public @Nullable Entity getEntity(int var1) {
-      return (Entity)this.getEntities().get(var1);
+   public @Nullable Entity getEntity(final int id) {
+      return (Entity)this.getEntities().get(id);
    }
 
-   public void disconnect(Component var1) {
-      this.connection.getConnection().disconnect(var1);
+   public void disconnect(final Component message) {
+      this.connection.getConnection().disconnect(message);
    }
 
-   public void animateTick(int var1, int var2, int var3) {
-      boolean var4 = true;
-      RandomSource var5 = RandomSource.create();
-      Block var6 = this.getMarkerParticleTarget();
-      BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
+   public void animateTick(final int xt, final int yt, final int zt) {
+      int r = 32;
+      RandomSource animateRandom = RandomSource.create();
+      Block markerParticleTarget = this.getMarkerParticleTarget();
+      BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-      for(int var8 = 0; var8 < 667; ++var8) {
-         this.doAnimateTick(var1, var2, var3, 16, var5, var6, var7);
-         this.doAnimateTick(var1, var2, var3, 32, var5, var6, var7);
+      for(int i = 0; i < 667; ++i) {
+         this.doAnimateTick(xt, yt, zt, 16, animateRandom, markerParticleTarget, pos);
+         this.doAnimateTick(xt, yt, zt, 32, animateRandom, markerParticleTarget, pos);
       }
 
    }
 
    private @Nullable Block getMarkerParticleTarget() {
       if (this.minecraft.gameMode.getPlayerMode() == GameType.CREATIVE) {
-         ItemStack var1 = this.minecraft.player.getMainHandItem();
-         Item var2 = var1.getItem();
-         if (MARKER_PARTICLE_ITEMS.contains(var2) && var2 instanceof BlockItem) {
-            BlockItem var3 = (BlockItem)var2;
-            return var3.getBlock();
+         ItemStack carriedItemStack = this.minecraft.player.getMainHandItem();
+         Item carriedItem = carriedItemStack.getItem();
+         if (MARKER_PARTICLE_ITEMS.contains(carriedItem) && carriedItem instanceof BlockItem) {
+            BlockItem blockItem = (BlockItem)carriedItem;
+            return blockItem.getBlock();
          }
       }
 
       return null;
    }
 
-   public void doAnimateTick(int var1, int var2, int var3, int var4, RandomSource var5, @Nullable Block var6, BlockPos.MutableBlockPos var7) {
-      int var8 = var1 + this.random.nextInt(var4) - this.random.nextInt(var4);
-      int var9 = var2 + this.random.nextInt(var4) - this.random.nextInt(var4);
-      int var10 = var3 + this.random.nextInt(var4) - this.random.nextInt(var4);
-      var7.set(var8, var9, var10);
-      BlockState var11 = this.getBlockState(var7);
-      var11.getBlock().animateTick(var11, this, var7, var5);
-      FluidState var12 = this.getFluidState(var7);
-      if (!var12.isEmpty()) {
-         var12.animateTick(this, var7, var5);
-         ParticleOptions var13 = var12.getDripParticle();
-         if (var13 != null && this.random.nextInt(10) == 0) {
-            boolean var14 = var11.isFaceSturdy(this, var7, Direction.DOWN);
-            BlockPos var15 = var7.below();
-            this.trySpawnDripParticles(var15, this.getBlockState(var15), var13, var14);
+   public void doAnimateTick(final int xt, final int yt, final int zt, final int r, final RandomSource animateRandom, final @Nullable Block markerParticleTarget, final BlockPos.MutableBlockPos pos) {
+      int x = xt + this.random.nextInt(r) - this.random.nextInt(r);
+      int y = yt + this.random.nextInt(r) - this.random.nextInt(r);
+      int z = zt + this.random.nextInt(r) - this.random.nextInt(r);
+      pos.set(x, y, z);
+      BlockState state = this.getBlockState(pos);
+      state.getBlock().animateTick(state, this, pos, animateRandom);
+      FluidState fluidState = this.getFluidState(pos);
+      if (!fluidState.isEmpty()) {
+         fluidState.animateTick(this, pos, animateRandom);
+         ParticleOptions dripParticle = fluidState.getDripParticle();
+         if (dripParticle != null && this.random.nextInt(10) == 0) {
+            boolean hasWatertightBottom = state.isFaceSturdy(this, pos, Direction.DOWN);
+            BlockPos below = pos.below();
+            this.trySpawnDripParticles(below, this.getBlockState(below), dripParticle, hasWatertightBottom);
          }
       }
 
-      if (var6 == var11.getBlock()) {
-         this.addParticle(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, var11), (double)var8 + 0.5, (double)var9 + 0.5, (double)var10 + 0.5, 0.0, 0.0, 0.0);
+      if (markerParticleTarget == state.getBlock()) {
+         this.addParticle(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, state), (double)x + 0.5, (double)y + 0.5, (double)z + 0.5, 0.0, 0.0, 0.0);
       }
 
-      if (!var11.isCollisionShapeFullBlock(this, var7)) {
-         for(AmbientParticle var17 : (List)this.environmentAttributes().getValue(EnvironmentAttributes.AMBIENT_PARTICLES, var7)) {
-            if (var17.canSpawn(this.random)) {
-               this.addParticle(var17.particle(), (double)var7.getX() + this.random.nextDouble(), (double)var7.getY() + this.random.nextDouble(), (double)var7.getZ() + this.random.nextDouble(), 0.0, 0.0, 0.0);
+      if (!state.isCollisionShapeFullBlock(this, pos)) {
+         for(AmbientParticle particle : (List)this.environmentAttributes().getValue(EnvironmentAttributes.AMBIENT_PARTICLES, pos)) {
+            if (particle.canSpawn(this.random)) {
+               this.addParticle(particle.particle(), (double)pos.getX() + this.random.nextDouble(), (double)pos.getY() + this.random.nextDouble(), (double)pos.getZ() + this.random.nextDouble(), 0.0, 0.0, 0.0);
             }
          }
       }
 
    }
 
-   private void trySpawnDripParticles(BlockPos var1, BlockState var2, ParticleOptions var3, boolean var4) {
-      if (var2.getFluidState().isEmpty()) {
-         VoxelShape var5 = var2.getCollisionShape(this, var1);
-         double var6 = var5.max(Direction.Axis.Y);
-         if (var6 < 1.0) {
-            if (var4) {
-               this.spawnFluidParticle((double)var1.getX(), (double)(var1.getX() + 1), (double)var1.getZ(), (double)(var1.getZ() + 1), (double)(var1.getY() + 1) - 0.05, var3);
+   private void trySpawnDripParticles(final BlockPos pos, final BlockState state, final ParticleOptions dripParticle, final boolean isTopSolid) {
+      if (state.getFluidState().isEmpty()) {
+         VoxelShape collisionShape = state.getCollisionShape(this, pos);
+         double topSideHeight = collisionShape.max(Direction.Axis.Y);
+         if (topSideHeight < 1.0) {
+            if (isTopSolid) {
+               this.spawnFluidParticle((double)pos.getX(), (double)(pos.getX() + 1), (double)pos.getZ(), (double)(pos.getZ() + 1), (double)(pos.getY() + 1) - 0.05, dripParticle);
             }
-         } else if (!var2.is(BlockTags.IMPERMEABLE)) {
-            double var8 = var5.min(Direction.Axis.Y);
-            if (var8 > 0.0) {
-               this.spawnParticle(var1, var3, var5, (double)var1.getY() + var8 - 0.05);
+         } else if (!state.is(BlockTags.IMPERMEABLE)) {
+            double bottomSideHeight = collisionShape.min(Direction.Axis.Y);
+            if (bottomSideHeight > 0.0) {
+               this.spawnParticle(pos, dripParticle, collisionShape, (double)pos.getY() + bottomSideHeight - 0.05);
             } else {
-               BlockPos var10 = var1.below();
-               BlockState var11 = this.getBlockState(var10);
-               VoxelShape var12 = var11.getCollisionShape(this, var10);
-               double var13 = var12.max(Direction.Axis.Y);
-               if (var13 < 1.0 && var11.getFluidState().isEmpty()) {
-                  this.spawnParticle(var1, var3, var5, (double)var1.getY() - 0.05);
+               BlockPos below = pos.below();
+               BlockState belowState = this.getBlockState(below);
+               VoxelShape belowShape = belowState.getCollisionShape(this, below);
+               double belowTopSideHeight = belowShape.max(Direction.Axis.Y);
+               if (belowTopSideHeight < 1.0 && belowState.getFluidState().isEmpty()) {
+                  this.spawnParticle(pos, dripParticle, collisionShape, (double)pos.getY() - 0.05);
                }
             }
          }
@@ -497,76 +491,76 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       }
    }
 
-   private void spawnParticle(BlockPos var1, ParticleOptions var2, VoxelShape var3, double var4) {
-      this.spawnFluidParticle((double)var1.getX() + var3.min(Direction.Axis.X), (double)var1.getX() + var3.max(Direction.Axis.X), (double)var1.getZ() + var3.min(Direction.Axis.Z), (double)var1.getZ() + var3.max(Direction.Axis.Z), var4, var2);
+   private void spawnParticle(final BlockPos pos, final ParticleOptions dripParticle, final VoxelShape dripShape, final double height) {
+      this.spawnFluidParticle((double)pos.getX() + dripShape.min(Direction.Axis.X), (double)pos.getX() + dripShape.max(Direction.Axis.X), (double)pos.getZ() + dripShape.min(Direction.Axis.Z), (double)pos.getZ() + dripShape.max(Direction.Axis.Z), height, dripParticle);
    }
 
-   private void spawnFluidParticle(double var1, double var3, double var5, double var7, double var9, ParticleOptions var11) {
-      this.addParticle(var11, Mth.lerp(this.random.nextDouble(), var1, var3), var9, Mth.lerp(this.random.nextDouble(), var5, var7), 0.0, 0.0, 0.0);
+   private void spawnFluidParticle(final double x1, final double x2, final double z1, final double z2, final double y, final ParticleOptions dripParticle) {
+      this.addParticle(dripParticle, Mth.lerp(this.random.nextDouble(), x1, x2), y, Mth.lerp(this.random.nextDouble(), z1, z2), 0.0, 0.0, 0.0);
    }
 
-   public CrashReportCategory fillReportDetails(CrashReport var1) {
-      CrashReportCategory var2 = super.fillReportDetails(var1);
-      var2.setDetail("Server brand", (CrashReportDetail)(() -> this.minecraft.player.connection.serverBrand()));
-      var2.setDetail("Server type", (CrashReportDetail)(() -> this.minecraft.getSingleplayerServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server"));
-      var2.setDetail("Tracked entity count", (CrashReportDetail)(() -> String.valueOf(this.getEntityCount())));
-      return var2;
+   public CrashReportCategory fillReportDetails(final CrashReport report) {
+      CrashReportCategory category = super.fillReportDetails(report);
+      category.setDetail("Server brand", (CrashReportDetail)(() -> this.minecraft.player.connection.serverBrand()));
+      category.setDetail("Server type", (CrashReportDetail)(() -> this.minecraft.getSingleplayerServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server"));
+      category.setDetail("Tracked entity count", (CrashReportDetail)(() -> String.valueOf(this.getEntityCount())));
+      return category;
    }
 
-   public void playSeededSound(@Nullable Entity var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12) {
-      if (var1 == this.minecraft.player) {
-         this.playSound(var2, var4, var6, (SoundEvent)var8.value(), var9, var10, var11, false, var12);
+   public void playSeededSound(final @Nullable Entity except, final double x, final double y, final double z, final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch, final long seed) {
+      if (except == this.minecraft.player) {
+         this.playSound(x, y, z, sound.value(), source, volume, pitch, false, seed);
       }
 
    }
 
-   public void playSeededSound(@Nullable Entity var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7) {
-      if (var1 == this.minecraft.player) {
-         this.minecraft.getSoundManager().play(new EntityBoundSoundInstance((SoundEvent)var3.value(), var4, var5, var6, var2, var7));
+   public void playSeededSound(final @Nullable Entity except, final Entity sourceEntity, final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch, final long seed) {
+      if (except == this.minecraft.player) {
+         this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(sound.value(), source, volume, pitch, sourceEntity, seed));
       }
 
    }
 
-   public void playLocalSound(Entity var1, SoundEvent var2, SoundSource var3, float var4, float var5) {
-      this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(var2, var3, var4, var5, var1, this.random.nextLong()));
+   public void playLocalSound(final Entity sourceEntity, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
+      this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(sound, source, volume, pitch, sourceEntity, this.random.nextLong()));
    }
 
-   public void playPlayerSound(SoundEvent var1, SoundSource var2, float var3, float var4) {
+   public void playPlayerSound(final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
       if (this.minecraft.player != null) {
-         this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(var1, var2, var3, var4, this.minecraft.player, this.random.nextLong()));
+         this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(sound, source, volume, pitch, this.minecraft.player, this.random.nextLong()));
       }
 
    }
 
-   public void playLocalSound(double var1, double var3, double var5, SoundEvent var7, SoundSource var8, float var9, float var10, boolean var11) {
-      this.playSound(var1, var3, var5, var7, var8, var9, var10, var11, this.random.nextLong());
+   public void playLocalSound(final double x, final double y, final double z, final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final boolean distanceDelay) {
+      this.playSound(x, y, z, sound, source, volume, pitch, distanceDelay, this.random.nextLong());
    }
 
-   private void playSound(double var1, double var3, double var5, SoundEvent var7, SoundSource var8, float var9, float var10, boolean var11, long var12) {
-      double var14 = this.minecraft.gameRenderer.getMainCamera().position().distanceToSqr(var1, var3, var5);
-      SimpleSoundInstance var16 = new SimpleSoundInstance(var7, var8, var9, var10, RandomSource.create(var12), var1, var3, var5);
-      if (var11 && var14 > 100.0) {
-         double var17 = Math.sqrt(var14) / 40.0;
-         this.minecraft.getSoundManager().playDelayed(var16, (int)(var17 * 20.0));
+   private void playSound(final double x, final double y, final double z, final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final boolean distanceDelay, final long seed) {
+      double distanceToSqr = this.minecraft.gameRenderer.getMainCamera().position().distanceToSqr(x, y, z);
+      SimpleSoundInstance instance = new SimpleSoundInstance(sound, source, volume, pitch, RandomSource.create(seed), x, y, z);
+      if (distanceDelay && distanceToSqr > 100.0) {
+         double delayInSeconds = Math.sqrt(distanceToSqr) / 40.0;
+         this.minecraft.getSoundManager().playDelayed(instance, (int)(delayInSeconds * 20.0));
       } else {
-         this.minecraft.getSoundManager().play(var16);
+         this.minecraft.getSoundManager().play(instance);
       }
 
    }
 
-   public void createFireworks(double var1, double var3, double var5, double var7, double var9, double var11, List<FireworkExplosion> var13) {
-      if (var13.isEmpty()) {
-         for(int var14 = 0; var14 < this.random.nextInt(3) + 2; ++var14) {
-            this.addParticle(ParticleTypes.POOF, var1, var3, var5, this.random.nextGaussian() * 0.05, 0.005, this.random.nextGaussian() * 0.05);
+   public void createFireworks(final double x, final double y, final double z, final double xd, final double yd, final double zd, final List<FireworkExplosion> explosions) {
+      if (explosions.isEmpty()) {
+         for(int i = 0; i < this.random.nextInt(3) + 2; ++i) {
+            this.addParticle(ParticleTypes.POOF, x, y, z, this.random.nextGaussian() * 0.05, 0.005, this.random.nextGaussian() * 0.05);
          }
       } else {
-         this.minecraft.particleEngine.add(new FireworkParticles.Starter(this, var1, var3, var5, var7, var9, var11, this.minecraft.particleEngine, var13));
+         this.minecraft.particleEngine.add(new FireworkParticles.Starter(this, x, y, z, xd, yd, zd, this.minecraft.particleEngine, explosions));
       }
 
    }
 
-   public void sendPacketToServer(Packet<?> var1) {
-      this.connection.send(var1);
+   public void sendPacketToServer(final Packet<?> packet) {
+      this.connection.send(packet);
    }
 
    public WorldBorder getWorldBorder() {
@@ -579,6 +573,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    public TickRateManager tickRateManager() {
       return this.tickRateManager;
+   }
+
+   public ClientClockManager clockManager() {
+      return this.connection.clockManager();
    }
 
    public EnvironmentAttributeSystem environmentAttributes() {
@@ -597,104 +595,104 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.chunkSource;
    }
 
-   public @Nullable MapItemSavedData getMapData(MapId var1) {
-      return (MapItemSavedData)this.mapData.get(var1);
+   public @Nullable MapItemSavedData getMapData(final MapId id) {
+      return (MapItemSavedData)this.mapData.get(id);
    }
 
-   public void overrideMapData(MapId var1, MapItemSavedData var2) {
-      this.mapData.put(var1, var2);
+   public void overrideMapData(final MapId id, final MapItemSavedData data) {
+      this.mapData.put(id, data);
    }
 
    public Scoreboard getScoreboard() {
       return this.connection.scoreboard();
    }
 
-   public void sendBlockUpdated(BlockPos var1, BlockState var2, BlockState var3, @Block.UpdateFlags int var4) {
-      this.levelRenderer.blockChanged(this, var1, var2, var3, var4);
+   public void sendBlockUpdated(final BlockPos pos, final BlockState old, final BlockState current, final @Block.UpdateFlags int updateFlags) {
+      this.levelRenderer.blockChanged(this, pos, old, current, updateFlags);
    }
 
-   public void setBlocksDirty(BlockPos var1, BlockState var2, BlockState var3) {
-      this.levelRenderer.setBlockDirty(var1, var2, var3);
+   public void setBlocksDirty(final BlockPos pos, final BlockState oldState, final BlockState newState) {
+      this.levelRenderer.setBlockDirty(pos, oldState, newState);
    }
 
-   public void setSectionDirtyWithNeighbors(int var1, int var2, int var3) {
-      this.levelRenderer.setSectionDirtyWithNeighbors(var1, var2, var3);
+   public void setSectionDirtyWithNeighbors(final int chunkX, final int chunkY, final int chunkZ) {
+      this.levelRenderer.setSectionDirtyWithNeighbors(chunkX, chunkY, chunkZ);
    }
 
-   public void setSectionRangeDirty(int var1, int var2, int var3, int var4, int var5, int var6) {
-      this.levelRenderer.setSectionRangeDirty(var1, var2, var3, var4, var5, var6);
+   public void setSectionRangeDirty(final int minSectionX, final int minSectionY, final int minSectionZ, final int maxSectionX, final int maxSectionY, final int maxSectionZ) {
+      this.levelRenderer.setSectionRangeDirty(minSectionX, minSectionY, minSectionZ, maxSectionX, maxSectionY, maxSectionZ);
    }
 
-   public void destroyBlockProgress(int var1, BlockPos var2, int var3) {
-      this.levelRenderer.destroyBlockProgress(var1, var2, var3);
+   public void destroyBlockProgress(final int id, final BlockPos blockPos, final int progress) {
+      this.levelRenderer.destroyBlockProgress(id, blockPos, progress);
    }
 
-   public void globalLevelEvent(int var1, BlockPos var2, int var3) {
-      this.levelEventHandler.globalLevelEvent(var1, var2, var3);
+   public void globalLevelEvent(final int type, final BlockPos pos, final int data) {
+      this.levelEventHandler.globalLevelEvent(type, pos, data);
    }
 
-   public void levelEvent(@Nullable Entity var1, int var2, BlockPos var3, int var4) {
+   public void levelEvent(final @Nullable Entity source, final int type, final BlockPos pos, final int data) {
       try {
-         this.levelEventHandler.levelEvent(var2, var3, var4);
-      } catch (Throwable var8) {
-         CrashReport var6 = CrashReport.forThrowable(var8, "Playing level event");
-         CrashReportCategory var7 = var6.addCategory("Level event being played");
-         var7.setDetail("Block coordinates", CrashReportCategory.formatLocation(this, var3));
-         var7.setDetail("Event source", var1);
-         var7.setDetail("Event type", var2);
-         var7.setDetail("Event data", var4);
-         throw new ReportedException(var6);
+         this.levelEventHandler.levelEvent(type, pos, data);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Playing level event");
+         CrashReportCategory category = report.addCategory("Level event being played");
+         category.setDetail("Block coordinates", CrashReportCategory.formatLocation(this, pos));
+         category.setDetail("Event source", source);
+         category.setDetail("Event type", type);
+         category.setDetail("Event data", data);
+         throw new ReportedException(report);
       }
    }
 
-   public void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      this.doAddParticle(var1, var1.getType().getOverrideLimiter(), false, var2, var4, var6, var8, var10, var12);
+   public void addParticle(final ParticleOptions particle, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
+      this.doAddParticle(particle, particle.getType().getOverrideLimiter(), false, x, y, z, xd, yd, zd);
    }
 
-   public void addParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
-      this.doAddParticle(var1, var1.getType().getOverrideLimiter() || var2, var3, var4, var6, var8, var10, var12, var14);
+   public void addParticle(final ParticleOptions particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
+      this.doAddParticle(particle, particle.getType().getOverrideLimiter() || overrideLimiter, alwaysShow, x, y, z, xd, yd, zd);
    }
 
-   public void addAlwaysVisibleParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      this.doAddParticle(var1, false, true, var2, var4, var6, var8, var10, var12);
+   public void addAlwaysVisibleParticle(final ParticleOptions particle, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
+      this.doAddParticle(particle, false, true, x, y, z, xd, yd, zd);
    }
 
-   public void addAlwaysVisibleParticle(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-      this.doAddParticle(var1, var1.getType().getOverrideLimiter() || var2, true, var3, var5, var7, var9, var11, var13);
+   public void addAlwaysVisibleParticle(final ParticleOptions particle, final boolean overrideLimiter, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
+      this.doAddParticle(particle, particle.getType().getOverrideLimiter() || overrideLimiter, true, x, y, z, xd, yd, zd);
    }
 
-   private void doAddParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
+   private void doAddParticle(final ParticleOptions particle, final boolean overrideLimiter, final boolean alwaysShowParticles, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
       try {
-         Camera var16 = this.minecraft.gameRenderer.getMainCamera();
-         ParticleStatus var20 = this.calculateParticleLevel(var3);
-         if (var2) {
-            this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
-         } else if (!(var16.position().distanceToSqr(var4, var6, var8) > 1024.0)) {
-            if (var20 != ParticleStatus.MINIMAL) {
-               this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
+         Camera camera = this.minecraft.gameRenderer.getMainCamera();
+         ParticleStatus particleLevel = this.calculateParticleLevel(alwaysShowParticles);
+         if (overrideLimiter) {
+            this.minecraft.particleEngine.createParticle(particle, x, y, z, xd, yd, zd);
+         } else if (!(camera.position().distanceToSqr(x, y, z) > 1024.0)) {
+            if (particleLevel != ParticleStatus.MINIMAL) {
+               this.minecraft.particleEngine.createParticle(particle, x, y, z, xd, yd, zd);
             }
          }
-      } catch (Throwable var19) {
-         CrashReport var17 = CrashReport.forThrowable(var19, "Exception while adding particle");
-         CrashReportCategory var18 = var17.addCategory("Particle being added");
-         var18.setDetail("ID", BuiltInRegistries.PARTICLE_TYPE.getKey(var1.getType()));
-         var18.setDetail("Parameters", (CrashReportDetail)(() -> ParticleTypes.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1).toString()));
-         var18.setDetail("Position", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, var4, var6, var8)));
-         throw new ReportedException(var17);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Exception while adding particle");
+         CrashReportCategory category = report.addCategory("Particle being added");
+         category.setDetail("ID", BuiltInRegistries.PARTICLE_TYPE.getKey(particle.getType()));
+         category.setDetail("Parameters", (CrashReportDetail)(() -> ParticleTypes.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), particle).toString()));
+         category.setDetail("Position", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, x, y, z)));
+         throw new ReportedException(report);
       }
    }
 
-   private ParticleStatus calculateParticleLevel(boolean var1) {
-      ParticleStatus var2 = (ParticleStatus)this.minecraft.options.particles().get();
-      if (var1 && var2 == ParticleStatus.MINIMAL && this.random.nextInt(10) == 0) {
-         var2 = ParticleStatus.DECREASED;
+   private ParticleStatus calculateParticleLevel(final boolean alwaysShowParticles) {
+      ParticleStatus particleLevel = (ParticleStatus)this.minecraft.options.particles().get();
+      if (alwaysShowParticles && particleLevel == ParticleStatus.MINIMAL && this.random.nextInt(10) == 0) {
+         particleLevel = ParticleStatus.DECREASED;
       }
 
-      if (var2 == ParticleStatus.DECREASED && this.random.nextInt(3) == 0) {
-         var2 = ParticleStatus.MINIMAL;
+      if (particleLevel == ParticleStatus.DECREASED && this.random.nextInt(3) == 0) {
+         particleLevel = ParticleStatus.MINIMAL;
       }
 
-      return var2;
+      return particleLevel;
    }
 
    public List<AbstractClientPlayer> players() {
@@ -705,7 +703,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.dragonParts;
    }
 
-   public Holder<Biome> getUncachedNoiseBiome(int var1, int var2, int var3) {
+   public Holder<Biome> getUncachedNoiseBiome(final int quartX, final int quartY, final int quartZ) {
       return this.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
    }
 
@@ -713,22 +711,22 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return (Boolean)this.minecraft.options.hideLightningFlash().get() ? 0 : this.skyFlashTime;
    }
 
-   public void setSkyFlashTime(int var1) {
-      this.skyFlashTime = var1;
+   public void setSkyFlashTime(final int skyFlashTime) {
+      this.skyFlashTime = skyFlashTime;
    }
 
-   public float getShade(Direction var1, boolean var2) {
-      DimensionType.CardinalLightType var3 = this.dimensionType().cardinalLightType();
-      if (!var2) {
-         return var3 == DimensionType.CardinalLightType.NETHER ? 0.9F : 1.0F;
+   public float getShade(final Direction direction, final boolean shade) {
+      DimensionType.CardinalLightType type = this.dimensionType().cardinalLightType();
+      if (!shade) {
+         return type == DimensionType.CardinalLightType.NETHER ? 0.9F : 1.0F;
       } else {
          float var10000;
-         switch (var1) {
+         switch (direction) {
             case DOWN:
-               var10000 = var3 == DimensionType.CardinalLightType.NETHER ? 0.9F : 0.5F;
+               var10000 = type == DimensionType.CardinalLightType.NETHER ? 0.9F : 0.5F;
                break;
             case UP:
-               var10000 = var3 == DimensionType.CardinalLightType.NETHER ? 0.9F : 1.0F;
+               var10000 = type == DimensionType.CardinalLightType.NETHER ? 0.9F : 1.0F;
                break;
             case NORTH:
             case SOUTH:
@@ -746,36 +744,36 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       }
    }
 
-   public int getBlockTint(BlockPos var1, ColorResolver var2) {
-      BlockTintCache var3 = (BlockTintCache)this.tintCaches.get(var2);
-      return var3.getColor(var1);
+   public int getBlockTint(final BlockPos pos, final ColorResolver resolver) {
+      BlockTintCache cache = (BlockTintCache)this.tintCaches.get(resolver);
+      return cache.getColor(pos);
    }
 
-   public int calculateBlockTint(BlockPos var1, ColorResolver var2) {
-      int var3 = (Integer)Minecraft.getInstance().options.biomeBlendRadius().get();
-      if (var3 == 0) {
-         return var2.getColor((Biome)this.getBiome(var1).value(), (double)var1.getX(), (double)var1.getZ());
+   public int calculateBlockTint(final BlockPos pos, final ColorResolver colorResolver) {
+      int dist = (Integer)Minecraft.getInstance().options.biomeBlendRadius().get();
+      if (dist == 0) {
+         return colorResolver.getColor((Biome)this.getBiome(pos).value(), (double)pos.getX(), (double)pos.getZ());
       } else {
-         int var4 = (var3 * 2 + 1) * (var3 * 2 + 1);
-         int var5 = 0;
-         int var6 = 0;
-         int var7 = 0;
-         Cursor3D var8 = new Cursor3D(var1.getX() - var3, var1.getY(), var1.getZ() - var3, var1.getX() + var3, var1.getY(), var1.getZ() + var3);
+         int count = (dist * 2 + 1) * (dist * 2 + 1);
+         int totalRed = 0;
+         int totalGreen = 0;
+         int totalBlue = 0;
+         Cursor3D cursor = new Cursor3D(pos.getX() - dist, pos.getY(), pos.getZ() - dist, pos.getX() + dist, pos.getY(), pos.getZ() + dist);
 
-         int var10;
-         for(BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos(); var8.advance(); var7 += var10 & 255) {
-            var9.set(var8.nextX(), var8.nextY(), var8.nextZ());
-            var10 = var2.getColor((Biome)this.getBiome(var9).value(), (double)var9.getX(), (double)var9.getZ());
-            var5 += (var10 & 16711680) >> 16;
-            var6 += (var10 & '\uff00') >> 8;
+         int color;
+         for(BlockPos.MutableBlockPos nextPos = new BlockPos.MutableBlockPos(); cursor.advance(); totalBlue += color & 255) {
+            nextPos.set(cursor.nextX(), cursor.nextY(), cursor.nextZ());
+            color = colorResolver.getColor((Biome)this.getBiome(nextPos).value(), (double)nextPos.getX(), (double)nextPos.getZ());
+            totalRed += (color & 16711680) >> 16;
+            totalGreen += (color & '\uff00') >> 8;
          }
 
-         return (var5 / var4 & 255) << 16 | (var6 / var4 & 255) << 8 | var7 / var4 & 255;
+         return (totalRed / count & 255) << 16 | (totalGreen / count & 255) << 8 | totalBlue / count & 255;
       }
    }
 
-   public void setRespawnData(LevelData.RespawnData var1) {
-      this.levelData.setSpawn(this.getWorldBorderAdjustedRespawnData(var1));
+   public void setRespawnData(final LevelData.RespawnData respawnData) {
+      this.levelData.setSpawn(this.getWorldBorderAdjustedRespawnData(respawnData));
    }
 
    public LevelData.RespawnData getRespawnData() {
@@ -790,15 +788,15 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.clientLevelData;
    }
 
-   public void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3) {
+   public void gameEvent(final Holder<GameEvent> gameEvent, final Vec3 pos, final GameEvent.Context context) {
    }
 
    protected Map<MapId, MapItemSavedData> getAllMapData() {
       return ImmutableMap.copyOf(this.mapData);
    }
 
-   protected void addMapData(Map<MapId, MapItemSavedData> var1) {
-      this.mapData.putAll(var1);
+   protected void addMapData(final Map<MapId, MapItemSavedData> mapData) {
+      this.mapData.putAll(mapData);
    }
 
    protected LevelEntityGetter<Entity> getEntities() {
@@ -810,28 +808,28 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return "Chunks[C] W: " + var10000 + " E: " + this.entityStorage.gatherStats();
    }
 
-   public void addDestroyBlockEffect(BlockPos var1, BlockState var2) {
-      if (!var2.isAir() && var2.shouldSpawnTerrainParticles()) {
-         VoxelShape var3 = var2.getShape(this, var1);
-         double var4 = 0.25;
-         var3.forAllBoxes((var3x, var5, var7, var9, var11, var13) -> {
-            double var15 = Math.min(1.0, var9 - var3x);
-            double var17 = Math.min(1.0, var11 - var5);
-            double var19 = Math.min(1.0, var13 - var7);
-            int var21 = Math.max(2, Mth.ceil(var15 / 0.25));
-            int var22 = Math.max(2, Mth.ceil(var17 / 0.25));
-            int var23 = Math.max(2, Mth.ceil(var19 / 0.25));
+   public void addDestroyBlockEffect(final BlockPos pos, final BlockState blockState) {
+      if (!blockState.isAir() && blockState.shouldSpawnTerrainParticles()) {
+         VoxelShape shape = blockState.getShape(this, pos);
+         double density = 0.25;
+         shape.forAllBoxes((x1, y1, z1, x2, y2, z2) -> {
+            double widthX = Math.min(1.0, x2 - x1);
+            double widthY = Math.min(1.0, y2 - y1);
+            double widthZ = Math.min(1.0, z2 - z1);
+            int countX = Math.max(2, Mth.ceil(widthX / 0.25));
+            int countY = Math.max(2, Mth.ceil(widthY / 0.25));
+            int countZ = Math.max(2, Mth.ceil(widthZ / 0.25));
 
-            for(int var24 = 0; var24 < var21; ++var24) {
-               for(int var25 = 0; var25 < var22; ++var25) {
-                  for(int var26 = 0; var26 < var23; ++var26) {
-                     double var27 = ((double)var24 + 0.5) / (double)var21;
-                     double var29 = ((double)var25 + 0.5) / (double)var22;
-                     double var31 = ((double)var26 + 0.5) / (double)var23;
-                     double var33 = var27 * var15 + var3x;
-                     double var35 = var29 * var17 + var5;
-                     double var37 = var31 * var19 + var7;
-                     this.minecraft.particleEngine.add(new TerrainParticle(this, (double)var1.getX() + var33, (double)var1.getY() + var35, (double)var1.getZ() + var37, var27 - 0.5, var29 - 0.5, var31 - 0.5, var2, var1));
+            for(int xx = 0; xx < countX; ++xx) {
+               for(int yy = 0; yy < countY; ++yy) {
+                  for(int zz = 0; zz < countZ; ++zz) {
+                     double relX = ((double)xx + 0.5) / (double)countX;
+                     double relY = ((double)yy + 0.5) / (double)countY;
+                     double relZ = ((double)zz + 0.5) / (double)countZ;
+                     double x = relX * widthX + x1;
+                     double y = relY * widthY + y1;
+                     double z = relZ * widthZ + z1;
+                     this.minecraft.particleEngine.add(new TerrainParticle(this, (double)pos.getX() + x, (double)pos.getY() + y, (double)pos.getZ() + z, relX - 0.5, relY - 0.5, relZ - 0.5, blockState, pos));
                   }
                }
             }
@@ -840,47 +838,47 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       }
    }
 
-   public void addBreakingBlockEffect(BlockPos var1, Direction var2) {
-      BlockState var3 = this.getBlockState(var1);
-      if (var3.getRenderShape() != RenderShape.INVISIBLE && var3.shouldSpawnTerrainParticles()) {
-         int var4 = var1.getX();
-         int var5 = var1.getY();
-         int var6 = var1.getZ();
-         float var7 = 0.1F;
-         AABB var8 = var3.getShape(this, var1).bounds();
-         double var9 = (double)var4 + this.random.nextDouble() * (var8.maxX - var8.minX - 0.20000000298023224) + 0.10000000149011612 + var8.minX;
-         double var11 = (double)var5 + this.random.nextDouble() * (var8.maxY - var8.minY - 0.20000000298023224) + 0.10000000149011612 + var8.minY;
-         double var13 = (double)var6 + this.random.nextDouble() * (var8.maxZ - var8.minZ - 0.20000000298023224) + 0.10000000149011612 + var8.minZ;
-         if (var2 == Direction.DOWN) {
-            var11 = (double)var5 + var8.minY - 0.10000000149011612;
+   public void addBreakingBlockEffect(final BlockPos pos, final Direction direction) {
+      BlockState blockState = this.getBlockState(pos);
+      if (blockState.getRenderShape() != RenderShape.INVISIBLE && blockState.shouldSpawnTerrainParticles()) {
+         int x = pos.getX();
+         int y = pos.getY();
+         int z = pos.getZ();
+         float r = 0.1F;
+         AABB shape = blockState.getShape(this, pos).bounds();
+         double xp = (double)x + this.random.nextDouble() * (shape.maxX - shape.minX - 0.20000000298023224) + 0.10000000149011612 + shape.minX;
+         double yp = (double)y + this.random.nextDouble() * (shape.maxY - shape.minY - 0.20000000298023224) + 0.10000000149011612 + shape.minY;
+         double zp = (double)z + this.random.nextDouble() * (shape.maxZ - shape.minZ - 0.20000000298023224) + 0.10000000149011612 + shape.minZ;
+         if (direction == Direction.DOWN) {
+            yp = (double)y + shape.minY - 0.10000000149011612;
          }
 
-         if (var2 == Direction.UP) {
-            var11 = (double)var5 + var8.maxY + 0.10000000149011612;
+         if (direction == Direction.UP) {
+            yp = (double)y + shape.maxY + 0.10000000149011612;
          }
 
-         if (var2 == Direction.NORTH) {
-            var13 = (double)var6 + var8.minZ - 0.10000000149011612;
+         if (direction == Direction.NORTH) {
+            zp = (double)z + shape.minZ - 0.10000000149011612;
          }
 
-         if (var2 == Direction.SOUTH) {
-            var13 = (double)var6 + var8.maxZ + 0.10000000149011612;
+         if (direction == Direction.SOUTH) {
+            zp = (double)z + shape.maxZ + 0.10000000149011612;
          }
 
-         if (var2 == Direction.WEST) {
-            var9 = (double)var4 + var8.minX - 0.10000000149011612;
+         if (direction == Direction.WEST) {
+            xp = (double)x + shape.minX - 0.10000000149011612;
          }
 
-         if (var2 == Direction.EAST) {
-            var9 = (double)var4 + var8.maxX + 0.10000000149011612;
+         if (direction == Direction.EAST) {
+            xp = (double)x + shape.maxX + 0.10000000149011612;
          }
 
-         this.minecraft.particleEngine.add((new TerrainParticle(this, var9, var11, var13, 0.0, 0.0, 0.0, var3, var1)).setPower(0.2F).scale(0.6F));
+         this.minecraft.particleEngine.add((new TerrainParticle(this, xp, yp, zp, 0.0, 0.0, 0.0, blockState, pos)).setPower(0.2F).scale(0.6F));
       }
    }
 
-   public void setServerSimulationDistance(int var1) {
-      this.serverSimulationDistance = var1;
+   public void setServerSimulationDistance(final int serverSimulationDistance) {
+      this.serverSimulationDistance = serverSimulationDistance;
    }
 
    public int getServerSimulationDistance() {
@@ -899,43 +897,23 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.connection.fuelValues();
    }
 
-   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, Level.ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, WeightedList<ExplosionParticleInfo> var15, Holder<SoundEvent> var16) {
+   public void explode(final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final double x, final double y, final double z, final float r, final boolean fire, final Level.ExplosionInteraction interactionType, final ParticleOptions smallExplosionParticles, final ParticleOptions largeExplosionParticles, final WeightedList<ExplosionParticleInfo> secondaryParticles, final Holder<SoundEvent> explosionSound) {
    }
 
    public int getSeaLevel() {
       return this.seaLevel;
    }
 
-   public int getClientLeafTintColor(BlockPos var1) {
-      return Minecraft.getInstance().getBlockColors().getColor(this.getBlockState(var1), this, var1, 0);
+   public int getClientLeafTintColor(final BlockPos pos) {
+      return Minecraft.getInstance().getBlockColors().getColor(this.getBlockState(pos), this, pos, 0);
    }
 
-   public void registerForCleaning(CacheSlot<ClientLevel, ?> var1) {
-      this.connection.registerForCleaning(var1);
+   public void registerForCleaning(final CacheSlot<ClientLevel, ?> slot) {
+      this.connection.registerForCleaning(slot);
    }
 
-   public void trackExplosionEffects(Vec3 var1, float var2, int var3, WeightedList<ExplosionParticleInfo> var4) {
-      this.explosionTracker.track(var1, var2, var3, var4);
-   }
-
-   // $FF: synthetic method
-   public LevelData getLevelData() {
-      return this.getLevelData();
-   }
-
-   // $FF: synthetic method
-   public Collection dragonParts() {
-      return this.dragonParts();
-   }
-
-   // $FF: synthetic method
-   public ChunkSource getChunkSource() {
-      return this.getChunkSource();
-   }
-
-   // $FF: synthetic method
-   public EnvironmentAttributeReader environmentAttributes() {
-      return this.environmentAttributes();
+   public void trackExplosionEffects(final Vec3 center, final float radius, final int blockCount, final WeightedList<ExplosionParticleInfo> blockParticles) {
+      this.explosionTracker.track(center, radius, blockCount, blockParticles);
    }
 
    static {
@@ -947,16 +925,15 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       private final boolean isFlat;
       private LevelData.RespawnData respawnData;
       private long gameTime;
-      private long dayTime;
       private boolean raining;
       private Difficulty difficulty;
       private boolean difficultyLocked;
 
-      public ClientLevelData(Difficulty var1, boolean var2, boolean var3) {
+      public ClientLevelData(final Difficulty difficulty, final boolean hardcore, final boolean isFlat) {
          super();
-         this.difficulty = var1;
-         this.hardcore = var2;
-         this.isFlat = var3;
+         this.difficulty = difficulty;
+         this.hardcore = hardcore;
+         this.isFlat = isFlat;
       }
 
       public LevelData.RespawnData getRespawnData() {
@@ -967,20 +944,12 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          return this.gameTime;
       }
 
-      public long getDayTime() {
-         return this.dayTime;
+      public void setGameTime(final long time) {
+         this.gameTime = time;
       }
 
-      public void setGameTime(long var1) {
-         this.gameTime = var1;
-      }
-
-      public void setDayTime(long var1) {
-         this.dayTime = var1;
-      }
-
-      public void setSpawn(LevelData.RespawnData var1) {
-         this.respawnData = var1;
+      public void setSpawn(final LevelData.RespawnData respawnData) {
+         this.respawnData = respawnData;
       }
 
       public boolean isThundering() {
@@ -991,8 +960,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          return this.raining;
       }
 
-      public void setRaining(boolean var1) {
-         this.raining = var1;
+      public void setRaining(final boolean raining) {
+         this.raining = raining;
       }
 
       public boolean isHardcore() {
@@ -1007,20 +976,20 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          return this.difficultyLocked;
       }
 
-      public void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
-         WritableLevelData.super.fillCrashReportCategory(var1, var2);
+      public void fillCrashReportCategory(final CrashReportCategory category, final LevelHeightAccessor levelHeightAccessor) {
+         WritableLevelData.super.fillCrashReportCategory(category, levelHeightAccessor);
       }
 
-      public void setDifficulty(Difficulty var1) {
-         this.difficulty = var1;
+      public void setDifficulty(final Difficulty difficulty) {
+         this.difficulty = difficulty;
       }
 
-      public void setDifficultyLocked(boolean var1) {
-         this.difficultyLocked = var1;
+      public void setDifficultyLocked(final boolean locked) {
+         this.difficultyLocked = locked;
       }
 
-      public double getHorizonHeight(LevelHeightAccessor var1) {
-         return this.isFlat ? (double)var1.getMinY() : 63.0;
+      public double getHorizonHeight(final LevelHeightAccessor level) {
+         return this.isFlat ? (double)level.getMinY() : 63.0;
       }
 
       public float voidDarknessOnsetRange() {
@@ -1028,93 +997,64 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       }
    }
 
-   final class EntityCallbacks implements LevelCallback<Entity> {
-      EntityCallbacks() {
+   private final class EntityCallbacks implements LevelCallback<Entity> {
+      private EntityCallbacks() {
+         Objects.requireNonNull(ClientLevel.this);
          super();
       }
 
-      public void onCreated(Entity var1) {
+      public void onCreated(final Entity entity) {
       }
 
-      public void onDestroyed(Entity var1) {
+      public void onDestroyed(final Entity entity) {
       }
 
-      public void onTickingStart(Entity var1) {
-         ClientLevel.this.tickingEntities.add(var1);
+      public void onTickingStart(final Entity entity) {
+         ClientLevel.this.tickingEntities.add(entity);
       }
 
-      public void onTickingEnd(Entity var1) {
-         ClientLevel.this.tickingEntities.remove(var1);
+      public void onTickingEnd(final Entity entity) {
+         ClientLevel.this.tickingEntities.remove(entity);
       }
 
-      public void onTrackingStart(Entity var1) {
-         Objects.requireNonNull(var1);
+      public void onTrackingStart(final Entity entity) {
+         Objects.requireNonNull(entity);
          byte var3 = 0;
          //$FF: var3->value
          //0->net/minecraft/client/player/AbstractClientPlayer
          //1->net/minecraft/world/entity/boss/enderdragon/EnderDragon
-         switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+         switch (entity.typeSwitch<invokedynamic>(entity, var3)) {
             case 0:
-               AbstractClientPlayer var4 = (AbstractClientPlayer)var1;
-               ClientLevel.this.players.add(var4);
+               AbstractClientPlayer player = (AbstractClientPlayer)entity;
+               ClientLevel.this.players.add(player);
                break;
             case 1:
-               EnderDragon var5 = (EnderDragon)var1;
-               ClientLevel.this.dragonParts.addAll(Arrays.asList(var5.getSubEntities()));
+               EnderDragon dragon = (EnderDragon)entity;
+               ClientLevel.this.dragonParts.addAll(Arrays.asList(dragon.getSubEntities()));
          }
 
       }
 
-      public void onTrackingEnd(Entity var1) {
-         var1.unRide();
-         Objects.requireNonNull(var1);
+      public void onTrackingEnd(final Entity entity) {
+         entity.unRide();
+         Objects.requireNonNull(entity);
          byte var3 = 0;
          //$FF: var3->value
          //0->net/minecraft/client/player/AbstractClientPlayer
          //1->net/minecraft/world/entity/boss/enderdragon/EnderDragon
-         switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+         switch (entity.typeSwitch<invokedynamic>(entity, var3)) {
             case 0:
-               AbstractClientPlayer var4 = (AbstractClientPlayer)var1;
-               ClientLevel.this.players.remove(var4);
+               AbstractClientPlayer player = (AbstractClientPlayer)entity;
+               ClientLevel.this.players.remove(player);
                break;
             case 1:
-               EnderDragon var5 = (EnderDragon)var1;
-               ClientLevel.this.dragonParts.removeAll(Arrays.asList(var5.getSubEntities()));
+               EnderDragon dragon = (EnderDragon)entity;
+               ClientLevel.this.dragonParts.removeAll(Arrays.asList(dragon.getSubEntities()));
          }
 
       }
 
-      public void onSectionChange(Entity var1) {
-      }
-
-      // $FF: synthetic method
-      public void onSectionChange(final Object var1) {
-         this.onSectionChange((Entity)var1);
-      }
-
-      // $FF: synthetic method
-      public void onTrackingEnd(final Object var1) {
-         this.onTrackingEnd((Entity)var1);
-      }
-
-      // $FF: synthetic method
-      public void onTrackingStart(final Object var1) {
-         this.onTrackingStart((Entity)var1);
-      }
-
-      // $FF: synthetic method
-      public void onTickingStart(final Object var1) {
-         this.onTickingStart((Entity)var1);
-      }
-
-      // $FF: synthetic method
-      public void onDestroyed(final Object var1) {
-         this.onDestroyed((Entity)var1);
-      }
-
-      // $FF: synthetic method
-      public void onCreated(final Object var1) {
-         this.onCreated((Entity)var1);
+      public void onSectionChange(final Entity entity) {
       }
    }
 }

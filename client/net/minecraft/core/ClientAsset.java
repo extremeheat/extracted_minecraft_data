@@ -15,14 +15,12 @@ public interface ClientAsset {
       public static final MapCodec<ResourceTexture> DEFAULT_FIELD_CODEC;
       public static final StreamCodec<ByteBuf, ResourceTexture> STREAM_CODEC;
 
-      public ResourceTexture(Identifier var1) {
-         this(var1, var1.withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")));
+      public ResourceTexture(final Identifier texture) {
+         this(texture, texture.withPath((UnaryOperator)((path) -> "textures/" + path + ".png")));
       }
 
-      public ResourceTexture(Identifier var1, Identifier var2) {
+      public ResourceTexture {
          super();
-         this.id = var1;
-         this.texturePath = var2;
       }
 
       static {
@@ -33,10 +31,8 @@ public interface ClientAsset {
    }
 
    public static record DownloadedTexture(Identifier texturePath, String url) implements Texture {
-      public DownloadedTexture(Identifier var1, String var2) {
+      public DownloadedTexture {
          super();
-         this.texturePath = var1;
-         this.url = var2;
       }
 
       public Identifier id() {

@@ -7,15 +7,14 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.IdentifierPattern;
 
 public record SourceFilter(IdentifierPattern filter) implements SpriteSource {
-   public static final MapCodec<SourceFilter> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(IdentifierPattern.CODEC.fieldOf("pattern").forGetter(SourceFilter::filter)).apply(var0, SourceFilter::new));
+   public static final MapCodec<SourceFilter> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(IdentifierPattern.CODEC.fieldOf("pattern").forGetter(SourceFilter::filter)).apply(i, SourceFilter::new));
 
-   public SourceFilter(final IdentifierPattern var1) {
+   public SourceFilter {
       super();
-      this.filter = var1;
    }
 
-   public void run(ResourceManager var1, SpriteSource.Output var2) {
-      var2.removeAll(this.filter.locationPredicate());
+   public void run(final ResourceManager resourceManager, final SpriteSource.Output output) {
+      output.removeAll(this.filter.locationPredicate());
    }
 
    public MapCodec<SourceFilter> codec() {

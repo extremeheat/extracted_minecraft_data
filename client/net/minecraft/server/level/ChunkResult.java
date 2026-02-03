@@ -6,46 +6,45 @@ import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
 public interface ChunkResult<T> {
-   static <T> ChunkResult<T> of(T var0) {
-      return new Success<T>(var0);
+   static <T> ChunkResult<T> of(final T value) {
+      return new Success<T>(value);
    }
 
-   static <T> ChunkResult<T> error(String var0) {
-      return error((Supplier)(() -> var0));
+   static <T> ChunkResult<T> error(final String error) {
+      return error((Supplier)(() -> error));
    }
 
-   static <T> ChunkResult<T> error(Supplier<String> var0) {
-      return new Fail<T>(var0);
+   static <T> ChunkResult<T> error(final Supplier<String> errorSupplier) {
+      return new Fail<T>(errorSupplier);
    }
 
    boolean isSuccess();
 
-   @Nullable T orElse(@Nullable T var1);
+   @Nullable T orElse(@Nullable T orElse);
 
-   static <R> @Nullable R orElse(ChunkResult<? extends R> var0, @Nullable R var1) {
-      Object var2 = var0.orElse((Object)null);
-      return var2 != null ? var2 : var1;
+   static <R> @Nullable R orElse(final ChunkResult<? extends R> chunkResult, final @Nullable R orElse) {
+      R result = chunkResult.orElse((Object)null);
+      return (R)(result != null ? result : orElse);
    }
 
    @Nullable String getError();
 
-   ChunkResult<T> ifSuccess(Consumer<T> var1);
+   ChunkResult<T> ifSuccess(Consumer<T> consumer);
 
-   <R> ChunkResult<R> map(Function<T, R> var1);
+   <R> ChunkResult<R> map(Function<T, R> map);
 
-   <E extends Throwable> T orElseThrow(Supplier<E> var1) throws E;
+   <E extends Throwable> T orElseThrow(Supplier<E> exceptionSupplier) throws E;
 
    public static record Success<T>(T value) implements ChunkResult<T> {
-      public Success(T var1) {
+      public Success {
          super();
-         this.value = var1;
       }
 
       public boolean isSuccess() {
          return true;
       }
 
-      public T orElse(@Nullable T var1) {
+      public T orElse(final @Nullable T orElse) {
          return this.value;
       }
 
@@ -53,48 +52,47 @@ public interface ChunkResult<T> {
          return null;
       }
 
-      public ChunkResult<T> ifSuccess(Consumer<T> var1) {
-         var1.accept(this.value);
+      public ChunkResult<T> ifSuccess(final Consumer<T> consumer) {
+         consumer.accept(this.value);
          return this;
       }
 
-      public <R> ChunkResult<R> map(Function<T, R> var1) {
-         return new Success<R>(var1.apply(this.value));
+      public <R> ChunkResult<R> map(final Function<T, R> map) {
+         return new Success<R>(map.apply(this.value));
       }
 
-      public <E extends Throwable> T orElseThrow(Supplier<E> var1) throws E {
+      public <E extends Throwable> T orElseThrow(final Supplier<E> exceptionSupplier) throws E {
          return this.value;
       }
    }
 
    public static record Fail<T>(Supplier<String> error) implements ChunkResult<T> {
-      public Fail(Supplier<String> var1) {
+      public Fail {
          super();
-         this.error = var1;
       }
 
       public boolean isSuccess() {
          return false;
       }
 
-      public @Nullable T orElse(@Nullable T var1) {
-         return var1;
+      public @Nullable T orElse(final @Nullable T orElse) {
+         return orElse;
       }
 
       public String getError() {
          return (String)this.error.get();
       }
 
-      public ChunkResult<T> ifSuccess(Consumer<T> var1) {
+      public ChunkResult<T> ifSuccess(final Consumer<T> consumer) {
          return this;
       }
 
-      public <R> ChunkResult<R> map(Function<T, R> var1) {
+      public <R> ChunkResult<R> map(final Function<T, R> map) {
          return new Fail<R>(this.error);
       }
 
-      public <E extends Throwable> T orElseThrow(Supplier<E> var1) throws E {
-         throw (Throwable)var1.get();
+      public <E extends Throwable> T orElseThrow(final Supplier<E> exceptionSupplier) throws E {
+         throw (Throwable)exceptionSupplier.get();
       }
    }
 }

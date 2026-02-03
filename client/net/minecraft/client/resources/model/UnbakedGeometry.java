@@ -4,7 +4,7 @@ import net.minecraft.client.renderer.block.model.TextureSlots;
 
 @FunctionalInterface
 public interface UnbakedGeometry {
-   UnbakedGeometry EMPTY = (var0, var1, var2, var3) -> QuadCollection.EMPTY;
+   UnbakedGeometry EMPTY = (textureSlots, modelBaker, modelState, name) -> QuadCollection.EMPTY;
 
-   QuadCollection bake(TextureSlots var1, ModelBaker var2, ModelState var3, ModelDebugName var4);
+   QuadCollection bake(TextureSlots textureSlots, ModelBaker modelBaker, ModelState modelState, ModelDebugName name);
 }

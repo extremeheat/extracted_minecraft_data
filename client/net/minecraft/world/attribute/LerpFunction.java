@@ -8,24 +8,24 @@ public interface LerpFunction<T> {
       return Mth::lerp;
    }
 
-   static LerpFunction<Float> ofDegrees(float var0) {
-      return (var1, var2, var3) -> {
-         float var4 = Mth.wrapDegrees(var3 - var2);
-         return Math.abs(var4) >= var0 ? var3 : var2 + var1 * var4;
+   static LerpFunction<Float> ofDegrees(final float maxDelta) {
+      return (alpha, from, to) -> {
+         float delta = Mth.wrapDegrees(to - from);
+         return Math.abs(delta) >= maxDelta ? to : from + alpha * delta;
       };
    }
 
    static <T> LerpFunction<T> ofConstant() {
-      return (var0, var1, var2) -> var1;
+      return (alpha, from, to) -> from;
    }
 
-   static <T> LerpFunction<T> ofStep(float var0) {
-      return (var1, var2, var3) -> var1 >= var0 ? var3 : var2;
+   static <T> LerpFunction<T> ofStep(final float threshold) {
+      return (alpha, from, to) -> alpha >= threshold ? to : from;
    }
 
    static LerpFunction<Integer> ofColor() {
       return ARGB::srgbLerp;
    }
 
-   T apply(float var1, T var2, T var3);
+   T apply(float alpha, T from, T to);
 }

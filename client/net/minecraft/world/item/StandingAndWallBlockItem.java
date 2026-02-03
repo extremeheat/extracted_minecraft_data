@@ -4,7 +4,6 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,37 +14,37 @@ public class StandingAndWallBlockItem extends BlockItem {
    protected final Block wallBlock;
    private final Direction attachmentDirection;
 
-   public StandingAndWallBlockItem(Block var1, Block var2, Direction var3, Item.Properties var4) {
-      super(var1, var4);
-      this.wallBlock = var2;
-      this.attachmentDirection = var3;
+   public StandingAndWallBlockItem(final Block block, final Block wallBlock, final Direction attachmentDirection, final Item.Properties properties) {
+      super(block, properties);
+      this.wallBlock = wallBlock;
+      this.attachmentDirection = attachmentDirection;
    }
 
-   protected boolean canPlace(LevelReader var1, BlockState var2, BlockPos var3) {
-      return var2.canSurvive(var1, var3);
+   protected boolean canPlace(final LevelReader level, final BlockState possibleState, final BlockPos pos) {
+      return possibleState.canSurvive(level, pos);
    }
 
-   protected @Nullable BlockState getPlacementState(BlockPlaceContext var1) {
-      BlockState var2 = this.wallBlock.getStateForPlacement(var1);
-      BlockState var3 = null;
-      Level var4 = var1.getLevel();
-      BlockPos var5 = var1.getClickedPos();
+   protected @Nullable BlockState getPlacementState(final BlockPlaceContext context) {
+      BlockState wallState = this.wallBlock.getStateForPlacement(context);
+      BlockState stateForPlacement = null;
+      LevelReader level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
 
-      for(Direction var9 : var1.getNearestLookingDirections()) {
-         if (var9 != this.attachmentDirection.getOpposite()) {
-            BlockState var10 = var9 == this.attachmentDirection ? this.getBlock().getStateForPlacement(var1) : var2;
-            if (var10 != null && this.canPlace(var4, var10, var5)) {
-               var3 = var10;
+      for(Direction direction : context.getNearestLookingDirections()) {
+         if (direction != this.attachmentDirection.getOpposite()) {
+            BlockState possibleState = direction == this.attachmentDirection ? this.getBlock().getStateForPlacement(context) : wallState;
+            if (possibleState != null && this.canPlace(level, possibleState, pos)) {
+               stateForPlacement = possibleState;
                break;
             }
          }
       }
 
-      return var3 != null && var4.isUnobstructed(var3, var5, CollisionContext.empty()) ? var3 : null;
+      return stateForPlacement != null && level.isUnobstructed(stateForPlacement, pos, CollisionContext.empty()) ? stateForPlacement : null;
    }
 
-   public void registerBlocks(Map<Block, Item> var1, Item var2) {
-      super.registerBlocks(var1, var2);
-      var1.put(this.wallBlock, var2);
+   public void registerBlocks(final Map<Block, Item> map, final Item item) {
+      super.registerBlocks(map, item);
+      map.put(this.wallBlock, item);
    }
 }

@@ -80,8 +80,8 @@ public class EnderMan extends Monster implements NeutralMob {
    private long persistentAngerEndTime;
    private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
 
-   public EnderMan(EntityType<? extends EnderMan> var1, Level var2) {
-      super(var1, var2);
+   public EnderMan(final EntityType<? extends EnderMan> type, final Level level) {
+      super(type, level);
       this.setPathfindingMalus(PathType.WATER, -1.0F);
    }
 
@@ -100,7 +100,7 @@ public class EnderMan extends Monster implements NeutralMob {
       this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal(this, false));
    }
 
-   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
+   public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {
       return 0.0F;
    }
 
@@ -108,45 +108,45 @@ public class EnderMan extends Monster implements NeutralMob {
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 40.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.ATTACK_DAMAGE, 7.0).add(Attributes.FOLLOW_RANGE, 64.0).add(Attributes.STEP_HEIGHT, 1.0);
    }
 
-   public void setTarget(@Nullable LivingEntity var1) {
-      super.setTarget(var1);
-      AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
-      if (var1 == null) {
+   public void setTarget(final @Nullable LivingEntity target) {
+      super.setTarget(target);
+      AttributeInstance movementSpeed = this.getAttribute(Attributes.MOVEMENT_SPEED);
+      if (target == null) {
          this.targetChangeTime = 0;
          this.entityData.set(DATA_CREEPY, false);
          this.entityData.set(DATA_STARED_AT, false);
-         var2.removeModifier(SPEED_MODIFIER_ATTACKING_ID);
+         movementSpeed.removeModifier(SPEED_MODIFIER_ATTACKING_ID);
       } else {
          this.targetChangeTime = this.tickCount;
          this.entityData.set(DATA_CREEPY, true);
-         if (!var2.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
-            var2.addTransientModifier(SPEED_MODIFIER_ATTACKING);
+         if (!movementSpeed.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
+            movementSpeed.addTransientModifier(SPEED_MODIFIER_ATTACKING);
          }
       }
 
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_CARRY_STATE, Optional.empty());
-      var1.define(DATA_CREEPY, false);
-      var1.define(DATA_STARED_AT, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_CARRY_STATE, Optional.empty());
+      entityData.define(DATA_CREEPY, false);
+      entityData.define(DATA_STARED_AT, false);
    }
 
    public void startPersistentAngerTimer() {
       this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
    }
 
-   public void setPersistentAngerEndTime(long var1) {
-      this.persistentAngerEndTime = var1;
+   public void setPersistentAngerEndTime(final long endTime) {
+      this.persistentAngerEndTime = endTime;
    }
 
    public long getPersistentAngerEndTime() {
       return this.persistentAngerEndTime;
    }
 
-   public void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> var1) {
-      this.persistentAngerTarget = var1;
+   public void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget) {
+      this.persistentAngerTarget = persistentAngerTarget;
    }
 
    public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
@@ -163,37 +163,37 @@ public class EnderMan extends Monster implements NeutralMob {
 
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (DATA_CREEPY.equals(var1) && this.hasBeenStaredAt() && this.level().isClientSide()) {
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      if (DATA_CREEPY.equals(accessor) && this.hasBeenStaredAt() && this.level().isClientSide()) {
          this.playStareSound();
       }
 
-      super.onSyncedDataUpdated(var1);
+      super.onSyncedDataUpdated(accessor);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      BlockState var2 = this.getCarriedBlock();
-      if (var2 != null) {
-         var1.store("carriedBlockState", BlockState.CODEC, var2);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      BlockState blockState = this.getCarriedBlock();
+      if (blockState != null) {
+         output.store("carriedBlockState", BlockState.CODEC, blockState);
       }
 
-      this.addPersistentAngerSaveData(var1);
+      this.addPersistentAngerSaveData(output);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setCarriedBlock((BlockState)var1.read("carriedBlockState", BlockState.CODEC).filter((var0) -> !var0.isAir()).orElse((Object)null));
-      this.readPersistentAngerSaveData(this.level(), var1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setCarriedBlock((BlockState)input.read("carriedBlockState", BlockState.CODEC).filter((blockState) -> !blockState.isAir()).orElse((Object)null));
+      this.readPersistentAngerSaveData(this.level(), input);
    }
 
-   boolean isBeingStaredBy(Player var1) {
-      return !LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM.test(var1) ? false : this.isLookingAtMe(var1, 0.025, true, false, new double[]{this.getEyeY()});
+   private boolean isBeingStaredBy(final Player player) {
+      return !LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM.test(player) ? false : this.isLookingAtMe(player, 0.025, true, false, new double[]{this.getEyeY()});
    }
 
    public void aiStep() {
       if (this.level().isClientSide()) {
-         for(int var1 = 0; var1 < 2; ++var1) {
+         for(int i = 0; i < 2; ++i) {
             this.level().addParticle(ParticleTypes.PORTAL, this.getRandomX(0.5), this.getRandomY() - 0.25, this.getRandomZ(0.5), (this.random.nextDouble() - 0.5) * 2.0, -this.random.nextDouble(), (this.random.nextDouble() - 0.5) * 2.0);
          }
       }
@@ -210,61 +210,61 @@ public class EnderMan extends Monster implements NeutralMob {
       return true;
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
-      if (var1.isBrightOutside() && this.tickCount >= this.targetChangeTime + 600) {
-         float var2 = this.getLightLevelDependentMagicValue();
-         if (var2 > 0.5F && var1.canSeeSky(this.blockPosition()) && this.random.nextFloat() * 30.0F < (var2 - 0.4F) * 2.0F) {
+   protected void customServerAiStep(final ServerLevel level) {
+      if (level.isBrightOutside() && this.tickCount >= this.targetChangeTime + 600) {
+         float br = this.getLightLevelDependentMagicValue();
+         if (br > 0.5F && level.canSeeSky(this.blockPosition()) && this.random.nextFloat() * 30.0F < (br - 0.4F) * 2.0F) {
             this.setTarget((LivingEntity)null);
             this.teleport();
          }
       }
 
-      super.customServerAiStep(var1);
+      super.customServerAiStep(level);
    }
 
    protected boolean teleport() {
       if (!this.level().isClientSide() && this.isAlive()) {
-         double var1 = this.getX() + (this.random.nextDouble() - 0.5) * 64.0;
-         double var3 = this.getY() + (double)(this.random.nextInt(64) - 32);
-         double var5 = this.getZ() + (this.random.nextDouble() - 0.5) * 64.0;
-         return this.teleport(var1, var3, var5);
+         double xx = this.getX() + (this.random.nextDouble() - 0.5) * 64.0;
+         double yy = this.getY() + (double)(this.random.nextInt(64) - 32);
+         double zz = this.getZ() + (this.random.nextDouble() - 0.5) * 64.0;
+         return this.teleport(xx, yy, zz);
       } else {
          return false;
       }
    }
 
-   boolean teleportTowards(Entity var1) {
-      Vec3 var2 = new Vec3(this.getX() - var1.getX(), this.getY(0.5) - var1.getEyeY(), this.getZ() - var1.getZ());
-      var2 = var2.normalize();
-      double var3 = 16.0;
-      double var5 = this.getX() + (this.random.nextDouble() - 0.5) * 8.0 - var2.x * 16.0;
-      double var7 = this.getY() + (double)(this.random.nextInt(16) - 8) - var2.y * 16.0;
-      double var9 = this.getZ() + (this.random.nextDouble() - 0.5) * 8.0 - var2.z * 16.0;
-      return this.teleport(var5, var7, var9);
+   private boolean teleportTowards(final Entity entity) {
+      Vec3 dir = new Vec3(this.getX() - entity.getX(), this.getY(0.5) - entity.getEyeY(), this.getZ() - entity.getZ());
+      dir = dir.normalize();
+      double d = 16.0;
+      double xx = this.getX() + (this.random.nextDouble() - 0.5) * 8.0 - dir.x * 16.0;
+      double yy = this.getY() + (double)(this.random.nextInt(16) - 8) - dir.y * 16.0;
+      double zz = this.getZ() + (this.random.nextDouble() - 0.5) * 8.0 - dir.z * 16.0;
+      return this.teleport(xx, yy, zz);
    }
 
-   private boolean teleport(double var1, double var3, double var5) {
-      BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos(var1, var3, var5);
+   private boolean teleport(final double x, final double y, final double z) {
+      BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y, z);
 
-      while(var7.getY() > this.level().getMinY() && !this.level().getBlockState(var7).blocksMotion()) {
-         var7.move(Direction.DOWN);
+      while(pos.getY() > this.level().getMinY() && !this.level().getBlockState(pos).blocksMotion()) {
+         pos.move(Direction.DOWN);
       }
 
-      BlockState var8 = this.level().getBlockState(var7);
-      boolean var9 = var8.blocksMotion();
-      boolean var10 = var8.getFluidState().is(FluidTags.WATER);
-      if (var9 && !var10) {
-         Vec3 var11 = this.position();
-         boolean var12 = this.randomTeleport(var1, var3, var5, true);
-         if (var12) {
-            this.level().gameEvent(GameEvent.TELEPORT, var11, GameEvent.Context.of((Entity)this));
+      BlockState blockState = this.level().getBlockState(pos);
+      boolean couldStandOn = blockState.blocksMotion();
+      boolean isWet = blockState.getFluidState().is(FluidTags.WATER);
+      if (couldStandOn && !isWet) {
+         Vec3 oldPos = this.position();
+         boolean result = this.randomTeleport(x, y, z, true);
+         if (result) {
+            this.level().gameEvent(GameEvent.TELEPORT, oldPos, GameEvent.Context.of((Entity)this));
             if (!this.isSilent()) {
                this.level().playSound((Entity)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
                this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
             }
          }
 
-         return var12;
+         return result;
       } else {
          return false;
       }
@@ -274,7 +274,7 @@ public class EnderMan extends Monster implements NeutralMob {
       return this.isCreepy() ? SoundEvents.ENDERMAN_SCREAM : SoundEvents.ENDERMAN_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.ENDERMAN_HURT;
    }
 
@@ -282,68 +282,68 @@ public class EnderMan extends Monster implements NeutralMob {
       return SoundEvents.ENDERMAN_DEATH;
    }
 
-   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      BlockState var4 = this.getCarriedBlock();
-      if (var4 != null) {
-         ItemStack var5 = new ItemStack(Items.DIAMOND_AXE);
-         EnchantmentHelper.enchantItemFromProvider(var5, var1.registryAccess(), VanillaEnchantmentProviders.ENDERMAN_LOOT_DROP, var1.getCurrentDifficultyAt(this.blockPosition()), this.getRandom());
-         LootParams.Builder var6 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.TOOL, var5).withOptionalParameter(LootContextParams.THIS_ENTITY, this);
+   protected void dropCustomDeathLoot(final ServerLevel level, final DamageSource source, final boolean killedByPlayer) {
+      super.dropCustomDeathLoot(level, source, killedByPlayer);
+      BlockState carryingBlock = this.getCarriedBlock();
+      if (carryingBlock != null) {
+         ItemStack fakeTool = new ItemStack(Items.DIAMOND_AXE);
+         EnchantmentHelper.enchantItemFromProvider(fakeTool, level.registryAccess(), VanillaEnchantmentProviders.ENDERMAN_LOOT_DROP, level.getCurrentDifficultyAt(this.blockPosition()), this.getRandom());
+         LootParams.Builder params = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.TOOL, fakeTool).withOptionalParameter(LootContextParams.THIS_ENTITY, this);
 
-         for(ItemStack var9 : var4.getDrops(var6)) {
-            this.spawnAtLocation(var1, var9);
+         for(ItemStack itemStack : carryingBlock.getDrops(params)) {
+            this.spawnAtLocation(level, itemStack);
          }
       }
 
    }
 
-   public void setCarriedBlock(@Nullable BlockState var1) {
-      this.entityData.set(DATA_CARRY_STATE, Optional.ofNullable(var1));
+   public void setCarriedBlock(final @Nullable BlockState carryingBlock) {
+      this.entityData.set(DATA_CARRY_STATE, Optional.ofNullable(carryingBlock));
    }
 
    public @Nullable BlockState getCarriedBlock() {
       return (BlockState)((Optional)this.entityData.get(DATA_CARRY_STATE)).orElse((Object)null);
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      if (this.isInvulnerableTo(var1, var2)) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      if (this.isInvulnerableTo(level, source)) {
          return false;
       } else {
-         Entity var6 = var2.getDirectEntity();
+         Entity var6 = source.getDirectEntity();
          AbstractThrownPotion var10000;
          if (var6 instanceof AbstractThrownPotion) {
-            AbstractThrownPotion var5 = (AbstractThrownPotion)var6;
-            var10000 = var5;
+            AbstractThrownPotion potion = (AbstractThrownPotion)var6;
+            var10000 = potion;
          } else {
             var10000 = null;
          }
 
-         AbstractThrownPotion var4 = var10000;
-         if (!var2.is(DamageTypeTags.IS_PROJECTILE) && var4 == null) {
-            boolean var8 = super.hurtServer(var1, var2, var3);
-            if (!(var2.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0) {
+         AbstractThrownPotion thrownPotion = var10000;
+         if (!source.is(DamageTypeTags.IS_PROJECTILE) && thrownPotion == null) {
+            boolean result = super.hurtServer(level, source, damage);
+            if (!(source.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0) {
                this.teleport();
             }
 
-            return var8;
+            return result;
          } else {
-            boolean var7 = var4 != null && this.hurtWithCleanWater(var1, var2, var4, var3);
+            boolean hurtWithCleanWater = thrownPotion != null && this.hurtWithCleanWater(level, source, thrownPotion, damage);
 
-            for(int var9 = 0; var9 < 64; ++var9) {
+            for(int i = 0; i < 64; ++i) {
                if (this.teleport()) {
                   return true;
                }
             }
 
-            return var7;
+            return hurtWithCleanWater;
          }
       }
    }
 
-   private boolean hurtWithCleanWater(ServerLevel var1, DamageSource var2, AbstractThrownPotion var3, float var4) {
-      ItemStack var5 = var3.getItem();
-      PotionContents var6 = (PotionContents)var5.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-      return var6.is(Potions.WATER) ? super.hurtServer(var1, var2, var4) : false;
+   private boolean hurtWithCleanWater(final ServerLevel level, final DamageSource source, final AbstractThrownPotion thrownPotion, final float damage) {
+      ItemStack potionItemStack = thrownPotion.getItem();
+      PotionContents potionContents = (PotionContents)potionItemStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+      return potionContents.is(Potions.WATER) ? super.hurtServer(level, source, damage) : false;
    }
 
    public boolean isCreepy() {
@@ -370,7 +370,7 @@ public class EnderMan extends Monster implements NeutralMob {
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }
 
-   static class EndermanLookForPlayerGoal extends NearestAttackableTargetGoal<Player> {
+   private static class EndermanLookForPlayerGoal extends NearestAttackableTargetGoal<Player> {
       private final EnderMan enderman;
       private @Nullable Player pendingTarget;
       private int aggroTime;
@@ -379,10 +379,10 @@ public class EnderMan extends Monster implements NeutralMob {
       private final TargetingConditions continueAggroTargetConditions = TargetingConditions.forCombat().ignoreLineOfSight();
       private final TargetingConditions.Selector isAngerInducing;
 
-      public EndermanLookForPlayerGoal(EnderMan var1, TargetingConditions.@Nullable Selector var2) {
-         super(var1, Player.class, 10, false, false, var2);
-         this.enderman = var1;
-         this.isAngerInducing = (var1x, var2x) -> (var1.isBeingStaredBy((Player)var1x) || var1.isAngryAt(var1x, var2x)) && !var1.hasIndirectPassenger(var1x);
+      public EndermanLookForPlayerGoal(final EnderMan enderman, final TargetingConditions.@Nullable Selector isAngryAt) {
+         super(enderman, Player.class, 10, false, false, isAngryAt);
+         this.enderman = enderman;
+         this.isAngerInducing = (target, level) -> (enderman.isBeingStaredBy((Player)target) || enderman.isAngryAt(target, level)) && !enderman.hasIndirectPassenger(target);
          this.startAggroTargetConditions = TargetingConditions.forCombat().range(this.getFollowDistance()).selector(this.isAngerInducing);
       }
 
@@ -455,22 +455,22 @@ public class EnderMan extends Monster implements NeutralMob {
       }
    }
 
-   static class EndermanFreezeWhenLookedAt extends Goal {
+   private static class EndermanFreezeWhenLookedAt extends Goal {
       private final EnderMan enderman;
       private @Nullable LivingEntity target;
 
-      public EndermanFreezeWhenLookedAt(EnderMan var1) {
+      public EndermanFreezeWhenLookedAt(final EnderMan enderman) {
          super();
-         this.enderman = var1;
+         this.enderman = enderman;
          this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
       }
 
       public boolean canUse() {
          this.target = this.enderman.getTarget();
          LivingEntity var2 = this.target;
-         if (var2 instanceof Player var1) {
-            double var4 = this.target.distanceToSqr(this.enderman);
-            return var4 > 256.0 ? false : this.enderman.isBeingStaredBy(var1);
+         if (var2 instanceof Player playerTarget) {
+            double dist = this.target.distanceToSqr(this.enderman);
+            return dist > 256.0 ? false : this.enderman.isBeingStaredBy(playerTarget);
          } else {
             return false;
          }
@@ -485,12 +485,12 @@ public class EnderMan extends Monster implements NeutralMob {
       }
    }
 
-   static class EndermanLeaveBlockGoal extends Goal {
+   private static class EndermanLeaveBlockGoal extends Goal {
       private final EnderMan enderman;
 
-      public EndermanLeaveBlockGoal(EnderMan var1) {
+      public EndermanLeaveBlockGoal(final EnderMan enderman) {
          super();
-         this.enderman = var1;
+         this.enderman = enderman;
       }
 
       public boolean canUse() {
@@ -504,38 +504,38 @@ public class EnderMan extends Monster implements NeutralMob {
       }
 
       public void tick() {
-         RandomSource var1 = this.enderman.getRandom();
-         Level var2 = this.enderman.level();
-         int var3 = Mth.floor(this.enderman.getX() - 1.0 + var1.nextDouble() * 2.0);
-         int var4 = Mth.floor(this.enderman.getY() + var1.nextDouble() * 2.0);
-         int var5 = Mth.floor(this.enderman.getZ() - 1.0 + var1.nextDouble() * 2.0);
-         BlockPos var6 = new BlockPos(var3, var4, var5);
-         BlockState var7 = var2.getBlockState(var6);
-         BlockPos var8 = var6.below();
-         BlockState var9 = var2.getBlockState(var8);
-         BlockState var10 = this.enderman.getCarriedBlock();
-         if (var10 != null) {
-            var10 = Block.updateFromNeighbourShapes(var10, this.enderman.level(), var6);
-            if (this.canPlaceBlock(var2, var6, var10, var7, var9, var8)) {
-               var2.setBlock(var6, var10, 3);
-               var2.gameEvent(GameEvent.BLOCK_PLACE, var6, GameEvent.Context.of(this.enderman, var10));
+         RandomSource random = this.enderman.getRandom();
+         Level level = this.enderman.level();
+         int xt = Mth.floor(this.enderman.getX() - 1.0 + random.nextDouble() * 2.0);
+         int yt = Mth.floor(this.enderman.getY() + random.nextDouble() * 2.0);
+         int zt = Mth.floor(this.enderman.getZ() - 1.0 + random.nextDouble() * 2.0);
+         BlockPos pos = new BlockPos(xt, yt, zt);
+         BlockState targetState = level.getBlockState(pos);
+         BlockPos below = pos.below();
+         BlockState belowState = level.getBlockState(below);
+         BlockState carried = this.enderman.getCarriedBlock();
+         if (carried != null) {
+            carried = Block.updateFromNeighbourShapes(carried, this.enderman.level(), pos);
+            if (this.canPlaceBlock(level, pos, carried, targetState, belowState, below)) {
+               level.setBlock(pos, carried, 3);
+               level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(this.enderman, carried));
                this.enderman.setCarriedBlock((BlockState)null);
             }
 
          }
       }
 
-      private boolean canPlaceBlock(Level var1, BlockPos var2, BlockState var3, BlockState var4, BlockState var5, BlockPos var6) {
-         return var4.isAir() && !var5.isAir() && !var5.is(Blocks.BEDROCK) && var5.isCollisionShapeFullBlock(var1, var6) && var3.canSurvive(var1, var2) && var1.getEntities(this.enderman, AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(var2))).isEmpty();
+      private boolean canPlaceBlock(final Level level, final BlockPos pos, final BlockState carried, final BlockState targetState, final BlockState belowState, final BlockPos below) {
+         return targetState.isAir() && !belowState.isAir() && !belowState.is(Blocks.BEDROCK) && belowState.isCollisionShapeFullBlock(level, below) && carried.canSurvive(level, pos) && level.getEntities(this.enderman, AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(pos))).isEmpty();
       }
    }
 
-   static class EndermanTakeBlockGoal extends Goal {
+   private static class EndermanTakeBlockGoal extends Goal {
       private final EnderMan enderman;
 
-      public EndermanTakeBlockGoal(EnderMan var1) {
+      public EndermanTakeBlockGoal(final EnderMan enderman) {
          super();
-         this.enderman = var1;
+         this.enderman = enderman;
       }
 
       public boolean canUse() {
@@ -549,21 +549,21 @@ public class EnderMan extends Monster implements NeutralMob {
       }
 
       public void tick() {
-         RandomSource var1 = this.enderman.getRandom();
-         Level var2 = this.enderman.level();
-         int var3 = Mth.floor(this.enderman.getX() - 2.0 + var1.nextDouble() * 4.0);
-         int var4 = Mth.floor(this.enderman.getY() + var1.nextDouble() * 3.0);
-         int var5 = Mth.floor(this.enderman.getZ() - 2.0 + var1.nextDouble() * 4.0);
-         BlockPos var6 = new BlockPos(var3, var4, var5);
-         BlockState var7 = var2.getBlockState(var6);
-         Vec3 var8 = new Vec3((double)this.enderman.getBlockX() + 0.5, (double)var4 + 0.5, (double)this.enderman.getBlockZ() + 0.5);
-         Vec3 var9 = new Vec3((double)var3 + 0.5, (double)var4 + 0.5, (double)var5 + 0.5);
-         BlockHitResult var10 = var2.clip(new ClipContext(var8, var9, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, this.enderman));
-         boolean var11 = var10.getBlockPos().equals(var6);
-         if (var7.is(BlockTags.ENDERMAN_HOLDABLE) && var11) {
-            var2.removeBlock(var6, false);
-            var2.gameEvent(GameEvent.BLOCK_DESTROY, var6, GameEvent.Context.of(this.enderman, var7));
-            this.enderman.setCarriedBlock(var7.getBlock().defaultBlockState());
+         RandomSource random = this.enderman.getRandom();
+         Level level = this.enderman.level();
+         int xt = Mth.floor(this.enderman.getX() - 2.0 + random.nextDouble() * 4.0);
+         int yt = Mth.floor(this.enderman.getY() + random.nextDouble() * 3.0);
+         int zt = Mth.floor(this.enderman.getZ() - 2.0 + random.nextDouble() * 4.0);
+         BlockPos pos = new BlockPos(xt, yt, zt);
+         BlockState blockState = level.getBlockState(pos);
+         Vec3 from = new Vec3((double)this.enderman.getBlockX() + 0.5, (double)yt + 0.5, (double)this.enderman.getBlockZ() + 0.5);
+         Vec3 to = new Vec3((double)xt + 0.5, (double)yt + 0.5, (double)zt + 0.5);
+         BlockHitResult result = level.clip(new ClipContext(from, to, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, this.enderman));
+         boolean reachable = result.getBlockPos().equals(pos);
+         if (blockState.is(BlockTags.ENDERMAN_HOLDABLE) && reachable) {
+            level.removeBlock(pos, false);
+            level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(this.enderman, blockState));
+            this.enderman.setCarriedBlock(blockState.getBlock().defaultBlockState());
          }
 
       }

@@ -20,21 +20,16 @@ public interface ContainerComponentManipulators {
          return DataComponents.CONTAINER;
       }
 
-      public Stream<ItemStack> getContents(ItemContainerContents var1) {
-         return var1.stream();
+      public Stream<ItemStack> getContents(final ItemContainerContents component) {
+         return component.allItemsCopyStream();
       }
 
       public ItemContainerContents empty() {
          return ItemContainerContents.EMPTY;
       }
 
-      public ItemContainerContents setContents(ItemContainerContents var1, Stream<ItemStack> var2) {
-         return ItemContainerContents.fromItems(var2.toList());
-      }
-
-      // $FF: synthetic method
-      public Object empty() {
-         return this.empty();
+      public ItemContainerContents setContents(final ItemContainerContents component, final Stream<ItemStack> newContents) {
+         return ItemContainerContents.fromItems(newContents.toList());
       }
    };
    ContainerComponentManipulator<BundleContents> BUNDLE_CONTENTS = new ContainerComponentManipulator<BundleContents>() {
@@ -46,20 +41,15 @@ public interface ContainerComponentManipulators {
          return BundleContents.EMPTY;
       }
 
-      public Stream<ItemStack> getContents(BundleContents var1) {
-         return var1.itemCopyStream();
+      public Stream<ItemStack> getContents(final BundleContents component) {
+         return component.itemCopyStream();
       }
 
-      public BundleContents setContents(BundleContents var1, Stream<ItemStack> var2) {
-         BundleContents.Mutable var3 = (new BundleContents.Mutable(var1)).clearItems();
-         Objects.requireNonNull(var3);
-         var2.forEach(var3::tryInsert);
-         return var3.toImmutable();
-      }
-
-      // $FF: synthetic method
-      public Object empty() {
-         return this.empty();
+      public BundleContents setContents(final BundleContents component, final Stream<ItemStack> newContents) {
+         BundleContents.Mutable builder = (new BundleContents.Mutable(component)).clearItems();
+         Objects.requireNonNull(builder);
+         newContents.forEach(builder::tryInsert);
+         return builder.toImmutable();
       }
    };
    ContainerComponentManipulator<ChargedProjectiles> CHARGED_PROJECTILES = new ContainerComponentManipulator<ChargedProjectiles>() {
@@ -71,22 +61,17 @@ public interface ContainerComponentManipulators {
          return ChargedProjectiles.EMPTY;
       }
 
-      public Stream<ItemStack> getContents(ChargedProjectiles var1) {
-         return var1.getItems().stream();
+      public Stream<ItemStack> getContents(final ChargedProjectiles component) {
+         return component.itemCopies().stream();
       }
 
-      public ChargedProjectiles setContents(ChargedProjectiles var1, Stream<ItemStack> var2) {
-         return ChargedProjectiles.of(var2.toList());
-      }
-
-      // $FF: synthetic method
-      public Object empty() {
-         return this.empty();
+      public ChargedProjectiles setContents(final ChargedProjectiles component, final Stream<ItemStack> newContents) {
+         return ChargedProjectiles.ofNonEmpty(newContents.filter((s) -> !s.isEmpty()).toList());
       }
    };
-   Map<DataComponentType<?>, ContainerComponentManipulator<?>> ALL_MANIPULATORS = (Map)Stream.of(CONTAINER, BUNDLE_CONTENTS, CHARGED_PROJECTILES).collect(Collectors.toMap(ContainerComponentManipulator::type, (var0) -> var0));
-   Codec<ContainerComponentManipulator<?>> CODEC = BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec().comapFlatMap((var0) -> {
-      ContainerComponentManipulator var1 = (ContainerComponentManipulator)ALL_MANIPULATORS.get(var0);
-      return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "No items in component");
+   Map<DataComponentType<?>, ContainerComponentManipulator<?>> ALL_MANIPULATORS = (Map)Stream.of(CONTAINER, BUNDLE_CONTENTS, CHARGED_PROJECTILES).collect(Collectors.toMap(ContainerComponentManipulator::type, (e) -> e));
+   Codec<ContainerComponentManipulator<?>> CODEC = BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec().comapFlatMap((type) -> {
+      ContainerComponentManipulator<?> manipulator = (ContainerComponentManipulator)ALL_MANIPULATORS.get(type);
+      return manipulator != null ? DataResult.success(manipulator) : DataResult.error(() -> "No items in component");
    }, ContainerComponentManipulator::type);
 }

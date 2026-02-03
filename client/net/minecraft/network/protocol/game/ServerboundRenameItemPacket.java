@@ -9,26 +9,26 @@ public class ServerboundRenameItemPacket implements Packet<ServerGamePacketListe
    public static final StreamCodec<FriendlyByteBuf, ServerboundRenameItemPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundRenameItemPacket>codec(ServerboundRenameItemPacket::write, ServerboundRenameItemPacket::new);
    private final String name;
 
-   public ServerboundRenameItemPacket(String var1) {
+   public ServerboundRenameItemPacket(final String name) {
       super();
-      this.name = var1;
+      this.name = name;
    }
 
-   private ServerboundRenameItemPacket(FriendlyByteBuf var1) {
+   private ServerboundRenameItemPacket(final FriendlyByteBuf input) {
       super();
-      this.name = var1.readUtf();
+      this.name = input.readUtf();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.name);
+   private void write(final FriendlyByteBuf output) {
+      output.writeUtf(this.name);
    }
 
    public PacketType<ServerboundRenameItemPacket> type() {
       return GamePacketTypes.SERVERBOUND_RENAME_ITEM;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleRenameItem(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleRenameItem(this);
    }
 
    public String getName() {

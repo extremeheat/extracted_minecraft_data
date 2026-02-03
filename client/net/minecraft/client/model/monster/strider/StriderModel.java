@@ -29,11 +29,11 @@ public class StriderModel extends EntityModel<StriderRenderState> {
    private final ModelPart leftMiddleBristle;
    private final ModelPart leftBottomBristle;
 
-   public StriderModel(ModelPart var1) {
-      super(var1);
-      this.rightLeg = var1.getChild("right_leg");
-      this.leftLeg = var1.getChild("left_leg");
-      this.body = var1.getChild("body");
+   public StriderModel(final ModelPart root) {
+      super(root);
+      this.rightLeg = root.getChild("right_leg");
+      this.leftLeg = root.getChild("left_leg");
+      this.body = root.getChild("body");
       this.rightBottomBristle = this.body.getChild("right_bottom_bristle");
       this.rightMiddleBristle = this.body.getChild("right_middle_bristle");
       this.rightTopBristle = this.body.getChild("right_top_bristle");
@@ -43,75 +43,75 @@ public class StriderModel extends EntityModel<StriderRenderState> {
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 32).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 16.0F, 4.0F), PartPose.offset(-4.0F, 8.0F, 0.0F));
-      var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 55).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 16.0F, 4.0F), PartPose.offset(4.0F, 8.0F, 0.0F));
-      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -6.0F, -8.0F, 16.0F, 14.0F, 16.0F), PartPose.offset(0.0F, 1.0F, 0.0F));
-      var2.addOrReplaceChild("right_bottom_bristle", CubeListBuilder.create().texOffs(16, 65).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true), PartPose.offsetAndRotation(-8.0F, 4.0F, -8.0F, 0.0F, 0.0F, -1.2217305F));
-      var2.addOrReplaceChild("right_middle_bristle", CubeListBuilder.create().texOffs(16, 49).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true), PartPose.offsetAndRotation(-8.0F, -1.0F, -8.0F, 0.0F, 0.0F, -1.134464F));
-      var2.addOrReplaceChild("right_top_bristle", CubeListBuilder.create().texOffs(16, 33).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true), PartPose.offsetAndRotation(-8.0F, -5.0F, -8.0F, 0.0F, 0.0F, -0.87266463F));
-      var2.addOrReplaceChild("left_top_bristle", CubeListBuilder.create().texOffs(16, 33).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F), PartPose.offsetAndRotation(8.0F, -6.0F, -8.0F, 0.0F, 0.0F, 0.87266463F));
-      var2.addOrReplaceChild("left_middle_bristle", CubeListBuilder.create().texOffs(16, 49).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F), PartPose.offsetAndRotation(8.0F, -2.0F, -8.0F, 0.0F, 0.0F, 1.134464F));
-      var2.addOrReplaceChild("left_bottom_bristle", CubeListBuilder.create().texOffs(16, 65).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F), PartPose.offsetAndRotation(8.0F, 3.0F, -8.0F, 0.0F, 0.0F, 1.2217305F));
-      return LayerDefinition.create(var0, 64, 128);
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 32).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 16.0F, 4.0F), PartPose.offset(-4.0F, 8.0F, 0.0F));
+      root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 55).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 16.0F, 4.0F), PartPose.offset(4.0F, 8.0F, 0.0F));
+      PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -6.0F, -8.0F, 16.0F, 14.0F, 16.0F), PartPose.offset(0.0F, 1.0F, 0.0F));
+      body.addOrReplaceChild("right_bottom_bristle", CubeListBuilder.create().texOffs(16, 65).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true), PartPose.offsetAndRotation(-8.0F, 4.0F, -8.0F, 0.0F, 0.0F, -1.2217305F));
+      body.addOrReplaceChild("right_middle_bristle", CubeListBuilder.create().texOffs(16, 49).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true), PartPose.offsetAndRotation(-8.0F, -1.0F, -8.0F, 0.0F, 0.0F, -1.134464F));
+      body.addOrReplaceChild("right_top_bristle", CubeListBuilder.create().texOffs(16, 33).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true), PartPose.offsetAndRotation(-8.0F, -5.0F, -8.0F, 0.0F, 0.0F, -0.87266463F));
+      body.addOrReplaceChild("left_top_bristle", CubeListBuilder.create().texOffs(16, 33).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F), PartPose.offsetAndRotation(8.0F, -6.0F, -8.0F, 0.0F, 0.0F, 0.87266463F));
+      body.addOrReplaceChild("left_middle_bristle", CubeListBuilder.create().texOffs(16, 49).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F), PartPose.offsetAndRotation(8.0F, -2.0F, -8.0F, 0.0F, 0.0F, 1.134464F));
+      body.addOrReplaceChild("left_bottom_bristle", CubeListBuilder.create().texOffs(16, 65).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F), PartPose.offsetAndRotation(8.0F, 3.0F, -8.0F, 0.0F, 0.0F, 1.2217305F));
+      return LayerDefinition.create(mesh, 64, 128);
    }
 
-   public void setupAnim(StriderRenderState var1) {
-      super.setupAnim(var1);
-      float var2 = var1.walkAnimationPos;
-      float var3 = Math.min(var1.walkAnimationSpeed, 0.25F);
-      if (!var1.isRidden) {
-         this.body.xRot = var1.xRot * 0.017453292F;
-         this.body.yRot = var1.yRot * 0.017453292F;
+   public void setupAnim(final StriderRenderState state) {
+      super.setupAnim(state);
+      float animationPos = state.walkAnimationPos;
+      float animationSpeed = Math.min(state.walkAnimationSpeed, 0.25F);
+      if (!state.isRidden) {
+         this.body.xRot = state.xRot * 0.017453292F;
+         this.body.yRot = state.yRot * 0.017453292F;
       } else {
          this.body.xRot = 0.0F;
          this.body.yRot = 0.0F;
       }
 
-      float var4 = 1.5F;
-      this.body.zRot = 0.1F * Mth.sin((double)(var2 * 1.5F)) * 4.0F * var3;
+      float speed = 1.5F;
+      this.body.zRot = 0.1F * Mth.sin((double)(animationPos * 1.5F)) * 4.0F * animationSpeed;
       this.body.y = 2.0F;
       ModelPart var10000 = this.body;
-      var10000.y -= 2.0F * Mth.cos((double)(var2 * 1.5F)) * 2.0F * var3;
-      this.leftLeg.xRot = Mth.sin((double)(var2 * 1.5F * 0.5F)) * 2.0F * var3;
-      this.rightLeg.xRot = Mth.sin((double)(var2 * 1.5F * 0.5F + 3.1415927F)) * 2.0F * var3;
-      this.leftLeg.zRot = 0.17453292F * Mth.cos((double)(var2 * 1.5F * 0.5F)) * var3;
-      this.rightLeg.zRot = 0.17453292F * Mth.cos((double)(var2 * 1.5F * 0.5F + 3.1415927F)) * var3;
-      this.leftLeg.y = 8.0F + 2.0F * Mth.sin((double)(var2 * 1.5F * 0.5F + 3.1415927F)) * 2.0F * var3;
-      this.rightLeg.y = 8.0F + 2.0F * Mth.sin((double)(var2 * 1.5F * 0.5F)) * 2.0F * var3;
+      var10000.y -= 2.0F * Mth.cos((double)(animationPos * 1.5F)) * 2.0F * animationSpeed;
+      this.leftLeg.xRot = Mth.sin((double)(animationPos * 1.5F * 0.5F)) * 2.0F * animationSpeed;
+      this.rightLeg.xRot = Mth.sin((double)(animationPos * 1.5F * 0.5F + 3.1415927F)) * 2.0F * animationSpeed;
+      this.leftLeg.zRot = 0.17453292F * Mth.cos((double)(animationPos * 1.5F * 0.5F)) * animationSpeed;
+      this.rightLeg.zRot = 0.17453292F * Mth.cos((double)(animationPos * 1.5F * 0.5F + 3.1415927F)) * animationSpeed;
+      this.leftLeg.y = 8.0F + 2.0F * Mth.sin((double)(animationPos * 1.5F * 0.5F + 3.1415927F)) * 2.0F * animationSpeed;
+      this.rightLeg.y = 8.0F + 2.0F * Mth.sin((double)(animationPos * 1.5F * 0.5F)) * 2.0F * animationSpeed;
       this.rightBottomBristle.zRot = -1.2217305F;
       this.rightMiddleBristle.zRot = -1.134464F;
       this.rightTopBristle.zRot = -0.87266463F;
       this.leftTopBristle.zRot = 0.87266463F;
       this.leftMiddleBristle.zRot = 1.134464F;
       this.leftBottomBristle.zRot = 1.2217305F;
-      float var5 = Mth.cos((double)(var2 * 1.5F + 3.1415927F)) * var3;
+      float bristleFlow = Mth.cos((double)(animationPos * 1.5F + 3.1415927F)) * animationSpeed;
       var10000 = this.rightBottomBristle;
-      var10000.zRot += var5 * 1.3F;
+      var10000.zRot += bristleFlow * 1.3F;
       var10000 = this.rightMiddleBristle;
-      var10000.zRot += var5 * 1.2F;
+      var10000.zRot += bristleFlow * 1.2F;
       var10000 = this.rightTopBristle;
-      var10000.zRot += var5 * 0.6F;
+      var10000.zRot += bristleFlow * 0.6F;
       var10000 = this.leftTopBristle;
-      var10000.zRot += var5 * 0.6F;
+      var10000.zRot += bristleFlow * 0.6F;
       var10000 = this.leftMiddleBristle;
-      var10000.zRot += var5 * 1.2F;
+      var10000.zRot += bristleFlow * 1.2F;
       var10000 = this.leftBottomBristle;
-      var10000.zRot += var5 * 1.3F;
-      float var6 = 1.0F;
-      float var7 = 1.0F;
+      var10000.zRot += bristleFlow * 1.3F;
+      float bristleRangeMod = 1.0F;
+      float bristleSpeedMod = 1.0F;
       var10000 = this.rightBottomBristle;
-      var10000.zRot += 0.05F * Mth.sin((double)(var1.ageInTicks * 1.0F * -0.4F));
+      var10000.zRot += 0.05F * Mth.sin((double)(state.ageInTicks * 1.0F * -0.4F));
       var10000 = this.rightMiddleBristle;
-      var10000.zRot += 0.1F * Mth.sin((double)(var1.ageInTicks * 1.0F * 0.2F));
+      var10000.zRot += 0.1F * Mth.sin((double)(state.ageInTicks * 1.0F * 0.2F));
       var10000 = this.rightTopBristle;
-      var10000.zRot += 0.1F * Mth.sin((double)(var1.ageInTicks * 1.0F * 0.4F));
+      var10000.zRot += 0.1F * Mth.sin((double)(state.ageInTicks * 1.0F * 0.4F));
       var10000 = this.leftTopBristle;
-      var10000.zRot += 0.1F * Mth.sin((double)(var1.ageInTicks * 1.0F * 0.4F));
+      var10000.zRot += 0.1F * Mth.sin((double)(state.ageInTicks * 1.0F * 0.4F));
       var10000 = this.leftMiddleBristle;
-      var10000.zRot += 0.1F * Mth.sin((double)(var1.ageInTicks * 1.0F * 0.2F));
+      var10000.zRot += 0.1F * Mth.sin((double)(state.ageInTicks * 1.0F * 0.2F));
       var10000 = this.leftBottomBristle;
-      var10000.zRot += 0.05F * Mth.sin((double)(var1.ageInTicks * 1.0F * -0.4F));
+      var10000.zRot += 0.05F * Mth.sin((double)(state.ageInTicks * 1.0F * -0.4F));
    }
 }

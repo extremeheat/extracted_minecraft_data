@@ -35,53 +35,53 @@ public class PerfCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).then(Commands.literal("start").executes((var0x) -> startProfilingDedicatedServer((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stopProfilingDedicatedServer((CommandSourceStack)var0x.getSource()))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).then(Commands.literal("start").executes((c) -> startProfilingDedicatedServer((CommandSourceStack)c.getSource())))).then(Commands.literal("stop").executes((c) -> stopProfilingDedicatedServer((CommandSourceStack)c.getSource()))));
    }
 
-   private static int startProfilingDedicatedServer(CommandSourceStack var0) throws CommandSyntaxException {
-      MinecraftServer var1 = var0.getServer();
-      if (var1.isRecordingMetrics()) {
+   private static int startProfilingDedicatedServer(final CommandSourceStack source) throws CommandSyntaxException {
+      MinecraftServer server = source.getServer();
+      if (server.isRecordingMetrics()) {
          throw ERROR_ALREADY_RUNNING.create();
       } else {
-         Consumer var2 = (var1x) -> whenStopped(var0, var1x);
-         Consumer var3 = (var2x) -> saveResults(var0, var2x, var1);
-         var1.startRecordingMetrics(var2, var3);
-         var0.sendSuccess(() -> Component.translatable("commands.perf.started"), false);
+         Consumer<ProfileResults> onStopped = (results) -> whenStopped(source, results);
+         Consumer<Path> onReportFinished = (profilingLogs) -> saveResults(source, profilingLogs, server);
+         server.startRecordingMetrics(onStopped, onReportFinished);
+         source.sendSuccess(() -> Component.translatable("commands.perf.started"), false);
          return 0;
       }
    }
 
-   private static int stopProfilingDedicatedServer(CommandSourceStack var0) throws CommandSyntaxException {
-      MinecraftServer var1 = var0.getServer();
-      if (!var1.isRecordingMetrics()) {
+   private static int stopProfilingDedicatedServer(final CommandSourceStack source) throws CommandSyntaxException {
+      MinecraftServer server = source.getServer();
+      if (!server.isRecordingMetrics()) {
          throw ERROR_NOT_RUNNING.create();
       } else {
-         var1.finishRecordingMetrics();
+         server.finishRecordingMetrics();
          return 0;
       }
    }
 
-   private static void saveResults(CommandSourceStack var0, Path var1, MinecraftServer var2) {
-      String var3 = String.format(Locale.ROOT, "%s-%s-%s", Util.getFilenameFormattedDateTime(), var2.getWorldData().getLevelName(), SharedConstants.getCurrentVersion().id());
+   private static void saveResults(final CommandSourceStack source, final Path report, final MinecraftServer server) {
+      String profilingName = String.format(Locale.ROOT, "%s-%s-%s", Util.getFilenameFormattedDateTime(), server.getWorldData().getLevelName(), SharedConstants.getCurrentVersion().id());
 
-      String var4;
+      String zipFile;
       try {
-         var4 = FileUtil.findAvailableName(MetricsPersister.PROFILING_RESULTS_DIR, var3, ".zip");
-      } catch (IOException var11) {
-         var0.sendFailure(Component.translatable("commands.perf.reportFailed"));
-         LOGGER.error("Failed to create report name", var11);
+         zipFile = FileUtil.findAvailableName(MetricsPersister.PROFILING_RESULTS_DIR, profilingName, ".zip");
+      } catch (IOException e) {
+         source.sendFailure(Component.translatable("commands.perf.reportFailed"));
+         LOGGER.error("Failed to create report name", e);
          return;
       }
 
-      FileZipper var5 = new FileZipper(MetricsPersister.PROFILING_RESULTS_DIR.resolve(var4));
+      FileZipper fileZipper = new FileZipper(MetricsPersister.PROFILING_RESULTS_DIR.resolve(zipFile));
 
       try {
-         var5.add(Paths.get("system.txt"), var2.fillSystemReport(new SystemReport()).toLineSeparatedString());
-         var5.add(var1);
+         fileZipper.add(Paths.get("system.txt"), server.fillSystemReport(new SystemReport()).toLineSeparatedString());
+         fileZipper.add(report);
       } catch (Throwable var10) {
          try {
-            var5.close();
+            fileZipper.close();
          } catch (Throwable var8) {
             var10.addSuppressed(var8);
          }
@@ -89,22 +89,22 @@ public class PerfCommand {
          throw var10;
       }
 
-      var5.close();
+      fileZipper.close();
 
       try {
-         FileUtils.forceDelete(var1.toFile());
-      } catch (IOException var9) {
-         LOGGER.warn("Failed to delete temporary profiling file {}", var1, var9);
+         FileUtils.forceDelete(report.toFile());
+      } catch (IOException e) {
+         LOGGER.warn("Failed to delete temporary profiling file {}", report, e);
       }
 
-      var0.sendSuccess(() -> Component.translatable("commands.perf.reportSaved", var4), false);
+      source.sendSuccess(() -> Component.translatable("commands.perf.reportSaved", zipFile), false);
    }
 
-   private static void whenStopped(CommandSourceStack var0, ProfileResults var1) {
-      if (var1 != EmptyProfileResults.EMPTY) {
-         int var2 = var1.getTickDuration();
-         double var3 = (double)var1.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
-         var0.sendSuccess(() -> Component.translatable("commands.perf.stopped", String.format(Locale.ROOT, "%.2f", var3), var2, String.format(Locale.ROOT, "%.2f", (double)var2 / var3)), false);
+   private static void whenStopped(final CommandSourceStack source, final ProfileResults results) {
+      if (results != EmptyProfileResults.EMPTY) {
+         int ticks = results.getTickDuration();
+         double durationInSeconds = (double)results.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
+         source.sendSuccess(() -> Component.translatable("commands.perf.stopped", String.format(Locale.ROOT, "%.2f", durationInSeconds), ticks, String.format(Locale.ROOT, "%.2f", (double)ticks / durationInSeconds)), false);
       }
    }
 }

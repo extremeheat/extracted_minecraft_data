@@ -12,30 +12,30 @@ public class ParsedTemplate {
    private final String raw;
    private final StringTemplate parsed;
 
-   private ParsedTemplate(String var1, StringTemplate var2) {
+   private ParsedTemplate(final String raw, final StringTemplate parsed) {
       super();
-      this.raw = var1;
-      this.parsed = var2;
+      this.raw = raw;
+      this.parsed = parsed;
    }
 
-   private static DataResult<ParsedTemplate> parse(String var0) {
-      StringTemplate var1;
+   private static DataResult<ParsedTemplate> parse(final String value) {
+      StringTemplate template;
       try {
-         var1 = StringTemplate.fromString(var0);
-      } catch (Exception var3) {
-         return DataResult.error(() -> "Failed to parse template " + var0 + ": " + var3.getMessage());
+         template = StringTemplate.fromString(value);
+      } catch (Exception e) {
+         return DataResult.error(() -> "Failed to parse template " + value + ": " + e.getMessage());
       }
 
-      return DataResult.success(new ParsedTemplate(var0, var1));
+      return DataResult.success(new ParsedTemplate(value, template));
    }
 
-   public String instantiate(Map<String, String> var1) {
-      List var2 = this.parsed.variables().stream().map((var1x) -> (String)var1.getOrDefault(var1x, "")).toList();
-      return this.parsed.substitute(var2);
+   public String instantiate(final Map<String, String> arguments) {
+      List<String> values = this.parsed.variables().stream().map((k) -> (String)arguments.getOrDefault(k, "")).toList();
+      return this.parsed.substitute(values);
    }
 
    static {
-      CODEC = Codec.STRING.comapFlatMap(ParsedTemplate::parse, (var0) -> var0.raw);
-      VARIABLE_CODEC = Codec.STRING.validate((var0) -> StringTemplate.isValidVariableName(var0) ? DataResult.success(var0) : DataResult.error(() -> var0 + " is not a valid input name"));
+      CODEC = Codec.STRING.comapFlatMap(ParsedTemplate::parse, (t) -> t.raw);
+      VARIABLE_CODEC = Codec.STRING.validate((s) -> StringTemplate.isValidVariableName(s) ? DataResult.success(s) : DataResult.error(() -> s + " is not a valid input name"));
    }
 }

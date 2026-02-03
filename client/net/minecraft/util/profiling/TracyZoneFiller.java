@@ -30,101 +30,101 @@ public class TracyZoneFiller implements ProfilerFiller {
    }
 
    public void endTick() {
-      for(PlotAndValue var2 : this.plots.values()) {
-         var2.set(0);
+      for(PlotAndValue plotAndValue : this.plots.values()) {
+         plotAndValue.set(0);
       }
 
    }
 
-   public void push(String var1) {
-      String var2 = "";
-      String var3 = "";
-      int var4 = 0;
+   public void push(final String name) {
+      String function = "";
+      String file = "";
+      int line = 0;
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         Optional var5 = (Optional)STACK_WALKER.walk((var0) -> var0.filter((var0x) -> var0x.getDeclaringClass() != TracyZoneFiller.class && var0x.getDeclaringClass() != ProfilerFiller.CombinedProfileFiller.class).findFirst());
-         if (var5.isPresent()) {
-            StackWalker.StackFrame var6 = (StackWalker.StackFrame)var5.get();
-            var2 = var6.getMethodName();
-            var3 = var6.getFileName();
-            var4 = var6.getLineNumber();
+         Optional<StackWalker.StackFrame> result = (Optional)STACK_WALKER.walk((s) -> s.filter((frame) -> frame.getDeclaringClass() != TracyZoneFiller.class && frame.getDeclaringClass() != ProfilerFiller.CombinedProfileFiller.class).findFirst());
+         if (result.isPresent()) {
+            StackWalker.StackFrame frame = (StackWalker.StackFrame)result.get();
+            function = frame.getMethodName();
+            file = frame.getFileName();
+            line = frame.getLineNumber();
          }
       }
 
-      com.mojang.jtracy.Zone var7 = TracyClient.beginZone(var1, var2, var3, var4);
-      this.activeZones.add(var7);
+      com.mojang.jtracy.Zone zone = TracyClient.beginZone(name, function, file, line);
+      this.activeZones.add(zone);
    }
 
-   public void push(Supplier<String> var1) {
-      this.push((String)var1.get());
+   public void push(final Supplier<String> name) {
+      this.push((String)name.get());
    }
 
    public void pop() {
       if (this.activeZones.isEmpty()) {
          LOGGER.error("Tried to pop one too many times! Mismatched push() and pop()?");
       } else {
-         com.mojang.jtracy.Zone var1 = (com.mojang.jtracy.Zone)this.activeZones.removeLast();
-         var1.close();
+         com.mojang.jtracy.Zone zone = (com.mojang.jtracy.Zone)this.activeZones.removeLast();
+         zone.close();
       }
    }
 
-   public void popPush(String var1) {
+   public void popPush(final String name) {
       this.pop();
-      this.push(var1);
+      this.push(name);
    }
 
-   public void popPush(Supplier<String> var1) {
+   public void popPush(final Supplier<String> name) {
       this.pop();
-      this.push((String)var1.get());
+      this.push((String)name.get());
    }
 
-   public void markForCharting(MetricCategory var1) {
+   public void markForCharting(final MetricCategory category) {
    }
 
-   public void incrementCounter(String var1, int var2) {
-      ((PlotAndValue)this.plots.computeIfAbsent(var1, (var2x) -> new PlotAndValue(this.name + " " + var1))).add(var2);
+   public void incrementCounter(final String name, final int amount) {
+      ((PlotAndValue)this.plots.computeIfAbsent(name, (s) -> new PlotAndValue(this.name + " " + name))).add(amount);
    }
 
-   public void incrementCounter(Supplier<String> var1, int var2) {
-      this.incrementCounter((String)var1.get(), var2);
+   public void incrementCounter(final Supplier<String> name, final int amount) {
+      this.incrementCounter((String)name.get(), amount);
    }
 
    private com.mojang.jtracy.Zone activeZone() {
       return (com.mojang.jtracy.Zone)this.activeZones.getLast();
    }
 
-   public void addZoneText(String var1) {
-      this.activeZone().addText(var1);
+   public void addZoneText(final String text) {
+      this.activeZone().addText(text);
    }
 
-   public void addZoneValue(long var1) {
-      this.activeZone().addValue(var1);
+   public void addZoneValue(final long value) {
+      this.activeZone().addValue(value);
    }
 
-   public void setZoneColor(int var1) {
-      this.activeZone().setColor(var1);
+   public void setZoneColor(final int color) {
+      this.activeZone().setColor(color);
    }
 
    static {
       STACK_WALKER = StackWalker.getInstance(Set.of(Option.RETAIN_CLASS_REFERENCE), 5);
    }
 
-   static final class PlotAndValue {
+   private static final class PlotAndValue {
       private final Plot plot;
       private int value;
 
-      PlotAndValue(String var1) {
+      private PlotAndValue(final String name) {
          super();
-         this.plot = TracyClient.createPlot(var1);
+         this.plot = TracyClient.createPlot(name);
          this.value = 0;
       }
 
-      void set(int var1) {
-         this.value = var1;
-         this.plot.setValue((double)var1);
+      void set(final int value) {
+         this.value = value;
+         this.plot.setValue((double)value);
       }
 
-      void add(int var1) {
-         this.set(this.value + var1);
+      void add(final int amount) {
+         this.set(this.value + amount);
       }
    }
 }

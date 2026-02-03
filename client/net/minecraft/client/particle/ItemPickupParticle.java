@@ -17,10 +17,10 @@ public class ItemPickupParticle extends Particle {
    protected double targetYOld;
    protected double targetZOld;
 
-   public ItemPickupParticle(ClientLevel var1, EntityRenderState var2, Entity var3, Vec3 var4) {
-      super(var1, var2.x, var2.y, var2.z, var4.x, var4.y, var4.z);
-      this.target = var3;
-      this.itemRenderState = var2;
+   public ItemPickupParticle(final ClientLevel level, final EntityRenderState itemEntity, final Entity target, final Vec3 movement) {
+      super(level, itemEntity.x, itemEntity.y, itemEntity.z, movement.x, movement.y, movement.z);
+      this.target = target;
+      this.itemRenderState = itemEntity;
       this.itemRenderState.outlineColor = 0;
       this.updatePosition();
       this.saveOldPosition();

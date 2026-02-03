@@ -11,17 +11,16 @@ import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 public record ClientboundRecipeBookRemovePacket(List<RecipeDisplayId> recipes) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundRecipeBookRemovePacket> STREAM_CODEC;
 
-   public ClientboundRecipeBookRemovePacket(List<RecipeDisplayId> var1) {
+   public ClientboundRecipeBookRemovePacket {
       super();
-      this.recipes = var1;
    }
 
    public PacketType<ClientboundRecipeBookRemovePacket> type() {
       return GamePacketTypes.CLIENTBOUND_RECIPE_BOOK_REMOVE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleRecipeBookRemove(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleRecipeBookRemove(this);
    }
 
    static {

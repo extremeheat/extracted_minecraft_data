@@ -17,19 +17,19 @@ public class MissingItemModel implements ItemModel {
    private final Supplier<Vector3fc[]> extents;
    private final ModelRenderProperties properties;
 
-   public MissingItemModel(List<BakedQuad> var1, ModelRenderProperties var2) {
+   public MissingItemModel(final List<BakedQuad> quads, final ModelRenderProperties properties) {
       super();
-      this.quads = var1;
-      this.properties = var2;
+      this.quads = quads;
+      this.properties = properties;
       this.extents = Suppliers.memoize(() -> BlockModelWrapper.computeExtents(this.quads));
    }
 
-   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
-      var1.appendModelIdentityElement(this);
-      ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
-      var8.setRenderType(Sheets.cutoutBlockSheet());
-      this.properties.applyToLayer(var8, var4);
-      var8.setExtents(this.extents);
-      var8.prepareQuadList().addAll(this.quads);
+   public void update(final ItemStackRenderState output, final ItemStack item, final ItemModelResolver resolver, final ItemDisplayContext displayContext, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      output.appendModelIdentityElement(this);
+      ItemStackRenderState.LayerRenderState layer = output.newLayer();
+      layer.setRenderType(Sheets.cutoutBlockSheet());
+      this.properties.applyToLayer(layer, displayContext);
+      layer.setExtents(this.extents);
+      layer.prepareQuadList().addAll(this.quads);
    }
 }

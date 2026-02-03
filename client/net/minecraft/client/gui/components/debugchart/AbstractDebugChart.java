@@ -13,14 +13,14 @@ public abstract class AbstractDebugChart {
    protected final Font font;
    protected final SampleStorage sampleStorage;
 
-   protected AbstractDebugChart(Font var1, SampleStorage var2) {
+   protected AbstractDebugChart(final Font font, final SampleStorage sampleStorage) {
       super();
-      this.font = var1;
-      this.sampleStorage = var2;
+      this.font = font;
+      this.sampleStorage = sampleStorage;
    }
 
-   public int getWidth(int var1) {
-      return Math.min(this.sampleStorage.capacity() + 2, var1);
+   public int getWidth(final int maxWidth) {
+      return Math.min(this.sampleStorage.capacity() + 2, maxWidth);
    }
 
    public int getFullHeight() {
@@ -28,93 +28,93 @@ public abstract class AbstractDebugChart {
       return 60 + 9;
    }
 
-   public void drawChart(GuiGraphics var1, int var2, int var3) {
-      int var4 = var1.guiHeight();
-      var1.fill(var2, var4 - 60, var2 + var3, var4, -1873784752);
-      long var5 = 0L;
-      long var7 = 2147483647L;
-      long var9 = -2147483648L;
-      int var11 = Math.max(0, this.sampleStorage.capacity() - (var3 - 2));
-      int var12 = this.sampleStorage.size() - var11;
+   public void drawChart(final GuiGraphics graphics, final int left, final int width) {
+      int bottom = graphics.guiHeight();
+      graphics.fill(left, bottom - 60, left + width, bottom, -1873784752);
+      long avg = 0L;
+      long min = 2147483647L;
+      long max = -2147483648L;
+      int startIndex = Math.max(0, this.sampleStorage.capacity() - (width - 2));
+      int sampleCount = this.sampleStorage.size() - startIndex;
 
-      for(int var13 = 0; var13 < var12; ++var13) {
-         int var14 = var2 + var13 + 1;
-         int var15 = var11 + var13;
-         long var16 = this.getValueForAggregation(var15);
-         var7 = Math.min(var7, var16);
-         var9 = Math.max(var9, var16);
-         var5 += var16;
-         this.drawDimensions(var1, var4, var14, var15);
+      for(int i = 0; i < sampleCount; ++i) {
+         int currentX = left + i + 1;
+         int sampleIndex = startIndex + i;
+         long valueForAggregation = this.getValueForAggregation(sampleIndex);
+         min = Math.min(min, valueForAggregation);
+         max = Math.max(max, valueForAggregation);
+         avg += valueForAggregation;
+         this.drawDimensions(graphics, bottom, currentX, sampleIndex);
       }
 
-      var1.hLine(var2, var2 + var3 - 1, var4 - 60, -1);
-      var1.hLine(var2, var2 + var3 - 1, var4 - 1, -1);
-      var1.vLine(var2, var4 - 60, var4, -1);
-      var1.vLine(var2 + var3 - 1, var4 - 60, var4, -1);
-      if (var12 > 0) {
-         String var10000 = this.toDisplayString((double)var7);
-         String var18 = var10000 + " min";
-         var10000 = this.toDisplayString((double)var5 / (double)var12);
-         String var19 = var10000 + " avg";
-         var10000 = this.toDisplayString((double)var9);
-         String var20 = var10000 + " max";
+      graphics.hLine(left, left + width - 1, bottom - 60, -1);
+      graphics.hLine(left, left + width - 1, bottom - 1, -1);
+      graphics.vLine(left, bottom - 60, bottom, -1);
+      graphics.vLine(left + width - 1, bottom - 60, bottom, -1);
+      if (sampleCount > 0) {
+         String var10000 = this.toDisplayString((double)min);
+         String minText = var10000 + " min";
+         var10000 = this.toDisplayString((double)avg / (double)sampleCount);
+         String avgText = var10000 + " avg";
+         var10000 = this.toDisplayString((double)max);
+         String maxText = var10000 + " max";
          Font var10001 = this.font;
-         int var10003 = var2 + 2;
-         int var10004 = var4 - 60;
+         int var10003 = left + 2;
+         int var10004 = bottom - 60;
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, var18, var10003, var10004 - 9, -2039584);
+         graphics.drawString(var10001, minText, var10003, var10004 - 9, -2039584);
          var10001 = this.font;
-         var10003 = var2 + var3 / 2;
-         var10004 = var4 - 60;
+         var10003 = left + width / 2;
+         var10004 = bottom - 60;
          Objects.requireNonNull(this.font);
-         var1.drawCenteredString(var10001, var19, var10003, var10004 - 9, -2039584);
+         graphics.drawCenteredString(var10001, avgText, var10003, var10004 - 9, -2039584);
          var10001 = this.font;
-         var10003 = var2 + var3 - this.font.width(var20) - 2;
-         var10004 = var4 - 60;
+         var10003 = left + width - this.font.width(maxText) - 2;
+         var10004 = bottom - 60;
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, var20, var10003, var10004 - 9, -2039584);
+         graphics.drawString(var10001, maxText, var10003, var10004 - 9, -2039584);
       }
 
-      this.renderAdditionalLinesAndLabels(var1, var2, var3, var4);
+      this.renderAdditionalLinesAndLabels(graphics, left, width, bottom);
    }
 
-   protected void drawDimensions(GuiGraphics var1, int var2, int var3, int var4) {
-      this.drawMainDimension(var1, var2, var3, var4);
-      this.drawAdditionalDimensions(var1, var2, var3, var4);
+   protected void drawDimensions(final GuiGraphics graphics, final int bottom, final int currentX, final int sampleIndex) {
+      this.drawMainDimension(graphics, bottom, currentX, sampleIndex);
+      this.drawAdditionalDimensions(graphics, bottom, currentX, sampleIndex);
    }
 
-   protected void drawMainDimension(GuiGraphics var1, int var2, int var3, int var4) {
-      long var5 = this.sampleStorage.get(var4);
-      int var7 = this.getSampleHeight((double)var5);
-      int var8 = this.getSampleColor(var5);
-      var1.fill(var3, var2 - var7, var3 + 1, var2, var8);
+   protected void drawMainDimension(final GuiGraphics graphics, final int bottom, final int currentX, final int sampleIndex) {
+      long value = this.sampleStorage.get(sampleIndex);
+      int sampleHeight = this.getSampleHeight((double)value);
+      int color = this.getSampleColor(value);
+      graphics.fill(currentX, bottom - sampleHeight, currentX + 1, bottom, color);
    }
 
-   protected void drawAdditionalDimensions(GuiGraphics var1, int var2, int var3, int var4) {
+   protected void drawAdditionalDimensions(final GuiGraphics graphics, final int bottom, final int currentX, final int sampleIndex) {
    }
 
-   protected long getValueForAggregation(int var1) {
-      return this.sampleStorage.get(var1);
+   protected long getValueForAggregation(final int sampleIndex) {
+      return this.sampleStorage.get(sampleIndex);
    }
 
-   protected void renderAdditionalLinesAndLabels(GuiGraphics var1, int var2, int var3, int var4) {
+   protected void renderAdditionalLinesAndLabels(final GuiGraphics graphics, final int left, final int width, final int bottom) {
    }
 
-   protected void drawStringWithShade(GuiGraphics var1, String var2, int var3, int var4) {
-      int var10003 = var3 + this.font.width(var2) + 1;
+   protected void drawStringWithShade(final GuiGraphics graphics, final String str, final int x, final int y) {
+      int var10003 = x + this.font.width(str) + 1;
       Objects.requireNonNull(this.font);
-      var1.fill(var3, var4, var10003, var4 + 9, -1873784752);
-      var1.drawString(this.font, var2, var3 + 1, var4 + 1, -2039584, false);
+      graphics.fill(x, y, var10003, y + 9, -1873784752);
+      graphics.drawString(this.font, str, x + 1, y + 1, -2039584, false);
    }
 
-   protected abstract String toDisplayString(double var1);
+   protected abstract String toDisplayString(double sample);
 
-   protected abstract int getSampleHeight(double var1);
+   protected abstract int getSampleHeight(double sample);
 
-   protected abstract int getSampleColor(long var1);
+   protected abstract int getSampleColor(long sample);
 
-   protected int getSampleColor(double var1, double var3, int var5, double var6, int var8, double var9, int var11) {
-      var1 = Mth.clamp(var1, var3, var9);
-      return var1 < var6 ? ARGB.srgbLerp((float)((var1 - var3) / (var6 - var3)), var5, var8) : ARGB.srgbLerp((float)((var1 - var6) / (var9 - var6)), var8, var11);
+   protected int getSampleColor(double sample, final double min, final int minColor, final double mid, final int midColor, final double max, final int maxColor) {
+      sample = Mth.clamp(sample, min, max);
+      return sample < mid ? ARGB.srgbLerp((float)((sample - min) / (mid - min)), minColor, midColor) : ARGB.srgbLerp((float)((sample - mid) / (max - mid)), midColor, maxColor);
    }
 }

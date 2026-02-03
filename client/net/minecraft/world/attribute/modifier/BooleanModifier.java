@@ -15,32 +15,27 @@ public enum BooleanModifier implements AttributeModifier<Boolean, Boolean> {
    private BooleanModifier() {
    }
 
-   public Boolean apply(Boolean var1, Boolean var2) {
+   public Boolean apply(final Boolean subject, final Boolean argument) {
       Boolean var10000;
       switch (this.ordinal()) {
-         case 0 -> var10000 = var2 && var1;
-         case 1 -> var10000 = !var2 || !var1;
-         case 2 -> var10000 = var2 || var1;
-         case 3 -> var10000 = !var2 && !var1;
-         case 4 -> var10000 = var2 ^ var1;
-         case 5 -> var10000 = var2 == var1;
+         case 0 -> var10000 = argument && subject;
+         case 1 -> var10000 = !argument || !subject;
+         case 2 -> var10000 = argument || subject;
+         case 3 -> var10000 = !argument && !subject;
+         case 4 -> var10000 = argument ^ subject;
+         case 5 -> var10000 = argument == subject;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   public Codec<Boolean> argumentCodec(EnvironmentAttribute<Boolean> var1) {
+   public Codec<Boolean> argumentCodec(final EnvironmentAttribute<Boolean> type) {
       return Codec.BOOL;
    }
 
-   public LerpFunction<Boolean> argumentKeyframeLerp(EnvironmentAttribute<Boolean> var1) {
+   public LerpFunction<Boolean> argumentKeyframeLerp(final EnvironmentAttribute<Boolean> type) {
       return LerpFunction.<Boolean>ofConstant();
-   }
-
-   // $FF: synthetic method
-   public Object apply(final Object var1, final Object var2) {
-      return this.apply((Boolean)var1, (Boolean)var2);
    }
 
    // $FF: synthetic method

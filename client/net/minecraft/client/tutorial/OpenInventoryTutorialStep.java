@@ -13,9 +13,9 @@ public class OpenInventoryTutorialStep implements TutorialStepInstance {
    private @Nullable TutorialToast toast;
    private int timeWaiting;
 
-   public OpenInventoryTutorialStep(Tutorial var1) {
+   public OpenInventoryTutorialStep(final Tutorial tutorial) {
       super();
-      this.tutorial = var1;
+      this.tutorial = tutorial;
    }
 
    public void tick() {
@@ -24,9 +24,9 @@ public class OpenInventoryTutorialStep implements TutorialStepInstance {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
          if (this.timeWaiting >= 600 && this.toast == null) {
-            Minecraft var1 = this.tutorial.getMinecraft();
-            this.toast = new TutorialToast(var1.font, TutorialToast.Icons.RECIPE_BOOK, TITLE, DESCRIPTION, false);
-            var1.getToastManager().addToast(this.toast);
+            Minecraft minecraft = this.tutorial.getMinecraft();
+            this.toast = new TutorialToast(minecraft.font, TutorialToast.Icons.RECIPE_BOOK, TITLE, DESCRIPTION, false);
+            minecraft.getToastManager().addToast(this.toast);
          }
 
       }

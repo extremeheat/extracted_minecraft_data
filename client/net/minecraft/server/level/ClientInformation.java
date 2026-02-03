@@ -8,33 +8,24 @@ import net.minecraft.world.entity.player.Player;
 public record ClientInformation(String language, int viewDistance, ChatVisiblity chatVisibility, boolean chatColors, int modelCustomisation, HumanoidArm mainHand, boolean textFilteringEnabled, boolean allowsListing, ParticleStatus particleStatus) {
    public static final int MAX_LANGUAGE_LENGTH = 16;
 
-   public ClientInformation(FriendlyByteBuf var1) {
-      this(var1.readUtf(16), var1.readByte(), (ChatVisiblity)var1.readEnum(ChatVisiblity.class), var1.readBoolean(), var1.readUnsignedByte(), (HumanoidArm)var1.readEnum(HumanoidArm.class), var1.readBoolean(), var1.readBoolean(), (ParticleStatus)var1.readEnum(ParticleStatus.class));
+   public ClientInformation(final FriendlyByteBuf input) {
+      this(input.readUtf(16), input.readByte(), (ChatVisiblity)input.readEnum(ChatVisiblity.class), input.readBoolean(), input.readUnsignedByte(), (HumanoidArm)input.readEnum(HumanoidArm.class), input.readBoolean(), input.readBoolean(), (ParticleStatus)input.readEnum(ParticleStatus.class));
    }
 
-   public ClientInformation(String var1, int var2, ChatVisiblity var3, boolean var4, int var5, HumanoidArm var6, boolean var7, boolean var8, ParticleStatus var9) {
+   public ClientInformation {
       super();
-      this.language = var1;
-      this.viewDistance = var2;
-      this.chatVisibility = var3;
-      this.chatColors = var4;
-      this.modelCustomisation = var5;
-      this.mainHand = var6;
-      this.textFilteringEnabled = var7;
-      this.allowsListing = var8;
-      this.particleStatus = var9;
    }
 
-   public void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.language);
-      var1.writeByte(this.viewDistance);
-      var1.writeEnum(this.chatVisibility);
-      var1.writeBoolean(this.chatColors);
-      var1.writeByte(this.modelCustomisation);
-      var1.writeEnum(this.mainHand);
-      var1.writeBoolean(this.textFilteringEnabled);
-      var1.writeBoolean(this.allowsListing);
-      var1.writeEnum(this.particleStatus);
+   public void write(final FriendlyByteBuf output) {
+      output.writeUtf(this.language);
+      output.writeByte(this.viewDistance);
+      output.writeEnum(this.chatVisibility);
+      output.writeBoolean(this.chatColors);
+      output.writeByte(this.modelCustomisation);
+      output.writeEnum(this.mainHand);
+      output.writeBoolean(this.textFilteringEnabled);
+      output.writeBoolean(this.allowsListing);
+      output.writeEnum(this.particleStatus);
    }
 
    public static ClientInformation createDefault() {

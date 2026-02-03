@@ -19,11 +19,11 @@ public class PiglinWallSkullBlock extends WallSkullBlock {
       return CODEC;
    }
 
-   public PiglinWallSkullBlock(BlockBehaviour.Properties var1) {
-      super(SkullBlock.Types.PIGLIN, var1);
+   public PiglinWallSkullBlock(final BlockBehaviour.Properties properties) {
+      super(SkullBlock.Types.PIGLIN, properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)SHAPES.get(state.getValue(FACING));
    }
 }

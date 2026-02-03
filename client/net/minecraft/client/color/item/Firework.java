@@ -13,38 +13,37 @@ import net.minecraft.world.item.component.FireworkExplosion;
 import org.jspecify.annotations.Nullable;
 
 public record Firework(int defaultColor) implements ItemTintSource {
-   public static final MapCodec<Firework> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(Firework::defaultColor)).apply(var0, Firework::new));
+   public static final MapCodec<Firework> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(Firework::defaultColor)).apply(i, Firework::new));
 
    public Firework() {
       this(-7697782);
    }
 
-   public Firework(int var1) {
+   public Firework {
       super();
-      this.defaultColor = var1;
    }
 
-   public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
-      FireworkExplosion var4 = (FireworkExplosion)var1.get(DataComponents.FIREWORK_EXPLOSION);
-      IntList var5 = var4 != null ? var4.colors() : IntList.of();
-      int var6 = var5.size();
-      if (var6 == 0) {
+   public int calculate(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner) {
+      FireworkExplosion explosion = (FireworkExplosion)itemStack.get(DataComponents.FIREWORK_EXPLOSION);
+      IntList explosionColors = explosion != null ? explosion.colors() : IntList.of();
+      int colorCount = explosionColors.size();
+      if (colorCount == 0) {
          return this.defaultColor;
-      } else if (var6 == 1) {
-         return ARGB.opaque(var5.getInt(0));
+      } else if (colorCount == 1) {
+         return ARGB.opaque(explosionColors.getInt(0));
       } else {
-         int var7 = 0;
-         int var8 = 0;
-         int var9 = 0;
+         int totalRed = 0;
+         int totalGreen = 0;
+         int totalBlue = 0;
 
-         for(int var10 = 0; var10 < var6; ++var10) {
-            int var11 = var5.getInt(var10);
-            var7 += ARGB.red(var11);
-            var8 += ARGB.green(var11);
-            var9 += ARGB.blue(var11);
+         for(int i = 0; i < colorCount; ++i) {
+            int color = explosionColors.getInt(i);
+            totalRed += ARGB.red(color);
+            totalGreen += ARGB.green(color);
+            totalBlue += ARGB.blue(color);
          }
 
-         return ARGB.color(var7 / var6, var8 / var6, var9 / var6);
+         return ARGB.color(totalRed / colorCount, totalGreen / colorCount, totalBlue / colorCount);
       }
    }
 

@@ -9,17 +9,17 @@ import net.minecraft.world.level.levelgen.feature.configurations.RandomBooleanFe
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class RandomBooleanSelectorFeature extends Feature<RandomBooleanFeatureConfiguration> {
-   public RandomBooleanSelectorFeature(Codec<RandomBooleanFeatureConfiguration> var1) {
-      super(var1);
+   public RandomBooleanSelectorFeature(final Codec<RandomBooleanFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<RandomBooleanFeatureConfiguration> var1) {
-      RandomSource var2 = var1.random();
-      RandomBooleanFeatureConfiguration var3 = (RandomBooleanFeatureConfiguration)var1.config();
-      WorldGenLevel var4 = var1.level();
-      ChunkGenerator var5 = var1.chunkGenerator();
-      BlockPos var6 = var1.origin();
-      boolean var7 = var2.nextBoolean();
-      return ((PlacedFeature)(var7 ? var3.featureTrue : var3.featureFalse).value()).place(var4, var5, var2, var6);
+   public boolean place(final FeaturePlaceContext<RandomBooleanFeatureConfiguration> context) {
+      RandomSource random = context.random();
+      RandomBooleanFeatureConfiguration config = context.config();
+      WorldGenLevel level = context.level();
+      ChunkGenerator chunkGenerator = context.chunkGenerator();
+      BlockPos origin = context.origin();
+      boolean result = random.nextBoolean();
+      return ((PlacedFeature)(result ? config.featureTrue : config.featureFalse).value()).place(level, chunkGenerator, random, origin);
    }
 }

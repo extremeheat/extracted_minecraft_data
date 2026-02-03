@@ -11,41 +11,41 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import org.slf4j.Logger;
 
 public class TrapezoidHeight extends HeightProvider {
-   public static final MapCodec<TrapezoidHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((var0x) -> var0x.maxInclusive), Codec.INT.optionalFieldOf("plateau", 0).forGetter((var0x) -> var0x.plateau)).apply(var0, TrapezoidHeight::new));
+   public static final MapCodec<TrapezoidHeight> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((u) -> u.minInclusive), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((u) -> u.maxInclusive), Codec.INT.optionalFieldOf("plateau", 0).forGetter((u) -> u.plateau)).apply(i, TrapezoidHeight::new));
    private static final Logger LOGGER = LogUtils.getLogger();
    private final VerticalAnchor minInclusive;
    private final VerticalAnchor maxInclusive;
    private final int plateau;
 
-   private TrapezoidHeight(VerticalAnchor var1, VerticalAnchor var2, int var3) {
+   private TrapezoidHeight(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive, final int plateau) {
       super();
-      this.minInclusive = var1;
-      this.maxInclusive = var2;
-      this.plateau = var3;
+      this.minInclusive = minInclusive;
+      this.maxInclusive = maxInclusive;
+      this.plateau = plateau;
    }
 
-   public static TrapezoidHeight of(VerticalAnchor var0, VerticalAnchor var1, int var2) {
-      return new TrapezoidHeight(var0, var1, var2);
+   public static TrapezoidHeight of(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive, final int plateau) {
+      return new TrapezoidHeight(minInclusive, maxInclusive, plateau);
    }
 
-   public static TrapezoidHeight of(VerticalAnchor var0, VerticalAnchor var1) {
-      return of(var0, var1, 0);
+   public static TrapezoidHeight of(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive) {
+      return of(minInclusive, maxInclusive, 0);
    }
 
-   public int sample(RandomSource var1, WorldGenerationContext var2) {
-      int var3 = this.minInclusive.resolveY(var2);
-      int var4 = this.maxInclusive.resolveY(var2);
-      if (var3 > var4) {
+   public int sample(final RandomSource random, final WorldGenerationContext context) {
+      int min = this.minInclusive.resolveY(context);
+      int max = this.maxInclusive.resolveY(context);
+      if (min > max) {
          LOGGER.warn("Empty height range: {}", this);
-         return var3;
+         return min;
       } else {
-         int var5 = var4 - var3;
-         if (this.plateau >= var5) {
-            return Mth.randomBetweenInclusive(var1, var3, var4);
+         int range = max - min;
+         if (this.plateau >= range) {
+            return Mth.randomBetweenInclusive(random, min, max);
          } else {
-            int var6 = (var5 - this.plateau) / 2;
-            int var7 = var5 - var6;
-            return var3 + Mth.randomBetweenInclusive(var1, 0, var7) + Mth.randomBetweenInclusive(var1, 0, var6);
+            int plateauStart = (range - this.plateau) / 2;
+            int plateauEnd = range - plateauStart;
+            return min + Mth.randomBetweenInclusive(random, 0, plateauEnd) + Mth.randomBetweenInclusive(random, 0, plateauStart);
          }
       }
    }

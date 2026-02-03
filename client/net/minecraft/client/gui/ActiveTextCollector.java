@@ -17,6 +17,7 @@ import net.minecraft.util.Util;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
 import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.jspecify.annotations.Nullable;
 
 public interface ActiveTextCollector {
@@ -25,76 +26,76 @@ public interface ActiveTextCollector {
 
    Parameters defaultParameters();
 
-   void defaultParameters(Parameters var1);
+   void defaultParameters(Parameters newParameters);
 
-   default void accept(int var1, int var2, FormattedCharSequence var3) {
-      this.accept(TextAlignment.LEFT, var1, var2, this.defaultParameters(), var3);
+   default void accept(final int x, final int y, final FormattedCharSequence text) {
+      this.accept(TextAlignment.LEFT, x, y, this.defaultParameters(), text);
    }
 
-   default void accept(int var1, int var2, Component var3) {
-      this.accept(TextAlignment.LEFT, var1, var2, this.defaultParameters(), var3.getVisualOrderText());
+   default void accept(final int x, final int y, final Component text) {
+      this.accept(TextAlignment.LEFT, x, y, this.defaultParameters(), text.getVisualOrderText());
    }
 
-   default void accept(TextAlignment var1, int var2, int var3, Parameters var4, Component var5) {
-      this.accept(var1, var2, var3, var4, var5.getVisualOrderText());
+   default void accept(final TextAlignment alignment, final int anchorX, final int y, final Parameters parameters, final Component text) {
+      this.accept(alignment, anchorX, y, parameters, text.getVisualOrderText());
    }
 
-   void accept(TextAlignment var1, int var2, int var3, Parameters var4, FormattedCharSequence var5);
+   void accept(TextAlignment alignment, int anchorX, int y, Parameters parameters, FormattedCharSequence text);
 
-   default void accept(TextAlignment var1, int var2, int var3, Component var4) {
-      this.accept(var1, var2, var3, var4.getVisualOrderText());
+   default void accept(final TextAlignment alignment, final int anchorX, final int y, final Component text) {
+      this.accept(alignment, anchorX, y, text.getVisualOrderText());
    }
 
-   default void accept(TextAlignment var1, int var2, int var3, FormattedCharSequence var4) {
-      this.accept(var1, var2, var3, this.defaultParameters(), var4);
+   default void accept(final TextAlignment alignment, final int anchorX, final int y, final FormattedCharSequence text) {
+      this.accept(alignment, anchorX, y, this.defaultParameters(), text);
    }
 
-   void acceptScrolling(Component var1, int var2, int var3, int var4, int var5, int var6, Parameters var7);
+   void acceptScrolling(Component message, int centerX, int left, int right, int top, int bottom, Parameters parameters);
 
-   default void acceptScrolling(Component var1, int var2, int var3, int var4, int var5, int var6) {
-      this.acceptScrolling(var1, var2, var3, var4, var5, var6, this.defaultParameters());
+   default void acceptScrolling(final Component message, final int centerX, final int left, final int right, final int top, final int bottom) {
+      this.acceptScrolling(message, centerX, left, right, top, bottom, this.defaultParameters());
    }
 
-   default void acceptScrollingWithDefaultCenter(Component var1, int var2, int var3, int var4, int var5) {
-      this.acceptScrolling(var1, (var2 + var3) / 2, var2, var3, var4, var5);
+   default void acceptScrollingWithDefaultCenter(final Component message, final int left, final int right, final int top, final int bottom) {
+      this.acceptScrolling(message, (left + right) / 2, left, right, top, bottom);
    }
 
-   default void defaultScrollingHelper(Component var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, Parameters var9) {
-      int var10 = (var5 + var6 - var8) / 2 + 1;
-      int var11 = var4 - var3;
-      if (var7 > var11) {
-         int var12 = var7 - var11;
-         double var13 = (double)Util.getMillis() / 1000.0;
-         double var15 = Math.max((double)var12 * 0.5, 3.0);
-         double var17 = Math.sin(1.5707963267948966 * Math.cos(6.283185307179586 * var13 / var15)) / 2.0 + 0.5;
-         double var19 = Mth.lerp(var17, 0.0, (double)var12);
-         Parameters var21 = var9.withScissor(var3, var4, var5, var6);
-         this.accept(TextAlignment.LEFT, var3 - (int)var19, var10, var21, var1.getVisualOrderText());
+   default void defaultScrollingHelper(final Component message, final int centerX, final int left, final int right, final int top, final int bottom, final int lineWidth, final int lineHeight, final Parameters parameters) {
+      int textTop = (top + bottom - lineHeight) / 2 + 1;
+      int availableMessageWidth = right - left;
+      if (lineWidth > availableMessageWidth) {
+         int maxPosition = lineWidth - availableMessageWidth;
+         double time = (double)Util.getMillis() / 1000.0;
+         double period = Math.max((double)maxPosition * 0.5, 3.0);
+         double alpha = Math.sin(1.5707963267948966 * Math.cos(6.283185307179586 * time / period)) / 2.0 + 0.5;
+         double pos = Mth.lerp(alpha, 0.0, (double)maxPosition);
+         Parameters localParameters = parameters.withScissor(left, right, top, bottom);
+         this.accept(TextAlignment.LEFT, left - (int)pos, textTop, localParameters, message.getVisualOrderText());
       } else {
-         int var22 = Mth.clamp(var2, var3 + var7 / 2, var4 - var7 / 2);
-         this.accept(TextAlignment.CENTER, var22, var10, var1);
+         int textX = Mth.clamp(centerX, left + lineWidth / 2, right - lineWidth / 2);
+         this.accept(TextAlignment.CENTER, textX, textTop, message);
       }
 
    }
 
-   static void findElementUnderCursor(GuiTextRenderState var0, float var1, float var2, final Consumer<Style> var3) {
-      ScreenRectangle var4 = var0.bounds();
-      if (var4 != null && var4.containsPoint((int)var1, (int)var2)) {
-         Vector2f var5 = var0.pose.invert(new Matrix3x2f()).transformPosition(new Vector2f(var1, var2));
-         final float var6 = var5.x();
-         final float var7 = var5.y();
-         var0.ensurePrepared().visit(new Font.GlyphVisitor() {
-            public void acceptGlyph(TextRenderable.Styled var1) {
-               this.acceptActiveArea(var1);
+   static void findElementUnderCursor(final GuiTextRenderState text, final float testX, final float testY, final Consumer<Style> output) {
+      ScreenRectangle bounds = text.bounds();
+      if (bounds != null && bounds.containsPoint((int)testX, (int)testY)) {
+         Vector2fc localMousePos = text.pose.invert(new Matrix3x2f()).transformPosition(new Vector2f(testX, testY));
+         final float localMouseX = localMousePos.x();
+         final float localMouseY = localMousePos.y();
+         text.ensurePrepared().visit(new Font.GlyphVisitor() {
+            public void acceptGlyph(final TextRenderable.Styled glyph) {
+               this.acceptActiveArea(glyph);
             }
 
-            public void acceptEmptyArea(EmptyArea var1) {
-               this.acceptActiveArea(var1);
+            public void acceptEmptyArea(final EmptyArea empty) {
+               this.acceptActiveArea(empty);
             }
 
-            private void acceptActiveArea(ActiveArea var1) {
-               if (ActiveTextCollector.isPointInRectangle(var6, var7, var1.activeLeft(), var1.activeTop(), var1.activeRight(), var1.activeBottom())) {
-                  var3.accept(var1.style());
+            private void acceptActiveArea(final ActiveArea glyph) {
+               if (ActiveTextCollector.isPointInRectangle(localMouseX, localMouseY, glyph.activeLeft(), glyph.activeTop(), glyph.activeRight(), glyph.activeBottom())) {
+                  output.accept(glyph.style());
                }
 
             }
@@ -102,45 +103,42 @@ public interface ActiveTextCollector {
       }
    }
 
-   static boolean isPointInRectangle(float var0, float var1, float var2, float var3, float var4, float var5) {
-      return var0 >= var2 && var0 < var4 && var1 >= var3 && var1 < var5;
+   static boolean isPointInRectangle(final float x, final float y, final float left, final float top, final float right, final float bottom) {
+      return x >= left && x < right && y >= top && y < bottom;
    }
 
    public static record Parameters(Matrix3x2fc pose, float opacity, @Nullable ScreenRectangle scissor) {
-      public Parameters(Matrix3x2fc var1) {
-         this(var1, 1.0F, (ScreenRectangle)null);
+      public Parameters(final Matrix3x2fc pose) {
+         this(pose, 1.0F, (ScreenRectangle)null);
       }
 
-      public Parameters(Matrix3x2fc var1, float var2, @Nullable ScreenRectangle var3) {
+      public Parameters {
          super();
-         this.pose = var1;
-         this.opacity = var2;
-         this.scissor = var3;
       }
 
-      public Parameters withPose(Matrix3x2fc var1) {
-         return new Parameters(var1, this.opacity, this.scissor);
+      public Parameters withPose(final Matrix3x2fc pose) {
+         return new Parameters(pose, this.opacity, this.scissor);
       }
 
-      public Parameters withScale(float var1) {
-         return this.withPose(this.pose.scale(var1, var1, new Matrix3x2f()));
+      public Parameters withScale(final float scale) {
+         return this.withPose(this.pose.scale(scale, scale, new Matrix3x2f()));
       }
 
-      public Parameters withOpacity(float var1) {
-         return this.opacity == var1 ? this : new Parameters(this.pose, var1, this.scissor);
+      public Parameters withOpacity(final float opacity) {
+         return this.opacity == opacity ? this : new Parameters(this.pose, opacity, this.scissor);
       }
 
-      public Parameters withScissor(ScreenRectangle var1) {
-         return var1.equals(this.scissor) ? this : new Parameters(this.pose, this.opacity, var1);
+      public Parameters withScissor(final ScreenRectangle scissor) {
+         return scissor.equals(this.scissor) ? this : new Parameters(this.pose, this.opacity, scissor);
       }
 
-      public Parameters withScissor(int var1, int var2, int var3, int var4) {
-         ScreenRectangle var5 = (new ScreenRectangle(var1, var3, var2 - var1, var4 - var3)).transformAxisAligned(this.pose);
+      public Parameters withScissor(final int left, final int right, final int top, final int bottom) {
+         ScreenRectangle newScissor = (new ScreenRectangle(left, top, right - left, bottom - top)).transformAxisAligned(this.pose);
          if (this.scissor != null) {
-            var5 = (ScreenRectangle)Objects.requireNonNullElse(this.scissor.intersection(var5), ScreenRectangle.empty());
+            newScissor = (ScreenRectangle)Objects.requireNonNullElse(this.scissor.intersection(newScissor), ScreenRectangle.empty());
          }
 
-         return this.withScissor(var5);
+         return this.withScissor(newScissor);
       }
    }
 
@@ -154,43 +152,43 @@ public interface ActiveTextCollector {
       private @Nullable Style result;
       private final Consumer<Style> styleScanner;
 
-      public ClickableStyleFinder(Font var1, int var2, int var3) {
+      public ClickableStyleFinder(final Font font, final int testX, final int testY) {
          super();
          this.defaultParameters = INITIAL;
-         this.styleScanner = (var1x) -> {
-            if (var1x.getClickEvent() != null || this.includeInsertions && var1x.getInsertion() != null) {
-               this.result = var1x;
+         this.styleScanner = (style) -> {
+            if (style.getClickEvent() != null || this.includeInsertions && style.getInsertion() != null) {
+               this.result = style;
             }
 
          };
-         this.font = var1;
-         this.testX = var2;
-         this.testY = var3;
+         this.font = font;
+         this.testX = testX;
+         this.testY = testY;
       }
 
       public Parameters defaultParameters() {
          return this.defaultParameters;
       }
 
-      public void defaultParameters(Parameters var1) {
-         this.defaultParameters = var1;
+      public void defaultParameters(final Parameters newParameters) {
+         this.defaultParameters = newParameters;
       }
 
-      public void accept(TextAlignment var1, int var2, int var3, Parameters var4, FormattedCharSequence var5) {
-         int var6 = var1.calculateLeft(var2, this.font, var5);
-         GuiTextRenderState var7 = new GuiTextRenderState(this.font, var5, var4.pose(), var6, var3, ARGB.white(var4.opacity()), 0, true, true, var4.scissor());
-         ActiveTextCollector.findElementUnderCursor(var7, (float)this.testX, (float)this.testY, this.styleScanner);
+      public void accept(final TextAlignment alignment, final int anchorX, final int y, final Parameters parameters, final FormattedCharSequence text) {
+         int leftX = alignment.calculateLeft(anchorX, this.font, text);
+         GuiTextRenderState renderState = new GuiTextRenderState(this.font, text, parameters.pose(), leftX, y, ARGB.white(parameters.opacity()), 0, true, true, parameters.scissor());
+         ActiveTextCollector.findElementUnderCursor(renderState, (float)this.testX, (float)this.testY, this.styleScanner);
       }
 
-      public void acceptScrolling(Component var1, int var2, int var3, int var4, int var5, int var6, Parameters var7) {
-         int var8 = this.font.width((FormattedText)var1);
+      public void acceptScrolling(final Component message, final int centerX, final int left, final int right, final int top, final int bottom, final Parameters parameters) {
+         int lineWidth = this.font.width((FormattedText)message);
          Objects.requireNonNull(this.font);
-         byte var9 = 9;
-         this.defaultScrollingHelper(var1, var2, var3, var4, var5, var6, var8, var9, var7);
+         int lineHeight = 9;
+         this.defaultScrollingHelper(message, centerX, left, right, top, bottom, lineWidth, lineHeight, parameters);
       }
 
-      public ClickableStyleFinder includeInsertions(boolean var1) {
-         this.includeInsertions = var1;
+      public ClickableStyleFinder includeInsertions(final boolean flag) {
+         this.includeInsertions = flag;
          return this;
       }
 

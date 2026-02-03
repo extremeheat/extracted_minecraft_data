@@ -61,52 +61,52 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       return CODEC;
    }
 
-   protected DecoratedPotBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected DecoratedPotBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(HORIZONTAL_FACING, Direction.NORTH)).setValue(WATERLOGGED, false)).setValue(CRACKED, false));
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(HORIZONTAL_FACING, var1.getHorizontalDirection())).setValue(WATERLOGGED, var2.getType() == Fluids.WATER)).setValue(CRACKED, false);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(HORIZONTAL_FACING, context.getHorizontalDirection())).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER))).setValue(CRACKED, false);
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      BlockEntity var9 = var3.getBlockEntity(var4);
-      if (var9 instanceof DecoratedPotBlockEntity var8) {
-         if (var3.isClientSide()) {
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      BlockEntity var9 = level.getBlockEntity(pos);
+      if (var9 instanceof DecoratedPotBlockEntity decoratedPot) {
+         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
          } else {
-            ItemStack var13 = var8.getTheItem();
-            if (!var1.isEmpty() && (var13.isEmpty() || ItemStack.isSameItemSameComponents(var13, var1) && var13.getCount() < var13.getMaxStackSize())) {
-               var8.wobble(DecoratedPotBlockEntity.WobbleStyle.POSITIVE);
-               var5.awardStat(Stats.ITEM_USED.get(var1.getItem()));
-               ItemStack var10 = var1.consumeAndReturn(1, var5);
-               float var11;
-               if (var8.isEmpty()) {
-                  var8.setTheItem(var10);
-                  var11 = (float)var10.getCount() / (float)var10.getMaxStackSize();
+            ItemStack potItem = decoratedPot.getTheItem();
+            if (!itemStack.isEmpty() && (potItem.isEmpty() || ItemStack.isSameItemSameComponents(potItem, itemStack) && potItem.getCount() < potItem.getMaxStackSize())) {
+               decoratedPot.wobble(DecoratedPotBlockEntity.WobbleStyle.POSITIVE);
+               player.awardStat(Stats.ITEM_USED.get(itemStack.getItem()));
+               ItemStack awardedItem = itemStack.consumeAndReturn(1, player);
+               float pitchBend;
+               if (decoratedPot.isEmpty()) {
+                  decoratedPot.setTheItem(awardedItem);
+                  pitchBend = (float)awardedItem.getCount() / (float)awardedItem.getMaxStackSize();
                } else {
-                  var13.grow(1);
-                  var11 = (float)var13.getCount() / (float)var13.getMaxStackSize();
+                  potItem.grow(1);
+                  pitchBend = (float)potItem.getCount() / (float)potItem.getMaxStackSize();
                }
 
-               var3.playSound((Entity)null, (BlockPos)var4, SoundEvents.DECORATED_POT_INSERT, SoundSource.BLOCKS, 1.0F, 0.7F + 0.5F * var11);
-               if (var3 instanceof ServerLevel) {
-                  ServerLevel var12 = (ServerLevel)var3;
-                  var12.sendParticles(ParticleTypes.DUST_PLUME, (double)var4.getX() + 0.5, (double)var4.getY() + 1.2, (double)var4.getZ() + 0.5, 7, 0.0, 0.0, 0.0, 0.0);
+               level.playSound((Entity)null, (BlockPos)pos, SoundEvents.DECORATED_POT_INSERT, SoundSource.BLOCKS, 1.0F, 0.7F + 0.5F * pitchBend);
+               if (level instanceof ServerLevel) {
+                  ServerLevel serverLevel = (ServerLevel)level;
+                  serverLevel.sendParticles(ParticleTypes.DUST_PLUME, (double)pos.getX() + 0.5, (double)pos.getY() + 1.2, (double)pos.getZ() + 0.5, 7, 0.0, 0.0, 0.0, 0.0);
                }
 
-               var8.setChanged();
-               var3.gameEvent(var5, GameEvent.BLOCK_CHANGE, var4);
+               decoratedPot.setChanged();
+               level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
                return InteractionResult.SUCCESS;
             } else {
                return InteractionResult.TRY_WITH_EMPTY_HAND;
@@ -117,106 +117,106 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       }
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var7 instanceof DecoratedPotBlockEntity var6) {
-         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.DECORATED_POT_INSERT_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F);
-         var6.wobble(DecoratedPotBlockEntity.WobbleStyle.NEGATIVE);
-         var2.gameEvent(var4, GameEvent.BLOCK_CHANGE, var3);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      BlockEntity var7 = level.getBlockEntity(pos);
+      if (var7 instanceof DecoratedPotBlockEntity decoratedPot) {
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.DECORATED_POT_INSERT_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F);
+         decoratedPot.wobble(DecoratedPotBlockEntity.WobbleStyle.NEGATIVE);
+         level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
          return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(HORIZONTAL_FACING, WATERLOGGED, CRACKED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(HORIZONTAL_FACING, WATERLOGGED, CRACKED);
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new DecoratedPotBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new DecoratedPotBlockEntity(worldPosition, blockState);
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      Containers.updateNeighboursAfterDestroy(state, level, pos);
    }
 
-   protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
-      BlockEntity var3 = (BlockEntity)var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-      if (var3 instanceof DecoratedPotBlockEntity var4) {
-         var2.withDynamicDrop(SHERDS_DYNAMIC_DROP_ID, (var1x) -> {
-            for(Item var3 : var4.getDecorations().ordered()) {
-               var1x.accept(var3.getDefaultInstance());
+   protected List<ItemStack> getDrops(final BlockState state, final LootParams.Builder params) {
+      BlockEntity maybeEntity = (BlockEntity)params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+      if (maybeEntity instanceof DecoratedPotBlockEntity entity) {
+         params.withDynamicDrop(SHERDS_DYNAMIC_DROP_ID, (output) -> {
+            for(Item item : entity.getDecorations().ordered()) {
+               output.accept(item.getDefaultInstance());
             }
 
          });
       }
 
-      return super.getDrops(var1, var2);
+      return super.getDrops(state, params);
    }
 
-   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      ItemStack var5 = var4.getMainHandItem();
-      BlockState var6 = var3;
-      if (var5.is(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasTag(var5, EnchantmentTags.PREVENTS_DECORATED_POT_SHATTERING)) {
-         var6 = (BlockState)var3.setValue(CRACKED, true);
-         var1.setBlock(var2, var6, 260);
+   public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+      ItemStack destroyedWith = player.getMainHandItem();
+      BlockState nextState = state;
+      if (destroyedWith.is(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasTag(destroyedWith, EnchantmentTags.PREVENTS_DECORATED_POT_SHATTERING)) {
+         nextState = (BlockState)state.setValue(CRACKED, true);
+         level.setBlock(pos, nextState, 260);
       }
 
-      return super.playerWillDestroy(var1, var2, var6, var4);
+      return super.playerWillDestroy(level, pos, nextState, player);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected SoundType getSoundType(BlockState var1) {
-      return (Boolean)var1.getValue(CRACKED) ? SoundType.DECORATED_POT_CRACKED : SoundType.DECORATED_POT;
+   protected SoundType getSoundType(final BlockState state) {
+      return (Boolean)state.getValue(CRACKED) ? SoundType.DECORATED_POT_CRACKED : SoundType.DECORATED_POT;
    }
 
-   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
-      BlockPos var5 = var3.getBlockPos();
-      if (var1 instanceof ServerLevel var6) {
-         if (var4.mayInteract(var6, var5) && var4.mayBreak(var6)) {
-            var1.setBlock(var5, (BlockState)var2.setValue(CRACKED, true), 260);
-            var1.destroyBlock(var5, true, var4);
+   protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile projectile) {
+      BlockPos pos = blockHit.getBlockPos();
+      if (level instanceof ServerLevel serverLevel) {
+         if (projectile.mayInteract(serverLevel, pos) && projectile.mayBreak(serverLevel)) {
+            level.setBlock(pos, (BlockState)state.setValue(CRACKED, true), 260);
+            level.destroyBlock(pos, true, projectile);
          }
       }
 
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      BlockEntity var6 = var1.getBlockEntity(var2);
-      if (var6 instanceof DecoratedPotBlockEntity var5) {
-         PotDecorations var7 = var5.getDecorations();
-         return DecoratedPotBlockEntity.createDecoratedPotItem(var7);
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
+      BlockEntity var6 = level.getBlockEntity(pos);
+      if (var6 instanceof DecoratedPotBlockEntity decoratedPotBlockEntity) {
+         PotDecorations decorations = decoratedPotBlockEntity.getDecorations();
+         return DecoratedPotBlockEntity.createDecoratedPotInstance(decorations);
       } else {
-         return super.getCloneItemStack(var1, var2, var3, var4);
+         return super.getCloneItemStack(level, pos, state, includeData);
       }
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(pos));
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(HORIZONTAL_FACING, var2.rotate((Direction)var1.getValue(HORIZONTAL_FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(HORIZONTAL_FACING, rotation.rotate((Direction)state.getValue(HORIZONTAL_FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(HORIZONTAL_FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(HORIZONTAL_FACING)));
    }
 
    static {

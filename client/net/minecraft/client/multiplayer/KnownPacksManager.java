@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.repository.PackRepository;
@@ -19,32 +20,32 @@ public class KnownPacksManager {
    public KnownPacksManager() {
       super();
       this.repository.reload();
-      ImmutableMap.Builder var1 = ImmutableMap.builder();
-      this.repository.getAvailablePacks().forEach((var1x) -> {
-         PackLocationInfo var2 = var1x.location();
-         var2.knownPackInfo().ifPresent((var2x) -> var1.put(var2x, var2.id()));
+      ImmutableMap.Builder<KnownPack, String> knownPacks = ImmutableMap.builder();
+      this.repository.getAvailablePacks().forEach((pack) -> {
+         PackLocationInfo location = pack.location();
+         location.knownPackInfo().ifPresent((knownPack) -> knownPacks.put(knownPack, location.id()));
       });
-      this.knownPackToId = var1.build();
+      this.knownPackToId = knownPacks.build();
    }
 
-   public List<KnownPack> trySelectingPacks(List<KnownPack> var1) {
-      ArrayList var2 = new ArrayList(var1.size());
-      ArrayList var3 = new ArrayList(var1.size());
+   public List<KnownPack> trySelectingPacks(final List<KnownPack> packsToSelect) {
+      List<KnownPack> response = new ArrayList(packsToSelect.size());
+      List<String> selectedPacks = new ArrayList(packsToSelect.size());
 
-      for(KnownPack var5 : var1) {
-         String var6 = (String)this.knownPackToId.get(var5);
-         if (var6 != null) {
-            var3.add(var6);
-            var2.add(var5);
+      for(KnownPack knownPack : packsToSelect) {
+         String knownPackId = (String)this.knownPackToId.get(knownPack);
+         if (knownPackId != null) {
+            selectedPacks.add(knownPackId);
+            response.add(knownPack);
          }
       }
 
-      this.repository.setSelected(var3);
-      return var2;
+      this.repository.setSelected(selectedPacks);
+      return response;
    }
 
    public CloseableResourceManager createResourceManager() {
-      List var1 = this.repository.openAllSelected();
-      return new MultiPackResourceManager(PackType.SERVER_DATA, var1);
+      List<PackResources> openedPacks = this.repository.openAllSelected();
+      return new MultiPackResourceManager(PackType.SERVER_DATA, openedPacks);
    }
 }

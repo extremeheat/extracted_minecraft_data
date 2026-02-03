@@ -18,6 +18,8 @@ import it.unimi.dsi.fastutil.ints.IntSets;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.resources.Identifier;
@@ -26,22 +28,22 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class BitmapProvider implements GlyphProvider {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private final NativeImage image;
    private final CodepointMap<Glyph> glyphs;
 
-   BitmapProvider(NativeImage var1, CodepointMap<Glyph> var2) {
+   private BitmapProvider(final NativeImage image, final CodepointMap<Glyph> glyphs) {
       super();
-      this.image = var1;
-      this.glyphs = var2;
+      this.image = image;
+      this.glyphs = glyphs;
    }
 
    public void close() {
       this.image.close();
    }
 
-   public @Nullable UnbakedGlyph getGlyph(int var1) {
-      return this.glyphs.get(var1);
+   public @Nullable UnbakedGlyph getGlyph(final int codepoint) {
+      return this.glyphs.get(codepoint);
    }
 
    public IntSet getSupportedGlyphs() {
@@ -52,38 +54,34 @@ public class BitmapProvider implements GlyphProvider {
       private static final Codec<int[][]> CODEPOINT_GRID_CODEC;
       public static final MapCodec<Definition> CODEC;
 
-      public Definition(Identifier var1, int var2, int var3, int[][] var4) {
+      public Definition {
          super();
-         this.file = var1;
-         this.height = var2;
-         this.ascent = var3;
-         this.codepointGrid = var4;
       }
 
-      private static DataResult<int[][]> validateDimensions(int[][] var0) {
-         int var1 = var0.length;
-         if (var1 == 0) {
+      private static DataResult<int[][]> validateDimensions(final int[][] grid) {
+         int lineCount = grid.length;
+         if (lineCount == 0) {
             return DataResult.error(() -> "Expected to find data in codepoint grid");
          } else {
-            int[] var2 = var0[0];
-            int var3 = var2.length;
-            if (var3 == 0) {
+            int[] firstLine = grid[0];
+            int lineWidth = firstLine.length;
+            if (lineWidth == 0) {
                return DataResult.error(() -> "Expected to find data in codepoint grid");
             } else {
-               for(int var4 = 1; var4 < var1; ++var4) {
-                  int[] var5 = var0[var4];
-                  if (var5.length != var3) {
-                     return DataResult.error(() -> "Lines in codepoint grid have to be the same length (found: " + var5.length + " codepoints, expected: " + var3 + "), pad with \\u0000");
+               for(int i = 1; i < lineCount; ++i) {
+                  int[] line = grid[i];
+                  if (line.length != lineWidth) {
+                     return DataResult.error(() -> "Lines in codepoint grid have to be the same length (found: " + line.length + " codepoints, expected: " + lineWidth + "), pad with \\u0000");
                   }
                }
 
-               return DataResult.success(var0);
+               return DataResult.success(grid);
             }
          }
       }
 
-      private static DataResult<Definition> validate(Definition var0) {
-         return var0.ascent > var0.height ? DataResult.error(() -> "Ascent " + var0.ascent + " higher than height " + var0.height) : DataResult.success(var0);
+      private static DataResult<Definition> validate(final Definition builder) {
+         return builder.ascent > builder.height ? DataResult.error(() -> "Ascent " + builder.ascent + " higher than height " + builder.height) : DataResult.success(builder);
       }
 
       public GlyphProviderType type() {
@@ -94,40 +92,40 @@ public class BitmapProvider implements GlyphProvider {
          return Either.left(this::load);
       }
 
-      private GlyphProvider load(ResourceManager var1) throws IOException {
-         Identifier var2 = this.file.withPrefix("textures/");
-         InputStream var3 = var1.open(var2);
+      private GlyphProvider load(final ResourceManager resourceManager) throws IOException {
+         Identifier texture = this.file.withPrefix("textures/");
+         InputStream resource = resourceManager.open(texture);
 
          BitmapProvider var22;
          try {
-            NativeImage var4 = NativeImage.read(NativeImage.Format.RGBA, var3);
-            int var5 = var4.getWidth();
-            int var6 = var4.getHeight();
-            int var7 = var5 / this.codepointGrid[0].length;
-            int var8 = var6 / this.codepointGrid.length;
-            float var9 = (float)this.height / (float)var8;
-            CodepointMap var10 = new CodepointMap((var0) -> new Glyph[var0], (var0) -> new Glyph[var0][]);
+            NativeImage image = NativeImage.read(NativeImage.Format.RGBA, resource);
+            int w = image.getWidth();
+            int h = image.getHeight();
+            int glyphWidth = w / this.codepointGrid[0].length;
+            int glyphHeight = h / this.codepointGrid.length;
+            float pixelScale = (float)this.height / (float)glyphHeight;
+            CodepointMap<Glyph> charMap = new CodepointMap<Glyph>((x$0) -> new Glyph[x$0], (x$0) -> new Glyph[x$0][]);
 
-            for(int var11 = 0; var11 < this.codepointGrid.length; ++var11) {
-               int var12 = 0;
+            for(int slotY = 0; slotY < this.codepointGrid.length; ++slotY) {
+               int linePos = 0;
 
-               for(int var16 : this.codepointGrid[var11]) {
-                  int var17 = var12++;
-                  if (var16 != 0) {
-                     int var18 = this.getActualGlyphWidth(var4, var7, var8, var17, var11);
-                     Glyph var19 = (Glyph)var10.put(var16, new Glyph(var9, var4, var17 * var7, var11 * var8, var7, var8, (int)(0.5 + (double)((float)var18 * var9)) + 1, this.ascent));
-                     if (var19 != null) {
-                        BitmapProvider.LOGGER.warn("Codepoint '{}' declared multiple times in {}", Integer.toHexString(var16), var2);
+               for(int c : this.codepointGrid[slotY]) {
+                  int slotX = linePos++;
+                  if (c != 0) {
+                     int actualGlyphWidth = this.getActualGlyphWidth(image, glyphWidth, glyphHeight, slotX, slotY);
+                     Glyph prev = charMap.put(c, new Glyph(pixelScale, image, slotX * glyphWidth, slotY * glyphHeight, glyphWidth, glyphHeight, (int)(0.5 + (double)((float)actualGlyphWidth * pixelScale)) + 1, this.ascent));
+                     if (prev != null) {
+                        BitmapProvider.LOGGER.warn("Codepoint '{}' declared multiple times in {}", Integer.toHexString(c), texture);
                      }
                   }
                }
             }
 
-            var22 = new BitmapProvider(var4, var10);
+            var22 = new BitmapProvider(image, charMap);
          } catch (Throwable var21) {
-            if (var3 != null) {
+            if (resource != null) {
                try {
-                  var3.close();
+                  resource.close();
                } catch (Throwable var20) {
                   var21.addSuppressed(var20);
                }
@@ -136,79 +134,67 @@ public class BitmapProvider implements GlyphProvider {
             throw var21;
          }
 
-         if (var3 != null) {
-            var3.close();
+         if (resource != null) {
+            resource.close();
          }
 
          return var22;
       }
 
-      private int getActualGlyphWidth(NativeImage var1, int var2, int var3, int var4, int var5) {
-         int var6;
-         for(var6 = var2 - 1; var6 >= 0; --var6) {
-            int var7 = var4 * var2 + var6;
+      private int getActualGlyphWidth(final NativeImage image, final int glyphWidth, final int glyphHeight, final int xGlyph, final int yGlyph) {
+         int width;
+         for(width = glyphWidth - 1; width >= 0; --width) {
+            int xPixel = xGlyph * glyphWidth + width;
 
-            for(int var8 = 0; var8 < var3; ++var8) {
-               int var9 = var5 * var3 + var8;
-               if (var1.getLuminanceOrAlpha(var7, var9) != 0) {
-                  return var6 + 1;
+            for(int y = 0; y < glyphHeight; ++y) {
+               int yPixel = yGlyph * glyphHeight + y;
+               if (image.getLuminanceOrAlpha(xPixel, yPixel) != 0) {
+                  return width + 1;
                }
             }
          }
 
-         return var6 + 1;
+         return width + 1;
       }
 
       static {
-         CODEPOINT_GRID_CODEC = Codec.STRING.listOf().xmap((var0) -> {
-            int var1 = var0.size();
-            int[][] var2 = new int[var1][];
+         CODEPOINT_GRID_CODEC = Codec.STRING.listOf().xmap((input) -> {
+            int lineCount = input.size();
+            int[][] result = new int[lineCount][];
 
-            for(int var3 = 0; var3 < var1; ++var3) {
-               var2[var3] = ((String)var0.get(var3)).codePoints().toArray();
+            for(int i = 0; i < lineCount; ++i) {
+               result[i] = ((String)input.get(i)).codePoints().toArray();
             }
 
-            return var2;
-         }, (var0) -> {
-            ArrayList var1 = new ArrayList(var0.length);
+            return result;
+         }, (grid) -> {
+            List<String> result = new ArrayList(grid.length);
 
-            for(int[] var5 : var0) {
-               var1.add(new String(var5, 0, var5.length));
+            for(int[] line : grid) {
+               result.add(new String(line, 0, line.length));
             }
 
-            return var1;
+            return result;
          }).validate(Definition::validateDimensions);
-         CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("file").forGetter(Definition::file), Codec.INT.optionalFieldOf("height", 8).forGetter(Definition::height), Codec.INT.fieldOf("ascent").forGetter(Definition::ascent), CODEPOINT_GRID_CODEC.fieldOf("chars").forGetter(Definition::codepointGrid)).apply(var0, Definition::new)).validate(Definition::validate);
+         CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("file").forGetter(Definition::file), Codec.INT.optionalFieldOf("height", 8).forGetter(Definition::height), Codec.INT.fieldOf("ascent").forGetter(Definition::ascent), CODEPOINT_GRID_CODEC.fieldOf("chars").forGetter(Definition::codepointGrid)).apply(i, Definition::new)).validate(Definition::validate);
       }
    }
 
-   static record Glyph(float scale, NativeImage image, int offsetX, int offsetY, int width, int height, int advance, int ascent) implements UnbakedGlyph {
-      final float scale;
-      final NativeImage image;
-      final int offsetX;
-      final int offsetY;
-      final int width;
-      final int height;
-      final int ascent;
-
-      Glyph(float var1, NativeImage var2, int var3, int var4, int var5, int var6, int var7, int var8) {
+   private static record Glyph(float scale, NativeImage image, int offsetX, int offsetY, int width, int height, int advance, int ascent) implements UnbakedGlyph {
+      private Glyph {
          super();
-         this.scale = var1;
-         this.image = var2;
-         this.offsetX = var3;
-         this.offsetY = var4;
-         this.width = var5;
-         this.height = var6;
-         this.advance = var7;
-         this.ascent = var8;
       }
 
       public GlyphInfo info() {
          return GlyphInfo.simple((float)this.advance);
       }
 
-      public BakedGlyph bake(UnbakedGlyph.Stitcher var1) {
-         return var1.stitch(this.info(), new GlyphBitmap() {
+      public BakedGlyph bake(final UnbakedGlyph.Stitcher stitcher) {
+         return stitcher.stitch(this.info(), new GlyphBitmap() {
+            {
+               Objects.requireNonNull(Glyph.this);
+            }
+
             public float getOversample() {
                return 1.0F / Glyph.this.scale;
             }
@@ -225,8 +211,8 @@ public class BitmapProvider implements GlyphProvider {
                return (float)Glyph.this.ascent;
             }
 
-            public void upload(int var1, int var2, GpuTexture var3) {
-               RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, Glyph.this.image, 0, 0, var1, var2, Glyph.this.width, Glyph.this.height, Glyph.this.offsetX, Glyph.this.offsetY);
+            public void upload(final int x, final int y, final GpuTexture texture) {
+               RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, Glyph.this.image, 0, 0, x, y, Glyph.this.width, Glyph.this.height, Glyph.this.offsetX, Glyph.this.offsetY);
             }
 
             public boolean isColored() {

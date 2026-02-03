@@ -7,47 +7,47 @@ import java.util.stream.Stream;
 import net.minecraft.core.HolderLookup;
 
 public interface ValueInput {
-   <T> Optional<T> read(String var1, Codec<T> var2);
+   <T> Optional<T> read(String name, Codec<T> codec);
 
    /** @deprecated */
    @Deprecated
-   <T> Optional<T> read(MapCodec<T> var1);
+   <T> Optional<T> read(MapCodec<T> codec);
 
-   Optional<ValueInput> child(String var1);
+   Optional<ValueInput> child(String name);
 
-   ValueInput childOrEmpty(String var1);
+   ValueInput childOrEmpty(String name);
 
-   Optional<ValueInputList> childrenList(String var1);
+   Optional<ValueInputList> childrenList(String name);
 
-   ValueInputList childrenListOrEmpty(String var1);
+   ValueInputList childrenListOrEmpty(String name);
 
-   <T> Optional<TypedInputList<T>> list(String var1, Codec<T> var2);
+   <T> Optional<TypedInputList<T>> list(String name, Codec<T> codec);
 
-   <T> TypedInputList<T> listOrEmpty(String var1, Codec<T> var2);
+   <T> TypedInputList<T> listOrEmpty(String name, Codec<T> codec);
 
-   boolean getBooleanOr(String var1, boolean var2);
+   boolean getBooleanOr(String name, boolean defaultValue);
 
-   byte getByteOr(String var1, byte var2);
+   byte getByteOr(String name, byte defaultValue);
 
-   int getShortOr(String var1, short var2);
+   int getShortOr(String name, short defaultValue);
 
-   Optional<Integer> getInt(String var1);
+   Optional<Integer> getInt(String name);
 
-   int getIntOr(String var1, int var2);
+   int getIntOr(String name, int defaultValue);
 
-   long getLongOr(String var1, long var2);
+   long getLongOr(String name, long defaultValue);
 
-   Optional<Long> getLong(String var1);
+   Optional<Long> getLong(String name);
 
-   float getFloatOr(String var1, float var2);
+   float getFloatOr(String name, float defaultValue);
 
-   double getDoubleOr(String var1, double var2);
+   double getDoubleOr(String name, double defaultValue);
 
-   Optional<String> getString(String var1);
+   Optional<String> getString(String name);
 
-   String getStringOr(String var1, String var2);
+   String getStringOr(String name, String defaultValue);
 
-   Optional<int[]> getIntArray(String var1);
+   Optional<int[]> getIntArray(String name);
 
    /** @deprecated */
    @Deprecated

@@ -14,7 +14,7 @@ public interface PositionSource {
    Codec<PositionSource> CODEC = BuiltInRegistries.POSITION_SOURCE_TYPE.byNameCodec().dispatch(PositionSource::getType, PositionSourceType::codec);
    StreamCodec<RegistryFriendlyByteBuf, PositionSource> STREAM_CODEC = ByteBufCodecs.registry(Registries.POSITION_SOURCE_TYPE).dispatch(PositionSource::getType, PositionSourceType::streamCodec);
 
-   Optional<Vec3> getPosition(Level var1);
+   Optional<Vec3> getPosition(final Level level);
 
    PositionSourceType<? extends PositionSource> getType();
 }

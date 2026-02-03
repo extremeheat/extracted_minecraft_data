@@ -37,15 +37,15 @@ public enum RealmsRegion {
    public final String nameId;
    public final String translationKey;
 
-   private RealmsRegion(final String var3, final String var4) {
-      this.nameId = var3;
-      this.translationKey = var4;
+   private RealmsRegion(final String nameId, final String translationKey) {
+      this.nameId = nameId;
+      this.translationKey = translationKey;
    }
 
-   public static @Nullable RealmsRegion findByNameId(String var0) {
-      for(RealmsRegion var4 : values()) {
-         if (var4.nameId.equals(var0)) {
-            return var4;
+   public static @Nullable RealmsRegion findByNameId(final String nameIdStr) {
+      for(RealmsRegion value : values()) {
+         if (value.nameId.equals(nameIdStr)) {
+            return value;
          }
       }
 
@@ -64,29 +64,19 @@ public enum RealmsRegion {
          super();
       }
 
-      public void write(JsonWriter var1, RealmsRegion var2) throws IOException {
-         var1.value(var2.nameId);
+      public void write(final JsonWriter jsonWriter, final RealmsRegion realmsRegion) throws IOException {
+         jsonWriter.value(realmsRegion.nameId);
       }
 
-      public RealmsRegion read(JsonReader var1) throws IOException {
-         String var2 = var1.nextString();
-         RealmsRegion var3 = RealmsRegion.findByNameId(var2);
-         if (var3 == null) {
-            LOGGER.warn("Unsupported RealmsRegion {}", var2);
+      public RealmsRegion read(final JsonReader jsonReader) throws IOException {
+         String nameId = jsonReader.nextString();
+         RealmsRegion realmsRegion = RealmsRegion.findByNameId(nameId);
+         if (realmsRegion == null) {
+            LOGGER.warn("Unsupported RealmsRegion {}", nameId);
             return RealmsRegion.INVALID_REGION;
          } else {
-            return var3;
+            return realmsRegion;
          }
-      }
-
-      // $FF: synthetic method
-      public Object read(final JsonReader var1) throws IOException {
-         return this.read(var1);
-      }
-
-      // $FF: synthetic method
-      public void write(final JsonWriter var1, final Object var2) throws IOException {
-         this.write(var1, (RealmsRegion)var2);
       }
    }
 }

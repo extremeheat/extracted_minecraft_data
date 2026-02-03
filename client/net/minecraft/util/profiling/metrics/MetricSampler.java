@@ -21,31 +21,31 @@ public class MetricSampler {
    final @Nullable ThresholdTest thresholdTest;
    private double currentValue;
 
-   protected MetricSampler(String var1, MetricCategory var2, DoubleSupplier var3, @Nullable Runnable var4, @Nullable ThresholdTest var5) {
+   protected MetricSampler(final String name, final MetricCategory category, final DoubleSupplier sampler, final @Nullable Runnable beforeTick, final @Nullable ThresholdTest thresholdTest) {
       super();
-      this.name = var1;
-      this.category = var2;
-      this.beforeTick = var4;
-      this.sampler = var3;
-      this.thresholdTest = var5;
+      this.name = name;
+      this.category = category;
+      this.beforeTick = beforeTick;
+      this.sampler = sampler;
+      this.thresholdTest = thresholdTest;
       this.values = ByteBufAllocator.DEFAULT.buffer();
       this.ticks = ByteBufAllocator.DEFAULT.buffer();
       this.isRunning = true;
    }
 
-   public static MetricSampler create(String var0, MetricCategory var1, DoubleSupplier var2) {
-      return new MetricSampler(var0, var1, var2, (Runnable)null, (ThresholdTest)null);
+   public static MetricSampler create(final String name, final MetricCategory category, final DoubleSupplier sampler) {
+      return new MetricSampler(name, category, sampler, (Runnable)null, (ThresholdTest)null);
    }
 
-   public static <T> MetricSampler create(String var0, MetricCategory var1, T var2, ToDoubleFunction<T> var3) {
-      return builder(var0, var1, var3, var2).build();
+   public static <T> MetricSampler create(final String metricName, final MetricCategory category, final T context, final ToDoubleFunction<T> sampler) {
+      return builder(metricName, category, sampler, context).build();
    }
 
-   public static <T> MetricSamplerBuilder<T> builder(String var0, MetricCategory var1, ToDoubleFunction<T> var2, T var3) {
-      if (var2 == null) {
+   public static <T> MetricSamplerBuilder<T> builder(final String metricName, final MetricCategory category, final ToDoubleFunction<T> sampler, final T context) {
+      if (sampler == null) {
          throw new IllegalStateException();
       } else {
-         return new MetricSamplerBuilder<T>(var0, var1, var2, var3);
+         return new MetricSamplerBuilder<T>(metricName, category, sampler, context);
       }
    }
 
@@ -60,11 +60,11 @@ public class MetricSampler {
       }
    }
 
-   public void onEndTick(int var1) {
+   public void onEndTick(final int currentTick) {
       this.verifyRunning();
       this.currentValue = this.sampler.getAsDouble();
       this.values.writeDouble(this.currentValue);
-      this.ticks.writeInt(var1);
+      this.ticks.writeInt(currentTick);
    }
 
    public void onFinished() {
@@ -93,33 +93,33 @@ public class MetricSampler {
    }
 
    public SamplerResult result() {
-      Int2DoubleOpenHashMap var1 = new Int2DoubleOpenHashMap();
-      int var2 = -2147483648;
+      Int2DoubleMap result = new Int2DoubleOpenHashMap();
+      int firstTick = -2147483648;
 
-      int var3;
-      int var4;
-      for(var3 = -2147483648; this.values.isReadable(8); var3 = var4) {
-         var4 = this.ticks.readInt();
-         if (var2 == -2147483648) {
-            var2 = var4;
+      int lastTick;
+      int currentTick;
+      for(lastTick = -2147483648; this.values.isReadable(8); lastTick = currentTick) {
+         currentTick = this.ticks.readInt();
+         if (firstTick == -2147483648) {
+            firstTick = currentTick;
          }
 
-         var1.put(var4, this.values.readDouble());
+         result.put(currentTick, this.values.readDouble());
       }
 
-      return new SamplerResult(var2, var3, var1);
+      return new SamplerResult(firstTick, lastTick, result);
    }
 
    public boolean triggersThreshold() {
       return this.thresholdTest != null && this.thresholdTest.test(this.currentValue);
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         MetricSampler var2 = (MetricSampler)var1;
-         return this.name.equals(var2.name) && this.category.equals(var2.category);
+      } else if (o != null && this.getClass() == o.getClass()) {
+         MetricSampler that = (MetricSampler)o;
+         return this.name.equals(that.name) && this.category.equals(that.category);
       } else {
          return false;
       }
@@ -134,15 +134,15 @@ public class MetricSampler {
       private final int firstTick;
       private final int lastTick;
 
-      public SamplerResult(int var1, int var2, Int2DoubleMap var3) {
+      public SamplerResult(final int firstTick, final int lastTick, final Int2DoubleMap recording) {
          super();
-         this.firstTick = var1;
-         this.lastTick = var2;
-         this.recording = var3;
+         this.firstTick = firstTick;
+         this.lastTick = lastTick;
+         this.recording = recording;
       }
 
-      public double valueAtTick(int var1) {
-         return this.recording.get(var1);
+      public double valueAtTick(final int tick) {
+         return this.recording.get(tick);
       }
 
       public int getFirstTick() {
@@ -158,21 +158,21 @@ public class MetricSampler {
       private final float percentageIncreaseThreshold;
       private double previousValue = 4.9E-324;
 
-      public ValueIncreasedByPercentage(float var1) {
+      public ValueIncreasedByPercentage(final float percentageIncreaseThreshold) {
          super();
-         this.percentageIncreaseThreshold = var1;
+         this.percentageIncreaseThreshold = percentageIncreaseThreshold;
       }
 
-      public boolean test(double var1) {
-         boolean var3;
-         if (this.previousValue != 4.9E-324 && !(var1 <= this.previousValue)) {
-            var3 = (var1 - this.previousValue) / this.previousValue >= (double)this.percentageIncreaseThreshold;
+      public boolean test(final double value) {
+         boolean result;
+         if (this.previousValue != 4.9E-324 && !(value <= this.previousValue)) {
+            result = (value - this.previousValue) / this.previousValue >= (double)this.percentageIncreaseThreshold;
          } else {
-            var3 = false;
+            result = false;
          }
 
-         this.previousValue = var1;
-         return var3;
+         this.previousValue = value;
+         return result;
       }
    }
 
@@ -184,21 +184,21 @@ public class MetricSampler {
       private @Nullable Runnable beforeTick;
       private @Nullable ThresholdTest thresholdTest;
 
-      public MetricSamplerBuilder(String var1, MetricCategory var2, ToDoubleFunction<T> var3, T var4) {
+      public MetricSamplerBuilder(final String name, final MetricCategory category, final ToDoubleFunction<T> sampler, final T context) {
          super();
-         this.name = var1;
-         this.category = var2;
-         this.sampler = () -> var3.applyAsDouble(var4);
-         this.context = var4;
+         this.name = name;
+         this.category = category;
+         this.sampler = () -> sampler.applyAsDouble(context);
+         this.context = context;
       }
 
-      public MetricSamplerBuilder<T> withBeforeTick(Consumer<T> var1) {
-         this.beforeTick = () -> var1.accept(this.context);
+      public MetricSamplerBuilder<T> withBeforeTick(final Consumer<T> beforeTick) {
+         this.beforeTick = () -> beforeTick.accept(this.context);
          return this;
       }
 
-      public MetricSamplerBuilder<T> withThresholdAlert(ThresholdTest var1) {
-         this.thresholdTest = var1;
+      public MetricSamplerBuilder<T> withThresholdAlert(final ThresholdTest thresholdTest) {
+         this.thresholdTest = thresholdTest;
          return this;
       }
 
@@ -208,6 +208,6 @@ public class MetricSampler {
    }
 
    public interface ThresholdTest {
-      boolean test(double var1);
+      boolean test(final double value);
    }
 }

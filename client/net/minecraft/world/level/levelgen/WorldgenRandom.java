@@ -7,9 +7,9 @@ public class WorldgenRandom extends LegacyRandomSource {
    private final RandomSource randomSource;
    private int count;
 
-   public WorldgenRandom(RandomSource var1) {
+   public WorldgenRandom(final RandomSource randomSource) {
       super(0L);
-      this.randomSource = var1;
+      this.randomSource = randomSource;
    }
 
    public int getCount() {
@@ -24,51 +24,51 @@ public class WorldgenRandom extends LegacyRandomSource {
       return this.randomSource.forkPositional();
    }
 
-   public int next(int var1) {
+   public int next(final int bits) {
       ++this.count;
       RandomSource var3 = this.randomSource;
-      if (var3 instanceof LegacyRandomSource var2) {
-         return var2.next(var1);
+      if (var3 instanceof LegacyRandomSource legacyRandomSource) {
+         return legacyRandomSource.next(bits);
       } else {
-         return (int)(this.randomSource.nextLong() >>> 64 - var1);
+         return (int)(this.randomSource.nextLong() >>> 64 - bits);
       }
    }
 
-   public synchronized void setSeed(long var1) {
+   public synchronized void setSeed(final long seed) {
       if (this.randomSource != null) {
-         this.randomSource.setSeed(var1);
+         this.randomSource.setSeed(seed);
       }
    }
 
-   public long setDecorationSeed(long var1, int var3, int var4) {
-      this.setSeed(var1);
-      long var5 = this.nextLong() | 1L;
-      long var7 = this.nextLong() | 1L;
-      long var9 = (long)var3 * var5 + (long)var4 * var7 ^ var1;
-      this.setSeed(var9);
-      return var9;
+   public long setDecorationSeed(final long seed, final int chunkX, final int chunkZ) {
+      this.setSeed(seed);
+      long xScale = this.nextLong() | 1L;
+      long zScale = this.nextLong() | 1L;
+      long result = (long)chunkX * xScale + (long)chunkZ * zScale ^ seed;
+      this.setSeed(result);
+      return result;
    }
 
-   public void setFeatureSeed(long var1, int var3, int var4) {
-      long var5 = var1 + (long)var3 + (long)(10000 * var4);
-      this.setSeed(var5);
+   public void setFeatureSeed(final long seed, final int index, final int step) {
+      long result = seed + (long)index + (long)(10000 * step);
+      this.setSeed(result);
    }
 
-   public void setLargeFeatureSeed(long var1, int var3, int var4) {
-      this.setSeed(var1);
-      long var5 = this.nextLong();
-      long var7 = this.nextLong();
-      long var9 = (long)var3 * var5 ^ (long)var4 * var7 ^ var1;
-      this.setSeed(var9);
+   public void setLargeFeatureSeed(final long seed, final int chunkX, final int chunkZ) {
+      this.setSeed(seed);
+      long xScale = this.nextLong();
+      long zScale = this.nextLong();
+      long result = (long)chunkX * xScale ^ (long)chunkZ * zScale ^ seed;
+      this.setSeed(result);
    }
 
-   public void setLargeFeatureWithSalt(long var1, int var3, int var4, int var5) {
-      long var6 = (long)var3 * 341873128712L + (long)var4 * 132897987541L + var1 + (long)var5;
-      this.setSeed(var6);
+   public void setLargeFeatureWithSalt(final long seed, final int x, final int z, final int blend) {
+      long result = (long)x * 341873128712L + (long)z * 132897987541L + seed + (long)blend;
+      this.setSeed(result);
    }
 
-   public static RandomSource seedSlimeChunk(int var0, int var1, long var2, long var4) {
-      return RandomSource.create(var2 + (long)(var0 * var0 * 4987142) + (long)(var0 * 5947611) + (long)(var1 * var1) * 4392871L + (long)(var1 * 389711) ^ var4);
+   public static RandomSource seedSlimeChunk(final int x, final int z, final long seed, final long salt) {
+      return RandomSource.create(seed + (long)(x * x * 4987142) + (long)(x * 5947611) + (long)(z * z) * 4392871L + (long)(z * 389711) ^ salt);
    }
 
    public static enum Algorithm {
@@ -77,12 +77,12 @@ public class WorldgenRandom extends LegacyRandomSource {
 
       private final LongFunction<RandomSource> constructor;
 
-      private Algorithm(final LongFunction<RandomSource> var3) {
-         this.constructor = var3;
+      private Algorithm(final LongFunction<RandomSource> constructor) {
+         this.constructor = constructor;
       }
 
-      public RandomSource newInstance(long var1) {
-         return (RandomSource)this.constructor.apply(var1);
+      public RandomSource newInstance(final long seed) {
+         return (RandomSource)this.constructor.apply(seed);
       }
 
       // $FF: synthetic method

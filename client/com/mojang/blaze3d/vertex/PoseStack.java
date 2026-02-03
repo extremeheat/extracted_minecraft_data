@@ -21,37 +21,37 @@ public class PoseStack {
       this.poses.add(new Pose());
    }
 
-   public void translate(double var1, double var3, double var5) {
-      this.translate((float)var1, (float)var3, (float)var5);
+   public void translate(final double xo, final double yo, final double zo) {
+      this.translate((float)xo, (float)yo, (float)zo);
    }
 
-   public void translate(float var1, float var2, float var3) {
-      this.last().translate(var1, var2, var3);
+   public void translate(final float xo, final float yo, final float zo) {
+      this.last().translate(xo, yo, zo);
    }
 
-   public void translate(Vec3 var1) {
-      this.translate(var1.x, var1.y, var1.z);
+   public void translate(final Vec3 offset) {
+      this.translate(offset.x, offset.y, offset.z);
    }
 
-   public void scale(float var1, float var2, float var3) {
-      this.last().scale(var1, var2, var3);
+   public void scale(final float xScale, final float yScale, final float zScale) {
+      this.last().scale(xScale, yScale, zScale);
    }
 
-   public void mulPose(Quaternionfc var1) {
-      this.last().rotate(var1);
+   public void mulPose(final Quaternionfc by) {
+      this.last().rotate(by);
    }
 
-   public void rotateAround(Quaternionfc var1, float var2, float var3, float var4) {
-      this.last().rotateAround(var1, var2, var3, var4);
+   public void rotateAround(final Quaternionfc rotation, final float pivotX, final float pivotY, final float pivotZ) {
+      this.last().rotateAround(rotation, pivotX, pivotY, pivotZ);
    }
 
    public void pushPose() {
-      Pose var1 = this.last();
+      Pose lastPose = this.last();
       ++this.lastIndex;
       if (this.lastIndex >= this.poses.size()) {
-         this.poses.add(var1.copy());
+         this.poses.add(lastPose.copy());
       } else {
-         ((Pose)this.poses.get(this.lastIndex)).set(var1);
+         ((Pose)this.poses.get(this.lastIndex)).set(lastPose);
       }
 
    }
@@ -76,8 +76,8 @@ public class PoseStack {
       this.last().setIdentity();
    }
 
-   public void mulPose(Matrix4fc var1) {
-      this.last().mulPose(var1);
+   public void mulPose(final Matrix4fc matrix) {
+      this.last().mulPose(matrix);
    }
 
    public static final class Pose {
@@ -94,10 +94,10 @@ public class PoseStack {
          this.trustedNormals = false;
       }
 
-      public void set(Pose var1) {
-         this.pose.set(var1.pose);
-         this.normal.set(var1.normal);
-         this.trustedNormals = var1.trustedNormals;
+      public void set(final Pose pose) {
+         this.pose.set(pose.pose);
+         this.normal.set(pose.normal);
+         this.trustedNormals = pose.trustedNormals;
       }
 
       public Matrix4f pose() {
@@ -108,40 +108,40 @@ public class PoseStack {
          return this.normal;
       }
 
-      public Vector3f transformNormal(Vector3fc var1, Vector3f var2) {
-         return this.transformNormal(var1.x(), var1.y(), var1.z(), var2);
+      public Vector3f transformNormal(final Vector3fc normal, final Vector3f destination) {
+         return this.transformNormal(normal.x(), normal.y(), normal.z(), destination);
       }
 
-      public Vector3f transformNormal(float var1, float var2, float var3, Vector3f var4) {
-         Vector3f var5 = this.normal.transform(var1, var2, var3, var4);
-         return this.trustedNormals ? var5 : var5.normalize();
+      public Vector3f transformNormal(final float x, final float y, final float z, final Vector3f destination) {
+         Vector3f result = this.normal.transform(x, y, z, destination);
+         return this.trustedNormals ? result : result.normalize();
       }
 
-      public Matrix4f translate(float var1, float var2, float var3) {
-         return this.pose.translate(var1, var2, var3);
+      public Matrix4f translate(final float xo, final float yo, final float zo) {
+         return this.pose.translate(xo, yo, zo);
       }
 
-      public void scale(float var1, float var2, float var3) {
-         this.pose.scale(var1, var2, var3);
-         if (Math.abs(var1) == Math.abs(var2) && Math.abs(var2) == Math.abs(var3)) {
-            if (var1 < 0.0F || var2 < 0.0F || var3 < 0.0F) {
-               this.normal.scale(Math.signum(var1), Math.signum(var2), Math.signum(var3));
+      public void scale(final float xScale, final float yScale, final float zScale) {
+         this.pose.scale(xScale, yScale, zScale);
+         if (Math.abs(xScale) == Math.abs(yScale) && Math.abs(yScale) == Math.abs(zScale)) {
+            if (xScale < 0.0F || yScale < 0.0F || zScale < 0.0F) {
+               this.normal.scale(Math.signum(xScale), Math.signum(yScale), Math.signum(zScale));
             }
 
          } else {
-            this.normal.scale(1.0F / var1, 1.0F / var2, 1.0F / var3);
+            this.normal.scale(1.0F / xScale, 1.0F / yScale, 1.0F / zScale);
             this.trustedNormals = false;
          }
       }
 
-      public void rotate(Quaternionfc var1) {
-         this.pose.rotate(var1);
-         this.normal.rotate(var1);
+      public void rotate(final Quaternionfc by) {
+         this.pose.rotate(by);
+         this.normal.rotate(by);
       }
 
-      public void rotateAround(Quaternionfc var1, float var2, float var3, float var4) {
-         this.pose.rotateAround(var1, var2, var3, var4);
-         this.normal.rotate(var1);
+      public void rotateAround(final Quaternionfc rotation, final float pivotX, final float pivotY, final float pivotZ) {
+         this.pose.rotateAround(rotation, pivotX, pivotY, pivotZ);
+         this.normal.rotate(rotation);
       }
 
       public void setIdentity() {
@@ -150,11 +150,11 @@ public class PoseStack {
          this.trustedNormals = true;
       }
 
-      public void mulPose(Matrix4fc var1) {
-         this.pose.mul(var1);
-         if (!MatrixUtil.isPureTranslation(var1)) {
-            if (MatrixUtil.isOrthonormal(var1)) {
-               this.normal.mul(new Matrix3f(var1));
+      public void mulPose(final Matrix4fc matrix) {
+         this.pose.mul(matrix);
+         if (!MatrixUtil.isPureTranslation(matrix)) {
+            if (MatrixUtil.isOrthonormal(matrix)) {
+               this.normal.mul(new Matrix3f(matrix));
             } else {
                this.computeNormalMatrix();
             }
@@ -163,9 +163,9 @@ public class PoseStack {
       }
 
       public Pose copy() {
-         Pose var1 = new Pose();
-         var1.set(this);
-         return var1;
+         Pose pose = new Pose();
+         pose.set(this);
+         return pose;
       }
    }
 }

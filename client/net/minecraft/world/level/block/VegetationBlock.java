@@ -13,30 +13,30 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 
 public abstract class VegetationBlock extends Block {
-   protected VegetationBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected VegetationBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    protected abstract MapCodec<? extends VegetationBlock> codec();
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(BlockTags.DIRT) || var1.is(Blocks.FARMLAND);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.is(BlockTags.SUPPORTS_VEGETATION);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockPos var4 = var3.below();
-      return this.mayPlaceOn(var2.getBlockState(var4), var2, var4);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockPos below = pos.below();
+      return this.mayPlaceOn(level.getBlockState(below), level, below);
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
-      return var1.getFluidState().isEmpty();
+   protected boolean propagatesSkylightDown(final BlockState state) {
+      return state.getFluidState().isEmpty();
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      return var2 == PathComputationType.AIR && !this.hasCollision ? true : super.isPathfindable(var1, var2);
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
+      return type == PathComputationType.AIR && !this.hasCollision ? true : super.isPathfindable(state, type);
    }
 }

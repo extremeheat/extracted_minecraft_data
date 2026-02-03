@@ -20,20 +20,15 @@ public class CompoundTagArgument implements ArgumentType<CompoundTag> {
       return new CompoundTagArgument();
    }
 
-   public static <S> CompoundTag getCompoundTag(CommandContext<S> var0, String var1) {
-      return (CompoundTag)var0.getArgument(var1, CompoundTag.class);
+   public static <S> CompoundTag getCompoundTag(final CommandContext<S> context, final String name) {
+      return (CompoundTag)context.getArgument(name, CompoundTag.class);
    }
 
-   public CompoundTag parse(StringReader var1) throws CommandSyntaxException {
-      return TagParser.parseCompoundAsArgument(var1);
+   public CompoundTag parse(final StringReader reader) throws CommandSyntaxException {
+      return TagParser.parseCompoundAsArgument(reader);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

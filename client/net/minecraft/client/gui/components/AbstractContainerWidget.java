@@ -12,58 +12,58 @@ public abstract class AbstractContainerWidget extends AbstractScrollArea impleme
    private @Nullable GuiEventListener focused;
    private boolean isDragging;
 
-   public AbstractContainerWidget(int var1, int var2, int var3, int var4, Component var5) {
-      super(var1, var2, var3, var4, var5);
+   public AbstractContainerWidget(final int x, final int y, final int width, final int height, final Component message, final AbstractScrollArea.ScrollbarSettings scrollbarSettings) {
+      super(x, y, width, height, message, scrollbarSettings);
    }
 
    public final boolean isDragging() {
       return this.isDragging;
    }
 
-   public final void setDragging(boolean var1) {
-      this.isDragging = var1;
+   public final void setDragging(final boolean dragging) {
+      this.isDragging = dragging;
    }
 
    public @Nullable GuiEventListener getFocused() {
       return this.focused;
    }
 
-   public void setFocused(@Nullable GuiEventListener var1) {
+   public void setFocused(final @Nullable GuiEventListener focused) {
       if (this.focused != null) {
          this.focused.setFocused(false);
       }
 
-      if (var1 != null) {
-         var1.setFocused(true);
+      if (focused != null) {
+         focused.setFocused(true);
       }
 
-      this.focused = var1;
+      this.focused = focused;
    }
 
-   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
-      return ContainerEventHandler.super.nextFocusPath(var1);
+   public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
+      return ContainerEventHandler.super.nextFocusPath(navigationEvent);
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      boolean var3 = this.updateScrolling(var1);
-      return ContainerEventHandler.super.mouseClicked(var1, var2) || var3;
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+      boolean scrolling = this.updateScrolling(event);
+      return ContainerEventHandler.super.mouseClicked(event, doubleClick) || scrolling;
    }
 
-   public boolean mouseReleased(MouseButtonEvent var1) {
-      super.mouseReleased(var1);
-      return ContainerEventHandler.super.mouseReleased(var1);
+   public boolean mouseReleased(final MouseButtonEvent event) {
+      super.mouseReleased(event);
+      return ContainerEventHandler.super.mouseReleased(event);
    }
 
-   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
-      super.mouseDragged(var1, var2, var4);
-      return ContainerEventHandler.super.mouseDragged(var1, var2, var4);
+   public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
+      super.mouseDragged(event, dx, dy);
+      return ContainerEventHandler.super.mouseDragged(event, dx, dy);
    }
 
    public boolean isFocused() {
       return ContainerEventHandler.super.isFocused();
    }
 
-   public void setFocused(boolean var1) {
-      ContainerEventHandler.super.setFocused(var1);
+   public void setFocused(final boolean focused) {
+      ContainerEventHandler.super.setFocused(focused);
    }
 }

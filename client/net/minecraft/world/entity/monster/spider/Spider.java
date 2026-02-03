@@ -48,13 +48,13 @@ public class Spider extends Monster {
    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
    private static final float SPIDER_SPECIAL_EFFECT_CHANCE = 0.1F;
 
-   public Spider(EntityType<? extends Spider> var1, Level var2) {
-      super(var1, var2);
+   public Spider(final EntityType<? extends Spider> type, final Level level) {
+      super(type, level);
    }
 
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new FloatGoal(this));
-      this.goalSelector.addGoal(2, new AvoidEntityGoal(this, Armadillo.class, 6.0F, 1.0, 1.2, (var0) -> !((Armadillo)var0).isScared()));
+      this.goalSelector.addGoal(2, new AvoidEntityGoal(this, Armadillo.class, 6.0F, 1.0, 1.2, (entity) -> !((Armadillo)entity).isScared()));
       this.goalSelector.addGoal(3, new LeapAtTargetGoal(this, 0.4F));
       this.goalSelector.addGoal(4, new SpiderAttackGoal(this));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
@@ -65,13 +65,13 @@ public class Spider extends Monster {
       this.targetSelector.addGoal(3, new SpiderTargetGoal(this, IronGolem.class));
    }
 
-   protected PathNavigation createNavigation(Level var1) {
-      return new WallClimberNavigation(this, var1);
+   protected PathNavigation createNavigation(final Level level) {
+      return new WallClimberNavigation(this, level);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_FLAGS_ID, (byte)0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_FLAGS_ID, (byte)0);
    }
 
    public void tick() {
@@ -90,7 +90,7 @@ public class Spider extends Monster {
       return SoundEvents.SPIDER_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.SPIDER_HURT;
    }
 
@@ -98,7 +98,7 @@ public class Spider extends Monster {
       return SoundEvents.SPIDER_DEATH;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(SoundEvents.SPIDER_STEP, 0.15F, 1.0F);
    }
 
@@ -106,63 +106,63 @@ public class Spider extends Monster {
       return this.isClimbing();
    }
 
-   public void makeStuckInBlock(BlockState var1, Vec3 var2) {
-      if (!var1.is(Blocks.COBWEB)) {
-         super.makeStuckInBlock(var1, var2);
+   public void makeStuckInBlock(final BlockState state, final Vec3 speedMultiplier) {
+      if (!state.is(Blocks.COBWEB)) {
+         super.makeStuckInBlock(state, speedMultiplier);
       }
 
    }
 
-   public boolean canBeAffected(MobEffectInstance var1) {
-      return var1.is(MobEffects.POISON) ? false : super.canBeAffected(var1);
+   public boolean canBeAffected(final MobEffectInstance newEffect) {
+      return newEffect.is(MobEffects.POISON) ? false : super.canBeAffected(newEffect);
    }
 
    public boolean isClimbing() {
       return ((Byte)this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
    }
 
-   public void setClimbing(boolean var1) {
-      byte var2 = (Byte)this.entityData.get(DATA_FLAGS_ID);
-      if (var1) {
-         var2 = (byte)(var2 | 1);
+   public void setClimbing(final boolean value) {
+      byte flags = (Byte)this.entityData.get(DATA_FLAGS_ID);
+      if (value) {
+         flags = (byte)(flags | 1);
       } else {
-         var2 = (byte)(var2 & -2);
+         flags = (byte)(flags & -2);
       }
 
-      this.entityData.set(DATA_FLAGS_ID, var2);
+      this.entityData.set(DATA_FLAGS_ID, flags);
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      var4 = super.finalizeSpawn(var1, var2, var3, var4);
-      RandomSource var5 = var1.getRandom();
-      if (var5.nextInt(100) == 0) {
-         Skeleton var6 = EntityType.SKELETON.create(this.level(), EntitySpawnReason.JOCKEY);
-         if (var6 != null) {
-            var6.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-            var6.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);
-            var6.startRiding(this, false, false);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
+      groupData = super.finalizeSpawn(level, difficulty, spawnReason, groupData);
+      RandomSource random = level.getRandom();
+      if (random.nextInt(100) == 0) {
+         Skeleton skeleton = EntityType.SKELETON.create(this.level(), EntitySpawnReason.JOCKEY);
+         if (skeleton != null) {
+            skeleton.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+            skeleton.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);
+            skeleton.startRiding(this, false, false);
          }
       }
 
-      if (var4 == null) {
-         var4 = new SpiderEffectsGroupData();
-         if (var1.getDifficulty() == Difficulty.HARD && var5.nextFloat() < 0.1F * var2.getSpecialMultiplier()) {
-            ((SpiderEffectsGroupData)var4).setRandomEffect(var5);
+      if (groupData == null) {
+         groupData = new SpiderEffectsGroupData();
+         if (level.getDifficulty() == Difficulty.HARD && random.nextFloat() < 0.1F * difficulty.getSpecialMultiplier()) {
+            ((SpiderEffectsGroupData)groupData).setRandomEffect(random);
          }
       }
 
-      if (var4 instanceof SpiderEffectsGroupData var9) {
-         Holder var7 = var9.effect;
-         if (var7 != null) {
-            this.addEffect(new MobEffectInstance(var7, -1));
+      if (groupData instanceof SpiderEffectsGroupData spiderEffectsGroupData) {
+         Holder<MobEffect> effect = spiderEffectsGroupData.effect;
+         if (effect != null) {
+            this.addEffect(new MobEffectInstance(effect, -1));
          }
       }
 
-      return var4;
+      return groupData;
    }
 
-   public Vec3 getVehicleAttachmentPoint(Entity var1) {
-      return var1.getBbWidth() <= this.getBbWidth() ? new Vec3(0.0, 0.3125 * (double)this.getScale(), 0.0) : super.getVehicleAttachmentPoint(var1);
+   public Vec3 getVehicleAttachmentPoint(final Entity vehicle) {
+      return vehicle.getBbWidth() <= this.getBbWidth() ? new Vec3(0.0, 0.3125 * (double)this.getScale(), 0.0) : super.getVehicleAttachmentPoint(vehicle);
    }
 
    static {
@@ -176,24 +176,24 @@ public class Spider extends Monster {
          super();
       }
 
-      public void setRandomEffect(RandomSource var1) {
-         int var2 = var1.nextInt(5);
-         if (var2 <= 1) {
+      public void setRandomEffect(final RandomSource random) {
+         int selection = random.nextInt(5);
+         if (selection <= 1) {
             this.effect = MobEffects.SPEED;
-         } else if (var2 <= 2) {
+         } else if (selection <= 2) {
             this.effect = MobEffects.STRENGTH;
-         } else if (var2 <= 3) {
+         } else if (selection <= 3) {
             this.effect = MobEffects.REGENERATION;
-         } else if (var2 <= 4) {
+         } else if (selection <= 4) {
             this.effect = MobEffects.INVISIBILITY;
          }
 
       }
    }
 
-   static class SpiderAttackGoal extends MeleeAttackGoal {
-      public SpiderAttackGoal(Spider var1) {
-         super(var1, 1.0, true);
+   private static class SpiderAttackGoal extends MeleeAttackGoal {
+      public SpiderAttackGoal(final Spider mob) {
+         super(mob, 1.0, true);
       }
 
       public boolean canUse() {
@@ -201,8 +201,8 @@ public class Spider extends Monster {
       }
 
       public boolean canContinueToUse() {
-         float var1 = this.mob.getLightLevelDependentMagicValue();
-         if (var1 >= 0.5F && this.mob.getRandom().nextInt(100) == 0) {
+         float br = this.mob.getLightLevelDependentMagicValue();
+         if (br >= 0.5F && this.mob.getRandom().nextInt(100) == 0) {
             this.mob.setTarget((LivingEntity)null);
             return false;
          } else {
@@ -211,14 +211,14 @@ public class Spider extends Monster {
       }
    }
 
-   static class SpiderTargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
-      public SpiderTargetGoal(Spider var1, Class<T> var2) {
-         super(var1, var2, true);
+   private static class SpiderTargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
+      public SpiderTargetGoal(final Spider mob, final Class<T> targetType) {
+         super(mob, targetType, true);
       }
 
       public boolean canUse() {
-         float var1 = this.mob.getLightLevelDependentMagicValue();
-         return var1 >= 0.5F ? false : super.canUse();
+         float br = this.mob.getLightLevelDependentMagicValue();
+         return br >= 0.5F ? false : super.canUse();
       }
    }
 }

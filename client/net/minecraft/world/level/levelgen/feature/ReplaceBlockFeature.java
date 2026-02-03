@@ -7,18 +7,18 @@ import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguratio
 import net.minecraft.world.level.levelgen.feature.configurations.ReplaceBlockConfiguration;
 
 public class ReplaceBlockFeature extends Feature<ReplaceBlockConfiguration> {
-   public ReplaceBlockFeature(Codec<ReplaceBlockConfiguration> var1) {
-      super(var1);
+   public ReplaceBlockFeature(final Codec<ReplaceBlockConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<ReplaceBlockConfiguration> var1) {
-      WorldGenLevel var2 = var1.level();
-      BlockPos var3 = var1.origin();
-      ReplaceBlockConfiguration var4 = (ReplaceBlockConfiguration)var1.config();
+   public boolean place(final FeaturePlaceContext<ReplaceBlockConfiguration> context) {
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
+      ReplaceBlockConfiguration config = context.config();
 
-      for(OreConfiguration.TargetBlockState var6 : var4.targetStates) {
-         if (var6.target.test(var2.getBlockState(var3), var1.random())) {
-            var2.setBlock(var3, var6.state, 2);
+      for(OreConfiguration.TargetBlockState targetState : config.targetStates) {
+         if (targetState.target.test(level.getBlockState(origin), context.random())) {
+            level.setBlock(origin, targetState.state, 2);
             break;
          }
       }

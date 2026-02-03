@@ -11,6 +11,7 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.core.HolderSet;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
@@ -23,102 +24,96 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<TriggerInstan
       return InventoryChangeTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, Inventory var2, ItemStack var3) {
-      int var4 = 0;
-      int var5 = 0;
-      int var6 = 0;
+   public void trigger(final ServerPlayer player, final Inventory inventory, final ItemStack changedItem) {
+      int slotsFull = 0;
+      int slotsEmpty = 0;
+      int slotsOccupied = 0;
 
-      for(int var7 = 0; var7 < var2.getContainerSize(); ++var7) {
-         ItemStack var8 = var2.getItem(var7);
-         if (var8.isEmpty()) {
-            ++var5;
+      for(int slot = 0; slot < inventory.getContainerSize(); ++slot) {
+         ItemStack itemStack = inventory.getItem(slot);
+         if (itemStack.isEmpty()) {
+            ++slotsEmpty;
          } else {
-            ++var6;
-            if (var8.getCount() >= var8.getMaxStackSize()) {
-               ++var4;
+            ++slotsOccupied;
+            if (itemStack.getCount() >= itemStack.getMaxStackSize()) {
+               ++slotsFull;
             }
          }
       }
 
-      this.trigger(var1, var2, var3, var4, var5, var6);
+      this.trigger(player, inventory, changedItem, slotsFull, slotsEmpty, slotsOccupied);
    }
 
-   private void trigger(ServerPlayer var1, Inventory var2, ItemStack var3, int var4, int var5, int var6) {
-      this.trigger(var1, (var5x) -> var5x.matches(var2, var3, var4, var5, var6));
+   private void trigger(final ServerPlayer player, final Inventory inventory, final ItemStack changedItem, final int slotsFull, final int slotsEmpty, final int slotsOccupied) {
+      this.trigger(player, (t) -> t.matches(inventory, changedItem, slotsFull, slotsEmpty, slotsOccupied));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Slots slots, List<ItemPredicate> items) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), InventoryChangeTrigger.TriggerInstance.Slots.CODEC.optionalFieldOf("slots", InventoryChangeTrigger.TriggerInstance.Slots.ANY).forGetter(TriggerInstance::slots), ItemPredicate.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(TriggerInstance::items)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), InventoryChangeTrigger.TriggerInstance.Slots.CODEC.optionalFieldOf("slots", InventoryChangeTrigger.TriggerInstance.Slots.ANY).forGetter(TriggerInstance::slots), ItemPredicate.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(TriggerInstance::items)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Slots var2, List<ItemPredicate> var3) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.slots = var2;
-         this.items = var3;
       }
 
-      public static Criterion<TriggerInstance> hasItems(ItemPredicate.Builder... var0) {
-         return hasItems((ItemPredicate[])Stream.of(var0).map(ItemPredicate.Builder::build).toArray((var0x) -> new ItemPredicate[var0x]));
+      public static Criterion<TriggerInstance> hasItems(final ItemPredicate.Builder... items) {
+         return hasItems((ItemPredicate[])Stream.of(items).map(ItemPredicate.Builder::build).toArray((x$0) -> new ItemPredicate[x$0]));
       }
 
-      public static Criterion<TriggerInstance> hasItems(ItemPredicate... var0) {
-         return CriteriaTriggers.INVENTORY_CHANGED.createCriterion(new TriggerInstance(Optional.empty(), InventoryChangeTrigger.TriggerInstance.Slots.ANY, List.of(var0)));
+      public static Criterion<TriggerInstance> hasItems(final ItemPredicate... items) {
+         return CriteriaTriggers.INVENTORY_CHANGED.createCriterion(new TriggerInstance(Optional.empty(), InventoryChangeTrigger.TriggerInstance.Slots.ANY, List.of(items)));
       }
 
-      public static Criterion<TriggerInstance> hasItems(ItemLike... var0) {
-         ItemPredicate[] var1 = new ItemPredicate[var0.length];
+      public static Criterion<TriggerInstance> hasItems(final ItemLike... items) {
+         ItemPredicate[] predicates = new ItemPredicate[items.length];
 
-         for(int var2 = 0; var2 < var0.length; ++var2) {
-            var1[var2] = new ItemPredicate(Optional.of(HolderSet.direct(var0[var2].asItem().builtInRegistryHolder())), MinMaxBounds.Ints.ANY, DataComponentMatchers.ANY);
+         for(int i = 0; i < items.length; ++i) {
+            predicates[i] = new ItemPredicate(Optional.of(HolderSet.direct(items[i].asItem().builtInRegistryHolder())), MinMaxBounds.Ints.ANY, DataComponentMatchers.ANY);
          }
 
-         return hasItems(var1);
+         return hasItems(predicates);
       }
 
-      public boolean matches(Inventory var1, ItemStack var2, int var3, int var4, int var5) {
-         if (!this.slots.matches(var3, var4, var5)) {
+      public boolean matches(final Inventory inventory, final ItemStack changedItem, final int slotsFull, final int slotsEmpty, final int slotsOccupied) {
+         if (!this.slots.matches(slotsFull, slotsEmpty, slotsOccupied)) {
             return false;
          } else if (this.items.isEmpty()) {
             return true;
          } else if (this.items.size() != 1) {
-            ObjectArrayList var6 = new ObjectArrayList(this.items);
-            int var7 = var1.getContainerSize();
+            List<ItemPredicate> predicates = new ObjectArrayList(this.items);
+            int count = inventory.getContainerSize();
 
-            for(int var8 = 0; var8 < var7; ++var8) {
-               if (var6.isEmpty()) {
+            for(int slot = 0; slot < count; ++slot) {
+               if (predicates.isEmpty()) {
                   return true;
                }
 
-               ItemStack var9 = var1.getItem(var8);
-               if (!var9.isEmpty()) {
-                  var6.removeIf((var1x) -> var1x.test(var9));
+               ItemStack itemStack = inventory.getItem(slot);
+               if (!itemStack.isEmpty()) {
+                  predicates.removeIf((predicate) -> predicate.test((ItemInstance)itemStack));
                }
             }
 
-            return var6.isEmpty();
+            return predicates.isEmpty();
          } else {
-            return !var2.isEmpty() && ((ItemPredicate)this.items.get(0)).test(var2);
+            return !changedItem.isEmpty() && ((ItemPredicate)this.items.get(0)).test((ItemInstance)changedItem);
          }
       }
 
       public static record Slots(MinMaxBounds.Ints occupied, MinMaxBounds.Ints full, MinMaxBounds.Ints empty) {
-         public static final Codec<Slots> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("occupied", MinMaxBounds.Ints.ANY).forGetter(Slots::occupied), MinMaxBounds.Ints.CODEC.optionalFieldOf("full", MinMaxBounds.Ints.ANY).forGetter(Slots::full), MinMaxBounds.Ints.CODEC.optionalFieldOf("empty", MinMaxBounds.Ints.ANY).forGetter(Slots::empty)).apply(var0, Slots::new));
+         public static final Codec<Slots> CODEC = RecordCodecBuilder.create((i) -> i.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("occupied", MinMaxBounds.Ints.ANY).forGetter(Slots::occupied), MinMaxBounds.Ints.CODEC.optionalFieldOf("full", MinMaxBounds.Ints.ANY).forGetter(Slots::full), MinMaxBounds.Ints.CODEC.optionalFieldOf("empty", MinMaxBounds.Ints.ANY).forGetter(Slots::empty)).apply(i, Slots::new));
          public static final Slots ANY;
 
-         public Slots(MinMaxBounds.Ints var1, MinMaxBounds.Ints var2, MinMaxBounds.Ints var3) {
+         public Slots {
             super();
-            this.occupied = var1;
-            this.full = var2;
-            this.empty = var3;
          }
 
-         public boolean matches(int var1, int var2, int var3) {
-            if (!this.full.matches(var1)) {
+         public boolean matches(final int slotsFull, final int slotsEmpty, final int slotsOccupied) {
+            if (!this.full.matches(slotsFull)) {
                return false;
-            } else if (!this.empty.matches(var2)) {
+            } else if (!this.empty.matches(slotsEmpty)) {
                return false;
             } else {
-               return this.occupied.matches(var3);
+               return this.occupied.matches(slotsOccupied);
             }
          }
 

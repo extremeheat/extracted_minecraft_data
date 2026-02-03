@@ -22,22 +22,20 @@ public record ConfiguredWorldCarver<WC extends CarverConfiguration>(WorldCarver<
    public static final Codec<Holder<ConfiguredWorldCarver<?>>> CODEC;
    public static final Codec<HolderSet<ConfiguredWorldCarver<?>>> LIST_CODEC;
 
-   public ConfiguredWorldCarver(WorldCarver<WC> var1, WC var2) {
+   public ConfiguredWorldCarver {
       super();
-      this.worldCarver = var1;
-      this.config = var2;
    }
 
-   public boolean isStartChunk(RandomSource var1) {
-      return this.worldCarver.isStartChunk(this.config, var1);
+   public boolean isStartChunk(final RandomSource random) {
+      return this.worldCarver.isStartChunk(this.config, random);
    }
 
-   public boolean carve(CarvingContext var1, ChunkAccess var2, Function<BlockPos, Holder<Biome>> var3, RandomSource var4, Aquifer var5, ChunkPos var6, CarvingMask var7) {
-      return SharedConstants.debugVoidTerrain(var2.getPos()) ? false : this.worldCarver.carve(var1, this.config, var2, var3, var4, var5, var6, var7);
+   public boolean carve(final CarvingContext context, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final RandomSource random, final Aquifer aquifer, final ChunkPos sourceChunkPos, final CarvingMask mask) {
+      return SharedConstants.debugVoidTerrain(chunk.getPos()) ? false : this.worldCarver.carve(context, this.config, chunk, biomeGetter, random, aquifer, sourceChunkPos, mask);
    }
 
    static {
-      DIRECT_CODEC = BuiltInRegistries.CARVER.byNameCodec().dispatch((var0) -> var0.worldCarver, WorldCarver::configuredCodec);
+      DIRECT_CODEC = BuiltInRegistries.CARVER.byNameCodec().dispatch((c) -> c.worldCarver, WorldCarver::configuredCodec);
       CODEC = RegistryFileCodec.<Holder<ConfiguredWorldCarver<?>>>create(Registries.CONFIGURED_CARVER, DIRECT_CODEC);
       LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CONFIGURED_CARVER, DIRECT_CODEC);
    }

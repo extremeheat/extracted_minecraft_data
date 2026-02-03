@@ -3,11 +3,11 @@ package net.minecraft;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 public class IdentifierException extends RuntimeException {
-   public IdentifierException(String var1) {
-      super(StringEscapeUtils.escapeJava(var1));
+   public IdentifierException(final String message) {
+      super(StringEscapeUtils.escapeJava(message));
    }
 
-   public IdentifierException(String var1, Throwable var2) {
-      super(StringEscapeUtils.escapeJava(var1), var2);
+   public IdentifierException(final String message, final Throwable cause) {
+      super(StringEscapeUtils.escapeJava(message), cause);
    }
 }

@@ -23,23 +23,23 @@ public class LogoRenderer {
    private final boolean showEasterEgg = (double)RandomSource.create().nextFloat() < 1.0E-4;
    private final boolean keepLogoThroughFade;
 
-   public LogoRenderer(boolean var1) {
+   public LogoRenderer(final boolean keepLogoThroughFade) {
       super();
-      this.keepLogoThroughFade = var1;
+      this.keepLogoThroughFade = keepLogoThroughFade;
    }
 
-   public void renderLogo(GuiGraphics var1, int var2, float var3) {
-      this.renderLogo(var1, var2, var3, 30);
+   public void renderLogo(final GuiGraphics graphics, final int width, final float alpha) {
+      this.renderLogo(graphics, width, alpha, 30);
    }
 
-   public void renderLogo(GuiGraphics var1, int var2, float var3, int var4) {
-      int var5 = var2 / 2 - 128;
-      float var6 = this.keepLogoThroughFade ? 1.0F : var3;
-      int var7 = ARGB.white(var6);
-      var1.blit(RenderPipelines.GUI_TEXTURED, this.showEasterEgg ? EASTER_EGG_LOGO : MINECRAFT_LOGO, var5, var4, 0.0F, 0.0F, 256, 44, 256, 64, var7);
-      int var8 = var2 / 2 - 64;
-      int var9 = var4 + 44 - 7;
-      var1.blit(RenderPipelines.GUI_TEXTURED, MINECRAFT_EDITION, var8, var9, 0.0F, 0.0F, 128, 14, 128, 16, var7);
+   public void renderLogo(final GuiGraphics graphics, final int width, final float alpha, final int heightOffset) {
+      int logoX = width / 2 - 128;
+      float effectiveAlpha = this.keepLogoThroughFade ? 1.0F : alpha;
+      int color = ARGB.white(effectiveAlpha);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, this.showEasterEgg ? EASTER_EGG_LOGO : MINECRAFT_LOGO, logoX, heightOffset, 0.0F, 0.0F, 256, 44, 256, 64, color);
+      int editionX = width / 2 - 64;
+      int y = heightOffset + 44 - 7;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, MINECRAFT_EDITION, editionX, y, 0.0F, 0.0F, 128, 14, 128, 16, color);
    }
 
    public boolean keepLogoThroughFade() {

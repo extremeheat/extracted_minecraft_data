@@ -17,38 +17,37 @@ public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
    private final BedRenderer bedRenderer;
    private final Material material;
 
-   public BedSpecialRenderer(BedRenderer var1, Material var2) {
+   public BedSpecialRenderer(final BedRenderer bedRenderer, final Material material) {
       super();
-      this.bedRenderer = var1;
-      this.material = var2;
+      this.bedRenderer = bedRenderer;
+      this.material = material;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      this.bedRenderer.submitSpecial(var2, var3, var4, var5, this.material, var7);
+   public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      this.bedRenderer.submitSpecial(poseStack, submitNodeCollector, lightCoords, overlayCoords, this.material, outlineColor);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      this.bedRenderer.getExtents(var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      this.bedRenderer.getExtents(output);
    }
 
    public static record Unbaked(Identifier texture) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture)).apply(i, Unbaked::new));
 
-      public Unbaked(DyeColor var1) {
-         this(Sheets.colorToResourceMaterial(var1));
+      public Unbaked(final DyeColor dyeColor) {
+         this(Sheets.colorToResourceMaterial(dyeColor));
       }
 
-      public Unbaked(Identifier var1) {
+      public Unbaked {
          super();
-         this.texture = var1;
       }
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         return new BedSpecialRenderer(new BedRenderer(var1), Sheets.BED_MAPPER.apply(this.texture));
+      public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+         return new BedSpecialRenderer(new BedRenderer(context), Sheets.BED_MAPPER.apply(this.texture));
       }
    }
 }

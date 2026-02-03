@@ -10,16 +10,15 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 
 public record DamageResistant(TagKey<DamageType> types) {
-   public static final Codec<DamageResistant> CODEC = RecordCodecBuilder.create((var0) -> var0.group(TagKey.hashedCodec(Registries.DAMAGE_TYPE).fieldOf("types").forGetter(DamageResistant::types)).apply(var0, DamageResistant::new));
+   public static final Codec<DamageResistant> CODEC = RecordCodecBuilder.create((i) -> i.group(TagKey.hashedCodec(Registries.DAMAGE_TYPE).fieldOf("types").forGetter(DamageResistant::types)).apply(i, DamageResistant::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, DamageResistant> STREAM_CODEC;
 
-   public DamageResistant(TagKey<DamageType> var1) {
+   public DamageResistant {
       super();
-      this.types = var1;
    }
 
-   public boolean isResistantTo(DamageSource var1) {
-      return var1.is(this.types);
+   public boolean isResistantTo(final DamageSource source) {
+      return source.is(this.types);
    }
 
    static {

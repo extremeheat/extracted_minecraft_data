@@ -1,21 +1,14 @@
 package net.minecraft.data.recipes;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRequirements;
-import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
@@ -25,95 +18,74 @@ import org.jspecify.annotations.Nullable;
 public class ShapelessRecipeBuilder implements RecipeBuilder {
    private final HolderGetter<Item> items;
    private final RecipeCategory category;
-   private final ItemStack result;
+   private final ItemStackTemplate result;
    private final List<Ingredient> ingredients = new ArrayList();
-   private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
+   private final RecipeUnlockAdvancementBuilder advancementBuilder = new RecipeUnlockAdvancementBuilder();
    private @Nullable String group;
 
-   private ShapelessRecipeBuilder(HolderGetter<Item> var1, RecipeCategory var2, ItemStack var3) {
+   private ShapelessRecipeBuilder(final HolderGetter<Item> items, final RecipeCategory category, final ItemStackTemplate result) {
       super();
-      this.items = var1;
-      this.category = var2;
-      this.result = var3;
+      this.items = items;
+      this.category = category;
+      this.result = result;
    }
 
-   public static ShapelessRecipeBuilder shapeless(HolderGetter<Item> var0, RecipeCategory var1, ItemStack var2) {
-      return new ShapelessRecipeBuilder(var0, var1, var2);
+   public static ShapelessRecipeBuilder shapeless(final HolderGetter<Item> items, final RecipeCategory category, final ItemStackTemplate result) {
+      return new ShapelessRecipeBuilder(items, category, result);
    }
 
-   public static ShapelessRecipeBuilder shapeless(HolderGetter<Item> var0, RecipeCategory var1, ItemLike var2) {
-      return shapeless(var0, var1, var2, 1);
+   public static ShapelessRecipeBuilder shapeless(final HolderGetter<Item> items, final RecipeCategory category, final ItemLike item) {
+      return shapeless(items, category, item, 1);
    }
 
-   public static ShapelessRecipeBuilder shapeless(HolderGetter<Item> var0, RecipeCategory var1, ItemLike var2, int var3) {
-      return new ShapelessRecipeBuilder(var0, var1, var2.asItem().getDefaultInstance().copyWithCount(var3));
+   public static ShapelessRecipeBuilder shapeless(final HolderGetter<Item> items, final RecipeCategory category, final ItemLike item, final int count) {
+      return new ShapelessRecipeBuilder(items, category, new ItemStackTemplate(item.asItem(), count));
    }
 
-   public ShapelessRecipeBuilder requires(TagKey<Item> var1) {
-      return this.requires(Ingredient.of((HolderSet)this.items.getOrThrow(var1)));
+   public ShapelessRecipeBuilder requires(final TagKey<Item> tag) {
+      return this.requires(Ingredient.of((HolderSet)this.items.getOrThrow(tag)));
    }
 
-   public ShapelessRecipeBuilder requires(ItemLike var1) {
-      return this.requires((ItemLike)var1, 1);
+   public ShapelessRecipeBuilder requires(final ItemLike item) {
+      return this.requires((ItemLike)item, 1);
    }
 
-   public ShapelessRecipeBuilder requires(ItemLike var1, int var2) {
-      for(int var3 = 0; var3 < var2; ++var3) {
-         this.requires(Ingredient.of(var1));
+   public ShapelessRecipeBuilder requires(final ItemLike item, final int count) {
+      for(int i = 0; i < count; ++i) {
+         this.requires(Ingredient.of(item));
       }
 
       return this;
    }
 
-   public ShapelessRecipeBuilder requires(Ingredient var1) {
-      return this.requires((Ingredient)var1, 1);
+   public ShapelessRecipeBuilder requires(final Ingredient ingredient) {
+      return this.requires((Ingredient)ingredient, 1);
    }
 
-   public ShapelessRecipeBuilder requires(Ingredient var1, int var2) {
-      for(int var3 = 0; var3 < var2; ++var3) {
-         this.ingredients.add(var1);
+   public ShapelessRecipeBuilder requires(final Ingredient ingredient, final int count) {
+      for(int i = 0; i < count; ++i) {
+         this.ingredients.add(ingredient);
       }
 
       return this;
    }
 
-   public ShapelessRecipeBuilder unlockedBy(String var1, Criterion<?> var2) {
-      this.criteria.put(var1, var2);
+   public ShapelessRecipeBuilder unlockedBy(final String name, final Criterion<?> criterion) {
+      this.advancementBuilder.unlockedBy(name, criterion);
       return this;
    }
 
-   public ShapelessRecipeBuilder group(@Nullable String var1) {
-      this.group = var1;
+   public ShapelessRecipeBuilder group(final @Nullable String group) {
+      this.group = group;
       return this;
    }
 
-   public Item getResult() {
-      return this.result.getItem();
+   public ResourceKey<Recipe<?>> defaultId() {
+      return RecipeBuilder.getDefaultRecipeId(this.result);
    }
 
-   public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
-      this.ensureValid(var2);
-      Advancement.Builder var3 = var1.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(AdvancementRequirements.Strategy.OR);
-      Map var10000 = this.criteria;
-      Objects.requireNonNull(var3);
-      var10000.forEach(var3::addCriterion);
-      ShapelessRecipe var4 = new ShapelessRecipe((String)Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), this.result, this.ingredients);
-      var1.accept(var2, var4, var3.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
-   }
-
-   private void ensureValid(ResourceKey<Recipe<?>> var1) {
-      if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
-      }
-   }
-
-   // $FF: synthetic method
-   public RecipeBuilder group(final @Nullable String var1) {
-      return this.group(var1);
-   }
-
-   // $FF: synthetic method
-   public RecipeBuilder unlockedBy(final String var1, final Criterion var2) {
-      return this.unlockedBy(var1, var2);
+   public void save(final RecipeOutput output, final ResourceKey<Recipe<?>> id) {
+      ShapelessRecipe recipe = new ShapelessRecipe(RecipeBuilder.createCraftingCommonInfo(true), RecipeBuilder.createCraftingBookInfo(this.category, this.group), this.result, this.ingredients);
+      output.accept(id, recipe, this.advancementBuilder.build(output, id, this.category));
    }
 }

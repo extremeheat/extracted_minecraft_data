@@ -26,12 +26,11 @@ public record FixedFormat(Component value) implements NumberFormat {
       }
    };
 
-   public FixedFormat(Component var1) {
+   public FixedFormat {
       super();
-      this.value = var1;
    }
 
-   public MutableComponent format(int var1) {
+   public MutableComponent format(final int value) {
       return this.value.copy();
    }
 

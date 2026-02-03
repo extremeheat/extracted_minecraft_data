@@ -32,66 +32,66 @@ public class BreezeModel extends EntityModel<BreezeRenderState> {
    private final KeyframeAnimation inhaleAnimation;
    private final KeyframeAnimation jumpAnimation;
 
-   public BreezeModel(ModelPart var1) {
-      super(var1, RenderTypes::entityTranslucent);
-      this.wind = var1.getChild("wind_body");
+   public BreezeModel(final ModelPart root) {
+      super(root, RenderTypes::entityTranslucent);
+      this.wind = root.getChild("wind_body");
       this.windBottom = this.wind.getChild("wind_bottom");
       this.windMid = this.windBottom.getChild("wind_mid");
       this.windTop = this.windMid.getChild("wind_top");
-      this.head = var1.getChild("body").getChild("head");
+      this.head = root.getChild("body").getChild("head");
       this.eyes = this.head.getChild("eyes");
-      this.rods = var1.getChild("body").getChild("rods");
-      this.idleAnimation = BreezeAnimation.IDLE.bake(var1);
-      this.shootAnimation = BreezeAnimation.SHOOT.bake(var1);
-      this.slideAnimation = BreezeAnimation.SLIDE.bake(var1);
-      this.slideBackAnimation = BreezeAnimation.SLIDE_BACK.bake(var1);
-      this.inhaleAnimation = BreezeAnimation.INHALE.bake(var1);
-      this.jumpAnimation = BreezeAnimation.JUMP.bake(var1);
+      this.rods = root.getChild("body").getChild("rods");
+      this.idleAnimation = BreezeAnimation.IDLE.bake(root);
+      this.shootAnimation = BreezeAnimation.SHOOT.bake(root);
+      this.slideAnimation = BreezeAnimation.SLIDE.bake(root);
+      this.slideBackAnimation = BreezeAnimation.SLIDE_BACK.bake(root);
+      this.inhaleAnimation = BreezeAnimation.INHALE.bake(root);
+      this.jumpAnimation = BreezeAnimation.JUMP.bake(root);
    }
 
    private static MeshDefinition createBaseMesh() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
-      PartDefinition var3 = var2.addOrReplaceChild("rods", CubeListBuilder.create(), PartPose.offset(0.0F, 8.0F, 0.0F));
-      var3.addOrReplaceChild("rod_1", CubeListBuilder.create().texOffs(0, 17).addBox(-1.0F, 0.0F, -3.0F, 2.0F, 8.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(2.5981F, -3.0F, 1.5F, -2.7489F, -1.0472F, 3.1416F));
-      var3.addOrReplaceChild("rod_2", CubeListBuilder.create().texOffs(0, 17).addBox(-1.0F, 0.0F, -3.0F, 2.0F, 8.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-2.5981F, -3.0F, 1.5F, -2.7489F, 1.0472F, 3.1416F));
-      var3.addOrReplaceChild("rod_3", CubeListBuilder.create().texOffs(0, 17).addBox(-1.0F, 0.0F, -3.0F, 2.0F, 8.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -3.0F, -3.0F, 0.3927F, 0.0F, 0.0F));
-      PartDefinition var4 = var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(4, 24).addBox(-5.0F, -5.0F, -4.2F, 10.0F, 3.0F, 4.0F, new CubeDeformation(0.0F)).texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 4.0F, 0.0F));
-      var4.addOrReplaceChild("eyes", CubeListBuilder.create().texOffs(4, 24).addBox(-5.0F, -5.0F, -4.2F, 10.0F, 3.0F, 4.0F, new CubeDeformation(0.0F)).texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
-      PartDefinition var5 = var1.addOrReplaceChild("wind_body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
-      PartDefinition var6 = var5.addOrReplaceChild("wind_bottom", CubeListBuilder.create().texOffs(1, 83).addBox(-2.5F, -7.0F, -2.5F, 5.0F, 7.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 24.0F, 0.0F));
-      PartDefinition var7 = var6.addOrReplaceChild("wind_mid", CubeListBuilder.create().texOffs(74, 28).addBox(-6.0F, -6.0F, -6.0F, 12.0F, 6.0F, 12.0F, new CubeDeformation(0.0F)).texOffs(78, 32).addBox(-4.0F, -6.0F, -4.0F, 8.0F, 6.0F, 8.0F, new CubeDeformation(0.0F)).texOffs(49, 71).addBox(-2.5F, -6.0F, -2.5F, 5.0F, 6.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -7.0F, 0.0F));
-      var7.addOrReplaceChild("wind_top", CubeListBuilder.create().texOffs(0, 0).addBox(-9.0F, -8.0F, -9.0F, 18.0F, 8.0F, 18.0F, new CubeDeformation(0.0F)).texOffs(6, 6).addBox(-6.0F, -8.0F, -6.0F, 12.0F, 8.0F, 12.0F, new CubeDeformation(0.0F)).texOffs(105, 57).addBox(-2.5F, -8.0F, -2.5F, 5.0F, 8.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -6.0F, 0.0F));
-      return var0;
+      MeshDefinition meshdefinition = new MeshDefinition();
+      PartDefinition partdefinition = meshdefinition.getRoot();
+      PartDefinition body = partdefinition.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
+      PartDefinition rods = body.addOrReplaceChild("rods", CubeListBuilder.create(), PartPose.offset(0.0F, 8.0F, 0.0F));
+      rods.addOrReplaceChild("rod_1", CubeListBuilder.create().texOffs(0, 17).addBox(-1.0F, 0.0F, -3.0F, 2.0F, 8.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(2.5981F, -3.0F, 1.5F, -2.7489F, -1.0472F, 3.1416F));
+      rods.addOrReplaceChild("rod_2", CubeListBuilder.create().texOffs(0, 17).addBox(-1.0F, 0.0F, -3.0F, 2.0F, 8.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-2.5981F, -3.0F, 1.5F, -2.7489F, 1.0472F, 3.1416F));
+      rods.addOrReplaceChild("rod_3", CubeListBuilder.create().texOffs(0, 17).addBox(-1.0F, 0.0F, -3.0F, 2.0F, 8.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -3.0F, -3.0F, 0.3927F, 0.0F, 0.0F));
+      PartDefinition head = body.addOrReplaceChild("head", CubeListBuilder.create().texOffs(4, 24).addBox(-5.0F, -5.0F, -4.2F, 10.0F, 3.0F, 4.0F, new CubeDeformation(0.0F)).texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 4.0F, 0.0F));
+      head.addOrReplaceChild("eyes", CubeListBuilder.create().texOffs(4, 24).addBox(-5.0F, -5.0F, -4.2F, 10.0F, 3.0F, 4.0F, new CubeDeformation(0.0F)).texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
+      PartDefinition windBody = partdefinition.addOrReplaceChild("wind_body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
+      PartDefinition windBottom = windBody.addOrReplaceChild("wind_bottom", CubeListBuilder.create().texOffs(1, 83).addBox(-2.5F, -7.0F, -2.5F, 5.0F, 7.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 24.0F, 0.0F));
+      PartDefinition windMid = windBottom.addOrReplaceChild("wind_mid", CubeListBuilder.create().texOffs(74, 28).addBox(-6.0F, -6.0F, -6.0F, 12.0F, 6.0F, 12.0F, new CubeDeformation(0.0F)).texOffs(78, 32).addBox(-4.0F, -6.0F, -4.0F, 8.0F, 6.0F, 8.0F, new CubeDeformation(0.0F)).texOffs(49, 71).addBox(-2.5F, -6.0F, -2.5F, 5.0F, 6.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -7.0F, 0.0F));
+      windMid.addOrReplaceChild("wind_top", CubeListBuilder.create().texOffs(0, 0).addBox(-9.0F, -8.0F, -9.0F, 18.0F, 8.0F, 18.0F, new CubeDeformation(0.0F)).texOffs(6, 6).addBox(-6.0F, -8.0F, -6.0F, 12.0F, 8.0F, 12.0F, new CubeDeformation(0.0F)).texOffs(105, 57).addBox(-2.5F, -8.0F, -2.5F, 5.0F, 8.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -6.0F, 0.0F));
+      return meshdefinition;
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = createBaseMesh();
-      var0.getRoot().retainPartsAndChildren(Set.of("head", "rods"));
-      return LayerDefinition.create(var0, 32, 32);
+      MeshDefinition mesh = createBaseMesh();
+      mesh.getRoot().retainPartsAndChildren(Set.of("head", "rods"));
+      return LayerDefinition.create(mesh, 32, 32);
    }
 
    public static LayerDefinition createWindLayer() {
-      MeshDefinition var0 = createBaseMesh();
-      var0.getRoot().retainPartsAndChildren(Set.of("wind_body"));
-      return LayerDefinition.create(var0, 128, 128);
+      MeshDefinition mesh = createBaseMesh();
+      mesh.getRoot().retainPartsAndChildren(Set.of("wind_body"));
+      return LayerDefinition.create(mesh, 128, 128);
    }
 
    public static LayerDefinition createEyesLayer() {
-      MeshDefinition var0 = createBaseMesh();
-      var0.getRoot().retainPartsAndChildren(Set.of("eyes"));
-      return LayerDefinition.create(var0, 32, 32);
+      MeshDefinition mesh = createBaseMesh();
+      mesh.getRoot().retainPartsAndChildren(Set.of("eyes"));
+      return LayerDefinition.create(mesh, 32, 32);
    }
 
-   public void setupAnim(BreezeRenderState var1) {
-      super.setupAnim(var1);
-      this.idleAnimation.apply(var1.idle, var1.ageInTicks);
-      this.shootAnimation.apply(var1.shoot, var1.ageInTicks);
-      this.slideAnimation.apply(var1.slide, var1.ageInTicks);
-      this.slideBackAnimation.apply(var1.slideBack, var1.ageInTicks);
-      this.inhaleAnimation.apply(var1.inhale, var1.ageInTicks);
-      this.jumpAnimation.apply(var1.longJump, var1.ageInTicks);
+   public void setupAnim(final BreezeRenderState state) {
+      super.setupAnim(state);
+      this.idleAnimation.apply(state.idle, state.ageInTicks);
+      this.shootAnimation.apply(state.shoot, state.ageInTicks);
+      this.slideAnimation.apply(state.slide, state.ageInTicks);
+      this.slideBackAnimation.apply(state.slideBack, state.ageInTicks);
+      this.inhaleAnimation.apply(state.inhale, state.ageInTicks);
+      this.jumpAnimation.apply(state.longJump, state.ageInTicks);
    }
 
    public ModelPart head() {

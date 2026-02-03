@@ -5,8 +5,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.creeper.CreeperModel;
 import net.minecraft.client.renderer.entity.layers.CreeperPowerLayer;
 import net.minecraft.client.renderer.entity.state.CreeperRenderState;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Creeper;
@@ -14,28 +12,28 @@ import net.minecraft.world.entity.monster.Creeper;
 public class CreeperRenderer extends MobRenderer<Creeper, CreeperRenderState, CreeperModel> {
    private static final Identifier CREEPER_LOCATION = Identifier.withDefaultNamespace("textures/entity/creeper/creeper.png");
 
-   public CreeperRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new CreeperModel(var1.bakeLayer(ModelLayers.CREEPER)), 0.5F);
-      this.addLayer(new CreeperPowerLayer(this, var1.getModelSet()));
+   public CreeperRenderer(final EntityRendererProvider.Context context) {
+      super(context, new CreeperModel(context.bakeLayer(ModelLayers.CREEPER)), 0.5F);
+      this.addLayer(new CreeperPowerLayer(this, context.getModelSet()));
    }
 
-   protected void scale(CreeperRenderState var1, PoseStack var2) {
-      float var3 = var1.swelling;
-      float var4 = 1.0F + Mth.sin((double)(var3 * 100.0F)) * var3 * 0.01F;
-      var3 = Mth.clamp(var3, 0.0F, 1.0F);
-      var3 *= var3;
-      var3 *= var3;
-      float var5 = (1.0F + var3 * 0.4F) * var4;
-      float var6 = (1.0F + var3 * 0.1F) / var4;
-      var2.scale(var5, var6, var5);
+   protected void scale(final CreeperRenderState state, final PoseStack poseStack) {
+      float g = state.swelling;
+      float wobble = 1.0F + Mth.sin((double)(g * 100.0F)) * g * 0.01F;
+      g = Mth.clamp(g, 0.0F, 1.0F);
+      g *= g;
+      g *= g;
+      float s = (1.0F + g * 0.4F) * wobble;
+      float hs = (1.0F + g * 0.1F) / wobble;
+      poseStack.scale(s, hs, s);
    }
 
-   protected float getWhiteOverlayProgress(CreeperRenderState var1) {
-      float var2 = var1.swelling;
-      return (int)(var2 * 10.0F) % 2 == 0 ? 0.0F : Mth.clamp(var2, 0.5F, 1.0F);
+   protected float getWhiteOverlayProgress(final CreeperRenderState state) {
+      float step = state.swelling;
+      return (int)(step * 10.0F) % 2 == 0 ? 0.0F : Mth.clamp(step, 0.5F, 1.0F);
    }
 
-   public Identifier getTextureLocation(CreeperRenderState var1) {
+   public Identifier getTextureLocation(final CreeperRenderState state) {
       return CREEPER_LOCATION;
    }
 
@@ -43,19 +41,9 @@ public class CreeperRenderer extends MobRenderer<Creeper, CreeperRenderState, Cr
       return new CreeperRenderState();
    }
 
-   public void extractRenderState(Creeper var1, CreeperRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.swelling = var1.getSwelling(var3);
-      var2.isPowered = var1.isPowered();
-   }
-
-   // $FF: synthetic method
-   protected float getWhiteOverlayProgress(final LivingEntityRenderState var1) {
-      return this.getWhiteOverlayProgress((CreeperRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final Creeper entity, final CreeperRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.swelling = entity.getSwelling(partialTicks);
+      state.isPowered = entity.isPowered();
    }
 }

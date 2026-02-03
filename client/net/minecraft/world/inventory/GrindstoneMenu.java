@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import java.util.Objects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -29,83 +30,99 @@ public class GrindstoneMenu extends AbstractContainerMenu {
    private static final int USE_ROW_SLOT_START = 30;
    private static final int USE_ROW_SLOT_END = 39;
    private final Container resultSlots;
-   final Container repairSlots;
+   private final Container repairSlots;
    private final ContainerLevelAccess access;
 
-   public GrindstoneMenu(int var1, Inventory var2) {
-      this(var1, var2, ContainerLevelAccess.NULL);
+   public GrindstoneMenu(final int containerId, final Inventory inventory) {
+      this(containerId, inventory, ContainerLevelAccess.NULL);
    }
 
-   public GrindstoneMenu(int var1, Inventory var2, final ContainerLevelAccess var3) {
-      super(MenuType.GRINDSTONE, var1);
+   public GrindstoneMenu(final int containerId, final Inventory inventory, final ContainerLevelAccess access) {
+      super(MenuType.GRINDSTONE, containerId);
       this.resultSlots = new ResultContainer();
       this.repairSlots = new SimpleContainer(2) {
+         {
+            Objects.requireNonNull(GrindstoneMenu.this);
+         }
+
          public void setChanged() {
             super.setChanged();
             GrindstoneMenu.this.slotsChanged(this);
          }
       };
-      this.access = var3;
+      this.access = access;
       this.addSlot(new Slot(this.repairSlots, 0, 49, 19) {
-         public boolean mayPlace(ItemStack var1) {
-            return var1.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(var1);
+         {
+            Objects.requireNonNull(GrindstoneMenu.this);
+         }
+
+         public boolean mayPlace(final ItemStack itemStack) {
+            return itemStack.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(itemStack);
          }
       });
       this.addSlot(new Slot(this.repairSlots, 1, 49, 40) {
-         public boolean mayPlace(ItemStack var1) {
-            return var1.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(var1);
+         {
+            Objects.requireNonNull(GrindstoneMenu.this);
+         }
+
+         public boolean mayPlace(final ItemStack itemStack) {
+            return itemStack.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(itemStack);
          }
       });
       this.addSlot(new Slot(this.resultSlots, 2, 129, 34) {
-         public boolean mayPlace(ItemStack var1) {
+         {
+            Objects.requireNonNull(GrindstoneMenu.this);
+         }
+
+         public boolean mayPlace(final ItemStack itemStack) {
             return false;
          }
 
-         public void onTake(Player var1, ItemStack var2) {
-            var3.execute((var1x, var2x) -> {
-               if (var1x instanceof ServerLevel) {
-                  ExperienceOrb.award((ServerLevel)var1x, Vec3.atCenterOf(var2x), this.getExperienceAmount(var1x));
+         public void onTake(final Player player, final ItemStack carried) {
+            access.execute((level, pos) -> {
+               if (level instanceof ServerLevel) {
+                  ExperienceOrb.award((ServerLevel)level, Vec3.atCenterOf(pos), this.getExperienceAmount(level));
                }
 
-               var1x.levelEvent(1042, var2x, 0);
+               level.levelEvent(1042, pos, 0);
             });
             GrindstoneMenu.this.repairSlots.setItem(0, ItemStack.EMPTY);
             GrindstoneMenu.this.repairSlots.setItem(1, ItemStack.EMPTY);
          }
 
-         private int getExperienceAmount(Level var1) {
-            int var2 = 0;
-            var2 += this.getExperienceFromItem(GrindstoneMenu.this.repairSlots.getItem(0));
-            var2 += this.getExperienceFromItem(GrindstoneMenu.this.repairSlots.getItem(1));
-            if (var2 > 0) {
-               int var3x = (int)Math.ceil((double)var2 / 2.0);
-               return var3x + var1.random.nextInt(var3x);
+         private int getExperienceAmount(final Level level) {
+            int amount = 0;
+            amount += this.getExperienceFromItem(GrindstoneMenu.this.repairSlots.getItem(0));
+            amount += this.getExperienceFromItem(GrindstoneMenu.this.repairSlots.getItem(1));
+            if (amount > 0) {
+               int halfAmount = (int)Math.ceil((double)amount / 2.0);
+               return halfAmount + level.getRandom().nextInt(halfAmount);
             } else {
                return 0;
             }
          }
 
-         private int getExperienceFromItem(ItemStack var1) {
-            int var2 = 0;
-            ItemEnchantments var3x = EnchantmentHelper.getEnchantmentsForCrafting(var1);
+         private int getExperienceFromItem(final ItemStack item) {
+            int amount = 0;
+            ItemEnchantments enchantments = EnchantmentHelper.getEnchantmentsForCrafting(item);
 
-            for(Object2IntMap.Entry var5 : var3x.entrySet()) {
-               Holder var6 = (Holder)var5.getKey();
-               int var7 = var5.getIntValue();
-               if (!var6.is(EnchantmentTags.CURSE)) {
-                  var2 += ((Enchantment)var6.value()).getMinCost(var7);
+            for(Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
+               Holder<Enchantment> enchant = (Holder)entry.getKey();
+               int lvl = entry.getIntValue();
+               if (!enchant.is(EnchantmentTags.CURSE)) {
+                  amount += ((Enchantment)enchant.value()).getMinCost(lvl);
                }
             }
 
-            return var2;
+            return amount;
          }
       });
-      this.addStandardInventorySlots(var2, 8, 84);
+      this.addStandardInventorySlots(inventory, 8, 84);
    }
 
-   public void slotsChanged(Container var1) {
-      super.slotsChanged(var1);
-      if (var1 == this.repairSlots) {
+   public void slotsChanged(final Container container) {
+      super.slotsChanged(container);
+      if (container == this.repairSlots) {
          this.createResult();
       }
 
@@ -116,133 +133,133 @@ public class GrindstoneMenu extends AbstractContainerMenu {
       this.broadcastChanges();
    }
 
-   private ItemStack computeResult(ItemStack var1, ItemStack var2) {
-      boolean var3 = !var1.isEmpty() || !var2.isEmpty();
-      if (!var3) {
+   private ItemStack computeResult(final ItemStack input, final ItemStack additional) {
+      boolean hasAnItem = !input.isEmpty() || !additional.isEmpty();
+      if (!hasAnItem) {
          return ItemStack.EMPTY;
-      } else if (var1.getCount() <= 1 && var2.getCount() <= 1) {
-         boolean var4 = !var1.isEmpty() && !var2.isEmpty();
-         if (!var4) {
-            ItemStack var5 = !var1.isEmpty() ? var1 : var2;
-            return !EnchantmentHelper.hasAnyEnchantments(var5) ? ItemStack.EMPTY : this.removeNonCursesFrom(var5.copy());
+      } else if (input.getCount() <= 1 && additional.getCount() <= 1) {
+         boolean hasBothItems = !input.isEmpty() && !additional.isEmpty();
+         if (!hasBothItems) {
+            ItemStack item = !input.isEmpty() ? input : additional;
+            return !EnchantmentHelper.hasAnyEnchantments(item) ? ItemStack.EMPTY : this.removeNonCursesFrom(item.copy());
          } else {
-            return this.mergeItems(var1, var2);
+            return this.mergeItems(input, additional);
          }
       } else {
          return ItemStack.EMPTY;
       }
    }
 
-   private ItemStack mergeItems(ItemStack var1, ItemStack var2) {
-      if (!var1.is(var2.getItem())) {
+   private ItemStack mergeItems(final ItemStack input, final ItemStack additional) {
+      if (!input.is(additional.getItem())) {
          return ItemStack.EMPTY;
       } else {
-         int var3 = Math.max(var1.getMaxDamage(), var2.getMaxDamage());
-         int var4 = var1.getMaxDamage() - var1.getDamageValue();
-         int var5 = var2.getMaxDamage() - var2.getDamageValue();
-         int var6 = var4 + var5 + var3 * 5 / 100;
-         byte var7 = 1;
-         if (!var1.isDamageableItem()) {
-            if (var1.getMaxStackSize() < 2 || !ItemStack.matches(var1, var2)) {
+         int durability = Math.max(input.getMaxDamage(), additional.getMaxDamage());
+         int remaining1 = input.getMaxDamage() - input.getDamageValue();
+         int remaining2 = additional.getMaxDamage() - additional.getDamageValue();
+         int remaining = remaining1 + remaining2 + durability * 5 / 100;
+         int count = 1;
+         if (!input.isDamageableItem()) {
+            if (input.getMaxStackSize() < 2 || !ItemStack.matches(input, additional)) {
                return ItemStack.EMPTY;
             }
 
-            var7 = 2;
+            count = 2;
          }
 
-         ItemStack var8 = var1.copyWithCount(var7);
-         if (var8.isDamageableItem()) {
-            var8.set(DataComponents.MAX_DAMAGE, var3);
-            var8.setDamageValue(Math.max(var3 - var6, 0));
+         ItemStack newItem = input.copyWithCount(count);
+         if (newItem.isDamageableItem()) {
+            newItem.set(DataComponents.MAX_DAMAGE, durability);
+            newItem.setDamageValue(Math.max(durability - remaining, 0));
          }
 
-         this.mergeEnchantsFrom(var8, var2);
-         return this.removeNonCursesFrom(var8);
+         this.mergeEnchantsFrom(newItem, additional);
+         return this.removeNonCursesFrom(newItem);
       }
    }
 
-   private void mergeEnchantsFrom(ItemStack var1, ItemStack var2) {
-      EnchantmentHelper.updateEnchantments(var1, (var1x) -> {
-         ItemEnchantments var2x = EnchantmentHelper.getEnchantmentsForCrafting(var2);
+   private void mergeEnchantsFrom(final ItemStack target, final ItemStack source) {
+      EnchantmentHelper.updateEnchantments(target, (newEnchantments) -> {
+         ItemEnchantments enchantments = EnchantmentHelper.getEnchantmentsForCrafting(source);
 
-         for(Object2IntMap.Entry var4 : var2x.entrySet()) {
-            Holder var5 = (Holder)var4.getKey();
-            if (!var5.is(EnchantmentTags.CURSE) || var1x.getLevel(var5) == 0) {
-               var1x.upgrade(var5, var4.getIntValue());
+         for(Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
+            Holder<Enchantment> enchant = (Holder)entry.getKey();
+            if (!enchant.is(EnchantmentTags.CURSE) || newEnchantments.getLevel(enchant) == 0) {
+               newEnchantments.upgrade(enchant, entry.getIntValue());
             }
          }
 
       });
    }
 
-   private ItemStack removeNonCursesFrom(ItemStack var1) {
-      ItemEnchantments var2 = EnchantmentHelper.updateEnchantments(var1, (var0) -> var0.removeIf((var0x) -> !var0x.is(EnchantmentTags.CURSE)));
-      if (var1.is(Items.ENCHANTED_BOOK) && var2.isEmpty()) {
-         var1 = var1.transmuteCopy(Items.BOOK);
+   private ItemStack removeNonCursesFrom(ItemStack item) {
+      ItemEnchantments newEnchantments = EnchantmentHelper.updateEnchantments(item, (enchantments) -> enchantments.removeIf((enchantment) -> !enchantment.is(EnchantmentTags.CURSE)));
+      if (item.is(Items.ENCHANTED_BOOK) && newEnchantments.isEmpty()) {
+         item = item.transmuteCopy(Items.BOOK);
       }
 
-      int var3 = 0;
+      int repairCost = 0;
 
-      for(int var4 = 0; var4 < var2.size(); ++var4) {
-         var3 = AnvilMenu.calculateIncreasedRepairCost(var3);
+      for(int i = 0; i < newEnchantments.size(); ++i) {
+         repairCost = AnvilMenu.calculateIncreasedRepairCost(repairCost);
       }
 
-      var1.set(DataComponents.REPAIR_COST, var3);
-      return var1;
+      item.set(DataComponents.REPAIR_COST, repairCost);
+      return item;
    }
 
-   public void removed(Player var1) {
-      super.removed(var1);
-      this.access.execute((var2, var3) -> this.clearContainer(var1, this.repairSlots));
+   public void removed(final Player player) {
+      super.removed(player);
+      this.access.execute((level, pos) -> this.clearContainer(player, this.repairSlots));
    }
 
-   public boolean stillValid(Player var1) {
-      return stillValid(this.access, var1, Blocks.GRINDSTONE);
+   public boolean stillValid(final Player player) {
+      return stillValid(this.access, player, Blocks.GRINDSTONE);
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4 != null && var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         var3 = var5.copy();
-         ItemStack var6 = this.repairSlots.getItem(0);
-         ItemStack var7 = this.repairSlots.getItem(1);
-         if (var2 == 2) {
-            if (!this.moveItemStackTo(var5, 3, 39, true)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot != null && slot.hasItem()) {
+         ItemStack item = slot.getItem();
+         clicked = item.copy();
+         ItemStack input = this.repairSlots.getItem(0);
+         ItemStack additional = this.repairSlots.getItem(1);
+         if (slotIndex == 2) {
+            if (!this.moveItemStackTo(item, 3, 39, true)) {
                return ItemStack.EMPTY;
             }
 
-            var4.onQuickCraft(var5, var3);
-         } else if (var2 != 0 && var2 != 1) {
-            if (!var6.isEmpty() && !var7.isEmpty()) {
-               if (var2 >= 3 && var2 < 30) {
-                  if (!this.moveItemStackTo(var5, 30, 39, false)) {
+            slot.onQuickCraft(item, clicked);
+         } else if (slotIndex != 0 && slotIndex != 1) {
+            if (!input.isEmpty() && !additional.isEmpty()) {
+               if (slotIndex >= 3 && slotIndex < 30) {
+                  if (!this.moveItemStackTo(item, 30, 39, false)) {
                      return ItemStack.EMPTY;
                   }
-               } else if (var2 >= 30 && var2 < 39 && !this.moveItemStackTo(var5, 3, 30, false)) {
+               } else if (slotIndex >= 30 && slotIndex < 39 && !this.moveItemStackTo(item, 3, 30, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (!this.moveItemStackTo(var5, 0, 2, false)) {
+            } else if (!this.moveItemStackTo(item, 0, 2, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (!this.moveItemStackTo(var5, 3, 39, false)) {
+         } else if (!this.moveItemStackTo(item, 3, 39, false)) {
             return ItemStack.EMPTY;
          }
 
-         if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY);
+         if (item.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY);
          } else {
-            var4.setChanged();
+            slot.setChanged();
          }
 
-         if (var5.getCount() == var3.getCount()) {
+         if (item.getCount() == clicked.getCount()) {
             return ItemStack.EMPTY;
          }
 
-         var4.onTake(var1, var5);
+         slot.onTake(player, item);
       }
 
-      return var3;
+      return clicked;
    }
 }

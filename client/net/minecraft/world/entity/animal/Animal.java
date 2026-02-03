@@ -46,8 +46,8 @@ public abstract class Animal extends AgeableMob {
    private int inLove = 0;
    private @Nullable EntityReference<ServerPlayer> loveCause;
 
-   protected Animal(EntityType<? extends Animal> var1, Level var2) {
-      super(var1, var2);
+   protected Animal(final EntityType<? extends Animal> type, final Level level) {
+      super(type, level);
       this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
       this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
    }
@@ -56,12 +56,12 @@ public abstract class Animal extends AgeableMob {
       return Mob.createMobAttributes().add(Attributes.TEMPT_RANGE, 10.0);
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
+   protected void customServerAiStep(final ServerLevel level) {
       if (this.getAge() != 0) {
          this.inLove = 0;
       }
 
-      super.customServerAiStep(var1);
+      super.customServerAiStep(level);
    }
 
    public void aiStep() {
@@ -73,76 +73,76 @@ public abstract class Animal extends AgeableMob {
       if (this.inLove > 0) {
          --this.inLove;
          if (this.inLove % 10 == 0) {
-            double var1 = this.random.nextGaussian() * 0.02;
-            double var3 = this.random.nextGaussian() * 0.02;
-            double var5 = this.random.nextGaussian() * 0.02;
-            this.level().addParticle(ParticleTypes.HEART, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var1, var3, var5);
+            double xa = this.random.nextGaussian() * 0.02;
+            double ya = this.random.nextGaussian() * 0.02;
+            double za = this.random.nextGaussian() * 0.02;
+            this.level().addParticle(ParticleTypes.HEART, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), xa, ya, za);
          }
       }
 
    }
 
-   protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
+   protected void actuallyHurt(final ServerLevel level, final DamageSource source, final float dmg) {
       this.resetLove();
-      super.actuallyHurt(var1, var2, var3);
+      super.actuallyHurt(level, source, dmg);
    }
 
-   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
-      return var2.getBlockState(var1.below()).is(Blocks.GRASS_BLOCK) ? 10.0F : var2.getPathfindingCostFromLightLevels(var1);
+   public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {
+      return level.getBlockState(pos.below()).is(Blocks.GRASS_BLOCK) ? 10.0F : level.getPathfindingCostFromLightLevels(pos);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("InLove", this.inLove);
-      EntityReference.store(this.loveCause, var1, "LoveCause");
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("InLove", this.inLove);
+      EntityReference.store(this.loveCause, output, "LoveCause");
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.inLove = var1.getIntOr("InLove", 0);
-      this.loveCause = EntityReference.<ServerPlayer>read(var1, "LoveCause");
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.inLove = input.getIntOr("InLove", 0);
+      this.loveCause = EntityReference.<ServerPlayer>read(input, "LoveCause");
    }
 
-   public static boolean checkAnimalSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      boolean var5 = EntitySpawnReason.ignoresLightRequirements(var2) || isBrightEnoughToSpawn(var1, var3);
-      return var1.getBlockState(var3.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON) && var5;
+   public static boolean checkAnimalSpawnRules(final EntityType<? extends Animal> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      boolean brightEnoughToSpawn = EntitySpawnReason.ignoresLightRequirements(spawnReason) || isBrightEnoughToSpawn(level, pos);
+      return level.getBlockState(pos.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON) && brightEnoughToSpawn;
    }
 
-   protected static boolean isBrightEnoughToSpawn(BlockAndTintGetter var0, BlockPos var1) {
-      return var0.getRawBrightness(var1, 0) > 8;
+   protected static boolean isBrightEnoughToSpawn(final BlockAndTintGetter level, final BlockPos pos) {
+      return level.getRawBrightness(pos, 0) > 8;
    }
 
    public int getAmbientSoundInterval() {
       return 120;
    }
 
-   public boolean removeWhenFarAway(double var1) {
+   public boolean removeWhenFarAway(final double distSqr) {
       return false;
    }
 
-   protected int getBaseExperienceReward(ServerLevel var1) {
+   protected int getBaseExperienceReward(final ServerLevel level) {
       return 1 + this.random.nextInt(3);
    }
 
-   public abstract boolean isFood(ItemStack var1);
+   public abstract boolean isFood(final ItemStack itemStack);
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (this.isFood(var3)) {
-         int var4 = this.getAge();
-         if (var1 instanceof ServerPlayer) {
-            ServerPlayer var5 = (ServerPlayer)var1;
-            if (var4 == 0 && this.canFallInLove()) {
-               this.usePlayerItem(var1, var2, var3);
-               this.setInLove(var5);
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (this.isFood(itemStack)) {
+         int age = this.getAge();
+         if (player instanceof ServerPlayer) {
+            ServerPlayer serverPlayer = (ServerPlayer)player;
+            if (age == 0 && this.canFallInLove()) {
+               this.usePlayerItem(player, hand, itemStack);
+               this.setInLove(serverPlayer);
                this.playEatingSound();
                return InteractionResult.SUCCESS_SERVER;
             }
          }
 
-         if (this.isBaby()) {
-            this.usePlayerItem(var1, var2, var3);
-            this.ageUp(getSpeedUpSecondsWhenFeeding(-var4), true);
+         if (this.canAgeUp()) {
+            this.usePlayerItem(player, hand, itemStack);
+            this.ageUp(getSpeedUpSecondsWhenFeeding(-age), true);
             this.playEatingSound();
             return InteractionResult.SUCCESS;
          }
@@ -152,7 +152,7 @@ public abstract class Animal extends AgeableMob {
          }
       }
 
-      return super.mobInteract(var1, var2);
+      return super.mobInteract(player, hand);
    }
 
    protected void playEatingSound() {
@@ -162,17 +162,17 @@ public abstract class Animal extends AgeableMob {
       return this.inLove <= 0;
    }
 
-   public void setInLove(@Nullable Player var1) {
+   public void setInLove(final @Nullable Player player) {
       this.inLove = 600;
-      if (var1 instanceof ServerPlayer var2) {
-         this.loveCause = EntityReference.of(var2);
+      if (player instanceof ServerPlayer serverPlayer) {
+         this.loveCause = EntityReference.of(serverPlayer);
       }
 
       this.level().broadcastEntityEvent(this, (byte)18);
    }
 
-   public void setInLoveTime(int var1) {
-      this.inLove = var1;
+   public void setInLoveTime(final int time) {
+      this.inLove = time;
    }
 
    public int getInLoveTime() {
@@ -191,84 +191,84 @@ public abstract class Animal extends AgeableMob {
       this.inLove = 0;
    }
 
-   public boolean canMate(Animal var1) {
-      if (var1 == this) {
+   public boolean canMate(final Animal partner) {
+      if (partner == this) {
          return false;
-      } else if (var1.getClass() != this.getClass()) {
+      } else if (partner.getClass() != this.getClass()) {
          return false;
       } else {
-         return this.isInLove() && var1.isInLove();
+         return this.isInLove() && partner.isInLove();
       }
    }
 
-   public void spawnChildFromBreeding(ServerLevel var1, Animal var2) {
-      AgeableMob var3 = this.getBreedOffspring(var1, var2);
-      if (var3 != null) {
-         var3.setBaby(true);
-         var3.snapTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
-         this.finalizeSpawnChildFromBreeding(var1, var2, var3);
-         var1.addFreshEntityWithPassengers(var3);
+   public void spawnChildFromBreeding(final ServerLevel level, final Animal partner) {
+      AgeableMob offspring = this.getBreedOffspring(level, partner);
+      if (offspring != null) {
+         offspring.setBaby(true);
+         offspring.snapTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
+         this.finalizeSpawnChildFromBreeding(level, partner, offspring);
+         level.addFreshEntityWithPassengers(offspring);
       }
    }
 
-   public void finalizeSpawnChildFromBreeding(ServerLevel var1, Animal var2, @Nullable AgeableMob var3) {
-      Optional.ofNullable(this.getLoveCause()).or(() -> Optional.ofNullable(var2.getLoveCause())).ifPresent((var3x) -> {
-         var3x.awardStat(Stats.ANIMALS_BRED);
-         CriteriaTriggers.BRED_ANIMALS.trigger(var3x, this, var2, var3);
+   public void finalizeSpawnChildFromBreeding(final ServerLevel level, final Animal partner, final @Nullable AgeableMob offspring) {
+      Optional.ofNullable(this.getLoveCause()).or(() -> Optional.ofNullable(partner.getLoveCause())).ifPresent((cause) -> {
+         cause.awardStat(Stats.ANIMALS_BRED);
+         CriteriaTriggers.BRED_ANIMALS.trigger(cause, this, partner, offspring);
       });
       this.setAge(6000);
-      var2.setAge(6000);
+      partner.setAge(6000);
       this.resetLove();
-      var2.resetLove();
-      var1.broadcastEntityEvent(this, (byte)18);
-      if ((Boolean)var1.getGameRules().get(GameRules.MOB_DROPS)) {
-         var1.addFreshEntity(new ExperienceOrb(var1, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
+      partner.resetLove();
+      level.broadcastEntityEvent(this, (byte)18);
+      if ((Boolean)level.getGameRules().get(GameRules.MOB_DROPS)) {
+         level.addFreshEntity(new ExperienceOrb(level, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
       }
 
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 18) {
-         for(int var2 = 0; var2 < 7; ++var2) {
-            double var3 = this.random.nextGaussian() * 0.02;
-            double var5 = this.random.nextGaussian() * 0.02;
-            double var7 = this.random.nextGaussian() * 0.02;
-            this.level().addParticle(ParticleTypes.HEART, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var3, var5, var7);
+   public void handleEntityEvent(final byte id) {
+      if (id == 18) {
+         for(int i = 0; i < 7; ++i) {
+            double xa = this.random.nextGaussian() * 0.02;
+            double ya = this.random.nextGaussian() * 0.02;
+            double za = this.random.nextGaussian() * 0.02;
+            this.level().addParticle(ParticleTypes.HEART, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), xa, ya, za);
          }
       } else {
-         super.handleEntityEvent(var1);
+         super.handleEntityEvent(id);
       }
 
    }
 
-   public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
-      Direction var2 = this.getMotionDirection();
-      if (var2.getAxis() == Direction.Axis.Y) {
-         return super.getDismountLocationForPassenger(var1);
+   public Vec3 getDismountLocationForPassenger(final LivingEntity passenger) {
+      Direction forward = this.getMotionDirection();
+      if (forward.getAxis() == Direction.Axis.Y) {
+         return super.getDismountLocationForPassenger(passenger);
       } else {
-         int[][] var3 = DismountHelper.offsetsForDirection(var2);
-         BlockPos var4 = this.blockPosition();
-         BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
-         UnmodifiableIterator var6 = var1.getDismountPoses().iterator();
+         int[][] offsets = DismountHelper.offsetsForDirection(forward);
+         BlockPos vehicleBlockPos = this.blockPosition();
+         BlockPos.MutableBlockPos targetBlockPos = new BlockPos.MutableBlockPos();
+         UnmodifiableIterator var6 = passenger.getDismountPoses().iterator();
 
          while(var6.hasNext()) {
-            Pose var7 = (Pose)var6.next();
-            AABB var8 = var1.getLocalBoundsForPose(var7);
+            Pose dismountPose = (Pose)var6.next();
+            AABB poseCollisionBox = passenger.getLocalBoundsForPose(dismountPose);
 
-            for(int[] var12 : var3) {
-               var5.set(var4.getX() + var12[0], var4.getY(), var4.getZ() + var12[1]);
-               double var13 = this.level().getBlockFloorHeight(var5);
-               if (DismountHelper.isBlockFloorValid(var13)) {
-                  Vec3 var15 = Vec3.upFromBottomCenterOf(var5, var13);
-                  if (DismountHelper.canDismountTo(this.level(), var1, var8.move(var15))) {
-                     var1.setPose(var7);
-                     return var15;
+            for(int[] offsetXZ : offsets) {
+               targetBlockPos.set(vehicleBlockPos.getX() + offsetXZ[0], vehicleBlockPos.getY(), vehicleBlockPos.getZ() + offsetXZ[1]);
+               double blockFloorHeight = this.level().getBlockFloorHeight(targetBlockPos);
+               if (DismountHelper.isBlockFloorValid(blockFloorHeight)) {
+                  Vec3 location = Vec3.upFromBottomCenterOf(targetBlockPos, blockFloorHeight);
+                  if (DismountHelper.canDismountTo(this.level(), passenger, poseCollisionBox.move(location))) {
+                     passenger.setPose(dismountPose);
+                     return location;
                   }
                }
             }
          }
 
-         return super.getDismountLocationForPassenger(var1);
+         return super.getDismountLocationForPassenger(passenger);
       }
    }
 }

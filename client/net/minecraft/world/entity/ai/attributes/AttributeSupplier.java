@@ -10,46 +10,46 @@ import org.jspecify.annotations.Nullable;
 public class AttributeSupplier {
    private final Map<Holder<Attribute>, AttributeInstance> instances;
 
-   AttributeSupplier(Map<Holder<Attribute>, AttributeInstance> var1) {
+   private AttributeSupplier(final Map<Holder<Attribute>, AttributeInstance> instances) {
       super();
-      this.instances = var1;
+      this.instances = instances;
    }
 
-   private AttributeInstance getAttributeInstance(Holder<Attribute> var1) {
-      AttributeInstance var2 = (AttributeInstance)this.instances.get(var1);
-      if (var2 == null) {
-         throw new IllegalArgumentException("Can't find attribute " + var1.getRegisteredName());
+   private AttributeInstance getAttributeInstance(final Holder<Attribute> attribute) {
+      AttributeInstance instance = (AttributeInstance)this.instances.get(attribute);
+      if (instance == null) {
+         throw new IllegalArgumentException("Can't find attribute " + attribute.getRegisteredName());
       } else {
-         return var2;
+         return instance;
       }
    }
 
-   public double getValue(Holder<Attribute> var1) {
-      return this.getAttributeInstance(var1).getValue();
+   public double getValue(final Holder<Attribute> attribute) {
+      return this.getAttributeInstance(attribute).getValue();
    }
 
-   public double getBaseValue(Holder<Attribute> var1) {
-      return this.getAttributeInstance(var1).getBaseValue();
+   public double getBaseValue(final Holder<Attribute> attribute) {
+      return this.getAttributeInstance(attribute).getBaseValue();
    }
 
-   public double getModifierValue(Holder<Attribute> var1, Identifier var2) {
-      AttributeModifier var3 = this.getAttributeInstance(var1).getModifier(var2);
-      if (var3 == null) {
-         String var10002 = String.valueOf(var2);
-         throw new IllegalArgumentException("Can't find modifier " + var10002 + " on attribute " + var1.getRegisteredName());
+   public double getModifierValue(final Holder<Attribute> attribute, final Identifier id) {
+      AttributeModifier modifier = this.getAttributeInstance(attribute).getModifier(id);
+      if (modifier == null) {
+         String var10002 = String.valueOf(id);
+         throw new IllegalArgumentException("Can't find modifier " + var10002 + " on attribute " + attribute.getRegisteredName());
       } else {
-         return var3.amount();
+         return modifier.amount();
       }
    }
 
-   public @Nullable AttributeInstance createInstance(Consumer<AttributeInstance> var1, Holder<Attribute> var2) {
-      AttributeInstance var3 = (AttributeInstance)this.instances.get(var2);
-      if (var3 == null) {
+   public @Nullable AttributeInstance createInstance(final Consumer<AttributeInstance> onDirty, final Holder<Attribute> attribute) {
+      AttributeInstance template = (AttributeInstance)this.instances.get(attribute);
+      if (template == null) {
          return null;
       } else {
-         AttributeInstance var4 = new AttributeInstance(var2, var1);
-         var4.replaceFrom(var3);
-         return var4;
+         AttributeInstance result = new AttributeInstance(attribute, onDirty);
+         result.replaceFrom(template);
+         return result;
       }
    }
 
@@ -57,13 +57,13 @@ public class AttributeSupplier {
       return new Builder();
    }
 
-   public boolean hasAttribute(Holder<Attribute> var1) {
-      return this.instances.containsKey(var1);
+   public boolean hasAttribute(final Holder<Attribute> attribute) {
+      return this.instances.containsKey(attribute);
    }
 
-   public boolean hasModifier(Holder<Attribute> var1, Identifier var2) {
-      AttributeInstance var3 = (AttributeInstance)this.instances.get(var1);
-      return var3 != null && var3.getModifier(var2) != null;
+   public boolean hasModifier(final Holder<Attribute> attribute, final Identifier modifier) {
+      AttributeInstance attributeInstance = (AttributeInstance)this.instances.get(attribute);
+      return attributeInstance != null && attributeInstance.getModifier(modifier) != null;
    }
 
    public static class Builder {
@@ -74,24 +74,24 @@ public class AttributeSupplier {
          super();
       }
 
-      private AttributeInstance create(Holder<Attribute> var1) {
-         AttributeInstance var2 = new AttributeInstance(var1, (var2x) -> {
+      private AttributeInstance create(final Holder<Attribute> attribute) {
+         AttributeInstance result = new AttributeInstance(attribute, (attributeInstance) -> {
             if (this.instanceFrozen) {
-               throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + var1.getRegisteredName());
+               throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + attribute.getRegisteredName());
             }
          });
-         this.builder.put(var1, var2);
-         return var2;
+         this.builder.put(attribute, result);
+         return result;
       }
 
-      public Builder add(Holder<Attribute> var1) {
-         this.create(var1);
+      public Builder add(final Holder<Attribute> attribute) {
+         this.create(attribute);
          return this;
       }
 
-      public Builder add(Holder<Attribute> var1, double var2) {
-         AttributeInstance var4 = this.create(var1);
-         var4.setBaseValue(var2);
+      public Builder add(final Holder<Attribute> attribute, final double baseValue) {
+         AttributeInstance result = this.create(attribute);
+         result.setBaseValue(baseValue);
          return this;
       }
 

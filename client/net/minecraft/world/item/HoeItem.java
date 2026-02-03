@@ -24,26 +24,26 @@ import net.minecraft.world.level.gameevent.GameEvent;
 public class HoeItem extends Item {
    protected static final Map<Block, Pair<Predicate<UseOnContext>, Consumer<UseOnContext>>> TILLABLES;
 
-   public HoeItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
-      super(var4.hoe(var1, var2, var3));
+   public HoeItem(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline, final Item.Properties properties) {
+      super(properties.hoe(material, attackDamageBaseline, attackSpeedBaseline));
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      Pair var4 = (Pair)TILLABLES.get(var2.getBlockState(var3).getBlock());
-      if (var4 == null) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      Pair<Predicate<UseOnContext>, Consumer<UseOnContext>> logicPair = (Pair)TILLABLES.get(level.getBlockState(pos).getBlock());
+      if (logicPair == null) {
          return InteractionResult.PASS;
       } else {
-         Predicate var5 = (Predicate)var4.getFirst();
-         Consumer var6 = (Consumer)var4.getSecond();
-         if (var5.test(var1)) {
-            Player var7 = var1.getPlayer();
-            var2.playSound(var7, (BlockPos)var3, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
-            if (!var2.isClientSide()) {
-               var6.accept(var1);
-               if (var7 != null) {
-                  var1.getItemInHand().hurtAndBreak(1, var7, (EquipmentSlot)var1.getHand().asEquipmentSlot());
+         Predicate<UseOnContext> predicate = (Predicate)logicPair.getFirst();
+         Consumer<UseOnContext> action = (Consumer)logicPair.getSecond();
+         if (predicate.test(context)) {
+            Player player = context.getPlayer();
+            level.playSound(player, (BlockPos)pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+            if (!level.isClientSide()) {
+               action.accept(context);
+               if (player != null) {
+                  context.getItemInHand().hurtAndBreak(1, player, (EquipmentSlot)context.getHand().asEquipmentSlot());
                }
             }
 
@@ -54,26 +54,26 @@ public class HoeItem extends Item {
       }
    }
 
-   public static Consumer<UseOnContext> changeIntoState(BlockState var0) {
-      return (var1) -> {
-         var1.getLevel().setBlock(var1.getClickedPos(), var0, 11);
-         var1.getLevel().gameEvent(GameEvent.BLOCK_CHANGE, var1.getClickedPos(), GameEvent.Context.of(var1.getPlayer(), var0));
+   public static Consumer<UseOnContext> changeIntoState(final BlockState state) {
+      return (context) -> {
+         context.getLevel().setBlock(context.getClickedPos(), state, 11);
+         context.getLevel().gameEvent(GameEvent.BLOCK_CHANGE, context.getClickedPos(), GameEvent.Context.of(context.getPlayer(), state));
       };
    }
 
-   public static Consumer<UseOnContext> changeIntoStateAndDropItem(BlockState var0, ItemLike var1) {
-      return (var2) -> {
-         var2.getLevel().setBlock(var2.getClickedPos(), var0, 11);
-         var2.getLevel().gameEvent(GameEvent.BLOCK_CHANGE, var2.getClickedPos(), GameEvent.Context.of(var2.getPlayer(), var0));
-         Block.popResourceFromFace(var2.getLevel(), var2.getClickedPos(), var2.getClickedFace(), new ItemStack(var1));
+   public static Consumer<UseOnContext> changeIntoStateAndDropItem(final BlockState state, final ItemLike item) {
+      return (context) -> {
+         context.getLevel().setBlock(context.getClickedPos(), state, 11);
+         context.getLevel().gameEvent(GameEvent.BLOCK_CHANGE, context.getClickedPos(), GameEvent.Context.of(context.getPlayer(), state));
+         Block.popResourceFromFace(context.getLevel(), context.getClickedPos(), context.getClickedFace(), new ItemStack(item));
       };
    }
 
-   public static boolean onlyIfAirAbove(UseOnContext var0) {
-      return var0.getClickedFace() != Direction.DOWN && var0.getLevel().getBlockState(var0.getClickedPos().above()).isAir();
+   public static boolean onlyIfAirAbove(final UseOnContext context) {
+      return context.getClickedFace() != Direction.DOWN && context.getLevel().getBlockState(context.getClickedPos().above()).isAir();
    }
 
    static {
-      TILLABLES = Maps.newHashMap(ImmutableMap.of(Blocks.GRASS_BLOCK, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())), Blocks.DIRT_PATH, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())), Blocks.DIRT, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())), Blocks.COARSE_DIRT, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.DIRT.defaultBlockState())), Blocks.ROOTED_DIRT, Pair.of((Predicate)(var0) -> true, changeIntoStateAndDropItem(Blocks.DIRT.defaultBlockState(), Items.HANGING_ROOTS))));
+      TILLABLES = Maps.newHashMap(ImmutableMap.of(Blocks.GRASS_BLOCK, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())), Blocks.DIRT_PATH, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())), Blocks.DIRT, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())), Blocks.COARSE_DIRT, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.DIRT.defaultBlockState())), Blocks.ROOTED_DIRT, Pair.of((Predicate)(context) -> true, changeIntoStateAndDropItem(Blocks.DIRT.defaultBlockState(), Items.HANGING_ROOTS))));
    }
 }

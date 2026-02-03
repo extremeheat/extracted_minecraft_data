@@ -12,7 +12,7 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 public interface EnchantmentProvider {
    Codec<EnchantmentProvider> DIRECT_CODEC = BuiltInRegistries.ENCHANTMENT_PROVIDER_TYPE.byNameCodec().dispatch(EnchantmentProvider::codec, Function.identity());
 
-   void enchant(ItemStack var1, ItemEnchantments.Mutable var2, RandomSource var3, DifficultyInstance var4);
+   void enchant(ItemStack item, ItemEnchantments.Mutable itemEnchantments, RandomSource random, final DifficultyInstance difficulty);
 
    MapCodec<? extends EnchantmentProvider> codec();
 }

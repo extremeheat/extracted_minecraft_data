@@ -12,15 +12,12 @@ import net.minecraft.world.entity.ai.village.poi.PoiType;
 public record DebugPoiInfo(BlockPos pos, Holder<PoiType> poiType, int freeTicketCount) {
    public static final StreamCodec<RegistryFriendlyByteBuf, DebugPoiInfo> STREAM_CODEC;
 
-   public DebugPoiInfo(PoiRecord var1) {
-      this(var1.getPos(), var1.getPoiType(), var1.getFreeTickets());
+   public DebugPoiInfo(final PoiRecord record) {
+      this(record.getPos(), record.getPoiType(), record.getFreeTickets());
    }
 
-   public DebugPoiInfo(BlockPos var1, Holder<PoiType> var2, int var3) {
+   public DebugPoiInfo {
       super();
-      this.pos = var1;
-      this.poiType = var2;
-      this.freeTicketCount = var3;
    }
 
    static {

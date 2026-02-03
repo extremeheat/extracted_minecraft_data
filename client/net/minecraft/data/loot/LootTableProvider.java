@@ -6,13 +6,16 @@ import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -23,9 +26,10 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.RandomSequence;
+import net.minecraft.world.level.levelgen.RandomSupport;
+import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.ValidationContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 import org.slf4j.Logger;
 
 public class LootTableProvider implements DataProvider {
@@ -35,58 +39,58 @@ public class LootTableProvider implements DataProvider {
    private final List<SubProviderEntry> subProviders;
    private final CompletableFuture<HolderLookup.Provider> registries;
 
-   public LootTableProvider(PackOutput var1, Set<ResourceKey<LootTable>> var2, List<SubProviderEntry> var3, CompletableFuture<HolderLookup.Provider> var4) {
+   public LootTableProvider(final PackOutput output, final Set<ResourceKey<LootTable>> requiredTables, final List<SubProviderEntry> subProviders, final CompletableFuture<HolderLookup.Provider> registries) {
       super();
-      this.pathProvider = var1.createRegistryElementsPathProvider(Registries.LOOT_TABLE);
-      this.subProviders = var3;
-      this.requiredTables = var2;
-      this.registries = var4;
+      this.pathProvider = output.createRegistryElementsPathProvider(Registries.LOOT_TABLE);
+      this.subProviders = subProviders;
+      this.requiredTables = requiredTables;
+      this.registries = registries;
    }
 
-   public CompletableFuture<?> run(CachedOutput var1) {
-      return this.registries.thenCompose((var2) -> this.run(var1, var2));
+   public CompletableFuture<?> run(final CachedOutput cache) {
+      return this.registries.thenCompose((registries) -> this.run(cache, registries));
    }
 
-   private CompletableFuture<?> run(CachedOutput var1, HolderLookup.Provider var2) {
-      MappedRegistry var3 = new MappedRegistry(Registries.LOOT_TABLE, Lifecycle.experimental());
-      Object2ObjectOpenHashMap var4 = new Object2ObjectOpenHashMap();
-      this.subProviders.forEach((var3x) -> ((LootTableSubProvider)var3x.provider().apply(var2)).generate((var3xx, var4x) -> {
-            Identifier var5 = sequenceIdForLootTable(var3xx);
-            Identifier var6 = (Identifier)var4.put(RandomSequence.seedForKey(var5), var5);
-            if (var6 != null) {
-               String var10000 = String.valueOf(var6);
-               Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + var10000 + " and " + String.valueOf(var3xx.identifier()));
+   private CompletableFuture<?> run(final CachedOutput cache, final HolderLookup.Provider registries) {
+      WritableRegistry<LootTable> tables = new MappedRegistry<LootTable>(Registries.LOOT_TABLE, Lifecycle.experimental());
+      Map<RandomSupport.Seed128bit, Identifier> randomSequenceSeeds = new Object2ObjectOpenHashMap();
+      this.subProviders.forEach((subProvider) -> ((LootTableSubProvider)subProvider.provider().apply(registries)).generate((id, lootTable) -> {
+            Identifier sequenceId = sequenceIdForLootTable(id);
+            Identifier previous = (Identifier)randomSequenceSeeds.put(RandomSequence.seedForKey(sequenceId), sequenceId);
+            if (previous != null) {
+               String var10000 = String.valueOf(previous);
+               Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + var10000 + " and " + String.valueOf(id.identifier()));
             }
 
-            var4x.setRandomSequence(var5);
-            LootTable var7 = var4x.setParamSet(var3x.paramSet).build();
-            var3.register(var3xx, var7, RegistrationInfo.BUILT_IN);
+            lootTable.setRandomSequence(sequenceId);
+            LootTable table = lootTable.setParamSet(subProvider.paramSet).build();
+            tables.register(id, table, RegistrationInfo.BUILT_IN);
          }));
-      var3.freeze();
-      ProblemReporter.Collector var5 = new ProblemReporter.Collector();
-      RegistryAccess.Frozen var6 = (new RegistryAccess.ImmutableRegistryAccess(List.of(var3))).freeze();
-      ValidationContext var7 = new ValidationContext(var5, LootContextParamSets.ALL_PARAMS, var6);
+      tables.freeze();
+      ProblemReporter.Collector problems = new ProblemReporter.Collector();
+      HolderGetter.Provider validationProvider = (new RegistryAccess.ImmutableRegistryAccess(List.of(tables))).freeze();
+      ValidationContextSource validationContext = new ValidationContextSource(problems, validationProvider);
 
-      for(ResourceKey var10 : Sets.difference(this.requiredTables, var3.registryKeySet())) {
-         var5.report(new MissingTableProblem(var10));
+      for(ResourceKey<LootTable> missingTable : Sets.difference(this.requiredTables, tables.registryKeySet())) {
+         problems.report(new MissingTableProblem(missingTable));
       }
 
-      var3.listElements().forEach((var1x) -> ((LootTable)var1x.value()).validate(var7.setContextKeySet(((LootTable)var1x.value()).getParamSet()).enterElement(new ProblemReporter.RootElementPathElement(var1x.key()), var1x.key())));
-      if (!var5.isEmpty()) {
-         var5.forEach((var0, var1x) -> LOGGER.warn("Found validation problem in {}: {}", var0, var1x.description()));
+      LootDataType.TABLE.runValidation(validationContext, tables);
+      if (!problems.isEmpty()) {
+         problems.forEach((id, problem) -> LOGGER.warn("Found validation problem in {}: {}", id, problem.description()));
          throw new IllegalStateException("Failed to validate loot tables, see logs");
       } else {
-         return CompletableFuture.allOf((CompletableFuture[])var3.entrySet().stream().map((var3x) -> {
-            ResourceKey var4 = (ResourceKey)var3x.getKey();
-            LootTable var5 = (LootTable)var3x.getValue();
-            Path var6 = this.pathProvider.json(var4.identifier());
-            return DataProvider.saveStable(var1, var2, LootTable.DIRECT_CODEC, var5, var6);
-         }).toArray((var0) -> new CompletableFuture[var0]));
+         return CompletableFuture.allOf((CompletableFuture[])tables.entrySet().stream().map((entry) -> {
+            ResourceKey<LootTable> id = (ResourceKey)entry.getKey();
+            LootTable table = (LootTable)entry.getValue();
+            Path path = this.pathProvider.json(id.identifier());
+            return DataProvider.saveStable(cache, registries, LootTable.DIRECT_CODEC, table, path);
+         }).toArray((x$0) -> new CompletableFuture[x$0]));
       }
    }
 
-   private static Identifier sequenceIdForLootTable(ResourceKey<LootTable> var0) {
-      return var0.identifier();
+   private static Identifier sequenceIdForLootTable(final ResourceKey<LootTable> id) {
+      return id.identifier();
    }
 
    public final String getName() {
@@ -94,19 +98,14 @@ public class LootTableProvider implements DataProvider {
    }
 
    public static record SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> provider, ContextKeySet paramSet) {
-      final ContextKeySet paramSet;
-
-      public SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> var1, ContextKeySet var2) {
+      public SubProviderEntry {
          super();
-         this.provider = var1;
-         this.paramSet = var2;
       }
    }
 
    public static record MissingTableProblem(ResourceKey<LootTable> id) implements ProblemReporter.Problem {
-      public MissingTableProblem(ResourceKey<LootTable> var1) {
+      public MissingTableProblem {
          super();
-         this.id = var1;
       }
 
       public String description() {

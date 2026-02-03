@@ -24,8 +24,8 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    private boolean buttonClicked;
    private final EffectsInInventory effects;
 
-   public InventoryScreen(Player var1) {
-      super(var1.inventoryMenu, new CraftingRecipeBookComponent(var1.inventoryMenu), var1.getInventory(), Component.translatable("container.crafting"));
+   public InventoryScreen(final Player player) {
+      super(player.inventoryMenu, new CraftingRecipeBookComponent(player.inventoryMenu), player.getInventory(), Component.translatable("container.crafting"));
       this.titleLabelX = 97;
       this.effects = new EffectsInInventory(this);
    }
@@ -54,15 +54,15 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       this.buttonClicked = true;
    }
 
-   protected void renderLabels(GuiGraphics var1, int var2, int var3) {
-      var1.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
+   protected void renderLabels(final GuiGraphics graphics, final int xm, final int ym) {
+      graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.effects.render(var1, var2, var3);
-      super.render(var1, var2, var3, var4);
-      this.xMouse = (float)var2;
-      this.yMouse = (float)var3;
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      this.effects.render(graphics, mouseX, mouseY);
+      super.render(graphics, mouseX, mouseY, a);
+      this.xMouse = (float)mouseX;
+      this.yMouse = (float)mouseY;
    }
 
    public boolean showsActiveEffects() {
@@ -73,56 +73,55 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       return false;
    }
 
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      int var5 = this.leftPos;
-      int var6 = this.topPos;
-      var1.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      renderEntityInInventoryFollowsMouse(var1, var5 + 26, var6 + 8, var5 + 75, var6 + 78, 30, 0.0625F, this.xMouse, this.yMouse, this.minecraft.player);
+   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+      int xo = this.leftPos;
+      int yo = this.topPos;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      renderEntityInInventoryFollowsMouse(graphics, xo + 26, yo + 8, xo + 75, yo + 78, 30, 0.0625F, this.xMouse, this.yMouse, this.minecraft.player);
    }
 
-   public static void renderEntityInInventoryFollowsMouse(GuiGraphics var0, int var1, int var2, int var3, int var4, int var5, float var6, float var7, float var8, LivingEntity var9) {
-      float var10 = (float)(var1 + var3) / 2.0F;
-      float var11 = (float)(var2 + var4) / 2.0F;
-      float var12 = (float)Math.atan((double)((var10 - var7) / 40.0F));
-      float var13 = (float)Math.atan((double)((var11 - var8) / 40.0F));
-      Quaternionf var14 = (new Quaternionf()).rotateZ(3.1415927F);
-      Quaternionf var15 = (new Quaternionf()).rotateX(var13 * 20.0F * 0.017453292F);
-      var14.mul(var15);
-      EntityRenderState var16 = extractRenderState(var9);
-      if (var16 instanceof LivingEntityRenderState var17) {
-         var17.bodyRot = 180.0F + var12 * 20.0F;
-         var17.yRot = var12 * 20.0F;
-         if (var17.pose != Pose.FALL_FLYING) {
-            var17.xRot = -var13 * 20.0F;
+   public static void renderEntityInInventoryFollowsMouse(final GuiGraphics graphics, final int x0, final int y0, final int x1, final int y1, final int size, final float offsetY, final float mouseX, final float mouseY, final LivingEntity entity) {
+      float centerX = (float)(x0 + x1) / 2.0F;
+      float centerY = (float)(y0 + y1) / 2.0F;
+      float xAngle = (float)Math.atan((double)((centerX - mouseX) / 40.0F));
+      float yAngle = (float)Math.atan((double)((centerY - mouseY) / 40.0F));
+      Quaternionf rotation = (new Quaternionf()).rotateZ(3.1415927F);
+      Quaternionf xRotation = (new Quaternionf()).rotateX(yAngle * 20.0F * 0.017453292F);
+      rotation.mul(xRotation);
+      EntityRenderState renderState = extractRenderState(entity);
+      if (renderState instanceof LivingEntityRenderState livingRenderState) {
+         livingRenderState.bodyRot = 180.0F + xAngle * 20.0F;
+         livingRenderState.yRot = xAngle * 20.0F;
+         if (livingRenderState.pose != Pose.FALL_FLYING) {
+            livingRenderState.xRot = -yAngle * 20.0F;
          } else {
-            var17.xRot = 0.0F;
+            livingRenderState.xRot = 0.0F;
          }
 
-         var17.boundingBoxWidth /= var17.scale;
-         var17.boundingBoxHeight /= var17.scale;
-         var17.scale = 1.0F;
+         livingRenderState.boundingBoxWidth /= livingRenderState.scale;
+         livingRenderState.boundingBoxHeight /= livingRenderState.scale;
+         livingRenderState.scale = 1.0F;
       }
 
-      Vector3f var18 = new Vector3f(0.0F, var16.boundingBoxHeight / 2.0F + var6, 0.0F);
-      var0.submitEntityRenderState(var16, (float)var5, var18, var14, var15, var1, var2, var3, var4);
+      Vector3f translation = new Vector3f(0.0F, renderState.boundingBoxHeight / 2.0F + offsetY, 0.0F);
+      graphics.submitEntityRenderState(renderState, (float)size, translation, rotation, xRotation, x0, y0, x1, y1);
    }
 
-   private static EntityRenderState extractRenderState(LivingEntity var0) {
-      EntityRenderDispatcher var1 = Minecraft.getInstance().getEntityRenderDispatcher();
-      EntityRenderer var2 = var1.getRenderer(var0);
-      EntityRenderState var3 = var2.createRenderState(var0, 1.0F);
-      var3.lightCoords = 15728880;
-      var3.shadowPieces.clear();
-      var3.outlineColor = 0;
-      return var3;
+   private static EntityRenderState extractRenderState(final LivingEntity entity) {
+      EntityRenderDispatcher entityRenderDispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
+      EntityRenderer<? super LivingEntity, ?> renderer = entityRenderDispatcher.getRenderer(entity);
+      EntityRenderState renderState = renderer.createRenderState(entity, 1.0F);
+      renderState.shadowPieces.clear();
+      renderState.outlineColor = 0;
+      return renderState;
    }
 
-   public boolean mouseReleased(MouseButtonEvent var1) {
+   public boolean mouseReleased(final MouseButtonEvent event) {
       if (this.buttonClicked) {
          this.buttonClicked = false;
          return true;
       } else {
-         return super.mouseReleased(var1);
+         return super.mouseReleased(event);
       }
    }
 }

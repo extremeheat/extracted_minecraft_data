@@ -13,32 +13,28 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.phys.Vec3;
 
 public record DamageSourcePredicate(List<TagPredicate<DamageType>> tags, Optional<EntityPredicate> directEntity, Optional<EntityPredicate> sourceEntity, Optional<Boolean> isDirect) {
-   public static final Codec<DamageSourcePredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(TagPredicate.codec(Registries.DAMAGE_TYPE).listOf().optionalFieldOf("tags", List.of()).forGetter(DamageSourcePredicate::tags), EntityPredicate.CODEC.optionalFieldOf("direct_entity").forGetter(DamageSourcePredicate::directEntity), EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamageSourcePredicate::sourceEntity), Codec.BOOL.optionalFieldOf("is_direct").forGetter(DamageSourcePredicate::isDirect)).apply(var0, DamageSourcePredicate::new));
+   public static final Codec<DamageSourcePredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(TagPredicate.codec(Registries.DAMAGE_TYPE).listOf().optionalFieldOf("tags", List.of()).forGetter(DamageSourcePredicate::tags), EntityPredicate.CODEC.optionalFieldOf("direct_entity").forGetter(DamageSourcePredicate::directEntity), EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamageSourcePredicate::sourceEntity), Codec.BOOL.optionalFieldOf("is_direct").forGetter(DamageSourcePredicate::isDirect)).apply(i, DamageSourcePredicate::new));
 
-   public DamageSourcePredicate(List<TagPredicate<DamageType>> var1, Optional<EntityPredicate> var2, Optional<EntityPredicate> var3, Optional<Boolean> var4) {
+   public DamageSourcePredicate {
       super();
-      this.tags = var1;
-      this.directEntity = var2;
-      this.sourceEntity = var3;
-      this.isDirect = var4;
    }
 
-   public boolean matches(ServerPlayer var1, DamageSource var2) {
-      return this.matches(var1.level(), var1.position(), var2);
+   public boolean matches(final ServerPlayer player, final DamageSource source) {
+      return this.matches(player.level(), player.position(), source);
    }
 
-   public boolean matches(ServerLevel var1, Vec3 var2, DamageSource var3) {
-      for(TagPredicate var5 : this.tags) {
-         if (!var5.matches(var3.typeHolder())) {
+   public boolean matches(final ServerLevel level, final Vec3 position, final DamageSource source) {
+      for(TagPredicate<DamageType> tag : this.tags) {
+         if (!tag.matches(source.typeHolder())) {
             return false;
          }
       }
 
-      if (this.directEntity.isPresent() && !((EntityPredicate)this.directEntity.get()).matches(var1, var2, var3.getDirectEntity())) {
+      if (this.directEntity.isPresent() && !((EntityPredicate)this.directEntity.get()).matches(level, position, source.getDirectEntity())) {
          return false;
-      } else if (this.sourceEntity.isPresent() && !((EntityPredicate)this.sourceEntity.get()).matches(var1, var2, var3.getEntity())) {
+      } else if (this.sourceEntity.isPresent() && !((EntityPredicate)this.sourceEntity.get()).matches(level, position, source.getEntity())) {
          return false;
-      } else if (this.isDirect.isPresent() && (Boolean)this.isDirect.get() != var3.isDirect()) {
+      } else if (this.isDirect.isPresent() && (Boolean)this.isDirect.get() != source.isDirect()) {
          return false;
       } else {
          return true;
@@ -59,23 +55,23 @@ public record DamageSourcePredicate(List<TagPredicate<DamageType>> tags, Optiona
          return new Builder();
       }
 
-      public Builder tag(TagPredicate<DamageType> var1) {
-         this.tags.add(var1);
+      public Builder tag(final TagPredicate<DamageType> tag) {
+         this.tags.add(tag);
          return this;
       }
 
-      public Builder direct(EntityPredicate.Builder var1) {
-         this.directEntity = Optional.of(var1.build());
+      public Builder direct(final EntityPredicate.Builder directEntity) {
+         this.directEntity = Optional.of(directEntity.build());
          return this;
       }
 
-      public Builder source(EntityPredicate.Builder var1) {
-         this.sourceEntity = Optional.of(var1.build());
+      public Builder source(final EntityPredicate.Builder sourceEntity) {
+         this.sourceEntity = Optional.of(sourceEntity.build());
          return this;
       }
 
-      public Builder isDirect(boolean var1) {
-         this.isDirect = Optional.of(var1);
+      public Builder isDirect(final boolean direct) {
+         this.isDirect = Optional.of(direct);
          return this;
       }
 

@@ -9,19 +9,19 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ColoredFallingBlock extends FallingBlock {
-   public static final MapCodec<ColoredFallingBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ColorRGBA.CODEC.fieldOf("falling_dust_color").forGetter((var0x) -> var0x.dustColor), propertiesCodec()).apply(var0, ColoredFallingBlock::new));
+   public static final MapCodec<ColoredFallingBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ColorRGBA.CODEC.fieldOf("falling_dust_color").forGetter((b) -> b.dustColor), propertiesCodec()).apply(i, ColoredFallingBlock::new));
    protected final ColorRGBA dustColor;
 
    public MapCodec<? extends ColoredFallingBlock> codec() {
       return CODEC;
    }
 
-   public ColoredFallingBlock(ColorRGBA var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.dustColor = var1;
+   public ColoredFallingBlock(final ColorRGBA dustColor, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.dustColor = dustColor;
    }
 
-   public int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3) {
+   public int getDustColor(final BlockState blockState, final BlockGetter level, final BlockPos pos) {
       return this.dustColor.rgba();
    }
 }

@@ -8,28 +8,25 @@ import net.minecraft.network.protocol.PacketType;
 public record ServerboundContainerSlotStateChangedPacket(int slotId, int containerId, boolean newState) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundContainerSlotStateChangedPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundContainerSlotStateChangedPacket>codec(ServerboundContainerSlotStateChangedPacket::write, ServerboundContainerSlotStateChangedPacket::new);
 
-   private ServerboundContainerSlotStateChangedPacket(FriendlyByteBuf var1) {
-      this(var1.readVarInt(), var1.readContainerId(), var1.readBoolean());
+   private ServerboundContainerSlotStateChangedPacket(final FriendlyByteBuf input) {
+      this(input.readVarInt(), input.readContainerId(), input.readBoolean());
    }
 
-   public ServerboundContainerSlotStateChangedPacket(int var1, int var2, boolean var3) {
+   public ServerboundContainerSlotStateChangedPacket {
       super();
-      this.slotId = var1;
-      this.containerId = var2;
-      this.newState = var3;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.slotId);
-      var1.writeContainerId(this.containerId);
-      var1.writeBoolean(this.newState);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.slotId);
+      output.writeContainerId(this.containerId);
+      output.writeBoolean(this.newState);
    }
 
    public PacketType<ServerboundContainerSlotStateChangedPacket> type() {
       return GamePacketTypes.SERVERBOUND_CONTAINER_SLOT_STATE_CHANGED;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleContainerSlotStateChanged(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleContainerSlotStateChanged(this);
    }
 }

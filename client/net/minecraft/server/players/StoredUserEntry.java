@@ -6,9 +6,9 @@ import org.jspecify.annotations.Nullable;
 public abstract class StoredUserEntry<T> {
    private final @Nullable T user;
 
-   public StoredUserEntry(@Nullable T var1) {
+   public StoredUserEntry(final @Nullable T user) {
       super();
-      this.user = var1;
+      this.user = user;
    }
 
    public @Nullable T getUser() {
@@ -19,5 +19,5 @@ public abstract class StoredUserEntry<T> {
       return false;
    }
 
-   protected abstract void serialize(JsonObject var1);
+   protected abstract void serialize(final JsonObject object);
 }

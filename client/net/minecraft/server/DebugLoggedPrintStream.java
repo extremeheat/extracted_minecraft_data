@@ -8,13 +8,13 @@ import org.slf4j.Logger;
 public class DebugLoggedPrintStream extends LoggedPrintStream {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public DebugLoggedPrintStream(String var1, OutputStream var2) {
-      super(var1, var2);
+   public DebugLoggedPrintStream(final String name, final OutputStream out) {
+      super(name, out);
    }
 
-   protected void logLine(@Nullable String var1) {
-      StackTraceElement[] var2 = Thread.currentThread().getStackTrace();
-      StackTraceElement var3 = var2[Math.min(3, var2.length)];
-      LOGGER.info("[{}]@.({}:{}): {}", new Object[]{this.name, var3.getFileName(), var3.getLineNumber(), var1});
+   protected void logLine(final @Nullable String out) {
+      StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+      StackTraceElement stackTraceElement = stackTrace[Math.min(3, stackTrace.length)];
+      LOGGER.info("[{}]@.({}:{}): {}", new Object[]{this.name, stackTraceElement.getFileName(), stackTraceElement.getLineNumber(), out});
    }
 }

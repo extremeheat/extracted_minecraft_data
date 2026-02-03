@@ -290,6 +290,7 @@ public class Items {
    public static final Item RED_WOOL;
    public static final Item BLACK_WOOL;
    public static final Item DANDELION;
+   public static final Item GOLDEN_DANDELION;
    public static final Item OPEN_EYEBLOSSOM;
    public static final Item CLOSED_EYEBLOSSOM;
    public static final Item POPPY;
@@ -1549,79 +1550,79 @@ public class Items {
       super();
    }
 
-   private static Function<Item.Properties, Item> createBlockItemWithCustomItemName(Block var0) {
-      return (var1) -> new BlockItem(var0, var1.useItemDescriptionPrefix());
+   private static Function<Item.Properties, Item> createBlockItemWithCustomItemName(final Block block) {
+      return (p) -> new BlockItem(block, p.useItemDescriptionPrefix());
    }
 
-   private static ResourceKey<Item> vanillaItemId(String var0) {
-      return ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<Item> vanillaItemId(final String name) {
+      return ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace(name));
    }
 
-   private static ResourceKey<Item> blockIdToItemId(ResourceKey<Block> var0) {
-      return ResourceKey.create(Registries.ITEM, var0.identifier());
+   private static ResourceKey<Item> blockIdToItemId(final ResourceKey<Block> blockName) {
+      return ResourceKey.create(Registries.ITEM, blockName.identifier());
    }
 
-   private static Item registerSpawnEgg(EntityType<?> var0) {
-      return registerItem(ResourceKey.create(Registries.ITEM, EntityType.getKey(var0).withSuffix("_spawn_egg")), SpawnEggItem::new, (new Item.Properties()).spawnEgg(var0));
+   private static Item registerSpawnEgg(final EntityType<?> type) {
+      return registerItem(ResourceKey.create(Registries.ITEM, EntityType.getKey(type).withSuffix("_spawn_egg")), SpawnEggItem::new, (new Item.Properties()).spawnEgg(type));
    }
 
-   public static Item registerBlock(Block var0) {
-      return registerBlock(var0, BlockItem::new);
+   private static Item registerBlock(final Block block) {
+      return registerBlock(block, BlockItem::new);
    }
 
-   public static Item registerBlock(Block var0, Item.Properties var1) {
-      return registerBlock(var0, BlockItem::new, var1);
+   private static Item registerBlock(final Block block, final Item.Properties properties) {
+      return registerBlock(block, BlockItem::new, properties);
    }
 
-   public static Item registerBlock(Block var0, UnaryOperator<Item.Properties> var1) {
-      return registerBlock(var0, (BiFunction)((var1x, var2) -> new BlockItem(var1x, (Item.Properties)var1.apply(var2))));
+   private static Item registerBlock(final Block block, final UnaryOperator<Item.Properties> propertiesFunction) {
+      return registerBlock(block, (BiFunction)((b, p) -> new BlockItem(b, (Item.Properties)propertiesFunction.apply(p))));
    }
 
-   public static Item registerBlock(Block var0, Block... var1) {
-      Item var2 = registerBlock(var0);
+   private static Item registerBlock(final Block block, final Block... alternatives) {
+      Item item = registerBlock(block);
 
-      for(Block var6 : var1) {
-         Item.BY_BLOCK.put(var6, var2);
+      for(Block alternative : alternatives) {
+         Item.BY_BLOCK.put(alternative, item);
       }
 
-      return var2;
+      return item;
    }
 
-   public static Item registerBlock(Block var0, BiFunction<Block, Item.Properties, Item> var1) {
-      return registerBlock(var0, var1, new Item.Properties());
+   private static Item registerBlock(final Block block, final BiFunction<Block, Item.Properties, Item> itemFactory) {
+      return registerBlock(block, itemFactory, new Item.Properties());
    }
 
-   public static Item registerBlock(Block var0, BiFunction<Block, Item.Properties, Item> var1, Item.Properties var2) {
-      return registerItem((ResourceKey)blockIdToItemId(var0.builtInRegistryHolder().key()), (var2x) -> (Item)var1.apply(var0, var2x), var2.useBlockDescriptionPrefix());
+   private static Item registerBlock(final Block block, final BiFunction<Block, Item.Properties, Item> itemFactory, final Item.Properties properties) {
+      return registerItem((ResourceKey)blockIdToItemId(block.builtInRegistryHolder().key()), (p) -> (Item)itemFactory.apply(block, p), properties.useBlockDescriptionPrefix());
    }
 
-   public static Item registerItem(String var0, Function<Item.Properties, Item> var1) {
-      return registerItem(vanillaItemId(var0), var1, new Item.Properties());
+   private static Item registerItem(final String name, final Function<Item.Properties, Item> itemFactory) {
+      return registerItem(vanillaItemId(name), itemFactory, new Item.Properties());
    }
 
-   public static Item registerItem(String var0, Function<Item.Properties, Item> var1, Item.Properties var2) {
-      return registerItem(vanillaItemId(var0), var1, var2);
+   private static Item registerItem(final String name, final Function<Item.Properties, Item> itemFactory, final Item.Properties properties) {
+      return registerItem(vanillaItemId(name), itemFactory, properties);
    }
 
-   public static Item registerItem(String var0, Item.Properties var1) {
-      return registerItem(vanillaItemId(var0), Item::new, var1);
+   private static Item registerItem(final String name, final Item.Properties properties) {
+      return registerItem(vanillaItemId(name), Item::new, properties);
    }
 
-   public static Item registerItem(String var0) {
-      return registerItem(vanillaItemId(var0), Item::new, new Item.Properties());
+   private static Item registerItem(final String name) {
+      return registerItem(vanillaItemId(name), Item::new, new Item.Properties());
    }
 
-   public static Item registerItem(ResourceKey<Item> var0, Function<Item.Properties, Item> var1) {
-      return registerItem(var0, var1, new Item.Properties());
+   private static Item registerItem(final ResourceKey<Item> key, final Function<Item.Properties, Item> itemFactory) {
+      return registerItem(key, itemFactory, new Item.Properties());
    }
 
-   public static Item registerItem(ResourceKey<Item> var0, Function<Item.Properties, Item> var1, Item.Properties var2) {
-      Item var3 = (Item)var1.apply(var2.setId(var0));
-      if (var3 instanceof BlockItem var4) {
-         var4.registerBlocks(Item.BY_BLOCK, var3);
+   private static Item registerItem(final ResourceKey<Item> key, final Function<Item.Properties, Item> itemFactory, final Item.Properties properties) {
+      Item item = (Item)itemFactory.apply(properties.setId(key));
+      if (item instanceof BlockItem blockItem) {
+         blockItem.registerBlocks(Item.BY_BLOCK, item);
       }
 
-      return (Item)Registry.register(BuiltInRegistries.ITEM, (ResourceKey)var0, var3);
+      return (Item)Registry.register(BuiltInRegistries.ITEM, (ResourceKey)key, item);
    }
 
    static {
@@ -1855,6 +1856,7 @@ public class Items {
       RED_WOOL = registerBlock(Blocks.RED_WOOL);
       BLACK_WOOL = registerBlock(Blocks.BLACK_WOOL);
       DANDELION = registerBlock(Blocks.DANDELION);
+      GOLDEN_DANDELION = registerBlock(Blocks.GOLDEN_DANDELION);
       OPEN_EYEBLOSSOM = registerBlock(Blocks.OPEN_EYEBLOSSOM);
       CLOSED_EYEBLOSSOM = registerBlock(Blocks.CLOSED_EYEBLOSSOM);
       POPPY = registerBlock(Blocks.POPPY);
@@ -1930,24 +1932,24 @@ public class Items {
       SMOOTH_SANDSTONE = registerBlock(Blocks.SMOOTH_SANDSTONE);
       SMOOTH_STONE = registerBlock(Blocks.SMOOTH_STONE);
       BRICKS = registerBlock(Blocks.BRICKS);
-      ACACIA_SHELF = registerBlock(Blocks.ACACIA_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      BAMBOO_SHELF = registerBlock(Blocks.BAMBOO_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      BIRCH_SHELF = registerBlock(Blocks.BIRCH_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      CHERRY_SHELF = registerBlock(Blocks.CHERRY_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      CRIMSON_SHELF = registerBlock(Blocks.CRIMSON_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      DARK_OAK_SHELF = registerBlock(Blocks.DARK_OAK_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      JUNGLE_SHELF = registerBlock(Blocks.JUNGLE_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      MANGROVE_SHELF = registerBlock(Blocks.MANGROVE_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      OAK_SHELF = registerBlock(Blocks.OAK_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      PALE_OAK_SHELF = registerBlock(Blocks.PALE_OAK_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      SPRUCE_SHELF = registerBlock(Blocks.SPRUCE_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      WARPED_SHELF = registerBlock(Blocks.WARPED_SHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      ACACIA_SHELF = registerBlock(Blocks.ACACIA_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      BAMBOO_SHELF = registerBlock(Blocks.BAMBOO_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      BIRCH_SHELF = registerBlock(Blocks.BIRCH_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      CHERRY_SHELF = registerBlock(Blocks.CHERRY_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      CRIMSON_SHELF = registerBlock(Blocks.CRIMSON_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      DARK_OAK_SHELF = registerBlock(Blocks.DARK_OAK_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      JUNGLE_SHELF = registerBlock(Blocks.JUNGLE_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      MANGROVE_SHELF = registerBlock(Blocks.MANGROVE_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      OAK_SHELF = registerBlock(Blocks.OAK_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      PALE_OAK_SHELF = registerBlock(Blocks.PALE_OAK_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      SPRUCE_SHELF = registerBlock(Blocks.SPRUCE_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      WARPED_SHELF = registerBlock(Blocks.WARPED_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       BOOKSHELF = registerBlock(Blocks.BOOKSHELF);
-      CHISELED_BOOKSHELF = registerBlock(Blocks.CHISELED_BOOKSHELF, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      CHISELED_BOOKSHELF = registerBlock(Blocks.CHISELED_BOOKSHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       DECORATED_POT = registerBlock(Blocks.DECORATED_POT, (new Item.Properties()).component(DataComponents.POT_DECORATIONS, PotDecorations.EMPTY).component(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
       MOSSY_COBBLESTONE = registerBlock(Blocks.MOSSY_COBBLESTONE);
       OBSIDIAN = registerBlock(Blocks.OBSIDIAN);
-      TORCH = registerBlock(Blocks.TORCH, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.WALL_TORCH, Direction.DOWN, var1)));
+      TORCH = registerBlock(Blocks.TORCH, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.WALL_TORCH, Direction.DOWN, p)));
       END_ROD = registerBlock(Blocks.END_ROD);
       CHORUS_PLANT = registerBlock(Blocks.CHORUS_PLANT);
       CHORUS_FLOWER = registerBlock(Blocks.CHORUS_FLOWER);
@@ -1956,10 +1958,10 @@ public class Items {
       PURPUR_STAIRS = registerBlock(Blocks.PURPUR_STAIRS);
       SPAWNER = registerBlock(Blocks.SPAWNER);
       CREAKING_HEART = registerBlock(Blocks.CREAKING_HEART);
-      CHEST = registerBlock(Blocks.CHEST, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      CHEST = registerBlock(Blocks.CHEST, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       CRAFTING_TABLE = registerBlock(Blocks.CRAFTING_TABLE);
       FARMLAND = registerBlock(Blocks.FARMLAND);
-      FURNACE = registerBlock(Blocks.FURNACE, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      FURNACE = registerBlock(Blocks.FURNACE, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       LADDER = registerBlock(Blocks.LADDER);
       COBBLESTONE_STAIRS = registerBlock(Blocks.COBBLESTONE_STAIRS);
       SNOW = registerBlock(Blocks.SNOW);
@@ -1982,7 +1984,7 @@ public class Items {
       CRIMSON_FENCE = registerBlock(Blocks.CRIMSON_FENCE);
       WARPED_FENCE = registerBlock(Blocks.WARPED_FENCE);
       PUMPKIN = registerBlock(Blocks.PUMPKIN);
-      CARVED_PUMPKIN = registerBlock(Blocks.CARVED_PUMPKIN, (UnaryOperator)((var0) -> Waypoint.addHideAttribute(var0).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD).setSwappable(false).setCameraOverlay(Identifier.withDefaultNamespace("misc/pumpkinblur")).build())));
+      CARVED_PUMPKIN = registerBlock(Blocks.CARVED_PUMPKIN, (UnaryOperator)((p) -> Waypoint.addHideAttribute(p).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD).setSwappable(false).setCameraOverlay(Identifier.withDefaultNamespace("misc/pumpkinblur")).build())));
       JACK_O_LANTERN = registerBlock(Blocks.JACK_O_LANTERN);
       NETHERRACK = registerBlock(Blocks.NETHERRACK);
       SOUL_SAND = registerBlock(Blocks.SOUL_SAND);
@@ -1990,8 +1992,8 @@ public class Items {
       BASALT = registerBlock(Blocks.BASALT);
       POLISHED_BASALT = registerBlock(Blocks.POLISHED_BASALT);
       SMOOTH_BASALT = registerBlock(Blocks.SMOOTH_BASALT);
-      SOUL_TORCH = registerBlock(Blocks.SOUL_TORCH, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.SOUL_WALL_TORCH, Direction.DOWN, var1)));
-      COPPER_TORCH = registerBlock(Blocks.COPPER_TORCH, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.COPPER_WALL_TORCH, Direction.DOWN, var1)));
+      SOUL_TORCH = registerBlock(Blocks.SOUL_TORCH, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.SOUL_WALL_TORCH, Direction.DOWN, p)));
+      COPPER_TORCH = registerBlock(Blocks.COPPER_TORCH, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.COPPER_WALL_TORCH, Direction.DOWN, p)));
       GLOWSTONE = registerBlock(Blocks.GLOWSTONE);
       INFESTED_STONE = registerBlock(Blocks.INFESTED_STONE);
       INFESTED_COBBLESTONE = registerBlock(Blocks.INFESTED_COBBLESTONE);
@@ -2114,24 +2116,24 @@ public class Items {
       RED_TERRACOTTA = registerBlock(Blocks.RED_TERRACOTTA);
       BLACK_TERRACOTTA = registerBlock(Blocks.BLACK_TERRACOTTA);
       BARRIER = registerBlock(Blocks.BARRIER, (new Item.Properties()).rarity(Rarity.EPIC));
-      LIGHT = registerBlock(Blocks.LIGHT, (UnaryOperator)((var0) -> var0.rarity(Rarity.EPIC).component(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LightBlock.LEVEL, 15))));
+      LIGHT = registerBlock(Blocks.LIGHT, (UnaryOperator)((p) -> p.rarity(Rarity.EPIC).component(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LightBlock.LEVEL, 15))));
       HAY_BLOCK = registerBlock(Blocks.HAY_BLOCK);
-      WHITE_CARPET = registerBlock(Blocks.WHITE_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.WHITE))));
-      ORANGE_CARPET = registerBlock(Blocks.ORANGE_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.ORANGE))));
-      MAGENTA_CARPET = registerBlock(Blocks.MAGENTA_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.MAGENTA))));
-      LIGHT_BLUE_CARPET = registerBlock(Blocks.LIGHT_BLUE_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.LIGHT_BLUE))));
-      YELLOW_CARPET = registerBlock(Blocks.YELLOW_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.YELLOW))));
-      LIME_CARPET = registerBlock(Blocks.LIME_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.LIME))));
-      PINK_CARPET = registerBlock(Blocks.PINK_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.PINK))));
-      GRAY_CARPET = registerBlock(Blocks.GRAY_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.GRAY))));
-      LIGHT_GRAY_CARPET = registerBlock(Blocks.LIGHT_GRAY_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.LIGHT_GRAY))));
-      CYAN_CARPET = registerBlock(Blocks.CYAN_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.CYAN))));
-      PURPLE_CARPET = registerBlock(Blocks.PURPLE_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.PURPLE))));
-      BLUE_CARPET = registerBlock(Blocks.BLUE_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.BLUE))));
-      BROWN_CARPET = registerBlock(Blocks.BROWN_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.BROWN))));
-      GREEN_CARPET = registerBlock(Blocks.GREEN_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.GREEN))));
-      RED_CARPET = registerBlock(Blocks.RED_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.RED))));
-      BLACK_CARPET = registerBlock(Blocks.BLACK_CARPET, (UnaryOperator)((var0) -> var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.BLACK))));
+      WHITE_CARPET = registerBlock(Blocks.WHITE_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.WHITE))));
+      ORANGE_CARPET = registerBlock(Blocks.ORANGE_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.ORANGE))));
+      MAGENTA_CARPET = registerBlock(Blocks.MAGENTA_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.MAGENTA))));
+      LIGHT_BLUE_CARPET = registerBlock(Blocks.LIGHT_BLUE_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.LIGHT_BLUE))));
+      YELLOW_CARPET = registerBlock(Blocks.YELLOW_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.YELLOW))));
+      LIME_CARPET = registerBlock(Blocks.LIME_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.LIME))));
+      PINK_CARPET = registerBlock(Blocks.PINK_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.PINK))));
+      GRAY_CARPET = registerBlock(Blocks.GRAY_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.GRAY))));
+      LIGHT_GRAY_CARPET = registerBlock(Blocks.LIGHT_GRAY_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.LIGHT_GRAY))));
+      CYAN_CARPET = registerBlock(Blocks.CYAN_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.CYAN))));
+      PURPLE_CARPET = registerBlock(Blocks.PURPLE_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.PURPLE))));
+      BLUE_CARPET = registerBlock(Blocks.BLUE_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.BLUE))));
+      BROWN_CARPET = registerBlock(Blocks.BROWN_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.BROWN))));
+      GREEN_CARPET = registerBlock(Blocks.GREEN_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.GREEN))));
+      RED_CARPET = registerBlock(Blocks.RED_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.RED))));
+      BLACK_CARPET = registerBlock(Blocks.BLACK_CARPET, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.BLACK))));
       TERRACOTTA = registerBlock(Blocks.TERRACOTTA);
       PACKED_ICE = registerBlock(Blocks.PACKED_ICE);
       DIRT_PATH = registerBlock(Blocks.DIRT_PATH);
@@ -2258,7 +2260,7 @@ public class Items {
       RED_CONCRETE_POWDER = registerBlock(Blocks.RED_CONCRETE_POWDER);
       BLACK_CONCRETE_POWDER = registerBlock(Blocks.BLACK_CONCRETE_POWDER);
       TURTLE_EGG = registerBlock(Blocks.TURTLE_EGG);
-      SNIFFER_EGG = registerBlock(Blocks.SNIFFER_EGG, (UnaryOperator)((var0) -> var0.rarity(Rarity.UNCOMMON)));
+      SNIFFER_EGG = registerBlock(Blocks.SNIFFER_EGG, (UnaryOperator)((p) -> p.rarity(Rarity.UNCOMMON)));
       DRIED_GHAST = registerBlock(Blocks.DRIED_GHAST);
       DEAD_TUBE_CORAL_BLOCK = registerBlock(Blocks.DEAD_TUBE_CORAL_BLOCK);
       DEAD_BRAIN_CORAL_BLOCK = registerBlock(Blocks.DEAD_BRAIN_CORAL_BLOCK);
@@ -2280,16 +2282,16 @@ public class Items {
       DEAD_FIRE_CORAL = registerBlock(Blocks.DEAD_FIRE_CORAL);
       DEAD_HORN_CORAL = registerBlock(Blocks.DEAD_HORN_CORAL);
       DEAD_TUBE_CORAL = registerBlock(Blocks.DEAD_TUBE_CORAL);
-      TUBE_CORAL_FAN = registerBlock(Blocks.TUBE_CORAL_FAN, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.TUBE_CORAL_WALL_FAN, Direction.DOWN, var1)));
-      BRAIN_CORAL_FAN = registerBlock(Blocks.BRAIN_CORAL_FAN, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.BRAIN_CORAL_WALL_FAN, Direction.DOWN, var1)));
-      BUBBLE_CORAL_FAN = registerBlock(Blocks.BUBBLE_CORAL_FAN, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.BUBBLE_CORAL_WALL_FAN, Direction.DOWN, var1)));
-      FIRE_CORAL_FAN = registerBlock(Blocks.FIRE_CORAL_FAN, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.FIRE_CORAL_WALL_FAN, Direction.DOWN, var1)));
-      HORN_CORAL_FAN = registerBlock(Blocks.HORN_CORAL_FAN, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.HORN_CORAL_WALL_FAN, Direction.DOWN, var1)));
-      DEAD_TUBE_CORAL_FAN = registerBlock(Blocks.DEAD_TUBE_CORAL_FAN, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.DEAD_TUBE_CORAL_WALL_FAN, Direction.DOWN, var1)));
-      DEAD_BRAIN_CORAL_FAN = registerBlock(Blocks.DEAD_BRAIN_CORAL_FAN, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.DEAD_BRAIN_CORAL_WALL_FAN, Direction.DOWN, var1)));
-      DEAD_BUBBLE_CORAL_FAN = registerBlock(Blocks.DEAD_BUBBLE_CORAL_FAN, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.DEAD_BUBBLE_CORAL_WALL_FAN, Direction.DOWN, var1)));
-      DEAD_FIRE_CORAL_FAN = registerBlock(Blocks.DEAD_FIRE_CORAL_FAN, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.DEAD_FIRE_CORAL_WALL_FAN, Direction.DOWN, var1)));
-      DEAD_HORN_CORAL_FAN = registerBlock(Blocks.DEAD_HORN_CORAL_FAN, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.DEAD_HORN_CORAL_WALL_FAN, Direction.DOWN, var1)));
+      TUBE_CORAL_FAN = registerBlock(Blocks.TUBE_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.TUBE_CORAL_WALL_FAN, Direction.DOWN, p)));
+      BRAIN_CORAL_FAN = registerBlock(Blocks.BRAIN_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.BRAIN_CORAL_WALL_FAN, Direction.DOWN, p)));
+      BUBBLE_CORAL_FAN = registerBlock(Blocks.BUBBLE_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.BUBBLE_CORAL_WALL_FAN, Direction.DOWN, p)));
+      FIRE_CORAL_FAN = registerBlock(Blocks.FIRE_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.FIRE_CORAL_WALL_FAN, Direction.DOWN, p)));
+      HORN_CORAL_FAN = registerBlock(Blocks.HORN_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.HORN_CORAL_WALL_FAN, Direction.DOWN, p)));
+      DEAD_TUBE_CORAL_FAN = registerBlock(Blocks.DEAD_TUBE_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.DEAD_TUBE_CORAL_WALL_FAN, Direction.DOWN, p)));
+      DEAD_BRAIN_CORAL_FAN = registerBlock(Blocks.DEAD_BRAIN_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.DEAD_BRAIN_CORAL_WALL_FAN, Direction.DOWN, p)));
+      DEAD_BUBBLE_CORAL_FAN = registerBlock(Blocks.DEAD_BUBBLE_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.DEAD_BUBBLE_CORAL_WALL_FAN, Direction.DOWN, p)));
+      DEAD_FIRE_CORAL_FAN = registerBlock(Blocks.DEAD_FIRE_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.DEAD_FIRE_CORAL_WALL_FAN, Direction.DOWN, p)));
+      DEAD_HORN_CORAL_FAN = registerBlock(Blocks.DEAD_HORN_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.DEAD_HORN_CORAL_WALL_FAN, Direction.DOWN, p)));
       BLUE_ICE = registerBlock(Blocks.BLUE_ICE);
       CONDUIT = registerBlock(Blocks.CONDUIT, (new Item.Properties()).rarity(Rarity.UNCOMMON));
       POLISHED_GRANITE_STAIRS = registerBlock(Blocks.POLISHED_GRANITE_STAIRS);
@@ -2329,7 +2331,7 @@ public class Items {
       DEEPSLATE_TILE_SLAB = registerBlock(Blocks.DEEPSLATE_TILE_SLAB);
       SCAFFOLDING = registerBlock(Blocks.SCAFFOLDING, ScaffoldingBlockItem::new);
       REDSTONE = registerItem("redstone", createBlockItemWithCustomItemName(Blocks.REDSTONE_WIRE), (new Item.Properties()).trimMaterial(TrimMaterials.REDSTONE));
-      REDSTONE_TORCH = registerBlock(Blocks.REDSTONE_TORCH, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.REDSTONE_WALL_TORCH, Direction.DOWN, var1)));
+      REDSTONE_TORCH = registerBlock(Blocks.REDSTONE_TORCH, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.REDSTONE_WALL_TORCH, Direction.DOWN, p)));
       REDSTONE_BLOCK = registerBlock(Blocks.REDSTONE_BLOCK);
       REPEATER = registerBlock(Blocks.REPEATER);
       COMPARATOR = registerBlock(Blocks.COMPARATOR);
@@ -2338,9 +2340,9 @@ public class Items {
       SLIME_BLOCK = registerBlock(Blocks.SLIME_BLOCK);
       HONEY_BLOCK = registerBlock(Blocks.HONEY_BLOCK);
       OBSERVER = registerBlock(Blocks.OBSERVER);
-      HOPPER = registerBlock(Blocks.HOPPER, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      DISPENSER = registerBlock(Blocks.DISPENSER, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      DROPPER = registerBlock(Blocks.DROPPER, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      HOPPER = registerBlock(Blocks.HOPPER, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      DISPENSER = registerBlock(Blocks.DISPENSER, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      DROPPER = registerBlock(Blocks.DROPPER, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       LECTERN = registerBlock(Blocks.LECTERN);
       TARGET = registerBlock(Blocks.TARGET);
       LEVER = registerBlock(Blocks.LEVER);
@@ -2356,7 +2358,7 @@ public class Items {
       SCULK_SENSOR = registerBlock(Blocks.SCULK_SENSOR);
       CALIBRATED_SCULK_SENSOR = registerBlock(Blocks.CALIBRATED_SCULK_SENSOR);
       TRIPWIRE_HOOK = registerBlock(Blocks.TRIPWIRE_HOOK);
-      TRAPPED_CHEST = registerBlock(Blocks.TRAPPED_CHEST, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      TRAPPED_CHEST = registerBlock(Blocks.TRAPPED_CHEST, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       TNT = registerBlock(Blocks.TNT);
       REDSTONE_LAMP = registerBlock(Blocks.REDSTONE_LAMP);
       NOTE_BLOCK = registerBlock(Blocks.NOTE_BLOCK);
@@ -2465,35 +2467,35 @@ public class Items {
       GREEN_HARNESS = registerItem("green_harness", (new Item.Properties()).stacksTo(1).component(DataComponents.EQUIPPABLE, Equippable.harness(DyeColor.GREEN)));
       RED_HARNESS = registerItem("red_harness", (new Item.Properties()).stacksTo(1).component(DataComponents.EQUIPPABLE, Equippable.harness(DyeColor.RED)));
       BLACK_HARNESS = registerItem("black_harness", (new Item.Properties()).stacksTo(1).component(DataComponents.EQUIPPABLE, Equippable.harness(DyeColor.BLACK)));
-      MINECART = registerItem("minecart", (var0) -> new MinecartItem(EntityType.MINECART, var0), (new Item.Properties()).stacksTo(1));
-      CHEST_MINECART = registerItem("chest_minecart", (var0) -> new MinecartItem(EntityType.CHEST_MINECART, var0), (new Item.Properties()).stacksTo(1));
-      FURNACE_MINECART = registerItem("furnace_minecart", (var0) -> new MinecartItem(EntityType.FURNACE_MINECART, var0), (new Item.Properties()).stacksTo(1));
-      TNT_MINECART = registerItem("tnt_minecart", (var0) -> new MinecartItem(EntityType.TNT_MINECART, var0), (new Item.Properties()).stacksTo(1));
-      HOPPER_MINECART = registerItem("hopper_minecart", (var0) -> new MinecartItem(EntityType.HOPPER_MINECART, var0), (new Item.Properties()).stacksTo(1));
-      CARROT_ON_A_STICK = registerItem("carrot_on_a_stick", (var0) -> new FoodOnAStickItem(EntityType.PIG, 7, var0), (new Item.Properties()).durability(25));
-      WARPED_FUNGUS_ON_A_STICK = registerItem("warped_fungus_on_a_stick", (var0) -> new FoodOnAStickItem(EntityType.STRIDER, 1, var0), (new Item.Properties()).durability(100));
+      MINECART = registerItem("minecart", (p) -> new MinecartItem(EntityType.MINECART, p), (new Item.Properties()).stacksTo(1));
+      CHEST_MINECART = registerItem("chest_minecart", (p) -> new MinecartItem(EntityType.CHEST_MINECART, p), (new Item.Properties()).stacksTo(1));
+      FURNACE_MINECART = registerItem("furnace_minecart", (p) -> new MinecartItem(EntityType.FURNACE_MINECART, p), (new Item.Properties()).stacksTo(1));
+      TNT_MINECART = registerItem("tnt_minecart", (p) -> new MinecartItem(EntityType.TNT_MINECART, p), (new Item.Properties()).stacksTo(1));
+      HOPPER_MINECART = registerItem("hopper_minecart", (p) -> new MinecartItem(EntityType.HOPPER_MINECART, p), (new Item.Properties()).stacksTo(1));
+      CARROT_ON_A_STICK = registerItem("carrot_on_a_stick", (p) -> new FoodOnAStickItem(EntityType.PIG, 7, p), (new Item.Properties()).durability(25));
+      WARPED_FUNGUS_ON_A_STICK = registerItem("warped_fungus_on_a_stick", (p) -> new FoodOnAStickItem(EntityType.STRIDER, 1, p), (new Item.Properties()).durability(100));
       PHANTOM_MEMBRANE = registerItem("phantom_membrane");
       ELYTRA = registerItem("elytra", (new Item.Properties()).durability(432).rarity(Rarity.EPIC).component(DataComponents.GLIDER, Unit.INSTANCE).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.CHEST).setEquipSound(SoundEvents.ARMOR_EQUIP_ELYTRA).setAsset(EquipmentAssets.ELYTRA).setDamageOnHurt(false).build()).repairable(PHANTOM_MEMBRANE));
-      OAK_BOAT = registerItem("oak_boat", (var0) -> new BoatItem(EntityType.OAK_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      OAK_CHEST_BOAT = registerItem("oak_chest_boat", (var0) -> new BoatItem(EntityType.OAK_CHEST_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      SPRUCE_BOAT = registerItem("spruce_boat", (var0) -> new BoatItem(EntityType.SPRUCE_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      SPRUCE_CHEST_BOAT = registerItem("spruce_chest_boat", (var0) -> new BoatItem(EntityType.SPRUCE_CHEST_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      BIRCH_BOAT = registerItem("birch_boat", (var0) -> new BoatItem(EntityType.BIRCH_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      BIRCH_CHEST_BOAT = registerItem("birch_chest_boat", (var0) -> new BoatItem(EntityType.BIRCH_CHEST_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      JUNGLE_BOAT = registerItem("jungle_boat", (var0) -> new BoatItem(EntityType.JUNGLE_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      JUNGLE_CHEST_BOAT = registerItem("jungle_chest_boat", (var0) -> new BoatItem(EntityType.JUNGLE_CHEST_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      ACACIA_BOAT = registerItem("acacia_boat", (var0) -> new BoatItem(EntityType.ACACIA_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      ACACIA_CHEST_BOAT = registerItem("acacia_chest_boat", (var0) -> new BoatItem(EntityType.ACACIA_CHEST_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      CHERRY_BOAT = registerItem("cherry_boat", (var0) -> new BoatItem(EntityType.CHERRY_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      CHERRY_CHEST_BOAT = registerItem("cherry_chest_boat", (var0) -> new BoatItem(EntityType.CHERRY_CHEST_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      DARK_OAK_BOAT = registerItem("dark_oak_boat", (var0) -> new BoatItem(EntityType.DARK_OAK_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      DARK_OAK_CHEST_BOAT = registerItem("dark_oak_chest_boat", (var0) -> new BoatItem(EntityType.DARK_OAK_CHEST_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      PALE_OAK_BOAT = registerItem("pale_oak_boat", (var0) -> new BoatItem(EntityType.PALE_OAK_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      PALE_OAK_CHEST_BOAT = registerItem("pale_oak_chest_boat", (var0) -> new BoatItem(EntityType.PALE_OAK_CHEST_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      MANGROVE_BOAT = registerItem("mangrove_boat", (var0) -> new BoatItem(EntityType.MANGROVE_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      MANGROVE_CHEST_BOAT = registerItem("mangrove_chest_boat", (var0) -> new BoatItem(EntityType.MANGROVE_CHEST_BOAT, var0), (new Item.Properties()).stacksTo(1));
-      BAMBOO_RAFT = registerItem("bamboo_raft", (var0) -> new BoatItem(EntityType.BAMBOO_RAFT, var0), (new Item.Properties()).stacksTo(1));
-      BAMBOO_CHEST_RAFT = registerItem("bamboo_chest_raft", (var0) -> new BoatItem(EntityType.BAMBOO_CHEST_RAFT, var0), (new Item.Properties()).stacksTo(1));
+      OAK_BOAT = registerItem("oak_boat", (p) -> new BoatItem(EntityType.OAK_BOAT, p), (new Item.Properties()).stacksTo(1));
+      OAK_CHEST_BOAT = registerItem("oak_chest_boat", (p) -> new BoatItem(EntityType.OAK_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
+      SPRUCE_BOAT = registerItem("spruce_boat", (p) -> new BoatItem(EntityType.SPRUCE_BOAT, p), (new Item.Properties()).stacksTo(1));
+      SPRUCE_CHEST_BOAT = registerItem("spruce_chest_boat", (p) -> new BoatItem(EntityType.SPRUCE_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
+      BIRCH_BOAT = registerItem("birch_boat", (p) -> new BoatItem(EntityType.BIRCH_BOAT, p), (new Item.Properties()).stacksTo(1));
+      BIRCH_CHEST_BOAT = registerItem("birch_chest_boat", (p) -> new BoatItem(EntityType.BIRCH_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
+      JUNGLE_BOAT = registerItem("jungle_boat", (p) -> new BoatItem(EntityType.JUNGLE_BOAT, p), (new Item.Properties()).stacksTo(1));
+      JUNGLE_CHEST_BOAT = registerItem("jungle_chest_boat", (p) -> new BoatItem(EntityType.JUNGLE_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
+      ACACIA_BOAT = registerItem("acacia_boat", (p) -> new BoatItem(EntityType.ACACIA_BOAT, p), (new Item.Properties()).stacksTo(1));
+      ACACIA_CHEST_BOAT = registerItem("acacia_chest_boat", (p) -> new BoatItem(EntityType.ACACIA_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
+      CHERRY_BOAT = registerItem("cherry_boat", (p) -> new BoatItem(EntityType.CHERRY_BOAT, p), (new Item.Properties()).stacksTo(1));
+      CHERRY_CHEST_BOAT = registerItem("cherry_chest_boat", (p) -> new BoatItem(EntityType.CHERRY_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
+      DARK_OAK_BOAT = registerItem("dark_oak_boat", (p) -> new BoatItem(EntityType.DARK_OAK_BOAT, p), (new Item.Properties()).stacksTo(1));
+      DARK_OAK_CHEST_BOAT = registerItem("dark_oak_chest_boat", (p) -> new BoatItem(EntityType.DARK_OAK_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
+      PALE_OAK_BOAT = registerItem("pale_oak_boat", (p) -> new BoatItem(EntityType.PALE_OAK_BOAT, p), (new Item.Properties()).stacksTo(1));
+      PALE_OAK_CHEST_BOAT = registerItem("pale_oak_chest_boat", (p) -> new BoatItem(EntityType.PALE_OAK_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
+      MANGROVE_BOAT = registerItem("mangrove_boat", (p) -> new BoatItem(EntityType.MANGROVE_BOAT, p), (new Item.Properties()).stacksTo(1));
+      MANGROVE_CHEST_BOAT = registerItem("mangrove_chest_boat", (p) -> new BoatItem(EntityType.MANGROVE_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
+      BAMBOO_RAFT = registerItem("bamboo_raft", (p) -> new BoatItem(EntityType.BAMBOO_RAFT, p), (new Item.Properties()).stacksTo(1));
+      BAMBOO_CHEST_RAFT = registerItem("bamboo_chest_raft", (p) -> new BoatItem(EntityType.BAMBOO_CHEST_RAFT, p), (new Item.Properties()).stacksTo(1));
       STRUCTURE_BLOCK = registerBlock(Blocks.STRUCTURE_BLOCK, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC));
       JIGSAW = registerBlock(Blocks.JIGSAW, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC));
       TEST_BLOCK = registerBlock(Blocks.TEST_BLOCK, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC).component(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(TestBlock.MODE, TestBlockMode.START)));
@@ -2523,40 +2525,40 @@ public class Items {
       NETHERITE_INGOT = registerItem("netherite_ingot", (new Item.Properties()).fireResistant().trimMaterial(TrimMaterials.NETHERITE));
       NETHERITE_SCRAP = registerItem("netherite_scrap", (new Item.Properties()).fireResistant());
       WOODEN_SWORD = registerItem("wooden_sword", (new Item.Properties()).sword(ToolMaterial.WOOD, 3.0F, -2.4F));
-      WOODEN_SHOVEL = registerItem("wooden_shovel", (Function)((var0) -> new ShovelItem(ToolMaterial.WOOD, 1.5F, -3.0F, var0)));
+      WOODEN_SHOVEL = registerItem("wooden_shovel", (Function)((p) -> new ShovelItem(ToolMaterial.WOOD, 1.5F, -3.0F, p)));
       WOODEN_PICKAXE = registerItem("wooden_pickaxe", (new Item.Properties()).pickaxe(ToolMaterial.WOOD, 1.0F, -2.8F));
-      WOODEN_AXE = registerItem("wooden_axe", (Function)((var0) -> new AxeItem(ToolMaterial.WOOD, 6.0F, -3.2F, var0)));
-      WOODEN_HOE = registerItem("wooden_hoe", (Function)((var0) -> new HoeItem(ToolMaterial.WOOD, 0.0F, -3.0F, var0)));
+      WOODEN_AXE = registerItem("wooden_axe", (Function)((p) -> new AxeItem(ToolMaterial.WOOD, 6.0F, -3.2F, p)));
+      WOODEN_HOE = registerItem("wooden_hoe", (Function)((p) -> new HoeItem(ToolMaterial.WOOD, 0.0F, -3.0F, p)));
       COPPER_SWORD = registerItem("copper_sword", (new Item.Properties()).sword(ToolMaterial.COPPER, 3.0F, -2.4F));
-      COPPER_SHOVEL = registerItem("copper_shovel", (Function)((var0) -> new ShovelItem(ToolMaterial.COPPER, 1.5F, -3.0F, var0)));
+      COPPER_SHOVEL = registerItem("copper_shovel", (Function)((p) -> new ShovelItem(ToolMaterial.COPPER, 1.5F, -3.0F, p)));
       COPPER_PICKAXE = registerItem("copper_pickaxe", (new Item.Properties()).pickaxe(ToolMaterial.COPPER, 1.0F, -2.8F));
-      COPPER_AXE = registerItem("copper_axe", (Function)((var0) -> new AxeItem(ToolMaterial.COPPER, 7.0F, -3.2F, var0)));
-      COPPER_HOE = registerItem("copper_hoe", (Function)((var0) -> new HoeItem(ToolMaterial.COPPER, -1.0F, -2.0F, var0)));
+      COPPER_AXE = registerItem("copper_axe", (Function)((p) -> new AxeItem(ToolMaterial.COPPER, 7.0F, -3.2F, p)));
+      COPPER_HOE = registerItem("copper_hoe", (Function)((p) -> new HoeItem(ToolMaterial.COPPER, -1.0F, -2.0F, p)));
       STONE_SWORD = registerItem("stone_sword", (new Item.Properties()).sword(ToolMaterial.STONE, 3.0F, -2.4F));
-      STONE_SHOVEL = registerItem("stone_shovel", (Function)((var0) -> new ShovelItem(ToolMaterial.STONE, 1.5F, -3.0F, var0)));
+      STONE_SHOVEL = registerItem("stone_shovel", (Function)((p) -> new ShovelItem(ToolMaterial.STONE, 1.5F, -3.0F, p)));
       STONE_PICKAXE = registerItem("stone_pickaxe", (new Item.Properties()).pickaxe(ToolMaterial.STONE, 1.0F, -2.8F));
-      STONE_AXE = registerItem("stone_axe", (Function)((var0) -> new AxeItem(ToolMaterial.STONE, 7.0F, -3.2F, var0)));
-      STONE_HOE = registerItem("stone_hoe", (Function)((var0) -> new HoeItem(ToolMaterial.STONE, -1.0F, -2.0F, var0)));
+      STONE_AXE = registerItem("stone_axe", (Function)((p) -> new AxeItem(ToolMaterial.STONE, 7.0F, -3.2F, p)));
+      STONE_HOE = registerItem("stone_hoe", (Function)((p) -> new HoeItem(ToolMaterial.STONE, -1.0F, -2.0F, p)));
       GOLDEN_SWORD = registerItem("golden_sword", (new Item.Properties()).sword(ToolMaterial.GOLD, 3.0F, -2.4F));
-      GOLDEN_SHOVEL = registerItem("golden_shovel", (Function)((var0) -> new ShovelItem(ToolMaterial.GOLD, 1.5F, -3.0F, var0)));
+      GOLDEN_SHOVEL = registerItem("golden_shovel", (Function)((p) -> new ShovelItem(ToolMaterial.GOLD, 1.5F, -3.0F, p)));
       GOLDEN_PICKAXE = registerItem("golden_pickaxe", (new Item.Properties()).pickaxe(ToolMaterial.GOLD, 1.0F, -2.8F));
-      GOLDEN_AXE = registerItem("golden_axe", (Function)((var0) -> new AxeItem(ToolMaterial.GOLD, 6.0F, -3.0F, var0)));
-      GOLDEN_HOE = registerItem("golden_hoe", (Function)((var0) -> new HoeItem(ToolMaterial.GOLD, 0.0F, -3.0F, var0)));
+      GOLDEN_AXE = registerItem("golden_axe", (Function)((p) -> new AxeItem(ToolMaterial.GOLD, 6.0F, -3.0F, p)));
+      GOLDEN_HOE = registerItem("golden_hoe", (Function)((p) -> new HoeItem(ToolMaterial.GOLD, 0.0F, -3.0F, p)));
       IRON_SWORD = registerItem("iron_sword", (new Item.Properties()).sword(ToolMaterial.IRON, 3.0F, -2.4F));
-      IRON_SHOVEL = registerItem("iron_shovel", (Function)((var0) -> new ShovelItem(ToolMaterial.IRON, 1.5F, -3.0F, var0)));
+      IRON_SHOVEL = registerItem("iron_shovel", (Function)((p) -> new ShovelItem(ToolMaterial.IRON, 1.5F, -3.0F, p)));
       IRON_PICKAXE = registerItem("iron_pickaxe", (new Item.Properties()).pickaxe(ToolMaterial.IRON, 1.0F, -2.8F));
-      IRON_AXE = registerItem("iron_axe", (Function)((var0) -> new AxeItem(ToolMaterial.IRON, 6.0F, -3.1F, var0)));
-      IRON_HOE = registerItem("iron_hoe", (Function)((var0) -> new HoeItem(ToolMaterial.IRON, -2.0F, -1.0F, var0)));
+      IRON_AXE = registerItem("iron_axe", (Function)((p) -> new AxeItem(ToolMaterial.IRON, 6.0F, -3.1F, p)));
+      IRON_HOE = registerItem("iron_hoe", (Function)((p) -> new HoeItem(ToolMaterial.IRON, -2.0F, -1.0F, p)));
       DIAMOND_SWORD = registerItem("diamond_sword", (new Item.Properties()).sword(ToolMaterial.DIAMOND, 3.0F, -2.4F));
-      DIAMOND_SHOVEL = registerItem("diamond_shovel", (Function)((var0) -> new ShovelItem(ToolMaterial.DIAMOND, 1.5F, -3.0F, var0)));
+      DIAMOND_SHOVEL = registerItem("diamond_shovel", (Function)((p) -> new ShovelItem(ToolMaterial.DIAMOND, 1.5F, -3.0F, p)));
       DIAMOND_PICKAXE = registerItem("diamond_pickaxe", (new Item.Properties()).pickaxe(ToolMaterial.DIAMOND, 1.0F, -2.8F));
-      DIAMOND_AXE = registerItem("diamond_axe", (Function)((var0) -> new AxeItem(ToolMaterial.DIAMOND, 5.0F, -3.0F, var0)));
-      DIAMOND_HOE = registerItem("diamond_hoe", (Function)((var0) -> new HoeItem(ToolMaterial.DIAMOND, -3.0F, 0.0F, var0)));
+      DIAMOND_AXE = registerItem("diamond_axe", (Function)((p) -> new AxeItem(ToolMaterial.DIAMOND, 5.0F, -3.0F, p)));
+      DIAMOND_HOE = registerItem("diamond_hoe", (Function)((p) -> new HoeItem(ToolMaterial.DIAMOND, -3.0F, 0.0F, p)));
       NETHERITE_SWORD = registerItem("netherite_sword", (new Item.Properties()).sword(ToolMaterial.NETHERITE, 3.0F, -2.4F).fireResistant());
-      NETHERITE_SHOVEL = registerItem("netherite_shovel", (var0) -> new ShovelItem(ToolMaterial.NETHERITE, 1.5F, -3.0F, var0), (new Item.Properties()).fireResistant());
+      NETHERITE_SHOVEL = registerItem("netherite_shovel", (p) -> new ShovelItem(ToolMaterial.NETHERITE, 1.5F, -3.0F, p), (new Item.Properties()).fireResistant());
       NETHERITE_PICKAXE = registerItem("netherite_pickaxe", (new Item.Properties()).pickaxe(ToolMaterial.NETHERITE, 1.0F, -2.8F).fireResistant());
-      NETHERITE_AXE = registerItem("netherite_axe", (var0) -> new AxeItem(ToolMaterial.NETHERITE, 5.0F, -3.0F, var0), (new Item.Properties()).fireResistant());
-      NETHERITE_HOE = registerItem("netherite_hoe", (var0) -> new HoeItem(ToolMaterial.NETHERITE, -4.0F, 0.0F, var0), (new Item.Properties()).fireResistant());
+      NETHERITE_AXE = registerItem("netherite_axe", (p) -> new AxeItem(ToolMaterial.NETHERITE, 5.0F, -3.0F, p), (new Item.Properties()).fireResistant());
+      NETHERITE_HOE = registerItem("netherite_hoe", (p) -> new HoeItem(ToolMaterial.NETHERITE, -4.0F, 0.0F, p), (new Item.Properties()).fireResistant());
       STICK = registerItem("stick");
       MUSHROOM_STEW = registerItem("mushroom_stew", (new Item.Properties()).stacksTo(1).food(Foods.MUSHROOM_STEW).usingConvertsTo(BOWL));
       STRING = registerItem("string", createBlockItemWithCustomItemName(Blocks.TRIPWIRE));
@@ -2596,55 +2598,55 @@ public class Items {
       FLINT = registerItem("flint");
       PORKCHOP = registerItem("porkchop", (new Item.Properties()).food(Foods.PORKCHOP));
       COOKED_PORKCHOP = registerItem("cooked_porkchop", (new Item.Properties()).food(Foods.COOKED_PORKCHOP));
-      PAINTING = registerItem("painting", (Function)((var0) -> new HangingEntityItem(EntityType.PAINTING, var0)));
+      PAINTING = registerItem("painting", (Function)((p) -> new HangingEntityItem(EntityType.PAINTING, p)));
       GOLDEN_APPLE = registerItem("golden_apple", (new Item.Properties()).food(Foods.GOLDEN_APPLE, Consumables.GOLDEN_APPLE));
       ENCHANTED_GOLDEN_APPLE = registerItem("enchanted_golden_apple", (new Item.Properties()).rarity(Rarity.RARE).food(Foods.ENCHANTED_GOLDEN_APPLE, Consumables.ENCHANTED_GOLDEN_APPLE).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
-      OAK_SIGN = registerBlock(Blocks.OAK_SIGN, (var0, var1) -> new SignItem(var0, Blocks.OAK_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      SPRUCE_SIGN = registerBlock(Blocks.SPRUCE_SIGN, (var0, var1) -> new SignItem(var0, Blocks.SPRUCE_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      BIRCH_SIGN = registerBlock(Blocks.BIRCH_SIGN, (var0, var1) -> new SignItem(var0, Blocks.BIRCH_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      JUNGLE_SIGN = registerBlock(Blocks.JUNGLE_SIGN, (var0, var1) -> new SignItem(var0, Blocks.JUNGLE_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      ACACIA_SIGN = registerBlock(Blocks.ACACIA_SIGN, (var0, var1) -> new SignItem(var0, Blocks.ACACIA_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      CHERRY_SIGN = registerBlock(Blocks.CHERRY_SIGN, (var0, var1) -> new SignItem(var0, Blocks.CHERRY_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      DARK_OAK_SIGN = registerBlock(Blocks.DARK_OAK_SIGN, (var0, var1) -> new SignItem(var0, Blocks.DARK_OAK_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      PALE_OAK_SIGN = registerBlock(Blocks.PALE_OAK_SIGN, (var0, var1) -> new SignItem(var0, Blocks.PALE_OAK_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      MANGROVE_SIGN = registerBlock(Blocks.MANGROVE_SIGN, (var0, var1) -> new SignItem(var0, Blocks.MANGROVE_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      BAMBOO_SIGN = registerBlock(Blocks.BAMBOO_SIGN, (var0, var1) -> new SignItem(var0, Blocks.BAMBOO_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      CRIMSON_SIGN = registerBlock(Blocks.CRIMSON_SIGN, (var0, var1) -> new SignItem(var0, Blocks.CRIMSON_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      WARPED_SIGN = registerBlock(Blocks.WARPED_SIGN, (var0, var1) -> new SignItem(var0, Blocks.WARPED_WALL_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      OAK_HANGING_SIGN = registerBlock(Blocks.OAK_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.OAK_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      SPRUCE_HANGING_SIGN = registerBlock(Blocks.SPRUCE_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.SPRUCE_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      BIRCH_HANGING_SIGN = registerBlock(Blocks.BIRCH_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.BIRCH_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      JUNGLE_HANGING_SIGN = registerBlock(Blocks.JUNGLE_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.JUNGLE_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      ACACIA_HANGING_SIGN = registerBlock(Blocks.ACACIA_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.ACACIA_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      CHERRY_HANGING_SIGN = registerBlock(Blocks.CHERRY_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.CHERRY_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      DARK_OAK_HANGING_SIGN = registerBlock(Blocks.DARK_OAK_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.DARK_OAK_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      PALE_OAK_HANGING_SIGN = registerBlock(Blocks.PALE_OAK_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.PALE_OAK_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      MANGROVE_HANGING_SIGN = registerBlock(Blocks.MANGROVE_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.MANGROVE_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      BAMBOO_HANGING_SIGN = registerBlock(Blocks.BAMBOO_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.BAMBOO_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      CRIMSON_HANGING_SIGN = registerBlock(Blocks.CRIMSON_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.CRIMSON_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      WARPED_HANGING_SIGN = registerBlock(Blocks.WARPED_HANGING_SIGN, (var0, var1) -> new HangingSignItem(var0, Blocks.WARPED_WALL_HANGING_SIGN, var1), (new Item.Properties()).stacksTo(16));
-      BUCKET = registerItem("bucket", (var0) -> new BucketItem(Fluids.EMPTY, var0), (new Item.Properties()).stacksTo(16));
-      WATER_BUCKET = registerItem("water_bucket", (var0) -> new BucketItem(Fluids.WATER, var0), (new Item.Properties()).craftRemainder(BUCKET).stacksTo(1));
-      LAVA_BUCKET = registerItem("lava_bucket", (var0) -> new BucketItem(Fluids.LAVA, var0), (new Item.Properties()).craftRemainder(BUCKET).stacksTo(1));
-      POWDER_SNOW_BUCKET = registerItem("powder_snow_bucket", (var0) -> new SolidBucketItem(Blocks.POWDER_SNOW, SoundEvents.BUCKET_EMPTY_POWDER_SNOW, var0), (new Item.Properties()).stacksTo(1).useItemDescriptionPrefix());
+      OAK_SIGN = registerBlock(Blocks.OAK_SIGN, (b, p) -> new SignItem(b, Blocks.OAK_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      SPRUCE_SIGN = registerBlock(Blocks.SPRUCE_SIGN, (b, p) -> new SignItem(b, Blocks.SPRUCE_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      BIRCH_SIGN = registerBlock(Blocks.BIRCH_SIGN, (b, p) -> new SignItem(b, Blocks.BIRCH_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      JUNGLE_SIGN = registerBlock(Blocks.JUNGLE_SIGN, (b, p) -> new SignItem(b, Blocks.JUNGLE_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      ACACIA_SIGN = registerBlock(Blocks.ACACIA_SIGN, (b, p) -> new SignItem(b, Blocks.ACACIA_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      CHERRY_SIGN = registerBlock(Blocks.CHERRY_SIGN, (b, p) -> new SignItem(b, Blocks.CHERRY_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      DARK_OAK_SIGN = registerBlock(Blocks.DARK_OAK_SIGN, (b, p) -> new SignItem(b, Blocks.DARK_OAK_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      PALE_OAK_SIGN = registerBlock(Blocks.PALE_OAK_SIGN, (b, p) -> new SignItem(b, Blocks.PALE_OAK_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      MANGROVE_SIGN = registerBlock(Blocks.MANGROVE_SIGN, (b, p) -> new SignItem(b, Blocks.MANGROVE_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      BAMBOO_SIGN = registerBlock(Blocks.BAMBOO_SIGN, (b, p) -> new SignItem(b, Blocks.BAMBOO_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      CRIMSON_SIGN = registerBlock(Blocks.CRIMSON_SIGN, (b, p) -> new SignItem(b, Blocks.CRIMSON_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      WARPED_SIGN = registerBlock(Blocks.WARPED_SIGN, (b, p) -> new SignItem(b, Blocks.WARPED_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      OAK_HANGING_SIGN = registerBlock(Blocks.OAK_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.OAK_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      SPRUCE_HANGING_SIGN = registerBlock(Blocks.SPRUCE_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.SPRUCE_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      BIRCH_HANGING_SIGN = registerBlock(Blocks.BIRCH_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.BIRCH_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      JUNGLE_HANGING_SIGN = registerBlock(Blocks.JUNGLE_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.JUNGLE_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      ACACIA_HANGING_SIGN = registerBlock(Blocks.ACACIA_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.ACACIA_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      CHERRY_HANGING_SIGN = registerBlock(Blocks.CHERRY_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.CHERRY_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      DARK_OAK_HANGING_SIGN = registerBlock(Blocks.DARK_OAK_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.DARK_OAK_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      PALE_OAK_HANGING_SIGN = registerBlock(Blocks.PALE_OAK_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.PALE_OAK_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      MANGROVE_HANGING_SIGN = registerBlock(Blocks.MANGROVE_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.MANGROVE_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      BAMBOO_HANGING_SIGN = registerBlock(Blocks.BAMBOO_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.BAMBOO_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      CRIMSON_HANGING_SIGN = registerBlock(Blocks.CRIMSON_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.CRIMSON_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      WARPED_HANGING_SIGN = registerBlock(Blocks.WARPED_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.WARPED_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      BUCKET = registerItem("bucket", (p) -> new BucketItem(Fluids.EMPTY, p), (new Item.Properties()).stacksTo(16));
+      WATER_BUCKET = registerItem("water_bucket", (p) -> new BucketItem(Fluids.WATER, p), (new Item.Properties()).craftRemainder(BUCKET).stacksTo(1));
+      LAVA_BUCKET = registerItem("lava_bucket", (p) -> new BucketItem(Fluids.LAVA, p), (new Item.Properties()).craftRemainder(BUCKET).stacksTo(1));
+      POWDER_SNOW_BUCKET = registerItem("powder_snow_bucket", (p) -> new SolidBucketItem(Blocks.POWDER_SNOW, SoundEvents.BUCKET_EMPTY_POWDER_SNOW, p), (new Item.Properties()).stacksTo(1).useItemDescriptionPrefix());
       SNOWBALL = registerItem("snowball", SnowballItem::new, (new Item.Properties()).stacksTo(16));
       LEATHER = registerItem("leather");
       MILK_BUCKET = registerItem("milk_bucket", (new Item.Properties()).craftRemainder(BUCKET).component(DataComponents.CONSUMABLE, Consumables.MILK_BUCKET).usingConvertsTo(BUCKET).stacksTo(1));
-      PUFFERFISH_BUCKET = registerItem("pufferfish_bucket", (var0) -> new MobBucketItem(EntityType.PUFFERFISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, var0), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.PUFFERFISH));
-      SALMON_BUCKET = registerItem("salmon_bucket", (var0) -> new MobBucketItem(EntityType.SALMON, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, var0), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.SALMON));
-      COD_BUCKET = registerItem("cod_bucket", (var0) -> new MobBucketItem(EntityType.COD, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, var0), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.COD));
-      TROPICAL_FISH_BUCKET = registerItem("tropical_fish_bucket", (var0) -> new MobBucketItem(EntityType.TROPICAL_FISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, var0), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.TROPICAL_FISH));
-      AXOLOTL_BUCKET = registerItem("axolotl_bucket", (var0) -> new MobBucketItem(EntityType.AXOLOTL, Fluids.WATER, SoundEvents.BUCKET_EMPTY_AXOLOTL, var0), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY));
-      TADPOLE_BUCKET = registerItem("tadpole_bucket", (var0) -> new MobBucketItem(EntityType.TADPOLE, Fluids.WATER, SoundEvents.BUCKET_EMPTY_TADPOLE, var0), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY));
+      PUFFERFISH_BUCKET = registerItem("pufferfish_bucket", (p) -> new MobBucketItem(EntityType.PUFFERFISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.PUFFERFISH));
+      SALMON_BUCKET = registerItem("salmon_bucket", (p) -> new MobBucketItem(EntityType.SALMON, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.SALMON));
+      COD_BUCKET = registerItem("cod_bucket", (p) -> new MobBucketItem(EntityType.COD, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.COD));
+      TROPICAL_FISH_BUCKET = registerItem("tropical_fish_bucket", (p) -> new MobBucketItem(EntityType.TROPICAL_FISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.TROPICAL_FISH));
+      AXOLOTL_BUCKET = registerItem("axolotl_bucket", (p) -> new MobBucketItem(EntityType.AXOLOTL, Fluids.WATER, SoundEvents.BUCKET_EMPTY_AXOLOTL, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY));
+      TADPOLE_BUCKET = registerItem("tadpole_bucket", (p) -> new MobBucketItem(EntityType.TADPOLE, Fluids.WATER, SoundEvents.BUCKET_EMPTY_TADPOLE, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY));
       BRICK = registerItem("brick");
       CLAY_BALL = registerItem("clay_ball");
       DRIED_KELP_BLOCK = registerBlock(Blocks.DRIED_KELP_BLOCK);
       PAPER = registerItem("paper");
       BOOK = registerItem("book", (new Item.Properties()).enchantable(1));
       SLIME_BALL = registerItem("slime_ball");
-      EGG = registerItem("egg", EggItem::new, (new Item.Properties()).stacksTo(16).component(DataComponents.CHICKEN_VARIANT, new EitherHolder(ChickenVariants.TEMPERATE)));
-      BLUE_EGG = registerItem("blue_egg", EggItem::new, (new Item.Properties()).stacksTo(16).component(DataComponents.CHICKEN_VARIANT, new EitherHolder(ChickenVariants.COLD)));
-      BROWN_EGG = registerItem("brown_egg", EggItem::new, (new Item.Properties()).stacksTo(16).component(DataComponents.CHICKEN_VARIANT, new EitherHolder(ChickenVariants.WARM)));
+      EGG = registerItem("egg", EggItem::new, (new Item.Properties()).stacksTo(16).delayedHolderComponent(DataComponents.CHICKEN_VARIANT, ChickenVariants.TEMPERATE));
+      BLUE_EGG = registerItem("blue_egg", EggItem::new, (new Item.Properties()).stacksTo(16).delayedHolderComponent(DataComponents.CHICKEN_VARIANT, ChickenVariants.COLD));
+      BROWN_EGG = registerItem("brown_egg", EggItem::new, (new Item.Properties()).stacksTo(16).delayedHolderComponent(DataComponents.CHICKEN_VARIANT, ChickenVariants.WARM));
       COMPASS = registerItem("compass", CompassItem::new);
       RECOVERY_COMPASS = registerItem("recovery_compass", (new Item.Properties()).rarity(Rarity.UNCOMMON));
       BUNDLE = registerItem("bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
@@ -2677,22 +2679,22 @@ public class Items {
       INK_SAC = registerItem("ink_sac", InkSacItem::new);
       GLOW_INK_SAC = registerItem("glow_ink_sac", GlowInkSacItem::new);
       COCOA_BEANS = registerItem("cocoa_beans", createBlockItemWithCustomItemName(Blocks.COCOA));
-      WHITE_DYE = registerItem("white_dye", (Function)((var0) -> new DyeItem(DyeColor.WHITE, var0)));
-      ORANGE_DYE = registerItem("orange_dye", (Function)((var0) -> new DyeItem(DyeColor.ORANGE, var0)));
-      MAGENTA_DYE = registerItem("magenta_dye", (Function)((var0) -> new DyeItem(DyeColor.MAGENTA, var0)));
-      LIGHT_BLUE_DYE = registerItem("light_blue_dye", (Function)((var0) -> new DyeItem(DyeColor.LIGHT_BLUE, var0)));
-      YELLOW_DYE = registerItem("yellow_dye", (Function)((var0) -> new DyeItem(DyeColor.YELLOW, var0)));
-      LIME_DYE = registerItem("lime_dye", (Function)((var0) -> new DyeItem(DyeColor.LIME, var0)));
-      PINK_DYE = registerItem("pink_dye", (Function)((var0) -> new DyeItem(DyeColor.PINK, var0)));
-      GRAY_DYE = registerItem("gray_dye", (Function)((var0) -> new DyeItem(DyeColor.GRAY, var0)));
-      LIGHT_GRAY_DYE = registerItem("light_gray_dye", (Function)((var0) -> new DyeItem(DyeColor.LIGHT_GRAY, var0)));
-      CYAN_DYE = registerItem("cyan_dye", (Function)((var0) -> new DyeItem(DyeColor.CYAN, var0)));
-      PURPLE_DYE = registerItem("purple_dye", (Function)((var0) -> new DyeItem(DyeColor.PURPLE, var0)));
-      BLUE_DYE = registerItem("blue_dye", (Function)((var0) -> new DyeItem(DyeColor.BLUE, var0)));
-      BROWN_DYE = registerItem("brown_dye", (Function)((var0) -> new DyeItem(DyeColor.BROWN, var0)));
-      GREEN_DYE = registerItem("green_dye", (Function)((var0) -> new DyeItem(DyeColor.GREEN, var0)));
-      RED_DYE = registerItem("red_dye", (Function)((var0) -> new DyeItem(DyeColor.RED, var0)));
-      BLACK_DYE = registerItem("black_dye", (Function)((var0) -> new DyeItem(DyeColor.BLACK, var0)));
+      WHITE_DYE = registerItem("white_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.WHITE));
+      ORANGE_DYE = registerItem("orange_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.ORANGE));
+      MAGENTA_DYE = registerItem("magenta_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.MAGENTA));
+      LIGHT_BLUE_DYE = registerItem("light_blue_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.LIGHT_BLUE));
+      YELLOW_DYE = registerItem("yellow_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.YELLOW));
+      LIME_DYE = registerItem("lime_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.LIME));
+      PINK_DYE = registerItem("pink_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.PINK));
+      GRAY_DYE = registerItem("gray_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.GRAY));
+      LIGHT_GRAY_DYE = registerItem("light_gray_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.LIGHT_GRAY));
+      CYAN_DYE = registerItem("cyan_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.CYAN));
+      PURPLE_DYE = registerItem("purple_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.PURPLE));
+      BLUE_DYE = registerItem("blue_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.BLUE));
+      BROWN_DYE = registerItem("brown_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.BROWN));
+      GREEN_DYE = registerItem("green_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.GREEN));
+      RED_DYE = registerItem("red_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.RED));
+      BLACK_DYE = registerItem("black_dye", DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, DyeColor.BLACK));
       BONE_MEAL = registerItem("bone_meal", BoneMealItem::new);
       BONE = registerItem("bone");
       SUGAR = registerItem("sugar");
@@ -2714,7 +2716,7 @@ public class Items {
       RED_BED = registerBlock(Blocks.RED_BED, BedItem::new, (new Item.Properties()).stacksTo(1));
       BLACK_BED = registerBlock(Blocks.BLACK_BED, BedItem::new, (new Item.Properties()).stacksTo(1));
       COOKIE = registerItem("cookie", (new Item.Properties()).food(Foods.COOKIE));
-      CRAFTER = registerBlock(Blocks.CRAFTER, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      CRAFTER = registerBlock(Blocks.CRAFTER, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       FILLED_MAP = registerItem("filled_map", MapItem::new, (new Item.Properties()).component(DataComponents.MAP_COLOR, MapItemColor.DEFAULT).component(DataComponents.MAP_DECORATIONS, MapDecorations.EMPTY));
       SHEARS = registerItem("shears", ShearsItem::new, (new Item.Properties()).durability(238).component(DataComponents.TOOL, ShearsItem.createToolProperties()));
       MELON_SLICE = registerItem("melon_slice", (new Item.Properties()).food(Foods.MELON_SLICE));
@@ -2737,7 +2739,7 @@ public class Items {
       FERMENTED_SPIDER_EYE = registerItem("fermented_spider_eye");
       BLAZE_POWDER = registerItem("blaze_powder");
       MAGMA_CREAM = registerItem("magma_cream");
-      BREWING_STAND = registerBlock(Blocks.BREWING_STAND, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      BREWING_STAND = registerBlock(Blocks.BREWING_STAND, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       CAULDRON = registerBlock(Blocks.CAULDRON, Blocks.WATER_CAULDRON, Blocks.LAVA_CAULDRON, Blocks.POWDER_SNOW_CAULDRON);
       ENDER_EYE = registerItem("ender_eye", EnderEyeItem::new);
       GLISTERING_MELON_SLICE = registerItem("glistering_melon_slice");
@@ -2835,8 +2837,8 @@ public class Items {
       WRITTEN_BOOK = registerItem("written_book", WrittenBookItem::new, (new Item.Properties()).stacksTo(16).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
       BREEZE_ROD = registerItem("breeze_rod");
       MACE = registerItem("mace", MaceItem::new, (new Item.Properties()).rarity(Rarity.EPIC).durability(500).component(DataComponents.TOOL, MaceItem.createToolProperties()).repairable(BREEZE_ROD).attributes(MaceItem.createAttributes()).enchantable(15).component(DataComponents.WEAPON, new Weapon(1)));
-      ITEM_FRAME = registerItem("item_frame", (Function)((var0) -> new ItemFrameItem(EntityType.ITEM_FRAME, var0)));
-      GLOW_ITEM_FRAME = registerItem("glow_item_frame", (Function)((var0) -> new ItemFrameItem(EntityType.GLOW_ITEM_FRAME, var0)));
+      ITEM_FRAME = registerItem("item_frame", (Function)((p) -> new ItemFrameItem(EntityType.ITEM_FRAME, p)));
+      GLOW_ITEM_FRAME = registerItem("glow_item_frame", (Function)((p) -> new ItemFrameItem(EntityType.GLOW_ITEM_FRAME, p)));
       FLOWER_POT = registerBlock(Blocks.FLOWER_POT);
       CARROT = registerItem("carrot", createBlockItemWithCustomItemName(Blocks.CARROTS), (new Item.Properties()).food(Foods.CARROT));
       POTATO = registerItem("potato", createBlockItemWithCustomItemName(Blocks.POTATOES), (new Item.Properties()).food(Foods.POTATO));
@@ -2844,13 +2846,13 @@ public class Items {
       POISONOUS_POTATO = registerItem("poisonous_potato", (new Item.Properties()).food(Foods.POISONOUS_POTATO, Consumables.POISONOUS_POTATO));
       MAP = registerItem("map", EmptyMapItem::new);
       GOLDEN_CARROT = registerItem("golden_carrot", (new Item.Properties()).food(Foods.GOLDEN_CARROT));
-      SKELETON_SKULL = registerBlock(Blocks.SKELETON_SKULL, (var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.SKELETON_WALL_SKULL, Direction.DOWN, Waypoint.addHideAttribute(var1)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
-      WITHER_SKELETON_SKULL = registerBlock(Blocks.WITHER_SKELETON_SKULL, (var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.WITHER_SKELETON_WALL_SKULL, Direction.DOWN, Waypoint.addHideAttribute(var1)), (new Item.Properties()).rarity(Rarity.RARE).equippableUnswappable(EquipmentSlot.HEAD));
-      PLAYER_HEAD = registerBlock(Blocks.PLAYER_HEAD, (var0, var1) -> new PlayerHeadItem(var0, Blocks.PLAYER_WALL_HEAD, Waypoint.addHideAttribute(var1)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
-      ZOMBIE_HEAD = registerBlock(Blocks.ZOMBIE_HEAD, (var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.ZOMBIE_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(var1)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
-      CREEPER_HEAD = registerBlock(Blocks.CREEPER_HEAD, (var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.CREEPER_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(var1)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
-      DRAGON_HEAD = registerBlock(Blocks.DRAGON_HEAD, (var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.DRAGON_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(var1)), (new Item.Properties()).rarity(Rarity.EPIC).equippableUnswappable(EquipmentSlot.HEAD));
-      PIGLIN_HEAD = registerBlock(Blocks.PIGLIN_HEAD, (var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.PIGLIN_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(var1)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
+      SKELETON_SKULL = registerBlock(Blocks.SKELETON_SKULL, (b, p) -> new StandingAndWallBlockItem(b, Blocks.SKELETON_WALL_SKULL, Direction.DOWN, Waypoint.addHideAttribute(p)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
+      WITHER_SKELETON_SKULL = registerBlock(Blocks.WITHER_SKELETON_SKULL, (b, p) -> new StandingAndWallBlockItem(b, Blocks.WITHER_SKELETON_WALL_SKULL, Direction.DOWN, Waypoint.addHideAttribute(p)), (new Item.Properties()).rarity(Rarity.RARE).equippableUnswappable(EquipmentSlot.HEAD));
+      PLAYER_HEAD = registerBlock(Blocks.PLAYER_HEAD, (b, p) -> new PlayerHeadItem(b, Blocks.PLAYER_WALL_HEAD, Waypoint.addHideAttribute(p)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
+      ZOMBIE_HEAD = registerBlock(Blocks.ZOMBIE_HEAD, (b, p) -> new StandingAndWallBlockItem(b, Blocks.ZOMBIE_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
+      CREEPER_HEAD = registerBlock(Blocks.CREEPER_HEAD, (b, p) -> new StandingAndWallBlockItem(b, Blocks.CREEPER_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
+      DRAGON_HEAD = registerBlock(Blocks.DRAGON_HEAD, (b, p) -> new StandingAndWallBlockItem(b, Blocks.DRAGON_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p)), (new Item.Properties()).rarity(Rarity.EPIC).equippableUnswappable(EquipmentSlot.HEAD));
+      PIGLIN_HEAD = registerBlock(Blocks.PIGLIN_HEAD, (b, p) -> new StandingAndWallBlockItem(b, Blocks.PIGLIN_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
       NETHER_STAR = registerItem("nether_star", (new Item.Properties()).rarity(Rarity.RARE).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true).component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(DamageTypeTags.IS_EXPLOSION)));
       PUMPKIN_PIE = registerItem("pumpkin_pie", (new Item.Properties()).food(Foods.PUMPKIN_PIE));
       FIREWORK_ROCKET = registerItem("firework_rocket", FireworkRocketItem::new, (new Item.Properties()).component(DataComponents.FIREWORKS, new Fireworks(1, List.of())));
@@ -2874,25 +2876,25 @@ public class Items {
       LEATHER_HORSE_ARMOR = registerItem("leather_horse_armor", (new Item.Properties()).horseArmor(ArmorMaterials.LEATHER));
       LEAD = registerItem("lead", LeadItem::new);
       NAME_TAG = registerItem("name_tag", NameTagItem::new);
-      COMMAND_BLOCK_MINECART = registerItem("command_block_minecart", (var0) -> new MinecartItem(EntityType.COMMAND_BLOCK_MINECART, var0), (new Item.Properties()).stacksTo(1).rarity(Rarity.EPIC));
+      COMMAND_BLOCK_MINECART = registerItem("command_block_minecart", (p) -> new MinecartItem(EntityType.COMMAND_BLOCK_MINECART, p), (new Item.Properties()).stacksTo(1).rarity(Rarity.EPIC));
       MUTTON = registerItem("mutton", (new Item.Properties()).food(Foods.MUTTON));
       COOKED_MUTTON = registerItem("cooked_mutton", (new Item.Properties()).food(Foods.COOKED_MUTTON));
-      WHITE_BANNER = registerBlock(Blocks.WHITE_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.WHITE_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      ORANGE_BANNER = registerBlock(Blocks.ORANGE_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.ORANGE_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      MAGENTA_BANNER = registerBlock(Blocks.MAGENTA_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.MAGENTA_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      LIGHT_BLUE_BANNER = registerBlock(Blocks.LIGHT_BLUE_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.LIGHT_BLUE_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      YELLOW_BANNER = registerBlock(Blocks.YELLOW_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.YELLOW_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      LIME_BANNER = registerBlock(Blocks.LIME_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.LIME_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      PINK_BANNER = registerBlock(Blocks.PINK_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.PINK_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      GRAY_BANNER = registerBlock(Blocks.GRAY_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.GRAY_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      LIGHT_GRAY_BANNER = registerBlock(Blocks.LIGHT_GRAY_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.LIGHT_GRAY_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      CYAN_BANNER = registerBlock(Blocks.CYAN_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.CYAN_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      PURPLE_BANNER = registerBlock(Blocks.PURPLE_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.PURPLE_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      BLUE_BANNER = registerBlock(Blocks.BLUE_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.BLUE_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      BROWN_BANNER = registerBlock(Blocks.BROWN_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.BROWN_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      GREEN_BANNER = registerBlock(Blocks.GREEN_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.GREEN_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      RED_BANNER = registerBlock(Blocks.RED_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.RED_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
-      BLACK_BANNER = registerBlock(Blocks.BLACK_BANNER, (var0, var1) -> new BannerItem(var0, Blocks.BLACK_WALL_BANNER, var1), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      WHITE_BANNER = registerBlock(Blocks.WHITE_BANNER, (b, p) -> new BannerItem(b, Blocks.WHITE_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      ORANGE_BANNER = registerBlock(Blocks.ORANGE_BANNER, (b, p) -> new BannerItem(b, Blocks.ORANGE_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      MAGENTA_BANNER = registerBlock(Blocks.MAGENTA_BANNER, (b, p) -> new BannerItem(b, Blocks.MAGENTA_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      LIGHT_BLUE_BANNER = registerBlock(Blocks.LIGHT_BLUE_BANNER, (b, p) -> new BannerItem(b, Blocks.LIGHT_BLUE_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      YELLOW_BANNER = registerBlock(Blocks.YELLOW_BANNER, (b, p) -> new BannerItem(b, Blocks.YELLOW_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      LIME_BANNER = registerBlock(Blocks.LIME_BANNER, (b, p) -> new BannerItem(b, Blocks.LIME_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      PINK_BANNER = registerBlock(Blocks.PINK_BANNER, (b, p) -> new BannerItem(b, Blocks.PINK_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      GRAY_BANNER = registerBlock(Blocks.GRAY_BANNER, (b, p) -> new BannerItem(b, Blocks.GRAY_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      LIGHT_GRAY_BANNER = registerBlock(Blocks.LIGHT_GRAY_BANNER, (b, p) -> new BannerItem(b, Blocks.LIGHT_GRAY_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      CYAN_BANNER = registerBlock(Blocks.CYAN_BANNER, (b, p) -> new BannerItem(b, Blocks.CYAN_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      PURPLE_BANNER = registerBlock(Blocks.PURPLE_BANNER, (b, p) -> new BannerItem(b, Blocks.PURPLE_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      BLUE_BANNER = registerBlock(Blocks.BLUE_BANNER, (b, p) -> new BannerItem(b, Blocks.BLUE_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      BROWN_BANNER = registerBlock(Blocks.BROWN_BANNER, (b, p) -> new BannerItem(b, Blocks.BROWN_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      GREEN_BANNER = registerBlock(Blocks.GREEN_BANNER, (b, p) -> new BannerItem(b, Blocks.GREEN_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      RED_BANNER = registerBlock(Blocks.RED_BANNER, (b, p) -> new BannerItem(b, Blocks.RED_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+      BLACK_BANNER = registerBlock(Blocks.BLACK_BANNER, (b, p) -> new BannerItem(b, Blocks.BLACK_WALL_BANNER, p), (new Item.Properties()).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
       END_CRYSTAL = registerItem("end_crystal", EndCrystalItem::new, (new Item.Properties()).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
       CHORUS_FRUIT = registerItem("chorus_fruit", (new Item.Properties()).food(Foods.CHORUS_FRUIT, Consumables.CHORUS_FRUIT).useCooldown(1.0F));
       POPPED_CHORUS_FRUIT = registerItem("popped_chorus_fruit");
@@ -2963,11 +2965,11 @@ public class Items {
       GUSTER_BANNER_PATTERN = registerItem("guster_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_GUSTER));
       FIELD_MASONED_BANNER_PATTERN = registerItem("field_masoned_banner_pattern", (new Item.Properties()).stacksTo(1).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_FIELD_MASONED));
       BORDURE_INDENTED_BANNER_PATTERN = registerItem("bordure_indented_banner_pattern", (new Item.Properties()).stacksTo(1).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_BORDURE_INDENTED));
-      GOAT_HORN = registerItem("goat_horn", InstrumentItem::new, (new Item.Properties()).rarity(Rarity.UNCOMMON).stacksTo(1).component(DataComponents.INSTRUMENT, new InstrumentComponent(Instruments.PONDER_GOAT_HORN)));
+      GOAT_HORN = registerItem("goat_horn", InstrumentItem::new, (new Item.Properties()).rarity(Rarity.UNCOMMON).stacksTo(1).delayedComponent(DataComponents.INSTRUMENT, (context) -> new InstrumentComponent(context.getOrThrow(Instruments.PONDER_GOAT_HORN))));
       COMPOSTER = registerBlock(Blocks.COMPOSTER);
-      BARREL = registerBlock(Blocks.BARREL, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      SMOKER = registerBlock(Blocks.SMOKER, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      BLAST_FURNACE = registerBlock(Blocks.BLAST_FURNACE, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      BARREL = registerBlock(Blocks.BARREL, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      SMOKER = registerBlock(Blocks.SMOKER, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      BLAST_FURNACE = registerBlock(Blocks.BLAST_FURNACE, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       CARTOGRAPHY_TABLE = registerBlock(Blocks.CARTOGRAPHY_TABLE);
       FLETCHING_TABLE = registerBlock(Blocks.FLETCHING_TABLE);
       GRINDSTONE = registerBlock(Blocks.GRINDSTONE);
@@ -2979,8 +2981,8 @@ public class Items {
       COPPER_LANTERN = WeatheringCopperItems.create(Blocks.COPPER_LANTERN, Items::registerBlock);
       SWEET_BERRIES = registerItem("sweet_berries", createBlockItemWithCustomItemName(Blocks.SWEET_BERRY_BUSH), (new Item.Properties()).food(Foods.SWEET_BERRIES));
       GLOW_BERRIES = registerItem("glow_berries", createBlockItemWithCustomItemName(Blocks.CAVE_VINES), (new Item.Properties()).food(Foods.GLOW_BERRIES));
-      CAMPFIRE = registerBlock(Blocks.CAMPFIRE, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
-      SOUL_CAMPFIRE = registerBlock(Blocks.SOUL_CAMPFIRE, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      CAMPFIRE = registerBlock(Blocks.CAMPFIRE, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      SOUL_CAMPFIRE = registerBlock(Blocks.SOUL_CAMPFIRE, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       SHROOMLIGHT = registerBlock(Blocks.SHROOMLIGHT);
       HONEYCOMB = registerItem("honeycomb", HoneycombItem::new);
       BEE_NEST = registerBlock(Blocks.BEE_NEST, (new Item.Properties()).component(DataComponents.BEES, Bees.EMPTY).component(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(BeehiveBlock.HONEY_LEVEL, 0)));

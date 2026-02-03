@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -16,35 +17,42 @@ import org.slf4j.Logger;
 
 public class SmeltItemFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<SmeltItemFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).apply(var0, SmeltItemFunction::new));
+   private final boolean useInputCount;
+   public static final MapCodec<SmeltItemFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(Codec.BOOL.optionalFieldOf("use_input_count", true).forGetter((o) -> o.useInputCount)).apply(i, SmeltItemFunction::new));
 
-   private SmeltItemFunction(List<LootItemCondition> var1) {
-      super(var1);
+   private SmeltItemFunction(final List<LootItemCondition> predicates, final boolean useInputCount) {
+      super(predicates);
+      this.useInputCount = useInputCount;
    }
 
-   public LootItemFunctionType<SmeltItemFunction> getType() {
-      return LootItemFunctions.FURNACE_SMELT;
+   public MapCodec<SmeltItemFunction> codec() {
+      return MAP_CODEC;
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      if (var1.isEmpty()) {
-         return var1;
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      if (itemStack.isEmpty()) {
+         return itemStack;
       } else {
-         SingleRecipeInput var3 = new SingleRecipeInput(var1);
-         Optional var4 = var2.getLevel().recipeAccess().getRecipeFor(RecipeType.SMELTING, var3, var2.getLevel());
-         if (var4.isPresent()) {
-            ItemStack var5 = ((SmeltingRecipe)((RecipeHolder)var4.get()).value()).assemble(var3, var2.getLevel().registryAccess());
-            if (!var5.isEmpty()) {
-               return var5.copyWithCount(var1.getCount());
+         SingleRecipeInput input = new SingleRecipeInput(itemStack);
+         Optional<RecipeHolder<SmeltingRecipe>> recipe = context.getLevel().recipeAccess().getRecipeFor(RecipeType.SMELTING, input, context.getLevel());
+         if (recipe.isPresent()) {
+            ItemStack result = ((SmeltingRecipe)((RecipeHolder)recipe.get()).value()).assemble(input);
+            if (!result.isEmpty()) {
+               int newCount = (this.useInputCount ? itemStack.count() : 1) * result.getCount();
+               return result.copyWithCount(Math.min(newCount, result.getMaxStackSize()));
             }
          }
 
-         LOGGER.warn("Couldn't smelt {} because there is no smelting recipe", var1);
-         return var1;
+         LOGGER.warn("Couldn't smelt {} because there is no smelting recipe", itemStack);
+         return itemStack;
       }
    }
 
    public static LootItemConditionalFunction.Builder<?> smelted() {
-      return simpleBuilder(SmeltItemFunction::new);
+      return smelted(true);
+   }
+
+   public static LootItemConditionalFunction.Builder<?> smelted(final boolean useInputCount) {
+      return simpleBuilder((predicates) -> new SmeltItemFunction(predicates, useInputCount));
    }
 }

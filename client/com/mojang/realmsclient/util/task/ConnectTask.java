@@ -14,11 +14,11 @@ public class ConnectTask extends LongRunningTask {
    private final RealmsServer server;
    private final RealmsJoinInformation address;
 
-   public ConnectTask(Screen var1, RealmsServer var2, RealmsJoinInformation var3) {
+   public ConnectTask(final Screen lastScreen, final RealmsServer server, final RealmsJoinInformation address) {
       super();
-      this.server = var2;
-      this.address = var3;
-      this.realmsConnect = new RealmsConnect(var1);
+      this.server = server;
+      this.address = address;
+      this.realmsConnect = new RealmsConnect(lastScreen);
    }
 
    public void run() {

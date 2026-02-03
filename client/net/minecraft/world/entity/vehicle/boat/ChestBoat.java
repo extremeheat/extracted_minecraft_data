@@ -7,11 +7,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 
 public class ChestBoat extends AbstractChestBoat {
-   public ChestBoat(EntityType<? extends ChestBoat> var1, Level var2, Supplier<Item> var3) {
-      super(var1, var2, var3);
+   public ChestBoat(final EntityType<? extends ChestBoat> type, final Level level, final Supplier<Item> dropItem) {
+      super(type, level, dropItem);
    }
 
-   protected double rideHeight(EntityDimensions var1) {
-      return (double)(var1.height() / 3.0F);
+   protected double rideHeight(final EntityDimensions dimensions) {
+      return (double)(dimensions.height() / 3.0F);
    }
 }

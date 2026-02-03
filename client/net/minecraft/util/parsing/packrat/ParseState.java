@@ -8,26 +8,26 @@ public interface ParseState<S> {
 
    ErrorCollector<S> errorCollector();
 
-   default <T> Optional<T> parseTopRule(NamedRule<S, T> var1) {
-      Object var2 = this.parse(var1);
-      if (var2 != null) {
+   default <T> Optional<T> parseTopRule(final NamedRule<S, T> rule) {
+      T result = (T)this.parse(rule);
+      if (result != null) {
          this.errorCollector().finish(this.mark());
       }
 
       if (!this.scope().hasOnlySingleFrame()) {
          throw new IllegalStateException("Malformed scope: " + String.valueOf(this.scope()));
       } else {
-         return Optional.ofNullable(var2);
+         return Optional.ofNullable(result);
       }
    }
 
-   <T> @Nullable T parse(NamedRule<S, T> var1);
+   <T> @Nullable T parse(NamedRule<S, T> rule);
 
    S input();
 
    int mark();
 
-   void restore(int var1);
+   void restore(int mark);
 
    Control acquireControl();
 

@@ -35,31 +35,31 @@ public class LevelLoadingScreen extends Screen {
    private long lastNarration = -1L;
    private Reason reason;
    private @Nullable TextureAtlasSprite cachedNetherPortalSprite;
-   private static final Object2IntMap<ChunkStatus> COLORS = (Object2IntMap)Util.make(new Object2IntOpenHashMap(), (var0) -> {
-      var0.defaultReturnValue(0);
-      var0.put(ChunkStatus.EMPTY, 5526612);
-      var0.put(ChunkStatus.STRUCTURE_STARTS, 10066329);
-      var0.put(ChunkStatus.STRUCTURE_REFERENCES, 6250897);
-      var0.put(ChunkStatus.BIOMES, 8434258);
-      var0.put(ChunkStatus.NOISE, 13750737);
-      var0.put(ChunkStatus.SURFACE, 7497737);
-      var0.put(ChunkStatus.CARVERS, 3159410);
-      var0.put(ChunkStatus.FEATURES, 2213376);
-      var0.put(ChunkStatus.INITIALIZE_LIGHT, 13421772);
-      var0.put(ChunkStatus.LIGHT, 16769184);
-      var0.put(ChunkStatus.SPAWN, 15884384);
-      var0.put(ChunkStatus.FULL, 16777215);
+   private static final Object2IntMap<ChunkStatus> COLORS = (Object2IntMap)Util.make(new Object2IntOpenHashMap(), (map) -> {
+      map.defaultReturnValue(0);
+      map.put(ChunkStatus.EMPTY, 5526612);
+      map.put(ChunkStatus.STRUCTURE_STARTS, 10066329);
+      map.put(ChunkStatus.STRUCTURE_REFERENCES, 6250897);
+      map.put(ChunkStatus.BIOMES, 8434258);
+      map.put(ChunkStatus.NOISE, 13750737);
+      map.put(ChunkStatus.SURFACE, 7497737);
+      map.put(ChunkStatus.CARVERS, 3159410);
+      map.put(ChunkStatus.FEATURES, 2213376);
+      map.put(ChunkStatus.INITIALIZE_LIGHT, 13421772);
+      map.put(ChunkStatus.LIGHT, 16769184);
+      map.put(ChunkStatus.SPAWN, 15884384);
+      map.put(ChunkStatus.FULL, 16777215);
    });
 
-   public LevelLoadingScreen(LevelLoadTracker var1, Reason var2) {
+   public LevelLoadingScreen(final LevelLoadTracker loadTracker, final Reason reason) {
       super(GameNarrator.NO_TITLE);
-      this.loadTracker = var1;
-      this.reason = var2;
+      this.loadTracker = loadTracker;
+      this.reason = reason;
    }
 
-   public void update(LevelLoadTracker var1, Reason var2) {
-      this.loadTracker = var1;
-      this.reason = var2;
+   public void update(final LevelLoadTracker loadTracker, final Reason reason) {
+      this.loadTracker = loadTracker;
+      this.reason = reason;
    }
 
    public boolean shouldCloseOnEsc() {
@@ -70,9 +70,9 @@ public class LevelLoadingScreen extends Screen {
       return false;
    }
 
-   protected void updateNarratedWidget(NarrationElementOutput var1) {
+   protected void updateNarratedWidget(final NarrationElementOutput output) {
       if (this.loadTracker.hasProgress()) {
-         var1.add(NarratedElementType.TITLE, (Component)Component.translatable("loading.progress", Mth.floor(this.loadTracker.serverProgress() * 100.0F)));
+         output.add(NarratedElementType.TITLE, (Component)Component.translatable("loading.progress", Mth.floor(this.loadTracker.serverProgress() * 100.0F)));
       }
 
    }
@@ -86,80 +86,80 @@ public class LevelLoadingScreen extends Screen {
 
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      long var5 = Util.getMillis();
-      if (var5 - this.lastNarration > 2000L) {
-         this.lastNarration = var5;
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
+      long current = Util.getMillis();
+      if (current - this.lastNarration > 2000L) {
+         this.lastNarration = current;
          this.triggerImmediateNarration(true);
       }
 
-      int var7 = this.width / 2;
-      int var8 = this.height / 2;
-      ChunkLoadStatusView var9 = this.loadTracker.statusView();
-      int var10;
-      if (var9 != null) {
-         boolean var11 = true;
-         renderChunks(var1, var7, var8, 2, 0, var9);
-         int var10000 = var8 - var9.radius() * 2;
+      int xCenter = this.width / 2;
+      int yCenter = this.height / 2;
+      ChunkLoadStatusView statusView = this.loadTracker.statusView();
+      int textTop;
+      if (statusView != null) {
+         int size = 2;
+         renderChunks(graphics, xCenter, yCenter, 2, 0, statusView);
+         int var10000 = yCenter - statusView.radius() * 2;
          Objects.requireNonNull(this.font);
-         var10 = var10000 - 9 * 3;
+         textTop = var10000 - 9 * 3;
       } else {
-         var10 = var8 - 50;
+         textTop = yCenter - 50;
       }
 
-      var1.drawCenteredString(this.font, (Component)DOWNLOADING_TERRAIN_TEXT, var7, var10, -1);
+      graphics.drawCenteredString(this.font, (Component)DOWNLOADING_TERRAIN_TEXT, xCenter, textTop, -1);
       if (this.loadTracker.hasProgress()) {
-         int var10002 = var7 - 100;
+         int var10002 = xCenter - 100;
          Objects.requireNonNull(this.font);
-         this.drawProgressBar(var1, var10002, var10 + 9 + 3, 200, 2, this.smoothedProgress);
+         this.drawProgressBar(graphics, var10002, textTop + 9 + 3, 200, 2, this.smoothedProgress);
       }
 
    }
 
-   private void drawProgressBar(GuiGraphics var1, int var2, int var3, int var4, int var5, float var6) {
-      var1.fill(var2, var3, var2 + var4, var3 + var5, -16777216);
-      var1.fill(var2, var3, var2 + Math.round(var6 * (float)var4), var3 + var5, -16711936);
+   private void drawProgressBar(final GuiGraphics graphics, final int left, final int top, final int width, final int height, final float progress) {
+      graphics.fill(left, top, left + width, top + height, -16777216);
+      graphics.fill(left, top, left + Math.round(progress * (float)width), top + height, -16711936);
    }
 
-   public static void renderChunks(GuiGraphics var0, int var1, int var2, int var3, int var4, ChunkLoadStatusView var5) {
-      int var6 = var3 + var4;
-      int var7 = var5.radius() * 2 + 1;
-      int var8 = var7 * var6 - var4;
-      int var9 = var1 - var8 / 2;
-      int var10 = var2 - var8 / 2;
+   public static void renderChunks(final GuiGraphics graphics, final int xCenter, final int yCenter, final int size, final int margin, final ChunkLoadStatusView statusView) {
+      int width = size + margin;
+      int diameter = statusView.radius() * 2 + 1;
+      int totalWidth = diameter * width - margin;
+      int xStart = xCenter - totalWidth / 2;
+      int yStart = yCenter - totalWidth / 2;
       if (Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DebugScreenEntries.VISUALIZE_CHUNKS_ON_SERVER)) {
-         int var11 = var6 / 2 + 1;
-         var0.fill(var1 - var11, var2 - var11, var1 + var11, var2 + var11, -65536);
+         int centerWidth = width / 2 + 1;
+         graphics.fill(xCenter - centerWidth, yCenter - centerWidth, xCenter + centerWidth, yCenter + centerWidth, -65536);
       }
 
-      for(int var16 = 0; var16 < var7; ++var16) {
-         for(int var12 = 0; var12 < var7; ++var12) {
-            ChunkStatus var13 = var5.get(var16, var12);
-            int var14 = var9 + var16 * var6;
-            int var15 = var10 + var12 * var6;
-            var0.fill(var14, var15, var14 + var3, var15 + var3, ARGB.opaque(COLORS.getInt(var13)));
+      for(int x = 0; x < diameter; ++x) {
+         for(int z = 0; z < diameter; ++z) {
+            ChunkStatus status = statusView.get(x, z);
+            int xCellStart = xStart + x * width;
+            int yCellStart = yStart + z * width;
+            graphics.fill(xCellStart, yCellStart, xCellStart + size, yCellStart + size, ARGB.opaque(COLORS.getInt(status)));
          }
       }
 
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
       switch (this.reason.ordinal()) {
          case 0:
-            var1.blitSprite(RenderPipelines.GUI_OPAQUE_TEXTURED_BACKGROUND, (TextureAtlasSprite)this.getNetherPortalSprite(), 0, 0, var1.guiWidth(), var1.guiHeight());
+            graphics.blitSprite(RenderPipelines.GUI_OPAQUE_TEXTURED_BACKGROUND, (TextureAtlasSprite)this.getNetherPortalSprite(), 0, 0, graphics.guiWidth(), graphics.guiHeight());
             break;
          case 1:
-            TextureManager var5 = Minecraft.getInstance().getTextureManager();
-            AbstractTexture var6 = var5.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
-            AbstractTexture var7 = var5.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
-            TextureSetup var8 = TextureSetup.doubleTexture(var6.getTextureView(), var6.getSampler(), var7.getTextureView(), var7.getSampler());
-            var1.fill(RenderPipelines.END_PORTAL, var8, 0, 0, this.width, this.height);
+            TextureManager textureManager = Minecraft.getInstance().getTextureManager();
+            AbstractTexture skyTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
+            AbstractTexture portalTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
+            TextureSetup textureSetup = TextureSetup.doubleTexture(skyTexture.getTextureView(), skyTexture.getSampler(), portalTexture.getTextureView(), portalTexture.getSampler());
+            graphics.fill(RenderPipelines.END_PORTAL, textureSetup, 0, 0, this.width, this.height);
             break;
          case 2:
-            this.renderPanorama(var1, var4);
-            this.renderBlurredBackground(var1);
-            this.renderMenuBackground(var1);
+            this.renderPanorama(graphics, a);
+            this.renderBlurredBackground(graphics);
+            this.renderMenuBackground(graphics);
       }
 
    }

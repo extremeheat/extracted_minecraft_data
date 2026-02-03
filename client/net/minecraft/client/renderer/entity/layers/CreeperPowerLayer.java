@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.creeper.CreeperModel;
@@ -12,17 +11,17 @@ public class CreeperPowerLayer extends EnergySwirlLayer<CreeperRenderState, Cree
    private static final Identifier POWER_LOCATION = Identifier.withDefaultNamespace("textures/entity/creeper/creeper_armor.png");
    private final CreeperModel model;
 
-   public CreeperPowerLayer(RenderLayerParent<CreeperRenderState, CreeperModel> var1, EntityModelSet var2) {
-      super(var1);
-      this.model = new CreeperModel(var2.bakeLayer(ModelLayers.CREEPER_ARMOR));
+   public CreeperPowerLayer(final RenderLayerParent<CreeperRenderState, CreeperModel> renderer, final EntityModelSet modelSet) {
+      super(renderer);
+      this.model = new CreeperModel(modelSet.bakeLayer(ModelLayers.CREEPER_ARMOR));
    }
 
-   protected boolean isPowered(CreeperRenderState var1) {
-      return var1.isPowered;
+   protected boolean isPowered(final CreeperRenderState state) {
+      return state.isPowered;
    }
 
-   protected float xOffset(float var1) {
-      return var1 * 0.01F;
+   protected float xOffset(final float t) {
+      return t * 0.01F;
    }
 
    protected Identifier getTextureLocation() {
@@ -31,10 +30,5 @@ public class CreeperPowerLayer extends EnergySwirlLayer<CreeperRenderState, Cree
 
    protected CreeperModel model() {
       return this.model;
-   }
-
-   // $FF: synthetic method
-   protected EntityModel model() {
-      return this.model();
    }
 }

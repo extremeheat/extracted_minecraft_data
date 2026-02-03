@@ -34,16 +34,16 @@ public class CommonLinks {
       super();
    }
 
-   public static String extendRealms(@Nullable String var0, UUID var1, boolean var2) {
-      if (var0 == null) {
+   public static String extendRealms(final @Nullable String subscriptionId, final UUID profileId, final boolean trial) {
+      if (subscriptionId == null) {
          return "https://aka.ms/ExtendJavaRealms";
       } else {
-         String var10000 = extendRealms(var0, var1);
-         return var10000 + "&ref=" + (var2 ? "expiredTrial" : "expiredRealm");
+         String var10000 = extendRealms(subscriptionId, profileId);
+         return var10000 + "&ref=" + (trial ? "expiredTrial" : "expiredRealm");
       }
    }
 
-   public static String extendRealms(@Nullable String var0, UUID var1) {
-      return var0 == null ? "https://aka.ms/ExtendJavaRealms" : "https://aka.ms/ExtendJavaRealms?subscriptionId=" + var0 + "&profileId=" + UndashedUuid.toString(var1);
+   public static String extendRealms(final @Nullable String subscriptionId, final UUID profileId) {
+      return subscriptionId == null ? "https://aka.ms/ExtendJavaRealms" : "https://aka.ms/ExtendJavaRealms?subscriptionId=" + subscriptionId + "&profileId=" + UndashedUuid.toString(profileId);
    }
 }

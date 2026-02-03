@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -50,55 +51,55 @@ public class ModelBakery {
    public static final List<Identifier> DESTROY_STAGES;
    public static final List<Identifier> BREAKING_LOCATIONS;
    public static final List<RenderType> DESTROY_TYPES;
-   static final Logger LOGGER;
+   private static final Logger LOGGER;
    private final EntityModelSet entityModelSet;
    private final MaterialSet materials;
    private final PlayerSkinRenderCache playerSkinRenderCache;
    private final Map<BlockState, BlockStateModel.UnbakedRoot> unbakedBlockStateModels;
    private final Map<Identifier, ClientItem> clientInfos;
-   final Map<Identifier, ResolvedModel> resolvedModels;
-   final ResolvedModel missingModel;
+   private final Map<Identifier, ResolvedModel> resolvedModels;
+   private final ResolvedModel missingModel;
 
-   public ModelBakery(EntityModelSet var1, MaterialSet var2, PlayerSkinRenderCache var3, Map<BlockState, BlockStateModel.UnbakedRoot> var4, Map<Identifier, ClientItem> var5, Map<Identifier, ResolvedModel> var6, ResolvedModel var7) {
+   public ModelBakery(final EntityModelSet entityModelSet, final MaterialSet materials, final PlayerSkinRenderCache playerSkinRenderCache, final Map<BlockState, BlockStateModel.UnbakedRoot> unbakedBlockStateModels, final Map<Identifier, ClientItem> clientInfos, final Map<Identifier, ResolvedModel> resolvedModels, final ResolvedModel missingModel) {
       super();
-      this.entityModelSet = var1;
-      this.materials = var2;
-      this.playerSkinRenderCache = var3;
-      this.unbakedBlockStateModels = var4;
-      this.clientInfos = var5;
-      this.resolvedModels = var6;
-      this.missingModel = var7;
+      this.entityModelSet = entityModelSet;
+      this.materials = materials;
+      this.playerSkinRenderCache = playerSkinRenderCache;
+      this.unbakedBlockStateModels = unbakedBlockStateModels;
+      this.clientInfos = clientInfos;
+      this.resolvedModels = resolvedModels;
+      this.missingModel = missingModel;
    }
 
-   public CompletableFuture<BakingResult> bakeModels(SpriteGetter var1, Executor var2) {
-      PartCacheImpl var3 = new PartCacheImpl();
-      MissingModels var4 = ModelBakery.MissingModels.bake(this.missingModel, var1, var3);
-      ModelBakerImpl var5 = new ModelBakerImpl(var1, var3, var4);
-      CompletableFuture var6 = ParallelMapTransform.schedule(this.unbakedBlockStateModels, (var1x, var2x) -> {
+   public CompletableFuture<BakingResult> bakeModels(final SpriteGetter sprites, final Executor taskExecutor) {
+      PartCacheImpl parts = new PartCacheImpl();
+      MissingModels missingModels = ModelBakery.MissingModels.bake(this.missingModel, sprites, parts);
+      ModelBakerImpl baker = new ModelBakerImpl(sprites, parts, missingModels);
+      CompletableFuture<Map<BlockState, BlockStateModel>> bakedBlockStateModelFuture = ParallelMapTransform.schedule(this.unbakedBlockStateModels, (blockState, model) -> {
          try {
-            return var2x.bake(var1x, var5);
-         } catch (Exception var4) {
-            LOGGER.warn("Unable to bake model: '{}': {}", var1x, var4);
+            return model.bake(blockState, baker);
+         } catch (Exception e) {
+            LOGGER.warn("Unable to bake model: '{}': {}", blockState, e);
             return null;
          }
-      }, var2);
-      CompletableFuture var7 = ParallelMapTransform.schedule(this.clientInfos, (var3x, var4x) -> {
+      }, taskExecutor);
+      CompletableFuture<Map<Identifier, ItemModel>> bakedItemStackModelFuture = ParallelMapTransform.schedule(this.clientInfos, (location, clientInfo) -> {
          try {
-            return var4x.model().bake(new ItemModel.BakingContext(var5, this.entityModelSet, this.materials, this.playerSkinRenderCache, var4.item, var4x.registrySwapper()));
-         } catch (Exception var6) {
-            LOGGER.warn("Unable to bake item model: '{}'", var3x, var6);
+            return clientInfo.model().bake(new ItemModel.BakingContext(baker, this.entityModelSet, this.materials, this.playerSkinRenderCache, missingModels.item, clientInfo.registrySwapper()));
+         } catch (Exception e) {
+            LOGGER.warn("Unable to bake item model: '{}'", location, e);
             return null;
          }
-      }, var2);
-      HashMap var8 = new HashMap(this.clientInfos.size());
-      this.clientInfos.forEach((var1x, var2x) -> {
-         ClientItem.Properties var3 = var2x.properties();
-         if (!var3.equals(ClientItem.Properties.DEFAULT)) {
-            var8.put(var1x, var3);
+      }, taskExecutor);
+      Map<Identifier, ClientItem.Properties> itemStackModelProperties = new HashMap(this.clientInfos.size());
+      this.clientInfos.forEach((id, clientInfo) -> {
+         ClientItem.Properties properties = clientInfo.properties();
+         if (!properties.equals(ClientItem.Properties.DEFAULT)) {
+            itemStackModelProperties.put(id, properties);
          }
 
       });
-      return var6.thenCombine(var7, (var2x, var3x) -> new BakingResult(var4, var2x, var3x, var8));
+      return bakedBlockStateModelFuture.thenCombine(bakedItemStackModelFuture, (bakedBlockStateModels, bakedItemStateModels) -> new BakingResult(missingModels, bakedBlockStateModels, bakedItemStateModels, itemStackModelProperties));
    }
 
    static {
@@ -109,73 +110,70 @@ public class ModelBakery {
       WATER_STILL = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_still");
       WATER_FLOW = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_flow");
       WATER_OVERLAY = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_overlay");
-      BANNER_BASE = new Material(Sheets.BANNER_SHEET, Identifier.withDefaultNamespace("entity/banner_base"));
-      SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, Identifier.withDefaultNamespace("entity/shield_base"));
-      NO_PATTERN_SHIELD = new Material(Sheets.SHIELD_SHEET, Identifier.withDefaultNamespace("entity/shield_base_nopattern"));
-      DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((var0) -> Identifier.withDefaultNamespace("block/destroy_stage_" + var0)).collect(Collectors.toList());
-      BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((var0) -> var0.withPath((UnaryOperator)((var0x) -> "textures/" + var0x + ".png"))).collect(Collectors.toList());
+      BANNER_BASE = new Material(Sheets.BANNER_SHEET, Identifier.withDefaultNamespace("entity/banner/banner_base"));
+      SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, Identifier.withDefaultNamespace("entity/shield/shield_base"));
+      NO_PATTERN_SHIELD = new Material(Sheets.SHIELD_SHEET, Identifier.withDefaultNamespace("entity/shield/shield_base_nopattern"));
+      DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((i) -> Identifier.withDefaultNamespace("block/destroy_stage_" + i)).collect(Collectors.toList());
+      BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((location) -> location.withPath((UnaryOperator)((path) -> "textures/" + path + ".png"))).collect(Collectors.toList());
       DESTROY_TYPES = (List)BREAKING_LOCATIONS.stream().map(RenderTypes::crumbling).collect(Collectors.toList());
       LOGGER = LogUtils.getLogger();
    }
 
    public static record MissingModels(BlockModelPart blockPart, BlockStateModel block, ItemModel item) {
-      final BlockModelPart blockPart;
-      final ItemModel item;
-
-      public MissingModels(BlockModelPart var1, BlockStateModel var2, ItemModel var3) {
+      public MissingModels {
          super();
-         this.blockPart = var1;
-         this.block = var2;
-         this.item = var3;
       }
 
-      public static MissingModels bake(ResolvedModel var0, final SpriteGetter var1, final ModelBaker.PartCache var2) {
-         ModelBaker var3 = new ModelBaker() {
-            public ResolvedModel getModel(Identifier var1x) {
-               throw new IllegalStateException("Missing model can't have dependencies, but asked for " + String.valueOf(var1x));
+      public static MissingModels bake(final ResolvedModel unbaked, final SpriteGetter sprites, final ModelBaker.PartCache parts) {
+         ModelBaker missingModelBakery = new ModelBaker() {
+            public ResolvedModel getModel(final Identifier location) {
+               throw new IllegalStateException("Missing model can't have dependencies, but asked for " + String.valueOf(location));
             }
 
             public BlockModelPart missingBlockModelPart() {
                throw new IllegalStateException();
             }
 
-            public <T> T compute(ModelBaker.SharedOperationKey<T> var1x) {
-               return (T)var1x.compute(this);
+            public <T> T compute(final ModelBaker.SharedOperationKey<T> key) {
+               return key.compute(this);
             }
 
             public SpriteGetter sprites() {
-               return var1;
+               return sprites;
             }
 
             public ModelBaker.PartCache parts() {
-               return var2;
+               return parts;
             }
          };
-         TextureSlots var4 = var0.getTopTextureSlots();
-         boolean var5 = var0.getTopAmbientOcclusion();
-         boolean var6 = var0.getTopGuiLight().lightLikeBlock();
-         ItemTransforms var7 = var0.getTopTransforms();
-         QuadCollection var8 = var0.bakeTopGeometry(var4, var3, BlockModelRotation.IDENTITY);
-         TextureAtlasSprite var9 = var0.resolveParticleSprite(var4, var3);
-         SimpleModelWrapper var10 = new SimpleModelWrapper(var8, var5, var9);
-         SingleVariant var11 = new SingleVariant(var10);
-         MissingItemModel var12 = new MissingItemModel(var8.getAll(), new ModelRenderProperties(var6, var9, var7));
-         return new MissingModels(var10, var11, var12);
+         TextureSlots textureSlots = unbaked.getTopTextureSlots();
+         boolean hasAmbientOcclusion = unbaked.getTopAmbientOcclusion();
+         boolean usesBlockLight = unbaked.getTopGuiLight().lightLikeBlock();
+         ItemTransforms transforms = unbaked.getTopTransforms();
+         QuadCollection geometry = unbaked.bakeTopGeometry(textureSlots, missingModelBakery, BlockModelRotation.IDENTITY);
+         TextureAtlasSprite particleSprite = unbaked.resolveParticleSprite(textureSlots, missingModelBakery);
+         SimpleModelWrapper missingModelPart = new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleSprite);
+         BlockStateModel bakedBlockModel = new SingleVariant(missingModelPart);
+         ItemModel bakedItemModel = new MissingItemModel(geometry.getAll(), new ModelRenderProperties(usesBlockLight, particleSprite, transforms));
+         return new MissingModels(missingModelPart, bakedBlockModel, bakedItemModel);
       }
    }
 
-   class ModelBakerImpl implements ModelBaker {
+   private class ModelBakerImpl implements ModelBaker {
       private final SpriteGetter sprites;
       private final ModelBaker.PartCache parts;
       private final MissingModels missingModels;
-      private final Map<ModelBaker.SharedOperationKey<Object>, Object> operationCache = new ConcurrentHashMap();
-      private final Function<ModelBaker.SharedOperationKey<Object>, Object> cacheComputeFunction = (var1x) -> var1x.compute(this);
+      private final Map<ModelBaker.SharedOperationKey<Object>, Object> operationCache;
+      private final Function<ModelBaker.SharedOperationKey<Object>, Object> cacheComputeFunction;
 
-      ModelBakerImpl(final SpriteGetter var2, final ModelBaker.PartCache var3, final MissingModels var4) {
+      private ModelBakerImpl(final SpriteGetter textures, final ModelBaker.PartCache parts, final MissingModels missingModels) {
+         Objects.requireNonNull(ModelBakery.this);
          super();
-         this.sprites = var2;
-         this.parts = var3;
-         this.missingModels = var4;
+         this.operationCache = new ConcurrentHashMap();
+         this.cacheComputeFunction = (k) -> k.compute(this);
+         this.sprites = textures;
+         this.parts = parts;
+         this.missingModels = missingModels;
       }
 
       public BlockModelPart missingBlockModelPart() {
@@ -190,40 +188,36 @@ public class ModelBakery {
          return this.parts;
       }
 
-      public ResolvedModel getModel(Identifier var1) {
-         ResolvedModel var2 = (ResolvedModel)ModelBakery.this.resolvedModels.get(var1);
-         if (var2 == null) {
-            ModelBakery.LOGGER.warn("Requested a model that was not discovered previously: {}", var1);
+      public ResolvedModel getModel(final Identifier location) {
+         ResolvedModel result = (ResolvedModel)ModelBakery.this.resolvedModels.get(location);
+         if (result == null) {
+            ModelBakery.LOGGER.warn("Requested a model that was not discovered previously: {}", location);
             return ModelBakery.this.missingModel;
          } else {
-            return var2;
+            return result;
          }
       }
 
-      public <T> T compute(ModelBaker.SharedOperationKey<T> var1) {
-         return (T)this.operationCache.computeIfAbsent(var1, this.cacheComputeFunction);
+      public <T> T compute(final ModelBaker.SharedOperationKey<T> key) {
+         return (T)this.operationCache.computeIfAbsent(key, this.cacheComputeFunction);
       }
    }
 
    public static record BakingResult(MissingModels missingModels, Map<BlockState, BlockStateModel> blockStateModels, Map<Identifier, ItemModel> itemStackModels, Map<Identifier, ClientItem.Properties> itemProperties) {
-      public BakingResult(MissingModels var1, Map<BlockState, BlockStateModel> var2, Map<Identifier, ItemModel> var3, Map<Identifier, ClientItem.Properties> var4) {
+      public BakingResult {
          super();
-         this.missingModels = var1;
-         this.blockStateModels = var2;
-         this.itemStackModels = var3;
-         this.itemProperties = var4;
       }
    }
 
-   static class PartCacheImpl implements ModelBaker.PartCache {
+   private static class PartCacheImpl implements ModelBaker.PartCache {
       private final Interner<Vector3fc> vectors = Interners.newStrongInterner();
 
-      PartCacheImpl() {
+      private PartCacheImpl() {
          super();
       }
 
-      public Vector3fc vector(Vector3fc var1) {
-         return (Vector3fc)this.vectors.intern(var1);
+      public Vector3fc vector(final Vector3fc v) {
+         return (Vector3fc)this.vectors.intern(v);
       }
    }
 }

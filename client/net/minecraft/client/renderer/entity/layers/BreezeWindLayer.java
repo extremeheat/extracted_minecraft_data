@@ -18,17 +18,17 @@ public class BreezeWindLayer extends RenderLayer<BreezeRenderState, BreezeModel>
    private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/breeze/breeze_wind.png");
    private final BreezeModel model;
 
-   public BreezeWindLayer(RenderLayerParent<BreezeRenderState, BreezeModel> var1, EntityModelSet var2) {
-      super(var1);
-      this.model = new BreezeModel(var2.bakeLayer(ModelLayers.BREEZE_WIND));
+   public BreezeWindLayer(final RenderLayerParent<BreezeRenderState, BreezeModel> renderer, final EntityModelSet modelSet) {
+      super(renderer);
+      this.model = new BreezeModel(modelSet.bakeLayer(ModelLayers.BREEZE_WIND));
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, BreezeRenderState var4, float var5, float var6) {
-      RenderType var7 = RenderTypes.breezeWind(TEXTURE_LOCATION, this.xOffset(var4.ageInTicks) % 1.0F, 0.0F);
-      var2.order(1).submitModel(this.model, var4, var1, var7, var3, OverlayTexture.NO_OVERLAY, -1, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final BreezeRenderState state, final float yRot, final float xRot) {
+      RenderType renderType = RenderTypes.breezeWind(TEXTURE_LOCATION, this.xOffset(state.ageInTicks) % 1.0F, 0.0F);
+      submitNodeCollector.order(1).submitModel(this.model, state, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY, -1, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
-   private float xOffset(float var1) {
-      return var1 * 0.02F;
+   private float xOffset(final float t) {
+      return t * 0.02F;
    }
 }

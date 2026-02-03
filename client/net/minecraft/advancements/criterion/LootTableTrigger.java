@@ -18,25 +18,23 @@ public class LootTableTrigger extends SimpleCriterionTrigger<TriggerInstance> {
       return LootTableTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, ResourceKey<LootTable> var2) {
-      this.trigger(var1, (var1x) -> var1x.matches(var2));
+   public void trigger(final ServerPlayer player, final ResourceKey<LootTable> lootTable) {
+      this.trigger(player, (t) -> t.matches(lootTable));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, ResourceKey<LootTable> lootTable) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LootTable.KEY_CODEC.fieldOf("loot_table").forGetter(TriggerInstance::lootTable)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LootTable.KEY_CODEC.fieldOf("loot_table").forGetter(TriggerInstance::lootTable)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceKey<LootTable> var2) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.lootTable = var2;
       }
 
-      public static Criterion<TriggerInstance> lootTableUsed(ResourceKey<LootTable> var0) {
-         return CriteriaTriggers.GENERATE_LOOT.createCriterion(new TriggerInstance(Optional.empty(), var0));
+      public static Criterion<TriggerInstance> lootTableUsed(final ResourceKey<LootTable> lootTable) {
+         return CriteriaTriggers.GENERATE_LOOT.createCriterion(new TriggerInstance(Optional.empty(), lootTable));
       }
 
-      public boolean matches(ResourceKey<LootTable> var1) {
-         return this.lootTable == var1;
+      public boolean matches(final ResourceKey<LootTable> lootTable) {
+         return this.lootTable == lootTable;
       }
    }
 }

@@ -8,9 +8,9 @@ import net.minecraft.server.players.UserBanListEntry;
 import net.minecraft.world.level.gamerules.GameRule;
 
 public interface NotificationService {
-   void playerJoined(ServerPlayer var1);
+   void playerJoined(ServerPlayer player);
 
-   void playerLeft(ServerPlayer var1);
+   void playerLeft(ServerPlayer player);
 
    void serverStarted();
 
@@ -22,23 +22,23 @@ public interface NotificationService {
 
    void serverActivityOccured();
 
-   void playerOped(ServerOpListEntry var1);
+   void playerOped(ServerOpListEntry operator);
 
-   void playerDeoped(ServerOpListEntry var1);
+   void playerDeoped(ServerOpListEntry operator);
 
-   void playerAddedToAllowlist(NameAndId var1);
+   void playerAddedToAllowlist(NameAndId player);
 
-   void playerRemovedFromAllowlist(NameAndId var1);
+   void playerRemovedFromAllowlist(NameAndId player);
 
-   void ipBanned(IpBanListEntry var1);
+   void ipBanned(IpBanListEntry ban);
 
-   void ipUnbanned(String var1);
+   void ipUnbanned(String ip);
 
-   void playerBanned(UserBanListEntry var1);
+   void playerBanned(UserBanListEntry ban);
 
-   void playerUnbanned(NameAndId var1);
+   void playerUnbanned(NameAndId player);
 
-   <T> void onGameRuleChanged(GameRule<T> var1, T var2);
+   <T> void onGameRuleChanged(GameRule<T> gameRule, T value);
 
    void statusHeartbeat();
 }

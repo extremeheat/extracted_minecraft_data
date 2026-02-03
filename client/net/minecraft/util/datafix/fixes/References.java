@@ -53,14 +53,14 @@ public class References {
       super();
    }
 
-   public static DSL.TypeReference reference(final String var0) {
+   public static DSL.TypeReference reference(final String id) {
       return new DSL.TypeReference() {
          public String typeName() {
-            return var0;
+            return id;
          }
 
          public String toString() {
-            return "@" + var0;
+            return "@" + id;
          }
       };
    }

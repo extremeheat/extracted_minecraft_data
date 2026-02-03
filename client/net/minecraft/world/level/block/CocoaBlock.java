@@ -35,44 +35,44 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
       return CODEC;
    }
 
-   public CocoaBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public CocoaBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(AGE, 0));
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return (Integer)var1.getValue(AGE) < 2;
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return (Integer)state.getValue(AGE) < 2;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var2.random.nextInt(5) == 0) {
-         int var5 = (Integer)var1.getValue(AGE);
-         if (var5 < 2) {
-            var2.setBlock(var3, (BlockState)var1.setValue(AGE, var5 + 1), 2);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (level.getRandom().nextInt(5) == 0) {
+         int age = (Integer)state.getValue(AGE);
+         if (age < 2) {
+            level.setBlock(pos, (BlockState)state.setValue(AGE, age + 1), 2);
          }
       }
 
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3.relative((Direction)var1.getValue(FACING)));
-      return var4.is(BlockTags.JUNGLE_LOGS);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockState relativeState = level.getBlockState(pos.relative((Direction)state.getValue(FACING)));
+      return relativeState.is(BlockTags.SUPPORTS_COCOA);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)((Map)SHAPES.get((Integer)var1.getValue(AGE))).get(var1.getValue(FACING));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)((Map)SHAPES.get((Integer)state.getValue(AGE))).get(state.getValue(FACING));
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = this.defaultBlockState();
-      Level var3 = var1.getLevel();
-      BlockPos var4 = var1.getClickedPos();
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState state = this.defaultBlockState();
+      LevelReader level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
 
-      for(Direction var8 : var1.getNearestLookingDirections()) {
-         if (var8.getAxis().isHorizontal()) {
-            var2 = (BlockState)var2.setValue(FACING, var8);
-            if (var2.canSurvive(var3, var4)) {
-               return var2;
+      for(Direction direction : context.getNearestLookingDirections()) {
+         if (direction.getAxis().isHorizontal()) {
+            state = (BlockState)state.setValue(FACING, direction);
+            if (state.canSurvive(level, pos)) {
+               return state;
             }
          }
       }
@@ -80,32 +80,32 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
       return null;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var5 == var1.getValue(FACING) && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return directionToNeighbour == state.getValue(FACING) && !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return (Integer)var3.getValue(AGE) < 2;
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return (Integer)state.getValue(AGE) < 2;
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      var1.setBlock(var3, (BlockState)var4.setValue(AGE, (Integer)var4.getValue(AGE) + 1), 2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      level.setBlock(pos, (BlockState)state.setValue(AGE, (Integer)state.getValue(AGE) + 1), 2);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, AGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, AGE);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
    static {
       AGE = BlockStateProperties.AGE_2;
-      SHAPES = IntStream.rangeClosed(0, 2).mapToObj((var0) -> Shapes.rotateHorizontal(Block.column((double)(4 + var0 * 2), (double)(7 - var0 * 2), 12.0).move(0.0, 0.0, (double)(var0 - 5) / 16.0).optimize())).toList();
+      SHAPES = IntStream.rangeClosed(0, 2).mapToObj((i) -> Shapes.rotateHorizontal(Block.column((double)(4 + i * 2), (double)(7 - i * 2), 12.0).move(0.0, 0.0, (double)(i - 5) / 16.0).optimize())).toList();
    }
 }

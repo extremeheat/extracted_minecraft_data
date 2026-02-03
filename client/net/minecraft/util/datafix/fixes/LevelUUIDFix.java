@@ -12,33 +12,33 @@ import org.slf4j.Logger;
 public class LevelUUIDFix extends AbstractUUIDFix {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public LevelUUIDFix(Schema var1) {
-      super(var1, References.LEVEL);
+   public LevelUUIDFix(final Schema outputSchema) {
+      super(outputSchema, References.LEVEL);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(this.typeReference);
-      OpticFinder var2 = var1.findField("CustomBossEvents");
-      OpticFinder var3 = DSL.typeFinder(DSL.and(DSL.optional(DSL.field("Name", this.getInputSchema().getTypeRaw(References.TEXT_COMPONENT))), DSL.remainderType()));
-      return this.fixTypeEverywhereTyped("LevelUUIDFix", var1, (var3x) -> var3x.update(DSL.remainderFinder(), (var1) -> {
-            var1 = this.updateDragonFight(var1);
-            var1 = this.updateWanderingTrader(var1);
-            return var1;
-         }).updateTyped(var2, (var2x) -> var2x.updateTyped(var3, (var1) -> var1.update(DSL.remainderFinder(), this::updateCustomBossEvent))));
+      Type<?> type = this.getInputSchema().getType(this.typeReference);
+      OpticFinder<?> customBossEventsF = type.findField("CustomBossEvents");
+      OpticFinder<?> customBossEventF = DSL.typeFinder(DSL.and(DSL.optional(DSL.field("Name", this.getInputSchema().getTypeRaw(References.TEXT_COMPONENT))), DSL.remainderType()));
+      return this.fixTypeEverywhereTyped("LevelUUIDFix", type, (input) -> input.update(DSL.remainderFinder(), (tag) -> {
+            tag = this.updateDragonFight(tag);
+            tag = this.updateWanderingTrader(tag);
+            return tag;
+         }).updateTyped(customBossEventsF, (customBossEvents) -> customBossEvents.updateTyped(customBossEventF, (event) -> event.update(DSL.remainderFinder(), this::updateCustomBossEvent))));
    }
 
-   private Dynamic<?> updateWanderingTrader(Dynamic<?> var1) {
-      return (Dynamic)replaceUUIDString(var1, "WanderingTraderId", "WanderingTraderId").orElse(var1);
+   private Dynamic<?> updateWanderingTrader(final Dynamic<?> tag) {
+      return (Dynamic)replaceUUIDString(tag, "WanderingTraderId", "WanderingTraderId").orElse(tag);
    }
 
-   private Dynamic<?> updateDragonFight(Dynamic<?> var1) {
-      return var1.update("DimensionData", (var0) -> var0.updateMapValues((var0x) -> var0x.mapSecond((var0) -> var0.update("DragonFight", (var0x) -> (Dynamic)replaceUUIDLeastMost(var0x, "DragonUUID", "Dragon").orElse(var0x)))));
+   private Dynamic<?> updateDragonFight(final Dynamic<?> tag) {
+      return tag.update("DimensionData", (dimensionDataMap) -> dimensionDataMap.updateMapValues((dimensionDataPair) -> dimensionDataPair.mapSecond((dimensionData) -> dimensionData.update("DragonFight", (dragonfight) -> (Dynamic)replaceUUIDLeastMost(dragonfight, "DragonUUID", "Dragon").orElse(dragonfight)))));
    }
 
-   private Dynamic<?> updateCustomBossEvent(Dynamic<?> var1) {
-      return var1.update("Players", (var1x) -> var1.createList(var1x.asStream().map((var0) -> (Dynamic)createUUIDFromML(var0).orElseGet(() -> {
+   private Dynamic<?> updateCustomBossEvent(final Dynamic<?> tag) {
+      return tag.update("Players", (players) -> tag.createList(players.asStream().map((player) -> (Dynamic)createUUIDFromML(player).orElseGet(() -> {
                LOGGER.warn("CustomBossEvents contains invalid UUIDs.");
-               return var0;
+               return player;
             }))));
    }
 }

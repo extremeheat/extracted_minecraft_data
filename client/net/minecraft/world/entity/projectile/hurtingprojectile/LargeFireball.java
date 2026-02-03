@@ -18,45 +18,45 @@ public class LargeFireball extends Fireball {
    private static final byte DEFAULT_EXPLOSION_POWER = 1;
    private int explosionPower = 1;
 
-   public LargeFireball(EntityType<? extends LargeFireball> var1, Level var2) {
-      super(var1, var2);
+   public LargeFireball(final EntityType<? extends LargeFireball> type, final Level level) {
+      super(type, level);
    }
 
-   public LargeFireball(Level var1, LivingEntity var2, Vec3 var3, int var4) {
-      super(EntityType.FIREBALL, var2, var3, var1);
-      this.explosionPower = var4;
+   public LargeFireball(final Level level, final LivingEntity mob, final Vec3 direction, final int explosionPower) {
+      super(EntityType.FIREBALL, mob, direction, level);
+      this.explosionPower = explosionPower;
    }
 
-   protected void onHit(HitResult var1) {
-      super.onHit(var1);
+   protected void onHit(final HitResult hitResult) {
+      super.onHit(hitResult);
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         boolean var4 = (Boolean)var2.getGameRules().get(GameRules.MOB_GRIEFING);
-         this.level().explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, var4, Level.ExplosionInteraction.MOB);
+      if (var3 instanceof ServerLevel serverLevel) {
+         boolean grief = (Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING);
+         this.level().explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, grief, Level.ExplosionInteraction.MOB);
          this.discard();
       }
 
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
+   protected void onHitEntity(final EntityHitResult hitResult) {
+      super.onHitEntity(hitResult);
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         Entity var6 = var1.getEntity();
-         Entity var4 = this.getOwner();
-         DamageSource var5 = this.damageSources().fireball(this, var4);
-         var6.hurtServer(var2, var5, 6.0F);
-         EnchantmentHelper.doPostAttackEffects(var2, var6, var5);
+      if (var3 instanceof ServerLevel serverLevel) {
+         Entity var6 = hitResult.getEntity();
+         Entity owner = this.getOwner();
+         DamageSource damageSource = this.damageSources().fireball(this, owner);
+         var6.hurtServer(serverLevel, damageSource, 6.0F);
+         EnchantmentHelper.doPostAttackEffects(serverLevel, var6, damageSource);
       }
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putByte("ExplosionPower", (byte)this.explosionPower);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putByte("ExplosionPower", (byte)this.explosionPower);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.explosionPower = var1.getByteOr("ExplosionPower", (byte)1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.explosionPower = input.getByteOr("ExplosionPower", (byte)1);
    }
 }

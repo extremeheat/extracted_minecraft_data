@@ -19,19 +19,19 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
       return ImmutableSet.of(MemoryModuleType.VISIBLE_VILLAGER_BABIES);
    }
 
-   protected void doTick(ServerLevel var1, LivingEntity var2) {
-      var2.getBrain().setMemory(MemoryModuleType.VISIBLE_VILLAGER_BABIES, this.getNearestVillagerBabies(var2));
+   protected void doTick(final ServerLevel level, final LivingEntity body) {
+      body.getBrain().setMemory(MemoryModuleType.VISIBLE_VILLAGER_BABIES, this.getNearestVillagerBabies(body));
    }
 
-   private List<LivingEntity> getNearestVillagerBabies(LivingEntity var1) {
-      return ImmutableList.copyOf(this.getVisibleEntities(var1).findAll(this::isVillagerBaby));
+   private List<LivingEntity> getNearestVillagerBabies(final LivingEntity myBody) {
+      return ImmutableList.copyOf(this.getVisibleEntities(myBody).findAll(this::isVillagerBaby));
    }
 
-   private boolean isVillagerBaby(LivingEntity var1) {
-      return var1.getType() == EntityType.VILLAGER && var1.isBaby();
+   private boolean isVillagerBaby(final LivingEntity entity) {
+      return entity.is(EntityType.VILLAGER) && entity.isBaby();
    }
 
-   private NearestVisibleLivingEntities getVisibleEntities(LivingEntity var1) {
-      return (NearestVisibleLivingEntities)var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
+   private NearestVisibleLivingEntities getVisibleEntities(final LivingEntity myBody) {
+      return (NearestVisibleLivingEntities)myBody.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
    }
 }

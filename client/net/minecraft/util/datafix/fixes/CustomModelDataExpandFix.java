@@ -9,15 +9,15 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class CustomModelDataExpandFix extends DataFix {
-   public CustomModelDataExpandFix(Schema var1) {
-      super(var1, false);
+   public CustomModelDataExpandFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.DATA_COMPONENTS);
-      return this.fixTypeEverywhereTyped("Custom Model Data expansion", var1, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.update("minecraft:custom_model_data", (var0) -> {
-               float var1 = var0.asNumber(0.0F).floatValue();
-               return var0.createMap(Map.of(var0.createString("floats"), var0.createList(Stream.of(var0.createFloat(var1)))));
+      Type<?> componentsType = this.getInputSchema().getType(References.DATA_COMPONENTS);
+      return this.fixTypeEverywhereTyped("Custom Model Data expansion", componentsType, (component) -> component.update(DSL.remainderFinder(), (tag) -> tag.update("minecraft:custom_model_data", (cmd) -> {
+               float currentValue = cmd.asNumber(0.0F).floatValue();
+               return cmd.createMap(Map.of(cmd.createString("floats"), cmd.createList(Stream.of(cmd.createFloat(currentValue)))));
             })));
    }
 }

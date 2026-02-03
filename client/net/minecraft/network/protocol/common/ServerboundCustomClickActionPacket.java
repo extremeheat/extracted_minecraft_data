@@ -14,18 +14,16 @@ public record ServerboundCustomClickActionPacket(Identifier id, Optional<Tag> pa
    private static final StreamCodec<ByteBuf, Optional<Tag>> UNTRUSTED_TAG_CODEC = ByteBufCodecs.optionalTagCodec(() -> new NbtAccounter(32768L, 16)).apply(ByteBufCodecs.lengthPrefixed(65536));
    public static final StreamCodec<ByteBuf, ServerboundCustomClickActionPacket> STREAM_CODEC;
 
-   public ServerboundCustomClickActionPacket(Identifier var1, Optional<Tag> var2) {
+   public ServerboundCustomClickActionPacket {
       super();
-      this.id = var1;
-      this.payload = var2;
    }
 
    public PacketType<ServerboundCustomClickActionPacket> type() {
       return CommonPacketTypes.SERVERBOUND_CUSTOM_CLICK_ACTION;
    }
 
-   public void handle(ServerCommonPacketListener var1) {
-      var1.handleCustomClickAction(this);
+   public void handle(final ServerCommonPacketListener listener) {
+      listener.handleCustomClickAction(this);
    }
 
    static {

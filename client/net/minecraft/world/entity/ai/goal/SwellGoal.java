@@ -9,15 +9,15 @@ public class SwellGoal extends Goal {
    private final Creeper creeper;
    private @Nullable LivingEntity target;
 
-   public SwellGoal(Creeper var1) {
+   public SwellGoal(final Creeper creeper) {
       super();
-      this.creeper = var1;
+      this.creeper = creeper;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
    public boolean canUse() {
-      LivingEntity var1 = this.creeper.getTarget();
-      return this.creeper.getSwellDir() > 0 || var1 != null && this.creeper.distanceToSqr(var1) < 9.0;
+      LivingEntity target = this.creeper.getTarget();
+      return this.creeper.getSwellDir() > 0 || target != null && !target.isDeadOrDying() && this.creeper.distanceToSqr(target) < 9.0;
    }
 
    public void start() {
@@ -34,14 +34,16 @@ public class SwellGoal extends Goal {
    }
 
    public void tick() {
-      if (this.target == null) {
-         this.creeper.setSwellDir(-1);
-      } else if (this.creeper.distanceToSqr(this.target) > 49.0) {
-         this.creeper.setSwellDir(-1);
-      } else if (!this.creeper.getSensing().hasLineOfSight(this.target)) {
-         this.creeper.setSwellDir(-1);
+      if (this.target != null && !this.target.isDeadOrDying()) {
+         if (this.creeper.distanceToSqr(this.target) > 49.0) {
+            this.creeper.setSwellDir(-1);
+         } else if (!this.creeper.getSensing().hasLineOfSight(this.target)) {
+            this.creeper.setSwellDir(-1);
+         } else {
+            this.creeper.setSwellDir(1);
+         }
       } else {
-         this.creeper.setSwellDir(1);
+         this.creeper.setSwellDir(-1);
       }
    }
 }

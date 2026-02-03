@@ -4,11 +4,8 @@ import java.net.URI;
 import java.util.List;
 
 public record SchemaComponent<T>(String name, URI ref, Schema<T> schema) {
-   public SchemaComponent(String var1, URI var2, Schema<T> var3) {
+   public SchemaComponent {
       super();
-      this.name = var1;
-      this.ref = var2;
-      this.schema = var3;
    }
 
    public Schema<T> asRef() {

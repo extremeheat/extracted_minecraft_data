@@ -11,25 +11,25 @@ public interface LevelBasedPermissionSet extends PermissionSet {
 
    PermissionLevel level();
 
-   default boolean hasPermission(Permission var1) {
-      if (var1 instanceof Permission.HasCommandLevel var2) {
-         return this.level().isEqualOrHigherThan(var2.level());
+   default boolean hasPermission(final Permission permission) {
+      if (permission instanceof Permission.HasCommandLevel levelCheck) {
+         return this.level().isEqualOrHigherThan(levelCheck.level());
       } else {
-         return var1.equals(Permissions.COMMANDS_ENTITY_SELECTORS) ? this.level().isEqualOrHigherThan(PermissionLevel.GAMEMASTERS) : false;
+         return permission.equals(Permissions.COMMANDS_ENTITY_SELECTORS) ? this.level().isEqualOrHigherThan(PermissionLevel.GAMEMASTERS) : false;
       }
    }
 
-   default PermissionSet union(PermissionSet var1) {
-      if (var1 instanceof LevelBasedPermissionSet var2) {
-         return this.level().isEqualOrHigherThan(var2.level()) ? var2 : this;
+   default PermissionSet union(final PermissionSet other) {
+      if (other instanceof LevelBasedPermissionSet otherSet) {
+         return this.level().isEqualOrHigherThan(otherSet.level()) ? otherSet : this;
       } else {
-         return PermissionSet.super.union(var1);
+         return PermissionSet.super.union(other);
       }
    }
 
-   static LevelBasedPermissionSet forLevel(PermissionLevel var0) {
+   static LevelBasedPermissionSet forLevel(final PermissionLevel level) {
       LevelBasedPermissionSet var10000;
-      switch (var0) {
+      switch (level) {
          case ALL -> var10000 = ALL;
          case MODERATORS -> var10000 = MODERATOR;
          case GAMEMASTERS -> var10000 = GAMEMASTER;
@@ -41,14 +41,14 @@ public interface LevelBasedPermissionSet extends PermissionSet {
       return var10000;
    }
 
-   private static LevelBasedPermissionSet create(final PermissionLevel var0) {
+   private static LevelBasedPermissionSet create(final PermissionLevel level) {
       return new LevelBasedPermissionSet() {
          public PermissionLevel level() {
-            return var0;
+            return level;
          }
 
          public String toString() {
-            return "permission level: " + var0.name();
+            return "permission level: " + level.name();
          }
       };
    }

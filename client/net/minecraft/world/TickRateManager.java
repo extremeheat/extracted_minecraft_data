@@ -20,8 +20,8 @@ public class TickRateManager {
       this.isFrozen = false;
    }
 
-   public void setTickRate(float var1) {
-      this.tickrate = Math.max(var1, 1.0F);
+   public void setTickRate(final float rate) {
+      this.tickrate = Math.max(rate, 1.0F);
       this.nanosecondsPerTick = (long)((double)TimeUtil.NANOSECONDS_PER_SECOND / (double)this.tickrate);
    }
 
@@ -45,16 +45,16 @@ public class TickRateManager {
       return this.frozenTicksToRun > 0;
    }
 
-   public void setFrozenTicksToRun(int var1) {
-      this.frozenTicksToRun = var1;
+   public void setFrozenTicksToRun(final int timeout) {
+      this.frozenTicksToRun = timeout;
    }
 
    public int frozenTicksToRun() {
       return this.frozenTicksToRun;
    }
 
-   public void setFrozen(boolean var1) {
-      this.isFrozen = var1;
+   public void setFrozen(final boolean state) {
+      this.isFrozen = state;
    }
 
    public boolean isFrozen() {
@@ -69,7 +69,7 @@ public class TickRateManager {
 
    }
 
-   public boolean isEntityFrozen(Entity var1) {
-      return !this.runsNormally() && !(var1 instanceof Player) && var1.countPlayerPassengers() <= 0;
+   public boolean isEntityFrozen(final Entity entity) {
+      return !this.runsNormally() && !(entity instanceof Player) && entity.countPlayerPassengers() <= 0;
    }
 }

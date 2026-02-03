@@ -3,7 +3,6 @@ package com.mojang.realmsclient.gui.screens.configuration;
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.CommonLayouts;
@@ -29,22 +28,20 @@ public class RealmsInviteScreen extends RealmsScreen {
    private final RealmsConfigureWorldScreen configureScreen;
    private @Nullable Component message;
 
-   public RealmsInviteScreen(RealmsConfigureWorldScreen var1, RealmsServer var2) {
+   public RealmsInviteScreen(final RealmsConfigureWorldScreen configureScreen, final RealmsServer serverData) {
       super(TITLE);
-      this.configureScreen = var1;
-      this.serverData = var2;
+      this.configureScreen = configureScreen;
+      this.serverData = serverData;
    }
 
    public void init() {
       this.layout.addTitleHeader(TITLE, this.font);
-      LinearLayout var1 = (LinearLayout)this.layout.addToContents(LinearLayout.vertical().spacing(8));
+      LinearLayout content = (LinearLayout)this.layout.addToContents(LinearLayout.vertical().spacing(8));
       this.profileName = new EditBox(this.minecraft.font, 200, 20, Component.translatable("mco.configure.world.invite.profile.name"));
-      var1.addChild(CommonLayouts.labeledElement(this.font, this.profileName, NAME_LABEL));
-      this.inviteButton = (Button)var1.addChild(Button.builder(TITLE, (var1x) -> this.onInvite()).width(200).build());
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).width(200).build());
-      this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-      });
+      content.addChild(CommonLayouts.labeledElement(this.font, this.profileName, NAME_LABEL));
+      this.inviteButton = (Button)content.addChild(Button.builder(TITLE, (button) -> this.onInvite()).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).width(200).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
@@ -63,16 +60,16 @@ public class RealmsInviteScreen extends RealmsScreen {
       if (this.inviteButton != null && this.profileName != null) {
          if (StringUtil.isBlank(this.profileName.getValue())) {
             this.showMessage(NO_SUCH_PLAYER_ERROR_TEXT);
-         } else if (this.serverData.players.stream().anyMatch((var1x) -> var1x.name.equalsIgnoreCase(this.profileName.getValue()))) {
+         } else if (this.serverData.players.stream().anyMatch((player) -> player.name.equalsIgnoreCase(this.profileName.getValue()))) {
             this.showMessage(DUPLICATE_PLAYER_TEXT);
          } else {
-            long var1 = this.serverData.id;
-            String var3 = this.profileName.getValue().trim();
+            long serverId = this.serverData.id;
+            String name = this.profileName.getValue().trim();
             this.inviteButton.active = false;
             this.profileName.setEditable(false);
             this.showMessage(INVITING_PLAYER_TEXT);
-            CompletableFuture.supplyAsync(() -> this.configureScreen.invitePlayer(var1, var3), Util.ioPool()).thenAcceptAsync((var1x) -> {
-               if (var1x) {
+            CompletableFuture.supplyAsync(() -> this.configureScreen.invitePlayer(serverId, name), Util.ioPool()).thenAcceptAsync((success) -> {
+               if (success) {
                   this.minecraft.setScreen(this.configureScreen);
                } else {
                   this.showMessage(NO_SUCH_PLAYER_ERROR_TEXT);
@@ -85,19 +82,19 @@ public class RealmsInviteScreen extends RealmsScreen {
       }
    }
 
-   private void showMessage(Component var1) {
-      this.message = var1;
-      this.minecraft.getNarrator().saySystemNow(var1);
+   private void showMessage(final Component message) {
+      this.message = message;
+      this.minecraft.getNarrator().saySystemNow(message);
    }
 
    public void onClose() {
       this.minecraft.setScreen(this.configureScreen);
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
+   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
+      super.render(graphics, xm, ym, a);
       if (this.message != null && this.inviteButton != null) {
-         var1.drawCenteredString(this.font, (Component)this.message, this.width / 2, this.inviteButton.getY() + this.inviteButton.getHeight() + 8, -1);
+         graphics.drawCenteredString(this.font, (Component)this.message, this.width / 2, this.inviteButton.getY() + this.inviteButton.getHeight() + 8, -1);
       }
 
    }

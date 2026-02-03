@@ -10,39 +10,35 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.world.entity.EquipmentSlot;
 
 public record ArmorModelSet<T>(T head, T chest, T legs, T feet) {
-   public ArmorModelSet(T var1, T var2, T var3, T var4) {
+   public ArmorModelSet {
       super();
-      this.head = var1;
-      this.chest = var2;
-      this.legs = var3;
-      this.feet = var4;
    }
 
-   public T get(EquipmentSlot var1) {
+   public T get(final EquipmentSlot slot) {
       Object var10000;
-      switch (var1) {
+      switch (slot) {
          case HEAD -> var10000 = this.head;
          case CHEST -> var10000 = this.chest;
          case LEGS -> var10000 = this.legs;
          case FEET -> var10000 = this.feet;
-         default -> throw new IllegalStateException("No model for slot: " + String.valueOf(var1));
+         default -> throw new IllegalStateException("No model for slot: " + String.valueOf(slot));
       }
 
       return (T)var10000;
    }
 
-   public <U> ArmorModelSet<U> map(Function<? super T, ? extends U> var1) {
-      return new ArmorModelSet<U>(var1.apply(this.head), var1.apply(this.chest), var1.apply(this.legs), var1.apply(this.feet));
+   public <U> ArmorModelSet<U> map(final Function<? super T, ? extends U> mapper) {
+      return new ArmorModelSet<U>(mapper.apply(this.head), mapper.apply(this.chest), mapper.apply(this.legs), mapper.apply(this.feet));
    }
 
-   public void putFrom(ArmorModelSet<LayerDefinition> var1, ImmutableMap.Builder<T, LayerDefinition> var2) {
-      var2.put(this.head, (LayerDefinition)var1.head);
-      var2.put(this.chest, (LayerDefinition)var1.chest);
-      var2.put(this.legs, (LayerDefinition)var1.legs);
-      var2.put(this.feet, (LayerDefinition)var1.feet);
+   public void putFrom(final ArmorModelSet<LayerDefinition> values, final ImmutableMap.Builder<T, LayerDefinition> output) {
+      output.put(this.head, (LayerDefinition)values.head);
+      output.put(this.chest, (LayerDefinition)values.chest);
+      output.put(this.legs, (LayerDefinition)values.legs);
+      output.put(this.feet, (LayerDefinition)values.feet);
    }
 
-   public static <M extends HumanoidModel<?>> ArmorModelSet<M> bake(ArmorModelSet<ModelLayerLocation> var0, EntityModelSet var1, Function<ModelPart, M> var2) {
-      return var0.<M>map((var2x) -> (HumanoidModel)var2.apply(var1.bakeLayer(var2x)));
+   public static <M extends HumanoidModel<?>> ArmorModelSet<M> bake(final ArmorModelSet<ModelLayerLocation> locations, final EntityModelSet modelSet, final Function<ModelPart, M> factory) {
+      return locations.<M>map((id) -> (HumanoidModel)factory.apply(modelSet.bakeLayer(id)));
    }
 }

@@ -7,6 +7,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 public interface VanillaEnchantmentProviders {
@@ -18,18 +19,18 @@ public interface VanillaEnchantmentProviders {
    ResourceKey<EnchantmentProvider> RAID_VINDICATOR_POST_WAVE_5 = create("raid/vindicator_post_wave_5");
    ResourceKey<EnchantmentProvider> ENDERMAN_LOOT_DROP = create("enderman_loot_drop");
 
-   static void bootstrap(BootstrapContext<EnchantmentProvider> var0) {
-      HolderGetter var1 = var0.lookup(Registries.ENCHANTMENT);
-      var0.register(MOB_SPAWN_EQUIPMENT, new EnchantmentsByCostWithDifficulty(var1.getOrThrow(EnchantmentTags.ON_MOB_SPAWN_EQUIPMENT), 5, 17));
-      var0.register(PILLAGER_SPAWN_CROSSBOW, new SingleEnchantment(var1.getOrThrow(Enchantments.PIERCING), ConstantInt.of(1)));
-      var0.register(RAID_PILLAGER_POST_WAVE_3, new SingleEnchantment(var1.getOrThrow(Enchantments.QUICK_CHARGE), ConstantInt.of(1)));
-      var0.register(RAID_PILLAGER_POST_WAVE_5, new SingleEnchantment(var1.getOrThrow(Enchantments.QUICK_CHARGE), ConstantInt.of(2)));
-      var0.register(RAID_VINDICATOR, new SingleEnchantment(var1.getOrThrow(Enchantments.SHARPNESS), ConstantInt.of(1)));
-      var0.register(RAID_VINDICATOR_POST_WAVE_5, new SingleEnchantment(var1.getOrThrow(Enchantments.SHARPNESS), ConstantInt.of(2)));
-      var0.register(ENDERMAN_LOOT_DROP, new SingleEnchantment(var1.getOrThrow(Enchantments.SILK_TOUCH), ConstantInt.of(1)));
+   static void bootstrap(final BootstrapContext<EnchantmentProvider> context) {
+      HolderGetter<Enchantment> enchantments = context.<Enchantment>lookup(Registries.ENCHANTMENT);
+      context.register(MOB_SPAWN_EQUIPMENT, new EnchantmentsByCostWithDifficulty(enchantments.getOrThrow(EnchantmentTags.ON_MOB_SPAWN_EQUIPMENT), 5, 17));
+      context.register(PILLAGER_SPAWN_CROSSBOW, new SingleEnchantment(enchantments.getOrThrow(Enchantments.PIERCING), ConstantInt.of(1)));
+      context.register(RAID_PILLAGER_POST_WAVE_3, new SingleEnchantment(enchantments.getOrThrow(Enchantments.QUICK_CHARGE), ConstantInt.of(1)));
+      context.register(RAID_PILLAGER_POST_WAVE_5, new SingleEnchantment(enchantments.getOrThrow(Enchantments.QUICK_CHARGE), ConstantInt.of(2)));
+      context.register(RAID_VINDICATOR, new SingleEnchantment(enchantments.getOrThrow(Enchantments.SHARPNESS), ConstantInt.of(1)));
+      context.register(RAID_VINDICATOR_POST_WAVE_5, new SingleEnchantment(enchantments.getOrThrow(Enchantments.SHARPNESS), ConstantInt.of(2)));
+      context.register(ENDERMAN_LOOT_DROP, new SingleEnchantment(enchantments.getOrThrow(Enchantments.SILK_TOUCH), ConstantInt.of(1)));
    }
 
-   static ResourceKey<EnchantmentProvider> create(String var0) {
-      return ResourceKey.create(Registries.ENCHANTMENT_PROVIDER, Identifier.withDefaultNamespace(var0));
+   static ResourceKey<EnchantmentProvider> create(final String id) {
+      return ResourceKey.create(Registries.ENCHANTMENT_PROVIDER, Identifier.withDefaultNamespace(id));
    }
 }

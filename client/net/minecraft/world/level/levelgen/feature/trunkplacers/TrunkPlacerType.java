@@ -16,13 +16,13 @@ public class TrunkPlacerType<P extends TrunkPlacer> {
    public static final TrunkPlacerType<CherryTrunkPlacer> CHERRY_TRUNK_PLACER;
    private final MapCodec<P> codec;
 
-   private static <P extends TrunkPlacer> TrunkPlacerType<P> register(String var0, MapCodec<P> var1) {
-      return (TrunkPlacerType)Registry.register(BuiltInRegistries.TRUNK_PLACER_TYPE, (String)var0, new TrunkPlacerType(var1));
+   private static <P extends TrunkPlacer> TrunkPlacerType<P> register(final String name, final MapCodec<P> codec) {
+      return (TrunkPlacerType)Registry.register(BuiltInRegistries.TRUNK_PLACER_TYPE, (String)name, new TrunkPlacerType(codec));
    }
 
-   private TrunkPlacerType(MapCodec<P> var1) {
+   private TrunkPlacerType(final MapCodec<P> codec) {
       super();
-      this.codec = var1;
+      this.codec = codec;
    }
 
    public MapCodec<P> codec() {

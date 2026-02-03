@@ -10,18 +10,16 @@ import net.minecraft.util.debug.DebugSubscription;
 public record ClientboundDebugEntityValuePacket(int entityId, DebugSubscription.Update<?> update) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDebugEntityValuePacket> STREAM_CODEC;
 
-   public ClientboundDebugEntityValuePacket(int var1, DebugSubscription.Update<?> var2) {
+   public ClientboundDebugEntityValuePacket {
       super();
-      this.entityId = var1;
-      this.update = var2;
    }
 
    public PacketType<ClientboundDebugEntityValuePacket> type() {
       return GamePacketTypes.CLIENTBOUND_DEBUG_ENTITY_VALUE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleDebugEntityValue(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleDebugEntityValue(this);
    }
 
    static {

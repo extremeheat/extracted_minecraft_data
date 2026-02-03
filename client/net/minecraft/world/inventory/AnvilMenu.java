@@ -44,39 +44,39 @@ public class AnvilMenu extends ItemCombinerMenu {
    private static final int RESULT_SLOT_X_PLACEMENT = 134;
    private static final int SLOT_Y_PLACEMENT = 47;
 
-   public AnvilMenu(int var1, Inventory var2) {
-      this(var1, var2, ContainerLevelAccess.NULL);
+   public AnvilMenu(final int containerId, final Inventory inventory) {
+      this(containerId, inventory, ContainerLevelAccess.NULL);
    }
 
-   public AnvilMenu(int var1, Inventory var2, ContainerLevelAccess var3) {
-      super(MenuType.ANVIL, var1, var2, var3, createInputSlotDefinitions());
+   public AnvilMenu(final int containerId, final Inventory inventory, final ContainerLevelAccess access) {
+      super(MenuType.ANVIL, containerId, inventory, access, createInputSlotDefinitions());
       this.cost = DataSlot.standalone();
       this.onlyRenaming = false;
       this.addDataSlot(this.cost);
    }
 
    private static ItemCombinerMenuSlotDefinition createInputSlotDefinitions() {
-      return ItemCombinerMenuSlotDefinition.create().withSlot(0, 27, 47, (var0) -> true).withSlot(1, 76, 47, (var0) -> true).withResultSlot(2, 134, 47).build();
+      return ItemCombinerMenuSlotDefinition.create().withSlot(0, 27, 47, (itemStack) -> true).withSlot(1, 76, 47, (itemStack) -> true).withResultSlot(2, 134, 47).build();
    }
 
-   protected boolean isValidBlock(BlockState var1) {
-      return var1.is(BlockTags.ANVIL);
+   protected boolean isValidBlock(final BlockState state) {
+      return state.is(BlockTags.ANVIL);
    }
 
-   protected boolean mayPickup(Player var1, boolean var2) {
-      return (var1.hasInfiniteMaterials() || var1.experienceLevel >= this.cost.get()) && this.cost.get() > 0;
+   protected boolean mayPickup(final Player player, final boolean hasItem) {
+      return (player.hasInfiniteMaterials() || player.experienceLevel >= this.cost.get()) && this.cost.get() > 0;
    }
 
-   protected void onTake(Player var1, ItemStack var2) {
-      if (!var1.hasInfiniteMaterials()) {
-         var1.giveExperienceLevels(-this.cost.get());
+   protected void onTake(final Player player, final ItemStack carried) {
+      if (!player.hasInfiniteMaterials()) {
+         player.giveExperienceLevels(-this.cost.get());
       }
 
       if (this.repairItemCountCost > 0) {
-         ItemStack var3 = this.inputSlots.getItem(1);
-         if (!var3.isEmpty() && var3.getCount() > this.repairItemCountCost) {
-            var3.shrink(this.repairItemCountCost);
-            this.inputSlots.setItem(1, var3);
+         ItemStack addition = this.inputSlots.getItem(1);
+         if (!addition.isEmpty() && addition.getCount() > this.repairItemCountCost) {
+            addition.shrink(this.repairItemCountCost);
+            this.inputSlots.setItem(1, addition);
          } else {
             this.inputSlots.setItem(1, ItemStack.EMPTY);
          }
@@ -85,130 +85,130 @@ public class AnvilMenu extends ItemCombinerMenu {
       }
 
       this.cost.set(0);
-      if (var1 instanceof ServerPlayer var4) {
+      if (player instanceof ServerPlayer serverPlayer) {
          if (!StringUtil.isBlank(this.itemName) && !this.inputSlots.getItem(0).getHoverName().getString().equals(this.itemName)) {
-            var4.getTextFilter().processStreamMessage(this.itemName);
+            serverPlayer.getTextFilter().processStreamMessage(this.itemName);
          }
       }
 
       this.inputSlots.setItem(0, ItemStack.EMPTY);
-      this.access.execute((var1x, var2x) -> {
-         BlockState var3 = var1x.getBlockState(var2x);
-         if (!var1.hasInfiniteMaterials() && var3.is(BlockTags.ANVIL) && var1.getRandom().nextFloat() < 0.12F) {
-            BlockState var4 = AnvilBlock.damage(var3);
-            if (var4 == null) {
-               var1x.removeBlock(var2x, false);
-               var1x.levelEvent(1029, var2x, 0);
+      this.access.execute((level, pos) -> {
+         BlockState state = level.getBlockState(pos);
+         if (!player.hasInfiniteMaterials() && state.is(BlockTags.ANVIL) && player.getRandom().nextFloat() < 0.12F) {
+            BlockState newBlockState = AnvilBlock.damage(state);
+            if (newBlockState == null) {
+               level.removeBlock(pos, false);
+               level.levelEvent(1029, pos, 0);
             } else {
-               var1x.setBlock(var2x, var4, 2);
-               var1x.levelEvent(1030, var2x, 0);
+               level.setBlock(pos, newBlockState, 2);
+               level.levelEvent(1030, pos, 0);
             }
          } else {
-            var1x.levelEvent(1030, var2x, 0);
+            level.levelEvent(1030, pos, 0);
          }
 
       });
    }
 
    public void createResult() {
-      ItemStack var1 = this.inputSlots.getItem(0);
+      ItemStack input = this.inputSlots.getItem(0);
       this.onlyRenaming = false;
       this.cost.set(1);
-      int var2 = 0;
-      long var3 = 0L;
-      byte var5 = 0;
-      if (!var1.isEmpty() && EnchantmentHelper.canStoreEnchantments(var1)) {
-         ItemStack var6 = var1.copy();
-         ItemStack var7 = this.inputSlots.getItem(1);
-         ItemEnchantments.Mutable var8 = new ItemEnchantments.Mutable(EnchantmentHelper.getEnchantmentsForCrafting(var6));
-         var3 += (long)(Integer)var1.getOrDefault(DataComponents.REPAIR_COST, 0) + (long)(Integer)var7.getOrDefault(DataComponents.REPAIR_COST, 0);
+      int price = 0;
+      long tax = 0L;
+      int namingCost = 0;
+      if (!input.isEmpty() && EnchantmentHelper.canStoreEnchantments(input)) {
+         ItemStack result = input.copy();
+         ItemStack addition = this.inputSlots.getItem(1);
+         ItemEnchantments.Mutable enchantments = new ItemEnchantments.Mutable(EnchantmentHelper.getEnchantmentsForCrafting(result));
+         tax += (long)(Integer)input.getOrDefault(DataComponents.REPAIR_COST, 0) + (long)(Integer)addition.getOrDefault(DataComponents.REPAIR_COST, 0);
          this.repairItemCountCost = 0;
-         if (!var7.isEmpty()) {
-            boolean var9 = var7.has(DataComponents.STORED_ENCHANTMENTS);
-            if (var6.isDamageableItem() && var1.isValidRepairItem(var7)) {
-               int var25 = Math.min(var6.getDamageValue(), var6.getMaxDamage() / 4);
-               if (var25 <= 0) {
+         if (!addition.isEmpty()) {
+            boolean usingBook = addition.has(DataComponents.STORED_ENCHANTMENTS);
+            if (result.isDamageableItem() && input.isValidRepairItem(addition)) {
+               int repairAmount = Math.min(result.getDamageValue(), result.getMaxDamage() / 4);
+               if (repairAmount <= 0) {
                   this.resultSlots.setItem(0, ItemStack.EMPTY);
                   this.cost.set(0);
                   return;
                }
 
-               int var28;
-               for(var28 = 0; var25 > 0 && var28 < var7.getCount(); ++var28) {
-                  int var30 = var6.getDamageValue() - var25;
-                  var6.setDamageValue(var30);
-                  ++var2;
-                  var25 = Math.min(var6.getDamageValue(), var6.getMaxDamage() / 4);
+               int count;
+               for(count = 0; repairAmount > 0 && count < addition.getCount(); ++count) {
+                  int resultDamage = result.getDamageValue() - repairAmount;
+                  result.setDamageValue(resultDamage);
+                  ++price;
+                  repairAmount = Math.min(result.getDamageValue(), result.getMaxDamage() / 4);
                }
 
-               this.repairItemCountCost = var28;
+               this.repairItemCountCost = count;
             } else {
-               if (!var9 && (!var6.is(var7.getItem()) || !var6.isDamageableItem())) {
+               if (!usingBook && (!result.is(addition.getItem()) || !result.isDamageableItem())) {
                   this.resultSlots.setItem(0, ItemStack.EMPTY);
                   this.cost.set(0);
                   return;
                }
 
-               if (var6.isDamageableItem() && !var9) {
-                  int var10 = var1.getMaxDamage() - var1.getDamageValue();
-                  int var11 = var7.getMaxDamage() - var7.getDamageValue();
-                  int var12 = var11 + var6.getMaxDamage() * 12 / 100;
-                  int var13 = var10 + var12;
-                  int var14 = var6.getMaxDamage() - var13;
-                  if (var14 < 0) {
-                     var14 = 0;
+               if (result.isDamageableItem() && !usingBook) {
+                  int remaining1 = input.getMaxDamage() - input.getDamageValue();
+                  int remaining2 = addition.getMaxDamage() - addition.getDamageValue();
+                  int additional = remaining2 + result.getMaxDamage() * 12 / 100;
+                  int remaining = remaining1 + additional;
+                  int resultDamage = result.getMaxDamage() - remaining;
+                  if (resultDamage < 0) {
+                     resultDamage = 0;
                   }
 
-                  if (var14 < var6.getDamageValue()) {
-                     var6.setDamageValue(var14);
-                     var2 += 2;
+                  if (resultDamage < result.getDamageValue()) {
+                     result.setDamageValue(resultDamage);
+                     price += 2;
                   }
                }
 
-               ItemEnchantments var24 = EnchantmentHelper.getEnchantmentsForCrafting(var7);
-               boolean var27 = false;
-               boolean var29 = false;
+               ItemEnchantments additionalEnchantments = EnchantmentHelper.getEnchantmentsForCrafting(addition);
+               boolean isAnyEnchantmentCompatible = false;
+               boolean isAnyEnchantmentNotCompatible = false;
 
-               for(Object2IntMap.Entry var32 : var24.entrySet()) {
-                  Holder var15 = (Holder)var32.getKey();
-                  int var16 = var8.getLevel(var15);
-                  int var17 = var32.getIntValue();
-                  var17 = var16 == var17 ? var17 + 1 : Math.max(var17, var16);
-                  Enchantment var18 = (Enchantment)var15.value();
-                  boolean var19 = var18.canEnchant(var1);
-                  if (this.player.hasInfiniteMaterials() || var1.is(Items.ENCHANTED_BOOK)) {
-                     var19 = true;
+               for(Object2IntMap.Entry<Holder<Enchantment>> entry : additionalEnchantments.entrySet()) {
+                  Holder<Enchantment> enchantmentHolder = (Holder)entry.getKey();
+                  int current = enchantments.getLevel(enchantmentHolder);
+                  int level = entry.getIntValue();
+                  level = current == level ? level + 1 : Math.max(level, current);
+                  Enchantment enchantment = enchantmentHolder.value();
+                  boolean compatible = enchantment.canEnchant(input);
+                  if (this.player.hasInfiniteMaterials() || input.is(Items.ENCHANTED_BOOK)) {
+                     compatible = true;
                   }
 
-                  for(Holder var21 : var8.keySet()) {
-                     if (!var21.equals(var15) && !Enchantment.areCompatible(var15, var21)) {
-                        var19 = false;
-                        ++var2;
+                  for(Holder<Enchantment> other : enchantments.keySet()) {
+                     if (!other.equals(enchantmentHolder) && !Enchantment.areCompatible(enchantmentHolder, other)) {
+                        compatible = false;
+                        ++price;
                      }
                   }
 
-                  if (!var19) {
-                     var29 = true;
+                  if (!compatible) {
+                     isAnyEnchantmentNotCompatible = true;
                   } else {
-                     var27 = true;
-                     if (var17 > var18.getMaxLevel()) {
-                        var17 = var18.getMaxLevel();
+                     isAnyEnchantmentCompatible = true;
+                     if (level > enchantment.getMaxLevel()) {
+                        level = enchantment.getMaxLevel();
                      }
 
-                     var8.set(var15, var17);
-                     int var34 = var18.getAnvilCost();
-                     if (var9) {
-                        var34 = Math.max(1, var34 / 2);
+                     enchantments.set(enchantmentHolder, level);
+                     int fee = enchantment.getAnvilCost();
+                     if (usingBook) {
+                        fee = Math.max(1, fee / 2);
                      }
 
-                     var2 += var34 * var17;
-                     if (var1.getCount() > 1) {
-                        var2 = 40;
+                     price += fee * level;
+                     if (input.getCount() > 1) {
+                        price = 40;
                      }
                   }
                }
 
-               if (var29 && !var27) {
+               if (isAnyEnchantmentNotCompatible && !isAnyEnchantmentCompatible) {
                   this.resultSlots.setItem(0, ItemStack.EMPTY);
                   this.cost.set(0);
                   return;
@@ -217,24 +217,24 @@ public class AnvilMenu extends ItemCombinerMenu {
          }
 
          if (this.itemName != null && !StringUtil.isBlank(this.itemName)) {
-            if (!this.itemName.equals(var1.getHoverName().getString())) {
-               var5 = 1;
-               var2 += var5;
-               var6.set(DataComponents.CUSTOM_NAME, Component.literal(this.itemName));
+            if (!this.itemName.equals(input.getHoverName().getString())) {
+               namingCost = 1;
+               price += namingCost;
+               result.set(DataComponents.CUSTOM_NAME, Component.literal(this.itemName));
             }
-         } else if (var1.has(DataComponents.CUSTOM_NAME)) {
-            var5 = 1;
-            var2 += var5;
-            var6.remove(DataComponents.CUSTOM_NAME);
+         } else if (input.has(DataComponents.CUSTOM_NAME)) {
+            namingCost = 1;
+            price += namingCost;
+            result.remove(DataComponents.CUSTOM_NAME);
          }
 
-         int var23 = var2 <= 0 ? 0 : (int)Mth.clamp(var3 + (long)var2, 0L, 2147483647L);
-         this.cost.set(var23);
-         if (var2 <= 0) {
-            var6 = ItemStack.EMPTY;
+         int finalPrice = price <= 0 ? 0 : (int)Mth.clamp(tax + (long)price, 0L, 2147483647L);
+         this.cost.set(finalPrice);
+         if (price <= 0) {
+            result = ItemStack.EMPTY;
          }
 
-         if (var5 == var2 && var5 > 0) {
+         if (namingCost == price && namingCost > 0) {
             if (this.cost.get() >= 40) {
                this.cost.set(39);
             }
@@ -243,24 +243,24 @@ public class AnvilMenu extends ItemCombinerMenu {
          }
 
          if (this.cost.get() >= 40 && !this.player.hasInfiniteMaterials()) {
-            var6 = ItemStack.EMPTY;
+            result = ItemStack.EMPTY;
          }
 
-         if (!var6.isEmpty()) {
-            int var26 = (Integer)var6.getOrDefault(DataComponents.REPAIR_COST, 0);
-            if (var26 < (Integer)var7.getOrDefault(DataComponents.REPAIR_COST, 0)) {
-               var26 = (Integer)var7.getOrDefault(DataComponents.REPAIR_COST, 0);
+         if (!result.isEmpty()) {
+            int baseCost = (Integer)result.getOrDefault(DataComponents.REPAIR_COST, 0);
+            if (baseCost < (Integer)addition.getOrDefault(DataComponents.REPAIR_COST, 0)) {
+               baseCost = (Integer)addition.getOrDefault(DataComponents.REPAIR_COST, 0);
             }
 
-            if (var5 != var2 || var5 == 0) {
-               var26 = calculateIncreasedRepairCost(var26);
+            if (namingCost != price || namingCost == 0) {
+               baseCost = calculateIncreasedRepairCost(baseCost);
             }
 
-            var6.set(DataComponents.REPAIR_COST, var26);
-            EnchantmentHelper.setEnchantments(var6, var8.toImmutable());
+            result.set(DataComponents.REPAIR_COST, baseCost);
+            EnchantmentHelper.setEnchantments(result, enchantments.toImmutable());
          }
 
-         this.resultSlots.setItem(0, var6);
+         this.resultSlots.setItem(0, result);
          this.broadcastChanges();
       } else {
          this.resultSlots.setItem(0, ItemStack.EMPTY);
@@ -268,20 +268,20 @@ public class AnvilMenu extends ItemCombinerMenu {
       }
    }
 
-   public static int calculateIncreasedRepairCost(int var0) {
-      return (int)Math.min((long)var0 * 2L + 1L, 2147483647L);
+   public static int calculateIncreasedRepairCost(final int baseCost) {
+      return (int)Math.min((long)baseCost * 2L + 1L, 2147483647L);
    }
 
-   public boolean setItemName(String var1) {
-      String var2 = validateName(var1);
-      if (var2 != null && !var2.equals(this.itemName)) {
-         this.itemName = var2;
+   public boolean setItemName(final String name) {
+      String validatedName = validateName(name);
+      if (validatedName != null && !validatedName.equals(this.itemName)) {
+         this.itemName = validatedName;
          if (this.getSlot(2).hasItem()) {
-            ItemStack var3 = this.getSlot(2).getItem();
-            if (StringUtil.isBlank(var2)) {
-               var3.remove(DataComponents.CUSTOM_NAME);
+            ItemStack itemStack = this.getSlot(2).getItem();
+            if (StringUtil.isBlank(validatedName)) {
+               itemStack.remove(DataComponents.CUSTOM_NAME);
             } else {
-               var3.set(DataComponents.CUSTOM_NAME, Component.literal(var2));
+               itemStack.set(DataComponents.CUSTOM_NAME, Component.literal(validatedName));
             }
          }
 
@@ -292,9 +292,9 @@ public class AnvilMenu extends ItemCombinerMenu {
       }
    }
 
-   private static @Nullable String validateName(String var0) {
-      String var1 = StringUtil.filterText(var0);
-      return var1.length() <= 50 ? var1 : null;
+   private static @Nullable String validateName(final String name) {
+      String filteredName = StringUtil.filterText(name);
+      return filteredName.length() <= 50 ? filteredName : null;
    }
 
    public int getCost() {

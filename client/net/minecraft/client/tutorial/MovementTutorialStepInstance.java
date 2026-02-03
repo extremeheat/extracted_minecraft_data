@@ -27,9 +27,9 @@ public class MovementTutorialStepInstance implements TutorialStepInstance {
    private int moveCompleted = -1;
    private int lookCompleted = -1;
 
-   public MovementTutorialStepInstance(Tutorial var1) {
+   public MovementTutorialStepInstance(final Tutorial tutorial) {
       super();
-      this.tutorial = var1;
+      this.tutorial = tutorial;
    }
 
    public void tick() {
@@ -79,13 +79,13 @@ public class MovementTutorialStepInstance implements TutorialStepInstance {
       }
 
       if (this.timeWaiting >= 100) {
-         Minecraft var1 = this.tutorial.getMinecraft();
+         Minecraft minecraft = this.tutorial.getMinecraft();
          if (this.moveCompleted == -1 && this.moveToast == null) {
-            this.moveToast = new TutorialToast(var1.font, TutorialToast.Icons.MOVEMENT_KEYS, MOVE_TITLE, MOVE_DESCRIPTION, true);
-            var1.getToastManager().addToast(this.moveToast);
+            this.moveToast = new TutorialToast(minecraft.font, TutorialToast.Icons.MOVEMENT_KEYS, MOVE_TITLE, MOVE_DESCRIPTION, true);
+            minecraft.getToastManager().addToast(this.moveToast);
          } else if (this.moveCompleted != -1 && this.timeWaiting - this.moveCompleted >= 20 && this.lookCompleted == -1 && this.lookToast == null) {
-            this.lookToast = new TutorialToast(var1.font, TutorialToast.Icons.MOUSE, LOOK_TITLE, LOOK_DESCRIPTION, true);
-            var1.getToastManager().addToast(this.lookToast);
+            this.lookToast = new TutorialToast(minecraft.font, TutorialToast.Icons.MOUSE, LOOK_TITLE, LOOK_DESCRIPTION, true);
+            minecraft.getToastManager().addToast(this.lookToast);
          }
       }
 
@@ -104,15 +104,15 @@ public class MovementTutorialStepInstance implements TutorialStepInstance {
 
    }
 
-   public void onInput(ClientInput var1) {
-      if (var1.keyPresses.forward() || var1.keyPresses.backward() || var1.keyPresses.left() || var1.keyPresses.right() || var1.keyPresses.jump()) {
+   public void onInput(final ClientInput input) {
+      if (input.keyPresses.forward() || input.keyPresses.backward() || input.keyPresses.left() || input.keyPresses.right() || input.keyPresses.jump()) {
          this.moved = true;
       }
 
    }
 
-   public void onMouse(double var1, double var3) {
-      if (Math.abs(var1) > 0.01 || Math.abs(var3) > 0.01) {
+   public void onMouse(final double xd, final double yd) {
+      if (Math.abs(xd) > 0.01 || Math.abs(yd) > 0.01) {
          this.turned = true;
       }
 

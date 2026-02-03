@@ -12,14 +12,14 @@ public class ValidatePlayDead {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.present(MemoryModuleType.PLAY_DEAD_TICKS), var0.registered(MemoryModuleType.HURT_BY_ENTITY)).apply(var0, (var1, var2) -> (var3, var4, var5) -> {
-               int var7 = (Integer)var0.get(var1);
-               if (var7 <= 0) {
-                  var1.erase();
-                  var2.erase();
-                  var4.getBrain().useDefaultActivity();
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.PLAY_DEAD_TICKS), i.registered(MemoryModuleType.HURT_BY_ENTITY)).apply(i, (playDeadTicks, hurtBy) -> (level, body, timestamp) -> {
+               int ticks = (Integer)i.get(playDeadTicks);
+               if (ticks <= 0) {
+                  playDeadTicks.erase();
+                  hurtBy.erase();
+                  body.getBrain().useDefaultActivity();
                } else {
-                  var1.set(var7 - 1);
+                  playDeadTicks.set(ticks - 1);
                }
 
                return true;

@@ -6,6 +6,7 @@ import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 
 public class FilledBucketTrigger extends SimpleCriterionTrigger<TriggerInstance> {
@@ -17,25 +18,23 @@ public class FilledBucketTrigger extends SimpleCriterionTrigger<TriggerInstance>
       return FilledBucketTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, ItemStack var2) {
-      this.trigger(var1, (var1x) -> var1x.matches(var2));
+   public void trigger(final ServerPlayer player, final ItemStack item) {
+      this.trigger(player, (t) -> t.matches(item));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.item = var2;
       }
 
-      public static Criterion<TriggerInstance> filledBucket(ItemPredicate.Builder var0) {
-         return CriteriaTriggers.FILLED_BUCKET.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(var0.build())));
+      public static Criterion<TriggerInstance> filledBucket(final ItemPredicate.Builder item) {
+         return CriteriaTriggers.FILLED_BUCKET.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(item.build())));
       }
 
-      public boolean matches(ItemStack var1) {
-         return !this.item.isPresent() || ((ItemPredicate)this.item.get()).test(var1);
+      public boolean matches(final ItemStack item) {
+         return !this.item.isPresent() || ((ItemPredicate)this.item.get()).test((ItemInstance)item);
       }
    }
 }

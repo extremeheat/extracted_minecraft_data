@@ -7,73 +7,73 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.SpringConfiguration;
 
 public class SpringFeature extends Feature<SpringConfiguration> {
-   public SpringFeature(Codec<SpringConfiguration> var1) {
-      super(var1);
+   public SpringFeature(final Codec<SpringConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<SpringConfiguration> var1) {
-      SpringConfiguration var2 = (SpringConfiguration)var1.config();
-      WorldGenLevel var3 = var1.level();
-      BlockPos var4 = var1.origin();
-      if (!var3.getBlockState(var4.above()).is(var2.validBlocks)) {
+   public boolean place(final FeaturePlaceContext<SpringConfiguration> context) {
+      SpringConfiguration config = context.config();
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
+      if (!level.getBlockState(origin.above()).is(config.validBlocks)) {
          return false;
-      } else if (var2.requiresBlockBelow && !var3.getBlockState(var4.below()).is(var2.validBlocks)) {
+      } else if (config.requiresBlockBelow && !level.getBlockState(origin.below()).is(config.validBlocks)) {
          return false;
       } else {
-         BlockState var5 = var3.getBlockState(var4);
-         if (!var5.isAir() && !var5.is(var2.validBlocks)) {
+         BlockState currentState = level.getBlockState(origin);
+         if (!currentState.isAir() && !currentState.is(config.validBlocks)) {
             return false;
          } else {
-            int var6 = 0;
-            int var7 = 0;
-            if (var3.getBlockState(var4.west()).is(var2.validBlocks)) {
-               ++var7;
+            int placed = 0;
+            int rockCount = 0;
+            if (level.getBlockState(origin.west()).is(config.validBlocks)) {
+               ++rockCount;
             }
 
-            if (var3.getBlockState(var4.east()).is(var2.validBlocks)) {
-               ++var7;
+            if (level.getBlockState(origin.east()).is(config.validBlocks)) {
+               ++rockCount;
             }
 
-            if (var3.getBlockState(var4.north()).is(var2.validBlocks)) {
-               ++var7;
+            if (level.getBlockState(origin.north()).is(config.validBlocks)) {
+               ++rockCount;
             }
 
-            if (var3.getBlockState(var4.south()).is(var2.validBlocks)) {
-               ++var7;
+            if (level.getBlockState(origin.south()).is(config.validBlocks)) {
+               ++rockCount;
             }
 
-            if (var3.getBlockState(var4.below()).is(var2.validBlocks)) {
-               ++var7;
+            if (level.getBlockState(origin.below()).is(config.validBlocks)) {
+               ++rockCount;
             }
 
-            int var8 = 0;
-            if (var3.isEmptyBlock(var4.west())) {
-               ++var8;
+            int holeCount = 0;
+            if (level.isEmptyBlock(origin.west())) {
+               ++holeCount;
             }
 
-            if (var3.isEmptyBlock(var4.east())) {
-               ++var8;
+            if (level.isEmptyBlock(origin.east())) {
+               ++holeCount;
             }
 
-            if (var3.isEmptyBlock(var4.north())) {
-               ++var8;
+            if (level.isEmptyBlock(origin.north())) {
+               ++holeCount;
             }
 
-            if (var3.isEmptyBlock(var4.south())) {
-               ++var8;
+            if (level.isEmptyBlock(origin.south())) {
+               ++holeCount;
             }
 
-            if (var3.isEmptyBlock(var4.below())) {
-               ++var8;
+            if (level.isEmptyBlock(origin.below())) {
+               ++holeCount;
             }
 
-            if (var7 == var2.rockCount && var8 == var2.holeCount) {
-               var3.setBlock(var4, var2.state.createLegacyBlock(), 2);
-               var3.scheduleTick(var4, var2.state.getType(), 0);
-               ++var6;
+            if (rockCount == config.rockCount && holeCount == config.holeCount) {
+               level.setBlock(origin, config.state.createLegacyBlock(), 2);
+               level.scheduleTick(origin, config.state.getType(), 0);
+               ++placed;
             }
 
-            return var6 > 0;
+            return placed > 0;
          }
       }
    }

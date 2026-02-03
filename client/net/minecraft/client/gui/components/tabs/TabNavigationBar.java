@@ -29,7 +29,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
-public class TabNavigationBar extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+public class TabNavigationBar extends AbstractContainerEventHandler implements NarratableEntry, Renderable {
    private static final int NO_TAB = -1;
    private static final int MAX_WIDTH = 400;
    private static final int HEIGHT = 24;
@@ -41,60 +41,61 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    private final ImmutableList<Tab> tabs;
    private final ImmutableList<TabButton> tabButtons;
 
-   TabNavigationBar(int var1, TabManager var2, Iterable<Tab> var3) {
+   private TabNavigationBar(final int width, final TabManager tabManager, final Iterable<Tab> tabs) {
       super();
-      this.width = var1;
-      this.tabManager = var2;
-      this.tabs = ImmutableList.copyOf(var3);
+      this.width = width;
+      this.tabManager = tabManager;
+      this.tabs = ImmutableList.copyOf(tabs);
       this.layout.defaultCellSetting().alignHorizontallyCenter();
-      ImmutableList.Builder var4 = ImmutableList.builder();
+      ImmutableList.Builder<TabButton> tabButtonsBuilder = ImmutableList.builder();
 
-      for(Tab var6 : var3) {
-         var4.add((TabButton)this.layout.addChild(new TabButton(var2, var6, 0, 24)));
+      for(Tab tab : tabs) {
+         tabButtonsBuilder.add((TabButton)this.layout.addChild(new TabButton(tabManager, tab, 0, 24)));
       }
 
-      this.tabButtons = var4.build();
+      this.tabButtons = tabButtonsBuilder.build();
    }
 
-   public static Builder builder(TabManager var0, int var1) {
-      return new Builder(var0, var1);
+   public static Builder builder(final TabManager tabManager, final int width) {
+      return new Builder(tabManager, width);
    }
 
-   public void setWidth(int var1) {
-      this.width = var1;
+   public void updateWidth(final int width) {
+      this.width = width;
+      this.arrangeElements();
    }
 
-   public boolean isMouseOver(double var1, double var3) {
-      return var1 >= (double)this.layout.getX() && var3 >= (double)this.layout.getY() && var1 < (double)(this.layout.getX() + this.layout.getWidth()) && var3 < (double)(this.layout.getY() + this.layout.getHeight());
+   public boolean isMouseOver(final double mouseX, final double mouseY) {
+      return mouseX >= (double)this.layout.getX() && mouseY >= (double)this.layout.getY() && mouseX < (double)(this.layout.getX() + this.layout.getWidth()) && mouseY < (double)(this.layout.getY() + this.layout.getHeight());
    }
 
-   public void setFocused(boolean var1) {
-      super.setFocused(var1);
+   public void setFocused(final boolean focused) {
+      super.setFocused(focused);
       if (this.getFocused() != null) {
          this.setFocused((GuiEventListener)null);
       }
 
    }
 
-   public void setFocused(@Nullable GuiEventListener var1) {
-      super.setFocused(var1);
-      if (var1 instanceof TabButton var2) {
-         if (var2.isActive()) {
-            this.tabManager.setCurrentTab(var2.tab(), true);
+   public void setFocused(final @Nullable GuiEventListener focused) {
+      super.setFocused(focused);
+      if (focused instanceof TabButton button) {
+         if (button.isActive()) {
+            this.tabManager.setCurrentTab(button.tab(), true);
          }
       }
 
    }
 
-   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
       if (!this.isFocused()) {
-         TabButton var2 = this.currentTabButton();
-         if (var2 != null) {
-            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(var2));
+         TabButton button = this.currentTabButton();
+         if (button != null) {
+            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(button));
          }
       }
 
-      return var1 instanceof FocusNavigationEvent.TabNavigation ? null : super.nextFocusPath(var1);
+      return navigationEvent instanceof FocusNavigationEvent.TabNavigation ? null : super.nextFocusPath(navigationEvent);
    }
 
    public List<? extends GuiEventListener> children() {
@@ -109,37 +110,37 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       return (NarratableEntry.NarrationPriority)this.tabButtons.stream().map(AbstractWidget::narrationPriority).max(Comparator.naturalOrder()).orElse(NarratableEntry.NarrationPriority.NONE);
    }
 
-   public void updateNarration(NarrationElementOutput var1) {
-      Optional var2 = this.tabButtons.stream().filter(AbstractWidget::isHovered).findFirst().or(() -> Optional.ofNullable(this.currentTabButton()));
-      var2.ifPresent((var2x) -> {
-         this.narrateListElementPosition(var1.nest(), var2x);
-         var2x.updateNarration(var1);
+   public void updateNarration(final NarrationElementOutput output) {
+      Optional<TabButton> selected = this.tabButtons.stream().filter(AbstractWidget::isHovered).findFirst().or(() -> Optional.ofNullable(this.currentTabButton()));
+      selected.ifPresent((button) -> {
+         this.narrateListElementPosition(output.nest(), button);
+         button.updateNarration(output);
       });
       if (this.isFocused()) {
-         var1.add(NarratedElementType.USAGE, USAGE_NARRATION);
+         output.add(NarratedElementType.USAGE, USAGE_NARRATION);
       }
 
    }
 
-   protected void narrateListElementPosition(NarrationElementOutput var1, TabButton var2) {
+   protected void narrateListElementPosition(final NarrationElementOutput output, final TabButton widget) {
       if (this.tabs.size() > 1) {
-         int var3 = this.tabButtons.indexOf(var2);
-         if (var3 != -1) {
-            var1.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.tab", var3 + 1, this.tabs.size()));
+         int index = this.tabButtons.indexOf(widget);
+         if (index != -1) {
+            output.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.tab", index + 1, this.tabs.size()));
          }
       }
 
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, ((TabButton)this.tabButtons.get(0)).getX(), 2, 32, 2);
-      int var5 = ((TabButton)this.tabButtons.get(this.tabButtons.size() - 1)).getRight();
-      var1.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, var5, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, ((TabButton)this.tabButtons.get(0)).getX(), 2, 32, 2);
+      int afterLastTab = ((TabButton)this.tabButtons.get(this.tabButtons.size() - 1)).getRight();
+      graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, afterLastTab, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
       UnmodifiableIterator var6 = this.tabButtons.iterator();
 
       while(var6.hasNext()) {
-         TabButton var7 = (TabButton)var6.next();
-         var7.render(var1, var2, var3, var4);
+         TabButton value = (TabButton)var6.next();
+         value.render(graphics, mouseX, mouseY, a);
       }
 
    }
@@ -149,48 +150,48 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    }
 
    public void arrangeElements() {
-      int var1 = Math.min(400, this.width) - 28;
-      int var2 = Mth.roundToward(var1 / this.tabs.size(), 2);
+      int tabsWidth = Math.min(400, this.width) - 28;
+      int tabWidth = Mth.roundToward(tabsWidth / this.tabs.size(), 2);
       UnmodifiableIterator var3 = this.tabButtons.iterator();
 
       while(var3.hasNext()) {
-         TabButton var4 = (TabButton)var3.next();
-         var4.setWidth(var2);
+         TabButton button = (TabButton)var3.next();
+         button.setWidth(tabWidth);
       }
 
       this.layout.arrangeElements();
-      this.layout.setX(Mth.roundToward((this.width - var1) / 2, 2));
+      this.layout.setX(Mth.roundToward((this.width - tabsWidth) / 2, 2));
       this.layout.setY(0);
    }
 
-   public void selectTab(int var1, boolean var2) {
+   public void selectTab(final int index, final boolean playSound) {
       if (this.isFocused()) {
-         this.setFocused((GuiEventListener)this.tabButtons.get(var1));
-      } else if (((TabButton)this.tabButtons.get(var1)).isActive()) {
-         this.tabManager.setCurrentTab((Tab)this.tabs.get(var1), var2);
+         this.setFocused((GuiEventListener)this.tabButtons.get(index));
+      } else if (((TabButton)this.tabButtons.get(index)).isActive()) {
+         this.tabManager.setCurrentTab((Tab)this.tabs.get(index), playSound);
       }
 
    }
 
-   public void setTabActiveState(int var1, boolean var2) {
-      if (var1 >= 0 && var1 < this.tabButtons.size()) {
-         ((TabButton)this.tabButtons.get(var1)).active = var2;
+   public void setTabActiveState(final int index, final boolean active) {
+      if (index >= 0 && index < this.tabButtons.size()) {
+         ((TabButton)this.tabButtons.get(index)).active = active;
       }
 
    }
 
-   public void setTabTooltip(int var1, @Nullable Tooltip var2) {
-      if (var1 >= 0 && var1 < this.tabButtons.size()) {
-         ((TabButton)this.tabButtons.get(var1)).setTooltip(var2);
+   public void setTabTooltip(final int index, final @Nullable Tooltip hint) {
+      if (index >= 0 && index < this.tabButtons.size()) {
+         ((TabButton)this.tabButtons.get(index)).setTooltip(hint);
       }
 
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (var1.hasControlDownWithQuirk()) {
-         int var2 = this.getNextTabIndex(var1);
-         if (var2 != -1) {
-            this.selectTab(Mth.clamp(var2, 0, this.tabs.size() - 1), true);
+   public boolean keyPressed(final KeyEvent event) {
+      if (event.hasControlDownWithQuirk()) {
+         int tabIndex = this.getNextTabIndex(event);
+         if (tabIndex != -1) {
+            this.selectTab(Mth.clamp(tabIndex, 0, this.tabs.size() - 1), true);
             return true;
          }
       }
@@ -198,32 +199,32 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       return false;
    }
 
-   private int getNextTabIndex(KeyEvent var1) {
-      return this.getNextTabIndex(this.currentTabIndex(), var1);
+   private int getNextTabIndex(final KeyEvent event) {
+      return this.getNextTabIndex(this.currentTabIndex(), event);
    }
 
-   private int getNextTabIndex(int var1, KeyEvent var2) {
-      int var3 = var2.getDigit();
-      if (var3 != -1) {
-         return Math.floorMod(var3 - 1, 10);
-      } else if (var2.isCycleFocus() && var1 != -1) {
-         int var4 = var2.hasShiftDown() ? var1 - 1 : var1 + 1;
-         int var5 = Math.floorMod(var4, this.tabs.size());
-         return ((TabButton)this.tabButtons.get(var5)).active ? var5 : this.getNextTabIndex(var5, var2);
+   private int getNextTabIndex(final int currentTab, final KeyEvent event) {
+      int digit = event.getDigit();
+      if (digit != -1) {
+         return Math.floorMod(digit - 1, 10);
+      } else if (event.isCycleFocus() && currentTab != -1) {
+         int nextTabIndex = event.hasShiftDown() ? currentTab - 1 : currentTab + 1;
+         int index = Math.floorMod(nextTabIndex, this.tabs.size());
+         return ((TabButton)this.tabButtons.get(index)).active ? index : this.getNextTabIndex(index, event);
       } else {
          return -1;
       }
    }
 
    private int currentTabIndex() {
-      Tab var1 = this.tabManager.getCurrentTab();
-      int var2 = this.tabs.indexOf(var1);
-      return var2 != -1 ? var2 : -1;
+      Tab currentTab = this.tabManager.getCurrentTab();
+      int index = this.tabs.indexOf(currentTab);
+      return index != -1 ? index : -1;
    }
 
    private @Nullable TabButton currentTabButton() {
-      int var1 = this.currentTabIndex();
-      return var1 != -1 ? (TabButton)this.tabButtons.get(var1) : null;
+      int index = this.currentTabIndex();
+      return index != -1 ? (TabButton)this.tabButtons.get(index) : null;
    }
 
    public static class Builder {
@@ -231,14 +232,14 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       private final TabManager tabManager;
       private final List<Tab> tabs = new ArrayList();
 
-      Builder(TabManager var1, int var2) {
+      private Builder(final TabManager tabManager, final int width) {
          super();
-         this.tabManager = var1;
-         this.width = var2;
+         this.tabManager = tabManager;
+         this.width = width;
       }
 
-      public Builder addTabs(Tab... var1) {
-         Collections.addAll(this.tabs, var1);
+      public Builder addTabs(final Tab... tabs) {
+         Collections.addAll(this.tabs, tabs);
          return this;
       }
 

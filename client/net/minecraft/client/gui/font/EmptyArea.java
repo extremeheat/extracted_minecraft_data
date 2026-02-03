@@ -6,14 +6,8 @@ public record EmptyArea(float x, float y, float advance, float ascent, float hei
    public static final float DEFAULT_HEIGHT = 9.0F;
    public static final float DEFAULT_ASCENT = 7.0F;
 
-   public EmptyArea(float var1, float var2, float var3, float var4, float var5, Style var6) {
+   public EmptyArea {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.advance = var3;
-      this.ascent = var4;
-      this.height = var5;
-      this.style = var6;
    }
 
    public float activeLeft() {

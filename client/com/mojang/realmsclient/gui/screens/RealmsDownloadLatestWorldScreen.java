@@ -7,8 +7,8 @@ import com.mojang.realmsclient.Unit;
 import com.mojang.realmsclient.client.FileDownload;
 import com.mojang.realmsclient.dto.WorldDownload;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -19,7 +19,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
@@ -55,19 +54,19 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    private boolean checked;
    private final BooleanConsumer callback;
 
-   public RealmsDownloadLatestWorldScreen(Screen var1, WorldDownload var2, String var3, BooleanConsumer var4) {
+   public RealmsDownloadLatestWorldScreen(final Screen lastScreen, final WorldDownload worldDownload, final String worldName, final BooleanConsumer callback) {
       super(GameNarrator.NO_TITLE);
-      this.callback = var4;
-      this.lastScreen = var1;
-      this.worldName = var3;
-      this.worldDownload = var2;
+      this.callback = callback;
+      this.lastScreen = lastScreen;
+      this.worldName = worldName;
+      this.worldDownload = worldDownload;
       this.downloadStatus = new DownloadStatus();
       this.downloadTitle = Component.translatable("mco.download.title");
       this.narrationRateLimiter = RateLimiter.create(0.10000000149011612);
    }
 
    public void init() {
-      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.onClose()).bounds((this.width - 200) / 2, this.height - 42, 200, 20).build());
+      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onClose()).bounds((this.width - 200) / 2, this.height - 42, 200, 20).build());
       this.checkDownloadSize();
    }
 
@@ -75,8 +74,8 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       if (!this.finished && !this.checked) {
          this.checked = true;
          if (this.getContentLength(this.worldDownload.downloadLink()) >= 5368709120L) {
-            MutableComponent var1 = Component.translatable("mco.download.confirmation.oversized", Unit.humanReadable(5368709120L));
-            this.minecraft.setScreen(RealmsPopups.warningAcknowledgePopupScreen(this, var1, (var1x) -> {
+            Component popupMessage = Component.translatable("mco.download.confirmation.oversized", Unit.humanReadable(5368709120L));
+            this.minecraft.setScreen(RealmsPopups.warningAcknowledgePopupScreen(this, popupMessage, (popupScreen) -> {
                this.minecraft.setScreen(this);
                this.downloadSave();
             }));
@@ -87,34 +86,34 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       }
    }
 
-   private long getContentLength(String var1) {
-      return FileDownload.contentLength(var1).orElse(0L);
+   private long getContentLength(final String downloadLink) {
+      return FileDownload.contentLength(downloadLink).orElse(0L);
    }
 
    public void tick() {
       super.tick();
       ++this.animTick;
       if (this.status != null && this.narrationRateLimiter.tryAcquire(1)) {
-         Component var1 = this.createProgressNarrationMessage();
-         this.minecraft.getNarrator().saySystemNow(var1);
+         Component message = this.createProgressNarrationMessage();
+         this.minecraft.getNarrator().saySystemNow(message);
       }
 
    }
 
    private Component createProgressNarrationMessage() {
-      ArrayList var1 = Lists.newArrayList();
-      var1.add(this.downloadTitle);
-      var1.add(this.status);
+      List<Component> elements = Lists.newArrayList();
+      elements.add(this.downloadTitle);
+      elements.add(this.status);
       if (this.progress != null) {
-         var1.add(Component.translatable("mco.download.percent", this.progress));
-         var1.add(Component.translatable("mco.download.speed.narration", Unit.humanReadable(this.bytesPersSecond)));
+         elements.add(Component.translatable("mco.download.percent", this.progress));
+         elements.add(Component.translatable("mco.download.speed.narration", Unit.humanReadable(this.bytesPersSecond)));
       }
 
       if (this.errorMessage != null) {
-         var1.add(this.errorMessage);
+         elements.add(this.errorMessage);
       }
 
-      return CommonComponents.joinLines((Collection)var1);
+      return CommonComponents.joinLines((Collection)elements);
    }
 
    public void onClose() {
@@ -126,68 +125,68 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.downloadTitle, this.width / 2, 20, -1);
-      var1.drawCenteredString(this.font, (Component)this.status, this.width / 2, 50, -1);
+   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
+      super.render(graphics, xm, ym, a);
+      graphics.drawCenteredString(this.font, (Component)this.downloadTitle, this.width / 2, 20, -1);
+      graphics.drawCenteredString(this.font, (Component)this.status, this.width / 2, 50, -1);
       if (this.showDots) {
-         this.drawDots(var1);
+         this.drawDots(graphics);
       }
 
       if (this.downloadStatus.bytesWritten != 0L && !this.cancelled) {
-         this.drawProgressBar(var1);
-         this.drawDownloadSpeed(var1);
+         this.drawProgressBar(graphics);
+         this.drawDownloadSpeed(graphics);
       }
 
       if (this.errorMessage != null) {
-         var1.drawCenteredString(this.font, (Component)this.errorMessage, this.width / 2, 110, -65536);
+         graphics.drawCenteredString(this.font, (Component)this.errorMessage, this.width / 2, 110, -65536);
       }
 
    }
 
-   private void drawDots(GuiGraphics var1) {
-      int var2 = this.font.width((FormattedText)this.status);
+   private void drawDots(final GuiGraphics graphics) {
+      int statusWidth = this.font.width((FormattedText)this.status);
       if (this.animTick != 0 && this.animTick % 10 == 0) {
          ++this.dotIndex;
       }
 
-      var1.drawString(this.font, (String)DOTS[this.dotIndex % DOTS.length], this.width / 2 + var2 / 2 + 5, 50, -1);
+      graphics.drawString(this.font, (String)DOTS[this.dotIndex % DOTS.length], this.width / 2 + statusWidth / 2 + 5, 50, -1);
    }
 
-   private void drawProgressBar(GuiGraphics var1) {
-      double var2 = Math.min((double)this.downloadStatus.bytesWritten / (double)this.downloadStatus.totalBytes, 1.0);
-      this.progress = String.format(Locale.ROOT, "%.1f", var2 * 100.0);
-      int var4 = (this.width - 200) / 2;
-      int var5 = var4 + (int)Math.round(200.0 * var2);
-      var1.fill(var4 - 1, 79, var5 + 1, 96, -1);
-      var1.fill(var4, 80, var5, 95, -8355712);
-      var1.drawCenteredString(this.font, (Component)Component.translatable("mco.download.percent", this.progress), this.width / 2, 84, -1);
+   private void drawProgressBar(final GuiGraphics graphics) {
+      double percentage = Math.min((double)this.downloadStatus.bytesWritten / (double)this.downloadStatus.totalBytes, 1.0);
+      this.progress = String.format(Locale.ROOT, "%.1f", percentage * 100.0);
+      int left = (this.width - 200) / 2;
+      int right = left + (int)Math.round(200.0 * percentage);
+      graphics.fill(left - 1, 79, right + 1, 96, -1);
+      graphics.fill(left, 80, right, 95, -8355712);
+      graphics.drawCenteredString(this.font, (Component)Component.translatable("mco.download.percent", this.progress), this.width / 2, 84, -1);
    }
 
-   private void drawDownloadSpeed(GuiGraphics var1) {
+   private void drawDownloadSpeed(final GuiGraphics graphics) {
       if (this.animTick % 20 == 0) {
          if (this.previousWrittenBytes != null) {
-            long var2 = Util.getMillis() - this.previousTimeSnapshot;
-            if (var2 == 0L) {
-               var2 = 1L;
+            long timeElapsed = Util.getMillis() - this.previousTimeSnapshot;
+            if (timeElapsed == 0L) {
+               timeElapsed = 1L;
             }
 
-            this.bytesPersSecond = 1000L * (this.downloadStatus.bytesWritten - this.previousWrittenBytes) / var2;
-            this.drawDownloadSpeed0(var1, this.bytesPersSecond);
+            this.bytesPersSecond = 1000L * (this.downloadStatus.bytesWritten - this.previousWrittenBytes) / timeElapsed;
+            this.drawDownloadSpeed0(graphics, this.bytesPersSecond);
          }
 
          this.previousWrittenBytes = this.downloadStatus.bytesWritten;
          this.previousTimeSnapshot = Util.getMillis();
       } else {
-         this.drawDownloadSpeed0(var1, this.bytesPersSecond);
+         this.drawDownloadSpeed0(graphics, this.bytesPersSecond);
       }
 
    }
 
-   private void drawDownloadSpeed0(GuiGraphics var1, long var2) {
-      if (var2 > 0L) {
-         int var4 = this.font.width(this.progress);
-         var1.drawString(this.font, (Component)Component.translatable("mco.download.speed", Unit.humanReadable(var2)), this.width / 2 + var4 / 2 + 15, 84, -1);
+   private void drawDownloadSpeed0(final GuiGraphics graphics, final long bytesPerSecond) {
+      if (bytesPerSecond > 0L) {
+         int progressLength = this.font.width(this.progress);
+         graphics.drawString(this.font, (Component)Component.translatable("mco.download.speed", Unit.humanReadable(bytesPerSecond)), this.width / 2 + progressLength / 2 + 15, 84, -1);
       }
 
    }
@@ -202,18 +201,18 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
                }
 
                this.status = Component.translatable("mco.download.downloading", this.worldName);
-               FileDownload var1 = new FileDownload();
-               var1.download(this.worldDownload, this.worldName, this.downloadStatus, this.minecraft.getLevelSource());
+               FileDownload fileDownload = new FileDownload();
+               fileDownload.download(this.worldDownload, this.worldName, this.downloadStatus, this.minecraft.getLevelSource());
 
-               while(!var1.isFinished()) {
-                  if (var1.isError()) {
-                     var1.cancel();
+               while(!fileDownload.isFinished()) {
+                  if (fileDownload.isError()) {
+                     fileDownload.cancel();
                      this.errorMessage = Component.translatable("mco.download.failed");
                      this.cancelButton.setMessage(CommonComponents.GUI_DONE);
                      return;
                   }
 
-                  if (var1.isExtracting()) {
+                  if (fileDownload.isExtracting()) {
                      if (!this.extracting) {
                         this.status = Component.translatable("mco.download.extracting");
                      }
@@ -222,7 +221,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
                   }
 
                   if (this.cancelled) {
-                     var1.cancel();
+                     fileDownload.cancel();
                      this.downloadCancelled();
                      return;
                   }
@@ -244,9 +243,9 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
          } catch (InterruptedException var9) {
             LOGGER.error("Could not acquire upload lock");
             return;
-         } catch (Exception var10) {
+         } catch (Exception e) {
             this.errorMessage = Component.translatable("mco.download.failed");
-            LOGGER.info("Exception while downloading world", var10);
+            LOGGER.info("Exception while downloading world", e);
             return;
          } finally {
             if (!DOWNLOAD_LOCK.isHeldByCurrentThread()) {

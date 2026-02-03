@@ -24,26 +24,26 @@ public abstract class BlockAttachedEntity extends Entity {
    private int checkInterval;
    protected BlockPos pos;
 
-   protected BlockAttachedEntity(EntityType<? extends BlockAttachedEntity> var1, Level var2) {
-      super(var1, var2);
+   protected BlockAttachedEntity(final EntityType<? extends BlockAttachedEntity> type, final Level level) {
+      super(type, level);
    }
 
-   protected BlockAttachedEntity(EntityType<? extends BlockAttachedEntity> var1, Level var2, BlockPos var3) {
-      this(var1, var2);
-      this.pos = var3;
+   protected BlockAttachedEntity(final EntityType<? extends BlockAttachedEntity> type, final Level level, final BlockPos pos) {
+      this(type, level);
+      this.pos = pos;
    }
 
    protected abstract void recalculateBoundingBox();
 
    public void tick() {
       Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
+      if (var2 instanceof ServerLevel level) {
          this.checkBelowWorld();
          if (this.checkInterval++ == 100) {
             this.checkInterval = 0;
             if (!this.isRemoved() && !this.survives()) {
                this.discard();
-               this.dropItem(var1, (Entity)null);
+               this.dropItem(level, (Entity)null);
             }
          }
       }
@@ -56,86 +56,86 @@ public abstract class BlockAttachedEntity extends Entity {
       return true;
    }
 
-   public boolean skipAttackInteraction(Entity var1) {
-      if (var1 instanceof Player var2) {
-         return !this.level().mayInteract(var2, this.pos) ? true : this.hurtOrSimulate(this.damageSources().playerAttack(var2), 0.0F);
+   public boolean skipAttackInteraction(final Entity source) {
+      if (source instanceof Player player) {
+         return !this.level().mayInteract(player, this.pos) ? true : this.hurtOrSimulate(this.damageSources().playerAttack(player), 0.0F);
       } else {
          return false;
       }
    }
 
-   public boolean hurtClient(DamageSource var1) {
-      return !this.isInvulnerableToBase(var1);
+   public boolean hurtClient(final DamageSource source) {
+      return !this.isInvulnerableToBase(source);
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      if (this.isInvulnerableToBase(var2)) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      if (this.isInvulnerableToBase(source)) {
          return false;
-      } else if (!(Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) && var2.getEntity() instanceof Mob) {
+      } else if (!(Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING) && source.getEntity() instanceof Mob) {
          return false;
       } else {
          if (!this.isRemoved()) {
-            this.kill(var1);
+            this.kill(level);
             this.markHurt();
-            this.dropItem(var1, var2.getEntity());
+            this.dropItem(level, source.getEntity());
          }
 
          return true;
       }
    }
 
-   public boolean ignoreExplosion(Explosion var1) {
-      Entity var2 = var1.getDirectSourceEntity();
-      if (var2 != null && var2.isInWater()) {
+   public boolean ignoreExplosion(final Explosion explosion) {
+      Entity directEntity = explosion.getDirectSourceEntity();
+      if (directEntity != null && directEntity.isInWater()) {
          return true;
       } else {
-         return var1.shouldAffectBlocklikeEntities() ? super.ignoreExplosion(var1) : true;
+         return explosion.shouldAffectBlocklikeEntities() ? super.ignoreExplosion(explosion) : true;
       }
    }
 
-   public void move(MoverType var1, Vec3 var2) {
+   public void move(final MoverType moverType, final Vec3 delta) {
       Level var4 = this.level();
-      if (var4 instanceof ServerLevel var3) {
-         if (!this.isRemoved() && var2.lengthSqr() > 0.0) {
-            this.kill(var3);
-            this.dropItem(var3, (Entity)null);
+      if (var4 instanceof ServerLevel level) {
+         if (!this.isRemoved() && delta.lengthSqr() > 0.0) {
+            this.kill(level);
+            this.dropItem(level, (Entity)null);
          }
       }
 
    }
 
-   public void push(double var1, double var3, double var5) {
+   public void push(final double xa, final double ya, final double za) {
       Level var8 = this.level();
-      if (var8 instanceof ServerLevel var7) {
-         if (!this.isRemoved() && var1 * var1 + var3 * var3 + var5 * var5 > 0.0) {
-            this.kill(var7);
-            this.dropItem(var7, (Entity)null);
+      if (var8 instanceof ServerLevel level) {
+         if (!this.isRemoved() && xa * xa + ya * ya + za * za > 0.0) {
+            this.kill(level);
+            this.dropItem(level, (Entity)null);
          }
       }
 
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      var1.store("block_pos", BlockPos.CODEC, this.getPos());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      output.store("block_pos", BlockPos.CODEC, this.getPos());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      BlockPos var2 = (BlockPos)var1.read("block_pos", BlockPos.CODEC).orElse((Object)null);
-      if (var2 != null && var2.closerThan(this.blockPosition(), 16.0)) {
-         this.pos = var2;
+   protected void readAdditionalSaveData(final ValueInput input) {
+      BlockPos storedPos = (BlockPos)input.read("block_pos", BlockPos.CODEC).orElse((Object)null);
+      if (storedPos != null && storedPos.closerThan(this.blockPosition(), 16.0)) {
+         this.pos = storedPos;
       } else {
-         LOGGER.error("Block-attached entity at invalid position: {}", var2);
+         LOGGER.error("Block-attached entity at invalid position: {}", storedPos);
       }
    }
 
-   public abstract void dropItem(ServerLevel var1, @Nullable Entity var2);
+   public abstract void dropItem(ServerLevel level, @Nullable Entity causedBy);
 
    protected boolean repositionEntityAfterLoad() {
       return false;
    }
 
-   public void setPos(double var1, double var3, double var5) {
-      this.pos = BlockPos.containing(var1, var3, var5);
+   public void setPos(final double x, final double y, final double z) {
+      this.pos = BlockPos.containing(x, y, z);
       this.recalculateBoundingBox();
       this.needsSync = true;
    }
@@ -144,7 +144,7 @@ public abstract class BlockAttachedEntity extends Entity {
       return this.pos;
    }
 
-   public void thunderHit(ServerLevel var1, LightningBolt var2) {
+   public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
    }
 
    public void refreshDimensions() {

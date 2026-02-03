@@ -9,7 +9,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.List;
 import net.minecraft.resources.Identifier;
@@ -25,13 +24,8 @@ public record TrueTypeGlyphProviderDefinition(Identifier location, float size, f
    private static final Codec<String> SKIP_LIST_CODEC;
    public static final MapCodec<TrueTypeGlyphProviderDefinition> CODEC;
 
-   public TrueTypeGlyphProviderDefinition(Identifier var1, float var2, float var3, Shift var4, String var5) {
+   public TrueTypeGlyphProviderDefinition {
       super();
-      this.location = var1;
-      this.size = var2;
-      this.oversample = var3;
-      this.shift = var4;
-      this.skip = var5;
    }
 
    public GlyphProviderType type() {
@@ -42,27 +36,27 @@ public record TrueTypeGlyphProviderDefinition(Identifier location, float size, f
       return Either.left(this::load);
    }
 
-   private GlyphProvider load(ResourceManager var1) throws IOException {
-      Object var2 = null;
-      Object var3 = null;
+   private GlyphProvider load(final ResourceManager resourceManager) throws IOException {
+      FT_Face face = null;
+      ByteBuffer fontData = null;
 
       try {
-         InputStream var4 = var1.open(this.location.withPrefix("font/"));
+         InputStream resource = resourceManager.open(this.location.withPrefix("font/"));
 
          TrueTypeGlyphProvider var21;
          try {
-            ByteBuffer var19 = TextureUtil.readResource(var4);
+            fontData = TextureUtil.readResource(resource);
             synchronized(FreeTypeUtil.LIBRARY_LOCK) {
-               MemoryStack var6 = MemoryStack.stackPush();
+               MemoryStack stack = MemoryStack.stackPush();
 
                try {
-                  PointerBuffer var7 = var6.mallocPointer(1);
-                  FreeTypeUtil.assertError(FreeType.FT_New_Memory_Face(FreeTypeUtil.getLibrary(), var19, 0L, var7), "Initializing font face");
-                  var18 = FT_Face.create(var7.get());
+                  PointerBuffer faceBuffer = stack.mallocPointer(1);
+                  FreeTypeUtil.assertError(FreeType.FT_New_Memory_Face(FreeTypeUtil.getLibrary(), fontData, 0L, faceBuffer), "Initializing font face");
+                  face = FT_Face.create(faceBuffer.get());
                } catch (Throwable var14) {
-                  if (var6 != null) {
+                  if (stack != null) {
                      try {
-                        var6.close();
+                        stack.close();
                      } catch (Throwable var12) {
                         var14.addSuppressed(var12);
                      }
@@ -71,22 +65,22 @@ public record TrueTypeGlyphProviderDefinition(Identifier location, float size, f
                   throw var14;
                }
 
-               if (var6 != null) {
-                  var6.close();
+               if (stack != null) {
+                  stack.close();
                }
 
-               String var20 = FreeType.FT_Get_Font_Format(var18);
-               if (!"TrueType".equals(var20)) {
-                  throw new IOException("Font is not in TTF format, was " + var20);
+               String format = FreeType.FT_Get_Font_Format(face);
+               if (!"TrueType".equals(format)) {
+                  throw new IOException("Font is not in TTF format, was " + format);
                }
 
-               FreeTypeUtil.assertError(FreeType.FT_Select_Charmap(var18, FreeType.FT_ENCODING_UNICODE), "Find unicode charmap");
-               var21 = new TrueTypeGlyphProvider(var19, var18, this.size, this.oversample, this.shift.x, this.shift.y, this.skip);
+               FreeTypeUtil.assertError(FreeType.FT_Select_Charmap(face, FreeType.FT_ENCODING_UNICODE), "Find unicode charmap");
+               var21 = new TrueTypeGlyphProvider(fontData, face, this.size, this.oversample, this.shift.x, this.shift.y, this.skip);
             }
          } catch (Throwable var16) {
-            if (var4 != null) {
+            if (resource != null) {
                try {
-                  var4.close();
+                  resource.close();
                } catch (Throwable var11) {
                   var16.addSuppressed(var11);
                }
@@ -95,38 +89,34 @@ public record TrueTypeGlyphProviderDefinition(Identifier location, float size, f
             throw var16;
          }
 
-         if (var4 != null) {
-            var4.close();
+         if (resource != null) {
+            resource.close();
          }
 
          return var21;
-      } catch (Exception var17) {
+      } catch (Exception ex) {
          synchronized(FreeTypeUtil.LIBRARY_LOCK) {
-            if (var2 != null) {
-               FreeType.FT_Done_Face((FT_Face)var2);
+            if (face != null) {
+               FreeType.FT_Done_Face(face);
             }
          }
 
-         MemoryUtil.memFree((Buffer)var3);
-         throw var17;
+         MemoryUtil.memFree(fontData);
+         throw ex;
       }
    }
 
    static {
-      SKIP_LIST_CODEC = Codec.withAlternative(Codec.STRING, Codec.STRING.listOf(), (var0) -> String.join("", var0));
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("file").forGetter(TrueTypeGlyphProviderDefinition::location), Codec.FLOAT.optionalFieldOf("size", 11.0F).forGetter(TrueTypeGlyphProviderDefinition::size), Codec.FLOAT.optionalFieldOf("oversample", 1.0F).forGetter(TrueTypeGlyphProviderDefinition::oversample), TrueTypeGlyphProviderDefinition.Shift.CODEC.optionalFieldOf("shift", TrueTypeGlyphProviderDefinition.Shift.NONE).forGetter(TrueTypeGlyphProviderDefinition::shift), SKIP_LIST_CODEC.optionalFieldOf("skip", "").forGetter(TrueTypeGlyphProviderDefinition::skip)).apply(var0, TrueTypeGlyphProviderDefinition::new));
+      SKIP_LIST_CODEC = Codec.withAlternative(Codec.STRING, Codec.STRING.listOf(), (list) -> String.join("", list));
+      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("file").forGetter(TrueTypeGlyphProviderDefinition::location), Codec.FLOAT.optionalFieldOf("size", 11.0F).forGetter(TrueTypeGlyphProviderDefinition::size), Codec.FLOAT.optionalFieldOf("oversample", 1.0F).forGetter(TrueTypeGlyphProviderDefinition::oversample), TrueTypeGlyphProviderDefinition.Shift.CODEC.optionalFieldOf("shift", TrueTypeGlyphProviderDefinition.Shift.NONE).forGetter(TrueTypeGlyphProviderDefinition::shift), SKIP_LIST_CODEC.optionalFieldOf("skip", "").forGetter(TrueTypeGlyphProviderDefinition::skip)).apply(i, TrueTypeGlyphProviderDefinition::new));
    }
 
    public static record Shift(float x, float y) {
-      final float x;
-      final float y;
       public static final Shift NONE = new Shift(0.0F, 0.0F);
-      public static final Codec<Shift> CODEC = Codec.floatRange(-512.0F, 512.0F).listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 2).map((var0x) -> new Shift((Float)var0x.get(0), (Float)var0x.get(1))), (var0) -> List.of(var0.x, var0.y));
+      public static final Codec<Shift> CODEC = Codec.floatRange(-512.0F, 512.0F).listOf().comapFlatMap((input) -> Util.fixedSize((List)input, 2).map((floats) -> new Shift((Float)floats.get(0), (Float)floats.get(1))), (shift) -> List.of(shift.x, shift.y));
 
-      public Shift(float var1, float var2) {
+      public Shift {
          super();
-         this.x = var1;
-         this.y = var2;
       }
    }
 }

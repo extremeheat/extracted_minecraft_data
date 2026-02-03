@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -20,40 +21,39 @@ public abstract class CompositeEntryBase extends LootPoolEntryContainer {
    protected final List<LootPoolEntryContainer> children;
    private final ComposableEntryContainer composedChildren;
 
-   protected CompositeEntryBase(List<LootPoolEntryContainer> var1, List<LootItemCondition> var2) {
-      super(var2);
-      this.children = var1;
-      this.composedChildren = this.compose(var1);
+   protected CompositeEntryBase(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
+      super(conditions);
+      this.children = children;
+      this.composedChildren = this.compose(children);
    }
 
-   public void validate(ValidationContext var1) {
-      super.validate(var1);
+   public abstract MapCodec<? extends CompositeEntryBase> codec();
+
+   public void validate(final ValidationContext context) {
+      super.validate(context);
       if (this.children.isEmpty()) {
-         var1.reportProblem(NO_CHILDREN_PROBLEM);
+         context.reportProblem(NO_CHILDREN_PROBLEM);
       }
 
-      for(int var2 = 0; var2 < this.children.size(); ++var2) {
-         ((LootPoolEntryContainer)this.children.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("children", var2)));
-      }
-
+      Validatable.validate(context, "children", this.children);
    }
 
-   protected abstract ComposableEntryContainer compose(List<? extends ComposableEntryContainer> var1);
+   protected abstract ComposableEntryContainer compose(List<? extends ComposableEntryContainer> entries);
 
-   public final boolean expand(LootContext var1, Consumer<LootPoolEntry> var2) {
-      return !this.canRun(var1) ? false : this.composedChildren.expand(var1, var2);
+   public final boolean expand(final LootContext context, final Consumer<LootPoolEntry> output) {
+      return !this.canRun(context) ? false : this.composedChildren.expand(context, output);
    }
 
-   public static <T extends CompositeEntryBase> MapCodec<T> createCodec(CompositeEntryConstructor<T> var0) {
-      return RecordCodecBuilder.mapCodec((var1) -> {
-         Products.P2 var10000 = var1.group(LootPoolEntries.CODEC.listOf().optionalFieldOf("children", List.of()).forGetter((var0x) -> var0x.children)).and(commonFields(var1).t1());
-         Objects.requireNonNull(var0);
-         return var10000.apply(var1, var0::create);
+   public static <T extends CompositeEntryBase> MapCodec<T> createCodec(final CompositeEntryConstructor<T> constructor) {
+      return RecordCodecBuilder.mapCodec((i) -> {
+         Products.P2 var10000 = i.group(LootPoolEntries.CODEC.listOf().optionalFieldOf("children", List.of()).forGetter((e) -> e.children)).and(commonFields(i).t1());
+         Objects.requireNonNull(constructor);
+         return var10000.apply(i, constructor::create);
       });
    }
 
    @FunctionalInterface
    public interface CompositeEntryConstructor<T extends CompositeEntryBase> {
-      T create(List<LootPoolEntryContainer> var1, List<LootItemCondition> var2);
+      T create(List<LootPoolEntryContainer> children, List<LootItemCondition> conditions);
    }
 }

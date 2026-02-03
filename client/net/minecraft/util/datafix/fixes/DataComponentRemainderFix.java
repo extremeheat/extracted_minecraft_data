@@ -14,29 +14,29 @@ public abstract class DataComponentRemainderFix extends DataFix {
    private final String componentId;
    private final String newComponentId;
 
-   public DataComponentRemainderFix(Schema var1, String var2, String var3) {
-      this(var1, var2, var3, var3);
+   public DataComponentRemainderFix(final Schema outputSchema, final String name, final String componentId) {
+      this(outputSchema, name, componentId, componentId);
    }
 
-   public DataComponentRemainderFix(Schema var1, String var2, String var3, String var4) {
-      super(var1, false);
-      this.name = var2;
-      this.componentId = var3;
-      this.newComponentId = var4;
+   public DataComponentRemainderFix(final Schema outputSchema, final String name, final String componentId, final String newComponentId) {
+      super(outputSchema, false);
+      this.name = name;
+      this.componentId = componentId;
+      this.newComponentId = newComponentId;
    }
 
    public final TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.DATA_COMPONENTS);
-      return this.fixTypeEverywhereTyped(this.name, var1, (var1x) -> var1x.update(DSL.remainderFinder(), (var1) -> {
-            Optional var2 = var1.get(this.componentId).result();
-            if (var2.isEmpty()) {
-               return var1;
+      Type<?> dataComponentsType = this.getInputSchema().getType(References.DATA_COMPONENTS);
+      return this.fixTypeEverywhereTyped(this.name, dataComponentsType, (components) -> components.update(DSL.remainderFinder(), (remainder) -> {
+            Optional<? extends Dynamic<?>> component = remainder.get(this.componentId).result();
+            if (component.isEmpty()) {
+               return remainder;
             } else {
-               Dynamic var3 = this.fixComponent((Dynamic)var2.get());
-               return var1.remove(this.componentId).setFieldIfPresent(this.newComponentId, Optional.ofNullable(var3));
+               Dynamic<?> newComponent = this.fixComponent((Dynamic)component.get());
+               return remainder.remove(this.componentId).setFieldIfPresent(this.newComponentId, Optional.ofNullable(newComponent));
             }
          }));
    }
 
-   protected abstract <T> @Nullable Dynamic<T> fixComponent(Dynamic<T> var1);
+   protected abstract <T> @Nullable Dynamic<T> fixComponent(Dynamic<T> input);
 }

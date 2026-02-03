@@ -11,20 +11,16 @@ import net.minecraft.world.item.ItemStack;
 public record ClientboundContainerSetContentPacket(int containerId, int stateId, List<ItemStack> items, ItemStack carriedItem) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetContentPacket> STREAM_CODEC;
 
-   public ClientboundContainerSetContentPacket(int var1, int var2, List<ItemStack> var3, ItemStack var4) {
+   public ClientboundContainerSetContentPacket {
       super();
-      this.containerId = var1;
-      this.stateId = var2;
-      this.items = var3;
-      this.carriedItem = var4;
    }
 
    public PacketType<ClientboundContainerSetContentPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CONTAINER_SET_CONTENT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleContainerContent(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleContainerContent(this);
    }
 
    static {

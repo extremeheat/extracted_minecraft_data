@@ -12,7 +12,6 @@ import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.chat.Style;
@@ -29,41 +28,41 @@ public class TeamMsgCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      LiteralCommandNode var1 = var0.register((LiteralArgumentBuilder)Commands.literal("teammsg").then(Commands.argument("message", MessageArgument.message()).executes((var0x) -> {
-         CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
-         Entity var2 = var1.getEntityOrException();
-         PlayerTeam var3 = var2.getTeam();
-         if (var3 == null) {
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      LiteralCommandNode<CommandSourceStack> msg = dispatcher.register((LiteralArgumentBuilder)Commands.literal("teammsg").then(Commands.argument("message", MessageArgument.message()).executes((c) -> {
+         CommandSourceStack source = (CommandSourceStack)c.getSource();
+         Entity entity = source.getEntityOrException();
+         PlayerTeam team = entity.getTeam();
+         if (team == null) {
             throw ERROR_NOT_ON_TEAM.create();
          } else {
-            List var4 = var1.getServer().getPlayerList().getPlayers().stream().filter((var2x) -> var2x == var2 || var2x.getTeam() == var3).toList();
-            if (!var4.isEmpty()) {
-               MessageArgument.resolveChatMessage(var0x, "message", (var4x) -> sendMessage(var1, var2, var3, var4, var4x));
+            List<ServerPlayer> receivers = source.getServer().getPlayerList().getPlayers().stream().filter((receiver) -> receiver == entity || receiver.getTeam() == team).toList();
+            if (!receivers.isEmpty()) {
+               MessageArgument.resolveChatMessage(c, "message", (message) -> sendMessage(source, entity, team, receivers, message));
             }
 
-            return var4.size();
+            return receivers.size();
          }
       })));
-      var0.register((LiteralArgumentBuilder)Commands.literal("tm").redirect(var1));
+      dispatcher.register((LiteralArgumentBuilder)Commands.literal("tm").redirect(msg));
    }
 
-   private static void sendMessage(CommandSourceStack var0, Entity var1, PlayerTeam var2, List<ServerPlayer> var3, PlayerChatMessage var4) {
-      MutableComponent var5 = var2.getFormattedDisplayName().withStyle(SUGGEST_STYLE);
-      ChatType.Bound var6 = ChatType.bind(ChatType.TEAM_MSG_COMMAND_INCOMING, var0).withTargetName(var5);
-      ChatType.Bound var7 = ChatType.bind(ChatType.TEAM_MSG_COMMAND_OUTGOING, var0).withTargetName(var5);
-      OutgoingChatMessage var8 = OutgoingChatMessage.create(var4);
-      boolean var9 = false;
+   private static void sendMessage(final CommandSourceStack source, final Entity entity, final PlayerTeam team, final List<ServerPlayer> receivers, final PlayerChatMessage message) {
+      Component teamName = team.getFormattedDisplayName().withStyle(SUGGEST_STYLE);
+      ChatType.Bound incomingChatType = ChatType.bind(ChatType.TEAM_MSG_COMMAND_INCOMING, source).withTargetName(teamName);
+      ChatType.Bound outgoingChatType = ChatType.bind(ChatType.TEAM_MSG_COMMAND_OUTGOING, source).withTargetName(teamName);
+      OutgoingChatMessage tracked = OutgoingChatMessage.create(message);
+      boolean wasFullyFiltered = false;
 
-      for(ServerPlayer var11 : var3) {
-         ChatType.Bound var12 = var11 == var1 ? var7 : var6;
-         boolean var13 = var0.shouldFilterMessageTo(var11);
-         var11.sendChatMessage(var8, var13, var12);
-         var9 |= var13 && var4.isFullyFiltered();
+      for(ServerPlayer teamPlayer : receivers) {
+         ChatType.Bound chatType = teamPlayer == entity ? outgoingChatType : incomingChatType;
+         boolean filtered = source.shouldFilterMessageTo(teamPlayer);
+         teamPlayer.sendChatMessage(tracked, filtered, chatType);
+         wasFullyFiltered |= filtered && message.isFullyFiltered();
       }
 
-      if (var9) {
-         var0.sendSystemMessage(PlayerList.CHAT_FILTERED_FULL);
+      if (wasFullyFiltered) {
+         source.sendSystemMessage(PlayerList.CHAT_FILTERED_FULL);
       }
 
    }

@@ -16,17 +16,17 @@ public class ServerTickRateManager extends TickRateManager {
    private boolean previousIsFrozen = false;
    private final MinecraftServer server;
 
-   public ServerTickRateManager(MinecraftServer var1) {
+   public ServerTickRateManager(final MinecraftServer server) {
       super();
-      this.server = var1;
+      this.server = server;
    }
 
    public boolean isSprinting() {
       return this.scheduledCurrentSprintTicks > 0L;
    }
 
-   public void setFrozen(boolean var1) {
-      super.setFrozen(var1);
+   public void setFrozen(final boolean frozen) {
+      super.setFrozen(frozen);
       this.updateStateToClients();
    }
 
@@ -38,11 +38,11 @@ public class ServerTickRateManager extends TickRateManager {
       this.server.getPlayerList().broadcastAll(ClientboundTickingStepPacket.from(this));
    }
 
-   public boolean stepGameIfPaused(int var1) {
+   public boolean stepGameIfPaused(final int ticks) {
       if (!this.isFrozen()) {
          return false;
       } else {
-         this.frozenTicksToRun = var1;
+         this.frozenTicksToRun = ticks;
          this.updateStepTicks();
          return true;
       }
@@ -67,24 +67,24 @@ public class ServerTickRateManager extends TickRateManager {
       }
    }
 
-   public boolean requestGameToSprint(int var1) {
-      boolean var2 = this.remainingSprintTicks > 0L;
+   public boolean requestGameToSprint(final int time) {
+      boolean interrupted = this.remainingSprintTicks > 0L;
       this.sprintTimeSpend = 0L;
-      this.scheduledCurrentSprintTicks = (long)var1;
-      this.remainingSprintTicks = (long)var1;
+      this.scheduledCurrentSprintTicks = (long)time;
+      this.remainingSprintTicks = (long)time;
       this.previousIsFrozen = this.isFrozen();
       this.setFrozen(false);
-      return var2;
+      return interrupted;
    }
 
    private void finishTickSprint() {
-      long var1 = this.scheduledCurrentSprintTicks - this.remainingSprintTicks;
-      double var3 = Math.max(1.0, (double)this.sprintTimeSpend) / (double)TimeUtil.NANOSECONDS_PER_MILLISECOND;
-      int var5 = (int)((double)(TimeUtil.MILLISECONDS_PER_SECOND * var1) / var3);
-      String var6 = String.format(Locale.ROOT, "%.2f", var1 == 0L ? (double)this.millisecondsPerTick() : var3 / (double)var1);
+      long completedTicks = this.scheduledCurrentSprintTicks - this.remainingSprintTicks;
+      double millisecondsToComplete = Math.max(1.0, (double)this.sprintTimeSpend) / (double)TimeUtil.NANOSECONDS_PER_MILLISECOND;
+      int ticksPerSecond = (int)((double)(TimeUtil.MILLISECONDS_PER_SECOND * completedTicks) / millisecondsToComplete);
+      String millisecondsPerTick = String.format(Locale.ROOT, "%.2f", completedTicks == 0L ? (double)this.millisecondsPerTick() : millisecondsToComplete / (double)completedTicks);
       this.scheduledCurrentSprintTicks = 0L;
       this.sprintTimeSpend = 0L;
-      this.server.createCommandSourceStack().sendSuccess(() -> Component.translatable("commands.tick.sprint.report", var5, var6), true);
+      this.server.createCommandSourceStack().sendSuccess(() -> Component.translatable("commands.tick.sprint.report", ticksPerSecond, millisecondsPerTick), true);
       this.remainingSprintTicks = 0L;
       this.setFrozen(this.previousIsFrozen);
       this.server.onTickRateChanged();
@@ -107,14 +107,14 @@ public class ServerTickRateManager extends TickRateManager {
       this.sprintTimeSpend += System.nanoTime() - this.sprintTickStartTime;
    }
 
-   public void setTickRate(float var1) {
-      super.setTickRate(var1);
+   public void setTickRate(final float rate) {
+      super.setTickRate(rate);
       this.server.onTickRateChanged();
       this.updateStateToClients();
    }
 
-   public void updateJoiningPlayer(ServerPlayer var1) {
-      var1.connection.send(ClientboundTickingStatePacket.from(this));
-      var1.connection.send(ClientboundTickingStepPacket.from(this));
+   public void updateJoiningPlayer(final ServerPlayer player) {
+      player.connection.send(ClientboundTickingStatePacket.from(this));
+      player.connection.send(ClientboundTickingStepPacket.from(this));
    }
 }

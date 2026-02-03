@@ -29,64 +29,59 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
    public static final StreamCodec<ByteBuf, FireworkExplosion> STREAM_CODEC;
    private static final Component CUSTOM_COLOR_NAME;
 
-   public FireworkExplosion(Shape var1, IntList var2, IntList var3, boolean var4, boolean var5) {
+   public FireworkExplosion {
       super();
-      this.shape = var1;
-      this.colors = var2;
-      this.fadeColors = var3;
-      this.hasTrail = var4;
-      this.hasTwinkle = var5;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      var2.accept(this.shape.getName().withStyle(ChatFormatting.GRAY));
-      this.addAdditionalTooltip(var2);
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      consumer.accept(this.shape.getName().withStyle(ChatFormatting.GRAY));
+      this.addAdditionalTooltip(consumer);
    }
 
-   public void addAdditionalTooltip(Consumer<Component> var1) {
+   public void addAdditionalTooltip(final Consumer<Component> consumer) {
       if (!this.colors.isEmpty()) {
-         var1.accept(appendColors(Component.empty().withStyle(ChatFormatting.GRAY), this.colors));
+         consumer.accept(appendColors(Component.empty().withStyle(ChatFormatting.GRAY), this.colors));
       }
 
       if (!this.fadeColors.isEmpty()) {
-         var1.accept(appendColors(Component.translatable("item.minecraft.firework_star.fade_to").append(CommonComponents.SPACE).withStyle(ChatFormatting.GRAY), this.fadeColors));
+         consumer.accept(appendColors(Component.translatable("item.minecraft.firework_star.fade_to").append(CommonComponents.SPACE).withStyle(ChatFormatting.GRAY), this.fadeColors));
       }
 
       if (this.hasTrail) {
-         var1.accept(Component.translatable("item.minecraft.firework_star.trail").withStyle(ChatFormatting.GRAY));
+         consumer.accept(Component.translatable("item.minecraft.firework_star.trail").withStyle(ChatFormatting.GRAY));
       }
 
       if (this.hasTwinkle) {
-         var1.accept(Component.translatable("item.minecraft.firework_star.flicker").withStyle(ChatFormatting.GRAY));
+         consumer.accept(Component.translatable("item.minecraft.firework_star.flicker").withStyle(ChatFormatting.GRAY));
       }
 
    }
 
-   private static Component appendColors(MutableComponent var0, IntList var1) {
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         if (var2 > 0) {
-            var0.append(", ");
+   private static Component appendColors(final MutableComponent builder, final IntList colors) {
+      for(int i = 0; i < colors.size(); ++i) {
+         if (i > 0) {
+            builder.append(", ");
          }
 
-         var0.append(getColorName(var1.getInt(var2)));
+         builder.append(getColorName(colors.getInt(i)));
       }
 
-      return var0;
+      return builder;
    }
 
-   private static Component getColorName(int var0) {
-      DyeColor var1 = DyeColor.byFireworkColor(var0);
-      return (Component)(var1 == null ? CUSTOM_COLOR_NAME : Component.translatable("item.minecraft.firework_star." + var1.getName()));
+   private static Component getColorName(final int colorIndex) {
+      DyeColor color = DyeColor.byFireworkColor(colorIndex);
+      return (Component)(color == null ? CUSTOM_COLOR_NAME : Component.translatable("item.minecraft.firework_star." + color.getName()));
    }
 
-   public FireworkExplosion withFadeColors(IntList var1) {
-      return new FireworkExplosion(this.shape, this.colors, new IntArrayList(var1), this.hasTrail, this.hasTwinkle);
+   public FireworkExplosion withFadeColors(final IntList fadeColors) {
+      return new FireworkExplosion(this.shape, this.colors, new IntArrayList(fadeColors), this.hasTrail, this.hasTwinkle);
    }
 
    static {
       DEFAULT = new FireworkExplosion(FireworkExplosion.Shape.SMALL_BALL, IntList.of(), IntList.of(), false, false);
       COLOR_LIST_CODEC = Codec.INT.listOf().xmap(IntArrayList::new, ArrayList::new);
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(FireworkExplosion.Shape.CODEC.fieldOf("shape").forGetter(FireworkExplosion::shape), COLOR_LIST_CODEC.optionalFieldOf("colors", IntList.of()).forGetter(FireworkExplosion::colors), COLOR_LIST_CODEC.optionalFieldOf("fade_colors", IntList.of()).forGetter(FireworkExplosion::fadeColors), Codec.BOOL.optionalFieldOf("has_trail", false).forGetter(FireworkExplosion::hasTrail), Codec.BOOL.optionalFieldOf("has_twinkle", false).forGetter(FireworkExplosion::hasTwinkle)).apply(var0, FireworkExplosion::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(FireworkExplosion.Shape.CODEC.fieldOf("shape").forGetter(FireworkExplosion::shape), COLOR_LIST_CODEC.optionalFieldOf("colors", IntList.of()).forGetter(FireworkExplosion::colors), COLOR_LIST_CODEC.optionalFieldOf("fade_colors", IntList.of()).forGetter(FireworkExplosion::fadeColors), Codec.BOOL.optionalFieldOf("has_trail", false).forGetter(FireworkExplosion::hasTrail), Codec.BOOL.optionalFieldOf("has_twinkle", false).forGetter(FireworkExplosion::hasTwinkle)).apply(i, FireworkExplosion::new));
       COLOR_LIST_STREAM_CODEC = ByteBufCodecs.INT.apply(ByteBufCodecs.list()).map(IntArrayList::new, ArrayList::new);
       STREAM_CODEC = StreamCodec.composite(FireworkExplosion.Shape.STREAM_CODEC, FireworkExplosion::shape, COLOR_LIST_STREAM_CODEC, FireworkExplosion::colors, COLOR_LIST_STREAM_CODEC, FireworkExplosion::fadeColors, ByteBufCodecs.BOOL, FireworkExplosion::hasTrail, ByteBufCodecs.BOOL, FireworkExplosion::hasTwinkle, FireworkExplosion::new);
       CUSTOM_COLOR_NAME = Component.translatable("item.minecraft.firework_star.custom_color");
@@ -105,9 +100,9 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
       private final int id;
       private final String name;
 
-      private Shape(final int var3, final String var4) {
-         this.id = var3;
-         this.name = var4;
+      private Shape(final int id, final String name) {
+         this.id = id;
+         this.name = name;
       }
 
       public MutableComponent getName() {
@@ -118,8 +113,8 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
          return this.id;
       }
 
-      public static Shape byId(int var0) {
-         return (Shape)BY_ID.apply(var0);
+      public static Shape byId(final int id) {
+         return (Shape)BY_ID.apply(id);
       }
 
       public String getSerializedName() {

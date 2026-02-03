@@ -1,5 +1,6 @@
 package net.minecraft.world.level.storage.loot.functions;
 
+import com.mojang.serialization.MapCodec;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import net.minecraft.world.item.ItemStack;
@@ -7,10 +8,10 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextUser;
 
 public interface LootItemFunction extends LootContextUser, BiFunction<ItemStack, LootContext, ItemStack> {
-   LootItemFunctionType<? extends LootItemFunction> getType();
+   MapCodec<? extends LootItemFunction> codec();
 
-   static Consumer<ItemStack> decorate(BiFunction<ItemStack, LootContext, ItemStack> var0, Consumer<ItemStack> var1, LootContext var2) {
-      return (var3) -> var1.accept((ItemStack)var0.apply(var3, var2));
+   static Consumer<ItemStack> decorate(final BiFunction<ItemStack, LootContext, ItemStack> function, final Consumer<ItemStack> output, final LootContext context) {
+      return (drop) -> output.accept((ItemStack)function.apply(drop, context));
    }
 
    public interface Builder {

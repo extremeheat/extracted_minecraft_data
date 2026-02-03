@@ -23,26 +23,26 @@ public class FollowMobGoal extends Goal {
    private float oldWaterCost;
    private final float areaSize;
 
-   public FollowMobGoal(Mob var1, double var2, float var4, float var5) {
+   public FollowMobGoal(final Mob mob, final double speedModifier, final float stopDistance, final float areaSize) {
       super();
-      this.mob = var1;
-      this.followPredicate = (var1x) -> var1.getClass() != var1x.getClass();
-      this.speedModifier = var2;
-      this.navigation = var1.getNavigation();
-      this.stopDistance = var4;
-      this.areaSize = var5;
+      this.mob = mob;
+      this.followPredicate = (input) -> mob.getClass() != input.getClass();
+      this.speedModifier = speedModifier;
+      this.navigation = mob.getNavigation();
+      this.stopDistance = stopDistance;
+      this.areaSize = areaSize;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      if (!(var1.getNavigation() instanceof GroundPathNavigation) && !(var1.getNavigation() instanceof FlyingPathNavigation)) {
+      if (!(mob.getNavigation() instanceof GroundPathNavigation) && !(mob.getNavigation() instanceof FlyingPathNavigation)) {
          throw new IllegalArgumentException("Unsupported mob type for FollowMobGoal");
       }
    }
 
    public boolean canUse() {
-      List var1 = this.mob.level().getEntitiesOfClass(Mob.class, this.mob.getBoundingBox().inflate((double)this.areaSize), this.followPredicate);
-      if (!var1.isEmpty()) {
-         for(Mob var3 : var1) {
-            if (!var3.isInvisible()) {
-               this.followingMob = var3;
+      List<Mob> mobs = this.mob.level().getEntitiesOfClass(Mob.class, this.mob.getBoundingBox().inflate((double)this.areaSize), this.followPredicate);
+      if (!mobs.isEmpty()) {
+         for(Mob mobInList : mobs) {
+            if (!mobInList.isInvisible()) {
+               this.followingMob = mobInList;
                return true;
             }
          }
@@ -72,19 +72,19 @@ public class FollowMobGoal extends Goal {
          this.mob.getLookControl().setLookAt(this.followingMob, 10.0F, (float)this.mob.getMaxHeadXRot());
          if (--this.timeToRecalcPath <= 0) {
             this.timeToRecalcPath = this.adjustedTickDelay(10);
-            double var1 = this.mob.getX() - this.followingMob.getX();
-            double var3 = this.mob.getY() - this.followingMob.getY();
-            double var5 = this.mob.getZ() - this.followingMob.getZ();
-            double var7 = var1 * var1 + var3 * var3 + var5 * var5;
-            if (!(var7 <= (double)(this.stopDistance * this.stopDistance))) {
+            double xxd = this.mob.getX() - this.followingMob.getX();
+            double yyd = this.mob.getY() - this.followingMob.getY();
+            double zzd = this.mob.getZ() - this.followingMob.getZ();
+            double distSqr = xxd * xxd + yyd * yyd + zzd * zzd;
+            if (!(distSqr <= (double)(this.stopDistance * this.stopDistance))) {
                this.navigation.moveTo((Entity)this.followingMob, this.speedModifier);
             } else {
                this.navigation.stop();
-               LookControl var9 = this.followingMob.getLookControl();
-               if (var7 <= (double)this.stopDistance || var9.getWantedX() == this.mob.getX() && var9.getWantedY() == this.mob.getY() && var9.getWantedZ() == this.mob.getZ()) {
-                  double var10 = this.followingMob.getX() - this.mob.getX();
-                  double var12 = this.followingMob.getZ() - this.mob.getZ();
-                  this.navigation.moveTo(this.mob.getX() - var10, this.mob.getY(), this.mob.getZ() - var12, this.speedModifier);
+               LookControl lookControl = this.followingMob.getLookControl();
+               if (distSqr <= (double)this.stopDistance || lookControl.getWantedX() == this.mob.getX() && lookControl.getWantedY() == this.mob.getY() && lookControl.getWantedZ() == this.mob.getZ()) {
+                  double deltaX = this.followingMob.getX() - this.mob.getX();
+                  double deltaZ = this.followingMob.getZ() - this.mob.getZ();
+                  this.navigation.moveTo(this.mob.getX() - deltaX, this.mob.getY(), this.mob.getZ() - deltaZ, this.speedModifier);
                }
 
             }

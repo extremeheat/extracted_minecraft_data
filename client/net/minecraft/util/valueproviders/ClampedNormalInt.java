@@ -8,30 +8,30 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class ClampedNormalInt extends IntProvider {
-   public static final MapCodec<ClampedNormalInt> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("mean").forGetter((var0x) -> var0x.mean), Codec.FLOAT.fieldOf("deviation").forGetter((var0x) -> var0x.deviation), Codec.INT.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter((var0x) -> var0x.maxInclusive)).apply(var0, ClampedNormalInt::new)).validate((var0) -> var0.maxInclusive < var0.minInclusive ? DataResult.error(() -> "Max must be larger than min: [" + var0.minInclusive + ", " + var0.maxInclusive + "]") : DataResult.success(var0));
+   public static final MapCodec<ClampedNormalInt> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("mean").forGetter((c) -> c.mean), Codec.FLOAT.fieldOf("deviation").forGetter((c) -> c.deviation), Codec.INT.fieldOf("min_inclusive").forGetter((c) -> c.minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter((c) -> c.maxInclusive)).apply(i, ClampedNormalInt::new)).validate((c) -> c.maxInclusive < c.minInclusive ? DataResult.error(() -> "Max must be larger than min: [" + c.minInclusive + ", " + c.maxInclusive + "]") : DataResult.success(c));
    private final float mean;
    private final float deviation;
    private final int minInclusive;
    private final int maxInclusive;
 
-   public static ClampedNormalInt of(float var0, float var1, int var2, int var3) {
-      return new ClampedNormalInt(var0, var1, var2, var3);
+   public static ClampedNormalInt of(final float mean, final float deviation, final int min_inclusive, final int max_inclusive) {
+      return new ClampedNormalInt(mean, deviation, min_inclusive, max_inclusive);
    }
 
-   private ClampedNormalInt(float var1, float var2, int var3, int var4) {
+   private ClampedNormalInt(final float mean, final float deviation, final int minInclusive, final int maxInclusive) {
       super();
-      this.mean = var1;
-      this.deviation = var2;
-      this.minInclusive = var3;
-      this.maxInclusive = var4;
+      this.mean = mean;
+      this.deviation = deviation;
+      this.minInclusive = minInclusive;
+      this.maxInclusive = maxInclusive;
    }
 
-   public int sample(RandomSource var1) {
-      return sample(var1, this.mean, this.deviation, (float)this.minInclusive, (float)this.maxInclusive);
+   public int sample(final RandomSource random) {
+      return sample(random, this.mean, this.deviation, (float)this.minInclusive, (float)this.maxInclusive);
    }
 
-   public static int sample(RandomSource var0, float var1, float var2, float var3, float var4) {
-      return (int)Mth.clamp(Mth.normal(var0, var1, var2), var3, var4);
+   public static int sample(final RandomSource random, final float mean, final float deviation, final float min_inclusive, final float max_inclusive) {
+      return (int)Mth.clamp(Mth.normal(random, mean, deviation), min_inclusive, max_inclusive);
    }
 
    public int getMinValue() {

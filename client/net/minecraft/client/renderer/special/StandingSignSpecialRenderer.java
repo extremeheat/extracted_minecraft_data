@@ -23,47 +23,45 @@ public class StandingSignSpecialRenderer implements NoDataSpecialModelRenderer {
    private final Model.Simple model;
    private final Material material;
 
-   public StandingSignSpecialRenderer(MaterialSet var1, Model.Simple var2, Material var3) {
+   public StandingSignSpecialRenderer(final MaterialSet materials, final Model.Simple model, final Material material) {
       super();
-      this.materials = var1;
-      this.model = var2;
-      this.material = var3;
+      this.materials = materials;
+      this.model = model;
+      this.material = material;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      SignRenderer.submitSpecial(this.materials, var2, var3, var4, var5, this.model, this.material);
+   public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      SignRenderer.submitSpecial(this.materials, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.model, this.material);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      PoseStack var2 = new PoseStack();
-      SignRenderer.applyInHandTransforms(var2);
-      this.model.root().getExtentsForGui(var2, var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
+      SignRenderer.applyInHandTransforms(poseStack);
+      this.model.root().getExtentsForGui(poseStack, output);
    }
 
    public static record Unbaked(WoodType woodType, Optional<Identifier> texture) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(Unbaked::woodType), Identifier.CODEC.optionalFieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WoodType.CODEC.fieldOf("wood_type").forGetter(Unbaked::woodType), Identifier.CODEC.optionalFieldOf("texture").forGetter(Unbaked::texture)).apply(i, Unbaked::new));
 
-      public Unbaked(WoodType var1) {
-         this(var1, Optional.empty());
+      public Unbaked(final WoodType woodType) {
+         this(woodType, Optional.empty());
       }
 
-      public Unbaked(WoodType var1, Optional<Identifier> var2) {
+      public Unbaked {
          super();
-         this.woodType = var1;
-         this.texture = var2;
       }
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         Model.Simple var2 = SignRenderer.createSignModel(var1.entityModelSet(), this.woodType, true);
+      public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+         Model.Simple model = SignRenderer.createSignModel(context.entityModelSet(), this.woodType, true);
          Optional var10000 = this.texture;
          MaterialMapper var10001 = Sheets.SIGN_MAPPER;
          Objects.requireNonNull(var10001);
-         Material var3 = (Material)var10000.map(var10001::apply).orElseGet(() -> Sheets.getSignMaterial(this.woodType));
-         return new StandingSignSpecialRenderer(var1.materials(), var2, var3);
+         Material material = (Material)var10000.map(var10001::apply).orElseGet(() -> Sheets.getSignMaterial(this.woodType));
+         return new StandingSignSpecialRenderer(context.materials(), model, material);
       }
    }
 }

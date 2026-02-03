@@ -7,19 +7,14 @@ import net.minecraft.resources.Identifier;
 public class DelegatedModel implements ModelInstance {
    private final Identifier parent;
 
-   public DelegatedModel(Identifier var1) {
+   public DelegatedModel(final Identifier parent) {
       super();
-      this.parent = var1;
+      this.parent = parent;
    }
 
    public JsonElement get() {
-      JsonObject var1 = new JsonObject();
-      var1.addProperty("parent", this.parent.toString());
-      return var1;
-   }
-
-   // $FF: synthetic method
-   public Object get() {
-      return this.get();
+      JsonObject result = new JsonObject();
+      result.addProperty("parent", this.parent.toString());
+      return result;
    }
 }

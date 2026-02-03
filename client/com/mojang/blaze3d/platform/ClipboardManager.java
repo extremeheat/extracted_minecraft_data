@@ -1,11 +1,11 @@
 package com.mojang.blaze3d.platform;
 
+import com.mojang.blaze3d.GLFWErrorScope;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import net.minecraft.util.StringDecomposer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWErrorCallbackI;
 import org.lwjgl.system.MemoryUtil;
 
@@ -17,38 +17,37 @@ public class ClipboardManager {
       super();
    }
 
-   public String getClipboard(Window var1, GLFWErrorCallbackI var2) {
-      GLFWErrorCallback var3 = GLFW.glfwSetErrorCallback(var2);
-      String var4 = GLFW.glfwGetClipboardString(var1.handle());
-      var4 = var4 != null ? StringDecomposer.filterBrokenSurrogates(var4) : "";
-      GLFWErrorCallback var5 = GLFW.glfwSetErrorCallback(var3);
-      if (var5 != null) {
-         var5.free();
+   public String getClipboard(final Window window, final GLFWErrorCallbackI errorCallback) {
+      String var5;
+      try (GLFWErrorScope ignored = new GLFWErrorScope(errorCallback)) {
+         String clipboard = GLFW.glfwGetClipboardString(window.handle());
+         clipboard = clipboard != null ? StringDecomposer.filterBrokenSurrogates(clipboard) : "";
+         var5 = clipboard;
       }
 
-      return var4;
+      return var5;
    }
 
-   private static void pushClipboard(Window var0, ByteBuffer var1, byte[] var2) {
-      var1.clear();
-      var1.put(var2);
-      var1.put((byte)0);
-      var1.flip();
-      GLFW.glfwSetClipboardString(var0.handle(), var1);
+   private static void pushClipboard(final Window window, final ByteBuffer buffer, final byte[] data) {
+      buffer.clear();
+      buffer.put(data);
+      buffer.put((byte)0);
+      buffer.flip();
+      GLFW.glfwSetClipboardString(window.handle(), buffer);
    }
 
-   public void setClipboard(Window var1, String var2) {
-      byte[] var3 = var2.getBytes(StandardCharsets.UTF_8);
-      int var4 = var3.length + 1;
-      if (var4 < this.clipboardScratchBuffer.capacity()) {
-         pushClipboard(var1, this.clipboardScratchBuffer, var3);
+   public void setClipboard(final Window window, final String clipboard) {
+      byte[] encoded = clipboard.getBytes(StandardCharsets.UTF_8);
+      int encodedLength = encoded.length + 1;
+      if (encodedLength < this.clipboardScratchBuffer.capacity()) {
+         pushClipboard(window, this.clipboardScratchBuffer, encoded);
       } else {
-         ByteBuffer var5 = MemoryUtil.memAlloc(var4);
+         ByteBuffer buffer = MemoryUtil.memAlloc(encodedLength);
 
          try {
-            pushClipboard(var1, var5, var3);
+            pushClipboard(window, buffer, encoded);
          } finally {
-            MemoryUtil.memFree(var5);
+            MemoryUtil.memFree(buffer);
          }
       }
 

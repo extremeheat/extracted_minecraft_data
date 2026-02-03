@@ -15,24 +15,22 @@ public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<TriggerInstance>
       return UsedEnderEyeTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, BlockPos var2) {
-      double var3 = var1.getX() - (double)var2.getX();
-      double var5 = var1.getZ() - (double)var2.getZ();
-      double var7 = var3 * var3 + var5 * var5;
-      this.trigger(var1, (var2x) -> var2x.matches(var7));
+   public void trigger(final ServerPlayer player, final BlockPos feature) {
+      double xd = player.getX() - (double)feature.getX();
+      double zd = player.getZ() - (double)feature.getZ();
+      double sqrDist = xd * xd + zd * zd;
+      this.trigger(player, (t) -> t.matches(sqrDist));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Doubles distance) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Doubles.CODEC.optionalFieldOf("distance", MinMaxBounds.Doubles.ANY).forGetter(TriggerInstance::distance)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Doubles.CODEC.optionalFieldOf("distance", MinMaxBounds.Doubles.ANY).forGetter(TriggerInstance::distance)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, MinMaxBounds.Doubles var2) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.distance = var2;
       }
 
-      public boolean matches(double var1) {
-         return this.distance.matchesSqr(var1);
+      public boolean matches(final double sqrDistance) {
+         return this.distance.matchesSqr(sqrDistance);
       }
    }
 }

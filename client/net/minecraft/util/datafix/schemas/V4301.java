@@ -9,12 +9,12 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V4301 extends NamespacedSchema {
-   public V4301(int var1, Schema var2) {
-      super(var1, var2);
+   public V4301(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
-      super.registerTypes(var1, var2, var3);
-      var1.registerType(true, References.ENTITY_EQUIPMENT, () -> DSL.optional(DSL.field("equipment", DSL.optionalFields(new Pair[]{Pair.of("mainhand", References.ITEM_STACK.in(var1)), Pair.of("offhand", References.ITEM_STACK.in(var1)), Pair.of("feet", References.ITEM_STACK.in(var1)), Pair.of("legs", References.ITEM_STACK.in(var1)), Pair.of("chest", References.ITEM_STACK.in(var1)), Pair.of("head", References.ITEM_STACK.in(var1)), Pair.of("body", References.ITEM_STACK.in(var1)), Pair.of("saddle", References.ITEM_STACK.in(var1))}))));
+   public void registerTypes(final Schema schema, final Map<String, Supplier<TypeTemplate>> entityTypes, final Map<String, Supplier<TypeTemplate>> blockEntityTypes) {
+      super.registerTypes(schema, entityTypes, blockEntityTypes);
+      schema.registerType(true, References.ENTITY_EQUIPMENT, () -> DSL.optional(DSL.field("equipment", DSL.optionalFields(new Pair[]{Pair.of("mainhand", References.ITEM_STACK.in(schema)), Pair.of("offhand", References.ITEM_STACK.in(schema)), Pair.of("feet", References.ITEM_STACK.in(schema)), Pair.of("legs", References.ITEM_STACK.in(schema)), Pair.of("chest", References.ITEM_STACK.in(schema)), Pair.of("head", References.ITEM_STACK.in(schema)), Pair.of("body", References.ITEM_STACK.in(schema)), Pair.of("saddle", References.ITEM_STACK.in(schema))}))));
    }
 }

@@ -39,9 +39,9 @@ public class Bat extends AmbientCreature {
    public final AnimationState restAnimationState = new AnimationState();
    private @Nullable BlockPos targetPosition;
 
-   public Bat(EntityType<? extends Bat> var1, Level var2) {
-      super(var1, var2);
-      if (!var2.isClientSide()) {
+   public Bat(final EntityType<? extends Bat> type, final Level level) {
+      super(type, level);
+      if (!level.isClientSide()) {
          this.setResting(true);
       }
 
@@ -51,9 +51,9 @@ public class Bat extends AmbientCreature {
       return !this.isResting() && (float)this.tickCount % 10.0F == 0.0F;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_ID_FLAGS, (byte)0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_ID_FLAGS, (byte)0);
    }
 
    protected float getSoundVolume() {
@@ -68,7 +68,7 @@ public class Bat extends AmbientCreature {
       return this.isResting() && this.random.nextInt(4) != 0 ? null : SoundEvents.BAT_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.BAT_HURT;
    }
 
@@ -80,7 +80,7 @@ public class Bat extends AmbientCreature {
       return false;
    }
 
-   protected void doPush(Entity var1) {
+   protected void doPush(final Entity entity) {
    }
 
    protected void pushEntities() {
@@ -94,12 +94,12 @@ public class Bat extends AmbientCreature {
       return ((Byte)this.entityData.get(DATA_ID_FLAGS) & 1) != 0;
    }
 
-   public void setResting(boolean var1) {
-      byte var2 = (Byte)this.entityData.get(DATA_ID_FLAGS);
-      if (var1) {
-         this.entityData.set(DATA_ID_FLAGS, (byte)(var2 | 1));
+   public void setResting(final boolean value) {
+      byte current = (Byte)this.entityData.get(DATA_ID_FLAGS);
+      if (value) {
+         this.entityData.set(DATA_ID_FLAGS, (byte)(current | 1));
       } else {
-         this.entityData.set(DATA_ID_FLAGS, (byte)(var2 & -2));
+         this.entityData.set(DATA_ID_FLAGS, (byte)(current & -2));
       }
 
    }
@@ -116,31 +116,31 @@ public class Bat extends AmbientCreature {
       this.setupAnimationStates();
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
-      super.customServerAiStep(var1);
-      BlockPos var2 = this.blockPosition();
-      BlockPos var3 = var2.above();
+   protected void customServerAiStep(final ServerLevel level) {
+      super.customServerAiStep(level);
+      BlockPos pos = this.blockPosition();
+      BlockPos above = pos.above();
       if (this.isResting()) {
-         boolean var4 = this.isSilent();
-         if (var1.getBlockState(var3).isRedstoneConductor(var1, var2)) {
+         boolean isSilent = this.isSilent();
+         if (level.getBlockState(above).isRedstoneConductor(level, pos)) {
             if (this.random.nextInt(200) == 0) {
                this.yHeadRot = (float)this.random.nextInt(360);
             }
 
-            if (var1.getNearestPlayer(BAT_RESTING_TARGETING, this) != null) {
+            if (level.getNearestPlayer(BAT_RESTING_TARGETING, this) != null) {
                this.setResting(false);
-               if (!var4) {
-                  var1.levelEvent((Entity)null, 1025, var2, 0);
+               if (!isSilent) {
+                  level.levelEvent((Entity)null, 1025, pos, 0);
                }
             }
          } else {
             this.setResting(false);
-            if (!var4) {
-               var1.levelEvent((Entity)null, 1025, var2, 0);
+            if (!isSilent) {
+               level.levelEvent((Entity)null, 1025, pos, 0);
             }
          }
       } else {
-         if (this.targetPosition != null && (!var1.isEmptyBlock(this.targetPosition) || this.targetPosition.getY() <= var1.getMinY())) {
+         if (this.targetPosition != null && (!level.isEmptyBlock(this.targetPosition) || this.targetPosition.getY() <= level.getMinY())) {
             this.targetPosition = null;
          }
 
@@ -148,17 +148,17 @@ public class Bat extends AmbientCreature {
             this.targetPosition = BlockPos.containing(this.getX() + (double)this.random.nextInt(7) - (double)this.random.nextInt(7), this.getY() + (double)this.random.nextInt(6) - 2.0, this.getZ() + (double)this.random.nextInt(7) - (double)this.random.nextInt(7));
          }
 
-         double var14 = (double)this.targetPosition.getX() + 0.5 - this.getX();
-         double var6 = (double)this.targetPosition.getY() + 0.1 - this.getY();
-         double var8 = (double)this.targetPosition.getZ() + 0.5 - this.getZ();
-         Vec3 var10 = this.getDeltaMovement();
-         Vec3 var11 = var10.add((Math.signum(var14) * 0.5 - var10.x) * 0.10000000149011612, (Math.signum(var6) * 0.699999988079071 - var10.y) * 0.10000000149011612, (Math.signum(var8) * 0.5 - var10.z) * 0.10000000149011612);
-         this.setDeltaMovement(var11);
-         float var12 = (float)(Mth.atan2(var11.z, var11.x) * 57.2957763671875) - 90.0F;
-         float var13 = Mth.wrapDegrees(var12 - this.getYRot());
+         double dx = (double)this.targetPosition.getX() + 0.5 - this.getX();
+         double dy = (double)this.targetPosition.getY() + 0.1 - this.getY();
+         double dz = (double)this.targetPosition.getZ() + 0.5 - this.getZ();
+         Vec3 movement = this.getDeltaMovement();
+         Vec3 newMovement = movement.add((Math.signum(dx) * 0.5 - movement.x) * 0.10000000149011612, (Math.signum(dy) * 0.699999988079071 - movement.y) * 0.10000000149011612, (Math.signum(dz) * 0.5 - movement.z) * 0.10000000149011612);
+         this.setDeltaMovement(newMovement);
+         float yRotD = (float)(Mth.atan2(newMovement.z, newMovement.x) * 57.2957763671875) - 90.0F;
+         float rotDiff = Mth.wrapDegrees(yRotD - this.getYRot());
          this.zza = 0.5F;
-         this.setYRot(this.getYRot() + var13);
-         if (this.random.nextInt(100) == 0 && var1.getBlockState(var3).isRedstoneConductor(var1, var3)) {
+         this.setYRot(this.getYRot() + rotDiff);
+         if (this.random.nextInt(100) == 0 && level.getBlockState(above).isRedstoneConductor(level, above)) {
             this.setResting(true);
          }
       }
@@ -169,44 +169,44 @@ public class Bat extends AmbientCreature {
       return Entity.MovementEmission.EVENTS;
    }
 
-   protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
+   protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
    }
 
    public boolean isIgnoringBlockTriggers() {
       return true;
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      if (this.isInvulnerableTo(var1, var2)) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      if (this.isInvulnerableTo(level, source)) {
          return false;
       } else {
          if (this.isResting()) {
             this.setResting(false);
          }
 
-         return super.hurtServer(var1, var2, var3);
+         return super.hurtServer(level, source, damage);
       }
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.entityData.set(DATA_ID_FLAGS, var1.getByteOr("BatFlags", (byte)0));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.entityData.set(DATA_ID_FLAGS, input.getByteOr("BatFlags", (byte)0));
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putByte("BatFlags", (Byte)this.entityData.get(DATA_ID_FLAGS));
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putByte("BatFlags", (Byte)this.entityData.get(DATA_ID_FLAGS));
    }
 
-   public static boolean checkBatSpawnRules(EntityType<Bat> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      if (var3.getY() >= var1.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, var3).getY()) {
+   public static boolean checkBatSpawnRules(final EntityType<Bat> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      if (pos.getY() >= level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, pos).getY()) {
          return false;
-      } else if (var4.nextBoolean()) {
+      } else if (random.nextBoolean()) {
          return false;
-      } else if (var1.getMaxLocalRawBrightness(var3) > var4.nextInt(4)) {
+      } else if (level.getMaxLocalRawBrightness(pos) > random.nextInt(4)) {
          return false;
       } else {
-         return !var1.getBlockState(var3.below()).is(BlockTags.BATS_SPAWNABLE_ON) ? false : checkMobSpawnRules(var0, var1, var2, var3, var4);
+         return !level.getBlockState(pos.below()).is(BlockTags.BATS_SPAWNABLE_ON) ? false : checkMobSpawnRules(type, level, spawnReason, pos, random);
       }
    }
 

@@ -11,28 +11,28 @@ public class PanoramaRenderer {
    private final CubeMap cubeMap;
    private float spin;
 
-   public PanoramaRenderer(CubeMap var1) {
+   public PanoramaRenderer(final CubeMap cubeMap) {
       super();
-      this.cubeMap = var1;
+      this.cubeMap = cubeMap;
       this.minecraft = Minecraft.getInstance();
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, boolean var4) {
-      if (var4) {
-         float var5 = this.minecraft.getDeltaTracker().getRealtimeDeltaTicks();
-         float var6 = (float)((double)var5 * (Double)this.minecraft.options.panoramaSpeed().get());
-         this.spin = wrap(this.spin + var6 * 0.1F, 360.0F);
+   public void render(final GuiGraphics graphics, final int width, final int height, final boolean shouldSpin) {
+      if (shouldSpin) {
+         float a = this.minecraft.getDeltaTracker().getRealtimeDeltaTicks();
+         float delta = (float)((double)a * (Double)this.minecraft.options.panoramaSpeed().get());
+         this.spin = wrap(this.spin + delta * 0.1F, 360.0F);
       }
 
       this.cubeMap.render(this.minecraft, 10.0F, -this.spin);
-      var1.blit(RenderPipelines.GUI_TEXTURED, PANORAMA_OVERLAY, 0, 0, 0.0F, 0.0F, var2, var3, 16, 128, 16, 128);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, PANORAMA_OVERLAY, 0, 0, 0.0F, 0.0F, width, height, 16, 128, 16, 128);
    }
 
-   private static float wrap(float var0, float var1) {
-      return var0 > var1 ? var0 - var1 : var0;
+   private static float wrap(final float value, final float limit) {
+      return value > limit ? value - limit : value;
    }
 
-   public void registerTextures(TextureManager var1) {
-      this.cubeMap.registerTextures(var1);
+   public void registerTextures(final TextureManager textureManager) {
+      this.cubeMap.registerTextures(textureManager);
    }
 }

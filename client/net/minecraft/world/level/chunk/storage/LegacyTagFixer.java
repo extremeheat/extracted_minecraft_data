@@ -6,11 +6,11 @@ import net.minecraft.world.level.ChunkPos;
 
 @FunctionalInterface
 public interface LegacyTagFixer {
-   Supplier<LegacyTagFixer> EMPTY = () -> (var0) -> var0;
+   Supplier<LegacyTagFixer> EMPTY = () -> (tag) -> tag;
 
-   CompoundTag applyFix(CompoundTag var1);
+   CompoundTag applyFix(CompoundTag tag);
 
-   default void markChunkDone(ChunkPos var1) {
+   default void markChunkDone(final ChunkPos pos) {
    }
 
    default int targetDataVersion() {

@@ -45,83 +45,83 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    public final ModelPart rightLeg;
    public final ModelPart leftLeg;
 
-   public HumanoidModel(ModelPart var1) {
-      this(var1, RenderTypes::entityCutoutNoCull);
+   public HumanoidModel(final ModelPart root) {
+      this(root, RenderTypes::entityCutoutNoCull);
    }
 
-   public HumanoidModel(ModelPart var1, Function<Identifier, RenderType> var2) {
-      super(var1, var2);
-      this.head = var1.getChild("head");
+   public HumanoidModel(final ModelPart root, final Function<Identifier, RenderType> renderType) {
+      super(root, renderType);
+      this.head = root.getChild("head");
       this.hat = this.head.getChild("hat");
-      this.body = var1.getChild("body");
-      this.rightArm = var1.getChild("right_arm");
-      this.leftArm = var1.getChild("left_arm");
-      this.rightLeg = var1.getChild("right_leg");
-      this.leftLeg = var1.getChild("left_leg");
+      this.body = root.getChild("body");
+      this.rightArm = root.getChild("right_arm");
+      this.leftArm = root.getChild("left_arm");
+      this.rightLeg = root.getChild("right_leg");
+      this.leftLeg = root.getChild("left_leg");
    }
 
-   public static MeshDefinition createMesh(CubeDeformation var0, float var1) {
-      MeshDefinition var2 = new MeshDefinition();
-      PartDefinition var3 = var2.getRoot();
-      PartDefinition var4 = var3.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0), PartPose.offset(0.0F, 0.0F + var1, 0.0F));
-      var4.addOrReplaceChild("hat", CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0.extend(0.5F)), PartPose.ZERO);
-      var3.addOrReplaceChild("body", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, var0), PartPose.offset(0.0F, 0.0F + var1, 0.0F));
-      var3.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(40, 16).addBox(-3.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(-5.0F, 2.0F + var1, 0.0F));
-      var3.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(40, 16).mirror().addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(5.0F, 2.0F + var1, 0.0F));
-      var3.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(-1.9F, 12.0F + var1, 0.0F));
-      var3.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(1.9F, 12.0F + var1, 0.0F));
-      return var2;
+   public static MeshDefinition createMesh(final CubeDeformation g, final float yOffset) {
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      PartDefinition head = root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, g), PartPose.offset(0.0F, 0.0F + yOffset, 0.0F));
+      head.addOrReplaceChild("hat", CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, g.extend(0.5F)), PartPose.ZERO);
+      root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, g), PartPose.offset(0.0F, 0.0F + yOffset, 0.0F));
+      root.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(40, 16).addBox(-3.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, g), PartPose.offset(-5.0F, 2.0F + yOffset, 0.0F));
+      root.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(40, 16).mirror().addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, g), PartPose.offset(5.0F, 2.0F + yOffset, 0.0F));
+      root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, g), PartPose.offset(-1.9F, 12.0F + yOffset, 0.0F));
+      root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, g), PartPose.offset(1.9F, 12.0F + yOffset, 0.0F));
+      return mesh;
    }
 
-   public static ArmorModelSet<MeshDefinition> createArmorMeshSet(CubeDeformation var0, CubeDeformation var1) {
-      return createArmorMeshSet(HumanoidModel::createBaseArmorMesh, var0, var1);
+   public static ArmorModelSet<MeshDefinition> createArmorMeshSet(final CubeDeformation innerDeformation, final CubeDeformation outerDeformation) {
+      return createArmorMeshSet(HumanoidModel::createBaseArmorMesh, innerDeformation, outerDeformation);
    }
 
-   protected static ArmorModelSet<MeshDefinition> createArmorMeshSet(Function<CubeDeformation, MeshDefinition> var0, CubeDeformation var1, CubeDeformation var2) {
-      MeshDefinition var3 = (MeshDefinition)var0.apply(var2);
-      var3.getRoot().retainPartsAndChildren(Set.of("head"));
-      MeshDefinition var4 = (MeshDefinition)var0.apply(var2);
-      var4.getRoot().retainExactParts(Set.of("body", "left_arm", "right_arm"));
-      MeshDefinition var5 = (MeshDefinition)var0.apply(var1);
-      var5.getRoot().retainExactParts(Set.of("left_leg", "right_leg", "body"));
-      MeshDefinition var6 = (MeshDefinition)var0.apply(var2);
-      var6.getRoot().retainExactParts(Set.of("left_leg", "right_leg"));
-      return new ArmorModelSet<MeshDefinition>(var3, var4, var5, var6);
+   protected static ArmorModelSet<MeshDefinition> createArmorMeshSet(final Function<CubeDeformation, MeshDefinition> baseFactory, final CubeDeformation innerDeformation, final CubeDeformation outerDeformation) {
+      MeshDefinition head = (MeshDefinition)baseFactory.apply(outerDeformation);
+      head.getRoot().retainPartsAndChildren(Set.of("head"));
+      MeshDefinition chest = (MeshDefinition)baseFactory.apply(outerDeformation);
+      chest.getRoot().retainExactParts(Set.of("body", "left_arm", "right_arm"));
+      MeshDefinition legs = (MeshDefinition)baseFactory.apply(innerDeformation);
+      legs.getRoot().retainExactParts(Set.of("left_leg", "right_leg", "body"));
+      MeshDefinition feet = (MeshDefinition)baseFactory.apply(outerDeformation);
+      feet.getRoot().retainExactParts(Set.of("left_leg", "right_leg"));
+      return new ArmorModelSet<MeshDefinition>(head, chest, legs, feet);
    }
 
-   private static MeshDefinition createBaseArmorMesh(CubeDeformation var0) {
-      MeshDefinition var1 = createMesh(var0, 0.0F);
-      PartDefinition var2 = var1.getRoot();
-      var2.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(-0.1F)), PartPose.offset(-1.9F, 12.0F, 0.0F));
-      var2.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(-0.1F)), PartPose.offset(1.9F, 12.0F, 0.0F));
-      return var1;
+   private static MeshDefinition createBaseArmorMesh(final CubeDeformation g) {
+      MeshDefinition mesh = createMesh(g, 0.0F);
+      PartDefinition root = mesh.getRoot();
+      root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, g.extend(-0.1F)), PartPose.offset(-1.9F, 12.0F, 0.0F));
+      root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, g.extend(-0.1F)), PartPose.offset(1.9F, 12.0F, 0.0F));
+      return mesh;
    }
 
-   public void setupAnim(T var1) {
-      super.setupAnim(var1);
-      ArmPose var2 = var1.leftArmPose;
-      ArmPose var3 = var1.rightArmPose;
-      float var4 = var1.swimAmount;
-      boolean var5 = var1.isFallFlying;
-      this.head.xRot = var1.xRot * 0.017453292F;
-      this.head.yRot = var1.yRot * 0.017453292F;
-      if (var5) {
+   public void setupAnim(final T state) {
+      super.setupAnim(state);
+      ArmPose leftArmPose = state.leftArmPose;
+      ArmPose rightArmPose = state.rightArmPose;
+      float swimAmount = state.swimAmount;
+      boolean fallFlying = state.isFallFlying;
+      this.head.xRot = state.xRot * 0.017453292F;
+      this.head.yRot = state.yRot * 0.017453292F;
+      if (fallFlying) {
          this.head.xRot = -0.7853982F;
-      } else if (var4 > 0.0F) {
-         this.head.xRot = Mth.rotLerpRad(var4, this.head.xRot, -0.7853982F);
+      } else if (swimAmount > 0.0F) {
+         this.head.xRot = Mth.rotLerpRad(swimAmount, this.head.xRot, -0.7853982F);
       }
 
-      float var6 = var1.walkAnimationPos;
-      float var7 = var1.walkAnimationSpeed;
-      this.rightArm.xRot = Mth.cos((double)(var6 * 0.6662F + 3.1415927F)) * 2.0F * var7 * 0.5F / var1.speedValue;
-      this.leftArm.xRot = Mth.cos((double)(var6 * 0.6662F)) * 2.0F * var7 * 0.5F / var1.speedValue;
-      this.rightLeg.xRot = Mth.cos((double)(var6 * 0.6662F)) * 1.4F * var7 / var1.speedValue;
-      this.leftLeg.xRot = Mth.cos((double)(var6 * 0.6662F + 3.1415927F)) * 1.4F * var7 / var1.speedValue;
+      float animationPos = state.walkAnimationPos;
+      float animationSpeed = state.walkAnimationSpeed;
+      this.rightArm.xRot = Mth.cos((double)(animationPos * 0.6662F + 3.1415927F)) * 2.0F * animationSpeed * 0.5F / state.speedValue;
+      this.leftArm.xRot = Mth.cos((double)(animationPos * 0.6662F)) * 2.0F * animationSpeed * 0.5F / state.speedValue;
+      this.rightLeg.xRot = Mth.cos((double)(animationPos * 0.6662F)) * 1.4F * animationSpeed / state.speedValue;
+      this.leftLeg.xRot = Mth.cos((double)(animationPos * 0.6662F + 3.1415927F)) * 1.4F * animationSpeed / state.speedValue;
       this.rightLeg.yRot = 0.005F;
       this.leftLeg.yRot = -0.005F;
       this.rightLeg.zRot = 0.005F;
       this.leftLeg.zRot = -0.005F;
-      if (var1.isPassenger) {
+      if (state.isPassenger) {
          ModelPart var10000 = this.rightArm;
          var10000.xRot += -0.62831855F;
          var10000 = this.leftArm;
@@ -134,37 +134,37 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          this.leftLeg.zRot = -0.07853982F;
       }
 
-      boolean var8 = var1.mainArm == HumanoidArm.RIGHT;
-      if (var1.isUsingItem) {
-         boolean var9 = var1.useItemHand == InteractionHand.MAIN_HAND;
-         if (var9 == var8) {
-            this.poseRightArm(var1);
-            if (!var1.rightArmPose.affectsOffhandPose()) {
-               this.poseLeftArm(var1);
+      boolean rightHanded = state.mainArm == HumanoidArm.RIGHT;
+      if (state.isUsingItem) {
+         boolean mainHandUsed = state.useItemHand == InteractionHand.MAIN_HAND;
+         if (mainHandUsed == rightHanded) {
+            this.poseRightArm(state);
+            if (!state.rightArmPose.affectsOffhandPose()) {
+               this.poseLeftArm(state);
             }
          } else {
-            this.poseLeftArm(var1);
-            if (!var1.leftArmPose.affectsOffhandPose()) {
-               this.poseRightArm(var1);
+            this.poseLeftArm(state);
+            if (!state.leftArmPose.affectsOffhandPose()) {
+               this.poseRightArm(state);
             }
          }
       } else {
-         boolean var15 = var8 ? var2.isTwoHanded() : var3.isTwoHanded();
-         if (var8 != var15) {
-            this.poseLeftArm(var1);
-            if (!var1.leftArmPose.affectsOffhandPose()) {
-               this.poseRightArm(var1);
+         boolean twoHandedOffhand = rightHanded ? leftArmPose.isTwoHanded() : rightArmPose.isTwoHanded();
+         if (rightHanded != twoHandedOffhand) {
+            this.poseLeftArm(state);
+            if (!state.leftArmPose.affectsOffhandPose()) {
+               this.poseRightArm(state);
             }
          } else {
-            this.poseRightArm(var1);
-            if (!var1.rightArmPose.affectsOffhandPose()) {
-               this.poseLeftArm(var1);
+            this.poseRightArm(state);
+            if (!state.rightArmPose.affectsOffhandPose()) {
+               this.poseLeftArm(state);
             }
          }
       }
 
-      this.setupAttackAnimation(var1);
-      if (var1.isCrouching) {
+      this.setupAttackAnimation(state);
+      if (state.isCrouching) {
          this.body.xRot = 0.5F;
          ModelPart var20 = this.rightArm;
          var20.xRot += 0.4F;
@@ -184,56 +184,56 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          var20.y += 3.2F;
       }
 
-      if (var3 != HumanoidModel.ArmPose.SPYGLASS) {
-         AnimationUtils.bobModelPart(this.rightArm, var1.ageInTicks, 1.0F);
+      if (rightArmPose != HumanoidModel.ArmPose.SPYGLASS) {
+         AnimationUtils.bobModelPart(this.rightArm, state.ageInTicks, 1.0F);
       }
 
-      if (var2 != HumanoidModel.ArmPose.SPYGLASS) {
-         AnimationUtils.bobModelPart(this.leftArm, var1.ageInTicks, -1.0F);
+      if (leftArmPose != HumanoidModel.ArmPose.SPYGLASS) {
+         AnimationUtils.bobModelPart(this.leftArm, state.ageInTicks, -1.0F);
       }
 
-      if (var4 > 0.0F) {
-         float var16 = var6 % 26.0F;
-         HumanoidArm var10 = var1.attackArm;
-         float var11 = var1.rightArmPose != HumanoidModel.ArmPose.SPEAR && (var10 != HumanoidArm.RIGHT || !(var1.attackTime > 0.0F)) ? var4 : 0.0F;
-         float var12 = var1.leftArmPose != HumanoidModel.ArmPose.SPEAR && (var10 != HumanoidArm.LEFT || !(var1.attackTime > 0.0F)) ? var4 : 0.0F;
-         if (!var1.isUsingItem) {
-            if (var16 < 14.0F) {
-               this.leftArm.xRot = Mth.rotLerpRad(var12, this.leftArm.xRot, 0.0F);
-               this.rightArm.xRot = Mth.lerp(var11, this.rightArm.xRot, 0.0F);
-               this.leftArm.yRot = Mth.rotLerpRad(var12, this.leftArm.yRot, 3.1415927F);
-               this.rightArm.yRot = Mth.lerp(var11, this.rightArm.yRot, 3.1415927F);
-               this.leftArm.zRot = Mth.rotLerpRad(var12, this.leftArm.zRot, 3.1415927F + 1.8707964F * this.quadraticArmUpdate(var16) / this.quadraticArmUpdate(14.0F));
-               this.rightArm.zRot = Mth.lerp(var11, this.rightArm.zRot, 3.1415927F - 1.8707964F * this.quadraticArmUpdate(var16) / this.quadraticArmUpdate(14.0F));
-            } else if (var16 >= 14.0F && var16 < 22.0F) {
-               float var17 = (var16 - 14.0F) / 8.0F;
-               this.leftArm.xRot = Mth.rotLerpRad(var12, this.leftArm.xRot, 1.5707964F * var17);
-               this.rightArm.xRot = Mth.lerp(var11, this.rightArm.xRot, 1.5707964F * var17);
-               this.leftArm.yRot = Mth.rotLerpRad(var12, this.leftArm.yRot, 3.1415927F);
-               this.rightArm.yRot = Mth.lerp(var11, this.rightArm.yRot, 3.1415927F);
-               this.leftArm.zRot = Mth.rotLerpRad(var12, this.leftArm.zRot, 5.012389F - 1.8707964F * var17);
-               this.rightArm.zRot = Mth.lerp(var11, this.rightArm.zRot, 1.2707963F + 1.8707964F * var17);
-            } else if (var16 >= 22.0F && var16 < 26.0F) {
-               float var13 = (var16 - 22.0F) / 4.0F;
-               this.leftArm.xRot = Mth.rotLerpRad(var12, this.leftArm.xRot, 1.5707964F - 1.5707964F * var13);
-               this.rightArm.xRot = Mth.lerp(var11, this.rightArm.xRot, 1.5707964F - 1.5707964F * var13);
-               this.leftArm.yRot = Mth.rotLerpRad(var12, this.leftArm.yRot, 3.1415927F);
-               this.rightArm.yRot = Mth.lerp(var11, this.rightArm.yRot, 3.1415927F);
-               this.leftArm.zRot = Mth.rotLerpRad(var12, this.leftArm.zRot, 3.1415927F);
-               this.rightArm.zRot = Mth.lerp(var11, this.rightArm.zRot, 3.1415927F);
+      if (swimAmount > 0.0F) {
+         float swimPos = animationPos % 26.0F;
+         HumanoidArm attackArm = state.attackArm;
+         float rightArmSwimAmount = state.rightArmPose != HumanoidModel.ArmPose.SPEAR && (attackArm != HumanoidArm.RIGHT || !(state.attackTime > 0.0F)) ? swimAmount : 0.0F;
+         float leftArmSwimAmount = state.leftArmPose != HumanoidModel.ArmPose.SPEAR && (attackArm != HumanoidArm.LEFT || !(state.attackTime > 0.0F)) ? swimAmount : 0.0F;
+         if (!state.isUsingItem) {
+            if (swimPos < 14.0F) {
+               this.leftArm.xRot = Mth.rotLerpRad(leftArmSwimAmount, this.leftArm.xRot, 0.0F);
+               this.rightArm.xRot = Mth.lerp(rightArmSwimAmount, this.rightArm.xRot, 0.0F);
+               this.leftArm.yRot = Mth.rotLerpRad(leftArmSwimAmount, this.leftArm.yRot, 3.1415927F);
+               this.rightArm.yRot = Mth.lerp(rightArmSwimAmount, this.rightArm.yRot, 3.1415927F);
+               this.leftArm.zRot = Mth.rotLerpRad(leftArmSwimAmount, this.leftArm.zRot, 3.1415927F + 1.8707964F * this.quadraticArmUpdate(swimPos) / this.quadraticArmUpdate(14.0F));
+               this.rightArm.zRot = Mth.lerp(rightArmSwimAmount, this.rightArm.zRot, 3.1415927F - 1.8707964F * this.quadraticArmUpdate(swimPos) / this.quadraticArmUpdate(14.0F));
+            } else if (swimPos >= 14.0F && swimPos < 22.0F) {
+               float internalSwimPos = (swimPos - 14.0F) / 8.0F;
+               this.leftArm.xRot = Mth.rotLerpRad(leftArmSwimAmount, this.leftArm.xRot, 1.5707964F * internalSwimPos);
+               this.rightArm.xRot = Mth.lerp(rightArmSwimAmount, this.rightArm.xRot, 1.5707964F * internalSwimPos);
+               this.leftArm.yRot = Mth.rotLerpRad(leftArmSwimAmount, this.leftArm.yRot, 3.1415927F);
+               this.rightArm.yRot = Mth.lerp(rightArmSwimAmount, this.rightArm.yRot, 3.1415927F);
+               this.leftArm.zRot = Mth.rotLerpRad(leftArmSwimAmount, this.leftArm.zRot, 5.012389F - 1.8707964F * internalSwimPos);
+               this.rightArm.zRot = Mth.lerp(rightArmSwimAmount, this.rightArm.zRot, 1.2707963F + 1.8707964F * internalSwimPos);
+            } else if (swimPos >= 22.0F && swimPos < 26.0F) {
+               float internalSwimPos = (swimPos - 22.0F) / 4.0F;
+               this.leftArm.xRot = Mth.rotLerpRad(leftArmSwimAmount, this.leftArm.xRot, 1.5707964F - 1.5707964F * internalSwimPos);
+               this.rightArm.xRot = Mth.lerp(rightArmSwimAmount, this.rightArm.xRot, 1.5707964F - 1.5707964F * internalSwimPos);
+               this.leftArm.yRot = Mth.rotLerpRad(leftArmSwimAmount, this.leftArm.yRot, 3.1415927F);
+               this.rightArm.yRot = Mth.lerp(rightArmSwimAmount, this.rightArm.yRot, 3.1415927F);
+               this.leftArm.zRot = Mth.rotLerpRad(leftArmSwimAmount, this.leftArm.zRot, 3.1415927F);
+               this.rightArm.zRot = Mth.lerp(rightArmSwimAmount, this.rightArm.zRot, 3.1415927F);
             }
          }
 
-         float var18 = 0.3F;
-         float var14 = 0.33333334F;
-         this.leftLeg.xRot = Mth.lerp(var4, this.leftLeg.xRot, 0.3F * Mth.cos((double)(var6 * 0.33333334F + 3.1415927F)));
-         this.rightLeg.xRot = Mth.lerp(var4, this.rightLeg.xRot, 0.3F * Mth.cos((double)(var6 * 0.33333334F)));
+         float amplitude = 0.3F;
+         float slowdown = 0.33333334F;
+         this.leftLeg.xRot = Mth.lerp(swimAmount, this.leftLeg.xRot, 0.3F * Mth.cos((double)(animationPos * 0.33333334F + 3.1415927F)));
+         this.rightLeg.xRot = Mth.lerp(swimAmount, this.rightLeg.xRot, 0.3F * Mth.cos((double)(animationPos * 0.33333334F)));
       }
 
    }
 
-   private void poseRightArm(T var1) {
-      switch (var1.rightArmPose.ordinal()) {
+   private void poseRightArm(final T state) {
+      switch (state.rightArmPose.ordinal()) {
          case 0:
             this.rightArm.yRot = 0.0F;
             break;
@@ -255,13 +255,13 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
             this.rightArm.yRot = 0.0F;
             break;
          case 5:
-            AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, var1.maxCrossbowChargeDuration, var1.ticksUsingItem, true);
+            AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, state.maxCrossbowChargeDuration, state.ticksUsingItem, true);
             break;
          case 6:
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, true);
             break;
          case 7:
-            this.rightArm.xRot = Mth.clamp(this.head.xRot - 1.9198622F - (var1.isCrouching ? 0.2617994F : 0.0F), -2.4F, 3.3F);
+            this.rightArm.xRot = Mth.clamp(this.head.xRot - 1.9198622F - (state.isCrouching ? 0.2617994F : 0.0F), -2.4F, 3.3F);
             this.rightArm.yRot = this.head.yRot - 0.2617994F;
             break;
          case 8:
@@ -273,13 +273,13 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
             this.rightArm.yRot = 0.0F;
             break;
          case 10:
-            SpearAnimations.thirdPersonHandUse(this.rightArm, this.head, true, var1.getUseItemStackForArm(HumanoidArm.RIGHT), var1);
+            SpearAnimations.thirdPersonHandUse(this.rightArm, this.head, true, state.getUseItemStackForArm(HumanoidArm.RIGHT), state);
       }
 
    }
 
-   private void poseLeftArm(T var1) {
-      switch (var1.leftArmPose.ordinal()) {
+   private void poseLeftArm(final T state) {
+      switch (state.leftArmPose.ordinal()) {
          case 0:
             this.leftArm.yRot = 0.0F;
             break;
@@ -301,13 +301,13 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
             this.leftArm.yRot = 0.0F;
             break;
          case 5:
-            AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, var1.maxCrossbowChargeDuration, var1.ticksUsingItem, false);
+            AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, state.maxCrossbowChargeDuration, state.ticksUsingItem, false);
             break;
          case 6:
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, false);
             break;
          case 7:
-            this.leftArm.xRot = Mth.clamp(this.head.xRot - 1.9198622F - (var1.isCrouching ? 0.2617994F : 0.0F), -2.4F, 3.3F);
+            this.leftArm.xRot = Mth.clamp(this.head.xRot - 1.9198622F - (state.isCrouching ? 0.2617994F : 0.0F), -2.4F, 3.3F);
             this.leftArm.yRot = this.head.yRot + 0.2617994F;
             break;
          case 8:
@@ -319,76 +319,76 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
             this.leftArm.yRot = 0.0F;
             break;
          case 10:
-            SpearAnimations.thirdPersonHandUse(this.leftArm, this.head, false, var1.getUseItemStackForArm(HumanoidArm.LEFT), var1);
+            SpearAnimations.thirdPersonHandUse(this.leftArm, this.head, false, state.getUseItemStackForArm(HumanoidArm.LEFT), state);
       }
 
    }
 
-   private void poseBlockingArm(ModelPart var1, boolean var2) {
-      var1.xRot = var1.xRot * 0.5F - 0.9424779F + Mth.clamp(this.head.xRot, -1.3962634F, 0.43633232F);
-      var1.yRot = (var2 ? -30.0F : 30.0F) * 0.017453292F + Mth.clamp(this.head.yRot, -0.5235988F, 0.5235988F);
+   private void poseBlockingArm(final ModelPart arm, final boolean right) {
+      arm.xRot = arm.xRot * 0.5F - 0.9424779F + Mth.clamp(this.head.xRot, -1.3962634F, 0.43633232F);
+      arm.yRot = (right ? -30.0F : 30.0F) * 0.017453292F + Mth.clamp(this.head.yRot, -0.5235988F, 0.5235988F);
    }
 
-   protected void setupAttackAnimation(T var1) {
-      float var2 = var1.attackTime;
-      if (!(var2 <= 0.0F)) {
-         this.body.yRot = Mth.sin((double)(Mth.sqrt(var2) * 6.2831855F)) * 0.2F;
-         if (var1.attackArm == HumanoidArm.LEFT) {
+   protected void setupAttackAnimation(final T state) {
+      float attackTime = state.attackTime;
+      if (!(attackTime <= 0.0F)) {
+         this.body.yRot = Mth.sin((double)(Mth.sqrt(attackTime) * 6.2831855F)) * 0.2F;
+         if (state.attackArm == HumanoidArm.LEFT) {
             ModelPart var10000 = this.body;
             var10000.yRot *= -1.0F;
          }
 
-         float var3 = var1.ageScale;
-         this.rightArm.z = Mth.sin((double)this.body.yRot) * 5.0F * var3;
-         this.rightArm.x = -Mth.cos((double)this.body.yRot) * 5.0F * var3;
-         this.leftArm.z = -Mth.sin((double)this.body.yRot) * 5.0F * var3;
-         this.leftArm.x = Mth.cos((double)this.body.yRot) * 5.0F * var3;
+         float ageScale = state.ageScale;
+         this.rightArm.z = Mth.sin((double)this.body.yRot) * 5.0F * ageScale;
+         this.rightArm.x = -Mth.cos((double)this.body.yRot) * 5.0F * ageScale;
+         this.leftArm.z = -Mth.sin((double)this.body.yRot) * 5.0F * ageScale;
+         this.leftArm.x = Mth.cos((double)this.body.yRot) * 5.0F * ageScale;
          ModelPart var8 = this.rightArm;
          var8.yRot += this.body.yRot;
          var8 = this.leftArm;
          var8.yRot += this.body.yRot;
          var8 = this.leftArm;
          var8.xRot += this.body.yRot;
-         switch (var1.swingAnimationType) {
+         switch (state.swingAnimationType) {
             case WHACK:
-               float var4 = Ease.outQuart(var2);
-               float var5 = Mth.sin((double)(var4 * 3.1415927F));
-               float var6 = Mth.sin((double)(var2 * 3.1415927F)) * -(this.head.xRot - 0.7F) * 0.75F;
-               ModelPart var7 = this.getArm(var1.attackArm);
-               var7.xRot -= var5 * 1.2F + var6;
-               var7.yRot += this.body.yRot * 2.0F;
-               var7.zRot += Mth.sin((double)(var2 * 3.1415927F)) * -0.4F;
+               float swing = Ease.outQuart(attackTime);
+               float aa = Mth.sin((double)(swing * 3.1415927F));
+               float bb = Mth.sin((double)(attackTime * 3.1415927F)) * -(this.head.xRot - 0.7F) * 0.75F;
+               ModelPart attackArm = this.getArm(state.attackArm);
+               attackArm.xRot -= aa * 1.2F + bb;
+               attackArm.yRot += this.body.yRot * 2.0F;
+               attackArm.zRot += Mth.sin((double)(attackTime * 3.1415927F)) * -0.4F;
             case NONE:
             default:
                break;
             case STAB:
-               SpearAnimations.thirdPersonAttackHand(this, var1);
+               SpearAnimations.thirdPersonAttackHand(this, state);
          }
 
       }
    }
 
-   private float quadraticArmUpdate(float var1) {
-      return -65.0F * var1 + var1 * var1;
+   private float quadraticArmUpdate(final float x) {
+      return -65.0F * x + x * x;
    }
 
-   public void setAllVisible(boolean var1) {
-      this.head.visible = var1;
-      this.hat.visible = var1;
-      this.body.visible = var1;
-      this.rightArm.visible = var1;
-      this.leftArm.visible = var1;
-      this.rightLeg.visible = var1;
-      this.leftLeg.visible = var1;
+   public void setAllVisible(final boolean visible) {
+      this.head.visible = visible;
+      this.hat.visible = visible;
+      this.body.visible = visible;
+      this.rightArm.visible = visible;
+      this.leftArm.visible = visible;
+      this.rightLeg.visible = visible;
+      this.leftLeg.visible = visible;
    }
 
-   public void translateToHand(HumanoidRenderState var1, HumanoidArm var2, PoseStack var3) {
-      this.root.translateAndRotate(var3);
-      this.getArm(var2).translateAndRotate(var3);
+   public void translateToHand(final HumanoidRenderState state, final HumanoidArm arm, final PoseStack poseStack) {
+      this.root.translateAndRotate(poseStack);
+      this.getArm(arm).translateAndRotate(poseStack);
    }
 
-   public ModelPart getArm(HumanoidArm var1) {
-      return var1 == HumanoidArm.LEFT ? this.leftArm : this.rightArm;
+   public ModelPart getArm(final HumanoidArm arm) {
+      return arm == HumanoidArm.LEFT ? this.leftArm : this.rightArm;
    }
 
    public ModelPart getHead() {
@@ -407,17 +407,17 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       TOOT_HORN(false, false),
       BRUSH(false, false),
       SPEAR(false, true) {
-         public <S extends ArmedEntityRenderState> void animateUseItem(S var1, PoseStack var2, float var3, HumanoidArm var4, ItemStack var5) {
-            SpearAnimations.thirdPersonUseItem(var1, var2, var3, var4, var5);
+         public <S extends ArmedEntityRenderState> void animateUseItem(final S state, final PoseStack poseStack, final float ticksUsingItem, final HumanoidArm arm, final ItemStack actualItem) {
+            SpearAnimations.thirdPersonUseItem(state, poseStack, ticksUsingItem, arm, actualItem);
          }
       };
 
       private final boolean twoHanded;
       private final boolean affectsOffhandPose;
 
-      ArmPose(final boolean var3, final boolean var4) {
-         this.twoHanded = var3;
-         this.affectsOffhandPose = var4;
+      private ArmPose(final boolean twoHanded, final boolean affectsOffhandPose) {
+         this.twoHanded = twoHanded;
+         this.affectsOffhandPose = affectsOffhandPose;
       }
 
       public boolean isTwoHanded() {
@@ -428,7 +428,7 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          return this.affectsOffhandPose;
       }
 
-      public <S extends ArmedEntityRenderState> void animateUseItem(S var1, PoseStack var2, float var3, HumanoidArm var4, ItemStack var5) {
+      public <S extends ArmedEntityRenderState> void animateUseItem(final S state, final PoseStack poseStack, final float ticksUsingItem, final HumanoidArm arm, final ItemStack actualItem) {
       }
 
       // $FF: synthetic method

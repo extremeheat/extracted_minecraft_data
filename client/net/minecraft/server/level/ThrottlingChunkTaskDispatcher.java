@@ -14,28 +14,28 @@ public class ThrottlingChunkTaskDispatcher extends ChunkTaskDispatcher {
    private final int maxChunksInExecution;
    private final String executorSchedulerName;
 
-   public ThrottlingChunkTaskDispatcher(TaskScheduler<Runnable> var1, Executor var2, int var3) {
-      super(var1, var2);
-      this.maxChunksInExecution = var3;
-      this.executorSchedulerName = var1.name();
+   public ThrottlingChunkTaskDispatcher(final TaskScheduler<Runnable> executor, final Executor dispatcherExecutor, final int maxChunksInExecution) {
+      super(executor, dispatcherExecutor);
+      this.maxChunksInExecution = maxChunksInExecution;
+      this.executorSchedulerName = executor.name();
    }
 
-   protected void onRelease(long var1) {
-      this.chunkPositionsInExecution.remove(var1);
+   protected void onRelease(final long key) {
+      this.chunkPositionsInExecution.remove(key);
    }
 
    protected ChunkTaskPriorityQueue.@Nullable TasksForChunk popTasks() {
       return this.chunkPositionsInExecution.size() < this.maxChunksInExecution ? super.popTasks() : null;
    }
 
-   protected void scheduleForExecution(ChunkTaskPriorityQueue.TasksForChunk var1) {
-      this.chunkPositionsInExecution.add(var1.chunkPos());
-      super.scheduleForExecution(var1);
+   protected void scheduleForExecution(final ChunkTaskPriorityQueue.TasksForChunk tasksForChunk) {
+      this.chunkPositionsInExecution.add(tasksForChunk.chunkPos());
+      super.scheduleForExecution(tasksForChunk);
    }
 
    @VisibleForTesting
    public String getDebugStatus() {
       String var10000 = this.executorSchedulerName;
-      return var10000 + "=[" + (String)this.chunkPositionsInExecution.longStream().mapToObj((var0) -> var0 + ":" + String.valueOf(new ChunkPos(var0))).collect(Collectors.joining(",")) + "], s=" + this.sleeping;
+      return var10000 + "=[" + (String)this.chunkPositionsInExecution.longStream().mapToObj((key) -> key + ":" + String.valueOf(ChunkPos.unpack(key))).collect(Collectors.joining(",")) + "], s=" + this.sleeping;
    }
 }

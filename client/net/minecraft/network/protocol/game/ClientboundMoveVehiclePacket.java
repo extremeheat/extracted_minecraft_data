@@ -11,23 +11,20 @@ import net.minecraft.world.phys.Vec3;
 public record ClientboundMoveVehiclePacket(Vec3 position, float yRot, float xRot) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundMoveVehiclePacket> STREAM_CODEC;
 
-   public ClientboundMoveVehiclePacket(Vec3 var1, float var2, float var3) {
+   public ClientboundMoveVehiclePacket {
       super();
-      this.position = var1;
-      this.yRot = var2;
-      this.xRot = var3;
    }
 
-   public static ClientboundMoveVehiclePacket fromEntity(Entity var0) {
-      return new ClientboundMoveVehiclePacket(var0.position(), var0.getYRot(), var0.getXRot());
+   public static ClientboundMoveVehiclePacket fromEntity(final Entity entity) {
+      return new ClientboundMoveVehiclePacket(entity.position(), entity.getYRot(), entity.getXRot());
    }
 
    public PacketType<ClientboundMoveVehiclePacket> type() {
       return GamePacketTypes.CLIENTBOUND_MOVE_VEHICLE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleMoveVehicle(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleMoveVehicle(this);
    }
 
    static {

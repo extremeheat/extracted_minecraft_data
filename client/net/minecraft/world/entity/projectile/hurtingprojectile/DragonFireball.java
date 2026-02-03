@@ -18,43 +18,43 @@ import net.minecraft.world.phys.Vec3;
 public class DragonFireball extends AbstractHurtingProjectile {
    public static final float SPLASH_RANGE = 4.0F;
 
-   public DragonFireball(EntityType<? extends DragonFireball> var1, Level var2) {
-      super(var1, var2);
+   public DragonFireball(final EntityType<? extends DragonFireball> type, final Level level) {
+      super(type, level);
    }
 
-   public DragonFireball(Level var1, LivingEntity var2, Vec3 var3) {
-      super(EntityType.DRAGON_FIREBALL, var2, var3, var1);
+   public DragonFireball(final Level level, final LivingEntity mob, final Vec3 direction) {
+      super(EntityType.DRAGON_FIREBALL, mob, direction, level);
    }
 
-   protected void onHit(HitResult var1) {
-      super.onHit(var1);
-      if (var1.getType() != HitResult.Type.ENTITY || !this.ownedBy(((EntityHitResult)var1).getEntity())) {
+   protected void onHit(final HitResult hitResult) {
+      super.onHit(hitResult);
+      if (hitResult.getType() != HitResult.Type.ENTITY || !this.ownedBy(((EntityHitResult)hitResult).getEntity())) {
          if (!this.level().isClientSide()) {
-            List var2 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0, 2.0, 4.0));
-            AreaEffectCloud var3 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
-            Entity var4 = this.getOwner();
-            if (var4 instanceof LivingEntity) {
-               var3.setOwner((LivingEntity)var4);
+            List<LivingEntity> entitiesOfClass = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0, 2.0, 4.0));
+            AreaEffectCloud cloud = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
+            Entity owner = this.getOwner();
+            if (owner instanceof LivingEntity) {
+               cloud.setOwner((LivingEntity)owner);
             }
 
-            var3.setCustomParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F));
-            var3.setRadius(3.0F);
-            var3.setDuration(600);
-            var3.setRadiusPerTick((7.0F - var3.getRadius()) / (float)var3.getDuration());
-            var3.setPotionDurationScale(0.25F);
-            var3.addEffect(new MobEffectInstance(MobEffects.INSTANT_DAMAGE, 1, 1));
-            if (!var2.isEmpty()) {
-               for(LivingEntity var6 : var2) {
-                  double var7 = this.distanceToSqr(var6);
-                  if (var7 < 16.0) {
-                     var3.setPos(var6.getX(), var6.getY(), var6.getZ());
+            cloud.setCustomParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F));
+            cloud.setRadius(3.0F);
+            cloud.setDuration(600);
+            cloud.setRadiusPerTick((7.0F - cloud.getRadius()) / (float)cloud.getDuration());
+            cloud.setPotionDurationScale(0.25F);
+            cloud.addEffect(new MobEffectInstance(MobEffects.INSTANT_DAMAGE, 1, 1));
+            if (!entitiesOfClass.isEmpty()) {
+               for(LivingEntity entity : entitiesOfClass) {
+                  double dist = this.distanceToSqr(entity);
+                  if (dist < 16.0) {
+                     cloud.setPos(entity.getX(), entity.getY(), entity.getZ());
                      break;
                   }
                }
             }
 
             this.level().levelEvent(2006, this.blockPosition(), this.isSilent() ? -1 : 1);
-            this.level().addFreshEntity(var3);
+            this.level().addFreshEntity(cloud);
             this.discard();
          }
 

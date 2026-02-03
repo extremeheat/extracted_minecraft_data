@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.animal.fish.TropicalFishLargeModel;
 import net.minecraft.client.model.animal.fish.TropicalFishSmallModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -29,24 +28,24 @@ public class TropicalFishPatternLayer extends RenderLayer<TropicalFishRenderStat
    private final TropicalFishSmallModel modelSmall;
    private final TropicalFishLargeModel modelLarge;
 
-   public TropicalFishPatternLayer(RenderLayerParent<TropicalFishRenderState, EntityModel<TropicalFishRenderState>> var1, EntityModelSet var2) {
-      super(var1);
-      this.modelSmall = new TropicalFishSmallModel(var2.bakeLayer(ModelLayers.TROPICAL_FISH_SMALL_PATTERN));
-      this.modelLarge = new TropicalFishLargeModel(var2.bakeLayer(ModelLayers.TROPICAL_FISH_LARGE_PATTERN));
+   public TropicalFishPatternLayer(final RenderLayerParent<TropicalFishRenderState, EntityModel<TropicalFishRenderState>> renderer, final EntityModelSet modelSet) {
+      super(renderer);
+      this.modelSmall = new TropicalFishSmallModel(modelSet.bakeLayer(ModelLayers.TROPICAL_FISH_SMALL_PATTERN));
+      this.modelLarge = new TropicalFishLargeModel(modelSet.bakeLayer(ModelLayers.TROPICAL_FISH_LARGE_PATTERN));
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, TropicalFishRenderState var4, float var5, float var6) {
-      TropicalFish.Pattern var7 = var4.pattern;
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final TropicalFishRenderState state, final float yRot, final float xRot) {
+      TropicalFish.Pattern variant = state.pattern;
       Object var10000;
-      switch (var7.base()) {
+      switch (variant.base()) {
          case SMALL -> var10000 = this.modelSmall;
          case LARGE -> var10000 = this.modelLarge;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
-      Object var8 = var10000;
+      EntityModel<TropicalFishRenderState> model = (EntityModel<TropicalFishRenderState>)var10000;
       Identifier var10;
-      switch (var7) {
+      switch (variant) {
          case KOB -> var10 = KOB_TEXTURE;
          case SUNSTREAK -> var10 = SUNSTREAK_TEXTURE;
          case SNOOPER -> var10 = SNOOPER_TEXTURE;
@@ -62,7 +61,7 @@ public class TropicalFishPatternLayer extends RenderLayer<TropicalFishRenderStat
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
-      Identifier var9 = var10;
-      coloredCutoutModelCopyLayerRender((Model)var8, var9, var1, var2, var3, var4, var4.patternColor, 1);
+      Identifier patternTexture = var10;
+      coloredCutoutModelCopyLayerRender(model, patternTexture, poseStack, submitNodeCollector, lightCoords, state, state.patternColor, 1);
    }
 }

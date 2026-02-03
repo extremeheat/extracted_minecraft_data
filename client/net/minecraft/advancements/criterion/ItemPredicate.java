@@ -11,32 +11,24 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.level.ItemLike;
 
-public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints count, DataComponentMatchers components) implements Predicate<ItemStack> {
-   public static final Codec<ItemPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("items").forGetter(ItemPredicate::items), MinMaxBounds.Ints.CODEC.optionalFieldOf("count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count), DataComponentMatchers.CODEC.forGetter(ItemPredicate::components)).apply(var0, ItemPredicate::new));
+public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints count, DataComponentMatchers components) implements Predicate<ItemInstance> {
+   public static final Codec<ItemPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("items").forGetter(ItemPredicate::items), MinMaxBounds.Ints.CODEC.optionalFieldOf("count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count), DataComponentMatchers.CODEC.forGetter(ItemPredicate::components)).apply(i, ItemPredicate::new));
 
-   public ItemPredicate(Optional<HolderSet<Item>> var1, MinMaxBounds.Ints var2, DataComponentMatchers var3) {
+   public ItemPredicate {
       super();
-      this.items = var1;
-      this.count = var2;
-      this.components = var3;
    }
 
-   public boolean test(ItemStack var1) {
-      if (this.items.isPresent() && !var1.is((HolderSet)this.items.get())) {
+   public boolean test(final ItemInstance itemStack) {
+      if (this.items.isPresent() && !itemStack.is((HolderSet)this.items.get())) {
          return false;
-      } else if (!this.count.matches(var1.getCount())) {
+      } else if (!this.count.matches(itemStack.count())) {
          return false;
       } else {
-         return this.components.test((DataComponentGetter)var1);
+         return this.components.test((DataComponentGetter)itemStack);
       }
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((ItemStack)var1);
    }
 
    public static class Builder {
@@ -54,23 +46,23 @@ public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints c
          return new Builder();
       }
 
-      public Builder of(HolderGetter<Item> var1, ItemLike... var2) {
-         this.items = Optional.of(HolderSet.direct((var0) -> var0.asItem().builtInRegistryHolder(), var2));
+      public Builder of(final HolderGetter<Item> lookup, final ItemLike... items) {
+         this.items = Optional.of(HolderSet.direct((i) -> i.asItem().builtInRegistryHolder(), items));
          return this;
       }
 
-      public Builder of(HolderGetter<Item> var1, TagKey<Item> var2) {
-         this.items = Optional.of(var1.getOrThrow(var2));
+      public Builder of(final HolderGetter<Item> lookup, final TagKey<Item> tag) {
+         this.items = Optional.of(lookup.getOrThrow(tag));
          return this;
       }
 
-      public Builder withCount(MinMaxBounds.Ints var1) {
-         this.count = var1;
+      public Builder withCount(final MinMaxBounds.Ints count) {
+         this.count = count;
          return this;
       }
 
-      public Builder withComponents(DataComponentMatchers var1) {
-         this.components = var1;
+      public Builder withComponents(final DataComponentMatchers components) {
+         this.components = components;
          return this;
       }
 

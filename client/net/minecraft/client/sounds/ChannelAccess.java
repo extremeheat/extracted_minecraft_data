@@ -14,45 +14,45 @@ import org.jspecify.annotations.Nullable;
 
 public class ChannelAccess {
    private final Set<ChannelHandle> channels = Sets.newIdentityHashSet();
-   final Library library;
-   final Executor executor;
+   private final Library library;
+   private final Executor executor;
 
-   public ChannelAccess(Library var1, Executor var2) {
+   public ChannelAccess(final Library library, final Executor executor) {
       super();
-      this.library = var1;
-      this.executor = var2;
+      this.library = library;
+      this.executor = executor;
    }
 
-   public CompletableFuture<ChannelHandle> createHandle(Library.Pool var1) {
-      CompletableFuture var2 = new CompletableFuture();
+   public CompletableFuture<ChannelHandle> createHandle(final Library.Pool pool) {
+      CompletableFuture<ChannelHandle> result = new CompletableFuture();
       this.executor.execute(() -> {
-         Channel var3 = this.library.acquireChannel(var1);
-         if (var3 != null) {
-            ChannelHandle var4 = new ChannelHandle(var3);
-            this.channels.add(var4);
-            var2.complete(var4);
+         Channel channel = this.library.acquireChannel(pool);
+         if (channel != null) {
+            ChannelHandle handle = new ChannelHandle(channel);
+            this.channels.add(handle);
+            result.complete(handle);
          } else {
-            var2.complete((Object)null);
+            result.complete((Object)null);
          }
 
       });
-      return var2;
+      return result;
    }
 
-   public void executeOnChannels(Consumer<Stream<Channel>> var1) {
-      this.executor.execute(() -> var1.accept(this.channels.stream().map((var0) -> var0.channel).filter(Objects::nonNull)));
+   public void executeOnChannels(final Consumer<Stream<Channel>> action) {
+      this.executor.execute(() -> action.accept(this.channels.stream().map((channelHandle) -> channelHandle.channel).filter(Objects::nonNull)));
    }
 
    public void scheduleTick() {
       this.executor.execute(() -> {
-         Iterator var1 = this.channels.iterator();
+         Iterator<ChannelHandle> it = this.channels.iterator();
 
-         while(var1.hasNext()) {
-            ChannelHandle var2 = (ChannelHandle)var1.next();
-            var2.channel.updateStream();
-            if (var2.channel.stopped()) {
-               var2.release();
-               var1.remove();
+         while(it.hasNext()) {
+            ChannelHandle handle = (ChannelHandle)it.next();
+            handle.channel.updateStream();
+            if (handle.channel.stopped()) {
+               handle.release();
+               it.remove();
             }
          }
 
@@ -65,22 +65,23 @@ public class ChannelAccess {
    }
 
    public class ChannelHandle {
-      @Nullable Channel channel;
+      private @Nullable Channel channel;
       private boolean stopped;
 
       public boolean isStopped() {
          return this.stopped;
       }
 
-      public ChannelHandle(final Channel var2) {
+      public ChannelHandle(final Channel channel) {
+         Objects.requireNonNull(ChannelAccess.this);
          super();
-         this.channel = var2;
+         this.channel = channel;
       }
 
-      public void execute(Consumer<Channel> var1) {
+      public void execute(final Consumer<Channel> action) {
          ChannelAccess.this.executor.execute(() -> {
             if (this.channel != null) {
-               var1.accept(this.channel);
+               action.accept(this.channel);
             }
 
          });

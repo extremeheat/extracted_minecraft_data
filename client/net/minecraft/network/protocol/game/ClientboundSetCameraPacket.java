@@ -12,29 +12,29 @@ public class ClientboundSetCameraPacket implements Packet<ClientGamePacketListen
    public static final StreamCodec<FriendlyByteBuf, ClientboundSetCameraPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetCameraPacket>codec(ClientboundSetCameraPacket::write, ClientboundSetCameraPacket::new);
    private final int cameraId;
 
-   public ClientboundSetCameraPacket(Entity var1) {
+   public ClientboundSetCameraPacket(final Entity camera) {
       super();
-      this.cameraId = var1.getId();
+      this.cameraId = camera.getId();
    }
 
-   private ClientboundSetCameraPacket(FriendlyByteBuf var1) {
+   private ClientboundSetCameraPacket(final FriendlyByteBuf input) {
       super();
-      this.cameraId = var1.readVarInt();
+      this.cameraId = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.cameraId);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.cameraId);
    }
 
    public PacketType<ClientboundSetCameraPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_CAMERA;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetCamera(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetCamera(this);
    }
 
-   public @Nullable Entity getEntity(Level var1) {
-      return var1.getEntity(this.cameraId);
+   public @Nullable Entity getEntity(final Level level) {
+      return level.getEntity(this.cameraId);
    }
 }

@@ -11,13 +11,13 @@ import net.minecraft.server.dialog.Dialog;
 import org.jspecify.annotations.Nullable;
 
 public interface DialogConnectionAccess {
-   void disconnect(Component var1);
+   void disconnect(Component message);
 
-   void runCommand(String var1, @Nullable Screen var2);
+   void runCommand(String command, @Nullable Screen activeScreen);
 
-   void openDialog(Holder<Dialog> var1, @Nullable Screen var2);
+   void openDialog(Holder<Dialog> dialog, @Nullable Screen activeScreen);
 
-   void sendCustomAction(Identifier var1, Optional<Tag> var2);
+   void sendCustomAction(Identifier id, Optional<Tag> payload);
 
    ServerLinks serverLinks();
 }

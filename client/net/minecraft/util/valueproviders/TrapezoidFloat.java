@@ -7,33 +7,33 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.RandomSource;
 
 public class TrapezoidFloat extends FloatProvider {
-   public static final MapCodec<TrapezoidFloat> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("min").forGetter((var0x) -> var0x.min), Codec.FLOAT.fieldOf("max").forGetter((var0x) -> var0x.max), Codec.FLOAT.fieldOf("plateau").forGetter((var0x) -> var0x.plateau)).apply(var0, TrapezoidFloat::new)).validate((var0) -> {
-      if (var0.max < var0.min) {
-         return DataResult.error(() -> "Max must be larger than min: [" + var0.min + ", " + var0.max + "]");
+   public static final MapCodec<TrapezoidFloat> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("min").forGetter((t) -> t.min), Codec.FLOAT.fieldOf("max").forGetter((t) -> t.max), Codec.FLOAT.fieldOf("plateau").forGetter((t) -> t.plateau)).apply(i, TrapezoidFloat::new)).validate((c) -> {
+      if (c.max < c.min) {
+         return DataResult.error(() -> "Max must be larger than min: [" + c.min + ", " + c.max + "]");
       } else {
-         return var0.plateau > var0.max - var0.min ? DataResult.error(() -> "Plateau can at most be the full span: [" + var0.min + ", " + var0.max + "]") : DataResult.success(var0);
+         return c.plateau > c.max - c.min ? DataResult.error(() -> "Plateau can at most be the full span: [" + c.min + ", " + c.max + "]") : DataResult.success(c);
       }
    });
    private final float min;
    private final float max;
    private final float plateau;
 
-   public static TrapezoidFloat of(float var0, float var1, float var2) {
-      return new TrapezoidFloat(var0, var1, var2);
+   public static TrapezoidFloat of(final float min, final float max, final float plateau) {
+      return new TrapezoidFloat(min, max, plateau);
    }
 
-   private TrapezoidFloat(float var1, float var2, float var3) {
+   private TrapezoidFloat(final float min, final float max, final float plateau) {
       super();
-      this.min = var1;
-      this.max = var2;
-      this.plateau = var3;
+      this.min = min;
+      this.max = max;
+      this.plateau = plateau;
    }
 
-   public float sample(RandomSource var1) {
-      float var2 = this.max - this.min;
-      float var3 = (var2 - this.plateau) / 2.0F;
-      float var4 = var2 - var3;
-      return this.min + var1.nextFloat() * var4 + var1.nextFloat() * var3;
+   public float sample(final RandomSource random) {
+      float range = this.max - this.min;
+      float plateauStart = (range - this.plateau) / 2.0F;
+      float plateauEnd = range - plateauStart;
+      return this.min + random.nextFloat() * plateauEnd + random.nextFloat() * plateauStart;
    }
 
    public float getMinValue() {

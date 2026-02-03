@@ -7,17 +7,16 @@ public record BrandPayload(String brand) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, BrandPayload> STREAM_CODEC = CustomPacketPayload.codec(BrandPayload::write, BrandPayload::new);
    public static final CustomPacketPayload.Type<BrandPayload> TYPE = CustomPacketPayload.<BrandPayload>createType("brand");
 
-   private BrandPayload(FriendlyByteBuf var1) {
-      this(var1.readUtf());
+   private BrandPayload(final FriendlyByteBuf input) {
+      this(input.readUtf());
    }
 
-   public BrandPayload(String var1) {
+   public BrandPayload {
       super();
-      this.brand = var1;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.brand);
+   private void write(final FriendlyByteBuf output) {
+      output.writeUtf(this.brand);
    }
 
    public CustomPacketPayload.Type<BrandPayload> type() {

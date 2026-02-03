@@ -6,15 +6,15 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class EntityShulkerColorFix extends NamedEntityFix {
-   public EntityShulkerColorFix(Schema var1, boolean var2) {
-      super(var1, var2, "EntityShulkerColorFix", References.ENTITY, "minecraft:shulker");
+   public EntityShulkerColorFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType, "EntityShulkerColorFix", References.ENTITY, "minecraft:shulker");
    }
 
-   public Dynamic<?> fixTag(Dynamic<?> var1) {
-      return var1.get("Color").map(Dynamic::asNumber).result().isEmpty() ? var1.set("Color", var1.createByte((byte)10)) : var1;
+   public Dynamic<?> fixTag(final Dynamic<?> input) {
+      return input.get("Color").map(Dynamic::asNumber).result().isEmpty() ? input.set("Color", input.createByte((byte)10)) : input;
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fixTag);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), this::fixTag);
    }
 }

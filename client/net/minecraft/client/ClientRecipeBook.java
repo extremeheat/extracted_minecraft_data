@@ -2,6 +2,7 @@ package net.minecraft.client;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Table;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,13 +31,13 @@ public class ClientRecipeBook extends RecipeBook {
       super();
    }
 
-   public void add(RecipeDisplayEntry var1) {
-      this.known.put(var1.id(), var1);
+   public void add(final RecipeDisplayEntry display) {
+      this.known.put(display.id(), display);
    }
 
-   public void remove(RecipeDisplayId var1) {
-      this.known.remove(var1);
-      this.highlight.remove(var1);
+   public void remove(final RecipeDisplayId id) {
+      this.known.remove(id);
+      this.highlight.remove(id);
    }
 
    public void clear() {
@@ -44,65 +45,65 @@ public class ClientRecipeBook extends RecipeBook {
       this.highlight.clear();
    }
 
-   public boolean willHighlight(RecipeDisplayId var1) {
-      return this.highlight.contains(var1);
+   public boolean willHighlight(final RecipeDisplayId recipe) {
+      return this.highlight.contains(recipe);
    }
 
-   public void removeHighlight(RecipeDisplayId var1) {
-      this.highlight.remove(var1);
+   public void removeHighlight(final RecipeDisplayId id) {
+      this.highlight.remove(id);
    }
 
-   public void addHighlight(RecipeDisplayId var1) {
-      this.highlight.add(var1);
+   public void addHighlight(final RecipeDisplayId id) {
+      this.highlight.add(id);
    }
 
    public void rebuildCollections() {
-      Map var1 = categorizeAndGroupRecipes(this.known.values());
-      HashMap var2 = new HashMap();
-      ImmutableList.Builder var3 = ImmutableList.builder();
-      var1.forEach((var2x, var3x) -> {
-         Stream var10002 = var3x.stream().map(RecipeCollection::new);
-         Objects.requireNonNull(var3);
-         var2.put(var2x, (List)var10002.peek(var3::add).collect(ImmutableList.toImmutableList()));
+      Map<RecipeBookCategory, List<List<RecipeDisplayEntry>>> recipeListsByCategory = categorizeAndGroupRecipes(this.known.values());
+      Map<ExtendedRecipeBookCategory, List<RecipeCollection>> byCategory = new HashMap();
+      ImmutableList.Builder<RecipeCollection> all = ImmutableList.builder();
+      recipeListsByCategory.forEach((category, categoryRecipes) -> {
+         Stream var10002 = categoryRecipes.stream().map(RecipeCollection::new);
+         Objects.requireNonNull(all);
+         byCategory.put(category, (List)var10002.peek(all::add).collect(ImmutableList.toImmutableList()));
       });
 
-      for(SearchRecipeBookCategory var7 : SearchRecipeBookCategory.values()) {
-         var2.put(var7, (List)var7.includedCategories().stream().flatMap((var1x) -> ((List)var2.getOrDefault(var1x, List.of())).stream()).collect(ImmutableList.toImmutableList()));
+      for(SearchRecipeBookCategory searchCategory : SearchRecipeBookCategory.values()) {
+         byCategory.put(searchCategory, (List)searchCategory.includedCategories().stream().flatMap((subCategory) -> ((List)byCategory.getOrDefault(subCategory, List.of())).stream()).collect(ImmutableList.toImmutableList()));
       }
 
-      this.collectionsByTab = Map.copyOf(var2);
-      this.allCollections = var3.build();
+      this.collectionsByTab = Map.copyOf(byCategory);
+      this.allCollections = all.build();
    }
 
-   private static Map<RecipeBookCategory, List<List<RecipeDisplayEntry>>> categorizeAndGroupRecipes(Iterable<RecipeDisplayEntry> var0) {
-      HashMap var1 = new HashMap();
-      HashBasedTable var2 = HashBasedTable.create();
+   private static Map<RecipeBookCategory, List<List<RecipeDisplayEntry>>> categorizeAndGroupRecipes(final Iterable<RecipeDisplayEntry> recipes) {
+      Map<RecipeBookCategory, List<List<RecipeDisplayEntry>>> result = new HashMap();
+      Table<RecipeBookCategory, Integer, List<RecipeDisplayEntry>> multiItemGroups = HashBasedTable.create();
 
-      for(RecipeDisplayEntry var4 : var0) {
-         RecipeBookCategory var5 = var4.category();
-         OptionalInt var6 = var4.group();
-         if (var6.isEmpty()) {
-            ((List)var1.computeIfAbsent(var5, (var0x) -> new ArrayList())).add(List.of(var4));
+      for(RecipeDisplayEntry entry : recipes) {
+         RecipeBookCategory category = entry.category();
+         OptionalInt groupId = entry.group();
+         if (groupId.isEmpty()) {
+            ((List)result.computeIfAbsent(category, (key) -> new ArrayList())).add(List.of(entry));
          } else {
-            Object var7 = (List)var2.get(var5, var6.getAsInt());
-            if (var7 == null) {
-               var7 = new ArrayList();
-               var2.put(var5, var6.getAsInt(), var7);
-               ((List)var1.computeIfAbsent(var5, (var0x) -> new ArrayList())).add(var7);
+            List<RecipeDisplayEntry> groupRecipes = (List)multiItemGroups.get(category, groupId.getAsInt());
+            if (groupRecipes == null) {
+               groupRecipes = new ArrayList();
+               multiItemGroups.put(category, groupId.getAsInt(), groupRecipes);
+               ((List)result.computeIfAbsent(category, (key) -> new ArrayList())).add(groupRecipes);
             }
 
-            ((List)var7).add(var4);
+            groupRecipes.add(entry);
          }
       }
 
-      return var1;
+      return result;
    }
 
    public List<RecipeCollection> getCollections() {
       return this.allCollections;
    }
 
-   public List<RecipeCollection> getCollection(ExtendedRecipeBookCategory var1) {
-      return (List)this.collectionsByTab.getOrDefault(var1, Collections.emptyList());
+   public List<RecipeCollection> getCollection(final ExtendedRecipeBookCategory category) {
+      return (List)this.collectionsByTab.getOrDefault(category, Collections.emptyList());
    }
 }

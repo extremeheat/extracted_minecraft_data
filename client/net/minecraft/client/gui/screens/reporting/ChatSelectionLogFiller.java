@@ -21,64 +21,64 @@ public class ChatSelectionLogFiller {
    private int missedCount;
    private @Nullable PlayerChatMessage lastMessage;
 
-   public ChatSelectionLogFiller(ReportingContext var1, Predicate<LoggedChatMessage.Player> var2) {
+   public ChatSelectionLogFiller(final ReportingContext reportingContext, final Predicate<LoggedChatMessage.Player> canReport) {
       super();
-      this.log = var1.chatLog();
-      this.contextBuilder = new ChatReportContextBuilder(var1.sender().reportLimits().leadingContextMessageCount());
-      this.canReport = var2;
+      this.log = reportingContext.chatLog();
+      this.contextBuilder = new ChatReportContextBuilder(reportingContext.sender().reportLimits().leadingContextMessageCount());
+      this.canReport = canReport;
       this.eventId = this.log.end();
    }
 
-   public void fillNextPage(int var1, Output var2) {
-      int var3 = 0;
+   public void fillNextPage(final int pageSize, final Output output) {
+      int count = 0;
 
-      while(var3 < var1) {
-         LoggedChatEvent var4 = this.log.lookup(this.eventId);
-         if (var4 == null) {
+      while(count < pageSize) {
+         LoggedChatEvent event = this.log.lookup(this.eventId);
+         if (event == null) {
             break;
          }
 
-         int var5 = this.eventId--;
-         if (var4 instanceof LoggedChatMessage.Player var6) {
-            if (!var6.message().equals(this.lastMessage)) {
-               if (this.acceptMessage(var2, var6)) {
+         int eventId = this.eventId--;
+         if (event instanceof LoggedChatMessage.Player message) {
+            if (!message.message().equals(this.lastMessage)) {
+               if (this.acceptMessage(output, message)) {
                   if (this.missedCount > 0) {
-                     var2.acceptDivider(Component.translatable("gui.chatSelection.fold", this.missedCount));
+                     output.acceptDivider(Component.translatable("gui.chatSelection.fold", this.missedCount));
                      this.missedCount = 0;
                   }
 
-                  var2.acceptMessage(var5, var6);
-                  ++var3;
+                  output.acceptMessage(eventId, message);
+                  ++count;
                } else {
                   ++this.missedCount;
                }
 
-               this.lastMessage = var6.message();
+               this.lastMessage = message.message();
             }
          }
       }
 
    }
 
-   private boolean acceptMessage(Output var1, LoggedChatMessage.Player var2) {
-      PlayerChatMessage var3 = var2.message();
-      boolean var4 = this.contextBuilder.acceptContext(var3);
-      if (this.canReport.test(var2)) {
-         this.contextBuilder.trackContext(var3);
-         if (this.previousLink != null && !this.previousLink.isDescendantOf(var3.link())) {
-            var1.acceptDivider(Component.translatable("gui.chatSelection.join", var2.profile().name()).withStyle(ChatFormatting.YELLOW));
+   private boolean acceptMessage(final Output output, final LoggedChatMessage.Player event) {
+      PlayerChatMessage message = event.message();
+      boolean context = this.contextBuilder.acceptContext(message);
+      if (this.canReport.test(event)) {
+         this.contextBuilder.trackContext(message);
+         if (this.previousLink != null && !this.previousLink.isDescendantOf(message.link())) {
+            output.acceptDivider(Component.translatable("gui.chatSelection.join", event.profile().name()).withStyle(ChatFormatting.YELLOW));
          }
 
-         this.previousLink = var3.link();
+         this.previousLink = message.link();
          return true;
       } else {
-         return var4;
+         return context;
       }
    }
 
    public interface Output {
-      void acceptMessage(int var1, LoggedChatMessage.Player var2);
+      void acceptMessage(int id, LoggedChatMessage.Player message);
 
-      void acceptDivider(Component var1);
+      void acceptDivider(Component text);
    }
 }

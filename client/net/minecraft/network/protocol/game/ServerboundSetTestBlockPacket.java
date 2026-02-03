@@ -11,19 +11,16 @@ import net.minecraft.world.level.block.state.properties.TestBlockMode;
 public record ServerboundSetTestBlockPacket(BlockPos position, TestBlockMode mode, String message) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundSetTestBlockPacket> STREAM_CODEC;
 
-   public ServerboundSetTestBlockPacket(BlockPos var1, TestBlockMode var2, String var3) {
+   public ServerboundSetTestBlockPacket {
       super();
-      this.position = var1;
-      this.mode = var2;
-      this.message = var3;
    }
 
    public PacketType<ServerboundSetTestBlockPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_TEST_BLOCK;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSetTestBlock(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleSetTestBlock(this);
    }
 
    static {

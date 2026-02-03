@@ -15,40 +15,30 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.players.NameAndId;
 
 public record ServerStatus(Component description, Optional<Players> players, Optional<Version> version, Optional<Favicon> favicon, boolean enforcesSecureChat) {
-   public static final Codec<ServerStatus> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description), ServerStatus.Players.CODEC.lenientOptionalFieldOf("players").forGetter(ServerStatus::players), ServerStatus.Version.CODEC.lenientOptionalFieldOf("version").forGetter(ServerStatus::version), ServerStatus.Favicon.CODEC.lenientOptionalFieldOf("favicon").forGetter(ServerStatus::favicon), Codec.BOOL.lenientOptionalFieldOf("enforcesSecureChat", false).forGetter(ServerStatus::enforcesSecureChat)).apply(var0, ServerStatus::new));
+   public static final Codec<ServerStatus> CODEC = RecordCodecBuilder.create((i) -> i.group(ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description), ServerStatus.Players.CODEC.lenientOptionalFieldOf("players").forGetter(ServerStatus::players), ServerStatus.Version.CODEC.lenientOptionalFieldOf("version").forGetter(ServerStatus::version), ServerStatus.Favicon.CODEC.lenientOptionalFieldOf("favicon").forGetter(ServerStatus::favicon), Codec.BOOL.lenientOptionalFieldOf("enforcesSecureChat", false).forGetter(ServerStatus::enforcesSecureChat)).apply(i, ServerStatus::new));
 
-   public ServerStatus(Component var1, Optional<Players> var2, Optional<Version> var3, Optional<Favicon> var4, boolean var5) {
+   public ServerStatus {
       super();
-      this.description = var1;
-      this.players = var2;
-      this.version = var3;
-      this.favicon = var4;
-      this.enforcesSecureChat = var5;
    }
 
    public static record Players(int max, int online, List<NameAndId> sample) {
-      public static final Codec<Players> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("max").forGetter(Players::max), Codec.INT.fieldOf("online").forGetter(Players::online), NameAndId.CODEC.listOf().lenientOptionalFieldOf("sample", List.of()).forGetter(Players::sample)).apply(var0, Players::new));
+      public static final Codec<Players> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.INT.fieldOf("max").forGetter(Players::max), Codec.INT.fieldOf("online").forGetter(Players::online), NameAndId.CODEC.listOf().lenientOptionalFieldOf("sample", List.of()).forGetter(Players::sample)).apply(i, Players::new));
 
-      public Players(int var1, int var2, List<NameAndId> var3) {
+      public Players {
          super();
-         this.max = var1;
-         this.online = var2;
-         this.sample = var3;
       }
    }
 
    public static record Version(String name, int protocol) {
-      public static final Codec<Version> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("name").forGetter(Version::name), Codec.INT.fieldOf("protocol").forGetter(Version::protocol)).apply(var0, Version::new));
+      public static final Codec<Version> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.STRING.fieldOf("name").forGetter(Version::name), Codec.INT.fieldOf("protocol").forGetter(Version::protocol)).apply(i, Version::new));
 
-      public Version(String var1, int var2) {
+      public Version {
          super();
-         this.name = var1;
-         this.protocol = var2;
       }
 
       public static Version current() {
-         WorldVersion var0 = SharedConstants.getCurrentVersion();
-         return new Version(var0.name(), var0.protocolVersion());
+         WorldVersion version = SharedConstants.getCurrentVersion();
+         return new Version(version.name(), version.protocolVersion());
       }
    }
 
@@ -56,26 +46,25 @@ public record ServerStatus(Component description, Optional<Players> players, Opt
       private static final String PREFIX = "data:image/png;base64,";
       public static final Codec<Favicon> CODEC;
 
-      public Favicon(byte[] var1) {
+      public Favicon {
          super();
-         this.iconBytes = var1;
       }
 
       static {
-         CODEC = Codec.STRING.comapFlatMap((var0) -> {
-            if (!var0.startsWith("data:image/png;base64,")) {
+         CODEC = Codec.STRING.comapFlatMap((string) -> {
+            if (!string.startsWith("data:image/png;base64,")) {
                return DataResult.error(() -> "Unknown format");
             } else {
                try {
-                  String var1 = var0.substring("data:image/png;base64,".length()).replaceAll("\n", "");
-                  byte[] var2 = Base64.getDecoder().decode(var1.getBytes(StandardCharsets.UTF_8));
-                  return DataResult.success(new Favicon(var2));
+                  String base64 = string.substring("data:image/png;base64,".length()).replaceAll("\n", "");
+                  byte[] iconBytes = Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8));
+                  return DataResult.success(new Favicon(iconBytes));
                } catch (IllegalArgumentException var3) {
                   return DataResult.error(() -> "Malformed base64 server icon");
                }
             }
-         }, (var0) -> {
-            String var10000 = new String(Base64.getEncoder().encode(var0.iconBytes), StandardCharsets.UTF_8);
+         }, (favicon) -> {
+            String var10000 = new String(Base64.getEncoder().encode(favicon.iconBytes), StandardCharsets.UTF_8);
             return "data:image/png;base64," + var10000;
          });
       }

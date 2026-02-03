@@ -10,20 +10,20 @@ import org.slf4j.Logger;
 public interface TaskChainer {
    Logger LOGGER = LogUtils.getLogger();
 
-   static TaskChainer immediate(final Executor var0) {
+   static TaskChainer immediate(final Executor executor) {
       return new TaskChainer() {
-         public <T> void append(CompletableFuture<T> var1, Consumer<T> var2) {
-            var1.thenAcceptAsync(var2, var0).exceptionally((var0x) -> {
-               LOGGER.error("Task failed", var0x);
+         public <T> void append(final CompletableFuture<T> preparation, final Consumer<T> chainedTask) {
+            preparation.thenAcceptAsync(chainedTask, executor).exceptionally((e) -> {
+               LOGGER.error("Task failed", e);
                return null;
             });
          }
       };
    }
 
-   default void append(Runnable var1) {
-      this.append(CompletableFuture.completedFuture((Object)null), (var1x) -> var1.run());
+   default void append(final Runnable task) {
+      this.append(CompletableFuture.completedFuture((Object)null), (ignored) -> task.run());
    }
 
-   <T> void append(CompletableFuture<T> var1, Consumer<T> var2);
+   <T> void append(CompletableFuture<T> preparation, Consumer<T> chainedTask);
 }

@@ -30,47 +30,47 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
    public static final byte DEFAULT_ZOOM = 2;
    public static final int DEFAULT_SEARCH_RADIUS = 50;
    public static final boolean DEFAULT_SKIP_EXISTING = true;
-   public static final MapCodec<ExplorationMapFunction> CODEC;
+   public static final MapCodec<ExplorationMapFunction> MAP_CODEC;
    private final TagKey<Structure> destination;
    private final Holder<MapDecorationType> mapDecoration;
    private final byte zoom;
    private final int searchRadius;
    private final boolean skipKnownStructures;
 
-   ExplorationMapFunction(List<LootItemCondition> var1, TagKey<Structure> var2, Holder<MapDecorationType> var3, byte var4, int var5, boolean var6) {
-      super(var1);
-      this.destination = var2;
-      this.mapDecoration = var3;
-      this.zoom = var4;
-      this.searchRadius = var5;
-      this.skipKnownStructures = var6;
+   private ExplorationMapFunction(final List<LootItemCondition> predicates, final TagKey<Structure> destination, final Holder<MapDecorationType> mapDecoration, final byte zoom, final int searchRadius, final boolean skipKnownStructures) {
+      super(predicates);
+      this.destination = destination;
+      this.mapDecoration = mapDecoration;
+      this.zoom = zoom;
+      this.searchRadius = searchRadius;
+      this.skipKnownStructures = skipKnownStructures;
    }
 
-   public LootItemFunctionType<ExplorationMapFunction> getType() {
-      return LootItemFunctions.EXPLORATION_MAP;
+   public MapCodec<ExplorationMapFunction> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Set.of(LootContextParams.ORIGIN);
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      if (!var1.is(Items.MAP)) {
-         return var1;
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      if (!itemStack.is(Items.MAP)) {
+         return itemStack;
       } else {
-         Vec3 var3 = (Vec3)var2.getOptionalParameter(LootContextParams.ORIGIN);
-         if (var3 != null) {
-            ServerLevel var4 = var2.getLevel();
-            BlockPos var5 = var4.findNearestMapStructure(this.destination, BlockPos.containing(var3), this.searchRadius, this.skipKnownStructures);
-            if (var5 != null) {
-               ItemStack var6 = MapItem.create(var4, var5.getX(), var5.getZ(), this.zoom, true, true);
-               MapItem.renderBiomePreviewMap(var4, var6);
-               MapItemSavedData.addTargetDecoration(var6, var5, "+", this.mapDecoration);
-               return var6;
+         Vec3 lootPos = (Vec3)context.getOptionalParameter(LootContextParams.ORIGIN);
+         if (lootPos != null) {
+            ServerLevel level = context.getLevel();
+            BlockPos nearestMapStructure = level.findNearestMapStructure(this.destination, BlockPos.containing(lootPos), this.searchRadius, this.skipKnownStructures);
+            if (nearestMapStructure != null) {
+               ItemStack map = MapItem.create(level, nearestMapStructure.getX(), nearestMapStructure.getZ(), this.zoom, true, true);
+               MapItem.renderBiomePreviewMap(level, map);
+               MapItemSavedData.addTargetDecoration(map, nearestMapStructure, "+", this.mapDecoration);
+               return map;
             }
          }
 
-         return var1;
+         return itemStack;
       }
    }
 
@@ -81,7 +81,7 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
    static {
       DEFAULT_DESTINATION = StructureTags.ON_TREASURE_MAPS;
       DEFAULT_DECORATION = MapDecorationTypes.WOODLAND_MANSION;
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(TagKey.codec(Registries.STRUCTURE).optionalFieldOf("destination", DEFAULT_DESTINATION).forGetter((var0x) -> var0x.destination), MapDecorationType.CODEC.optionalFieldOf("decoration", DEFAULT_DECORATION).forGetter((var0x) -> var0x.mapDecoration), Codec.BYTE.optionalFieldOf("zoom", (byte)2).forGetter((var0x) -> var0x.zoom), Codec.INT.optionalFieldOf("search_radius", 50).forGetter((var0x) -> var0x.searchRadius), Codec.BOOL.optionalFieldOf("skip_existing_chunks", true).forGetter((var0x) -> var0x.skipKnownStructures))).apply(var0, ExplorationMapFunction::new));
+      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(TagKey.codec(Registries.STRUCTURE).optionalFieldOf("destination", DEFAULT_DESTINATION).forGetter((f) -> f.destination), MapDecorationType.CODEC.optionalFieldOf("decoration", DEFAULT_DECORATION).forGetter((f) -> f.mapDecoration), Codec.BYTE.optionalFieldOf("zoom", (byte)2).forGetter((f) -> f.zoom), Codec.INT.optionalFieldOf("search_radius", 50).forGetter((f) -> f.searchRadius), Codec.BOOL.optionalFieldOf("skip_existing_chunks", true).forGetter((f) -> f.skipKnownStructures))).apply(i, ExplorationMapFunction::new));
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
@@ -104,38 +104,33 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
          return this;
       }
 
-      public Builder setDestination(TagKey<Structure> var1) {
-         this.destination = var1;
+      public Builder setDestination(final TagKey<Structure> destination) {
+         this.destination = destination;
          return this;
       }
 
-      public Builder setMapDecoration(Holder<MapDecorationType> var1) {
-         this.mapDecoration = var1;
+      public Builder setMapDecoration(final Holder<MapDecorationType> mapDecoration) {
+         this.mapDecoration = mapDecoration;
          return this;
       }
 
-      public Builder setZoom(byte var1) {
-         this.zoom = var1;
+      public Builder setZoom(final byte zoom) {
+         this.zoom = zoom;
          return this;
       }
 
-      public Builder setSearchRadius(int var1) {
-         this.searchRadius = var1;
+      public Builder setSearchRadius(final int searchRadius) {
+         this.searchRadius = searchRadius;
          return this;
       }
 
-      public Builder setSkipKnownStructures(boolean var1) {
-         this.skipKnownStructures = var1;
+      public Builder setSkipKnownStructures(final boolean skipKnownStructures) {
+         this.skipKnownStructures = skipKnownStructures;
          return this;
       }
 
       public LootItemFunction build() {
          return new ExplorationMapFunction(this.getConditions(), this.destination, this.mapDecoration, this.zoom, this.searchRadius, this.skipKnownStructures);
-      }
-
-      // $FF: synthetic method
-      protected LootItemConditionalFunction.Builder getThis() {
-         return this.getThis();
       }
    }
 }

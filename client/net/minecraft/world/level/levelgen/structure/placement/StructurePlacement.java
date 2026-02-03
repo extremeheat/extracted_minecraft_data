@@ -27,17 +27,17 @@ public abstract class StructurePlacement {
    private final int salt;
    private final Optional<ExclusionZone> exclusionZone;
 
-   protected static <S extends StructurePlacement> Products.P5<RecordCodecBuilder.Mu<S>, Vec3i, FrequencyReductionMethod, Float, Integer, Optional<ExclusionZone>> placementCodec(RecordCodecBuilder.Instance<S> var0) {
-      return var0.group(Vec3i.offsetCodec(16).optionalFieldOf("locate_offset", Vec3i.ZERO).forGetter(StructurePlacement::locateOffset), StructurePlacement.FrequencyReductionMethod.CODEC.optionalFieldOf("frequency_reduction_method", StructurePlacement.FrequencyReductionMethod.DEFAULT).forGetter(StructurePlacement::frequencyReductionMethod), Codec.floatRange(0.0F, 1.0F).optionalFieldOf("frequency", 1.0F).forGetter(StructurePlacement::frequency), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("salt").forGetter(StructurePlacement::salt), StructurePlacement.ExclusionZone.CODEC.optionalFieldOf("exclusion_zone").forGetter(StructurePlacement::exclusionZone));
+   protected static <S extends StructurePlacement> Products.P5<RecordCodecBuilder.Mu<S>, Vec3i, FrequencyReductionMethod, Float, Integer, Optional<ExclusionZone>> placementCodec(final RecordCodecBuilder.Instance<S> i) {
+      return i.group(Vec3i.offsetCodec(16).optionalFieldOf("locate_offset", Vec3i.ZERO).forGetter(StructurePlacement::locateOffset), StructurePlacement.FrequencyReductionMethod.CODEC.optionalFieldOf("frequency_reduction_method", StructurePlacement.FrequencyReductionMethod.DEFAULT).forGetter(StructurePlacement::frequencyReductionMethod), Codec.floatRange(0.0F, 1.0F).optionalFieldOf("frequency", 1.0F).forGetter(StructurePlacement::frequency), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("salt").forGetter(StructurePlacement::salt), StructurePlacement.ExclusionZone.CODEC.optionalFieldOf("exclusion_zone").forGetter(StructurePlacement::exclusionZone));
    }
 
-   protected StructurePlacement(Vec3i var1, FrequencyReductionMethod var2, float var3, int var4, Optional<ExclusionZone> var5) {
+   protected StructurePlacement(final Vec3i locateOffset, final FrequencyReductionMethod frequencyReductionMethod, final float frequency, final int salt, final Optional<ExclusionZone> exclusionZone) {
       super();
-      this.locateOffset = var1;
-      this.frequencyReductionMethod = var2;
-      this.frequency = var3;
-      this.salt = var4;
-      this.exclusionZone = var5;
+      this.locateOffset = locateOffset;
+      this.frequencyReductionMethod = frequencyReductionMethod;
+      this.frequency = frequency;
+      this.salt = salt;
+      this.exclusionZone = exclusionZone;
    }
 
    protected Vec3i locateOffset() {
@@ -60,51 +60,51 @@ public abstract class StructurePlacement {
       return this.exclusionZone;
    }
 
-   public boolean isStructureChunk(ChunkGeneratorStructureState var1, int var2, int var3) {
-      return this.isPlacementChunk(var1, var2, var3) && this.applyAdditionalChunkRestrictions(var2, var3, var1.getLevelSeed()) && this.applyInteractionsWithOtherStructures(var1, var2, var3);
+   public boolean isStructureChunk(final ChunkGeneratorStructureState state, final int sourceX, final int sourceZ) {
+      return this.isPlacementChunk(state, sourceX, sourceZ) && this.applyAdditionalChunkRestrictions(sourceX, sourceZ, state.getLevelSeed()) && this.applyInteractionsWithOtherStructures(state, sourceX, sourceZ);
    }
 
-   public boolean applyAdditionalChunkRestrictions(int var1, int var2, long var3) {
-      return !(this.frequency < 1.0F) || this.frequencyReductionMethod.shouldGenerate(var3, this.salt, var1, var2, this.frequency);
+   public boolean applyAdditionalChunkRestrictions(final int sourceX, final int sourceZ, final long levelSeed) {
+      return !(this.frequency < 1.0F) || this.frequencyReductionMethod.shouldGenerate(levelSeed, this.salt, sourceX, sourceZ, this.frequency);
    }
 
-   public boolean applyInteractionsWithOtherStructures(ChunkGeneratorStructureState var1, int var2, int var3) {
-      return !this.exclusionZone.isPresent() || !((ExclusionZone)this.exclusionZone.get()).isPlacementForbidden(var1, var2, var3);
+   public boolean applyInteractionsWithOtherStructures(final ChunkGeneratorStructureState state, final int sourceX, final int sourceZ) {
+      return !this.exclusionZone.isPresent() || !((ExclusionZone)this.exclusionZone.get()).isPlacementForbidden(state, sourceX, sourceZ);
    }
 
-   protected abstract boolean isPlacementChunk(ChunkGeneratorStructureState var1, int var2, int var3);
+   protected abstract boolean isPlacementChunk(final ChunkGeneratorStructureState state, final int sourceX, final int sourceZ);
 
-   public BlockPos getLocatePos(ChunkPos var1) {
-      return (new BlockPos(var1.getMinBlockX(), 0, var1.getMinBlockZ())).offset(this.locateOffset());
+   public BlockPos getLocatePos(final ChunkPos chunkPos) {
+      return (new BlockPos(chunkPos.getMinBlockX(), 0, chunkPos.getMinBlockZ())).offset(this.locateOffset());
    }
 
    public abstract StructurePlacementType<?> type();
 
-   private static boolean probabilityReducer(long var0, int var2, int var3, int var4, float var5) {
-      WorldgenRandom var6 = new WorldgenRandom(new LegacyRandomSource(0L));
-      var6.setLargeFeatureWithSalt(var0, var2, var3, var4);
-      return var6.nextFloat() < var5;
+   private static boolean probabilityReducer(final long seed, final int salt, final int sourceX, final int sourceZ, final float probability) {
+      WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
+      random.setLargeFeatureWithSalt(seed, salt, sourceX, sourceZ);
+      return random.nextFloat() < probability;
    }
 
-   private static boolean legacyProbabilityReducerWithDouble(long var0, int var2, int var3, int var4, float var5) {
-      WorldgenRandom var6 = new WorldgenRandom(new LegacyRandomSource(0L));
-      var6.setLargeFeatureSeed(var0, var3, var4);
-      return var6.nextDouble() < (double)var5;
+   private static boolean legacyProbabilityReducerWithDouble(final long seed, final int salt, final int sourceX, final int sourceZ, final float probability) {
+      WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
+      random.setLargeFeatureSeed(seed, sourceX, sourceZ);
+      return random.nextDouble() < (double)probability;
    }
 
-   private static boolean legacyArbitrarySaltProbabilityReducer(long var0, int var2, int var3, int var4, float var5) {
-      WorldgenRandom var6 = new WorldgenRandom(new LegacyRandomSource(0L));
-      var6.setLargeFeatureWithSalt(var0, var3, var4, 10387320);
-      return var6.nextFloat() < var5;
+   private static boolean legacyArbitrarySaltProbabilityReducer(final long seed, final int salt, final int sourceX, final int sourceZ, final float probability) {
+      WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
+      random.setLargeFeatureWithSalt(seed, sourceX, sourceZ, 10387320);
+      return random.nextFloat() < probability;
    }
 
-   private static boolean legacyPillagerOutpostReducer(long var0, int var2, int var3, int var4, float var5) {
-      int var6 = var3 >> 4;
-      int var7 = var4 >> 4;
-      WorldgenRandom var8 = new WorldgenRandom(new LegacyRandomSource(0L));
-      var8.setSeed((long)(var6 ^ var7 << 4) ^ var0);
-      var8.nextInt();
-      return var8.nextInt((int)(1.0F / var5)) == 0;
+   private static boolean legacyPillagerOutpostReducer(final long seed, final int salt, final int sourceX, final int sourceZ, final float probability) {
+      int cx = sourceX >> 4;
+      int cz = sourceZ >> 4;
+      WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
+      random.setSeed((long)(cx ^ cz << 4) ^ seed);
+      random.nextInt();
+      return random.nextInt((int)(1.0F / probability)) == 0;
    }
 
    static {
@@ -114,16 +114,14 @@ public abstract class StructurePlacement {
    /** @deprecated */
    @Deprecated
    public static record ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
-      public static final Codec<ExclusionZone> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false).fieldOf("other_set").forGetter(ExclusionZone::otherSet), Codec.intRange(1, 16).fieldOf("chunk_count").forGetter(ExclusionZone::chunkCount)).apply(var0, ExclusionZone::new));
+      public static final Codec<ExclusionZone> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false).fieldOf("other_set").forGetter(ExclusionZone::otherSet), Codec.intRange(1, 16).fieldOf("chunk_count").forGetter(ExclusionZone::chunkCount)).apply(i, ExclusionZone::new));
 
-      public ExclusionZone(Holder<StructureSet> var1, int var2) {
+      public ExclusionZone {
          super();
-         this.otherSet = var1;
-         this.chunkCount = var2;
       }
 
-      boolean isPlacementForbidden(ChunkGeneratorStructureState var1, int var2, int var3) {
-         return var1.hasStructureChunkInRange(this.otherSet, var2, var3, this.chunkCount);
+      private boolean isPlacementForbidden(final ChunkGeneratorStructureState state, final int sourceX, final int sourceZ) {
+         return state.hasStructureChunkInRange(this.otherSet, sourceX, sourceZ, this.chunkCount);
       }
    }
 
@@ -137,13 +135,13 @@ public abstract class StructurePlacement {
       private final String name;
       private final FrequencyReducer reducer;
 
-      private FrequencyReductionMethod(final String var3, final FrequencyReducer var4) {
-         this.name = var3;
-         this.reducer = var4;
+      private FrequencyReductionMethod(final String name, final FrequencyReducer reducer) {
+         this.name = name;
+         this.reducer = reducer;
       }
 
-      public boolean shouldGenerate(long var1, int var3, int var4, int var5, float var6) {
-         return this.reducer.shouldGenerate(var1, var3, var4, var5, var6);
+      public boolean shouldGenerate(final long seed, final int salt, final int sourceX, final int sourceZ, final float probability) {
+         return this.reducer.shouldGenerate(seed, salt, sourceX, sourceZ, probability);
       }
 
       public String getSerializedName() {
@@ -158,6 +156,6 @@ public abstract class StructurePlacement {
 
    @FunctionalInterface
    public interface FrequencyReducer {
-      boolean shouldGenerate(long var1, int var3, int var4, int var5, float var6);
+      boolean shouldGenerate(long seed, final int salt, final int sourceX, final int sourceZ, float probability);
    }
 }

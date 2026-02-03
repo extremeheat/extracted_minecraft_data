@@ -19,10 +19,10 @@ public class JukeboxSongPlayer {
    private final BlockPos blockPos;
    private final OnSongChanged onSongChanged;
 
-   public JukeboxSongPlayer(OnSongChanged var1, BlockPos var2) {
+   public JukeboxSongPlayer(final OnSongChanged onSongChanged, final BlockPos blockPos) {
       super();
-      this.onSongChanged = var1;
-      this.blockPos = var2;
+      this.onSongChanged = onSongChanged;
+      this.blockPos = blockPos;
    }
 
    public boolean isPlaying() {
@@ -37,39 +37,39 @@ public class JukeboxSongPlayer {
       return this.ticksSinceSongStarted;
    }
 
-   public void setSongWithoutPlaying(Holder<JukeboxSong> var1, long var2) {
-      if (!((JukeboxSong)var1.value()).hasFinished(var2)) {
-         this.song = var1;
-         this.ticksSinceSongStarted = var2;
+   public void setSongWithoutPlaying(final Holder<JukeboxSong> song, final long ticksSinceSongStarted) {
+      if (!((JukeboxSong)song.value()).hasFinished(ticksSinceSongStarted)) {
+         this.song = song;
+         this.ticksSinceSongStarted = ticksSinceSongStarted;
       }
    }
 
-   public void play(LevelAccessor var1, Holder<JukeboxSong> var2) {
-      this.song = var2;
+   public void play(final LevelAccessor level, final Holder<JukeboxSong> song) {
+      this.song = song;
       this.ticksSinceSongStarted = 0L;
-      int var3 = var1.registryAccess().lookupOrThrow(Registries.JUKEBOX_SONG).getId(this.song.value());
-      var1.levelEvent((Entity)null, 1010, this.blockPos, var3);
+      int songId = level.registryAccess().lookupOrThrow(Registries.JUKEBOX_SONG).getId(this.song.value());
+      level.levelEvent((Entity)null, 1010, this.blockPos, songId);
       this.onSongChanged.notifyChange();
    }
 
-   public void stop(LevelAccessor var1, @Nullable BlockState var2) {
+   public void stop(final LevelAccessor level, final @Nullable BlockState blockState) {
       if (this.song != null) {
          this.song = null;
          this.ticksSinceSongStarted = 0L;
-         var1.gameEvent(GameEvent.JUKEBOX_STOP_PLAY, (BlockPos)this.blockPos, (GameEvent.Context)GameEvent.Context.of(var2));
-         var1.levelEvent(1011, this.blockPos, 0);
+         level.gameEvent(GameEvent.JUKEBOX_STOP_PLAY, (BlockPos)this.blockPos, (GameEvent.Context)GameEvent.Context.of(blockState));
+         level.levelEvent(1011, this.blockPos, 0);
          this.onSongChanged.notifyChange();
       }
    }
 
-   public void tick(LevelAccessor var1, @Nullable BlockState var2) {
+   public void tick(final LevelAccessor level, final @Nullable BlockState blockState) {
       if (this.song != null) {
          if (((JukeboxSong)this.song.value()).hasFinished(this.ticksSinceSongStarted)) {
-            this.stop(var1, var2);
+            this.stop(level, blockState);
          } else {
             if (this.shouldEmitJukeboxPlayingEvent()) {
-               var1.gameEvent(GameEvent.JUKEBOX_PLAY, (BlockPos)this.blockPos, (GameEvent.Context)GameEvent.Context.of(var2));
-               spawnMusicParticles(var1, this.blockPos);
+               level.gameEvent(GameEvent.JUKEBOX_PLAY, (BlockPos)this.blockPos, (GameEvent.Context)GameEvent.Context.of(blockState));
+               spawnMusicParticles(level, this.blockPos);
             }
 
             ++this.ticksSinceSongStarted;
@@ -81,11 +81,11 @@ public class JukeboxSongPlayer {
       return this.ticksSinceSongStarted % 20L == 0L;
    }
 
-   private static void spawnMusicParticles(LevelAccessor var0, BlockPos var1) {
-      if (var0 instanceof ServerLevel var2) {
-         Vec3 var3 = Vec3.atBottomCenterOf(var1).add(0.0, 1.2000000476837158, 0.0);
-         float var4 = (float)var0.getRandom().nextInt(4) / 24.0F;
-         var2.sendParticles(ParticleTypes.NOTE, var3.x(), var3.y(), var3.z(), 0, (double)var4, 0.0, 0.0, 1.0);
+   private static void spawnMusicParticles(final LevelAccessor level, final BlockPos blockPos) {
+      if (level instanceof ServerLevel serverLevel) {
+         Vec3 pos = Vec3.atBottomCenterOf(blockPos).add(0.0, 1.2000000476837158, 0.0);
+         float randomColor = (float)level.getRandom().nextInt(4) / 24.0F;
+         serverLevel.sendParticles(ParticleTypes.NOTE, pos.x(), pos.y(), pos.z(), 0, (double)randomColor, 0.0, 0.0, 1.0);
       }
 
    }

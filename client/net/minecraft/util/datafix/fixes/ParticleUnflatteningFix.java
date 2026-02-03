@@ -24,210 +24,210 @@ import org.slf4j.Logger;
 public class ParticleUnflatteningFix extends DataFix {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public ParticleUnflatteningFix(Schema var1) {
-      super(var1, true);
+   public ParticleUnflatteningFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.PARTICLE);
-      Type var2 = this.getOutputSchema().getType(References.PARTICLE);
-      return this.writeFixAndRead("ParticleUnflatteningFix", var1, var2, this::fix);
+      Type<?> oldType = this.getInputSchema().getType(References.PARTICLE);
+      Type<?> newType = this.getOutputSchema().getType(References.PARTICLE);
+      return this.writeFixAndRead("ParticleUnflatteningFix", oldType, newType, this::fix);
    }
 
-   private <T> Dynamic<T> fix(Dynamic<T> var1) {
-      Optional var2 = var1.asString().result();
-      if (var2.isEmpty()) {
-         return var1;
+   private <T> Dynamic<T> fix(final Dynamic<T> input) {
+      Optional<String> maybeString = input.asString().result();
+      if (maybeString.isEmpty()) {
+         return input;
       } else {
-         String var3 = (String)var2.get();
-         String[] var4 = var3.split(" ", 2);
-         String var5 = NamespacedSchema.ensureNamespaced(var4[0]);
-         Dynamic var6 = var1.createMap(Map.of(var1.createString("type"), var1.createString(var5)));
+         String particleDescription = (String)maybeString.get();
+         String[] parts = particleDescription.split(" ", 2);
+         String id = NamespacedSchema.ensureNamespaced(parts[0]);
+         Dynamic<T> result = input.createMap(Map.of(input.createString("type"), input.createString(id)));
          Dynamic var10000;
-         switch (var5) {
+         switch (id) {
             case "minecraft:item":
-               var10000 = var4.length > 1 ? this.updateItem(var6, var4[1]) : var6;
+               var10000 = parts.length > 1 ? this.updateItem(result, parts[1]) : result;
                break;
             case "minecraft:block":
             case "minecraft:block_marker":
             case "minecraft:falling_dust":
             case "minecraft:dust_pillar":
-               var10000 = var4.length > 1 ? this.updateBlock(var6, var4[1]) : var6;
+               var10000 = parts.length > 1 ? this.updateBlock(result, parts[1]) : result;
                break;
             case "minecraft:dust":
-               var10000 = var4.length > 1 ? this.updateDust(var6, var4[1]) : var6;
+               var10000 = parts.length > 1 ? this.updateDust(result, parts[1]) : result;
                break;
             case "minecraft:dust_color_transition":
-               var10000 = var4.length > 1 ? this.updateDustTransition(var6, var4[1]) : var6;
+               var10000 = parts.length > 1 ? this.updateDustTransition(result, parts[1]) : result;
                break;
             case "minecraft:sculk_charge":
-               var10000 = var4.length > 1 ? this.updateSculkCharge(var6, var4[1]) : var6;
+               var10000 = parts.length > 1 ? this.updateSculkCharge(result, parts[1]) : result;
                break;
             case "minecraft:vibration":
-               var10000 = var4.length > 1 ? this.updateVibration(var6, var4[1]) : var6;
+               var10000 = parts.length > 1 ? this.updateVibration(result, parts[1]) : result;
                break;
             case "minecraft:shriek":
-               var10000 = var4.length > 1 ? this.updateShriek(var6, var4[1]) : var6;
+               var10000 = parts.length > 1 ? this.updateShriek(result, parts[1]) : result;
                break;
             default:
-               var10000 = var6;
+               var10000 = result;
          }
 
          return var10000;
       }
    }
 
-   private <T> Dynamic<T> updateItem(Dynamic<T> var1, String var2) {
-      int var3 = var2.indexOf("{");
-      Dynamic var4 = var1.createMap(Map.of(var1.createString("Count"), var1.createInt(1)));
-      if (var3 == -1) {
-         var4 = var4.set("id", var1.createString(var2));
+   private <T> Dynamic<T> updateItem(final Dynamic<T> result, final String contents) {
+      int tagPartStart = contents.indexOf("{");
+      Dynamic<T> itemStack = result.createMap(Map.of(result.createString("Count"), result.createInt(1)));
+      if (tagPartStart == -1) {
+         itemStack = itemStack.set("id", result.createString(contents));
       } else {
-         var4 = var4.set("id", var1.createString(var2.substring(0, var3)));
-         Dynamic var5 = parseTag(var1.getOps(), var2.substring(var3));
-         if (var5 != null) {
-            var4 = var4.set("tag", var5);
+         itemStack = itemStack.set("id", result.createString(contents.substring(0, tagPartStart)));
+         Dynamic<T> itemTag = parseTag(result.getOps(), contents.substring(tagPartStart));
+         if (itemTag != null) {
+            itemStack = itemStack.set("tag", itemTag);
          }
       }
 
-      return var1.set("item", var4);
+      return result.set("item", itemStack);
    }
 
-   private static <T> @Nullable Dynamic<T> parseTag(DynamicOps<T> var0, String var1) {
+   private static <T> @Nullable Dynamic<T> parseTag(final DynamicOps<T> ops, final String contents) {
       try {
-         return new Dynamic(var0, TagParser.create(var0).parseFully(var1));
-      } catch (Exception var3) {
-         LOGGER.warn("Failed to parse tag: {}", var1, var3);
+         return new Dynamic(ops, TagParser.create(ops).parseFully(contents));
+      } catch (Exception e) {
+         LOGGER.warn("Failed to parse tag: {}", contents, e);
          return null;
       }
    }
 
-   private <T> Dynamic<T> updateBlock(Dynamic<T> var1, String var2) {
-      int var3 = var2.indexOf("[");
-      Dynamic var4 = var1.emptyMap();
-      if (var3 == -1) {
-         var4 = var4.set("Name", var1.createString(NamespacedSchema.ensureNamespaced(var2)));
+   private <T> Dynamic<T> updateBlock(final Dynamic<T> result, final String contents) {
+      int statePartStart = contents.indexOf("[");
+      Dynamic<T> blockState = result.emptyMap();
+      if (statePartStart == -1) {
+         blockState = blockState.set("Name", result.createString(NamespacedSchema.ensureNamespaced(contents)));
       } else {
-         var4 = var4.set("Name", var1.createString(NamespacedSchema.ensureNamespaced(var2.substring(0, var3))));
-         Map var5 = parseBlockProperties(var1, var2.substring(var3));
-         if (!var5.isEmpty()) {
-            var4 = var4.set("Properties", var1.createMap(var5));
+         blockState = blockState.set("Name", result.createString(NamespacedSchema.ensureNamespaced(contents.substring(0, statePartStart))));
+         Map<Dynamic<T>, Dynamic<T>> properties = parseBlockProperties(result, contents.substring(statePartStart));
+         if (!properties.isEmpty()) {
+            blockState = blockState.set("Properties", result.createMap(properties));
          }
       }
 
-      return var1.set("block_state", var4);
+      return result.set("block_state", blockState);
    }
 
-   private static <T> Map<Dynamic<T>, Dynamic<T>> parseBlockProperties(Dynamic<T> var0, String var1) {
+   private static <T> Map<Dynamic<T>, Dynamic<T>> parseBlockProperties(final Dynamic<T> dynamic, final String contents) {
       try {
-         HashMap var2 = new HashMap();
-         StringReader var3 = new StringReader(var1);
-         var3.expect('[');
-         var3.skipWhitespace();
+         Map<Dynamic<T>, Dynamic<T>> result = new HashMap();
+         StringReader reader = new StringReader(contents);
+         reader.expect('[');
+         reader.skipWhitespace();
 
-         while(var3.canRead() && var3.peek() != ']') {
-            var3.skipWhitespace();
-            String var4 = var3.readString();
-            var3.skipWhitespace();
-            var3.expect('=');
-            var3.skipWhitespace();
-            String var5 = var3.readString();
-            var3.skipWhitespace();
-            var2.put(var0.createString(var4), var0.createString(var5));
-            if (var3.canRead()) {
-               if (var3.peek() != ',') {
+         while(reader.canRead() && reader.peek() != ']') {
+            reader.skipWhitespace();
+            String key = reader.readString();
+            reader.skipWhitespace();
+            reader.expect('=');
+            reader.skipWhitespace();
+            String value = reader.readString();
+            reader.skipWhitespace();
+            result.put(dynamic.createString(key), dynamic.createString(value));
+            if (reader.canRead()) {
+               if (reader.peek() != ',') {
                   break;
                }
 
-               var3.skip();
+               reader.skip();
             }
          }
 
-         var3.expect(']');
-         return var2;
-      } catch (Exception var6) {
-         LOGGER.warn("Failed to parse block properties: {}", var1, var6);
+         reader.expect(']');
+         return result;
+      } catch (Exception e) {
+         LOGGER.warn("Failed to parse block properties: {}", contents, e);
          return Map.of();
       }
    }
 
-   private static <T> Dynamic<T> readVector(Dynamic<T> var0, StringReader var1) throws CommandSyntaxException {
-      float var2 = var1.readFloat();
-      var1.expect(' ');
-      float var3 = var1.readFloat();
-      var1.expect(' ');
-      float var4 = var1.readFloat();
-      Stream var10001 = Stream.of(var2, var3, var4);
-      Objects.requireNonNull(var0);
-      return var0.createList(var10001.map(var0::createFloat));
+   private static <T> Dynamic<T> readVector(final Dynamic<T> result, final StringReader reader) throws CommandSyntaxException {
+      float x = reader.readFloat();
+      reader.expect(' ');
+      float y = reader.readFloat();
+      reader.expect(' ');
+      float z = reader.readFloat();
+      Stream var10001 = Stream.of(x, y, z);
+      Objects.requireNonNull(result);
+      return result.createList(var10001.map(result::createFloat));
    }
 
-   private <T> Dynamic<T> updateDust(Dynamic<T> var1, String var2) {
+   private <T> Dynamic<T> updateDust(final Dynamic<T> result, final String contents) {
       try {
-         StringReader var3 = new StringReader(var2);
-         Dynamic var4 = readVector(var1, var3);
-         var3.expect(' ');
-         float var5 = var3.readFloat();
-         return var1.set("color", var4).set("scale", var1.createFloat(var5));
-      } catch (Exception var6) {
-         LOGGER.warn("Failed to parse particle options: {}", var2, var6);
-         return var1;
+         StringReader reader = new StringReader(contents);
+         Dynamic<T> vector = readVector(result, reader);
+         reader.expect(' ');
+         float scale = reader.readFloat();
+         return result.set("color", vector).set("scale", result.createFloat(scale));
+      } catch (Exception e) {
+         LOGGER.warn("Failed to parse particle options: {}", contents, e);
+         return result;
       }
    }
 
-   private <T> Dynamic<T> updateDustTransition(Dynamic<T> var1, String var2) {
+   private <T> Dynamic<T> updateDustTransition(final Dynamic<T> result, final String contents) {
       try {
-         StringReader var3 = new StringReader(var2);
-         Dynamic var4 = readVector(var1, var3);
-         var3.expect(' ');
-         float var5 = var3.readFloat();
-         var3.expect(' ');
-         Dynamic var6 = readVector(var1, var3);
-         return var1.set("from_color", var4).set("to_color", var6).set("scale", var1.createFloat(var5));
-      } catch (Exception var7) {
-         LOGGER.warn("Failed to parse particle options: {}", var2, var7);
-         return var1;
+         StringReader reader = new StringReader(contents);
+         Dynamic<T> from = readVector(result, reader);
+         reader.expect(' ');
+         float scale = reader.readFloat();
+         reader.expect(' ');
+         Dynamic<T> to = readVector(result, reader);
+         return result.set("from_color", from).set("to_color", to).set("scale", result.createFloat(scale));
+      } catch (Exception e) {
+         LOGGER.warn("Failed to parse particle options: {}", contents, e);
+         return result;
       }
    }
 
-   private <T> Dynamic<T> updateSculkCharge(Dynamic<T> var1, String var2) {
+   private <T> Dynamic<T> updateSculkCharge(final Dynamic<T> result, final String contents) {
       try {
-         StringReader var3 = new StringReader(var2);
-         float var4 = var3.readFloat();
-         return var1.set("roll", var1.createFloat(var4));
-      } catch (Exception var5) {
-         LOGGER.warn("Failed to parse particle options: {}", var2, var5);
-         return var1;
+         StringReader reader = new StringReader(contents);
+         float roll = reader.readFloat();
+         return result.set("roll", result.createFloat(roll));
+      } catch (Exception e) {
+         LOGGER.warn("Failed to parse particle options: {}", contents, e);
+         return result;
       }
    }
 
-   private <T> Dynamic<T> updateVibration(Dynamic<T> var1, String var2) {
+   private <T> Dynamic<T> updateVibration(final Dynamic<T> result, final String contents) {
       try {
-         StringReader var3 = new StringReader(var2);
-         float var4 = (float)var3.readDouble();
-         var3.expect(' ');
-         float var5 = (float)var3.readDouble();
-         var3.expect(' ');
-         float var6 = (float)var3.readDouble();
-         var3.expect(' ');
-         int var7 = var3.readInt();
-         Dynamic var8 = var1.createIntList(IntStream.of(new int[]{Mth.floor(var4), Mth.floor(var5), Mth.floor(var6)}));
-         Dynamic var9 = var1.createMap(Map.of(var1.createString("type"), var1.createString("minecraft:block"), var1.createString("pos"), var8));
-         return var1.set("destination", var9).set("arrival_in_ticks", var1.createInt(var7));
-      } catch (Exception var10) {
-         LOGGER.warn("Failed to parse particle options: {}", var2, var10);
-         return var1;
+         StringReader reader = new StringReader(contents);
+         float destX = (float)reader.readDouble();
+         reader.expect(' ');
+         float destY = (float)reader.readDouble();
+         reader.expect(' ');
+         float destZ = (float)reader.readDouble();
+         reader.expect(' ');
+         int arrivalInTicks = reader.readInt();
+         Dynamic<T> blockPos = result.createIntList(IntStream.of(new int[]{Mth.floor(destX), Mth.floor(destY), Mth.floor(destZ)}));
+         Dynamic<T> positionSource = result.createMap(Map.of(result.createString("type"), result.createString("minecraft:block"), result.createString("pos"), blockPos));
+         return result.set("destination", positionSource).set("arrival_in_ticks", result.createInt(arrivalInTicks));
+      } catch (Exception e) {
+         LOGGER.warn("Failed to parse particle options: {}", contents, e);
+         return result;
       }
    }
 
-   private <T> Dynamic<T> updateShriek(Dynamic<T> var1, String var2) {
+   private <T> Dynamic<T> updateShriek(final Dynamic<T> result, final String contents) {
       try {
-         StringReader var3 = new StringReader(var2);
-         int var4 = var3.readInt();
-         return var1.set("delay", var1.createInt(var4));
-      } catch (Exception var5) {
-         LOGGER.warn("Failed to parse particle options: {}", var2, var5);
-         return var1;
+         StringReader reader = new StringReader(contents);
+         int delay = reader.readInt();
+         return result.set("delay", result.createInt(delay));
+      } catch (Exception e) {
+         LOGGER.warn("Failed to parse particle options: {}", contents, e);
+         return result;
       }
    }
 }

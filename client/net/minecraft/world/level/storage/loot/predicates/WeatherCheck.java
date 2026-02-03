@@ -8,34 +8,27 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record WeatherCheck(Optional<Boolean> isRaining, Optional<Boolean> isThundering) implements LootItemCondition {
-   public static final MapCodec<WeatherCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("raining").forGetter(WeatherCheck::isRaining), Codec.BOOL.optionalFieldOf("thundering").forGetter(WeatherCheck::isThundering)).apply(var0, WeatherCheck::new));
+   public static final MapCodec<WeatherCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.optionalFieldOf("raining").forGetter(WeatherCheck::isRaining), Codec.BOOL.optionalFieldOf("thundering").forGetter(WeatherCheck::isThundering)).apply(i, WeatherCheck::new));
 
-   public WeatherCheck(Optional<Boolean> var1, Optional<Boolean> var2) {
+   public WeatherCheck {
       super();
-      this.isRaining = var1;
-      this.isThundering = var2;
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.WEATHER_CHECK;
+   public MapCodec<WeatherCheck> codec() {
+      return MAP_CODEC;
    }
 
-   public boolean test(LootContext var1) {
-      ServerLevel var2 = var1.getLevel();
-      if (this.isRaining.isPresent() && (Boolean)this.isRaining.get() != var2.isRaining()) {
+   public boolean test(final LootContext context) {
+      ServerLevel level = context.getLevel();
+      if (this.isRaining.isPresent() && (Boolean)this.isRaining.get() != level.isRaining()) {
          return false;
       } else {
-         return !this.isThundering.isPresent() || (Boolean)this.isThundering.get() == var2.isThundering();
+         return !this.isThundering.isPresent() || (Boolean)this.isThundering.get() == level.isThundering();
       }
    }
 
    public static Builder weather() {
       return new Builder();
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((LootContext)var1);
    }
 
    public static class Builder implements LootItemCondition.Builder {
@@ -46,23 +39,18 @@ public record WeatherCheck(Optional<Boolean> isRaining, Optional<Boolean> isThun
          super();
       }
 
-      public Builder setRaining(boolean var1) {
-         this.isRaining = Optional.of(var1);
+      public Builder setRaining(final boolean raining) {
+         this.isRaining = Optional.of(raining);
          return this;
       }
 
-      public Builder setThundering(boolean var1) {
-         this.isThundering = Optional.of(var1);
+      public Builder setThundering(final boolean thundering) {
+         this.isThundering = Optional.of(thundering);
          return this;
       }
 
       public WeatherCheck build() {
          return new WeatherCheck(this.isRaining, this.isThundering);
-      }
-
-      // $FF: synthetic method
-      public LootItemCondition build() {
-         return this.build();
       }
    }
 }

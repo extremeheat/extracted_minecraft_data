@@ -16,49 +16,49 @@ public class PolarBearModel extends QuadrupedModel<PolarBearRenderState> {
    private static final float BABY_HEAD_SCALE = 2.25F;
    private static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 16.0F, 4.0F, 2.25F, 2.0F, 24.0F, Set.of("head"));
 
-   public PolarBearModel(ModelPart var1) {
-      super(var1);
+   public PolarBearModel(final ModelPart root) {
+      super(root);
    }
 
-   public static LayerDefinition createBodyLayer(boolean var0) {
-      MeshDefinition var1 = new MeshDefinition();
-      PartDefinition var2 = var1.getRoot();
-      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-3.5F, -3.0F, -3.0F, 7.0F, 7.0F, 7.0F).texOffs(0, 44).addBox("mouth", -2.5F, 1.0F, -6.0F, 5.0F, 3.0F, 3.0F).texOffs(26, 0).addBox("right_ear", -4.5F, -4.0F, -1.0F, 2.0F, 2.0F, 1.0F).texOffs(26, 0).mirror().addBox("left_ear", 2.5F, -4.0F, -1.0F, 2.0F, 2.0F, 1.0F), PartPose.offset(0.0F, 10.0F, -16.0F));
-      var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 19).addBox(-5.0F, -13.0F, -7.0F, 14.0F, 14.0F, 11.0F).texOffs(39, 0).addBox(-4.0F, -25.0F, -7.0F, 12.0F, 12.0F, 10.0F), PartPose.offsetAndRotation(-2.0F, 9.0F, 12.0F, 1.5707964F, 0.0F, 0.0F));
-      boolean var3 = true;
-      CubeListBuilder var4 = CubeListBuilder.create().texOffs(50, 22).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 8.0F);
-      var2.addOrReplaceChild("right_hind_leg", var4, PartPose.offset(-4.5F, 14.0F, 6.0F));
-      var2.addOrReplaceChild("left_hind_leg", var4, PartPose.offset(4.5F, 14.0F, 6.0F));
-      CubeListBuilder var5 = CubeListBuilder.create().texOffs(50, 40).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 6.0F);
-      var2.addOrReplaceChild("right_front_leg", var5, PartPose.offset(-3.5F, 14.0F, -8.0F));
-      var2.addOrReplaceChild("left_front_leg", var5, PartPose.offset(3.5F, 14.0F, -8.0F));
-      return LayerDefinition.create(var1, 128, 64).apply(var0 ? BABY_TRANSFORMER : MeshTransformer.IDENTITY).apply(MeshTransformer.scaling(1.2F));
+   public static LayerDefinition createBodyLayer(final boolean baby) {
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-3.5F, -3.0F, -3.0F, 7.0F, 7.0F, 7.0F).texOffs(0, 44).addBox("mouth", -2.5F, 1.0F, -6.0F, 5.0F, 3.0F, 3.0F).texOffs(26, 0).addBox("right_ear", -4.5F, -4.0F, -1.0F, 2.0F, 2.0F, 1.0F).texOffs(26, 0).mirror().addBox("left_ear", 2.5F, -4.0F, -1.0F, 2.0F, 2.0F, 1.0F), PartPose.offset(0.0F, 10.0F, -16.0F));
+      root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 19).addBox(-5.0F, -13.0F, -7.0F, 14.0F, 14.0F, 11.0F).texOffs(39, 0).addBox(-4.0F, -25.0F, -7.0F, 12.0F, 12.0F, 10.0F), PartPose.offsetAndRotation(-2.0F, 9.0F, 12.0F, 1.5707964F, 0.0F, 0.0F));
+      int legSize = 10;
+      CubeListBuilder hindLeg = CubeListBuilder.create().texOffs(50, 22).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 8.0F);
+      root.addOrReplaceChild("right_hind_leg", hindLeg, PartPose.offset(-4.5F, 14.0F, 6.0F));
+      root.addOrReplaceChild("left_hind_leg", hindLeg, PartPose.offset(4.5F, 14.0F, 6.0F));
+      CubeListBuilder frontLeg = CubeListBuilder.create().texOffs(50, 40).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 6.0F);
+      root.addOrReplaceChild("right_front_leg", frontLeg, PartPose.offset(-3.5F, 14.0F, -8.0F));
+      root.addOrReplaceChild("left_front_leg", frontLeg, PartPose.offset(3.5F, 14.0F, -8.0F));
+      return LayerDefinition.create(mesh, 128, 64).apply(baby ? BABY_TRANSFORMER : MeshTransformer.IDENTITY).apply(MeshTransformer.scaling(1.2F));
    }
 
-   public void setupAnim(PolarBearRenderState var1) {
-      super.setupAnim(var1);
-      float var2 = var1.standScale * var1.standScale;
-      float var3 = var1.ageScale;
-      float var4 = var1.isBaby ? 0.44444445F : 1.0F;
+   public void setupAnim(final PolarBearRenderState state) {
+      super.setupAnim(state);
+      float standScale = state.standScale * state.standScale;
+      float bodyAgeScale = state.ageScale;
+      float headAgeScale = state.isBaby ? 0.44444445F : 1.0F;
       ModelPart var10000 = this.body;
-      var10000.xRot -= var2 * 3.1415927F * 0.35F;
+      var10000.xRot -= standScale * 3.1415927F * 0.35F;
       var10000 = this.body;
-      var10000.y += var2 * var3 * 2.0F;
+      var10000.y += standScale * bodyAgeScale * 2.0F;
       var10000 = this.rightFrontLeg;
-      var10000.y -= var2 * var3 * 20.0F;
+      var10000.y -= standScale * bodyAgeScale * 20.0F;
       var10000 = this.rightFrontLeg;
-      var10000.z += var2 * var3 * 4.0F;
+      var10000.z += standScale * bodyAgeScale * 4.0F;
       var10000 = this.rightFrontLeg;
-      var10000.xRot -= var2 * 3.1415927F * 0.45F;
+      var10000.xRot -= standScale * 3.1415927F * 0.45F;
       this.leftFrontLeg.y = this.rightFrontLeg.y;
       this.leftFrontLeg.z = this.rightFrontLeg.z;
       var10000 = this.leftFrontLeg;
-      var10000.xRot -= var2 * 3.1415927F * 0.45F;
+      var10000.xRot -= standScale * 3.1415927F * 0.45F;
       var10000 = this.head;
-      var10000.y -= var2 * var4 * 24.0F;
+      var10000.y -= standScale * headAgeScale * 24.0F;
       var10000 = this.head;
-      var10000.z += var2 * var4 * 13.0F;
+      var10000.z += standScale * headAgeScale * 13.0F;
       var10000 = this.head;
-      var10000.xRot += var2 * 3.1415927F * 0.15F;
+      var10000.xRot += standScale * 3.1415927F * 0.15F;
    }
 }

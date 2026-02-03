@@ -22,7 +22,7 @@ public abstract class AggregatedTelemetryEvent {
       this.sampleCount = 0;
    }
 
-   public void tick(TelemetryEventSender var1) {
+   public void tick(final TelemetryEventSender eventSender) {
       if (this.shouldTakeSample()) {
          this.takeSample();
          ++this.sampleCount;
@@ -30,7 +30,7 @@ public abstract class AggregatedTelemetryEvent {
       }
 
       if (this.shouldSentEvent()) {
-         this.sendEvent(var1);
+         this.sendEvent(eventSender);
          this.sampleCount = 0;
       }
 
@@ -54,5 +54,5 @@ public abstract class AggregatedTelemetryEvent {
 
    public abstract void takeSample();
 
-   public abstract void sendEvent(TelemetryEventSender var1);
+   public abstract void sendEvent(TelemetryEventSender eventSender);
 }

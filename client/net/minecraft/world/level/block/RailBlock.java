@@ -19,14 +19,14 @@ public class RailBlock extends BaseRailBlock {
       return CODEC;
    }
 
-   protected RailBlock(BlockBehaviour.Properties var1) {
-      super(false, var1);
+   protected RailBlock(final BlockBehaviour.Properties properties) {
+      super(false, properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHAPE, RailShape.NORTH_SOUTH)).setValue(WATERLOGGED, false));
    }
 
-   protected void updateState(BlockState var1, Level var2, BlockPos var3, Block var4) {
-      if (var4.defaultBlockState().isSignalSource() && (new RailState(var2, var3, var1)).countPotentialConnections() == 3) {
-         this.updateDir(var2, var3, var1, false);
+   protected void updateState(final BlockState state, final Level level, final BlockPos pos, final Block block) {
+      if (block.defaultBlockState().isSignalSource() && (new RailState(level, pos, state)).countPotentialConnections() == 3) {
+         this.updateDir(level, pos, state, false);
       }
 
    }
@@ -35,20 +35,20 @@ public class RailBlock extends BaseRailBlock {
       return SHAPE;
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      RailShape var3 = (RailShape)var1.getValue(SHAPE);
-      RailShape var4 = this.rotate(var3, var2);
-      return (BlockState)var1.setValue(SHAPE, var4);
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      RailShape currentShape = (RailShape)state.getValue(SHAPE);
+      RailShape newShape = this.rotate(currentShape, rotation);
+      return (BlockState)state.setValue(SHAPE, newShape);
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      RailShape var3 = (RailShape)var1.getValue(SHAPE);
-      RailShape var4 = this.mirror(var3, var2);
-      return (BlockState)var1.setValue(SHAPE, var4);
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      RailShape currentShape = (RailShape)state.getValue(SHAPE);
+      RailShape newShape = this.mirror(currentShape, mirror);
+      return (BlockState)state.setValue(SHAPE, newShape);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(SHAPE, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(SHAPE, WATERLOGGED);
    }
 
    static {

@@ -13,12 +13,12 @@ public class BastionSharedPools {
       super();
    }
 
-   public static void bootstrap(BootstrapContext<StructureTemplatePool> var0) {
-      HolderGetter var1 = var0.lookup(Registries.TEMPLATE_POOL);
-      Holder.Reference var2 = var1.getOrThrow(Pools.EMPTY);
-      Pools.register(var0, "bastion/mobs/piglin", new StructureTemplatePool(var2, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/mobs/melee_piglin"), 1), Pair.of(StructurePoolElement.single("bastion/mobs/sword_piglin"), 4), Pair.of(StructurePoolElement.single("bastion/mobs/crossbow_piglin"), 4), Pair.of(StructurePoolElement.single("bastion/mobs/empty"), 1)), StructureTemplatePool.Projection.RIGID));
-      Pools.register(var0, "bastion/mobs/hoglin", new StructureTemplatePool(var2, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/mobs/hoglin"), 2), Pair.of(StructurePoolElement.single("bastion/mobs/empty"), 1)), StructureTemplatePool.Projection.RIGID));
-      Pools.register(var0, "bastion/blocks/gold", new StructureTemplatePool(var2, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/blocks/air"), 3), Pair.of(StructurePoolElement.single("bastion/blocks/gold"), 1)), StructureTemplatePool.Projection.RIGID));
-      Pools.register(var0, "bastion/mobs/piglin_melee", new StructureTemplatePool(var2, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/mobs/melee_piglin_always"), 1), Pair.of(StructurePoolElement.single("bastion/mobs/melee_piglin"), 5), Pair.of(StructurePoolElement.single("bastion/mobs/sword_piglin"), 1)), StructureTemplatePool.Projection.RIGID));
+   public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
+      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
+      Pools.register(context, "bastion/mobs/piglin", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/mobs/melee_piglin"), 1), Pair.of(StructurePoolElement.single("bastion/mobs/sword_piglin"), 4), Pair.of(StructurePoolElement.single("bastion/mobs/crossbow_piglin"), 4), Pair.of(StructurePoolElement.single("bastion/mobs/empty"), 1)), StructureTemplatePool.Projection.RIGID));
+      Pools.register(context, "bastion/mobs/hoglin", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/mobs/hoglin"), 2), Pair.of(StructurePoolElement.single("bastion/mobs/empty"), 1)), StructureTemplatePool.Projection.RIGID));
+      Pools.register(context, "bastion/blocks/gold", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/blocks/air"), 3), Pair.of(StructurePoolElement.single("bastion/blocks/gold"), 1)), StructureTemplatePool.Projection.RIGID));
+      Pools.register(context, "bastion/mobs/piglin_melee", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/mobs/melee_piglin_always"), 1), Pair.of(StructurePoolElement.single("bastion/mobs/melee_piglin"), 5), Pair.of(StructurePoolElement.single("bastion/mobs/sword_piglin"), 1)), StructureTemplatePool.Projection.RIGID));
    }
 }

@@ -8,6 +8,7 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableLong;
 
 public class StrollAroundPoi {
@@ -19,17 +20,17 @@ public class StrollAroundPoi {
       super();
    }
 
-   public static OneShot<PathfinderMob> create(MemoryModuleType<GlobalPos> var0, float var1, int var2) {
-      MutableLong var3 = new MutableLong(0L);
-      return BehaviorBuilder.create((Function)((var4) -> var4.group(var4.registered(MemoryModuleType.WALK_TARGET), var4.present(var0)).apply(var4, (var4x, var5) -> (var6, var7, var8) -> {
-               GlobalPos var10 = (GlobalPos)var4.get(var5);
-               if (var6.dimension() == var10.dimension() && var10.pos().closerToCenterThan(var7.position(), (double)var2)) {
-                  if (var8 <= var3.longValue()) {
+   public static OneShot<PathfinderMob> create(final MemoryModuleType<GlobalPos> memoryType, final float speedModifier, final int maxDistanceFromPoi) {
+      MutableLong nextOkStartTime = new MutableLong(0L);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.WALK_TARGET), i.present(memoryType)).apply(i, (walkTarget, memory) -> (level, body, timestamp) -> {
+               GlobalPos pos = (GlobalPos)i.get(memory);
+               if (level.dimension() == pos.dimension() && pos.pos().closerToCenterThan(body.position(), (double)maxDistanceFromPoi)) {
+                  if (timestamp <= nextOkStartTime.longValue()) {
                      return true;
                   } else {
-                     Optional var11 = Optional.ofNullable(LandRandomPos.getPos(var7, 8, 6));
-                     var4x.setOrErase(var11.map((var1x) -> new WalkTarget(var1x, var1, 1)));
-                     var3.setValue(var8 + 180L);
+                     Optional<Vec3> landPos = Optional.ofNullable(LandRandomPos.getPos(body, 8, 6));
+                     walkTarget.setOrErase(landPos.map((p) -> new WalkTarget(p, speedModifier, 1)));
+                     nextOkStartTime.setValue(timestamp + 180L);
                      return true;
                   }
                } else {

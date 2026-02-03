@@ -33,43 +33,43 @@ public class WitherSkullBlock extends SkullBlock {
       return CODEC;
    }
 
-   protected WitherSkullBlock(BlockBehaviour.Properties var1) {
-      super(SkullBlock.Types.WITHER_SKELETON, var1);
+   protected WitherSkullBlock(final BlockBehaviour.Properties properties) {
+      super(SkullBlock.Types.WITHER_SKELETON, properties);
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      checkSpawn(var1, var2);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      checkSpawn(level, pos);
    }
 
-   public static void checkSpawn(Level var0, BlockPos var1) {
-      BlockEntity var3 = var0.getBlockEntity(var1);
-      if (var3 instanceof SkullBlockEntity var2) {
-         checkSpawn(var0, var1, var2);
+   public static void checkSpawn(final Level level, final BlockPos pos) {
+      BlockEntity var3 = level.getBlockEntity(pos);
+      if (var3 instanceof SkullBlockEntity placedSkull) {
+         checkSpawn(level, pos, placedSkull);
       }
 
    }
 
-   public static void checkSpawn(Level var0, BlockPos var1, SkullBlockEntity var2) {
-      if (!var0.isClientSide()) {
-         BlockState var3 = var2.getBlockState();
-         boolean var4 = var3.is(Blocks.WITHER_SKELETON_SKULL) || var3.is(Blocks.WITHER_SKELETON_WALL_SKULL);
-         if (var4 && var1.getY() >= var0.getMinY() && var0.getDifficulty() != Difficulty.PEACEFUL) {
-            BlockPattern.BlockPatternMatch var5 = getOrCreateWitherFull().find(var0, var1);
-            if (var5 != null) {
-               WitherBoss var6 = EntityType.WITHER.create(var0, EntitySpawnReason.TRIGGERED);
-               if (var6 != null) {
-                  CarvedPumpkinBlock.clearPatternBlocks(var0, var5);
-                  BlockPos var7 = var5.getBlock(1, 2, 0).getPos();
-                  var6.snapTo((double)var7.getX() + 0.5, (double)var7.getY() + 0.55, (double)var7.getZ() + 0.5, var5.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
-                  var6.yBodyRot = var5.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
-                  var6.makeInvulnerable();
+   public static void checkSpawn(final Level level, final BlockPos pos, final SkullBlockEntity placedSkull) {
+      if (!level.isClientSide()) {
+         BlockState blockState = placedSkull.getBlockState();
+         boolean correctBlock = blockState.is(Blocks.WITHER_SKELETON_SKULL) || blockState.is(Blocks.WITHER_SKELETON_WALL_SKULL);
+         if (correctBlock && pos.getY() >= level.getMinY() && level.getDifficulty() != Difficulty.PEACEFUL) {
+            BlockPattern.BlockPatternMatch match = getOrCreateWitherFull().find(level, pos);
+            if (match != null) {
+               WitherBoss witherBoss = EntityType.WITHER.create(level, EntitySpawnReason.TRIGGERED);
+               if (witherBoss != null) {
+                  CarvedPumpkinBlock.clearPatternBlocks(level, match);
+                  BlockPos spawnPos = match.getBlock(1, 2, 0).getPos();
+                  witherBoss.snapTo((double)spawnPos.getX() + 0.5, (double)spawnPos.getY() + 0.55, (double)spawnPos.getZ() + 0.5, match.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
+                  witherBoss.yBodyRot = match.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
+                  witherBoss.makeInvulnerable();
 
-                  for(ServerPlayer var9 : var0.getEntitiesOfClass(ServerPlayer.class, var6.getBoundingBox().inflate(50.0))) {
-                     CriteriaTriggers.SUMMONED_ENTITY.trigger(var9, var6);
+                  for(ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, witherBoss.getBoundingBox().inflate(50.0))) {
+                     CriteriaTriggers.SUMMONED_ENTITY.trigger(player, witherBoss);
                   }
 
-                  var0.addFreshEntity(var6);
-                  CarvedPumpkinBlock.updatePatternBlocks(var0, var5);
+                  level.addFreshEntity(witherBoss);
+                  CarvedPumpkinBlock.updatePatternBlocks(level, match);
                }
 
             }
@@ -77,9 +77,9 @@ public class WitherSkullBlock extends SkullBlock {
       }
    }
 
-   public static boolean canSpawnMob(Level var0, BlockPos var1, ItemStack var2) {
-      if (var2.is(Items.WITHER_SKELETON_SKULL) && var1.getY() >= var0.getMinY() + 2 && var0.getDifficulty() != Difficulty.PEACEFUL && !var0.isClientSide()) {
-         return getOrCreateWitherBase().find(var0, var1) != null;
+   public static boolean canSpawnMob(final Level level, final BlockPos pos, final ItemStack itemStack) {
+      if (itemStack.is(Items.WITHER_SKELETON_SKULL) && pos.getY() >= level.getMinY() + 2 && level.getDifficulty() != Difficulty.PEACEFUL && !level.isClientSide()) {
+         return getOrCreateWitherBase().find(level, pos) != null;
       } else {
          return false;
       }
@@ -87,7 +87,7 @@ public class WitherSkullBlock extends SkullBlock {
 
    private static BlockPattern getOrCreateWitherFull() {
       if (witherPatternFull == null) {
-         witherPatternFull = BlockPatternBuilder.start().aisle("^^^", "###", "~#~").where('#', (var0) -> var0.getState().is(BlockTags.WITHER_SUMMON_BASE_BLOCKS)).where('^', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_SKULL).or(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_WALL_SKULL)))).where('~', (var0) -> var0.getState().isAir()).build();
+         witherPatternFull = BlockPatternBuilder.start().aisle("^^^", "###", "~#~").where('#', (block) -> block.getState().is(BlockTags.WITHER_SUMMON_BASE_BLOCKS)).where('^', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_SKULL).or(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_WALL_SKULL)))).where('~', (block) -> block.getState().isAir()).build();
       }
 
       return witherPatternFull;
@@ -95,7 +95,7 @@ public class WitherSkullBlock extends SkullBlock {
 
    private static BlockPattern getOrCreateWitherBase() {
       if (witherPatternBase == null) {
-         witherPatternBase = BlockPatternBuilder.start().aisle("   ", "###", "~#~").where('#', (var0) -> var0.getState().is(BlockTags.WITHER_SUMMON_BASE_BLOCKS)).where('~', (var0) -> var0.getState().isAir()).build();
+         witherPatternBase = BlockPatternBuilder.start().aisle("   ", "###", "~#~").where('#', (block) -> block.getState().is(BlockTags.WITHER_SUMMON_BASE_BLOCKS)).where('~', (block) -> block.getState().isAir()).build();
       }
 
       return witherPatternBase;

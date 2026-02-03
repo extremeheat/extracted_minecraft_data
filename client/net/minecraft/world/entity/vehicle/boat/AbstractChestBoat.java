@@ -26,6 +26,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractChestBoat extends AbstractBoat implements HasCustomInventoryScreen, ContainerEntity {
@@ -34,8 +35,8 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
    private @Nullable ResourceKey<LootTable> lootTable;
    private long lootTableSeed;
 
-   public AbstractChestBoat(EntityType<? extends AbstractChestBoat> var1, Level var2, Supplier<Item> var3) {
-      super(var1, var2, var3);
+   public AbstractChestBoat(final EntityType<? extends AbstractChestBoat> type, final Level level, final Supplier<Item> dropItem) {
+      super(type, level, dropItem);
       this.itemStacks = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
    }
 
@@ -47,56 +48,56 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
       return 1;
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      this.addChestVehicleSaveData(var1);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      this.addChestVehicleSaveData(output);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.readChestVehicleSaveData(var1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.readChestVehicleSaveData(input);
    }
 
-   public void destroy(ServerLevel var1, DamageSource var2) {
-      this.destroy(var1, this.getDropItem());
-      this.chestVehicleDestroyed(var2, var1, this);
+   public void destroy(final ServerLevel level, final DamageSource source) {
+      this.destroy(level, this.getDropItem());
+      this.chestVehicleDestroyed(source, level, this);
    }
 
-   public void remove(Entity.RemovalReason var1) {
-      if (!this.level().isClientSide() && var1.shouldDestroy()) {
+   public void remove(final Entity.RemovalReason reason) {
+      if (!this.level().isClientSide() && reason.shouldDestroy()) {
          Containers.dropContents(this.level(), (Entity)this, this);
       }
 
-      super.remove(var1);
+      super.remove(reason);
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
-      InteractionResult var3 = super.interact(var1, var2);
-      if (var3 != InteractionResult.PASS) {
-         return var3;
-      } else if (this.canAddPassenger(var1) && !var1.isSecondaryUseActive()) {
+   public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
+      InteractionResult superInteraction = super.interact(player, hand, location);
+      if (superInteraction != InteractionResult.PASS) {
+         return superInteraction;
+      } else if (this.canAddPassenger(player) && !player.isSecondaryUseActive()) {
          return InteractionResult.PASS;
       } else {
-         InteractionResult var4 = this.interactWithContainerVehicle(var1);
-         if (var4.consumesAction()) {
-            Level var6 = var1.level();
-            if (var6 instanceof ServerLevel) {
-               ServerLevel var5 = (ServerLevel)var6;
-               this.gameEvent(GameEvent.CONTAINER_OPEN, var1);
-               PiglinAi.angerNearbyPiglins(var5, var1, true);
+         InteractionResult result = this.interactWithContainerVehicle(player);
+         if (result.consumesAction()) {
+            Level var7 = player.level();
+            if (var7 instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)var7;
+               this.gameEvent(GameEvent.CONTAINER_OPEN, player);
+               PiglinAi.angerNearbyPiglins(serverLevel, player, true);
             }
          }
 
-         return var4;
+         return result;
       }
    }
 
-   public void openCustomInventoryScreen(Player var1) {
-      var1.openMenu(this);
-      Level var3 = var1.level();
-      if (var3 instanceof ServerLevel var2) {
-         this.gameEvent(GameEvent.CONTAINER_OPEN, var1);
-         PiglinAi.angerNearbyPiglins(var2, var1, true);
+   public void openCustomInventoryScreen(final Player player) {
+      player.openMenu(this);
+      Level var3 = player.level();
+      if (var3 instanceof ServerLevel level) {
+         this.gameEvent(GameEvent.CONTAINER_OPEN, player);
+         PiglinAi.angerNearbyPiglins(level, player, true);
       }
 
    }
@@ -109,60 +110,60 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
       return 27;
    }
 
-   public ItemStack getItem(int var1) {
-      return this.getChestVehicleItem(var1);
+   public ItemStack getItem(final int slot) {
+      return this.getChestVehicleItem(slot);
    }
 
-   public ItemStack removeItem(int var1, int var2) {
-      return this.removeChestVehicleItem(var1, var2);
+   public ItemStack removeItem(final int slot, final int count) {
+      return this.removeChestVehicleItem(slot, count);
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
-      return this.removeChestVehicleItemNoUpdate(var1);
+   public ItemStack removeItemNoUpdate(final int slot) {
+      return this.removeChestVehicleItemNoUpdate(slot);
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      this.setChestVehicleItem(var1, var2);
+   public void setItem(final int slot, final ItemStack itemStack) {
+      this.setChestVehicleItem(slot, itemStack);
    }
 
-   public SlotAccess getSlot(int var1) {
-      return this.getChestVehicleSlot(var1);
+   public SlotAccess getSlot(final int slot) {
+      return this.getChestVehicleSlot(slot);
    }
 
    public void setChanged() {
    }
 
-   public boolean stillValid(Player var1) {
-      return this.isChestVehicleStillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.isChestVehicleStillValid(player);
    }
 
-   public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
-      if (this.lootTable != null && var3.isSpectator()) {
+   public @Nullable AbstractContainerMenu createMenu(final int containerId, final Inventory inventory, final Player player) {
+      if (this.lootTable != null && player.isSpectator()) {
          return null;
       } else {
-         this.unpackLootTable(var2.player);
-         return ChestMenu.threeRows(var1, var2, this);
+         this.unpackLootTable(inventory.player);
+         return ChestMenu.threeRows(containerId, inventory, this);
       }
    }
 
-   public void unpackLootTable(@Nullable Player var1) {
-      this.unpackChestVehicleLootTable(var1);
+   public void unpackLootTable(final @Nullable Player player) {
+      this.unpackChestVehicleLootTable(player);
    }
 
    public @Nullable ResourceKey<LootTable> getContainerLootTable() {
       return this.lootTable;
    }
 
-   public void setContainerLootTable(@Nullable ResourceKey<LootTable> var1) {
-      this.lootTable = var1;
+   public void setContainerLootTable(final @Nullable ResourceKey<LootTable> lootTable) {
+      this.lootTable = lootTable;
    }
 
    public long getContainerLootTableSeed() {
       return this.lootTableSeed;
    }
 
-   public void setContainerLootTableSeed(long var1) {
-      this.lootTableSeed = var1;
+   public void setContainerLootTableSeed(final long lootTableSeed) {
+      this.lootTableSeed = lootTableSeed;
    }
 
    public NonNullList<ItemStack> getItemStacks() {
@@ -173,7 +174,7 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
       this.itemStacks = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
    }
 
-   public void stopOpen(ContainerUser var1) {
-      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of((Entity)var1.getLivingEntity()));
+   public void stopOpen(final ContainerUser containerUser) {
+      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of((Entity)containerUser.getLivingEntity()));
    }
 }

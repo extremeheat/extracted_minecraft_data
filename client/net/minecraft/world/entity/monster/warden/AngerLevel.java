@@ -10,15 +10,15 @@ public enum AngerLevel {
    AGITATED(40, SoundEvents.WARDEN_AGITATED, SoundEvents.WARDEN_LISTENING_ANGRY),
    ANGRY(80, SoundEvents.WARDEN_ANGRY, SoundEvents.WARDEN_LISTENING_ANGRY);
 
-   private static final AngerLevel[] SORTED_LEVELS = (AngerLevel[])Util.make(values(), (var0) -> Arrays.sort(var0, (var0x, var1) -> Integer.compare(var1.minimumAnger, var0x.minimumAnger)));
+   private static final AngerLevel[] SORTED_LEVELS = (AngerLevel[])Util.make(values(), (values) -> Arrays.sort(values, (a, b) -> Integer.compare(b.minimumAnger, a.minimumAnger)));
    private final int minimumAnger;
    private final SoundEvent ambientSound;
    private final SoundEvent listeningSound;
 
-   private AngerLevel(final int var3, final SoundEvent var4, final SoundEvent var5) {
-      this.minimumAnger = var3;
-      this.ambientSound = var4;
-      this.listeningSound = var5;
+   private AngerLevel(final int minimumAnger, final SoundEvent ambientSound, final SoundEvent listeningSound) {
+      this.minimumAnger = minimumAnger;
+      this.ambientSound = ambientSound;
+      this.listeningSound = listeningSound;
    }
 
    public int getMinimumAnger() {
@@ -33,10 +33,10 @@ public enum AngerLevel {
       return this.listeningSound;
    }
 
-   public static AngerLevel byAnger(int var0) {
-      for(AngerLevel var4 : SORTED_LEVELS) {
-         if (var0 >= var4.minimumAnger) {
-            return var4;
+   public static AngerLevel byAnger(final int anger) {
+      for(AngerLevel level : SORTED_LEVELS) {
+         if (anger >= level.minimumAnger) {
+            return level;
          }
       }
 

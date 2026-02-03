@@ -12,23 +12,20 @@ import net.minecraft.world.entity.Relative;
 public record ClientboundPlayerPositionPacket(int id, PositionMoveRotation change, Set<Relative> relatives) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerPositionPacket> STREAM_CODEC;
 
-   public ClientboundPlayerPositionPacket(int var1, PositionMoveRotation var2, Set<Relative> var3) {
+   public ClientboundPlayerPositionPacket {
       super();
-      this.id = var1;
-      this.change = var2;
-      this.relatives = var3;
    }
 
-   public static ClientboundPlayerPositionPacket of(int var0, PositionMoveRotation var1, Set<Relative> var2) {
-      return new ClientboundPlayerPositionPacket(var0, var1, var2);
+   public static ClientboundPlayerPositionPacket of(final int id, final PositionMoveRotation values, final Set<Relative> relatives) {
+      return new ClientboundPlayerPositionPacket(id, values, relatives);
    }
 
    public PacketType<ClientboundPlayerPositionPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_POSITION;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleMovePlayer(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleMovePlayer(this);
    }
 
    static {

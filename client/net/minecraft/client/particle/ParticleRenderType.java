@@ -6,8 +6,7 @@ public record ParticleRenderType(String name) {
    public static final ParticleRenderType ELDER_GUARDIANS = new ParticleRenderType("ELDER_GUARDIANS");
    public static final ParticleRenderType NO_RENDER = new ParticleRenderType("NO_RENDER");
 
-   public ParticleRenderType(String var1) {
+   public ParticleRenderType {
       super();
-      this.name = var1;
    }
 }

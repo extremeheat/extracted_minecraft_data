@@ -16,26 +16,26 @@ public class LocalMobCapCalculator {
    private final Map<ServerPlayer, MobCounts> playerMobCounts = Maps.newHashMap();
    private final ChunkMap chunkMap;
 
-   public LocalMobCapCalculator(ChunkMap var1) {
+   public LocalMobCapCalculator(final ChunkMap chunkMap) {
       super();
-      this.chunkMap = var1;
+      this.chunkMap = chunkMap;
    }
 
-   private List<ServerPlayer> getPlayersNear(ChunkPos var1) {
-      return (List)this.playersNearChunk.computeIfAbsent(var1.toLong(), (var2) -> this.chunkMap.getPlayersCloseForSpawning(var1));
+   private List<ServerPlayer> getPlayersNear(final ChunkPos pos) {
+      return (List)this.playersNearChunk.computeIfAbsent(pos.pack(), (key) -> this.chunkMap.getPlayersCloseForSpawning(pos));
    }
 
-   public void addMob(ChunkPos var1, MobCategory var2) {
-      for(ServerPlayer var4 : this.getPlayersNear(var1)) {
-         ((MobCounts)this.playerMobCounts.computeIfAbsent(var4, (var0) -> new MobCounts())).add(var2);
+   public void addMob(final ChunkPos pos, final MobCategory category) {
+      for(ServerPlayer player : this.getPlayersNear(pos)) {
+         ((MobCounts)this.playerMobCounts.computeIfAbsent(player, (key) -> new MobCounts())).add(category);
       }
 
    }
 
-   public boolean canSpawn(MobCategory var1, ChunkPos var2) {
-      for(ServerPlayer var4 : this.getPlayersNear(var2)) {
-         MobCounts var5 = (MobCounts)this.playerMobCounts.get(var4);
-         if (var5 == null || var5.canSpawn(var1)) {
+   public boolean canSpawn(final MobCategory mobCategory, final ChunkPos pos) {
+      for(ServerPlayer serverPlayer : this.getPlayersNear(pos)) {
+         MobCounts mobCounts = (MobCounts)this.playerMobCounts.get(serverPlayer);
+         if (mobCounts == null || mobCounts.canSpawn(mobCategory)) {
             return true;
          }
       }
@@ -43,19 +43,19 @@ public class LocalMobCapCalculator {
       return false;
    }
 
-   static class MobCounts {
+   private static class MobCounts {
       private final Object2IntMap<MobCategory> counts = new Object2IntOpenHashMap(MobCategory.values().length);
 
-      MobCounts() {
+      private MobCounts() {
          super();
       }
 
-      public void add(MobCategory var1) {
-         this.counts.computeInt(var1, (var0, var1x) -> var1x == null ? 1 : var1x + 1);
+      public void add(final MobCategory category) {
+         this.counts.computeInt(category, (k, count) -> count == null ? 1 : count + 1);
       }
 
-      public boolean canSpawn(MobCategory var1) {
-         return this.counts.getOrDefault(var1, 0) < var1.getMaxInstancesPerChunk();
+      public boolean canSpawn(final MobCategory category) {
+         return this.counts.getOrDefault(category, 0) < category.getMaxInstancesPerChunk();
       }
    }
 }

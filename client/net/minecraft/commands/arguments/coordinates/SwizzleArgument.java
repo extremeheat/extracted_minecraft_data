@@ -24,39 +24,34 @@ public class SwizzleArgument implements ArgumentType<EnumSet<Direction.Axis>> {
       return new SwizzleArgument();
    }
 
-   public static EnumSet<Direction.Axis> getSwizzle(CommandContext<CommandSourceStack> var0, String var1) {
-      return (EnumSet)var0.getArgument(var1, EnumSet.class);
+   public static EnumSet<Direction.Axis> getSwizzle(final CommandContext<CommandSourceStack> context, final String name) {
+      return (EnumSet)context.getArgument(name, EnumSet.class);
    }
 
-   public EnumSet<Direction.Axis> parse(StringReader var1) throws CommandSyntaxException {
-      EnumSet var2 = EnumSet.noneOf(Direction.Axis.class);
+   public EnumSet<Direction.Axis> parse(final StringReader reader) throws CommandSyntaxException {
+      EnumSet<Direction.Axis> result = EnumSet.noneOf(Direction.Axis.class);
 
-      while(var1.canRead() && var1.peek() != ' ') {
-         char var3 = var1.read();
-         Direction.Axis var4;
-         switch (var3) {
-            case 'x' -> var4 = Direction.Axis.X;
-            case 'y' -> var4 = Direction.Axis.Y;
-            case 'z' -> var4 = Direction.Axis.Z;
-            default -> throw ERROR_INVALID.createWithContext(var1);
+      while(reader.canRead() && reader.peek() != ' ') {
+         char c = reader.read();
+         Direction.Axis axis;
+         switch (c) {
+            case 'x' -> axis = Direction.Axis.X;
+            case 'y' -> axis = Direction.Axis.Y;
+            case 'z' -> axis = Direction.Axis.Z;
+            default -> throw ERROR_INVALID.createWithContext(reader);
          }
 
-         if (var2.contains(var4)) {
-            throw ERROR_INVALID.createWithContext(var1);
+         if (result.contains(axis)) {
+            throw ERROR_INVALID.createWithContext(reader);
          }
 
-         var2.add(var4);
+         result.add(axis);
       }
 
-      return var2;
+      return result;
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

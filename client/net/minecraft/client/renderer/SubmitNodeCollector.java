@@ -9,15 +9,17 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import org.jspecify.annotations.Nullable;
 
 public interface SubmitNodeCollector extends OrderedSubmitNodeCollector {
-   OrderedSubmitNodeCollector order(int var1);
+   OrderedSubmitNodeCollector order(int order);
 
    public interface CustomGeometryRenderer {
-      void render(PoseStack.Pose var1, VertexConsumer var2);
+      void render(PoseStack.Pose pose, VertexConsumer buffer);
    }
 
    public interface ParticleGroupRenderer {
-      QuadParticleRenderState.@Nullable PreparedBuffers prepare(ParticleFeatureRenderer.ParticleBufferCache var1);
+      boolean isEmpty();
 
-      void render(QuadParticleRenderState.PreparedBuffers var1, ParticleFeatureRenderer.ParticleBufferCache var2, RenderPass var3, TextureManager var4, boolean var5);
+      QuadParticleRenderState.@Nullable PreparedBuffers prepare(ParticleFeatureRenderer.ParticleBufferCache buffer, boolean translucent);
+
+      void render(QuadParticleRenderState.PreparedBuffers buffers, ParticleFeatureRenderer.ParticleBufferCache bufferCache, RenderPass renderPass, TextureManager textureManager);
    }
 }

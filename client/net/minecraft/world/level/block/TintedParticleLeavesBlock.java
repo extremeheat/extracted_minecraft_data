@@ -12,15 +12,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public class TintedParticleLeavesBlock extends LeavesBlock {
-   public static final MapCodec<TintedParticleLeavesBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.floatRange(0.0F, 1.0F).fieldOf("leaf_particle_chance").forGetter((var0x) -> var0x.leafParticleChance), propertiesCodec()).apply(var0, TintedParticleLeavesBlock::new));
+   public static final MapCodec<TintedParticleLeavesBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.floatRange(0.0F, 1.0F).fieldOf("leaf_particle_chance").forGetter((e) -> e.leafParticleChance), propertiesCodec()).apply(i, TintedParticleLeavesBlock::new));
 
-   public TintedParticleLeavesBlock(float var1, BlockBehaviour.Properties var2) {
-      super(var1, var2);
+   public TintedParticleLeavesBlock(final float leafParticleChance, final BlockBehaviour.Properties properties) {
+      super(leafParticleChance, properties);
    }
 
-   protected void spawnFallingLeavesParticle(Level var1, BlockPos var2, RandomSource var3) {
-      ColorParticleOption var4 = ColorParticleOption.create(ParticleTypes.TINTED_LEAVES, var1.getClientLeafTintColor(var2));
-      ParticleUtils.spawnParticleBelow(var1, var2, var3, var4);
+   protected void spawnFallingLeavesParticle(final Level level, final BlockPos pos, final RandomSource random) {
+      ColorParticleOption particle = ColorParticleOption.create(ParticleTypes.TINTED_LEAVES, level.getClientLeafTintColor(pos));
+      ParticleUtils.spawnParticleBelow(level, pos, random, particle);
    }
 
    public MapCodec<? extends TintedParticleLeavesBlock> codec() {

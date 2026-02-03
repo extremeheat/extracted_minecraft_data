@@ -8,7 +8,7 @@ public enum ScreenDirection {
    LEFT,
    RIGHT;
 
-   private final IntComparator coordinateValueComparator = (var1x, var2x) -> var1x == var2x ? 0 : (this.isBefore(var1x, var2x) ? -1 : 1);
+   private final IntComparator coordinateValueComparator = (k1, k2) -> k1 == k2 ? 0 : (this.isBefore(k1, k2) ? -1 : 1);
 
    private ScreenDirection() {
    }
@@ -62,19 +62,19 @@ public enum ScreenDirection {
       return var10000;
    }
 
-   public boolean isAfter(int var1, int var2) {
+   public boolean isAfter(final int a, final int b) {
       if (this.isPositive()) {
-         return var1 > var2;
+         return a > b;
       } else {
-         return var2 > var1;
+         return b > a;
       }
    }
 
-   public boolean isBefore(int var1, int var2) {
+   public boolean isBefore(final int a, final int b) {
       if (this.isPositive()) {
-         return var1 < var2;
+         return a < b;
       } else {
-         return var2 < var1;
+         return b < a;
       }
    }
 

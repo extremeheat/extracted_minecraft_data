@@ -7,15 +7,15 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 
 public class ContainerBlockEntityLockPredicateFix extends DataFix {
-   public ContainerBlockEntityLockPredicateFix(Schema var1) {
-      super(var1, false);
+   public ContainerBlockEntityLockPredicateFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    protected TypeRewriteRule makeRule() {
       return this.fixTypeEverywhereTyped("ContainerBlockEntityLockPredicateFix", this.getInputSchema().findChoiceType(References.BLOCK_ENTITY), ContainerBlockEntityLockPredicateFix::fixBlockEntity);
    }
 
-   private static Typed<?> fixBlockEntity(Typed<?> var0) {
-      return var0.update(DSL.remainderFinder(), (var0x) -> var0x.renameAndFixField("Lock", "lock", LockComponentPredicateFix::fixLock));
+   private static Typed<?> fixBlockEntity(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), (tag) -> tag.renameAndFixField("Lock", "lock", LockComponentPredicateFix::fixLock));
    }
 }

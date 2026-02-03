@@ -42,7 +42,7 @@ public interface Leashable {
 
    @Nullable LeashData getLeashData();
 
-   void setLeashData(@Nullable LeashData var1);
+   void setLeashData(@Nullable LeashData leashData);
 
    default boolean isLeashed() {
       return this.getLeashData() != null && this.getLeashData().leashHolder != null;
@@ -52,61 +52,61 @@ public interface Leashable {
       return this.getLeashData() != null;
    }
 
-   default boolean canHaveALeashAttachedTo(Entity var1) {
-      if (this == var1) {
+   default boolean canHaveALeashAttachedTo(final Entity entity) {
+      if (this == entity) {
          return false;
       } else {
-         return this.leashDistanceTo(var1) > this.leashSnapDistance() ? false : this.canBeLeashed();
+         return this.leashDistanceTo(entity) > this.leashSnapDistance() ? false : this.canBeLeashed();
       }
    }
 
-   default double leashDistanceTo(Entity var1) {
-      return var1.getBoundingBox().getCenter().distanceTo(((Entity)this).getBoundingBox().getCenter());
+   default double leashDistanceTo(final Entity entity) {
+      return entity.getBoundingBox().getCenter().distanceTo(((Entity)this).getBoundingBox().getCenter());
    }
 
    default boolean canBeLeashed() {
       return true;
    }
 
-   default void setDelayedLeashHolderId(int var1) {
-      this.setLeashData(new LeashData(var1));
+   default void setDelayedLeashHolderId(final int entityId) {
+      this.setLeashData(new LeashData(entityId));
       dropLeash((Entity)this, false, false);
    }
 
-   default void readLeashData(ValueInput var1) {
-      LeashData var2 = (LeashData)var1.read("leash", Leashable.LeashData.CODEC).orElse((Object)null);
-      if (this.getLeashData() != null && var2 == null) {
+   default void readLeashData(final ValueInput input) {
+      LeashData newLeashData = (LeashData)input.read("leash", Leashable.LeashData.CODEC).orElse((Object)null);
+      if (this.getLeashData() != null && newLeashData == null) {
          this.removeLeash();
       }
 
-      this.setLeashData(var2);
+      this.setLeashData(newLeashData);
    }
 
-   default void writeLeashData(ValueOutput var1, @Nullable LeashData var2) {
-      var1.storeNullable("leash", Leashable.LeashData.CODEC, var2);
+   default void writeLeashData(final ValueOutput output, final @Nullable LeashData leashData) {
+      output.storeNullable("leash", Leashable.LeashData.CODEC, leashData);
    }
 
-   private static <E extends Entity & Leashable> void restoreLeashFromSave(E var0, LeashData var1) {
-      if (var1.delayedLeashInfo != null) {
-         Level var3 = var0.level();
+   private static <E extends Entity & Leashable> void restoreLeashFromSave(final E entity, final LeashData leashData) {
+      if (leashData.delayedLeashInfo != null) {
+         Level var3 = entity.level();
          if (var3 instanceof ServerLevel) {
-            ServerLevel var2 = (ServerLevel)var3;
-            Optional var6 = var1.delayedLeashInfo.left();
-            Optional var4 = var1.delayedLeashInfo.right();
-            if (var6.isPresent()) {
-               Entity var5 = var2.getEntity((UUID)var6.get());
-               if (var5 != null) {
-                  setLeashedTo(var0, var5, true);
+            ServerLevel serverLevel = (ServerLevel)var3;
+            Optional<UUID> leashUuid = leashData.delayedLeashInfo.left();
+            Optional<BlockPos> pos = leashData.delayedLeashInfo.right();
+            if (leashUuid.isPresent()) {
+               Entity leasher = serverLevel.getEntity((UUID)leashUuid.get());
+               if (leasher != null) {
+                  setLeashedTo(entity, leasher, true);
                   return;
                }
-            } else if (var4.isPresent()) {
-               setLeashedTo(var0, LeashFenceKnotEntity.getOrCreateKnot(var2, (BlockPos)var4.get()), true);
+            } else if (pos.isPresent()) {
+               setLeashedTo(entity, LeashFenceKnotEntity.getOrCreateKnot(serverLevel, (BlockPos)pos.get()), true);
                return;
             }
 
-            if (var0.tickCount > 100) {
-               var0.spawnAtLocation(var2, (ItemLike)Items.LEAD);
-               ((Leashable)var0).setLeashData((LeashData)null);
+            if (entity.tickCount > 100) {
+               entity.spawnAtLocation(serverLevel, (ItemLike)Items.LEAD);
+               ((Leashable)entity).setLeashData((LeashData)null);
             }
          }
       }
@@ -124,66 +124,66 @@ public interface Leashable {
    default void onLeashRemoved() {
    }
 
-   private static <E extends Entity & Leashable> void dropLeash(E var0, boolean var1, boolean var2) {
-      LeashData var3 = ((Leashable)var0).getLeashData();
-      if (var3 != null && var3.leashHolder != null) {
-         ((Leashable)var0).setLeashData((LeashData)null);
-         ((Leashable)var0).onLeashRemoved();
-         Level var5 = var0.level();
+   private static <E extends Entity & Leashable> void dropLeash(final E entity, final boolean sendPacket, final boolean dropLead) {
+      LeashData leashData = ((Leashable)entity).getLeashData();
+      if (leashData != null && leashData.leashHolder != null) {
+         ((Leashable)entity).setLeashData((LeashData)null);
+         ((Leashable)entity).onLeashRemoved();
+         Level var5 = entity.level();
          if (var5 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var5;
-            if (var2) {
-               var0.spawnAtLocation(var4, (ItemLike)Items.LEAD);
+            ServerLevel level = (ServerLevel)var5;
+            if (dropLead) {
+               entity.spawnAtLocation(level, (ItemLike)Items.LEAD);
             }
 
-            if (var1) {
-               var4.getChunkSource().sendToTrackingPlayers(var0, new ClientboundSetEntityLinkPacket(var0, (Entity)null));
+            if (sendPacket) {
+               level.getChunkSource().sendToTrackingPlayers(entity, new ClientboundSetEntityLinkPacket(entity, (Entity)null));
             }
 
-            var3.leashHolder.notifyLeasheeRemoved((Leashable)var0);
+            leashData.leashHolder.notifyLeasheeRemoved(entity);
          }
       }
 
    }
 
-   static <E extends Entity & Leashable> void tickLeash(ServerLevel var0, E var1) {
-      LeashData var2 = ((Leashable)var1).getLeashData();
-      if (var2 != null && var2.delayedLeashInfo != null) {
-         restoreLeashFromSave(var1, var2);
+   static <E extends Entity & Leashable> void tickLeash(final ServerLevel level, final E entity) {
+      LeashData leashData = ((Leashable)entity).getLeashData();
+      if (leashData != null && leashData.delayedLeashInfo != null) {
+         restoreLeashFromSave(entity, leashData);
       }
 
-      if (var2 != null && var2.leashHolder != null) {
-         if (!var1.canInteractWithLevel() || !var2.leashHolder.canInteractWithLevel()) {
-            if ((Boolean)var0.getGameRules().get(GameRules.ENTITY_DROPS)) {
-               ((Leashable)var1).dropLeash();
+      if (leashData != null && leashData.leashHolder != null) {
+         if (!entity.canInteractWithLevel() || !leashData.leashHolder.canInteractWithLevel()) {
+            if ((Boolean)level.getGameRules().get(GameRules.ENTITY_DROPS)) {
+               ((Leashable)entity).dropLeash();
             } else {
-               ((Leashable)var1).removeLeash();
+               ((Leashable)entity).removeLeash();
             }
          }
 
-         Entity var3 = ((Leashable)var1).getLeashHolder();
-         if (var3 != null && var3.level() == var1.level()) {
-            double var4 = ((Leashable)var1).leashDistanceTo(var3);
-            ((Leashable)var1).whenLeashedTo(var3);
-            if (var4 > ((Leashable)var1).leashSnapDistance()) {
-               var0.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.LEAD_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
-               ((Leashable)var1).leashTooFarBehaviour();
-            } else if (var4 > ((Leashable)var1).leashElasticDistance() - (double)var3.getBbWidth() - (double)var1.getBbWidth() && ((Leashable)var1).checkElasticInteractions(var3, var2)) {
-               ((Leashable)var1).onElasticLeashPull();
+         Entity leashHolder = ((Leashable)entity).getLeashHolder();
+         if (leashHolder != null && leashHolder.level() == entity.level()) {
+            double distanceTo = ((Leashable)entity).leashDistanceTo(leashHolder);
+            ((Leashable)entity).whenLeashedTo(leashHolder);
+            if (distanceTo > ((Leashable)entity).leashSnapDistance()) {
+               level.playSound((Entity)null, leashHolder.getX(), leashHolder.getY(), leashHolder.getZ(), SoundEvents.LEAD_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
+               ((Leashable)entity).leashTooFarBehaviour();
+            } else if (distanceTo > ((Leashable)entity).leashElasticDistance() - (double)leashHolder.getBbWidth() - (double)entity.getBbWidth() && ((Leashable)entity).checkElasticInteractions(leashHolder, leashData)) {
+               ((Leashable)entity).onElasticLeashPull();
             } else {
-               ((Leashable)var1).closeRangeLeashBehaviour(var3);
+               ((Leashable)entity).closeRangeLeashBehaviour(leashHolder);
             }
 
-            var1.setYRot((float)((double)var1.getYRot() - var2.angularMomentum));
-            var2.angularMomentum *= (double)angularFriction(var1);
+            entity.setYRot((float)((double)entity.getYRot() - leashData.angularMomentum));
+            leashData.angularMomentum *= (double)angularFriction(entity);
          }
 
       }
    }
 
    default void onElasticLeashPull() {
-      Entity var1 = (Entity)this;
-      var1.checkFallDistanceAccumulation();
+      Entity entity = (Entity)this;
+      entity.checkFallDistanceAccumulation();
    }
 
    default double leashSnapDistance() {
@@ -194,84 +194,84 @@ public interface Leashable {
       return 6.0;
    }
 
-   static <E extends Entity & Leashable> float angularFriction(E var0) {
-      if (var0.onGround()) {
-         return var0.level().getBlockState(var0.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.91F;
+   static <E extends Entity & Leashable> float angularFriction(final E entity) {
+      if (entity.onGround()) {
+         return entity.level().getBlockState(entity.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.91F;
       } else {
-         return var0.isInLiquid() ? 0.8F : 0.91F;
+         return entity.isInLiquid() ? 0.8F : 0.91F;
       }
    }
 
-   default void whenLeashedTo(Entity var1) {
-      var1.notifyLeashHolder(this);
+   default void whenLeashedTo(final Entity leashHolder) {
+      leashHolder.notifyLeashHolder(this);
    }
 
    default void leashTooFarBehaviour() {
       this.dropLeash();
    }
 
-   default void closeRangeLeashBehaviour(Entity var1) {
+   default void closeRangeLeashBehaviour(final Entity leashHolder) {
    }
 
-   default boolean checkElasticInteractions(Entity var1, LeashData var2) {
-      boolean var3 = var1.supportQuadLeashAsHolder() && this.supportQuadLeash();
-      List var4 = computeElasticInteraction((Entity)this, var1, var3 ? SHARED_QUAD_ATTACHMENT_POINTS : ENTITY_ATTACHMENT_POINT, var3 ? SHARED_QUAD_ATTACHMENT_POINTS : LEASHER_ATTACHMENT_POINT);
-      if (var4.isEmpty()) {
+   default boolean checkElasticInteractions(final Entity leashHolder, final LeashData leashData) {
+      boolean quadConnection = leashHolder.supportQuadLeashAsHolder() && this.supportQuadLeash();
+      List<Wrench> wrenches = computeElasticInteraction((Entity)this, leashHolder, quadConnection ? SHARED_QUAD_ATTACHMENT_POINTS : ENTITY_ATTACHMENT_POINT, quadConnection ? SHARED_QUAD_ATTACHMENT_POINTS : LEASHER_ATTACHMENT_POINT);
+      if (wrenches.isEmpty()) {
          return false;
       } else {
-         Wrench var5 = Leashable.Wrench.accumulate(var4).scale(var3 ? 0.25 : 1.0);
-         var2.angularMomentum += 10.0 * var5.torque();
-         Vec3 var6 = getHolderMovement(var1).subtract(((Entity)this).getKnownMovement());
-         ((Entity)this).addDeltaMovement(var5.force().multiply(AXIS_SPECIFIC_ELASTICITY).add(var6.scale(0.11)));
+         Wrench result = Leashable.Wrench.accumulate(wrenches).scale(quadConnection ? 0.25 : 1.0);
+         leashData.angularMomentum += 10.0 * result.torque();
+         Vec3 relativeVelocityToLeasher = getHolderMovement(leashHolder).subtract(((Entity)this).getKnownMovement());
+         ((Entity)this).addDeltaMovement(result.force().multiply(AXIS_SPECIFIC_ELASTICITY).add(relativeVelocityToLeasher.scale(0.11)));
          return true;
       }
    }
 
-   private static Vec3 getHolderMovement(Entity var0) {
-      if (var0 instanceof Mob var1) {
-         if (var1.isNoAi()) {
+   private static Vec3 getHolderMovement(final Entity leashHolder) {
+      if (leashHolder instanceof Mob mob) {
+         if (mob.isNoAi()) {
             return Vec3.ZERO;
          }
       }
 
-      return var0.getKnownMovement();
+      return leashHolder.getKnownMovement();
    }
 
-   private static <E extends Entity & Leashable> List<Wrench> computeElasticInteraction(E var0, Entity var1, List<Vec3> var2, List<Vec3> var3) {
-      double var4 = ((Leashable)var0).leashElasticDistance();
-      Vec3 var6 = getHolderMovement(var0);
-      float var7 = var0.getYRot() * 0.017453292F;
-      Vec3 var8 = new Vec3((double)var0.getBbWidth(), (double)var0.getBbHeight(), (double)var0.getBbWidth());
-      float var9 = var1.getYRot() * 0.017453292F;
-      Vec3 var10 = new Vec3((double)var1.getBbWidth(), (double)var1.getBbHeight(), (double)var1.getBbWidth());
-      ArrayList var11 = new ArrayList();
+   private static <E extends Entity & Leashable> List<Wrench> computeElasticInteraction(final E entity, final Entity leashHolder, final List<Vec3> entityAttachmentPoints, final List<Vec3> leasherAttachmentPoints) {
+      double slackDistance = ((Leashable)entity).leashElasticDistance();
+      Vec3 currentMovement = getHolderMovement(entity);
+      float entityYRot = entity.getYRot() * 0.017453292F;
+      Vec3 entityDimensions = new Vec3((double)entity.getBbWidth(), (double)entity.getBbHeight(), (double)entity.getBbWidth());
+      float leashHolderYRot = leashHolder.getYRot() * 0.017453292F;
+      Vec3 leasherDimensions = new Vec3((double)leashHolder.getBbWidth(), (double)leashHolder.getBbHeight(), (double)leashHolder.getBbWidth());
+      List<Wrench> wrenches = new ArrayList();
 
-      for(int var12 = 0; var12 < var2.size(); ++var12) {
-         Vec3 var13 = ((Vec3)var2.get(var12)).multiply(var8).yRot(-var7);
-         Vec3 var14 = var0.position().add(var13);
-         Vec3 var15 = ((Vec3)var3.get(var12)).multiply(var10).yRot(-var9);
-         Vec3 var16 = var1.position().add(var15);
-         Optional var10000 = computeDampenedSpringInteraction(var16, var14, var4, var6, var13);
-         Objects.requireNonNull(var11);
-         var10000.ifPresent(var11::add);
+      for(int i = 0; i < entityAttachmentPoints.size(); ++i) {
+         Vec3 entityAttachVector = ((Vec3)entityAttachmentPoints.get(i)).multiply(entityDimensions).yRot(-entityYRot);
+         Vec3 entityAttachPos = entity.position().add(entityAttachVector);
+         Vec3 leasherAttachVector = ((Vec3)leasherAttachmentPoints.get(i)).multiply(leasherDimensions).yRot(-leashHolderYRot);
+         Vec3 leasherAttachPos = leashHolder.position().add(leasherAttachVector);
+         Optional var10000 = computeDampenedSpringInteraction(leasherAttachPos, entityAttachPos, slackDistance, currentMovement, entityAttachVector);
+         Objects.requireNonNull(wrenches);
+         var10000.ifPresent(wrenches::add);
       }
 
-      return var11;
+      return wrenches;
    }
 
-   private static Optional<Wrench> computeDampenedSpringInteraction(Vec3 var0, Vec3 var1, double var2, Vec3 var4, Vec3 var5) {
-      double var6 = var1.distanceTo(var0);
-      if (var6 < var2) {
+   private static Optional<Wrench> computeDampenedSpringInteraction(final Vec3 pivotPoint, final Vec3 objectPosition, final double springSlack, final Vec3 objectMotion, final Vec3 leverArm) {
+      double distance = objectPosition.distanceTo(pivotPoint);
+      if (distance < springSlack) {
          return Optional.empty();
       } else {
-         Vec3 var8 = var0.subtract(var1).normalize().scale(var6 - var2);
-         double var9 = Leashable.Wrench.torqueFromForce(var5, var8);
-         boolean var11 = var4.dot(var8) >= 0.0;
-         if (var11) {
-            var8 = var8.scale(0.30000001192092896);
+         Vec3 displacement = pivotPoint.subtract(objectPosition).normalize().scale(distance - springSlack);
+         double torque = Leashable.Wrench.torqueFromForce(leverArm, displacement);
+         boolean sameDirectionToMovement = objectMotion.dot(displacement) >= 0.0;
+         if (sameDirectionToMovement) {
+            displacement = displacement.scale(0.30000001192092896);
          }
 
-         return Optional.of(new Wrench(var8, var9));
+         return Optional.of(new Wrench(displacement, torque));
       }
    }
 
@@ -283,53 +283,53 @@ public interface Leashable {
       return createQuadLeashOffsets((Entity)this, 0.0, 0.5, 0.5, 0.5);
    }
 
-   static Vec3[] createQuadLeashOffsets(Entity var0, double var1, double var3, double var5, double var7) {
-      float var9 = var0.getBbWidth();
-      double var10 = var1 * (double)var9;
-      double var12 = var3 * (double)var9;
-      double var14 = var5 * (double)var9;
-      double var16 = var7 * (double)var0.getBbHeight();
-      return new Vec3[]{new Vec3(-var14, var16, var12 + var10), new Vec3(-var14, var16, -var12 + var10), new Vec3(var14, var16, -var12 + var10), new Vec3(var14, var16, var12 + var10)};
+   static Vec3[] createQuadLeashOffsets(final Entity entity, final double frontOffset, final double frontBack, final double leftRight, final double height) {
+      float width = entity.getBbWidth();
+      double frontOffsetScaled = frontOffset * (double)width;
+      double frontBackScaled = frontBack * (double)width;
+      double leftRightScaled = leftRight * (double)width;
+      double heightScaled = height * (double)entity.getBbHeight();
+      return new Vec3[]{new Vec3(-leftRightScaled, heightScaled, frontBackScaled + frontOffsetScaled), new Vec3(-leftRightScaled, heightScaled, -frontBackScaled + frontOffsetScaled), new Vec3(leftRightScaled, heightScaled, -frontBackScaled + frontOffsetScaled), new Vec3(leftRightScaled, heightScaled, frontBackScaled + frontOffsetScaled)};
    }
 
-   default Vec3 getLeashOffset(float var1) {
+   default Vec3 getLeashOffset(final float partialTicks) {
       return this.getLeashOffset();
    }
 
    default Vec3 getLeashOffset() {
-      Entity var1 = (Entity)this;
-      return new Vec3(0.0, (double)var1.getEyeHeight(), (double)(var1.getBbWidth() * 0.4F));
+      Entity entity = (Entity)this;
+      return new Vec3(0.0, (double)entity.getEyeHeight(), (double)(entity.getBbWidth() * 0.4F));
    }
 
-   default void setLeashedTo(Entity var1, boolean var2) {
-      if (this != var1) {
-         setLeashedTo((Entity)this, var1, var2);
+   default void setLeashedTo(final Entity holder, final boolean synch) {
+      if (this != holder) {
+         setLeashedTo((Entity)this, holder, synch);
       }
    }
 
-   private static <E extends Entity & Leashable> void setLeashedTo(E var0, Entity var1, boolean var2) {
-      LeashData var3 = ((Leashable)var0).getLeashData();
-      if (var3 == null) {
-         var3 = new LeashData(var1);
-         ((Leashable)var0).setLeashData(var3);
+   private static <E extends Entity & Leashable> void setLeashedTo(final E entity, final Entity holder, final boolean synch) {
+      LeashData leashData = ((Leashable)entity).getLeashData();
+      if (leashData == null) {
+         leashData = new LeashData(holder);
+         ((Leashable)entity).setLeashData(leashData);
       } else {
-         Entity var4 = var3.leashHolder;
-         var3.setLeashHolder(var1);
-         if (var4 != null && var4 != var1) {
-            var4.notifyLeasheeRemoved((Leashable)var0);
+         Entity oldHolder = leashData.leashHolder;
+         leashData.setLeashHolder(holder);
+         if (oldHolder != null && oldHolder != holder) {
+            oldHolder.notifyLeasheeRemoved(entity);
          }
       }
 
-      if (var2) {
-         Level var5 = var0.level();
+      if (synch) {
+         Level var5 = entity.level();
          if (var5 instanceof ServerLevel) {
-            ServerLevel var7 = (ServerLevel)var5;
-            var7.getChunkSource().sendToTrackingPlayers(var0, new ClientboundSetEntityLinkPacket(var0, var1));
+            ServerLevel level = (ServerLevel)var5;
+            level.getChunkSource().sendToTrackingPlayers(entity, new ClientboundSetEntityLinkPacket(entity, holder));
          }
       }
 
-      if (var0.isPassenger()) {
-         var0.stopRiding();
+      if (entity.isPassenger()) {
+         entity.stopRiding();
       }
 
    }
@@ -338,37 +338,37 @@ public interface Leashable {
       return getLeashHolder((Entity)this);
    }
 
-   private static <E extends Entity & Leashable> @Nullable Entity getLeashHolder(E var0) {
-      LeashData var1 = ((Leashable)var0).getLeashData();
-      if (var1 == null) {
+   private static <E extends Entity & Leashable> @Nullable Entity getLeashHolder(final E entity) {
+      LeashData leashData = ((Leashable)entity).getLeashData();
+      if (leashData == null) {
          return null;
       } else {
-         if (var1.delayedLeashHolderId != 0 && var0.level().isClientSide()) {
-            Entity var3 = var0.level().getEntity(var1.delayedLeashHolderId);
-            if (var3 instanceof Entity) {
-               var1.setLeashHolder(var3);
+         if (leashData.delayedLeashHolderId != 0 && entity.level().isClientSide()) {
+            Entity ntt = entity.level().getEntity(leashData.delayedLeashHolderId);
+            if (ntt instanceof Entity) {
+               leashData.setLeashHolder(ntt);
             }
          }
 
-         return var1.leashHolder;
+         return leashData.leashHolder;
       }
    }
 
-   static List<Leashable> leashableLeashedTo(Entity var0) {
-      return leashableInArea(var0, (var1) -> var1.getLeashHolder() == var0);
+   static List<Leashable> leashableLeashedTo(final Entity entity) {
+      return leashableInArea(entity, (l) -> l.getLeashHolder() == entity);
    }
 
-   static List<Leashable> leashableInArea(Entity var0, Predicate<Leashable> var1) {
-      return leashableInArea(var0.level(), var0.getBoundingBox().getCenter(), var1);
+   static List<Leashable> leashableInArea(final Entity entity, final Predicate<Leashable> test) {
+      return leashableInArea(entity.level(), entity.getBoundingBox().getCenter(), test);
    }
 
-   static List<Leashable> leashableInArea(Level var0, Vec3 var1, Predicate<Leashable> var2) {
-      double var3 = 32.0;
-      AABB var5 = AABB.ofSize(var1, 32.0, 32.0, 32.0);
-      Stream var10000 = var0.getEntitiesOfClass(Entity.class, var5, (var1x) -> {
+   static List<Leashable> leashableInArea(final Level level, final Vec3 pos, final Predicate<Leashable> test) {
+      double size = 32.0;
+      AABB scanArea = AABB.ofSize(pos, 32.0, 32.0, 32.0);
+      Stream var10000 = level.getEntitiesOfClass(Entity.class, scanArea, (e) -> {
          boolean var10000;
-         if (var1x instanceof Leashable var2x) {
-            if (var2.test(var2x)) {
+         if (e instanceof Leashable leashable) {
+            if (test.test(leashable)) {
                var10000 = true;
                return var10000;
             }
@@ -383,80 +383,78 @@ public interface Leashable {
 
    public static final class LeashData {
       public static final Codec<LeashData> CODEC;
-      int delayedLeashHolderId;
+      private int delayedLeashHolderId;
       public @Nullable Entity leashHolder;
       public @Nullable Either<UUID, BlockPos> delayedLeashInfo;
       public double angularMomentum;
 
-      private LeashData(Either<UUID, BlockPos> var1) {
+      private LeashData(final Either<UUID, BlockPos> delayedLeashInfo) {
          super();
-         this.delayedLeashInfo = var1;
+         this.delayedLeashInfo = delayedLeashInfo;
       }
 
-      LeashData(Entity var1) {
+      private LeashData(final Entity entity) {
          super();
-         this.leashHolder = var1;
+         this.leashHolder = entity;
       }
 
-      LeashData(int var1) {
+      private LeashData(final int entityId) {
          super();
-         this.delayedLeashHolderId = var1;
+         this.delayedLeashHolderId = entityId;
       }
 
-      public void setLeashHolder(Entity var1) {
-         this.leashHolder = var1;
+      public void setLeashHolder(final Entity leashHolder) {
+         this.leashHolder = leashHolder;
          this.delayedLeashInfo = null;
          this.delayedLeashHolderId = 0;
       }
 
       static {
-         CODEC = Codec.xor(UUIDUtil.CODEC.fieldOf("UUID").codec(), BlockPos.CODEC).xmap(LeashData::new, (var0) -> {
-            Entity var2 = var0.leashHolder;
-            if (var2 instanceof LeashFenceKnotEntity var1) {
-               return Either.right(var1.getPos());
+         CODEC = Codec.xor(UUIDUtil.CODEC.fieldOf("UUID").codec(), BlockPos.CODEC).xmap(LeashData::new, (data) -> {
+            Entity patt0$temp = data.leashHolder;
+            if (patt0$temp instanceof LeashFenceKnotEntity leashKnot) {
+               return Either.right(leashKnot.getPos());
             } else {
-               return var0.leashHolder != null ? Either.left(var0.leashHolder.getUUID()) : (Either)Objects.requireNonNull(var0.delayedLeashInfo, "Invalid LeashData had no attachment");
+               return data.leashHolder != null ? Either.left(data.leashHolder.getUUID()) : (Either)Objects.requireNonNull(data.delayedLeashInfo, "Invalid LeashData had no attachment");
             }
          });
       }
    }
 
    public static record Wrench(Vec3 force, double torque) {
-      static Wrench ZERO;
+      static final Wrench ZERO;
 
-      public Wrench(Vec3 var1, double var2) {
+      public Wrench {
          super();
-         this.force = var1;
-         this.torque = var2;
       }
 
-      static double torqueFromForce(Vec3 var0, Vec3 var1) {
-         return var0.z * var1.x - var0.x * var1.z;
+      static double torqueFromForce(final Vec3 leverArm, final Vec3 force) {
+         return leverArm.z * force.x - leverArm.x * force.z;
       }
 
-      static Wrench accumulate(List<Wrench> var0) {
-         if (var0.isEmpty()) {
+      static Wrench accumulate(final List<Wrench> wrenches) {
+         if (wrenches.isEmpty()) {
             return ZERO;
          } else {
-            double var1 = 0.0;
-            double var3 = 0.0;
-            double var5 = 0.0;
-            double var7 = 0.0;
+            double x = 0.0;
+            double y = 0.0;
+            double z = 0.0;
+            double t = 0.0;
 
-            for(Wrench var10 : var0) {
-               Vec3 var11 = var10.force;
-               var1 += var11.x;
-               var3 += var11.y;
-               var5 += var11.z;
-               var7 += var10.torque;
+            for(Wrench wrench : wrenches) {
+               Vec3 force = wrench.force;
+               x += force.x;
+               y += force.y;
+               z += force.z;
+               t += wrench.torque;
             }
 
-            return new Wrench(new Vec3(var1, var3, var5), var7);
+            return new Wrench(new Vec3(x, y, z), t);
          }
       }
 
-      public Wrench scale(double var1) {
-         return new Wrench(this.force.scale(var1), this.torque * var1);
+      public Wrench scale(final double scale) {
+         return new Wrench(this.force.scale(scale), this.torque * scale);
       }
 
       static {

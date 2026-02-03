@@ -1,5 +1,5 @@
 package net.minecraft.client.gui.spectator;
 
 public interface SpectatorMenuListener {
-   void onSpectatorMenuClosed(SpectatorMenu var1);
+   void onSpectatorMenuClosed(SpectatorMenu menu);
 }

@@ -26,47 +26,43 @@ public record PotDecorations(Optional<Item> back, Optional<Item> left, Optional<
    public static final Codec<PotDecorations> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, PotDecorations> STREAM_CODEC;
 
-   private PotDecorations(List<Item> var1) {
-      this(getItem(var1, 0), getItem(var1, 1), getItem(var1, 2), getItem(var1, 3));
+   private PotDecorations(final List<Item> items) {
+      this(getItem(items, 0), getItem(items, 1), getItem(items, 2), getItem(items, 3));
    }
 
-   public PotDecorations(Item var1, Item var2, Item var3, Item var4) {
-      this(List.of(var1, var2, var3, var4));
+   public PotDecorations(final Item back, final Item left, final Item right, final Item front) {
+      this(List.of(back, left, right, front));
    }
 
-   public PotDecorations(Optional<Item> var1, Optional<Item> var2, Optional<Item> var3, Optional<Item> var4) {
+   public PotDecorations {
       super();
-      this.back = var1;
-      this.left = var2;
-      this.right = var3;
-      this.front = var4;
    }
 
-   private static Optional<Item> getItem(List<Item> var0, int var1) {
-      if (var1 >= var0.size()) {
+   private static Optional<Item> getItem(final List<Item> sherds, final int i) {
+      if (i >= sherds.size()) {
          return Optional.empty();
       } else {
-         Item var2 = (Item)var0.get(var1);
-         return var2 == Items.BRICK ? Optional.empty() : Optional.of(var2);
+         Item item = (Item)sherds.get(i);
+         return item == Items.BRICK ? Optional.empty() : Optional.of(item);
       }
    }
 
    public List<Item> ordered() {
-      return Stream.of(this.back, this.left, this.right, this.front).map((var0) -> (Item)var0.orElse(Items.BRICK)).toList();
+      return Stream.of(this.back, this.left, this.right, this.front).map((item) -> (Item)item.orElse(Items.BRICK)).toList();
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
       if (!this.equals(EMPTY)) {
-         var2.accept(CommonComponents.EMPTY);
-         addSideDetailsToTooltip(var2, this.front);
-         addSideDetailsToTooltip(var2, this.left);
-         addSideDetailsToTooltip(var2, this.right);
-         addSideDetailsToTooltip(var2, this.back);
+         consumer.accept(CommonComponents.EMPTY);
+         addSideDetailsToTooltip(consumer, this.front);
+         addSideDetailsToTooltip(consumer, this.left);
+         addSideDetailsToTooltip(consumer, this.right);
+         addSideDetailsToTooltip(consumer, this.back);
       }
    }
 
-   private static void addSideDetailsToTooltip(Consumer<Component> var0, Optional<Item> var1) {
-      var0.accept((new ItemStack((ItemLike)var1.orElse(Items.BRICK), 1)).getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
+   private static void addSideDetailsToTooltip(final Consumer<Component> consumer, final Optional<Item> side) {
+      consumer.accept((new ItemStack((ItemLike)side.orElse(Items.BRICK), 1)).getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
    }
 
    static {

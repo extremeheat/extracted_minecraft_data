@@ -9,28 +9,27 @@ import net.minecraft.world.TickRateManager;
 public record ClientboundTickingStepPacket(int tickSteps) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundTickingStepPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundTickingStepPacket>codec(ClientboundTickingStepPacket::write, ClientboundTickingStepPacket::new);
 
-   private ClientboundTickingStepPacket(FriendlyByteBuf var1) {
-      this(var1.readVarInt());
+   private ClientboundTickingStepPacket(final FriendlyByteBuf input) {
+      this(input.readVarInt());
    }
 
-   public ClientboundTickingStepPacket(int var1) {
+   public ClientboundTickingStepPacket {
       super();
-      this.tickSteps = var1;
    }
 
-   public static ClientboundTickingStepPacket from(TickRateManager var0) {
-      return new ClientboundTickingStepPacket(var0.frozenTicksToRun());
+   public static ClientboundTickingStepPacket from(final TickRateManager manager) {
+      return new ClientboundTickingStepPacket(manager.frozenTicksToRun());
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.tickSteps);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.tickSteps);
    }
 
    public PacketType<ClientboundTickingStepPacket> type() {
       return GamePacketTypes.CLIENTBOUND_TICKING_STEP;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleTickingStep(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleTickingStep(this);
    }
 }

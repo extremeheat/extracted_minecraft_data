@@ -20,59 +20,58 @@ import org.slf4j.Logger;
 public record RealmsServerPlayerLists(Map<Long, List<ResolvableProfile>> servers) {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public RealmsServerPlayerLists(Map<Long, List<ResolvableProfile>> var1) {
+   public RealmsServerPlayerLists {
       super();
-      this.servers = var1;
    }
 
-   public static RealmsServerPlayerLists parse(String var0) {
-      ImmutableMap.Builder var1 = ImmutableMap.builder();
+   public static RealmsServerPlayerLists parse(final String json) {
+      ImmutableMap.Builder<Long, List<ResolvableProfile>> elements = ImmutableMap.builder();
 
       try {
-         JsonObject var2 = GsonHelper.parse(var0);
-         if (GsonHelper.isArrayNode(var2, "lists")) {
-            for(JsonElement var5 : var2.getAsJsonArray("lists")) {
-               JsonObject var7 = var5.getAsJsonObject();
-               String var8 = JsonUtils.getStringOr("playerList", var7, (String)null);
-               Object var6;
-               if (var8 != null) {
-                  JsonElement var9 = LenientJsonParser.parse(var8);
-                  if (var9.isJsonArray()) {
-                     var6 = parsePlayers(var9.getAsJsonArray());
+         JsonObject object = GsonHelper.parse(json);
+         if (GsonHelper.isArrayNode(object, "lists")) {
+            for(JsonElement jsonElement : object.getAsJsonArray("lists")) {
+               JsonObject node = jsonElement.getAsJsonObject();
+               String playerListString = JsonUtils.getStringOr("playerList", node, (String)null);
+               List<ResolvableProfile> players;
+               if (playerListString != null) {
+                  JsonElement element = LenientJsonParser.parse(playerListString);
+                  if (element.isJsonArray()) {
+                     players = parsePlayers(element.getAsJsonArray());
                   } else {
-                     var6 = Lists.newArrayList();
+                     players = Lists.newArrayList();
                   }
                } else {
-                  var6 = Lists.newArrayList();
+                  players = Lists.newArrayList();
                }
 
-               var1.put(JsonUtils.getLongOr("serverId", var7, -1L), var6);
+               elements.put(JsonUtils.getLongOr("serverId", node, -1L), players);
             }
          }
-      } catch (Exception var10) {
-         LOGGER.error("Could not parse RealmsServerPlayerLists", var10);
+      } catch (Exception e) {
+         LOGGER.error("Could not parse RealmsServerPlayerLists", e);
       }
 
-      return new RealmsServerPlayerLists(var1.build());
+      return new RealmsServerPlayerLists(elements.build());
    }
 
-   private static List<ResolvableProfile> parsePlayers(JsonArray var0) {
-      ArrayList var1 = new ArrayList(var0.size());
+   private static List<ResolvableProfile> parsePlayers(final JsonArray array) {
+      List<ResolvableProfile> profiles = new ArrayList(array.size());
 
-      for(JsonElement var3 : var0) {
-         if (var3.isJsonObject()) {
-            UUID var4 = JsonUtils.getUuidOr("playerId", var3.getAsJsonObject(), (UUID)null);
-            if (var4 != null && !Minecraft.getInstance().isLocalPlayer(var4)) {
-               var1.add(ResolvableProfile.createUnresolved(var4));
+      for(JsonElement element : array) {
+         if (element.isJsonObject()) {
+            UUID playerId = JsonUtils.getUuidOr("playerId", element.getAsJsonObject(), (UUID)null);
+            if (playerId != null && !Minecraft.getInstance().isLocalPlayer(playerId)) {
+               profiles.add(ResolvableProfile.createUnresolved(playerId));
             }
          }
       }
 
-      return var1;
+      return profiles;
    }
 
-   public List<ResolvableProfile> getProfileResultsFor(long var1) {
-      List var3 = (List)this.servers.get(var1);
-      return var3 != null ? var3 : List.of();
+   public List<ResolvableProfile> getProfileResultsFor(final long serverId) {
+      List<ResolvableProfile> profileResults = (List)this.servers.get(serverId);
+      return profileResults != null ? profileResults : List.of();
    }
 }

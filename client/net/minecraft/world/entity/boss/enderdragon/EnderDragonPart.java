@@ -19,21 +19,21 @@ public class EnderDragonPart extends Entity {
    public final String name;
    private final EntityDimensions size;
 
-   public EnderDragonPart(EnderDragon var1, String var2, float var3, float var4) {
-      super(var1.getType(), var1.level());
-      this.size = EntityDimensions.scalable(var3, var4);
+   public EnderDragonPart(final EnderDragon parentMob, final String name, final float w, final float h) {
+      super(parentMob.getType(), parentMob.level());
+      this.size = EntityDimensions.scalable(w, h);
       this.refreshDimensions();
-      this.parentMob = var1;
-      this.name = var2;
+      this.parentMob = parentMob;
+      this.name = name;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
+   protected void readAdditionalSaveData(final ValueInput input) {
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
+   protected void addAdditionalSaveData(final ValueOutput output) {
    }
 
    public boolean isPickable() {
@@ -44,19 +44,19 @@ public class EnderDragonPart extends Entity {
       return this.parentMob.getPickResult();
    }
 
-   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      return this.isInvulnerableToBase(var2) ? false : this.parentMob.hurt(var1, this, var2, var3);
+   public final boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      return this.isInvulnerableToBase(source) ? false : this.parentMob.hurt(level, this, source, damage);
    }
 
-   public boolean is(Entity var1) {
-      return this == var1 || this.parentMob == var1;
+   public boolean is(final Entity other) {
+      return this == other || this.parentMob == other;
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+   public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {
       throw new UnsupportedOperationException();
    }
 
-   public EntityDimensions getDimensions(Pose var1) {
+   public EntityDimensions getDimensions(final Pose pose) {
       return this.size;
    }
 

@@ -12,34 +12,33 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
 import org.jspecify.annotations.Nullable;
 
 public record EntityDataSource(String selectorPattern, @Nullable EntitySelector compiledSelector) implements DataSource {
-   public static final MapCodec<EntityDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("entity").forGetter(EntityDataSource::selectorPattern)).apply(var0, EntityDataSource::new));
+   public static final MapCodec<EntityDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.STRING.fieldOf("entity").forGetter(EntityDataSource::selectorPattern)).apply(i, EntityDataSource::new));
 
-   public EntityDataSource(String var1) {
-      this(var1, compileSelector(var1));
+   public EntityDataSource(final String selector) {
+      this(selector, compileSelector(selector));
    }
 
-   public EntityDataSource(String var1, @Nullable EntitySelector var2) {
+   public EntityDataSource {
       super();
-      this.selectorPattern = var1;
-      this.compiledSelector = var2;
    }
 
-   private static @Nullable EntitySelector compileSelector(String var0) {
+   private static @Nullable EntitySelector compileSelector(final String selector) {
       try {
-         EntitySelectorParser var1 = new EntitySelectorParser(new StringReader(var0), true);
-         return var1.parse();
+         EntitySelectorParser parser = new EntitySelectorParser(new StringReader(selector), true);
+         return parser.parse();
       } catch (CommandSyntaxException var2) {
          return null;
       }
    }
 
-   public Stream<CompoundTag> getData(CommandSourceStack var1) throws CommandSyntaxException {
+   public Stream<CompoundTag> getData(final CommandSourceStack sender) throws CommandSyntaxException {
       if (this.compiledSelector != null) {
-         List var2 = this.compiledSelector.findEntities(var1);
-         return var2.stream().map(NbtPredicate::getEntityTagToCompare);
+         List<? extends Entity> entities = this.compiledSelector.findEntities(sender);
+         return entities.stream().map(NbtPredicate::getEntityTagToCompare);
       } else {
          return Stream.empty();
       }
@@ -53,14 +52,14 @@ public record EntityDataSource(String selectorPattern, @Nullable EntitySelector 
       return "entity=" + this.selectorPattern;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof EntityDataSource) {
-            EntityDataSource var2 = (EntityDataSource)var1;
-            if (this.selectorPattern.equals(var2.selectorPattern)) {
+         if (o instanceof EntityDataSource) {
+            EntityDataSource that = (EntityDataSource)o;
+            if (this.selectorPattern.equals(that.selectorPattern)) {
                var10000 = true;
                return var10000;
             }

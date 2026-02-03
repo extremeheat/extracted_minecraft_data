@@ -13,68 +13,68 @@ public class CraftingInput implements RecipeInput {
    private final StackedItemContents stackedContents = new StackedItemContents();
    private final int ingredientCount;
 
-   private CraftingInput(int var1, int var2, List<ItemStack> var3) {
+   private CraftingInput(final int width, final int height, final List<ItemStack> items) {
       super();
-      this.width = var1;
-      this.height = var2;
-      this.items = var3;
-      int var4 = 0;
+      this.width = width;
+      this.height = height;
+      this.items = items;
+      int ingredientCount = 0;
 
-      for(ItemStack var6 : var3) {
-         if (!var6.isEmpty()) {
-            ++var4;
-            this.stackedContents.accountStack(var6, 1);
+      for(ItemStack item : items) {
+         if (!item.isEmpty()) {
+            ++ingredientCount;
+            this.stackedContents.accountStack(item, 1);
          }
       }
 
-      this.ingredientCount = var4;
+      this.ingredientCount = ingredientCount;
    }
 
-   public static CraftingInput of(int var0, int var1, List<ItemStack> var2) {
-      return ofPositioned(var0, var1, var2).input();
+   public static CraftingInput of(final int width, final int height, final List<ItemStack> items) {
+      return ofPositioned(width, height, items).input();
    }
 
-   public static Positioned ofPositioned(int var0, int var1, List<ItemStack> var2) {
-      if (var0 != 0 && var1 != 0) {
-         int var3 = var0 - 1;
-         int var4 = 0;
-         int var5 = var1 - 1;
-         int var6 = 0;
+   public static Positioned ofPositioned(final int width, final int height, final List<ItemStack> items) {
+      if (width != 0 && height != 0) {
+         int left = width - 1;
+         int right = 0;
+         int top = height - 1;
+         int bottom = 0;
 
-         for(int var7 = 0; var7 < var1; ++var7) {
-            boolean var8 = true;
+         for(int y = 0; y < height; ++y) {
+            boolean rowEmpty = true;
 
-            for(int var9 = 0; var9 < var0; ++var9) {
-               ItemStack var10 = (ItemStack)var2.get(var9 + var7 * var0);
-               if (!var10.isEmpty()) {
-                  var3 = Math.min(var3, var9);
-                  var4 = Math.max(var4, var9);
-                  var8 = false;
+            for(int x = 0; x < width; ++x) {
+               ItemStack item = (ItemStack)items.get(x + y * width);
+               if (!item.isEmpty()) {
+                  left = Math.min(left, x);
+                  right = Math.max(right, x);
+                  rowEmpty = false;
                }
             }
 
-            if (!var8) {
-               var5 = Math.min(var5, var7);
-               var6 = Math.max(var6, var7);
+            if (!rowEmpty) {
+               top = Math.min(top, y);
+               bottom = Math.max(bottom, y);
             }
          }
 
-         int var13 = var4 - var3 + 1;
-         int var14 = var6 - var5 + 1;
-         if (var13 > 0 && var14 > 0) {
-            if (var13 == var0 && var14 == var1) {
-               return new Positioned(new CraftingInput(var0, var1, var2), var3, var5);
+         int newWidth = right - left + 1;
+         int newHeight = bottom - top + 1;
+         if (newWidth > 0 && newHeight > 0) {
+            if (newWidth == width && newHeight == height) {
+               return new Positioned(new CraftingInput(width, height, items), left, top);
             } else {
-               ArrayList var15 = new ArrayList(var13 * var14);
+               List<ItemStack> newItems = new ArrayList(newWidth * newHeight);
 
-               for(int var16 = 0; var16 < var14; ++var16) {
-                  for(int var11 = 0; var11 < var13; ++var11) {
-                     int var12 = var11 + var3 + (var16 + var5) * var0;
-                     var15.add((ItemStack)var2.get(var12));
+               for(int y = 0; y < newHeight; ++y) {
+                  for(int x = 0; x < newWidth; ++x) {
+                     int index = x + left + (y + top) * width;
+                     newItems.add((ItemStack)items.get(index));
                   }
                }
 
-               return new Positioned(new CraftingInput(var13, var14, var15), var3, var5);
+               return new Positioned(new CraftingInput(newWidth, newHeight, newItems), left, top);
             }
          } else {
             return CraftingInput.Positioned.EMPTY;
@@ -84,12 +84,12 @@ public class CraftingInput implements RecipeInput {
       }
    }
 
-   public ItemStack getItem(int var1) {
-      return (ItemStack)this.items.get(var1);
+   public ItemStack getItem(final int index) {
+      return (ItemStack)this.items.get(index);
    }
 
-   public ItemStack getItem(int var1, int var2) {
-      return (ItemStack)this.items.get(var1 + var2 * this.width);
+   public ItemStack getItem(final int x, final int y) {
+      return (ItemStack)this.items.get(x + y * this.width);
    }
 
    public int size() {
@@ -120,32 +120,29 @@ public class CraftingInput implements RecipeInput {
       return this.height;
    }
 
-   public boolean equals(Object var1) {
-      if (var1 == this) {
+   public boolean equals(final Object obj) {
+      if (obj == this) {
          return true;
-      } else if (!(var1 instanceof CraftingInput)) {
+      } else if (!(obj instanceof CraftingInput)) {
          return false;
       } else {
-         CraftingInput var2 = (CraftingInput)var1;
-         return this.width == var2.width && this.height == var2.height && this.ingredientCount == var2.ingredientCount && ItemStack.listMatches(this.items, var2.items);
+         CraftingInput input = (CraftingInput)obj;
+         return this.width == input.width && this.height == input.height && this.ingredientCount == input.ingredientCount && ItemStack.listMatches(this.items, input.items);
       }
    }
 
    public int hashCode() {
-      int var1 = ItemStack.hashStackList(this.items);
-      var1 = 31 * var1 + this.width;
-      var1 = 31 * var1 + this.height;
-      return var1;
+      int result = ItemStack.hashStackList(this.items);
+      result = 31 * result + this.width;
+      result = 31 * result + this.height;
+      return result;
    }
 
    public static record Positioned(CraftingInput input, int left, int top) {
       public static final Positioned EMPTY;
 
-      public Positioned(CraftingInput var1, int var2, int var3) {
+      public Positioned {
          super();
-         this.input = var1;
-         this.left = var2;
-         this.top = var3;
       }
 
       static {

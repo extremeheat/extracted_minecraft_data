@@ -8,16 +8,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 
 public record StorageDataSource(Identifier id) implements DataSource {
-   public static final MapCodec<StorageDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("storage").forGetter(StorageDataSource::id)).apply(var0, StorageDataSource::new));
+   public static final MapCodec<StorageDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("storage").forGetter(StorageDataSource::id)).apply(i, StorageDataSource::new));
 
-   public StorageDataSource(Identifier var1) {
+   public StorageDataSource {
       super();
-      this.id = var1;
    }
 
-   public Stream<CompoundTag> getData(CommandSourceStack var1) {
-      CompoundTag var2 = var1.getServer().getCommandStorage().get(this.id);
-      return Stream.of(var2);
+   public Stream<CompoundTag> getData(final CommandSourceStack sender) {
+      CompoundTag tag = sender.getServer().getCommandStorage().get(this.id);
+      return Stream.of(tag);
    }
 
    public MapCodec<StorageDataSource> codec() {

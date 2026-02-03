@@ -21,41 +21,41 @@ public class RenderSectionRegion implements BlockAndTintGetter {
    private final SectionCopy[] sections;
    private final Level level;
 
-   RenderSectionRegion(Level var1, int var2, int var3, int var4, SectionCopy[] var5) {
+   RenderSectionRegion(final Level level, final int minSectionX, final int minSectionY, final int minSectionZ, final SectionCopy[] sections) {
       super();
-      this.level = var1;
-      this.minSectionX = var2;
-      this.minSectionY = var3;
-      this.minSectionZ = var4;
-      this.sections = var5;
+      this.level = level;
+      this.minSectionX = minSectionX;
+      this.minSectionY = minSectionY;
+      this.minSectionZ = minSectionZ;
+      this.sections = sections;
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      return this.getSection(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getY()), SectionPos.blockToSectionCoord(var1.getZ())).getBlockState(var1);
+   public BlockState getBlockState(final BlockPos pos) {
+      return this.getSection(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getY()), SectionPos.blockToSectionCoord(pos.getZ())).getBlockState(pos);
    }
 
-   public FluidState getFluidState(BlockPos var1) {
-      return this.getSection(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getY()), SectionPos.blockToSectionCoord(var1.getZ())).getBlockState(var1).getFluidState();
+   public FluidState getFluidState(final BlockPos pos) {
+      return this.getSection(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getY()), SectionPos.blockToSectionCoord(pos.getZ())).getBlockState(pos).getFluidState();
    }
 
-   public float getShade(Direction var1, boolean var2) {
-      return this.level.getShade(var1, var2);
+   public float getShade(final Direction direction, final boolean shade) {
+      return this.level.getShade(direction, shade);
    }
 
    public LevelLightEngine getLightEngine() {
       return this.level.getLightEngine();
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
-      return this.getSection(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getY()), SectionPos.blockToSectionCoord(var1.getZ())).getBlockEntity(var1);
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
+      return this.getSection(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getY()), SectionPos.blockToSectionCoord(pos.getZ())).getBlockEntity(pos);
    }
 
-   private SectionCopy getSection(int var1, int var2, int var3) {
-      return this.sections[index(this.minSectionX, this.minSectionY, this.minSectionZ, var1, var2, var3)];
+   private SectionCopy getSection(final int sectionX, final int sectionY, final int sectionZ) {
+      return this.sections[index(this.minSectionX, this.minSectionY, this.minSectionZ, sectionX, sectionY, sectionZ)];
    }
 
-   public int getBlockTint(BlockPos var1, ColorResolver var2) {
-      return this.level.getBlockTint(var1, var2);
+   public int getBlockTint(final BlockPos pos, final ColorResolver resolver) {
+      return this.level.getBlockTint(pos, resolver);
    }
 
    public int getMinY() {
@@ -66,7 +66,7 @@ public class RenderSectionRegion implements BlockAndTintGetter {
       return this.level.getHeight();
    }
 
-   public static int index(int var0, int var1, int var2, int var3, int var4, int var5) {
-      return var3 - var0 + (var4 - var1) * 3 + (var5 - var2) * 3 * 3;
+   public static int index(final int minSectionX, final int minSectionY, final int minSectionZ, final int sectionX, final int sectionY, final int sectionZ) {
+      return sectionX - minSectionX + (sectionY - minSectionY) * 3 + (sectionZ - minSectionZ) * 3 * 3;
    }
 }

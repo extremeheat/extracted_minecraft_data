@@ -6,13 +6,13 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.util.parsing.packrat.commands.StringReaderTerms;
 
 public interface DelayedException<T extends Exception> {
-   T create(String var1, int var2);
+   T create(String contents, int position);
 
-   static DelayedException<CommandSyntaxException> create(SimpleCommandExceptionType var0) {
-      return (var1, var2) -> var0.createWithContext(StringReaderTerms.createReader(var1, var2));
+   static DelayedException<CommandSyntaxException> create(final SimpleCommandExceptionType type) {
+      return (contents, position) -> type.createWithContext(StringReaderTerms.createReader(contents, position));
    }
 
-   static DelayedException<CommandSyntaxException> create(DynamicCommandExceptionType var0, String var1) {
-      return (var2, var3) -> var0.createWithContext(StringReaderTerms.createReader(var2, var3), var1);
+   static DelayedException<CommandSyntaxException> create(final DynamicCommandExceptionType type, final String argument) {
+      return (contents, position) -> type.createWithContext(StringReaderTerms.createReader(contents, position), argument);
    }
 }

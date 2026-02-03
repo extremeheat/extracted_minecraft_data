@@ -15,15 +15,15 @@ public class MinecartSoundInstance extends AbstractTickableSoundInstance {
    private final AbstractMinecart minecart;
    private float pitch = 0.0F;
 
-   public MinecartSoundInstance(AbstractMinecart var1) {
+   public MinecartSoundInstance(final AbstractMinecart minecart) {
       super(SoundEvents.MINECART_RIDING, SoundSource.NEUTRAL, SoundInstance.createUnseededRandom());
-      this.minecart = var1;
+      this.minecart = minecart;
       this.looping = true;
       this.delay = 0;
       this.volume = 0.0F;
-      this.x = (double)((float)var1.getX());
-      this.y = (double)((float)var1.getY());
-      this.z = (double)((float)var1.getZ());
+      this.x = (double)((float)minecart.getX());
+      this.y = (double)((float)minecart.getY());
+      this.z = (double)((float)minecart.getZ());
    }
 
    public boolean canPlaySound() {
@@ -41,11 +41,11 @@ public class MinecartSoundInstance extends AbstractTickableSoundInstance {
          this.x = (double)((float)this.minecart.getX());
          this.y = (double)((float)this.minecart.getY());
          this.z = (double)((float)this.minecart.getZ());
-         float var1 = (float)this.minecart.getDeltaMovement().horizontalDistance();
-         boolean var2 = !this.minecart.isOnRails() && this.minecart.getBehavior() instanceof NewMinecartBehavior;
-         if (var1 >= 0.01F && this.minecart.level().tickRateManager().runsNormally() && !var2) {
+         float speed = (float)this.minecart.getDeltaMovement().horizontalDistance();
+         boolean offRail = !this.minecart.isOnRails() && this.minecart.getBehavior() instanceof NewMinecartBehavior;
+         if (speed >= 0.01F && this.minecart.level().tickRateManager().runsNormally() && !offRail) {
             this.pitch = Mth.clamp(this.pitch + 0.0025F, 0.0F, 1.0F);
-            this.volume = Mth.lerp(Mth.clamp(var1, 0.0F, 0.5F), 0.0F, 0.7F);
+            this.volume = Mth.lerp(Mth.clamp(speed, 0.0F, 0.5F), 0.0F, 0.7F);
          } else {
             this.pitch = 0.0F;
             this.volume = 0.0F;

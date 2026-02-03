@@ -9,26 +9,26 @@ public class ServerboundKeepAlivePacket implements Packet<ServerCommonPacketList
    public static final StreamCodec<FriendlyByteBuf, ServerboundKeepAlivePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundKeepAlivePacket>codec(ServerboundKeepAlivePacket::write, ServerboundKeepAlivePacket::new);
    private final long id;
 
-   public ServerboundKeepAlivePacket(long var1) {
+   public ServerboundKeepAlivePacket(final long id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
-   private ServerboundKeepAlivePacket(FriendlyByteBuf var1) {
+   private ServerboundKeepAlivePacket(final FriendlyByteBuf input) {
       super();
-      this.id = var1.readLong();
+      this.id = input.readLong();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeLong(this.id);
+   private void write(final FriendlyByteBuf output) {
+      output.writeLong(this.id);
    }
 
    public PacketType<ServerboundKeepAlivePacket> type() {
       return CommonPacketTypes.SERVERBOUND_KEEP_ALIVE;
    }
 
-   public void handle(ServerCommonPacketListener var1) {
-      var1.handleKeepAlive(this);
+   public void handle(final ServerCommonPacketListener listener) {
+      listener.handleKeepAlive(this);
    }
 
    public long getId() {

@@ -1,6 +1,7 @@
 package net.minecraft.client.resources;
 
 import com.google.common.base.Splitter;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
@@ -24,32 +25,32 @@ public class IndexedAssetSource {
       super();
    }
 
-   public static Path createIndexFs(Path var0, String var1) {
-      Path var2 = var0.resolve("objects");
-      LinkFileSystem.Builder var3 = LinkFileSystem.builder();
-      Path var4 = var0.resolve("indexes/" + var1 + ".json");
+   public static Path createIndexFs(final Path assetsDirectory, final String index) {
+      Path objectsDirectory = assetsDirectory.resolve("objects");
+      LinkFileSystem.Builder builder = LinkFileSystem.builder();
+      Path indexFile = assetsDirectory.resolve("indexes/" + index + ".json");
 
       try {
-         BufferedReader var5 = Files.newBufferedReader(var4, StandardCharsets.UTF_8);
+         BufferedReader reader = Files.newBufferedReader(indexFile, StandardCharsets.UTF_8);
 
          try {
-            JsonObject var6 = GsonHelper.parse((Reader)var5);
-            JsonObject var7 = GsonHelper.getAsJsonObject(var6, "objects", (JsonObject)null);
-            if (var7 != null) {
-               for(Map.Entry var9 : var7.entrySet()) {
-                  JsonObject var10 = (JsonObject)var9.getValue();
-                  String var11 = (String)var9.getKey();
-                  List var12 = PATH_SPLITTER.splitToList(var11);
-                  String var13 = GsonHelper.getAsString(var10, "hash");
-                  String var10001 = var13.substring(0, 2);
-                  Path var14 = var2.resolve(var10001 + "/" + var13);
-                  var3.put(var12, var14);
+            JsonObject root = GsonHelper.parse((Reader)reader);
+            JsonObject objects = GsonHelper.getAsJsonObject(root, "objects", (JsonObject)null);
+            if (objects != null) {
+               for(Map.Entry<String, JsonElement> entry : objects.entrySet()) {
+                  JsonObject object = (JsonObject)entry.getValue();
+                  String filename = (String)entry.getKey();
+                  List<String> path = PATH_SPLITTER.splitToList(filename);
+                  String hash = GsonHelper.getAsString(object, "hash");
+                  String var10001 = hash.substring(0, 2);
+                  Path file = objectsDirectory.resolve(var10001 + "/" + hash);
+                  builder.put(path, file);
                }
             }
          } catch (Throwable var16) {
-            if (var5 != null) {
+            if (reader != null) {
                try {
-                  var5.close();
+                  reader.close();
                } catch (Throwable var15) {
                   var16.addSuppressed(var15);
                }
@@ -58,15 +59,15 @@ public class IndexedAssetSource {
             throw var16;
          }
 
-         if (var5 != null) {
-            var5.close();
+         if (reader != null) {
+            reader.close();
          }
       } catch (JsonParseException var17) {
-         LOGGER.error("Unable to parse resource index file: {}", var4);
+         LOGGER.error("Unable to parse resource index file: {}", indexFile);
       } catch (IOException var18) {
-         LOGGER.error("Can't open the resource index file: {}", var4);
+         LOGGER.error("Can't open the resource index file: {}", indexFile);
       }
 
-      return var3.build("index-" + var1).getPath("/");
+      return builder.build("index-" + index).getPath("/");
    }
 }

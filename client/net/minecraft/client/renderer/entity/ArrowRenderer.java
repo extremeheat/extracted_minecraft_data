@@ -17,26 +17,26 @@ import org.joml.Quaternionfc;
 public abstract class ArrowRenderer<T extends AbstractArrow, S extends ArrowRenderState> extends EntityRenderer<T, S> {
    private final ArrowModel model;
 
-   public ArrowRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
-      this.model = new ArrowModel(var1.bakeLayer(ModelLayers.ARROW));
+   public ArrowRenderer(final EntityRendererProvider.Context context) {
+      super(context);
+      this.model = new ArrowModel(context.bakeLayer(ModelLayers.ARROW));
    }
 
-   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      var2.pushPose();
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.yRot - 90.0F));
-      var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var1.xRot));
-      var3.submitModel(this.model, var1, var2, RenderTypes.entityCutout(this.getTextureLocation(var1)), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
-      var2.popPose();
-      super.submit(var1, var2, var3, var4);
+   public void submit(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      poseStack.pushPose();
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.yRot - 90.0F));
+      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(state.xRot));
+      submitNodeCollector.submitModel(this.model, state, poseStack, RenderTypes.entityCutout(this.getTextureLocation(state)), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      poseStack.popPose();
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
-   protected abstract Identifier getTextureLocation(S var1);
+   protected abstract Identifier getTextureLocation(S state);
 
-   public void extractRenderState(T var1, S var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.xRot = var1.getXRot(var3);
-      var2.yRot = var1.getYRot(var3);
-      var2.shake = (float)var1.shakeTime - var3;
+   public void extractRenderState(final T entity, final S state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.xRot = entity.getXRot(partialTicks);
+      state.yRot = entity.getYRot(partialTicks);
+      state.shake = (float)entity.shakeTime - partialTicks;
    }
 }

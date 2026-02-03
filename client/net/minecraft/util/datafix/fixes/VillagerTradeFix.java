@@ -13,21 +13,21 @@ import java.util.function.Function;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class VillagerTradeFix extends DataFix {
-   public VillagerTradeFix(Schema var1) {
-      super(var1, false);
+   public VillagerTradeFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.VILLAGER_TRADE);
-      OpticFinder var2 = var1.findField("buy");
-      OpticFinder var3 = var1.findField("buyB");
-      OpticFinder var4 = var1.findField("sell");
-      OpticFinder var5 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      Function var6 = (var2x) -> this.updateItemStack(var5, var2x);
-      return this.fixTypeEverywhereTyped("Villager trade fix", var1, (var4x) -> var4x.updateTyped(var2, var6).updateTyped(var3, var6).updateTyped(var4, var6));
+      Type<?> recipeType = this.getInputSchema().getType(References.VILLAGER_TRADE);
+      OpticFinder<?> buyFinder = recipeType.findField("buy");
+      OpticFinder<?> buyBFinder = recipeType.findField("buyB");
+      OpticFinder<?> sellFinder = recipeType.findField("sell");
+      OpticFinder<Pair<String, String>> idF = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      Function<Typed<?>, Typed<?>> itemStackUpdater = (itemStack) -> this.updateItemStack(idF, itemStack);
+      return this.fixTypeEverywhereTyped("Villager trade fix", recipeType, (recipe) -> recipe.updateTyped(buyFinder, itemStackUpdater).updateTyped(buyBFinder, itemStackUpdater).updateTyped(sellFinder, itemStackUpdater));
    }
 
-   private Typed<?> updateItemStack(OpticFinder<Pair<String, String>> var1, Typed<?> var2) {
-      return var2.update(var1, (var0) -> var0.mapSecond((var0x) -> Objects.equals(var0x, "minecraft:carved_pumpkin") ? "minecraft:pumpkin" : var0x));
+   private Typed<?> updateItemStack(final OpticFinder<Pair<String, String>> idF, final Typed<?> itemStack) {
+      return itemStack.update(idF, (pair) -> pair.mapSecond((name) -> Objects.equals(name, "minecraft:carved_pumpkin") ? "minecraft:pumpkin" : name));
    }
 }

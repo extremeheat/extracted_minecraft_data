@@ -11,23 +11,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionfc;
 
 public class CarriedBlockLayer extends RenderLayer<EndermanRenderState, EndermanModel<EndermanRenderState>> {
-   public CarriedBlockLayer(RenderLayerParent<EndermanRenderState, EndermanModel<EndermanRenderState>> var1) {
-      super(var1);
+   public CarriedBlockLayer(final RenderLayerParent<EndermanRenderState, EndermanModel<EndermanRenderState>> renderer) {
+      super(renderer);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, EndermanRenderState var4, float var5, float var6) {
-      BlockState var7 = var4.carriedBlock;
-      if (var7 != null) {
-         var1.pushPose();
-         var1.translate(0.0F, 0.6875F, -0.75F);
-         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(20.0F));
-         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(45.0F));
-         var1.translate(0.25F, 0.1875F, 0.25F);
-         float var8 = 0.5F;
-         var1.scale(-0.5F, -0.5F, 0.5F);
-         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-         var2.submitBlock(var1, var7, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
-         var1.popPose();
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final EndermanRenderState state, final float yRot, final float xRot) {
+      BlockState blockState = state.carriedBlock;
+      if (blockState != null) {
+         poseStack.pushPose();
+         poseStack.translate(0.0F, 0.6875F, -0.75F);
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(20.0F));
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(45.0F));
+         poseStack.translate(0.25F, 0.1875F, 0.25F);
+         float s = 0.5F;
+         poseStack.scale(-0.5F, -0.5F, 0.5F);
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
+         submitNodeCollector.submitBlock(poseStack, blockState, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+         poseStack.popPose();
       }
    }
 }

@@ -25,50 +25,50 @@ public class TabButton extends AbstractWidget.WithInactiveMessage {
    private final TabManager tabManager;
    private final Tab tab;
 
-   public TabButton(TabManager var1, Tab var2, int var3, int var4) {
-      super(0, 0, var3, var4, var2.getTabTitle());
-      this.tabManager = var1;
-      this.tab = var2;
+   public TabButton(final TabManager tabManager, final Tab tab, final int width, final int height) {
+      super(0, 0, width, height, tab.getTabTitle());
+      this.tabManager = tabManager;
+      this.tab = tab;
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.isSelected(), this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
-      Font var5 = Minecraft.getInstance().font;
-      int var6 = this.active ? -1 : -6250336;
+   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.isSelected(), this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
+      Font font = Minecraft.getInstance().font;
+      int underlineColor = this.active ? -1 : -6250336;
       if (this.isSelected()) {
-         this.renderMenuBackground(var1, this.getX() + 2, this.getY() + 2, this.getRight() - 2, this.getBottom());
-         this.renderFocusUnderline(var1, var5, var6);
+         this.renderMenuBackground(graphics, this.getX() + 2, this.getY() + 2, this.getRight() - 2, this.getBottom());
+         this.renderFocusUnderline(graphics, font, underlineColor);
       }
 
-      this.renderLabel(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
-      this.handleCursor(var1);
+      this.renderLabel(graphics.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
+      this.handleCursor(graphics);
    }
 
-   protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      Screen.renderMenuBackgroundTexture(var1, Screen.MENU_BACKGROUND, var2, var3, 0.0F, 0.0F, var4 - var2, var5 - var3);
+   protected void renderMenuBackground(final GuiGraphics graphics, final int x0, final int y0, final int x1, final int y1) {
+      Screen.renderMenuBackgroundTexture(graphics, Screen.MENU_BACKGROUND, x0, y0, 0.0F, 0.0F, x1 - x0, y1 - y0);
    }
 
-   private void renderLabel(ActiveTextCollector var1) {
-      int var2 = this.getX() + 1;
-      int var3 = this.getY() + (this.isSelected() ? 0 : 3);
-      int var4 = this.getX() + this.getWidth() - 1;
-      int var5 = this.getY() + this.getHeight();
-      var1.acceptScrollingWithDefaultCenter(this.getMessage(), var2, var4, var3, var5);
+   private void renderLabel(final ActiveTextCollector output) {
+      int left = this.getX() + 1;
+      int top = this.getY() + (this.isSelected() ? 0 : 3);
+      int right = this.getX() + this.getWidth() - 1;
+      int bottom = this.getY() + this.getHeight();
+      output.acceptScrollingWithDefaultCenter(this.getMessage(), left, right, top, bottom);
    }
 
-   private void renderFocusUnderline(GuiGraphics var1, Font var2, int var3) {
-      int var4 = Math.min(var2.width((FormattedText)this.getMessage()), this.getWidth() - 4);
-      int var5 = this.getX() + (this.getWidth() - var4) / 2;
-      int var6 = this.getY() + this.getHeight() - 2;
-      var1.fill(var5, var6, var5 + var4, var6 + 1, var3);
+   private void renderFocusUnderline(final GuiGraphics graphics, final Font font, final int color) {
+      int width = Math.min(font.width((FormattedText)this.getMessage()), this.getWidth() - 4);
+      int left = this.getX() + (this.getWidth() - width) / 2;
+      int top = this.getY() + this.getHeight() - 2;
+      graphics.fill(left, top, left + width, top + 1, color);
    }
 
-   protected void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, (Component)Component.translatable("gui.narrate.tab", this.tab.getTabTitle()));
-      var1.add(NarratedElementType.HINT, this.tab.getTabExtraNarration());
+   protected void updateWidgetNarration(final NarrationElementOutput output) {
+      output.add(NarratedElementType.TITLE, (Component)Component.translatable("gui.narrate.tab", this.tab.getTabTitle()));
+      output.add(NarratedElementType.HINT, this.tab.getTabExtraNarration());
    }
 
-   public void playDownSound(SoundManager var1) {
+   public void playDownSound(final SoundManager soundManager) {
    }
 
    public Tab tab() {

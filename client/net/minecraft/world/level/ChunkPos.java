@@ -17,7 +17,7 @@ import net.minecraft.world.level.chunk.status.ChunkPyramid;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import org.jspecify.annotations.Nullable;
 
-public class ChunkPos {
+public record ChunkPos(int x, int z) {
    public static final Codec<ChunkPos> CODEC;
    public static final StreamCodec<ByteBuf, ChunkPos> STREAM_CODEC;
    private static final int SAFETY_MARGIN = 1056;
@@ -31,85 +31,66 @@ public class ChunkPos {
    public static final int REGION_SIZE = 32;
    private static final int REGION_MASK = 31;
    public static final int REGION_MAX_INDEX = 31;
-   public final int x;
-   public final int z;
    private static final int HASH_A = 1664525;
    private static final int HASH_C = 1013904223;
    private static final int HASH_Z_XOR = -559038737;
 
-   public ChunkPos(int var1, int var2) {
+   public ChunkPos {
       super();
-      this.x = var1;
-      this.z = var2;
    }
 
-   public ChunkPos(BlockPos var1) {
-      super();
-      this.x = SectionPos.blockToSectionCoord(var1.getX());
-      this.z = SectionPos.blockToSectionCoord(var1.getZ());
+   public static ChunkPos containing(final BlockPos pos) {
+      return new ChunkPos(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
    }
 
-   public ChunkPos(long var1) {
-      super();
-      this.x = (int)var1;
-      this.z = (int)(var1 >> 32);
+   public static ChunkPos unpack(final long key) {
+      return new ChunkPos((int)key, (int)(key >> 32));
    }
 
-   public static ChunkPos minFromRegion(int var0, int var1) {
-      return new ChunkPos(var0 << 5, var1 << 5);
+   public static ChunkPos minFromRegion(final int regionX, final int regionZ) {
+      return new ChunkPos(regionX << 5, regionZ << 5);
    }
 
-   public static ChunkPos maxFromRegion(int var0, int var1) {
-      return new ChunkPos((var0 << 5) + 31, (var1 << 5) + 31);
+   public static ChunkPos maxFromRegion(final int regionX, final int regionZ) {
+      return new ChunkPos((regionX << 5) + 31, (regionZ << 5) + 31);
    }
 
    public boolean isValid() {
       return isValid(this.x, this.z);
    }
 
-   public static boolean isValid(int var0, int var1) {
-      return Mth.absMax(var0, var1) <= MAX_COORDINATE_VALUE;
+   public static boolean isValid(final int x, final int z) {
+      return Mth.absMax(x, z) <= MAX_COORDINATE_VALUE;
    }
 
-   public long toLong() {
-      return asLong(this.x, this.z);
+   public long pack() {
+      return pack(this.x, this.z);
    }
 
-   public static long asLong(int var0, int var1) {
-      return (long)var0 & 4294967295L | ((long)var1 & 4294967295L) << 32;
+   public static long pack(final int x, final int z) {
+      return (long)x & 4294967295L | ((long)z & 4294967295L) << 32;
    }
 
-   public static long asLong(BlockPos var0) {
-      return asLong(SectionPos.blockToSectionCoord(var0.getX()), SectionPos.blockToSectionCoord(var0.getZ()));
+   public static long pack(final BlockPos pos) {
+      return pack(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
    }
 
-   public static int getX(long var0) {
-      return (int)(var0 & 4294967295L);
+   public static int getX(final long pos) {
+      return (int)(pos & 4294967295L);
    }
 
-   public static int getZ(long var0) {
-      return (int)(var0 >>> 32 & 4294967295L);
+   public static int getZ(final long pos) {
+      return (int)(pos >>> 32 & 4294967295L);
    }
 
    public int hashCode() {
       return hash(this.x, this.z);
    }
 
-   public static int hash(int var0, int var1) {
-      int var2 = 1664525 * var0 + 1013904223;
-      int var3 = 1664525 * (var1 ^ -559038737) + 1013904223;
-      return var2 ^ var3;
-   }
-
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (!(var1 instanceof ChunkPos)) {
-         return false;
-      } else {
-         ChunkPos var2 = (ChunkPos)var1;
-         return this.x == var2.x && this.z == var2.z;
-      }
+   public static int hash(final int x, final int z) {
+      int xTransform = 1664525 * x + 1013904223;
+      int zTransform = 1664525 * (z ^ -559038737) + 1013904223;
+      return xTransform ^ zTransform;
    }
 
    public int getMiddleBlockX() {
@@ -152,24 +133,24 @@ public class ChunkPos {
       return this.z & 31;
    }
 
-   public BlockPos getBlockAt(int var1, int var2, int var3) {
-      return new BlockPos(this.getBlockX(var1), var2, this.getBlockZ(var3));
+   public BlockPos getBlockAt(final int x, final int y, final int z) {
+      return new BlockPos(this.getBlockX(x), y, this.getBlockZ(z));
    }
 
-   public int getBlockX(int var1) {
-      return SectionPos.sectionToBlockCoord(this.x, var1);
+   public int getBlockX(final int offset) {
+      return SectionPos.sectionToBlockCoord(this.x, offset);
    }
 
-   public int getBlockZ(int var1) {
-      return SectionPos.sectionToBlockCoord(this.z, var1);
+   public int getBlockZ(final int offset) {
+      return SectionPos.sectionToBlockCoord(this.z, offset);
    }
 
-   public BlockPos getMiddleBlockPosition(int var1) {
-      return new BlockPos(this.getMiddleBlockX(), var1, this.getMiddleBlockZ());
+   public BlockPos getMiddleBlockPosition(final int y) {
+      return new BlockPos(this.getMiddleBlockX(), y, this.getMiddleBlockZ());
    }
 
-   public boolean contains(BlockPos var1) {
-      return var1.getX() >= this.getMinBlockX() && var1.getZ() >= this.getMinBlockZ() && var1.getX() <= this.getMaxBlockX() && var1.getZ() <= this.getMaxBlockZ();
+   public boolean contains(final BlockPos pos) {
+      return pos.getX() >= this.getMinBlockX() && pos.getZ() >= this.getMinBlockZ() && pos.getX() <= this.getMaxBlockX() && pos.getZ() <= this.getMaxBlockZ();
    }
 
    public String toString() {
@@ -180,85 +161,75 @@ public class ChunkPos {
       return new BlockPos(this.getMinBlockX(), 0, this.getMinBlockZ());
    }
 
-   public int getChessboardDistance(ChunkPos var1) {
-      return this.getChessboardDistance(var1.x, var1.z);
+   public int getChessboardDistance(final ChunkPos pos) {
+      return this.getChessboardDistance(pos.x, pos.z);
    }
 
-   public int getChessboardDistance(int var1, int var2) {
-      return Mth.chessboardDistance(var1, var2, this.x, this.z);
+   public int getChessboardDistance(final int x, final int z) {
+      return Mth.chessboardDistance(x, z, this.x, this.z);
    }
 
-   public int distanceSquared(ChunkPos var1) {
-      return this.distanceSquared(var1.x, var1.z);
+   public int distanceSquared(final ChunkPos pos) {
+      return this.distanceSquared(pos.x, pos.z);
    }
 
-   public int distanceSquared(long var1) {
-      return this.distanceSquared(getX(var1), getZ(var1));
+   public int distanceSquared(final long pos) {
+      return this.distanceSquared(getX(pos), getZ(pos));
    }
 
-   private int distanceSquared(int var1, int var2) {
-      int var3 = var1 - this.x;
-      int var4 = var2 - this.z;
-      return var3 * var3 + var4 * var4;
+   private int distanceSquared(final int x, final int z) {
+      int deltaX = x - this.x;
+      int deltaZ = z - this.z;
+      return deltaX * deltaX + deltaZ * deltaZ;
    }
 
-   public static Stream<ChunkPos> rangeClosed(ChunkPos var0, int var1) {
-      return rangeClosed(new ChunkPos(var0.x - var1, var0.z - var1), new ChunkPos(var0.x + var1, var0.z + var1));
+   public static Stream<ChunkPos> rangeClosed(final ChunkPos center, final int radius) {
+      return rangeClosed(new ChunkPos(center.x - radius, center.z - radius), new ChunkPos(center.x + radius, center.z + radius));
    }
 
-   public static Stream<ChunkPos> rangeClosed(final ChunkPos var0, final ChunkPos var1) {
-      int var2 = Math.abs(var0.x - var1.x) + 1;
-      int var3 = Math.abs(var0.z - var1.z) + 1;
-      final int var4 = var0.x < var1.x ? 1 : -1;
-      final int var5 = var0.z < var1.z ? 1 : -1;
-      return StreamSupport.stream(new Spliterators.AbstractSpliterator<ChunkPos>((long)(var2 * var3), 64) {
+   public static Stream<ChunkPos> rangeClosed(final ChunkPos from, final ChunkPos to) {
+      int xSize = Math.abs(from.x - to.x) + 1;
+      int zSize = Math.abs(from.z - to.z) + 1;
+      final int xDiff = from.x < to.x ? 1 : -1;
+      final int zDiff = from.z < to.z ? 1 : -1;
+      return StreamSupport.stream(new Spliterators.AbstractSpliterator<ChunkPos>((long)(xSize * zSize), 64) {
          private @Nullable ChunkPos pos;
 
-         public boolean tryAdvance(Consumer<? super ChunkPos> var1x) {
+         public boolean tryAdvance(final Consumer<? super ChunkPos> action) {
             if (this.pos == null) {
-               this.pos = var0;
+               this.pos = from;
             } else {
-               int var2 = this.pos.x;
-               int var3 = this.pos.z;
-               if (var2 == var1.x) {
-                  if (var3 == var1.z) {
+               int x = this.pos.x;
+               int z = this.pos.z;
+               if (x == to.x) {
+                  if (z == to.z) {
                      return false;
                   }
 
-                  this.pos = new ChunkPos(var0.x, var3 + var5);
+                  this.pos = new ChunkPos(from.x, z + zDiff);
                } else {
-                  this.pos = new ChunkPos(var2 + var4, var3);
+                  this.pos = new ChunkPos(x + xDiff, z);
                }
             }
 
-            var1x.accept(this.pos);
+            action.accept(this.pos);
             return true;
          }
       }, false);
    }
 
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 2).map((var0x) -> new ChunkPos(var0x[0], var0x[1])), (var0) -> IntStream.of(new int[]{var0.x, var0.z})).stable();
+      CODEC = Codec.INT_STREAM.comapFlatMap((input) -> Util.fixedSize((IntStream)input, 2).map((ints) -> new ChunkPos(ints[0], ints[1])), (pos) -> IntStream.of(new int[]{pos.x, pos.z})).stable();
       STREAM_CODEC = new StreamCodec<ByteBuf, ChunkPos>() {
-         public ChunkPos decode(ByteBuf var1) {
-            return FriendlyByteBuf.readChunkPos(var1);
+         public ChunkPos decode(final ByteBuf input) {
+            return FriendlyByteBuf.readChunkPos(input);
          }
 
-         public void encode(ByteBuf var1, ChunkPos var2) {
-            FriendlyByteBuf.writeChunkPos(var1, var2);
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((ByteBuf)var1, (ChunkPos)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((ByteBuf)var1);
+         public void encode(final ByteBuf output, final ChunkPos value) {
+            FriendlyByteBuf.writeChunkPos(output, value);
          }
       };
-      INVALID_CHUNK_POS = asLong(1875066, 1875066);
+      INVALID_CHUNK_POS = pack(1875066, 1875066);
       SAFETY_MARGIN_CHUNKS = (32 + ChunkPyramid.GENERATION_PYRAMID.getStepTo(ChunkStatus.FULL).accumulatedDependencies().size() + 1) * 2;
       MAX_COORDINATE_VALUE = SectionPos.blockToSectionCoord(BlockPos.MAX_HORIZONTAL_COORDINATE) - SAFETY_MARGIN_CHUNKS;
       ZERO = new ChunkPos(0, 0);

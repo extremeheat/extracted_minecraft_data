@@ -7,11 +7,11 @@ public enum LiquidSettings implements StringRepresentable {
    IGNORE_WATERLOGGING("ignore_waterlogging"),
    APPLY_WATERLOGGING("apply_waterlogging");
 
-   public static Codec<LiquidSettings> CODEC = StringRepresentable.<LiquidSettings>fromValues(LiquidSettings::values);
+   public static final Codec<LiquidSettings> CODEC = StringRepresentable.<LiquidSettings>fromValues(LiquidSettings::values);
    private final String name;
 
-   private LiquidSettings(final String var3) {
-      this.name = var3;
+   private LiquidSettings(final String name) {
+      this.name = name;
    }
 
    public String getSerializedName() {

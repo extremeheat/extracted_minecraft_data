@@ -39,7 +39,7 @@ public abstract class Particle {
    protected float friction;
    protected boolean speedUpWhenYMotionIsBlocked;
 
-   protected Particle(ClientLevel var1, double var2, double var4, double var6) {
+   protected Particle(final ClientLevel level, final double x, final double y, final double z) {
       super();
       this.bb = INITIAL_AABB;
       this.hasPhysics = true;
@@ -48,47 +48,47 @@ public abstract class Particle {
       this.random = RandomSource.create();
       this.friction = 0.98F;
       this.speedUpWhenYMotionIsBlocked = false;
-      this.level = var1;
+      this.level = level;
       this.setSize(0.2F, 0.2F);
-      this.setPos(var2, var4, var6);
-      this.xo = var2;
-      this.yo = var4;
-      this.zo = var6;
+      this.setPos(x, y, z);
+      this.xo = x;
+      this.yo = y;
+      this.zo = z;
       this.lifetime = (int)(4.0F / (this.random.nextFloat() * 0.9F + 0.1F));
    }
 
-   public Particle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      this(var1, var2, var4, var6);
-      this.xd = var8 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F);
-      this.yd = var10 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F);
-      this.zd = var12 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F);
-      double var14 = (double)((this.random.nextFloat() + this.random.nextFloat() + 1.0F) * 0.15F);
-      double var16 = Math.sqrt(this.xd * this.xd + this.yd * this.yd + this.zd * this.zd);
-      this.xd = this.xd / var16 * var14 * 0.4000000059604645;
-      this.yd = this.yd / var16 * var14 * 0.4000000059604645 + 0.10000000149011612;
-      this.zd = this.zd / var16 * var14 * 0.4000000059604645;
+   public Particle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za) {
+      this(level, x, y, z);
+      this.xd = xa + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F);
+      this.yd = ya + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F);
+      this.zd = za + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F);
+      double speed = (double)((this.random.nextFloat() + this.random.nextFloat() + 1.0F) * 0.15F);
+      double dd = Math.sqrt(this.xd * this.xd + this.yd * this.yd + this.zd * this.zd);
+      this.xd = this.xd / dd * speed * 0.4000000059604645;
+      this.yd = this.yd / dd * speed * 0.4000000059604645 + 0.10000000149011612;
+      this.zd = this.zd / dd * speed * 0.4000000059604645;
    }
 
-   public Particle setPower(float var1) {
-      this.xd *= (double)var1;
-      this.yd = (this.yd - 0.10000000149011612) * (double)var1 + 0.10000000149011612;
-      this.zd *= (double)var1;
+   public Particle setPower(final float power) {
+      this.xd *= (double)power;
+      this.yd = (this.yd - 0.10000000149011612) * (double)power + 0.10000000149011612;
+      this.zd *= (double)power;
       return this;
    }
 
-   public void setParticleSpeed(double var1, double var3, double var5) {
-      this.xd = var1;
-      this.yd = var3;
-      this.zd = var5;
+   public void setParticleSpeed(final double xd, final double yd, final double zd) {
+      this.xd = xd;
+      this.yd = yd;
+      this.zd = zd;
    }
 
-   public Particle scale(float var1) {
-      this.setSize(0.2F * var1, 0.2F * var1);
+   public Particle scale(final float scale) {
+      this.setSize(0.2F * scale, 0.2F * scale);
       return this;
    }
 
-   public void setLifetime(int var1) {
-      this.lifetime = var1;
+   public void setLifetime(final int lifetime) {
+      this.lifetime = lifetime;
    }
 
    public int getLifetime() {
@@ -131,54 +131,54 @@ public abstract class Particle {
       this.removed = true;
    }
 
-   protected void setSize(float var1, float var2) {
-      if (var1 != this.bbWidth || var2 != this.bbHeight) {
-         this.bbWidth = var1;
-         this.bbHeight = var2;
-         AABB var3 = this.getBoundingBox();
-         double var4 = (var3.minX + var3.maxX - (double)var1) / 2.0;
-         double var6 = (var3.minZ + var3.maxZ - (double)var1) / 2.0;
-         this.setBoundingBox(new AABB(var4, var3.minY, var6, var4 + (double)this.bbWidth, var3.minY + (double)this.bbHeight, var6 + (double)this.bbWidth));
+   protected void setSize(final float w, final float h) {
+      if (w != this.bbWidth || h != this.bbHeight) {
+         this.bbWidth = w;
+         this.bbHeight = h;
+         AABB aabb = this.getBoundingBox();
+         double newMinX = (aabb.minX + aabb.maxX - (double)w) / 2.0;
+         double newMinZ = (aabb.minZ + aabb.maxZ - (double)w) / 2.0;
+         this.setBoundingBox(new AABB(newMinX, aabb.minY, newMinZ, newMinX + (double)this.bbWidth, aabb.minY + (double)this.bbHeight, newMinZ + (double)this.bbWidth));
       }
 
    }
 
-   public void setPos(double var1, double var3, double var5) {
-      this.x = var1;
-      this.y = var3;
-      this.z = var5;
-      float var7 = this.bbWidth / 2.0F;
-      float var8 = this.bbHeight;
-      this.setBoundingBox(new AABB(var1 - (double)var7, var3, var5 - (double)var7, var1 + (double)var7, var3 + (double)var8, var5 + (double)var7));
+   public void setPos(final double x, final double y, final double z) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      float w = this.bbWidth / 2.0F;
+      float h = this.bbHeight;
+      this.setBoundingBox(new AABB(x - (double)w, y, z - (double)w, x + (double)w, y + (double)h, z + (double)w));
    }
 
-   public void move(double var1, double var3, double var5) {
+   public void move(double xa, double ya, double za) {
       if (!this.stoppedByCollision) {
-         double var7 = var1;
-         double var9 = var3;
-         double var11 = var5;
-         if (this.hasPhysics && (var1 != 0.0 || var3 != 0.0 || var5 != 0.0) && var1 * var1 + var3 * var3 + var5 * var5 < MAXIMUM_COLLISION_VELOCITY_SQUARED) {
-            Vec3 var13 = Entity.collideBoundingBox((Entity)null, new Vec3(var1, var3, var5), this.getBoundingBox(), this.level, List.of());
-            var1 = var13.x;
-            var3 = var13.y;
-            var5 = var13.z;
+         double originalXa = xa;
+         double originalYa = ya;
+         double originalZa = za;
+         if (this.hasPhysics && (xa != 0.0 || ya != 0.0 || za != 0.0) && xa * xa + ya * ya + za * za < MAXIMUM_COLLISION_VELOCITY_SQUARED) {
+            Vec3 movement = Entity.collideBoundingBox((Entity)null, new Vec3(xa, ya, za), this.getBoundingBox(), this.level, List.of());
+            xa = movement.x;
+            ya = movement.y;
+            za = movement.z;
          }
 
-         if (var1 != 0.0 || var3 != 0.0 || var5 != 0.0) {
-            this.setBoundingBox(this.getBoundingBox().move(var1, var3, var5));
+         if (xa != 0.0 || ya != 0.0 || za != 0.0) {
+            this.setBoundingBox(this.getBoundingBox().move(xa, ya, za));
             this.setLocationFromBoundingbox();
          }
 
-         if (Math.abs(var9) >= 9.999999747378752E-6 && Math.abs(var3) < 9.999999747378752E-6) {
+         if (Math.abs(originalYa) >= 9.999999747378752E-6 && Math.abs(ya) < 9.999999747378752E-6) {
             this.stoppedByCollision = true;
          }
 
-         this.onGround = var9 != var3 && var9 < 0.0;
-         if (var7 != var1) {
+         this.onGround = originalYa != ya && originalYa < 0.0;
+         if (originalXa != xa) {
             this.xd = 0.0;
          }
 
-         if (var11 != var5) {
+         if (originalZa != za) {
             this.zd = 0.0;
          }
 
@@ -186,15 +186,15 @@ public abstract class Particle {
    }
 
    protected void setLocationFromBoundingbox() {
-      AABB var1 = this.getBoundingBox();
-      this.x = (var1.minX + var1.maxX) / 2.0;
-      this.y = var1.minY;
-      this.z = (var1.minZ + var1.maxZ) / 2.0;
+      AABB aabb = this.getBoundingBox();
+      this.x = (aabb.minX + aabb.maxX) / 2.0;
+      this.y = aabb.minY;
+      this.z = (aabb.minZ + aabb.maxZ) / 2.0;
    }
 
-   protected int getLightColor(float var1) {
-      BlockPos var2 = BlockPos.containing(this.x, this.y, this.z);
-      return this.level.hasChunkAt(var2) ? LevelRenderer.getLightColor(this.level, var2) : 0;
+   protected int getLightCoords(final float a) {
+      BlockPos pos = BlockPos.containing(this.x, this.y, this.z);
+      return this.level.hasChunkAt(pos) ? LevelRenderer.getLightCoords(this.level, pos) : 15728640;
    }
 
    public boolean isAlive() {
@@ -205,8 +205,8 @@ public abstract class Particle {
       return this.bb;
    }
 
-   public void setBoundingBox(AABB var1) {
-      this.bb = var1;
+   public void setBoundingBox(final AABB bb) {
+      this.bb = bb;
    }
 
    public Optional<ParticleLimit> getParticleLimit() {
@@ -216,24 +216,20 @@ public abstract class Particle {
    public static record LifetimeAlpha(float startAlpha, float endAlpha, float startAtNormalizedAge, float endAtNormalizedAge) {
       public static final LifetimeAlpha ALWAYS_OPAQUE = new LifetimeAlpha(1.0F, 1.0F, 0.0F, 1.0F);
 
-      public LifetimeAlpha(float var1, float var2, float var3, float var4) {
+      public LifetimeAlpha {
          super();
-         this.startAlpha = var1;
-         this.endAlpha = var2;
-         this.startAtNormalizedAge = var3;
-         this.endAtNormalizedAge = var4;
       }
 
       public boolean isOpaque() {
          return this.startAlpha >= 1.0F && this.endAlpha >= 1.0F;
       }
 
-      public float currentAlphaForAge(int var1, int var2, float var3) {
+      public float currentAlphaForAge(final int age, final int lifetime, final float partialTickTime) {
          if (Mth.equal(this.startAlpha, this.endAlpha)) {
             return this.startAlpha;
          } else {
-            float var4 = Mth.inverseLerp(((float)var1 + var3) / (float)var2, this.startAtNormalizedAge, this.endAtNormalizedAge);
-            return Mth.clampedLerp(var4, this.startAlpha, this.endAlpha);
+            float timeNormalized = Mth.inverseLerp(((float)age + partialTickTime) / (float)lifetime, this.startAtNormalizedAge, this.endAtNormalizedAge);
+            return Mth.clampedLerp(timeNormalized, this.startAlpha, this.endAlpha);
          }
       }
    }

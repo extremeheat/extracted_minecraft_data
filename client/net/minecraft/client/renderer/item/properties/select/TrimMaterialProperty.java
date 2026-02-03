@@ -21,9 +21,9 @@ public record TrimMaterialProperty() implements SelectItemModelProperty<Resource
       super();
    }
 
-   public @Nullable ResourceKey<TrimMaterial> get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      ArmorTrim var6 = (ArmorTrim)var1.get(DataComponents.TRIM);
-      return var6 == null ? null : (ResourceKey)var6.material().unwrapKey().orElse((Object)null);
+   public @Nullable ResourceKey<TrimMaterial> get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      ArmorTrim trim = (ArmorTrim)itemStack.get(DataComponents.TRIM);
+      return trim == null ? null : (ResourceKey)trim.material().unwrapKey().orElse((Object)null);
    }
 
    public SelectItemModelProperty.Type<TrimMaterialProperty, ResourceKey<TrimMaterial>> type() {
@@ -32,11 +32,6 @@ public record TrimMaterialProperty() implements SelectItemModelProperty<Resource
 
    public Codec<ResourceKey<TrimMaterial>> valueCodec() {
       return VALUE_CODEC;
-   }
-
-   // $FF: synthetic method
-   public @Nullable Object get(final ItemStack var1, final @Nullable ClientLevel var2, final @Nullable LivingEntity var3, final int var4, final ItemDisplayContext var5) {
-      return this.get(var1, var2, var3, var4, var5);
    }
 
    static {

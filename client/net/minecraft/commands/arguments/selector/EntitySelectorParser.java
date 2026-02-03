@@ -46,15 +46,15 @@ public class EntitySelectorParser {
    private static final char SELECTOR_ALL_ENTITIES = 'e';
    private static final char SELECTOR_NEAREST_ENTITY = 'n';
    public static final SimpleCommandExceptionType ERROR_INVALID_NAME_OR_UUID = new SimpleCommandExceptionType(Component.translatable("argument.entity.invalid"));
-   public static final DynamicCommandExceptionType ERROR_UNKNOWN_SELECTOR_TYPE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.selector.unknown", var0));
+   public static final DynamicCommandExceptionType ERROR_UNKNOWN_SELECTOR_TYPE = new DynamicCommandExceptionType((type) -> Component.translatableEscape("argument.entity.selector.unknown", type));
    public static final SimpleCommandExceptionType ERROR_SELECTORS_NOT_ALLOWED = new SimpleCommandExceptionType(Component.translatable("argument.entity.selector.not_allowed"));
    public static final SimpleCommandExceptionType ERROR_MISSING_SELECTOR_TYPE = new SimpleCommandExceptionType(Component.translatable("argument.entity.selector.missing"));
    public static final SimpleCommandExceptionType ERROR_EXPECTED_END_OF_OPTIONS = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.unterminated"));
-   public static final DynamicCommandExceptionType ERROR_EXPECTED_OPTION_VALUE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.valueless", var0));
-   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_NEAREST = (var0, var1) -> var1.sort((var1x, var2) -> Doubles.compare(var1x.distanceToSqr(var0), var2.distanceToSqr(var0)));
-   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_FURTHEST = (var0, var1) -> var1.sort((var1x, var2) -> Doubles.compare(var2.distanceToSqr(var0), var1x.distanceToSqr(var0)));
-   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_RANDOM = (var0, var1) -> Collections.shuffle(var1);
-   public static final BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> SUGGEST_NOTHING = (var0, var1) -> var0.buildFuture();
+   public static final DynamicCommandExceptionType ERROR_EXPECTED_OPTION_VALUE = new DynamicCommandExceptionType((name) -> Component.translatableEscape("argument.entity.options.valueless", name));
+   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_NEAREST = (p, c) -> c.sort((a, b) -> Doubles.compare(a.distanceToSqr(p), b.distanceToSqr(p)));
+   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_FURTHEST = (p, c) -> c.sort((a, b) -> Doubles.compare(b.distanceToSqr(p), a.distanceToSqr(p)));
+   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_RANDOM = (p, c) -> Collections.shuffle(c);
+   public static final BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> SUGGEST_NOTHING = (b, s) -> b.buildFuture();
    private final StringReader reader;
    private final boolean allowSelectors;
    private int maxResults;
@@ -91,18 +91,18 @@ public class EntitySelectorParser {
    private boolean hasAdvancements;
    private boolean usesSelectors;
 
-   public EntitySelectorParser(StringReader var1, boolean var2) {
+   public EntitySelectorParser(final StringReader reader, final boolean allowSelectors) {
       super();
       this.order = EntitySelector.ORDER_ARBITRARY;
       this.suggestions = SUGGEST_NOTHING;
-      this.reader = var1;
-      this.allowSelectors = var2;
+      this.reader = reader;
+      this.allowSelectors = allowSelectors;
    }
 
-   public static <S> boolean allowSelectors(S var0) {
+   public static <S> boolean allowSelectors(final S source) {
       boolean var10000;
-      if (var0 instanceof PermissionSetSupplier var1) {
-         if (var1.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS)) {
+      if (source instanceof PermissionSetSupplier sender) {
+         if (sender.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS)) {
             var10000 = true;
             return var10000;
          }
@@ -114,44 +114,44 @@ public class EntitySelectorParser {
 
    /** @deprecated */
    @Deprecated
-   public static boolean allowSelectors(PermissionSetSupplier var0) {
-      return var0.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS);
+   public static boolean allowSelectors(final PermissionSetSupplier source) {
+      return source.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS);
    }
 
    public EntitySelector getSelector() {
-      AABB var1;
+      AABB aabb;
       if (this.deltaX == null && this.deltaY == null && this.deltaZ == null) {
          if (this.distance != null && this.distance.max().isPresent()) {
-            double var2 = (Double)this.distance.max().get();
-            var1 = new AABB(-var2, -var2, -var2, var2 + 1.0, var2 + 1.0, var2 + 1.0);
+            double maxRange = (Double)this.distance.max().get();
+            aabb = new AABB(-maxRange, -maxRange, -maxRange, maxRange + 1.0, maxRange + 1.0, maxRange + 1.0);
          } else {
-            var1 = null;
+            aabb = null;
          }
       } else {
-         var1 = this.createAabb(this.deltaX == null ? 0.0 : this.deltaX, this.deltaY == null ? 0.0 : this.deltaY, this.deltaZ == null ? 0.0 : this.deltaZ);
+         aabb = this.createAabb(this.deltaX == null ? 0.0 : this.deltaX, this.deltaY == null ? 0.0 : this.deltaY, this.deltaZ == null ? 0.0 : this.deltaZ);
       }
 
-      Function var4;
+      Function<Vec3, Vec3> position;
       if (this.x == null && this.y == null && this.z == null) {
-         var4 = (var0) -> var0;
+         position = (o) -> o;
       } else {
-         var4 = (var1x) -> new Vec3(this.x == null ? var1x.x : this.x, this.y == null ? var1x.y : this.y, this.z == null ? var1x.z : this.z);
+         position = (o) -> new Vec3(this.x == null ? o.x : this.x, this.y == null ? o.y : this.y, this.z == null ? o.z : this.z);
       }
 
-      return new EntitySelector(this.maxResults, this.includesEntities, this.worldLimited, List.copyOf(this.predicates), this.distance, var4, var1, this.order, this.currentEntity, this.playerName, this.entityUUID, this.type, this.usesSelectors);
+      return new EntitySelector(this.maxResults, this.includesEntities, this.worldLimited, List.copyOf(this.predicates), this.distance, position, aabb, this.order, this.currentEntity, this.playerName, this.entityUUID, this.type, this.usesSelectors);
    }
 
-   private AABB createAabb(double var1, double var3, double var5) {
-      boolean var7 = var1 < 0.0;
-      boolean var8 = var3 < 0.0;
-      boolean var9 = var5 < 0.0;
-      double var10 = var7 ? var1 : 0.0;
-      double var12 = var8 ? var3 : 0.0;
-      double var14 = var9 ? var5 : 0.0;
-      double var16 = (var7 ? 0.0 : var1) + 1.0;
-      double var18 = (var8 ? 0.0 : var3) + 1.0;
-      double var20 = (var9 ? 0.0 : var5) + 1.0;
-      return new AABB(var10, var12, var14, var16, var18, var20);
+   private AABB createAabb(final double x, final double y, final double z) {
+      boolean xNeg = x < 0.0;
+      boolean yNeg = y < 0.0;
+      boolean zNeg = z < 0.0;
+      double xMin = xNeg ? x : 0.0;
+      double yMin = yNeg ? y : 0.0;
+      double zMin = zNeg ? z : 0.0;
+      double xMax = (xNeg ? 0.0 : x) + 1.0;
+      double yMax = (yNeg ? 0.0 : y) + 1.0;
+      double zMax = (zNeg ? 0.0 : z) + 1.0;
+      return new AABB(xMin, yMin, zMin, xMax, yMax, zMax);
    }
 
    private void finalizePredicates() {
@@ -164,10 +164,10 @@ public class EntitySelectorParser {
       }
 
       if (this.level != null) {
-         this.predicates.add((Predicate)(var1) -> {
+         this.predicates.add((Predicate)(e) -> {
             boolean var10000;
-            if (var1 instanceof ServerPlayer var2) {
-               if (this.level.matches(var2.experienceLevel)) {
+            if (e instanceof ServerPlayer serverPlayer) {
+               if (this.level.matches(serverPlayer.experienceLevel)) {
                   var10000 = true;
                   return var10000;
                }
@@ -180,15 +180,15 @@ public class EntitySelectorParser {
 
    }
 
-   private Predicate<Entity> createRotationPredicate(MinMaxBounds.FloatDegrees var1, ToFloatFunction<Entity> var2) {
-      float var3 = Mth.wrapDegrees((Float)var1.min().orElse(0.0F));
-      float var4 = Mth.wrapDegrees((Float)var1.max().orElse(359.0F));
-      return (var3x) -> {
-         float var4x = Mth.wrapDegrees(var2.applyAsFloat(var3x));
-         if (var3 > var4) {
-            return var4x >= var3 || var4x <= var4;
+   private Predicate<Entity> createRotationPredicate(final MinMaxBounds.FloatDegrees range, final ToFloatFunction<Entity> function) {
+      float min = Mth.wrapDegrees((Float)range.min().orElse(0.0F));
+      float max = Mth.wrapDegrees((Float)range.max().orElse(359.0F));
+      return (e) -> {
+         float rotation = Mth.wrapDegrees(function.applyAsFloat(e));
+         if (min > max) {
+            return rotation >= min || rotation <= max;
          } else {
-            return var4x >= var3 && var4x <= var4;
+            return rotation >= min && rotation <= max;
          }
       };
    }
@@ -199,16 +199,16 @@ public class EntitySelectorParser {
       if (!this.reader.canRead()) {
          throw ERROR_MISSING_SELECTOR_TYPE.createWithContext(this.reader);
       } else {
-         int var1 = this.reader.getCursor();
-         char var2 = this.reader.read();
-         boolean var3;
-         switch (var2) {
+         int start = this.reader.getCursor();
+         char type = this.reader.read();
+         boolean selectOnlyAlive;
+         switch (type) {
             case 'a':
                this.maxResults = 2147483647;
                this.includesEntities = false;
                this.order = EntitySelector.ORDER_ARBITRARY;
                this.limitToType(EntityType.PLAYER);
-               var3 = false;
+               selectOnlyAlive = false;
                break;
             case 'b':
             case 'c':
@@ -224,42 +224,42 @@ public class EntitySelectorParser {
             case 'o':
             case 'q':
             default:
-               this.reader.setCursor(var1);
-               throw ERROR_UNKNOWN_SELECTOR_TYPE.createWithContext(this.reader, "@" + String.valueOf(var2));
+               this.reader.setCursor(start);
+               throw ERROR_UNKNOWN_SELECTOR_TYPE.createWithContext(this.reader, "@" + String.valueOf(type));
             case 'e':
                this.maxResults = 2147483647;
                this.includesEntities = true;
                this.order = EntitySelector.ORDER_ARBITRARY;
-               var3 = true;
+               selectOnlyAlive = true;
                break;
             case 'n':
                this.maxResults = 1;
                this.includesEntities = true;
                this.order = ORDER_NEAREST;
-               var3 = true;
+               selectOnlyAlive = true;
                break;
             case 'p':
                this.maxResults = 1;
                this.includesEntities = false;
                this.order = ORDER_NEAREST;
                this.limitToType(EntityType.PLAYER);
-               var3 = false;
+               selectOnlyAlive = false;
                break;
             case 'r':
                this.maxResults = 1;
                this.includesEntities = false;
                this.order = ORDER_RANDOM;
                this.limitToType(EntityType.PLAYER);
-               var3 = false;
+               selectOnlyAlive = false;
                break;
             case 's':
                this.maxResults = 1;
                this.includesEntities = true;
                this.currentEntity = true;
-               var3 = false;
+               selectOnlyAlive = false;
          }
 
-         if (var3) {
+         if (selectOnlyAlive) {
             this.predicates.add(Entity::isAlive);
          }
 
@@ -278,20 +278,20 @@ public class EntitySelectorParser {
          this.suggestions = this::suggestName;
       }
 
-      int var1 = this.reader.getCursor();
-      String var2 = this.reader.readString();
+      int start = this.reader.getCursor();
+      String name = this.reader.readString();
 
       try {
-         this.entityUUID = UUID.fromString(var2);
+         this.entityUUID = UUID.fromString(name);
          this.includesEntities = true;
       } catch (IllegalArgumentException var4) {
-         if (var2.isEmpty() || var2.length() > 16) {
-            this.reader.setCursor(var1);
+         if (name.isEmpty() || name.length() > 16) {
+            this.reader.setCursor(start);
             throw ERROR_INVALID_NAME_OR_UUID.createWithContext(this.reader);
          }
 
          this.includesEntities = false;
-         this.playerName = var2;
+         this.playerName = name;
       }
 
       this.maxResults = 1;
@@ -304,19 +304,19 @@ public class EntitySelectorParser {
       while(true) {
          if (this.reader.canRead() && this.reader.peek() != ']') {
             this.reader.skipWhitespace();
-            int var1 = this.reader.getCursor();
-            String var2 = this.reader.readString();
-            EntitySelectorOptions.Modifier var3 = EntitySelectorOptions.get(this, var2, var1);
+            int start = this.reader.getCursor();
+            String key = this.reader.readString();
+            EntitySelectorOptions.Modifier modifier = EntitySelectorOptions.get(this, key, start);
             this.reader.skipWhitespace();
             if (!this.reader.canRead() || this.reader.peek() != '=') {
-               this.reader.setCursor(var1);
-               throw ERROR_EXPECTED_OPTION_VALUE.createWithContext(this.reader, var2);
+               this.reader.setCursor(start);
+               throw ERROR_EXPECTED_OPTION_VALUE.createWithContext(this.reader, key);
             }
 
             this.reader.skip();
             this.reader.skipWhitespace();
             this.suggestions = SUGGEST_NOTHING;
-            var3.handle(this);
+            modifier.handle(this);
             this.reader.skipWhitespace();
             this.suggestions = this::suggestOptionsNextOrClose;
             if (!this.reader.canRead()) {
@@ -370,8 +370,8 @@ public class EntitySelectorParser {
       return this.reader;
    }
 
-   public void addPredicate(Predicate<Entity> var1) {
-      this.predicates.add(var1);
+   public void addPredicate(final Predicate<Entity> predicate) {
+      this.predicates.add(predicate);
    }
 
    public void setWorldLimited() {
@@ -382,32 +382,32 @@ public class EntitySelectorParser {
       return this.distance;
    }
 
-   public void setDistance(MinMaxBounds.Doubles var1) {
-      this.distance = var1;
+   public void setDistance(final MinMaxBounds.Doubles distance) {
+      this.distance = distance;
    }
 
    public MinMaxBounds.@Nullable Ints getLevel() {
       return this.level;
    }
 
-   public void setLevel(MinMaxBounds.Ints var1) {
-      this.level = var1;
+   public void setLevel(final MinMaxBounds.Ints level) {
+      this.level = level;
    }
 
    public MinMaxBounds.@Nullable FloatDegrees getRotX() {
       return this.rotX;
    }
 
-   public void setRotX(MinMaxBounds.FloatDegrees var1) {
-      this.rotX = var1;
+   public void setRotX(final MinMaxBounds.FloatDegrees rotX) {
+      this.rotX = rotX;
    }
 
    public MinMaxBounds.@Nullable FloatDegrees getRotY() {
       return this.rotY;
    }
 
-   public void setRotY(MinMaxBounds.FloatDegrees var1) {
-      this.rotY = var1;
+   public void setRotY(final MinMaxBounds.FloatDegrees rotY) {
+      this.rotY = rotY;
    }
 
    public @Nullable Double getX() {
@@ -422,28 +422,28 @@ public class EntitySelectorParser {
       return this.z;
    }
 
-   public void setX(double var1) {
-      this.x = var1;
+   public void setX(final double x) {
+      this.x = x;
    }
 
-   public void setY(double var1) {
-      this.y = var1;
+   public void setY(final double y) {
+      this.y = y;
    }
 
-   public void setZ(double var1) {
-      this.z = var1;
+   public void setZ(final double z) {
+      this.z = z;
    }
 
-   public void setDeltaX(double var1) {
-      this.deltaX = var1;
+   public void setDeltaX(final double deltaX) {
+      this.deltaX = deltaX;
    }
 
-   public void setDeltaY(double var1) {
-      this.deltaY = var1;
+   public void setDeltaY(final double deltaY) {
+      this.deltaY = deltaY;
    }
 
-   public void setDeltaZ(double var1) {
-      this.deltaZ = var1;
+   public void setDeltaZ(final double deltaZ) {
+      this.deltaZ = deltaZ;
    }
 
    public @Nullable Double getDeltaX() {
@@ -458,20 +458,20 @@ public class EntitySelectorParser {
       return this.deltaZ;
    }
 
-   public void setMaxResults(int var1) {
-      this.maxResults = var1;
+   public void setMaxResults(final int maxResults) {
+      this.maxResults = maxResults;
    }
 
-   public void setIncludesEntities(boolean var1) {
-      this.includesEntities = var1;
+   public void setIncludesEntities(final boolean includesEntities) {
+      this.includesEntities = includesEntities;
    }
 
    public BiConsumer<Vec3, List<? extends Entity>> getOrder() {
       return this.order;
    }
 
-   public void setOrder(BiConsumer<Vec3, List<? extends Entity>> var1) {
-      this.order = var1;
+   public void setOrder(final BiConsumer<Vec3, List<? extends Entity>> order) {
+      this.order = order;
    }
 
    public EntitySelector parse() throws CommandSyntaxException {
@@ -492,142 +492,142 @@ public class EntitySelectorParser {
       return this.getSelector();
    }
 
-   private static void fillSelectorSuggestions(SuggestionsBuilder var0) {
-      var0.suggest("@p", Component.translatable("argument.entity.selector.nearestPlayer"));
-      var0.suggest("@a", Component.translatable("argument.entity.selector.allPlayers"));
-      var0.suggest("@r", Component.translatable("argument.entity.selector.randomPlayer"));
-      var0.suggest("@s", Component.translatable("argument.entity.selector.self"));
-      var0.suggest("@e", Component.translatable("argument.entity.selector.allEntities"));
-      var0.suggest("@n", Component.translatable("argument.entity.selector.nearestEntity"));
+   private static void fillSelectorSuggestions(final SuggestionsBuilder builder) {
+      builder.suggest("@p", Component.translatable("argument.entity.selector.nearestPlayer"));
+      builder.suggest("@a", Component.translatable("argument.entity.selector.allPlayers"));
+      builder.suggest("@r", Component.translatable("argument.entity.selector.randomPlayer"));
+      builder.suggest("@s", Component.translatable("argument.entity.selector.self"));
+      builder.suggest("@e", Component.translatable("argument.entity.selector.allEntities"));
+      builder.suggest("@n", Component.translatable("argument.entity.selector.nearestEntity"));
    }
 
-   private CompletableFuture<Suggestions> suggestNameOrSelector(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {
-      var2.accept(var1);
+   private CompletableFuture<Suggestions> suggestNameOrSelector(final SuggestionsBuilder builder, final Consumer<SuggestionsBuilder> names) {
+      names.accept(builder);
       if (this.allowSelectors) {
-         fillSelectorSuggestions(var1);
+         fillSelectorSuggestions(builder);
       }
 
-      return var1.buildFuture();
+      return builder.buildFuture();
    }
 
-   private CompletableFuture<Suggestions> suggestName(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {
-      SuggestionsBuilder var3 = var1.createOffset(this.startPosition);
-      var2.accept(var3);
-      return var1.add(var3).buildFuture();
+   private CompletableFuture<Suggestions> suggestName(final SuggestionsBuilder builder, final Consumer<SuggestionsBuilder> names) {
+      SuggestionsBuilder sub = builder.createOffset(this.startPosition);
+      names.accept(sub);
+      return builder.add(sub).buildFuture();
    }
 
-   private CompletableFuture<Suggestions> suggestSelector(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {
-      SuggestionsBuilder var3 = var1.createOffset(var1.getStart() - 1);
-      fillSelectorSuggestions(var3);
-      var1.add(var3);
-      return var1.buildFuture();
+   private CompletableFuture<Suggestions> suggestSelector(final SuggestionsBuilder builder, final Consumer<SuggestionsBuilder> names) {
+      SuggestionsBuilder sub = builder.createOffset(builder.getStart() - 1);
+      fillSelectorSuggestions(sub);
+      builder.add(sub);
+      return builder.buildFuture();
    }
 
-   private CompletableFuture<Suggestions> suggestOpenOptions(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {
-      var1.suggest(String.valueOf('['));
-      return var1.buildFuture();
+   private CompletableFuture<Suggestions> suggestOpenOptions(final SuggestionsBuilder builder, final Consumer<SuggestionsBuilder> names) {
+      builder.suggest(String.valueOf('['));
+      return builder.buildFuture();
    }
 
-   private CompletableFuture<Suggestions> suggestOptionsKeyOrClose(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {
-      var1.suggest(String.valueOf(']'));
-      EntitySelectorOptions.suggestNames(this, var1);
-      return var1.buildFuture();
+   private CompletableFuture<Suggestions> suggestOptionsKeyOrClose(final SuggestionsBuilder builder, final Consumer<SuggestionsBuilder> names) {
+      builder.suggest(String.valueOf(']'));
+      EntitySelectorOptions.suggestNames(this, builder);
+      return builder.buildFuture();
    }
 
-   private CompletableFuture<Suggestions> suggestOptionsKey(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {
-      EntitySelectorOptions.suggestNames(this, var1);
-      return var1.buildFuture();
+   private CompletableFuture<Suggestions> suggestOptionsKey(final SuggestionsBuilder builder, final Consumer<SuggestionsBuilder> names) {
+      EntitySelectorOptions.suggestNames(this, builder);
+      return builder.buildFuture();
    }
 
-   private CompletableFuture<Suggestions> suggestOptionsNextOrClose(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {
-      var1.suggest(String.valueOf(','));
-      var1.suggest(String.valueOf(']'));
-      return var1.buildFuture();
+   private CompletableFuture<Suggestions> suggestOptionsNextOrClose(final SuggestionsBuilder builder, final Consumer<SuggestionsBuilder> names) {
+      builder.suggest(String.valueOf(','));
+      builder.suggest(String.valueOf(']'));
+      return builder.buildFuture();
    }
 
-   private CompletableFuture<Suggestions> suggestEquals(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {
-      var1.suggest(String.valueOf('='));
-      return var1.buildFuture();
+   private CompletableFuture<Suggestions> suggestEquals(final SuggestionsBuilder builder, final Consumer<SuggestionsBuilder> names) {
+      builder.suggest(String.valueOf('='));
+      return builder.buildFuture();
    }
 
    public boolean isCurrentEntity() {
       return this.currentEntity;
    }
 
-   public void setSuggestions(BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> var1) {
-      this.suggestions = var1;
+   public void setSuggestions(final BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> suggestions) {
+      this.suggestions = suggestions;
    }
 
-   public CompletableFuture<Suggestions> fillSuggestions(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {
-      return (CompletableFuture)this.suggestions.apply(var1.createOffset(this.reader.getCursor()), var2);
+   public CompletableFuture<Suggestions> fillSuggestions(final SuggestionsBuilder builder, final Consumer<SuggestionsBuilder> names) {
+      return (CompletableFuture)this.suggestions.apply(builder.createOffset(this.reader.getCursor()), names);
    }
 
    public boolean hasNameEquals() {
       return this.hasNameEquals;
    }
 
-   public void setHasNameEquals(boolean var1) {
-      this.hasNameEquals = var1;
+   public void setHasNameEquals(final boolean hasNameEquals) {
+      this.hasNameEquals = hasNameEquals;
    }
 
    public boolean hasNameNotEquals() {
       return this.hasNameNotEquals;
    }
 
-   public void setHasNameNotEquals(boolean var1) {
-      this.hasNameNotEquals = var1;
+   public void setHasNameNotEquals(final boolean hasNameNotEquals) {
+      this.hasNameNotEquals = hasNameNotEquals;
    }
 
    public boolean isLimited() {
       return this.isLimited;
    }
 
-   public void setLimited(boolean var1) {
-      this.isLimited = var1;
+   public void setLimited(final boolean limited) {
+      this.isLimited = limited;
    }
 
    public boolean isSorted() {
       return this.isSorted;
    }
 
-   public void setSorted(boolean var1) {
-      this.isSorted = var1;
+   public void setSorted(final boolean sorted) {
+      this.isSorted = sorted;
    }
 
    public boolean hasGamemodeEquals() {
       return this.hasGamemodeEquals;
    }
 
-   public void setHasGamemodeEquals(boolean var1) {
-      this.hasGamemodeEquals = var1;
+   public void setHasGamemodeEquals(final boolean hasGamemodeEquals) {
+      this.hasGamemodeEquals = hasGamemodeEquals;
    }
 
    public boolean hasGamemodeNotEquals() {
       return this.hasGamemodeNotEquals;
    }
 
-   public void setHasGamemodeNotEquals(boolean var1) {
-      this.hasGamemodeNotEquals = var1;
+   public void setHasGamemodeNotEquals(final boolean hasGamemodeNotEquals) {
+      this.hasGamemodeNotEquals = hasGamemodeNotEquals;
    }
 
    public boolean hasTeamEquals() {
       return this.hasTeamEquals;
    }
 
-   public void setHasTeamEquals(boolean var1) {
-      this.hasTeamEquals = var1;
+   public void setHasTeamEquals(final boolean hasTeamEquals) {
+      this.hasTeamEquals = hasTeamEquals;
    }
 
    public boolean hasTeamNotEquals() {
       return this.hasTeamNotEquals;
    }
 
-   public void setHasTeamNotEquals(boolean var1) {
-      this.hasTeamNotEquals = var1;
+   public void setHasTeamNotEquals(final boolean hasTeamNotEquals) {
+      this.hasTeamNotEquals = hasTeamNotEquals;
    }
 
-   public void limitToType(EntityType<?> var1) {
-      this.type = var1;
+   public void limitToType(final EntityType<?> type) {
+      this.type = type;
    }
 
    public void setTypeLimitedInversely() {
@@ -646,15 +646,15 @@ public class EntitySelectorParser {
       return this.hasScores;
    }
 
-   public void setHasScores(boolean var1) {
-      this.hasScores = var1;
+   public void setHasScores(final boolean hasScores) {
+      this.hasScores = hasScores;
    }
 
    public boolean hasAdvancements() {
       return this.hasAdvancements;
    }
 
-   public void setHasAdvancements(boolean var1) {
-      this.hasAdvancements = var1;
+   public void setHasAdvancements(final boolean hasAdvancements) {
+      this.hasAdvancements = hasAdvancements;
    }
 }

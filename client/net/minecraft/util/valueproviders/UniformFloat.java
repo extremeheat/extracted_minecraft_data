@@ -8,26 +8,26 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class UniformFloat extends FloatProvider {
-   public static final MapCodec<UniformFloat> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), Codec.FLOAT.fieldOf("max_exclusive").forGetter((var0x) -> var0x.maxExclusive)).apply(var0, UniformFloat::new)).validate((var0) -> var0.maxExclusive <= var0.minInclusive ? DataResult.error(() -> "Max must be larger than min, min_inclusive: " + var0.minInclusive + ", max_exclusive: " + var0.maxExclusive) : DataResult.success(var0));
+   public static final MapCodec<UniformFloat> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("min_inclusive").forGetter((u) -> u.minInclusive), Codec.FLOAT.fieldOf("max_exclusive").forGetter((u) -> u.maxExclusive)).apply(i, UniformFloat::new)).validate((u) -> u.maxExclusive <= u.minInclusive ? DataResult.error(() -> "Max must be larger than min, min_inclusive: " + u.minInclusive + ", max_exclusive: " + u.maxExclusive) : DataResult.success(u));
    private final float minInclusive;
    private final float maxExclusive;
 
-   private UniformFloat(float var1, float var2) {
+   private UniformFloat(final float minInclusive, final float maxExclusive) {
       super();
-      this.minInclusive = var1;
-      this.maxExclusive = var2;
+      this.minInclusive = minInclusive;
+      this.maxExclusive = maxExclusive;
    }
 
-   public static UniformFloat of(float var0, float var1) {
-      if (var1 <= var0) {
+   public static UniformFloat of(final float minInclusive, final float maxExclusive) {
+      if (maxExclusive <= minInclusive) {
          throw new IllegalArgumentException("Max must exceed min");
       } else {
-         return new UniformFloat(var0, var1);
+         return new UniformFloat(minInclusive, maxExclusive);
       }
    }
 
-   public float sample(RandomSource var1) {
-      return Mth.randomBetween(var1, this.minInclusive, this.maxExclusive);
+   public float sample(final RandomSource random) {
+      return Mth.randomBetween(random, this.minInclusive, this.maxExclusive);
    }
 
    public float getMinValue() {

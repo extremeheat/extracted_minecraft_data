@@ -16,11 +16,11 @@ public class WitherWallSkullBlock extends WallSkullBlock {
       return CODEC;
    }
 
-   protected WitherWallSkullBlock(BlockBehaviour.Properties var1) {
-      super(SkullBlock.Types.WITHER_SKELETON, var1);
+   protected WitherWallSkullBlock(final BlockBehaviour.Properties properties) {
+      super(SkullBlock.Types.WITHER_SKELETON, properties);
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      WitherSkullBlock.checkSpawn(var1, var2);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      WitherSkullBlock.checkSpawn(level, pos);
    }
 }

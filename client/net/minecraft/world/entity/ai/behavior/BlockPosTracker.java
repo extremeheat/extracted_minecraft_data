@@ -8,16 +8,16 @@ public class BlockPosTracker implements PositionTracker {
    private final BlockPos blockPos;
    private final Vec3 centerPosition;
 
-   public BlockPosTracker(BlockPos var1) {
+   public BlockPosTracker(final BlockPos blockPos) {
       super();
-      this.blockPos = var1.immutable();
-      this.centerPosition = Vec3.atCenterOf(var1);
+      this.blockPos = blockPos.immutable();
+      this.centerPosition = Vec3.atCenterOf(blockPos);
    }
 
-   public BlockPosTracker(Vec3 var1) {
+   public BlockPosTracker(final Vec3 vec) {
       super();
-      this.blockPos = BlockPos.containing(var1);
-      this.centerPosition = var1;
+      this.blockPos = BlockPos.containing(vec);
+      this.centerPosition = vec;
    }
 
    public Vec3 currentPosition() {
@@ -28,7 +28,7 @@ public class BlockPosTracker implements PositionTracker {
       return this.blockPos;
    }
 
-   public boolean isVisibleBy(LivingEntity var1) {
+   public boolean isVisibleBy(final LivingEntity body) {
       return true;
    }
 

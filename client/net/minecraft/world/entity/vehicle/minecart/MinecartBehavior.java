@@ -11,17 +11,17 @@ import net.minecraft.world.phys.Vec3;
 public abstract class MinecartBehavior {
    protected final AbstractMinecart minecart;
 
-   protected MinecartBehavior(AbstractMinecart var1) {
+   protected MinecartBehavior(final AbstractMinecart minecart) {
       super();
-      this.minecart = var1;
+      this.minecart = minecart;
    }
 
    public InterpolationHandler getInterpolation() {
       return null;
    }
 
-   public void lerpMotion(Vec3 var1) {
-      this.setDeltaMovement(var1);
+   public void lerpMotion(final Vec3 movement) {
+      this.setDeltaMovement(movement);
    }
 
    public abstract void tick();
@@ -30,9 +30,9 @@ public abstract class MinecartBehavior {
       return this.minecart.level();
    }
 
-   public abstract void moveAlongTrack(ServerLevel var1);
+   public abstract void moveAlongTrack(ServerLevel level);
 
-   public abstract double stepAlongTrack(BlockPos var1, RailShape var2, double var3);
+   public abstract double stepAlongTrack(final BlockPos pos, final RailShape shape, final double movementLeft);
 
    public abstract boolean pushAndPickupEntities();
 
@@ -40,12 +40,12 @@ public abstract class MinecartBehavior {
       return this.minecart.getDeltaMovement();
    }
 
-   public void setDeltaMovement(Vec3 var1) {
-      this.minecart.setDeltaMovement(var1);
+   public void setDeltaMovement(final Vec3 deltaMovement) {
+      this.minecart.setDeltaMovement(deltaMovement);
    }
 
-   public void setDeltaMovement(double var1, double var3, double var5) {
-      this.minecart.setDeltaMovement(var1, var3, var5);
+   public void setDeltaMovement(final double x, final double y, final double z) {
+      this.minecart.setDeltaMovement(x, y, z);
    }
 
    public Vec3 position() {
@@ -64,39 +64,39 @@ public abstract class MinecartBehavior {
       return this.minecart.getZ();
    }
 
-   public void setPos(Vec3 var1) {
-      this.minecart.setPos(var1);
+   public void setPos(final Vec3 pos) {
+      this.minecart.setPos(pos);
    }
 
-   public void setPos(double var1, double var3, double var5) {
-      this.minecart.setPos(var1, var3, var5);
+   public void setPos(final double x, final double y, final double z) {
+      this.minecart.setPos(x, y, z);
    }
 
    public float getXRot() {
       return this.minecart.getXRot();
    }
 
-   public void setXRot(float var1) {
-      this.minecart.setXRot(var1);
+   public void setXRot(final float rot) {
+      this.minecart.setXRot(rot);
    }
 
    public float getYRot() {
       return this.minecart.getYRot();
    }
 
-   public void setYRot(float var1) {
-      this.minecart.setYRot(var1);
+   public void setYRot(final float rot) {
+      this.minecart.setYRot(rot);
    }
 
    public Direction getMotionDirection() {
       return this.minecart.getDirection();
    }
 
-   public Vec3 getKnownMovement(Vec3 var1) {
-      return var1;
+   public Vec3 getKnownMovement(final Vec3 knownMovement) {
+      return knownMovement;
    }
 
-   public abstract double getMaxSpeed(ServerLevel var1);
+   public abstract double getMaxSpeed(ServerLevel level);
 
    public abstract double getSlowdownFactor();
 }

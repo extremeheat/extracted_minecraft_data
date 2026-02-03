@@ -12,9 +12,9 @@ public enum InactivityFpsLimit implements StringRepresentable {
    private final String serializedName;
    private final Component caption;
 
-   private InactivityFpsLimit(final String var3, final String var4) {
-      this.serializedName = var3;
-      this.caption = Component.translatable(var4);
+   private InactivityFpsLimit(final String serializedName, final String key) {
+      this.serializedName = serializedName;
+      this.caption = Component.translatable(key);
    }
 
    public Component caption() {

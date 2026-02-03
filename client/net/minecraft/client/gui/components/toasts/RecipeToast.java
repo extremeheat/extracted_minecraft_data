@@ -32,56 +32,54 @@ public class RecipeToast implements Toast {
       return this.wantedVisibility;
    }
 
-   public void update(ToastManager var1, long var2) {
+   public void update(final ToastManager manager, final long fullyVisibleForMs) {
       if (this.changed) {
-         this.lastChanged = var2;
+         this.lastChanged = fullyVisibleForMs;
          this.changed = false;
       }
 
       if (this.recipeItems.isEmpty()) {
          this.wantedVisibility = Toast.Visibility.HIDE;
       } else {
-         this.wantedVisibility = (double)(var2 - this.lastChanged) >= 5000.0 * var1.getNotificationDisplayTimeMultiplier() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
+         this.wantedVisibility = (double)(fullyVisibleForMs - this.lastChanged) >= 5000.0 * manager.getNotificationDisplayTimeMultiplier() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
       }
 
-      this.displayedRecipeIndex = (int)((double)var2 / Math.max(1.0, 5000.0 * var1.getNotificationDisplayTimeMultiplier() / (double)this.recipeItems.size()) % (double)this.recipeItems.size());
+      this.displayedRecipeIndex = (int)((double)fullyVisibleForMs / Math.max(1.0, 5000.0 * manager.getNotificationDisplayTimeMultiplier() / (double)this.recipeItems.size()) % (double)this.recipeItems.size());
    }
 
-   public void render(GuiGraphics var1, Font var2, long var3) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
-      var1.drawString(var2, (Component)TITLE_TEXT, 30, 7, -11534256, false);
-      var1.drawString(var2, (Component)DESCRIPTION_TEXT, 30, 18, -16777216, false);
-      Entry var5 = (Entry)this.recipeItems.get(this.displayedRecipeIndex);
-      var1.pose().pushMatrix();
-      var1.pose().scale(0.6F, 0.6F);
-      var1.renderFakeItem(var5.categoryItem(), 3, 3);
-      var1.pose().popMatrix();
-      var1.renderFakeItem(var5.unlockedItem(), 8, 8);
+   public void render(final GuiGraphics graphics, final Font font, final long fullyVisibleForMs) {
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+      graphics.drawString(font, (Component)TITLE_TEXT, 30, 7, -11534256, false);
+      graphics.drawString(font, (Component)DESCRIPTION_TEXT, 30, 18, -16777216, false);
+      Entry items = (Entry)this.recipeItems.get(this.displayedRecipeIndex);
+      graphics.pose().pushMatrix();
+      graphics.pose().scale(0.6F, 0.6F);
+      graphics.renderFakeItem(items.categoryItem(), 3, 3);
+      graphics.pose().popMatrix();
+      graphics.renderFakeItem(items.unlockedItem(), 8, 8);
    }
 
-   private void addItem(ItemStack var1, ItemStack var2) {
-      this.recipeItems.add(new Entry(var1, var2));
+   private void addItem(final ItemStack craftingStation, final ItemStack unlockedItem) {
+      this.recipeItems.add(new Entry(craftingStation, unlockedItem));
       this.changed = true;
    }
 
-   public static void addOrUpdate(ToastManager var0, RecipeDisplay var1) {
-      RecipeToast var2 = (RecipeToast)var0.getToast(RecipeToast.class, NO_TOKEN);
-      if (var2 == null) {
-         var2 = new RecipeToast();
-         var0.addToast(var2);
+   public static void addOrUpdate(final ToastManager toastManager, final RecipeDisplay recipe) {
+      RecipeToast toast = (RecipeToast)toastManager.getToast(RecipeToast.class, NO_TOKEN);
+      if (toast == null) {
+         toast = new RecipeToast();
+         toastManager.addToast(toast);
       }
 
-      ContextMap var3 = SlotDisplayContext.fromLevel(var0.getMinecraft().level);
-      ItemStack var4 = var1.craftingStation().resolveForFirstStack(var3);
-      ItemStack var5 = var1.result().resolveForFirstStack(var3);
-      var2.addItem(var4, var5);
+      ContextMap context = SlotDisplayContext.fromLevel(toastManager.getMinecraft().level);
+      ItemStack categoryItem = recipe.craftingStation().resolveForFirstStack(context);
+      ItemStack unlockedItem = recipe.result().resolveForFirstStack(context);
+      toast.addItem(categoryItem, unlockedItem);
    }
 
-   static record Entry(ItemStack categoryItem, ItemStack unlockedItem) {
-      Entry(ItemStack var1, ItemStack var2) {
+   private static record Entry(ItemStack categoryItem, ItemStack unlockedItem) {
+      private Entry {
          super();
-         this.categoryItem = var1;
-         this.unlockedItem = var2;
       }
    }
 }

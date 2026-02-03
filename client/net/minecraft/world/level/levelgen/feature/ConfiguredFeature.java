@@ -19,14 +19,12 @@ public record ConfiguredFeature<FC extends FeatureConfiguration, F extends Featu
    public static final Codec<Holder<ConfiguredFeature<?, ?>>> CODEC;
    public static final Codec<HolderSet<ConfiguredFeature<?, ?>>> LIST_CODEC;
 
-   public ConfiguredFeature(F var1, FC var2) {
+   public ConfiguredFeature {
       super();
-      this.feature = var1;
-      this.config = var2;
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, RandomSource var3, BlockPos var4) {
-      return this.feature.place(this.config, var1, var2, var3, var4);
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      return this.feature.place(this.config, level, chunkGenerator, random, origin);
    }
 
    public Stream<ConfiguredFeature<?, ?>> getFeatures() {
@@ -39,7 +37,7 @@ public record ConfiguredFeature<FC extends FeatureConfiguration, F extends Featu
    }
 
    static {
-      DIRECT_CODEC = BuiltInRegistries.FEATURE.byNameCodec().dispatch((var0) -> var0.feature, Feature::configuredCodec);
+      DIRECT_CODEC = BuiltInRegistries.FEATURE.byNameCodec().dispatch((f) -> f.feature, Feature::configuredCodec);
       CODEC = RegistryFileCodec.<Holder<ConfiguredFeature<?, ?>>>create(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
       LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
    }

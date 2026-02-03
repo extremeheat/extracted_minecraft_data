@@ -3,15 +3,11 @@ package net.minecraft.util.profiling.jfr.stats;
 import jdk.jfr.consumer.RecordedEvent;
 
 public record ChunkIdentification(String level, String dimension, int x, int z) {
-   public ChunkIdentification(String var1, String var2, int var3, int var4) {
+   public ChunkIdentification {
       super();
-      this.level = var1;
-      this.dimension = var2;
-      this.x = var3;
-      this.z = var4;
    }
 
-   public static ChunkIdentification from(RecordedEvent var0) {
-      return new ChunkIdentification(var0.getString("level"), var0.getString("dimension"), var0.getInt("chunkPosX"), var0.getInt("chunkPosZ"));
+   public static ChunkIdentification from(final RecordedEvent event) {
+      return new ChunkIdentification(event.getString("level"), event.getString("dimension"), event.getInt("chunkPosX"), event.getInt("chunkPosZ"));
    }
 }

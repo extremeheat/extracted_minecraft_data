@@ -17,11 +17,11 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 public abstract class ProjectileWeaponItem extends Item {
-   public static final Predicate<ItemStack> ARROW_ONLY = (var0) -> var0.is(ItemTags.ARROWS);
+   public static final Predicate<ItemStack> ARROW_ONLY = (itemStack) -> itemStack.is(ItemTags.ARROWS);
    public static final Predicate<ItemStack> ARROW_OR_FIREWORK;
 
-   public ProjectileWeaponItem(Item.Properties var1) {
-      super(var1);
+   public ProjectileWeaponItem(final Item.Properties properties) {
+      super(properties);
    }
 
    public Predicate<ItemStack> getSupportedHeldProjectiles() {
@@ -30,30 +30,30 @@ public abstract class ProjectileWeaponItem extends Item {
 
    public abstract Predicate<ItemStack> getAllSupportedProjectiles();
 
-   public static ItemStack getHeldProjectile(LivingEntity var0, Predicate<ItemStack> var1) {
-      if (var1.test(var0.getItemInHand(InteractionHand.OFF_HAND))) {
-         return var0.getItemInHand(InteractionHand.OFF_HAND);
+   public static ItemStack getHeldProjectile(final LivingEntity entity, final Predicate<ItemStack> valid) {
+      if (valid.test(entity.getItemInHand(InteractionHand.OFF_HAND))) {
+         return entity.getItemInHand(InteractionHand.OFF_HAND);
       } else {
-         return var1.test(var0.getItemInHand(InteractionHand.MAIN_HAND)) ? var0.getItemInHand(InteractionHand.MAIN_HAND) : ItemStack.EMPTY;
+         return valid.test(entity.getItemInHand(InteractionHand.MAIN_HAND)) ? entity.getItemInHand(InteractionHand.MAIN_HAND) : ItemStack.EMPTY;
       }
    }
 
    public abstract int getDefaultProjectileRange();
 
-   protected void shoot(ServerLevel var1, LivingEntity var2, InteractionHand var3, ItemStack var4, List<ItemStack> var5, float var6, float var7, boolean var8, @Nullable LivingEntity var9) {
-      float var10 = EnchantmentHelper.processProjectileSpread(var1, var4, var2, 0.0F);
-      float var11 = var5.size() == 1 ? 0.0F : 2.0F * var10 / (float)(var5.size() - 1);
-      float var12 = (float)((var5.size() - 1) % 2) * var11 / 2.0F;
-      float var13 = 1.0F;
+   protected void shoot(final ServerLevel level, final LivingEntity shooter, final InteractionHand hand, final ItemStack weapon, final List<ItemStack> projectiles, final float power, final float uncertainty, final boolean isCrit, final @Nullable LivingEntity targetOverride) {
+      float maxAngle = EnchantmentHelper.processProjectileSpread(level, weapon, shooter, 0.0F);
+      float angleStep = projectiles.size() == 1 ? 0.0F : 2.0F * maxAngle / (float)(projectiles.size() - 1);
+      float angleOffset = (float)((projectiles.size() - 1) % 2) * angleStep / 2.0F;
+      float direction = 1.0F;
 
-      for(int var14 = 0; var14 < var5.size(); ++var14) {
-         ItemStack var15 = (ItemStack)var5.get(var14);
-         if (!var15.isEmpty()) {
-            float var16 = var12 + var13 * (float)((var14 + 1) / 2) * var11;
-            var13 = -var13;
-            Projectile.spawnProjectile(this.createProjectile(var1, var2, var4, var15, var8), var1, var15, (var7x) -> this.shootProjectile(var2, var7x, var14, var6, var7, var16, var9));
-            var4.hurtAndBreak(this.getDurabilityUse(var15), var2, var3.asEquipmentSlot());
-            if (var4.isEmpty()) {
+      for(int i = 0; i < projectiles.size(); ++i) {
+         ItemStack projectile = (ItemStack)projectiles.get(i);
+         if (!projectile.isEmpty()) {
+            float angle = angleOffset + direction * (float)((i + 1) / 2) * angleStep;
+            direction = -direction;
+            Projectile.spawnProjectile(this.createProjectile(level, shooter, weapon, projectile, isCrit), level, projectile, (projectileEntity) -> this.shootProjectile(shooter, projectileEntity, i, power, uncertainty, angle, targetOverride));
+            weapon.hurtAndBreak(this.getDurabilityUse(projectile), shooter, hand.asEquipmentSlot());
+            if (weapon.isEmpty()) {
                break;
             }
          }
@@ -61,66 +61,66 @@ public abstract class ProjectileWeaponItem extends Item {
 
    }
 
-   protected int getDurabilityUse(ItemStack var1) {
+   protected int getDurabilityUse(final ItemStack projectile) {
       return 1;
    }
 
-   protected abstract void shootProjectile(LivingEntity var1, Projectile var2, int var3, float var4, float var5, float var6, @Nullable LivingEntity var7);
+   protected abstract void shootProjectile(final LivingEntity shooter, final Projectile projectileEntity, final int index, final float power, final float uncertainty, final float angle, final @Nullable LivingEntity targetOverrride);
 
-   protected Projectile createProjectile(Level var1, LivingEntity var2, ItemStack var3, ItemStack var4, boolean var5) {
-      Item var8 = var4.getItem();
+   protected Projectile createProjectile(final Level level, final LivingEntity shooter, final ItemStack weapon, final ItemStack projectile, final boolean isCrit) {
+      Item var8 = projectile.getItem();
       ArrowItem var10000;
-      if (var8 instanceof ArrowItem var7) {
-         var10000 = var7;
+      if (var8 instanceof ArrowItem arrow) {
+         var10000 = arrow;
       } else {
          var10000 = (ArrowItem)Items.ARROW;
       }
 
-      ArrowItem var6 = var10000;
-      AbstractArrow var9 = var6.createArrow(var1, var4, var2, var3);
-      if (var5) {
-         var9.setCritArrow(true);
+      ArrowItem arrowItem = var10000;
+      AbstractArrow arrow = arrowItem.createArrow(level, projectile, shooter, weapon);
+      if (isCrit) {
+         arrow.setCritArrow(true);
       }
 
-      return var9;
+      return arrow;
    }
 
-   protected static List<ItemStack> draw(ItemStack var0, ItemStack var1, LivingEntity var2) {
-      if (var1.isEmpty()) {
+   protected static List<ItemStack> draw(final ItemStack weapon, final ItemStack projectile, final LivingEntity shooter) {
+      if (projectile.isEmpty()) {
          return List.of();
       } else {
-         Level var5 = var2.level();
+         Level var5 = shooter.level();
          int var10000;
          if (var5 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var5;
-            var10000 = EnchantmentHelper.processProjectileCount(var4, var0, var2, 1);
+            ServerLevel serverLevel = (ServerLevel)var5;
+            var10000 = EnchantmentHelper.processProjectileCount(serverLevel, weapon, shooter, 1);
          } else {
             var10000 = 1;
          }
 
-         int var3 = var10000;
-         ArrayList var8 = new ArrayList(var3);
-         ItemStack var9 = var1.copy();
+         int numProjectiles = var10000;
+         List<ItemStack> drawn = new ArrayList(numProjectiles);
+         ItemStack projectileCopy = projectile.copy();
 
-         for(int var6 = 0; var6 < var3; ++var6) {
-            ItemStack var7 = useAmmo(var0, var6 == 0 ? var1 : var9, var2, var6 > 0);
-            if (!var7.isEmpty()) {
-               var8.add(var7);
+         for(int i = 0; i < numProjectiles; ++i) {
+            ItemStack drawnStack = useAmmo(weapon, i == 0 ? projectile : projectileCopy, shooter, i > 0);
+            if (!drawnStack.isEmpty()) {
+               drawn.add(drawnStack);
             }
          }
 
-         return var8;
+         return drawn;
       }
    }
 
-   protected static ItemStack useAmmo(ItemStack var0, ItemStack var1, LivingEntity var2, boolean var3) {
+   protected static ItemStack useAmmo(final ItemStack weapon, final ItemStack projectile, final LivingEntity holder, final boolean forceInfinite) {
       int var10000;
       label28: {
-         if (!var3 && !var2.hasInfiniteMaterials()) {
-            Level var6 = var2.level();
+         if (!forceInfinite && !holder.hasInfiniteMaterials()) {
+            Level var6 = holder.level();
             if (var6 instanceof ServerLevel) {
-               ServerLevel var5 = (ServerLevel)var6;
-               var10000 = EnchantmentHelper.processAmmoUse(var5, var0, var1, 1);
+               ServerLevel serverLevel = (ServerLevel)var6;
+               var10000 = EnchantmentHelper.processAmmoUse(serverLevel, weapon, projectile, 1);
                break label28;
             }
          }
@@ -128,25 +128,25 @@ public abstract class ProjectileWeaponItem extends Item {
          var10000 = 0;
       }
 
-      int var4 = var10000;
-      if (var4 > var1.getCount()) {
+      int ammoToUse = var10000;
+      if (ammoToUse > projectile.getCount()) {
          return ItemStack.EMPTY;
-      } else if (var4 == 0) {
-         ItemStack var8 = var1.copyWithCount(1);
-         var8.set(DataComponents.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
-         return var8;
+      } else if (ammoToUse == 0) {
+         ItemStack copy = projectile.copyWithCount(1);
+         copy.set(DataComponents.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
+         return copy;
       } else {
-         ItemStack var7 = var1.split(var4);
-         if (var1.isEmpty() && var2 instanceof Player) {
-            Player var9 = (Player)var2;
-            var9.getInventory().removeItem(var1);
+         ItemStack used = projectile.split(ammoToUse);
+         if (projectile.isEmpty() && holder instanceof Player) {
+            Player player = (Player)holder;
+            player.getInventory().removeItem(projectile);
          }
 
-         return var7;
+         return used;
       }
    }
 
    static {
-      ARROW_OR_FIREWORK = ARROW_ONLY.or((var0) -> var0.is(Items.FIREWORK_ROCKET));
+      ARROW_OR_FIREWORK = ARROW_ONLY.or((itemStack) -> itemStack.is(Items.FIREWORK_ROCKET));
    }
 }

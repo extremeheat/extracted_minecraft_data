@@ -22,16 +22,16 @@ public class DefaultPlayerSkin {
       return DEFAULT_SKINS[6];
    }
 
-   public static PlayerSkin get(UUID var0) {
-      return DEFAULT_SKINS[Math.floorMod(var0.hashCode(), DEFAULT_SKINS.length)];
+   public static PlayerSkin get(final UUID profileId) {
+      return DEFAULT_SKINS[Math.floorMod(profileId.hashCode(), DEFAULT_SKINS.length)];
    }
 
-   public static PlayerSkin get(GameProfile var0) {
-      return get(var0.id());
+   public static PlayerSkin get(final GameProfile profile) {
+      return get(profile.id());
    }
 
-   private static PlayerSkin create(String var0, PlayerModelType var1) {
-      return new PlayerSkin(new ClientAsset.ResourceTexture(Identifier.withDefaultNamespace(var0)), (ClientAsset.Texture)null, (ClientAsset.Texture)null, var1, true);
+   private static PlayerSkin create(final String body, final PlayerModelType model) {
+      return new PlayerSkin(new ClientAsset.ResourceTexture(Identifier.withDefaultNamespace(body)), (ClientAsset.Texture)null, (ClientAsset.Texture)null, model, true);
    }
 
    static {

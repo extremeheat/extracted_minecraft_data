@@ -4,21 +4,24 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 import org.jspecify.annotations.Nullable;
 
 public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance> {
@@ -30,70 +33,66 @@ public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance
       return KilledByArrowTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, Collection<Entity> var2, @Nullable ItemStack var3) {
-      ArrayList var4 = Lists.newArrayList();
-      HashSet var5 = Sets.newHashSet();
+   public void trigger(final ServerPlayer player, final Collection<Entity> victims, final @Nullable ItemStack firedByWeapon) {
+      List<LootContext> victimContexts = Lists.newArrayList();
+      Set<EntityType<?>> entityTypes = Sets.newHashSet();
 
-      for(Entity var7 : var2) {
-         var5.add(var7.getType());
-         var4.add(EntityPredicate.createContext(var1, var7));
+      for(Entity victim : victims) {
+         entityTypes.add(victim.getType());
+         victimContexts.add(EntityPredicate.createContext(player, victim));
       }
 
-      this.trigger(var1, (var3x) -> var3x.matches(var4, var5.size(), var3));
+      this.trigger(player, (t) -> t.matches(victimContexts, entityTypes.size(), firedByWeapon));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims, MinMaxBounds.Ints uniqueEntityTypes, Optional<ItemPredicate> firedFromWeapon) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims), MinMaxBounds.Ints.CODEC.optionalFieldOf("unique_entity_types", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::uniqueEntityTypes), ItemPredicate.CODEC.optionalFieldOf("fired_from_weapon").forGetter(TriggerInstance::firedFromWeapon)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims), MinMaxBounds.Ints.CODEC.optionalFieldOf("unique_entity_types", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::uniqueEntityTypes), ItemPredicate.CODEC.optionalFieldOf("fired_from_weapon").forGetter(TriggerInstance::firedFromWeapon)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, List<ContextAwarePredicate> var2, MinMaxBounds.Ints var3, Optional<ItemPredicate> var4) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.victims = var2;
-         this.uniqueEntityTypes = var3;
-         this.firedFromWeapon = var4;
       }
 
-      public static Criterion<TriggerInstance> crossbowKilled(HolderGetter<Item> var0, EntityPredicate.Builder... var1) {
-         return CriteriaTriggers.KILLED_BY_ARROW.createCriterion(new TriggerInstance(Optional.empty(), EntityPredicate.wrap(var1), MinMaxBounds.Ints.ANY, Optional.of(ItemPredicate.Builder.item().of(var0, Items.CROSSBOW).build())));
+      public static Criterion<TriggerInstance> crossbowKilled(final HolderGetter<Item> items, final EntityPredicate.Builder... victims) {
+         return CriteriaTriggers.KILLED_BY_ARROW.createCriterion(new TriggerInstance(Optional.empty(), EntityPredicate.wrap(victims), MinMaxBounds.Ints.ANY, Optional.of(ItemPredicate.Builder.item().of(items, Items.CROSSBOW).build())));
       }
 
-      public static Criterion<TriggerInstance> crossbowKilled(HolderGetter<Item> var0, MinMaxBounds.Ints var1) {
-         return CriteriaTriggers.KILLED_BY_ARROW.createCriterion(new TriggerInstance(Optional.empty(), List.of(), var1, Optional.of(ItemPredicate.Builder.item().of(var0, Items.CROSSBOW).build())));
+      public static Criterion<TriggerInstance> crossbowKilled(final HolderGetter<Item> items, final MinMaxBounds.Ints uniqueEntityTypes) {
+         return CriteriaTriggers.KILLED_BY_ARROW.createCriterion(new TriggerInstance(Optional.empty(), List.of(), uniqueEntityTypes, Optional.of(ItemPredicate.Builder.item().of(items, Items.CROSSBOW).build())));
       }
 
-      public boolean matches(Collection<LootContext> var1, int var2, @Nullable ItemStack var3) {
-         if (!this.firedFromWeapon.isPresent() || var3 != null && ((ItemPredicate)this.firedFromWeapon.get()).test(var3)) {
+      public boolean matches(final Collection<LootContext> victims, final int uniqueEntityTypes, final @Nullable ItemStack firedFromWeapon) {
+         if (!this.firedFromWeapon.isPresent() || firedFromWeapon != null && ((ItemPredicate)this.firedFromWeapon.get()).test((ItemInstance)firedFromWeapon)) {
             if (!this.victims.isEmpty()) {
-               ArrayList var4 = Lists.newArrayList(var1);
+               List<LootContext> victimsCopy = Lists.newArrayList(victims);
 
-               for(ContextAwarePredicate var6 : this.victims) {
-                  boolean var7 = false;
-                  Iterator var8 = var4.iterator();
+               for(ContextAwarePredicate predicate : this.victims) {
+                  boolean found = false;
+                  Iterator<LootContext> iterator = victimsCopy.iterator();
 
-                  while(var8.hasNext()) {
-                     LootContext var9 = (LootContext)var8.next();
-                     if (var6.matches(var9)) {
-                        var8.remove();
-                        var7 = true;
+                  while(iterator.hasNext()) {
+                     LootContext entity = (LootContext)iterator.next();
+                     if (predicate.matches(entity)) {
+                        iterator.remove();
+                        found = true;
                         break;
                      }
                   }
 
-                  if (!var7) {
+                  if (!found) {
                      return false;
                   }
                }
             }
 
-            return this.uniqueEntityTypes.matches(var2);
+            return this.uniqueEntityTypes.matches(uniqueEntityTypes);
          } else {
             return false;
          }
       }
 
-      public void validate(CriterionValidator var1) {
-         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntities(this.victims, "victims");
+      public void validate(final ValidationContextSource validator) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
+         Validatable.validate(validator.entityContext(), "victims", this.victims);
       }
    }
 }

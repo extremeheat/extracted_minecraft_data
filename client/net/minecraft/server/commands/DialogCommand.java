@@ -19,35 +19,35 @@ public class DialogCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("dialog").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("show").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("dialog", ResourceOrIdArgument.dialog(var1)).executes((var0x) -> showDialog((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ResourceOrIdArgument.getDialog(var0x, "dialog"))))))).then(Commands.literal("clear").then(Commands.argument("targets", EntityArgument.players()).executes((var0x) -> clearDialog((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("dialog").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("show").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("dialog", ResourceOrIdArgument.dialog(context)).executes((c) -> showDialog((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ResourceOrIdArgument.getDialog(c, "dialog"))))))).then(Commands.literal("clear").then(Commands.argument("targets", EntityArgument.players()).executes((c) -> clearDialog((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"))))));
    }
 
-   private static int showDialog(CommandSourceStack var0, Collection<ServerPlayer> var1, Holder<Dialog> var2) {
-      for(ServerPlayer var4 : var1) {
-         var4.openDialog(var2);
+   private static int showDialog(final CommandSourceStack sender, final Collection<ServerPlayer> targets, final Holder<Dialog> dialog) {
+      for(ServerPlayer target : targets) {
+         target.openDialog(dialog);
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.dialog.show.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+      if (targets.size() == 1) {
+         sender.sendSuccess(() -> Component.translatable("commands.dialog.show.single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.dialog.show.multiple", var1.size()), true);
+         sender.sendSuccess(() -> Component.translatable("commands.dialog.show.multiple", targets.size()), true);
       }
 
-      return var1.size();
+      return targets.size();
    }
 
-   private static int clearDialog(CommandSourceStack var0, Collection<ServerPlayer> var1) {
-      for(ServerPlayer var3 : var1) {
-         var3.connection.send(ClientboundClearDialogPacket.INSTANCE);
+   private static int clearDialog(final CommandSourceStack sender, final Collection<ServerPlayer> targets) {
+      for(ServerPlayer target : targets) {
+         target.connection.send(ClientboundClearDialogPacket.INSTANCE);
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.dialog.clear.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+      if (targets.size() == 1) {
+         sender.sendSuccess(() -> Component.translatable("commands.dialog.clear.single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.dialog.clear.multiple", var1.size()), true);
+         sender.sendSuccess(() -> Component.translatable("commands.dialog.clear.multiple", targets.size()), true);
       }
 
-      return var1.size();
+      return targets.size();
    }
 }

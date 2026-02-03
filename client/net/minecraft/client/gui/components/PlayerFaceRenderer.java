@@ -21,27 +21,27 @@ public class PlayerFaceRenderer {
       super();
    }
 
-   public static void draw(GuiGraphics var0, PlayerSkin var1, int var2, int var3, int var4) {
-      draw(var0, var1, var2, var3, var4, -1);
+   public static void draw(final GuiGraphics graphics, final PlayerSkin skin, final int x, final int y, final int size) {
+      draw(graphics, skin, x, y, size, -1);
    }
 
-   public static void draw(GuiGraphics var0, PlayerSkin var1, int var2, int var3, int var4, int var5) {
-      draw(var0, var1.body().texturePath(), var2, var3, var4, true, false, var5);
+   public static void draw(final GuiGraphics graphics, final PlayerSkin skin, final int x, final int y, final int size, final int color) {
+      draw(graphics, skin.body().texturePath(), x, y, size, true, false, color);
    }
 
-   public static void draw(GuiGraphics var0, Identifier var1, int var2, int var3, int var4, boolean var5, boolean var6, int var7) {
-      int var8 = 8 + (var6 ? 8 : 0);
-      int var9 = 8 * (var6 ? -1 : 1);
-      var0.blit(RenderPipelines.GUI_TEXTURED, var1, var2, var3, 8.0F, (float)var8, var4, var4, 8, var9, 64, 64, var7);
-      if (var5) {
-         drawHat(var0, var1, var2, var3, var4, var6, var7);
+   public static void draw(final GuiGraphics graphics, final Identifier texture, final int x, final int y, final int size, final boolean hat, final boolean flip, final int color) {
+      int skinHeadV = 8 + (flip ? 8 : 0);
+      int skinHeadHeight = 8 * (flip ? -1 : 1);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 8.0F, (float)skinHeadV, size, size, 8, skinHeadHeight, 64, 64, color);
+      if (hat) {
+         drawHat(graphics, texture, x, y, size, flip, color);
       }
 
    }
 
-   private static void drawHat(GuiGraphics var0, Identifier var1, int var2, int var3, int var4, boolean var5, int var6) {
-      int var7 = 8 + (var5 ? 8 : 0);
-      int var8 = 8 * (var5 ? -1 : 1);
-      var0.blit(RenderPipelines.GUI_TEXTURED, var1, var2, var3, 40.0F, (float)var7, var4, var4, 8, var8, 64, 64, var6);
+   private static void drawHat(final GuiGraphics graphics, final Identifier texture, final int x, final int y, final int size, final boolean flip, final int color) {
+      int skinHatV = 8 + (flip ? 8 : 0);
+      int skinHatHeight = 8 * (flip ? -1 : 1);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 40.0F, (float)skinHatV, size, size, 8, skinHatHeight, 64, 64, color);
    }
 }

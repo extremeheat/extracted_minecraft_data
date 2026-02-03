@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.EndGatewayRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -17,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class TheEndGatewayRenderer extends AbstractEndPortalRenderer<TheEndGatewayBlockEntity, EndGatewayRenderState> {
-   private static final Identifier BEAM_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_gateway_beam.png");
+   private static final Identifier BEAM_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_portal/end_gateway_beam.png");
 
    public TheEndGatewayRenderer() {
       super();
@@ -27,28 +26,28 @@ public class TheEndGatewayRenderer extends AbstractEndPortalRenderer<TheEndGatew
       return new EndGatewayRenderState();
    }
 
-   public void extractRenderState(TheEndGatewayBlockEntity var1, EndGatewayRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
-      super.extractRenderState(var1, var2, var3, var4, var5);
-      Level var6 = var1.getLevel();
-      if (var1.isSpawning() || var1.isCoolingDown() && var6 != null) {
-         var2.scale = var1.isSpawning() ? var1.getSpawnPercent(var3) : var1.getCooldownPercent(var3);
-         double var7 = var1.isSpawning() ? (double)var1.getLevel().getMaxY() : 50.0;
-         var2.scale = Mth.sin((double)(var2.scale * 3.1415927F));
-         var2.height = Mth.floor((double)var2.scale * var7);
-         var2.color = var1.isSpawning() ? DyeColor.MAGENTA.getTextureDiffuseColor() : DyeColor.PURPLE.getTextureDiffuseColor();
-         var2.animationTime = var1.getLevel() != null ? (float)Math.floorMod(var1.getLevel().getGameTime(), 40) + var3 : 0.0F;
+   public void extractRenderState(final TheEndGatewayBlockEntity blockEntity, final EndGatewayRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+      Level level = blockEntity.getLevel();
+      if (blockEntity.isSpawning() || blockEntity.isCoolingDown() && level != null) {
+         state.scale = blockEntity.isSpawning() ? blockEntity.getSpawnPercent(partialTicks) : blockEntity.getCooldownPercent(partialTicks);
+         double beamDistance = blockEntity.isSpawning() ? (double)blockEntity.getLevel().getMaxY() : 50.0;
+         state.scale = Mth.sin((double)(state.scale * 3.1415927F));
+         state.height = Mth.floor((double)state.scale * beamDistance);
+         state.color = blockEntity.isSpawning() ? DyeColor.MAGENTA.getTextureDiffuseColor() : DyeColor.PURPLE.getTextureDiffuseColor();
+         state.animationTime = blockEntity.getLevel() != null ? (float)Math.floorMod(blockEntity.getLevel().getGameTime(), 40) + partialTicks : 0.0F;
       } else {
-         var2.height = 0;
+         state.height = 0;
       }
 
    }
 
-   public void submit(EndGatewayRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      if (var1.height > 0) {
-         BeaconRenderer.submitBeaconBeam(var2, var3, BEAM_LOCATION, var1.scale, var1.animationTime, -var1.height, var1.height * 2, var1.color, 0.15F, 0.175F);
+   public void submit(final EndGatewayRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      if (state.height > 0) {
+         BeaconRenderer.submitBeaconBeam(poseStack, submitNodeCollector, BEAM_LOCATION, state.scale, state.animationTime, -state.height, state.height * 2, state.color, 0.15F, 0.175F);
       }
 
-      super.submit(var1, var2, var3, var4);
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
    protected float getOffsetUp() {
@@ -65,10 +64,5 @@ public class TheEndGatewayRenderer extends AbstractEndPortalRenderer<TheEndGatew
 
    public int getViewDistance() {
       return 256;
-   }
-
-   // $FF: synthetic method
-   public BlockEntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.block.model;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -17,41 +18,38 @@ import org.slf4j.Logger;
 public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusion, TextureAtlasSprite particleIcon) implements BlockModelPart {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public SimpleModelWrapper(QuadCollection var1, boolean var2, TextureAtlasSprite var3) {
+   public SimpleModelWrapper {
       super();
-      this.quads = var1;
-      this.useAmbientOcclusion = var2;
-      this.particleIcon = var3;
    }
 
-   public static BlockModelPart bake(ModelBaker var0, Identifier var1, ModelState var2) {
-      ResolvedModel var3 = var0.getModel(var1);
-      TextureSlots var4 = var3.getTopTextureSlots();
-      boolean var5 = var3.getTopAmbientOcclusion();
-      TextureAtlasSprite var6 = var3.resolveParticleSprite(var4, var0);
-      QuadCollection var7 = var3.bakeTopGeometry(var4, var0, var2);
-      HashMultimap var8 = null;
+   public static BlockModelPart bake(final ModelBaker modelBakery, final Identifier location, final ModelState state) {
+      ResolvedModel model = modelBakery.getModel(location);
+      TextureSlots textureSlots = model.getTopTextureSlots();
+      boolean hasAmbientOcclusion = model.getTopAmbientOcclusion();
+      TextureAtlasSprite particleSprite = model.resolveParticleSprite(textureSlots, modelBakery);
+      QuadCollection geometry = model.bakeTopGeometry(textureSlots, modelBakery, state);
+      Multimap<Identifier, Identifier> forbiddenSprites = null;
 
-      for(BakedQuad var10 : var7.getAll()) {
-         TextureAtlasSprite var11 = var10.sprite();
-         if (!var11.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS)) {
-            if (var8 == null) {
-               var8 = HashMultimap.create();
+      for(BakedQuad bakedQuad : geometry.getAll()) {
+         TextureAtlasSprite sprite = bakedQuad.sprite();
+         if (!sprite.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS)) {
+            if (forbiddenSprites == null) {
+               forbiddenSprites = HashMultimap.create();
             }
 
-            var8.put(var11.atlasLocation(), var11.contents().name());
+            forbiddenSprites.put(sprite.atlasLocation(), sprite.contents().name());
          }
       }
 
-      if (var8 != null) {
-         LOGGER.warn("Rejecting block model {}, since it contains sprites from outside of supported atlas: {}", var1, var8);
-         return var0.missingBlockModelPart();
+      if (forbiddenSprites != null) {
+         LOGGER.warn("Rejecting block model {}, since it contains sprites from outside of supported atlas: {}", location, forbiddenSprites);
+         return modelBakery.missingBlockModelPart();
       } else {
-         return new SimpleModelWrapper(var7, var5, var6);
+         return new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleSprite);
       }
    }
 
-   public List<BakedQuad> getQuads(@Nullable Direction var1) {
-      return this.quads.getQuads(var1);
+   public List<BakedQuad> getQuads(final @Nullable Direction direction) {
+      return this.quads.getQuads(direction);
    }
 }

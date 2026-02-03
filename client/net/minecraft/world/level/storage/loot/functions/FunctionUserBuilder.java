@@ -4,20 +4,20 @@ import java.util.Arrays;
 import java.util.function.Function;
 
 public interface FunctionUserBuilder<T extends FunctionUserBuilder<T>> {
-   T apply(LootItemFunction.Builder var1);
+   T apply(LootItemFunction.Builder builder);
 
-   default <E> T apply(Iterable<E> var1, Function<E, LootItemFunction.Builder> var2) {
-      FunctionUserBuilder var3 = this.unwrap();
+   default <E> T apply(final Iterable<E> collection, final Function<E, LootItemFunction.Builder> functionProvider) {
+      T result = this.unwrap();
 
-      for(Object var5 : var1) {
-         var3 = var3.apply((LootItemFunction.Builder)var2.apply(var5));
+      for(E value : collection) {
+         result = result.apply((LootItemFunction.Builder)functionProvider.apply(value));
       }
 
-      return (T)var3;
+      return result;
    }
 
-   default <E> T apply(E[] var1, Function<E, LootItemFunction.Builder> var2) {
-      return (T)this.apply(Arrays.asList(var1), var2);
+   default <E> T apply(final E[] collection, final Function<E, LootItemFunction.Builder> functionProvider) {
+      return (T)this.apply(Arrays.asList(collection), functionProvider);
    }
 
    T unwrap();

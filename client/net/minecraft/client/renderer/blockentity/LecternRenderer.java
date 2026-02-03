@@ -5,7 +5,6 @@ import com.mojang.math.Axis;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.LecternRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -24,36 +23,31 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, 
    private final BookModel bookModel;
    private final BookModel.State bookState = new BookModel.State(0.0F, 0.1F, 0.9F, 1.2F);
 
-   public LecternRenderer(BlockEntityRendererProvider.Context var1) {
+   public LecternRenderer(final BlockEntityRendererProvider.Context context) {
       super();
-      this.materials = var1.materials();
-      this.bookModel = new BookModel(var1.bakeLayer(ModelLayers.BOOK));
+      this.materials = context.materials();
+      this.bookModel = new BookModel(context.bakeLayer(ModelLayers.BOOK));
    }
 
    public LecternRenderState createRenderState() {
       return new LecternRenderState();
    }
 
-   public void extractRenderState(LecternBlockEntity var1, LecternRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
-      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
-      var2.hasBook = (Boolean)var1.getBlockState().getValue(LecternBlock.HAS_BOOK);
-      var2.yRot = ((Direction)var1.getBlockState().getValue(LecternBlock.FACING)).getClockWise().toYRot();
+   public void extractRenderState(final LecternBlockEntity blockEntity, final LecternRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+      state.hasBook = (Boolean)blockEntity.getBlockState().getValue(LecternBlock.HAS_BOOK);
+      state.yRot = ((Direction)blockEntity.getBlockState().getValue(LecternBlock.FACING)).getClockWise().toYRot();
    }
 
-   public void submit(LecternRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      if (var1.hasBook) {
-         var2.pushPose();
-         var2.translate(0.5F, 1.0625F, 0.5F);
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var1.yRot));
-         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(67.5F));
-         var2.translate(0.0F, -0.125F, 0.0F);
-         var3.submitModel(this.bookModel, this.bookState, var2, EnchantTableRenderer.BOOK_TEXTURE.renderType(RenderTypes::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(EnchantTableRenderer.BOOK_TEXTURE), 0, var1.breakProgress);
-         var2.popPose();
+   public void submit(final LecternRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      if (state.hasBook) {
+         poseStack.pushPose();
+         poseStack.translate(0.5F, 1.0625F, 0.5F);
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-state.yRot));
+         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(67.5F));
+         poseStack.translate(0.0F, -0.125F, 0.0F);
+         submitNodeCollector.submitModel(this.bookModel, this.bookState, poseStack, EnchantTableRenderer.BOOK_TEXTURE.renderType(RenderTypes::entitySolid), state.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(EnchantTableRenderer.BOOK_TEXTURE), 0, state.breakProgress);
+         poseStack.popPose();
       }
-   }
-
-   // $FF: synthetic method
-   public BlockEntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

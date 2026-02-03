@@ -4,8 +4,8 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public abstract class MultifaceSpreadeableBlock extends MultifaceBlock {
-   public MultifaceSpreadeableBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public MultifaceSpreadeableBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    public abstract MapCodec<? extends MultifaceSpreadeableBlock> codec();

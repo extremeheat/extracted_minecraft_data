@@ -47,11 +47,11 @@ public class Attributes {
       super();
    }
 
-   private static Holder<Attribute> register(String var0, Attribute var1) {
-      return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, Identifier.withDefaultNamespace(var0), var1);
+   private static Holder<Attribute> register(final String name, final Attribute attribute) {
+      return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, Identifier.withDefaultNamespace(name), attribute);
    }
 
-   public static Holder<Attribute> bootstrap(Registry<Attribute> var0) {
+   public static Holder<Attribute> bootstrap(final Registry<Attribute> registry) {
       return MAX_HEALTH;
    }
 

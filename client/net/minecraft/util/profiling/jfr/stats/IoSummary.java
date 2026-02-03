@@ -10,11 +10,11 @@ public final class IoSummary<T> {
    private final List<Pair<T, CountAndSize>> largestSizeContributors;
    private final Duration recordingDuration;
 
-   public IoSummary(Duration var1, List<Pair<T, CountAndSize>> var2) {
+   public IoSummary(final Duration recordingDuration, final List<Pair<T, CountAndSize>> packetStats) {
       super();
-      this.recordingDuration = var1;
-      this.totalCountAndSize = (CountAndSize)var2.stream().map(Pair::getSecond).reduce(new CountAndSize(0L, 0L), CountAndSize::add);
-      this.largestSizeContributors = var2.stream().sorted(Comparator.comparing(Pair::getSecond, IoSummary.CountAndSize.SIZE_THEN_COUNT)).limit(10L).toList();
+      this.recordingDuration = recordingDuration;
+      this.totalCountAndSize = (CountAndSize)packetStats.stream().map(Pair::getSecond).reduce(new CountAndSize(0L, 0L), CountAndSize::add);
+      this.largestSizeContributors = packetStats.stream().sorted(Comparator.comparing(Pair::getSecond, IoSummary.CountAndSize.SIZE_THEN_COUNT)).limit(10L).toList();
    }
 
    public double getCountsPerSecond() {
@@ -38,18 +38,14 @@ public final class IoSummary<T> {
    }
 
    public static record CountAndSize(long totalCount, long totalSize) {
-      final long totalCount;
-      final long totalSize;
-      static final Comparator<CountAndSize> SIZE_THEN_COUNT = Comparator.comparing(CountAndSize::totalSize).thenComparing(CountAndSize::totalCount).reversed();
+      private static final Comparator<CountAndSize> SIZE_THEN_COUNT = Comparator.comparing(CountAndSize::totalSize).thenComparing(CountAndSize::totalCount).reversed();
 
-      public CountAndSize(long var1, long var3) {
+      public CountAndSize {
          super();
-         this.totalCount = var1;
-         this.totalSize = var3;
       }
 
-      CountAndSize add(CountAndSize var1) {
-         return new CountAndSize(this.totalCount + var1.totalCount, this.totalSize + var1.totalSize);
+      CountAndSize add(final CountAndSize that) {
+         return new CountAndSize(this.totalCount + that.totalCount, this.totalSize + that.totalSize);
       }
 
       public float averageSize() {

@@ -54,57 +54,57 @@ public class BannerPatterns {
       super();
    }
 
-   private static ResourceKey<BannerPattern> create(String var0) {
-      return ResourceKey.create(Registries.BANNER_PATTERN, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<BannerPattern> create(final String id) {
+      return ResourceKey.create(Registries.BANNER_PATTERN, Identifier.withDefaultNamespace(id));
    }
 
-   public static void bootstrap(BootstrapContext<BannerPattern> var0) {
-      register(var0, BASE);
-      register(var0, SQUARE_BOTTOM_LEFT);
-      register(var0, SQUARE_BOTTOM_RIGHT);
-      register(var0, SQUARE_TOP_LEFT);
-      register(var0, SQUARE_TOP_RIGHT);
-      register(var0, STRIPE_BOTTOM);
-      register(var0, STRIPE_TOP);
-      register(var0, STRIPE_LEFT);
-      register(var0, STRIPE_RIGHT);
-      register(var0, STRIPE_CENTER);
-      register(var0, STRIPE_MIDDLE);
-      register(var0, STRIPE_DOWNRIGHT);
-      register(var0, STRIPE_DOWNLEFT);
-      register(var0, STRIPE_SMALL);
-      register(var0, CROSS);
-      register(var0, STRAIGHT_CROSS);
-      register(var0, TRIANGLE_BOTTOM);
-      register(var0, TRIANGLE_TOP);
-      register(var0, TRIANGLES_BOTTOM);
-      register(var0, TRIANGLES_TOP);
-      register(var0, DIAGONAL_LEFT);
-      register(var0, DIAGONAL_RIGHT);
-      register(var0, DIAGONAL_LEFT_MIRROR);
-      register(var0, DIAGONAL_RIGHT_MIRROR);
-      register(var0, CIRCLE_MIDDLE);
-      register(var0, RHOMBUS_MIDDLE);
-      register(var0, HALF_VERTICAL);
-      register(var0, HALF_HORIZONTAL);
-      register(var0, HALF_VERTICAL_MIRROR);
-      register(var0, HALF_HORIZONTAL_MIRROR);
-      register(var0, BORDER);
-      register(var0, GRADIENT);
-      register(var0, GRADIENT_UP);
-      register(var0, BRICKS);
-      register(var0, CURLY_BORDER);
-      register(var0, GLOBE);
-      register(var0, CREEPER);
-      register(var0, SKULL);
-      register(var0, FLOWER);
-      register(var0, MOJANG);
-      register(var0, PIGLIN);
-      register(var0, FLOW);
-      register(var0, GUSTER);
+   public static void bootstrap(final BootstrapContext<BannerPattern> context) {
+      register(context, BASE);
+      register(context, SQUARE_BOTTOM_LEFT);
+      register(context, SQUARE_BOTTOM_RIGHT);
+      register(context, SQUARE_TOP_LEFT);
+      register(context, SQUARE_TOP_RIGHT);
+      register(context, STRIPE_BOTTOM);
+      register(context, STRIPE_TOP);
+      register(context, STRIPE_LEFT);
+      register(context, STRIPE_RIGHT);
+      register(context, STRIPE_CENTER);
+      register(context, STRIPE_MIDDLE);
+      register(context, STRIPE_DOWNRIGHT);
+      register(context, STRIPE_DOWNLEFT);
+      register(context, STRIPE_SMALL);
+      register(context, CROSS);
+      register(context, STRAIGHT_CROSS);
+      register(context, TRIANGLE_BOTTOM);
+      register(context, TRIANGLE_TOP);
+      register(context, TRIANGLES_BOTTOM);
+      register(context, TRIANGLES_TOP);
+      register(context, DIAGONAL_LEFT);
+      register(context, DIAGONAL_RIGHT);
+      register(context, DIAGONAL_LEFT_MIRROR);
+      register(context, DIAGONAL_RIGHT_MIRROR);
+      register(context, CIRCLE_MIDDLE);
+      register(context, RHOMBUS_MIDDLE);
+      register(context, HALF_VERTICAL);
+      register(context, HALF_HORIZONTAL);
+      register(context, HALF_VERTICAL_MIRROR);
+      register(context, HALF_HORIZONTAL_MIRROR);
+      register(context, BORDER);
+      register(context, GRADIENT);
+      register(context, GRADIENT_UP);
+      register(context, BRICKS);
+      register(context, CURLY_BORDER);
+      register(context, GLOBE);
+      register(context, CREEPER);
+      register(context, SKULL);
+      register(context, FLOWER);
+      register(context, MOJANG);
+      register(context, PIGLIN);
+      register(context, FLOW);
+      register(context, GUSTER);
    }
 
-   public static void register(BootstrapContext<BannerPattern> var0, ResourceKey<BannerPattern> var1) {
-      var0.register(var1, new BannerPattern(var1.identifier(), "block.minecraft.banner." + var1.identifier().toShortLanguageKey()));
+   public static void register(final BootstrapContext<BannerPattern> context, final ResourceKey<BannerPattern> key) {
+      context.register(key, new BannerPattern(key.identifier(), "block.minecraft.banner." + key.identifier().toShortLanguageKey()));
    }
 }

@@ -5,23 +5,23 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
 
 public class SonicBoomParticle extends HugeExplosionParticle {
-   protected SonicBoomParticle(ClientLevel var1, double var2, double var4, double var6, double var8, SpriteSet var10) {
-      super(var1, var2, var4, var6, var8, var10);
+   protected SonicBoomParticle(final ClientLevel level, final double x, final double y, final double z, final double size, final SpriteSet sprites) {
+      super(level, x, y, z, size, sprites);
       this.lifetime = 16;
       this.quadSize = 1.5F;
-      this.setSpriteFromAge(var10);
+      this.setSpriteFromAge(sprites);
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new SonicBoomParticle(var2, var3, var5, var7, var9, this.sprites);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new SonicBoomParticle(level, x, y, z, xAux, this.sprites);
       }
    }
 }

@@ -15,8 +15,8 @@ public record ExtendedView() implements ConditionalItemModelProperty {
       super();
    }
 
-   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      return var5 == ItemDisplayContext.GUI && Minecraft.getInstance().hasShiftDown();
+   public boolean get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      return displayContext == ItemDisplayContext.GUI && Minecraft.getInstance().hasShiftDown();
    }
 
    public MapCodec<ExtendedView> type() {

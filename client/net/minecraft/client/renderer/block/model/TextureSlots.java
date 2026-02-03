@@ -27,70 +27,64 @@ public class TextureSlots {
    private static final char REFERENCE_CHAR = '#';
    private final Map<String, Material> resolvedValues;
 
-   TextureSlots(Map<String, Material> var1) {
+   private TextureSlots(final Map<String, Material> resolvedValues) {
       super();
-      this.resolvedValues = var1;
+      this.resolvedValues = resolvedValues;
    }
 
-   public @Nullable Material getMaterial(String var1) {
-      if (isTextureReference(var1)) {
-         var1 = var1.substring(1);
+   public @Nullable Material getMaterial(String reference) {
+      if (isTextureReference(reference)) {
+         reference = reference.substring(1);
       }
 
-      return (Material)this.resolvedValues.get(var1);
+      return (Material)this.resolvedValues.get(reference);
    }
 
-   private static boolean isTextureReference(String var0) {
-      return var0.charAt(0) == '#';
+   private static boolean isTextureReference(final String texture) {
+      return texture.charAt(0) == '#';
    }
 
-   public static Data parseTextureMap(JsonObject var0) {
-      Data.Builder var1 = new Data.Builder();
+   public static Data parseTextureMap(final JsonObject texturesObject) {
+      Data.Builder builder = new Data.Builder();
 
-      for(Map.Entry var3 : var0.entrySet()) {
-         parseEntry((String)var3.getKey(), ((JsonElement)var3.getValue()).getAsString(), var1);
+      for(Map.Entry<String, JsonElement> entry : texturesObject.entrySet()) {
+         parseEntry((String)entry.getKey(), ((JsonElement)entry.getValue()).getAsString(), builder);
       }
 
-      return var1.build();
+      return builder.build();
    }
 
-   private static void parseEntry(String var0, String var1, Data.Builder var2) {
-      if (isTextureReference(var1)) {
-         var2.addReference(var0, var1.substring(1));
+   private static void parseEntry(final String slot, final String value, final Data.Builder output) {
+      if (isTextureReference(value)) {
+         output.addReference(slot, value.substring(1));
       } else {
-         Identifier var3 = Identifier.tryParse(var1);
-         if (var3 == null) {
-            throw new JsonParseException(var1 + " is not valid resource location");
+         Identifier location = Identifier.tryParse(value);
+         if (location == null) {
+            throw new JsonParseException(value + " is not valid resource location");
          }
 
-         var2.addTexture(var0, new Material(ModelManager.BLOCK_OR_ITEM, var3));
+         output.addTexture(slot, new Material(ModelManager.BLOCK_OR_ITEM, location));
       }
 
    }
 
-   static record Value(Material material) implements SlotContents {
-      Value(Material var1) {
+   private static record Value(Material material) implements SlotContents {
+      private Value {
          super();
-         this.material = var1;
       }
    }
 
-   static record Reference(String target) implements SlotContents {
-      final String target;
-
-      Reference(String var1) {
+   private static record Reference(String target) implements SlotContents {
+      private Reference {
          super();
-         this.target = var1;
       }
    }
 
    public static record Data(Map<String, SlotContents> values) {
-      final Map<String, SlotContents> values;
       public static final Data EMPTY = new Data(Map.of());
 
-      public Data(Map<String, SlotContents> var1) {
+      public Data {
          super();
-         this.values = var1;
       }
 
       public static class Builder {
@@ -100,13 +94,13 @@ public class TextureSlots {
             super();
          }
 
-         public Builder addReference(String var1, String var2) {
-            this.textureMap.put(var1, new Reference(var2));
+         public Builder addReference(final String slot, final String reference) {
+            this.textureMap.put(slot, new Reference(reference));
             return this;
          }
 
-         public Builder addTexture(String var1, Material var2) {
-            this.textureMap.put(var1, new Value(var2));
+         public Builder addTexture(final String slot, final Material material) {
+            this.textureMap.put(slot, new Value(material));
             return this;
          }
 
@@ -124,40 +118,40 @@ public class TextureSlots {
          super();
       }
 
-      public Resolver addLast(Data var1) {
-         this.entries.addLast(var1);
+      public Resolver addLast(final Data data) {
+         this.entries.addLast(data);
          return this;
       }
 
-      public Resolver addFirst(Data var1) {
-         this.entries.addFirst(var1);
+      public Resolver addFirst(final Data data) {
+         this.entries.addFirst(data);
          return this;
       }
 
-      public TextureSlots resolve(ModelDebugName var1) {
+      public TextureSlots resolve(final ModelDebugName debugNameProvider) {
          if (this.entries.isEmpty()) {
             return TextureSlots.EMPTY;
          } else {
-            Object2ObjectArrayMap var2 = new Object2ObjectArrayMap();
-            Object2ObjectArrayMap var3 = new Object2ObjectArrayMap();
+            Object2ObjectMap<String, Material> resolved = new Object2ObjectArrayMap();
+            Object2ObjectMap<String, Reference> unresolved = new Object2ObjectArrayMap();
 
-            for(Data var5 : Lists.reverse(this.entries)) {
-               var5.values.forEach((var2x, var3x) -> {
-                  Objects.requireNonNull(var3x);
-                  byte var5 = 0;
-                  //$FF: var5->value
+            for(Data data : Lists.reverse(this.entries)) {
+               data.values.forEach((slot, contents) -> {
+                  Objects.requireNonNull(contents);
+                  int index$1 = 0;
+                  //$FF: index$1->value
                   //0->net/minecraft/client/renderer/block/model/TextureSlots$Value
                   //1->net/minecraft/client/renderer/block/model/TextureSlots$Reference
-                  switch (var3x.typeSwitch<invokedynamic>(var3x, var5)) {
+                  switch (contents.typeSwitch<invokedynamic>(contents, index$1)) {
                      case 0:
-                        Value var6 = (Value)var3x;
-                        var3.remove(var2x);
-                        var2.put(var2x, var6.material());
+                        Value value = (Value)contents;
+                        unresolved.remove(slot);
+                        resolved.put(slot, value.material());
                         break;
                      case 1:
-                        Reference var7 = (Reference)var3x;
-                        var2.remove(var2x);
-                        var3.put(var2x, var7);
+                        Reference reference = (Reference)contents;
+                        resolved.remove(slot);
+                        unresolved.put(slot, reference);
                         break;
                      default:
                         throw new MatchException((String)null, (Throwable)null);
@@ -166,34 +160,34 @@ public class TextureSlots {
                });
             }
 
-            if (var3.isEmpty()) {
-               return new TextureSlots(var2);
+            if (unresolved.isEmpty()) {
+               return new TextureSlots(resolved);
             } else {
-               boolean var8 = true;
+               boolean hasChanges = true;
 
-               while(var8) {
-                  var8 = false;
-                  ObjectIterator var9 = Object2ObjectMaps.fastIterator(var3);
+               while(hasChanges) {
+                  hasChanges = false;
+                  ObjectIterator<Object2ObjectMap.Entry<String, Reference>> iterator = Object2ObjectMaps.fastIterator(unresolved);
 
-                  while(var9.hasNext()) {
-                     Object2ObjectMap.Entry var6 = (Object2ObjectMap.Entry)var9.next();
-                     Material var7 = (Material)var2.get(((Reference)var6.getValue()).target);
-                     if (var7 != null) {
-                        var2.put((String)var6.getKey(), var7);
-                        var9.remove();
-                        var8 = true;
+                  while(iterator.hasNext()) {
+                     Object2ObjectMap.Entry<String, Reference> entry = (Object2ObjectMap.Entry)iterator.next();
+                     Material maybeResolved = (Material)resolved.get(((Reference)entry.getValue()).target);
+                     if (maybeResolved != null) {
+                        resolved.put((String)entry.getKey(), maybeResolved);
+                        iterator.remove();
+                        hasChanges = true;
                      }
                   }
                }
 
-               if (!var3.isEmpty()) {
-                  LOGGER.warn("Unresolved texture references in {}:\n{}", var1.debugName(), var3.entrySet().stream().map((var0) -> {
-                     String var10000 = (String)var0.getKey();
-                     return "\t#" + var10000 + "-> #" + ((Reference)var0.getValue()).target + "\n";
+               if (!unresolved.isEmpty()) {
+                  LOGGER.warn("Unresolved texture references in {}:\n{}", debugNameProvider.debugName(), unresolved.entrySet().stream().map((e) -> {
+                     String var10000 = (String)e.getKey();
+                     return "\t#" + var10000 + "-> #" + ((Reference)e.getValue()).target + "\n";
                   }).collect(Collectors.joining()));
                }
 
-               return new TextureSlots(var2);
+               return new TextureSlots(resolved);
             }
          }
       }

@@ -18,6 +18,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 
@@ -36,43 +37,43 @@ public class FlatLevelGeneratorPresets {
       super();
    }
 
-   public static void bootstrap(BootstrapContext<FlatLevelGeneratorPreset> var0) {
-      (new Bootstrap(var0)).run();
+   public static void bootstrap(final BootstrapContext<FlatLevelGeneratorPreset> context) {
+      (new Bootstrap(context)).run();
    }
 
-   private static ResourceKey<FlatLevelGeneratorPreset> register(String var0) {
-      return ResourceKey.create(Registries.FLAT_LEVEL_GENERATOR_PRESET, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<FlatLevelGeneratorPreset> register(final String name) {
+      return ResourceKey.create(Registries.FLAT_LEVEL_GENERATOR_PRESET, Identifier.withDefaultNamespace(name));
    }
 
-   static class Bootstrap {
+   private static class Bootstrap {
       private final BootstrapContext<FlatLevelGeneratorPreset> context;
 
-      Bootstrap(BootstrapContext<FlatLevelGeneratorPreset> var1) {
+      private Bootstrap(final BootstrapContext<FlatLevelGeneratorPreset> context) {
          super();
-         this.context = var1;
+         this.context = context;
       }
 
-      private void register(ResourceKey<FlatLevelGeneratorPreset> var1, ItemLike var2, ResourceKey<Biome> var3, Set<ResourceKey<StructureSet>> var4, boolean var5, boolean var6, FlatLayerInfo... var7) {
-         HolderGetter var8 = this.context.lookup(Registries.STRUCTURE_SET);
-         HolderGetter var9 = this.context.lookup(Registries.PLACED_FEATURE);
-         HolderGetter var10 = this.context.lookup(Registries.BIOME);
-         Stream var10000 = var4.stream();
-         Objects.requireNonNull(var8);
-         HolderSet.Direct var11 = HolderSet.direct((List)var10000.map(var8::getOrThrow).collect(Collectors.toList()));
-         FlatLevelGeneratorSettings var12 = new FlatLevelGeneratorSettings(Optional.of(var11), var10.getOrThrow(var3), FlatLevelGeneratorSettings.createLakesList(var9));
-         if (var5) {
-            var12.setDecoration();
+      private void register(final ResourceKey<FlatLevelGeneratorPreset> key, final ItemLike icon, final ResourceKey<Biome> biome, final Set<ResourceKey<StructureSet>> structures, final boolean decoration, final boolean addLakes, final FlatLayerInfo... layers) {
+         HolderGetter<StructureSet> structureSets = this.context.<StructureSet>lookup(Registries.STRUCTURE_SET);
+         HolderGetter<PlacedFeature> placedFeatures = this.context.<PlacedFeature>lookup(Registries.PLACED_FEATURE);
+         HolderGetter<Biome> biomes = this.context.<Biome>lookup(Registries.BIOME);
+         Stream var10000 = structures.stream();
+         Objects.requireNonNull(structureSets);
+         HolderSet.Direct<StructureSet> structuresHolder = HolderSet.direct((List)var10000.map(structureSets::getOrThrow).collect(Collectors.toList()));
+         FlatLevelGeneratorSettings generator = new FlatLevelGeneratorSettings(Optional.of(structuresHolder), biomes.getOrThrow(biome), FlatLevelGeneratorSettings.createLakesList(placedFeatures));
+         if (decoration) {
+            generator.setDecoration();
          }
 
-         if (var6) {
-            var12.setAddLakes();
+         if (addLakes) {
+            generator.setAddLakes();
          }
 
-         for(int var13 = var7.length - 1; var13 >= 0; --var13) {
-            var12.getLayersInfo().add(var7[var13]);
+         for(int i = layers.length - 1; i >= 0; --i) {
+            generator.getLayersInfo().add(layers[i]);
          }
 
-         this.context.register(var1, new FlatLevelGeneratorPreset(var2.asItem().builtInRegistryHolder(), var12));
+         this.context.register(key, new FlatLevelGeneratorPreset(icon.asItem().builtInRegistryHolder(), generator));
       }
 
       public void run() {

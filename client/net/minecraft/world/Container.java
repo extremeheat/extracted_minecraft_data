@@ -3,6 +3,7 @@ package net.minecraft.world;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -16,70 +17,70 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
-public interface Container extends Clearable, SlotProvider, Iterable<ItemStack> {
+public interface Container extends Clearable, Iterable<ItemStack>, SlotProvider {
    float DEFAULT_DISTANCE_BUFFER = 4.0F;
 
    int getContainerSize();
 
    boolean isEmpty();
 
-   ItemStack getItem(int var1);
+   ItemStack getItem(int slot);
 
-   ItemStack removeItem(int var1, int var2);
+   ItemStack removeItem(int slot, int count);
 
-   ItemStack removeItemNoUpdate(int var1);
+   ItemStack removeItemNoUpdate(int slot);
 
-   void setItem(int var1, ItemStack var2);
+   void setItem(int slot, ItemStack itemStack);
 
    default int getMaxStackSize() {
       return 99;
    }
 
-   default int getMaxStackSize(ItemStack var1) {
-      return Math.min(this.getMaxStackSize(), var1.getMaxStackSize());
+   default int getMaxStackSize(final ItemStack itemStack) {
+      return Math.min(this.getMaxStackSize(), itemStack.getMaxStackSize());
    }
 
    void setChanged();
 
-   boolean stillValid(Player var1);
+   boolean stillValid(Player player);
 
-   default void startOpen(ContainerUser var1) {
+   default void startOpen(final ContainerUser containerUser) {
    }
 
-   default void stopOpen(ContainerUser var1) {
+   default void stopOpen(final ContainerUser containerUser) {
    }
 
    default List<ContainerUser> getEntitiesWithContainerOpen() {
       return List.of();
    }
 
-   default boolean canPlaceItem(int var1, ItemStack var2) {
+   default boolean canPlaceItem(final int slot, final ItemStack itemStack) {
       return true;
    }
 
-   default boolean canTakeItem(Container var1, int var2, ItemStack var3) {
+   default boolean canTakeItem(final Container into, final int slot, final ItemStack itemStack) {
       return true;
    }
 
-   default int countItem(Item var1) {
-      int var2 = 0;
+   default int countItem(final Item item) {
+      int count = 0;
 
-      for(ItemStack var4 : this) {
-         if (var4.getItem().equals(var1)) {
-            var2 += var4.getCount();
+      for(ItemStack slotItem : this) {
+         if (slotItem.getItem().equals(item)) {
+            count += slotItem.getCount();
          }
       }
 
-      return var2;
+      return count;
    }
 
-   default boolean hasAnyOf(Set<Item> var1) {
-      return this.hasAnyMatching((var1x) -> !var1x.isEmpty() && var1.contains(var1x.getItem()));
+   default boolean hasAnyOf(final Set<Item> item) {
+      return this.hasAnyMatching((stack) -> !stack.isEmpty() && item.contains(stack.getItem()));
    }
 
-   default boolean hasAnyMatching(Predicate<ItemStack> var1) {
-      for(ItemStack var3 : this) {
-         if (var1.test(var3)) {
+   default boolean hasAnyMatching(final Predicate<ItemStack> predicate) {
+      for(ItemStack slotItem : this) {
+         if (predicate.test(slotItem)) {
             return true;
          }
       }
@@ -87,28 +88,32 @@ public interface Container extends Clearable, SlotProvider, Iterable<ItemStack> 
       return false;
    }
 
-   static boolean stillValidBlockEntity(BlockEntity var0, Player var1) {
-      return stillValidBlockEntity(var0, var1, 4.0F);
+   static boolean stillValidBlockEntity(final BlockEntity blockEntity, final Player player) {
+      return stillValidBlockEntity(blockEntity, player, 4.0F);
    }
 
-   static boolean stillValidBlockEntity(BlockEntity var0, Player var1, float var2) {
-      Level var3 = var0.getLevel();
-      BlockPos var4 = var0.getBlockPos();
-      if (var3 == null) {
+   static boolean stillValidBlockEntity(final BlockEntity blockEntity, final Player player, final float distanceBuffer) {
+      Level level = blockEntity.getLevel();
+      BlockPos worldPosition = blockEntity.getBlockPos();
+      if (level == null) {
          return false;
       } else {
-         return var3.getBlockEntity(var4) != var0 ? false : var1.isWithinBlockInteractionRange(var4, (double)var2);
+         return level.getBlockEntity(worldPosition) != blockEntity ? false : player.isWithinBlockInteractionRange(worldPosition, (double)distanceBuffer);
       }
    }
 
-   default @Nullable SlotAccess getSlot(final int var1) {
-      return var1 >= 0 && var1 < this.getContainerSize() ? new SlotAccess() {
-         public ItemStack get() {
-            return Container.this.getItem(var1);
+   default @Nullable SlotAccess getSlot(final int slot) {
+      return slot >= 0 && slot < this.getContainerSize() ? new SlotAccess() {
+         {
+            Objects.requireNonNull(Container.this);
          }
 
-         public boolean set(ItemStack var1x) {
-            Container.this.setItem(var1, var1x);
+         public ItemStack get() {
+            return Container.this.getItem(slot);
+         }
+
+         public boolean set(final ItemStack itemStack) {
+            Container.this.setItem(slot, itemStack);
             return true;
          }
       } : null;
@@ -123,10 +128,10 @@ public interface Container extends Clearable, SlotProvider, Iterable<ItemStack> 
       private int index;
       private final int size;
 
-      public ContainerIterator(Container var1) {
+      public ContainerIterator(final Container container) {
          super();
-         this.container = var1;
-         this.size = var1.getContainerSize();
+         this.container = container;
+         this.size = container.getContainerSize();
       }
 
       public boolean hasNext() {
@@ -139,11 +144,6 @@ public interface Container extends Clearable, SlotProvider, Iterable<ItemStack> 
          } else {
             return this.container.getItem(this.index++);
          }
-      }
-
-      // $FF: synthetic method
-      public Object next() {
-         return this.next();
       }
    }
 }

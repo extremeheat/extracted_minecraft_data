@@ -28,6 +28,7 @@ import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurati
 import net.minecraft.network.protocol.configuration.ServerboundSelectKnownPacks;
 import net.minecraft.network.protocol.game.GameProtocols;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.network.config.JoinWorldTask;
@@ -35,6 +36,7 @@ import net.minecraft.server.network.config.PrepareSpawnTask;
 import net.minecraft.server.network.config.ServerCodeOfConductConfigurationTask;
 import net.minecraft.server.network.config.ServerResourcePackConfigurationTask;
 import net.minecraft.server.network.config.SynchronizeRegistriesTask;
+import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.flag.FeatureFlags;
@@ -52,24 +54,24 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    private @Nullable SynchronizeRegistriesTask synchronizeRegistriesTask;
    private @Nullable PrepareSpawnTask prepareSpawnTask;
 
-   public ServerConfigurationPacketListenerImpl(MinecraftServer var1, Connection var2, CommonListenerCookie var3) {
-      super(var1, var2, var3);
-      this.gameProfile = var3.gameProfile();
-      this.clientInformation = var3.clientInformation();
+   public ServerConfigurationPacketListenerImpl(final MinecraftServer server, final Connection connection, final CommonListenerCookie cookie) {
+      super(server, connection, cookie);
+      this.gameProfile = cookie.gameProfile();
+      this.clientInformation = cookie.clientInformation();
    }
 
    protected GameProfile playerProfile() {
       return this.gameProfile;
    }
 
-   public void onDisconnect(DisconnectionDetails var1) {
-      LOGGER.info("{} ({}) lost connection: {}", new Object[]{this.gameProfile.name(), this.gameProfile.id(), var1.reason().getString()});
+   public void onDisconnect(final DisconnectionDetails details) {
+      LOGGER.info("{} ({}) lost connection: {}", new Object[]{this.gameProfile.name(), this.gameProfile.id(), details.reason().getString()});
       if (this.prepareSpawnTask != null) {
          this.prepareSpawnTask.close();
          this.prepareSpawnTask = null;
       }
 
-      super.onDisconnect(var1);
+      super.onDisconnect(details);
    }
 
    public boolean isAcceptingMessages() {
@@ -78,15 +80,15 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
 
    public void startConfiguration() {
       this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
-      ServerLinks var1 = this.server.serverLinks();
-      if (!var1.isEmpty()) {
-         this.send(new ClientboundServerLinksPacket(var1.untrust()));
+      ServerLinks serverLinks = this.server.serverLinks();
+      if (!serverLinks.isEmpty()) {
+         this.send(new ClientboundServerLinksPacket(serverLinks.untrust()));
       }
 
-      LayeredRegistryAccess var2 = this.server.registries();
-      List var3 = this.server.getResourceManager().listPacks().flatMap((var0) -> var0.location().knownPackInfo().stream()).toList();
+      LayeredRegistryAccess<RegistryLayer> registries = this.server.registries();
+      List<KnownPack> knownPacks = this.server.getResourceManager().listPacks().flatMap((packResources) -> packResources.location().knownPackInfo().stream()).toList();
       this.send(new ClientboundUpdateEnabledFeaturesPacket(FeatureFlags.REGISTRY.toNames(this.server.getWorldData().enabledFeatures())));
-      this.synchronizeRegistriesTask = new SynchronizeRegistriesTask(var3, var2);
+      this.synchronizeRegistriesTask = new SynchronizeRegistriesTask(knownPacks, registries);
       this.configurationTasks.add(this.synchronizeRegistriesTask);
       this.addOptionalTasks();
       this.returnToWorld();
@@ -100,72 +102,72 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    private void addOptionalTasks() {
-      Map var1 = this.server.getCodeOfConducts();
-      if (!var1.isEmpty()) {
+      Map<String, String> codeOfConducts = this.server.getCodeOfConducts();
+      if (!codeOfConducts.isEmpty()) {
          this.configurationTasks.add(new ServerCodeOfConductConfigurationTask(() -> {
-            String var2 = (String)var1.get(this.clientInformation.language().toLowerCase(Locale.ROOT));
-            if (var2 == null) {
-               var2 = (String)var1.get("en_us");
+            String codeOfConduct = (String)codeOfConducts.get(this.clientInformation.language().toLowerCase(Locale.ROOT));
+            if (codeOfConduct == null) {
+               codeOfConduct = (String)codeOfConducts.get("en_us");
             }
 
-            if (var2 == null) {
-               var2 = (String)var1.values().iterator().next();
+            if (codeOfConduct == null) {
+               codeOfConduct = (String)codeOfConducts.values().iterator().next();
             }
 
-            return var2;
+            return codeOfConduct;
          }));
       }
 
-      this.server.getServerResourcePack().ifPresent((var1x) -> this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1x)));
+      this.server.getServerResourcePack().ifPresent((info) -> this.configurationTasks.add(new ServerResourcePackConfigurationTask(info)));
    }
 
-   public void handleClientInformation(ServerboundClientInformationPacket var1) {
-      this.clientInformation = var1.information();
+   public void handleClientInformation(final ServerboundClientInformationPacket packet) {
+      this.clientInformation = packet.information();
    }
 
-   public void handleResourcePackResponse(ServerboundResourcePackPacket var1) {
-      super.handleResourcePackResponse(var1);
-      if (var1.action().isTerminal()) {
+   public void handleResourcePackResponse(final ServerboundResourcePackPacket packet) {
+      super.handleResourcePackResponse(packet);
+      if (packet.action().isTerminal()) {
          this.finishCurrentTask(ServerResourcePackConfigurationTask.TYPE);
       }
 
    }
 
-   public void handleSelectKnownPacks(ServerboundSelectKnownPacks var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.server.packetProcessor());
+   public void handleSelectKnownPacks(final ServerboundSelectKnownPacks packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.server.packetProcessor());
       if (this.synchronizeRegistriesTask == null) {
          throw new IllegalStateException("Unexpected response from client: received pack selection, but no negotiation ongoing");
       } else {
-         this.synchronizeRegistriesTask.handleResponse(var1.knownPacks(), this::send);
+         this.synchronizeRegistriesTask.handleResponse(packet.knownPacks(), this::send);
          this.finishCurrentTask(SynchronizeRegistriesTask.TYPE);
       }
    }
 
-   public void handleAcceptCodeOfConduct(ServerboundAcceptCodeOfConductPacket var1) {
+   public void handleAcceptCodeOfConduct(final ServerboundAcceptCodeOfConductPacket packet) {
       this.finishCurrentTask(ServerCodeOfConductConfigurationTask.TYPE);
    }
 
-   public void handleConfigurationFinished(ServerboundFinishConfigurationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.server.packetProcessor());
+   public void handleConfigurationFinished(final ServerboundFinishConfigurationPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.server.packetProcessor());
       this.finishCurrentTask(JoinWorldTask.TYPE);
       this.connection.setupOutboundProtocol(GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())));
 
       try {
-         PlayerList var2 = this.server.getPlayerList();
-         if (var2.getPlayer(this.gameProfile.id()) != null) {
+         PlayerList playerList = this.server.getPlayerList();
+         if (playerList.getPlayer(this.gameProfile.id()) != null) {
             this.disconnect(PlayerList.DUPLICATE_LOGIN_DISCONNECT_MESSAGE);
             return;
          }
 
-         Component var3 = var2.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(this.gameProfile));
-         if (var3 != null) {
-            this.disconnect(var3);
+         Component loginError = playerList.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(this.gameProfile));
+         if (loginError != null) {
+            this.disconnect(loginError);
             return;
          }
 
          ((PrepareSpawnTask)Objects.requireNonNull(this.prepareSpawnTask)).spawnPlayer(this.connection, this.createCookie(this.clientInformation));
-      } catch (Exception var4) {
-         LOGGER.error("Couldn't place player in world", var4);
+      } catch (Exception e) {
+         LOGGER.error("Couldn't place player in world", e);
          this.disconnect(DISCONNECT_REASON_INVALID_DATA);
       }
 
@@ -173,14 +175,14 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
 
    public void tick() {
       this.keepConnectionAlive();
-      ConfigurationTask var1 = this.currentTask;
-      if (var1 != null) {
+      ConfigurationTask task = this.currentTask;
+      if (task != null) {
          try {
-            if (var1.tick()) {
-               this.finishCurrentTask(var1.type());
+            if (task.tick()) {
+               this.finishCurrentTask(task.type());
             }
-         } catch (Exception var3) {
-            LOGGER.error("Failed to tick configuration task {}", var1.type(), var3);
+         } catch (Exception e) {
+            LOGGER.error("Failed to tick configuration task {}", task.type(), e);
             this.disconnect(DISCONNECT_REASON_CONFIGURATION_ERROR);
          }
       }
@@ -195,14 +197,14 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       if (this.currentTask != null) {
          throw new IllegalStateException("Task " + this.currentTask.type().id() + " has not finished yet");
       } else if (this.isAcceptingMessages()) {
-         ConfigurationTask var1 = (ConfigurationTask)this.configurationTasks.poll();
-         if (var1 != null) {
-            this.currentTask = var1;
+         ConfigurationTask task = (ConfigurationTask)this.configurationTasks.poll();
+         if (task != null) {
+            this.currentTask = task;
 
             try {
-               var1.start(this::send);
-            } catch (Exception var3) {
-               LOGGER.error("Failed to start configuration task {}", var1.type(), var3);
+               task.start(this::send);
+            } catch (Exception e) {
+               LOGGER.error("Failed to start configuration task {}", task.type(), e);
                this.disconnect(DISCONNECT_REASON_CONFIGURATION_ERROR);
             }
          }
@@ -210,11 +212,11 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       }
    }
 
-   private void finishCurrentTask(ConfigurationTask.Type var1) {
-      ConfigurationTask.Type var2 = this.currentTask != null ? this.currentTask.type() : null;
-      if (!var1.equals(var2)) {
-         String var10002 = String.valueOf(var2);
-         throw new IllegalStateException("Unexpected request for task finish, current task: " + var10002 + ", requested: " + String.valueOf(var1));
+   private void finishCurrentTask(final ConfigurationTask.Type taskTypeToFinish) {
+      ConfigurationTask.Type currentTaskType = this.currentTask != null ? this.currentTask.type() : null;
+      if (!taskTypeToFinish.equals(currentTaskType)) {
+         String var10002 = String.valueOf(currentTaskType);
+         throw new IllegalStateException("Unexpected request for task finish, current task: " + var10002 + ", requested: " + String.valueOf(taskTypeToFinish));
       } else {
          this.currentTask = null;
          this.startNextTask();

@@ -30,93 +30,93 @@ public class TimerQueue<T> {
    private final Table<String, Long, Event<T>> events;
 
    private static <T> Comparator<Event<T>> createComparator() {
-      return Comparator.comparingLong((var0) -> var0.triggerTime).thenComparing((var0) -> var0.sequentialId);
+      return Comparator.comparingLong((l) -> l.triggerTime).thenComparing((l) -> l.sequentialId);
    }
 
-   public TimerQueue(TimerCallbacks<T> var1, Stream<? extends Dynamic<?>> var2) {
-      this(var1);
+   public TimerQueue(final TimerCallbacks<T> callbacksRegistry, final Stream<? extends Dynamic<?>> eventData) {
+      this(callbacksRegistry);
       this.queue.clear();
       this.events.clear();
       this.sequentialId = UnsignedLong.ZERO;
-      var2.forEach((var1x) -> {
-         Tag var2 = (Tag)var1x.convert(NbtOps.INSTANCE).getValue();
-         if (var2 instanceof CompoundTag var3) {
-            this.loadEvent(var3);
+      eventData.forEach((input) -> {
+         Tag tag = (Tag)input.convert(NbtOps.INSTANCE).getValue();
+         if (tag instanceof CompoundTag compoundTag) {
+            this.loadEvent(compoundTag);
          } else {
-            LOGGER.warn("Invalid format of events: {}", var2);
+            LOGGER.warn("Invalid format of events: {}", tag);
          }
 
       });
    }
 
-   public TimerQueue(TimerCallbacks<T> var1) {
+   public TimerQueue(final TimerCallbacks<T> callbacksRegistry) {
       super();
       this.queue = new PriorityQueue(createComparator());
       this.sequentialId = UnsignedLong.ZERO;
       this.events = HashBasedTable.create();
-      this.callbacksRegistry = var1;
+      this.callbacksRegistry = callbacksRegistry;
    }
 
-   public void tick(T var1, long var2) {
+   public void tick(final T context, final long currentTick) {
       while(true) {
-         Event var4 = (Event)this.queue.peek();
-         if (var4 == null || var4.triggerTime > var2) {
+         Event<T> event = (Event)this.queue.peek();
+         if (event == null || event.triggerTime > currentTick) {
             return;
          }
 
          this.queue.remove();
-         this.events.remove(var4.id, var2);
-         var4.callback.handle(var1, this, var2);
+         this.events.remove(event.id, currentTick);
+         event.callback.handle(context, this, currentTick);
       }
    }
 
-   public void schedule(String var1, long var2, TimerCallback<T> var4) {
-      if (!this.events.contains(var1, var2)) {
+   public void schedule(final String id, final long time, final TimerCallback<T> callback) {
+      if (!this.events.contains(id, time)) {
          this.sequentialId = this.sequentialId.plus(UnsignedLong.ONE);
-         Event var5 = new Event(var2, this.sequentialId, var1, var4);
-         this.events.put(var1, var2, var5);
-         this.queue.add(var5);
+         Event<T> newEvent = new Event<T>(time, this.sequentialId, id, callback);
+         this.events.put(id, time, newEvent);
+         this.queue.add(newEvent);
       }
    }
 
-   public int remove(String var1) {
-      Collection var2 = this.events.row(var1).values();
+   public int remove(final String id) {
+      Collection<Event<T>> eventsToRemove = this.events.row(id).values();
       Queue var10001 = this.queue;
       Objects.requireNonNull(var10001);
-      var2.forEach(var10001::remove);
-      int var3 = var2.size();
-      var2.clear();
-      return var3;
+      eventsToRemove.forEach(var10001::remove);
+      int size = eventsToRemove.size();
+      eventsToRemove.clear();
+      return size;
    }
 
    public Set<String> getEventsIds() {
       return Collections.unmodifiableSet(this.events.rowKeySet());
    }
 
-   private void loadEvent(CompoundTag var1) {
-      TimerCallback var2 = (TimerCallback)var1.read("Callback", this.callbacksRegistry.codec()).orElse((Object)null);
-      if (var2 != null) {
-         String var3 = var1.getStringOr("Name", "");
-         long var4 = var1.getLongOr("TriggerTime", 0L);
-         this.schedule(var3, var4, var2);
+   private void loadEvent(final CompoundTag tag) {
+      TimerCallback<T> callback = (TimerCallback)tag.read("Callback", this.callbacksRegistry.codec()).orElse((Object)null);
+      if (callback != null) {
+         String id = tag.getStringOr("Name", "");
+         long time = tag.getLongOr("TriggerTime", 0L);
+         this.schedule(id, time, callback);
       }
 
    }
 
-   private CompoundTag storeEvent(Event<T> var1) {
-      CompoundTag var2 = new CompoundTag();
-      var2.putString("Name", var1.id);
-      var2.putLong("TriggerTime", var1.triggerTime);
-      var2.store("Callback", this.callbacksRegistry.codec(), var1.callback);
-      return var2;
+   private CompoundTag storeEvent(final Event<T> event) {
+      CompoundTag result = new CompoundTag();
+      result.putString("Name", event.id);
+      result.putLong("TriggerTime", event.triggerTime);
+      result.store("Callback", this.callbacksRegistry.codec(), event.callback);
+      return result;
    }
 
    public ListTag store() {
-      ListTag var1 = new ListTag();
+      ListTag result = new ListTag();
       Stream var10000 = this.queue.stream().sorted(createComparator()).map(this::storeEvent);
-      Objects.requireNonNull(var1);
-      var10000.forEach(var1::add);
-      return var1;
+      Objects.requireNonNull(result);
+      var10000.forEach(result::add);
+      return result;
    }
 
    public static class Event<T> {
@@ -125,12 +125,12 @@ public class TimerQueue<T> {
       public final String id;
       public final TimerCallback<T> callback;
 
-      Event(long var1, UnsignedLong var3, String var4, TimerCallback<T> var5) {
+      private Event(final long triggerTime, final UnsignedLong sequentialId, final String id, final TimerCallback<T> callback) {
          super();
-         this.triggerTime = var1;
-         this.sequentialId = var3;
-         this.id = var4;
-         this.callback = var5;
+         this.triggerTime = triggerTime;
+         this.sequentialId = sequentialId;
+         this.id = id;
+         this.callback = callback;
       }
    }
 }

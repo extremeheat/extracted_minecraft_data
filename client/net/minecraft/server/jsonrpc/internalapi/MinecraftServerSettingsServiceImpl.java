@@ -11,19 +11,19 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
    private final DedicatedServer server;
    private final JsonRpcLogger jsonrpcLogger;
 
-   public MinecraftServerSettingsServiceImpl(DedicatedServer var1, JsonRpcLogger var2) {
+   public MinecraftServerSettingsServiceImpl(final DedicatedServer server, final JsonRpcLogger jsonrpcLogger) {
       super();
-      this.server = var1;
-      this.jsonrpcLogger = var2;
+      this.server = server;
+      this.jsonrpcLogger = jsonrpcLogger;
    }
 
    public boolean isAutoSave() {
       return this.server.isAutoSave();
    }
 
-   public boolean setAutoSave(boolean var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update autosave from {} to {}", this.isAutoSave(), var1);
-      this.server.setAutoSave(var1);
+   public boolean setAutoSave(final boolean enabled, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update autosave from {} to {}", this.isAutoSave(), enabled);
+      this.server.setAutoSave(enabled);
       return this.isAutoSave();
    }
 
@@ -31,9 +31,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.getWorldData().getDifficulty();
    }
 
-   public Difficulty setDifficulty(Difficulty var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update difficulty from '{}' to '{}'", this.getDifficulty(), var1);
-      this.server.setDifficulty(var1);
+   public Difficulty setDifficulty(final Difficulty difficulty, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update difficulty from '{}' to '{}'", this.getDifficulty(), difficulty);
+      this.server.setDifficulty(difficulty);
       return this.getDifficulty();
    }
 
@@ -41,9 +41,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.isEnforceWhitelist();
    }
 
-   public boolean setEnforceWhitelist(boolean var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update enforce allowlist from {} to {}", this.isEnforceWhitelist(), var1);
-      this.server.setEnforceWhitelist(var1);
+   public boolean setEnforceWhitelist(final boolean enforce, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update enforce allowlist from {} to {}", this.isEnforceWhitelist(), enforce);
+      this.server.setEnforceWhitelist(enforce);
       this.server.kickUnlistedPlayers();
       return this.isEnforceWhitelist();
    }
@@ -52,9 +52,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.isUsingWhitelist();
    }
 
-   public boolean setUsingWhitelist(boolean var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update using allowlist from {} to {}", this.isUsingWhitelist(), var1);
-      this.server.setUsingWhitelist(var1);
+   public boolean setUsingWhitelist(final boolean use, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update using allowlist from {} to {}", this.isUsingWhitelist(), use);
+      this.server.setUsingWhitelist(use);
       this.server.kickUnlistedPlayers();
       return this.isUsingWhitelist();
    }
@@ -63,9 +63,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.getMaxPlayers();
    }
 
-   public int setMaxPlayers(int var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update max players from {} to {}", this.getMaxPlayers(), var1);
-      this.server.setMaxPlayers(var1);
+   public int setMaxPlayers(final int maxPlayers, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update max players from {} to {}", this.getMaxPlayers(), maxPlayers);
+      this.server.setMaxPlayers(maxPlayers);
       return this.getMaxPlayers();
    }
 
@@ -73,9 +73,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.pauseWhenEmptySeconds();
    }
 
-   public int setPauseWhenEmptySeconds(int var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update pause when empty from {} seconds to {} seconds", this.getPauseWhenEmptySeconds(), var1);
-      this.server.setPauseWhenEmptySeconds(var1);
+   public int setPauseWhenEmptySeconds(final int emptySeconds, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update pause when empty from {} seconds to {} seconds", this.getPauseWhenEmptySeconds(), emptySeconds);
+      this.server.setPauseWhenEmptySeconds(emptySeconds);
       return this.getPauseWhenEmptySeconds();
    }
 
@@ -83,9 +83,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.playerIdleTimeout();
    }
 
-   public int setPlayerIdleTimeout(int var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update player idle timeout from {} minutes to {} minutes", this.getPlayerIdleTimeout(), var1);
-      this.server.setPlayerIdleTimeout(var1);
+   public int setPlayerIdleTimeout(final int idleTime, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update player idle timeout from {} minutes to {} minutes", this.getPlayerIdleTimeout(), idleTime);
+      this.server.setPlayerIdleTimeout(idleTime);
       return this.getPlayerIdleTimeout();
    }
 
@@ -93,9 +93,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.allowFlight();
    }
 
-   public boolean setAllowFlight(boolean var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update allow flight from {} to {}", this.allowFlight(), var1);
-      this.server.setAllowFlight(var1);
+   public boolean setAllowFlight(final boolean allow, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update allow flight from {} to {}", this.allowFlight(), allow);
+      this.server.setAllowFlight(allow);
       return this.allowFlight();
    }
 
@@ -103,9 +103,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.spawnProtectionRadius();
    }
 
-   public int setSpawnProtectionRadius(int var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update spawn protection radius from {} to {}", this.getSpawnProtectionRadius(), var1);
-      this.server.setSpawnProtectionRadius(var1);
+   public int setSpawnProtectionRadius(final int spawnProtection, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update spawn protection radius from {} to {}", this.getSpawnProtectionRadius(), spawnProtection);
+      this.server.setSpawnProtectionRadius(spawnProtection);
       return this.getSpawnProtectionRadius();
    }
 
@@ -113,9 +113,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.getMotd();
    }
 
-   public String setMotd(String var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update MOTD from '{}' to '{}'", this.getMotd(), var1);
-      this.server.setMotd(var1);
+   public String setMotd(final String motd, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update MOTD from '{}' to '{}'", this.getMotd(), motd);
+      this.server.setMotd(motd);
       return this.getMotd();
    }
 
@@ -123,9 +123,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.forceGameMode();
    }
 
-   public boolean setForceGameMode(boolean var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update force game mode from {} to {}", this.forceGameMode(), var1);
-      this.server.setForceGameMode(var1);
+   public boolean setForceGameMode(final boolean force, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update force game mode from {} to {}", this.forceGameMode(), force);
+      this.server.setForceGameMode(force);
       return this.forceGameMode();
    }
 
@@ -133,9 +133,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.gameMode();
    }
 
-   public GameType setGameMode(GameType var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update game mode from '{}' to '{}'", this.getGameMode(), var1);
-      this.server.setGameMode(var1);
+   public GameType setGameMode(final GameType gameMode, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update game mode from '{}' to '{}'", this.getGameMode(), gameMode);
+      this.server.setGameMode(gameMode);
       return this.getGameMode();
    }
 
@@ -143,9 +143,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.viewDistance();
    }
 
-   public int setViewDistance(int var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update view distance from {} to {}", this.getViewDistance(), var1);
-      this.server.setViewDistance(var1);
+   public int setViewDistance(final int viewDistance, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update view distance from {} to {}", this.getViewDistance(), viewDistance);
+      this.server.setViewDistance(viewDistance);
       return this.getViewDistance();
    }
 
@@ -153,9 +153,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.simulationDistance();
    }
 
-   public int setSimulationDistance(int var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update simulation distance from {} to {}", this.getSimulationDistance(), var1);
-      this.server.setSimulationDistance(var1);
+   public int setSimulationDistance(final int simulationDistance, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update simulation distance from {} to {}", this.getSimulationDistance(), simulationDistance);
+      this.server.setSimulationDistance(simulationDistance);
       return this.getSimulationDistance();
    }
 
@@ -163,9 +163,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.acceptsTransfers();
    }
 
-   public boolean setAcceptsTransfers(boolean var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update accepts transfers from {} to {}", this.acceptsTransfers(), var1);
-      this.server.setAcceptsTransfers(var1);
+   public boolean setAcceptsTransfers(final boolean accept, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update accepts transfers from {} to {}", this.acceptsTransfers(), accept);
+      this.server.setAcceptsTransfers(accept);
       return this.acceptsTransfers();
    }
 
@@ -173,9 +173,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.statusHeartbeatInterval();
    }
 
-   public int setStatusHeartbeatInterval(int var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update status heartbeat interval from {} to {}", this.getStatusHeartbeatInterval(), var1);
-      this.server.setStatusHeartbeatInterval(var1);
+   public int setStatusHeartbeatInterval(final int statusHeartbeatInterval, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update status heartbeat interval from {} to {}", this.getStatusHeartbeatInterval(), statusHeartbeatInterval);
+      this.server.setStatusHeartbeatInterval(statusHeartbeatInterval);
       return this.getStatusHeartbeatInterval();
    }
 
@@ -183,9 +183,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.operatorUserPermissions();
    }
 
-   public LevelBasedPermissionSet setOperatorUserPermissions(LevelBasedPermissionSet var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update operator user permission level from {} to {}", this.getOperatorUserPermissions(), var1.level());
-      this.server.setOperatorUserPermissions(var1);
+   public LevelBasedPermissionSet setOperatorUserPermissions(final LevelBasedPermissionSet permissions, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update operator user permission level from {} to {}", this.getOperatorUserPermissions(), permissions.level());
+      this.server.setOperatorUserPermissions(permissions);
       return this.getOperatorUserPermissions();
    }
 
@@ -193,9 +193,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.hidesOnlinePlayers();
    }
 
-   public boolean setHidesOnlinePlayers(boolean var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update hides online players from {} to {}", this.hidesOnlinePlayers(), var1);
-      this.server.setHidesOnlinePlayers(var1);
+   public boolean setHidesOnlinePlayers(final boolean hide, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update hides online players from {} to {}", this.hidesOnlinePlayers(), hide);
+      this.server.setHidesOnlinePlayers(hide);
       return this.hidesOnlinePlayers();
    }
 
@@ -203,9 +203,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.repliesToStatus();
    }
 
-   public boolean setRepliesToStatus(boolean var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update replies to status from {} to {}", this.repliesToStatus(), var1);
-      this.server.setRepliesToStatus(var1);
+   public boolean setRepliesToStatus(final boolean enable, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update replies to status from {} to {}", this.repliesToStatus(), enable);
+      this.server.setRepliesToStatus(enable);
       return this.repliesToStatus();
    }
 
@@ -213,9 +213,9 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.server.entityBroadcastRangePercentage();
    }
 
-   public int setEntityBroadcastRangePercentage(int var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update entity broadcast range percentage from {}% to {}%", this.getEntityBroadcastRangePercentage(), var1);
-      this.server.setEntityBroadcastRangePercentage(var1);
+   public int setEntityBroadcastRangePercentage(final int percentage, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Update entity broadcast range percentage from {}% to {}%", this.getEntityBroadcastRangePercentage(), percentage);
+      this.server.setEntityBroadcastRangePercentage(percentage);
       return this.getEntityBroadcastRangePercentage();
    }
 }

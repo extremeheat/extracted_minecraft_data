@@ -26,77 +26,77 @@ public class ExperienceCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      LiteralCommandNode var1 = var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("experience").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("add").then(Commands.argument("target", EntityArgument.players()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("amount", IntegerArgumentType.integer()).executes((var0x) -> addExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS))).then(Commands.literal("points").executes((var0x) -> addExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS)))).then(Commands.literal("levels").executes((var0x) -> addExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.LEVELS))))))).then(Commands.literal("set").then(Commands.argument("target", EntityArgument.players()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("amount", IntegerArgumentType.integer(0)).executes((var0x) -> setExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS))).then(Commands.literal("points").executes((var0x) -> setExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS)))).then(Commands.literal("levels").executes((var0x) -> setExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.LEVELS))))))).then(Commands.literal("query").then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.player()).then(Commands.literal("points").executes((var0x) -> queryExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "target"), ExperienceCommand.Type.POINTS)))).then(Commands.literal("levels").executes((var0x) -> queryExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "target"), ExperienceCommand.Type.LEVELS))))));
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("xp").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).redirect(var1));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      LiteralCommandNode<CommandSourceStack> command = dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("experience").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("add").then(Commands.argument("target", EntityArgument.players()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("amount", IntegerArgumentType.integer()).executes((c) -> addExperience((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "target"), IntegerArgumentType.getInteger(c, "amount"), ExperienceCommand.Type.POINTS))).then(Commands.literal("points").executes((c) -> addExperience((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "target"), IntegerArgumentType.getInteger(c, "amount"), ExperienceCommand.Type.POINTS)))).then(Commands.literal("levels").executes((c) -> addExperience((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "target"), IntegerArgumentType.getInteger(c, "amount"), ExperienceCommand.Type.LEVELS))))))).then(Commands.literal("set").then(Commands.argument("target", EntityArgument.players()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("amount", IntegerArgumentType.integer(0)).executes((c) -> setExperience((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "target"), IntegerArgumentType.getInteger(c, "amount"), ExperienceCommand.Type.POINTS))).then(Commands.literal("points").executes((c) -> setExperience((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "target"), IntegerArgumentType.getInteger(c, "amount"), ExperienceCommand.Type.POINTS)))).then(Commands.literal("levels").executes((c) -> setExperience((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "target"), IntegerArgumentType.getInteger(c, "amount"), ExperienceCommand.Type.LEVELS))))))).then(Commands.literal("query").then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.player()).then(Commands.literal("points").executes((c) -> queryExperience((CommandSourceStack)c.getSource(), EntityArgument.getPlayer(c, "target"), ExperienceCommand.Type.POINTS)))).then(Commands.literal("levels").executes((c) -> queryExperience((CommandSourceStack)c.getSource(), EntityArgument.getPlayer(c, "target"), ExperienceCommand.Type.LEVELS))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("xp").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).redirect(command));
    }
 
-   private static int queryExperience(CommandSourceStack var0, ServerPlayer var1, Type var2) {
-      int var3 = var2.query.applyAsInt(var1);
-      var0.sendSuccess(() -> Component.translatable("commands.experience.query." + var2.name, var1.getDisplayName(), var3), false);
-      return var3;
+   private static int queryExperience(final CommandSourceStack source, final ServerPlayer target, final Type type) {
+      int result = type.query.applyAsInt(target);
+      source.sendSuccess(() -> Component.translatable("commands.experience.query." + type.name, target.getDisplayName(), result), false);
+      return result;
    }
 
-   private static int addExperience(CommandSourceStack var0, Collection<? extends ServerPlayer> var1, int var2, Type var3) {
-      for(ServerPlayer var5 : var1) {
-         var3.add.accept(var5, var2);
+   private static int addExperience(final CommandSourceStack source, final Collection<? extends ServerPlayer> players, final int amount, final Type type) {
+      for(ServerPlayer player : players) {
+         type.add.accept(player, amount);
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.experience.add." + var3.name + ".success.single", var2, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+      if (players.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.experience.add." + type.name + ".success.single", amount, ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.experience.add." + var3.name + ".success.multiple", var2, var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.experience.add." + type.name + ".success.multiple", amount, players.size()), true);
       }
 
-      return var1.size();
+      return players.size();
    }
 
-   private static int setExperience(CommandSourceStack var0, Collection<? extends ServerPlayer> var1, int var2, Type var3) throws CommandSyntaxException {
-      int var4 = 0;
+   private static int setExperience(final CommandSourceStack source, final Collection<? extends ServerPlayer> players, final int amount, final Type type) throws CommandSyntaxException {
+      int success = 0;
 
-      for(ServerPlayer var6 : var1) {
-         if (var3.set.test(var6, var2)) {
-            ++var4;
+      for(ServerPlayer player : players) {
+         if (type.set.test(player, amount)) {
+            ++success;
          }
       }
 
-      if (var4 == 0) {
+      if (success == 0) {
          throw ERROR_SET_POINTS_INVALID.create();
       } else {
-         if (var1.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.experience.set." + var3.name + ".success.single", var2, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         if (players.size() == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.experience.set." + type.name + ".success.single", amount, ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.experience.set." + var3.name + ".success.multiple", var2, var1.size()), true);
+            source.sendSuccess(() -> Component.translatable("commands.experience.set." + type.name + ".success.multiple", amount, players.size()), true);
          }
 
-         return var1.size();
+         return players.size();
       }
    }
 
-   static enum Type {
-      POINTS("points", Player::giveExperiencePoints, (var0, var1) -> {
-         if (var1 >= var0.getXpNeededForNextLevel()) {
+   private static enum Type {
+      POINTS("points", Player::giveExperiencePoints, (p, a) -> {
+         if (a >= p.getXpNeededForNextLevel()) {
             return false;
          } else {
-            var0.setExperiencePoints(var1);
+            p.setExperiencePoints(a);
             return true;
          }
-      }, (var0) -> Mth.floor(var0.experienceProgress * (float)var0.getXpNeededForNextLevel())),
-      LEVELS("levels", ServerPlayer::giveExperienceLevels, (var0, var1) -> {
-         var0.setExperienceLevels(var1);
+      }, (p) -> Mth.floor(p.experienceProgress * (float)p.getXpNeededForNextLevel())),
+      LEVELS("levels", ServerPlayer::giveExperienceLevels, (p, a) -> {
+         p.setExperienceLevels(a);
          return true;
-      }, (var0) -> var0.experienceLevel);
+      }, (p) -> p.experienceLevel);
 
       public final BiConsumer<ServerPlayer, Integer> add;
       public final BiPredicate<ServerPlayer, Integer> set;
       public final String name;
-      final ToIntFunction<ServerPlayer> query;
+      private final ToIntFunction<ServerPlayer> query;
 
-      private Type(final String var3, final BiConsumer<ServerPlayer, Integer> var4, final BiPredicate<ServerPlayer, Integer> var5, final ToIntFunction<ServerPlayer> var6) {
-         this.add = var4;
-         this.name = var3;
-         this.set = var5;
-         this.query = var6;
+      private Type(final String name, final BiConsumer<ServerPlayer, Integer> add, final BiPredicate<ServerPlayer, Integer> set, final ToIntFunction<ServerPlayer> query) {
+         this.add = add;
+         this.name = name;
+         this.set = set;
+         this.query = query;
       }
 
       // $FF: synthetic method

@@ -12,28 +12,28 @@ public class LoopingAudioStream implements AudioStream {
    private AudioStream stream;
    private final BufferedInputStream bufferedInputStream;
 
-   public LoopingAudioStream(AudioStreamProvider var1, InputStream var2) throws IOException {
+   public LoopingAudioStream(final AudioStreamProvider provider, final InputStream originalInputStream) throws IOException {
       super();
-      this.provider = var1;
-      this.bufferedInputStream = new BufferedInputStream(var2);
+      this.provider = provider;
+      this.bufferedInputStream = new BufferedInputStream(originalInputStream);
       this.bufferedInputStream.mark(2147483647);
-      this.stream = var1.create(new NoCloseBuffer(this.bufferedInputStream));
+      this.stream = provider.create(new NoCloseBuffer(this.bufferedInputStream));
    }
 
    public AudioFormat getFormat() {
       return this.stream.getFormat();
    }
 
-   public ByteBuffer read(int var1) throws IOException {
-      ByteBuffer var2 = this.stream.read(var1);
-      if (!var2.hasRemaining()) {
+   public ByteBuffer read(final int expectedSize) throws IOException {
+      ByteBuffer result = this.stream.read(expectedSize);
+      if (!result.hasRemaining()) {
          this.stream.close();
          this.bufferedInputStream.reset();
          this.stream = this.provider.create(new NoCloseBuffer(this.bufferedInputStream));
-         var2 = this.stream.read(var1);
+         result = this.stream.read(expectedSize);
       }
 
-      return var2;
+      return result;
    }
 
    public void close() throws IOException {
@@ -41,9 +41,9 @@ public class LoopingAudioStream implements AudioStream {
       this.bufferedInputStream.close();
    }
 
-   static class NoCloseBuffer extends FilterInputStream {
-      NoCloseBuffer(InputStream var1) {
-         super(var1);
+   private static class NoCloseBuffer extends FilterInputStream {
+      private NoCloseBuffer(final InputStream in) {
+         super(in);
       }
 
       public void close() {
@@ -52,6 +52,6 @@ public class LoopingAudioStream implements AudioStream {
 
    @FunctionalInterface
    public interface AudioStreamProvider {
-      AudioStream create(InputStream var1) throws IOException;
+      AudioStream create(final InputStream inputStream) throws IOException;
    }
 }

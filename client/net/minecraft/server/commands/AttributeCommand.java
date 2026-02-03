@@ -28,116 +28,116 @@ import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 public class AttributeCommand {
-   private static final DynamicCommandExceptionType ERROR_NOT_LIVING_ENTITY = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.attribute.failed.entity", var0));
-   private static final Dynamic2CommandExceptionType ERROR_NO_SUCH_ATTRIBUTE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.attribute.failed.no_attribute", var0, var1));
-   private static final Dynamic3CommandExceptionType ERROR_NO_SUCH_MODIFIER = new Dynamic3CommandExceptionType((var0, var1, var2) -> Component.translatableEscape("commands.attribute.failed.no_modifier", var1, var0, var2));
-   private static final Dynamic3CommandExceptionType ERROR_MODIFIER_ALREADY_PRESENT = new Dynamic3CommandExceptionType((var0, var1, var2) -> Component.translatableEscape("commands.attribute.failed.modifier_already_present", var2, var1, var0));
+   private static final DynamicCommandExceptionType ERROR_NOT_LIVING_ENTITY = new DynamicCommandExceptionType((target) -> Component.translatableEscape("commands.attribute.failed.entity", target));
+   private static final Dynamic2CommandExceptionType ERROR_NO_SUCH_ATTRIBUTE = new Dynamic2CommandExceptionType((target, attribute) -> Component.translatableEscape("commands.attribute.failed.no_attribute", target, attribute));
+   private static final Dynamic3CommandExceptionType ERROR_NO_SUCH_MODIFIER = new Dynamic3CommandExceptionType((target, attribute, modifier) -> Component.translatableEscape("commands.attribute.failed.no_modifier", attribute, target, modifier));
+   private static final Dynamic3CommandExceptionType ERROR_MODIFIER_ALREADY_PRESENT = new Dynamic3CommandExceptionType((target, attribute, modifier) -> Component.translatableEscape("commands.attribute.failed.modifier_already_present", modifier, attribute, target));
 
    public AttributeCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("attribute").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("target", EntityArgument.entity()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("attribute", ResourceArgument.resource(var1, Registries.ATTRIBUTE)).then(((LiteralArgumentBuilder)Commands.literal("get").executes((var0x) -> getAttributeValue((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), 1.0))).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((var0x) -> getAttributeValue((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), DoubleArgumentType.getDouble(var0x, "scale")))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("base").then(Commands.literal("set").then(Commands.argument("value", DoubleArgumentType.doubleArg()).executes((var0x) -> setAttributeBase((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), DoubleArgumentType.getDouble(var0x, "value")))))).then(((LiteralArgumentBuilder)Commands.literal("get").executes((var0x) -> getAttributeBase((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), 1.0))).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((var0x) -> getAttributeBase((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), DoubleArgumentType.getDouble(var0x, "scale")))))).then(Commands.literal("reset").executes((var0x) -> resetAttributeBase((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute")))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("modifier").then(Commands.literal("add").then(Commands.argument("id", IdentifierArgument.id()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("value", DoubleArgumentType.doubleArg()).then(Commands.literal("add_value").executes((var0x) -> addModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), IdentifierArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "value"), AttributeModifier.Operation.ADD_VALUE)))).then(Commands.literal("add_multiplied_base").executes((var0x) -> addModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), IdentifierArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "value"), AttributeModifier.Operation.ADD_MULTIPLIED_BASE)))).then(Commands.literal("add_multiplied_total").executes((var0x) -> addModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), IdentifierArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "value"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL))))))).then(Commands.literal("remove").then(Commands.argument("id", IdentifierArgument.id()).suggests((var0x, var1x) -> SharedSuggestionProvider.suggestResource(getAttributeModifiers(EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute")), var1x)).executes((var0x) -> removeModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), IdentifierArgument.getId(var0x, "id")))))).then(Commands.literal("value").then(Commands.literal("get").then(((RequiredArgumentBuilder)Commands.argument("id", IdentifierArgument.id()).suggests((var0x, var1x) -> SharedSuggestionProvider.suggestResource(getAttributeModifiers(EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute")), var1x)).executes((var0x) -> getAttributeModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), IdentifierArgument.getId(var0x, "id"), 1.0))).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((var0x) -> getAttributeModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), IdentifierArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "scale")))))))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("attribute").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("target", EntityArgument.entity()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("attribute", ResourceArgument.resource(context, Registries.ATTRIBUTE)).then(((LiteralArgumentBuilder)Commands.literal("get").executes((c) -> getAttributeValue((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), 1.0))).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((c) -> getAttributeValue((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), DoubleArgumentType.getDouble(c, "scale")))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("base").then(Commands.literal("set").then(Commands.argument("value", DoubleArgumentType.doubleArg()).executes((c) -> setAttributeBase((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), DoubleArgumentType.getDouble(c, "value")))))).then(((LiteralArgumentBuilder)Commands.literal("get").executes((c) -> getAttributeBase((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), 1.0))).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((c) -> getAttributeBase((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), DoubleArgumentType.getDouble(c, "scale")))))).then(Commands.literal("reset").executes((c) -> resetAttributeBase((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute")))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("modifier").then(Commands.literal("add").then(Commands.argument("id", IdentifierArgument.id()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("value", DoubleArgumentType.doubleArg()).then(Commands.literal("add_value").executes((c) -> addModifier((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), IdentifierArgument.getId(c, "id"), DoubleArgumentType.getDouble(c, "value"), AttributeModifier.Operation.ADD_VALUE)))).then(Commands.literal("add_multiplied_base").executes((c) -> addModifier((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), IdentifierArgument.getId(c, "id"), DoubleArgumentType.getDouble(c, "value"), AttributeModifier.Operation.ADD_MULTIPLIED_BASE)))).then(Commands.literal("add_multiplied_total").executes((c) -> addModifier((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), IdentifierArgument.getId(c, "id"), DoubleArgumentType.getDouble(c, "value"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL))))))).then(Commands.literal("remove").then(Commands.argument("id", IdentifierArgument.id()).suggests((c, p) -> SharedSuggestionProvider.suggestResource(getAttributeModifiers(EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute")), p)).executes((c) -> removeModifier((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), IdentifierArgument.getId(c, "id")))))).then(Commands.literal("value").then(Commands.literal("get").then(((RequiredArgumentBuilder)Commands.argument("id", IdentifierArgument.id()).suggests((c, p) -> SharedSuggestionProvider.suggestResource(getAttributeModifiers(EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute")), p)).executes((c) -> getAttributeModifier((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), IdentifierArgument.getId(c, "id"), 1.0))).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((c) -> getAttributeModifier((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ResourceArgument.getAttribute(c, "attribute"), IdentifierArgument.getId(c, "id"), DoubleArgumentType.getDouble(c, "scale")))))))))));
    }
 
-   private static AttributeInstance getAttributeInstance(Entity var0, Holder<Attribute> var1) throws CommandSyntaxException {
-      AttributeInstance var2 = getLivingEntity(var0).getAttributes().getInstance(var1);
-      if (var2 == null) {
-         throw ERROR_NO_SUCH_ATTRIBUTE.create(var0.getName(), getAttributeDescription(var1));
+   private static AttributeInstance getAttributeInstance(final Entity target, final Holder<Attribute> attribute) throws CommandSyntaxException {
+      AttributeInstance attributeInstance = getLivingEntity(target).getAttributes().getInstance(attribute);
+      if (attributeInstance == null) {
+         throw ERROR_NO_SUCH_ATTRIBUTE.create(target.getName(), getAttributeDescription(attribute));
       } else {
-         return var2;
+         return attributeInstance;
       }
    }
 
-   private static LivingEntity getLivingEntity(Entity var0) throws CommandSyntaxException {
-      if (!(var0 instanceof LivingEntity)) {
-         throw ERROR_NOT_LIVING_ENTITY.create(var0.getName());
+   private static LivingEntity getLivingEntity(final Entity target) throws CommandSyntaxException {
+      if (!(target instanceof LivingEntity)) {
+         throw ERROR_NOT_LIVING_ENTITY.create(target.getName());
       } else {
-         return (LivingEntity)var0;
+         return (LivingEntity)target;
       }
    }
 
-   private static LivingEntity getEntityWithAttribute(Entity var0, Holder<Attribute> var1) throws CommandSyntaxException {
-      LivingEntity var2 = getLivingEntity(var0);
-      if (!var2.getAttributes().hasAttribute(var1)) {
-         throw ERROR_NO_SUCH_ATTRIBUTE.create(var0.getName(), getAttributeDescription(var1));
+   private static LivingEntity getEntityWithAttribute(final Entity target, final Holder<Attribute> attribute) throws CommandSyntaxException {
+      LivingEntity livingEntity = getLivingEntity(target);
+      if (!livingEntity.getAttributes().hasAttribute(attribute)) {
+         throw ERROR_NO_SUCH_ATTRIBUTE.create(target.getName(), getAttributeDescription(attribute));
       } else {
-         return var2;
+         return livingEntity;
       }
    }
 
-   private static int getAttributeValue(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, double var3) throws CommandSyntaxException {
-      LivingEntity var5 = getEntityWithAttribute(var1, var2);
-      double var6 = var5.getAttributeValue(var2);
-      var0.sendSuccess(() -> Component.translatable("commands.attribute.value.get.success", getAttributeDescription(var2), var1.getName(), var6), false);
-      return (int)(var6 * var3);
+   private static int getAttributeValue(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute, final double scale) throws CommandSyntaxException {
+      LivingEntity livingEntity = getEntityWithAttribute(target, attribute);
+      double result = livingEntity.getAttributeValue(attribute);
+      source.sendSuccess(() -> Component.translatable("commands.attribute.value.get.success", getAttributeDescription(attribute), target.getName(), result), false);
+      return (int)(result * scale);
    }
 
-   private static int getAttributeBase(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, double var3) throws CommandSyntaxException {
-      LivingEntity var5 = getEntityWithAttribute(var1, var2);
-      double var6 = var5.getAttributeBaseValue(var2);
-      var0.sendSuccess(() -> Component.translatable("commands.attribute.base_value.get.success", getAttributeDescription(var2), var1.getName(), var6), false);
-      return (int)(var6 * var3);
+   private static int getAttributeBase(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute, final double scale) throws CommandSyntaxException {
+      LivingEntity livingEntity = getEntityWithAttribute(target, attribute);
+      double result = livingEntity.getAttributeBaseValue(attribute);
+      source.sendSuccess(() -> Component.translatable("commands.attribute.base_value.get.success", getAttributeDescription(attribute), target.getName(), result), false);
+      return (int)(result * scale);
    }
 
-   private static int getAttributeModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, Identifier var3, double var4) throws CommandSyntaxException {
-      LivingEntity var6 = getEntityWithAttribute(var1, var2);
-      AttributeMap var7 = var6.getAttributes();
-      if (!var7.hasModifier(var2, var3)) {
-         throw ERROR_NO_SUCH_MODIFIER.create(var1.getName(), getAttributeDescription(var2), var3);
+   private static int getAttributeModifier(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute, final Identifier id, final double scale) throws CommandSyntaxException {
+      LivingEntity livingEntity = getEntityWithAttribute(target, attribute);
+      AttributeMap attributes = livingEntity.getAttributes();
+      if (!attributes.hasModifier(attribute, id)) {
+         throw ERROR_NO_SUCH_MODIFIER.create(target.getName(), getAttributeDescription(attribute), id);
       } else {
-         double var8 = var7.getModifierValue(var2, var3);
-         var0.sendSuccess(() -> Component.translatable("commands.attribute.modifier.value.get.success", Component.translationArg(var3), getAttributeDescription(var2), var1.getName(), var8), false);
-         return (int)(var8 * var4);
+         double result = attributes.getModifierValue(attribute, id);
+         source.sendSuccess(() -> Component.translatable("commands.attribute.modifier.value.get.success", Component.translationArg(id), getAttributeDescription(attribute), target.getName(), result), false);
+         return (int)(result * scale);
       }
    }
 
-   private static Stream<Identifier> getAttributeModifiers(Entity var0, Holder<Attribute> var1) throws CommandSyntaxException {
-      AttributeInstance var2 = getAttributeInstance(var0, var1);
-      return var2.getModifiers().stream().map(AttributeModifier::id);
+   private static Stream<Identifier> getAttributeModifiers(final Entity target, final Holder<Attribute> attribute) throws CommandSyntaxException {
+      AttributeInstance attributeInstance = getAttributeInstance(target, attribute);
+      return attributeInstance.getModifiers().stream().map(AttributeModifier::id);
    }
 
-   private static int setAttributeBase(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, double var3) throws CommandSyntaxException {
-      getAttributeInstance(var1, var2).setBaseValue(var3);
-      var0.sendSuccess(() -> Component.translatable("commands.attribute.base_value.set.success", getAttributeDescription(var2), var1.getName(), var3), false);
+   private static int setAttributeBase(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute, final double value) throws CommandSyntaxException {
+      getAttributeInstance(target, attribute).setBaseValue(value);
+      source.sendSuccess(() -> Component.translatable("commands.attribute.base_value.set.success", getAttributeDescription(attribute), target.getName(), value), false);
       return 1;
    }
 
-   private static int resetAttributeBase(CommandSourceStack var0, Entity var1, Holder<Attribute> var2) throws CommandSyntaxException {
-      LivingEntity var3 = getLivingEntity(var1);
-      if (!var3.getAttributes().resetBaseValue(var2)) {
-         throw ERROR_NO_SUCH_ATTRIBUTE.create(var1.getName(), getAttributeDescription(var2));
+   private static int resetAttributeBase(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute) throws CommandSyntaxException {
+      LivingEntity livingTarget = getLivingEntity(target);
+      if (!livingTarget.getAttributes().resetBaseValue(attribute)) {
+         throw ERROR_NO_SUCH_ATTRIBUTE.create(target.getName(), getAttributeDescription(attribute));
       } else {
-         double var4 = var3.getAttributeBaseValue(var2);
-         var0.sendSuccess(() -> Component.translatable("commands.attribute.base_value.reset.success", getAttributeDescription(var2), var1.getName(), var4), false);
+         double value = livingTarget.getAttributeBaseValue(attribute);
+         source.sendSuccess(() -> Component.translatable("commands.attribute.base_value.reset.success", getAttributeDescription(attribute), target.getName(), value), false);
          return 1;
       }
    }
 
-   private static int addModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, Identifier var3, double var4, AttributeModifier.Operation var6) throws CommandSyntaxException {
-      AttributeInstance var7 = getAttributeInstance(var1, var2);
-      AttributeModifier var8 = new AttributeModifier(var3, var4, var6);
-      if (var7.hasModifier(var3)) {
-         throw ERROR_MODIFIER_ALREADY_PRESENT.create(var1.getName(), getAttributeDescription(var2), var3);
+   private static int addModifier(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute, final Identifier id, final double value, final AttributeModifier.Operation operation) throws CommandSyntaxException {
+      AttributeInstance attributeInstance = getAttributeInstance(target, attribute);
+      AttributeModifier modifier = new AttributeModifier(id, value, operation);
+      if (attributeInstance.hasModifier(id)) {
+         throw ERROR_MODIFIER_ALREADY_PRESENT.create(target.getName(), getAttributeDescription(attribute), id);
       } else {
-         var7.addPermanentModifier(var8);
-         var0.sendSuccess(() -> Component.translatable("commands.attribute.modifier.add.success", Component.translationArg(var3), getAttributeDescription(var2), var1.getName()), false);
+         attributeInstance.addPermanentModifier(modifier);
+         source.sendSuccess(() -> Component.translatable("commands.attribute.modifier.add.success", Component.translationArg(id), getAttributeDescription(attribute), target.getName()), false);
          return 1;
       }
    }
 
-   private static int removeModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, Identifier var3) throws CommandSyntaxException {
-      AttributeInstance var4 = getAttributeInstance(var1, var2);
-      if (var4.removeModifier(var3)) {
-         var0.sendSuccess(() -> Component.translatable("commands.attribute.modifier.remove.success", Component.translationArg(var3), getAttributeDescription(var2), var1.getName()), false);
+   private static int removeModifier(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute, final Identifier id) throws CommandSyntaxException {
+      AttributeInstance attributeInstance = getAttributeInstance(target, attribute);
+      if (attributeInstance.removeModifier(id)) {
+         source.sendSuccess(() -> Component.translatable("commands.attribute.modifier.remove.success", Component.translationArg(id), getAttributeDescription(attribute), target.getName()), false);
          return 1;
       } else {
-         throw ERROR_NO_SUCH_MODIFIER.create(var1.getName(), getAttributeDescription(var2), var3);
+         throw ERROR_NO_SUCH_MODIFIER.create(target.getName(), getAttributeDescription(attribute), id);
       }
    }
 
-   private static Component getAttributeDescription(Holder<Attribute> var0) {
-      return Component.translatable(((Attribute)var0.value()).getDescriptionId());
+   private static Component getAttributeDescription(final Holder<Attribute> attribute) {
+      return Component.translatable(((Attribute)attribute.value()).getDescriptionId());
    }
 }

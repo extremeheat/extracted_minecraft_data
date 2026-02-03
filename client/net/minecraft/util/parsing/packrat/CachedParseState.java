@@ -1,5 +1,6 @@
 package net.minecraft.util.parsing.packrat;
 
+import java.util.Objects;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
@@ -11,9 +12,9 @@ public abstract class CachedParseState<S> implements ParseState<S> {
    private int nextControlToReturn;
    private final CachedParseState<S>.Silent silent = new Silent();
 
-   protected CachedParseState(ErrorCollector<S> var1) {
+   protected CachedParseState(final ErrorCollector<S> errorCollector) {
       super();
-      this.errorCollector = var1;
+      this.errorCollector = errorCollector;
    }
 
    public Scope scope() {
@@ -24,74 +25,74 @@ public abstract class CachedParseState<S> implements ParseState<S> {
       return this.errorCollector;
    }
 
-   public <T> @Nullable T parse(NamedRule<S, T> var1) {
-      int var2 = this.mark();
-      PositionCache var3 = this.getCacheForPosition(var2);
-      int var4 = var3.findKeyIndex(var1.name());
-      if (var4 != -1) {
-         CacheEntry var5 = var3.getValue(var4);
-         if (var5 != null) {
-            if (var5 == CachedParseState.CacheEntry.NEGATIVE) {
+   public <T> @Nullable T parse(final NamedRule<S, T> rule) {
+      int markBeforeParse = this.mark();
+      PositionCache positionCache = this.getCacheForPosition(markBeforeParse);
+      int entryIndex = positionCache.findKeyIndex(rule.name());
+      if (entryIndex != -1) {
+         CacheEntry<T> value = positionCache.<T>getValue(entryIndex);
+         if (value != null) {
+            if (value == CachedParseState.CacheEntry.NEGATIVE) {
                return null;
             }
 
-            this.restore(var5.markAfterParse);
-            return var5.value;
+            this.restore(value.markAfterParse);
+            return value.value;
          }
       } else {
-         var4 = var3.allocateNewEntry(var1.name());
+         entryIndex = positionCache.allocateNewEntry(rule.name());
       }
 
-      Object var8 = var1.value().parse(this);
-      CacheEntry var6;
-      if (var8 == null) {
-         var6 = CachedParseState.CacheEntry.negativeEntry();
+      T result = rule.value().parse(this);
+      CacheEntry<T> entry;
+      if (result == null) {
+         entry = CachedParseState.CacheEntry.<T>negativeEntry();
       } else {
-         int var7 = this.mark();
-         var6 = new CacheEntry(var8, var7);
+         int markAfterParse = this.mark();
+         entry = new CacheEntry<T>(result, markAfterParse);
       }
 
-      var3.setValue(var4, var6);
-      return (T)var8;
+      positionCache.setValue(entryIndex, entry);
+      return result;
    }
 
-   private PositionCache getCacheForPosition(int var1) {
-      int var2 = this.positionCache.length;
-      if (var1 >= var2) {
-         int var3 = Util.growByHalf(var2, var1 + 1);
-         PositionCache[] var4 = new PositionCache[var3];
-         System.arraycopy(this.positionCache, 0, var4, 0, var2);
-         this.positionCache = var4;
+   private PositionCache getCacheForPosition(final int index) {
+      int currentSize = this.positionCache.length;
+      if (index >= currentSize) {
+         int newSize = Util.growByHalf(currentSize, index + 1);
+         PositionCache[] newCache = new PositionCache[newSize];
+         System.arraycopy(this.positionCache, 0, newCache, 0, currentSize);
+         this.positionCache = newCache;
       }
 
-      PositionCache var5 = this.positionCache[var1];
-      if (var5 == null) {
-         var5 = new PositionCache();
-         this.positionCache[var1] = var5;
+      PositionCache result = this.positionCache[index];
+      if (result == null) {
+         result = new PositionCache();
+         this.positionCache[index] = result;
       }
 
-      return var5;
+      return result;
    }
 
    public Control acquireControl() {
-      int var1 = this.controlCache.length;
-      if (this.nextControlToReturn >= var1) {
-         int var2 = Util.growByHalf(var1, this.nextControlToReturn + 1);
-         SimpleControl[] var3 = new SimpleControl[var2];
-         System.arraycopy(this.controlCache, 0, var3, 0, var1);
-         this.controlCache = var3;
+      int currentSize = this.controlCache.length;
+      if (this.nextControlToReturn >= currentSize) {
+         int newSize = Util.growByHalf(currentSize, this.nextControlToReturn + 1);
+         SimpleControl[] newControlCache = new SimpleControl[newSize];
+         System.arraycopy(this.controlCache, 0, newControlCache, 0, currentSize);
+         this.controlCache = newControlCache;
       }
 
-      int var4 = this.nextControlToReturn++;
-      SimpleControl var5 = this.controlCache[var4];
-      if (var5 == null) {
-         var5 = new SimpleControl();
-         this.controlCache[var4] = var5;
+      int controlIndex = this.nextControlToReturn++;
+      SimpleControl entry = this.controlCache[controlIndex];
+      if (entry == null) {
+         entry = new SimpleControl();
+         this.controlCache[controlIndex] = entry;
       } else {
-         var5.reset();
+         entry.reset();
       }
 
-      return var5;
+      return entry;
    }
 
    public void releaseControl() {
@@ -102,60 +103,56 @@ public abstract class CachedParseState<S> implements ParseState<S> {
       return this.silent;
    }
 
-   static class PositionCache {
+   private static class PositionCache {
       public static final int ENTRY_STRIDE = 2;
       private static final int NOT_FOUND = -1;
       private Object[] atomCache = new Object[16];
       private int nextKey;
 
-      PositionCache() {
+      private PositionCache() {
          super();
       }
 
-      public int findKeyIndex(Atom<?> var1) {
-         for(int var2 = 0; var2 < this.nextKey; var2 += 2) {
-            if (this.atomCache[var2] == var1) {
-               return var2;
+      public int findKeyIndex(final Atom<?> key) {
+         for(int i = 0; i < this.nextKey; i += 2) {
+            if (this.atomCache[i] == key) {
+               return i;
             }
          }
 
          return -1;
       }
 
-      public int allocateNewEntry(Atom<?> var1) {
-         int var2 = this.nextKey;
+      public int allocateNewEntry(final Atom<?> key) {
+         int newKeyIndex = this.nextKey;
          this.nextKey += 2;
-         int var3 = var2 + 1;
-         int var4 = this.atomCache.length;
-         if (var3 >= var4) {
-            int var5 = Util.growByHalf(var4, var3 + 1);
-            Object[] var6 = new Object[var5];
-            System.arraycopy(this.atomCache, 0, var6, 0, var4);
-            this.atomCache = var6;
+         int newValueIndex = newKeyIndex + 1;
+         int currentSize = this.atomCache.length;
+         if (newValueIndex >= currentSize) {
+            int newSize = Util.growByHalf(currentSize, newValueIndex + 1);
+            Object[] newCache = new Object[newSize];
+            System.arraycopy(this.atomCache, 0, newCache, 0, currentSize);
+            this.atomCache = newCache;
          }
 
-         this.atomCache[var2] = var1;
-         return var2;
+         this.atomCache[newKeyIndex] = key;
+         return newKeyIndex;
       }
 
-      public <T> @Nullable CacheEntry<T> getValue(int var1) {
-         return (CacheEntry)this.atomCache[var1 + 1];
+      public <T> @Nullable CacheEntry<T> getValue(final int keyIndex) {
+         return (CacheEntry)this.atomCache[keyIndex + 1];
       }
 
-      public void setValue(int var1, CacheEntry<?> var2) {
-         this.atomCache[var1 + 1] = var2;
+      public void setValue(final int keyIndex, final CacheEntry<?> entry) {
+         this.atomCache[keyIndex + 1] = entry;
       }
    }
 
-   static record CacheEntry<T>(@Nullable T value, int markAfterParse) {
-      final @Nullable T value;
-      final int markAfterParse;
+   private static record CacheEntry<T>(@Nullable T value, int markAfterParse) {
       public static final CacheEntry<?> NEGATIVE = new CacheEntry((Object)null, -1);
 
-      CacheEntry(@Nullable T var1, int var2) {
+      private CacheEntry {
          super();
-         this.value = var1;
-         this.markAfterParse = var2;
       }
 
       public static <T> CacheEntry<T> negativeEntry() {
@@ -163,11 +160,13 @@ public abstract class CachedParseState<S> implements ParseState<S> {
       }
    }
 
-   class Silent implements ParseState<S> {
-      private final ErrorCollector<S> silentCollector = new ErrorCollector.Nop<S>();
+   private class Silent implements ParseState<S> {
+      private final ErrorCollector<S> silentCollector;
 
-      Silent() {
+      private Silent() {
+         Objects.requireNonNull(CachedParseState.this);
          super();
+         this.silentCollector = new ErrorCollector.Nop<S>();
       }
 
       public ErrorCollector<S> errorCollector() {
@@ -178,8 +177,8 @@ public abstract class CachedParseState<S> implements ParseState<S> {
          return CachedParseState.this.scope();
       }
 
-      public <T> @Nullable T parse(NamedRule<S, T> var1) {
-         return (T)CachedParseState.this.parse(var1);
+      public <T> @Nullable T parse(final NamedRule<S, T> rule) {
+         return (T)CachedParseState.this.parse(rule);
       }
 
       public S input() {
@@ -190,8 +189,8 @@ public abstract class CachedParseState<S> implements ParseState<S> {
          return CachedParseState.this.mark();
       }
 
-      public void restore(int var1) {
-         CachedParseState.this.restore(var1);
+      public void restore(final int mark) {
+         CachedParseState.this.restore(mark);
       }
 
       public Control acquireControl() {
@@ -207,10 +206,10 @@ public abstract class CachedParseState<S> implements ParseState<S> {
       }
    }
 
-   static class SimpleControl implements Control {
+   private static class SimpleControl implements Control {
       private boolean hasCut;
 
-      SimpleControl() {
+      private SimpleControl() {
          super();
       }
 

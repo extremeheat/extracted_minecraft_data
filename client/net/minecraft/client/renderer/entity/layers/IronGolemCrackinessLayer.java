@@ -13,16 +13,16 @@ import net.minecraft.world.entity.Crackiness;
 public class IronGolemCrackinessLayer extends RenderLayer<IronGolemRenderState, IronGolemModel> {
    private static final Map<Crackiness.Level, Identifier> identifiers;
 
-   public IronGolemCrackinessLayer(RenderLayerParent<IronGolemRenderState, IronGolemModel> var1) {
-      super(var1);
+   public IronGolemCrackinessLayer(final RenderLayerParent<IronGolemRenderState, IronGolemModel> renderer) {
+      super(renderer);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, IronGolemRenderState var4, float var5, float var6) {
-      if (!var4.isInvisible) {
-         Crackiness.Level var7 = var4.crackiness;
-         if (var7 != Crackiness.Level.NONE) {
-            Identifier var8 = (Identifier)identifiers.get(var7);
-            renderColoredCutoutModel(this.getParentModel(), var8, var1, var2, var3, var4, -1, 1);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final IronGolemRenderState state, final float yRot, final float xRot) {
+      if (!state.isInvisible) {
+         Crackiness.Level crackiness = state.crackiness;
+         if (crackiness != Crackiness.Level.NONE) {
+            Identifier damageTexture = (Identifier)identifiers.get(crackiness);
+            renderColoredCutoutModel(this.getParentModel(), damageTexture, poseStack, submitNodeCollector, lightCoords, state, -1, 1);
          }
       }
    }

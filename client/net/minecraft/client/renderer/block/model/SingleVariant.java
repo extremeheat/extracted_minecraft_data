@@ -10,13 +10,13 @@ import net.minecraft.util.RandomSource;
 public class SingleVariant implements BlockStateModel {
    private final BlockModelPart model;
 
-   public SingleVariant(BlockModelPart var1) {
+   public SingleVariant(final BlockModelPart model) {
       super();
-      this.model = var1;
+      this.model = model;
    }
 
-   public void collectParts(RandomSource var1, List<BlockModelPart> var2) {
-      var2.add(this.model);
+   public void collectParts(final RandomSource random, final List<BlockModelPart> output) {
+      output.add(this.model);
    }
 
    public TextureAtlasSprite particleIcon() {
@@ -26,17 +26,16 @@ public class SingleVariant implements BlockStateModel {
    public static record Unbaked(Variant variant) implements BlockStateModel.Unbaked {
       public static final Codec<Unbaked> CODEC;
 
-      public Unbaked(Variant var1) {
+      public Unbaked {
          super();
-         this.variant = var1;
       }
 
-      public BlockStateModel bake(ModelBaker var1) {
-         return new SingleVariant(this.variant.bake(var1));
+      public BlockStateModel bake(final ModelBaker modelBakery) {
+         return new SingleVariant(this.variant.bake(modelBakery));
       }
 
-      public void resolveDependencies(ResolvableModel.Resolver var1) {
-         this.variant.resolveDependencies(var1);
+      public void resolveDependencies(final ResolvableModel.Resolver resolver) {
+         this.variant.resolveDependencies(resolver);
       }
 
       static {

@@ -7,17 +7,16 @@ public record SpawnPrioritySelectors(List<PriorityProvider.Selector<SpawnContext
    public static final SpawnPrioritySelectors EMPTY = new SpawnPrioritySelectors(List.of());
    public static final Codec<SpawnPrioritySelectors> CODEC;
 
-   public SpawnPrioritySelectors(List<PriorityProvider.Selector<SpawnContext, SpawnCondition>> var1) {
+   public SpawnPrioritySelectors {
       super();
-      this.selectors = var1;
    }
 
-   public static SpawnPrioritySelectors single(SpawnCondition var0, int var1) {
-      return new SpawnPrioritySelectors(PriorityProvider.single(var0, var1));
+   public static SpawnPrioritySelectors single(final SpawnCondition condition, final int priority) {
+      return new SpawnPrioritySelectors(PriorityProvider.single(condition, priority));
    }
 
-   public static SpawnPrioritySelectors fallback(int var0) {
-      return new SpawnPrioritySelectors(PriorityProvider.alwaysTrue(var0));
+   public static SpawnPrioritySelectors fallback(final int priority) {
+      return new SpawnPrioritySelectors(PriorityProvider.alwaysTrue(priority));
    }
 
    static {

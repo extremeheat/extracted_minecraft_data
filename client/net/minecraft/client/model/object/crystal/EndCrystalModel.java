@@ -22,35 +22,35 @@ public class EndCrystalModel extends EntityModel<EndCrystalRenderState> {
    public final ModelPart innerGlass;
    public final ModelPart cube;
 
-   public EndCrystalModel(ModelPart var1) {
-      super(var1);
-      this.base = var1.getChild("base");
-      this.outerGlass = var1.getChild("outer_glass");
+   public EndCrystalModel(final ModelPart root) {
+      super(root);
+      this.base = root.getChild("base");
+      this.outerGlass = root.getChild("outer_glass");
       this.innerGlass = this.outerGlass.getChild("inner_glass");
       this.cube = this.innerGlass.getChild("cube");
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      float var2 = 0.875F;
-      CubeListBuilder var3 = CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F);
-      PartDefinition var4 = var1.addOrReplaceChild("outer_glass", var3, PartPose.offset(0.0F, 24.0F, 0.0F));
-      PartDefinition var5 = var4.addOrReplaceChild("inner_glass", var3, PartPose.ZERO.withScale(0.875F));
-      var5.addOrReplaceChild("cube", CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO.withScale(0.765625F));
-      var1.addOrReplaceChild("base", CubeListBuilder.create().texOffs(0, 16).addBox(-6.0F, 0.0F, -6.0F, 12.0F, 4.0F, 12.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 64, 32);
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      float scale = 0.875F;
+      CubeListBuilder glassCube = CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F);
+      PartDefinition outerGlass = root.addOrReplaceChild("outer_glass", glassCube, PartPose.offset(0.0F, 24.0F, 0.0F));
+      PartDefinition innerGlass = outerGlass.addOrReplaceChild("inner_glass", glassCube, PartPose.ZERO.withScale(0.875F));
+      innerGlass.addOrReplaceChild("cube", CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO.withScale(0.765625F));
+      root.addOrReplaceChild("base", CubeListBuilder.create().texOffs(0, 16).addBox(-6.0F, 0.0F, -6.0F, 12.0F, 4.0F, 12.0F), PartPose.ZERO);
+      return LayerDefinition.create(mesh, 64, 32);
    }
 
-   public void setupAnim(EndCrystalRenderState var1) {
-      super.setupAnim(var1);
-      this.base.visible = var1.showsBottom;
-      float var2 = var1.ageInTicks * 3.0F;
-      float var3 = EndCrystalRenderer.getY(var1.ageInTicks) * 16.0F;
+   public void setupAnim(final EndCrystalRenderState state) {
+      super.setupAnim(state);
+      this.base.visible = state.showsBottom;
+      float animationSpeed = state.ageInTicks * 3.0F;
+      float crystalY = EndCrystalRenderer.getY(state.ageInTicks) * 16.0F;
       ModelPart var10000 = this.outerGlass;
-      var10000.y += var3 / 2.0F;
-      this.outerGlass.rotateBy(Axis.YP.rotationDegrees(var2).rotateAxis(1.0471976F, SIN_45, 0.0F, SIN_45));
-      this.innerGlass.rotateBy((new Quaternionf()).setAngleAxis(1.0471976F, SIN_45, 0.0F, SIN_45).rotateY(var2 * 0.017453292F));
-      this.cube.rotateBy((new Quaternionf()).setAngleAxis(1.0471976F, SIN_45, 0.0F, SIN_45).rotateY(var2 * 0.017453292F));
+      var10000.y += crystalY / 2.0F;
+      this.outerGlass.rotateBy(Axis.YP.rotationDegrees(animationSpeed).rotateAxis(1.0471976F, SIN_45, 0.0F, SIN_45));
+      this.innerGlass.rotateBy((new Quaternionf()).setAngleAxis(1.0471976F, SIN_45, 0.0F, SIN_45).rotateY(animationSpeed * 0.017453292F));
+      this.cube.rotateBy((new Quaternionf()).setAngleAxis(1.0471976F, SIN_45, 0.0F, SIN_45).rotateY(animationSpeed * 0.017453292F));
    }
 }

@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.VaultRenderState;
 import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.state.ItemClusterRenderState;
@@ -25,40 +24,35 @@ public class VaultRenderer implements BlockEntityRenderer<VaultBlockEntity, Vaul
    private final ItemModelResolver itemModelResolver;
    private final RandomSource random = RandomSource.create();
 
-   public VaultRenderer(BlockEntityRendererProvider.Context var1) {
+   public VaultRenderer(final BlockEntityRendererProvider.Context context) {
       super();
-      this.itemModelResolver = var1.itemModelResolver();
+      this.itemModelResolver = context.itemModelResolver();
    }
 
    public VaultRenderState createRenderState() {
       return new VaultRenderState();
    }
 
-   public void extractRenderState(VaultBlockEntity var1, VaultRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
-      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
-      ItemStack var6 = var1.getSharedData().getDisplayItem();
-      if (VaultBlockEntity.Client.shouldDisplayActiveEffects(var1.getSharedData()) && !var6.isEmpty() && var1.getLevel() != null) {
-         var2.displayItem = new ItemClusterRenderState();
-         this.itemModelResolver.updateForTopItem(var2.displayItem.item, var6, ItemDisplayContext.GROUND, var1.getLevel(), (ItemOwner)null, 0);
-         var2.displayItem.count = ItemClusterRenderState.getRenderedAmount(var6.getCount());
-         var2.displayItem.seed = ItemClusterRenderState.getSeedForItemStack(var6);
-         VaultClientData var7 = var1.getClientData();
-         var2.spin = Mth.rotLerp(var3, var7.previousSpin(), var7.currentSpin());
+   public void extractRenderState(final VaultBlockEntity blockEntity, final VaultRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+      ItemStack displayItem = blockEntity.getSharedData().getDisplayItem();
+      if (VaultBlockEntity.Client.shouldDisplayActiveEffects(blockEntity.getSharedData()) && !displayItem.isEmpty() && blockEntity.getLevel() != null) {
+         state.displayItem = new ItemClusterRenderState();
+         this.itemModelResolver.updateForTopItem(state.displayItem.item, displayItem, ItemDisplayContext.GROUND, blockEntity.getLevel(), (ItemOwner)null, 0);
+         state.displayItem.count = ItemClusterRenderState.getRenderedAmount(displayItem.getCount());
+         state.displayItem.seed = ItemClusterRenderState.getSeedForItemStack(displayItem);
+         VaultClientData clientData = blockEntity.getClientData();
+         state.spin = Mth.rotLerp(partialTicks, clientData.previousSpin(), clientData.currentSpin());
       }
    }
 
-   public void submit(VaultRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      if (var1.displayItem != null) {
-         var2.pushPose();
-         var2.translate(0.5F, 0.4F, 0.5F);
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.spin));
-         ItemEntityRenderer.renderMultipleFromCount(var2, var3, var1.lightCoords, var1.displayItem, this.random);
-         var2.popPose();
+   public void submit(final VaultRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      if (state.displayItem != null) {
+         poseStack.pushPose();
+         poseStack.translate(0.5F, 0.4F, 0.5F);
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.spin));
+         ItemEntityRenderer.renderMultipleFromCount(poseStack, submitNodeCollector, state.lightCoords, state.displayItem, this.random);
+         poseStack.popPose();
       }
-   }
-
-   // $FF: synthetic method
-   public BlockEntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

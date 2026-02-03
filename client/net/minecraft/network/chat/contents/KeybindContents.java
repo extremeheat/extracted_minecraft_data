@@ -12,13 +12,13 @@ import net.minecraft.network.chat.Style;
 import org.jspecify.annotations.Nullable;
 
 public class KeybindContents implements ComponentContents {
-   public static final MapCodec<KeybindContents> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("keybind").forGetter((var0x) -> var0x.name)).apply(var0, KeybindContents::new));
+   public static final MapCodec<KeybindContents> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.STRING.fieldOf("keybind").forGetter((o) -> o.name)).apply(i, KeybindContents::new));
    private final String name;
    private @Nullable Supplier<Component> nameResolver;
 
-   public KeybindContents(String var1) {
+   public KeybindContents(final String name) {
       super();
-      this.name = var1;
+      this.name = name;
    }
 
    private Component getNestedComponent() {
@@ -29,22 +29,22 @@ public class KeybindContents implements ComponentContents {
       return (Component)this.nameResolver.get();
    }
 
-   public <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
-      return this.getNestedComponent().<T>visit(var1);
+   public <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
+      return this.getNestedComponent().<T>visit(output);
    }
 
-   public <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
-      return this.getNestedComponent().<T>visit(var1, var2);
+   public <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
+      return this.getNestedComponent().<T>visit(output, currentStyle);
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof KeybindContents) {
-            KeybindContents var2 = (KeybindContents)var1;
-            if (this.name.equals(var2.name)) {
+         if (o instanceof KeybindContents) {
+            KeybindContents that = (KeybindContents)o;
+            if (this.name.equals(that.name)) {
                var10000 = true;
                return var10000;
             }

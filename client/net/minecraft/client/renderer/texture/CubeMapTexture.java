@@ -13,35 +13,35 @@ import net.minecraft.server.packs.resources.ResourceManager;
 public class CubeMapTexture extends ReloadableTexture {
    private static final String[] SUFFIXES = new String[]{"_1.png", "_3.png", "_5.png", "_4.png", "_0.png", "_2.png"};
 
-   public CubeMapTexture(Identifier var1) {
-      super(var1);
+   public CubeMapTexture(final Identifier resourceId) {
+      super(resourceId);
    }
 
-   public TextureContents loadContents(ResourceManager var1) throws IOException {
-      Identifier var2 = this.resourceId();
-      TextureContents var3 = TextureContents.load(var1, var2.withSuffix(SUFFIXES[0]));
+   public TextureContents loadContents(final ResourceManager resourceManager) throws IOException {
+      Identifier location = this.resourceId();
+      TextureContents first = TextureContents.load(resourceManager, location.withSuffix(SUFFIXES[0]));
 
       TextureContents var15;
       try {
-         int var4 = var3.image().getWidth();
-         int var5 = var3.image().getHeight();
-         NativeImage var6 = new NativeImage(var4, var5 * 6, false);
-         var3.image().copyRect(var6, 0, 0, 0, 0, var4, var5, false, true);
+         int width = first.image().getWidth();
+         int height = first.image().getHeight();
+         NativeImage stackedImage = new NativeImage(width, height * 6, false);
+         first.image().copyRect(stackedImage, 0, 0, 0, 0, width, height, false, true);
 
-         for(int var7 = 1; var7 < 6; ++var7) {
-            TextureContents var8 = TextureContents.load(var1, var2.withSuffix(SUFFIXES[var7]));
+         for(int i = 1; i < 6; ++i) {
+            TextureContents part = TextureContents.load(resourceManager, location.withSuffix(SUFFIXES[i]));
 
             try {
-               if (var8.image().getWidth() != var4 || var8.image().getHeight() != var5) {
-                  String var10002 = String.valueOf(var2);
-                  throw new IOException("Image dimensions of cubemap '" + var10002 + "' sides do not match: part 0 is " + var4 + "x" + var5 + ", but part " + var7 + " is " + var8.image().getWidth() + "x" + var8.image().getHeight());
+               if (part.image().getWidth() != width || part.image().getHeight() != height) {
+                  String var10002 = String.valueOf(location);
+                  throw new IOException("Image dimensions of cubemap '" + var10002 + "' sides do not match: part 0 is " + width + "x" + height + ", but part " + i + " is " + part.image().getWidth() + "x" + part.image().getHeight());
                }
 
-               var8.image().copyRect(var6, 0, 0, 0, var7 * var5, var4, var5, false, true);
+               part.image().copyRect(stackedImage, 0, 0, 0, i * height, width, height, false, true);
             } catch (Throwable var13) {
-               if (var8 != null) {
+               if (part != null) {
                   try {
-                     var8.close();
+                     part.close();
                   } catch (Throwable var12) {
                      var13.addSuppressed(var12);
                   }
@@ -50,16 +50,16 @@ public class CubeMapTexture extends ReloadableTexture {
                throw var13;
             }
 
-            if (var8 != null) {
-               var8.close();
+            if (part != null) {
+               part.close();
             }
          }
 
-         var15 = new TextureContents(var6, new TextureMetadataSection(true, false, MipmapStrategy.MEAN, 0.0F));
+         var15 = new TextureContents(stackedImage, new TextureMetadataSection(true, false, MipmapStrategy.MEAN, 0.0F));
       } catch (Throwable var14) {
-         if (var3 != null) {
+         if (first != null) {
             try {
-               var3.close();
+               first.close();
             } catch (Throwable var11) {
                var14.addSuppressed(var11);
             }
@@ -68,25 +68,25 @@ public class CubeMapTexture extends ReloadableTexture {
          throw var14;
       }
 
-      if (var3 != null) {
-         var3.close();
+      if (first != null) {
+         first.close();
       }
 
       return var15;
    }
 
-   protected void doLoad(NativeImage var1) {
-      GpuDevice var2 = RenderSystem.getDevice();
-      int var3 = var1.getWidth();
-      int var4 = var1.getHeight() / 6;
+   protected void doLoad(final NativeImage image) {
+      GpuDevice device = RenderSystem.getDevice();
+      int width = image.getWidth();
+      int height = image.getHeight() / 6;
       this.close();
       Identifier var10002 = this.resourceId();
       Objects.requireNonNull(var10002);
-      this.texture = var2.createTexture(var10002::toString, 21, TextureFormat.RGBA8, var3, var4, 6, 1);
-      this.textureView = var2.createTextureView(this.texture);
+      this.texture = device.createTexture(var10002::toString, 21, TextureFormat.RGBA8, width, height, 6, 1);
+      this.textureView = device.createTextureView(this.texture);
 
-      for(int var5 = 0; var5 < 6; ++var5) {
-         var2.createCommandEncoder().writeToTexture(this.texture, var1, 0, var5, 0, 0, var3, var4, 0, var4 * var5);
+      for(int i = 0; i < 6; ++i) {
+         device.createCommandEncoder().writeToTexture(this.texture, image, 0, i, 0, 0, width, height, 0, height * i);
       }
 
    }

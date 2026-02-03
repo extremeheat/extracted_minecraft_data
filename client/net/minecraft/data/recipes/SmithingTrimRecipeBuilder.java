@@ -1,13 +1,6 @@
 package net.minecraft.data.recipes;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRequirements;
-import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -21,39 +14,28 @@ public class SmithingTrimRecipeBuilder {
    private final Ingredient base;
    private final Ingredient addition;
    private final Holder<TrimPattern> pattern;
-   private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
+   private final RecipeUnlockAdvancementBuilder advancementBuilder = new RecipeUnlockAdvancementBuilder();
 
-   public SmithingTrimRecipeBuilder(RecipeCategory var1, Ingredient var2, Ingredient var3, Ingredient var4, Holder<TrimPattern> var5) {
+   public SmithingTrimRecipeBuilder(final RecipeCategory category, final Ingredient template, final Ingredient base, final Ingredient addition, final Holder<TrimPattern> pattern) {
       super();
-      this.category = var1;
-      this.template = var2;
-      this.base = var3;
-      this.addition = var4;
-      this.pattern = var5;
+      this.category = category;
+      this.template = template;
+      this.base = base;
+      this.addition = addition;
+      this.pattern = pattern;
    }
 
-   public static SmithingTrimRecipeBuilder smithingTrim(Ingredient var0, Ingredient var1, Ingredient var2, Holder<TrimPattern> var3, RecipeCategory var4) {
-      return new SmithingTrimRecipeBuilder(var4, var0, var1, var2, var3);
+   public static SmithingTrimRecipeBuilder smithingTrim(final Ingredient template, final Ingredient base, final Ingredient addition, final Holder<TrimPattern> pattern, final RecipeCategory category) {
+      return new SmithingTrimRecipeBuilder(category, template, base, addition, pattern);
    }
 
-   public SmithingTrimRecipeBuilder unlocks(String var1, Criterion<?> var2) {
-      this.criteria.put(var1, var2);
+   public SmithingTrimRecipeBuilder unlocks(final String name, final Criterion<?> criterion) {
+      this.advancementBuilder.unlockedBy(name, criterion);
       return this;
    }
 
-   public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
-      this.ensureValid(var2);
-      Advancement.Builder var3 = var1.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(AdvancementRequirements.Strategy.OR);
-      Map var10000 = this.criteria;
-      Objects.requireNonNull(var3);
-      var10000.forEach(var3::addCriterion);
-      SmithingTrimRecipe var4 = new SmithingTrimRecipe(this.template, this.base, this.addition, this.pattern);
-      var1.accept(var2, var4, var3.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
-   }
-
-   private void ensureValid(ResourceKey<Recipe<?>> var1) {
-      if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
-      }
+   public void save(final RecipeOutput output, final ResourceKey<Recipe<?>> id) {
+      SmithingTrimRecipe recipe = new SmithingTrimRecipe(new Recipe.CommonInfo(true), this.template, this.base, this.addition, this.pattern);
+      output.accept(id, recipe, this.advancementBuilder.build(output, id, this.category));
    }
 }

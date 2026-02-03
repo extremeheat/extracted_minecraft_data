@@ -26,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class BrushableBlock extends BaseEntityBlock implements Fallable {
-   public static final MapCodec<BrushableBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("turns_into").forGetter(BrushableBlock::getTurnsInto), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_sound").forGetter(BrushableBlock::getBrushSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_completed_sound").forGetter(BrushableBlock::getBrushCompletedSound), propertiesCodec()).apply(var0, BrushableBlock::new));
+   public static final MapCodec<BrushableBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("turns_into").forGetter(BrushableBlock::getTurnsInto), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_sound").forGetter(BrushableBlock::getBrushSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_completed_sound").forGetter(BrushableBlock::getBrushCompletedSound), propertiesCodec()).apply(i, BrushableBlock::new));
    private static final IntegerProperty DUSTED;
    public static final int TICK_DELAY = 2;
    private final Block turnsInto;
@@ -37,60 +37,60 @@ public class BrushableBlock extends BaseEntityBlock implements Fallable {
       return CODEC;
    }
 
-   public BrushableBlock(Block var1, SoundEvent var2, SoundEvent var3, BlockBehaviour.Properties var4) {
-      super(var4);
-      this.turnsInto = var1;
-      this.brushSound = var2;
-      this.brushCompletedSound = var3;
+   public BrushableBlock(final Block turnsInto, final SoundEvent brushSound, final SoundEvent brushCompletedSound, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.turnsInto = turnsInto;
+      this.brushSound = brushSound;
+      this.brushCompletedSound = brushCompletedSound;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(DUSTED, 0));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(DUSTED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(DUSTED);
    }
 
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      var2.scheduleTick(var3, this, 2);
+   public void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      level.scheduleTick(pos, this, 2);
    }
 
-   public BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      var3.scheduleTick(var4, (Block)this, 2);
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   public BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      ticks.scheduleTick(pos, (Block)this, 2);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof BrushableBlockEntity var5) {
-         var5.checkReset(var2);
+   public void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      BlockEntity var6 = level.getBlockEntity(pos);
+      if (var6 instanceof BrushableBlockEntity brushableBlockEntity) {
+         brushableBlockEntity.checkReset(level);
       }
 
-      if (FallingBlock.isFree(var2.getBlockState(var3.below())) && var3.getY() >= var2.getMinY()) {
-         FallingBlockEntity var7 = FallingBlockEntity.fall(var2, var3, var1);
-         var7.disableDrop();
+      if (FallingBlock.isFree(level.getBlockState(pos.below())) && pos.getY() >= level.getMinY()) {
+         FallingBlockEntity entity = FallingBlockEntity.fall(level, pos, state);
+         entity.disableDrop();
       }
    }
 
-   public void onBrokenAfterFall(Level var1, BlockPos var2, FallingBlockEntity var3) {
-      Vec3 var4 = var3.getBoundingBox().getCenter();
-      var1.levelEvent(2001, BlockPos.containing(var4), Block.getId(var3.getBlockState()));
-      var1.gameEvent(var3, GameEvent.BLOCK_DESTROY, var4);
+   public void onBrokenAfterFall(final Level level, final BlockPos pos, final FallingBlockEntity entity) {
+      Vec3 centerOfEntity = entity.getBoundingBox().getCenter();
+      level.levelEvent(2001, BlockPos.containing(centerOfEntity), Block.getId(entity.getBlockState()));
+      level.gameEvent(entity, GameEvent.BLOCK_DESTROY, centerOfEntity);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var4.nextInt(16) == 0) {
-         BlockPos var5 = var3.below();
-         if (FallingBlock.isFree(var2.getBlockState(var5))) {
-            double var6 = (double)var3.getX() + var4.nextDouble();
-            double var8 = (double)var3.getY() - 0.05;
-            double var10 = (double)var3.getZ() + var4.nextDouble();
-            var2.addParticle(new BlockParticleOption(ParticleTypes.FALLING_DUST, var1), var6, var8, var10, 0.0, 0.0, 0.0);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if (random.nextInt(16) == 0) {
+         BlockPos below = pos.below();
+         if (FallingBlock.isFree(level.getBlockState(below))) {
+            double xx = (double)pos.getX() + random.nextDouble();
+            double yy = (double)pos.getY() - 0.05;
+            double zz = (double)pos.getZ() + random.nextDouble();
+            level.addParticle(new BlockParticleOption(ParticleTypes.FALLING_DUST, state), xx, yy, zz, 0.0, 0.0, 0.0);
          }
       }
 
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new BrushableBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new BrushableBlockEntity(worldPosition, blockState);
    }
 
    public Block getTurnsInto() {

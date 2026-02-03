@@ -24,23 +24,23 @@ public class DebugPathCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugpath").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("to", BlockPosArgument.blockPos()).executes((var0x) -> fillBlocks((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "to")))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugpath").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("to", BlockPosArgument.blockPos()).executes((c) -> fillBlocks((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "to")))));
    }
 
-   private static int fillBlocks(CommandSourceStack var0, BlockPos var1) throws CommandSyntaxException {
-      Entity var2 = var0.getEntity();
-      if (!(var2 instanceof Mob var3)) {
+   private static int fillBlocks(final CommandSourceStack source, final BlockPos target) throws CommandSyntaxException {
+      Entity entity = source.getEntity();
+      if (!(entity instanceof Mob mob)) {
          throw ERROR_NOT_MOB.create();
       } else {
-         GroundPathNavigation var4 = new GroundPathNavigation(var3, var0.getLevel());
-         Path var5 = ((PathNavigation)var4).createPath(var1, 0);
-         if (var5 == null) {
+         PathNavigation pathNavigation = new GroundPathNavigation(mob, source.getLevel());
+         Path path = pathNavigation.createPath(target, 0);
+         if (path == null) {
             throw ERROR_NO_PATH.create();
-         } else if (!var5.canReach()) {
+         } else if (!path.canReach()) {
             throw ERROR_NOT_COMPLETE.create();
          } else {
-            var0.sendSuccess(() -> Component.literal("Made path"), true);
+            source.sendSuccess(() -> Component.literal("Made path"), true);
             return 1;
          }
       }

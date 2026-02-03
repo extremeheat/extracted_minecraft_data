@@ -5,24 +5,25 @@ import com.google.common.collect.Streams;
 import com.mojang.blocklist.BlockListSupplier;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.function.Predicate;
 
 public interface AddressCheck {
-   boolean isAllowed(ResolvedServerAddress var1);
+   boolean isAllowed(ResolvedServerAddress address);
 
-   boolean isAllowed(ServerAddress var1);
+   boolean isAllowed(ServerAddress address);
 
    static AddressCheck createFromService() {
-      final ImmutableList var0 = (ImmutableList)Streams.stream(ServiceLoader.load(BlockListSupplier.class)).map(BlockListSupplier::createBlockList).filter(Objects::nonNull).collect(ImmutableList.toImmutableList());
+      final ImmutableList<Predicate<String>> blockLists = (ImmutableList)Streams.stream(ServiceLoader.load(BlockListSupplier.class)).map(BlockListSupplier::createBlockList).filter(Objects::nonNull).collect(ImmutableList.toImmutableList());
       return new AddressCheck() {
-         public boolean isAllowed(ResolvedServerAddress var1) {
-            String var2 = var1.getHostName();
-            String var3 = var1.getHostIp();
-            return var0.stream().noneMatch((var2x) -> var2x.test(var2) || var2x.test(var3));
+         public boolean isAllowed(final ResolvedServerAddress address) {
+            String hostName = address.getHostName();
+            String hostIp = address.getHostIp();
+            return blockLists.stream().noneMatch((p) -> p.test(hostName) || p.test(hostIp));
          }
 
-         public boolean isAllowed(ServerAddress var1) {
-            String var2 = var1.getHost();
-            return var0.stream().noneMatch((var1x) -> var1x.test(var2));
+         public boolean isAllowed(final ServerAddress address) {
+            String hostName = address.getHost();
+            return blockLists.stream().noneMatch((p) -> p.test(hostName));
          }
       };
    }

@@ -11,7 +11,6 @@ import java.util.function.Function;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.BuiltInMetadata;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackSelectionConfig;
@@ -23,12 +22,13 @@ import net.minecraft.server.packs.repository.BuiltInPackSource;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
+import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import org.jspecify.annotations.Nullable;
 
 public class ClientPackSource extends BuiltInPackSource {
    private static final PackMetadataSection VERSION_METADATA_SECTION;
-   private static final BuiltInMetadata BUILT_IN_METADATA;
+   private static final ResourceMetadata BUILT_IN_METADATA;
    public static final String HIGH_CONTRAST_PACK = "high_contrast";
    private static final Map<String, Component> SPECIAL_PACK_NAMES;
    private static final PackLocationInfo VANILLA_PACK_INFO;
@@ -37,55 +37,54 @@ public class ClientPackSource extends BuiltInPackSource {
    private static final Identifier PACKS_DIR;
    private final @Nullable Path externalAssetDir;
 
-   public ClientPackSource(Path var1, DirectoryValidator var2) {
-      super(PackType.CLIENT_RESOURCES, createVanillaPackSource(var1), PACKS_DIR, var2);
-      this.externalAssetDir = this.findExplodedAssetPacks(var1);
+   public ClientPackSource(final Path externalAssetSource, final DirectoryValidator validator) {
+      super(PackType.CLIENT_RESOURCES, createVanillaPackSource(externalAssetSource), PACKS_DIR, validator);
+      this.externalAssetDir = this.findExplodedAssetPacks(externalAssetSource);
    }
 
-   private static PackLocationInfo createBuiltInPackLocation(String var0, Component var1) {
-      return new PackLocationInfo(var0, var1, PackSource.BUILT_IN, Optional.of(KnownPack.vanilla(var0)));
+   private static PackLocationInfo createBuiltInPackLocation(final String id, final Component title) {
+      return new PackLocationInfo(id, title, PackSource.BUILT_IN, Optional.of(KnownPack.vanilla(id)));
    }
 
-   private @Nullable Path findExplodedAssetPacks(Path var1) {
-      if (SharedConstants.IS_RUNNING_IN_IDE && var1.getFileSystem() == FileSystems.getDefault()) {
-         Path var2 = var1.getParent().resolve("resourcepacks");
-         if (Files.isDirectory(var2, new LinkOption[0])) {
-            return var2;
+   private @Nullable Path findExplodedAssetPacks(final Path externalAssetSource) {
+      if (SharedConstants.IS_RUNNING_IN_IDE && externalAssetSource.getFileSystem() == FileSystems.getDefault()) {
+         Path devAssetDir = externalAssetSource.getParent().resolve("resourcepacks");
+         if (Files.isDirectory(devAssetDir, new LinkOption[0])) {
+            return devAssetDir;
          }
       }
 
       return null;
    }
 
-   private static VanillaPackResources createVanillaPackSource(Path var0) {
-      VanillaPackResourcesBuilder var1 = (new VanillaPackResourcesBuilder()).setMetadata(BUILT_IN_METADATA).exposeNamespace("minecraft", "realms");
-      return var1.applyDevelopmentConfig().pushJarResources().pushAssetPath(PackType.CLIENT_RESOURCES, var0).build(VANILLA_PACK_INFO);
+   private static VanillaPackResources createVanillaPackSource(final Path externalAssetRoot) {
+      return (new VanillaPackResourcesBuilder()).setMetadata(BUILT_IN_METADATA).exposeNamespace("minecraft", "realms").applyDevelopmentConfig().pushJarResources().pushAssetPath(PackType.CLIENT_RESOURCES, externalAssetRoot).build(VANILLA_PACK_INFO);
    }
 
-   protected Component getPackTitle(String var1) {
-      Component var2 = (Component)SPECIAL_PACK_NAMES.get(var1);
-      return (Component)(var2 != null ? var2 : Component.literal(var1));
+   protected Component getPackTitle(final String id) {
+      Component title = (Component)SPECIAL_PACK_NAMES.get(id);
+      return (Component)(title != null ? title : Component.literal(id));
    }
 
-   protected @Nullable Pack createVanillaPack(PackResources var1) {
-      return Pack.readMetaAndCreate(VANILLA_PACK_INFO, fixedResources(var1), PackType.CLIENT_RESOURCES, VANILLA_SELECTION_CONFIG);
+   protected @Nullable Pack createVanillaPack(final PackResources resources) {
+      return Pack.readMetaAndCreate(VANILLA_PACK_INFO, fixedResources(resources), PackType.CLIENT_RESOURCES, VANILLA_SELECTION_CONFIG);
    }
 
-   protected @Nullable Pack createBuiltinPack(String var1, Pack.ResourcesSupplier var2, Component var3) {
-      return Pack.readMetaAndCreate(createBuiltInPackLocation(var1, var3), var2, PackType.CLIENT_RESOURCES, BUILT_IN_SELECTION_CONFIG);
+   protected @Nullable Pack createBuiltinPack(final String id, final Pack.ResourcesSupplier resources, final Component name) {
+      return Pack.readMetaAndCreate(createBuiltInPackLocation(id, name), resources, PackType.CLIENT_RESOURCES, BUILT_IN_SELECTION_CONFIG);
    }
 
-   protected void populatePackList(BiConsumer<String, Function<String, Pack>> var1) {
-      super.populatePackList(var1);
+   protected void populatePackList(final BiConsumer<String, Function<String, Pack>> discoveredPacks) {
+      super.populatePackList(discoveredPacks);
       if (this.externalAssetDir != null) {
-         this.discoverPacksInPath(this.externalAssetDir, var1);
+         this.discoverPacksInPath(this.externalAssetDir, discoveredPacks);
       }
 
    }
 
    static {
       VERSION_METADATA_SECTION = new PackMetadataSection(Component.translatable("resourcePack.vanilla.description"), SharedConstants.getCurrentVersion().packVersion(PackType.CLIENT_RESOURCES).minorRange());
-      BUILT_IN_METADATA = BuiltInMetadata.of(PackMetadataSection.CLIENT_TYPE, VERSION_METADATA_SECTION);
+      BUILT_IN_METADATA = ResourceMetadata.of(PackMetadataSection.CLIENT_TYPE, VERSION_METADATA_SECTION);
       SPECIAL_PACK_NAMES = Map.of("programmer_art", Component.translatable("resourcePack.programmer_art.name"), "high_contrast", Component.translatable("resourcePack.high_contrast.name"));
       VANILLA_PACK_INFO = new PackLocationInfo("vanilla", Component.translatable("resourcePack.vanilla.name"), PackSource.BUILT_IN, Optional.of(CORE_PACK_INFO));
       VANILLA_SELECTION_CONFIG = new PackSelectionConfig(true, Pack.Position.BOTTOM, false);

@@ -4,9 +4,9 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.RandomSource;
 
 public interface SpriteSet {
-   TextureAtlasSprite get(int var1, int var2);
+   TextureAtlasSprite get(final int index, final int max);
 
-   TextureAtlasSprite get(RandomSource var1);
+   TextureAtlasSprite get(RandomSource random);
 
    TextureAtlasSprite first();
 }

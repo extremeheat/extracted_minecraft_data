@@ -3,31 +3,31 @@ package net.minecraft.world.level.entity;
 import org.jspecify.annotations.Nullable;
 
 public interface EntityTypeTest<B, T extends B> {
-   static <B, T extends B> EntityTypeTest<B, T> forClass(final Class<T> var0) {
+   static <B, T extends B> EntityTypeTest<B, T> forClass(final Class<T> cls) {
       return new EntityTypeTest<B, T>() {
-         public @Nullable T tryCast(B var1) {
-            return var0.isInstance(var1) ? var1 : null;
+         public @Nullable T tryCast(final B entity) {
+            return (T)(cls.isInstance(entity) ? entity : null);
          }
 
          public Class<? extends B> getBaseClass() {
-            return var0;
+            return cls;
          }
       };
    }
 
-   static <B, T extends B> EntityTypeTest<B, T> forExactClass(final Class<T> var0) {
+   static <B, T extends B> EntityTypeTest<B, T> forExactClass(final Class<T> cls) {
       return new EntityTypeTest<B, T>() {
-         public @Nullable T tryCast(B var1) {
-            return var0.equals(var1.getClass()) ? var1 : null;
+         public @Nullable T tryCast(final B entity) {
+            return (T)(cls.equals(entity.getClass()) ? entity : null);
          }
 
          public Class<? extends B> getBaseClass() {
-            return var0;
+            return cls;
          }
       };
    }
 
-   @Nullable T tryCast(B var1);
+   @Nullable T tryCast(B entity);
 
    Class<? extends B> getBaseClass();
 }

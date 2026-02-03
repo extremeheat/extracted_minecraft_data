@@ -2,8 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.animal.parrot.ParrotModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ParrotRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -16,30 +14,30 @@ public class ParrotRenderer extends MobRenderer<Parrot, ParrotRenderState, Parro
    private static final Identifier YELLOW_BLUE = Identifier.withDefaultNamespace("textures/entity/parrot/parrot_yellow_blue.png");
    private static final Identifier GREY = Identifier.withDefaultNamespace("textures/entity/parrot/parrot_grey.png");
 
-   public ParrotRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new ParrotModel(var1.bakeLayer(ModelLayers.PARROT)), 0.3F);
+   public ParrotRenderer(final EntityRendererProvider.Context context) {
+      super(context, new ParrotModel(context.bakeLayer(ModelLayers.PARROT)), 0.3F);
    }
 
-   public Identifier getTextureLocation(ParrotRenderState var1) {
-      return getVariantTexture(var1.variant);
+   public Identifier getTextureLocation(final ParrotRenderState state) {
+      return getVariantTexture(state.variant);
    }
 
    public ParrotRenderState createRenderState() {
       return new ParrotRenderState();
    }
 
-   public void extractRenderState(Parrot var1, ParrotRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.variant = var1.getVariant();
-      float var4 = Mth.lerp(var3, var1.oFlap, var1.flap);
-      float var5 = Mth.lerp(var3, var1.oFlapSpeed, var1.flapSpeed);
-      var2.flapAngle = (Mth.sin((double)var4) + 1.0F) * var5;
-      var2.pose = ParrotModel.getPose(var1);
+   public void extractRenderState(final Parrot entity, final ParrotRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.variant = entity.getVariant();
+      float flap = Mth.lerp(partialTicks, entity.oFlap, entity.flap);
+      float flapSpeed = Mth.lerp(partialTicks, entity.oFlapSpeed, entity.flapSpeed);
+      state.flapAngle = (Mth.sin((double)flap) + 1.0F) * flapSpeed;
+      state.pose = ParrotModel.getPose(entity);
    }
 
-   public static Identifier getVariantTexture(Parrot.Variant var0) {
+   public static Identifier getVariantTexture(final Parrot.Variant variant) {
       Identifier var10000;
-      switch (var0) {
+      switch (variant) {
          case RED_BLUE -> var10000 = RED_BLUE;
          case BLUE -> var10000 = BLUE;
          case GREEN -> var10000 = GREEN;
@@ -49,15 +47,5 @@ public class ParrotRenderer extends MobRenderer<Parrot, ParrotRenderState, Parro
       }
 
       return var10000;
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((ParrotRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

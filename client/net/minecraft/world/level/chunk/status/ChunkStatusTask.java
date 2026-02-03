@@ -7,5 +7,5 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 
 @FunctionalInterface
 public interface ChunkStatusTask {
-   CompletableFuture<ChunkAccess> doWork(WorldGenContext var1, ChunkStep var2, StaticCache2D<GenerationChunkHolder> var3, ChunkAccess var4);
+   CompletableFuture<ChunkAccess> doWork(WorldGenContext context, ChunkStep step, StaticCache2D<GenerationChunkHolder> chunks, ChunkAccess chunk);
 }

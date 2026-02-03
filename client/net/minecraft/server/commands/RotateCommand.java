@@ -19,22 +19,22 @@ public class RotateCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("rotate").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.entity()).then(Commands.argument("rotation", RotationArgument.rotation()).executes((var0x) -> rotate((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), RotationArgument.getRotation(var0x, "rotation"))))).then(((LiteralArgumentBuilder)Commands.literal("facing").then(Commands.literal("entity").then(((RequiredArgumentBuilder)Commands.argument("facingEntity", EntityArgument.entity()).executes((var0x) -> rotate((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), (LookAt)(new LookAt.LookAtEntity(EntityArgument.getEntity(var0x, "facingEntity"), EntityAnchorArgument.Anchor.FEET))))).then(Commands.argument("facingAnchor", EntityAnchorArgument.anchor()).executes((var0x) -> rotate((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), (LookAt)(new LookAt.LookAtEntity(EntityArgument.getEntity(var0x, "facingEntity"), EntityAnchorArgument.getAnchor(var0x, "facingAnchor"))))))))).then(Commands.argument("facingLocation", Vec3Argument.vec3()).executes((var0x) -> rotate((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), (LookAt)(new LookAt.LookAtPosition(Vec3Argument.getVec3(var0x, "facingLocation")))))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("rotate").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.entity()).then(Commands.argument("rotation", RotationArgument.rotation()).executes((c) -> rotate((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), RotationArgument.getRotation(c, "rotation"))))).then(((LiteralArgumentBuilder)Commands.literal("facing").then(Commands.literal("entity").then(((RequiredArgumentBuilder)Commands.argument("facingEntity", EntityArgument.entity()).executes((c) -> rotate((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), (LookAt)(new LookAt.LookAtEntity(EntityArgument.getEntity(c, "facingEntity"), EntityAnchorArgument.Anchor.FEET))))).then(Commands.argument("facingAnchor", EntityAnchorArgument.anchor()).executes((c) -> rotate((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), (LookAt)(new LookAt.LookAtEntity(EntityArgument.getEntity(c, "facingEntity"), EntityAnchorArgument.getAnchor(c, "facingAnchor"))))))))).then(Commands.argument("facingLocation", Vec3Argument.vec3()).executes((c) -> rotate((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), (LookAt)(new LookAt.LookAtPosition(Vec3Argument.getVec3(c, "facingLocation")))))))));
    }
 
-   private static int rotate(CommandSourceStack var0, Entity var1, Coordinates var2) {
-      Vec2 var3 = var2.getRotation(var0);
-      float var4 = var2.isYRelative() ? var3.y - var1.getYRot() : var3.y;
-      float var5 = var2.isXRelative() ? var3.x - var1.getXRot() : var3.x;
-      var1.forceSetRotation(var4, var2.isYRelative(), var5, var2.isXRelative());
-      var0.sendSuccess(() -> Component.translatable("commands.rotate.success", var1.getDisplayName()), true);
+   private static int rotate(final CommandSourceStack source, final Entity entity, final Coordinates rotation) {
+      Vec2 rot = rotation.getRotation(source);
+      float relativeOrAbsoluteYRot = rotation.isYRelative() ? rot.y - entity.getYRot() : rot.y;
+      float relativeOrAbsoluteXRot = rotation.isXRelative() ? rot.x - entity.getXRot() : rot.x;
+      entity.forceSetRotation(relativeOrAbsoluteYRot, rotation.isYRelative(), relativeOrAbsoluteXRot, rotation.isXRelative());
+      source.sendSuccess(() -> Component.translatable("commands.rotate.success", entity.getDisplayName()), true);
       return 1;
    }
 
-   private static int rotate(CommandSourceStack var0, Entity var1, LookAt var2) {
-      var2.perform(var0, var1);
-      var0.sendSuccess(() -> Component.translatable("commands.rotate.success", var1.getDisplayName()), true);
+   private static int rotate(final CommandSourceStack source, final Entity entity, final LookAt facing) {
+      facing.perform(source, entity);
+      source.sendSuccess(() -> Component.translatable("commands.rotate.success", entity.getDisplayName()), true);
       return 1;
    }
 }

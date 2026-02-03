@@ -12,26 +12,26 @@ public class ExperienceBarRenderer implements ContextualBarRenderer {
    private static final Identifier EXPERIENCE_BAR_PROGRESS_SPRITE = Identifier.withDefaultNamespace("hud/experience_bar_progress");
    private final Minecraft minecraft;
 
-   public ExperienceBarRenderer(Minecraft var1) {
+   public ExperienceBarRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void renderBackground(GuiGraphics var1, DeltaTracker var2) {
-      LocalPlayer var3 = this.minecraft.player;
-      int var4 = this.left(this.minecraft.getWindow());
-      int var5 = this.top(this.minecraft.getWindow());
-      int var6 = var3.getXpNeededForNextLevel();
-      if (var6 > 0) {
-         int var7 = (int)(var3.experienceProgress * 183.0F);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)EXPERIENCE_BAR_BACKGROUND_SPRITE, var4, var5, 182, 5);
-         if (var7 > 0) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, EXPERIENCE_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, var4, var5, var7, 5);
+   public void renderBackground(final GuiGraphics graphics, final DeltaTracker deltaTracker) {
+      LocalPlayer player = this.minecraft.player;
+      int left = this.left(this.minecraft.getWindow());
+      int top = this.top(this.minecraft.getWindow());
+      int xpNeededForNextLevel = player.getXpNeededForNextLevel();
+      if (xpNeededForNextLevel > 0) {
+         int progress = (int)(player.experienceProgress * 183.0F);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)EXPERIENCE_BAR_BACKGROUND_SPRITE, left, top, 182, 5);
+         if (progress > 0) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, EXPERIENCE_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, left, top, progress, 5);
          }
       }
 
    }
 
-   public void render(GuiGraphics var1, DeltaTracker var2) {
+   public void render(final GuiGraphics graphics, final DeltaTracker deltaTracker) {
    }
 }

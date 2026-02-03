@@ -15,25 +15,25 @@ public class Eula {
    private final Path file;
    private final boolean agreed;
 
-   public Eula(Path var1) {
+   public Eula(final Path file) {
       super();
-      this.file = var1;
+      this.file = file;
       this.agreed = SharedConstants.IS_RUNNING_IN_IDE || this.readFile();
    }
 
    private boolean readFile() {
       try {
-         InputStream var1 = Files.newInputStream(this.file);
+         InputStream input = Files.newInputStream(this.file);
 
          boolean var3;
          try {
-            Properties var2 = new Properties();
-            var2.load(var1);
-            var3 = Boolean.parseBoolean(var2.getProperty("eula", "false"));
+            Properties properties = new Properties();
+            properties.load(input);
+            var3 = Boolean.parseBoolean(properties.getProperty("eula", "false"));
          } catch (Throwable var5) {
-            if (var1 != null) {
+            if (input != null) {
                try {
-                  var1.close();
+                  input.close();
                } catch (Throwable var4) {
                   var5.addSuppressed(var4);
                }
@@ -42,8 +42,8 @@ public class Eula {
             throw var5;
          }
 
-         if (var1 != null) {
-            var1.close();
+         if (input != null) {
+            input.close();
          }
 
          return var3;
@@ -61,16 +61,16 @@ public class Eula {
    private void saveDefaults() {
       if (!SharedConstants.IS_RUNNING_IN_IDE) {
          try {
-            OutputStream var1 = Files.newOutputStream(this.file);
+            OutputStream output = Files.newOutputStream(this.file);
 
             try {
-               Properties var2 = new Properties();
-               var2.setProperty("eula", "false");
-               var2.store(var1, "By changing the setting below to TRUE you are indicating your agreement to our EULA (" + String.valueOf(CommonLinks.EULA) + ").");
+               Properties properties = new Properties();
+               properties.setProperty("eula", "false");
+               properties.store(output, "By changing the setting below to TRUE you are indicating your agreement to our EULA (" + String.valueOf(CommonLinks.EULA) + ").");
             } catch (Throwable var5) {
-               if (var1 != null) {
+               if (output != null) {
                   try {
-                     var1.close();
+                     output.close();
                   } catch (Throwable var4) {
                      var5.addSuppressed(var4);
                   }
@@ -79,11 +79,11 @@ public class Eula {
                throw var5;
             }
 
-            if (var1 != null) {
-               var1.close();
+            if (output != null) {
+               output.close();
             }
-         } catch (Exception var6) {
-            LOGGER.warn("Failed to save {}", this.file, var6);
+         } catch (Exception e) {
+            LOGGER.warn("Failed to save {}", this.file, e);
          }
 
       }

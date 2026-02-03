@@ -8,8 +8,8 @@ public enum Half implements StringRepresentable {
 
    private final String name;
 
-   private Half(final String var3) {
-      this.name = var3;
+   private Half(final String name) {
+      this.name = name;
    }
 
    public String toString() {

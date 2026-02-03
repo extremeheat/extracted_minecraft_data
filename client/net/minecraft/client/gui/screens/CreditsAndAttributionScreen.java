@@ -18,19 +18,19 @@ public class CreditsAndAttributionScreen extends Screen {
    private final Screen lastScreen;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
-   public CreditsAndAttributionScreen(Screen var1) {
+   public CreditsAndAttributionScreen(final Screen lastScreen) {
       super(TITLE);
-      this.lastScreen = var1;
+      this.lastScreen = lastScreen;
    }
 
    protected void init() {
       this.layout.addTitleHeader(TITLE, this.font);
-      LinearLayout var1 = ((LinearLayout)this.layout.addToContents(LinearLayout.vertical())).spacing(8);
-      var1.defaultCellSetting().alignHorizontallyCenter();
-      var1.addChild(Button.builder(CREDITS_BUTTON, (var1x) -> this.openCreditsScreen()).width(210).build());
-      var1.addChild(Button.builder(ATTRIBUTION_BUTTON, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.ATTRIBUTION)).width(210).build());
-      var1.addChild(Button.builder(LICENSES_BUTTON, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.LICENSES)).width(210).build());
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).width(200).build());
+      LinearLayout content = ((LinearLayout)this.layout.addToContents(LinearLayout.vertical())).spacing(8);
+      content.defaultCellSetting().alignHorizontallyCenter();
+      content.addChild(Button.builder(CREDITS_BUTTON, (button) -> this.openCreditsScreen()).width(210).build());
+      content.addChild(Button.builder(ATTRIBUTION_BUTTON, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.ATTRIBUTION)).width(210).build());
+      content.addChild(Button.builder(LICENSES_BUTTON, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.LICENSES)).width(210).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
       this.layout.arrangeElements();
       this.layout.visitWidgets(this::addRenderableWidget);
    }

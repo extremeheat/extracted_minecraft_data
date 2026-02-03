@@ -8,5 +8,5 @@ import org.jspecify.annotations.Nullable;
 
 @FunctionalInterface
 public interface CreateWorldCallback {
-   boolean create(CreateWorldScreen var1, LayeredRegistryAccess<RegistryLayer> var2, PrimaryLevelData var3, @Nullable Path var4);
+   boolean create(CreateWorldScreen createWorldScreen, LayeredRegistryAccess<RegistryLayer> finalLayers, PrimaryLevelData worldData, @Nullable Path tempDataPackDir);
 }

@@ -6,7 +6,6 @@ import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -23,73 +22,73 @@ public class AnimalMakeLove extends Behavior<Animal> {
    private static final int DEFAULT_CLOSE_ENOUGH_DISTANCE = 2;
    private long spawnChildAtTime;
 
-   public AnimalMakeLove(EntityType<? extends Animal> var1) {
-      this(var1, 1.0F, 2);
+   public AnimalMakeLove(final EntityType<? extends Animal> partnerType) {
+      this(partnerType, 1.0F, 2);
    }
 
-   public AnimalMakeLove(EntityType<? extends Animal> var1, float var2, int var3) {
+   public AnimalMakeLove(final EntityType<? extends Animal> partnerType, final float speedModifier, final int closeEnoughDistance) {
       super(ImmutableMap.of(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT, MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT), 110);
-      this.partnerType = var1;
-      this.speedModifier = var2;
-      this.closeEnoughDistance = var3;
+      this.partnerType = partnerType;
+      this.speedModifier = speedModifier;
+      this.closeEnoughDistance = closeEnoughDistance;
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Animal var2) {
-      return var2.isInLove() && this.findValidBreedPartner(var2).isPresent();
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Animal body) {
+      return body.isInLove() && this.findValidBreedPartner(body).isPresent();
    }
 
-   protected void start(ServerLevel var1, Animal var2, long var3) {
-      Animal var5 = (Animal)this.findValidBreedPartner(var2).get();
-      var2.getBrain().setMemory(MemoryModuleType.BREED_TARGET, var5);
-      var5.getBrain().setMemory(MemoryModuleType.BREED_TARGET, var2);
-      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, this.speedModifier, this.closeEnoughDistance);
-      int var6 = 60 + var2.getRandom().nextInt(50);
-      this.spawnChildAtTime = var3 + (long)var6;
+   protected void start(final ServerLevel level, final Animal body, final long timestamp) {
+      Animal partner = (Animal)this.findValidBreedPartner(body).get();
+      body.getBrain().setMemory(MemoryModuleType.BREED_TARGET, partner);
+      partner.getBrain().setMemory(MemoryModuleType.BREED_TARGET, body);
+      BehaviorUtils.lockGazeAndWalkToEachOther(body, partner, this.speedModifier, this.closeEnoughDistance);
+      int duration = 60 + body.getRandom().nextInt(50);
+      this.spawnChildAtTime = timestamp + (long)duration;
    }
 
-   protected boolean canStillUse(ServerLevel var1, Animal var2, long var3) {
-      if (!this.hasBreedTargetOfRightType(var2)) {
+   protected boolean canStillUse(final ServerLevel level, final Animal body, final long timestamp) {
+      if (!this.hasBreedTargetOfRightType(body)) {
          return false;
       } else {
-         Animal var5 = this.getBreedTarget(var2);
-         return var5.isAlive() && var2.canMate(var5) && BehaviorUtils.entityIsVisible(var2.getBrain(), var5) && var3 <= this.spawnChildAtTime && !var2.isPanicking() && !var5.isPanicking();
+         Animal partner = this.getBreedTarget(body);
+         return partner.isAlive() && body.canMate(partner) && BehaviorUtils.entityIsVisible(body.getBrain(), partner) && timestamp <= this.spawnChildAtTime && !body.isPanicking() && !partner.isPanicking();
       }
    }
 
-   protected void tick(ServerLevel var1, Animal var2, long var3) {
-      Animal var5 = this.getBreedTarget(var2);
-      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, this.speedModifier, this.closeEnoughDistance);
-      if (var2.closerThan(var5, 3.0)) {
-         if (var3 >= this.spawnChildAtTime) {
-            var2.spawnChildFromBreeding(var1, var5);
-            var2.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
-            var5.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
+   protected void tick(final ServerLevel level, final Animal body, final long timestamp) {
+      Animal partner = this.getBreedTarget(body);
+      BehaviorUtils.lockGazeAndWalkToEachOther(body, partner, this.speedModifier, this.closeEnoughDistance);
+      if (body.closerThan(partner, 3.0)) {
+         if (timestamp >= this.spawnChildAtTime) {
+            body.spawnChildFromBreeding(level, partner);
+            body.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
+            partner.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
          }
 
       }
    }
 
-   protected void stop(ServerLevel var1, Animal var2, long var3) {
-      var2.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
-      var2.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
-      var2.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+   protected void stop(final ServerLevel level, final Animal body, final long timestamp) {
+      body.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
+      body.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+      body.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
       this.spawnChildAtTime = 0L;
    }
 
-   private Animal getBreedTarget(Animal var1) {
-      return (Animal)var1.getBrain().getMemory(MemoryModuleType.BREED_TARGET).get();
+   private Animal getBreedTarget(final Animal body) {
+      return (Animal)body.getBrain().getMemory(MemoryModuleType.BREED_TARGET).get();
    }
 
-   private boolean hasBreedTargetOfRightType(Animal var1) {
-      Brain var2 = var1.getBrain();
-      return var2.hasMemoryValue(MemoryModuleType.BREED_TARGET) && ((AgeableMob)var2.getMemory(MemoryModuleType.BREED_TARGET).get()).getType() == this.partnerType;
+   private boolean hasBreedTargetOfRightType(final Animal body) {
+      Brain<?> brain = body.getBrain();
+      return brain.hasMemoryValue(MemoryModuleType.BREED_TARGET) && ((AgeableMob)brain.getMemory(MemoryModuleType.BREED_TARGET).get()).is(this.partnerType);
    }
 
-   private Optional<? extends Animal> findValidBreedPartner(Animal var1) {
-      Optional var10000 = ((NearestVisibleLivingEntities)var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get()).findClosest((var2) -> {
+   private Optional<? extends Animal> findValidBreedPartner(final Animal body) {
+      Optional var10000 = ((NearestVisibleLivingEntities)body.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get()).findClosest((entity) -> {
          boolean var10000;
-         if (var2.getType() == this.partnerType && var2 instanceof Animal var3) {
-            if (var1.canMate(var3) && !var3.isPanicking()) {
+         if (entity.is(this.partnerType) && entity instanceof Animal animal) {
+            if (body.canMate(animal) && !animal.isPanicking()) {
                var10000 = true;
                return var10000;
             }
@@ -100,20 +99,5 @@ public class AnimalMakeLove extends Behavior<Animal> {
       });
       Objects.requireNonNull(Animal.class);
       return var10000.map(Animal.class::cast);
-   }
-
-   // $FF: synthetic method
-   protected boolean canStillUse(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      return this.canStillUse(var1, (Animal)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (Animal)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Animal)var2, var3);
    }
 }

@@ -14,17 +14,17 @@ public abstract class BlockStateProvider {
       super();
    }
 
-   public static SimpleStateProvider simple(BlockState var0) {
-      return new SimpleStateProvider(var0);
+   public static SimpleStateProvider simple(final BlockState state) {
+      return new SimpleStateProvider(state);
    }
 
-   public static SimpleStateProvider simple(Block var0) {
-      return new SimpleStateProvider(var0.defaultBlockState());
+   public static SimpleStateProvider simple(final Block block) {
+      return new SimpleStateProvider(block.defaultBlockState());
    }
 
    protected abstract BlockStateProviderType<?> type();
 
-   public abstract BlockState getState(RandomSource var1, BlockPos var2);
+   public abstract BlockState getState(final RandomSource random, final BlockPos pos);
 
    static {
       CODEC = BuiltInRegistries.BLOCKSTATE_PROVIDER_TYPE.byNameCodec().dispatch(BlockStateProvider::type, BlockStateProviderType::codec);

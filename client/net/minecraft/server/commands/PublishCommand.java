@@ -20,29 +20,29 @@ import org.jspecify.annotations.Nullable;
 
 public class PublishCommand {
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.publish.failed"));
-   private static final DynamicCommandExceptionType ERROR_ALREADY_PUBLISHED = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.publish.alreadyPublished", var0));
+   private static final DynamicCommandExceptionType ERROR_ALREADY_PUBLISHED = new DynamicCommandExceptionType((port) -> Component.translatableEscape("commands.publish.alreadyPublished", port));
 
    public PublishCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("publish").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), HttpUtil.getAvailablePort(), false, (GameType)null))).then(((RequiredArgumentBuilder)Commands.argument("allowCommands", BoolArgumentType.bool()).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), HttpUtil.getAvailablePort(), BoolArgumentType.getBool(var0x, "allowCommands"), (GameType)null))).then(((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode()).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), HttpUtil.getAvailablePort(), BoolArgumentType.getBool(var0x, "allowCommands"), GameModeArgument.getGameMode(var0x, "gamemode")))).then(Commands.argument("port", IntegerArgumentType.integer(0, 65535)).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "port"), BoolArgumentType.getBool(var0x, "allowCommands"), GameModeArgument.getGameMode(var0x, "gamemode")))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("publish").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((c) -> publish((CommandSourceStack)c.getSource(), HttpUtil.getAvailablePort(), false, (GameType)null))).then(((RequiredArgumentBuilder)Commands.argument("allowCommands", BoolArgumentType.bool()).executes((c) -> publish((CommandSourceStack)c.getSource(), HttpUtil.getAvailablePort(), BoolArgumentType.getBool(c, "allowCommands"), (GameType)null))).then(((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode()).executes((c) -> publish((CommandSourceStack)c.getSource(), HttpUtil.getAvailablePort(), BoolArgumentType.getBool(c, "allowCommands"), GameModeArgument.getGameMode(c, "gamemode")))).then(Commands.argument("port", IntegerArgumentType.integer(0, 65535)).executes((c) -> publish((CommandSourceStack)c.getSource(), IntegerArgumentType.getInteger(c, "port"), BoolArgumentType.getBool(c, "allowCommands"), GameModeArgument.getGameMode(c, "gamemode")))))));
    }
 
-   private static int publish(CommandSourceStack var0, int var1, boolean var2, @Nullable GameType var3) throws CommandSyntaxException {
-      if (var0.getServer().isPublished()) {
-         throw ERROR_ALREADY_PUBLISHED.create(var0.getServer().getPort());
-      } else if (!var0.getServer().publishServer(var3, var2, var1)) {
+   private static int publish(final CommandSourceStack source, final int port, final boolean allowCommands, final @Nullable GameType type) throws CommandSyntaxException {
+      if (source.getServer().isPublished()) {
+         throw ERROR_ALREADY_PUBLISHED.create(source.getServer().getPort());
+      } else if (!source.getServer().publishServer(type, allowCommands, port)) {
          throw ERROR_FAILED.create();
       } else {
-         var0.sendSuccess(() -> getSuccessMessage(var1), true);
-         return var1;
+         source.sendSuccess(() -> getSuccessMessage(port), true);
+         return port;
       }
    }
 
-   public static MutableComponent getSuccessMessage(int var0) {
-      MutableComponent var1 = ComponentUtils.copyOnClickText(String.valueOf(var0));
-      return Component.translatable("commands.publish.started", var1);
+   public static MutableComponent getSuccessMessage(final int port) {
+      Component portText = ComponentUtils.copyOnClickText(String.valueOf(port));
+      return Component.translatable("commands.publish.started", portText);
    }
 }

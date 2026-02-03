@@ -17,11 +17,11 @@ public class FleeSunGoal extends Goal {
    private final double speedModifier;
    private final Level level;
 
-   public FleeSunGoal(PathfinderMob var1, double var2) {
+   public FleeSunGoal(final PathfinderMob mob, final double speedModifier) {
       super();
-      this.mob = var1;
-      this.speedModifier = var2;
-      this.level = var1.level();
+      this.mob = mob;
+      this.speedModifier = speedModifier;
+      this.level = mob.level();
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
@@ -40,13 +40,13 @@ public class FleeSunGoal extends Goal {
    }
 
    protected boolean setWantedPos() {
-      Vec3 var1 = this.getHidePos();
-      if (var1 == null) {
+      Vec3 pos = this.getHidePos();
+      if (pos == null) {
          return false;
       } else {
-         this.wantedX = var1.x;
-         this.wantedY = var1.y;
-         this.wantedZ = var1.z;
+         this.wantedX = pos.x;
+         this.wantedY = pos.y;
+         this.wantedZ = pos.z;
          return true;
       }
    }
@@ -60,13 +60,13 @@ public class FleeSunGoal extends Goal {
    }
 
    protected @Nullable Vec3 getHidePos() {
-      RandomSource var1 = this.mob.getRandom();
-      BlockPos var2 = this.mob.blockPosition();
+      RandomSource random = this.mob.getRandom();
+      BlockPos pos = this.mob.blockPosition();
 
-      for(int var3 = 0; var3 < 10; ++var3) {
-         BlockPos var4 = var2.offset(var1.nextInt(20) - 10, var1.nextInt(6) - 3, var1.nextInt(20) - 10);
-         if (!this.level.canSeeSky(var4) && this.mob.getWalkTargetValue(var4) < 0.0F) {
-            return Vec3.atBottomCenterOf(var4);
+      for(int i = 0; i < 10; ++i) {
+         BlockPos randomPos = pos.offset(random.nextInt(20) - 10, random.nextInt(6) - 3, random.nextInt(20) - 10);
+         if (!this.level.canSeeSky(randomPos) && this.mob.getWalkTargetValue(randomPos) < 0.0F) {
+            return Vec3.atBottomCenterOf(randomPos);
          }
       }
 

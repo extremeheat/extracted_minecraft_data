@@ -23,35 +23,35 @@ public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>>
    private final ElytraModel elytraBabyModel;
    private final EquipmentLayerRenderer equipmentRenderer;
 
-   public WingsLayer(RenderLayerParent<S, M> var1, EntityModelSet var2, EquipmentLayerRenderer var3) {
-      super(var1);
-      this.elytraModel = new ElytraModel(var2.bakeLayer(ModelLayers.ELYTRA));
-      this.elytraBabyModel = new ElytraModel(var2.bakeLayer(ModelLayers.ELYTRA_BABY));
-      this.equipmentRenderer = var3;
+   public WingsLayer(final RenderLayerParent<S, M> renderer, final EntityModelSet modelSet, final EquipmentLayerRenderer equipmentRenderer) {
+      super(renderer);
+      this.elytraModel = new ElytraModel(modelSet.bakeLayer(ModelLayers.ELYTRA));
+      this.elytraBabyModel = new ElytraModel(modelSet.bakeLayer(ModelLayers.ELYTRA_BABY));
+      this.equipmentRenderer = equipmentRenderer;
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, S var4, float var5, float var6) {
-      ItemStack var7 = var4.chestEquipment;
-      Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
-      if (var8 != null && !var8.assetId().isEmpty()) {
-         Identifier var9 = getPlayerElytraTexture(var4);
-         ElytraModel var10 = var4.isBaby ? this.elytraBabyModel : this.elytraModel;
-         var1.pushPose();
-         var1.translate(0.0F, 0.0F, 0.125F);
-         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WINGS, (ResourceKey)var8.assetId().get(), var10, var4, var7, var1, var2, var3, var9, var4.outlineColor, 0);
-         var1.popPose();
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final S state, final float yRot, final float xRot) {
+      ItemStack itemStack = state.chestEquipment;
+      Equippable equippable = (Equippable)itemStack.get(DataComponents.EQUIPPABLE);
+      if (equippable != null && !equippable.assetId().isEmpty()) {
+         Identifier playerElytraTexture = getPlayerElytraTexture(state);
+         ElytraModel model = state.isBaby ? this.elytraBabyModel : this.elytraModel;
+         poseStack.pushPose();
+         poseStack.translate(0.0F, 0.0F, 0.125F);
+         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WINGS, (ResourceKey)equippable.assetId().get(), model, state, itemStack, poseStack, submitNodeCollector, lightCoords, playerElytraTexture, state.outlineColor, 0);
+         poseStack.popPose();
       }
    }
 
-   private static @Nullable Identifier getPlayerElytraTexture(HumanoidRenderState var0) {
-      if (var0 instanceof AvatarRenderState var1) {
-         PlayerSkin var2 = var1.skin;
-         if (var2.elytra() != null) {
-            return var2.elytra().texturePath();
+   private static @Nullable Identifier getPlayerElytraTexture(final HumanoidRenderState state) {
+      if (state instanceof AvatarRenderState playerState) {
+         PlayerSkin skin = playerState.skin;
+         if (skin.elytra() != null) {
+            return skin.elytra().texturePath();
          }
 
-         if (var2.cape() != null && var1.showCape) {
-            return var2.cape().texturePath();
+         if (skin.cape() != null && playerState.showCape) {
+            return skin.cape().texturePath();
          }
       }
 

@@ -8,11 +8,11 @@ public class SoundEventRegistration {
    private final boolean replace;
    private final @Nullable String subtitle;
 
-   public SoundEventRegistration(List<Sound> var1, boolean var2, @Nullable String var3) {
+   public SoundEventRegistration(final List<Sound> sounds, final boolean replace, final @Nullable String subtitle) {
       super();
-      this.sounds = var1;
-      this.replace = var2;
-      this.subtitle = var3;
+      this.sounds = sounds;
+      this.replace = replace;
+      this.subtitle = subtitle;
    }
 
    public List<Sound> getSounds() {

@@ -8,17 +8,12 @@ import javax.crypto.Cipher;
 public class CipherEncoder extends MessageToByteEncoder<ByteBuf> {
    private final CipherBase cipher;
 
-   public CipherEncoder(Cipher var1) {
+   public CipherEncoder(final Cipher cipher) {
       super();
-      this.cipher = new CipherBase(var1);
+      this.cipher = new CipherBase(cipher);
    }
 
-   protected void encode(ChannelHandlerContext var1, ByteBuf var2, ByteBuf var3) throws Exception {
-      this.cipher.encipher(var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void encode(final ChannelHandlerContext var1, final Object var2, final ByteBuf var3) throws Exception {
-      this.encode(var1, (ByteBuf)var2, var3);
+   protected void encode(final ChannelHandlerContext ctx, final ByteBuf msg, final ByteBuf out) throws Exception {
+      this.cipher.encipher(msg, out);
    }
 }

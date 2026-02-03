@@ -17,16 +17,16 @@ public class SpectralArrow extends AbstractArrow {
    private static final int DEFAULT_DURATION = 200;
    private int duration = 200;
 
-   public SpectralArrow(EntityType<? extends SpectralArrow> var1, Level var2) {
-      super(var1, var2);
+   public SpectralArrow(final EntityType<? extends SpectralArrow> type, final Level level) {
+      super(type, level);
    }
 
-   public SpectralArrow(Level var1, LivingEntity var2, ItemStack var3, @Nullable ItemStack var4) {
-      super(EntityType.SPECTRAL_ARROW, var2, var1, var3, var4);
+   public SpectralArrow(final Level level, final LivingEntity owner, final ItemStack pickupItemStack, final @Nullable ItemStack firedFromWeapon) {
+      super(EntityType.SPECTRAL_ARROW, owner, level, pickupItemStack, firedFromWeapon);
    }
 
-   public SpectralArrow(Level var1, double var2, double var4, double var6, ItemStack var8, @Nullable ItemStack var9) {
-      super(EntityType.SPECTRAL_ARROW, var2, var4, var6, var1, var8, var9);
+   public SpectralArrow(final Level level, final double x, final double y, final double z, final ItemStack pickupItemStack, final @Nullable ItemStack firedFromWeapon) {
+      super(EntityType.SPECTRAL_ARROW, x, y, z, level, pickupItemStack, firedFromWeapon);
    }
 
    public void tick() {
@@ -37,20 +37,20 @@ public class SpectralArrow extends AbstractArrow {
 
    }
 
-   protected void doPostHurtEffects(LivingEntity var1) {
-      super.doPostHurtEffects(var1);
-      MobEffectInstance var2 = new MobEffectInstance(MobEffects.GLOWING, this.duration, 0);
-      var1.addEffect(var2, this.getEffectSource());
+   protected void doPostHurtEffects(final LivingEntity mob) {
+      super.doPostHurtEffects(mob);
+      MobEffectInstance effect = new MobEffectInstance(MobEffects.GLOWING, this.duration, 0);
+      mob.addEffect(effect, this.getEffectSource());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.duration = var1.getIntOr("Duration", 200);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.duration = input.getIntOr("Duration", 200);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("Duration", this.duration);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("Duration", this.duration);
    }
 
    protected ItemStack getDefaultPickupItem() {

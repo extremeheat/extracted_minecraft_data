@@ -19,45 +19,45 @@ import net.minecraft.world.phys.Vec3;
 public class MinecartItem extends Item {
    private final EntityType<? extends AbstractMinecart> type;
 
-   public MinecartItem(EntityType<? extends AbstractMinecart> var1, Item.Properties var2) {
-      super(var2);
-      this.type = var1;
+   public MinecartItem(final EntityType<? extends AbstractMinecart> type, final Item.Properties properties) {
+      super(properties);
+      this.type = type;
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      BlockState var4 = var2.getBlockState(var3);
-      if (!var4.is(BlockTags.RAILS)) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      BlockState blockState = level.getBlockState(pos);
+      if (!blockState.is(BlockTags.RAILS)) {
          return InteractionResult.FAIL;
       } else {
-         ItemStack var5 = var1.getItemInHand();
-         RailShape var6 = var4.getBlock() instanceof BaseRailBlock ? (RailShape)var4.getValue(((BaseRailBlock)var4.getBlock()).getShapeProperty()) : RailShape.NORTH_SOUTH;
-         double var7 = 0.0;
-         if (var6.isSlope()) {
-            var7 = 0.5;
+         ItemStack itemStack = context.getItemInHand();
+         RailShape shape = blockState.getBlock() instanceof BaseRailBlock ? (RailShape)blockState.getValue(((BaseRailBlock)blockState.getBlock()).getShapeProperty()) : RailShape.NORTH_SOUTH;
+         double offset = 0.0;
+         if (shape.isSlope()) {
+            offset = 0.5;
          }
 
-         Vec3 var9 = new Vec3((double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var7, (double)var3.getZ() + 0.5);
-         AbstractMinecart var10 = AbstractMinecart.createMinecart(var2, var9.x, var9.y, var9.z, this.type, EntitySpawnReason.DISPENSER, var5, var1.getPlayer());
-         if (var10 == null) {
+         Vec3 spawnPos = new Vec3((double)pos.getX() + 0.5, (double)pos.getY() + 0.0625 + offset, (double)pos.getZ() + 0.5);
+         AbstractMinecart cart = AbstractMinecart.createMinecart(level, spawnPos.x, spawnPos.y, spawnPos.z, this.type, EntitySpawnReason.DISPENSER, itemStack, context.getPlayer());
+         if (cart == null) {
             return InteractionResult.FAIL;
          } else {
-            if (AbstractMinecart.useExperimentalMovement(var2)) {
-               for(Entity var13 : var2.getEntities((Entity)null, var10.getBoundingBox())) {
-                  if (var13 instanceof AbstractMinecart) {
+            if (AbstractMinecart.useExperimentalMovement(level)) {
+               for(Entity entity : level.getEntities((Entity)null, cart.getBoundingBox())) {
+                  if (entity instanceof AbstractMinecart) {
                      return InteractionResult.FAIL;
                   }
                }
             }
 
-            if (var2 instanceof ServerLevel) {
-               ServerLevel var14 = (ServerLevel)var2;
-               var14.addFreshEntity(var10);
-               var14.gameEvent(GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(var1.getPlayer(), var14.getBlockState(var3.below())));
+            if (level instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)level;
+               serverLevel.addFreshEntity(cart);
+               serverLevel.gameEvent(GameEvent.ENTITY_PLACE, pos, GameEvent.Context.of(context.getPlayer(), serverLevel.getBlockState(pos.below())));
             }
 
-            var5.shrink(1);
+            itemStack.shrink(1);
             return InteractionResult.SUCCESS;
          }
       }

@@ -10,17 +10,17 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 public class SpectralArrowItem extends ArrowItem {
-   public SpectralArrowItem(Item.Properties var1) {
-      super(var1);
+   public SpectralArrowItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public AbstractArrow createArrow(Level var1, ItemStack var2, LivingEntity var3, @Nullable ItemStack var4) {
-      return new SpectralArrow(var1, var3, var2.copyWithCount(1), var4);
+   public AbstractArrow createArrow(final Level level, final ItemStack itemStack, final LivingEntity owner, final @Nullable ItemStack firedFromWeapon) {
+      return new SpectralArrow(level, owner, itemStack.copyWithCount(1), firedFromWeapon);
    }
 
-   public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
-      SpectralArrow var5 = new SpectralArrow(var1, var2.x(), var2.y(), var2.z(), var3.copyWithCount(1), (ItemStack)null);
-      var5.pickup = AbstractArrow.Pickup.ALLOWED;
-      return var5;
+   public Projectile asProjectile(final Level level, final Position position, final ItemStack itemStack, final Direction direction) {
+      SpectralArrow arrow = new SpectralArrow(level, position.x(), position.y(), position.z(), itemStack.copyWithCount(1), (ItemStack)null);
+      arrow.pickup = AbstractArrow.Pickup.ALLOWED;
+      return arrow;
    }
 }

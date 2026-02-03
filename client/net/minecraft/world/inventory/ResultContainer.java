@@ -22,8 +22,8 @@ public class ResultContainer implements Container, RecipeCraftingHolder {
    }
 
    public boolean isEmpty() {
-      for(ItemStack var2 : this.itemStacks) {
-         if (!var2.isEmpty()) {
+      for(ItemStack itemStack : this.itemStacks) {
+         if (!itemStack.isEmpty()) {
             return false;
          }
       }
@@ -31,26 +31,26 @@ public class ResultContainer implements Container, RecipeCraftingHolder {
       return true;
    }
 
-   public ItemStack getItem(int var1) {
+   public ItemStack getItem(final int slot) {
       return this.itemStacks.get(0);
    }
 
-   public ItemStack removeItem(int var1, int var2) {
+   public ItemStack removeItem(final int slot, final int count) {
       return ContainerHelper.takeItem(this.itemStacks, 0);
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
+   public ItemStack removeItemNoUpdate(final int slot) {
       return ContainerHelper.takeItem(this.itemStacks, 0);
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      this.itemStacks.set(0, var2);
+   public void setItem(final int slot, final ItemStack itemStack) {
+      this.itemStacks.set(0, itemStack);
    }
 
    public void setChanged() {
    }
 
-   public boolean stillValid(Player var1) {
+   public boolean stillValid(final Player player) {
       return true;
    }
 
@@ -58,8 +58,8 @@ public class ResultContainer implements Container, RecipeCraftingHolder {
       this.itemStacks.clear();
    }
 
-   public void setRecipeUsed(@Nullable RecipeHolder<?> var1) {
-      this.recipeUsed = var1;
+   public void setRecipeUsed(final @Nullable RecipeHolder<?> recipeUsed) {
+      this.recipeUsed = recipeUsed;
    }
 
    public @Nullable RecipeHolder<?> getRecipeUsed() {

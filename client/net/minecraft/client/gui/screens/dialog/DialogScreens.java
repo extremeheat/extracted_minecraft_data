@@ -19,13 +19,13 @@ public class DialogScreens {
       super();
    }
 
-   private static <T extends Dialog> void register(MapCodec<T> var0, Factory<? super T> var1) {
-      FACTORIES.put(var0, var1);
+   private static <T extends Dialog> void register(final MapCodec<T> type, final Factory<? super T> factory) {
+      FACTORIES.put(type, factory);
    }
 
-   public static <T extends Dialog> @Nullable DialogScreen<T> createFromData(T var0, @Nullable Screen var1, DialogConnectionAccess var2) {
-      Factory var3 = (Factory)FACTORIES.get(var0.codec());
-      return var3 != null ? var3.create(var1, var0, var2) : null;
+   public static <T extends Dialog> @Nullable DialogScreen<T> createFromData(final T dialog, final @Nullable Screen previousScreen, final DialogConnectionAccess connectionAccess) {
+      Factory<T> factory = (Factory)FACTORIES.get(dialog.codec());
+      return factory != null ? factory.create(previousScreen, dialog, connectionAccess) : null;
    }
 
    public static void bootstrap() {
@@ -38,6 +38,6 @@ public class DialogScreens {
 
    @FunctionalInterface
    public interface Factory<T extends Dialog> {
-      DialogScreen<T> create(@Nullable Screen var1, T var2, DialogConnectionAccess var3);
+      DialogScreen<T> create(@Nullable Screen previousScreen, T data, DialogConnectionAccess connectionAccess);
    }
 }

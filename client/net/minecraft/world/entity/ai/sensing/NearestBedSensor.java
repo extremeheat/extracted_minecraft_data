@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.sensing;
 
 import com.google.common.collect.ImmutableSet;
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import java.util.Optional;
@@ -8,11 +9,13 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.AcquirePoi;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
+import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.level.pathfinder.Path;
 
@@ -32,32 +35,32 @@ public class NearestBedSensor extends Sensor<Mob> {
       return ImmutableSet.of(MemoryModuleType.NEAREST_BED);
    }
 
-   protected void doTick(ServerLevel var1, Mob var2) {
-      if (var2.isBaby()) {
+   protected void doTick(final ServerLevel level, final Mob body) {
+      if (body.isBaby()) {
          this.triedCount = 0;
-         this.lastUpdate = var1.getGameTime() + (long)var1.getRandom().nextInt(20);
-         PoiManager var3 = var1.getPoiManager();
-         Predicate var4 = (var1x) -> {
-            long var2 = var1x.asLong();
-            if (this.batchCache.containsKey(var2)) {
+         this.lastUpdate = level.getGameTime() + (long)level.getRandom().nextInt(20);
+         PoiManager poiManager = level.getPoiManager();
+         Predicate<BlockPos> cacheTest = (pos) -> {
+            long key = pos.asLong();
+            if (this.batchCache.containsKey(key)) {
                return false;
             } else if (++this.triedCount >= 5) {
                return false;
             } else {
-               this.batchCache.put(var2, this.lastUpdate + 40L);
+               this.batchCache.put(key, this.lastUpdate + 40L);
                return true;
             }
          };
-         Set var5 = (Set)var3.findAllWithType((var0) -> var0.is(PoiTypes.HOME), var4, var2.blockPosition(), 48, PoiManager.Occupancy.ANY).collect(Collectors.toSet());
-         Path var6 = AcquirePoi.findPathToPois(var2, var5);
-         if (var6 != null && var6.canReach()) {
-            BlockPos var7 = var6.getTarget();
-            Optional var8 = var3.getType(var7);
-            if (var8.isPresent()) {
-               var2.getBrain().setMemory(MemoryModuleType.NEAREST_BED, var7);
+         Set<Pair<Holder<PoiType>, BlockPos>> pois = (Set)poiManager.findAllWithType((e) -> e.is(PoiTypes.HOME), cacheTest, body.blockPosition(), 48, PoiManager.Occupancy.ANY).collect(Collectors.toSet());
+         Path path = AcquirePoi.findPathToPois(body, pois);
+         if (path != null && path.canReach()) {
+            BlockPos targetPos = path.getTarget();
+            Optional<Holder<PoiType>> type = poiManager.getType(targetPos);
+            if (type.isPresent()) {
+               body.getBrain().setMemory(MemoryModuleType.NEAREST_BED, targetPos);
             }
          } else if (this.triedCount < 5) {
-            this.batchCache.long2LongEntrySet().removeIf((var1x) -> var1x.getLongValue() < this.lastUpdate);
+            this.batchCache.long2LongEntrySet().removeIf((entry) -> entry.getLongValue() < this.lastUpdate);
          }
 
       }

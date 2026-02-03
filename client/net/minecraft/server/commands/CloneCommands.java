@@ -10,8 +10,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.logging.LogUtils;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Deque;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.commands.CommandBuildContext;
@@ -41,149 +40,149 @@ import org.slf4j.Logger;
 public class CloneCommands {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final SimpleCommandExceptionType ERROR_OVERLAP = new SimpleCommandExceptionType(Component.translatable("commands.clone.overlap"));
-   private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.clone.toobig", var0, var1));
+   private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((max, count) -> Component.translatableEscape("commands.clone.toobig", max, count));
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.clone.failed"));
-   public static final Predicate<BlockInWorld> FILTER_AIR = (var0) -> !var0.getState().isAir();
+   public static final Predicate<BlockInWorld> FILTER_AIR = (b) -> !b.getState().isAir();
 
    public CloneCommands() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> ((CommandSourceStack)var0x.getSource()).getLevel()))).then(Commands.literal("from").then(Commands.argument("sourceDimension", DimensionArgument.dimension()).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> DimensionArgument.getDimension(var0x, "sourceDimension"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(beginEndDestinationAndModeSuffix(context, (c) -> ((CommandSourceStack)c.getSource()).getLevel()))).then(Commands.literal("from").then(Commands.argument("sourceDimension", DimensionArgument.dimension()).then(beginEndDestinationAndModeSuffix(context, (c) -> DimensionArgument.getDimension(c, "sourceDimension"))))));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> beginEndDestinationAndModeSuffix(CommandBuildContext var0, InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1) {
-      return Commands.argument("begin", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("end", BlockPosArgument.blockPos()).then(destinationAndStrictSuffix(var0, var1, (var0x) -> ((CommandSourceStack)var0x.getSource()).getLevel()))).then(Commands.literal("to").then(Commands.argument("targetDimension", DimensionArgument.dimension()).then(destinationAndStrictSuffix(var0, var1, (var0x) -> DimensionArgument.getDimension(var0x, "targetDimension"))))));
+   private static ArgumentBuilder<CommandSourceStack, ?> beginEndDestinationAndModeSuffix(final CommandBuildContext context, final InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> fromDimension) {
+      return Commands.argument("begin", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("end", BlockPosArgument.blockPos()).then(destinationAndStrictSuffix(context, fromDimension, (c) -> ((CommandSourceStack)c.getSource()).getLevel()))).then(Commands.literal("to").then(Commands.argument("targetDimension", DimensionArgument.dimension()).then(destinationAndStrictSuffix(context, fromDimension, (c) -> DimensionArgument.getDimension(c, "targetDimension"))))));
    }
 
-   private static DimensionAndPosition getLoadedDimensionAndPosition(CommandContext<CommandSourceStack> var0, ServerLevel var1, String var2) throws CommandSyntaxException {
-      BlockPos var3 = BlockPosArgument.getLoadedBlockPos(var0, var1, var2);
-      return new DimensionAndPosition(var1, var3);
+   private static DimensionAndPosition getLoadedDimensionAndPosition(final CommandContext<CommandSourceStack> context, final ServerLevel level, final String positionArgument) throws CommandSyntaxException {
+      BlockPos blockPos = BlockPosArgument.getLoadedBlockPos(context, level, positionArgument);
+      return new DimensionAndPosition(level, blockPos);
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> destinationAndStrictSuffix(CommandBuildContext var0, InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1, InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var2) {
-      InCommandFunction var3 = (var1x) -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var1.apply(var1x), "begin");
-      InCommandFunction var4 = (var1x) -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var1.apply(var1x), "end");
-      InCommandFunction var5 = (var1x) -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var2.apply(var1x), "destination");
-      return modeSuffix(var0, var3, var4, var5, false, Commands.argument("destination", BlockPosArgument.blockPos())).then(modeSuffix(var0, var3, var4, var5, true, Commands.literal("strict")));
+   private static ArgumentBuilder<CommandSourceStack, ?> destinationAndStrictSuffix(final CommandBuildContext context, final InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> fromDimension, final InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> toDimension) {
+      InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> beginPos = (c) -> getLoadedDimensionAndPosition(c, fromDimension.apply(c), "begin");
+      InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> endPos = (c) -> getLoadedDimensionAndPosition(c, fromDimension.apply(c), "end");
+      InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> destinationPos = (c) -> getLoadedDimensionAndPosition(c, toDimension.apply(c), "destination");
+      return modeSuffix(context, beginPos, endPos, destinationPos, false, Commands.argument("destination", BlockPosArgument.blockPos())).then(modeSuffix(context, beginPos, endPos, destinationPos, true, Commands.literal("strict")));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> modeSuffix(CommandBuildContext var0, InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var1, InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var2, InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var3, boolean var4, ArgumentBuilder<CommandSourceStack, ?> var5) {
-      return var5.executes((var4x) -> clone((CommandSourceStack)var4x.getSource(), (DimensionAndPosition)var1.apply(var4x), (DimensionAndPosition)var2.apply(var4x), (DimensionAndPosition)var3.apply(var4x), (var0) -> true, CloneCommands.Mode.NORMAL, var4)).then(wrapWithCloneMode(var1, var2, var3, (var0x) -> (var0) -> true, var4, Commands.literal("replace"))).then(wrapWithCloneMode(var1, var2, var3, (var0x) -> FILTER_AIR, var4, Commands.literal("masked"))).then(Commands.literal("filtered").then(wrapWithCloneMode(var1, var2, var3, (var0x) -> BlockPredicateArgument.getBlockPredicate(var0x, "filter"), var4, Commands.argument("filter", BlockPredicateArgument.blockPredicate(var0)))));
+   private static ArgumentBuilder<CommandSourceStack, ?> modeSuffix(final CommandBuildContext context, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> beginPos, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> endPos, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> destinationPos, final boolean strict, final ArgumentBuilder<CommandSourceStack, ?> builder) {
+      return builder.executes((c) -> clone((CommandSourceStack)c.getSource(), beginPos.apply(c), endPos.apply(c), destinationPos.apply(c), (b) -> true, CloneCommands.Mode.NORMAL, strict)).then(wrapWithCloneMode(beginPos, endPos, destinationPos, (c) -> (b) -> true, strict, Commands.literal("replace"))).then(wrapWithCloneMode(beginPos, endPos, destinationPos, (c) -> FILTER_AIR, strict, Commands.literal("masked"))).then(Commands.literal("filtered").then(wrapWithCloneMode(beginPos, endPos, destinationPos, (c) -> BlockPredicateArgument.getBlockPredicate(c, "filter"), strict, Commands.argument("filter", BlockPredicateArgument.blockPredicate(context)))));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> wrapWithCloneMode(InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var0, InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var1, InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var2, InCommandFunction<CommandContext<CommandSourceStack>, Predicate<BlockInWorld>> var3, boolean var4, ArgumentBuilder<CommandSourceStack, ?> var5) {
-      return var5.executes((var5x) -> clone((CommandSourceStack)var5x.getSource(), (DimensionAndPosition)var0.apply(var5x), (DimensionAndPosition)var1.apply(var5x), (DimensionAndPosition)var2.apply(var5x), (Predicate)var3.apply(var5x), CloneCommands.Mode.NORMAL, var4)).then(Commands.literal("force").executes((var5x) -> clone((CommandSourceStack)var5x.getSource(), (DimensionAndPosition)var0.apply(var5x), (DimensionAndPosition)var1.apply(var5x), (DimensionAndPosition)var2.apply(var5x), (Predicate)var3.apply(var5x), CloneCommands.Mode.FORCE, var4))).then(Commands.literal("move").executes((var5x) -> clone((CommandSourceStack)var5x.getSource(), (DimensionAndPosition)var0.apply(var5x), (DimensionAndPosition)var1.apply(var5x), (DimensionAndPosition)var2.apply(var5x), (Predicate)var3.apply(var5x), CloneCommands.Mode.MOVE, var4))).then(Commands.literal("normal").executes((var5x) -> clone((CommandSourceStack)var5x.getSource(), (DimensionAndPosition)var0.apply(var5x), (DimensionAndPosition)var1.apply(var5x), (DimensionAndPosition)var2.apply(var5x), (Predicate)var3.apply(var5x), CloneCommands.Mode.NORMAL, var4)));
+   private static ArgumentBuilder<CommandSourceStack, ?> wrapWithCloneMode(final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> beginPos, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> endPos, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> destinationPos, final InCommandFunction<CommandContext<CommandSourceStack>, Predicate<BlockInWorld>> filter, final boolean strict, final ArgumentBuilder<CommandSourceStack, ?> builder) {
+      return builder.executes((c) -> clone((CommandSourceStack)c.getSource(), beginPos.apply(c), endPos.apply(c), destinationPos.apply(c), filter.apply(c), CloneCommands.Mode.NORMAL, strict)).then(Commands.literal("force").executes((c) -> clone((CommandSourceStack)c.getSource(), beginPos.apply(c), endPos.apply(c), destinationPos.apply(c), filter.apply(c), CloneCommands.Mode.FORCE, strict))).then(Commands.literal("move").executes((c) -> clone((CommandSourceStack)c.getSource(), beginPos.apply(c), endPos.apply(c), destinationPos.apply(c), filter.apply(c), CloneCommands.Mode.MOVE, strict))).then(Commands.literal("normal").executes((c) -> clone((CommandSourceStack)c.getSource(), beginPos.apply(c), endPos.apply(c), destinationPos.apply(c), filter.apply(c), CloneCommands.Mode.NORMAL, strict)));
    }
 
-   private static int clone(CommandSourceStack var0, DimensionAndPosition var1, DimensionAndPosition var2, DimensionAndPosition var3, Predicate<BlockInWorld> var4, Mode var5, boolean var6) throws CommandSyntaxException {
-      BlockPos var7 = var1.position();
-      BlockPos var8 = var2.position();
-      BoundingBox var9 = BoundingBox.fromCorners(var7, var8);
-      BlockPos var10 = var3.position();
-      BlockPos var11 = var10.offset(var9.getLength());
-      BoundingBox var12 = BoundingBox.fromCorners(var10, var11);
-      ServerLevel var13 = var1.dimension();
-      ServerLevel var14 = var3.dimension();
-      if (!var5.canOverlap() && var13 == var14 && var12.intersects(var9)) {
+   private static int clone(final CommandSourceStack source, final DimensionAndPosition startPosAndDimension, final DimensionAndPosition endPosAndDimension, final DimensionAndPosition destPosAndDimension, final Predicate<BlockInWorld> predicate, final Mode mode, final boolean strict) throws CommandSyntaxException {
+      BlockPos startPos = startPosAndDimension.position();
+      BlockPos endPos = endPosAndDimension.position();
+      BoundingBox from = BoundingBox.fromCorners(startPos, endPos);
+      BlockPos destPos = destPosAndDimension.position();
+      BlockPos destEndPos = destPos.offset(from.getLength());
+      BoundingBox destination = BoundingBox.fromCorners(destPos, destEndPos);
+      ServerLevel fromDimension = startPosAndDimension.dimension();
+      ServerLevel toDimension = destPosAndDimension.dimension();
+      if (!mode.canOverlap() && fromDimension == toDimension && destination.intersects(from)) {
          throw ERROR_OVERLAP.create();
       } else {
-         int var15 = var9.getXSpan() * var9.getYSpan() * var9.getZSpan();
-         int var16 = (Integer)var0.getLevel().getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
-         if (var15 > var16) {
-            throw ERROR_AREA_TOO_LARGE.create(var16, var15);
-         } else if (var13.hasChunksAt(var7, var8) && var14.hasChunksAt(var10, var11)) {
-            if (var14.isDebug()) {
+         int area = from.getXSpan() * from.getYSpan() * from.getZSpan();
+         int limit = (Integer)source.getLevel().getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
+         if (area > limit) {
+            throw ERROR_AREA_TOO_LARGE.create(limit, area);
+         } else if (fromDimension.hasChunksAt(startPos, endPos) && toDimension.hasChunksAt(destPos, destEndPos)) {
+            if (toDimension.isDebug()) {
                throw ERROR_FAILED.create();
             } else {
-               ArrayList var17 = Lists.newArrayList();
-               ArrayList var18 = Lists.newArrayList();
-               ArrayList var19 = Lists.newArrayList();
-               LinkedList var20 = Lists.newLinkedList();
-               int var21 = 0;
-               ProblemReporter.ScopedCollector var22 = new ProblemReporter.ScopedCollector(LOGGER);
+               List<CloneBlockInfo> solidList = Lists.newArrayList();
+               List<CloneBlockInfo> blockEntitiesList = Lists.newArrayList();
+               List<CloneBlockInfo> otherBlocksList = Lists.newArrayList();
+               Deque<BlockPos> clearBlocksList = Lists.newLinkedList();
+               int count = 0;
+               ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER);
 
                try {
-                  BlockPos var23 = new BlockPos(var12.minX() - var9.minX(), var12.minY() - var9.minY(), var12.minZ() - var9.minZ());
+                  BlockPos offset = new BlockPos(destination.minX() - from.minX(), destination.minY() - from.minY(), destination.minZ() - from.minZ());
 
-                  for(int var24 = var9.minZ(); var24 <= var9.maxZ(); ++var24) {
-                     for(int var25 = var9.minY(); var25 <= var9.maxY(); ++var25) {
-                        for(int var26 = var9.minX(); var26 <= var9.maxX(); ++var26) {
-                           BlockPos var27 = new BlockPos(var26, var25, var24);
-                           BlockPos var28 = var27.offset(var23);
-                           BlockInWorld var29 = new BlockInWorld(var13, var27, false);
-                           BlockState var30 = var29.getState();
-                           if (var4.test(var29)) {
-                              BlockEntity var31 = var13.getBlockEntity(var27);
-                              if (var31 != null) {
-                                 TagValueOutput var32 = TagValueOutput.createWithContext(var22.forChild(var31.problemPath()), var0.registryAccess());
-                                 var31.saveCustomOnly((ValueOutput)var32);
-                                 CloneBlockEntityInfo var33 = new CloneBlockEntityInfo(var32.buildResult(), var31.components());
-                                 var18.add(new CloneBlockInfo(var28, var30, var33, var14.getBlockState(var28)));
-                                 var20.addLast(var27);
-                              } else if (!var30.isSolidRender() && !var30.isCollisionShapeFullBlock(var13, var27)) {
-                                 var19.add(new CloneBlockInfo(var28, var30, (CloneBlockEntityInfo)null, var14.getBlockState(var28)));
-                                 var20.addFirst(var27);
+                  for(int z = from.minZ(); z <= from.maxZ(); ++z) {
+                     for(int y = from.minY(); y <= from.maxY(); ++y) {
+                        for(int x = from.minX(); x <= from.maxX(); ++x) {
+                           BlockPos sourcePos = new BlockPos(x, y, z);
+                           BlockPos destinationPos = sourcePos.offset(offset);
+                           BlockInWorld block = new BlockInWorld(fromDimension, sourcePos, false);
+                           BlockState blockState = block.getState();
+                           if (predicate.test(block)) {
+                              BlockEntity blockEntity = fromDimension.getBlockEntity(sourcePos);
+                              if (blockEntity != null) {
+                                 TagValueOutput output = TagValueOutput.createWithContext(reporter.forChild(blockEntity.problemPath()), source.registryAccess());
+                                 blockEntity.saveCustomOnly((ValueOutput)output);
+                                 CloneBlockEntityInfo blockEntityInfo = new CloneBlockEntityInfo(output.buildResult(), blockEntity.components());
+                                 blockEntitiesList.add(new CloneBlockInfo(destinationPos, blockState, blockEntityInfo, toDimension.getBlockState(destinationPos)));
+                                 clearBlocksList.addLast(sourcePos);
+                              } else if (!blockState.isSolidRender() && !blockState.isCollisionShapeFullBlock(fromDimension, sourcePos)) {
+                                 otherBlocksList.add(new CloneBlockInfo(destinationPos, blockState, (CloneBlockEntityInfo)null, toDimension.getBlockState(destinationPos)));
+                                 clearBlocksList.addFirst(sourcePos);
                               } else {
-                                 var17.add(new CloneBlockInfo(var28, var30, (CloneBlockEntityInfo)null, var14.getBlockState(var28)));
-                                 var20.addLast(var27);
+                                 solidList.add(new CloneBlockInfo(destinationPos, blockState, (CloneBlockEntityInfo)null, toDimension.getBlockState(destinationPos)));
+                                 clearBlocksList.addLast(sourcePos);
                               }
                            }
                         }
                      }
                   }
 
-                  int var36 = 2 | (var6 ? 816 : 0);
-                  if (var5 == CloneCommands.Mode.MOVE) {
-                     for(BlockPos var40 : var20) {
-                        var13.setBlock(var40, Blocks.BARRIER.defaultBlockState(), var36 | 816);
+                  int defaultUpdateFlags = 2 | (strict ? 816 : 0);
+                  if (mode == CloneCommands.Mode.MOVE) {
+                     for(BlockPos pos : clearBlocksList) {
+                        fromDimension.setBlock(pos, Blocks.BARRIER.defaultBlockState(), defaultUpdateFlags | 816);
                      }
 
-                     int var38 = var6 ? var36 : 3;
+                     int standardUpdateFlags = strict ? defaultUpdateFlags : 3;
 
-                     for(BlockPos var43 : var20) {
-                        var13.setBlock(var43, Blocks.AIR.defaultBlockState(), var38);
-                     }
-                  }
-
-                  ArrayList var39 = Lists.newArrayList();
-                  var39.addAll(var17);
-                  var39.addAll(var18);
-                  var39.addAll(var19);
-                  List var42 = Lists.reverse(var39);
-
-                  for(CloneBlockInfo var48 : var42) {
-                     var14.setBlock(var48.pos, Blocks.BARRIER.defaultBlockState(), var36 | 816);
-                  }
-
-                  for(CloneBlockInfo var49 : var39) {
-                     if (var14.setBlock(var49.pos, var49.state, var36)) {
-                        ++var21;
+                     for(BlockPos pos : clearBlocksList) {
+                        fromDimension.setBlock(pos, Blocks.AIR.defaultBlockState(), standardUpdateFlags);
                      }
                   }
 
-                  for(CloneBlockInfo var50 : var18) {
-                     BlockEntity var52 = var14.getBlockEntity(var50.pos);
-                     if (var50.blockEntityInfo != null && var52 != null) {
-                        var52.loadCustomOnly(TagValueInput.create(var22.forChild(var52.problemPath()), var14.registryAccess(), var50.blockEntityInfo.tag));
-                        var52.setComponents(var50.blockEntityInfo.components);
-                        var52.setChanged();
-                     }
+                  List<CloneBlockInfo> blockInfoList = Lists.newArrayList();
+                  blockInfoList.addAll(solidList);
+                  blockInfoList.addAll(blockEntitiesList);
+                  blockInfoList.addAll(otherBlocksList);
+                  List<CloneBlockInfo> reverse = Lists.reverse(blockInfoList);
 
-                     var14.setBlock(var50.pos, var50.state, var36);
+                  for(CloneBlockInfo cloneInfo : reverse) {
+                     toDimension.setBlock(cloneInfo.pos, Blocks.BARRIER.defaultBlockState(), defaultUpdateFlags | 816);
                   }
 
-                  if (!var6) {
-                     for(CloneBlockInfo var51 : var42) {
-                        var14.updateNeighboursOnBlockSet(var51.pos, var51.previousStateAtDestination);
+                  for(CloneBlockInfo cloneInfo : blockInfoList) {
+                     if (toDimension.setBlock(cloneInfo.pos, cloneInfo.state, defaultUpdateFlags)) {
+                        ++count;
                      }
                   }
 
-                  var14.getBlockTicks().copyAreaFrom(var13.getBlockTicks(), var9, var23);
+                  for(CloneBlockInfo cloneInfo : blockEntitiesList) {
+                     BlockEntity newBlockEntity = toDimension.getBlockEntity(cloneInfo.pos);
+                     if (cloneInfo.blockEntityInfo != null && newBlockEntity != null) {
+                        newBlockEntity.loadCustomOnly(TagValueInput.create(reporter.forChild(newBlockEntity.problemPath()), toDimension.registryAccess(), cloneInfo.blockEntityInfo.tag));
+                        newBlockEntity.setComponents(cloneInfo.blockEntityInfo.components);
+                        newBlockEntity.setChanged();
+                     }
+
+                     toDimension.setBlock(cloneInfo.pos, cloneInfo.state, defaultUpdateFlags);
+                  }
+
+                  if (!strict) {
+                     for(CloneBlockInfo cloneInfo : reverse) {
+                        toDimension.updateNeighboursOnBlockSet(cloneInfo.pos, cloneInfo.previousStateAtDestination);
+                     }
+                  }
+
+                  toDimension.getBlockTicks().copyAreaFrom(fromDimension.getBlockTicks(), from, offset);
                } catch (Throwable var35) {
                   try {
-                     var22.close();
+                     reporter.close();
                   } catch (Throwable var34) {
                      var35.addSuppressed(var34);
                   }
@@ -191,12 +190,12 @@ public class CloneCommands {
                   throw var35;
                }
 
-               var22.close();
-               if (var21 == 0) {
+               reporter.close();
+               if (count == 0) {
                   throw ERROR_FAILED.create();
                } else {
-                  var0.sendSuccess(() -> Component.translatable("commands.clone.success", var21), true);
-                  return var21;
+                  source.sendSuccess(() -> Component.translatable("commands.clone.success", count), true);
+                  return count;
                }
             }
          } else {
@@ -205,23 +204,21 @@ public class CloneCommands {
       }
    }
 
-   static record DimensionAndPosition(ServerLevel dimension, BlockPos position) {
-      DimensionAndPosition(ServerLevel var1, BlockPos var2) {
+   private static record DimensionAndPosition(ServerLevel dimension, BlockPos position) {
+      private DimensionAndPosition {
          super();
-         this.dimension = var1;
-         this.position = var2;
       }
    }
 
-   static enum Mode {
+   private static enum Mode {
       FORCE(true),
       MOVE(true),
       NORMAL(false);
 
       private final boolean canOverlap;
 
-      private Mode(final boolean var3) {
-         this.canOverlap = var3;
+      private Mode(final boolean canOverlap) {
+         this.canOverlap = canOverlap;
       }
 
       public boolean canOverlap() {
@@ -234,29 +231,15 @@ public class CloneCommands {
       }
    }
 
-   static record CloneBlockEntityInfo(CompoundTag tag, DataComponentMap components) {
-      final CompoundTag tag;
-      final DataComponentMap components;
-
-      CloneBlockEntityInfo(CompoundTag var1, DataComponentMap var2) {
+   private static record CloneBlockEntityInfo(CompoundTag tag, DataComponentMap components) {
+      private CloneBlockEntityInfo {
          super();
-         this.tag = var1;
-         this.components = var2;
       }
    }
 
-   static record CloneBlockInfo(BlockPos pos, BlockState state, @Nullable CloneBlockEntityInfo blockEntityInfo, BlockState previousStateAtDestination) {
-      final BlockPos pos;
-      final BlockState state;
-      final @Nullable CloneBlockEntityInfo blockEntityInfo;
-      final BlockState previousStateAtDestination;
-
-      CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CloneBlockEntityInfo var3, BlockState var4) {
+   private static record CloneBlockInfo(BlockPos pos, BlockState state, @Nullable CloneBlockEntityInfo blockEntityInfo, BlockState previousStateAtDestination) {
+      private CloneBlockInfo {
          super();
-         this.pos = var1;
-         this.state = var2;
-         this.blockEntityInfo = var3;
-         this.previousStateAtDestination = var4;
       }
    }
 }

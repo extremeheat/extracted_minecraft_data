@@ -12,13 +12,13 @@ public class StartAdmiringItemIfSeen {
       super();
    }
 
-   public static BehaviorControl<LivingEntity> create(int var0) {
-      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM), var1.absent(MemoryModuleType.ADMIRING_ITEM), var1.absent(MemoryModuleType.ADMIRING_DISABLED), var1.absent(MemoryModuleType.DISABLE_WALK_TO_ADMIRE_ITEM)).apply(var1, (var2, var3, var4, var5) -> (var4x, var5x, var6) -> {
-               ItemEntity var8 = (ItemEntity)var1.get(var2);
-               if (!PiglinAi.isLovedItem(var8.getItem())) {
+   public static BehaviorControl<LivingEntity> create(final int admireDuration) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM), i.absent(MemoryModuleType.ADMIRING_ITEM), i.absent(MemoryModuleType.ADMIRING_DISABLED), i.absent(MemoryModuleType.DISABLE_WALK_TO_ADMIRE_ITEM)).apply(i, (nearestItem, admiring, admiringDisabled, walkDisabled) -> (level, body, timestamp) -> {
+               ItemEntity itemEntity = (ItemEntity)i.get(nearestItem);
+               if (!PiglinAi.isLovedItem(itemEntity.getItem())) {
                   return false;
                } else {
-                  var3.setWithExpiry(true, (long)var0);
+                  admiring.setWithExpiry(true, (long)admireDuration);
                   return true;
                }
             })));

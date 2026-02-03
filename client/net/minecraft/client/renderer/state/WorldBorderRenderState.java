@@ -17,9 +17,9 @@ public class WorldBorderRenderState {
       super();
    }
 
-   public List<DistancePerDirection> closestBorder(double var1, double var3) {
-      DistancePerDirection[] var5 = new DistancePerDirection[]{new DistancePerDirection(Direction.NORTH, var3 - this.minZ), new DistancePerDirection(Direction.SOUTH, this.maxZ - var3), new DistancePerDirection(Direction.WEST, var1 - this.minX), new DistancePerDirection(Direction.EAST, this.maxX - var1)};
-      return Arrays.stream(var5).sorted(Comparator.comparingDouble((var0) -> var0.distance)).toList();
+   public List<DistancePerDirection> closestBorder(final double x, final double z) {
+      DistancePerDirection[] directions = new DistancePerDirection[]{new DistancePerDirection(Direction.NORTH, z - this.minZ), new DistancePerDirection(Direction.SOUTH, this.maxZ - z), new DistancePerDirection(Direction.WEST, x - this.minX), new DistancePerDirection(Direction.EAST, this.maxX - x)};
+      return Arrays.stream(directions).sorted(Comparator.comparingDouble((d) -> d.distance)).toList();
    }
 
    public void reset() {
@@ -27,12 +27,8 @@ public class WorldBorderRenderState {
    }
 
    public static record DistancePerDirection(Direction direction, double distance) {
-      final double distance;
-
-      public DistancePerDirection(Direction var1, double var2) {
+      public DistancePerDirection {
          super();
-         this.direction = var1;
-         this.distance = var2;
       }
    }
 }

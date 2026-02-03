@@ -7,9 +7,9 @@ import net.minecraft.world.entity.player.Player;
 public class TradeWithPlayerGoal extends Goal {
    private final AbstractVillager mob;
 
-   public TradeWithPlayerGoal(AbstractVillager var1) {
+   public TradeWithPlayerGoal(final AbstractVillager mob) {
       super();
-      this.mob = var1;
+      this.mob = mob;
       this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
    }
 
@@ -23,11 +23,11 @@ public class TradeWithPlayerGoal extends Goal {
       } else if (this.mob.hurtMarked) {
          return false;
       } else {
-         Player var1 = this.mob.getTradingPlayer();
-         if (var1 == null) {
+         Player trader = this.mob.getTradingPlayer();
+         if (trader == null) {
             return false;
          } else {
-            return !(this.mob.distanceToSqr(var1) > 16.0);
+            return !(this.mob.distanceToSqr(trader) > 16.0);
          }
       }
    }

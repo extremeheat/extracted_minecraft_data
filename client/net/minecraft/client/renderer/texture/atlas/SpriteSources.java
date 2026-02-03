@@ -29,7 +29,7 @@ public class SpriteSources {
    }
 
    static {
-      CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatch(SpriteSource::codec, (var0) -> var0);
+      CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatch(SpriteSource::codec, (c) -> c);
       FILE_CODEC = CODEC.listOf().fieldOf("sources").codec();
    }
 }

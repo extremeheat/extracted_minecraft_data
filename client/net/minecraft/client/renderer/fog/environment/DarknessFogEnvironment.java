@@ -21,23 +21,23 @@ public class DarknessFogEnvironment extends MobEffectFogEnvironment {
       return MobEffects.DARKNESS;
    }
 
-   public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {
-      Entity var7 = var2.entity();
-      if (var7 instanceof LivingEntity var6) {
-         MobEffectInstance var9 = var6.getEffect(this.getMobEffect());
-         if (var9 != null) {
-            float var8 = Mth.lerp(var9.getBlendFactor(var6, var5.getGameTimeDeltaPartialTick(false)), var4, 15.0F);
-            var1.environmentalStart = var8 * 0.75F;
-            var1.environmentalEnd = var8;
-            var1.skyEnd = var8;
-            var1.cloudEnd = var8;
+   public void setupFog(final FogData fog, final Camera camera, final ClientLevel level, final float renderDistance, final DeltaTracker deltaTracker) {
+      Entity var7 = camera.entity();
+      if (var7 instanceof LivingEntity livingEntity) {
+         MobEffectInstance effect = livingEntity.getEffect(this.getMobEffect());
+         if (effect != null) {
+            float distance = Mth.lerp(effect.getBlendFactor(livingEntity, deltaTracker.getGameTimeDeltaPartialTick(false)), renderDistance, 15.0F);
+            fog.environmentalStart = distance * 0.75F;
+            fog.environmentalEnd = distance;
+            fog.skyEnd = distance;
+            fog.cloudEnd = distance;
          }
       }
 
    }
 
-   public float getModifiedDarkness(LivingEntity var1, float var2, float var3) {
-      MobEffectInstance var4 = var1.getEffect(this.getMobEffect());
-      return var4 != null ? Math.max(var4.getBlendFactor(var1, var3), var2) : var2;
+   public float getModifiedDarkness(final LivingEntity entity, final float darkness, final float partialTickTime) {
+      MobEffectInstance instance = entity.getEffect(this.getMobEffect());
+      return instance != null ? Math.max(instance.getBlendFactor(entity, partialTickTime), darkness) : darkness;
    }
 }

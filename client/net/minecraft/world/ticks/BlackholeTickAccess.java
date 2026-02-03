@@ -4,10 +4,10 @@ import net.minecraft.core.BlockPos;
 
 public class BlackholeTickAccess {
    private static final TickContainerAccess<Object> CONTAINER_BLACKHOLE = new TickContainerAccess<Object>() {
-      public void schedule(ScheduledTick<Object> var1) {
+      public void schedule(final ScheduledTick<Object> tick) {
       }
 
-      public boolean hasScheduledTick(BlockPos var1, Object var2) {
+      public boolean hasScheduledTick(final BlockPos pos, final Object type) {
          return false;
       }
 
@@ -16,14 +16,14 @@ public class BlackholeTickAccess {
       }
    };
    private static final LevelTickAccess<Object> LEVEL_BLACKHOLE = new LevelTickAccess<Object>() {
-      public void schedule(ScheduledTick<Object> var1) {
+      public void schedule(final ScheduledTick<Object> tick) {
       }
 
-      public boolean hasScheduledTick(BlockPos var1, Object var2) {
+      public boolean hasScheduledTick(final BlockPos pos, final Object type) {
          return false;
       }
 
-      public boolean willTickThisTick(BlockPos var1, Object var2) {
+      public boolean willTickThisTick(final BlockPos pos, final Object type) {
          return false;
       }
 

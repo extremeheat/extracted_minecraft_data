@@ -24,8 +24,8 @@ public interface PictureInPictureRenderState extends ScreenArea {
 
    @Nullable ScreenRectangle scissorArea();
 
-   static @Nullable ScreenRectangle getBounds(int var0, int var1, int var2, int var3, @Nullable ScreenRectangle var4) {
-      ScreenRectangle var5 = new ScreenRectangle(var0, var1, var2 - var0, var3 - var1);
-      return var4 != null ? var4.intersection(var5) : var5;
+   static @Nullable ScreenRectangle getBounds(final int x0, final int y0, final int x1, final int y1, final @Nullable ScreenRectangle scissorArea) {
+      ScreenRectangle bounds = new ScreenRectangle(x0, y0, x1 - x0, y1 - y0);
+      return scissorArea != null ? scissorArea.intersection(bounds) : bounds;
    }
 }

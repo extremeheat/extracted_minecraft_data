@@ -21,19 +21,19 @@ public class EnderDragonPhase<T extends DragonPhaseInstance> {
    private final int id;
    private final String name;
 
-   private EnderDragonPhase(int var1, Class<? extends DragonPhaseInstance> var2, String var3) {
+   private EnderDragonPhase(final int id, final Class<? extends DragonPhaseInstance> instanceClass, final String name) {
       super();
-      this.id = var1;
-      this.instanceClass = var2;
-      this.name = var3;
+      this.id = id;
+      this.instanceClass = instanceClass;
+      this.name = name;
    }
 
-   public DragonPhaseInstance createInstance(EnderDragon var1) {
+   public DragonPhaseInstance createInstance(final EnderDragon dragon) {
       try {
-         Constructor var2 = this.getConstructor();
-         return (DragonPhaseInstance)var2.newInstance(var1);
-      } catch (Exception var3) {
-         throw new Error(var3);
+         Constructor<? extends DragonPhaseInstance> constructor = this.getConstructor();
+         return (DragonPhaseInstance)constructor.newInstance(dragon);
+      } catch (Exception e) {
+         throw new Error(e);
       }
    }
 
@@ -49,18 +49,18 @@ public class EnderDragonPhase<T extends DragonPhaseInstance> {
       return this.name + " (#" + this.id + ")";
    }
 
-   public static EnderDragonPhase<?> getById(int var0) {
-      return var0 >= 0 && var0 < phases.length ? phases[var0] : HOLDING_PATTERN;
+   public static EnderDragonPhase<?> getById(final int id) {
+      return id >= 0 && id < phases.length ? phases[id] : HOLDING_PATTERN;
    }
 
    public static int getCount() {
       return phases.length;
    }
 
-   private static <T extends DragonPhaseInstance> EnderDragonPhase<T> create(Class<T> var0, String var1) {
-      EnderDragonPhase var2 = new EnderDragonPhase(phases.length, var0, var1);
+   private static <T extends DragonPhaseInstance> EnderDragonPhase<T> create(final Class<T> instanceClass, final String name) {
+      EnderDragonPhase<T> phase = new EnderDragonPhase<T>(phases.length, instanceClass, name);
       phases = (EnderDragonPhase[])Arrays.copyOf(phases, phases.length + 1);
-      phases[var2.getId()] = var2;
-      return var2;
+      phases[phase.getId()] = phase;
+      return phase;
    }
 }

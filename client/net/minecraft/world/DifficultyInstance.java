@@ -11,10 +11,10 @@ public class DifficultyInstance {
    private final Difficulty base;
    private final float effectiveDifficulty;
 
-   public DifficultyInstance(Difficulty var1, long var2, long var4, float var6) {
+   public DifficultyInstance(final Difficulty base, final long totalGameTime, final long localGameTime, final float moonBrightness) {
       super();
-      this.base = var1;
-      this.effectiveDifficulty = this.calculateDifficulty(var1, var2, var4, var6);
+      this.base = base;
+      this.effectiveDifficulty = this.calculateDifficulty(base, totalGameTime, localGameTime, moonBrightness);
    }
 
    public Difficulty getDifficulty() {
@@ -29,8 +29,8 @@ public class DifficultyInstance {
       return this.effectiveDifficulty >= (float)Difficulty.HARD.ordinal();
    }
 
-   public boolean isHarderThan(float var1) {
-      return this.effectiveDifficulty > var1;
+   public boolean isHarderThan(final float requiredDifficulty) {
+      return this.effectiveDifficulty > requiredDifficulty;
    }
 
    public float getSpecialMultiplier() {
@@ -41,23 +41,23 @@ public class DifficultyInstance {
       }
    }
 
-   private float calculateDifficulty(Difficulty var1, long var2, long var4, float var6) {
-      if (var1 == Difficulty.PEACEFUL) {
+   private float calculateDifficulty(final Difficulty base, final long totalGameTime, final long localGameTime, final float moonBrightness) {
+      if (base == Difficulty.PEACEFUL) {
          return 0.0F;
       } else {
-         boolean var7 = var1 == Difficulty.HARD;
-         float var8 = 0.75F;
-         float var9 = Mth.clamp(((float)var2 + -72000.0F) / 1440000.0F, 0.0F, 1.0F) * 0.25F;
-         var8 += var9;
-         float var10 = 0.0F;
-         var10 += Mth.clamp((float)var4 / 3600000.0F, 0.0F, 1.0F) * (var7 ? 1.0F : 0.75F);
-         var10 += Mth.clamp(var6 * 0.25F, 0.0F, var9);
-         if (var1 == Difficulty.EASY) {
-            var10 *= 0.5F;
+         boolean isHard = base == Difficulty.HARD;
+         float scale = 0.75F;
+         float globalScale = Mth.clamp(((float)totalGameTime + -72000.0F) / 1440000.0F, 0.0F, 1.0F) * 0.25F;
+         scale += globalScale;
+         float localScale = 0.0F;
+         localScale += Mth.clamp((float)localGameTime / 3600000.0F, 0.0F, 1.0F) * (isHard ? 1.0F : 0.75F);
+         localScale += Mth.clamp(moonBrightness * 0.25F, 0.0F, globalScale);
+         if (base == Difficulty.EASY) {
+            localScale *= 0.5F;
          }
 
-         var8 += var10;
-         return (float)var1.getId() * var8;
+         scale += localScale;
+         return (float)base.getId() * scale;
       }
    }
 }

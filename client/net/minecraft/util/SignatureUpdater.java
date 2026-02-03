@@ -4,10 +4,10 @@ import java.security.SignatureException;
 
 @FunctionalInterface
 public interface SignatureUpdater {
-   void update(Output var1) throws SignatureException;
+   void update(Output output) throws SignatureException;
 
    @FunctionalInterface
    public interface Output {
-      void update(byte[] var1) throws SignatureException;
+      void update(byte[] payload) throws SignatureException;
    }
 }

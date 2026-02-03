@@ -1,5 +1,6 @@
 package net.minecraft.advancements.criterion;
 
+import com.google.common.collect.Range;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.BuiltInExceptionProvider;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -37,64 +38,73 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
       return this.bounds().isAny();
    }
 
+   static <V extends Number & Comparable<V>, B extends MinMaxBounds<V>> Function<B, DataResult<B>> validateContainedInRange(final MinMaxBounds<V> allowed) {
+      Range<V> allowedRange = allowed.bounds().asRange();
+      return (target) -> {
+         Range<V> selfAsRange = target.bounds().asRange();
+         return !allowedRange.encloses(selfAsRange) ? DataResult.error(() -> {
+            String var10000 = String.valueOf(allowedRange);
+            return "Range must be within " + var10000 + ", but was " + String.valueOf(selfAsRange);
+         }) : DataResult.success(target);
+      };
+   }
+
    public static record Ints(Bounds<Integer> bounds, Bounds<Long> boundsSqr) implements MinMaxBounds<Integer> {
       public static final Ints ANY = new Ints(MinMaxBounds.Bounds.any());
       public static final Codec<Ints> CODEC;
       public static final StreamCodec<ByteBuf, Ints> STREAM_CODEC;
 
-      private Ints(Bounds<Integer> var1) {
-         this(var1, var1.map((var0) -> Mth.square(var0.longValue())));
+      private Ints(final Bounds<Integer> bounds) {
+         this(bounds, bounds.map((i) -> Mth.square(i.longValue())));
       }
 
-      public Ints(Bounds<Integer> var1, Bounds<Long> var2) {
+      public Ints {
          super();
-         this.bounds = var1;
-         this.boundsSqr = var2;
       }
 
-      public static Ints exactly(int var0) {
-         return new Ints(MinMaxBounds.Bounds.exactly(var0));
+      public static Ints exactly(final int value) {
+         return new Ints(MinMaxBounds.Bounds.exactly(value));
       }
 
-      public static Ints between(int var0, int var1) {
-         return new Ints(MinMaxBounds.Bounds.between(var0, var1));
+      public static Ints between(final int min, final int max) {
+         return new Ints(MinMaxBounds.Bounds.between(min, max));
       }
 
-      public static Ints atLeast(int var0) {
-         return new Ints(MinMaxBounds.Bounds.atLeast(var0));
+      public static Ints atLeast(final int value) {
+         return new Ints(MinMaxBounds.Bounds.atLeast(value));
       }
 
-      public static Ints atMost(int var0) {
-         return new Ints(MinMaxBounds.Bounds.atMost(var0));
+      public static Ints atMost(final int value) {
+         return new Ints(MinMaxBounds.Bounds.atMost(value));
       }
 
-      public boolean matches(int var1) {
-         if (this.bounds.min.isPresent() && (Integer)this.bounds.min.get() > var1) {
+      public boolean matches(final int value) {
+         if (this.bounds.min.isPresent() && (Integer)this.bounds.min.get() > value) {
             return false;
          } else {
-            return this.bounds.max.isEmpty() || (Integer)this.bounds.max.get() >= var1;
+            return this.bounds.max.isEmpty() || (Integer)this.bounds.max.get() >= value;
          }
       }
 
-      public boolean matchesSqr(long var1) {
-         if (this.boundsSqr.min.isPresent() && (Long)this.boundsSqr.min.get() > var1) {
+      public boolean matchesSqr(final long valueSqr) {
+         if (this.boundsSqr.min.isPresent() && (Long)this.boundsSqr.min.get() > valueSqr) {
             return false;
          } else {
-            return this.boundsSqr.max.isEmpty() || (Long)this.boundsSqr.max.get() >= var1;
+            return this.boundsSqr.max.isEmpty() || (Long)this.boundsSqr.max.get() >= valueSqr;
          }
       }
 
-      public static Ints fromReader(StringReader var0) throws CommandSyntaxException {
-         int var1 = var0.getCursor();
+      public static Ints fromReader(final StringReader reader) throws CommandSyntaxException {
+         int start = reader.getCursor();
          Function var10001 = Integer::parseInt;
          BuiltInExceptionProvider var10002 = CommandSyntaxException.BUILT_IN_EXCEPTIONS;
          Objects.requireNonNull(var10002);
-         Bounds var2 = MinMaxBounds.Bounds.fromReader(var0, var10001, var10002::readerInvalidInt);
-         if (var2.areSwapped()) {
-            var0.setCursor(var1);
-            throw ERROR_SWAPPED.createWithContext(var0);
+         Bounds<Integer> bounds = MinMaxBounds.Bounds.<Integer>fromReader(reader, var10001, var10002::readerInvalidInt);
+         if (bounds.areSwapped()) {
+            reader.setCursor(start);
+            throw ERROR_SWAPPED.createWithContext(reader);
          } else {
-            return new Ints(var2);
+            return new Ints(bounds);
          }
       }
 
@@ -109,59 +119,57 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
       public static final Codec<Doubles> CODEC;
       public static final StreamCodec<ByteBuf, Doubles> STREAM_CODEC;
 
-      private Doubles(Bounds<Double> var1) {
-         this(var1, var1.map(Mth::square));
+      private Doubles(final Bounds<Double> bounds) {
+         this(bounds, bounds.map(Mth::square));
       }
 
-      public Doubles(Bounds<Double> var1, Bounds<Double> var2) {
+      public Doubles {
          super();
-         this.bounds = var1;
-         this.boundsSqr = var2;
       }
 
-      public static Doubles exactly(double var0) {
-         return new Doubles(MinMaxBounds.Bounds.exactly(var0));
+      public static Doubles exactly(final double value) {
+         return new Doubles(MinMaxBounds.Bounds.exactly(value));
       }
 
-      public static Doubles between(double var0, double var2) {
-         return new Doubles(MinMaxBounds.Bounds.between(var0, var2));
+      public static Doubles between(final double min, final double max) {
+         return new Doubles(MinMaxBounds.Bounds.between(min, max));
       }
 
-      public static Doubles atLeast(double var0) {
-         return new Doubles(MinMaxBounds.Bounds.atLeast(var0));
+      public static Doubles atLeast(final double value) {
+         return new Doubles(MinMaxBounds.Bounds.atLeast(value));
       }
 
-      public static Doubles atMost(double var0) {
-         return new Doubles(MinMaxBounds.Bounds.atMost(var0));
+      public static Doubles atMost(final double value) {
+         return new Doubles(MinMaxBounds.Bounds.atMost(value));
       }
 
-      public boolean matches(double var1) {
-         if (this.bounds.min.isPresent() && (Double)this.bounds.min.get() > var1) {
+      public boolean matches(final double value) {
+         if (this.bounds.min.isPresent() && (Double)this.bounds.min.get() > value) {
             return false;
          } else {
-            return this.bounds.max.isEmpty() || !((Double)this.bounds.max.get() < var1);
+            return this.bounds.max.isEmpty() || !((Double)this.bounds.max.get() < value);
          }
       }
 
-      public boolean matchesSqr(double var1) {
-         if (this.boundsSqr.min.isPresent() && (Double)this.boundsSqr.min.get() > var1) {
+      public boolean matchesSqr(final double valueSqr) {
+         if (this.boundsSqr.min.isPresent() && (Double)this.boundsSqr.min.get() > valueSqr) {
             return false;
          } else {
-            return this.boundsSqr.max.isEmpty() || !((Double)this.boundsSqr.max.get() < var1);
+            return this.boundsSqr.max.isEmpty() || !((Double)this.boundsSqr.max.get() < valueSqr);
          }
       }
 
-      public static Doubles fromReader(StringReader var0) throws CommandSyntaxException {
-         int var1 = var0.getCursor();
+      public static Doubles fromReader(final StringReader reader) throws CommandSyntaxException {
+         int start = reader.getCursor();
          Function var10001 = Double::parseDouble;
          BuiltInExceptionProvider var10002 = CommandSyntaxException.BUILT_IN_EXCEPTIONS;
          Objects.requireNonNull(var10002);
-         Bounds var2 = MinMaxBounds.Bounds.fromReader(var0, var10001, var10002::readerInvalidDouble);
-         if (var2.areSwapped()) {
-            var0.setCursor(var1);
-            throw ERROR_SWAPPED.createWithContext(var0);
+         Bounds<Double> bounds = MinMaxBounds.Bounds.<Double>fromReader(reader, var10001, var10002::readerInvalidDouble);
+         if (bounds.areSwapped()) {
+            reader.setCursor(start);
+            throw ERROR_SWAPPED.createWithContext(reader);
          } else {
-            return new Doubles(var2);
+            return new Doubles(bounds);
          }
       }
 
@@ -176,17 +184,16 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
       public static final Codec<FloatDegrees> CODEC;
       public static final StreamCodec<ByteBuf, FloatDegrees> STREAM_CODEC;
 
-      public FloatDegrees(Bounds<Float> var1) {
+      public FloatDegrees {
          super();
-         this.bounds = var1;
       }
 
-      public static FloatDegrees fromReader(StringReader var0) throws CommandSyntaxException {
+      public static FloatDegrees fromReader(final StringReader reader) throws CommandSyntaxException {
          Function var10001 = Float::parseFloat;
          BuiltInExceptionProvider var10002 = CommandSyntaxException.BUILT_IN_EXCEPTIONS;
          Objects.requireNonNull(var10002);
-         Bounds var1 = MinMaxBounds.Bounds.fromReader(var0, var10001, var10002::readerInvalidFloat);
-         return new FloatDegrees(var1);
+         Bounds<Float> bounds = MinMaxBounds.Bounds.<Float>fromReader(reader, var10001, var10002::readerInvalidFloat);
+         return new FloatDegrees(bounds);
       }
 
       static {
@@ -196,13 +203,8 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
    }
 
    public static record Bounds<T extends Number & Comparable<T>>(Optional<T> min, Optional<T> max) {
-      final Optional<T> min;
-      final Optional<T> max;
-
-      public Bounds(Optional<T> var1, Optional<T> var2) {
+      public Bounds {
          super();
-         this.min = var1;
-         this.max = var2;
       }
 
       public boolean isAny() {
@@ -220,132 +222,130 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
          return this.min.isPresent() && this.max.isPresent() && ((Comparable)((Number)this.min.get())).compareTo((Number)this.max.get()) > 0;
       }
 
+      public Range<T> asRange() {
+         if (this.min.isPresent()) {
+            return this.max.isPresent() ? Range.closed((Number)this.min.get(), (Number)this.max.get()) : Range.atLeast((Number)this.min.get());
+         } else {
+            return this.max.isPresent() ? Range.atMost((Number)this.max.get()) : Range.all();
+         }
+      }
+
       public Optional<T> asPoint() {
-         Optional var1 = this.min();
-         Optional var2 = this.max();
-         return var1.equals(var2) ? var1 : Optional.empty();
+         Optional<T> min = this.min();
+         Optional<T> max = this.max();
+         return min.equals(max) ? min : Optional.empty();
       }
 
       public static <T extends Number & Comparable<T>> Bounds<T> any() {
          return new Bounds<T>(Optional.empty(), Optional.empty());
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> exactly(T var0) {
-         Optional var1 = Optional.of(var0);
-         return new Bounds<T>(var1, var1);
+      public static <T extends Number & Comparable<T>> Bounds<T> exactly(final T value) {
+         Optional<T> wrapped = Optional.of(value);
+         return new Bounds<T>(wrapped, wrapped);
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> between(T var0, T var1) {
-         return new Bounds<T>(Optional.of(var0), Optional.of(var1));
+      public static <T extends Number & Comparable<T>> Bounds<T> between(final T min, final T max) {
+         return new Bounds<T>(Optional.of(min), Optional.of(max));
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> atLeast(T var0) {
-         return new Bounds<T>(Optional.of(var0), Optional.empty());
+      public static <T extends Number & Comparable<T>> Bounds<T> atLeast(final T value) {
+         return new Bounds<T>(Optional.of(value), Optional.empty());
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> atMost(T var0) {
-         return new Bounds<T>(Optional.empty(), Optional.of(var0));
+      public static <T extends Number & Comparable<T>> Bounds<T> atMost(final T value) {
+         return new Bounds<T>(Optional.empty(), Optional.of(value));
       }
 
-      public <U extends Number & Comparable<U>> Bounds<U> map(Function<T, U> var1) {
-         return new Bounds<U>(this.min.map(var1), this.max.map(var1));
+      public <U extends Number & Comparable<U>> Bounds<U> map(final Function<T, U> mapper) {
+         return new Bounds<U>(this.min.map(mapper), this.max.map(mapper));
       }
 
-      static <T extends Number & Comparable<T>> Codec<Bounds<T>> createCodec(Codec<T> var0) {
-         Codec var1 = RecordCodecBuilder.create((var1x) -> var1x.group(var0.optionalFieldOf("min").forGetter(Bounds::min), var0.optionalFieldOf("max").forGetter(Bounds::max)).apply(var1x, Bounds::new));
-         return Codec.either(var1, var0).xmap((var0x) -> (Bounds)var0x.map((var0) -> var0, (var0) -> exactly((Number)var0)), (var0x) -> {
-            Optional var1 = var0x.asPoint();
-            return var1.isPresent() ? Either.right((Number)var1.get()) : Either.left(var0x);
+      static <T extends Number & Comparable<T>> Codec<Bounds<T>> createCodec(final Codec<T> numberCodec) {
+         Codec<Bounds<T>> rangeCodec = RecordCodecBuilder.create((i) -> i.group(numberCodec.optionalFieldOf("min").forGetter(Bounds::min), numberCodec.optionalFieldOf("max").forGetter(Bounds::max)).apply(i, Bounds::new));
+         return Codec.either(rangeCodec, numberCodec).xmap((either) -> (Bounds)either.map((v) -> v, (x$0) -> exactly(x$0)), (bounds) -> {
+            Optional<T> point = bounds.asPoint();
+            return point.isPresent() ? Either.right((Number)point.get()) : Either.left(bounds);
          });
       }
 
-      static <B extends ByteBuf, T extends Number & Comparable<T>> StreamCodec<B, Bounds<T>> createStreamCodec(final StreamCodec<B, T> var0) {
+      static <B extends ByteBuf, T extends Number & Comparable<T>> StreamCodec<B, Bounds<T>> createStreamCodec(final StreamCodec<B, T> numberCodec) {
          return new StreamCodec<B, Bounds<T>>() {
             private static final int MIN_FLAG = 1;
             private static final int MAX_FLAG = 2;
 
-            public Bounds<T> decode(B var1) {
-               byte var2 = var1.readByte();
-               Optional var3 = (var2 & 1) != 0 ? Optional.of((Number)var0.decode(var1)) : Optional.empty();
-               Optional var4 = (var2 & 2) != 0 ? Optional.of((Number)var0.decode(var1)) : Optional.empty();
-               return new Bounds<T>(var3, var4);
+            public Bounds<T> decode(final B input) {
+               byte flags = input.readByte();
+               Optional<T> min = (flags & 1) != 0 ? Optional.of((Number)numberCodec.decode(input)) : Optional.empty();
+               Optional<T> max = (flags & 2) != 0 ? Optional.of((Number)numberCodec.decode(input)) : Optional.empty();
+               return new Bounds<T>(min, max);
             }
 
-            public void encode(B var1, Bounds<T> var2) {
-               Optional var3 = var2.min();
-               Optional var4 = var2.max();
-               var1.writeByte((var3.isPresent() ? 1 : 0) | (var4.isPresent() ? 2 : 0));
-               var3.ifPresent((var2x) -> var0.encode(var1, var2x));
-               var4.ifPresent((var2x) -> var0.encode(var1, var2x));
-            }
-
-            // $FF: synthetic method
-            public void encode(final Object var1, final Object var2) {
-               this.encode((ByteBuf)var1, (Bounds)var2);
-            }
-
-            // $FF: synthetic method
-            public Object decode(final Object var1) {
-               return this.decode((ByteBuf)var1);
+            public void encode(final B output, final Bounds<T> value) {
+               Optional<T> min = value.min();
+               Optional<T> max = value.max();
+               output.writeByte((min.isPresent() ? 1 : 0) | (max.isPresent() ? 2 : 0));
+               min.ifPresent((v) -> numberCodec.encode(output, v));
+               max.ifPresent((v) -> numberCodec.encode(output, v));
             }
          };
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> fromReader(StringReader var0, Function<String, T> var1, Supplier<DynamicCommandExceptionType> var2) throws CommandSyntaxException {
-         if (!var0.canRead()) {
-            throw MinMaxBounds.ERROR_EMPTY.createWithContext(var0);
+      public static <T extends Number & Comparable<T>> Bounds<T> fromReader(final StringReader reader, final Function<String, T> converter, final Supplier<DynamicCommandExceptionType> parseExc) throws CommandSyntaxException {
+         if (!reader.canRead()) {
+            throw MinMaxBounds.ERROR_EMPTY.createWithContext(reader);
          } else {
-            int var3 = var0.getCursor();
+            int start = reader.getCursor();
 
             try {
-               Optional var4 = readNumber(var0, var1, var2);
-               Optional var5;
-               if (var0.canRead(2) && var0.peek() == '.' && var0.peek(1) == '.') {
-                  var0.skip();
-                  var0.skip();
-                  var5 = readNumber(var0, var1, var2);
+               Optional<T> min = readNumber(reader, converter, parseExc);
+               Optional<T> max;
+               if (reader.canRead(2) && reader.peek() == '.' && reader.peek(1) == '.') {
+                  reader.skip();
+                  reader.skip();
+                  max = readNumber(reader, converter, parseExc);
                } else {
-                  var5 = var4;
+                  max = min;
                }
 
-               if (var4.isEmpty() && var5.isEmpty()) {
-                  throw MinMaxBounds.ERROR_EMPTY.createWithContext(var0);
+               if (min.isEmpty() && max.isEmpty()) {
+                  throw MinMaxBounds.ERROR_EMPTY.createWithContext(reader);
                } else {
-                  return new Bounds<T>(var4, var5);
+                  return new Bounds<T>(min, max);
                }
-            } catch (CommandSyntaxException var6) {
-               var0.setCursor(var3);
-               throw new CommandSyntaxException(var6.getType(), var6.getRawMessage(), var6.getInput(), var3);
+            } catch (CommandSyntaxException e) {
+               reader.setCursor(start);
+               throw new CommandSyntaxException(e.getType(), e.getRawMessage(), e.getInput(), start);
             }
          }
       }
 
-      private static <T extends Number> Optional<T> readNumber(StringReader var0, Function<String, T> var1, Supplier<DynamicCommandExceptionType> var2) throws CommandSyntaxException {
-         int var3 = var0.getCursor();
+      private static <T extends Number> Optional<T> readNumber(final StringReader reader, final Function<String, T> converter, final Supplier<DynamicCommandExceptionType> parseExc) throws CommandSyntaxException {
+         int start = reader.getCursor();
 
-         while(var0.canRead() && isAllowedInputChar(var0)) {
-            var0.skip();
+         while(reader.canRead() && isAllowedInputChar(reader)) {
+            reader.skip();
          }
 
-         String var4 = var0.getString().substring(var3, var0.getCursor());
-         if (var4.isEmpty()) {
+         String number = reader.getString().substring(start, reader.getCursor());
+         if (number.isEmpty()) {
             return Optional.empty();
          } else {
             try {
-               return Optional.of((Number)var1.apply(var4));
+               return Optional.of((Number)converter.apply(number));
             } catch (NumberFormatException var6) {
-               throw ((DynamicCommandExceptionType)var2.get()).createWithContext(var0, var4);
+               throw ((DynamicCommandExceptionType)parseExc.get()).createWithContext(reader, number);
             }
          }
       }
 
-      private static boolean isAllowedInputChar(StringReader var0) {
-         char var1 = var0.peek();
-         if ((var1 < '0' || var1 > '9') && var1 != '-') {
-            if (var1 != '.') {
+      private static boolean isAllowedInputChar(final StringReader reader) {
+         char c = reader.peek();
+         if ((c < '0' || c > '9') && c != '-') {
+            if (c != '.') {
                return false;
             } else {
-               return !var0.canRead(2) || var0.peek(1) != '.';
+               return !reader.canRead(2) || reader.peek(1) != '.';
             }
          } else {
             return true;

@@ -16,19 +16,19 @@ public class SetWalkTargetFromAttackTargetIfTargetOutOfReach {
       super();
    }
 
-   public static BehaviorControl<Mob> create(float var0) {
-      return create((var1) -> var0);
+   public static BehaviorControl<Mob> create(final float speedModifier) {
+      return create((mob) -> speedModifier);
    }
 
-   public static BehaviorControl<Mob> create(Function<LivingEntity, Float> var0) {
-      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.registered(MemoryModuleType.WALK_TARGET), var1.registered(MemoryModuleType.LOOK_TARGET), var1.present(MemoryModuleType.ATTACK_TARGET), var1.registered(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(var1, (var2, var3, var4, var5) -> (var6, var7, var8) -> {
-               LivingEntity var10 = (LivingEntity)var1.get(var4);
-               Optional var11 = var1.tryGet(var5);
-               if (var11.isPresent() && ((NearestVisibleLivingEntities)var11.get()).contains(var10) && BehaviorUtils.isWithinAttackRange(var7, var10, 1)) {
-                  var2.erase();
+   public static BehaviorControl<Mob> create(final Function<LivingEntity, Float> speedModifier) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.LOOK_TARGET), i.present(MemoryModuleType.ATTACK_TARGET), i.registered(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(i, (walkTarget, lookTarget, attackTarget, nearestEntities) -> (level, body, timestamp) -> {
+               LivingEntity toAttack = (LivingEntity)i.get(attackTarget);
+               Optional<NearestVisibleLivingEntities> entities = i.<NearestVisibleLivingEntities>tryGet(nearestEntities);
+               if (entities.isPresent() && ((NearestVisibleLivingEntities)entities.get()).contains(toAttack) && BehaviorUtils.isWithinAttackRange(body, toAttack, 1)) {
+                  walkTarget.erase();
                } else {
-                  var3.set(new EntityTracker(var10, true));
-                  var2.set(new WalkTarget(new EntityTracker(var10, false), (Float)var0.apply(var7), 0));
+                  lookTarget.set(new EntityTracker(toAttack, true));
+                  walkTarget.set(new WalkTarget(new EntityTracker(toAttack, false), (Float)speedModifier.apply(body), 0));
                }
 
                return true;

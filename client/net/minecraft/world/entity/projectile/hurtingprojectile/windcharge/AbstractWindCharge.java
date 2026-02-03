@@ -29,87 +29,87 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
    public static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR;
    public static final double JUMP_SCALE = 0.25;
 
-   public AbstractWindCharge(EntityType<? extends AbstractWindCharge> var1, Level var2) {
-      super(var1, var2);
+   public AbstractWindCharge(final EntityType<? extends AbstractWindCharge> type, final Level level) {
+      super(type, level);
       this.accelerationPower = 0.0;
    }
 
-   public AbstractWindCharge(EntityType<? extends AbstractWindCharge> var1, Level var2, Entity var3, double var4, double var6, double var8) {
-      super(var1, var4, var6, var8, var2);
-      this.setOwner(var3);
+   public AbstractWindCharge(final EntityType<? extends AbstractWindCharge> type, final Level level, final Entity owner, final double x, final double y, final double z) {
+      super(type, x, y, z, level);
+      this.setOwner(owner);
       this.accelerationPower = 0.0;
    }
 
-   AbstractWindCharge(EntityType<? extends AbstractWindCharge> var1, double var2, double var4, double var6, Vec3 var8, Level var9) {
-      super(var1, var2, var4, var6, var8, var9);
+   AbstractWindCharge(final EntityType<? extends AbstractWindCharge> type, final double x, final double y, final double z, final Vec3 direction, final Level level) {
+      super(type, x, y, z, direction, level);
       this.accelerationPower = 0.0;
    }
 
-   protected AABB makeBoundingBox(Vec3 var1) {
-      float var2 = this.getType().getDimensions().width() / 2.0F;
-      float var3 = this.getType().getDimensions().height();
-      float var4 = 0.15F;
-      return new AABB(var1.x - (double)var2, var1.y - 0.15000000596046448, var1.z - (double)var2, var1.x + (double)var2, var1.y - 0.15000000596046448 + (double)var3, var1.z + (double)var2);
+   protected AABB makeBoundingBox(final Vec3 position) {
+      float width = this.getType().getDimensions().width() / 2.0F;
+      float height = this.getType().getDimensions().height();
+      float offset = 0.15F;
+      return new AABB(position.x - (double)width, position.y - 0.15000000596046448, position.z - (double)width, position.x + (double)width, position.y - 0.15000000596046448 + (double)height, position.z + (double)width);
    }
 
-   public boolean canCollideWith(Entity var1) {
-      return var1 instanceof AbstractWindCharge ? false : super.canCollideWith(var1);
+   public boolean canCollideWith(final Entity entity) {
+      return entity instanceof AbstractWindCharge ? false : super.canCollideWith(entity);
    }
 
-   protected boolean canHitEntity(Entity var1) {
-      if (var1 instanceof AbstractWindCharge) {
+   protected boolean canHitEntity(final Entity entity) {
+      if (entity instanceof AbstractWindCharge) {
          return false;
       } else {
-         return var1.getType() == EntityType.END_CRYSTAL ? false : super.canHitEntity(var1);
+         return entity.is(EntityType.END_CRYSTAL) ? false : super.canHitEntity(entity);
       }
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
+   protected void onHitEntity(final EntityHitResult hitResult) {
+      super.onHitEntity(hitResult);
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
+      if (var3 instanceof ServerLevel serverLevel) {
          Entity var5 = this.getOwner();
          LivingEntity var10000;
-         if (var5 instanceof LivingEntity var4) {
-            var10000 = var4;
+         if (var5 instanceof LivingEntity entity) {
+            var10000 = entity;
          } else {
             var10000 = null;
          }
 
-         LivingEntity var7 = var10000;
-         Entity var8 = var1.getEntity();
-         if (var7 != null) {
-            var7.setLastHurtMob(var8);
+         LivingEntity owner = var10000;
+         Entity entity = hitResult.getEntity();
+         if (owner != null) {
+            owner.setLastHurtMob(entity);
          }
 
-         DamageSource var9 = this.damageSources().windCharge(this, var7);
-         if (var8.hurtServer(var2, var9, 1.0F) && var8 instanceof LivingEntity var6) {
-            EnchantmentHelper.doPostAttackEffects(var2, var6, var9);
+         DamageSource source = this.damageSources().windCharge(this, owner);
+         if (entity.hurtServer(serverLevel, source, 1.0F) && entity instanceof LivingEntity mob) {
+            EnchantmentHelper.doPostAttackEffects(serverLevel, mob, source);
          }
 
          this.explode(this.position());
       }
    }
 
-   public void push(double var1, double var3, double var5) {
+   public void push(final double xa, final double ya, final double za) {
    }
 
-   protected abstract void explode(Vec3 var1);
+   protected abstract void explode(final Vec3 position);
 
-   protected void onHitBlock(BlockHitResult var1) {
-      super.onHitBlock(var1);
+   protected void onHitBlock(final BlockHitResult hitResult) {
+      super.onHitBlock(hitResult);
       if (!this.level().isClientSide()) {
-         Vec3i var2 = var1.getDirection().getUnitVec3i();
-         Vec3 var3 = Vec3.atLowerCornerOf(var2).multiply(0.25, 0.25, 0.25);
-         Vec3 var4 = var1.getLocation().add(var3);
-         this.explode(var4);
+         Vec3i collisionNormal = hitResult.getDirection().getUnitVec3i();
+         Vec3 scaledNormal = Vec3.atLowerCornerOf(collisionNormal).multiply(0.25, 0.25, 0.25);
+         Vec3 explosionPos = hitResult.getLocation().add(scaledNormal);
+         this.explode(explosionPos);
          this.discard();
       }
 
    }
 
-   protected void onHit(HitResult var1) {
-      super.onHit(var1);
+   protected void onHit(final HitResult hitResult) {
+      super.onHit(hitResult);
       if (!this.level().isClientSide()) {
          this.discard();
       }

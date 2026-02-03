@@ -9,11 +9,11 @@ public class ExceptionCollector<T extends Throwable> {
       super();
    }
 
-   public void add(T var1) {
+   public void add(final T throwable) {
       if (this.result == null) {
-         this.result = var1;
+         this.result = throwable;
       } else {
-         this.result.addSuppressed(var1);
+         this.result.addSuppressed(throwable);
       }
 
    }

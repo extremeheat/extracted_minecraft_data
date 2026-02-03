@@ -10,7 +10,6 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
@@ -30,41 +29,41 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBackedContainer {
+public class ShelfBlockEntity extends BlockEntity implements ListBackedContainer, ItemOwner {
    public static final int MAX_ITEMS = 3;
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String ALIGN_ITEMS_TO_BOTTOM_TAG = "align_items_to_bottom";
    private final NonNullList<ItemStack> items;
    private boolean alignItemsToBottom;
 
-   public ShelfBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.SHELF, var1, var2);
+   public ShelfBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.SHELF, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(3, ItemStack.EMPTY);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
       this.items.clear();
-      ContainerHelper.loadAllItems(var1, this.items);
-      this.alignItemsToBottom = var1.getBooleanOr("align_items_to_bottom", false);
+      ContainerHelper.loadAllItems(input, this.items);
+      this.alignItemsToBottom = input.getBooleanOr("align_items_to_bottom", false);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      ContainerHelper.saveAllItems(var1, this.items, true);
-      var1.putBoolean("align_items_to_bottom", this.alignItemsToBottom);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      ContainerHelper.saveAllItems(output, this.items, true);
+      output.putBoolean("align_items_to_bottom", this.alignItemsToBottom);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1);
-         ContainerHelper.saveAllItems(var3, this.items, true);
-         var3.putBoolean("align_items_to_bottom", this.alignItemsToBottom);
-         return var3.buildResult();
+   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput output = TagValueOutput.createWithContext(reporter, registries);
+         ContainerHelper.saveAllItems(output, this.items, true);
+         output.putBoolean("align_items_to_bottom", this.alignItemsToBottom);
+         return output.buildResult();
       }
    }
 
@@ -72,21 +71,21 @@ public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBack
       return this.items;
    }
 
-   public boolean stillValid(Player var1) {
-      return Container.stillValidBlockEntity(this, var1);
+   public boolean stillValid(final Player player) {
+      return Container.stillValidBlockEntity(this, player);
    }
 
-   public ItemStack swapItemNoUpdate(int var1, ItemStack var2) {
-      ItemStack var3 = this.removeItemNoUpdate(var1);
-      this.setItemNoUpdate(var1, var2);
-      return var3;
+   public ItemStack swapItemNoUpdate(final int slot, final ItemStack heldItemStack) {
+      ItemStack retrievedItem = this.removeItemNoUpdate(slot);
+      this.setItemNoUpdate(slot, heldItemStack);
+      return retrievedItem;
    }
 
-   public void setChanged(Holder.@Nullable Reference<GameEvent> var1) {
+   public void setChanged(final Holder.@Nullable Reference<GameEvent> event) {
       super.setChanged();
       if (this.level != null) {
-         if (var1 != null) {
-            this.level.gameEvent(var1, this.worldPosition, GameEvent.Context.of(this.getBlockState()));
+         if (event != null) {
+            this.level.gameEvent(event, this.worldPosition, GameEvent.Context.of(this.getBlockState()));
          }
 
          this.getLevel().sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
@@ -98,18 +97,18 @@ public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBack
       this.setChanged(GameEvent.BLOCK_ACTIVATE);
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      super.applyImplicitComponents(var1);
-      ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.items);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      super.applyImplicitComponents(components);
+      ((ItemContainerContents)components.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.items);
    }
 
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
-      var1.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.items));
+   protected void collectImplicitComponents(final DataComponentMap.Builder components) {
+      super.collectImplicitComponents(components);
+      components.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.items));
    }
 
-   public void removeComponentsFromTag(ValueOutput var1) {
-      var1.discard("Items");
+   public void removeComponentsFromTag(final ValueOutput output) {
+      output.discard("Items");
    }
 
    public Level level() {
@@ -126,10 +125,5 @@ public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBack
 
    public boolean getAlignItemsToBottom() {
       return this.alignItemsToBottom;
-   }
-
-   // $FF: synthetic method
-   public Packet getUpdatePacket() {
-      return this.getUpdatePacket();
    }
 }

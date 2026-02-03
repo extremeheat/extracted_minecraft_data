@@ -22,10 +22,10 @@ public final class WeightedList<E> {
    private final List<Weighted<E>> items;
    private final @Nullable Selector<E> selector;
 
-   WeightedList(List<? extends Weighted<E>> var1) {
+   private WeightedList(final List<? extends Weighted<E>> items) {
       super();
-      this.items = List.copyOf(var1);
-      this.totalWeight = WeightedRandom.getTotalWeight(var1, Weighted::weight);
+      this.items = List.copyOf(items);
+      this.totalWeight = WeightedRandom.getTotalWeight(items, Weighted::weight);
       if (this.totalWeight == 0) {
          this.selector = null;
       } else if (this.totalWeight < 64) {
@@ -40,17 +40,17 @@ public final class WeightedList<E> {
       return new WeightedList<E>(List.of());
    }
 
-   public static <E> WeightedList<E> of(E var0) {
-      return new WeightedList<E>(List.of(new Weighted(var0, 1)));
+   public static <E> WeightedList<E> of(final E value) {
+      return new WeightedList<E>(List.of(new Weighted(value, 1)));
    }
 
    @SafeVarargs
-   public static <E> WeightedList<E> of(Weighted<E>... var0) {
-      return new WeightedList<E>(List.of(var0));
+   public static <E> WeightedList<E> of(final Weighted<E>... items) {
+      return new WeightedList<E>(List.of(items));
    }
 
-   public static <E> WeightedList<E> of(List<Weighted<E>> var0) {
-      return new WeightedList<E>(var0);
+   public static <E> WeightedList<E> of(final List<Weighted<E>> items) {
+      return new WeightedList<E>(items);
    }
 
    public static <E> Builder<E> builder() {
@@ -61,25 +61,25 @@ public final class WeightedList<E> {
       return this.items.isEmpty();
    }
 
-   public <T> WeightedList<T> map(Function<E, T> var1) {
-      return new WeightedList<T>(Lists.transform(this.items, (var1x) -> var1x.map(var1)));
+   public <T> WeightedList<T> map(final Function<E, T> mapper) {
+      return new WeightedList<T>(Lists.transform(this.items, (e) -> e.map(mapper)));
    }
 
-   public Optional<E> getRandom(RandomSource var1) {
+   public Optional<E> getRandom(final RandomSource random) {
       if (this.selector == null) {
          return Optional.empty();
       } else {
-         int var2 = var1.nextInt(this.totalWeight);
-         return Optional.of(this.selector.get(var2));
+         int selection = random.nextInt(this.totalWeight);
+         return Optional.of(this.selector.get(selection));
       }
    }
 
-   public E getRandomOrThrow(RandomSource var1) {
+   public E getRandomOrThrow(final RandomSource random) {
       if (this.selector == null) {
          throw new IllegalStateException("Weighted list has no elements");
       } else {
-         int var2 = var1.nextInt(this.totalWeight);
-         return this.selector.get(var2);
+         int selection = random.nextInt(this.totalWeight);
+         return this.selector.get(selection);
       }
    }
 
@@ -87,29 +87,29 @@ public final class WeightedList<E> {
       return this.items;
    }
 
-   public static <E> Codec<WeightedList<E>> codec(Codec<E> var0) {
-      return Weighted.codec(var0).listOf().xmap(WeightedList::of, WeightedList::unwrap);
+   public static <E> Codec<WeightedList<E>> codec(final Codec<E> elementCodec) {
+      return Weighted.codec(elementCodec).listOf().xmap(WeightedList::of, WeightedList::unwrap);
    }
 
-   public static <E> Codec<WeightedList<E>> codec(MapCodec<E> var0) {
-      return Weighted.codec(var0).listOf().xmap(WeightedList::of, WeightedList::unwrap);
+   public static <E> Codec<WeightedList<E>> codec(final MapCodec<E> elementCodec) {
+      return Weighted.codec(elementCodec).listOf().xmap(WeightedList::of, WeightedList::unwrap);
    }
 
-   public static <E> Codec<WeightedList<E>> nonEmptyCodec(Codec<E> var0) {
-      return ExtraCodecs.nonEmptyList(Weighted.codec(var0).listOf()).xmap(WeightedList::of, WeightedList::unwrap);
+   public static <E> Codec<WeightedList<E>> nonEmptyCodec(final Codec<E> elementCodec) {
+      return ExtraCodecs.nonEmptyList(Weighted.codec(elementCodec).listOf()).xmap(WeightedList::of, WeightedList::unwrap);
    }
 
-   public static <E> Codec<WeightedList<E>> nonEmptyCodec(MapCodec<E> var0) {
-      return ExtraCodecs.nonEmptyList(Weighted.codec(var0).listOf()).xmap(WeightedList::of, WeightedList::unwrap);
+   public static <E> Codec<WeightedList<E>> nonEmptyCodec(final MapCodec<E> elementCodec) {
+      return ExtraCodecs.nonEmptyList(Weighted.codec(elementCodec).listOf()).xmap(WeightedList::of, WeightedList::unwrap);
    }
 
-   public static <E, B extends ByteBuf> StreamCodec<B, WeightedList<E>> streamCodec(StreamCodec<B, E> var0) {
-      return Weighted.streamCodec(var0).apply(ByteBufCodecs.list()).map(WeightedList::of, WeightedList::unwrap);
+   public static <E, B extends ByteBuf> StreamCodec<B, WeightedList<E>> streamCodec(final StreamCodec<B, E> elementCodec) {
+      return Weighted.streamCodec(elementCodec).apply(ByteBufCodecs.list()).map(WeightedList::of, WeightedList::unwrap);
    }
 
-   public boolean contains(E var1) {
-      for(Weighted var3 : this.items) {
-         if (var3.value().equals(var1)) {
+   public boolean contains(final E value) {
+      for(Weighted<E> item : this.items) {
+         if (item.value().equals(value)) {
             return true;
          }
       }
@@ -117,21 +117,21 @@ public final class WeightedList<E> {
       return false;
    }
 
-   public boolean equals(@Nullable Object var1) {
-      if (this == var1) {
+   public boolean equals(final @Nullable Object obj) {
+      if (this == obj) {
          return true;
-      } else if (!(var1 instanceof WeightedList)) {
+      } else if (!(obj instanceof WeightedList)) {
          return false;
       } else {
-         WeightedList var2 = (WeightedList)var1;
-         return this.totalWeight == var2.totalWeight && Objects.equals(this.items, var2.items);
+         WeightedList<?> list = (WeightedList)obj;
+         return this.totalWeight == list.totalWeight && Objects.equals(this.items, list.items);
       }
    }
 
    public int hashCode() {
-      int var1 = this.totalWeight;
-      var1 = 31 * var1 + this.items.hashCode();
-      return var1;
+      int result = this.totalWeight;
+      result = 31 * result + this.items.hashCode();
+      return result;
    }
 
    public static class Builder<E> {
@@ -141,12 +141,12 @@ public final class WeightedList<E> {
          super();
       }
 
-      public Builder<E> add(E var1) {
-         return this.add(var1, 1);
+      public Builder<E> add(final E item) {
+         return this.add(item, 1);
       }
 
-      public Builder<E> add(E var1, int var2) {
-         this.result.add(new Weighted(var1, var2));
+      public Builder<E> add(final E item, final int weight) {
+         this.result.add(new Weighted(item, weight));
          return this;
       }
 
@@ -155,48 +155,48 @@ public final class WeightedList<E> {
       }
    }
 
-   static class Flat<E> implements Selector<E> {
+   private static class Flat<E> implements Selector<E> {
       private final Object[] entries;
 
-      Flat(List<Weighted<E>> var1, int var2) {
+      private Flat(final List<Weighted<E>> entries, final int totalWeight) {
          super();
-         this.entries = new Object[var2];
-         int var3 = 0;
+         this.entries = new Object[totalWeight];
+         int i = 0;
 
-         for(Weighted var5 : var1) {
-            int var6 = var5.weight();
-            Arrays.fill(this.entries, var3, var3 + var6, var5.value());
-            var3 += var6;
+         for(Weighted<E> entry : entries) {
+            int weight = entry.weight();
+            Arrays.fill(this.entries, i, i + weight, entry.value());
+            i += weight;
          }
 
       }
 
-      public E get(int var1) {
-         return (E)this.entries[var1];
+      public E get(final int selection) {
+         return (E)this.entries[selection];
       }
    }
 
-   static class Compact<E> implements Selector<E> {
+   private static class Compact<E> implements Selector<E> {
       private final Weighted<?>[] entries;
 
-      Compact(List<Weighted<E>> var1) {
+      private Compact(final List<Weighted<E>> entries) {
          super();
-         this.entries = (Weighted[])var1.toArray((var0) -> new Weighted[var0]);
+         this.entries = (Weighted[])entries.toArray((x$0) -> new Weighted[x$0]);
       }
 
-      public E get(int var1) {
-         for(Weighted var5 : this.entries) {
-            var1 -= var5.weight();
-            if (var1 < 0) {
-               return (E)var5.value();
+      public E get(int selection) {
+         for(Weighted<?> entry : this.entries) {
+            selection -= entry.weight();
+            if (selection < 0) {
+               return (E)entry.value();
             }
          }
 
-         throw new IllegalStateException(var1 + " exceeded total weight");
+         throw new IllegalStateException(selection + " exceeded total weight");
       }
    }
 
-   interface Selector<E> {
-      E get(int var1);
+   private interface Selector<E> {
+      E get(int selection);
    }
 }

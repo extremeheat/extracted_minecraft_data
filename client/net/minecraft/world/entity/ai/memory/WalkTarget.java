@@ -12,23 +12,23 @@ public class WalkTarget {
    private final float speedModifier;
    private final int closeEnoughDist;
 
-   public WalkTarget(BlockPos var1, float var2, int var3) {
-      this((PositionTracker)(new BlockPosTracker(var1)), var2, var3);
+   public WalkTarget(final BlockPos target, final float speedModifier, final int closeEnoughDist) {
+      this((PositionTracker)(new BlockPosTracker(target)), speedModifier, closeEnoughDist);
    }
 
-   public WalkTarget(Vec3 var1, float var2, int var3) {
-      this((PositionTracker)(new BlockPosTracker(BlockPos.containing(var1))), var2, var3);
+   public WalkTarget(final Vec3 target, final float speedModifier, final int closeEnoughDist) {
+      this((PositionTracker)(new BlockPosTracker(BlockPos.containing(target))), speedModifier, closeEnoughDist);
    }
 
-   public WalkTarget(Entity var1, float var2, int var3) {
-      this((PositionTracker)(new EntityTracker(var1, false)), var2, var3);
+   public WalkTarget(final Entity target, final float speedModifier, final int closeEnoughDist) {
+      this((PositionTracker)(new EntityTracker(target, false)), speedModifier, closeEnoughDist);
    }
 
-   public WalkTarget(PositionTracker var1, float var2, int var3) {
+   public WalkTarget(final PositionTracker target, final float speedModifier, final int closeEnoughDist) {
       super();
-      this.target = var1;
-      this.speedModifier = var2;
-      this.closeEnoughDist = var3;
+      this.target = target;
+      this.speedModifier = speedModifier;
+      this.closeEnoughDist = closeEnoughDist;
    }
 
    public PositionTracker getTarget() {

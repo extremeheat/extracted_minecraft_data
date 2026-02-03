@@ -10,17 +10,17 @@ import net.minecraft.world.level.levelgen.feature.WeightedPlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class RandomFeatureConfiguration implements FeatureConfiguration {
-   public static final Codec<RandomFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.apply2(RandomFeatureConfiguration::new, WeightedPlacedFeature.CODEC.listOf().fieldOf("features").forGetter((var0x) -> var0x.features), PlacedFeature.CODEC.fieldOf("default").forGetter((var0x) -> var0x.defaultFeature)));
+   public static final Codec<RandomFeatureConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.apply2(RandomFeatureConfiguration::new, WeightedPlacedFeature.CODEC.listOf().fieldOf("features").forGetter((c) -> c.features), PlacedFeature.CODEC.fieldOf("default").forGetter((c) -> c.defaultFeature)));
    public final List<WeightedPlacedFeature> features;
    public final Holder<PlacedFeature> defaultFeature;
 
-   public RandomFeatureConfiguration(List<WeightedPlacedFeature> var1, Holder<PlacedFeature> var2) {
+   public RandomFeatureConfiguration(final List<WeightedPlacedFeature> features, final Holder<PlacedFeature> defaultFeature) {
       super();
-      this.features = var1;
-      this.defaultFeature = var2;
+      this.features = features;
+      this.defaultFeature = defaultFeature;
    }
 
    public Stream<ConfiguredFeature<?, ?>> getFeatures() {
-      return Stream.concat(this.features.stream().flatMap((var0) -> (var0.feature.value()).getFeatures()), (this.defaultFeature.value()).getFeatures());
+      return Stream.concat(this.features.stream().flatMap((weighted) -> (weighted.feature.value()).getFeatures()), (this.defaultFeature.value()).getFeatures());
    }
 }

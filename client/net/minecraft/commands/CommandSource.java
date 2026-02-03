@@ -4,7 +4,7 @@ import net.minecraft.network.chat.Component;
 
 public interface CommandSource {
    CommandSource NULL = new CommandSource() {
-      public void sendSystemMessage(Component var1) {
+      public void sendSystemMessage(final Component message) {
       }
 
       public boolean acceptsSuccess() {
@@ -20,7 +20,7 @@ public interface CommandSource {
       }
    };
 
-   void sendSystemMessage(Component var1);
+   void sendSystemMessage(Component message);
 
    boolean acceptsSuccess();
 

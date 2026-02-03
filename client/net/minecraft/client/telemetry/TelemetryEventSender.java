@@ -4,15 +4,15 @@ import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface TelemetryEventSender {
-   TelemetryEventSender DISABLED = (var0, var1) -> {
+   TelemetryEventSender DISABLED = (type, buildFunction) -> {
    };
 
-   default TelemetryEventSender decorate(Consumer<TelemetryPropertyMap.Builder> var1) {
-      return (var2, var3) -> this.send(var2, (var2x) -> {
-            var3.accept(var2x);
-            var1.accept(var2x);
+   default TelemetryEventSender decorate(final Consumer<TelemetryPropertyMap.Builder> decorator) {
+      return (type, buildFunction) -> this.send(type, (properties) -> {
+            buildFunction.accept(properties);
+            decorator.accept(properties);
          });
    }
 
-   void send(TelemetryEventType var1, Consumer<TelemetryPropertyMap.Builder> var2);
+   void send(TelemetryEventType type, Consumer<TelemetryPropertyMap.Builder> buildFunction);
 }

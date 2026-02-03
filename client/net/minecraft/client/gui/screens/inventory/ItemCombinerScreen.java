@@ -13,9 +13,9 @@ import net.minecraft.world.item.ItemStack;
 public abstract class ItemCombinerScreen<T extends ItemCombinerMenu> extends AbstractContainerScreen<T> implements ContainerListener {
    private final Identifier menuResource;
 
-   public ItemCombinerScreen(T var1, Inventory var2, Component var3, Identifier var4) {
-      super(var1, var2, var3);
-      this.menuResource = var4;
+   public ItemCombinerScreen(final T menu, final Inventory inventory, final Component title, final Identifier menuResource) {
+      super(menu, inventory, title);
+      this.menuResource = menuResource;
    }
 
    protected void subInit() {
@@ -32,21 +32,16 @@ public abstract class ItemCombinerScreen<T extends ItemCombinerMenu> extends Abs
       ((ItemCombinerMenu)this.menu).removeSlotListener(this);
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
+   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+      graphics.blit(RenderPipelines.GUI_TEXTURED, this.menuResource, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      this.renderErrorIcon(graphics, this.leftPos, this.topPos);
    }
 
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      var1.blit(RenderPipelines.GUI_TEXTURED, this.menuResource, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      this.renderErrorIcon(var1, this.leftPos, this.topPos);
+   protected abstract void renderErrorIcon(final GuiGraphics graphics, final int xo, final int yo);
+
+   public void dataChanged(final AbstractContainerMenu container, final int id, final int value) {
    }
 
-   protected abstract void renderErrorIcon(GuiGraphics var1, int var2, int var3);
-
-   public void dataChanged(AbstractContainerMenu var1, int var2, int var3) {
-   }
-
-   public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
+   public void slotChanged(final AbstractContainerMenu container, final int slotIndex, final ItemStack itemStack) {
    }
 }

@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.netty.channel.ChannelFuture;
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.DefaultUncaughtExceptionHandler;
@@ -23,6 +24,7 @@ import net.minecraft.client.quickplay.QuickPlay;
 import net.minecraft.client.quickplay.QuickPlayLog;
 import net.minecraft.client.resources.server.ServerPackManager;
 import net.minecraft.network.Connection;
+import net.minecraft.network.ProtocolInfo;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
@@ -35,124 +37,135 @@ import org.slf4j.Logger;
 
 public class ConnectScreen extends Screen {
    private static final AtomicInteger UNIQUE_THREAD_ID = new AtomicInteger(0);
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final long NARRATION_DELAY_MS = 2000L;
    public static final Component ABORT_CONNECTION = Component.translatable("connect.aborted");
    public static final Component UNKNOWN_HOST_MESSAGE = Component.translatable("disconnect.genericReason", Component.translatable("disconnect.unknownHost"));
-   volatile @Nullable Connection connection;
-   @Nullable ChannelFuture channelFuture;
-   volatile boolean aborted;
-   final Screen parent;
+   private volatile @Nullable Connection connection;
+   private @Nullable ChannelFuture channelFuture;
+   private volatile boolean aborted;
+   private final Screen parent;
    private Component status = Component.translatable("connect.connecting");
    private long lastNarration = -1L;
-   final Component connectFailedTitle;
+   private final Component connectFailedTitle;
 
-   private ConnectScreen(Screen var1, Component var2) {
+   private ConnectScreen(final Screen parent, final Component connectFailedTitle) {
       super(GameNarrator.NO_TITLE);
-      this.parent = var1;
-      this.connectFailedTitle = var2;
+      this.parent = parent;
+      this.connectFailedTitle = connectFailedTitle;
    }
 
-   public static void startConnecting(Screen var0, Minecraft var1, ServerAddress var2, ServerData var3, boolean var4, @Nullable TransferState var5) {
-      if (var1.screen instanceof ConnectScreen) {
+   public static void startConnecting(final Screen parent, final Minecraft minecraft, final ServerAddress hostAndPort, final ServerData data, final boolean isQuickPlay, final @Nullable TransferState transferState) {
+      if (minecraft.screen instanceof ConnectScreen) {
          LOGGER.error("Attempt to connect while already connecting");
       } else {
-         Component var6;
-         if (var5 != null) {
-            var6 = CommonComponents.TRANSFER_CONNECT_FAILED;
-         } else if (var4) {
-            var6 = QuickPlay.ERROR_TITLE;
+         Component connectFailedTitle;
+         if (transferState != null) {
+            connectFailedTitle = CommonComponents.TRANSFER_CONNECT_FAILED;
+         } else if (isQuickPlay) {
+            connectFailedTitle = QuickPlay.ERROR_TITLE;
          } else {
-            var6 = CommonComponents.CONNECT_FAILED;
+            connectFailedTitle = CommonComponents.CONNECT_FAILED;
          }
 
-         ConnectScreen var7 = new ConnectScreen(var0, var6);
-         if (var5 != null) {
-            var7.updateStatus(Component.translatable("connect.transferring"));
+         ConnectScreen screen = new ConnectScreen(parent, connectFailedTitle);
+         if (transferState != null) {
+            screen.updateStatus(Component.translatable("connect.transferring"));
          }
 
-         var1.disconnectWithProgressScreen(false);
-         var1.prepareForMultiplayer();
-         var1.updateReportEnvironment(ReportEnvironment.thirdParty(var3.ip));
-         var1.quickPlayLog().setWorldData(QuickPlayLog.Type.MULTIPLAYER, var3.ip, var3.name);
-         var1.setScreen(var7);
-         var7.connect(var1, var2, var3, var5);
+         minecraft.disconnectWithProgressScreen(false);
+         minecraft.prepareForMultiplayer();
+         minecraft.updateReportEnvironment(ReportEnvironment.thirdParty(data.ip));
+         minecraft.quickPlayLog().setWorldData(QuickPlayLog.Type.MULTIPLAYER, data.ip, data.name);
+         minecraft.setScreen(screen);
+         screen.connect(minecraft, hostAndPort, data, transferState);
       }
    }
 
-   private void connect(final Minecraft var1, final ServerAddress var2, final ServerData var3, final @Nullable TransferState var4) {
-      LOGGER.info("Connecting to {}, {}", var2.getHost(), var2.getPort());
-      Thread var5 = new Thread("Server Connector #" + UNIQUE_THREAD_ID.incrementAndGet()) {
+   private void connect(final Minecraft minecraft, final ServerAddress hostAndPort, final ServerData server, final @Nullable TransferState transferState) {
+      LOGGER.info("Connecting to {}, {}", hostAndPort.getHost(), hostAndPort.getPort());
+      Thread thread = new Thread("Server Connector #" + UNIQUE_THREAD_ID.incrementAndGet()) {
+         {
+            Objects.requireNonNull(ConnectScreen.this);
+         }
+
          public void run() {
-            Object var1x = null;
+            InetSocketAddress address = null;
 
             try {
                if (ConnectScreen.this.aborted) {
                   return;
                }
 
-               Optional var2x = ServerNameResolver.DEFAULT.resolveAddress(var2).map(ResolvedServerAddress::asInetSocketAddress);
+               Optional<InetSocketAddress> resolvedAddress = ServerNameResolver.DEFAULT.resolveAddress(hostAndPort).map(ResolvedServerAddress::asInetSocketAddress);
                if (ConnectScreen.this.aborted) {
                   return;
                }
 
-               if (var2x.isEmpty()) {
-                  var1.execute(() -> var1.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, ConnectScreen.UNKNOWN_HOST_MESSAGE)));
+               if (resolvedAddress.isEmpty()) {
+                  minecraft.execute(() -> minecraft.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, ConnectScreen.UNKNOWN_HOST_MESSAGE)));
                   return;
                }
 
-               InetSocketAddress var10 = (InetSocketAddress)var2x.get();
-               Connection var11;
+               address = (InetSocketAddress)resolvedAddress.get();
+               Connection pendingConnection;
                synchronized(ConnectScreen.this) {
                   if (ConnectScreen.this.aborted) {
                      return;
                   }
 
-                  var11 = new Connection(PacketFlow.CLIENTBOUND);
-                  var11.setBandwidthLogger(var1.getDebugOverlay().getBandwidthLogger());
-                  ConnectScreen.this.channelFuture = Connection.connect(var10, EventLoopGroupHolder.remote(var1.options.useNativeTransport()), var11);
+                  pendingConnection = new Connection(PacketFlow.CLIENTBOUND);
+                  pendingConnection.setBandwidthLogger(minecraft.getDebugOverlay().getBandwidthLogger());
+                  ConnectScreen.this.channelFuture = Connection.connect(address, EventLoopGroupHolder.remote(minecraft.options.useNativeTransport()), pendingConnection);
                }
 
                ConnectScreen.this.channelFuture.syncUninterruptibly();
                synchronized(ConnectScreen.this) {
                   if (ConnectScreen.this.aborted) {
-                     var11.disconnect(ConnectScreen.ABORT_CONNECTION);
+                     pendingConnection.disconnect(ConnectScreen.ABORT_CONNECTION);
                      return;
                   }
 
-                  ConnectScreen.this.connection = var11;
-                  var1.getDownloadedPackSource().configureForServerControl(var11, convertPackStatus(var3.getResourcePackStatus()));
+                  ConnectScreen.this.connection = pendingConnection;
+                  minecraft.getDownloadedPackSource().configureForServerControl(pendingConnection, convertPackStatus(server.getResourcePackStatus()));
                }
 
                Connection var10000 = ConnectScreen.this.connection;
-               String var10001 = var10.getHostName();
-               int var10002 = var10.getPort();
+               String var10001 = address.getHostName();
+               int var10002 = address.getPort();
+               ProtocolInfo var10003 = LoginProtocols.SERVERBOUND;
+               ProtocolInfo var10004 = LoginProtocols.CLIENTBOUND;
+               Connection var10007 = ConnectScreen.this.connection;
+               Minecraft var10008 = minecraft;
+               ServerData var10009 = server;
+               Screen var10010 = ConnectScreen.this.parent;
                ConnectScreen var10013 = ConnectScreen.this;
-               var10000.initiateServerboundPlayConnection(var10001, var10002, LoginProtocols.SERVERBOUND, LoginProtocols.CLIENTBOUND, new ClientHandshakePacketListenerImpl(ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, (Duration)null, var10013::updateStatus, new LevelLoadTracker(), var4), var4 != null);
-               ConnectScreen.this.connection.send(new ServerboundHelloPacket(var1.getUser().getName(), var1.getUser().getProfileId()));
+               Objects.requireNonNull(var10013);
+               var10000.initiateServerboundPlayConnection(var10001, var10002, var10003, var10004, new ClientHandshakePacketListenerImpl(var10007, var10008, var10009, var10010, false, (Duration)null, var10013::updateStatus, new LevelLoadTracker(), transferState), transferState != null);
+               ConnectScreen.this.connection.send(new ServerboundHelloPacket(minecraft.getUser().getName(), minecraft.getUser().getProfileId()));
             } catch (Exception var9) {
                if (ConnectScreen.this.aborted) {
                   return;
                }
 
                Throwable var5 = var9.getCause();
-               Exception var3x;
-               if (var5 instanceof Exception var4x) {
-                  var3x = var4x;
+               Exception cause;
+               if (var5 instanceof Exception originalCause) {
+                  cause = originalCause;
                } else {
-                  var3x = var9;
+                  cause = var9;
                }
 
                ConnectScreen.LOGGER.error("Couldn't connect to server", var9);
-               String var12 = var1x == null ? var3x.getMessage() : var3x.getMessage().replaceAll(((InetSocketAddress)var1x).getHostName() + ":" + ((InetSocketAddress)var1x).getPort(), "").replaceAll(((InetSocketAddress)var1x).toString(), "");
-               var1.execute(() -> var1.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, Component.translatable("disconnect.genericReason", var12))));
+               String message = address == null ? cause.getMessage() : cause.getMessage().replaceAll(address.getHostName() + ":" + address.getPort(), "").replaceAll(address.toString(), "");
+               minecraft.execute(() -> minecraft.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, Component.translatable("disconnect.genericReason", message))));
             }
 
          }
 
-         private static ServerPackManager.PackPromptStatus convertPackStatus(ServerData.ServerPackStatus var0) {
+         private static ServerPackManager.PackPromptStatus convertPackStatus(final ServerData.ServerPackStatus resourcePackStatus) {
             ServerPackManager.PackPromptStatus var10000;
-            switch (var0) {
+            switch (resourcePackStatus) {
                case ENABLED -> var10000 = ServerPackManager.PackPromptStatus.ALLOWED;
                case DISABLED -> var10000 = ServerPackManager.PackPromptStatus.DECLINED;
                case PROMPT -> var10000 = ServerPackManager.PackPromptStatus.PENDING;
@@ -162,12 +175,12 @@ public class ConnectScreen extends Screen {
             return var10000;
          }
       };
-      var5.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
-      var5.start();
+      thread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
+      thread.start();
    }
 
-   private void updateStatus(Component var1) {
-      this.status = var1;
+   private void updateStatus(final Component status) {
+      this.status = status;
    }
 
    public void tick() {
@@ -186,7 +199,7 @@ public class ConnectScreen extends Screen {
    }
 
    protected void init() {
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> {
          synchronized(this) {
             this.aborted = true;
             if (this.channelFuture != null) {
@@ -203,14 +216,14 @@ public class ConnectScreen extends Screen {
       }).bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20).build());
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      long var5 = Util.getMillis();
-      if (var5 - this.lastNarration > 2000L) {
-         this.lastNarration = var5;
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      super.render(graphics, mouseX, mouseY, a);
+      long current = Util.getMillis();
+      if (current - this.lastNarration > 2000L) {
+         this.lastNarration = current;
          this.minecraft.getNarrator().saySystemNow((Component)Component.translatable("narrator.joining"));
       }
 
-      var1.drawCenteredString(this.font, (Component)this.status, this.width / 2, this.height / 2 - 50, -1);
+      graphics.drawCenteredString(this.font, (Component)this.status, this.width / 2, this.height / 2 - 50, -1);
    }
 }

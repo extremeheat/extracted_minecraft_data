@@ -4,69 +4,62 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import java.util.Set;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.context.ContextKey;
+import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 
-public record TimeCheck(Optional<Long> period, IntRange value) implements LootItemCondition {
-   public static final MapCodec<TimeCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.LONG.optionalFieldOf("period").forGetter(TimeCheck::period), IntRange.CODEC.fieldOf("value").forGetter(TimeCheck::value)).apply(var0, TimeCheck::new));
+public record TimeCheck(Holder<WorldClock> clock, Optional<Long> period, IntRange value) implements LootItemCondition {
+   public static final MapCodec<TimeCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WorldClock.CODEC.fieldOf("clock").forGetter(TimeCheck::clock), Codec.LONG.optionalFieldOf("period").forGetter(TimeCheck::period), IntRange.CODEC.fieldOf("value").forGetter(TimeCheck::value)).apply(i, TimeCheck::new));
 
-   public TimeCheck(Optional<Long> var1, IntRange var2) {
+   public TimeCheck {
       super();
-      this.period = var1;
-      this.value = var2;
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.TIME_CHECK;
+   public MapCodec<TimeCheck> codec() {
+      return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return this.value.getReferencedContextParams();
+   public void validate(final ValidationContext context) {
+      LootItemCondition.super.validate(context);
+      Validatable.validate(context, "value", this.value);
    }
 
-   public boolean test(LootContext var1) {
-      ServerLevel var2 = var1.getLevel();
-      long var3 = var2.getDayTime();
+   public boolean test(final LootContext context) {
+      ServerLevel level = context.getLevel();
+      long time = level.clockManager().getTotalTicks(this.clock);
       if (this.period.isPresent()) {
-         var3 %= (Long)this.period.get();
+         time %= (Long)this.period.get();
       }
 
-      return this.value.test(var1, (int)var3);
+      return this.value.test(context, (int)time);
    }
 
-   public static Builder time(IntRange var0) {
-      return new Builder(var0);
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((LootContext)var1);
+   public static Builder time(final Holder<WorldClock> clock, final IntRange value) {
+      return new Builder(clock, value);
    }
 
    public static class Builder implements LootItemCondition.Builder {
+      private final Holder<WorldClock> clock;
       private Optional<Long> period = Optional.empty();
       private final IntRange value;
 
-      public Builder(IntRange var1) {
+      public Builder(final Holder<WorldClock> clock, final IntRange value) {
          super();
-         this.value = var1;
+         this.clock = clock;
+         this.value = value;
       }
 
-      public Builder setPeriod(long var1) {
-         this.period = Optional.of(var1);
+      public Builder setPeriod(final long period) {
+         this.period = Optional.of(period);
          return this;
       }
 
       public TimeCheck build() {
-         return new TimeCheck(this.period, this.value);
-      }
-
-      // $FF: synthetic method
-      public LootItemCondition build() {
-         return this.build();
+         return new TimeCheck(this.clock, this.period, this.value);
       }
    }
 }

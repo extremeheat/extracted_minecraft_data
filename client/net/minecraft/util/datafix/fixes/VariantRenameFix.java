@@ -10,12 +10,12 @@ import java.util.Map;
 public class VariantRenameFix extends NamedEntityFix {
    private final Map<String, String> renames;
 
-   public VariantRenameFix(Schema var1, String var2, DSL.TypeReference var3, String var4, Map<String, String> var5) {
-      super(var1, false, var2, var3, var4);
-      this.renames = var5;
+   public VariantRenameFix(final Schema outputSchema, final String name, final DSL.TypeReference type, final String entityName, final Map<String, String> renames) {
+      super(outputSchema, false, name, type, entityName);
+      this.renames = renames;
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var1x) -> var1x.update("variant", (var1) -> (Dynamic)DataFixUtils.orElse(var1.asString().map((var2) -> var1.createString((String)this.renames.getOrDefault(var2, var2))).result(), var1)));
+   protected Typed<?> fix(final Typed<?> typed) {
+      return typed.update(DSL.remainderFinder(), (remainder) -> remainder.update("variant", (variant) -> (Dynamic)DataFixUtils.orElse(variant.asString().map((v) -> variant.createString((String)this.renames.getOrDefault(v, v))).result(), variant)));
    }
 }

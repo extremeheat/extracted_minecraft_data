@@ -11,22 +11,22 @@ import net.minecraft.util.GsonHelper;
 public class ParticleDescription {
    private final List<Identifier> textures;
 
-   private ParticleDescription(List<Identifier> var1) {
+   private ParticleDescription(final List<Identifier> textures) {
       super();
-      this.textures = var1;
+      this.textures = textures;
    }
 
    public List<Identifier> getTextures() {
       return this.textures;
    }
 
-   public static ParticleDescription fromJson(JsonObject var0) {
-      JsonArray var1 = GsonHelper.getAsJsonArray(var0, "textures", (JsonArray)null);
-      if (var1 == null) {
+   public static ParticleDescription fromJson(final JsonObject data) {
+      JsonArray texturesData = GsonHelper.getAsJsonArray(data, "textures", (JsonArray)null);
+      if (texturesData == null) {
          return new ParticleDescription(List.of());
       } else {
-         List var2 = (List)Streams.stream(var1).map((var0x) -> GsonHelper.convertToString(var0x, "texture")).map(Identifier::parse).collect(ImmutableList.toImmutableList());
-         return new ParticleDescription(var2);
+         List<Identifier> textures = (List)Streams.stream(texturesData).map((element) -> GsonHelper.convertToString(element, "texture")).map(Identifier::parse).collect(ImmutableList.toImmutableList());
+         return new ParticleDescription(textures);
       }
    }
 }

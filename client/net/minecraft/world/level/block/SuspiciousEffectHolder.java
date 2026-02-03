@@ -17,18 +17,18 @@ public interface SuspiciousEffectHolder {
       return (List)BuiltInRegistries.ITEM.stream().map(SuspiciousEffectHolder::tryGet).filter(Objects::nonNull).collect(Collectors.toList());
    }
 
-   static @Nullable SuspiciousEffectHolder tryGet(ItemLike var0) {
-      Item var3 = var0.asItem();
-      if (var3 instanceof BlockItem var1) {
-         Block var6 = var1.getBlock();
-         if (var6 instanceof SuspiciousEffectHolder var5) {
-            return var5;
+   static @Nullable SuspiciousEffectHolder tryGet(final ItemLike item) {
+      Item var3 = item.asItem();
+      if (var3 instanceof BlockItem blockItem) {
+         Block var6 = blockItem.getBlock();
+         if (var6 instanceof SuspiciousEffectHolder effectHolder) {
+            return effectHolder;
          }
       }
 
-      Item var2 = var0.asItem();
-      if (var2 instanceof SuspiciousEffectHolder var4) {
-         return var4;
+      Item effectHolder = item.asItem();
+      if (effectHolder instanceof SuspiciousEffectHolder effectHolder) {
+         return effectHolder;
       } else {
          return null;
       }

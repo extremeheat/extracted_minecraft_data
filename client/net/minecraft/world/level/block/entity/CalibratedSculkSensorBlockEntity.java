@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -12,8 +13,8 @@ import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import org.jspecify.annotations.Nullable;
 
 public class CalibratedSculkSensorBlockEntity extends SculkSensorBlockEntity {
-   public CalibratedSculkSensorBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.CALIBRATED_SCULK_SENSOR, var1, var2);
+   public CalibratedSculkSensorBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.CALIBRATED_SCULK_SENSOR, worldPosition, blockState);
    }
 
    public VibrationSystem.User createVibrationUser() {
@@ -21,22 +22,23 @@ public class CalibratedSculkSensorBlockEntity extends SculkSensorBlockEntity {
    }
 
    protected class VibrationUser extends SculkSensorBlockEntity.VibrationUser {
-      public VibrationUser(final BlockPos var2) {
-         super(var2);
+      public VibrationUser(final BlockPos blockPos) {
+         Objects.requireNonNull(CalibratedSculkSensorBlockEntity.this);
+         super(blockPos);
       }
 
       public int getListenerRadius() {
          return 16;
       }
 
-      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, GameEvent.@Nullable Context var4) {
-         int var5 = this.getBackSignal(var1, this.blockPos, CalibratedSculkSensorBlockEntity.this.getBlockState());
-         return var5 != 0 && VibrationSystem.getGameEventFrequency(var3) != var5 ? false : super.canReceiveVibration(var1, var2, var3, var4);
+      public boolean canReceiveVibration(final ServerLevel level, final BlockPos pos, final Holder<GameEvent> event, final GameEvent.@Nullable Context context) {
+         int comparisonType = this.getBackSignal(level, this.blockPos, CalibratedSculkSensorBlockEntity.this.getBlockState());
+         return comparisonType != 0 && VibrationSystem.getGameEventFrequency(event) != comparisonType ? false : super.canReceiveVibration(level, pos, event, context);
       }
 
-      private int getBackSignal(Level var1, BlockPos var2, BlockState var3) {
-         Direction var4 = ((Direction)var3.getValue(CalibratedSculkSensorBlock.FACING)).getOpposite();
-         return var1.getSignal(var2.relative(var4), var4);
+      private int getBackSignal(final Level level, final BlockPos pos, final BlockState state) {
+         Direction direction = ((Direction)state.getValue(CalibratedSculkSensorBlock.FACING)).getOpposite();
+         return level.getSignal(pos.relative(direction), direction);
       }
    }
 }

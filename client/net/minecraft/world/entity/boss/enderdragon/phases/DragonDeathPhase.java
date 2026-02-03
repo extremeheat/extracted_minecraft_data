@@ -13,29 +13,29 @@ public class DragonDeathPhase extends AbstractDragonPhaseInstance {
    private @Nullable Vec3 targetLocation;
    private int time;
 
-   public DragonDeathPhase(EnderDragon var1) {
-      super(var1);
+   public DragonDeathPhase(final EnderDragon dragon) {
+      super(dragon);
    }
 
    public void doClientTick() {
       if (this.time++ % 10 == 0) {
-         float var1 = (this.dragon.getRandom().nextFloat() - 0.5F) * 8.0F;
-         float var2 = (this.dragon.getRandom().nextFloat() - 0.5F) * 4.0F;
-         float var3 = (this.dragon.getRandom().nextFloat() - 0.5F) * 8.0F;
-         this.dragon.level().addParticle(ParticleTypes.EXPLOSION_EMITTER, this.dragon.getX() + (double)var1, this.dragon.getY() + 2.0 + (double)var2, this.dragon.getZ() + (double)var3, 0.0, 0.0, 0.0);
+         float xo = (this.dragon.getRandom().nextFloat() - 0.5F) * 8.0F;
+         float yo = (this.dragon.getRandom().nextFloat() - 0.5F) * 4.0F;
+         float zo = (this.dragon.getRandom().nextFloat() - 0.5F) * 8.0F;
+         this.dragon.level().addParticle(ParticleTypes.EXPLOSION_EMITTER, this.dragon.getX() + (double)xo, this.dragon.getY() + 2.0 + (double)yo, this.dragon.getZ() + (double)zo, 0.0, 0.0, 0.0);
       }
 
    }
 
-   public void doServerTick(ServerLevel var1) {
+   public void doServerTick(final ServerLevel level) {
       ++this.time;
       if (this.targetLocation == null) {
-         BlockPos var2 = var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
-         this.targetLocation = Vec3.atBottomCenterOf(var2);
+         BlockPos egg = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
+         this.targetLocation = Vec3.atBottomCenterOf(egg);
       }
 
-      double var4 = this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
-      if (!(var4 < 100.0) && !(var4 > 22500.0) && !this.dragon.horizontalCollision && !this.dragon.verticalCollision) {
+      double distToTarget = this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+      if (!(distToTarget < 100.0) && !(distToTarget > 22500.0) && !this.dragon.horizontalCollision && !this.dragon.verticalCollision) {
          this.dragon.setHealth(1.0F);
       } else {
          this.dragon.setHealth(0.0F);

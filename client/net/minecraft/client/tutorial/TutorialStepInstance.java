@@ -14,21 +14,21 @@ public interface TutorialStepInstance {
    default void tick() {
    }
 
-   default void onInput(ClientInput var1) {
+   default void onInput(final ClientInput input) {
    }
 
-   default void onMouse(double var1, double var3) {
+   default void onMouse(final double xd, final double yd) {
    }
 
-   default void onLookAt(ClientLevel var1, HitResult var2) {
+   default void onLookAt(final ClientLevel level, final HitResult hit) {
    }
 
-   default void onDestroyBlock(ClientLevel var1, BlockPos var2, BlockState var3, float var4) {
+   default void onDestroyBlock(final ClientLevel level, final BlockPos pos, final BlockState state, final float percent) {
    }
 
    default void onOpenInventory() {
    }
 
-   default void onGetItem(ItemStack var1) {
+   default void onGetItem(final ItemStack itemStack) {
    }
 }

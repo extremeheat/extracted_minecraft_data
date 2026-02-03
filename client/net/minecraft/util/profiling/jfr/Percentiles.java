@@ -15,20 +15,20 @@ public class Percentiles {
       super();
    }
 
-   public static Map<Integer, Double> evaluate(long[] var0) {
-      return var0.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(var0));
+   public static Map<Integer, Double> evaluate(final long[] dataset) {
+      return dataset.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(dataset));
    }
 
-   public static Map<Integer, Double> evaluate(int[] var0) {
-      return var0.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(var0));
+   public static Map<Integer, Double> evaluate(final int[] dataset) {
+      return dataset.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(dataset));
    }
 
-   public static Map<Integer, Double> evaluate(double[] var0) {
-      return var0.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(var0));
+   public static Map<Integer, Double> evaluate(final double[] dataset) {
+      return dataset.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(dataset));
    }
 
-   private static Map<Integer, Double> sorted(Map<Integer, Double> var0) {
-      Int2DoubleSortedMap var1 = (Int2DoubleSortedMap)Util.make(new Int2DoubleRBTreeMap(Comparator.reverseOrder()), (var1x) -> var1x.putAll(var0));
-      return Int2DoubleSortedMaps.unmodifiable(var1);
+   private static Map<Integer, Double> sorted(final Map<Integer, Double> percentiles) {
+      Int2DoubleSortedMap sorted = (Int2DoubleSortedMap)Util.make(new Int2DoubleRBTreeMap(Comparator.reverseOrder()), (it) -> it.putAll(percentiles));
+      return Int2DoubleSortedMaps.unmodifiable(sorted);
    }
 }

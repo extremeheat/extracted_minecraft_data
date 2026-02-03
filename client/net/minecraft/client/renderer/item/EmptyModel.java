@@ -15,8 +15,8 @@ public class EmptyModel implements ItemModel {
       super();
    }
 
-   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
-      var1.appendModelIdentityElement(this);
+   public void update(final ItemStackRenderState output, final ItemStack item, final ItemModelResolver resolver, final ItemDisplayContext displayContext, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      output.appendModelIdentityElement(this);
    }
 
    public static record Unbaked() implements ItemModel.Unbaked {
@@ -26,10 +26,10 @@ public class EmptyModel implements ItemModel {
          super();
       }
 
-      public void resolveDependencies(ResolvableModel.Resolver var1) {
+      public void resolveDependencies(final ResolvableModel.Resolver resolver) {
       }
 
-      public ItemModel bake(ItemModel.BakingContext var1) {
+      public ItemModel bake(final ItemModel.BakingContext context) {
          return EmptyModel.INSTANCE;
       }
 

@@ -18,13 +18,12 @@ public record Bees(List<BeehiveBlockEntity.Occupant> bees) implements TooltipPro
    public static final StreamCodec<RegistryFriendlyByteBuf, Bees> STREAM_CODEC;
    public static final Bees EMPTY;
 
-   public Bees(List<BeehiveBlockEntity.Occupant> var1) {
+   public Bees {
       super();
-      this.bees = var1;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      var2.accept(Component.translatable("container.beehive.bees", this.bees.size(), 3).withStyle(ChatFormatting.GRAY));
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      consumer.accept(Component.translatable("container.beehive.bees", this.bees.size(), 3).withStyle(ChatFormatting.GRAY));
    }
 
    static {

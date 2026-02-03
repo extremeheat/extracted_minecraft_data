@@ -33,19 +33,19 @@ public final class MinecraftServerStatistics implements DynamicMBean {
    private final MBeanInfo mBeanInfo;
    private final Map<String, AttributeDescription> attributeDescriptionByName;
 
-   private MinecraftServerStatistics(MinecraftServer var1) {
+   private MinecraftServerStatistics(final MinecraftServer server) {
       super();
-      this.attributeDescriptionByName = (Map)Stream.of(new AttributeDescription("tickTimes", this::getTickTimes, "Historical tick times (ms)", long[].class), new AttributeDescription("averageTickTime", this::getAverageTickTime, "Current average tick time (ms)", Long.TYPE)).collect(Collectors.toMap((var0) -> var0.name, Function.identity()));
-      this.server = var1;
-      MBeanAttributeInfo[] var2 = (MBeanAttributeInfo[])this.attributeDescriptionByName.values().stream().map(AttributeDescription::asMBeanAttributeInfo).toArray((var0) -> new MBeanAttributeInfo[var0]);
-      this.mBeanInfo = new MBeanInfo(MinecraftServerStatistics.class.getSimpleName(), "metrics for dedicated server", var2, (MBeanConstructorInfo[])null, (MBeanOperationInfo[])null, new MBeanNotificationInfo[0]);
+      this.attributeDescriptionByName = (Map)Stream.of(new AttributeDescription("tickTimes", this::getTickTimes, "Historical tick times (ms)", long[].class), new AttributeDescription("averageTickTime", this::getAverageTickTime, "Current average tick time (ms)", Long.TYPE)).collect(Collectors.toMap((attributeDescription) -> attributeDescription.name, Function.identity()));
+      this.server = server;
+      MBeanAttributeInfo[] mBeanAttributeInfos = (MBeanAttributeInfo[])this.attributeDescriptionByName.values().stream().map(AttributeDescription::asMBeanAttributeInfo).toArray((x$0) -> new MBeanAttributeInfo[x$0]);
+      this.mBeanInfo = new MBeanInfo(MinecraftServerStatistics.class.getSimpleName(), "metrics for dedicated server", mBeanAttributeInfos, (MBeanConstructorInfo[])null, (MBeanOperationInfo[])null, new MBeanNotificationInfo[0]);
    }
 
-   public static void registerJmxMonitoring(MinecraftServer var0) {
+   public static void registerJmxMonitoring(final MinecraftServer server) {
       try {
-         ManagementFactory.getPlatformMBeanServer().registerMBean(new MinecraftServerStatistics(var0), new ObjectName("net.minecraft.server:type=Server"));
-      } catch (InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException | MalformedObjectNameException var2) {
-         LOGGER.warn("Failed to initialise server as JMX bean", var2);
+         ManagementFactory.getPlatformMBeanServer().registerMBean(new MinecraftServerStatistics(server), new ObjectName("net.minecraft.server:type=Server"));
+      } catch (InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException | MalformedObjectNameException e) {
+         LOGGER.warn("Failed to initialise server as JMX bean", e);
       }
 
    }
@@ -58,27 +58,27 @@ public final class MinecraftServerStatistics implements DynamicMBean {
       return this.server.getTickTimesNanos();
    }
 
-   public @Nullable Object getAttribute(String var1) {
-      AttributeDescription var2 = (AttributeDescription)this.attributeDescriptionByName.get(var1);
-      return var2 == null ? null : var2.getter.get();
+   public @Nullable Object getAttribute(final String attribute) {
+      AttributeDescription attributeDescription = (AttributeDescription)this.attributeDescriptionByName.get(attribute);
+      return attributeDescription == null ? null : attributeDescription.getter.get();
    }
 
-   public void setAttribute(Attribute var1) {
+   public void setAttribute(final Attribute attribute) {
    }
 
-   public AttributeList getAttributes(String[] var1) {
-      Stream var10000 = Arrays.stream(var1);
+   public AttributeList getAttributes(final String[] attributes) {
+      Stream var10000 = Arrays.stream(attributes);
       Map var10001 = this.attributeDescriptionByName;
       Objects.requireNonNull(var10001);
-      List var2 = (List)var10000.map(var10001::get).filter(Objects::nonNull).map((var0) -> new Attribute(var0.name, var0.getter.get())).collect(Collectors.toList());
-      return new AttributeList(var2);
+      List<Attribute> attributeList = (List)var10000.map(var10001::get).filter(Objects::nonNull).map((attributeDescription) -> new Attribute(attributeDescription.name, attributeDescription.getter.get())).collect(Collectors.toList());
+      return new AttributeList(attributeList);
    }
 
-   public AttributeList setAttributes(AttributeList var1) {
+   public AttributeList setAttributes(final AttributeList attributes) {
       return new AttributeList();
    }
 
-   public @Nullable Object invoke(String var1, Object[] var2, String[] var3) {
+   public @Nullable Object invoke(final String actionName, final Object[] params, final String[] signature) {
       return null;
    }
 
@@ -86,18 +86,18 @@ public final class MinecraftServerStatistics implements DynamicMBean {
       return this.mBeanInfo;
    }
 
-   static final class AttributeDescription {
-      final String name;
-      final Supplier<Object> getter;
+   private static final class AttributeDescription {
+      private final String name;
+      private final Supplier<Object> getter;
       private final String description;
       private final Class<?> type;
 
-      AttributeDescription(String var1, Supplier<Object> var2, String var3, Class<?> var4) {
+      private AttributeDescription(final String name, final Supplier<Object> getter, final String description, final Class<?> type) {
          super();
-         this.name = var1;
-         this.getter = var2;
-         this.description = var3;
-         this.type = var4;
+         this.name = name;
+         this.getter = getter;
+         this.description = description;
+         this.type = type;
       }
 
       private MBeanAttributeInfo asMBeanAttributeInfo() {

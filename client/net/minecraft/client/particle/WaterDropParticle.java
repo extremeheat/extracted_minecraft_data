@@ -8,8 +8,8 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
 
 public class WaterDropParticle extends SingleQuadParticle {
-   protected WaterDropParticle(ClientLevel var1, double var2, double var4, double var6, TextureAtlasSprite var8) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var8);
+   protected WaterDropParticle(final ClientLevel level, final double x, final double y, final double z, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprite);
       this.xd *= 0.30000001192092896;
       this.yd = (double)(this.random.nextFloat() * 0.2F + 0.1F);
       this.zd *= 0.30000001192092896;
@@ -43,9 +43,9 @@ public class WaterDropParticle extends SingleQuadParticle {
             this.zd *= 0.699999988079071;
          }
 
-         BlockPos var1 = BlockPos.containing(this.x, this.y, this.z);
-         double var2 = Math.max(this.level.getBlockState(var1).getCollisionShape(this.level, var1).max(Direction.Axis.Y, this.x - (double)var1.getX(), this.z - (double)var1.getZ()), (double)this.level.getFluidState(var1).getHeight(this.level, var1));
-         if (var2 > 0.0 && this.y < (double)var1.getY() + var2) {
+         BlockPos pos = BlockPos.containing(this.x, this.y, this.z);
+         double offset = Math.max(this.level.getBlockState(pos).getCollisionShape(this.level, pos).max(Direction.Axis.Y, this.x - (double)pos.getX(), this.z - (double)pos.getZ()), (double)this.level.getFluidState(pos).getHeight(this.level, pos));
+         if (offset > 0.0 && this.y < (double)pos.getY() + offset) {
             this.remove();
          }
 
@@ -55,13 +55,13 @@ public class WaterDropParticle extends SingleQuadParticle {
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new WaterDropParticle(var2, var3, var5, var7, this.sprite.get(var15));
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new WaterDropParticle(level, x, y, z, this.sprite.get(random));
       }
    }
 }

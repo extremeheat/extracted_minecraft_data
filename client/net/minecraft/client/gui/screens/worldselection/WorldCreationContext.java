@@ -17,35 +17,28 @@ import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
 
 public record WorldCreationContext(WorldOptions options, Registry<LevelStem> datapackDimensions, WorldDimensions selectedDimensions, LayeredRegistryAccess<RegistryLayer> worldgenRegistries, ReloadableServerResources dataPackResources, WorldDataConfiguration dataConfiguration, InitialWorldCreationOptions initialWorldCreationOptions) {
-   public WorldCreationContext(WorldGenSettings var1, LayeredRegistryAccess<RegistryLayer> var2, ReloadableServerResources var3, WorldDataConfiguration var4) {
-      this(var1.options(), var1.dimensions(), var2, var3, var4, new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.SURVIVAL, GameRuleMap.of(), (ResourceKey)null));
+   public WorldCreationContext(final WorldGenSettings worldGenSettings, final LayeredRegistryAccess<RegistryLayer> loadedRegistries, final ReloadableServerResources dataPackResources, final WorldDataConfiguration dataConfiguration) {
+      this(worldGenSettings.options(), worldGenSettings.dimensions(), loadedRegistries, dataPackResources, dataConfiguration, new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.SURVIVAL, GameRuleMap.of(), (ResourceKey)null));
    }
 
-   public WorldCreationContext(WorldOptions var1, WorldDimensions var2, LayeredRegistryAccess<RegistryLayer> var3, ReloadableServerResources var4, WorldDataConfiguration var5, InitialWorldCreationOptions var6) {
-      this(var1, var3.getLayer(RegistryLayer.DIMENSIONS).lookupOrThrow(Registries.LEVEL_STEM), var2, var3.replaceFrom(RegistryLayer.DIMENSIONS), var4, var5, var6);
+   public WorldCreationContext(final WorldOptions worldOptions, final WorldDimensions worldDimensions, final LayeredRegistryAccess<RegistryLayer> loadedRegistries, final ReloadableServerResources dataPackResources, final WorldDataConfiguration dataConfiguration, final InitialWorldCreationOptions initialWorldCreationOptions) {
+      this(worldOptions, loadedRegistries.getLayer(RegistryLayer.DIMENSIONS).lookupOrThrow(Registries.LEVEL_STEM), worldDimensions, loadedRegistries.replaceFrom(RegistryLayer.DIMENSIONS), dataPackResources, dataConfiguration, initialWorldCreationOptions);
    }
 
-   public WorldCreationContext(WorldOptions var1, Registry<LevelStem> var2, WorldDimensions var3, LayeredRegistryAccess<RegistryLayer> var4, ReloadableServerResources var5, WorldDataConfiguration var6, InitialWorldCreationOptions var7) {
+   public WorldCreationContext {
       super();
-      this.options = var1;
-      this.datapackDimensions = var2;
-      this.selectedDimensions = var3;
-      this.worldgenRegistries = var4;
-      this.dataPackResources = var5;
-      this.dataConfiguration = var6;
-      this.initialWorldCreationOptions = var7;
    }
 
-   public WorldCreationContext withSettings(WorldOptions var1, WorldDimensions var2) {
-      return new WorldCreationContext(var1, this.datapackDimensions, var2, this.worldgenRegistries, this.dataPackResources, this.dataConfiguration, this.initialWorldCreationOptions);
+   public WorldCreationContext withSettings(final WorldOptions options, final WorldDimensions dimensions) {
+      return new WorldCreationContext(options, this.datapackDimensions, dimensions, this.worldgenRegistries, this.dataPackResources, this.dataConfiguration, this.initialWorldCreationOptions);
    }
 
-   public WorldCreationContext withOptions(OptionsModifier var1) {
-      return new WorldCreationContext((WorldOptions)var1.apply(this.options), this.datapackDimensions, this.selectedDimensions, this.worldgenRegistries, this.dataPackResources, this.dataConfiguration, this.initialWorldCreationOptions);
+   public WorldCreationContext withOptions(final OptionsModifier modifier) {
+      return new WorldCreationContext((WorldOptions)modifier.apply(this.options), this.datapackDimensions, this.selectedDimensions, this.worldgenRegistries, this.dataPackResources, this.dataConfiguration, this.initialWorldCreationOptions);
    }
 
-   public WorldCreationContext withDimensions(DimensionsUpdater var1) {
-      return new WorldCreationContext(this.options, this.datapackDimensions, (WorldDimensions)var1.apply(this.worldgenLoadContext(), this.selectedDimensions), this.worldgenRegistries, this.dataPackResources, this.dataConfiguration, this.initialWorldCreationOptions);
+   public WorldCreationContext withDimensions(final DimensionsUpdater modifier) {
+      return new WorldCreationContext(this.options, this.datapackDimensions, (WorldDimensions)modifier.apply(this.worldgenLoadContext(), this.selectedDimensions), this.worldgenRegistries, this.dataPackResources, this.dataConfiguration, this.initialWorldCreationOptions);
    }
 
    public RegistryAccess.Frozen worldgenLoadContext() {
@@ -53,8 +46,8 @@ public record WorldCreationContext(WorldOptions options, Registry<LevelStem> dat
    }
 
    public void validate() {
-      for(LevelStem var2 : this.datapackDimensions()) {
-         var2.generator().validate();
+      for(LevelStem stem : this.datapackDimensions()) {
+         stem.generator().validate();
       }
 
    }

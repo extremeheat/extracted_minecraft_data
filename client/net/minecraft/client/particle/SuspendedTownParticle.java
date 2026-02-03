@@ -6,12 +6,12 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
 
 public class SuspendedTownParticle extends SingleQuadParticle {
-   SuspendedTownParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
-      super(var1, var2, var4, var6, var8, var10, var12, var14);
-      float var15 = this.random.nextFloat() * 0.1F + 0.2F;
-      this.rCol = var15;
-      this.gCol = var15;
-      this.bCol = var15;
+   private SuspendedTownParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, xa, ya, za, sprite);
+      float br = this.random.nextFloat() * 0.1F + 0.2F;
+      this.rCol = br;
+      this.gCol = br;
+      this.bCol = br;
       this.setSize(0.02F, 0.02F);
       this.quadSize *= this.random.nextFloat() * 0.6F + 0.5F;
       this.xd *= 0.019999999552965164;
@@ -24,8 +24,8 @@ public class SuspendedTownParticle extends SingleQuadParticle {
       return SingleQuadParticle.Layer.OPAQUE;
    }
 
-   public void move(double var1, double var3, double var5) {
-      this.setBoundingBox(this.getBoundingBox().move(var1, var3, var5));
+   public void move(final double xa, final double ya, final double za) {
+      this.setBoundingBox(this.getBoundingBox().move(xa, ya, za));
       this.setLocationFromBoundingbox();
    }
 
@@ -46,76 +46,76 @@ public class SuspendedTownParticle extends SingleQuadParticle {
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new SuspendedTownParticle(level, x, y, z, xAux, yAux, zAux, this.sprite.get(random));
       }
    }
 
    public static class HappyVillagerProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public HappyVillagerProvider(SpriteSet var1) {
+      public HappyVillagerProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         SuspendedTownParticle var16 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
-         var16.setColor(1.0F, 1.0F, 1.0F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         SuspendedTownParticle particle = new SuspendedTownParticle(level, x, y, z, xAux, yAux, zAux, this.sprite.get(random));
+         particle.setColor(1.0F, 1.0F, 1.0F);
+         return particle;
       }
    }
 
    public static class ComposterFillProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public ComposterFillProvider(SpriteSet var1) {
+      public ComposterFillProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         SuspendedTownParticle var16 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
-         var16.setColor(1.0F, 1.0F, 1.0F);
-         var16.setLifetime(3 + var2.getRandom().nextInt(5));
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         SuspendedTownParticle particle = new SuspendedTownParticle(level, x, y, z, xAux, yAux, zAux, this.sprite.get(random));
+         particle.setColor(1.0F, 1.0F, 1.0F);
+         particle.setLifetime(3 + level.getRandom().nextInt(5));
+         return particle;
       }
    }
 
    public static class DolphinSpeedProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public DolphinSpeedProvider(SpriteSet var1) {
+      public DolphinSpeedProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         SuspendedTownParticle var16 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
-         var16.setColor(0.3F, 0.5F, 1.0F);
-         var16.setAlpha(1.0F - var15.nextFloat() * 0.7F);
-         var16.setLifetime(var16.getLifetime() / 2);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         SuspendedTownParticle particle = new SuspendedTownParticle(level, x, y, z, xAux, yAux, zAux, this.sprite.get(random));
+         particle.setColor(0.3F, 0.5F, 1.0F);
+         particle.setAlpha(1.0F - random.nextFloat() * 0.7F);
+         particle.setLifetime(particle.getLifetime() / 2);
+         return particle;
       }
    }
 
    public static class EggCrackProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public EggCrackProvider(SpriteSet var1) {
+      public EggCrackProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         SuspendedTownParticle var16 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
-         var16.setColor(1.0F, 1.0F, 1.0F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         SuspendedTownParticle particle = new SuspendedTownParticle(level, x, y, z, xAux, yAux, zAux, this.sprite.get(random));
+         particle.setColor(1.0F, 1.0F, 1.0F);
+         return particle;
       }
    }
 }

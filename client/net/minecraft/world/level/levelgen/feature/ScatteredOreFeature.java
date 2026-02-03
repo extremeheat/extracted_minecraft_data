@@ -11,26 +11,26 @@ import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguratio
 public class ScatteredOreFeature extends Feature<OreConfiguration> {
    private static final int MAX_DIST_FROM_ORIGIN = 7;
 
-   ScatteredOreFeature(Codec<OreConfiguration> var1) {
-      super(var1);
+   ScatteredOreFeature(final Codec<OreConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<OreConfiguration> var1) {
-      WorldGenLevel var2 = var1.level();
-      RandomSource var3 = var1.random();
-      OreConfiguration var4 = (OreConfiguration)var1.config();
-      BlockPos var5 = var1.origin();
-      int var6 = var3.nextInt(var4.size + 1);
-      BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
+   public boolean place(final FeaturePlaceContext<OreConfiguration> context) {
+      WorldGenLevel level = context.level();
+      RandomSource random = context.random();
+      OreConfiguration config = context.config();
+      BlockPos origin = context.origin();
+      int numberOfTries = random.nextInt(config.size + 1);
+      BlockPos.MutableBlockPos targetPos = new BlockPos.MutableBlockPos();
 
-      for(int var8 = 0; var8 < var6; ++var8) {
-         this.offsetTargetPos(var7, var3, var5, Math.min(var8, 7));
-         BlockState var9 = var2.getBlockState(var7);
+      for(int i = 0; i < numberOfTries; ++i) {
+         this.offsetTargetPos(targetPos, random, origin, Math.min(i, 7));
+         BlockState blockState = level.getBlockState(targetPos);
 
-         for(OreConfiguration.TargetBlockState var11 : var4.targetStates) {
-            Objects.requireNonNull(var2);
-            if (OreFeature.canPlaceOre(var9, var2::getBlockState, var3, var4, var11, var7)) {
-               var2.setBlock(var7, var11.state, 2);
+         for(OreConfiguration.TargetBlockState targetState : config.targetStates) {
+            Objects.requireNonNull(level);
+            if (OreFeature.canPlaceOre(blockState, level::getBlockState, random, config, targetState, targetPos)) {
+               level.setBlock(targetPos, targetState.state, 2);
                break;
             }
          }
@@ -39,14 +39,14 @@ public class ScatteredOreFeature extends Feature<OreConfiguration> {
       return true;
    }
 
-   private void offsetTargetPos(BlockPos.MutableBlockPos var1, RandomSource var2, BlockPos var3, int var4) {
-      int var5 = this.getRandomPlacementInOneAxisRelativeToOrigin(var2, var4);
-      int var6 = this.getRandomPlacementInOneAxisRelativeToOrigin(var2, var4);
-      int var7 = this.getRandomPlacementInOneAxisRelativeToOrigin(var2, var4);
-      var1.setWithOffset(var3, var5, var6, var7);
+   private void offsetTargetPos(final BlockPos.MutableBlockPos targetPos, final RandomSource random, final BlockPos origin, final int maxDistFromOriginForThisTry) {
+      int xd = this.getRandomPlacementInOneAxisRelativeToOrigin(random, maxDistFromOriginForThisTry);
+      int yd = this.getRandomPlacementInOneAxisRelativeToOrigin(random, maxDistFromOriginForThisTry);
+      int zd = this.getRandomPlacementInOneAxisRelativeToOrigin(random, maxDistFromOriginForThisTry);
+      targetPos.setWithOffset(origin, xd, yd, zd);
    }
 
-   private int getRandomPlacementInOneAxisRelativeToOrigin(RandomSource var1, int var2) {
-      return Math.round((var1.nextFloat() - var1.nextFloat()) * (float)var2);
+   private int getRandomPlacementInOneAxisRelativeToOrigin(final RandomSource random, final int maxDistanceFromOrigin) {
+      return Math.round((random.nextFloat() - random.nextFloat()) * (float)maxDistanceFromOrigin);
    }
 }

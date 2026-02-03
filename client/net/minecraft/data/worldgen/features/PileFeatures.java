@@ -22,11 +22,11 @@ public class PileFeatures {
       super();
    }
 
-   public static void bootstrap(BootstrapContext<ConfiguredFeature<?, ?>> var0) {
-      FeatureUtils.register(var0, PILE_HAY, Feature.BLOCK_PILE, new BlockPileConfiguration(new RotatedBlockProvider(Blocks.HAY_BLOCK)));
-      FeatureUtils.register(var0, PILE_MELON, Feature.BLOCK_PILE, new BlockPileConfiguration(BlockStateProvider.simple(Blocks.MELON)));
-      FeatureUtils.register(var0, PILE_SNOW, Feature.BLOCK_PILE, new BlockPileConfiguration(BlockStateProvider.simple(Blocks.SNOW)));
-      FeatureUtils.register(var0, PILE_ICE, Feature.BLOCK_PILE, new BlockPileConfiguration(new WeightedStateProvider(WeightedList.builder().add(Blocks.BLUE_ICE.defaultBlockState(), 1).add(Blocks.PACKED_ICE.defaultBlockState(), 5))));
-      FeatureUtils.register(var0, PILE_PUMPKIN, Feature.BLOCK_PILE, new BlockPileConfiguration(new WeightedStateProvider(WeightedList.builder().add(Blocks.PUMPKIN.defaultBlockState(), 19).add(Blocks.JACK_O_LANTERN.defaultBlockState(), 1))));
+   public static void bootstrap(final BootstrapContext<ConfiguredFeature<?, ?>> context) {
+      FeatureUtils.register(context, PILE_HAY, Feature.BLOCK_PILE, new BlockPileConfiguration(new RotatedBlockProvider(Blocks.HAY_BLOCK)));
+      FeatureUtils.register(context, PILE_MELON, Feature.BLOCK_PILE, new BlockPileConfiguration(BlockStateProvider.simple(Blocks.MELON)));
+      FeatureUtils.register(context, PILE_SNOW, Feature.BLOCK_PILE, new BlockPileConfiguration(BlockStateProvider.simple(Blocks.SNOW)));
+      FeatureUtils.register(context, PILE_ICE, Feature.BLOCK_PILE, new BlockPileConfiguration(new WeightedStateProvider(WeightedList.builder().add(Blocks.BLUE_ICE.defaultBlockState(), 1).add(Blocks.PACKED_ICE.defaultBlockState(), 5))));
+      FeatureUtils.register(context, PILE_PUMPKIN, Feature.BLOCK_PILE, new BlockPileConfiguration(new WeightedStateProvider(WeightedList.builder().add(Blocks.PUMPKIN.defaultBlockState(), 19).add(Blocks.JACK_O_LANTERN.defaultBlockState(), 1))));
    }
 }

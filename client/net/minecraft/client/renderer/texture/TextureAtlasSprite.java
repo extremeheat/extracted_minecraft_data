@@ -22,17 +22,17 @@ public class TextureAtlasSprite implements AutoCloseable {
    private final float v1;
    private final int padding;
 
-   protected TextureAtlasSprite(Identifier var1, SpriteContents var2, int var3, int var4, int var5, int var6, int var7) {
+   protected TextureAtlasSprite(final Identifier atlasLocation, final SpriteContents contents, final int atlasWidth, final int atlasHeight, final int x, final int y, final int padding) {
       super();
-      this.atlasLocation = var1;
-      this.contents = var2;
-      this.padding = var7;
-      this.x = var5;
-      this.y = var6;
-      this.u0 = (float)(var5 + var7) / (float)var3;
-      this.u1 = (float)(var5 + var7 + var2.width()) / (float)var3;
-      this.v0 = (float)(var6 + var7) / (float)var4;
-      this.v1 = (float)(var6 + var7 + var2.height()) / (float)var4;
+      this.atlasLocation = atlasLocation;
+      this.contents = contents;
+      this.padding = padding;
+      this.x = x;
+      this.y = y;
+      this.u0 = (float)(x + padding) / (float)atlasWidth;
+      this.u1 = (float)(x + padding + contents.width()) / (float)atlasWidth;
+      this.v0 = (float)(y + padding) / (float)atlasHeight;
+      this.v1 = (float)(y + padding + contents.height()) / (float)atlasHeight;
    }
 
    public int getX() {
@@ -55,13 +55,13 @@ public class TextureAtlasSprite implements AutoCloseable {
       return this.contents;
    }
 
-   public SpriteContents.@Nullable AnimationState createAnimationState(GpuBufferSlice var1, int var2) {
-      return this.contents.createAnimationState(var1, var2);
+   public SpriteContents.@Nullable AnimationState createAnimationState(final GpuBufferSlice uboSlice, final int spriteUboSize) {
+      return this.contents.createAnimationState(uboSlice, spriteUboSize);
    }
 
-   public float getU(float var1) {
-      float var2 = this.u1 - this.u0;
-      return this.u0 + var2 * var1;
+   public float getU(final float offset) {
+      float diff = this.u1 - this.u0;
+      return this.u0 + diff * offset;
    }
 
    public float getV0() {
@@ -72,9 +72,9 @@ public class TextureAtlasSprite implements AutoCloseable {
       return this.v1;
    }
 
-   public float getV(float var1) {
-      float var2 = this.v1 - this.v0;
-      return this.v0 + var2 * var1;
+   public float getV(final float offset) {
+      float diff = this.v1 - this.v0;
+      return this.v0 + diff * offset;
    }
 
    public Identifier atlasLocation() {
@@ -86,21 +86,21 @@ public class TextureAtlasSprite implements AutoCloseable {
       return "TextureAtlasSprite{contents='" + var10000 + "', u0=" + this.u0 + ", u1=" + this.u1 + ", v0=" + this.v0 + ", v1=" + this.v1 + "}";
    }
 
-   public void uploadFirstFrame(GpuTexture var1, int var2) {
-      this.contents.uploadFirstFrame(var1, var2);
+   public void uploadFirstFrame(final GpuTexture destination, final int level) {
+      this.contents.uploadFirstFrame(destination, level);
    }
 
-   public VertexConsumer wrap(VertexConsumer var1) {
-      return new SpriteCoordinateExpander(var1, this);
+   public VertexConsumer wrap(final VertexConsumer buffer) {
+      return new SpriteCoordinateExpander(buffer, this);
    }
 
    boolean isAnimated() {
       return this.contents.isAnimated();
    }
 
-   public void uploadSpriteUbo(ByteBuffer var1, int var2, int var3, int var4, int var5, int var6) {
-      for(int var7 = 0; var7 <= var3; ++var7) {
-         Std140Builder.intoBuffer(MemoryUtil.memSlice(var1, var2 + var7 * var6, var6)).putMat4f((new Matrix4f()).ortho2D(0.0F, (float)(var4 >> var7), 0.0F, (float)(var5 >> var7))).putMat4f((new Matrix4f()).translate((float)(this.x >> var7), (float)(this.y >> var7), 0.0F).scale((float)(this.contents.width() + this.padding * 2 >> var7), (float)(this.contents.height() + this.padding * 2 >> var7), 1.0F)).putFloat((float)this.padding / (float)this.contents.width()).putFloat((float)this.padding / (float)this.contents.height()).putInt(var7);
+   public void uploadSpriteUbo(final ByteBuffer uboBuffer, final int startOffset, final int maxMipLevel, final int atlasWidth, final int atlasHeight, final int spriteUboSize) {
+      for(int level = 0; level <= maxMipLevel; ++level) {
+         Std140Builder.intoBuffer(MemoryUtil.memSlice(uboBuffer, startOffset + level * spriteUboSize, spriteUboSize)).putMat4f((new Matrix4f()).ortho2D(0.0F, (float)(atlasWidth >> level), 0.0F, (float)(atlasHeight >> level))).putMat4f((new Matrix4f()).translate((float)(this.x >> level), (float)(this.y >> level), 0.0F).scale((float)(this.contents.width() + this.padding * 2 >> level), (float)(this.contents.height() + this.padding * 2 >> level), 1.0F)).putFloat((float)this.padding / (float)this.contents.width()).putFloat((float)this.padding / (float)this.contents.height()).putInt(level);
       }
 
    }

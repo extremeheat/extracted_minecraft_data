@@ -6,12 +6,12 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class FontOptionsScreen extends OptionsSubScreen {
-   private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.forceUnicodeFont(), var0.japaneseGlyphVariants()};
+   private static OptionInstance<?>[] options(final Options options) {
+      return new OptionInstance[]{options.forceUnicodeFont(), options.japaneseGlyphVariants()};
    }
 
-   public FontOptionsScreen(Screen var1, Options var2) {
-      super(var1, var2, Component.translatable("options.font.title"));
+   public FontOptionsScreen(final Screen lastScreen, final Options options) {
+      super(lastScreen, options, Component.translatable("options.font.title"));
    }
 
    protected void addOptions() {

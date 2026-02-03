@@ -15,41 +15,40 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.profiling.jfr.Environment;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 
 public class JfrCommand {
    private static final SimpleCommandExceptionType START_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.jfr.start.failed"));
-   private static final DynamicCommandExceptionType DUMP_FAILED = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.jfr.dump.failed", var0));
+   private static final DynamicCommandExceptionType DUMP_FAILED = new DynamicCommandExceptionType((message) -> Component.translatableEscape("commands.jfr.dump.failed", message));
 
    private JfrCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("jfr").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).then(Commands.literal("start").executes((var0x) -> startJfr((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stopJfr((CommandSourceStack)var0x.getSource()))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("jfr").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).then(Commands.literal("start").executes((c) -> startJfr((CommandSourceStack)c.getSource())))).then(Commands.literal("stop").executes((c) -> stopJfr((CommandSourceStack)c.getSource()))));
    }
 
-   private static int startJfr(CommandSourceStack var0) throws CommandSyntaxException {
-      Environment var1 = Environment.from(var0.getServer());
-      if (!JvmProfiler.INSTANCE.start(var1)) {
+   private static int startJfr(final CommandSourceStack source) throws CommandSyntaxException {
+      Environment env = Environment.from(source.getServer());
+      if (!JvmProfiler.INSTANCE.start(env)) {
          throw START_FAILED.create();
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.jfr.started"), false);
+         source.sendSuccess(() -> Component.translatable("commands.jfr.started"), false);
          return 1;
       }
    }
 
-   private static int stopJfr(CommandSourceStack var0) throws CommandSyntaxException {
+   private static int stopJfr(final CommandSourceStack source) throws CommandSyntaxException {
       try {
-         Path var1 = Paths.get(".").relativize(JvmProfiler.INSTANCE.stop().normalize());
-         Path var2 = var0.getServer().isPublished() && !SharedConstants.IS_RUNNING_IN_IDE ? var1 : var1.toAbsolutePath();
-         MutableComponent var3 = Component.literal(var1.toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.CopyToClipboard(var2.toString())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.copy.click")))));
-         var0.sendSuccess(() -> Component.translatable("commands.jfr.stopped", var3), false);
+         Path savedRecording = Paths.get(".").relativize(JvmProfiler.INSTANCE.stop().normalize());
+         Path clipboardPath = source.getServer().isPublished() && !SharedConstants.IS_RUNNING_IN_IDE ? savedRecording : savedRecording.toAbsolutePath();
+         Component fileText = Component.literal(savedRecording.toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((style) -> style.withClickEvent(new ClickEvent.CopyToClipboard(clipboardPath.toString())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.copy.click")))));
+         source.sendSuccess(() -> Component.translatable("commands.jfr.stopped", fileText), false);
          return 1;
-      } catch (Throwable var4) {
-         throw DUMP_FAILED.create(var4.getMessage());
+      } catch (Throwable t) {
+         throw DUMP_FAILED.create(t.getMessage());
       }
    }
 }

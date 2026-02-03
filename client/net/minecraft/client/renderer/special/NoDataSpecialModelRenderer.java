@@ -7,18 +7,13 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public interface NoDataSpecialModelRenderer extends SpecialModelRenderer<Void> {
-   default @Nullable Void extractArgument(ItemStack var1) {
+   default @Nullable Void extractArgument(final ItemStack stack) {
       return null;
    }
 
-   default void submit(@Nullable Void var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8) {
-      this.submit(var2, var3, var4, var5, var6, var7, var8);
+   default void submit(final @Nullable Void argument, final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      this.submit(type, poseStack, submitNodeCollector, lightCoords, overlayCoords, hasFoil, outlineColor);
    }
 
-   void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7);
-
-   // $FF: synthetic method
-   default @Nullable Object extractArgument(final ItemStack var1) {
-      return this.extractArgument(var1);
-   }
+   void submit(ItemDisplayContext type, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int lightCoords, int overlayCoords, boolean hasFoil, final int outlineColor);
 }

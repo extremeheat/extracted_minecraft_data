@@ -19,91 +19,86 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
    private static final Codec<List<Layer>> LAYER_LIST_CODEC;
    public static final Codec<EquipmentClientInfo> CODEC;
 
-   public EquipmentClientInfo(Map<LayerType, List<Layer>> var1) {
+   public EquipmentClientInfo {
       super();
-      this.layers = var1;
    }
 
    public static Builder builder() {
       return new Builder();
    }
 
-   public List<Layer> getLayers(LayerType var1) {
-      return (List)this.layers.getOrDefault(var1, List.of());
+   public List<Layer> getLayers(final LayerType type) {
+      return (List)this.layers.getOrDefault(type, List.of());
    }
 
    static {
       LAYER_LIST_CODEC = ExtraCodecs.nonEmptyList(EquipmentClientInfo.Layer.CODEC.listOf());
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.nonEmptyMap(Codec.unboundedMap(EquipmentClientInfo.LayerType.CODEC, LAYER_LIST_CODEC)).fieldOf("layers").forGetter(EquipmentClientInfo::layers)).apply(var0, EquipmentClientInfo::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.nonEmptyMap(Codec.unboundedMap(EquipmentClientInfo.LayerType.CODEC, LAYER_LIST_CODEC)).fieldOf("layers").forGetter(EquipmentClientInfo::layers)).apply(i, EquipmentClientInfo::new));
    }
 
    public static record Layer(Identifier textureId, Optional<Dyeable> dyeable, boolean usePlayerTexture) {
-      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Layer::textureId), EquipmentClientInfo.Dyeable.CODEC.optionalFieldOf("dyeable").forGetter(Layer::dyeable), Codec.BOOL.optionalFieldOf("use_player_texture", false).forGetter(Layer::usePlayerTexture)).apply(var0, Layer::new));
+      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((i) -> i.group(Identifier.CODEC.fieldOf("texture").forGetter(Layer::textureId), EquipmentClientInfo.Dyeable.CODEC.optionalFieldOf("dyeable").forGetter(Layer::dyeable), Codec.BOOL.optionalFieldOf("use_player_texture", false).forGetter(Layer::usePlayerTexture)).apply(i, Layer::new));
 
-      public Layer(Identifier var1) {
-         this(var1, Optional.empty(), false);
+      public Layer(final Identifier textureId) {
+         this(textureId, Optional.empty(), false);
       }
 
-      public Layer(Identifier var1, Optional<Dyeable> var2, boolean var3) {
+      public Layer {
          super();
-         this.textureId = var1;
-         this.dyeable = var2;
-         this.usePlayerTexture = var3;
       }
 
-      public static Layer leatherDyeable(Identifier var0, boolean var1) {
-         return new Layer(var0, var1 ? Optional.of(new Dyeable(Optional.of(-6265536))) : Optional.empty(), false);
+      public static Layer leatherDyeable(final Identifier textureId, final boolean dyeable) {
+         return new Layer(textureId, dyeable ? Optional.of(new Dyeable(Optional.of(-6265536))) : Optional.empty(), false);
       }
 
-      public static Layer onlyIfDyed(Identifier var0, boolean var1) {
-         return new Layer(var0, var1 ? Optional.of(new Dyeable(Optional.empty())) : Optional.empty(), false);
+      public static Layer onlyIfDyed(final Identifier textureId, final boolean dyeable) {
+         return new Layer(textureId, dyeable ? Optional.of(new Dyeable(Optional.empty())) : Optional.empty(), false);
       }
 
-      public Identifier getTextureLocation(LayerType var1) {
-         return this.textureId.withPath((UnaryOperator)((var1x) -> {
-            String var10000 = var1.getSerializedName();
-            return "textures/entity/equipment/" + var10000 + "/" + var1x + ".png";
+      public Identifier getTextureLocation(final LayerType type) {
+         return this.textureId.withPath((UnaryOperator)((path) -> {
+            String var10000 = type.getSerializedName();
+            return "textures/entity/equipment/" + var10000 + "/" + path + ".png";
          }));
       }
    }
 
    public static record Dyeable(Optional<Integer> colorWhenUndyed) {
-      public static final Codec<Dyeable> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.optionalFieldOf("color_when_undyed").forGetter(Dyeable::colorWhenUndyed)).apply(var0, Dyeable::new));
+      public static final Codec<Dyeable> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.RGB_COLOR_CODEC.optionalFieldOf("color_when_undyed").forGetter(Dyeable::colorWhenUndyed)).apply(i, Dyeable::new));
 
-      public Dyeable(Optional<Integer> var1) {
+      public Dyeable {
          super();
-         this.colorWhenUndyed = var1;
       }
    }
 
    public static class Builder {
       private final Map<LayerType, List<Layer>> layersByType = new EnumMap(LayerType.class);
 
-      Builder() {
+      private Builder() {
          super();
       }
 
-      public Builder addHumanoidLayers(Identifier var1) {
-         return this.addHumanoidLayers(var1, false);
+      public Builder addHumanoidLayers(final Identifier textureId) {
+         return this.addHumanoidLayers(textureId, false);
       }
 
-      public Builder addHumanoidLayers(Identifier var1, boolean var2) {
-         this.addLayers(EquipmentClientInfo.LayerType.HUMANOID_LEGGINGS, EquipmentClientInfo.Layer.leatherDyeable(var1, var2));
-         this.addMainHumanoidLayer(var1, var2);
+      public Builder addHumanoidLayers(final Identifier textureId, final boolean dyeable) {
+         this.addLayers(EquipmentClientInfo.LayerType.HUMANOID_LEGGINGS, EquipmentClientInfo.Layer.leatherDyeable(textureId, dyeable));
+         this.addMainHumanoidLayer(textureId, dyeable);
          return this;
       }
 
-      public Builder addMainHumanoidLayer(Identifier var1, boolean var2) {
-         return this.addLayers(EquipmentClientInfo.LayerType.HUMANOID, EquipmentClientInfo.Layer.leatherDyeable(var1, var2));
+      public Builder addMainHumanoidLayer(final Identifier textureId, final boolean dyeable) {
+         return this.addLayers(EquipmentClientInfo.LayerType.HUMANOID, EquipmentClientInfo.Layer.leatherDyeable(textureId, dyeable));
       }
 
-      public Builder addLayers(LayerType var1, Layer... var2) {
-         Collections.addAll((Collection)this.layersByType.computeIfAbsent(var1, (var0) -> new ArrayList()), var2);
+      public Builder addLayers(final LayerType type, final Layer... layers) {
+         Collections.addAll((Collection)this.layersByType.computeIfAbsent(type, (t) -> new ArrayList()), layers);
          return this;
       }
 
       public EquipmentClientInfo build() {
-         return new EquipmentClientInfo((Map)this.layersByType.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var0) -> List.copyOf((Collection)var0.getValue()))));
+         return new EquipmentClientInfo((Map)this.layersByType.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (entry) -> List.copyOf((Collection)entry.getValue()))));
       }
    }
 
@@ -130,8 +125,8 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
       public static final Codec<LayerType> CODEC = StringRepresentable.<LayerType>fromEnum(LayerType::values);
       private final String id;
 
-      private LayerType(final String var3) {
-         this.id = var3;
+      private LayerType(final String id) {
+         this.id = id;
       }
 
       public String getSerializedName() {

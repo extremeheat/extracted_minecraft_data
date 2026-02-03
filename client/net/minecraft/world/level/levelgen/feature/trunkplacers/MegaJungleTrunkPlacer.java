@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.feature.trunkplacers;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -15,35 +14,35 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class MegaJungleTrunkPlacer extends GiantTrunkPlacer {
-   public static final MapCodec<MegaJungleTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> trunkPlacerParts(var0).apply(var0, MegaJungleTrunkPlacer::new));
+   public static final MapCodec<MegaJungleTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> trunkPlacerParts(i).apply(i, MegaJungleTrunkPlacer::new));
 
-   public MegaJungleTrunkPlacer(int var1, int var2, int var3) {
-      super(var1, var2, var3);
+   public MegaJungleTrunkPlacer(final int baseHeight, final int heightRandA, final int heightRandB) {
+      super(baseHeight, heightRandA, heightRandB);
    }
 
    protected TrunkPlacerType<?> type() {
       return TrunkPlacerType.MEGA_JUNGLE_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6) {
-      ArrayList var7 = Lists.newArrayList();
-      var7.addAll(super.placeTrunk(var1, var2, var3, var4, var5, var6));
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+      List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
+      attachments.addAll(super.placeTrunk(level, trunkSetter, random, treeHeight, origin, config));
 
-      for(int var8 = var4 - 2 - var3.nextInt(4); var8 > var4 / 2; var8 -= 2 + var3.nextInt(4)) {
-         float var9 = var3.nextFloat() * 6.2831855F;
-         int var10 = 0;
-         int var11 = 0;
+      for(int branchHeight = treeHeight - 2 - random.nextInt(4); branchHeight > treeHeight / 2; branchHeight -= 2 + random.nextInt(4)) {
+         float angle = random.nextFloat() * 6.2831855F;
+         int bx = 0;
+         int bz = 0;
 
-         for(int var12 = 0; var12 < 5; ++var12) {
-            var10 = (int)(1.5F + Mth.cos((double)var9) * (float)var12);
-            var11 = (int)(1.5F + Mth.sin((double)var9) * (float)var12);
-            BlockPos var13 = var5.offset(var10, var8 - 3 + var12 / 2, var11);
-            this.placeLog(var1, var2, var3, var13, var6);
+         for(int b = 0; b < 5; ++b) {
+            bx = (int)(1.5F + Mth.cos((double)angle) * (float)b);
+            bz = (int)(1.5F + Mth.sin((double)angle) * (float)b);
+            BlockPos pos = origin.offset(bx, branchHeight - 3 + b / 2, bz);
+            this.placeLog(level, trunkSetter, random, pos, config);
          }
 
-         var7.add(new FoliagePlacer.FoliageAttachment(var5.offset(var10, var8, var11), -2, false));
+         attachments.add(new FoliagePlacer.FoliageAttachment(origin.offset(bx, branchHeight, bz), -2, false));
       }
 
-      return var7;
+      return attachments;
    }
 }

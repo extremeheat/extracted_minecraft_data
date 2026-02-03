@@ -11,57 +11,59 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.datafixers.util.Unit;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 public class EntityRidingToPassengersFix extends DataFix {
-   public EntityRidingToPassengersFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public EntityRidingToPassengersFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    public TypeRewriteRule makeRule() {
-      Schema var1 = this.getInputSchema();
-      Schema var2 = this.getOutputSchema();
-      Type var3 = var1.getTypeRaw(References.ENTITY_TREE);
-      Type var4 = var2.getTypeRaw(References.ENTITY_TREE);
-      Type var5 = var1.getTypeRaw(References.ENTITY);
-      return this.cap(var1, var2, var3, var4, var5);
+      Schema inputSchema = this.getInputSchema();
+      Schema outputSchema = this.getOutputSchema();
+      Type<?> oldEntityTreeType = inputSchema.getTypeRaw(References.ENTITY_TREE);
+      Type<?> newEntityTreeType = outputSchema.getTypeRaw(References.ENTITY_TREE);
+      Type<?> entityType = inputSchema.getTypeRaw(References.ENTITY);
+      return this.cap(inputSchema, outputSchema, oldEntityTreeType, newEntityTreeType, entityType);
    }
 
-   private <OldEntityTree, NewEntityTree, Entity> TypeRewriteRule cap(Schema var1, Schema var2, Type<OldEntityTree> var3, Type<NewEntityTree> var4, Type<Entity> var5) {
-      Type var6 = DSL.named(References.ENTITY_TREE.typeName(), DSL.and(DSL.optional(DSL.field("Riding", var3)), var5));
-      Type var7 = DSL.named(References.ENTITY_TREE.typeName(), DSL.and(DSL.optional(DSL.field("Passengers", DSL.list(var4))), var5));
-      Type var8 = var1.getType(References.ENTITY_TREE);
-      Type var9 = var2.getType(References.ENTITY_TREE);
-      if (!Objects.equals(var8, var6)) {
+   private <OldEntityTree, NewEntityTree, Entity> TypeRewriteRule cap(final Schema inputSchema, final Schema outputType, final Type<OldEntityTree> oldEntityTreeType, final Type<NewEntityTree> newEntityTreeType, final Type<Entity> entityType) {
+      Type<Pair<String, Pair<Either<OldEntityTree, Unit>, Entity>>> oldType = DSL.named(References.ENTITY_TREE.typeName(), DSL.and(DSL.optional(DSL.field("Riding", oldEntityTreeType)), entityType));
+      Type<Pair<String, Pair<Either<List<NewEntityTree>, Unit>, Entity>>> newType = DSL.named(References.ENTITY_TREE.typeName(), DSL.and(DSL.optional(DSL.field("Passengers", DSL.list(newEntityTreeType))), entityType));
+      Type<?> oldEntityType = inputSchema.getType(References.ENTITY_TREE);
+      Type<?> newEntityType = outputType.getType(References.ENTITY_TREE);
+      if (!Objects.equals(oldEntityType, oldType)) {
          throw new IllegalStateException("Old entity type is not what was expected.");
-      } else if (!var9.equals(var7, true, true)) {
+      } else if (!newEntityType.equals(newType, true, true)) {
          throw new IllegalStateException("New entity type is not what was expected.");
       } else {
-         OpticFinder var10 = DSL.typeFinder(var6);
-         OpticFinder var11 = DSL.typeFinder(var7);
-         OpticFinder var12 = DSL.typeFinder(var4);
-         Type var13 = var1.getType(References.PLAYER);
-         Type var14 = var2.getType(References.PLAYER);
-         return TypeRewriteRule.seq(this.fixTypeEverywhere("EntityRidingToPassengerFix", var6, var7, (var5x) -> (var6) -> {
-               Optional var7 = Optional.empty();
-               Pair var8 = var6;
+         OpticFinder<Pair<String, Pair<Either<OldEntityTree, Unit>, Entity>>> entityTreeFinder = DSL.typeFinder(oldType);
+         OpticFinder<Pair<String, Pair<Either<List<NewEntityTree>, Unit>, Entity>>> newEntityTreeValueFinder = DSL.typeFinder(newType);
+         OpticFinder<NewEntityTree> newEntityTreeFinder = DSL.typeFinder(newEntityTreeType);
+         Type<?> oldPlayerType = inputSchema.getType(References.PLAYER);
+         Type<?> newPlayerType = outputType.getType(References.PLAYER);
+         return TypeRewriteRule.seq(this.fixTypeEverywhere("EntityRidingToPassengerFix", oldType, newType, (ops) -> (input) -> {
+               Optional<Pair<String, Pair<Either<List<NewEntityTree>, Unit>, Entity>>> passenger = Optional.empty();
+               Pair<String, Pair<Either<OldEntityTree, Unit>, Entity>> updating = input;
 
                while(true) {
-                  Either var9 = (Either)DataFixUtils.orElse(var7.map((var4x) -> {
-                     Typed var5 = (Typed)var4.pointTyped(var5x).orElseThrow(() -> new IllegalStateException("Could not create new entity tree"));
-                     Object var6 = var5.set(var11, var4x).getOptional(var12).orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
-                     return Either.left(ImmutableList.of(var6));
+                  Either<List<NewEntityTree>, Unit> passengersValue = (Either)DataFixUtils.orElse(passenger.map((p) -> {
+                     Typed<NewEntityTree> newEntity = (Typed)newEntityTreeType.pointTyped(ops).orElseThrow(() -> new IllegalStateException("Could not create new entity tree"));
+                     NewEntityTree newEntityTree = (NewEntityTree)newEntity.set(newEntityTreeValueFinder, p).getOptional(newEntityTreeFinder).orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
+                     return Either.left(ImmutableList.of(newEntityTree));
                   }), Either.right(DSL.unit()));
-                  var7 = Optional.of(Pair.of(References.ENTITY_TREE.typeName(), Pair.of(var9, ((Pair)var8.getSecond()).getSecond())));
-                  Optional var10x = ((Either)((Pair)var8.getSecond()).getFirst()).left();
-                  if (var10x.isEmpty()) {
-                     return (Pair)var7.orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
+                  passenger = Optional.of(Pair.of(References.ENTITY_TREE.typeName(), Pair.of(passengersValue, ((Pair)updating.getSecond()).getSecond())));
+                  Optional<OldEntityTree> riding = ((Either)((Pair)updating.getSecond()).getFirst()).left();
+                  if (riding.isEmpty()) {
+                     return (Pair)passenger.orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
                   }
 
-                  var8 = (Pair)(new Typed(var3, var5x, var10x.get())).getOptional(var10).orElseThrow(() -> new IllegalStateException("Should always have an entity here"));
+                  updating = (Pair)(new Typed(oldEntityTreeType, ops, riding.get())).getOptional(entityTreeFinder).orElseThrow(() -> new IllegalStateException("Should always have an entity here"));
                }
-            }), this.writeAndRead("player RootVehicle injecter", var13, var14));
+            }), this.writeAndRead("player RootVehicle injecter", oldPlayerType, newPlayerType));
       }
    }
 }

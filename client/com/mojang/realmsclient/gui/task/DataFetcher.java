@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -15,25 +16,25 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DataFetcher {
-   static final Logger LOGGER = LogUtils.getLogger();
-   final Executor executor;
-   final TimeUnit resolution;
-   final TimeSource timeSource;
+   private static final Logger LOGGER = LogUtils.getLogger();
+   private final Executor executor;
+   private final TimeUnit resolution;
+   private final TimeSource timeSource;
 
-   public DataFetcher(Executor var1, TimeUnit var2, TimeSource var3) {
+   public DataFetcher(final Executor executor, final TimeUnit resolution, final TimeSource timeSource) {
       super();
-      this.executor = var1;
-      this.resolution = var2;
-      this.timeSource = var3;
+      this.executor = executor;
+      this.resolution = resolution;
+      this.timeSource = timeSource;
    }
 
-   public <T> Task<T> createTask(String var1, Callable<T> var2, Duration var3, RepeatedDelayStrategy var4) {
-      long var5 = this.resolution.convert(var3);
-      if (var5 == 0L) {
-         String var10002 = String.valueOf(var3);
+   public <T> Task<T> createTask(final String id, final Callable<T> updater, final Duration period, final RepeatedDelayStrategy repeatStrategy) {
+      long periodInUnit = this.resolution.convert(period);
+      if (periodInUnit == 0L) {
+         String var10002 = String.valueOf(period);
          throw new IllegalArgumentException("Period of " + var10002 + " too short for selected resolution of " + String.valueOf(this.resolution));
       } else {
-         return new Task<T>(var1, var2, var5, var4);
+         return new Task<T>(id, updater, periodInUnit, repeatStrategy);
       }
    }
 
@@ -41,24 +42,15 @@ public class DataFetcher {
       return new Subscription();
    }
 
-   static record ComputationResult<T>(Either<T, Exception> value, long time) {
-      final long time;
-
-      ComputationResult(Either<T, Exception> var1, long var2) {
+   private static record ComputationResult<T>(Either<T, Exception> value, long time) {
+      private ComputationResult {
          super();
-         this.value = var1;
-         this.time = var2;
       }
    }
 
-   static record SuccessfulComputationResult<T>(T value, long time) {
-      final T value;
-      final long time;
-
-      SuccessfulComputationResult(T var1, long var2) {
+   private static record SuccessfulComputationResult<T>(T value, long time) {
+      private SuccessfulComputationResult {
          super();
-         this.value = var1;
-         this.time = var2;
       }
    }
 
@@ -68,45 +60,47 @@ public class DataFetcher {
       private final long period;
       private final RepeatedDelayStrategy repeatStrategy;
       private @Nullable CompletableFuture<ComputationResult<T>> pendingTask;
-      @Nullable SuccessfulComputationResult<T> lastResult;
-      private long nextUpdate = -1L;
+      private @Nullable SuccessfulComputationResult<T> lastResult;
+      private long nextUpdate;
 
-      Task(final String var2, final Callable<T> var3, final long var4, final RepeatedDelayStrategy var6) {
+      private Task(final String id, final Callable<T> updater, final long period, final RepeatedDelayStrategy repeatStrategy) {
+         Objects.requireNonNull(DataFetcher.this);
          super();
-         this.id = var2;
-         this.updater = var3;
-         this.period = var4;
-         this.repeatStrategy = var6;
+         this.nextUpdate = -1L;
+         this.id = id;
+         this.updater = updater;
+         this.period = period;
+         this.repeatStrategy = repeatStrategy;
       }
 
-      void updateIfNeeded(long var1) {
+      private void updateIfNeeded(final long currentTime) {
          if (this.pendingTask != null) {
-            ComputationResult var3 = (ComputationResult)this.pendingTask.getNow((Object)null);
-            if (var3 == null) {
+            ComputationResult<T> result = (ComputationResult)this.pendingTask.getNow((Object)null);
+            if (result == null) {
                return;
             }
 
             this.pendingTask = null;
-            long var4 = var3.time;
-            var3.value().ifLeft((var3x) -> {
-               this.lastResult = new SuccessfulComputationResult<T>(var3x, var4);
-               this.nextUpdate = var4 + this.period * this.repeatStrategy.delayCyclesAfterSuccess();
-            }).ifRight((var3x) -> {
-               long var4x = this.repeatStrategy.delayCyclesAfterFailure();
-               DataFetcher.LOGGER.warn("Failed to process task {}, will repeat after {} cycles", new Object[]{this.id, var4x, var3x});
-               this.nextUpdate = var4 + this.period * var4x;
+            long completionTime = result.time;
+            result.value().ifLeft((value) -> {
+               this.lastResult = new SuccessfulComputationResult<T>(value, completionTime);
+               this.nextUpdate = completionTime + this.period * this.repeatStrategy.delayCyclesAfterSuccess();
+            }).ifRight((e) -> {
+               long cycles = this.repeatStrategy.delayCyclesAfterFailure();
+               DataFetcher.LOGGER.warn("Failed to process task {}, will repeat after {} cycles", new Object[]{this.id, cycles, e});
+               this.nextUpdate = completionTime + this.period * cycles;
             });
          }
 
-         if (this.nextUpdate <= var1) {
+         if (this.nextUpdate <= currentTime) {
             this.pendingTask = CompletableFuture.supplyAsync(() -> {
                try {
-                  Object var1 = this.updater.call();
-                  long var5 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
-                  return new ComputationResult(Either.left(var1), var5);
-               } catch (Exception var4) {
-                  long var2 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
-                  return new ComputationResult(Either.right(var4), var2);
+                  T result = (T)this.updater.call();
+                  long completionTime = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
+                  return new ComputationResult(Either.left(result), completionTime);
+               } catch (Exception e) {
+                  long completionTime = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
+                  return new ComputationResult(Either.right(e), completionTime);
                }
             }, DataFetcher.this.executor);
          }
@@ -120,76 +114,80 @@ public class DataFetcher {
       }
    }
 
-   class SubscribedTask<T> {
+   private class SubscribedTask<T> {
       private final Task<T> task;
       private final Consumer<T> output;
-      private long lastCheckTime = -1L;
+      private long lastCheckTime;
 
-      SubscribedTask(final Task<T> var2, final Consumer<T> var3) {
+      private SubscribedTask(final Task<T> task, final Consumer<T> output) {
+         Objects.requireNonNull(DataFetcher.this);
          super();
-         this.task = var2;
-         this.output = var3;
+         this.lastCheckTime = -1L;
+         this.task = task;
+         this.output = output;
       }
 
-      void update(long var1) {
-         this.task.updateIfNeeded(var1);
+      private void update(final long currentTime) {
+         this.task.updateIfNeeded(currentTime);
          this.runCallbackIfNeeded();
       }
 
-      void runCallbackIfNeeded() {
-         SuccessfulComputationResult var1 = this.task.lastResult;
-         if (var1 != null && this.lastCheckTime < var1.time) {
-            this.output.accept(var1.value);
-            this.lastCheckTime = var1.time;
+      private void runCallbackIfNeeded() {
+         SuccessfulComputationResult<T> lastResult = this.task.lastResult;
+         if (lastResult != null && this.lastCheckTime < lastResult.time) {
+            this.output.accept(lastResult.value);
+            this.lastCheckTime = lastResult.time;
          }
 
       }
 
-      void runCallback() {
-         SuccessfulComputationResult var1 = this.task.lastResult;
-         if (var1 != null) {
-            this.output.accept(var1.value);
-            this.lastCheckTime = var1.time;
+      private void runCallback() {
+         SuccessfulComputationResult<T> lastResult = this.task.lastResult;
+         if (lastResult != null) {
+            this.output.accept(lastResult.value);
+            this.lastCheckTime = lastResult.time;
          }
 
       }
 
-      void reset() {
+      private void reset() {
          this.task.reset();
          this.lastCheckTime = -1L;
       }
    }
 
    public class Subscription {
-      private final List<SubscribedTask<?>> subscriptions = new ArrayList();
+      private final List<SubscribedTask<?>> subscriptions;
 
       public Subscription() {
+         Objects.requireNonNull(DataFetcher.this);
          super();
+         this.subscriptions = new ArrayList();
       }
 
-      public <T> void subscribe(Task<T> var1, Consumer<T> var2) {
-         SubscribedTask var3 = DataFetcher.this.new SubscribedTask(var1, var2);
-         this.subscriptions.add(var3);
-         var3.runCallbackIfNeeded();
+      public <T> void subscribe(final Task<T> task, final Consumer<T> output) {
+         SubscribedTask<T> subscription = DataFetcher.this.new SubscribedTask<T>(task, output);
+         this.subscriptions.add(subscription);
+         subscription.runCallbackIfNeeded();
       }
 
       public void forceUpdate() {
-         for(SubscribedTask var2 : this.subscriptions) {
-            var2.runCallback();
+         for(SubscribedTask<?> subscription : this.subscriptions) {
+            subscription.runCallback();
          }
 
       }
 
       public void tick() {
-         for(SubscribedTask var2 : this.subscriptions) {
-            var2.update(DataFetcher.this.timeSource.get(DataFetcher.this.resolution));
+         for(SubscribedTask<?> subscription : this.subscriptions) {
+            subscription.update(DataFetcher.this.timeSource.get(DataFetcher.this.resolution));
          }
 
       }
 
       public void reset() {
-         for(SubscribedTask var2 : this.subscriptions) {
-            var2.reset();
+         for(SubscribedTask<?> subscription : this.subscriptions) {
+            subscription.reset();
          }
 
       }

@@ -13,67 +13,52 @@ import net.minecraft.resources.Identifier;
 public interface CustomPacketPayload {
    Type<? extends CustomPacketPayload> type();
 
-   static <B extends ByteBuf, T extends CustomPacketPayload> StreamCodec<B, T> codec(StreamMemberEncoder<B, T> var0, StreamDecoder<B, T> var1) {
-      return StreamCodec.<B, T>ofMember(var0, var1);
+   static <B extends ByteBuf, T extends CustomPacketPayload> StreamCodec<B, T> codec(final StreamMemberEncoder<B, T> writer, final StreamDecoder<B, T> reader) {
+      return StreamCodec.<B, T>ofMember(writer, reader);
    }
 
-   static <T extends CustomPacketPayload> Type<T> createType(String var0) {
-      return new Type<T>(Identifier.withDefaultNamespace(var0));
+   static <T extends CustomPacketPayload> Type<T> createType(final String id) {
+      return new Type<T>(Identifier.withDefaultNamespace(id));
    }
 
-   static <B extends FriendlyByteBuf> StreamCodec<B, CustomPacketPayload> codec(final FallbackProvider<B> var0, List<TypeAndCodec<? super B, ?>> var1) {
-      final Map var2 = (Map)var1.stream().collect(Collectors.toUnmodifiableMap((var0x) -> var0x.type().id(), TypeAndCodec::codec));
+   static <B extends FriendlyByteBuf> StreamCodec<B, CustomPacketPayload> codec(final FallbackProvider<B> fallback, final List<TypeAndCodec<? super B, ?>> types) {
+      final Map<Identifier, StreamCodec<? super B, ? extends CustomPacketPayload>> idToType = (Map)types.stream().collect(Collectors.toUnmodifiableMap((t) -> t.type().id(), TypeAndCodec::codec));
       return new StreamCodec<B, CustomPacketPayload>() {
-         private StreamCodec<? super B, ? extends CustomPacketPayload> findCodec(Identifier var1) {
-            StreamCodec var2x = (StreamCodec)var2.get(var1);
-            return var2x != null ? var2x : var0.create(var1);
+         private StreamCodec<? super B, ? extends CustomPacketPayload> findCodec(final Identifier typeId) {
+            StreamCodec<? super B, ? extends CustomPacketPayload> codec = (StreamCodec)idToType.get(typeId);
+            return codec != null ? codec : fallback.create(typeId);
          }
 
-         private <T extends CustomPacketPayload> void writeCap(B var1, Type<T> var2x, CustomPacketPayload var3) {
-            var1.writeIdentifier(var2x.id());
-            StreamCodec var4 = this.findCodec(var2x.id);
-            var4.encode(var1, var3);
+         private <T extends CustomPacketPayload> void writeCap(final B output, final Type<T> type, final CustomPacketPayload payload) {
+            output.writeIdentifier(type.id());
+            StreamCodec<B, T> codec = this.findCodec(type.id);
+            codec.encode(output, payload);
          }
 
-         public void encode(B var1, CustomPacketPayload var2x) {
-            this.writeCap(var1, var2x.type(), var2x);
+         public void encode(final B output, final CustomPacketPayload value) {
+            this.writeCap(output, value.type(), value);
          }
 
-         public CustomPacketPayload decode(B var1) {
-            Identifier var2x = var1.readIdentifier();
-            return (CustomPacketPayload)this.findCodec(var2x).decode(var1);
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2x) {
-            this.encode((FriendlyByteBuf)var1, (CustomPacketPayload)var2x);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((FriendlyByteBuf)var1);
+         public CustomPacketPayload decode(final B input) {
+            Identifier identifier = input.readIdentifier();
+            return (CustomPacketPayload)this.findCodec(identifier).decode(input);
          }
       };
    }
 
    public static record Type<T extends CustomPacketPayload>(Identifier id) {
-      final Identifier id;
-
-      public Type(Identifier var1) {
+      public Type {
          super();
-         this.id = var1;
       }
    }
 
    public static record TypeAndCodec<B extends FriendlyByteBuf, T extends CustomPacketPayload>(Type<T> type, StreamCodec<B, T> codec) {
-      public TypeAndCodec(Type<T> var1, StreamCodec<B, T> var2) {
+      public TypeAndCodec {
          super();
-         this.type = var1;
-         this.codec = var2;
       }
    }
 
    public interface FallbackProvider<B extends FriendlyByteBuf> {
-      StreamCodec<B, ? extends CustomPacketPayload> create(Identifier var1);
+      StreamCodec<B, ? extends CustomPacketPayload> create(Identifier typeId);
    }
 }

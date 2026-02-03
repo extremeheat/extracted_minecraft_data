@@ -1,5 +1,5 @@
 package net.minecraft.gizmos;
 
 public interface Gizmo {
-   void emit(GizmoPrimitives var1, float var2);
+   void emit(GizmoPrimitives primitives, float alphaMultiplier);
 }

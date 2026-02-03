@@ -29,74 +29,74 @@ public class ItemRenderer {
       super();
    }
 
-   public static void renderItem(ItemDisplayContext var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, int[] var5, List<BakedQuad> var6, RenderType var7, ItemStackRenderState.FoilType var8) {
-      VertexConsumer var9;
-      if (var8 == ItemStackRenderState.FoilType.SPECIAL) {
-         PoseStack.Pose var10 = var1.last().copy();
-         if (var0 == ItemDisplayContext.GUI) {
-            MatrixUtil.mulComponentWise(var10.pose(), 0.5F);
-         } else if (var0.firstPerson()) {
-            MatrixUtil.mulComponentWise(var10.pose(), 0.75F);
+   public static void renderItem(final ItemDisplayContext type, final PoseStack poseStack, final MultiBufferSource bufferSource, final int lightCoords, final int overlayCoords, final int[] tintLayers, final List<BakedQuad> quads, final RenderType renderType, final ItemStackRenderState.FoilType foilType) {
+      VertexConsumer builder;
+      if (foilType == ItemStackRenderState.FoilType.SPECIAL) {
+         PoseStack.Pose cameraPose = poseStack.last().copy();
+         if (type == ItemDisplayContext.GUI) {
+            MatrixUtil.mulComponentWise(cameraPose.pose(), 0.5F);
+         } else if (type.firstPerson()) {
+            MatrixUtil.mulComponentWise(cameraPose.pose(), 0.75F);
          }
 
-         var9 = getSpecialFoilBuffer(var2, var7, var10);
+         builder = getSpecialFoilBuffer(bufferSource, renderType, cameraPose);
       } else {
-         var9 = getFoilBuffer(var2, var7, true, var8 != ItemStackRenderState.FoilType.NONE);
+         builder = getFoilBuffer(bufferSource, renderType, true, foilType != ItemStackRenderState.FoilType.NONE);
       }
 
-      renderQuadList(var1, var9, var6, var5, var3, var4);
+      renderQuadList(poseStack, builder, quads, tintLayers, lightCoords, overlayCoords);
    }
 
-   private static VertexConsumer getSpecialFoilBuffer(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
-      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(useTransparentGlint(var1) ? RenderTypes.glintTranslucent() : RenderTypes.glint()), var2, 0.0078125F), var0.getBuffer(var1));
+   private static VertexConsumer getSpecialFoilBuffer(final MultiBufferSource bufferSource, final RenderType renderType, final PoseStack.Pose cameraPose) {
+      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(bufferSource.getBuffer(useTransparentGlint(renderType) ? RenderTypes.glintTranslucent() : RenderTypes.glint()), cameraPose, 0.0078125F), bufferSource.getBuffer(renderType));
    }
 
-   public static VertexConsumer getFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2, boolean var3) {
-      if (var3) {
-         return useTransparentGlint(var1) ? VertexMultiConsumer.create(var0.getBuffer(RenderTypes.glintTranslucent()), var0.getBuffer(var1)) : VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderTypes.glint() : RenderTypes.entityGlint()), var0.getBuffer(var1));
+   public static VertexConsumer getFoilBuffer(final MultiBufferSource bufferSource, final RenderType renderType, final boolean sheeted, final boolean hasFoil) {
+      if (hasFoil) {
+         return useTransparentGlint(renderType) ? VertexMultiConsumer.create(bufferSource.getBuffer(RenderTypes.glintTranslucent()), bufferSource.getBuffer(renderType)) : VertexMultiConsumer.create(bufferSource.getBuffer(sheeted ? RenderTypes.glint() : RenderTypes.entityGlint()), bufferSource.getBuffer(renderType));
       } else {
-         return var0.getBuffer(var1);
-      }
-   }
-
-   public static List<RenderType> getFoilRenderTypes(RenderType var0, boolean var1, boolean var2) {
-      if (var2) {
-         return useTransparentGlint(var0) ? List.of(var0, RenderTypes.glintTranslucent()) : List.of(var0, var1 ? RenderTypes.glint() : RenderTypes.entityGlint());
-      } else {
-         return List.of(var0);
+         return bufferSource.getBuffer(renderType);
       }
    }
 
-   private static boolean useTransparentGlint(RenderType var0) {
-      return Minecraft.useShaderTransparency() && (var0 == Sheets.translucentItemSheet() || var0 == Sheets.translucentBlockItemSheet());
+   public static List<RenderType> getFoilRenderTypes(final RenderType baseRenderType, final boolean sheeted, final boolean hasFoil) {
+      if (hasFoil) {
+         return useTransparentGlint(baseRenderType) ? List.of(baseRenderType, RenderTypes.glintTranslucent()) : List.of(baseRenderType, sheeted ? RenderTypes.glint() : RenderTypes.entityGlint());
+      } else {
+         return List.of(baseRenderType);
+      }
    }
 
-   private static int getLayerColorSafe(int[] var0, int var1) {
-      return var1 >= 0 && var1 < var0.length ? var0[var1] : -1;
+   private static boolean useTransparentGlint(final RenderType renderType) {
+      return Minecraft.useShaderTransparency() && (renderType == Sheets.translucentItemSheet() || renderType == Sheets.translucentBlockItemSheet());
    }
 
-   private static void renderQuadList(PoseStack var0, VertexConsumer var1, List<BakedQuad> var2, int[] var3, int var4, int var5) {
-      PoseStack.Pose var6 = var0.last();
+   private static int getLayerColorSafe(final int[] layers, final int layer) {
+      return layer >= 0 && layer < layers.length ? layers[layer] : -1;
+   }
 
-      for(BakedQuad var8 : var2) {
-         float var9;
-         float var10;
-         float var11;
-         float var12;
-         if (var8.isTinted()) {
-            int var13 = getLayerColorSafe(var3, var8.tintIndex());
-            var9 = (float)ARGB.alpha(var13) / 255.0F;
-            var10 = (float)ARGB.red(var13) / 255.0F;
-            var11 = (float)ARGB.green(var13) / 255.0F;
-            var12 = (float)ARGB.blue(var13) / 255.0F;
+   private static void renderQuadList(final PoseStack poseStack, final VertexConsumer builder, final List<BakedQuad> quads, final int[] tintLayers, final int lightCoords, final int overlayCoords) {
+      PoseStack.Pose pose = poseStack.last();
+
+      for(BakedQuad quad : quads) {
+         float alpha;
+         float red;
+         float green;
+         float blue;
+         if (quad.isTinted()) {
+            int color = getLayerColorSafe(tintLayers, quad.tintIndex());
+            alpha = (float)ARGB.alpha(color) / 255.0F;
+            red = (float)ARGB.red(color) / 255.0F;
+            green = (float)ARGB.green(color) / 255.0F;
+            blue = (float)ARGB.blue(color) / 255.0F;
          } else {
-            var9 = 1.0F;
-            var10 = 1.0F;
-            var11 = 1.0F;
-            var12 = 1.0F;
+            alpha = 1.0F;
+            red = 1.0F;
+            green = 1.0F;
+            blue = 1.0F;
          }
 
-         var1.putBulkData(var6, var8, var10, var11, var12, var9, var4, var5);
+         builder.putBulkData(pose, quad, red, green, blue, alpha, lightCoords, overlayCoords);
       }
 
    }

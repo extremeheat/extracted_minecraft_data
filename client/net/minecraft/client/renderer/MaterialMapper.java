@@ -4,17 +4,15 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.Identifier;
 
 public record MaterialMapper(Identifier sheet, String prefix) {
-   public MaterialMapper(Identifier var1, String var2) {
+   public MaterialMapper {
       super();
-      this.sheet = var1;
-      this.prefix = var2;
    }
 
-   public Material apply(Identifier var1) {
-      return new Material(this.sheet, var1.withPrefix(this.prefix + "/"));
+   public Material apply(final Identifier path) {
+      return new Material(this.sheet, path.withPrefix(this.prefix + "/"));
    }
 
-   public Material defaultNamespaceApply(String var1) {
-      return this.apply(Identifier.withDefaultNamespace(var1));
+   public Material defaultNamespaceApply(final String path) {
+      return this.apply(Identifier.withDefaultNamespace(path));
    }
 }

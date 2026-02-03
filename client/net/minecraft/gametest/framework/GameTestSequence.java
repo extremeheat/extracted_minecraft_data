@@ -8,51 +8,56 @@ import java.util.function.Supplier;
 import net.minecraft.network.chat.Component;
 
 public class GameTestSequence {
-   final GameTestInfo parent;
+   private final GameTestInfo parent;
    private final List<GameTestEvent> events = Lists.newArrayList();
    private int lastTick;
 
-   GameTestSequence(GameTestInfo var1) {
+   GameTestSequence(final GameTestInfo parent) {
       super();
-      this.parent = var1;
-      this.lastTick = var1.getTick();
+      this.parent = parent;
+      this.lastTick = parent.getTick();
    }
 
-   public GameTestSequence thenWaitUntil(Runnable var1) {
-      this.events.add(GameTestEvent.create(var1));
+   public GameTestSequence thenWaitUntil(final Runnable assertion) {
+      this.events.add(GameTestEvent.create(assertion));
       return this;
    }
 
-   public GameTestSequence thenWaitUntil(long var1, Runnable var3) {
-      this.events.add(GameTestEvent.create(var1, var3));
+   public GameTestSequence thenWaitUntil(final long expectedDelay, final Runnable assertion) {
+      this.events.add(GameTestEvent.create(expectedDelay, assertion));
       return this;
    }
 
-   public GameTestSequence thenIdle(int var1) {
-      return this.thenExecuteAfter(var1, () -> {
+   public GameTestSequence thenWaitAtLeast(final long minimumDelay, final Runnable assertion) {
+      this.events.add(GameTestEvent.createWithMinimumDelay(minimumDelay, assertion));
+      return this;
+   }
+
+   public GameTestSequence thenIdle(final int delta) {
+      return this.thenExecuteAfter(delta, () -> {
       });
    }
 
-   public GameTestSequence thenExecute(Runnable var1) {
-      this.events.add(GameTestEvent.create(() -> this.executeWithoutFail(var1)));
+   public GameTestSequence thenExecute(final Runnable assertion) {
+      this.events.add(GameTestEvent.create(() -> this.executeWithoutFail(assertion)));
       return this;
    }
 
-   public GameTestSequence thenExecuteAfter(int var1, Runnable var2) {
+   public GameTestSequence thenExecuteAfter(final int delta, final Runnable after) {
       this.events.add(GameTestEvent.create(() -> {
-         if (this.parent.getTick() < this.lastTick + var1) {
+         if (this.parent.getTick() < this.lastTick + delta) {
             throw new GameTestAssertException(Component.translatable("test.error.sequence.not_completed"), this.parent.getTick());
          } else {
-            this.executeWithoutFail(var2);
+            this.executeWithoutFail(after);
          }
       }));
       return this;
    }
 
-   public GameTestSequence thenExecuteFor(int var1, Runnable var2) {
+   public GameTestSequence thenExecuteFor(final int delta, final Runnable check) {
       this.events.add(GameTestEvent.create(() -> {
-         if (this.parent.getTick() < this.lastTick + var1) {
-            this.executeWithoutFail(var2);
+         if (this.parent.getTick() < this.lastTick + delta) {
+            this.executeWithoutFail(check);
             throw new GameTestAssertException(Component.translatable("test.error.sequence.not_completed"), this.parent.getTick());
          }
       }));
@@ -66,54 +71,59 @@ public class GameTestSequence {
       var10000.add(GameTestEvent.create(var10001::succeed));
    }
 
-   public void thenFail(Supplier<GameTestException> var1) {
-      this.events.add(GameTestEvent.create(() -> this.parent.fail((GameTestException)var1.get())));
+   public void thenFail(final Supplier<GameTestException> e) {
+      this.events.add(GameTestEvent.create(() -> this.parent.fail((GameTestException)e.get())));
    }
 
    public Condition thenTrigger() {
-      Condition var1 = new Condition();
-      this.events.add(GameTestEvent.create(() -> var1.trigger(this.parent.getTick())));
-      return var1;
+      Condition result = new Condition();
+      this.events.add(GameTestEvent.create(() -> result.trigger(this.parent.getTick())));
+      return result;
    }
 
-   public void tickAndContinue(int var1) {
+   public void tickAndContinue(final int tick) {
       try {
-         this.tick(var1);
+         this.tick(tick);
       } catch (GameTestAssertException var3) {
       }
 
    }
 
-   public void tickAndFailIfNotComplete(int var1) {
+   public void tickAndFailIfNotComplete(final int tick) {
       try {
-         this.tick(var1);
-      } catch (GameTestAssertException var3) {
-         this.parent.fail((GameTestException)var3);
+         this.tick(tick);
+      } catch (GameTestAssertException e) {
+         this.parent.fail((GameTestException)e);
       }
 
    }
 
-   private void executeWithoutFail(Runnable var1) {
+   private void executeWithoutFail(final Runnable assertion) {
       try {
-         var1.run();
-      } catch (GameTestAssertException var3) {
-         this.parent.fail((GameTestException)var3);
+         assertion.run();
+      } catch (GameTestAssertException e) {
+         this.parent.fail((GameTestException)e);
       }
 
    }
 
-   private void tick(int var1) {
-      Iterator var2 = this.events.iterator();
+   private void tick(final int tick) {
+      Iterator<GameTestEvent> iterator = this.events.iterator();
 
-      while(var2.hasNext()) {
-         GameTestEvent var3 = (GameTestEvent)var2.next();
-         var3.assertion.run();
-         var2.remove();
-         int var4 = var1 - this.lastTick;
-         int var5 = this.lastTick;
-         this.lastTick = var1;
-         if (var3.expectedDelay != null && var3.expectedDelay != (long)var4) {
-            this.parent.fail((GameTestException)(new GameTestAssertException(Component.translatable("test.error.sequence.invalid_tick", (long)var5 + var3.expectedDelay), var1)));
+      while(iterator.hasNext()) {
+         GameTestEvent event = (GameTestEvent)iterator.next();
+         event.assertion.run();
+         iterator.remove();
+         int delay = tick - this.lastTick;
+         int prevTick = this.lastTick;
+         this.lastTick = tick;
+         if (event.minimumDelay != null && event.minimumDelay > (long)delay) {
+            this.parent.fail((GameTestException)(new GameTestAssertException(Component.translatable("test.error.sequence.minimum_tick", (long)prevTick + event.minimumDelay), tick)));
+            break;
+         }
+
+         if (event.expectedDelay != null && event.expectedDelay != (long)delay) {
+            this.parent.fail((GameTestException)(new GameTestAssertException(Component.translatable("test.error.sequence.invalid_tick", (long)prevTick + event.expectedDelay), tick)));
             break;
          }
       }
@@ -122,27 +132,29 @@ public class GameTestSequence {
 
    public class Condition {
       private static final int NOT_TRIGGERED = -1;
-      private int triggerTime = -1;
+      private int triggerTime;
 
       public Condition() {
+         Objects.requireNonNull(GameTestSequence.this);
          super();
+         this.triggerTime = -1;
       }
 
-      void trigger(int var1) {
+      void trigger(final int time) {
          if (this.triggerTime != -1) {
             throw new IllegalStateException("Condition already triggered at " + this.triggerTime);
          } else {
-            this.triggerTime = var1;
+            this.triggerTime = time;
          }
       }
 
       public void assertTriggeredThisTick() {
-         int var1 = GameTestSequence.this.parent.getTick();
-         if (this.triggerTime != var1) {
+         int tick = GameTestSequence.this.parent.getTick();
+         if (this.triggerTime != tick) {
             if (this.triggerTime == -1) {
-               throw new GameTestAssertException(Component.translatable("test.error.sequence.condition_not_triggered"), var1);
+               throw new GameTestAssertException(Component.translatable("test.error.sequence.condition_not_triggered"), tick);
             } else {
-               throw new GameTestAssertException(Component.translatable("test.error.sequence.condition_already_triggered", this.triggerTime), var1);
+               throw new GameTestAssertException(Component.translatable("test.error.sequence.condition_already_triggered", this.triggerTime), tick);
             }
          }
       }

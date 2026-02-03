@@ -9,26 +9,26 @@ public class ClientboundSetChunkCacheRadiusPacket implements Packet<ClientGamePa
    public static final StreamCodec<FriendlyByteBuf, ClientboundSetChunkCacheRadiusPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetChunkCacheRadiusPacket>codec(ClientboundSetChunkCacheRadiusPacket::write, ClientboundSetChunkCacheRadiusPacket::new);
    private final int radius;
 
-   public ClientboundSetChunkCacheRadiusPacket(int var1) {
+   public ClientboundSetChunkCacheRadiusPacket(final int radius) {
       super();
-      this.radius = var1;
+      this.radius = radius;
    }
 
-   private ClientboundSetChunkCacheRadiusPacket(FriendlyByteBuf var1) {
+   private ClientboundSetChunkCacheRadiusPacket(final FriendlyByteBuf input) {
       super();
-      this.radius = var1.readVarInt();
+      this.radius = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.radius);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.radius);
    }
 
    public PacketType<ClientboundSetChunkCacheRadiusPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_CHUNK_CACHE_RADIUS;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetChunkCacheRadius(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetChunkCacheRadius(this);
    }
 
    public int getRadius() {

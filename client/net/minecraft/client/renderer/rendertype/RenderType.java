@@ -28,15 +28,15 @@ public class RenderType {
    private final Optional<RenderType> outline;
    protected final String name;
 
-   private RenderType(String var1, RenderSetup var2) {
+   private RenderType(final String name, final RenderSetup state) {
       super();
-      this.name = var1;
-      this.state = var2;
-      this.outline = var2.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? var2.textures.values().stream().findFirst().map((var1x) -> (RenderType)RenderTypes.OUTLINE.apply(var1x.location(), var2.pipeline.isCull())) : Optional.empty();
+      this.name = name;
+      this.state = state;
+      this.outline = state.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? state.textures.values().stream().findFirst().map((texture) -> (RenderType)RenderTypes.OUTLINE.apply(texture.location(), state.pipeline.isCull())) : Optional.empty();
    }
 
-   static RenderType create(String var0, RenderSetup var1) {
-      return new RenderType(var0, var1);
+   static RenderType create(final String name, final RenderSetup state) {
+      return new RenderType(name, state);
    }
 
    public String toString() {
@@ -44,55 +44,59 @@ public class RenderType {
       return "RenderType[" + var10000 + ":" + String.valueOf(this.state) + "]";
    }
 
-   public void draw(MeshData var1) {
-      Matrix4fStack var2 = RenderSystem.getModelViewStack();
-      Consumer var3 = this.state.layeringTransform.getModifier();
-      if (var3 != null) {
-         var2.pushMatrix();
-         var3.accept(var2);
+   public boolean hasBlending() {
+      return this.state.pipeline.getBlendFunction().isPresent();
+   }
+
+   public void draw(final MeshData mesh) {
+      Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+      Consumer<Matrix4fStack> modelViewModifier = this.state.layeringTransform.getModifier();
+      if (modelViewModifier != null) {
+         modelViewStack.pushMatrix();
+         modelViewModifier.accept(modelViewStack);
       }
 
-      GpuBufferSlice var4 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), this.state.textureTransform.getMatrix());
-      Map var5 = this.state.getTextures();
-      MeshData var6 = var1;
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), this.state.textureTransform.getMatrix());
+      Map<String, RenderSetup.TextureAndSampler> textures = this.state.getTextures();
+      MeshData var6 = mesh;
 
       try {
-         GpuBuffer var7 = this.state.pipeline.getVertexFormat().uploadImmediateVertexBuffer(var1.vertexBuffer());
-         GpuBuffer var8;
-         VertexFormat.IndexType var9;
-         if (var1.indexBuffer() == null) {
-            RenderSystem.AutoStorageIndexBuffer var10 = RenderSystem.getSequentialBuffer(var1.drawState().mode());
-            var8 = var10.getBuffer(var1.drawState().indexCount());
-            var9 = var10.type();
+         GpuBuffer vertices = this.state.pipeline.getVertexFormat().uploadImmediateVertexBuffer(mesh.vertexBuffer());
+         GpuBuffer indices;
+         VertexFormat.IndexType indexType;
+         if (mesh.indexBuffer() == null) {
+            RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(mesh.drawState().mode());
+            indices = autoIndices.getBuffer(mesh.drawState().indexCount());
+            indexType = autoIndices.type();
          } else {
-            var8 = this.state.pipeline.getVertexFormat().uploadImmediateIndexBuffer(var1.indexBuffer());
-            var9 = var1.drawState().indexType();
+            indices = this.state.pipeline.getVertexFormat().uploadImmediateIndexBuffer(mesh.indexBuffer());
+            indexType = mesh.drawState().indexType();
          }
 
-         RenderTarget var21 = this.state.outputTarget.getRenderTarget();
-         GpuTextureView var11 = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : var21.getColorTextureView();
-         GpuTextureView var12 = var21.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : var21.getDepthTextureView()) : null;
+         RenderTarget renderTarget = this.state.outputTarget.getRenderTarget();
+         GpuTextureView colorTexture = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : renderTarget.getColorTextureView();
+         GpuTextureView depthTexture = renderTarget.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : renderTarget.getDepthTextureView()) : null;
 
-         try (RenderPass var13 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw for " + this.name, var11, OptionalInt.empty(), var12, OptionalDouble.empty())) {
-            var13.setPipeline(this.state.pipeline);
-            ScissorState var14 = RenderSystem.getScissorStateForRenderTypeDraws();
-            if (var14.enabled()) {
-               var13.enableScissor(var14.x(), var14.y(), var14.width(), var14.height());
+         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw for " + this.name, colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+            renderPass.setPipeline(this.state.pipeline);
+            ScissorState scissorState = RenderSystem.getScissorStateForRenderTypeDraws();
+            if (scissorState.enabled()) {
+               renderPass.enableScissor(scissorState.x(), scissorState.y(), scissorState.width(), scissorState.height());
             }
 
-            RenderSystem.bindDefaultUniforms(var13);
-            var13.setUniform("DynamicTransforms", var4);
-            var13.setVertexBuffer(0, var7);
+            RenderSystem.bindDefaultUniforms(renderPass);
+            renderPass.setUniform("DynamicTransforms", dynamicTransforms);
+            renderPass.setVertexBuffer(0, vertices);
 
-            for(Map.Entry var16 : var5.entrySet()) {
-               var13.bindTexture((String)var16.getKey(), ((RenderSetup.TextureAndSampler)var16.getValue()).textureView(), ((RenderSetup.TextureAndSampler)var16.getValue()).sampler());
+            for(Map.Entry<String, RenderSetup.TextureAndSampler> entry : textures.entrySet()) {
+               renderPass.bindTexture((String)entry.getKey(), ((RenderSetup.TextureAndSampler)entry.getValue()).textureView(), ((RenderSetup.TextureAndSampler)entry.getValue()).sampler());
             }
 
-            var13.setIndexBuffer(var8, var9);
-            var13.drawIndexed(0, 0, var1.drawState().indexCount(), 1);
+            renderPass.setIndexBuffer(indices, indexType);
+            renderPass.drawIndexed(0, 0, mesh.drawState().indexCount(), 1);
          }
       } catch (Throwable var20) {
-         if (var1 != null) {
+         if (mesh != null) {
             try {
                var6.close();
             } catch (Throwable var17) {
@@ -103,12 +107,12 @@ public class RenderType {
          throw var20;
       }
 
-      if (var1 != null) {
-         var1.close();
+      if (mesh != null) {
+         mesh.close();
       }
 
-      if (var3 != null) {
-         var2.popMatrix();
+      if (modelViewModifier != null) {
+         modelViewStack.popMatrix();
       }
 
    }

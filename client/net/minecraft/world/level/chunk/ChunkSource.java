@@ -8,32 +8,32 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.jspecify.annotations.Nullable;
 
-public abstract class ChunkSource implements LightChunkGetter, AutoCloseable {
+public abstract class ChunkSource implements AutoCloseable, LightChunkGetter {
    public ChunkSource() {
       super();
    }
 
-   public @Nullable LevelChunk getChunk(int var1, int var2, boolean var3) {
-      return (LevelChunk)this.getChunk(var1, var2, ChunkStatus.FULL, var3);
+   public @Nullable LevelChunk getChunk(final int x, final int z, final boolean loadOrGenerate) {
+      return (LevelChunk)this.getChunk(x, z, ChunkStatus.FULL, loadOrGenerate);
    }
 
-   public @Nullable LevelChunk getChunkNow(int var1, int var2) {
-      return this.getChunk(var1, var2, false);
+   public @Nullable LevelChunk getChunkNow(final int x, final int z) {
+      return this.getChunk(x, z, false);
    }
 
-   public @Nullable LightChunk getChunkForLighting(int var1, int var2) {
-      return this.getChunk(var1, var2, ChunkStatus.EMPTY, false);
+   public @Nullable LightChunk getChunkForLighting(final int x, final int z) {
+      return this.getChunk(x, z, ChunkStatus.EMPTY, false);
    }
 
-   public boolean hasChunk(int var1, int var2) {
-      return this.getChunk(var1, var2, ChunkStatus.FULL, false) != null;
+   public boolean hasChunk(final int x, final int z) {
+      return this.getChunk(x, z, ChunkStatus.FULL, false) != null;
    }
 
-   public abstract @Nullable ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4);
+   public abstract @Nullable ChunkAccess getChunk(int x, int z, ChunkStatus targetStatus, boolean loadOrGenerate);
 
-   public abstract void tick(BooleanSupplier var1, boolean var2);
+   public abstract void tick(BooleanSupplier haveTime, final boolean tickChunks);
 
-   public void onSectionEmptinessChanged(int var1, int var2, int var3, boolean var4) {
+   public void onSectionEmptinessChanged(final int sectionX, final int sectionY, final int sectionZ, final boolean empty) {
    }
 
    public abstract String gatherStats();
@@ -45,10 +45,10 @@ public abstract class ChunkSource implements LightChunkGetter, AutoCloseable {
 
    public abstract LevelLightEngine getLightEngine();
 
-   public void setSpawnSettings(boolean var1) {
+   public void setSpawnSettings(final boolean spawnEnemies) {
    }
 
-   public boolean updateChunkForced(ChunkPos var1, boolean var2) {
+   public boolean updateChunkForced(final ChunkPos pos, final boolean forced) {
       return false;
    }
 

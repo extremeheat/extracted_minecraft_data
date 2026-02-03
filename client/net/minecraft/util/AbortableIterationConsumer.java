@@ -4,11 +4,11 @@ import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface AbortableIterationConsumer<T> {
-   Continuation accept(T var1);
+   Continuation accept(T entry);
 
-   static <T> AbortableIterationConsumer<T> forConsumer(Consumer<T> var0) {
-      return (var1) -> {
-         var0.accept(var1);
+   static <T> AbortableIterationConsumer<T> forConsumer(final Consumer<T> consumer) {
+      return (e) -> {
+         consumer.accept(e);
          return AbortableIterationConsumer.Continuation.CONTINUE;
       };
    }

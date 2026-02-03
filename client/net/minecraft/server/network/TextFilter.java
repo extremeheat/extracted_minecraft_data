@@ -6,12 +6,12 @@ import java.util.concurrent.CompletableFuture;
 
 public interface TextFilter {
    TextFilter DUMMY = new TextFilter() {
-      public CompletableFuture<FilteredText> processStreamMessage(String var1) {
-         return CompletableFuture.completedFuture(FilteredText.passThrough(var1));
+      public CompletableFuture<FilteredText> processStreamMessage(final String message) {
+         return CompletableFuture.completedFuture(FilteredText.passThrough(message));
       }
 
-      public CompletableFuture<List<FilteredText>> processMessageBundle(List<String> var1) {
-         return CompletableFuture.completedFuture((List)var1.stream().map(FilteredText::passThrough).collect(ImmutableList.toImmutableList()));
+      public CompletableFuture<List<FilteredText>> processMessageBundle(final List<String> messages) {
+         return CompletableFuture.completedFuture((List)messages.stream().map(FilteredText::passThrough).collect(ImmutableList.toImmutableList()));
       }
    };
 
@@ -21,7 +21,7 @@ public interface TextFilter {
    default void leave() {
    }
 
-   CompletableFuture<FilteredText> processStreamMessage(String var1);
+   CompletableFuture<FilteredText> processStreamMessage(String message);
 
-   CompletableFuture<List<FilteredText>> processMessageBundle(List<String> var1);
+   CompletableFuture<List<FilteredText>> processMessageBundle(List<String> messages);
 }

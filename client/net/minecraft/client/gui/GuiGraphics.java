@@ -74,6 +74,7 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.state.properties.WoodType;
@@ -86,43 +87,43 @@ import org.jspecify.annotations.Nullable;
 
 public class GuiGraphics {
    private static final int EXTRA_SPACE_AFTER_FIRST_TOOLTIP_LINE = 2;
-   final Minecraft minecraft;
+   private final Minecraft minecraft;
    private final Matrix3x2fStack pose;
    private final ScissorStack scissorStack;
    private final MaterialSet materials;
    private final TextureAtlas guiSprites;
-   final GuiRenderState guiRenderState;
+   private final GuiRenderState guiRenderState;
    private CursorType pendingCursor;
-   final int mouseX;
-   final int mouseY;
+   private final int mouseX;
+   private final int mouseY;
    private @Nullable Runnable deferredTooltip;
-   @Nullable Style hoveredTextStyle;
-   @Nullable Style clickableTextStyle;
+   private @Nullable Style hoveredTextStyle;
+   private @Nullable Style clickableTextStyle;
 
-   private GuiGraphics(Minecraft var1, Matrix3x2fStack var2, GuiRenderState var3, int var4, int var5) {
+   private GuiGraphics(final Minecraft minecraft, final Matrix3x2fStack pose, final GuiRenderState guiRenderState, final int mouseX, final int mouseY) {
       super();
       this.scissorStack = new ScissorStack();
       this.pendingCursor = CursorType.DEFAULT;
-      this.minecraft = var1;
-      this.pose = var2;
-      this.mouseX = var4;
-      this.mouseY = var5;
-      AtlasManager var6 = var1.getAtlasManager();
-      this.materials = var6;
-      this.guiSprites = var6.getAtlasOrThrow(AtlasIds.GUI);
-      this.guiRenderState = var3;
+      this.minecraft = minecraft;
+      this.pose = pose;
+      this.mouseX = mouseX;
+      this.mouseY = mouseY;
+      AtlasManager atlasManager = minecraft.getAtlasManager();
+      this.materials = atlasManager;
+      this.guiSprites = atlasManager.getAtlasOrThrow(AtlasIds.GUI);
+      this.guiRenderState = guiRenderState;
    }
 
-   public GuiGraphics(Minecraft var1, GuiRenderState var2, int var3, int var4) {
-      this(var1, new Matrix3x2fStack(16), var2, var3, var4);
+   public GuiGraphics(final Minecraft minecraft, final GuiRenderState guiRenderState, final int mouseX, final int mouseY) {
+      this(minecraft, new Matrix3x2fStack(16), guiRenderState, mouseX, mouseY);
    }
 
-   public void requestCursor(CursorType var1) {
-      this.pendingCursor = var1;
+   public void requestCursor(final CursorType cursorType) {
+      this.pendingCursor = cursorType;
    }
 
-   public void applyCursor(Window var1) {
-      var1.selectCursor(this.pendingCursor);
+   public void applyCursor(final Window window) {
+      window.selectCursor(this.pendingCursor);
    }
 
    public int guiWidth() {
@@ -145,454 +146,464 @@ public class GuiGraphics {
       return this.pose;
    }
 
-   public void hLine(int var1, int var2, int var3, int var4) {
-      if (var2 < var1) {
-         int var5 = var1;
-         var1 = var2;
-         var2 = var5;
+   public void hLine(int x0, int x1, final int y, final int col) {
+      if (x1 < x0) {
+         int tmp = x0;
+         x0 = x1;
+         x1 = tmp;
       }
 
-      this.fill(var1, var3, var2 + 1, var3 + 1, var4);
+      this.fill(x0, y, x1 + 1, y + 1, col);
    }
 
-   public void vLine(int var1, int var2, int var3, int var4) {
-      if (var3 < var2) {
-         int var5 = var2;
-         var2 = var3;
-         var3 = var5;
+   public void vLine(final int x, int y0, int y1, final int col) {
+      if (y1 < y0) {
+         int tmp = y0;
+         y0 = y1;
+         y1 = tmp;
       }
 
-      this.fill(var1, var2 + 1, var1 + 1, var3, var4);
+      this.fill(x, y0 + 1, x + 1, y1, col);
    }
 
-   public void enableScissor(int var1, int var2, int var3, int var4) {
-      ScreenRectangle var5 = (new ScreenRectangle(var1, var2, var3 - var1, var4 - var2)).transformAxisAligned(this.pose);
-      this.scissorStack.push(var5);
+   public void enableScissor(final int x0, final int y0, final int x1, final int y1) {
+      ScreenRectangle rectangle = (new ScreenRectangle(x0, y0, x1 - x0, y1 - y0)).transformAxisAligned(this.pose);
+      this.scissorStack.push(rectangle);
    }
 
    public void disableScissor() {
       this.scissorStack.pop();
    }
 
-   public boolean containsPointInScissor(int var1, int var2) {
-      return this.scissorStack.containsPoint(var1, var2);
+   public boolean containsPointInScissor(final int x, final int y) {
+      return this.scissorStack.containsPoint(x, y);
    }
 
-   public void fill(int var1, int var2, int var3, int var4, int var5) {
-      this.fill(RenderPipelines.GUI, var1, var2, var3, var4, var5);
+   public void fill(final int x0, final int y0, final int x1, final int y1, final int col) {
+      this.fill(RenderPipelines.GUI, x0, y0, x1, y1, col);
    }
 
-   public void fill(RenderPipeline var1, int var2, int var3, int var4, int var5, int var6) {
-      if (var2 < var4) {
-         int var7 = var2;
-         var2 = var4;
-         var4 = var7;
+   public void fill(final RenderPipeline pipeline, int x0, int y0, int x1, int y1, final int col) {
+      if (x0 < x1) {
+         int tmp = x0;
+         x0 = x1;
+         x1 = tmp;
       }
 
-      if (var3 < var5) {
-         int var8 = var3;
-         var3 = var5;
-         var5 = var8;
+      if (y0 < y1) {
+         int tmp = y0;
+         y0 = y1;
+         y1 = tmp;
       }
 
-      this.submitColoredRectangle(var1, TextureSetup.noTexture(), var2, var3, var4, var5, var6, (Integer)null);
+      this.submitColoredRectangle(pipeline, TextureSetup.noTexture(), x0, y0, x1, y1, col, (Integer)null);
    }
 
-   public void fillGradient(int var1, int var2, int var3, int var4, int var5, int var6) {
-      this.submitColoredRectangle(RenderPipelines.GUI, TextureSetup.noTexture(), var1, var2, var3, var4, var5, var6);
+   public void fillGradient(final int x0, final int y0, final int x1, final int y1, final int col1, final int col2) {
+      this.submitColoredRectangle(RenderPipelines.GUI, TextureSetup.noTexture(), x0, y0, x1, y1, col1, col2);
    }
 
-   public void fill(RenderPipeline var1, TextureSetup var2, int var3, int var4, int var5, int var6) {
-      this.submitColoredRectangle(var1, var2, var3, var4, var5, var6, -1, (Integer)null);
+   public void fill(final RenderPipeline renderPipeline, final TextureSetup textureSetup, final int x0, final int y0, final int x1, final int y1) {
+      this.submitColoredRectangle(renderPipeline, textureSetup, x0, y0, x1, y1, -1, (Integer)null);
    }
 
-   private void submitColoredRectangle(RenderPipeline var1, TextureSetup var2, int var3, int var4, int var5, int var6, int var7, @Nullable Integer var8) {
-      this.guiRenderState.submitGuiElement(new ColoredRectangleRenderState(var1, var2, new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8 != null ? var8 : var7, this.scissorStack.peek()));
+   private void submitColoredRectangle(final RenderPipeline renderPipeline, final TextureSetup textureSetup, final int x0, final int y0, final int x1, final int y1, final int color1, final @Nullable Integer color2) {
+      this.guiRenderState.submitGuiElement(new ColoredRectangleRenderState(renderPipeline, textureSetup, new Matrix3x2f(this.pose), x0, y0, x1, y1, color1, color2 != null ? color2 : color1, this.scissorStack.peek()));
    }
 
-   public void textHighlight(int var1, int var2, int var3, int var4, boolean var5) {
-      if (var5) {
-         this.fill(RenderPipelines.GUI_INVERT, var1, var2, var3, var4, -1);
+   public void textHighlight(final int x0, final int y0, final int x1, final int y1, final boolean invertText) {
+      if (invertText) {
+         this.fill(RenderPipelines.GUI_INVERT, x0, y0, x1, y1, -1);
       }
 
-      this.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var1, var2, var3, var4, -16776961);
+      this.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, x0, y0, x1, y1, -16776961);
    }
 
-   public void drawCenteredString(Font var1, String var2, int var3, int var4, int var5) {
-      this.drawString(var1, var2, var3 - var1.width(var2) / 2, var4, var5);
+   public void drawCenteredString(final Font font, final String str, final int x, final int y, final int color) {
+      this.drawString(font, str, x - font.width(str) / 2, y, color);
    }
 
-   public void drawCenteredString(Font var1, Component var2, int var3, int var4, int var5) {
-      FormattedCharSequence var6 = var2.getVisualOrderText();
-      this.drawString(var1, var6, var3 - var1.width(var6) / 2, var4, var5);
+   public void drawCenteredString(final Font font, final Component text, final int x, final int y, final int color) {
+      FormattedCharSequence toRender = text.getVisualOrderText();
+      this.drawString(font, toRender, x - font.width(toRender) / 2, y, color);
    }
 
-   public void drawCenteredString(Font var1, FormattedCharSequence var2, int var3, int var4, int var5) {
-      this.drawString(var1, var2, var3 - var1.width(var2) / 2, var4, var5);
+   public void drawCenteredString(final Font font, final FormattedCharSequence text, final int x, final int y, final int color) {
+      this.drawString(font, text, x - font.width(text) / 2, y, color);
    }
 
-   public void drawString(Font var1, @Nullable String var2, int var3, int var4, int var5) {
-      this.drawString(var1, var2, var3, var4, var5, true);
+   public void drawString(final Font font, final @Nullable String str, final int x, final int y, final int color) {
+      this.drawString(font, str, x, y, color, true);
    }
 
-   public void drawString(Font var1, @Nullable String var2, int var3, int var4, int var5, boolean var6) {
-      if (var2 != null) {
-         this.drawString(var1, Language.getInstance().getVisualOrder(FormattedText.of(var2)), var3, var4, var5, var6);
-      }
-   }
-
-   public void drawString(Font var1, FormattedCharSequence var2, int var3, int var4, int var5) {
-      this.drawString(var1, var2, var3, var4, var5, true);
-   }
-
-   public void drawString(Font var1, FormattedCharSequence var2, int var3, int var4, int var5, boolean var6) {
-      if (ARGB.alpha(var5) != 0) {
-         this.guiRenderState.submitText(new GuiTextRenderState(var1, var2, new Matrix3x2f(this.pose), var3, var4, var5, 0, var6, false, this.scissorStack.peek()));
+   public void drawString(final Font font, final @Nullable String str, final int x, final int y, final int color, final boolean dropShadow) {
+      if (str != null) {
+         this.drawString(font, Language.getInstance().getVisualOrder(FormattedText.of(str)), x, y, color, dropShadow);
       }
    }
 
-   public void drawString(Font var1, Component var2, int var3, int var4, int var5) {
-      this.drawString(var1, var2, var3, var4, var5, true);
+   public void drawString(final Font font, final FormattedCharSequence str, final int x, final int y, final int color) {
+      this.drawString(font, str, x, y, color, true);
    }
 
-   public void drawString(Font var1, Component var2, int var3, int var4, int var5, boolean var6) {
-      this.drawString(var1, var2.getVisualOrderText(), var3, var4, var5, var6);
+   public void drawString(final Font font, final FormattedCharSequence str, final int x, final int y, final int color, final boolean dropShadow) {
+      if (ARGB.alpha(color) != 0) {
+         this.guiRenderState.submitText(new GuiTextRenderState(font, str, new Matrix3x2f(this.pose), x, y, color, 0, dropShadow, false, this.scissorStack.peek()));
+      }
    }
 
-   public void drawWordWrap(Font var1, FormattedText var2, int var3, int var4, int var5, int var6) {
-      this.drawWordWrap(var1, var2, var3, var4, var5, var6, true);
+   public void drawString(final Font font, final Component str, final int x, final int y, final int color) {
+      this.drawString(font, str, x, y, color, true);
    }
 
-   public void drawWordWrap(Font var1, FormattedText var2, int var3, int var4, int var5, int var6, boolean var7) {
-      for(FormattedCharSequence var9 : var1.split(var2, var5)) {
-         this.drawString(var1, var9, var3, var4, var6, var7);
-         Objects.requireNonNull(var1);
-         var4 += 9;
+   public void drawString(final Font font, final Component str, final int x, final int y, final int color, final boolean dropShadow) {
+      this.drawString(font, str.getVisualOrderText(), x, y, color, dropShadow);
+   }
+
+   public void drawWordWrap(final Font font, final FormattedText string, final int x, final int y, final int w, final int col) {
+      this.drawWordWrap(font, string, x, y, w, col, true);
+   }
+
+   public void drawWordWrap(final Font font, final FormattedText string, final int x, int y, final int w, final int col, final boolean dropShadow) {
+      for(FormattedCharSequence line : font.split(string, w)) {
+         this.drawString(font, line, x, y, col, dropShadow);
+         Objects.requireNonNull(font);
+         y += 9;
       }
 
    }
 
-   public void drawStringWithBackdrop(Font var1, Component var2, int var3, int var4, int var5, int var6) {
-      int var7 = this.minecraft.options.getBackgroundColor(0.0F);
-      if (var7 != 0) {
-         boolean var8 = true;
-         int var10001 = var3 - 2;
-         int var10002 = var4 - 2;
-         int var10003 = var3 + var5 + 2;
-         Objects.requireNonNull(var1);
-         this.fill(var10001, var10002, var10003, var4 + 9 + 2, ARGB.multiply(var7, var6));
+   public void drawStringWithBackdrop(final Font font, final Component str, final int textX, final int textY, final int textWidth, final int textColor) {
+      int backgroundColor = this.minecraft.options.getBackgroundColor(0.0F);
+      if (backgroundColor != 0) {
+         int padding = 2;
+         int var10001 = textX - 2;
+         int var10002 = textY - 2;
+         int var10003 = textX + textWidth + 2;
+         Objects.requireNonNull(font);
+         this.fill(var10001, var10002, var10003, textY + 9 + 2, ARGB.multiply(backgroundColor, textColor));
       }
 
-      this.drawString(var1, var2, var3, var4, var6, true);
+      this.drawString(font, str, textX, textY, textColor, true);
    }
 
-   public void renderOutline(int var1, int var2, int var3, int var4, int var5) {
-      this.fill(var1, var2, var1 + var3, var2 + 1, var5);
-      this.fill(var1, var2 + var4 - 1, var1 + var3, var2 + var4, var5);
-      this.fill(var1, var2 + 1, var1 + 1, var2 + var4 - 1, var5);
-      this.fill(var1 + var3 - 1, var2 + 1, var1 + var3, var2 + var4 - 1, var5);
+   public void renderOutline(final int x, final int y, final int width, final int height, final int color) {
+      this.fill(x, y, x + width, y + 1, color);
+      this.fill(x, y + height - 1, x + width, y + height, color);
+      this.fill(x, y + 1, x + 1, y + height - 1, color);
+      this.fill(x + width - 1, y + 1, x + width, y + height - 1, color);
    }
 
-   public void blitSprite(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6) {
-      this.blitSprite(var1, (Identifier)var2, var3, var4, var5, var6, -1);
+   public void blitSprite(final RenderPipeline renderPipeline, final Identifier location, final int x, final int y, final int width, final int height) {
+      this.blitSprite(renderPipeline, (Identifier)location, x, y, width, height, -1);
    }
 
-   public void blitSprite(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6, float var7) {
-      this.blitSprite(var1, var2, var3, var4, var5, var6, ARGB.white(var7));
+   public void blitSprite(final RenderPipeline renderPipeline, final Identifier location, final int x, final int y, final int width, final int height, final float alpha) {
+      this.blitSprite(renderPipeline, location, x, y, width, height, ARGB.white(alpha));
    }
 
-   private static GuiSpriteScaling getSpriteScaling(TextureAtlasSprite var0) {
-      return ((GuiMetadataSection)var0.contents().getAdditionalMetadata(GuiMetadataSection.TYPE).orElse(GuiMetadataSection.DEFAULT)).scaling();
+   private static GuiSpriteScaling getSpriteScaling(final TextureAtlasSprite sprite) {
+      return ((GuiMetadataSection)sprite.contents().getAdditionalMetadata(GuiMetadataSection.TYPE).orElse(GuiMetadataSection.DEFAULT)).scaling();
    }
 
-   public void blitSprite(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6, int var7) {
-      TextureAtlasSprite var8 = this.guiSprites.getSprite(var2);
-      GuiSpriteScaling var9 = getSpriteScaling(var8);
-      Objects.requireNonNull(var9);
+   public void blitSprite(final RenderPipeline renderPipeline, final Identifier location, final int x, final int y, final int width, final int height, final int color) {
+      TextureAtlasSprite sprite = this.guiSprites.getSprite(location);
+      GuiSpriteScaling scaling = getSpriteScaling(sprite);
+      Objects.requireNonNull(scaling);
       byte var11 = 0;
       //$FF: var11->value
       //0->net/minecraft/client/resources/metadata/gui/GuiSpriteScaling$Stretch
       //1->net/minecraft/client/resources/metadata/gui/GuiSpriteScaling$Tile
       //2->net/minecraft/client/resources/metadata/gui/GuiSpriteScaling$NineSlice
-      switch (var9.typeSwitch<invokedynamic>(var9, var11)) {
+      switch (scaling.typeSwitch<invokedynamic>(scaling, var11)) {
          case 0:
-            GuiSpriteScaling.Stretch var12 = (GuiSpriteScaling.Stretch)var9;
-            this.blitSprite(var1, var8, var3, var4, var5, var6, var7);
+            GuiSpriteScaling.Stretch stretch = (GuiSpriteScaling.Stretch)scaling;
+            this.blitSprite(renderPipeline, sprite, x, y, width, height, color);
             break;
          case 1:
-            GuiSpriteScaling.Tile var13 = (GuiSpriteScaling.Tile)var9;
-            this.blitTiledSprite(var1, var8, var3, var4, var5, var6, 0, 0, var13.width(), var13.height(), var13.width(), var13.height(), var7);
+            GuiSpriteScaling.Tile tile = (GuiSpriteScaling.Tile)scaling;
+            this.blitTiledSprite(renderPipeline, sprite, x, y, width, height, 0, 0, tile.width(), tile.height(), tile.width(), tile.height(), color);
             break;
          case 2:
-            GuiSpriteScaling.NineSlice var14 = (GuiSpriteScaling.NineSlice)var9;
-            this.blitNineSlicedSprite(var1, var8, var14, var3, var4, var5, var6, var7);
+            GuiSpriteScaling.NineSlice nineSlice = (GuiSpriteScaling.NineSlice)scaling;
+            this.blitNineSlicedSprite(renderPipeline, sprite, nineSlice, x, y, width, height, color);
       }
 
    }
 
-   public void blitSprite(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10) {
-      this.blitSprite(var1, (Identifier)var2, var3, var4, var5, var6, var7, var8, var9, var10, -1);
+   public void blitSprite(final RenderPipeline renderPipeline, final Identifier location, final int spriteWidth, final int spriteHeight, final int textureX, final int textureY, final int x, final int y, final int width, final int height) {
+      this.blitSprite(renderPipeline, (Identifier)location, spriteWidth, spriteHeight, textureX, textureY, x, y, width, height, -1);
    }
 
-   public void blitSprite(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
-      TextureAtlasSprite var12 = this.guiSprites.getSprite(var2);
-      GuiSpriteScaling var13 = getSpriteScaling(var12);
-      if (var13 instanceof GuiSpriteScaling.Stretch) {
-         this.blitSprite(var1, var12, var3, var4, var5, var6, var7, var8, var9, var10, var11);
+   public void blitSprite(final RenderPipeline renderPipeline, final Identifier location, final int spriteWidth, final int spriteHeight, final int textureX, final int textureY, final int x, final int y, final int width, final int height, final int color) {
+      TextureAtlasSprite sprite = this.guiSprites.getSprite(location);
+      GuiSpriteScaling scaling = getSpriteScaling(sprite);
+      if (scaling instanceof GuiSpriteScaling.Stretch) {
+         this.blitSprite(renderPipeline, sprite, spriteWidth, spriteHeight, textureX, textureY, x, y, width, height, color);
       } else {
-         this.enableScissor(var7, var8, var7 + var9, var8 + var10);
-         this.blitSprite(var1, var2, var7 - var5, var8 - var6, var3, var4, var11);
+         this.enableScissor(x, y, x + width, y + height);
+         this.blitSprite(renderPipeline, location, x - textureX, y - textureY, spriteWidth, spriteHeight, color);
          this.disableScissor();
       }
 
    }
 
-   public void blitSprite(RenderPipeline var1, TextureAtlasSprite var2, int var3, int var4, int var5, int var6) {
-      this.blitSprite(var1, (TextureAtlasSprite)var2, var3, var4, var5, var6, -1);
+   public void blitSprite(final RenderPipeline renderPipeline, final TextureAtlasSprite sprite, final int x, final int y, final int width, final int height) {
+      this.blitSprite(renderPipeline, (TextureAtlasSprite)sprite, x, y, width, height, -1);
    }
 
-   public void blitSprite(RenderPipeline var1, TextureAtlasSprite var2, int var3, int var4, int var5, int var6, int var7) {
-      if (var5 != 0 && var6 != 0) {
-         this.innerBlit(var1, var2.atlasLocation(), var3, var3 + var5, var4, var4 + var6, var2.getU0(), var2.getU1(), var2.getV0(), var2.getV1(), var7);
+   public void blitSprite(final RenderPipeline renderPipeline, final TextureAtlasSprite sprite, final int x, final int y, final int width, final int height, final int color) {
+      if (width != 0 && height != 0) {
+         this.innerBlit(renderPipeline, sprite.atlasLocation(), x, x + width, y, y + height, sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(), color);
       }
    }
 
-   private void blitSprite(RenderPipeline var1, TextureAtlasSprite var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
-      if (var9 != 0 && var10 != 0) {
-         this.innerBlit(var1, var2.atlasLocation(), var7, var7 + var9, var8, var8 + var10, var2.getU((float)var5 / (float)var3), var2.getU((float)(var5 + var9) / (float)var3), var2.getV((float)var6 / (float)var4), var2.getV((float)(var6 + var10) / (float)var4), var11);
+   private void blitSprite(final RenderPipeline renderPipeline, final TextureAtlasSprite sprite, final int spriteWidth, final int spriteHeight, final int textureX, final int textureY, final int x, final int y, final int width, final int height, final int color) {
+      if (width != 0 && height != 0) {
+         this.innerBlit(renderPipeline, sprite.atlasLocation(), x, x + width, y, y + height, sprite.getU((float)textureX / (float)spriteWidth), sprite.getU((float)(textureX + width) / (float)spriteWidth), sprite.getV((float)textureY / (float)spriteHeight), sprite.getV((float)(textureY + height) / (float)spriteHeight), color);
       }
    }
 
-   private void blitNineSlicedSprite(RenderPipeline var1, TextureAtlasSprite var2, GuiSpriteScaling.NineSlice var3, int var4, int var5, int var6, int var7, int var8) {
-      GuiSpriteScaling.NineSlice.Border var9 = var3.border();
-      int var10 = Math.min(var9.left(), var6 / 2);
-      int var11 = Math.min(var9.right(), var6 / 2);
-      int var12 = Math.min(var9.top(), var7 / 2);
-      int var13 = Math.min(var9.bottom(), var7 / 2);
-      if (var6 == var3.width() && var7 == var3.height()) {
-         this.blitSprite(var1, (TextureAtlasSprite)var2, var3.width(), var3.height(), 0, 0, var4, var5, var6, var7, var8);
-      } else if (var7 == var3.height()) {
-         this.blitSprite(var1, (TextureAtlasSprite)var2, var3.width(), var3.height(), 0, 0, var4, var5, var10, var7, var8);
-         this.blitNineSliceInnerSegment(var1, var3, var2, var4 + var10, var5, var6 - var11 - var10, var7, var10, 0, var3.width() - var11 - var10, var3.height(), var3.width(), var3.height(), var8);
-         this.blitSprite(var1, (TextureAtlasSprite)var2, var3.width(), var3.height(), var3.width() - var11, 0, var4 + var6 - var11, var5, var11, var7, var8);
-      } else if (var6 == var3.width()) {
-         this.blitSprite(var1, (TextureAtlasSprite)var2, var3.width(), var3.height(), 0, 0, var4, var5, var6, var12, var8);
-         this.blitNineSliceInnerSegment(var1, var3, var2, var4, var5 + var12, var6, var7 - var13 - var12, 0, var12, var3.width(), var3.height() - var13 - var12, var3.width(), var3.height(), var8);
-         this.blitSprite(var1, (TextureAtlasSprite)var2, var3.width(), var3.height(), 0, var3.height() - var13, var4, var5 + var7 - var13, var6, var13, var8);
+   private void blitNineSlicedSprite(final RenderPipeline renderPipeline, final TextureAtlasSprite sprite, final GuiSpriteScaling.NineSlice nineSlice, final int x, final int y, final int width, final int height, final int color) {
+      GuiSpriteScaling.NineSlice.Border border = nineSlice.border();
+      int borderLeft = Math.min(border.left(), width / 2);
+      int borderRight = Math.min(border.right(), width / 2);
+      int borderTop = Math.min(border.top(), height / 2);
+      int borderBottom = Math.min(border.bottom(), height / 2);
+      if (width == nineSlice.width() && height == nineSlice.height()) {
+         this.blitSprite(renderPipeline, (TextureAtlasSprite)sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, width, height, color);
+      } else if (height == nineSlice.height()) {
+         this.blitSprite(renderPipeline, (TextureAtlasSprite)sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, borderLeft, height, color);
+         this.blitNineSliceInnerSegment(renderPipeline, nineSlice, sprite, x + borderLeft, y, width - borderRight - borderLeft, height, borderLeft, 0, nineSlice.width() - borderRight - borderLeft, nineSlice.height(), nineSlice.width(), nineSlice.height(), color);
+         this.blitSprite(renderPipeline, (TextureAtlasSprite)sprite, nineSlice.width(), nineSlice.height(), nineSlice.width() - borderRight, 0, x + width - borderRight, y, borderRight, height, color);
+      } else if (width == nineSlice.width()) {
+         this.blitSprite(renderPipeline, (TextureAtlasSprite)sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, width, borderTop, color);
+         this.blitNineSliceInnerSegment(renderPipeline, nineSlice, sprite, x, y + borderTop, width, height - borderBottom - borderTop, 0, borderTop, nineSlice.width(), nineSlice.height() - borderBottom - borderTop, nineSlice.width(), nineSlice.height(), color);
+         this.blitSprite(renderPipeline, (TextureAtlasSprite)sprite, nineSlice.width(), nineSlice.height(), 0, nineSlice.height() - borderBottom, x, y + height - borderBottom, width, borderBottom, color);
       } else {
-         this.blitSprite(var1, (TextureAtlasSprite)var2, var3.width(), var3.height(), 0, 0, var4, var5, var10, var12, var8);
-         this.blitNineSliceInnerSegment(var1, var3, var2, var4 + var10, var5, var6 - var11 - var10, var12, var10, 0, var3.width() - var11 - var10, var12, var3.width(), var3.height(), var8);
-         this.blitSprite(var1, (TextureAtlasSprite)var2, var3.width(), var3.height(), var3.width() - var11, 0, var4 + var6 - var11, var5, var11, var12, var8);
-         this.blitSprite(var1, (TextureAtlasSprite)var2, var3.width(), var3.height(), 0, var3.height() - var13, var4, var5 + var7 - var13, var10, var13, var8);
-         this.blitNineSliceInnerSegment(var1, var3, var2, var4 + var10, var5 + var7 - var13, var6 - var11 - var10, var13, var10, var3.height() - var13, var3.width() - var11 - var10, var13, var3.width(), var3.height(), var8);
-         this.blitSprite(var1, var2, var3.width(), var3.height(), var3.width() - var11, var3.height() - var13, var4 + var6 - var11, var5 + var7 - var13, var11, var13, var8);
-         this.blitNineSliceInnerSegment(var1, var3, var2, var4, var5 + var12, var10, var7 - var13 - var12, 0, var12, var10, var3.height() - var13 - var12, var3.width(), var3.height(), var8);
-         this.blitNineSliceInnerSegment(var1, var3, var2, var4 + var10, var5 + var12, var6 - var11 - var10, var7 - var13 - var12, var10, var12, var3.width() - var11 - var10, var3.height() - var13 - var12, var3.width(), var3.height(), var8);
-         this.blitNineSliceInnerSegment(var1, var3, var2, var4 + var6 - var11, var5 + var12, var11, var7 - var13 - var12, var3.width() - var11, var12, var11, var3.height() - var13 - var12, var3.width(), var3.height(), var8);
+         this.blitSprite(renderPipeline, (TextureAtlasSprite)sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, borderLeft, borderTop, color);
+         this.blitNineSliceInnerSegment(renderPipeline, nineSlice, sprite, x + borderLeft, y, width - borderRight - borderLeft, borderTop, borderLeft, 0, nineSlice.width() - borderRight - borderLeft, borderTop, nineSlice.width(), nineSlice.height(), color);
+         this.blitSprite(renderPipeline, (TextureAtlasSprite)sprite, nineSlice.width(), nineSlice.height(), nineSlice.width() - borderRight, 0, x + width - borderRight, y, borderRight, borderTop, color);
+         this.blitSprite(renderPipeline, (TextureAtlasSprite)sprite, nineSlice.width(), nineSlice.height(), 0, nineSlice.height() - borderBottom, x, y + height - borderBottom, borderLeft, borderBottom, color);
+         this.blitNineSliceInnerSegment(renderPipeline, nineSlice, sprite, x + borderLeft, y + height - borderBottom, width - borderRight - borderLeft, borderBottom, borderLeft, nineSlice.height() - borderBottom, nineSlice.width() - borderRight - borderLeft, borderBottom, nineSlice.width(), nineSlice.height(), color);
+         this.blitSprite(renderPipeline, sprite, nineSlice.width(), nineSlice.height(), nineSlice.width() - borderRight, nineSlice.height() - borderBottom, x + width - borderRight, y + height - borderBottom, borderRight, borderBottom, color);
+         this.blitNineSliceInnerSegment(renderPipeline, nineSlice, sprite, x, y + borderTop, borderLeft, height - borderBottom - borderTop, 0, borderTop, borderLeft, nineSlice.height() - borderBottom - borderTop, nineSlice.width(), nineSlice.height(), color);
+         this.blitNineSliceInnerSegment(renderPipeline, nineSlice, sprite, x + borderLeft, y + borderTop, width - borderRight - borderLeft, height - borderBottom - borderTop, borderLeft, borderTop, nineSlice.width() - borderRight - borderLeft, nineSlice.height() - borderBottom - borderTop, nineSlice.width(), nineSlice.height(), color);
+         this.blitNineSliceInnerSegment(renderPipeline, nineSlice, sprite, x + width - borderRight, y + borderTop, borderRight, height - borderBottom - borderTop, nineSlice.width() - borderRight, borderTop, borderRight, nineSlice.height() - borderBottom - borderTop, nineSlice.width(), nineSlice.height(), color);
       }
    }
 
-   private void blitNineSliceInnerSegment(RenderPipeline var1, GuiSpriteScaling.NineSlice var2, TextureAtlasSprite var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13, int var14) {
-      if (var6 > 0 && var7 > 0) {
-         if (var2.stretchInner()) {
-            this.innerBlit(var1, var3.atlasLocation(), var4, var4 + var6, var5, var5 + var7, var3.getU((float)var8 / (float)var12), var3.getU((float)(var8 + var10) / (float)var12), var3.getV((float)var9 / (float)var13), var3.getV((float)(var9 + var11) / (float)var13), var14);
+   private void blitNineSliceInnerSegment(final RenderPipeline renderPipeline, final GuiSpriteScaling.NineSlice nineSlice, final TextureAtlasSprite sprite, final int x, final int y, final int width, final int height, final int textureX, final int textureY, final int textureWidth, final int textureHeight, final int spriteWidth, final int spriteHeight, final int color) {
+      if (width > 0 && height > 0) {
+         if (nineSlice.stretchInner()) {
+            this.innerBlit(renderPipeline, sprite.atlasLocation(), x, x + width, y, y + height, sprite.getU((float)textureX / (float)spriteWidth), sprite.getU((float)(textureX + textureWidth) / (float)spriteWidth), sprite.getV((float)textureY / (float)spriteHeight), sprite.getV((float)(textureY + textureHeight) / (float)spriteHeight), color);
          } else {
-            this.blitTiledSprite(var1, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14);
+            this.blitTiledSprite(renderPipeline, sprite, x, y, width, height, textureX, textureY, textureWidth, textureHeight, spriteWidth, spriteHeight, color);
          }
 
       }
    }
 
-   private void blitTiledSprite(RenderPipeline var1, TextureAtlasSprite var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13) {
-      if (var5 > 0 && var6 > 0) {
-         if (var9 > 0 && var10 > 0) {
-            AbstractTexture var14 = this.minecraft.getTextureManager().getTexture(var2.atlasLocation());
-            GpuTextureView var15 = var14.getTextureView();
-            this.submitTiledBlit(var1, var15, var14.getSampler(), var9, var10, var3, var4, var3 + var5, var4 + var6, var2.getU((float)var7 / (float)var11), var2.getU((float)(var7 + var9) / (float)var11), var2.getV((float)var8 / (float)var12), var2.getV((float)(var8 + var10) / (float)var12), var13);
+   private void blitTiledSprite(final RenderPipeline renderPipeline, final TextureAtlasSprite sprite, final int x, final int y, final int width, final int height, final int textureX, final int textureY, final int tileWidth, final int tileHeight, final int spriteWidth, final int spriteHeight, final int color) {
+      if (width > 0 && height > 0) {
+         if (tileWidth > 0 && tileHeight > 0) {
+            AbstractTexture spriteTexture = this.minecraft.getTextureManager().getTexture(sprite.atlasLocation());
+            GpuTextureView texture = spriteTexture.getTextureView();
+            this.submitTiledBlit(renderPipeline, texture, spriteTexture.getSampler(), tileWidth, tileHeight, x, y, x + width, y + height, sprite.getU((float)textureX / (float)spriteWidth), sprite.getU((float)(textureX + tileWidth) / (float)spriteWidth), sprite.getV((float)textureY / (float)spriteHeight), sprite.getV((float)(textureY + tileHeight) / (float)spriteHeight), color);
          } else {
-            throw new IllegalArgumentException("Tile size must be positive, got " + var9 + "x" + var10);
+            throw new IllegalArgumentException("Tile size must be positive, got " + tileWidth + "x" + tileHeight);
          }
       }
    }
 
-   public void blit(RenderPipeline var1, Identifier var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10, int var11) {
-      this.blit(var1, var2, var3, var4, var5, var6, var7, var8, var7, var8, var9, var10, var11);
+   public void blit(final RenderPipeline renderPipeline, final Identifier texture, final int x, final int y, final float u, final float v, final int width, final int height, final int textureWidth, final int textureHeight, final int color) {
+      this.blit(renderPipeline, texture, x, y, u, v, width, height, width, height, textureWidth, textureHeight, color);
    }
 
-   public void blit(RenderPipeline var1, Identifier var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10) {
-      this.blit(var1, var2, var3, var4, var5, var6, var7, var8, var7, var8, var9, var10);
+   public void blit(final RenderPipeline renderPipeline, final Identifier texture, final int x, final int y, final float u, final float v, final int width, final int height, final int textureWidth, final int textureHeight) {
+      this.blit(renderPipeline, texture, x, y, u, v, width, height, width, height, textureWidth, textureHeight);
    }
 
-   public void blit(RenderPipeline var1, Identifier var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10, int var11, int var12) {
-      this.blit(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, -1);
+   public void blit(final RenderPipeline renderPipeline, final Identifier texture, final int x, final int y, final float u, final float v, final int width, final int height, final int srcWidth, final int srcHeight, final int textureWidth, final int textureHeight) {
+      this.blit(renderPipeline, texture, x, y, u, v, width, height, srcWidth, srcHeight, textureWidth, textureHeight, -1);
    }
 
-   public void blit(RenderPipeline var1, Identifier var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13) {
-      this.innerBlit(var1, var2, var3, var3 + var7, var4, var4 + var8, (var5 + 0.0F) / (float)var11, (var5 + (float)var9) / (float)var11, (var6 + 0.0F) / (float)var12, (var6 + (float)var10) / (float)var12, var13);
+   public void blit(final RenderPipeline renderPipeline, final Identifier texture, final int x, final int y, final float u, final float v, final int width, final int height, final int srcWidth, final int srcHeight, final int textureWidth, final int textureHeight, final int color) {
+      this.innerBlit(renderPipeline, texture, x, x + width, y, y + height, (u + 0.0F) / (float)textureWidth, (u + (float)srcWidth) / (float)textureWidth, (v + 0.0F) / (float)textureHeight, (v + (float)srcHeight) / (float)textureHeight, color);
    }
 
-   public void blit(Identifier var1, int var2, int var3, int var4, int var5, float var6, float var7, float var8, float var9) {
-      this.innerBlit(RenderPipelines.GUI_TEXTURED, var1, var2, var4, var3, var5, var6, var7, var8, var9, -1);
+   public void blit(final Identifier location, final int x0, final int y0, final int x1, final int y1, final float u0, final float u1, final float v0, final float v1) {
+      this.innerBlit(RenderPipelines.GUI_TEXTURED, location, x0, x1, y0, y1, u0, u1, v0, v1, -1);
    }
 
-   private void innerBlit(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
-      AbstractTexture var12 = this.minecraft.getTextureManager().getTexture(var2);
-      this.submitBlit(var1, var12.getTextureView(), var12.getSampler(), var3, var5, var4, var6, var7, var8, var9, var10, var11);
+   public void blit(final GpuTextureView textureView, final GpuSampler sampler, final int x0, final int y0, final int x1, final int y1, final float u0, final float u1, final float v0, final float v1) {
+      this.submitBlit(RenderPipelines.GUI_TEXTURED, textureView, sampler, x0, y0, x1, y1, u0, u1, v0, v1, -1);
    }
 
-   private void submitBlit(RenderPipeline var1, GpuTextureView var2, GpuSampler var3, int var4, int var5, int var6, int var7, float var8, float var9, float var10, float var11, int var12) {
-      this.guiRenderState.submitGuiElement(new BlitRenderState(var1, TextureSetup.singleTexture(var2, var3), new Matrix3x2f(this.pose), var4, var5, var6, var7, var8, var9, var10, var11, var12, this.scissorStack.peek()));
+   private void innerBlit(final RenderPipeline renderPipeline, final Identifier location, final int x0, final int x1, final int y0, final int y1, final float u0, final float u1, final float v0, final float v1, final int color) {
+      AbstractTexture texture = this.minecraft.getTextureManager().getTexture(location);
+      this.submitBlit(renderPipeline, texture.getTextureView(), texture.getSampler(), x0, y0, x1, y1, u0, u1, v0, v1, color);
    }
 
-   private void submitTiledBlit(RenderPipeline var1, GpuTextureView var2, GpuSampler var3, int var4, int var5, int var6, int var7, int var8, int var9, float var10, float var11, float var12, float var13, int var14) {
-      this.guiRenderState.submitGuiElement(new TiledBlitRenderState(var1, TextureSetup.singleTexture(var2, var3), new Matrix3x2f(this.pose), var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, this.scissorStack.peek()));
+   private void submitBlit(final RenderPipeline pipeline, final GpuTextureView textureView, final GpuSampler sampler, final int x0, final int y0, final int x1, final int y1, final float u0, final float u1, final float v0, final float v1, final int color) {
+      this.guiRenderState.submitGuiElement(new BlitRenderState(pipeline, TextureSetup.singleTexture(textureView, sampler), new Matrix3x2f(this.pose), x0, y0, x1, y1, u0, u1, v0, v1, color, this.scissorStack.peek()));
    }
 
-   public void renderItem(ItemStack var1, int var2, int var3) {
-      this.renderItem(this.minecraft.player, this.minecraft.level, var1, var2, var3, 0);
+   private void submitTiledBlit(final RenderPipeline pipeline, final GpuTextureView textureView, final GpuSampler sampler, final int tileWidth, final int tileHeight, final int x0, final int y0, final int x1, final int y1, final float u0, final float u1, final float v0, final float v1, final int color) {
+      this.guiRenderState.submitGuiElement(new TiledBlitRenderState(pipeline, TextureSetup.singleTexture(textureView, sampler), new Matrix3x2f(this.pose), tileWidth, tileHeight, x0, y0, x1, y1, u0, u1, v0, v1, color, this.scissorStack.peek()));
    }
 
-   public void renderItem(ItemStack var1, int var2, int var3, int var4) {
-      this.renderItem(this.minecraft.player, this.minecraft.level, var1, var2, var3, var4);
+   public void renderItem(final ItemStack itemStack, final int x, final int y) {
+      this.renderItem(this.minecraft.player, this.minecraft.level, itemStack, x, y, 0);
    }
 
-   public void renderFakeItem(ItemStack var1, int var2, int var3) {
-      this.renderFakeItem(var1, var2, var3, 0);
+   public void renderItem(final ItemStack itemStack, final int x, final int y, final int seed) {
+      this.renderItem(this.minecraft.player, this.minecraft.level, itemStack, x, y, seed);
    }
 
-   public void renderFakeItem(ItemStack var1, int var2, int var3, int var4) {
-      this.renderItem((LivingEntity)null, this.minecraft.level, var1, var2, var3, var4);
+   public void renderFakeItem(final ItemStack itemStack, final int x, final int y) {
+      this.renderFakeItem(itemStack, x, y, 0);
    }
 
-   public void renderItem(LivingEntity var1, ItemStack var2, int var3, int var4, int var5) {
-      this.renderItem(var1, var1.level(), var2, var3, var4, var5);
+   public void renderFakeItem(final ItemStack itemStack, final int x, final int y, final int seed) {
+      this.renderItem((LivingEntity)null, this.minecraft.level, itemStack, x, y, seed);
    }
 
-   private void renderItem(@Nullable LivingEntity var1, @Nullable Level var2, ItemStack var3, int var4, int var5, int var6) {
-      if (!var3.isEmpty()) {
-         TrackingItemStackRenderState var7 = new TrackingItemStackRenderState();
-         this.minecraft.getItemModelResolver().updateForTopItem(var7, var3, ItemDisplayContext.GUI, var2, var1, var6);
+   public void renderItem(final LivingEntity owner, final ItemStack itemStack, final int x, final int y, final int seed) {
+      this.renderItem(owner, owner.level(), itemStack, x, y, seed);
+   }
+
+   private void renderItem(final @Nullable LivingEntity owner, final @Nullable Level level, final ItemStack itemStack, final int x, final int y, final int seed) {
+      if (!itemStack.isEmpty()) {
+         TrackingItemStackRenderState itemStackRenderState = new TrackingItemStackRenderState();
+         this.minecraft.getItemModelResolver().updateForTopItem(itemStackRenderState, itemStack, ItemDisplayContext.GUI, level, owner, seed);
 
          try {
-            this.guiRenderState.submitItem(new GuiItemRenderState(var3.getItem().getName().toString(), new Matrix3x2f(this.pose), var7, var4, var5, this.scissorStack.peek()));
-         } catch (Throwable var11) {
-            CrashReport var9 = CrashReport.forThrowable(var11, "Rendering item");
-            CrashReportCategory var10 = var9.addCategory("Item being rendered");
-            var10.setDetail("Item Type", (CrashReportDetail)(() -> String.valueOf(var3.getItem())));
-            var10.setDetail("Item Components", (CrashReportDetail)(() -> String.valueOf(var3.getComponents())));
-            var10.setDetail("Item Foil", (CrashReportDetail)(() -> String.valueOf(var3.hasFoil())));
-            throw new ReportedException(var9);
+            this.guiRenderState.submitItem(new GuiItemRenderState(new Matrix3x2f(this.pose), itemStackRenderState, x, y, this.scissorStack.peek()));
+         } catch (Throwable t) {
+            CrashReport report = CrashReport.forThrowable(t, "Rendering item");
+            CrashReportCategory category = report.addCategory("Item being rendered");
+            category.setDetail("Item Type", (CrashReportDetail)(() -> String.valueOf(itemStack.getItem())));
+            category.setDetail("Item Components", (CrashReportDetail)(() -> String.valueOf(itemStack.getComponents())));
+            category.setDetail("Item Foil", (CrashReportDetail)(() -> String.valueOf(itemStack.hasFoil())));
+            throw new ReportedException(report);
          }
       }
    }
 
-   public void renderItemDecorations(Font var1, ItemStack var2, int var3, int var4) {
-      this.renderItemDecorations(var1, var2, var3, var4, (String)null);
+   public void renderItemDecorations(final Font font, final ItemStack itemStack, final int x, final int y) {
+      this.renderItemDecorations(font, itemStack, x, y, (String)null);
    }
 
-   public void renderItemDecorations(Font var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
-      if (!var2.isEmpty()) {
+   public void renderItemDecorations(final Font font, final ItemStack itemStack, final int x, final int y, final @Nullable String countText) {
+      if (!itemStack.isEmpty()) {
          this.pose.pushMatrix();
-         this.renderItemBar(var2, var3, var4);
-         this.renderItemCooldown(var2, var3, var4);
-         this.renderItemCount(var1, var2, var3, var4, var5);
+         this.renderItemBar(itemStack, x, y);
+         this.renderItemCooldown(itemStack, x, y);
+         this.renderItemCount(font, itemStack, x, y, countText);
          this.pose.popMatrix();
       }
    }
 
-   public void setTooltipForNextFrame(Component var1, int var2, int var3) {
-      this.setTooltipForNextFrame(List.of(var1.getVisualOrderText()), var2, var3);
+   public void setTooltipForNextFrame(final Component component, final int x, final int y) {
+      this.setTooltipForNextFrame(List.of(component.getVisualOrderText()), x, y);
    }
 
-   public void setTooltipForNextFrame(List<FormattedCharSequence> var1, int var2, int var3) {
-      this.setTooltipForNextFrame(this.minecraft.font, var1, DefaultTooltipPositioner.INSTANCE, var2, var3, false);
+   public void setTooltipForNextFrame(final List<FormattedCharSequence> formattedCharSequences, final int x, final int y) {
+      this.setTooltipForNextFrame(this.minecraft.font, formattedCharSequences, DefaultTooltipPositioner.INSTANCE, x, y, false);
    }
 
-   public void setTooltipForNextFrame(Font var1, ItemStack var2, int var3, int var4) {
-      this.setTooltipForNextFrame(var1, Screen.getTooltipFromItem(this.minecraft, var2), var2.getTooltipImage(), var3, var4, (Identifier)var2.get(DataComponents.TOOLTIP_STYLE));
+   public void setTooltipForNextFrame(final Font font, final ItemStack itemStack, final int xo, final int yo) {
+      this.setTooltipForNextFrame(font, Screen.getTooltipFromItem(this.minecraft, itemStack), itemStack.getTooltipImage(), xo, yo, (Identifier)itemStack.get(DataComponents.TOOLTIP_STYLE));
    }
 
-   public void setTooltipForNextFrame(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5) {
-      this.setTooltipForNextFrame(var1, var2, var3, var4, var5, (Identifier)null);
+   public void setTooltipForNextFrame(final Font font, final List<Component> texts, final Optional<TooltipComponent> optionalImage, final int xo, final int yo) {
+      this.setTooltipForNextFrame(font, texts, optionalImage, xo, yo, (Identifier)null);
    }
 
-   public void setTooltipForNextFrame(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5, @Nullable Identifier var6) {
-      List var7 = (List)var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
-      var3.ifPresent((var1x) -> var7.add(var7.isEmpty() ? 0 : 1, ClientTooltipComponent.create(var1x)));
-      this.setTooltipForNextFrameInternal(var1, var7, var4, var5, DefaultTooltipPositioner.INSTANCE, var6, false);
+   public void setTooltipForNextFrame(final Font font, final List<Component> texts, final Optional<TooltipComponent> optionalImage, final int xo, final int yo, final @Nullable Identifier style) {
+      List<ClientTooltipComponent> components = (List)texts.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
+      optionalImage.ifPresent((image) -> components.add(components.isEmpty() ? 0 : 1, ClientTooltipComponent.create(image)));
+      this.setTooltipForNextFrameInternal(font, components, xo, yo, DefaultTooltipPositioner.INSTANCE, style, false);
    }
 
-   public void setTooltipForNextFrame(Font var1, Component var2, int var3, int var4) {
-      this.setTooltipForNextFrame(var1, var2, var3, var4, (Identifier)null);
+   public void setTooltipForNextFrame(final Font font, final List<FormattedCharSequence> tooltip, final Optional<TooltipComponent> component, final ClientTooltipPositioner positioner, final int xo, final int yo, final boolean replaceExisting, final @Nullable Identifier style) {
+      List<ClientTooltipComponent> components = (List)tooltip.stream().map(ClientTooltipComponent::create).collect(Collectors.toList());
+      component.ifPresent((tooltipComponent) -> components.add(components.isEmpty() ? 0 : 1, ClientTooltipComponent.create(tooltipComponent)));
+      this.setTooltipForNextFrameInternal(font, components, xo, yo, positioner, style, replaceExisting);
    }
 
-   public void setTooltipForNextFrame(Font var1, Component var2, int var3, int var4, @Nullable Identifier var5) {
-      this.setTooltipForNextFrame(var1, List.of(var2.getVisualOrderText()), var3, var4, var5);
+   public void setTooltipForNextFrame(final Font font, final Component text, final int xo, final int yo) {
+      this.setTooltipForNextFrame(font, text, xo, yo, (Identifier)null);
    }
 
-   public void setComponentTooltipForNextFrame(Font var1, List<Component> var2, int var3, int var4) {
-      this.setComponentTooltipForNextFrame(var1, var2, var3, var4, (Identifier)null);
+   public void setTooltipForNextFrame(final Font font, final Component text, final int xo, final int yo, final @Nullable Identifier style) {
+      this.setTooltipForNextFrame(font, List.of(text.getVisualOrderText()), xo, yo, style);
    }
 
-   public void setComponentTooltipForNextFrame(Font var1, List<Component> var2, int var3, int var4, @Nullable Identifier var5) {
-      this.setTooltipForNextFrameInternal(var1, var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).toList(), var3, var4, DefaultTooltipPositioner.INSTANCE, var5, false);
+   public void setComponentTooltipForNextFrame(final Font font, final List<Component> lines, final int xo, final int yo) {
+      this.setComponentTooltipForNextFrame(font, lines, xo, yo, (Identifier)null);
    }
 
-   public void setTooltipForNextFrame(Font var1, List<? extends FormattedCharSequence> var2, int var3, int var4) {
-      this.setTooltipForNextFrame(var1, (List)var2, var3, var4, (Identifier)null);
+   public void setComponentTooltipForNextFrame(final Font font, final List<Component> lines, final int xo, final int yo, final @Nullable Identifier style) {
+      this.setTooltipForNextFrameInternal(font, lines.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).toList(), xo, yo, DefaultTooltipPositioner.INSTANCE, style, false);
    }
 
-   public void setTooltipForNextFrame(Font var1, List<? extends FormattedCharSequence> var2, int var3, int var4, @Nullable Identifier var5) {
-      this.setTooltipForNextFrameInternal(var1, (List)var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var3, var4, DefaultTooltipPositioner.INSTANCE, var5, false);
+   public void setTooltipForNextFrame(final Font font, final List<? extends FormattedCharSequence> lines, final int xo, final int yo) {
+      this.setTooltipForNextFrame(font, (List)lines, xo, yo, (Identifier)null);
    }
 
-   public void setTooltipForNextFrame(Font var1, List<FormattedCharSequence> var2, ClientTooltipPositioner var3, int var4, int var5, boolean var6) {
-      this.setTooltipForNextFrameInternal(var1, (List)var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var4, var5, var3, (Identifier)null, var6);
+   public void setTooltipForNextFrame(final Font font, final List<? extends FormattedCharSequence> lines, final int xo, final int yo, final @Nullable Identifier style) {
+      this.setTooltipForNextFrameInternal(font, (List)lines.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), xo, yo, DefaultTooltipPositioner.INSTANCE, style, false);
    }
 
-   private void setTooltipForNextFrameInternal(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable Identifier var6, boolean var7) {
-      if (!var2.isEmpty()) {
-         if (this.deferredTooltip == null || var7) {
-            this.deferredTooltip = () -> this.renderTooltip(var1, var2, var3, var4, var5, var6);
+   public void setTooltipForNextFrame(final Font font, final List<FormattedCharSequence> tooltip, final ClientTooltipPositioner positioner, final int xo, final int yo, final boolean replaceExisting) {
+      this.setTooltipForNextFrameInternal(font, (List)tooltip.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), xo, yo, positioner, (Identifier)null, replaceExisting);
+   }
+
+   private void setTooltipForNextFrameInternal(final Font font, final List<ClientTooltipComponent> lines, final int xo, final int yo, final ClientTooltipPositioner positioner, final @Nullable Identifier style, final boolean replaceExisting) {
+      if (!lines.isEmpty()) {
+         if (this.deferredTooltip == null || replaceExisting) {
+            this.deferredTooltip = () -> this.renderTooltip(font, lines, xo, yo, positioner, style);
          }
 
       }
    }
 
-   public void renderTooltip(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable Identifier var6) {
-      int var7 = 0;
-      int var8 = var2.size() == 1 ? -2 : 0;
+   public void renderTooltip(final Font font, final List<ClientTooltipComponent> lines, final int xo, final int yo, final ClientTooltipPositioner positioner, final @Nullable Identifier style) {
+      int textWidth = 0;
+      int tempHeight = lines.size() == 1 ? -2 : 0;
 
-      for(ClientTooltipComponent var10 : var2) {
-         int var11 = var10.getWidth(var1);
-         if (var11 > var7) {
-            var7 = var11;
+      for(ClientTooltipComponent line : lines) {
+         int lineWidth = line.getWidth(font);
+         if (lineWidth > textWidth) {
+            textWidth = lineWidth;
          }
 
-         var8 += var10.getHeight(var1);
+         tempHeight += line.getHeight(font);
       }
 
-      int var17 = var7;
-      int var18 = var8;
-      Vector2ic var19 = var5.positionTooltip(this.guiWidth(), this.guiHeight(), var3, var4, var7, var8);
-      int var12 = var19.x();
-      int var13 = var19.y();
+      int w = textWidth;
+      int h = tempHeight;
+      Vector2ic positionedTooltip = positioner.positionTooltip(this.guiWidth(), this.guiHeight(), xo, yo, textWidth, tempHeight);
+      int x = positionedTooltip.x();
+      int y = positionedTooltip.y();
       this.pose.pushMatrix();
-      TooltipRenderUtil.renderTooltipBackground(this, var12, var13, var7, var8, var6);
-      int var14 = var13;
+      TooltipRenderUtil.renderTooltipBackground(this, x, y, textWidth, tempHeight, style);
+      int localY = y;
 
-      for(int var15 = 0; var15 < var2.size(); ++var15) {
-         ClientTooltipComponent var16 = (ClientTooltipComponent)var2.get(var15);
-         var16.renderText(this, var1, var12, var14);
-         var14 += var16.getHeight(var1) + (var15 == 0 ? 2 : 0);
+      for(int i = 0; i < lines.size(); ++i) {
+         ClientTooltipComponent line = (ClientTooltipComponent)lines.get(i);
+         line.renderText(this, font, x, localY);
+         localY += line.getHeight(font) + (i == 0 ? 2 : 0);
       }
 
-      var14 = var13;
+      localY = y;
 
-      for(int var21 = 0; var21 < var2.size(); ++var21) {
-         ClientTooltipComponent var22 = (ClientTooltipComponent)var2.get(var21);
-         var22.renderImage(var1, var12, var14, var17, var18, this);
-         var14 += var22.getHeight(var1) + (var21 == 0 ? 2 : 0);
+      for(int i = 0; i < lines.size(); ++i) {
+         ClientTooltipComponent line = (ClientTooltipComponent)lines.get(i);
+         line.renderImage(font, x, localY, w, h, this);
+         localY += line.getHeight(font) + (i == 0 ? 2 : 0);
       }
 
       this.pose.popMatrix();
@@ -615,39 +626,39 @@ public class GuiGraphics {
 
    }
 
-   private void renderItemBar(ItemStack var1, int var2, int var3) {
-      if (var1.isBarVisible()) {
-         int var4 = var2 + 2;
-         int var5 = var3 + 13;
-         this.fill(RenderPipelines.GUI, var4, var5, var4 + 13, var5 + 2, -16777216);
-         this.fill(RenderPipelines.GUI, var4, var5, var4 + var1.getBarWidth(), var5 + 1, ARGB.opaque(var1.getBarColor()));
+   private void renderItemBar(final ItemStack itemStack, final int x, final int y) {
+      if (itemStack.isBarVisible()) {
+         int left = x + 2;
+         int top = y + 13;
+         this.fill(RenderPipelines.GUI, left, top, left + 13, top + 2, -16777216);
+         this.fill(RenderPipelines.GUI, left, top, left + itemStack.getBarWidth(), top + 1, ARGB.opaque(itemStack.getBarColor()));
       }
 
    }
 
-   private void renderItemCount(Font var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
-      if (var2.getCount() != 1 || var5 != null) {
-         String var6 = var5 == null ? String.valueOf(var2.getCount()) : var5;
-         this.drawString(var1, (String)var6, var3 + 19 - 2 - var1.width(var6), var4 + 6 + 3, -1, true);
+   private void renderItemCount(final Font font, final ItemStack itemStack, final int x, final int y, final @Nullable String countText) {
+      if (itemStack.getCount() != 1 || countText != null) {
+         String amount = countText == null ? String.valueOf(itemStack.getCount()) : countText;
+         this.drawString(font, (String)amount, x + 19 - 2 - font.width(amount), y + 6 + 3, -1, true);
       }
 
    }
 
-   private void renderItemCooldown(ItemStack var1, int var2, int var3) {
-      LocalPlayer var4 = this.minecraft.player;
-      float var5 = var4 == null ? 0.0F : var4.getCooldowns().getCooldownPercent(var1, this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true));
-      if (var5 > 0.0F) {
-         int var6 = var3 + Mth.floor(16.0F * (1.0F - var5));
-         int var7 = var6 + Mth.ceil(16.0F * var5);
-         this.fill(RenderPipelines.GUI, var2, var6, var2 + 16, var7, 2147483647);
+   private void renderItemCooldown(final ItemStack itemStack, final int x, final int y) {
+      LocalPlayer player = this.minecraft.player;
+      float cooldown = player == null ? 0.0F : player.getCooldowns().getCooldownPercent(itemStack, this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true));
+      if (cooldown > 0.0F) {
+         int top = y + Mth.floor(16.0F * (1.0F - cooldown));
+         int bottom = top + Mth.ceil(16.0F * cooldown);
+         this.fill(RenderPipelines.GUI, x, top, x + 16, bottom, 2147483647);
       }
 
    }
 
-   public void renderComponentHoverEffect(Font var1, @Nullable Style var2, int var3, int var4) {
-      if (var2 != null) {
-         if (var2.getHoverEvent() != null) {
-            HoverEvent.ShowText var10000 = var2.getHoverEvent();
+   public void renderComponentHoverEffect(final Font font, final @Nullable Style hoveredStyle, final int xMouse, final int yMouse) {
+      if (hoveredStyle != null) {
+         if (hoveredStyle.getHoverEvent() != null) {
+            HoverEvent.ShowText var10000 = hoveredStyle.getHoverEvent();
             Objects.requireNonNull(var10000);
             HoverEvent var5 = var10000;
             byte var6 = 0;
@@ -666,12 +677,12 @@ public class GuiGraphics {
                      throw new MatchException(var16.toString(), var16);
                   }
 
-                  ItemStack var17 = var24;
-                  this.setTooltipForNextFrame(var1, var17, var3, var4);
+                  ItemStackTemplate item = var24;
+                  this.setTooltipForNextFrame(font, item.create(), xMouse, yMouse);
                   break;
                case 1:
-                  HoverEvent.ShowEntity var9 = (HoverEvent.ShowEntity)var5;
-                  HoverEvent.ShowEntity var21 = var9;
+                  HoverEvent.ShowEntity item = (HoverEvent.ShowEntity)var5;
+                  HoverEvent.ShowEntity var21 = item;
 
                   try {
                      var22 = var21.entity();
@@ -679,14 +690,14 @@ public class GuiGraphics {
                      throw new MatchException(var15.toString(), var15);
                   }
 
-                  HoverEvent.EntityTooltipInfo var18 = var22;
+                  HoverEvent.EntityTooltipInfo entity = var22;
                   if (this.minecraft.options.advancedItemTooltips) {
-                     this.setComponentTooltipForNextFrame(var1, var18.getTooltipLines(), var3, var4);
+                     this.setComponentTooltipForNextFrame(font, entity.getTooltipLines(), xMouse, yMouse);
                   }
                   break;
                case 2:
-                  HoverEvent.ShowText var11 = (HoverEvent.ShowText)var5;
-                  var10000 = var11;
+                  HoverEvent.ShowText entity = (HoverEvent.ShowText)var5;
+                  var10000 = entity;
 
                   try {
                      var20 = var10000.value();
@@ -694,44 +705,44 @@ public class GuiGraphics {
                      throw new MatchException(var14.toString(), var14);
                   }
 
-                  Component var13 = var20;
-                  this.setTooltipForNextFrame(var1, var1.split(var13, Math.max(this.guiWidth() / 2, 200)), var3, var4);
+                  Component text = var20;
+                  this.setTooltipForNextFrame(font, font.split(text, Math.max(this.guiWidth() / 2, 200)), xMouse, yMouse);
             }
          }
 
       }
    }
 
-   public void submitMapRenderState(MapRenderState var1) {
-      Minecraft var2 = Minecraft.getInstance();
-      TextureManager var3 = var2.getTextureManager();
-      AbstractTexture var4 = var3.getTexture(var1.texture);
-      this.submitBlit(RenderPipelines.GUI_TEXTURED, var4.getTextureView(), var4.getSampler(), 0, 0, 128, 128, 0.0F, 1.0F, 0.0F, 1.0F, -1);
+   public void submitMapRenderState(final MapRenderState mapRenderState) {
+      Minecraft minecraft = Minecraft.getInstance();
+      TextureManager textureManager = minecraft.getTextureManager();
+      AbstractTexture texture = textureManager.getTexture(mapRenderState.texture);
+      this.submitBlit(RenderPipelines.GUI_TEXTURED, texture.getTextureView(), texture.getSampler(), 0, 0, 128, 128, 0.0F, 1.0F, 0.0F, 1.0F, -1);
 
-      for(MapRenderState.MapDecorationRenderState var6 : var1.decorations) {
-         if (var6.renderOnFrame) {
+      for(MapRenderState.MapDecorationRenderState decoration : mapRenderState.decorations) {
+         if (decoration.renderOnFrame) {
             this.pose.pushMatrix();
-            this.pose.translate((float)var6.x / 2.0F + 64.0F, (float)var6.y / 2.0F + 64.0F);
-            this.pose.rotate(0.017453292F * (float)var6.rot * 360.0F / 16.0F);
+            this.pose.translate((float)decoration.x / 2.0F + 64.0F, (float)decoration.y / 2.0F + 64.0F);
+            this.pose.rotate(0.017453292F * (float)decoration.rot * 360.0F / 16.0F);
             this.pose.scale(4.0F, 4.0F);
             this.pose.translate(-0.125F, 0.125F);
-            TextureAtlasSprite var7 = var6.atlasSprite;
-            if (var7 != null) {
-               AbstractTexture var8 = var3.getTexture(var7.atlasLocation());
-               this.submitBlit(RenderPipelines.GUI_TEXTURED, var8.getTextureView(), var8.getSampler(), -1, -1, 1, 1, var7.getU0(), var7.getU1(), var7.getV1(), var7.getV0(), -1);
+            TextureAtlasSprite atlasSprite = decoration.atlasSprite;
+            if (atlasSprite != null) {
+               AbstractTexture decorationTexture = textureManager.getTexture(atlasSprite.atlasLocation());
+               this.submitBlit(RenderPipelines.GUI_TEXTURED, decorationTexture.getTextureView(), decorationTexture.getSampler(), -1, -1, 1, 1, atlasSprite.getU0(), atlasSprite.getU1(), atlasSprite.getV1(), atlasSprite.getV0(), -1);
             }
 
             this.pose.popMatrix();
-            if (var6.name != null) {
-               Font var11 = var2.font;
-               float var9 = (float)var11.width((FormattedText)var6.name);
-               float var10000 = 25.0F / var9;
-               Objects.requireNonNull(var11);
-               float var10 = Mth.clamp(var10000, 0.0F, 6.0F / 9.0F);
+            if (decoration.name != null) {
+               Font font = minecraft.font;
+               float width = (float)font.width((FormattedText)decoration.name);
+               float var10000 = 25.0F / width;
+               Objects.requireNonNull(font);
+               float scale = Mth.clamp(var10000, 0.0F, 6.0F / 9.0F);
                this.pose.pushMatrix();
-               this.pose.translate((float)var6.x / 2.0F + 64.0F - var9 * var10 / 2.0F, (float)var6.y / 2.0F + 64.0F + 4.0F);
-               this.pose.scale(var10, var10);
-               this.guiRenderState.submitText(new GuiTextRenderState(var11, var6.name.getVisualOrderText(), new Matrix3x2f(this.pose), 0, 0, -1, -2147483648, false, false, this.scissorStack.peek()));
+               this.pose.translate((float)decoration.x / 2.0F + 64.0F - width * scale / 2.0F, (float)decoration.y / 2.0F + 64.0F + 4.0F);
+               this.pose.scale(scale, scale);
+               this.guiRenderState.submitText(new GuiTextRenderState(font, decoration.name.getVisualOrderText(), new Matrix3x2f(this.pose), 0, 0, -1, -2147483648, false, false, this.scissorStack.peek()));
                this.pose.popMatrix();
             }
          }
@@ -739,70 +750,71 @@ public class GuiGraphics {
 
    }
 
-   public void submitEntityRenderState(EntityRenderState var1, float var2, Vector3f var3, Quaternionf var4, @Nullable Quaternionf var5, int var6, int var7, int var8, int var9) {
-      this.guiRenderState.submitPicturesInPictureState(new GuiEntityRenderState(var1, var3, var4, var5, var6, var7, var8, var9, var2, this.scissorStack.peek()));
+   public void submitEntityRenderState(final EntityRenderState renderState, final float scale, final Vector3f translation, final Quaternionf rotation, final @Nullable Quaternionf overrideCameraAngle, final int x0, final int y0, final int x1, final int y1) {
+      renderState.lightCoords = 15728880;
+      this.guiRenderState.submitPicturesInPictureState(new GuiEntityRenderState(renderState, translation, rotation, overrideCameraAngle, x0, y0, x1, y1, scale, this.scissorStack.peek()));
    }
 
-   public void submitSkinRenderState(PlayerModel var1, Identifier var2, float var3, float var4, float var5, float var6, int var7, int var8, int var9, int var10) {
-      this.guiRenderState.submitPicturesInPictureState(new GuiSkinRenderState(var1, var2, var4, var5, var6, var7, var8, var9, var10, var3, this.scissorStack.peek()));
+   public void submitSkinRenderState(final PlayerModel playerModel, final Identifier texture, final float scale, final float rotationX, final float rotationY, final float pivotY, final int x0, final int y0, final int x1, final int y1) {
+      this.guiRenderState.submitPicturesInPictureState(new GuiSkinRenderState(playerModel, texture, rotationX, rotationY, pivotY, x0, y0, x1, y1, scale, this.scissorStack.peek()));
    }
 
-   public void submitBookModelRenderState(BookModel var1, Identifier var2, float var3, float var4, float var5, int var6, int var7, int var8, int var9) {
-      this.guiRenderState.submitPicturesInPictureState(new GuiBookModelRenderState(var1, var2, var4, var5, var6, var7, var8, var9, var3, this.scissorStack.peek()));
+   public void submitBookModelRenderState(final BookModel bookModel, final Identifier texture, final float scale, final float open, final float flip, final int x0, final int y0, final int x1, final int y1) {
+      this.guiRenderState.submitPicturesInPictureState(new GuiBookModelRenderState(bookModel, texture, open, flip, x0, y0, x1, y1, scale, this.scissorStack.peek()));
    }
 
-   public void submitBannerPatternRenderState(BannerFlagModel var1, DyeColor var2, BannerPatternLayers var3, int var4, int var5, int var6, int var7) {
-      this.guiRenderState.submitPicturesInPictureState(new GuiBannerResultRenderState(var1, var2, var3, var4, var5, var6, var7, this.scissorStack.peek()));
+   public void submitBannerPatternRenderState(final BannerFlagModel flag, final DyeColor baseColor, final BannerPatternLayers resultBannerPatterns, final int x0, final int y0, final int x1, final int y1) {
+      this.guiRenderState.submitPicturesInPictureState(new GuiBannerResultRenderState(flag, baseColor, resultBannerPatterns, x0, y0, x1, y1, this.scissorStack.peek()));
    }
 
-   public void submitSignRenderState(Model.Simple var1, float var2, WoodType var3, int var4, int var5, int var6, int var7) {
-      this.guiRenderState.submitPicturesInPictureState(new GuiSignRenderState(var1, var3, var4, var5, var6, var7, var2, this.scissorStack.peek()));
+   public void submitSignRenderState(final Model.Simple signModel, final float scale, final WoodType woodType, final int x0, final int y0, final int x1, final int y1) {
+      this.guiRenderState.submitPicturesInPictureState(new GuiSignRenderState(signModel, woodType, x0, y0, x1, y1, scale, this.scissorStack.peek()));
    }
 
-   public void submitProfilerChartRenderState(List<ResultField> var1, int var2, int var3, int var4, int var5) {
-      this.guiRenderState.submitPicturesInPictureState(new GuiProfilerChartRenderState(var1, var2, var3, var4, var5, this.scissorStack.peek()));
+   public void submitProfilerChartRenderState(final List<ResultField> chartData, final int x0, final int y0, final int x1, final int y1) {
+      this.guiRenderState.submitPicturesInPictureState(new GuiProfilerChartRenderState(chartData, x0, y0, x1, y1, this.scissorStack.peek()));
    }
 
-   public TextureAtlasSprite getSprite(Material var1) {
-      return this.materials.get(var1);
+   public TextureAtlasSprite getSprite(final Material sprite) {
+      return this.materials.get(sprite);
    }
 
-   public ActiveTextCollector textRendererForWidget(AbstractWidget var1, HoveredTextEffects var2) {
-      return new RenderingTextCollector(this.createDefaultTextParameters(var1.getAlpha()), var2, (Consumer)null);
+   public ActiveTextCollector textRendererForWidget(final AbstractWidget owner, final HoveredTextEffects hoveredTextEffects) {
+      return new RenderingTextCollector(this.createDefaultTextParameters(owner.getAlpha()), hoveredTextEffects, (Consumer)null);
    }
 
    public ActiveTextCollector textRenderer() {
       return this.textRenderer(GuiGraphics.HoveredTextEffects.TOOLTIP_ONLY);
    }
 
-   public ActiveTextCollector textRenderer(HoveredTextEffects var1) {
-      return this.textRenderer(var1, (Consumer)null);
+   public ActiveTextCollector textRenderer(final HoveredTextEffects hoveredTextEffects) {
+      return this.textRenderer(hoveredTextEffects, (Consumer)null);
    }
 
-   public ActiveTextCollector textRenderer(HoveredTextEffects var1, @Nullable Consumer<Style> var2) {
-      return new RenderingTextCollector(this.createDefaultTextParameters(1.0F), var1, var2);
+   public ActiveTextCollector textRenderer(final HoveredTextEffects hoveredTextEffects, final @Nullable Consumer<Style> additionalHoverStyleConsumer) {
+      return new RenderingTextCollector(this.createDefaultTextParameters(1.0F), hoveredTextEffects, additionalHoverStyleConsumer);
    }
 
-   private ActiveTextCollector.Parameters createDefaultTextParameters(float var1) {
-      return new ActiveTextCollector.Parameters(new Matrix3x2f(this.pose), var1, this.scissorStack.peek());
+   private ActiveTextCollector.Parameters createDefaultTextParameters(final float opacity) {
+      return new ActiveTextCollector.Parameters(new Matrix3x2f(this.pose), opacity, this.scissorStack.peek());
    }
 
-   static class ScissorStack {
+   private static class ScissorStack {
       private final Deque<ScreenRectangle> stack = new ArrayDeque();
 
-      ScissorStack() {
+      private ScissorStack() {
          super();
       }
 
-      public ScreenRectangle push(ScreenRectangle var1) {
-         ScreenRectangle var2 = (ScreenRectangle)this.stack.peekLast();
-         if (var2 != null) {
-            ScreenRectangle var3 = (ScreenRectangle)Objects.requireNonNullElse(var1.intersection(var2), ScreenRectangle.empty());
-            this.stack.addLast(var3);
-            return var3;
+      public ScreenRectangle push(final ScreenRectangle rectangle) {
+         ScreenRectangle lastRectangle = (ScreenRectangle)this.stack.peekLast();
+         if (lastRectangle != null) {
+            ScreenRectangle intersection = (ScreenRectangle)Objects.requireNonNullElse(rectangle.intersection(lastRectangle), ScreenRectangle.empty());
+            this.stack.addLast(intersection);
+            return intersection;
          } else {
-            this.stack.addLast(var1);
-            return var1;
+            this.stack.addLast(rectangle);
+            return rectangle;
          }
       }
 
@@ -819,8 +831,8 @@ public class GuiGraphics {
          return (ScreenRectangle)this.stack.peekLast();
       }
 
-      public boolean containsPoint(int var1, int var2) {
-         return this.stack.isEmpty() ? true : ((ScreenRectangle)this.stack.peek()).containsPoint(var1, var2);
+      public boolean containsPoint(final int x, final int y) {
+         return this.stack.isEmpty() ? true : ((ScreenRectangle)this.stack.peek()).containsPoint(x, y);
       }
    }
 
@@ -832,13 +844,13 @@ public class GuiGraphics {
       public final boolean allowTooltip;
       public final boolean allowCursorChanges;
 
-      private HoveredTextEffects(final boolean var3, final boolean var4) {
-         this.allowTooltip = var3;
-         this.allowCursorChanges = var4;
+      private HoveredTextEffects(final boolean allowTooltip, final boolean allowCursorChanges) {
+         this.allowTooltip = allowTooltip;
+         this.allowCursorChanges = allowCursorChanges;
       }
 
-      public static HoveredTextEffects notClickable(boolean var0) {
-         return var0 ? TOOLTIP_ONLY : NONE;
+      public static HoveredTextEffects notClickable(final boolean canTooltip) {
+         return canTooltip ? TOOLTIP_ONLY : NONE;
       }
 
       // $FF: synthetic method
@@ -847,65 +859,61 @@ public class GuiGraphics {
       }
    }
 
-   class RenderingTextCollector implements ActiveTextCollector, Consumer<Style> {
+   private class RenderingTextCollector implements ActiveTextCollector, Consumer<Style> {
       private ActiveTextCollector.Parameters defaultParameters;
       private final HoveredTextEffects hoveredTextEffects;
       private final @Nullable Consumer<Style> additionalConsumer;
 
-      RenderingTextCollector(final ActiveTextCollector.Parameters var2, final @Nullable HoveredTextEffects var3, final Consumer<Style> var4) {
+      private RenderingTextCollector(final ActiveTextCollector.Parameters initialParameters, final @Nullable HoveredTextEffects hoveredTextEffects, final Consumer<Style> additonalConsumer) {
+         Objects.requireNonNull(GuiGraphics.this);
          super();
-         this.defaultParameters = var2;
-         this.hoveredTextEffects = var3;
-         this.additionalConsumer = var4;
+         this.defaultParameters = initialParameters;
+         this.hoveredTextEffects = hoveredTextEffects;
+         this.additionalConsumer = additonalConsumer;
       }
 
       public ActiveTextCollector.Parameters defaultParameters() {
          return this.defaultParameters;
       }
 
-      public void defaultParameters(ActiveTextCollector.Parameters var1) {
-         this.defaultParameters = var1;
+      public void defaultParameters(final ActiveTextCollector.Parameters newParameters) {
+         this.defaultParameters = newParameters;
       }
 
-      public void accept(Style var1) {
-         if (this.hoveredTextEffects.allowTooltip && var1.getHoverEvent() != null) {
-            GuiGraphics.this.hoveredTextStyle = var1;
+      public void accept(final Style style) {
+         if (this.hoveredTextEffects.allowTooltip && style.getHoverEvent() != null) {
+            GuiGraphics.this.hoveredTextStyle = style;
          }
 
-         if (this.hoveredTextEffects.allowCursorChanges && var1.getClickEvent() != null) {
-            GuiGraphics.this.clickableTextStyle = var1;
+         if (this.hoveredTextEffects.allowCursorChanges && style.getClickEvent() != null) {
+            GuiGraphics.this.clickableTextStyle = style;
          }
 
          if (this.additionalConsumer != null) {
-            this.additionalConsumer.accept(var1);
+            this.additionalConsumer.accept(style);
          }
 
       }
 
-      public void accept(TextAlignment var1, int var2, int var3, ActiveTextCollector.Parameters var4, FormattedCharSequence var5) {
-         boolean var6 = this.hoveredTextEffects.allowCursorChanges || this.hoveredTextEffects.allowTooltip || this.additionalConsumer != null;
-         int var7 = var1.calculateLeft(var2, GuiGraphics.this.minecraft.font, var5);
-         GuiTextRenderState var8 = new GuiTextRenderState(GuiGraphics.this.minecraft.font, var5, var4.pose(), var7, var3, ARGB.white(var4.opacity()), 0, true, var6, var4.scissor());
-         if (ARGB.as8BitChannel(var4.opacity()) != 0) {
-            GuiGraphics.this.guiRenderState.submitText(var8);
+      public void accept(final TextAlignment alignment, final int anchorX, final int y, final ActiveTextCollector.Parameters parameters, final FormattedCharSequence text) {
+         boolean needsFullStyleScan = this.hoveredTextEffects.allowCursorChanges || this.hoveredTextEffects.allowTooltip || this.additionalConsumer != null;
+         int leftX = alignment.calculateLeft(anchorX, GuiGraphics.this.minecraft.font, text);
+         GuiTextRenderState renderState = new GuiTextRenderState(GuiGraphics.this.minecraft.font, text, parameters.pose(), leftX, y, ARGB.white(parameters.opacity()), 0, true, needsFullStyleScan, parameters.scissor());
+         if (ARGB.as8BitChannel(parameters.opacity()) != 0) {
+            GuiGraphics.this.guiRenderState.submitText(renderState);
          }
 
-         if (var6) {
-            ActiveTextCollector.findElementUnderCursor(var8, (float)GuiGraphics.this.mouseX, (float)GuiGraphics.this.mouseY, this);
+         if (needsFullStyleScan) {
+            ActiveTextCollector.findElementUnderCursor(renderState, (float)GuiGraphics.this.mouseX, (float)GuiGraphics.this.mouseY, this);
          }
 
       }
 
-      public void acceptScrolling(Component var1, int var2, int var3, int var4, int var5, int var6, ActiveTextCollector.Parameters var7) {
-         int var8 = GuiGraphics.this.minecraft.font.width((FormattedText)var1);
+      public void acceptScrolling(final Component message, final int centerX, final int left, final int right, final int top, final int bottom, final ActiveTextCollector.Parameters parameters) {
+         int lineWidth = GuiGraphics.this.minecraft.font.width((FormattedText)message);
          Objects.requireNonNull(GuiGraphics.this.minecraft.font);
-         byte var9 = 9;
-         this.defaultScrollingHelper(var1, var2, var3, var4, var5, var6, var8, var9, var7);
-      }
-
-      // $FF: synthetic method
-      public void accept(final Object var1) {
-         this.accept((Style)var1);
+         int lineHeight = 9;
+         this.defaultScrollingHelper(message, centerX, left, right, top, bottom, lineWidth, lineHeight, parameters);
       }
    }
 }

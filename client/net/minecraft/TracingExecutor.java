@@ -7,109 +7,108 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public record TracingExecutor(ExecutorService service) implements Executor {
-   public TracingExecutor(ExecutorService var1) {
+   public TracingExecutor {
       super();
-      this.service = var1;
    }
 
-   public Executor forName(String var1) {
+   public Executor forName(final String name) {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         return (var2) -> this.service.execute(() -> {
-               Thread var2x = Thread.currentThread();
-               String var3 = var2x.getName();
-               var2x.setName(var1);
+         return (command) -> this.service.execute(() -> {
+               Thread thread = Thread.currentThread();
+               String oldName = thread.getName();
+               thread.setName(name);
 
                try {
-                  Zone var4 = TracyClient.beginZone(var1, SharedConstants.IS_RUNNING_IN_IDE);
+                  Zone ignored = TracyClient.beginZone(name, SharedConstants.IS_RUNNING_IN_IDE);
 
                   try {
-                     var2.run();
+                     command.run();
                   } catch (Throwable var12) {
-                     if (var4 != null) {
+                     if (ignored != null) {
                         try {
-                           var4.close();
-                        } catch (Throwable var11) {
-                           var12.addSuppressed(var11);
+                           ignored.close();
+                        } catch (Throwable x2) {
+                           var12.addSuppressed(x2);
                         }
                      }
 
                      throw var12;
                   }
 
-                  if (var4 != null) {
-                     var4.close();
+                  if (ignored != null) {
+                     ignored.close();
                   }
                } finally {
-                  var2x.setName(var3);
+                  thread.setName(oldName);
                }
 
             });
       } else {
-         return (Executor)(TracyClient.isAvailable() ? (var2) -> this.service.execute(() -> {
-               Zone var2x = TracyClient.beginZone(var1, SharedConstants.IS_RUNNING_IN_IDE);
+         return (Executor)(TracyClient.isAvailable() ? (command) -> this.service.execute(() -> {
+               Zone ignored = TracyClient.beginZone(name, SharedConstants.IS_RUNNING_IN_IDE);
 
                try {
-                  var2.run();
+                  command.run();
                } catch (Throwable var6) {
-                  if (var2x != null) {
+                  if (ignored != null) {
                      try {
-                        var2x.close();
-                     } catch (Throwable var5) {
-                        var6.addSuppressed(var5);
+                        ignored.close();
+                     } catch (Throwable x2) {
+                        var6.addSuppressed(x2);
                      }
                   }
 
                   throw var6;
                }
 
-               if (var2x != null) {
-                  var2x.close();
+               if (ignored != null) {
+                  ignored.close();
                }
 
             }) : this.service);
       }
    }
 
-   public void execute(Runnable var1) {
-      this.service.execute(wrapUnnamed(var1));
+   public void execute(final Runnable command) {
+      this.service.execute(wrapUnnamed(command));
    }
 
-   public void shutdownAndAwait(long var1, TimeUnit var3) {
+   public void shutdownAndAwait(final long timeout, final TimeUnit unit) {
       this.service.shutdown();
 
-      boolean var4;
+      boolean terminated;
       try {
-         var4 = this.service.awaitTermination(var1, var3);
+         terminated = this.service.awaitTermination(timeout, unit);
       } catch (InterruptedException var6) {
-         var4 = false;
+         terminated = false;
       }
 
-      if (!var4) {
+      if (!terminated) {
          this.service.shutdownNow();
       }
 
    }
 
-   private static Runnable wrapUnnamed(Runnable var0) {
-      return !TracyClient.isAvailable() ? var0 : () -> {
-         Zone var1 = TracyClient.beginZone("task", SharedConstants.IS_RUNNING_IN_IDE);
+   private static Runnable wrapUnnamed(final Runnable command) {
+      return !TracyClient.isAvailable() ? command : () -> {
+         Zone ignored = TracyClient.beginZone("task", SharedConstants.IS_RUNNING_IN_IDE);
 
          try {
-            var0.run();
+            command.run();
          } catch (Throwable var5) {
-            if (var1 != null) {
+            if (ignored != null) {
                try {
-                  var1.close();
-               } catch (Throwable var4) {
-                  var5.addSuppressed(var4);
+                  ignored.close();
+               } catch (Throwable x2) {
+                  var5.addSuppressed(x2);
                }
             }
 
             throw var5;
          }
 
-         if (var1 != null) {
-            var1.close();
+         if (ignored != null) {
+            ignored.close();
          }
 
       };

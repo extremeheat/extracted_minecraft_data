@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.PistonHeadRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -30,65 +29,60 @@ public class PistonHeadRenderer implements BlockEntityRenderer<PistonMovingBlock
       return new PistonHeadRenderState();
    }
 
-   public void extractRenderState(PistonMovingBlockEntity var1, PistonHeadRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
-      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
-      var2.xOffset = var1.getXOff(var3);
-      var2.yOffset = var1.getYOff(var3);
-      var2.zOffset = var1.getZOff(var3);
-      var2.block = null;
-      var2.base = null;
-      BlockState var6 = var1.getMovedState();
-      Level var7 = var1.getLevel();
-      if (var7 != null && !var6.isAir()) {
-         BlockPos var8 = var1.getBlockPos().relative(var1.getMovementDirection().getOpposite());
-         Holder var9 = var7.getBiome(var8);
-         if (var6.is(Blocks.PISTON_HEAD) && var1.getProgress(var3) <= 4.0F) {
-            var6 = (BlockState)var6.setValue(PistonHeadBlock.SHORT, var1.getProgress(var3) <= 0.5F);
-            var2.block = createMovingBlock(var8, var6, var9, var7);
-         } else if (var1.isSourcePiston() && !var1.isExtending()) {
-            PistonType var10 = var6.is(Blocks.STICKY_PISTON) ? PistonType.STICKY : PistonType.DEFAULT;
-            BlockState var11 = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.TYPE, var10)).setValue(PistonHeadBlock.FACING, (Direction)var6.getValue(PistonBaseBlock.FACING));
-            var11 = (BlockState)var11.setValue(PistonHeadBlock.SHORT, var1.getProgress(var3) >= 0.5F);
-            var2.block = createMovingBlock(var8, var11, var9, var7);
-            BlockPos var12 = var8.relative(var1.getMovementDirection());
-            var6 = (BlockState)var6.setValue(PistonBaseBlock.EXTENDED, true);
-            var2.base = createMovingBlock(var12, var6, var9, var7);
+   public void extractRenderState(final PistonMovingBlockEntity blockEntity, final PistonHeadRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+      state.xOffset = blockEntity.getXOff(partialTicks);
+      state.yOffset = blockEntity.getYOff(partialTicks);
+      state.zOffset = blockEntity.getZOff(partialTicks);
+      state.block = null;
+      state.base = null;
+      BlockState blockState = blockEntity.getMovedState();
+      Level level = blockEntity.getLevel();
+      if (level != null && !blockState.isAir()) {
+         BlockPos pos = blockEntity.getBlockPos().relative(blockEntity.getMovementDirection().getOpposite());
+         Holder<Biome> biome = level.getBiome(pos);
+         if (blockState.is(Blocks.PISTON_HEAD) && blockEntity.getProgress(partialTicks) <= 4.0F) {
+            blockState = (BlockState)blockState.setValue(PistonHeadBlock.SHORT, blockEntity.getProgress(partialTicks) <= 0.5F);
+            state.block = createMovingBlock(pos, blockState, biome, level);
+         } else if (blockEntity.isSourcePiston() && !blockEntity.isExtending()) {
+            PistonType value = blockState.is(Blocks.STICKY_PISTON) ? PistonType.STICKY : PistonType.DEFAULT;
+            BlockState pistonHeadState = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.TYPE, value)).setValue(PistonHeadBlock.FACING, (Direction)blockState.getValue(PistonBaseBlock.FACING));
+            pistonHeadState = (BlockState)pistonHeadState.setValue(PistonHeadBlock.SHORT, blockEntity.getProgress(partialTicks) >= 0.5F);
+            state.block = createMovingBlock(pos, pistonHeadState, biome, level);
+            BlockPos basePos = pos.relative(blockEntity.getMovementDirection());
+            blockState = (BlockState)blockState.setValue(PistonBaseBlock.EXTENDED, true);
+            state.base = createMovingBlock(basePos, blockState, biome, level);
          } else {
-            var2.block = createMovingBlock(var8, var6, var9, var7);
+            state.block = createMovingBlock(pos, blockState, biome, level);
          }
       }
 
    }
 
-   public void submit(PistonHeadRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      if (var1.block != null) {
-         var2.pushPose();
-         var2.translate(var1.xOffset, var1.yOffset, var1.zOffset);
-         var3.submitMovingBlock(var2, var1.block);
-         var2.popPose();
-         if (var1.base != null) {
-            var3.submitMovingBlock(var2, var1.base);
+   public void submit(final PistonHeadRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      if (state.block != null) {
+         poseStack.pushPose();
+         poseStack.translate(state.xOffset, state.yOffset, state.zOffset);
+         submitNodeCollector.submitMovingBlock(poseStack, state.block);
+         poseStack.popPose();
+         if (state.base != null) {
+            submitNodeCollector.submitMovingBlock(poseStack, state.base);
          }
 
       }
    }
 
-   private static MovingBlockRenderState createMovingBlock(BlockPos var0, BlockState var1, Holder<Biome> var2, Level var3) {
-      MovingBlockRenderState var4 = new MovingBlockRenderState();
-      var4.randomSeedPos = var0;
-      var4.blockPos = var0;
-      var4.blockState = var1;
-      var4.biome = var2;
-      var4.level = var3;
-      return var4;
+   private static MovingBlockRenderState createMovingBlock(final BlockPos pos, final BlockState blockState, final Holder<Biome> biome, final Level level) {
+      MovingBlockRenderState movingBlockRenderState = new MovingBlockRenderState();
+      movingBlockRenderState.randomSeedPos = pos;
+      movingBlockRenderState.blockPos = pos;
+      movingBlockRenderState.blockState = blockState;
+      movingBlockRenderState.biome = biome;
+      movingBlockRenderState.level = level;
+      return movingBlockRenderState;
    }
 
    public int getViewDistance() {
       return 68;
-   }
-
-   // $FF: synthetic method
-   public BlockEntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

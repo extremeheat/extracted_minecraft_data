@@ -9,14 +9,14 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 public class ColdPigModel extends PigModel {
-   public ColdPigModel(ModelPart var1) {
-      super(var1);
+   public ColdPigModel(final ModelPart root) {
+      super(root);
    }
 
-   public static LayerDefinition createBodyLayer(CubeDeformation var0) {
-      MeshDefinition var1 = createBasePigModel(var0);
-      PartDefinition var2 = var1.getRoot();
-      var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(28, 8).addBox(-5.0F, -10.0F, -7.0F, 10.0F, 16.0F, 8.0F).texOffs(28, 32).addBox(-5.0F, -10.0F, -7.0F, 10.0F, 16.0F, 8.0F, new CubeDeformation(0.5F)), PartPose.offsetAndRotation(0.0F, 11.0F, 2.0F, 1.5707964F, 0.0F, 0.0F));
-      return LayerDefinition.create(var1, 64, 64);
+   public static LayerDefinition createBodyLayer(final CubeDeformation g) {
+      MeshDefinition basePigModel = createBasePigModel(g);
+      PartDefinition root = basePigModel.getRoot();
+      root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(28, 8).addBox(-5.0F, -10.0F, -7.0F, 10.0F, 16.0F, 8.0F).texOffs(28, 32).addBox(-5.0F, -10.0F, -7.0F, 10.0F, 16.0F, 8.0F, new CubeDeformation(0.5F)), PartPose.offsetAndRotation(0.0F, 11.0F, 2.0F, 1.5707964F, 0.0F, 0.0F));
+      return LayerDefinition.create(basePigModel, 64, 64);
    }
 }

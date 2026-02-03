@@ -10,25 +10,21 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.Vec3;
 
 public interface ProjectileItem {
-   Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4);
+   Projectile asProjectile(final Level level, final Position position, final ItemStack itemStack, final Direction direction);
 
    default DispenseConfig createDispenseConfig() {
       return ProjectileItem.DispenseConfig.DEFAULT;
    }
 
-   default void shoot(Projectile var1, double var2, double var4, double var6, float var8, float var9) {
-      var1.shoot(var2, var4, var6, var8, var9);
+   default void shoot(final Projectile projectile, final double xd, final double yd, final double zd, final float pow, final float uncertainty) {
+      projectile.shoot(xd, yd, zd, pow, uncertainty);
    }
 
    public static record DispenseConfig(PositionFunction positionFunction, float uncertainty, float power, OptionalInt overrideDispenseEvent) {
       public static final DispenseConfig DEFAULT = builder().build();
 
-      public DispenseConfig(PositionFunction var1, float var2, float var3, OptionalInt var4) {
+      public DispenseConfig {
          super();
-         this.positionFunction = var1;
-         this.uncertainty = var2;
-         this.power = var3;
-         this.overrideDispenseEvent = var4;
       }
 
       public static Builder builder() {
@@ -36,7 +32,7 @@ public interface ProjectileItem {
       }
 
       public static class Builder {
-         private PositionFunction positionFunction = (var0, var1) -> DispenserBlock.getDispensePosition(var0, 0.7, new Vec3(0.0, 0.1, 0.0));
+         private PositionFunction positionFunction = (source, direction) -> DispenserBlock.getDispensePosition(source, 0.7, new Vec3(0.0, 0.1, 0.0));
          private float uncertainty = 6.0F;
          private float power = 1.1F;
          private OptionalInt overrideDispenseEvent = OptionalInt.empty();
@@ -45,23 +41,23 @@ public interface ProjectileItem {
             super();
          }
 
-         public Builder positionFunction(PositionFunction var1) {
-            this.positionFunction = var1;
+         public Builder positionFunction(final PositionFunction positionFunction) {
+            this.positionFunction = positionFunction;
             return this;
          }
 
-         public Builder uncertainty(float var1) {
-            this.uncertainty = var1;
+         public Builder uncertainty(final float uncertainty) {
+            this.uncertainty = uncertainty;
             return this;
          }
 
-         public Builder power(float var1) {
-            this.power = var1;
+         public Builder power(final float power) {
+            this.power = power;
             return this;
          }
 
-         public Builder overrideDispenseEvent(int var1) {
-            this.overrideDispenseEvent = OptionalInt.of(var1);
+         public Builder overrideDispenseEvent(final int dispenseEvent) {
+            this.overrideDispenseEvent = OptionalInt.of(dispenseEvent);
             return this;
          }
 
@@ -73,6 +69,6 @@ public interface ProjectileItem {
 
    @FunctionalInterface
    public interface PositionFunction {
-      Position getDispensePosition(BlockSource var1, Direction var2);
+      Position getDispensePosition(final BlockSource source, final Direction direction);
    }
 }

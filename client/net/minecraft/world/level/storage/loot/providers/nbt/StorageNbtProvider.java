@@ -2,29 +2,22 @@ package net.minecraft.world.level.storage.loot.providers.nbt;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Set;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record StorageNbtProvider(Identifier id) implements NbtProvider {
-   public static final MapCodec<StorageNbtProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("source").forGetter(StorageNbtProvider::id)).apply(var0, StorageNbtProvider::new));
+   public static final MapCodec<StorageNbtProvider> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("source").forGetter(StorageNbtProvider::id)).apply(i, StorageNbtProvider::new));
 
-   public StorageNbtProvider(Identifier var1) {
+   public StorageNbtProvider {
       super();
-      this.id = var1;
    }
 
-   public LootNbtProviderType getType() {
-      return NbtProviders.STORAGE;
+   public MapCodec<StorageNbtProvider> codec() {
+      return MAP_CODEC;
    }
 
-   public Tag get(LootContext var1) {
-      return var1.getLevel().getServer().getCommandStorage().get(this.id);
-   }
-
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return Set.of();
+   public Tag get(final LootContext context) {
+      return context.getLevel().getServer().getCommandStorage().get(this.id);
    }
 }

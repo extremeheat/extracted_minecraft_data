@@ -8,12 +8,12 @@ import net.minecraft.network.chat.Component;
 public class ChatOptionsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.chat.title");
 
-   private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.chatVisibility(), var0.chatColors(), var0.chatLinks(), var0.chatLinksPrompt(), var0.chatOpacity(), var0.textBackgroundOpacity(), var0.chatScale(), var0.chatLineSpacing(), var0.chatDelay(), var0.chatWidth(), var0.chatHeightFocused(), var0.chatHeightUnfocused(), var0.narrator(), var0.autoSuggestions(), var0.hideMatchedNames(), var0.reducedDebugInfo(), var0.onlyShowSecureChat(), var0.saveChatDrafts()};
+   private static OptionInstance<?>[] options(final Options options) {
+      return new OptionInstance[]{options.chatVisibility(), options.chatColors(), options.chatLinks(), options.chatLinksPrompt(), options.chatOpacity(), options.textBackgroundOpacity(), options.chatScale(), options.chatLineSpacing(), options.chatDelay(), options.chatWidth(), options.chatHeightFocused(), options.chatHeightUnfocused(), options.narrator(), options.autoSuggestions(), options.hideMatchedNames(), options.reducedDebugInfo(), options.onlyShowSecureChat(), options.saveChatDrafts()};
    }
 
-   public ChatOptionsScreen(Screen var1, Options var2) {
-      super(var1, var2, TITLE);
+   public ChatOptionsScreen(final Screen lastScreen, final Options options) {
+      super(lastScreen, options, TITLE);
    }
 
    protected void addOptions() {

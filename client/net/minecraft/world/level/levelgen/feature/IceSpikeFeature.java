@@ -10,47 +10,47 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class IceSpikeFeature extends Feature<NoneFeatureConfiguration> {
-   public IceSpikeFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public IceSpikeFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      BlockPos var2 = var1.origin();
-      RandomSource var3 = var1.random();
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      BlockPos origin = context.origin();
+      RandomSource random = context.random();
 
-      WorldGenLevel var4;
-      for(var4 = var1.level(); var4.isEmptyBlock(var2) && var2.getY() > var4.getMinY() + 2; var2 = var2.below()) {
+      WorldGenLevel level;
+      for(level = context.level(); level.isEmptyBlock(origin) && origin.getY() > level.getMinY() + 2; origin = origin.below()) {
       }
 
-      if (!var4.getBlockState(var2).is(Blocks.SNOW_BLOCK)) {
+      if (!level.getBlockState(origin).is(Blocks.SNOW_BLOCK)) {
          return false;
       } else {
-         var2 = var2.above(var3.nextInt(4));
-         int var5 = var3.nextInt(4) + 7;
-         int var6 = var5 / 4 + var3.nextInt(2);
-         if (var6 > 1 && var3.nextInt(60) == 0) {
-            var2 = var2.above(10 + var3.nextInt(30));
+         origin = origin.above(random.nextInt(4));
+         int height = random.nextInt(4) + 7;
+         int width = height / 4 + random.nextInt(2);
+         if (width > 1 && random.nextInt(60) == 0) {
+            origin = origin.above(10 + random.nextInt(30));
          }
 
-         for(int var7 = 0; var7 < var5; ++var7) {
-            float var8 = (1.0F - (float)var7 / (float)var5) * (float)var6;
-            int var9 = Mth.ceil(var8);
+         for(int yOff = 0; yOff < height; ++yOff) {
+            float scale = (1.0F - (float)yOff / (float)height) * (float)width;
+            int newWidth = Mth.ceil(scale);
 
-            for(int var10 = -var9; var10 <= var9; ++var10) {
-               float var11 = (float)Mth.abs(var10) - 0.25F;
+            for(int xo = -newWidth; xo <= newWidth; ++xo) {
+               float dx = (float)Mth.abs(xo) - 0.25F;
 
-               for(int var12 = -var9; var12 <= var9; ++var12) {
-                  float var13 = (float)Mth.abs(var12) - 0.25F;
-                  if ((var10 == 0 && var12 == 0 || !(var11 * var11 + var13 * var13 > var8 * var8)) && (var10 != -var9 && var10 != var9 && var12 != -var9 && var12 != var9 || !(var3.nextFloat() > 0.75F))) {
-                     BlockState var14 = var4.getBlockState(var2.offset(var10, var7, var12));
-                     if (var14.isAir() || isDirt(var14) || var14.is(Blocks.SNOW_BLOCK) || var14.is(Blocks.ICE)) {
-                        this.setBlock(var4, var2.offset(var10, var7, var12), Blocks.PACKED_ICE.defaultBlockState());
+               for(int zo = -newWidth; zo <= newWidth; ++zo) {
+                  float dz = (float)Mth.abs(zo) - 0.25F;
+                  if ((xo == 0 && zo == 0 || !(dx * dx + dz * dz > scale * scale)) && (xo != -newWidth && xo != newWidth && zo != -newWidth && zo != newWidth || !(random.nextFloat() > 0.75F))) {
+                     BlockState state = level.getBlockState(origin.offset(xo, yOff, zo));
+                     if (state.isAir() || isDirt(state) || state.is(Blocks.SNOW_BLOCK) || state.is(Blocks.ICE)) {
+                        this.setBlock(level, origin.offset(xo, yOff, zo), Blocks.PACKED_ICE.defaultBlockState());
                      }
 
-                     if (var7 != 0 && var9 > 1) {
-                        var14 = var4.getBlockState(var2.offset(var10, -var7, var12));
-                        if (var14.isAir() || isDirt(var14) || var14.is(Blocks.SNOW_BLOCK) || var14.is(Blocks.ICE)) {
-                           this.setBlock(var4, var2.offset(var10, -var7, var12), Blocks.PACKED_ICE.defaultBlockState());
+                     if (yOff != 0 && newWidth > 1) {
+                        state = level.getBlockState(origin.offset(xo, -yOff, zo));
+                        if (state.isAir() || isDirt(state) || state.is(Blocks.SNOW_BLOCK) || state.is(Blocks.ICE)) {
+                           this.setBlock(level, origin.offset(xo, -yOff, zo), Blocks.PACKED_ICE.defaultBlockState());
                         }
                      }
                   }
@@ -58,33 +58,33 @@ public class IceSpikeFeature extends Feature<NoneFeatureConfiguration> {
             }
          }
 
-         int var16 = var6 - 1;
-         if (var16 < 0) {
-            var16 = 0;
-         } else if (var16 > 1) {
-            var16 = 1;
+         int pillarWidth = width - 1;
+         if (pillarWidth < 0) {
+            pillarWidth = 0;
+         } else if (pillarWidth > 1) {
+            pillarWidth = 1;
          }
 
-         for(int var17 = -var16; var17 <= var16; ++var17) {
-            for(int var18 = -var16; var18 <= var16; ++var18) {
-               BlockPos var19 = var2.offset(var17, -1, var18);
-               int var20 = 50;
-               if (Math.abs(var17) == 1 && Math.abs(var18) == 1) {
-                  var20 = var3.nextInt(5);
+         for(int xo = -pillarWidth; xo <= pillarWidth; ++xo) {
+            for(int zo = -pillarWidth; zo <= pillarWidth; ++zo) {
+               BlockPos iceBlock = origin.offset(xo, -1, zo);
+               int runLength = 50;
+               if (Math.abs(xo) == 1 && Math.abs(zo) == 1) {
+                  runLength = random.nextInt(5);
                }
 
-               while(var19.getY() > 50) {
-                  BlockState var21 = var4.getBlockState(var19);
-                  if (!var21.isAir() && !isDirt(var21) && !var21.is(Blocks.SNOW_BLOCK) && !var21.is(Blocks.ICE) && !var21.is(Blocks.PACKED_ICE)) {
+               while(iceBlock.getY() > 50) {
+                  BlockState state = level.getBlockState(iceBlock);
+                  if (!state.isAir() && !isDirt(state) && !state.is(Blocks.SNOW_BLOCK) && !state.is(Blocks.ICE) && !state.is(Blocks.PACKED_ICE)) {
                      break;
                   }
 
-                  this.setBlock(var4, var19, Blocks.PACKED_ICE.defaultBlockState());
-                  var19 = var19.below();
-                  --var20;
-                  if (var20 <= 0) {
-                     var19 = var19.below(var3.nextInt(5) + 1);
-                     var20 = var3.nextInt(5);
+                  this.setBlock(level, iceBlock, Blocks.PACKED_ICE.defaultBlockState());
+                  iceBlock = iceBlock.below();
+                  --runLength;
+                  if (runLength <= 0) {
+                     iceBlock = iceBlock.below(random.nextInt(5) + 1);
+                     runLength = random.nextInt(5);
                   }
                }
             }

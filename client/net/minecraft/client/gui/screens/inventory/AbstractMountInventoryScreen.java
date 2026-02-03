@@ -13,42 +13,41 @@ public abstract class AbstractMountInventoryScreen<T extends AbstractMountInvent
    protected final int inventoryColumns;
    protected float xMouse;
    protected float yMouse;
-   protected LivingEntity mount;
+   protected final LivingEntity mount;
 
-   public AbstractMountInventoryScreen(T var1, Inventory var2, Component var3, int var4, LivingEntity var5) {
-      super(var1, var2, var3);
-      this.inventoryColumns = var4;
-      this.mount = var5;
+   public AbstractMountInventoryScreen(final T menu, final Inventory inventory, final Component title, final int inventoryColumns, final LivingEntity mount) {
+      super(menu, inventory, title);
+      this.inventoryColumns = inventoryColumns;
+      this.mount = mount;
    }
 
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      int var5 = (this.width - this.imageWidth) / 2;
-      int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(RenderPipelines.GUI_TEXTURED, this.getBackgroundTextureLocation(), var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+      int xo = (this.width - this.imageWidth) / 2;
+      int yo = (this.height - this.imageHeight) / 2;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, this.getBackgroundTextureLocation(), xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       if (this.inventoryColumns > 0 && this.getChestSlotsSpriteLocation() != null) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.getChestSlotsSpriteLocation(), 90, 54, 0, 0, var5 + 79, var6 + 17, this.inventoryColumns * 18, 54);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.getChestSlotsSpriteLocation(), 90, 54, 0, 0, xo + 79, yo + 17, this.inventoryColumns * 18, 54);
       }
 
       if (this.shouldRenderSaddleSlot()) {
-         this.drawSlot(var1, var5 + 7, var6 + 35 - 18);
+         this.drawSlot(graphics, xo + 7, yo + 35 - 18);
       }
 
       if (this.shouldRenderArmorSlot()) {
-         this.drawSlot(var1, var5 + 7, var6 + 35);
+         this.drawSlot(graphics, xo + 7, yo + 35);
       }
 
-      InventoryScreen.renderEntityInInventoryFollowsMouse(var1, var5 + 26, var6 + 18, var5 + 78, var6 + 70, 17, 0.25F, this.xMouse, this.yMouse, this.mount);
+      InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, xo + 26, yo + 18, xo + 78, yo + 70, 17, 0.25F, this.xMouse, this.yMouse, this.mount);
    }
 
-   protected void drawSlot(GuiGraphics var1, int var2, int var3) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.getSlotSpriteLocation(), var2, var3, 18, 18);
+   protected void drawSlot(final GuiGraphics graphics, final int x, final int y) {
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.getSlotSpriteLocation(), x, y, 18, 18);
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.xMouse = (float)var2;
-      this.yMouse = (float)var3;
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
+   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      this.xMouse = (float)mouseX;
+      this.yMouse = (float)mouseY;
+      super.render(graphics, mouseX, mouseY, a);
    }
 
    protected abstract Identifier getBackgroundTextureLocation();

@@ -17,16 +17,16 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
       return CODEC;
    }
 
-   public NetherrackBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public NetherrackBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      if (!var1.getBlockState(var2.above()).propagatesSkylightDown()) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      if (!level.getBlockState(pos.above()).propagatesSkylightDown()) {
          return false;
       } else {
-         for(BlockPos var5 : BlockPos.betweenClosed(var2.offset(-1, -1, -1), var2.offset(1, 1, 1))) {
-            if (var1.getBlockState(var5).is(BlockTags.NYLIUM)) {
+         for(BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))) {
+            if (level.getBlockState(blockPos).is(BlockTags.NYLIUM)) {
                return true;
             }
          }
@@ -35,35 +35,35 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
       }
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      boolean var5 = false;
-      boolean var6 = false;
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      boolean foundRed = false;
+      boolean foundBlue = false;
 
-      for(BlockPos var8 : BlockPos.betweenClosed(var3.offset(-1, -1, -1), var3.offset(1, 1, 1))) {
-         BlockState var9 = var1.getBlockState(var8);
-         if (var9.is(Blocks.WARPED_NYLIUM)) {
-            var6 = true;
+      for(BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))) {
+         BlockState blockState = level.getBlockState(blockPos);
+         if (blockState.is(Blocks.WARPED_NYLIUM)) {
+            foundBlue = true;
          }
 
-         if (var9.is(Blocks.CRIMSON_NYLIUM)) {
-            var5 = true;
+         if (blockState.is(Blocks.CRIMSON_NYLIUM)) {
+            foundRed = true;
          }
 
-         if (var6 && var5) {
+         if (foundBlue && foundRed) {
             break;
          }
       }
 
-      if (var6 && var5) {
-         var1.setBlock(var3, var2.nextBoolean() ? Blocks.WARPED_NYLIUM.defaultBlockState() : Blocks.CRIMSON_NYLIUM.defaultBlockState(), 3);
-      } else if (var6) {
-         var1.setBlock(var3, Blocks.WARPED_NYLIUM.defaultBlockState(), 3);
-      } else if (var5) {
-         var1.setBlock(var3, Blocks.CRIMSON_NYLIUM.defaultBlockState(), 3);
+      if (foundBlue && foundRed) {
+         level.setBlock(pos, random.nextBoolean() ? Blocks.WARPED_NYLIUM.defaultBlockState() : Blocks.CRIMSON_NYLIUM.defaultBlockState(), 3);
+      } else if (foundBlue) {
+         level.setBlock(pos, Blocks.WARPED_NYLIUM.defaultBlockState(), 3);
+      } else if (foundRed) {
+         level.setBlock(pos, Blocks.CRIMSON_NYLIUM.defaultBlockState(), 3);
       }
 
    }

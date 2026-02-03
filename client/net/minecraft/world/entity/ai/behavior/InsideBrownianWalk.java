@@ -15,15 +15,15 @@ public class InsideBrownianWalk {
       super();
    }
 
-   public static BehaviorControl<PathfinderMob> create(float var0) {
-      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.absent(MemoryModuleType.WALK_TARGET)).apply(var1, (var1x) -> (var2, var3, var4) -> {
-               if (var2.canSeeSky(var3.blockPosition())) {
+   public static BehaviorControl<PathfinderMob> create(final float speedModifier) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.WALK_TARGET)).apply(i, (walkTarget) -> (level, body, timestamp) -> {
+               if (level.canSeeSky(body.blockPosition())) {
                   return false;
                } else {
-                  BlockPos var6 = var3.blockPosition();
-                  List var7 = (List)BlockPos.betweenClosedStream(var6.offset(-1, -1, -1), var6.offset(1, 1, 1)).map(BlockPos::immutable).collect(Util.toMutableList());
-                  Collections.shuffle(var7);
-                  var7.stream().filter((var1) -> !var2.canSeeSky(var1)).filter((var2x) -> var2.loadedAndEntityCanStandOn(var2x, var3)).filter((var2x) -> var2.noCollision(var3)).findFirst().ifPresent((var2x) -> var1x.set(new WalkTarget(var2x, var0, 0)));
+                  BlockPos bodyPos = body.blockPosition();
+                  List<BlockPos> poses = (List)BlockPos.betweenClosedStream(bodyPos.offset(-1, -1, -1), bodyPos.offset(1, 1, 1)).map(BlockPos::immutable).collect(Util.toMutableList());
+                  Collections.shuffle(poses);
+                  poses.stream().filter((pos) -> !level.canSeeSky(pos)).filter((pos) -> level.loadedAndEntityCanStandOn(pos, body)).filter((pos) -> level.noCollision(body)).findFirst().ifPresent((target) -> walkTarget.set(new WalkTarget(target, speedModifier, 0)));
                   return true;
                }
             })));

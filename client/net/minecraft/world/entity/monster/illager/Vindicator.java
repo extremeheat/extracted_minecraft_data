@@ -39,6 +39,7 @@ import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -48,12 +49,12 @@ import org.jspecify.annotations.Nullable;
 
 public class Vindicator extends AbstractIllager {
    private static final String TAG_JOHNNY = "Johnny";
-   static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE = (var0) -> var0 == Difficulty.NORMAL || var0 == Difficulty.HARD;
+   private static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE = (d) -> d == Difficulty.NORMAL || d == Difficulty.HARD;
    private static final boolean DEFAULT_JOHNNY = false;
-   boolean isJohnny = false;
+   private boolean isJohnny = false;
 
-   public Vindicator(EntityType<? extends Vindicator> var1, Level var2) {
-      super(var1, var2);
+   public Vindicator(final EntityType<? extends Vindicator> type, final Level level) {
+      super(type, level);
    }
 
    protected void registerGoals() {
@@ -74,23 +75,23 @@ public class Vindicator extends AbstractIllager {
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
+   protected void customServerAiStep(final ServerLevel level) {
       if (!this.isNoAi() && GoalUtils.hasGroundPathNavigation(this)) {
-         boolean var2 = var1.isRaided(this.blockPosition());
-         this.getNavigation().setCanOpenDoors(var2);
+         boolean canOpenDoors = level.isRaided(this.blockPosition());
+         this.getNavigation().setCanOpenDoors(canOpenDoors);
       }
 
-      super.customServerAiStep(var1);
+      super.customServerAiStep(level);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.3499999940395355).add(Attributes.FOLLOW_RANGE, 12.0).add(Attributes.MAX_HEALTH, 24.0).add(Attributes.ATTACK_DAMAGE, 5.0);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
       if (this.isJohnny) {
-         var1.putBoolean("Johnny", true);
+         output.putBoolean("Johnny", true);
       }
 
    }
@@ -103,34 +104,34 @@ public class Vindicator extends AbstractIllager {
       }
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.isJohnny = var1.getBooleanOr("Johnny", false);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.isJohnny = input.getBooleanOr("Johnny", false);
    }
 
    public SoundEvent getCelebrateSound() {
       return SoundEvents.VINDICATOR_CELEBRATE;
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      SpawnGroupData spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, groupData);
       this.getNavigation().setCanOpenDoors(true);
-      RandomSource var6 = var1.getRandom();
-      this.populateDefaultEquipmentSlots(var6, var2);
-      this.populateDefaultEquipmentEnchantments(var1, var6, var2);
-      return var5;
+      RandomSource random = level.getRandom();
+      this.populateDefaultEquipmentSlots(random, difficulty);
+      this.populateDefaultEquipmentEnchantments(level, random, difficulty);
+      return spawnGroupData;
    }
 
-   protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
+   protected void populateDefaultEquipmentSlots(final RandomSource random, final DifficultyInstance difficulty) {
       if (this.getCurrentRaid() == null) {
          this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_AXE));
       }
 
    }
 
-   public void setCustomName(@Nullable Component var1) {
-      super.setCustomName(var1);
-      if (!this.isJohnny && var1 != null && var1.getString().equals("Johnny")) {
+   public void setCustomName(final @Nullable Component name) {
+      super.setCustomName(name);
+      if (!this.isJohnny && name != null && name.getString().equals("Johnny")) {
          this.isJohnny = true;
       }
 
@@ -144,36 +145,36 @@ public class Vindicator extends AbstractIllager {
       return SoundEvents.VINDICATOR_DEATH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.VINDICATOR_HURT;
    }
 
-   public void applyRaidBuffs(ServerLevel var1, int var2, boolean var3) {
-      ItemStack var4 = new ItemStack(Items.IRON_AXE);
-      Raid var5 = this.getCurrentRaid();
-      boolean var6 = this.random.nextFloat() <= var5.getEnchantOdds();
-      if (var6) {
-         ResourceKey var7 = var2 > var5.getNumGroups(Difficulty.NORMAL) ? VanillaEnchantmentProviders.RAID_VINDICATOR_POST_WAVE_5 : VanillaEnchantmentProviders.RAID_VINDICATOR;
-         EnchantmentHelper.enchantItemFromProvider(var4, var1.registryAccess(), var7, var1.getCurrentDifficultyAt(this.blockPosition()), this.random);
+   public void applyRaidBuffs(final ServerLevel level, final int wave, final boolean isCaptain) {
+      ItemStack axe = new ItemStack(Items.IRON_AXE);
+      Raid raid = this.getCurrentRaid();
+      boolean shouldEnchant = this.random.nextFloat() <= raid.getEnchantOdds();
+      if (shouldEnchant) {
+         ResourceKey<EnchantmentProvider> provider = wave > raid.getNumGroups(Difficulty.NORMAL) ? VanillaEnchantmentProviders.RAID_VINDICATOR_POST_WAVE_5 : VanillaEnchantmentProviders.RAID_VINDICATOR;
+         EnchantmentHelper.enchantItemFromProvider(axe, level.registryAccess(), provider, level.getCurrentDifficultyAt(this.blockPosition()), this.random);
       }
 
-      this.setItemSlot(EquipmentSlot.MAINHAND, var4);
+      this.setItemSlot(EquipmentSlot.MAINHAND, axe);
    }
 
-   static class VindicatorBreakDoorGoal extends BreakDoorGoal {
-      public VindicatorBreakDoorGoal(Mob var1) {
-         super(var1, 6, Vindicator.DOOR_BREAKING_PREDICATE);
+   private static class VindicatorBreakDoorGoal extends BreakDoorGoal {
+      public VindicatorBreakDoorGoal(final Mob mob) {
+         super(mob, 6, Vindicator.DOOR_BREAKING_PREDICATE);
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
       public boolean canContinueToUse() {
-         Vindicator var1 = (Vindicator)this.mob;
-         return var1.hasActiveRaid() && super.canContinueToUse();
+         Vindicator vindicator = (Vindicator)this.mob;
+         return vindicator.hasActiveRaid() && super.canContinueToUse();
       }
 
       public boolean canUse() {
-         Vindicator var1 = (Vindicator)this.mob;
-         return var1.hasActiveRaid() && var1.random.nextInt(reducedTickDelay(10)) == 0 && super.canUse();
+         Vindicator vindicator = (Vindicator)this.mob;
+         return vindicator.hasActiveRaid() && vindicator.random.nextInt(reducedTickDelay(10)) == 0 && super.canUse();
       }
 
       public void start() {
@@ -182,9 +183,9 @@ public class Vindicator extends AbstractIllager {
       }
    }
 
-   static class VindicatorJohnnyAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
-      public VindicatorJohnnyAttackGoal(Vindicator var1) {
-         super(var1, LivingEntity.class, 0, true, true, (var0, var1x) -> var0.attackable());
+   private static class VindicatorJohnnyAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
+      public VindicatorJohnnyAttackGoal(final Vindicator mob) {
+         super(mob, LivingEntity.class, 0, true, true, (target, level) -> target.attackable());
       }
 
       public boolean canUse() {

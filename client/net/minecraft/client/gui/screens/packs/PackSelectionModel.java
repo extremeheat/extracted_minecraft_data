@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -19,33 +20,33 @@ import net.minecraft.server.packs.repository.PackSource;
 
 public class PackSelectionModel {
    private final PackRepository repository;
-   final List<Pack> selected;
-   final List<Pack> unselected;
-   final Function<Pack, Identifier> iconGetter;
-   final Consumer<EntryBase> onListChanged;
+   private final List<Pack> selected;
+   private final List<Pack> unselected;
+   private final Function<Pack, Identifier> iconGetter;
+   private final Consumer<EntryBase> onListChanged;
    private final Consumer<PackRepository> output;
 
-   public PackSelectionModel(Consumer<EntryBase> var1, Function<Pack, Identifier> var2, PackRepository var3, Consumer<PackRepository> var4) {
+   public PackSelectionModel(final Consumer<EntryBase> onListChanged, final Function<Pack, Identifier> iconGetter, final PackRepository repository, final Consumer<PackRepository> output) {
       super();
-      this.onListChanged = var1;
-      this.iconGetter = var2;
-      this.repository = var3;
-      this.selected = Lists.newArrayList(var3.getSelectedPacks());
+      this.onListChanged = onListChanged;
+      this.iconGetter = iconGetter;
+      this.repository = repository;
+      this.selected = Lists.newArrayList(repository.getSelectedPacks());
       Collections.reverse(this.selected);
-      this.unselected = Lists.newArrayList(var3.getAvailablePacks());
+      this.unselected = Lists.newArrayList(repository.getAvailablePacks());
       this.unselected.removeAll(this.selected);
-      this.output = var4;
+      this.output = output;
    }
 
    public Stream<Entry> getUnselected() {
-      return this.unselected.stream().map((var1) -> new UnselectedPackEntry(var1));
+      return this.unselected.stream().map((x$0) -> new UnselectedPackEntry(x$0));
    }
 
    public Stream<Entry> getSelected() {
-      return this.selected.stream().map((var1) -> new SelectedPackEntry(var1));
+      return this.selected.stream().map((x$0) -> new SelectedPackEntry(x$0));
    }
 
-   void updateRepoSelectedList() {
+   private void updateRepoSelectedList() {
       this.repository.setSelected((Collection)Lists.reverse(this.selected).stream().map(Pack::getId).collect(ImmutableList.toImmutableList()));
    }
 
@@ -109,9 +110,10 @@ public class PackSelectionModel {
    public abstract class EntryBase implements Entry {
       private final Pack pack;
 
-      public EntryBase(final Pack var2) {
+      public EntryBase(final Pack pack) {
+         Objects.requireNonNull(PackSelectionModel.this);
          super();
-         this.pack = var2;
+         this.pack = pack;
       }
 
       protected abstract List<Pack> getSelfList();
@@ -160,24 +162,24 @@ public class PackSelectionModel {
 
       private void updateHighContrastOptionInstance() {
          if (this.pack.getId().equals("high_contrast")) {
-            OptionInstance var1 = Minecraft.getInstance().options.highContrast();
-            var1.set(!(Boolean)var1.get());
+            OptionInstance<Boolean> highContrastMode = Minecraft.getInstance().options.highContrast();
+            highContrastMode.set(!(Boolean)highContrastMode.get());
          }
 
       }
 
-      protected void move(int var1) {
-         List var2 = this.getSelfList();
-         int var3 = var2.indexOf(this.pack);
-         var2.remove(var3);
-         var2.add(var3 + var1, this.pack);
+      protected void move(final int direction) {
+         List<Pack> list = this.getSelfList();
+         int currentPos = list.indexOf(this.pack);
+         list.remove(currentPos);
+         list.add(currentPos + direction, this.pack);
          PackSelectionModel.this.onListChanged.accept(this);
       }
 
       public boolean canMoveUp() {
-         List var1 = this.getSelfList();
-         int var2 = var1.indexOf(this.pack);
-         return var2 > 0 && !((Pack)var1.get(var2 - 1)).isFixedPosition();
+         List<Pack> list = this.getSelfList();
+         int index = list.indexOf(this.pack);
+         return index > 0 && !((Pack)list.get(index - 1)).isFixedPosition();
       }
 
       public void moveUp() {
@@ -185,9 +187,9 @@ public class PackSelectionModel {
       }
 
       public boolean canMoveDown() {
-         List var1 = this.getSelfList();
-         int var2 = var1.indexOf(this.pack);
-         return var2 >= 0 && var2 < var1.size() - 1 && !((Pack)var1.get(var2 + 1)).isFixedPosition();
+         List<Pack> list = this.getSelfList();
+         int index = list.indexOf(this.pack);
+         return index >= 0 && index < list.size() - 1 && !((Pack)list.get(index + 1)).isFixedPosition();
       }
 
       public void moveDown() {
@@ -195,9 +197,10 @@ public class PackSelectionModel {
       }
    }
 
-   class SelectedPackEntry extends EntryBase {
-      public SelectedPackEntry(final Pack var2) {
-         super(var2);
+   private class SelectedPackEntry extends EntryBase {
+      public SelectedPackEntry(final Pack pack) {
+         Objects.requireNonNull(PackSelectionModel.this);
+         super(pack);
       }
 
       protected List<Pack> getSelfList() {
@@ -220,9 +223,10 @@ public class PackSelectionModel {
       }
    }
 
-   class UnselectedPackEntry extends EntryBase {
-      public UnselectedPackEntry(final Pack var2) {
-         super(var2);
+   private class UnselectedPackEntry extends EntryBase {
+      public UnselectedPackEntry(final Pack pack) {
+         Objects.requireNonNull(PackSelectionModel.this);
+         super(pack);
       }
 
       protected List<Pack> getSelfList() {

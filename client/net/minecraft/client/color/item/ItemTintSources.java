@@ -25,6 +25,6 @@ public class ItemTintSources {
    }
 
    static {
-      CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatch(ItemTintSource::type, (var0) -> var0);
+      CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatch(ItemTintSource::type, (c) -> c);
    }
 }

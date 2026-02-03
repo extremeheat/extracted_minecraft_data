@@ -60,8 +60,8 @@ public class Pig extends Animal implements ItemSteerable {
    private static final EntityDataAccessor<Holder<PigVariant>> DATA_VARIANT_ID;
    private final ItemBasedSteering steering;
 
-   public Pig(EntityType<? extends Pig> var1, Level var2) {
-      super(var1, var2);
+   public Pig(final EntityType<? extends Pig> type, final Level level) {
+      super(type, level);
       this.steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME);
    }
 
@@ -69,8 +69,8 @@ public class Pig extends Animal implements ItemSteerable {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.25));
       this.goalSelector.addGoal(3, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, (var0) -> var0.is(Items.CARROT_ON_A_STICK), false));
-      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, (var0) -> var0.is(ItemTags.PIG_FOOD), false));
+      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, (i) -> i.is(Items.CARROT_ON_A_STICK), false));
+      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, (i) -> i.is(ItemTags.PIG_FOOD), false));
       this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.1));
       this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
@@ -85,9 +85,9 @@ public class Pig extends Animal implements ItemSteerable {
       if (this.isSaddled()) {
          Entity var2 = this.getFirstPassenger();
          if (var2 instanceof Player) {
-            Player var1 = (Player)var2;
-            if (var1.isHolding(Items.CARROT_ON_A_STICK)) {
-               return var1;
+            Player player = (Player)var2;
+            if (player.isHolding(Items.CARROT_ON_A_STICK)) {
+               return player;
             }
          }
       }
@@ -95,108 +95,108 @@ public class Pig extends Animal implements ItemSteerable {
       return super.getControllingPassenger();
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (DATA_BOOST_TIME.equals(var1) && this.level().isClientSide()) {
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      if (DATA_BOOST_TIME.equals(accessor) && this.level().isClientSide()) {
          this.steering.onSynced();
       }
 
-      super.onSyncedDataUpdated(var1);
+      super.onSyncedDataUpdated(accessor);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_BOOST_TIME, 0);
-      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), PigVariants.DEFAULT));
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_BOOST_TIME, 0);
+      entityData.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), PigVariants.DEFAULT));
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      VariantUtils.writeVariant(var1, this.getVariant());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      VariantUtils.writeVariant(output, this.getVariant());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      VariantUtils.readVariant(var1, Registries.PIG_VARIANT).ifPresent(this::setVariant);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      VariantUtils.readVariant(input, Registries.PIG_VARIANT).ifPresent(this::setVariant);
    }
 
    protected SoundEvent getAmbientSound() {
-      return SoundEvents.PIG_AMBIENT;
+      return this.isBaby() ? SoundEvents.PIG_AMBIENT_BABY : SoundEvents.PIG_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
-      return SoundEvents.PIG_HURT;
+   protected SoundEvent getHurtSound(final DamageSource source) {
+      return this.isBaby() ? SoundEvents.PIG_HURT_BABY : SoundEvents.PIG_HURT;
    }
 
    protected SoundEvent getDeathSound() {
-      return SoundEvents.PIG_DEATH;
+      return this.isBaby() ? SoundEvents.PIG_DEATH_BABY : SoundEvents.PIG_DEATH;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
-      this.playSound(SoundEvents.PIG_STEP, 0.15F, 1.0F);
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
+      this.playSound(this.isBaby() ? SoundEvents.PIG_STEP_BABY : SoundEvents.PIG_STEP, 0.15F, 1.0F);
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      boolean var3 = this.isFood(var1.getItemInHand(var2));
-      if (!var3 && this.isSaddled() && !this.isVehicle() && !var1.isSecondaryUseActive()) {
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      boolean hasFood = this.isFood(player.getItemInHand(hand));
+      if (!hasFood && this.isSaddled() && !this.isVehicle() && !player.isSecondaryUseActive()) {
          if (!this.level().isClientSide()) {
-            var1.startRiding(this);
+            player.startRiding(this);
          }
 
          return InteractionResult.SUCCESS;
       } else {
-         InteractionResult var4 = super.mobInteract(var1, var2);
-         if (!var4.consumesAction()) {
-            ItemStack var5 = var1.getItemInHand(var2);
-            return (InteractionResult)(this.isEquippableInSlot(var5, EquipmentSlot.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS);
+         InteractionResult interactionResult = super.mobInteract(player, hand);
+         if (!interactionResult.consumesAction()) {
+            ItemStack itemStack = player.getItemInHand(hand);
+            return (InteractionResult)(this.isEquippableInSlot(itemStack, EquipmentSlot.SADDLE) ? itemStack.interactLivingEntity(player, this, hand) : InteractionResult.PASS);
          } else {
-            return var4;
+            return interactionResult;
          }
       }
    }
 
-   public boolean canUseSlot(EquipmentSlot var1) {
-      if (var1 != EquipmentSlot.SADDLE) {
-         return super.canUseSlot(var1);
+   public boolean canUseSlot(final EquipmentSlot slot) {
+      if (slot != EquipmentSlot.SADDLE) {
+         return super.canUseSlot(slot);
       } else {
          return this.isAlive() && !this.isBaby();
       }
    }
 
-   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
-      return var1 == EquipmentSlot.SADDLE || super.canDispenserEquipIntoSlot(var1);
+   protected boolean canDispenserEquipIntoSlot(final EquipmentSlot slot) {
+      return slot == EquipmentSlot.SADDLE || super.canDispenserEquipIntoSlot(slot);
    }
 
-   protected Holder<SoundEvent> getEquipSound(EquipmentSlot var1, ItemStack var2, Equippable var3) {
-      return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE ? SoundEvents.PIG_SADDLE : super.getEquipSound(var1, var2, var3));
+   protected Holder<SoundEvent> getEquipSound(final EquipmentSlot slot, final ItemStack stack, final Equippable equippable) {
+      return (Holder<SoundEvent>)(slot == EquipmentSlot.SADDLE ? SoundEvents.PIG_SADDLE : super.getEquipSound(slot, stack, equippable));
    }
 
-   public void thunderHit(ServerLevel var1, LightningBolt var2) {
-      if (var1.getDifficulty() != Difficulty.PEACEFUL) {
-         ZombifiedPiglin var3 = (ZombifiedPiglin)this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, false, true), (var2x) -> {
-            var2x.populateDefaultEquipmentSlots(this.getRandom(), var1.getCurrentDifficultyAt(this.blockPosition()));
-            var2x.setPersistenceRequired();
+   public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
+      if (level.getDifficulty() != Difficulty.PEACEFUL) {
+         ZombifiedPiglin zombifiedPiglin = (ZombifiedPiglin)this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, false, true), (zp) -> {
+            zp.populateDefaultEquipmentSlots(this.getRandom(), level.getCurrentDifficultyAt(this.blockPosition()));
+            zp.setPersistenceRequired();
          });
-         if (var3 == null) {
-            super.thunderHit(var1, var2);
+         if (zombifiedPiglin == null) {
+            super.thunderHit(level, lightningBolt);
          }
       } else {
-         super.thunderHit(var1, var2);
+         super.thunderHit(level, lightningBolt);
       }
 
    }
 
-   protected void tickRidden(Player var1, Vec3 var2) {
-      super.tickRidden(var1, var2);
-      this.setRot(var1.getYRot(), var1.getXRot() * 0.5F);
+   protected void tickRidden(final Player controller, final Vec3 riddenInput) {
+      super.tickRidden(controller, riddenInput);
+      this.setRot(controller.getYRot(), controller.getXRot() * 0.5F);
       this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
       this.steering.tickBoost();
    }
 
-   protected Vec3 getRiddenInput(Player var1, Vec3 var2) {
+   protected Vec3 getRiddenInput(final Player controller, final Vec3 selfInput) {
       return new Vec3(0.0, 0.0, 1.0);
    }
 
-   protected float getRiddenSpeed(Player var1) {
+   protected float getRiddenSpeed(final Player controller) {
       return (float)(this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 0.225 * (double)this.steering.boostFactor());
    }
 
@@ -204,57 +204,52 @@ public class Pig extends Animal implements ItemSteerable {
       return this.steering.boost(this.getRandom());
    }
 
-   public @Nullable Pig getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Pig var3 = EntityType.PIG.create(var1, EntitySpawnReason.BREEDING);
-      if (var3 != null && var2 instanceof Pig var4) {
-         var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
+   public @Nullable Pig getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      Pig baby = EntityType.PIG.create(level, EntitySpawnReason.BREEDING);
+      if (baby != null && partner instanceof Pig partnerPig) {
+         baby.setVariant(this.random.nextBoolean() ? this.getVariant() : partnerPig.getVariant());
       }
 
-      return var3;
+      return baby;
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.PIG_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.PIG_FOOD);
    }
 
    public Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)(0.6F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
    }
 
-   private void setVariant(Holder<PigVariant> var1) {
-      this.entityData.set(DATA_VARIANT_ID, var1);
+   private void setVariant(final Holder<PigVariant> variant) {
+      this.entityData.set(DATA_VARIANT_ID, variant);
    }
 
    public Holder<PigVariant> getVariant() {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.PIG_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)(type == DataComponents.PIG_VARIANT ? castComponentValue(type, this.getVariant()) : super.get(type));
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.PIG_VARIANT);
-      super.applyImplicitComponents(var1);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.PIG_VARIANT);
+      super.applyImplicitComponents(components);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.PIG_VARIANT) {
-         this.setVariant((Holder)castComponentValue(DataComponents.PIG_VARIANT, var2));
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.PIG_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.PIG_VARIANT, value));
          return true;
       } else {
-         return super.applyImplicitComponent(var1, var2);
+         return super.applyImplicitComponent(type, value);
       }
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.PIG_VARIANT).ifPresent(this::setVariant);
-      return super.finalizeSpawn(var1, var2, var3, var4);
-   }
-
-   // $FF: synthetic method
-   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
+   public SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      VariantUtils.selectVariantToSpawn(SpawnContext.create(level, this.blockPosition()), Registries.PIG_VARIANT).ifPresent(this::setVariant);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
    static {

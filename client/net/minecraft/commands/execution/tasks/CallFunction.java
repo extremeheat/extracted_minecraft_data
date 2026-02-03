@@ -15,29 +15,24 @@ public class CallFunction<T extends ExecutionCommandSource<T>> implements Unboun
    private final CommandResultCallback resultCallback;
    private final boolean returnParentFrame;
 
-   public CallFunction(InstantiatedFunction<T> var1, CommandResultCallback var2, boolean var3) {
+   public CallFunction(final InstantiatedFunction<T> function, final CommandResultCallback resultCallback, final boolean returnParentFrame) {
       super();
-      this.function = var1;
-      this.resultCallback = var2;
-      this.returnParentFrame = var3;
+      this.function = function;
+      this.resultCallback = resultCallback;
+      this.returnParentFrame = returnParentFrame;
    }
 
-   public void execute(T var1, ExecutionContext<T> var2, Frame var3) {
-      var2.incrementCost();
-      List var4 = this.function.entries();
-      TraceCallbacks var5 = var2.tracer();
-      if (var5 != null) {
-         var5.onCall(var3.depth(), this.function.id(), this.function.entries().size());
+   public void execute(final T sender, final ExecutionContext<T> context, final Frame frame) {
+      context.incrementCost();
+      List<UnboundEntryAction<T>> contents = this.function.entries();
+      TraceCallbacks tracer = context.tracer();
+      if (tracer != null) {
+         tracer.onCall(frame.depth(), this.function.id(), this.function.entries().size());
       }
 
-      int var6 = var3.depth() + 1;
-      Frame.FrameControl var7 = this.returnParentFrame ? var3.frameControl() : var2.frameControlForDepth(var6);
-      Frame var8 = new Frame(var6, this.resultCallback, var7);
-      ContinuationTask.schedule(var2, var8, var4, (var1x, var2x) -> new CommandQueueEntry(var1x, var2x.bind(var1)));
-   }
-
-   // $FF: synthetic method
-   public void execute(final Object var1, final ExecutionContext var2, final Frame var3) {
-      this.execute((ExecutionCommandSource)var1, var2, var3);
+      int newDepth = frame.depth() + 1;
+      Frame.FrameControl frameControl = this.returnParentFrame ? frame.frameControl() : context.frameControlForDepth(newDepth);
+      Frame newFrame = new Frame(newDepth, this.resultCallback, frameControl);
+      ContinuationTask.schedule(context, newFrame, contents, (frame1, entryAction) -> new CommandQueueEntry(frame1, entryAction.bind(sender)));
    }
 }

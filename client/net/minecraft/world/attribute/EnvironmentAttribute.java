@@ -14,18 +14,18 @@ public class EnvironmentAttribute<Value> {
    private final boolean isPositional;
    private final boolean isSpatiallyInterpolated;
 
-   EnvironmentAttribute(AttributeType<Value> var1, Value var2, AttributeRange<Value> var3, boolean var4, boolean var5, boolean var6) {
+   private EnvironmentAttribute(final AttributeType<Value> type, final Value defaultValue, final AttributeRange<Value> valueRange, final boolean isSyncable, final boolean isPositional, final boolean isSpatiallyInterpolated) {
       super();
-      this.type = var1;
-      this.defaultValue = var2;
-      this.valueRange = var3;
-      this.isSyncable = var4;
-      this.isPositional = var5;
-      this.isSpatiallyInterpolated = var6;
+      this.type = type;
+      this.defaultValue = defaultValue;
+      this.valueRange = valueRange;
+      this.isSyncable = isSyncable;
+      this.isPositional = isPositional;
+      this.isSpatiallyInterpolated = isSpatiallyInterpolated;
    }
 
-   public static <Value> Builder<Value> builder(AttributeType<Value> var0) {
-      return new Builder<Value>(var0);
+   public static <Value> Builder<Value> builder(final AttributeType<Value> type) {
+      return new Builder<Value>(type);
    }
 
    public AttributeType<Value> type() {
@@ -43,8 +43,8 @@ public class EnvironmentAttribute<Value> {
       return var10000.validate(var10001::validate);
    }
 
-   public Value sanitizeValue(Value var1) {
-      return this.valueRange.sanitize(var1);
+   public Value sanitizeValue(final Value value) {
+      return this.valueRange.sanitize(value);
    }
 
    public boolean isSyncable() {
@@ -71,18 +71,18 @@ public class EnvironmentAttribute<Value> {
       private boolean isPositional = true;
       private boolean isSpatiallyInterpolated = false;
 
-      public Builder(AttributeType<Value> var1) {
+      public Builder(final AttributeType<Value> type) {
          super();
-         this.type = var1;
+         this.type = type;
       }
 
-      public Builder<Value> defaultValue(Value var1) {
-         this.defaultValue = var1;
+      public Builder<Value> defaultValue(final Value defaultValue) {
+         this.defaultValue = defaultValue;
          return this;
       }
 
-      public Builder<Value> valueRange(AttributeRange<Value> var1) {
-         this.valueRange = var1;
+      public Builder<Value> valueRange(final AttributeRange<Value> valueRange) {
+         this.valueRange = valueRange;
          return this;
       }
 

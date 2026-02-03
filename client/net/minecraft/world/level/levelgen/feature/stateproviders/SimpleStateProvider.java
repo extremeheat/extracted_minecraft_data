@@ -9,20 +9,20 @@ public class SimpleStateProvider extends BlockStateProvider {
    public static final MapCodec<SimpleStateProvider> CODEC;
    private final BlockState state;
 
-   protected SimpleStateProvider(BlockState var1) {
+   protected SimpleStateProvider(final BlockState state) {
       super();
-      this.state = var1;
+      this.state = state;
    }
 
    protected BlockStateProviderType<?> type() {
       return BlockStateProviderType.SIMPLE_STATE_PROVIDER;
    }
 
-   public BlockState getState(RandomSource var1, BlockPos var2) {
+   public BlockState getState(final RandomSource random, final BlockPos pos) {
       return this.state;
    }
 
    static {
-      CODEC = BlockState.CODEC.fieldOf("state").xmap(SimpleStateProvider::new, (var0) -> var0.state);
+      CODEC = BlockState.CODEC.fieldOf("state").xmap(SimpleStateProvider::new, (p) -> p.state);
    }
 }

@@ -8,13 +8,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TextComponentTagVisitor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -29,29 +28,29 @@ import org.slf4j.Logger;
 
 public class NbtContents implements ComponentContents {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<NbtContents> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("nbt").forGetter(NbtContents::getNbtPath), Codec.BOOL.lenientOptionalFieldOf("interpret", false).forGetter(NbtContents::isInterpreting), ComponentSerialization.CODEC.lenientOptionalFieldOf("separator").forGetter(NbtContents::getSeparator), DataSources.CODEC.forGetter(NbtContents::getDataSource)).apply(var0, NbtContents::new));
+   public static final MapCodec<NbtContents> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.STRING.fieldOf("nbt").forGetter(NbtContents::getNbtPath), Codec.BOOL.lenientOptionalFieldOf("interpret", false).forGetter(NbtContents::isInterpreting), ComponentSerialization.CODEC.lenientOptionalFieldOf("separator").forGetter(NbtContents::getSeparator), DataSources.CODEC.forGetter(NbtContents::getDataSource)).apply(i, NbtContents::new));
    private final boolean interpreting;
    private final Optional<Component> separator;
    private final String nbtPathPattern;
    private final DataSource dataSource;
    protected final NbtPathArgument.@Nullable NbtPath compiledNbtPath;
 
-   public NbtContents(String var1, boolean var2, Optional<Component> var3, DataSource var4) {
-      this(var1, compileNbtPath(var1), var2, var3, var4);
+   public NbtContents(final String nbtPath, final boolean interpreting, final Optional<Component> separator, final DataSource dataSource) {
+      this(nbtPath, compileNbtPath(nbtPath), interpreting, separator, dataSource);
    }
 
-   private NbtContents(String var1, NbtPathArgument.@Nullable NbtPath var2, boolean var3, Optional<Component> var4, DataSource var5) {
+   private NbtContents(final String nbtPathPattern, final NbtPathArgument.@Nullable NbtPath compiledNbtPath, final boolean interpreting, final Optional<Component> separator, final DataSource dataSource) {
       super();
-      this.nbtPathPattern = var1;
-      this.compiledNbtPath = var2;
-      this.interpreting = var3;
-      this.separator = var4;
-      this.dataSource = var5;
+      this.nbtPathPattern = nbtPathPattern;
+      this.compiledNbtPath = compiledNbtPath;
+      this.interpreting = interpreting;
+      this.separator = separator;
+      this.dataSource = dataSource;
    }
 
-   private static NbtPathArgument.@Nullable NbtPath compileNbtPath(String var0) {
+   private static NbtPathArgument.@Nullable NbtPath compileNbtPath(final String path) {
       try {
-         return (new NbtPathArgument()).parse(new StringReader(var0));
+         return (new NbtPathArgument()).parse(new StringReader(path));
       } catch (CommandSyntaxException var2) {
          return null;
       }
@@ -73,14 +72,14 @@ public class NbtContents implements ComponentContents {
       return this.dataSource;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof NbtContents) {
-            NbtContents var2 = (NbtContents)var1;
-            if (this.dataSource.equals(var2.dataSource) && this.separator.equals(var2.separator) && this.interpreting == var2.interpreting && this.nbtPathPattern.equals(var2.nbtPathPattern)) {
+         if (o instanceof NbtContents) {
+            NbtContents that = (NbtContents)o;
+            if (this.dataSource.equals(that.dataSource) && this.separator.equals(that.separator) && this.interpreting == that.interpreting && this.nbtPathPattern.equals(that.nbtPathPattern)) {
                var10000 = true;
                return var10000;
             }
@@ -92,11 +91,11 @@ public class NbtContents implements ComponentContents {
    }
 
    public int hashCode() {
-      int var1 = this.interpreting ? 1 : 0;
-      var1 = 31 * var1 + this.separator.hashCode();
-      var1 = 31 * var1 + this.nbtPathPattern.hashCode();
-      var1 = 31 * var1 + this.dataSource.hashCode();
-      return var1;
+      int result = this.interpreting ? 1 : 0;
+      result = 31 * result + this.separator.hashCode();
+      result = 31 * result + this.nbtPathPattern.hashCode();
+      result = 31 * result + this.dataSource.hashCode();
+      return result;
    }
 
    public String toString() {
@@ -104,50 +103,35 @@ public class NbtContents implements ComponentContents {
       return "nbt{" + var10000 + ", interpreting=" + this.interpreting + ", separator=" + String.valueOf(this.separator) + "}";
    }
 
-   public MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
-      if (var1 != null && this.compiledNbtPath != null) {
-         Stream var4 = this.dataSource.getData(var1).flatMap((var1x) -> {
+   public MutableComponent resolve(final @Nullable CommandSourceStack source, final @Nullable Entity entity, final int recursionDepth) throws CommandSyntaxException {
+      if (source != null && this.compiledNbtPath != null) {
+         Stream<Tag> elements = this.dataSource.getData(source).flatMap((t) -> {
             try {
-               return this.compiledNbtPath.get(var1x).stream();
+               return this.compiledNbtPath.get(t).stream();
             } catch (CommandSyntaxException var3) {
                return Stream.empty();
             }
          });
+         Component resolvedSeparator = (Component)DataFixUtils.orElse(ComponentUtils.updateForEntity(source, this.separator, entity, recursionDepth), ComponentUtils.DEFAULT_NO_STYLE_SEPARATOR);
          if (this.interpreting) {
-            RegistryOps var7 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            Component var6 = (Component)DataFixUtils.orElse(ComponentUtils.updateForEntity(var1, this.separator, var2, var3), ComponentUtils.DEFAULT_NO_STYLE_SEPARATOR);
-            return (MutableComponent)var4.flatMap((var4x) -> {
+            RegistryOps<Tag> registryOps = source.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+            return (MutableComponent)elements.flatMap((tag) -> {
                try {
-                  Component var5 = (Component)ComponentSerialization.CODEC.parse(var7, var4x).getOrThrow();
-                  return Stream.of(ComponentUtils.updateForEntity(var1, var5, var2, var3));
-               } catch (Exception var6) {
-                  LOGGER.warn("Failed to parse component: {}", var4x, var6);
+                  Component component = (Component)ComponentSerialization.CODEC.parse(registryOps, tag).getOrThrow();
+                  return Stream.of(ComponentUtils.updateForEntity(source, component, entity, recursionDepth));
+               } catch (Exception e) {
+                  LOGGER.warn("Failed to parse component: {}", tag, e);
                   return Stream.of();
                }
-            }).reduce((var1x, var2x) -> var1x.append(var6).append((Component)var2x)).orElseGet(Component::empty);
+            }).reduce((left, right) -> left.append(resolvedSeparator).append((Component)right)).orElseGet(Component::empty);
          } else {
-            Stream var5 = var4.map(NbtContents::asString);
-            return (MutableComponent)ComponentUtils.updateForEntity(var1, this.separator, var2, var3).map((var1x) -> (MutableComponent)var5.map(Component::literal).reduce((var1, var2) -> var1.append((Component)var1x).append((Component)var2)).orElseGet(Component::empty)).orElseGet(() -> Component.literal((String)var5.collect(Collectors.joining(", "))));
+            return (MutableComponent)elements.map((tag) -> {
+               TextComponentTagVisitor visitor = new TextComponentTagVisitor("");
+               return (MutableComponent)visitor.visit(tag);
+            }).reduce((left, right) -> left.append(resolvedSeparator).append((Component)right)).orElseGet(Component::empty);
          }
       } else {
          return Component.empty();
-      }
-   }
-
-   private static String asString(Tag var0) {
-      if (var0 instanceof StringTag var1) {
-         StringTag var10000 = var1;
-
-         try {
-            var5 = var10000.value();
-         } catch (Throwable var4) {
-            throw new MatchException(var4.toString(), var4);
-         }
-
-         String var3 = var5;
-         return var3;
-      } else {
-         return var0.toString();
       }
    }
 

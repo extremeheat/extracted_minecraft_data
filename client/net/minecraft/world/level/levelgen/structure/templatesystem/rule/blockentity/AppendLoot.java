@@ -9,19 +9,19 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import org.jspecify.annotations.Nullable;
 
 public class AppendLoot implements RuleBlockEntityModifier {
-   public static final MapCodec<AppendLoot> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LootTable.KEY_CODEC.fieldOf("loot_table").forGetter((var0x) -> var0x.lootTable)).apply(var0, AppendLoot::new));
+   public static final MapCodec<AppendLoot> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LootTable.KEY_CODEC.fieldOf("loot_table").forGetter((c) -> c.lootTable)).apply(i, AppendLoot::new));
    private final ResourceKey<LootTable> lootTable;
 
-   public AppendLoot(ResourceKey<LootTable> var1) {
+   public AppendLoot(final ResourceKey<LootTable> lootTable) {
       super();
-      this.lootTable = var1;
+      this.lootTable = lootTable;
    }
 
-   public CompoundTag apply(RandomSource var1, @Nullable CompoundTag var2) {
-      CompoundTag var3 = var2 == null ? new CompoundTag() : var2.copy();
-      var3.store("LootTable", LootTable.KEY_CODEC, this.lootTable);
-      var3.putLong("LootTableSeed", var1.nextLong());
-      return var3;
+   public CompoundTag apply(final RandomSource random, final @Nullable CompoundTag existingTag) {
+      CompoundTag result = existingTag == null ? new CompoundTag() : existingTag.copy();
+      result.store("LootTable", LootTable.KEY_CODEC, this.lootTable);
+      result.putLong("LootTableSeed", random.nextLong());
+      return result;
    }
 
    public RuleBlockEntityModifierType<?> getType() {

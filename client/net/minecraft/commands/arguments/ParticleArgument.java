@@ -29,66 +29,61 @@ import net.minecraft.resources.ResourceKey;
 
 public class ParticleArgument implements ArgumentType<ParticleOptions> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "particle{foo:bar}");
-   public static final DynamicCommandExceptionType ERROR_UNKNOWN_PARTICLE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("particle.notFound", var0));
-   public static final DynamicCommandExceptionType ERROR_INVALID_OPTIONS = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("particle.invalidOptions", var0));
+   public static final DynamicCommandExceptionType ERROR_UNKNOWN_PARTICLE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("particle.notFound", value));
+   public static final DynamicCommandExceptionType ERROR_INVALID_OPTIONS = new DynamicCommandExceptionType((message) -> Component.translatableEscape("particle.invalidOptions", message));
    private final HolderLookup.Provider registries;
    private static final TagParser<?> VALUE_PARSER;
 
-   public ParticleArgument(CommandBuildContext var1) {
+   public ParticleArgument(final CommandBuildContext context) {
       super();
-      this.registries = var1;
+      this.registries = context;
    }
 
-   public static ParticleArgument particle(CommandBuildContext var0) {
-      return new ParticleArgument(var0);
+   public static ParticleArgument particle(final CommandBuildContext context) {
+      return new ParticleArgument(context);
    }
 
-   public static ParticleOptions getParticle(CommandContext<CommandSourceStack> var0, String var1) {
-      return (ParticleOptions)var0.getArgument(var1, ParticleOptions.class);
+   public static ParticleOptions getParticle(final CommandContext<CommandSourceStack> context, final String name) {
+      return (ParticleOptions)context.getArgument(name, ParticleOptions.class);
    }
 
-   public ParticleOptions parse(StringReader var1) throws CommandSyntaxException {
-      return readParticle(var1, this.registries);
+   public ParticleOptions parse(final StringReader reader) throws CommandSyntaxException {
+      return readParticle(reader, this.registries);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   public static ParticleOptions readParticle(StringReader var0, HolderLookup.Provider var1) throws CommandSyntaxException {
-      ParticleType var2 = readParticleType(var0, var1.lookupOrThrow(Registries.PARTICLE_TYPE));
-      return readParticle(VALUE_PARSER, var0, var2, var1);
+   public static ParticleOptions readParticle(final StringReader reader, final HolderLookup.Provider registries) throws CommandSyntaxException {
+      ParticleType<?> type = readParticleType(reader, registries.lookupOrThrow(Registries.PARTICLE_TYPE));
+      return readParticle(VALUE_PARSER, reader, type, registries);
    }
 
-   private static ParticleType<?> readParticleType(StringReader var0, HolderLookup<ParticleType<?>> var1) throws CommandSyntaxException {
-      Identifier var2 = Identifier.read(var0);
-      ResourceKey var3 = ResourceKey.create(Registries.PARTICLE_TYPE, var2);
-      return (ParticleType)((Holder.Reference)var1.get(var3).orElseThrow(() -> ERROR_UNKNOWN_PARTICLE.createWithContext(var0, var2))).value();
+   private static ParticleType<?> readParticleType(final StringReader reader, final HolderLookup<ParticleType<?>> particles) throws CommandSyntaxException {
+      Identifier id = Identifier.read(reader);
+      ResourceKey<ParticleType<?>> key = ResourceKey.create(Registries.PARTICLE_TYPE, id);
+      return (ParticleType)((Holder.Reference)particles.get(key).orElseThrow(() -> ERROR_UNKNOWN_PARTICLE.createWithContext(reader, id))).value();
    }
 
-   private static <T extends ParticleOptions, O> T readParticle(TagParser<O> var0, StringReader var1, ParticleType<T> var2, HolderLookup.Provider var3) throws CommandSyntaxException {
-      RegistryOps var5 = var3.createSerializationContext(var0.getOps());
-      Object var4;
-      if (var1.canRead() && var1.peek() == '{') {
-         var4 = var0.parseAsArgument(var1);
+   private static <T extends ParticleOptions, O> T readParticle(final TagParser<O> parser, final StringReader reader, final ParticleType<T> type, final HolderLookup.Provider registries) throws CommandSyntaxException {
+      RegistryOps<O> ops = registries.<O>createSerializationContext(parser.getOps());
+      O extraData;
+      if (reader.canRead() && reader.peek() == '{') {
+         extraData = parser.parseAsArgument(reader);
       } else {
-         var4 = var5.emptyMap();
+         extraData = (O)ops.emptyMap();
       }
 
-      DataResult var10000 = var2.codec().codec().parse(var5, var4);
+      DataResult var10000 = type.codec().codec().parse(ops, extraData);
       DynamicCommandExceptionType var10001 = ERROR_INVALID_OPTIONS;
       Objects.requireNonNull(var10001);
       return (T)(var10000.getOrThrow(var10001::create));
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      HolderLookup.RegistryLookup var3 = this.registries.lookupOrThrow(Registries.PARTICLE_TYPE);
-      return SharedSuggestionProvider.suggestResource(var3.listElementIds().map(ResourceKey::identifier), var2);
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      HolderLookup.RegistryLookup<ParticleType<?>> particles = this.registries.lookupOrThrow(Registries.PARTICLE_TYPE);
+      return SharedSuggestionProvider.suggestResource(particles.listElementIds().map(ResourceKey::identifier), builder);
    }
 
    static {

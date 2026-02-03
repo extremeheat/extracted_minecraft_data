@@ -3,15 +3,13 @@ package net.minecraft.world.level.material;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
+import net.minecraft.core.TypedInstance;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
@@ -25,13 +23,13 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-public final class FluidState extends StateHolder<Fluid, FluidState> {
+public final class FluidState extends StateHolder<Fluid, FluidState> implements TypedInstance<Fluid> {
    public static final Codec<FluidState> CODEC;
    public static final int AMOUNT_MAX = 9;
    public static final int AMOUNT_FULL = 8;
 
-   public FluidState(Fluid var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<FluidState> var3) {
-      super(var1, var2, var3);
+   public FluidState(final Fluid owner, final Reference2ObjectArrayMap<Property<?>, Comparable<?>> values, final MapCodec<FluidState> propertiesCodec) {
+      super(owner, values, propertiesCodec);
    }
 
    public Fluid getType() {
@@ -42,32 +40,36 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
       return this.getType().isSource(this);
    }
 
-   public boolean isSourceOfType(Fluid var1) {
-      return this.owner == var1 && ((Fluid)this.owner).isSource(this);
+   public boolean isSourceOfType(final Fluid fluidType) {
+      return this.owner == fluidType && ((Fluid)this.owner).isSource(this);
    }
 
    public boolean isEmpty() {
       return this.getType().isEmpty();
    }
 
-   public float getHeight(BlockGetter var1, BlockPos var2) {
-      return this.getType().getHeight(this, var1, var2);
+   public float getHeight(final BlockGetter level, final BlockPos pos) {
+      return this.getType().getHeight(this, level, pos);
    }
 
    public float getOwnHeight() {
       return this.getType().getOwnHeight(this);
    }
 
+   public boolean isFull() {
+      return this.getAmount() == 8;
+   }
+
    public int getAmount() {
       return this.getType().getAmount(this);
    }
 
-   public boolean shouldRenderBackwardUpFace(BlockGetter var1, BlockPos var2) {
-      for(int var3 = -1; var3 <= 1; ++var3) {
-         for(int var4 = -1; var4 <= 1; ++var4) {
-            BlockPos var5 = var2.offset(var3, 0, var4);
-            FluidState var6 = var1.getFluidState(var5);
-            if (!var6.getType().isSame(this.getType()) && !var1.getBlockState(var5).isSolidRender()) {
+   public boolean shouldRenderBackwardUpFace(final BlockGetter level, final BlockPos above) {
+      for(int ox = -1; ox <= 1; ++ox) {
+         for(int oz = -1; oz <= 1; ++oz) {
+            BlockPos offset = above.offset(ox, 0, oz);
+            FluidState fluidState = level.getFluidState(offset);
+            if (!fluidState.getType().isSame(this.getType()) && !level.getBlockState(offset).isSolidRender()) {
                return true;
             }
          }
@@ -76,24 +78,24 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
       return false;
    }
 
-   public void tick(ServerLevel var1, BlockPos var2, BlockState var3) {
-      this.getType().tick(var1, var2, var3, this);
+   public void tick(final ServerLevel level, final BlockPos pos, final BlockState blockState) {
+      this.getType().tick(level, pos, blockState, this);
    }
 
-   public void animateTick(Level var1, BlockPos var2, RandomSource var3) {
-      this.getType().animateTick(var1, var2, this, var3);
+   public void animateTick(final Level level, final BlockPos pos, final RandomSource random) {
+      this.getType().animateTick(level, pos, this, random);
    }
 
    public boolean isRandomlyTicking() {
       return this.getType().isRandomlyTicking();
    }
 
-   public void randomTick(ServerLevel var1, BlockPos var2, RandomSource var3) {
-      this.getType().randomTick(var1, var2, this, var3);
+   public void randomTick(final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      this.getType().randomTick(level, pos, this, random);
    }
 
-   public Vec3 getFlow(BlockGetter var1, BlockPos var2) {
-      return this.getType().getFlow(var1, var2, this);
+   public Vec3 getFlow(final BlockGetter level, final BlockPos pos) {
+      return this.getType().getFlow(level, pos, this);
    }
 
    public BlockState createLegacyBlock() {
@@ -104,44 +106,28 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
       return this.getType().getDripParticle();
    }
 
-   public boolean is(TagKey<Fluid> var1) {
-      return this.getType().builtInRegistryHolder().is(var1);
-   }
-
-   public boolean is(HolderSet<Fluid> var1) {
-      return var1.contains(this.getType().builtInRegistryHolder());
-   }
-
-   public boolean is(Fluid var1) {
-      return this.getType() == var1;
+   public Holder<Fluid> typeHolder() {
+      return this.getType().builtInRegistryHolder();
    }
 
    public float getExplosionResistance() {
       return this.getType().getExplosionResistance();
    }
 
-   public boolean canBeReplacedWith(BlockGetter var1, BlockPos var2, Fluid var3, Direction var4) {
-      return this.getType().canBeReplacedWith(this, var1, var2, var3, var4);
+   public boolean canBeReplacedWith(final BlockGetter level, final BlockPos pos, final Fluid other, final Direction direction) {
+      return this.getType().canBeReplacedWith(this, level, pos, other, direction);
    }
 
-   public VoxelShape getShape(BlockGetter var1, BlockPos var2) {
-      return this.getType().getShape(this, var1, var2);
+   public VoxelShape getShape(final BlockGetter level, final BlockPos pos) {
+      return this.getType().getShape(this, level, pos);
    }
 
-   public @Nullable AABB getAABB(BlockGetter var1, BlockPos var2) {
-      return this.getType().getAABB(this, var1, var2);
+   public @Nullable AABB getAABB(final BlockGetter level, final BlockPos pos) {
+      return this.getType().getAABB(this, level, pos);
    }
 
-   public Holder<Fluid> holder() {
-      return ((Fluid)this.owner).builtInRegistryHolder();
-   }
-
-   public Stream<TagKey<Fluid>> getTags() {
-      return ((Fluid)this.owner).builtInRegistryHolder().tags();
-   }
-
-   public void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
-      this.getType().entityInside(var1, var2, var3, var4);
+   public void entityInside(final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier) {
+      this.getType().entityInside(level, pos, entity, effectApplier);
    }
 
    static {

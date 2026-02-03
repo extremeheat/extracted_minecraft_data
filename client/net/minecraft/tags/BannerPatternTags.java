@@ -21,7 +21,7 @@ public class BannerPatternTags {
       super();
    }
 
-   private static TagKey<BannerPattern> create(String var0) {
-      return TagKey.<BannerPattern>create(Registries.BANNER_PATTERN, Identifier.withDefaultNamespace(var0));
+   private static TagKey<BannerPattern> create(final String name) {
+      return TagKey.<BannerPattern>create(Registries.BANNER_PATTERN, Identifier.withDefaultNamespace(name));
    }
 }

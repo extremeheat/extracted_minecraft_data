@@ -173,125 +173,125 @@ public class InputConstants {
       super();
    }
 
-   public static Key getKey(KeyEvent var0) {
-      return var0.key() == -1 ? InputConstants.Type.SCANCODE.getOrCreate(var0.scancode()) : InputConstants.Type.KEYSYM.getOrCreate(var0.key());
+   public static Key getKey(final KeyEvent event) {
+      return event.key() == -1 ? InputConstants.Type.SCANCODE.getOrCreate(event.scancode()) : InputConstants.Type.KEYSYM.getOrCreate(event.key());
    }
 
-   public static Key getKey(String var0) {
-      if (InputConstants.Key.NAME_MAP.containsKey(var0)) {
-         return (Key)InputConstants.Key.NAME_MAP.get(var0);
+   public static Key getKey(final String name) {
+      if (InputConstants.Key.NAME_MAP.containsKey(name)) {
+         return (Key)InputConstants.Key.NAME_MAP.get(name);
       } else {
-         for(Type var4 : InputConstants.Type.values()) {
-            if (var0.startsWith(var4.defaultPrefix)) {
-               String var5 = var0.substring(var4.defaultPrefix.length() + 1);
-               int var6 = Integer.parseInt(var5);
-               if (var4 == InputConstants.Type.MOUSE) {
-                  --var6;
+         for(Type type : InputConstants.Type.values()) {
+            if (name.startsWith(type.defaultPrefix)) {
+               String humanReadableValue = name.substring(type.defaultPrefix.length() + 1);
+               int intValue = Integer.parseInt(humanReadableValue);
+               if (type == InputConstants.Type.MOUSE) {
+                  --intValue;
                }
 
-               return var4.getOrCreate(var6);
+               return type.getOrCreate(intValue);
             }
          }
 
-         throw new IllegalArgumentException("Unknown key name: " + var0);
+         throw new IllegalArgumentException("Unknown key name: " + name);
       }
    }
 
-   public static boolean isKeyDown(Window var0, int var1) {
-      return GLFW.glfwGetKey(var0.handle(), var1) == 1;
+   public static boolean isKeyDown(final Window window, final int key) {
+      return GLFW.glfwGetKey(window.handle(), key) == 1;
    }
 
-   public static void setupKeyboardCallbacks(Window var0, GLFWKeyCallbackI var1, GLFWCharModsCallbackI var2) {
-      GLFW.glfwSetKeyCallback(var0.handle(), var1);
-      GLFW.glfwSetCharModsCallback(var0.handle(), var2);
+   public static void setupKeyboardCallbacks(final Window window, final GLFWKeyCallbackI keyPressCallback, final GLFWCharModsCallbackI charTypedCallback) {
+      GLFW.glfwSetKeyCallback(window.handle(), keyPressCallback);
+      GLFW.glfwSetCharModsCallback(window.handle(), charTypedCallback);
    }
 
-   public static void setupMouseCallbacks(Window var0, GLFWCursorPosCallbackI var1, GLFWMouseButtonCallbackI var2, GLFWScrollCallbackI var3, GLFWDropCallbackI var4) {
-      GLFW.glfwSetCursorPosCallback(var0.handle(), var1);
-      GLFW.glfwSetMouseButtonCallback(var0.handle(), var2);
-      GLFW.glfwSetScrollCallback(var0.handle(), var3);
-      GLFW.glfwSetDropCallback(var0.handle(), var4);
+   public static void setupMouseCallbacks(final Window window, final GLFWCursorPosCallbackI onMoveCallback, final GLFWMouseButtonCallbackI onPressCallback, final GLFWScrollCallbackI onScrollCallback, final GLFWDropCallbackI onDropCallback) {
+      GLFW.glfwSetCursorPosCallback(window.handle(), onMoveCallback);
+      GLFW.glfwSetMouseButtonCallback(window.handle(), onPressCallback);
+      GLFW.glfwSetScrollCallback(window.handle(), onScrollCallback);
+      GLFW.glfwSetDropCallback(window.handle(), onDropCallback);
    }
 
-   public static void grabOrReleaseMouse(Window var0, int var1, double var2, double var4) {
-      GLFW.glfwSetCursorPos(var0.handle(), var2, var4);
-      GLFW.glfwSetInputMode(var0.handle(), 208897, var1);
+   public static void grabOrReleaseMouse(final Window window, final int cursorMode, final double xpos, final double ypos) {
+      GLFW.glfwSetCursorPos(window.handle(), xpos, ypos);
+      GLFW.glfwSetInputMode(window.handle(), 208897, cursorMode);
    }
 
    public static boolean isRawMouseInputSupported() {
       try {
          return GLFW_RAW_MOUSE_MOTION_SUPPORTED != null && GLFW_RAW_MOUSE_MOTION_SUPPORTED.invokeExact();
-      } catch (Throwable var1) {
-         throw new RuntimeException(var1);
+      } catch (Throwable throwable) {
+         throw new RuntimeException(throwable);
       }
    }
 
-   public static void updateRawMouseInput(Window var0, boolean var1) {
+   public static void updateRawMouseInput(final Window window, final boolean value) {
       if (isRawMouseInputSupported()) {
-         GLFW.glfwSetInputMode(var0.handle(), GLFW_RAW_MOUSE_MOTION, var1 ? 1 : 0);
+         GLFW.glfwSetInputMode(window.handle(), GLFW_RAW_MOUSE_MOTION, value ? 1 : 0);
       }
 
    }
 
    static {
-      MethodHandles.Lookup var0 = MethodHandles.lookup();
-      MethodType var1 = MethodType.methodType(Boolean.TYPE);
-      MethodHandle var2 = null;
-      int var3 = 0;
+      MethodHandles.Lookup lookup = MethodHandles.lookup();
+      MethodType type = MethodType.methodType(Boolean.TYPE);
+      MethodHandle handle = null;
+      int rawInput = 0;
 
       try {
-         var2 = var0.findStatic(GLFW.class, "glfwRawMouseMotionSupported", var1);
-         MethodHandle var4 = var0.findStaticGetter(GLFW.class, "GLFW_RAW_MOUSE_MOTION", Integer.TYPE);
-         var3 = var4.invokeExact();
+         handle = lookup.findStatic(GLFW.class, "glfwRawMouseMotionSupported", type);
+         MethodHandle field = lookup.findStaticGetter(GLFW.class, "GLFW_RAW_MOUSE_MOTION", Integer.TYPE);
+         rawInput = field.invokeExact();
       } catch (NoSuchFieldException | NoSuchMethodException var5) {
-      } catch (Throwable var6) {
-         throw new RuntimeException(var6);
+      } catch (Throwable e) {
+         throw new RuntimeException(e);
       }
 
-      GLFW_RAW_MOUSE_MOTION_SUPPORTED = var2;
-      GLFW_RAW_MOUSE_MOTION = var3;
+      GLFW_RAW_MOUSE_MOTION_SUPPORTED = handle;
+      GLFW_RAW_MOUSE_MOTION = rawInput;
       UNKNOWN = InputConstants.Type.KEYSYM.getOrCreate(-1);
    }
 
    public static enum Type {
-      KEYSYM("key.keyboard", (var0, var1) -> {
-         if ("key.keyboard.unknown".equals(var1)) {
-            return Component.translatable(var1);
+      KEYSYM("key.keyboard", (value, name) -> {
+         if ("key.keyboard.unknown".equals(name)) {
+            return Component.translatable(name);
          } else {
-            String var2 = GLFW.glfwGetKeyName(var0, -1);
-            return var2 != null ? Component.literal(var2.toUpperCase(Locale.ROOT)) : Component.translatable(var1);
+            String systemName = GLFW.glfwGetKeyName(value, -1);
+            return systemName != null ? Component.literal(systemName.toUpperCase(Locale.ROOT)) : Component.translatable(name);
          }
       }),
-      SCANCODE("scancode", (var0, var1) -> {
-         String var2 = GLFW.glfwGetKeyName(-1, var0);
-         return var2 != null ? Component.literal(var2) : Component.translatable(var1);
+      SCANCODE("scancode", (value, name) -> {
+         String systemName = GLFW.glfwGetKeyName(-1, value);
+         return systemName != null ? Component.literal(systemName) : Component.translatable(name);
       }),
-      MOUSE("key.mouse", (var0, var1) -> Language.getInstance().has(var1) ? Component.translatable(var1) : Component.translatable("key.mouse", var0 + 1));
+      MOUSE("key.mouse", (value, name) -> Language.getInstance().has(name) ? Component.translatable(name) : Component.translatable("key.mouse", value + 1));
 
       private static final String KEY_KEYBOARD_UNKNOWN = "key.keyboard.unknown";
       private final Int2ObjectMap<Key> map = new Int2ObjectOpenHashMap();
-      final String defaultPrefix;
-      final BiFunction<Integer, String, Component> displayTextSupplier;
+      private final String defaultPrefix;
+      private final BiFunction<Integer, String, Component> displayTextSupplier;
 
-      private static void addKey(Type var0, String var1, int var2) {
-         Key var3 = new Key(var1, var0, var2);
-         var0.map.put(var2, var3);
+      private static void addKey(final Type type, final String name, final int value) {
+         Key key = new Key(name, type, value);
+         type.map.put(value, key);
       }
 
-      private Type(final String var3, final BiFunction<Integer, String, Component> var4) {
-         this.defaultPrefix = var3;
-         this.displayTextSupplier = var4;
+      private Type(final String defaultPrefix, final BiFunction<Integer, String, Component> displayTextSupplier) {
+         this.defaultPrefix = defaultPrefix;
+         this.displayTextSupplier = displayTextSupplier;
       }
 
-      public Key getOrCreate(int var1) {
-         return (Key)this.map.computeIfAbsent(var1, (var1x) -> {
-            int var2 = var1x;
+      public Key getOrCreate(final int value) {
+         return (Key)this.map.computeIfAbsent(value, (intValue) -> {
+            int humanReadableValue = intValue;
             if (this == MOUSE) {
-               var2 = var1x + 1;
+               humanReadableValue = intValue + 1;
             }
 
-            String var3 = this.defaultPrefix + "." + var2;
-            return new Key(var3, this, var1x);
+            String name = this.defaultPrefix + "." + humanReadableValue;
+            return new Key(name, this, intValue);
          });
       }
 
@@ -438,15 +438,15 @@ public class InputConstants {
       private final Type type;
       private final int value;
       private final Supplier<Component> displayName;
-      static final Map<String, Key> NAME_MAP = Maps.newHashMap();
+      private static final Map<String, Key> NAME_MAP = Maps.newHashMap();
 
-      Key(String var1, Type var2, int var3) {
+      private Key(final String name, final Type type, final int value) {
          super();
-         this.name = var1;
-         this.type = var2;
-         this.value = var3;
-         this.displayName = Suppliers.memoize(() -> (Component)var2.displayTextSupplier.apply(var3, var1));
-         NAME_MAP.put(var1, this);
+         this.name = name;
+         this.type = type;
+         this.value = value;
+         this.displayName = Suppliers.memoize(() -> (Component)type.displayTextSupplier.apply(value, name));
+         NAME_MAP.put(name, this);
       }
 
       public Type getType() {
@@ -473,12 +473,12 @@ public class InputConstants {
          }
       }
 
-      public boolean equals(Object var1) {
-         if (this == var1) {
+      public boolean equals(final Object o) {
+         if (this == o) {
             return true;
-         } else if (var1 != null && this.getClass() == var1.getClass()) {
-            Key var2 = (Key)var1;
-            return this.value == var2.value && this.type == var2.type;
+         } else if (o != null && this.getClass() == o.getClass()) {
+            Key key = (Key)o;
+            return this.value == key.value && this.type == key.type;
          } else {
             return false;
          }

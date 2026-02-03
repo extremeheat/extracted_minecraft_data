@@ -20,24 +20,24 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
    protected @Nullable ResourceKey<LootTable> lootTable;
    protected long lootTableSeed = 0L;
 
-   protected RandomizableContainerBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
-      super(var1, var2, var3);
+   protected RandomizableContainerBlockEntity(final BlockEntityType<?> type, final BlockPos worldPosition, final BlockState blockState) {
+      super(type, worldPosition, blockState);
    }
 
    public @Nullable ResourceKey<LootTable> getLootTable() {
       return this.lootTable;
    }
 
-   public void setLootTable(@Nullable ResourceKey<LootTable> var1) {
-      this.lootTable = var1;
+   public void setLootTable(final @Nullable ResourceKey<LootTable> lootTable) {
+      this.lootTable = lootTable;
    }
 
    public long getLootTableSeed() {
       return this.lootTableSeed;
    }
 
-   public void setLootTableSeed(long var1) {
-      this.lootTableSeed = var1;
+   public void setLootTableSeed(final long lootTableSeed) {
+      this.lootTableSeed = lootTableSeed;
    }
 
    public boolean isEmpty() {
@@ -45,61 +45,64 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
       return super.isEmpty();
    }
 
-   public ItemStack getItem(int var1) {
+   public ItemStack getItem(final int slot) {
       this.unpackLootTable((Player)null);
-      return super.getItem(var1);
+      return super.getItem(slot);
    }
 
-   public ItemStack removeItem(int var1, int var2) {
+   public ItemStack removeItem(final int slot, final int count) {
       this.unpackLootTable((Player)null);
-      return super.removeItem(var1, var2);
+      return super.removeItem(slot, count);
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
+   public ItemStack removeItemNoUpdate(final int slot) {
       this.unpackLootTable((Player)null);
-      return super.removeItemNoUpdate(var1);
+      return super.removeItemNoUpdate(slot);
    }
 
-   public void setItem(int var1, ItemStack var2) {
+   public void setItem(final int slot, final ItemStack itemStack) {
       this.unpackLootTable((Player)null);
-      super.setItem(var1, var2);
+      super.setItem(slot, itemStack);
    }
 
-   public boolean canOpen(Player var1) {
-      return super.canOpen(var1) && (this.lootTable == null || !var1.isSpectator());
+   public boolean canOpen(final Player player) {
+      return (this.lootTable == null || !player.isSpectator()) && super.canOpen(player);
    }
 
-   public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
-      if (this.canOpen(var3)) {
-         this.unpackLootTable(var2.player);
-         return this.createMenu(var1, var2);
+   public @Nullable AbstractContainerMenu createMenu(final int containerId, final Inventory inventory, final Player player) {
+      if (this.canOpen(player)) {
+         this.unpackLootTable(inventory.player);
+         return this.createMenu(containerId, inventory);
       } else {
-         BaseContainerBlockEntity.sendChestLockedNotifications(this.getBlockPos().getCenter(), var3, this.getDisplayName());
+         if (!player.isSpectator()) {
+            BaseContainerBlockEntity.sendChestLockedNotifications(this.getBlockPos().getCenter(), player, this.getDisplayName());
+         }
+
          return null;
       }
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      super.applyImplicitComponents(var1);
-      SeededContainerLoot var2 = (SeededContainerLoot)var1.get(DataComponents.CONTAINER_LOOT);
-      if (var2 != null) {
-         this.lootTable = var2.lootTable();
-         this.lootTableSeed = var2.seed();
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      super.applyImplicitComponents(components);
+      SeededContainerLoot loot = (SeededContainerLoot)components.get(DataComponents.CONTAINER_LOOT);
+      if (loot != null) {
+         this.lootTable = loot.lootTable();
+         this.lootTableSeed = loot.seed();
       }
 
    }
 
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
+   protected void collectImplicitComponents(final DataComponentMap.Builder components) {
+      super.collectImplicitComponents(components);
       if (this.lootTable != null) {
-         var1.set(DataComponents.CONTAINER_LOOT, new SeededContainerLoot(this.lootTable, this.lootTableSeed));
+         components.set(DataComponents.CONTAINER_LOOT, new SeededContainerLoot(this.lootTable, this.lootTableSeed));
       }
 
    }
 
-   public void removeComponentsFromTag(ValueOutput var1) {
-      super.removeComponentsFromTag(var1);
-      var1.discard("LootTable");
-      var1.discard("LootTableSeed");
+   public void removeComponentsFromTag(final ValueOutput output) {
+      super.removeComponentsFromTag(output);
+      output.discard("LootTable");
+      output.discard("LootTableSeed");
    }
 }

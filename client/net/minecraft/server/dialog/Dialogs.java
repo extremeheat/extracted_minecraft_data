@@ -22,15 +22,15 @@ public class Dialogs {
       super();
    }
 
-   private static ResourceKey<Dialog> create(String var0) {
-      return ResourceKey.create(Registries.DIALOG, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<Dialog> create(final String id) {
+      return ResourceKey.create(Registries.DIALOG, Identifier.withDefaultNamespace(id));
    }
 
-   public static void bootstrap(BootstrapContext<Dialog> var0) {
-      HolderGetter var1 = var0.lookup(Registries.DIALOG);
-      var0.register(SERVER_LINKS, new ServerLinksDialog(new CommonDialogData(Component.translatable("menu.server_links.title"), Optional.of(Component.translatable("menu.server_links")), true, true, DialogAction.CLOSE, List.of(), List.of()), Optional.of(DEFAULT_BACK_BUTTON), 1, 310));
-      var0.register(CUSTOM_OPTIONS, new DialogListDialog(new CommonDialogData(Component.translatable("menu.custom_options.title"), Optional.of(Component.translatable("menu.custom_options")), true, true, DialogAction.CLOSE, List.of(), List.of()), var1.getOrThrow(DialogTags.PAUSE_SCREEN_ADDITIONS), Optional.of(DEFAULT_BACK_BUTTON), 1, 310));
-      var0.register(QUICK_ACTIONS, new DialogListDialog(new CommonDialogData(Component.translatable("menu.quick_actions.title"), Optional.of(Component.translatable("menu.quick_actions")), true, true, DialogAction.CLOSE, List.of(), List.of()), var1.getOrThrow(DialogTags.QUICK_ACTIONS), Optional.of(DEFAULT_BACK_BUTTON), 1, 310));
+   public static void bootstrap(final BootstrapContext<Dialog> context) {
+      HolderGetter<Dialog> dialogs = context.<Dialog>lookup(Registries.DIALOG);
+      context.register(SERVER_LINKS, new ServerLinksDialog(new CommonDialogData(Component.translatable("menu.server_links.title"), Optional.of(Component.translatable("menu.server_links")), true, true, DialogAction.CLOSE, List.of(), List.of()), Optional.of(DEFAULT_BACK_BUTTON), 1, 310));
+      context.register(CUSTOM_OPTIONS, new DialogListDialog(new CommonDialogData(Component.translatable("menu.custom_options.title"), Optional.of(Component.translatable("menu.custom_options")), true, true, DialogAction.CLOSE, List.of(), List.of()), dialogs.getOrThrow(DialogTags.PAUSE_SCREEN_ADDITIONS), Optional.of(DEFAULT_BACK_BUTTON), 1, 310));
+      context.register(QUICK_ACTIONS, new DialogListDialog(new CommonDialogData(Component.translatable("menu.quick_actions.title"), Optional.of(Component.translatable("menu.quick_actions")), true, true, DialogAction.CLOSE, List.of(), List.of()), dialogs.getOrThrow(DialogTags.QUICK_ACTIONS), Optional.of(DEFAULT_BACK_BUTTON), 1, 310));
    }
 
    static {

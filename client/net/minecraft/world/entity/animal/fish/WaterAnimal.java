@@ -16,29 +16,29 @@ import net.minecraft.world.level.pathfinder.PathType;
 public abstract class WaterAnimal extends PathfinderMob {
    public static final int AMBIENT_SOUND_INTERVAL = 120;
 
-   protected WaterAnimal(EntityType<? extends WaterAnimal> var1, Level var2) {
-      super(var1, var2);
+   protected WaterAnimal(final EntityType<? extends WaterAnimal> type, final Level level) {
+      super(type, level);
       this.setPathfindingMalus(PathType.WATER, 0.0F);
    }
 
-   public boolean checkSpawnObstruction(LevelReader var1) {
-      return var1.isUnobstructed(this);
+   public boolean checkSpawnObstruction(final LevelReader level) {
+      return level.isUnobstructed(this);
    }
 
    public int getAmbientSoundInterval() {
       return 120;
    }
 
-   protected int getBaseExperienceReward(ServerLevel var1) {
+   protected int getBaseExperienceReward(final ServerLevel level) {
       return 1 + this.random.nextInt(3);
    }
 
-   protected void handleAirSupply(ServerLevel var1, int var2) {
+   protected void handleAirSupply(final ServerLevel level, final int preTickAirSupply) {
       if (this.isAlive() && !this.isInWater()) {
-         this.setAirSupply(var2 - 1);
+         this.setAirSupply(preTickAirSupply - 1);
          if (this.shouldTakeDrowningDamage()) {
             this.setAirSupply(0);
-            this.hurtServer(var1, this.damageSources().drown(), 2.0F);
+            this.hurtServer(level, this.damageSources().drown(), 2.0F);
          }
       } else {
          this.setAirSupply(300);
@@ -47,11 +47,11 @@ public abstract class WaterAnimal extends PathfinderMob {
    }
 
    public void baseTick() {
-      int var1 = this.getAirSupply();
+      int airSupply = this.getAirSupply();
       super.baseTick();
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         this.handleAirSupply(var2, var1);
+      if (var3 instanceof ServerLevel serverLevel) {
+         this.handleAirSupply(serverLevel, airSupply);
       }
 
    }
@@ -64,9 +64,9 @@ public abstract class WaterAnimal extends PathfinderMob {
       return false;
    }
 
-   public static boolean checkSurfaceWaterAnimalSpawnRules(EntityType<? extends WaterAnimal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      int var5 = var1.getSeaLevel();
-      int var6 = var5 - 13;
-      return var3.getY() >= var6 && var3.getY() <= var5 && var1.getFluidState(var3.below()).is(FluidTags.WATER) && var1.getBlockState(var3.above()).is(Blocks.WATER);
+   public static boolean checkSurfaceWaterAnimalSpawnRules(final EntityType<? extends WaterAnimal> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      int seaLevel = level.getSeaLevel();
+      int minSpawnLevel = seaLevel - 13;
+      return pos.getY() >= minSpawnLevel && pos.getY() <= seaLevel && level.getFluidState(pos.below()).is(FluidTags.WATER) && level.getBlockState(pos.above()).is(Blocks.WATER);
    }
 }

@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.server.dialog.body.DialogBody;
 import net.minecraft.server.dialog.body.ItemBody;
 import net.minecraft.server.dialog.body.PlainMessage;
+import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -28,21 +29,21 @@ public class DialogBodyHandlers {
       super();
    }
 
-   private static <B extends DialogBody> void register(MapCodec<B> var0, DialogBodyHandler<? super B> var1) {
-      HANDLERS.put(var0, var1);
+   private static <B extends DialogBody> void register(final MapCodec<B> type, final DialogBodyHandler<? super B> handler) {
+      HANDLERS.put(type, handler);
    }
 
-   private static <B extends DialogBody> @Nullable DialogBodyHandler<B> getHandler(B var0) {
-      return (DialogBodyHandler)HANDLERS.get(var0.mapCodec());
+   private static <B extends DialogBody> @Nullable DialogBodyHandler<B> getHandler(final B body) {
+      return (DialogBodyHandler)HANDLERS.get(body.mapCodec());
    }
 
-   public static <B extends DialogBody> @Nullable LayoutElement createBodyElement(DialogScreen<?> var0, B var1) {
-      DialogBodyHandler var2 = getHandler(var1);
-      if (var2 == null) {
-         LOGGER.warn("Unrecognized dialog body {}", var1);
+   public static <B extends DialogBody> @Nullable LayoutElement createBodyElement(final DialogScreen<?> screen, final B body) {
+      DialogBodyHandler<B> handler = getHandler(body);
+      if (handler == null) {
+         LOGGER.warn("Unrecognized dialog body {}", body);
          return null;
       } else {
-         return var2.createControls(var0, var1);
+         return handler.createControls(screen, body);
       }
    }
 
@@ -51,42 +52,43 @@ public class DialogBodyHandlers {
       register(ItemBody.MAP_CODEC, new ItemHandler());
    }
 
-   static void runActionOnParent(DialogScreen<?> var0, @Nullable Style var1) {
-      if (var1 != null) {
-         ClickEvent var2 = var1.getClickEvent();
-         if (var2 != null) {
-            var0.runAction(Optional.of(var2));
+   private static void runActionOnParent(final DialogScreen<?> parent, final @Nullable Style clickedStyle) {
+      if (clickedStyle != null) {
+         ClickEvent clickEvent = clickedStyle.getClickEvent();
+         if (clickEvent != null) {
+            parent.runAction(Optional.of(clickEvent));
          }
       }
 
    }
 
-   static class PlainMessageHandler implements DialogBodyHandler<PlainMessage> {
-      PlainMessageHandler() {
+   private static class PlainMessageHandler implements DialogBodyHandler<PlainMessage> {
+      private PlainMessageHandler() {
          super();
       }
 
-      public LayoutElement createControls(DialogScreen<?> var1, PlainMessage var2) {
-         return FocusableTextWidget.builder(var2.contents(), var1.getFont()).maxWidth(var2.width()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build().setCentered(true).setComponentClickHandler((var1x) -> DialogBodyHandlers.runActionOnParent(var1, var1x));
+      public LayoutElement createControls(final DialogScreen<?> parent, final PlainMessage message) {
+         return FocusableTextWidget.builder(message.contents(), parent.getFont()).maxWidth(message.width()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build().setCentered(true).setComponentClickHandler((style) -> DialogBodyHandlers.runActionOnParent(parent, style));
       }
    }
 
-   static class ItemHandler implements DialogBodyHandler<ItemBody> {
-      ItemHandler() {
+   private static class ItemHandler implements DialogBodyHandler<ItemBody> {
+      private ItemHandler() {
          super();
       }
 
-      public LayoutElement createControls(DialogScreen<?> var1, ItemBody var2) {
-         if (var2.description().isPresent()) {
-            PlainMessage var3 = (PlainMessage)var2.description().get();
-            LinearLayout var4 = LinearLayout.horizontal().spacing(2);
-            var4.defaultCellSetting().alignVerticallyMiddle();
-            ItemDisplayWidget var5 = new ItemDisplayWidget(Minecraft.getInstance(), 0, 0, var2.width(), var2.height(), CommonComponents.EMPTY, var2.item(), var2.showDecorations(), var2.showTooltip());
-            var4.addChild(var5);
-            var4.addChild(FocusableTextWidget.builder(var3.contents(), var1.getFont()).maxWidth(var3.width()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build().setComponentClickHandler((var1x) -> DialogBodyHandlers.runActionOnParent(var1, var1x)));
-            return var4;
+      public LayoutElement createControls(final DialogScreen<?> parent, final ItemBody item) {
+         ItemStack displayStack = item.item().create();
+         if (item.description().isPresent()) {
+            PlainMessage description = (PlainMessage)item.description().get();
+            LinearLayout layout = LinearLayout.horizontal().spacing(2);
+            layout.defaultCellSetting().alignVerticallyMiddle();
+            ItemDisplayWidget itemWidget = new ItemDisplayWidget(Minecraft.getInstance(), 0, 0, item.width(), item.height(), CommonComponents.EMPTY, displayStack, item.showDecorations(), item.showTooltip());
+            layout.addChild(itemWidget);
+            layout.addChild(FocusableTextWidget.builder(description.contents(), parent.getFont()).maxWidth(description.width()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build().setComponentClickHandler((style) -> DialogBodyHandlers.runActionOnParent(parent, style)));
+            return layout;
          } else {
-            return new ItemDisplayWidget(Minecraft.getInstance(), 0, 0, var2.width(), var2.height(), var2.item().getHoverName(), var2.item(), var2.showDecorations(), var2.showTooltip());
+            return new ItemDisplayWidget(Minecraft.getInstance(), 0, 0, item.width(), item.height(), displayStack.getHoverName(), displayStack, item.showDecorations(), item.showTooltip());
          }
       }
    }

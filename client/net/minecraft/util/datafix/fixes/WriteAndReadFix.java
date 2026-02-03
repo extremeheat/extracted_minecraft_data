@@ -9,10 +9,10 @@ public class WriteAndReadFix extends DataFix {
    private final String name;
    private final DSL.TypeReference type;
 
-   public WriteAndReadFix(Schema var1, String var2, DSL.TypeReference var3) {
-      super(var1, true);
-      this.name = var2;
-      this.type = var3;
+   public WriteAndReadFix(final Schema outputSchema, final String name, final DSL.TypeReference type) {
+      super(outputSchema, true);
+      this.name = name;
+      this.type = type;
    }
 
    protected TypeRewriteRule makeRule() {

@@ -5,7 +5,7 @@ import net.minecraft.util.RandomSource;
 public interface Weighted<T> {
    int getWeight();
 
-   T getSound(RandomSource var1);
+   T getSound(RandomSource random);
 
-   void preloadIfRequired(SoundEngine var1);
+   void preloadIfRequired(SoundEngine soundEngine);
 }

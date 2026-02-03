@@ -57,11 +57,11 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    public static void bootStrap() {
       COMPOSTABLES.defaultReturnValue(-1.0F);
-      float var0 = 0.3F;
-      float var1 = 0.5F;
-      float var2 = 0.65F;
-      float var3 = 0.85F;
-      float var4 = 1.0F;
+      float low = 0.3F;
+      float lowMid = 0.5F;
+      float mid = 0.65F;
+      float midHigh = 0.85F;
+      float high = 1.0F;
       add(0.3F, Items.JUNGLE_LEAVES);
       add(0.3F, Items.OAK_LEAVES);
       add(0.3F, Items.SPRUCE_LEAVES);
@@ -179,157 +179,157 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(1.0F, Items.PUMPKIN_PIE);
    }
 
-   private static void add(float var0, ItemLike var1) {
-      COMPOSTABLES.put(var1.asItem(), var0);
+   private static void add(final float value, final ItemLike item) {
+      COMPOSTABLES.put(item.asItem(), value);
    }
 
-   public ComposterBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public ComposterBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(LEVEL, 0));
    }
 
-   public static void handleFill(Level var0, BlockPos var1, boolean var2) {
-      BlockState var3 = var0.getBlockState(var1);
-      var0.playLocalSound(var1, var2 ? SoundEvents.COMPOSTER_FILL_SUCCESS : SoundEvents.COMPOSTER_FILL, SoundSource.BLOCKS, 1.0F, 1.0F, false);
-      double var4 = var3.getShape(var0, var1).max(Direction.Axis.Y, 0.5, 0.5) + 0.03125;
-      double var6 = 2.0;
-      double var8 = 0.1875;
-      double var10 = 0.625;
-      RandomSource var12 = var0.getRandom();
+   public static void handleFill(final Level level, final BlockPos pos, final boolean success) {
+      BlockState state = level.getBlockState(pos);
+      level.playLocalSound(pos, success ? SoundEvents.COMPOSTER_FILL_SUCCESS : SoundEvents.COMPOSTER_FILL, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+      double centerHeight = state.getShape(level, pos).max(Direction.Axis.Y, 0.5, 0.5) + 0.03125;
+      double sideOffsetPixels = 2.0;
+      double sideOffset = 0.1875;
+      double width = 0.625;
+      RandomSource random = level.getRandom();
 
-      for(int var13 = 0; var13 < 10; ++var13) {
-         double var14 = var12.nextGaussian() * 0.02;
-         double var16 = var12.nextGaussian() * 0.02;
-         double var18 = var12.nextGaussian() * 0.02;
-         var0.addParticle(ParticleTypes.COMPOSTER, (double)var1.getX() + 0.1875 + 0.625 * (double)var12.nextFloat(), (double)var1.getY() + var4 + (double)var12.nextFloat() * (1.0 - var4), (double)var1.getZ() + 0.1875 + 0.625 * (double)var12.nextFloat(), var14, var16, var18);
+      for(int i = 0; i < 10; ++i) {
+         double xa = random.nextGaussian() * 0.02;
+         double ya = random.nextGaussian() * 0.02;
+         double za = random.nextGaussian() * 0.02;
+         level.addParticle(ParticleTypes.COMPOSTER, (double)pos.getX() + 0.1875 + 0.625 * (double)random.nextFloat(), (double)pos.getY() + centerHeight + (double)random.nextFloat() * (1.0 - centerHeight), (double)pos.getZ() + 0.1875 + 0.625 * (double)random.nextFloat(), xa, ya, za);
       }
 
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPES[(Integer)var1.getValue(LEVEL)];
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPES[(Integer)state.getValue(LEVEL)];
    }
 
-   protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getInteractionShape(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return Shapes.block();
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPES[0];
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if ((Integer)var1.getValue(LEVEL) == 7) {
-         var2.scheduleTick(var3, var1.getBlock(), 20);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if ((Integer)state.getValue(LEVEL) == 7) {
+         level.scheduleTick(pos, state.getBlock(), 20);
       }
 
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      int var8 = (Integer)var2.getValue(LEVEL);
-      if (var8 < 8 && COMPOSTABLES.containsKey(var1.getItem())) {
-         if (var8 < 7 && !var3.isClientSide()) {
-            BlockState var9 = addItem(var5, var2, var3, var4, var1);
-            var3.levelEvent(1500, var4, var2 != var9 ? 1 : 0);
-            var5.awardStat(Stats.ITEM_USED.get(var1.getItem()));
-            var1.consume(1, var5);
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      int fillLevel = (Integer)state.getValue(LEVEL);
+      if (fillLevel < 8 && COMPOSTABLES.containsKey(itemStack.getItem())) {
+         if (fillLevel < 7 && !level.isClientSide()) {
+            BlockState newState = addItem(player, state, level, pos, itemStack);
+            level.levelEvent(1500, pos, state != newState ? 1 : 0);
+            player.awardStat(Stats.ITEM_USED.get(itemStack.getItem()));
+            itemStack.consume(1, player);
          }
 
          return InteractionResult.SUCCESS;
       } else {
-         return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
+         return super.useItemOn(itemStack, state, level, pos, player, hand, hitResult);
       }
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      int var6 = (Integer)var1.getValue(LEVEL);
-      if (var6 == 8) {
-         extractProduce(var4, var1, var2, var3);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      int fillLevel = (Integer)state.getValue(LEVEL);
+      if (fillLevel == 8) {
+         extractProduce(player, state, level, pos);
          return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }
    }
 
-   public static BlockState insertItem(Entity var0, BlockState var1, ServerLevel var2, ItemStack var3, BlockPos var4) {
-      int var5 = (Integer)var1.getValue(LEVEL);
-      if (var5 < 7 && COMPOSTABLES.containsKey(var3.getItem())) {
-         BlockState var6 = addItem(var0, var1, var2, var4, var3);
-         var3.shrink(1);
-         return var6;
+   public static BlockState insertItem(final Entity sourceEntity, final BlockState state, final ServerLevel level, final ItemStack itemStack, final BlockPos pos) {
+      int fillLevel = (Integer)state.getValue(LEVEL);
+      if (fillLevel < 7 && COMPOSTABLES.containsKey(itemStack.getItem())) {
+         BlockState newState = addItem(sourceEntity, state, level, pos, itemStack);
+         itemStack.shrink(1);
+         return newState;
       } else {
-         return var1;
+         return state;
       }
    }
 
-   public static BlockState extractProduce(Entity var0, BlockState var1, Level var2, BlockPos var3) {
-      if (!var2.isClientSide()) {
-         Vec3 var4 = Vec3.atLowerCornerWithOffset(var3, 0.5, 1.01, 0.5).offsetRandomXZ(var2.random, 0.7F);
-         ItemEntity var5 = new ItemEntity(var2, var4.x(), var4.y(), var4.z(), new ItemStack(Items.BONE_MEAL));
-         var5.setDefaultPickUpDelay();
-         var2.addFreshEntity(var5);
+   public static BlockState extractProduce(final Entity sourceEntity, final BlockState state, final Level level, final BlockPos pos) {
+      if (!level.isClientSide()) {
+         Vec3 itemPos = Vec3.atLowerCornerWithOffset(pos, 0.5, 1.01, 0.5).offsetRandomXZ(level.getRandom(), 0.7F);
+         ItemEntity entity = new ItemEntity(level, itemPos.x(), itemPos.y(), itemPos.z(), new ItemStack(Items.BONE_MEAL));
+         entity.setDefaultPickUpDelay();
+         level.addFreshEntity(entity);
       }
 
-      BlockState var6 = empty(var0, var1, var2, var3);
-      var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.COMPOSTER_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
-      return var6;
+      BlockState emptyState = empty(sourceEntity, state, level, pos);
+      level.playSound((Entity)null, (BlockPos)pos, SoundEvents.COMPOSTER_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+      return emptyState;
    }
 
-   static BlockState empty(@Nullable Entity var0, BlockState var1, LevelAccessor var2, BlockPos var3) {
-      BlockState var4 = (BlockState)var1.setValue(LEVEL, 0);
-      var2.setBlock(var3, var4, 3);
-      var2.gameEvent(GameEvent.BLOCK_CHANGE, (BlockPos)var3, (GameEvent.Context)GameEvent.Context.of(var0, var4));
-      return var4;
+   private static BlockState empty(final @Nullable Entity sourceEntity, final BlockState state, final LevelAccessor level, final BlockPos pos) {
+      BlockState newState = (BlockState)state.setValue(LEVEL, 0);
+      level.setBlock(pos, newState, 3);
+      level.gameEvent(GameEvent.BLOCK_CHANGE, (BlockPos)pos, (GameEvent.Context)GameEvent.Context.of(sourceEntity, newState));
+      return newState;
    }
 
-   static BlockState addItem(@Nullable Entity var0, BlockState var1, LevelAccessor var2, BlockPos var3, ItemStack var4) {
-      int var5 = (Integer)var1.getValue(LEVEL);
-      float var6 = COMPOSTABLES.getFloat(var4.getItem());
-      if ((var5 != 0 || !(var6 > 0.0F)) && !(var2.getRandom().nextDouble() < (double)var6)) {
-         return var1;
+   private static BlockState addItem(final @Nullable Entity sourceEntity, final BlockState state, final LevelAccessor level, final BlockPos pos, final ItemStack itemStack) {
+      int fillLevel = (Integer)state.getValue(LEVEL);
+      float chance = COMPOSTABLES.getFloat(itemStack.getItem());
+      if ((fillLevel != 0 || !(chance > 0.0F)) && !(level.getRandom().nextDouble() < (double)chance)) {
+         return state;
       } else {
-         int var7 = var5 + 1;
-         BlockState var8 = (BlockState)var1.setValue(LEVEL, var7);
-         var2.setBlock(var3, var8, 3);
-         var2.gameEvent(GameEvent.BLOCK_CHANGE, (BlockPos)var3, (GameEvent.Context)GameEvent.Context.of(var0, var8));
-         if (var7 == 7) {
-            var2.scheduleTick(var3, var1.getBlock(), 20);
+         int newLevel = fillLevel + 1;
+         BlockState newState = (BlockState)state.setValue(LEVEL, newLevel);
+         level.setBlock(pos, newState, 3);
+         level.gameEvent(GameEvent.BLOCK_CHANGE, (BlockPos)pos, (GameEvent.Context)GameEvent.Context.of(sourceEntity, newState));
+         if (newLevel == 7) {
+            level.scheduleTick(pos, state.getBlock(), 20);
          }
 
-         return var8;
+         return newState;
       }
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((Integer)var1.getValue(LEVEL) == 7) {
-         var2.setBlock(var3, (BlockState)var1.cycle(LEVEL), 3);
-         var2.playSound((Entity)null, var3, SoundEvents.COMPOSTER_READY, SoundSource.BLOCKS, 1.0F, 1.0F);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if ((Integer)state.getValue(LEVEL) == 7) {
+         level.setBlock(pos, (BlockState)state.cycle(LEVEL), 3);
+         level.playSound((Entity)null, pos, SoundEvents.COMPOSTER_READY, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      return (Integer)var1.getValue(LEVEL);
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      return (Integer)state.getValue(LEVEL);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(LEVEL);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(LEVEL);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   public WorldlyContainer getContainer(BlockState var1, LevelAccessor var2, BlockPos var3) {
-      int var4 = (Integer)var1.getValue(LEVEL);
-      if (var4 == 8) {
-         return new OutputContainer(var1, var2, var3, new ItemStack(Items.BONE_MEAL));
+   public WorldlyContainer getContainer(final BlockState state, final LevelAccessor level, final BlockPos pos) {
+      int contentLevel = (Integer)state.getValue(LEVEL);
+      if (contentLevel == 8) {
+         return new OutputContainer(state, level, pos, new ItemStack(Items.BONE_MEAL));
       } else {
-         return (WorldlyContainer)(var4 < 7 ? new InputContainer(var1, var2, var3) : new EmptyContainer());
+         return (WorldlyContainer)(contentLevel < 7 ? new InputContainer(state, level, pos) : new EmptyContainer());
       }
    }
 
@@ -337,57 +337,57 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       LEVEL = BlockStateProperties.LEVEL_COMPOSTER;
       COMPOSTABLES = new Object2FloatOpenHashMap();
       SHAPES = (VoxelShape[])Util.make(() -> {
-         VoxelShape[] var0 = Block.boxes(8, (var0x) -> Shapes.join(Shapes.block(), Block.column(12.0, (double)Math.clamp((long)(1 + var0x * 2), 2, 16), 16.0), BooleanOp.ONLY_FIRST));
-         var0[8] = var0[7];
-         return var0;
+         VoxelShape[] shapes = Block.boxes(8, (level) -> Shapes.join(Shapes.block(), Block.column(12.0, (double)Math.clamp((long)(1 + level * 2), 2, 16), 16.0), BooleanOp.ONLY_FIRST));
+         shapes[8] = shapes[7];
+         return shapes;
       });
    }
 
-   static class EmptyContainer extends SimpleContainer implements WorldlyContainer {
+   private static class EmptyContainer extends SimpleContainer implements WorldlyContainer {
       public EmptyContainer() {
          super(0);
       }
 
-      public int[] getSlotsForFace(Direction var1) {
+      public int[] getSlotsForFace(final Direction direction) {
          return new int[0];
       }
 
-      public boolean canPlaceItemThroughFace(int var1, ItemStack var2, @Nullable Direction var3) {
+      public boolean canPlaceItemThroughFace(final int slot, final ItemStack itemStack, final @Nullable Direction direction) {
          return false;
       }
 
-      public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
+      public boolean canTakeItemThroughFace(final int slot, final ItemStack itemStack, final Direction direction) {
          return false;
       }
    }
 
-   static class OutputContainer extends SimpleContainer implements WorldlyContainer {
+   private static class OutputContainer extends SimpleContainer implements WorldlyContainer {
       private final BlockState state;
       private final LevelAccessor level;
       private final BlockPos pos;
       private boolean changed;
 
-      public OutputContainer(BlockState var1, LevelAccessor var2, BlockPos var3, ItemStack var4) {
-         super(var4);
-         this.state = var1;
-         this.level = var2;
-         this.pos = var3;
+      public OutputContainer(final BlockState state, final LevelAccessor level, final BlockPos pos, final ItemStack contents) {
+         super(contents);
+         this.state = state;
+         this.level = level;
+         this.pos = pos;
       }
 
       public int getMaxStackSize() {
          return 1;
       }
 
-      public int[] getSlotsForFace(Direction var1) {
-         return var1 == Direction.DOWN ? new int[]{0} : new int[0];
+      public int[] getSlotsForFace(final Direction direction) {
+         return direction == Direction.DOWN ? new int[]{0} : new int[0];
       }
 
-      public boolean canPlaceItemThroughFace(int var1, ItemStack var2, @Nullable Direction var3) {
+      public boolean canPlaceItemThroughFace(final int slot, final ItemStack itemStack, final @Nullable Direction direction) {
          return false;
       }
 
-      public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
-         return !this.changed && var3 == Direction.DOWN && var2.is(Items.BONE_MEAL);
+      public boolean canTakeItemThroughFace(final int slot, final ItemStack itemStack, final Direction direction) {
+         return !this.changed && direction == Direction.DOWN && itemStack.is(Items.BONE_MEAL);
       }
 
       public void setChanged() {
@@ -396,41 +396,41 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       }
    }
 
-   static class InputContainer extends SimpleContainer implements WorldlyContainer {
+   private static class InputContainer extends SimpleContainer implements WorldlyContainer {
       private final BlockState state;
       private final LevelAccessor level;
       private final BlockPos pos;
       private boolean changed;
 
-      public InputContainer(BlockState var1, LevelAccessor var2, BlockPos var3) {
+      public InputContainer(final BlockState state, final LevelAccessor level, final BlockPos pos) {
          super(1);
-         this.state = var1;
-         this.level = var2;
-         this.pos = var3;
+         this.state = state;
+         this.level = level;
+         this.pos = pos;
       }
 
       public int getMaxStackSize() {
          return 1;
       }
 
-      public int[] getSlotsForFace(Direction var1) {
-         return var1 == Direction.UP ? new int[]{0} : new int[0];
+      public int[] getSlotsForFace(final Direction direction) {
+         return direction == Direction.UP ? new int[]{0} : new int[0];
       }
 
-      public boolean canPlaceItemThroughFace(int var1, ItemStack var2, @Nullable Direction var3) {
-         return !this.changed && var3 == Direction.UP && ComposterBlock.COMPOSTABLES.containsKey(var2.getItem());
+      public boolean canPlaceItemThroughFace(final int slot, final ItemStack itemStack, final @Nullable Direction direction) {
+         return !this.changed && direction == Direction.UP && ComposterBlock.COMPOSTABLES.containsKey(itemStack.getItem());
       }
 
-      public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
+      public boolean canTakeItemThroughFace(final int slot, final ItemStack itemStack, final Direction direction) {
          return false;
       }
 
       public void setChanged() {
-         ItemStack var1 = this.getItem(0);
-         if (!var1.isEmpty()) {
+         ItemStack contents = this.getItem(0);
+         if (!contents.isEmpty()) {
             this.changed = true;
-            BlockState var2 = ComposterBlock.addItem((Entity)null, this.state, this.level, this.pos, var1);
-            this.level.levelEvent(1500, this.pos, var2 != this.state ? 1 : 0);
+            BlockState newState = ComposterBlock.addItem((Entity)null, this.state, this.level, this.pos, contents);
+            this.level.levelEvent(1500, this.pos, newState != this.state ? 1 : 0);
             this.removeItemNoUpdate(0);
          }
 

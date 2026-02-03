@@ -20,32 +20,32 @@ import net.minecraft.network.protocol.status.StatusProtocols;
 public class PacketReport implements DataProvider {
    private final PackOutput output;
 
-   public PacketReport(PackOutput var1) {
+   public PacketReport(final PackOutput output) {
       super();
-      this.output = var1;
+      this.output = output;
    }
 
-   public CompletableFuture<?> run(CachedOutput var1) {
-      Path var2 = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("packets.json");
-      return DataProvider.saveStable(var1, this.serializePackets(), var2);
+   public CompletableFuture<?> run(final CachedOutput cache) {
+      Path path = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("packets.json");
+      return DataProvider.saveStable(cache, this.serializePackets(), path);
    }
 
    private JsonElement serializePackets() {
-      JsonObject var1 = new JsonObject();
-      ((Map)Stream.of(HandshakeProtocols.SERVERBOUND_TEMPLATE, StatusProtocols.CLIENTBOUND_TEMPLATE, StatusProtocols.SERVERBOUND_TEMPLATE, LoginProtocols.CLIENTBOUND_TEMPLATE, LoginProtocols.SERVERBOUND_TEMPLATE, ConfigurationProtocols.CLIENTBOUND_TEMPLATE, ConfigurationProtocols.SERVERBOUND_TEMPLATE, GameProtocols.CLIENTBOUND_TEMPLATE, GameProtocols.SERVERBOUND_TEMPLATE).map(ProtocolInfo.DetailsProvider::details).collect(Collectors.groupingBy(ProtocolInfo.Details::id))).forEach((var1x, var2) -> {
-         JsonObject var3 = new JsonObject();
-         var1.add(var1x.id(), var3);
-         var2.forEach((var1xx) -> {
-            JsonObject var2 = new JsonObject();
-            var3.add(var1xx.flow().id(), var2);
-            var1xx.listPackets((var1, var2x) -> {
-               JsonObject var3 = new JsonObject();
-               var3.addProperty("protocol_id", var2x);
-               var2.add(var1.id().toString(), var3);
+      JsonObject protocols = new JsonObject();
+      ((Map)Stream.of(HandshakeProtocols.SERVERBOUND_TEMPLATE, StatusProtocols.CLIENTBOUND_TEMPLATE, StatusProtocols.SERVERBOUND_TEMPLATE, LoginProtocols.CLIENTBOUND_TEMPLATE, LoginProtocols.SERVERBOUND_TEMPLATE, ConfigurationProtocols.CLIENTBOUND_TEMPLATE, ConfigurationProtocols.SERVERBOUND_TEMPLATE, GameProtocols.CLIENTBOUND_TEMPLATE, GameProtocols.SERVERBOUND_TEMPLATE).map(ProtocolInfo.DetailsProvider::details).collect(Collectors.groupingBy(ProtocolInfo.Details::id))).forEach((protocolId, flows) -> {
+         JsonObject protocolData = new JsonObject();
+         protocols.add(protocolId.id(), protocolData);
+         flows.forEach((flow) -> {
+            JsonObject protocolFlowData = new JsonObject();
+            protocolData.add(flow.flow().id(), protocolFlowData);
+            flow.listPackets((type, networkId) -> {
+               JsonObject packetInfo = new JsonObject();
+               packetInfo.addProperty("protocol_id", networkId);
+               protocolFlowData.add(type.id().toString(), packetInfo);
             });
          });
       });
-      return var1;
+      return protocols;
    }
 
    public String getName() {

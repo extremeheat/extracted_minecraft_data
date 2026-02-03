@@ -1,7 +1,6 @@
 package net.minecraft.client;
 
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
@@ -18,235 +17,241 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.jspecify.annotations.Nullable;
 
 public class StringSplitter {
-   final WidthProvider widthProvider;
+   private final WidthProvider widthProvider;
 
-   public StringSplitter(WidthProvider var1) {
+   public StringSplitter(final WidthProvider widthProvider) {
       super();
-      this.widthProvider = var1;
+      this.widthProvider = widthProvider;
    }
 
-   public float stringWidth(@Nullable String var1) {
-      if (var1 == null) {
+   public float stringWidth(final @Nullable String str) {
+      if (str == null) {
          return 0.0F;
       } else {
-         MutableFloat var2 = new MutableFloat();
-         StringDecomposer.iterateFormatted((String)var1, Style.EMPTY, (var2x, var3, var4) -> {
-            var2.add(this.widthProvider.getWidth(var4, var3));
+         MutableFloat result = new MutableFloat();
+         StringDecomposer.iterateFormatted((String)str, Style.EMPTY, (position, style, codepoint) -> {
+            result.add(this.widthProvider.getWidth(codepoint, style));
             return true;
          });
-         return var2.floatValue();
+         return result.floatValue();
       }
    }
 
-   public float stringWidth(FormattedText var1) {
-      MutableFloat var2 = new MutableFloat();
-      StringDecomposer.iterateFormatted((FormattedText)var1, Style.EMPTY, (var2x, var3, var4) -> {
-         var2.add(this.widthProvider.getWidth(var4, var3));
+   public float stringWidth(final FormattedText text) {
+      MutableFloat result = new MutableFloat();
+      StringDecomposer.iterateFormatted((FormattedText)text, Style.EMPTY, (position, style, codepoint) -> {
+         result.add(this.widthProvider.getWidth(codepoint, style));
          return true;
       });
-      return var2.floatValue();
+      return result.floatValue();
    }
 
-   public float stringWidth(FormattedCharSequence var1) {
-      MutableFloat var2 = new MutableFloat();
-      var1.accept((var2x, var3, var4) -> {
-         var2.add(this.widthProvider.getWidth(var4, var3));
+   public float stringWidth(final FormattedCharSequence text) {
+      MutableFloat result = new MutableFloat();
+      text.accept((position, style, codepoint) -> {
+         result.add(this.widthProvider.getWidth(codepoint, style));
          return true;
       });
-      return var2.floatValue();
+      return result.floatValue();
    }
 
-   public int plainIndexAtWidth(String var1, int var2, Style var3) {
-      WidthLimitedCharSink var4 = new WidthLimitedCharSink((float)var2);
-      StringDecomposer.iterate(var1, var3, var4);
-      return var4.getPosition();
+   public int plainIndexAtWidth(final String str, final int maxWidth, final Style style) {
+      WidthLimitedCharSink output = new WidthLimitedCharSink((float)maxWidth);
+      StringDecomposer.iterate(str, style, output);
+      return output.getPosition();
    }
 
-   public String plainHeadByWidth(String var1, int var2, Style var3) {
-      return var1.substring(0, this.plainIndexAtWidth(var1, var2, var3));
+   public String plainHeadByWidth(final String str, final int maxWidth, final Style style) {
+      return str.substring(0, this.plainIndexAtWidth(str, maxWidth, style));
    }
 
-   public String plainTailByWidth(String var1, int var2, Style var3) {
-      MutableFloat var4 = new MutableFloat();
-      MutableInt var5 = new MutableInt(var1.length());
-      StringDecomposer.iterateBackwards(var1, var3, (var4x, var5x, var6) -> {
-         float var7 = var4.addAndGet(this.widthProvider.getWidth(var6, var5x));
-         if (var7 > (float)var2) {
+   public String plainTailByWidth(final String str, final int maxWidth, final Style style) {
+      MutableFloat currentWidth = new MutableFloat();
+      MutableInt result = new MutableInt(str.length());
+      StringDecomposer.iterateBackwards(str, style, (position, s, codepoint) -> {
+         float w = currentWidth.addAndGet(this.widthProvider.getWidth(codepoint, s));
+         if (w > (float)maxWidth) {
             return false;
          } else {
-            var5.setValue(var4x);
+            result.setValue(position);
             return true;
          }
       });
-      return var1.substring(var5.intValue());
+      return str.substring(result.intValue());
    }
 
-   public FormattedText headByWidth(FormattedText var1, int var2, Style var3) {
-      final WidthLimitedCharSink var4 = new WidthLimitedCharSink((float)var2);
-      return (FormattedText)var1.visit(new FormattedText.StyledContentConsumer<FormattedText>() {
-         private final ComponentCollector collector = new ComponentCollector();
+   public FormattedText headByWidth(final FormattedText text, final int width, final Style initialStyle) {
+      final WidthLimitedCharSink output = new WidthLimitedCharSink((float)width);
+      return (FormattedText)text.visit(new FormattedText.StyledContentConsumer<FormattedText>() {
+         private final ComponentCollector collector;
 
-         public Optional<FormattedText> accept(Style var1, String var2) {
-            var4.resetPosition();
-            if (!StringDecomposer.iterateFormatted((String)var2, var1, var4)) {
-               String var3 = var2.substring(0, var4.getPosition());
-               if (!var3.isEmpty()) {
-                  this.collector.append(FormattedText.of(var3, var1));
+         {
+            Objects.requireNonNull(StringSplitter.this);
+            this.collector = new ComponentCollector();
+         }
+
+         public Optional<FormattedText> accept(final Style style, final String contents) {
+            output.resetPosition();
+            if (!StringDecomposer.iterateFormatted((String)contents, style, output)) {
+               String partial = contents.substring(0, output.getPosition());
+               if (!partial.isEmpty()) {
+                  this.collector.append(FormattedText.of(partial, style));
                }
 
                return Optional.of(this.collector.getResultOrEmpty());
             } else {
-               if (!var2.isEmpty()) {
-                  this.collector.append(FormattedText.of(var2, var1));
+               if (!contents.isEmpty()) {
+                  this.collector.append(FormattedText.of(contents, style));
                }
 
                return Optional.empty();
             }
          }
-      }, var3).orElse(var1);
+      }, initialStyle).orElse(text);
    }
 
-   public int findLineBreak(String var1, int var2, Style var3) {
-      LineBreakFinder var4 = new LineBreakFinder((float)var2);
-      StringDecomposer.iterateFormatted((String)var1, var3, var4);
-      return var4.getSplitPosition();
+   public int findLineBreak(final String input, final int max, final Style initialStyle) {
+      LineBreakFinder finder = new LineBreakFinder((float)max);
+      StringDecomposer.iterateFormatted((String)input, initialStyle, finder);
+      return finder.getSplitPosition();
    }
 
-   public static int getWordPosition(String var0, int var1, int var2, boolean var3) {
-      int var4 = var2;
-      boolean var5 = var1 < 0;
-      int var6 = Math.abs(var1);
+   public static int getWordPosition(final String text, final int dir, final int from, final boolean stripSpaces) {
+      int result = from;
+      boolean reverse = dir < 0;
+      int abs = Math.abs(dir);
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         if (var5) {
-            while(var3 && var4 > 0 && (var0.charAt(var4 - 1) == ' ' || var0.charAt(var4 - 1) == '\n')) {
-               --var4;
+      for(int i = 0; i < abs; ++i) {
+         if (reverse) {
+            while(stripSpaces && result > 0 && (text.charAt(result - 1) == ' ' || text.charAt(result - 1) == '\n')) {
+               --result;
             }
 
-            while(var4 > 0 && var0.charAt(var4 - 1) != ' ' && var0.charAt(var4 - 1) != '\n') {
-               --var4;
+            while(result > 0 && text.charAt(result - 1) != ' ' && text.charAt(result - 1) != '\n') {
+               --result;
             }
          } else {
-            int var8 = var0.length();
-            int var9 = var0.indexOf(32, var4);
-            int var10 = var0.indexOf(10, var4);
-            if (var9 == -1 && var10 == -1) {
-               var4 = -1;
-            } else if (var9 != -1 && var10 != -1) {
-               var4 = Math.min(var9, var10);
-            } else if (var9 != -1) {
-               var4 = var9;
+            int length = text.length();
+            int index1 = text.indexOf(32, result);
+            int index2 = text.indexOf(10, result);
+            if (index1 == -1 && index2 == -1) {
+               result = -1;
+            } else if (index1 != -1 && index2 != -1) {
+               result = Math.min(index1, index2);
+            } else if (index1 != -1) {
+               result = index1;
             } else {
-               var4 = var10;
+               result = index2;
             }
 
-            if (var4 == -1) {
-               var4 = var8;
+            if (result == -1) {
+               result = length;
             } else {
-               while(var3 && var4 < var8 && (var0.charAt(var4) == ' ' || var0.charAt(var4) == '\n')) {
-                  ++var4;
+               while(stripSpaces && result < length && (text.charAt(result) == ' ' || text.charAt(result) == '\n')) {
+                  ++result;
                }
             }
          }
       }
 
-      return var4;
+      return result;
    }
 
-   public void splitLines(String var1, int var2, Style var3, boolean var4, LinePosConsumer var5) {
-      int var6 = 0;
-      int var7 = var1.length();
+   public void splitLines(final String input, final int maxWidth, final Style initialStyle, final boolean includeAll, final LinePosConsumer output) {
+      int start = 0;
+      int size = input.length();
 
-      LineBreakFinder var9;
-      for(Style var8 = var3; var6 < var7; var8 = var9.getSplitStyle()) {
-         var9 = new LineBreakFinder((float)var2);
-         boolean var10 = StringDecomposer.iterateFormatted(var1, var6, var8, var3, var9);
-         if (var10) {
-            var5.accept(var8, var6, var7);
+      LineBreakFinder finder;
+      for(Style workStyle = initialStyle; start < size; workStyle = finder.getSplitStyle()) {
+         finder = new LineBreakFinder((float)maxWidth);
+         boolean endOfText = StringDecomposer.iterateFormatted(input, start, workStyle, initialStyle, finder);
+         if (endOfText) {
+            output.accept(workStyle, start, size);
             break;
          }
 
-         int var11 = var9.getSplitPosition();
-         char var12 = var1.charAt(var11);
-         int var13 = var12 != '\n' && var12 != ' ' ? var11 : var11 + 1;
-         var5.accept(var8, var6, var4 ? var13 : var11);
-         var6 = var13;
+         int lineBreak = finder.getSplitPosition();
+         char firstTailChar = input.charAt(lineBreak);
+         int adjustedBreak = firstTailChar != '\n' && firstTailChar != ' ' ? lineBreak : lineBreak + 1;
+         output.accept(workStyle, start, includeAll ? adjustedBreak : lineBreak);
+         start = adjustedBreak;
       }
 
    }
 
-   public List<FormattedText> splitLines(String var1, int var2, Style var3) {
-      ArrayList var4 = Lists.newArrayList();
-      this.splitLines(var1, var2, var3, false, (var2x, var3x, var4x) -> var4.add(FormattedText.of(var1.substring(var3x, var4x), var2x)));
-      return var4;
+   public List<FormattedText> splitLines(final String input, final int maxWidth, final Style initialStyle) {
+      List<FormattedText> result = Lists.newArrayList();
+      this.splitLines(input, maxWidth, initialStyle, false, (style, start, end) -> result.add(FormattedText.of(input.substring(start, end), style)));
+      return result;
    }
 
-   public List<FormattedText> splitLines(FormattedText var1, int var2, Style var3) {
-      ArrayList var4 = Lists.newArrayList();
-      this.splitLines(var1, var2, var3, (var1x, var2x) -> var4.add(var1x));
-      return var4;
+   public List<FormattedText> splitLines(final FormattedText input, final int maxWidth, final Style initialStyle) {
+      List<FormattedText> result = Lists.newArrayList();
+      this.splitLines(input, maxWidth, initialStyle, (text, wrapped) -> result.add(text));
+      return result;
    }
 
-   public void splitLines(FormattedText var1, int var2, Style var3, BiConsumer<FormattedText, Boolean> var4) {
-      ArrayList var5 = Lists.newArrayList();
-      var1.visit((var1x, var2x) -> {
-         if (!var2x.isEmpty()) {
-            var5.add(new LineComponent(var2x, var1x));
+   public void splitLines(final FormattedText input, final int maxWidth, final Style initialStyle, final BiConsumer<FormattedText, Boolean> output) {
+      List<LineComponent> partList = Lists.newArrayList();
+      input.visit((style, contents) -> {
+         if (!contents.isEmpty()) {
+            partList.add(new LineComponent(contents, style));
          }
 
          return Optional.empty();
-      }, var3);
-      FlatComponents var6 = new FlatComponents(var5);
-      boolean var7 = true;
-      boolean var8 = false;
-      boolean var9 = false;
+      }, initialStyle);
+      FlatComponents parts = new FlatComponents(partList);
+      boolean shouldRestart = true;
+      boolean forceNewLine = false;
+      boolean isWrapped = false;
 
-      while(var7) {
-         var7 = false;
-         LineBreakFinder var10 = new LineBreakFinder((float)var2);
+      while(shouldRestart) {
+         shouldRestart = false;
+         LineBreakFinder finder = new LineBreakFinder((float)maxWidth);
 
-         for(LineComponent var12 : var6.parts) {
-            boolean var13 = StringDecomposer.iterateFormatted(var12.contents, 0, var12.style, var3, var10);
-            if (!var13) {
-               int var14 = var10.getSplitPosition();
-               Style var15 = var10.getSplitStyle();
-               char var16 = var6.charAt(var14);
-               boolean var17 = var16 == '\n';
-               boolean var18 = var17 || var16 == ' ';
-               var8 = var17;
-               FormattedText var19 = var6.splitAt(var14, var18 ? 1 : 0, var15);
-               var4.accept(var19, var9);
-               var9 = !var17;
-               var7 = true;
+         for(LineComponent part : parts.parts) {
+            boolean endOfText = StringDecomposer.iterateFormatted(part.contents, 0, part.style, initialStyle, finder);
+            if (!endOfText) {
+               int lineBreak = finder.getSplitPosition();
+               Style lineBreakStyle = finder.getSplitStyle();
+               char firstTailChar = parts.charAt(lineBreak);
+               boolean isNewLine = firstTailChar == '\n';
+               boolean skipNextChar = isNewLine || firstTailChar == ' ';
+               forceNewLine = isNewLine;
+               FormattedText result = parts.splitAt(lineBreak, skipNextChar ? 1 : 0, lineBreakStyle);
+               output.accept(result, isWrapped);
+               isWrapped = !isNewLine;
+               shouldRestart = true;
                break;
             }
 
-            var10.addToOffset(var12.contents.length());
+            finder.addToOffset(part.contents.length());
          }
       }
 
-      FormattedText var20 = var6.getRemainder();
-      if (var20 != null) {
-         var4.accept(var20, var9);
-      } else if (var8) {
-         var4.accept(FormattedText.EMPTY, false);
+      FormattedText lastLine = parts.getRemainder();
+      if (lastLine != null) {
+         output.accept(lastLine, isWrapped);
+      } else if (forceNewLine) {
+         output.accept(FormattedText.EMPTY, false);
       }
 
    }
 
-   class WidthLimitedCharSink implements FormattedCharSink {
+   private class WidthLimitedCharSink implements FormattedCharSink {
       private float maxWidth;
       private int position;
 
-      public WidthLimitedCharSink(final float var2) {
+      public WidthLimitedCharSink(final float maxWidth) {
+         Objects.requireNonNull(StringSplitter.this);
          super();
-         this.maxWidth = var2;
+         this.maxWidth = maxWidth;
       }
 
-      public boolean accept(int var1, Style var2, int var3) {
-         this.maxWidth -= StringSplitter.this.widthProvider.getWidth(var3, var2);
+      public boolean accept(final int position, final Style style, final int codepoint) {
+         this.maxWidth -= StringSplitter.this.widthProvider.getWidth(codepoint, style);
          if (this.maxWidth >= 0.0F) {
-            this.position = var1 + Character.charCount(var3);
+            this.position = position + Character.charCount(codepoint);
             return true;
          } else {
             return false;
@@ -262,9 +267,9 @@ public class StringSplitter {
       }
    }
 
-   class LineBreakFinder implements FormattedCharSink {
+   private class LineBreakFinder implements FormattedCharSink {
       private final float maxWidth;
-      private int lineBreak = -1;
+      private int lineBreak;
       private Style lineBreakStyle;
       private boolean hadNonZeroWidthChar;
       private float width;
@@ -273,38 +278,40 @@ public class StringSplitter {
       private int nextChar;
       private int offset;
 
-      public LineBreakFinder(final float var2) {
+      public LineBreakFinder(final float maxWidth) {
+         Objects.requireNonNull(StringSplitter.this);
          super();
+         this.lineBreak = -1;
          this.lineBreakStyle = Style.EMPTY;
          this.lastSpace = -1;
          this.lastSpaceStyle = Style.EMPTY;
-         this.maxWidth = Math.max(var2, 1.0F);
+         this.maxWidth = Math.max(maxWidth, 1.0F);
       }
 
-      public boolean accept(int var1, Style var2, int var3) {
-         int var4 = var1 + this.offset;
-         switch (var3) {
+      public boolean accept(final int position, final Style style, final int codepoint) {
+         int adjustedPosition = position + this.offset;
+         switch (codepoint) {
             case 10:
-               return this.finishIteration(var4, var2);
+               return this.finishIteration(adjustedPosition, style);
             case 32:
-               this.lastSpace = var4;
-               this.lastSpaceStyle = var2;
+               this.lastSpace = adjustedPosition;
+               this.lastSpaceStyle = style;
             default:
-               float var5 = StringSplitter.this.widthProvider.getWidth(var3, var2);
-               this.width += var5;
+               float charWidth = StringSplitter.this.widthProvider.getWidth(codepoint, style);
+               this.width += charWidth;
                if (this.hadNonZeroWidthChar && this.width > this.maxWidth) {
-                  return this.lastSpace != -1 ? this.finishIteration(this.lastSpace, this.lastSpaceStyle) : this.finishIteration(var4, var2);
+                  return this.lastSpace != -1 ? this.finishIteration(this.lastSpace, this.lastSpaceStyle) : this.finishIteration(adjustedPosition, style);
                } else {
-                  this.hadNonZeroWidthChar |= var5 != 0.0F;
-                  this.nextChar = var4 + Character.charCount(var3);
+                  this.hadNonZeroWidthChar |= charWidth != 0.0F;
+                  this.nextChar = adjustedPosition + Character.charCount(codepoint);
                   return true;
                }
          }
       }
 
-      private boolean finishIteration(int var1, Style var2) {
-         this.lineBreak = var1;
-         this.lineBreakStyle = var2;
+      private boolean finishIteration(final int lineBreak, final Style style) {
+         this.lineBreak = lineBreak;
+         this.lineBreakStyle = style;
          return false;
       }
 
@@ -320,107 +327,107 @@ public class StringSplitter {
          return this.lineBreakStyle;
       }
 
-      public void addToOffset(int var1) {
-         this.offset += var1;
+      public void addToOffset(final int delta) {
+         this.offset += delta;
       }
    }
 
-   static class LineComponent implements FormattedText {
-      final String contents;
-      final Style style;
+   private static class LineComponent implements FormattedText {
+      private final String contents;
+      private final Style style;
 
-      public LineComponent(String var1, Style var2) {
+      public LineComponent(final String contents, final Style style) {
          super();
-         this.contents = var1;
-         this.style = var2;
+         this.contents = contents;
+         this.style = style;
       }
 
-      public <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
-         return var1.accept(this.contents);
+      public <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
+         return output.accept(this.contents);
       }
 
-      public <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
-         return var1.accept(this.style.applyTo(var2), this.contents);
+      public <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style parentStyle) {
+         return output.accept(this.style.applyTo(parentStyle), this.contents);
       }
    }
 
-   static class FlatComponents {
-      final List<LineComponent> parts;
+   private static class FlatComponents {
+      private final List<LineComponent> parts;
       private String flatParts;
 
-      public FlatComponents(List<LineComponent> var1) {
+      public FlatComponents(final List<LineComponent> parts) {
          super();
-         this.parts = var1;
-         this.flatParts = (String)var1.stream().map((var0) -> var0.contents).collect(Collectors.joining());
+         this.parts = parts;
+         this.flatParts = (String)parts.stream().map((p) -> p.contents).collect(Collectors.joining());
       }
 
-      public char charAt(int var1) {
-         return this.flatParts.charAt(var1);
+      public char charAt(final int position) {
+         return this.flatParts.charAt(position);
       }
 
-      public FormattedText splitAt(int var1, int var2, Style var3) {
-         ComponentCollector var4 = new ComponentCollector();
-         ListIterator var5 = this.parts.listIterator();
-         int var6 = var1;
-         boolean var7 = false;
+      public FormattedText splitAt(final int skipPosition, final int skipSize, final Style splitStyle) {
+         ComponentCollector result = new ComponentCollector();
+         ListIterator<LineComponent> it = this.parts.listIterator();
+         int position = skipPosition;
+         boolean inSkip = false;
 
-         while(var5.hasNext()) {
-            LineComponent var8 = (LineComponent)var5.next();
-            String var9 = var8.contents;
-            int var10 = var9.length();
-            if (!var7) {
-               if (var6 > var10) {
-                  var4.append(var8);
-                  var5.remove();
-                  var6 -= var10;
+         while(it.hasNext()) {
+            LineComponent element = (LineComponent)it.next();
+            String contents = element.contents;
+            int contentsSize = contents.length();
+            if (!inSkip) {
+               if (position > contentsSize) {
+                  result.append(element);
+                  it.remove();
+                  position -= contentsSize;
                } else {
-                  String var11 = var9.substring(0, var6);
-                  if (!var11.isEmpty()) {
-                     var4.append(FormattedText.of(var11, var8.style));
+                  String beforeSplit = contents.substring(0, position);
+                  if (!beforeSplit.isEmpty()) {
+                     result.append(FormattedText.of(beforeSplit, element.style));
                   }
 
-                  var6 += var2;
-                  var7 = true;
+                  position += skipSize;
+                  inSkip = true;
                }
             }
 
-            if (var7) {
-               if (var6 <= var10) {
-                  String var12 = var9.substring(var6);
-                  if (var12.isEmpty()) {
-                     var5.remove();
+            if (inSkip) {
+               if (position <= contentsSize) {
+                  String afterSplit = contents.substring(position);
+                  if (afterSplit.isEmpty()) {
+                     it.remove();
                   } else {
-                     var5.set(new LineComponent(var12, var3));
+                     it.set(new LineComponent(afterSplit, splitStyle));
                   }
                   break;
                }
 
-               var5.remove();
-               var6 -= var10;
+               it.remove();
+               position -= contentsSize;
             }
          }
 
-         this.flatParts = this.flatParts.substring(var1 + var2);
-         return var4.getResultOrEmpty();
+         this.flatParts = this.flatParts.substring(skipPosition + skipSize);
+         return result.getResultOrEmpty();
       }
 
       public @Nullable FormattedText getRemainder() {
-         ComponentCollector var1 = new ComponentCollector();
+         ComponentCollector result = new ComponentCollector();
          List var10000 = this.parts;
-         Objects.requireNonNull(var1);
-         var10000.forEach(var1::append);
+         Objects.requireNonNull(result);
+         var10000.forEach(result::append);
          this.parts.clear();
-         return var1.getResult();
+         return result.getResult();
       }
    }
 
    @FunctionalInterface
    public interface LinePosConsumer {
-      void accept(Style var1, int var2, int var3);
+      void accept(final Style style, int start, int end);
    }
 
    @FunctionalInterface
    public interface WidthProvider {
-      float getWidth(int var1, Style var2);
+      float getWidth(int codepoint, Style style);
    }
 }

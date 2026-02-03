@@ -13,8 +13,8 @@ public enum SearchRecipeBookCategory implements ExtendedRecipeBookCategory {
 
    private final List<RecipeBookCategory> includedCategories;
 
-   private SearchRecipeBookCategory(final RecipeBookCategory... var3) {
-      this.includedCategories = List.of(var3);
+   private SearchRecipeBookCategory(final RecipeBookCategory... includedCategories) {
+      this.includedCategories = List.of(includedCategories);
    }
 
    public List<RecipeBookCategory> includedCategories() {

@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.monster.zombie.ZombieModel;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
@@ -15,37 +14,27 @@ import net.minecraft.world.item.component.SwingAnimation;
 public abstract class AbstractZombieRenderer<T extends Zombie, S extends ZombieRenderState, M extends ZombieModel<S>> extends HumanoidMobRenderer<T, S, M> {
    private static final Identifier ZOMBIE_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie/zombie.png");
 
-   protected AbstractZombieRenderer(EntityRendererProvider.Context var1, M var2, M var3, ArmorModelSet<M> var4, ArmorModelSet<M> var5) {
-      super(var1, var2, var3, 0.5F);
-      this.addLayer(new HumanoidArmorLayer(this, var4, var5, var1.getEquipmentRenderer()));
+   protected AbstractZombieRenderer(final EntityRendererProvider.Context context, final M model, final M babyModel, final ArmorModelSet<M> armorSet, final ArmorModelSet<M> babyArmorSet) {
+      super(context, model, babyModel, 0.5F);
+      this.addLayer(new HumanoidArmorLayer(this, armorSet, babyArmorSet, context.getEquipmentRenderer()));
    }
 
-   public Identifier getTextureLocation(S var1) {
+   public Identifier getTextureLocation(final S state) {
       return ZOMBIE_LOCATION;
    }
 
-   public void extractRenderState(T var1, S var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.isAggressive = var1.isAggressive();
-      var2.isConverting = var1.isUnderWaterConverting();
+   public void extractRenderState(final T entity, final S state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.isAggressive = entity.isAggressive();
+      state.isConverting = entity.isUnderWaterConverting();
    }
 
-   protected boolean isShaking(S var1) {
-      return super.isShaking(var1) || var1.isConverting;
+   protected boolean isShaking(final S state) {
+      return super.isShaking(state) || state.isConverting;
    }
 
-   protected HumanoidModel.ArmPose getArmPose(T var1, HumanoidArm var2) {
-      SwingAnimation var3 = (SwingAnimation)var1.getItemHeldByArm(var2.getOpposite()).get(DataComponents.SWING_ANIMATION);
-      return var3 != null && var3.type() == SwingAnimationType.STAB ? HumanoidModel.ArmPose.SPEAR : super.getArmPose(var1, var2);
-   }
-
-   // $FF: synthetic method
-   protected boolean isShaking(final LivingEntityRenderState var1) {
-      return this.isShaking((ZombieRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((ZombieRenderState)var1);
+   protected HumanoidModel.ArmPose getArmPose(final T mob, final HumanoidArm arm) {
+      SwingAnimation otherAnim = (SwingAnimation)mob.getItemHeldByArm(arm.getOpposite()).get(DataComponents.SWING_ANIMATION);
+      return otherAnim != null && otherAnim.type() == SwingAnimationType.STAB ? HumanoidModel.ArmPose.SPEAR : super.getArmPose(mob, arm);
    }
 }

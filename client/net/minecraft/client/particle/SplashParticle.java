@@ -6,13 +6,13 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
 
 public class SplashParticle extends WaterDropParticle {
-   SplashParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
-      super(var1, var2, var4, var6, var14);
+   private SplashParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, sprite);
       this.gravity = 0.04F;
-      if (var10 == 0.0 && (var8 != 0.0 || var12 != 0.0)) {
-         this.xd = var8;
+      if (ya == 0.0 && (xa != 0.0 || za != 0.0)) {
+         this.xd = xa;
          this.yd = 0.1;
-         this.zd = var12;
+         this.zd = za;
       }
 
    }
@@ -20,13 +20,13 @@ public class SplashParticle extends WaterDropParticle {
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new SplashParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new SplashParticle(level, x, y, z, xAux, yAux, zAux, this.sprite.get(random));
       }
    }
 }

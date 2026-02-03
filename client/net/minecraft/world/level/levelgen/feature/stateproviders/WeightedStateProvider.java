@@ -11,28 +11,28 @@ public class WeightedStateProvider extends BlockStateProvider {
    public static final MapCodec<WeightedStateProvider> CODEC;
    private final WeightedList<BlockState> weightedList;
 
-   private static DataResult<WeightedStateProvider> create(WeightedList<BlockState> var0) {
-      return var0.isEmpty() ? DataResult.error(() -> "WeightedStateProvider with no states") : DataResult.success(new WeightedStateProvider(var0));
+   private static DataResult<WeightedStateProvider> create(final WeightedList<BlockState> weightedList) {
+      return weightedList.isEmpty() ? DataResult.error(() -> "WeightedStateProvider with no states") : DataResult.success(new WeightedStateProvider(weightedList));
    }
 
-   public WeightedStateProvider(WeightedList<BlockState> var1) {
+   public WeightedStateProvider(final WeightedList<BlockState> weightedList) {
       super();
-      this.weightedList = var1;
+      this.weightedList = weightedList;
    }
 
-   public WeightedStateProvider(WeightedList.Builder<BlockState> var1) {
-      this(var1.build());
+   public WeightedStateProvider(final WeightedList.Builder<BlockState> weightedList) {
+      this(weightedList.build());
    }
 
    protected BlockStateProviderType<?> type() {
       return BlockStateProviderType.WEIGHTED_STATE_PROVIDER;
    }
 
-   public BlockState getState(RandomSource var1, BlockPos var2) {
-      return this.weightedList.getRandomOrThrow(var1);
+   public BlockState getState(final RandomSource random, final BlockPos pos) {
+      return this.weightedList.getRandomOrThrow(random);
    }
 
    static {
-      CODEC = WeightedList.nonEmptyCodec(BlockState.CODEC).comapFlatMap(WeightedStateProvider::create, (var0) -> var0.weightedList).fieldOf("entries");
+      CODEC = WeightedList.nonEmptyCodec(BlockState.CODEC).comapFlatMap(WeightedStateProvider::create, (p) -> p.weightedList).fieldOf("entries");
    }
 }

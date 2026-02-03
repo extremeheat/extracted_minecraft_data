@@ -10,16 +10,15 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public record UseCycle(float period) implements RangeSelectItemModelProperty {
-   public static final MapCodec<UseCycle> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("period", 1.0F).forGetter(UseCycle::period)).apply(var0, UseCycle::new));
+   public static final MapCodec<UseCycle> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("period", 1.0F).forGetter(UseCycle::period)).apply(i, UseCycle::new));
 
-   public UseCycle(float var1) {
+   public UseCycle {
       super();
-      this.period = var1;
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
-      LivingEntity var5 = var3 == null ? null : var3.asLivingEntity();
-      return var5 != null && var5.getUseItem() == var1 ? (float)var5.getUseItemRemainingTicks() % this.period : 0.0F;
+   public float get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      LivingEntity entity = owner == null ? null : owner.asLivingEntity();
+      return entity != null && entity.getUseItem() == itemStack ? (float)entity.getUseItemRemainingTicks() % this.period : 0.0F;
    }
 
    public MapCodec<UseCycle> type() {
