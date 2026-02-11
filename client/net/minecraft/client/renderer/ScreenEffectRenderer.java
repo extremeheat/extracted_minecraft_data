@@ -9,8 +9,8 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.SpriteGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.FluidTags;
@@ -31,7 +31,7 @@ import org.jspecify.annotations.Nullable;
 public class ScreenEffectRenderer {
    private static final Identifier UNDERWATER_LOCATION = Identifier.withDefaultNamespace("textures/misc/underwater.png");
    private final Minecraft minecraft;
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final MultiBufferSource bufferSource;
    public static final int ITEM_ACTIVATION_ANIMATION_LENGTH = 40;
    private @Nullable ItemStack itemActivationItem;
@@ -39,10 +39,10 @@ public class ScreenEffectRenderer {
    private float itemActivationOffX;
    private float itemActivationOffY;
 
-   public ScreenEffectRenderer(final Minecraft minecraft, final MaterialSet materials, final MultiBufferSource bufferSource) {
+   public ScreenEffectRenderer(final Minecraft minecraft, final SpriteGetter sprites, final MultiBufferSource bufferSource) {
       super();
       this.minecraft = minecraft;
-      this.materials = materials;
+      this.sprites = sprites;
       this.bufferSource = bufferSource;
    }
 
@@ -63,7 +63,7 @@ public class ScreenEffectRenderer {
          if (!player.noPhysics) {
             BlockState blockState = getViewBlockingState(player);
             if (blockState != null) {
-               renderTex(this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(blockState), poseStack, this.bufferSource);
+               renderTex(this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleMaterial(blockState).sprite(), poseStack, this.bufferSource);
             }
          }
 
@@ -73,7 +73,7 @@ public class ScreenEffectRenderer {
             }
 
             if (this.minecraft.player.isOnFire()) {
-               TextureAtlasSprite fireSprite = this.materials.get(ModelBakery.FIRE_1);
+               TextureAtlasSprite fireSprite = this.sprites.get(ModelBakery.FIRE_1);
                renderFire(poseStack, this.bufferSource, fireSprite);
             }
          }

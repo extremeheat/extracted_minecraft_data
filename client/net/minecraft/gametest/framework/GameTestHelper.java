@@ -33,6 +33,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -143,6 +144,15 @@ public class GameTestHelper {
       return this.spawnItem(item, (float)pos.getX(), (float)pos.getY(), (float)pos.getZ());
    }
 
+   public void despawnItem(final BlockPos pos, final double distance) {
+      BlockPos absolutePos = this.absolutePos(pos);
+
+      for(ItemEntity entity : this.getLevel().getEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), Entity::isAlive)) {
+         entity.remove(Entity.RemovalReason.KILLED);
+      }
+
+   }
+
    public <E extends Entity> E spawn(final EntityType<E> entityType, final BlockPos pos) {
       return (E)this.spawn(entityType, Vec3.atBottomCenterOf(pos));
    }
@@ -201,6 +211,10 @@ public class GameTestHelper {
 
    public void kill(final Entity entity) {
       entity.kill(this.getLevel());
+   }
+
+   public void discard(final Entity entity) {
+      entity.discard();
    }
 
    public <E extends Entity> E findOneEntity(final EntityType<E> entityType) {
@@ -265,7 +279,15 @@ public class GameTestHelper {
    }
 
    public void moveTo(final Mob mob, final float x, final float y, final float z) {
-      Vec3 absoluteVec = this.absoluteVec(new Vec3((double)x, (double)y, (double)z));
+      this.moveTo(mob, new Vec3((double)x, (double)y, (double)z));
+   }
+
+   public void moveTo(final Mob mob, final BlockPos pos) {
+      this.moveTo(mob, pos.getBottomCenter());
+   }
+
+   public void moveTo(final Mob mob, final Vec3 pos) {
+      Vec3 absoluteVec = this.absoluteVec(pos);
       mob.snapTo(absoluteVec.x, absoluteVec.y, absoluteVec.z, mob.getYRot(), mob.getXRot());
    }
 
@@ -573,8 +595,12 @@ public class GameTestHelper {
    }
 
    public void assertEntityInstancePresent(final Entity entity, final BlockPos pos) {
+      this.assertEntityInstancePresent(entity, pos, 0.0);
+   }
+
+   public void assertEntityInstancePresent(final Entity entity, final BlockPos pos, final double inflate) {
       BlockPos absolutePos = this.absolutePos(pos);
-      List<? extends Entity> entities = this.getLevel().getEntities(entity.getType(), new AABB(absolutePos), Entity::isAlive);
+      List<? extends Entity> entities = this.getLevel().getEntities(entity.getType(), (new AABB(absolutePos)).inflate(inflate), Entity::isAlive);
       entities.stream().filter((it) -> it == entity).findFirst().orElseThrow(() -> this.assertionException(pos, "test.error.expected_entity", entity.getType().getDescription()));
    }
 
@@ -856,6 +882,12 @@ public class GameTestHelper {
 
    public void runAfterDelay(final long ticksToDelay, final Runnable whatToRun) {
       this.runAtTickTime((long)this.testInfo.getTick() + ticksToDelay, whatToRun);
+   }
+
+   public void setTime(final long ticks) {
+      ServerLevel level = this.getLevel();
+      Holder<WorldClock> clock = (Holder)level.dimensionType().defaultClock().orElseThrow();
+      level.clockManager().setTotalTicks(clock, ticks);
    }
 
    public void randomTick(final BlockPos pos) {

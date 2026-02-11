@@ -2,7 +2,6 @@ package net.minecraft.client.particle;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.util.RandomSource;
@@ -21,7 +20,7 @@ public class TerrainParticle extends SingleQuadParticle {
    }
 
    public TerrainParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final BlockState blockState, final BlockPos pos) {
-      super(level, x, y, z, xa, ya, za, Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(blockState));
+      super(level, x, y, z, xa, ya, za, Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleMaterial(blockState).sprite());
       this.pos = pos;
       this.gravity = 1.0F;
       this.rCol = 0.6F;
@@ -37,7 +36,7 @@ public class TerrainParticle extends SingleQuadParticle {
       this.quadSize /= 2.0F;
       this.uo = this.random.nextFloat() * 3.0F;
       this.vo = this.random.nextFloat() * 3.0F;
-      this.layer = this.sprite.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS) ? SingleQuadParticle.Layer.TERRAIN : SingleQuadParticle.Layer.ITEMS;
+      this.layer = SingleQuadParticle.Layer.bySprite(this.sprite);
    }
 
    public SingleQuadParticle.Layer getLayer() {

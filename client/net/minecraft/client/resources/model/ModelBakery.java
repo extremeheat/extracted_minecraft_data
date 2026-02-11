@@ -17,9 +17,11 @@ import java.util.stream.IntStream;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.client.renderer.block.model.SimpleModelWrapper;
 import net.minecraft.client.renderer.block.model.SingleVariant;
 import net.minecraft.client.renderer.block.model.TextureSlots;
@@ -29,7 +31,6 @@ import net.minecraft.client.renderer.item.MissingItemModel;
 import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.thread.ParallelMapTransform;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,33 +38,30 @@ import org.joml.Vector3fc;
 import org.slf4j.Logger;
 
 public class ModelBakery {
-   public static final Material FIRE_0;
-   public static final Material FIRE_1;
-   public static final Material LAVA_STILL;
-   public static final Material LAVA_FLOW;
-   public static final Material WATER_STILL;
-   public static final Material WATER_FLOW;
-   public static final Material WATER_OVERLAY;
-   public static final Material BANNER_BASE;
-   public static final Material SHIELD_BASE;
-   public static final Material NO_PATTERN_SHIELD;
+   public static final SpriteId FIRE_0;
+   public static final SpriteId FIRE_1;
+   public static final SpriteId LAVA_STILL;
+   public static final SpriteId LAVA_FLOW;
+   public static final SpriteId WATER_STILL;
+   public static final SpriteId WATER_FLOW;
+   public static final SpriteId WATER_OVERLAY;
    public static final int DESTROY_STAGE_COUNT = 10;
    public static final List<Identifier> DESTROY_STAGES;
    public static final List<Identifier> BREAKING_LOCATIONS;
    public static final List<RenderType> DESTROY_TYPES;
    private static final Logger LOGGER;
    private final EntityModelSet entityModelSet;
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final PlayerSkinRenderCache playerSkinRenderCache;
    private final Map<BlockState, BlockStateModel.UnbakedRoot> unbakedBlockStateModels;
    private final Map<Identifier, ClientItem> clientInfos;
    private final Map<Identifier, ResolvedModel> resolvedModels;
    private final ResolvedModel missingModel;
 
-   public ModelBakery(final EntityModelSet entityModelSet, final MaterialSet materials, final PlayerSkinRenderCache playerSkinRenderCache, final Map<BlockState, BlockStateModel.UnbakedRoot> unbakedBlockStateModels, final Map<Identifier, ClientItem> clientInfos, final Map<Identifier, ResolvedModel> resolvedModels, final ResolvedModel missingModel) {
+   public ModelBakery(final EntityModelSet entityModelSet, final SpriteGetter sprites, final PlayerSkinRenderCache playerSkinRenderCache, final Map<BlockState, BlockStateModel.UnbakedRoot> unbakedBlockStateModels, final Map<Identifier, ClientItem> clientInfos, final Map<Identifier, ResolvedModel> resolvedModels, final ResolvedModel missingModel) {
       super();
       this.entityModelSet = entityModelSet;
-      this.materials = materials;
+      this.sprites = sprites;
       this.playerSkinRenderCache = playerSkinRenderCache;
       this.unbakedBlockStateModels = unbakedBlockStateModels;
       this.clientInfos = clientInfos;
@@ -71,10 +69,10 @@ public class ModelBakery {
       this.missingModel = missingModel;
    }
 
-   public CompletableFuture<BakingResult> bakeModels(final SpriteGetter sprites, final Executor taskExecutor) {
-      PartCacheImpl parts = new PartCacheImpl();
-      MissingModels missingModels = ModelBakery.MissingModels.bake(this.missingModel, sprites, parts);
-      ModelBakerImpl baker = new ModelBakerImpl(sprites, parts, missingModels);
+   public CompletableFuture<BakingResult> bakeModels(final MaterialBaker materials, final Executor taskExecutor) {
+      InternerImpl interner = new InternerImpl();
+      MissingModels missingModels = ModelBakery.MissingModels.bake(this.missingModel, materials, interner);
+      ModelBakerImpl baker = new ModelBakerImpl(materials, interner, missingModels);
       CompletableFuture<Map<BlockState, BlockStateModel>> bakedBlockStateModelFuture = ParallelMapTransform.schedule(this.unbakedBlockStateModels, (blockState, model) -> {
          try {
             return model.bake(blockState, baker);
@@ -85,7 +83,7 @@ public class ModelBakery {
       }, taskExecutor);
       CompletableFuture<Map<Identifier, ItemModel>> bakedItemStackModelFuture = ParallelMapTransform.schedule(this.clientInfos, (location, clientInfo) -> {
          try {
-            return clientInfo.model().bake(new ItemModel.BakingContext(baker, this.entityModelSet, this.materials, this.playerSkinRenderCache, missingModels.item, clientInfo.registrySwapper()));
+            return clientInfo.model().bake(new ItemModel.BakingContext(baker, this.entityModelSet, this.sprites, this.playerSkinRenderCache, missingModels.item, clientInfo.registrySwapper()));
          } catch (Exception e) {
             LOGGER.warn("Unable to bake item model: '{}'", location, e);
             return null;
@@ -110,9 +108,6 @@ public class ModelBakery {
       WATER_STILL = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_still");
       WATER_FLOW = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_flow");
       WATER_OVERLAY = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_overlay");
-      BANNER_BASE = new Material(Sheets.BANNER_SHEET, Identifier.withDefaultNamespace("entity/banner/banner_base"));
-      SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, Identifier.withDefaultNamespace("entity/shield/shield_base"));
-      NO_PATTERN_SHIELD = new Material(Sheets.SHIELD_SHEET, Identifier.withDefaultNamespace("entity/shield/shield_base_nopattern"));
       DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((i) -> Identifier.withDefaultNamespace("block/destroy_stage_" + i)).collect(Collectors.toList());
       BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((location) -> location.withPath((UnaryOperator)((path) -> "textures/" + path + ".png"))).collect(Collectors.toList());
       DESTROY_TYPES = (List)BREAKING_LOCATIONS.stream().map(RenderTypes::crumbling).collect(Collectors.toList());
@@ -124,7 +119,7 @@ public class ModelBakery {
          super();
       }
 
-      public static MissingModels bake(final ResolvedModel unbaked, final SpriteGetter sprites, final ModelBaker.PartCache parts) {
+      public static MissingModels bake(final ResolvedModel unbaked, final MaterialBaker materials, final ModelBaker.Interner interner) {
          ModelBaker missingModelBakery = new ModelBaker() {
             public ResolvedModel getModel(final Identifier location) {
                throw new IllegalStateException("Missing model can't have dependencies, but asked for " + String.valueOf(location));
@@ -138,12 +133,12 @@ public class ModelBakery {
                return key.compute(this);
             }
 
-            public SpriteGetter sprites() {
-               return sprites;
+            public MaterialBaker materials() {
+               return materials;
             }
 
-            public ModelBaker.PartCache parts() {
-               return parts;
+            public ModelBaker.Interner interner() {
+               return interner;
             }
          };
          TextureSlots textureSlots = unbaked.getTopTextureSlots();
@@ -151,28 +146,28 @@ public class ModelBakery {
          boolean usesBlockLight = unbaked.getTopGuiLight().lightLikeBlock();
          ItemTransforms transforms = unbaked.getTopTransforms();
          QuadCollection geometry = unbaked.bakeTopGeometry(textureSlots, missingModelBakery, BlockModelRotation.IDENTITY);
-         TextureAtlasSprite particleSprite = unbaked.resolveParticleSprite(textureSlots, missingModelBakery);
-         SimpleModelWrapper missingModelPart = new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleSprite);
+         Material.Baked particleMaterial = unbaked.resolveParticleMaterial(textureSlots, missingModelBakery);
+         SimpleModelWrapper missingModelPart = new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleMaterial, false);
          BlockStateModel bakedBlockModel = new SingleVariant(missingModelPart);
-         ItemModel bakedItemModel = new MissingItemModel(geometry.getAll(), new ModelRenderProperties(usesBlockLight, particleSprite, transforms));
+         ItemModel bakedItemModel = new MissingItemModel(geometry.getAll(), new ModelRenderProperties(usesBlockLight, particleMaterial, transforms));
          return new MissingModels(missingModelPart, bakedBlockModel, bakedItemModel);
       }
    }
 
    private class ModelBakerImpl implements ModelBaker {
-      private final SpriteGetter sprites;
-      private final ModelBaker.PartCache parts;
+      private final MaterialBaker materials;
+      private final ModelBaker.Interner interner;
       private final MissingModels missingModels;
       private final Map<ModelBaker.SharedOperationKey<Object>, Object> operationCache;
       private final Function<ModelBaker.SharedOperationKey<Object>, Object> cacheComputeFunction;
 
-      private ModelBakerImpl(final SpriteGetter textures, final ModelBaker.PartCache parts, final MissingModels missingModels) {
+      private ModelBakerImpl(final MaterialBaker materials, final ModelBaker.Interner interner, final MissingModels missingModels) {
          Objects.requireNonNull(ModelBakery.this);
          super();
          this.operationCache = new ConcurrentHashMap();
          this.cacheComputeFunction = (k) -> k.compute(this);
-         this.sprites = textures;
-         this.parts = parts;
+         this.materials = materials;
+         this.interner = interner;
          this.missingModels = missingModels;
       }
 
@@ -180,12 +175,12 @@ public class ModelBakery {
          return this.missingModels.blockPart;
       }
 
-      public SpriteGetter sprites() {
-         return this.sprites;
+      public MaterialBaker materials() {
+         return this.materials;
       }
 
-      public ModelBaker.PartCache parts() {
-         return this.parts;
+      public ModelBaker.Interner interner() {
+         return this.interner;
       }
 
       public ResolvedModel getModel(final Identifier location) {
@@ -209,15 +204,20 @@ public class ModelBakery {
       }
    }
 
-   private static class PartCacheImpl implements ModelBaker.PartCache {
+   private static class InternerImpl implements ModelBaker.Interner {
       private final Interner<Vector3fc> vectors = Interners.newStrongInterner();
+      private final Interner<BakedQuad.SpriteInfo> spriteInfos = Interners.newStrongInterner();
 
-      private PartCacheImpl() {
+      private InternerImpl() {
          super();
       }
 
       public Vector3fc vector(final Vector3fc v) {
          return (Vector3fc)this.vectors.intern(v);
+      }
+
+      public BakedQuad.SpriteInfo spriteInfo(final BakedQuad.SpriteInfo sprite) {
+         return (BakedQuad.SpriteInfo)this.spriteInfos.intern(sprite);
       }
    }
 }

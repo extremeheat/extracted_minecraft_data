@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.npc.BabyVillagerModel;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.renderer.entity.layers.CrossedArmsItemLayer;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
@@ -11,18 +12,19 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.npc.villager.Villager;
 
 public class VillagerRenderer extends AgeableMobRenderer<Villager, VillagerRenderState, VillagerModel> {
-   private static final Identifier VILLAGER_BASE_SKIN = Identifier.withDefaultNamespace("textures/entity/villager/villager.png");
+   private static final Identifier VILLAGER_BASE_LOCATION = Identifier.withDefaultNamespace("textures/entity/villager/villager.png");
+   private static final Identifier VILLAGER_BABY_LOCATION = Identifier.withDefaultNamespace("textures/entity/villager/villager_baby.png");
    public static final CustomHeadLayer.Transforms CUSTOM_HEAD_TRANSFORMS = new CustomHeadLayer.Transforms(-0.1171875F, -0.07421875F, 1.0F);
 
    public VillagerRenderer(final EntityRendererProvider.Context context) {
-      super(context, new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER)), new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER_BABY)), 0.5F);
+      super(context, new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER)), new BabyVillagerModel(context.bakeLayer(ModelLayers.VILLAGER_BABY)), 0.5F);
       this.addLayer(new CustomHeadLayer(this, context.getModelSet(), context.getPlayerSkinRenderCache(), CUSTOM_HEAD_TRANSFORMS));
-      this.addLayer(new VillagerProfessionLayer(this, context.getResourceManager(), "villager", new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER_NO_HAT)), new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER_BABY_NO_HAT))));
+      this.addLayer(new VillagerProfessionLayer(this, context.getResourceManager(), "villager", new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER_NO_HAT)), new BabyVillagerModel(context.bakeLayer(ModelLayers.VILLAGER_BABY_NO_HAT))));
       this.addLayer(new CrossedArmsItemLayer(this));
    }
 
    public Identifier getTextureLocation(final VillagerRenderState state) {
-      return VILLAGER_BASE_SKIN;
+      return state.isBaby ? VILLAGER_BABY_LOCATION : VILLAGER_BASE_LOCATION;
    }
 
    protected float getShadowRadius(final VillagerRenderState state) {

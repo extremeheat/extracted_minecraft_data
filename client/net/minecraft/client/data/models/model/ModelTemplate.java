@@ -3,7 +3,9 @@ package net.minecraft.client.data.models.model;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,6 +13,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -48,13 +51,16 @@ public class ModelTemplate {
    }
 
    public Identifier create(final Identifier target, final TextureMapping textures, final BiConsumer<Identifier, ModelInstance> output) {
-      Map<TextureSlot, Identifier> slots = this.createMap(textures);
+      Map<TextureSlot, Material> slots = this.createMap(textures);
       output.accept(target, (ModelInstance)() -> {
          JsonObject result = new JsonObject();
          this.model.ifPresent((m) -> result.addProperty("parent", m.toString()));
          if (!slots.isEmpty()) {
             JsonObject textureObj = new JsonObject();
-            slots.forEach((slot, value) -> textureObj.addProperty(slot.getId(), value.toString()));
+            slots.forEach((slot, value) -> {
+               JsonElement valueJson = (JsonElement)Material.CODEC.encodeStart(JsonOps.INSTANCE, value).getOrThrow();
+               textureObj.add(slot.getId(), valueJson);
+            });
             result.add("textures", textureObj);
          }
 
@@ -63,7 +69,7 @@ public class ModelTemplate {
       return target;
    }
 
-   private Map<TextureSlot, Identifier> createMap(final TextureMapping mapping) {
+   private Map<TextureSlot, Material> createMap(final TextureMapping mapping) {
       Stream var10000 = Streams.concat(new Stream[]{this.requiredSlots.stream(), mapping.getForced()});
       Function var10001 = Function.identity();
       Objects.requireNonNull(mapping);

@@ -147,6 +147,10 @@ public class SelectWorldScreen extends Screen {
                this.editButton.setTooltip(Tooltip.create(Component.translatable("selectWorld.requiresFileFixingTooltip.edit")));
                this.playWorldButton.setTooltip(Tooltip.create(Component.translatable("selectWorld.requiresFileFixingTooltip.play")));
                this.recreateButton.setTooltip(Tooltip.create(Component.translatable("selectWorld.requiresFileFixingTooltip.recreate")));
+            } else {
+               this.editButton.setTooltip((Tooltip)null);
+               this.playWorldButton.setTooltip((Tooltip)null);
+               this.recreateButton.setTooltip((Tooltip)null);
             }
          }
 

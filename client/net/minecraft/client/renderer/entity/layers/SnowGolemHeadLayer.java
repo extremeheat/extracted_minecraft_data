@@ -38,8 +38,8 @@ public class SnowGolemHeadLayer extends RenderLayer<SnowGolemRenderState, SnowGo
             BlockStateModel model = this.blockRenderer.getBlockModel(pumpkinBlockState);
             int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
             poseStack.translate(-0.5F, -0.5F, -0.5F);
-            RenderType renderType = state.appearsGlowing() && state.isInvisible ? RenderTypes.outline(TextureAtlas.LOCATION_BLOCKS) : ItemBlockRenderTypes.getRenderType(pumpkinBlockState);
-            submitNodeCollector.submitBlockModel(poseStack, renderType, model, 0.0F, 0.0F, 0.0F, lightCoords, overlayCoords, state.outlineColor);
+            RenderType renderType = state.appearsGlowing() && state.isInvisible ? RenderTypes.outline(TextureAtlas.LOCATION_BLOCKS) : ItemBlockRenderTypes.getBlockModelRenderType(model);
+            submitNodeCollector.submitBlockModel(poseStack, renderType, model, -16777216, lightCoords, overlayCoords, state.outlineColor);
             poseStack.popPose();
          }
       }

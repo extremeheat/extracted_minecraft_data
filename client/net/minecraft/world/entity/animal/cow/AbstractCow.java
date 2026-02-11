@@ -55,23 +55,27 @@ public abstract class AbstractCow extends Animal {
    }
 
    protected SoundEvent getAmbientSound() {
-      return SoundEvents.COW_AMBIENT;
+      return (SoundEvent)this.getSoundSet().ambientSound().value();
    }
 
    protected SoundEvent getHurtSound(final DamageSource source) {
-      return SoundEvents.COW_HURT;
+      return (SoundEvent)this.getSoundSet().hurtSound().value();
    }
 
    protected SoundEvent getDeathSound() {
-      return SoundEvents.COW_DEATH;
+      return (SoundEvent)this.getSoundSet().deathSound().value();
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      this.playSound(SoundEvents.COW_STEP, 0.15F, 1.0F);
+      this.playSound((SoundEvent)this.getSoundSet().stepSound().value(), 0.15F, 1.0F);
    }
 
    protected float getSoundVolume() {
       return 0.4F;
+   }
+
+   protected CowSoundVariant getSoundSet() {
+      return (CowSoundVariant)SoundEvents.COW_SOUNDS.get(CowSoundVariants.SoundSet.CLASSIC);
    }
 
    public InteractionResult mobInteract(final Player player, final InteractionHand hand) {

@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.ShulkerBoxRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
@@ -20,18 +20,18 @@ public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
    private final ShulkerBoxRenderer shulkerBoxRenderer;
    private final float openness;
    private final Direction orientation;
-   private final Material material;
+   private final SpriteId sprite;
 
-   public ShulkerBoxSpecialRenderer(final ShulkerBoxRenderer shulkerBoxRenderer, final float openness, final Direction orientation, final Material material) {
+   public ShulkerBoxSpecialRenderer(final ShulkerBoxRenderer shulkerBoxRenderer, final float openness, final Direction orientation, final SpriteId sprite) {
       super();
       this.shulkerBoxRenderer = shulkerBoxRenderer;
       this.openness = openness;
       this.orientation = orientation;
-      this.material = material;
+      this.sprite = sprite;
    }
 
    public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
-      this.shulkerBoxRenderer.submit(poseStack, submitNodeCollector, lightCoords, overlayCoords, this.orientation, this.openness, (ModelFeatureRenderer.CrumblingOverlay)null, this.material, outlineColor);
+      this.shulkerBoxRenderer.submit(poseStack, submitNodeCollector, lightCoords, overlayCoords, this.orientation, this.openness, (ModelFeatureRenderer.CrumblingOverlay)null, this.sprite, outlineColor);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {
@@ -46,7 +46,7 @@ public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
       }
 
       public Unbaked(final DyeColor color) {
-         this(Sheets.colorToShulkerMaterial(color), 0.0F, Direction.UP);
+         this(Sheets.colorToShulkerSprite(color), 0.0F, Direction.UP);
       }
 
       public Unbaked {

@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3fc;
@@ -22,11 +22,11 @@ public interface SpecialModelRenderer<T> {
    public interface BakingContext {
       EntityModelSet entityModelSet();
 
-      MaterialSet materials();
+      SpriteGetter sprites();
 
       PlayerSkinRenderCache playerSkinRenderCache();
 
-      public static record Simple(EntityModelSet entityModelSet, MaterialSet materials, PlayerSkinRenderCache playerSkinRenderCache) implements BakingContext {
+      public static record Simple(EntityModelSet entityModelSet, SpriteGetter sprites, PlayerSkinRenderCache playerSkinRenderCache) implements BakingContext {
          public Simple {
             super();
          }

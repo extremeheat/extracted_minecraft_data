@@ -3,24 +3,40 @@ package net.minecraft.client.resources.model;
 import java.util.List;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
 
 public class WeightedVariants implements BlockStateModel {
    private final WeightedList<BlockStateModel> list;
-   private final TextureAtlasSprite particleIcon;
+   private final Material.Baked particleMaterial;
+   private final boolean hasTranslucency;
 
    public WeightedVariants(final WeightedList<BlockStateModel> list) {
       super();
       this.list = list;
       BlockStateModel firstModel = (BlockStateModel)((Weighted)list.unwrap().getFirst()).value();
-      this.particleIcon = firstModel.particleIcon();
+      this.particleMaterial = firstModel.particleMaterial();
+      this.hasTranslucency = hasTranslucency(list);
    }
 
-   public TextureAtlasSprite particleIcon() {
-      return this.particleIcon;
+   private static boolean hasTranslucency(final WeightedList<BlockStateModel> list) {
+      for(Weighted<BlockStateModel> entry : list.unwrap()) {
+         if (((BlockStateModel)entry.value()).hasTranslucency()) {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   public Material.Baked particleMaterial() {
+      return this.particleMaterial;
+   }
+
+   public boolean hasTranslucency() {
+      return this.hasTranslucency;
    }
 
    public void collectParts(final RandomSource random, final List<BlockModelPart> output) {

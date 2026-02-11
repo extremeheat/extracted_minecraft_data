@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -42,6 +41,7 @@ import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -468,12 +468,12 @@ public class DebugScreenOverlay {
       this.bandwidthLogger.reset();
    }
 
-   public void render3dCrosshair(final Camera camera) {
+   public void render3dCrosshair(final CameraRenderState cameraState) {
       Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
       modelViewStack.pushMatrix();
       modelViewStack.translate(0.0F, 0.0F, -1.0F);
-      modelViewStack.rotateX(camera.xRot() * 0.017453292F);
-      modelViewStack.rotateY(camera.yRot() * 0.017453292F);
+      modelViewStack.rotateX(cameraState.xRot * 0.017453292F);
+      modelViewStack.rotateY(cameraState.yRot * 0.017453292F);
       float crosshairScale = 0.01F * (float)this.minecraft.getWindow().getGuiScale();
       modelViewStack.scale(-crosshairScale, crosshairScale, -crosshairScale);
       RenderPipeline renderPipelineOutline = RenderPipelines.LINES;

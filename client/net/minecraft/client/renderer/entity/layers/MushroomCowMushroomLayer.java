@@ -59,7 +59,7 @@ public class MushroomCowMushroomLayer extends RenderLayer<MushroomCowRenderState
 
    private void submitMushroomBlock(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final boolean appearsGlowingWithInvisibility, final int outlineColor, final BlockState mushroomBlockState, final int overlayCoords, final BlockStateModel model) {
       if (appearsGlowingWithInvisibility) {
-         submitNodeCollector.submitBlockModel(poseStack, RenderTypes.outline(TextureAtlas.LOCATION_BLOCKS), model, 0.0F, 0.0F, 0.0F, lightCoords, overlayCoords, outlineColor);
+         submitNodeCollector.submitBlockModel(poseStack, RenderTypes.outline(TextureAtlas.LOCATION_BLOCKS), model, -16777216, lightCoords, overlayCoords, outlineColor);
       } else {
          submitNodeCollector.submitBlock(poseStack, mushroomBlockState, lightCoords, overlayCoords, outlineColor);
       }

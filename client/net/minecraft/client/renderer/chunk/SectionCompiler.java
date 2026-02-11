@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
+import net.minecraft.client.renderer.block.BakedQuadOutput;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
@@ -46,6 +47,14 @@ public class SectionCompiler {
       PoseStack poseStack = new PoseStack();
       ModelBlockRenderer.enableCaching();
       Map<ChunkSectionLayer, BufferBuilder> startedLayers = new EnumMap(ChunkSectionLayer.class);
+      BakedQuadOutput quadOutput = (pose, quad, brightness, color, lightmapCoord, overlayCoords) -> {
+         BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, quad.spriteInfo().layer());
+         builder.putBulkData(pose, quad, brightness, color, lightmapCoord, overlayCoords);
+      };
+      BakedQuadOutput opaqueQuadOutput = (pose, quad, brightness, color, lightmapCoord, overlayCoords) -> {
+         BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, ChunkSectionLayer.SOLID);
+         builder.putBulkData(pose, quad, brightness, color, lightmapCoord, overlayCoords);
+      };
       RandomSource random = RandomSource.create();
       List<BlockModelPart> parts = new ObjectArrayList();
 
@@ -70,13 +79,12 @@ public class SectionCompiler {
          }
 
          if (blockState.getRenderShape() == RenderShape.MODEL) {
-            ChunkSectionLayer layer = ItemBlockRenderTypes.getChunkRenderType(blockState);
-            BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, layer);
+            boolean forceOpaque = ItemBlockRenderTypes.forceOpaque(blockState);
             random.setSeed(blockState.getSeed(pos));
             this.blockRenderer.getBlockModel(blockState).collectParts(random, parts);
             poseStack.pushPose();
             poseStack.translate((float)SectionPos.sectionRelative(pos.getX()), (float)SectionPos.sectionRelative(pos.getY()), (float)SectionPos.sectionRelative(pos.getZ()));
-            this.blockRenderer.renderBatched(blockState, pos, region, poseStack, builder, true, parts);
+            this.blockRenderer.renderBatched(blockState, pos, region, poseStack, forceOpaque ? opaqueQuadOutput : quadOutput, true, parts);
             poseStack.popPose();
             parts.clear();
          }

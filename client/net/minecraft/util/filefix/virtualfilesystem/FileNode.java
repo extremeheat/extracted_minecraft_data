@@ -7,7 +7,7 @@ import java.nio.file.StandardCopyOption;
 
 final class FileNode extends Node {
    private Path storagePath;
-   private boolean isCopy;
+   boolean isCopy;
 
    FileNode(final CopyOnWriteFSPath path, final Path storagePath, final boolean isCopy) {
       super(path);

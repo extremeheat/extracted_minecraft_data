@@ -1,41 +1,60 @@
 package net.minecraft.util.filefix;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.datafixers.DataFixerBuilder;
 import com.mojang.datafixers.schemas.Schema;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.CopyOption;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import net.minecraft.CrashReport;
-import net.minecraft.CrashReportCategory;
-import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.filefix.virtualfilesystem.CopyOnWriteFileSystem;
+import net.minecraft.util.filefix.virtualfilesystem.FileMove;
 import net.minecraft.util.worldupdate.UpgradeProgress;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import org.apache.commons.io.file.PathUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class FileFixerUpper {
-   public static final int FILE_FIXER_INTRODUCTION_VERSION = 4772;
+   private static final int FILE_FIXER_INTRODUCTION_VERSION = 4772;
+   private static final Gson GSON = (new Gson()).newBuilder().setPrettyPrinting().create();
+   private static final String FILE_FIX_DIRECTORY_NAME = "filefix";
+   private static final String NEW_WORLD_TEMP_NAME = "new_world";
+   private static final String UPGRADE_IN_PROGRESS_NAME = "upgrade_in_progress.json";
    private static final Logger LOGGER = LogUtils.getLogger();
    private final DataFixerBuilder.Result dataFixer;
    private final List<FileFix> fileFixes;
@@ -56,46 +75,144 @@ public class FileFixerUpper {
       return worldVersionToFileFixerVersion(levelDataVersion) < this.latestFileFixerVersion;
    }
 
-   public Dynamic<?> fix(final LevelStorageSource.LevelStorageAccess worldAccess, final Dynamic<?> levelDataTag, final UpgradeProgress upgradeProgress) throws IOException {
+   public Dynamic<?> fix(final LevelStorageSource.LevelStorageAccess worldAccess, final Dynamic<?> levelDataTag, final UpgradeProgress upgradeProgress) throws FileFixException {
       return this.fix(worldAccess, levelDataTag, upgradeProgress, SharedConstants.getCurrentVersion().dataVersion().version());
    }
 
    @VisibleForTesting
-   public Dynamic<?> fix(final LevelStorageSource.LevelStorageAccess worldAccess, final Dynamic<?> levelDataTag, final UpgradeProgress upgradeProgress, final int toVersion) throws IOException {
+   public Dynamic<?> fix(final LevelStorageSource.LevelStorageAccess worldAccess, Dynamic<?> levelDataTag, final UpgradeProgress upgradeProgress, final int toVersion) throws FileFixException {
       int loadedVersion = NbtUtils.getDataVersion(levelDataTag);
       if (this.requiresFileFixing(loadedVersion)) {
          Path worldFolder = worldAccess.getLevelDirectory().path();
-         CopyOnWriteFileSystem fs = CopyOnWriteFileSystem.create(worldFolder.getFileName().toString(), worldFolder);
+         Path fileFixDirectory = worldFolder.resolve("filefix");
+         Path tempWorld = fileFixDirectory.resolve("new_world");
+         List<FileMove> moves = this.startOrContinueFileFixing(upgradeProgress, toVersion, worldFolder, tempWorld, fileFixDirectory, loadedVersion);
 
-         Dynamic<?> fixedLevelDataTag;
          try {
-            fixedLevelDataTag = this.applyFileFixers(upgradeProgress, loadedVersion, toVersion, fs.rootPath());
-            swapInFixedWorld(worldAccess, fs);
-         } catch (Throwable var12) {
-            if (fs != null) {
-               try {
-                  fs.close();
-               } catch (Throwable var11) {
-                  var12.addSuppressed(var11);
-               }
+            swapInFixedWorld(worldAccess, moves, fileFixDirectory, tempWorld);
+         } catch (AbortedFileFixException e) {
+            if (e.notRevertedMoves().isEmpty()) {
+               cleanup(fileFixDirectory);
             }
 
-            throw var12;
+            throw e;
          }
 
-         if (fs != null) {
-            fs.close();
+         try {
+            levelDataTag = worldAccess.getUnfixedDataTag(false);
+         } catch (IOException e) {
+            throw new UncheckedIOException(e);
          }
 
-         return fixedLevelDataTag;
-      } else {
-         Dynamic<?> fixedLevelDataTag = DataFixTypes.LEVEL.updateToCurrentVersion(this.dataFixer.fixer(), levelDataTag, loadedVersion);
-         return addVersionsToLevelData(fixedLevelDataTag, toVersion);
+         loadedVersion = NbtUtils.getDataVersion(levelDataTag);
       }
+
+      Dynamic<?> fixedLevelDataTag = DataFixTypes.LEVEL.updateToCurrentVersion(this.dataFixer.fixer(), levelDataTag, loadedVersion);
+      return addVersionsToLevelData(fixedLevelDataTag, toVersion);
+   }
+
+   private List<FileMove> startOrContinueFileFixing(final UpgradeProgress upgradeProgress, final int toVersion, final Path worldFolder, final Path tempWorld, final Path fileFixDirectory, final int loadedVersion) {
+      Path upgradeInProgressFile = fileFixDirectory.resolve("upgrade_in_progress.json");
+      List<FileMove> moves;
+      if (Files.exists(upgradeInProgressFile, new LinkOption[0])) {
+         LOGGER.warn("Found previously interrupted world upgrade, attempting to continue it");
+
+         try {
+            moves = readMoves(worldFolder, tempWorld, upgradeInProgressFile);
+         } catch (IOException e) {
+            throw new AbortedFileFixException(e);
+         }
+      } else {
+         if (Files.exists(fileFixDirectory, new LinkOption[0])) {
+            try {
+               deleteDirectory(fileFixDirectory);
+            } catch (IOException e) {
+               throw new AbortedFileFixException(e);
+            }
+         }
+
+         try {
+            Files.createDirectory(fileFixDirectory);
+            moves = this.applyFileFixersOnCow(upgradeProgress, loadedVersion, toVersion, worldFolder, fileFixDirectory, tempWorld);
+         } catch (Exception e) {
+            cleanup(fileFixDirectory);
+            throw new AbortedFileFixException(e);
+         }
+      }
+
+      return moves;
+   }
+
+   private static void deleteDirectory(final Path directory) throws IOException {
+      Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+         public FileVisitResult visitFile(final Path realPath, final BasicFileAttributes attrs) {
+            try {
+               Files.deleteIfExists(realPath);
+            } catch (IOException var4) {
+            }
+
+            return FileVisitResult.CONTINUE;
+         }
+
+         public FileVisitResult postVisitDirectory(final Path realPath, final @Nullable IOException e) {
+            try {
+               Files.deleteIfExists(realPath);
+            } catch (IOException var4) {
+            }
+
+            return FileVisitResult.CONTINUE;
+         }
+      });
+      if (Files.exists(directory, new LinkOption[0])) {
+         PathUtils.deleteDirectory(directory);
+      }
+
+   }
+
+   private static void cleanup(final Path fileFixDirectory) {
+      try {
+         deleteDirectory(fileFixDirectory);
+      } catch (Exception ex) {
+         LOGGER.error("Failed to clean up", ex);
+      }
+
+   }
+
+   private List<FileMove> applyFileFixersOnCow(final UpgradeProgress upgradeProgress, final int loadedVersion, final int toVersion, final Path worldFolder, final Path fileFixDirectory, final Path tempWorld) throws IOException {
+      String var10000 = worldFolder.getFileName().toString();
+      Path var10002 = fileFixDirectory.resolve("cow");
+      Objects.requireNonNull(fileFixDirectory);
+      CopyOnWriteFileSystem fs = CopyOnWriteFileSystem.create(var10000, worldFolder, var10002, fileFixDirectory::equals);
+
+      List var9;
+      try {
+         this.applyFileFixers(upgradeProgress, loadedVersion, toVersion, fs.rootPath());
+         CopyOnWriteFileSystem.Moves moves = fs.collectMoveOperations(tempWorld);
+         Files.createDirectory(tempWorld);
+         CopyOnWriteFileSystem.createDirectories(moves.directories());
+         CopyOnWriteFileSystem.moveFiles(moves.copiedFiles());
+         var9 = moves.preexistingFiles();
+      } catch (Throwable var11) {
+         if (fs != null) {
+            try {
+               fs.close();
+            } catch (Throwable var10) {
+               var11.addSuppressed(var10);
+            }
+         }
+
+         throw var11;
+      }
+
+      if (fs != null) {
+         fs.close();
+      }
+
+      return var9;
    }
 
    @VisibleForTesting
-   public Dynamic<?> applyFileFixers(final UpgradeProgress upgradeProgress, final int loadedVersion, final int toVersion, final Path basePath) throws IOException {
+   public void applyFileFixers(final UpgradeProgress upgradeProgress, final int loadedVersion, final int toVersion, final Path basePath) throws IOException {
       List<FileFix> applicableFixers = this.getApplicableFixers(loadedVersion, toVersion);
       upgradeProgress.setType(UpgradeProgress.Type.FILES);
       this.countFiles(applicableFixers, upgradeProgress);
@@ -107,7 +224,9 @@ public class FileFixerUpper {
          fileFix.runFixOperations(basePath, upgradeProgress);
       }
 
-      return this.writeUpdatedLevelData(basePath, toVersion);
+      this.writeUpdatedLevelData(basePath, toVersion);
+      Files.deleteIfExists(basePath.resolve("level.dat_old"));
+      Files.deleteIfExists(basePath.resolve("session.lock"));
    }
 
    private List<FileFix> getApplicableFixers(final int fromVersion, final int toVersion) {
@@ -126,7 +245,7 @@ public class FileFixerUpper {
       upgradeProgress.addTotalFileFixOperations(totalFiles);
    }
 
-   private Dynamic<?> writeUpdatedLevelData(final Path worldFolder, final int toVersion) throws IOException {
+   private void writeUpdatedLevelData(final Path worldFolder, final int toVersion) throws IOException {
       Path levelDatPath = worldFolder.resolve(LevelResource.LEVEL_DATA_FILE.id());
       CompoundTag unfixedLevelDat = NbtIo.readCompressed(levelDatPath, NbtAccounter.defaultQuota());
       CompoundTag unfixedDataTag = unfixedLevelDat.getCompoundOrEmpty("Data");
@@ -135,7 +254,6 @@ public class FileFixerUpper {
       fixed = addVersionsToLevelData(fixed, toVersion);
       Dynamic<?> dynamic = fixed.emptyMap().set("Data", fixed);
       NbtIo.writeCompressed((CompoundTag)dynamic.convert(NbtOps.INSTANCE).getValue(), levelDatPath);
-      return fixed;
    }
 
    private static Dynamic<?> addVersionsToLevelData(Dynamic<?> fixed, final int toVersion) {
@@ -146,48 +264,145 @@ public class FileFixerUpper {
    }
 
    @VisibleForTesting
-   protected static void swapInFixedWorld(final LevelStorageSource.LevelStorageAccess worldAccess, final CopyOnWriteFileSystem fs) throws IOException {
+   protected static void swapInFixedWorld(final LevelStorageSource.LevelStorageAccess worldAccess, final List<FileMove> moves, final Path fileFixDirectory, final Path tempWorld) throws FileFixException {
       Path worldFolder = worldAccess.getLevelDirectory().path();
-      FileSystemCapabilities fileSystemCapabilities = detectFileSystemCapabilities(worldFolder);
+      Path savesDirectory = worldFolder.getParent();
+      String worldName = worldFolder.getFileName().toString();
 
+      Path tempWorldTopLevel;
+      Path oldWorldFolder;
+      FileSystemCapabilities fileSystemCapabilities;
       try {
-         LOGGER.info("Swapping in the fixed world. File system capabilities: {}", fileSystemCapabilities);
-         Path tmpWorld = worldFolder.resolve("file_fixed_world");
-         Path var10000 = worldFolder.getParent();
-         String var10001 = worldFolder.getFileName().toString();
-         Path oldWorldFolder = var10000.resolve(var10001 + "_file_fix_" + String.valueOf(UUID.randomUUID()));
-         Path tmpWorldAfterMove = oldWorldFolder.resolve(worldFolder.relativize(tmpWorld));
-         Files.createDirectory(tmpWorld);
-         if (fileSystemCapabilities.hardLinks) {
-            fs.makeHardLinkCopy(tmpWorld);
-         }
+         fileSystemCapabilities = detectFileSystemCapabilities(fileFixDirectory);
+         tempWorldTopLevel = savesDirectory.resolve(FileUtil.findAvailableName(savesDirectory, worldName + " upgraded", ""));
+         oldWorldFolder = savesDirectory.resolve(FileUtil.findAvailableName(savesDirectory, worldName + " OUTDATED", ""));
+      } catch (Exception e) {
+         throw new AbortedFileFixException(e);
+      }
 
-         CopyOption[] copyOptions;
-         if (fileSystemCapabilities.atomicMove) {
-            copyOptions = new CopyOption[]{StandardCopyOption.ATOMIC_MOVE};
-         } else {
-            copyOptions = new CopyOption[0];
+      if (!fileSystemCapabilities.atomicMove()) {
+         throw new AtomicMoveNotSupportedFileFixException(fileSystemCapabilities);
+      } else {
+         CopyOption[] moveOptions = fileSystemCapabilities.getMoveOptions();
+         LOGGER.info("File system capabilities: {}", fileSystemCapabilities);
+         Path movesFile = fileFixDirectory.resolve("upgrade_in_progress.json");
+
+         try {
+            if (fileSystemCapabilities.hardLinks()) {
+               CopyOnWriteFileSystem.hardLinkFiles(moves);
+            } else {
+               writeMoves(moves, worldFolder, tempWorld, movesFile);
+            }
+         } catch (Exception e) {
+            throw new AbortedFileFixException(e, List.of(), fileSystemCapabilities);
          }
 
          LOGGER.info("Applying file structure changes for world \"{}\"", worldAccess.getLevelId());
-         if (!fileSystemCapabilities.hardLinks) {
-            fs.moveFilesToNewFolder(tmpWorld, copyOptions);
+         if (fileSystemCapabilities.hardLinks()) {
+            try {
+               LOGGER.info("Moving new hardlinked world to top level");
+               Files.move(tempWorld, tempWorldTopLevel, moveOptions);
+            } catch (Exception e) {
+               LOGGER.error("Encountered error trying to move world folder:", e);
+               throw new AbortedFileFixException(e, List.of(), fileSystemCapabilities);
+            }
+         } else {
+            try {
+               LOGGER.info("Moving files into new file structure");
+               CopyOnWriteFileSystem.moveFilesWithRetry(moves, moveOptions);
+               LOGGER.info("Moving new world to top level");
+               Files.move(tempWorld, tempWorldTopLevel, moveOptions);
+            } catch (Exception var23) {
+               LOGGER.error("Encountered error while trying to create new world folder:", var23);
+               List<FileMove> failedMoves = CopyOnWriteFileSystem.tryRevertMoves(moves, moveOptions);
+               if (failedMoves.isEmpty()) {
+                  try {
+                     Files.deleteIfExists(movesFile);
+                  } catch (IOException var15) {
+                     LOGGER.warn("Failed to delete {}", movesFile, var23);
+                  }
+               }
+
+               throw new AbortedFileFixException(var23, failedMoves, fileSystemCapabilities);
+            }
+
+            LOGGER.info("Complete move");
+
+            try {
+               Files.deleteIfExists(movesFile);
+            } catch (IOException e) {
+               LOGGER.warn("Failed to delete {}", movesFile, e);
+            }
          }
 
-         worldAccess.releaseTemporarilyAndRun(() -> {
-            LOGGER.info("Swapping world folder for new one");
-            Files.move(worldFolder, oldWorldFolder, copyOptions);
-            Files.move(tmpWorldAfterMove, worldFolder, copyOptions);
-         });
-         LOGGER.info("Done applying file structure changes for world \"{}\"", worldAccess.getLevelId());
-         PathUtils.deleteDirectory(oldWorldFolder);
-      } catch (Exception e) {
-         CrashReport crashReport = CrashReport.forThrowable(e, "Failed to swap in file fixed world");
-         CrashReportCategory fsCapabilities = crashReport.addCategory("File system capabilities");
-         fsCapabilities.setDetail("hardLinks", fileSystemCapabilities.hardLinks);
-         fsCapabilities.setDetail("atomicMove", fileSystemCapabilities.atomicMove);
-         throw new ReportedException(crashReport);
+         LOGGER.info("Start cleanup");
+
+         try {
+            Files.deleteIfExists(worldFolder.resolve("level.dat"));
+            Files.deleteIfExists(worldFolder.resolve("level.dat_old"));
+         } catch (Exception e) {
+            LOGGER.warn("Failed to delete outdated level.dat files: ", e);
+         }
+
+         MutableBoolean succeeded = new MutableBoolean();
+
+         try {
+            worldAccess.releaseTemporarilyAndRun(() -> {
+               LOGGER.info("Moving out old world folder");
+
+               try {
+                  Files.move(worldFolder, oldWorldFolder, moveOptions);
+               } catch (Exception e) {
+                  LOGGER.warn("Failed to move outdated world folder out of the way; will try to delete instead: ", e);
+
+                  try {
+                     deleteDirectory(worldFolder);
+                  } catch (Exception var9) {
+                     LOGGER.warn("Failed to delete outdated world folder: ", e);
+                     throw new FailedCleanupFileFixException(e, tempWorldTopLevel.getFileName().toString(), fileSystemCapabilities);
+                  }
+               }
+
+               LOGGER.info("Moving in new world folder");
+
+               try {
+                  Files.move(tempWorldTopLevel, worldFolder, moveOptions);
+               } catch (Exception e) {
+                  LOGGER.warn("Failed to move in new world folder: ", e);
+                  throw new FailedCleanupFileFixException(e, tempWorldTopLevel.getFileName().toString(), fileSystemCapabilities);
+               }
+
+               succeeded.setTrue();
+            });
+         } catch (IOException e) {
+            Path newWorldFolder = succeeded.isTrue() ? worldFolder : tempWorldTopLevel;
+            throw new FailedCleanupFileFixException(e, newWorldFolder.getFileName().toString(), fileSystemCapabilities);
+         }
+
+         LOGGER.info("Done applying file structure changes for world \"{}\". Cleaning up outdated data...", worldAccess.getLevelId());
+
+         try {
+            if (Files.exists(oldWorldFolder, new LinkOption[0])) {
+               deleteDirectory(oldWorldFolder);
+            }
+         } catch (Exception e) {
+            LOGGER.warn("Failed to clean up old world folder", e);
+         }
+
+         LOGGER.info("Upgrade done for world {}", worldAccess.getLevelId());
       }
+   }
+
+   private static void writeMoves(final List<FileMove> moves, final Path fromDirectory, final Path toDirectory, final Path filePath) throws IOException {
+      Codec<UpgradeInProgress> codec = FileFixerUpper.UpgradeInProgress.codec(fromDirectory, toDirectory);
+      JsonElement json = (JsonElement)codec.encodeStart(JsonOps.INSTANCE, new UpgradeInProgress(moves)).getOrThrow();
+      Files.writeString(filePath, GSON.toJson(json), StandardOpenOption.DSYNC, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+   }
+
+   private static List<FileMove> readMoves(final Path fromDirectory, final Path toDirectory, final Path filePath) throws IOException {
+      JsonObject json = (JsonObject)GSON.fromJson(Files.readString(filePath), JsonObject.class);
+      Codec<UpgradeInProgress> codec = FileFixerUpper.UpgradeInProgress.codec(fromDirectory, toDirectory);
+      return ((UpgradeInProgress)((Pair)codec.decode(JsonOps.INSTANCE, json).getOrThrow()).getFirst()).moves;
    }
 
    public static FileSystemCapabilities detectFileSystemCapabilities(final Path dir) throws IOException {
@@ -240,6 +455,16 @@ public class FileFixerUpper {
       return var4;
    }
 
+   public static record UpgradeInProgress(List<FileMove> moves) {
+      public UpgradeInProgress {
+         super();
+      }
+
+      public static Codec<UpgradeInProgress> codec(final Path fromDirectory, final Path toDirectory) {
+         return RecordCodecBuilder.create((i) -> i.group(FileMove.moveCodec(fromDirectory, toDirectory).listOf().fieldOf("moves").forGetter(UpgradeInProgress::moves)).apply(i, UpgradeInProgress::new));
+      }
+   }
+
    public static class Builder {
       public final List<FileFix> fileFixes = new ArrayList();
       private final int currentVersion;
@@ -280,12 +505,6 @@ public class FileFixerUpper {
 
       public FileFixerUpper build(final DataFixerBuilder.Result dataFixer) {
          return new FileFixerUpper(dataFixer, this.fileFixes, this.latestFileFixerVersion);
-      }
-   }
-
-   public static record FileSystemCapabilities(boolean atomicMove, boolean hardLinks) {
-      public FileSystemCapabilities {
-         super();
       }
    }
 }

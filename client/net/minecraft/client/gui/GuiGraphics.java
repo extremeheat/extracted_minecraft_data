@@ -54,8 +54,8 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.client.resources.model.AtlasManager;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.locale.Language;
@@ -90,7 +90,7 @@ public class GuiGraphics {
    private final Minecraft minecraft;
    private final Matrix3x2fStack pose;
    private final ScissorStack scissorStack;
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final TextureAtlas guiSprites;
    private final GuiRenderState guiRenderState;
    private CursorType pendingCursor;
@@ -109,7 +109,7 @@ public class GuiGraphics {
       this.mouseX = mouseX;
       this.mouseY = mouseY;
       AtlasManager atlasManager = minecraft.getAtlasManager();
-      this.materials = atlasManager;
+      this.sprites = atlasManager;
       this.guiSprites = atlasManager.getAtlasOrThrow(AtlasIds.GUI);
       this.guiRenderState = guiRenderState;
    }
@@ -775,8 +775,8 @@ public class GuiGraphics {
       this.guiRenderState.submitPicturesInPictureState(new GuiProfilerChartRenderState(chartData, x0, y0, x1, y1, this.scissorStack.peek()));
    }
 
-   public TextureAtlasSprite getSprite(final Material sprite) {
-      return this.materials.get(sprite);
+   public TextureAtlasSprite getSprite(final SpriteId sprite) {
+      return this.sprites.get(sprite);
    }
 
    public ActiveTextCollector textRendererForWidget(final AbstractWidget owner, final HoveredTextEffects hoveredTextEffects) {

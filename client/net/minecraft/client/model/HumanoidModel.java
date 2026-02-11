@@ -1,6 +1,8 @@
 package net.minecraft.client.model;
 
+import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.client.model.effects.SpearAnimations;
@@ -20,6 +22,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Ease;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
 
@@ -37,6 +40,8 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    private static final float HORIZONTAL_SHIELD_MOVEMENT_LIMIT = 0.5235988F;
    public static final float TOOT_HORN_XROT_BASE = 1.4835298F;
    public static final float TOOT_HORN_YROT_BASE = 0.5235988F;
+   protected static final Map<EquipmentSlot, Set<String>> ADULT_ARMOR_PARTS_PER_SLOT;
+   protected static final Map<EquipmentSlot, Set<String>> BABY_ARMOR_PARTS_PER_SLOT;
    public final ModelPart head;
    public final ModelPart hat;
    public final ModelPart body;
@@ -74,18 +79,22 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    }
 
    public static ArmorModelSet<MeshDefinition> createArmorMeshSet(final CubeDeformation innerDeformation, final CubeDeformation outerDeformation) {
-      return createArmorMeshSet(HumanoidModel::createBaseArmorMesh, innerDeformation, outerDeformation);
+      return createArmorMeshSet(HumanoidModel::createBaseArmorMesh, ADULT_ARMOR_PARTS_PER_SLOT, innerDeformation, outerDeformation);
    }
 
-   protected static ArmorModelSet<MeshDefinition> createArmorMeshSet(final Function<CubeDeformation, MeshDefinition> baseFactory, final CubeDeformation innerDeformation, final CubeDeformation outerDeformation) {
+   public static ArmorModelSet<MeshDefinition> createBabyArmorMeshSet(final CubeDeformation innerDeformation, final CubeDeformation outerDeformation, final PartPose armOffset) {
+      return createArmorMeshSet((cube) -> createBabyArmorMesh(cube, armOffset), BABY_ARMOR_PARTS_PER_SLOT, innerDeformation, outerDeformation);
+   }
+
+   protected static ArmorModelSet<MeshDefinition> createArmorMeshSet(final Function<CubeDeformation, MeshDefinition> baseFactory, final Map<EquipmentSlot, Set<String>> partsPerSlot, final CubeDeformation innerDeformation, final CubeDeformation outerDeformation) {
       MeshDefinition head = (MeshDefinition)baseFactory.apply(outerDeformation);
-      head.getRoot().retainPartsAndChildren(Set.of("head"));
+      head.getRoot().retainPartsAndChildren((Set)partsPerSlot.get(EquipmentSlot.HEAD));
       MeshDefinition chest = (MeshDefinition)baseFactory.apply(outerDeformation);
-      chest.getRoot().retainExactParts(Set.of("body", "left_arm", "right_arm"));
+      chest.getRoot().retainExactParts((Set)partsPerSlot.get(EquipmentSlot.CHEST));
       MeshDefinition legs = (MeshDefinition)baseFactory.apply(innerDeformation);
-      legs.getRoot().retainExactParts(Set.of("left_leg", "right_leg", "body"));
+      legs.getRoot().retainExactParts((Set)partsPerSlot.get(EquipmentSlot.LEGS));
       MeshDefinition feet = (MeshDefinition)baseFactory.apply(outerDeformation);
-      feet.getRoot().retainExactParts(Set.of("left_leg", "right_leg"));
+      feet.getRoot().retainExactParts((Set)partsPerSlot.get(EquipmentSlot.FEET));
       return new ArmorModelSet<MeshDefinition>(head, chest, legs, feet);
    }
 
@@ -94,6 +103,23 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       PartDefinition root = mesh.getRoot();
       root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, g.extend(-0.1F)), PartPose.offset(-1.9F, 12.0F, 0.0F));
       root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, g.extend(-0.1F)), PartPose.offset(1.9F, 12.0F, 0.0F));
+      return mesh;
+   }
+
+   private static MeshDefinition createBabyArmorMesh(final CubeDeformation g, final PartPose armOffset) {
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      PartDefinition head = root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.5F, -8.0F, -4.5F, 9.0F, 8.0F, 8.0F, g), PartPose.offset(0.0F, 15.0F, 0.5F));
+      root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 17).addBox(-3.0F, -3.0F, -1.5F, 6.0F, 5.0F, 3.0F, g), PartPose.offset(0.0F, 18.0F, 0.0F));
+      root.addOrReplaceChild("waist", CubeListBuilder.create().texOffs(0, 36).addBox(-3.0F, -1.2F, -1.49F, 5.9F, 2.0F, 2.9F, g.extend(-0.1F)), PartPose.offset(0.0F, 19.0F, 0.0F));
+      root.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(30, 25).addBox(-1.0F, 0.0F, -1.53F, 2.0F, 5.0F, 3.0F, g), PartPose.offset(-3.0F - armOffset.x(), 15.5F + armOffset.y(), 1.0F + armOffset.z()));
+      root.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(30, 17).addBox(-1.0F, 0.0F, -1.53F, 2.0F, 5.0F, 3.0F, g), PartPose.offset(3.0F + armOffset.x(), 15.5F + armOffset.y(), 1.0F + armOffset.z()));
+      root.addOrReplaceChild("inner_body", CubeListBuilder.create().texOffs(0, 17).addBox(-3.0F, -3.0F, -1.5F, 6.0F, 5.0F, 3.0F, g), PartPose.offset(0.0F, 18.0F, 0.0F));
+      PartDefinition rightLeg = root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(18, 24).addBox(-1.5F, -0.2F, -2.0F, 3.0F, 4.0F, 3.0F, g.extend(-0.1F)), PartPose.offset(1.5F, 20.0F, 0.5F));
+      PartDefinition leftLeg = root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(18, 17).addBox(-1.5F, -0.2F, -2.0F, 3.0F, 4.0F, 3.0F, g.extend(-0.1F)), PartPose.offset(-1.5F, 20.0F, 0.5F));
+      rightLeg.addOrReplaceChild("right_foot", CubeListBuilder.create().texOffs(0, 25).addBox(-1.5F, 2.9F, -2.0F, 3.0F, 1.0F, 3.0F, g), PartPose.offset(0.0F, 0.0F, 0.0F));
+      leftLeg.addOrReplaceChild("left_foot", CubeListBuilder.create().texOffs(0, 29).mirror().addBox(-1.5F, 2.9F, -2.0F, 3.0F, 1.0F, 3.0F, g).mirror(false), PartPose.offset(0.0F, 0.0F, 0.0F));
+      head.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
       return mesh;
    }
 
@@ -372,16 +398,6 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       return -65.0F * x + x * x;
    }
 
-   public void setAllVisible(final boolean visible) {
-      this.head.visible = visible;
-      this.hat.visible = visible;
-      this.body.visible = visible;
-      this.rightArm.visible = visible;
-      this.leftArm.visible = visible;
-      this.rightLeg.visible = visible;
-      this.leftLeg.visible = visible;
-   }
-
    public void translateToHand(final HumanoidRenderState state, final HumanoidArm arm, final PoseStack poseStack) {
       this.root.translateAndRotate(poseStack);
       this.getArm(arm).translateAndRotate(poseStack);
@@ -393,6 +409,11 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
 
    public ModelPart getHead() {
       return this.head;
+   }
+
+   static {
+      ADULT_ARMOR_PARTS_PER_SLOT = Maps.newEnumMap(Map.of(EquipmentSlot.HEAD, Set.of("head"), EquipmentSlot.CHEST, Set.of("body", "left_arm", "right_arm"), EquipmentSlot.LEGS, Set.of("left_leg", "right_leg", "body"), EquipmentSlot.FEET, Set.of("left_leg", "right_leg")));
+      BABY_ARMOR_PARTS_PER_SLOT = Maps.newEnumMap(Map.of(EquipmentSlot.HEAD, Set.of("head"), EquipmentSlot.CHEST, Set.of("body", "left_arm", "right_arm"), EquipmentSlot.LEGS, Set.of("left_leg", "right_leg", "waist"), EquipmentSlot.FEET, Set.of("left_foot", "right_foot")));
    }
 
    public static enum ArmPose {

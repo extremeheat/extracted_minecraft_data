@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.chunk;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.Transparency;
 import java.util.Locale;
 import net.minecraft.client.renderer.RenderPipelines;
 
@@ -11,14 +12,22 @@ public enum ChunkSectionLayer {
 
    private final RenderPipeline pipeline;
    private final int bufferSize;
-   private final boolean sortOnUpload;
+   private final boolean translucent;
    private final String label;
 
-   private ChunkSectionLayer(final RenderPipeline pipeline, final int bufferSize, final boolean sortOnUpload) {
+   private ChunkSectionLayer(final RenderPipeline pipeline, final int bufferSize, final boolean translucent) {
       this.pipeline = pipeline;
       this.bufferSize = bufferSize;
-      this.sortOnUpload = sortOnUpload;
+      this.translucent = translucent;
       this.label = this.toString().toLowerCase(Locale.ROOT);
+   }
+
+   public static ChunkSectionLayer byTransparency(final Transparency transparency) {
+      if (transparency.hasTranslucent()) {
+         return TRANSLUCENT;
+      } else {
+         return transparency.hasTransparent() ? CUTOUT : SOLID;
+      }
    }
 
    public RenderPipeline pipeline() {
@@ -33,8 +42,8 @@ public enum ChunkSectionLayer {
       return this.label;
    }
 
-   public boolean sortOnUpload() {
-      return this.sortOnUpload;
+   public boolean translucent() {
+      return this.translucent;
    }
 
    // $FF: synthetic method

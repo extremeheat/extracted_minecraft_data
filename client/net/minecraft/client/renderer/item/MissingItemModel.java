@@ -4,7 +4,6 @@ import com.google.common.base.Suppliers;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -27,7 +26,6 @@ public class MissingItemModel implements ItemModel {
    public void update(final ItemStackRenderState output, final ItemStack item, final ItemModelResolver resolver, final ItemDisplayContext displayContext, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
       output.appendModelIdentityElement(this);
       ItemStackRenderState.LayerRenderState layer = output.newLayer();
-      layer.setRenderType(Sheets.cutoutBlockItemSheet());
       this.properties.applyToLayer(layer, displayContext);
       layer.setExtents(this.extents);
       layer.prepareQuadList().addAll(this.quads);

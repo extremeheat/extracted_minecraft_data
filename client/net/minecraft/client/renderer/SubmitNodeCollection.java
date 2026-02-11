@@ -98,14 +98,14 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.movingBlockSubmits.add(new SubmitNodeStorage.MovingBlockSubmit(new Matrix4f(poseStack.last().pose()), movingBlockRenderState));
    }
 
-   public void submitBlockModel(final PoseStack poseStack, final RenderType renderType, final BlockStateModel model, final float r, final float g, final float b, final int lightCoords, final int overlayCoords, final int outlineColor) {
+   public void submitBlockModel(final PoseStack poseStack, final RenderType renderType, final BlockStateModel model, final int tintColor, final int lightCoords, final int overlayCoords, final int outlineColor) {
       this.wasUsed = true;
-      this.blockModelSubmits.add(new SubmitNodeStorage.BlockModelSubmit(poseStack.last().copy(), renderType, model, r, g, b, lightCoords, overlayCoords, outlineColor));
+      this.blockModelSubmits.add(new SubmitNodeStorage.BlockModelSubmit(poseStack.last().copy(), renderType, model, tintColor, lightCoords, overlayCoords, outlineColor));
    }
 
-   public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final List<BakedQuad> quads, final RenderType renderType, final ItemStackRenderState.FoilType foilType) {
+   public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final List<BakedQuad> quads, final ItemStackRenderState.FoilType foilType) {
       this.wasUsed = true;
-      this.itemSubmits.add(new SubmitNodeStorage.ItemSubmit(poseStack.last().copy(), displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, renderType, foilType));
+      this.itemSubmits.add(new SubmitNodeStorage.ItemSubmit(poseStack.last().copy(), displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, foilType));
    }
 
    public void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {

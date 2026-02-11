@@ -5,20 +5,21 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.state.pip.GuiBannerResultRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.MaterialSet;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.SpriteGetter;
 
 public class GuiBannerResultRenderer extends PictureInPictureRenderer<GuiBannerResultRenderState> {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
 
-   public GuiBannerResultRenderer(final MultiBufferSource.BufferSource bufferSource, final MaterialSet materials) {
+   public GuiBannerResultRenderer(final MultiBufferSource.BufferSource bufferSource, final SpriteGetter sprites) {
       super(bufferSource);
-      this.materials = materials;
+      this.sprites = sprites;
    }
 
    public Class<GuiBannerResultRenderState> getRenderStateClass() {
@@ -30,7 +31,8 @@ public class GuiBannerResultRenderer extends PictureInPictureRenderer<GuiBannerR
       poseStack.translate(0.0F, 0.25F, 0.0F);
       FeatureRenderDispatcher featureRenderDispatcher = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
       SubmitNodeStorage submitNodeStorage = featureRenderDispatcher.getSubmitNodeStorage();
-      BannerRenderer.submitPatterns(this.materials, poseStack, submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, renderState.flag(), 0.0F, ModelBakery.BANNER_BASE, true, renderState.baseColor(), renderState.resultBannerPatterns(), false, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
+      submitNodeStorage.submitModel(renderState.flag(), 0.0F, poseStack, Sheets.BANNER_BASE.renderType(RenderTypes::entitySolid), 15728880, OverlayTexture.NO_OVERLAY, -1, this.sprites.get(Sheets.BANNER_BASE), 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+      BannerRenderer.submitPatterns(this.sprites, poseStack, submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, renderState.flag(), 0.0F, true, renderState.baseColor(), renderState.resultBannerPatterns(), (ModelFeatureRenderer.CrumblingOverlay)null);
       featureRenderDispatcher.renderAllFeatures();
    }
 

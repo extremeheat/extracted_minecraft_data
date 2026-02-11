@@ -293,7 +293,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private FuelValues fuelValues;
    private int emptyTicks;
    private volatile boolean isSaving;
-   private static final AtomicReference<@Nullable RuntimeException> fatalException;
    private final SuppressedExceptionCollector suppressedExceptions;
    private final DiscontinuousFrame tickFrame;
    private final PacketProcessor packetProcessor;
@@ -314,8 +313,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return server;
    }
 
-   public MinecraftServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess storageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Proxy proxy, final DataFixer fixerUpper, final Services services, final LevelLoadListener levelLoadListener) {
-      super("Server");
+   public MinecraftServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess storageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Proxy proxy, final DataFixer fixerUpper, final Services services, final LevelLoadListener levelLoadListener, final boolean propagatesCrashes) {
+      super("Server", propagatesCrashes);
       this.metricsRecorder = InactiveMetricsRecorder.INSTANCE;
       this.onMetricsRecordingStopped = (results) -> this.stopRecordingMetrics();
       this.onMetricsRecordingFinished = (ignored) -> {
@@ -872,23 +871,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    private boolean haveTime() {
       return this.runningTask() || Util.getNanos() < (this.mayHaveDelayedTasks ? this.delayedTasksMaxNextTickTimeNanos : this.nextTickTimeNanos);
-   }
-
-   public static boolean throwIfFatalException() {
-      RuntimeException e = (RuntimeException)fatalException.get();
-      if (e != null) {
-         throw e;
-      } else {
-         return true;
-      }
-   }
-
-   public static void setFatalException(final RuntimeException exception) {
-      fatalException.compareAndSet((Object)null, exception);
-   }
-
-   public void managedBlock(final BooleanSupplier condition) {
-      super.managedBlock(() -> throwIfFatalException() && condition.getAsBoolean());
    }
 
    public NotificationManager notificationManager() {
@@ -2338,7 +2320,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       DEMO_SETTINGS = new LevelSettings("Demo World", GameType.SURVIVAL, LevelSettings.DifficultySettings.DEFAULT, false, WorldDataConfiguration.DEFAULT);
       DEFAULT_GAME_RULES = () -> new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures());
       ANONYMOUS_PLAYER_PROFILE = new NameAndId(Util.NIL_UUID, "Anonymous Player");
-      fatalException = new AtomicReference();
    }
 
    public static record ServerResourcePackInfo(UUID id, String url, String hash, boolean isRequired, @Nullable Component prompt) {

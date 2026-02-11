@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
+import com.mojang.blaze3d.platform.Transparency;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
@@ -89,9 +90,9 @@ public class MipmapGenerator {
 
    }
 
-   public static NativeImage[] generateMipLevels(final Identifier name, final NativeImage[] currentMips, final int newMipLevel, MipmapStrategy mipmapStrategy, final float alphaCutoffBias) {
+   public static NativeImage[] generateMipLevels(final Identifier name, final NativeImage[] currentMips, final int newMipLevel, MipmapStrategy mipmapStrategy, final float alphaCutoffBias, final Transparency transparency) {
       if (mipmapStrategy == MipmapStrategy.AUTO) {
-         mipmapStrategy = hasTransparentPixel(currentMips[0]) ? MipmapStrategy.CUTOUT : MipmapStrategy.MEAN;
+         mipmapStrategy = transparency.hasTransparent() ? MipmapStrategy.CUTOUT : MipmapStrategy.MEAN;
       }
 
       if (currentMips.length == 1 && !name.getPath().startsWith("item/")) {
@@ -149,18 +150,6 @@ public class MipmapGenerator {
 
          return result;
       }
-   }
-
-   private static boolean hasTransparentPixel(final NativeImage image) {
-      for(int x = 0; x < image.getWidth(); ++x) {
-         for(int y = 0; y < image.getHeight(); ++y) {
-            if (ARGB.alpha(image.getPixel(x, y)) == 0) {
-               return true;
-            }
-         }
-      }
-
-      return false;
    }
 
    private static int darkenedAlphaBlend(final int color1, final int color2, final int color3, final int color4) {

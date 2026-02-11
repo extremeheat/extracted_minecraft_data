@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
@@ -19,13 +19,13 @@ import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, LecternRenderState> {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final BookModel bookModel;
    private final BookModel.State bookState = new BookModel.State(0.0F, 0.1F, 0.9F, 1.2F);
 
    public LecternRenderer(final BlockEntityRendererProvider.Context context) {
       super();
-      this.materials = context.materials();
+      this.sprites = context.sprites();
       this.bookModel = new BookModel(context.bakeLayer(ModelLayers.BOOK));
    }
 
@@ -46,7 +46,7 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, 
          poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-state.yRot));
          poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(67.5F));
          poseStack.translate(0.0F, -0.125F, 0.0F);
-         submitNodeCollector.submitModel(this.bookModel, this.bookState, poseStack, EnchantTableRenderer.BOOK_TEXTURE.renderType(RenderTypes::entitySolid), state.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(EnchantTableRenderer.BOOK_TEXTURE), 0, state.breakProgress);
+         submitNodeCollector.submitModel(this.bookModel, this.bookState, poseStack, EnchantTableRenderer.BOOK_TEXTURE.renderType(RenderTypes::entitySolid), state.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.sprites.get(EnchantTableRenderer.BOOK_TEXTURE), 0, state.breakProgress);
          poseStack.popPose();
       }
    }

@@ -14,8 +14,8 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
@@ -36,17 +36,17 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
    private static final int BLACK_TEXT_OUTLINE_COLOR = -988212;
    private static final int OUTLINE_RENDER_DISTANCE = Mth.square(16);
    private final Font font;
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
 
    public AbstractSignRenderer(final BlockEntityRendererProvider.Context context) {
       super();
       this.font = context.font();
-      this.materials = context.materials();
+      this.sprites = context.sprites();
    }
 
    protected abstract Model.Simple getSignModel(BlockState blockState, WoodType type);
 
-   protected abstract Material getSignMaterial(WoodType type);
+   protected abstract SpriteId getSignSprite(WoodType type);
 
    protected abstract float getSignModelRenderScale();
 
@@ -76,10 +76,10 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
       poseStack.pushPose();
       float scale = this.getSignModelRenderScale();
       poseStack.scale(scale, -scale, -scale);
-      Material material = this.getSignMaterial(type);
+      SpriteId sprite = this.getSignSprite(type);
       Objects.requireNonNull(signModel);
-      RenderType renderType = material.renderType(signModel::renderType);
-      submitNodeCollector.submitModel(signModel, Unit.INSTANCE, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(material), 0, breakProgress);
+      RenderType renderType = sprite.renderType(signModel::renderType);
+      submitNodeCollector.submitModel(signModel, Unit.INSTANCE, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY, -1, this.sprites.get(sprite), 0, breakProgress);
       poseStack.popPose();
    }
 

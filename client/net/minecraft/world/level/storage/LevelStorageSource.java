@@ -195,7 +195,9 @@ public class LevelStorageSource {
          CompoundTag fullTag = new CompoundTag();
          fullTag.put("data", (Tag)encoded.getOrThrow());
          NbtUtils.addCurrentDataVersion(fullTag);
-         NbtIo.writeCompressed(fullTag, GameRuleMap.TYPE.id().withSuffix(".dat").resolveAgainst(worldFolder.resolve("data")));
+         Path gameRulesPath = GameRuleMap.TYPE.id().withSuffix(".dat").resolveAgainst(worldFolder.resolve("data"));
+         FileUtil.createDirectoriesSafe(gameRulesPath.getParent());
+         NbtIo.writeCompressed(fullTag, gameRulesPath);
       }
 
    }
@@ -596,7 +598,7 @@ public class LevelStorageSource {
                   public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
                      if (!file.equals(lockPath)) {
                         LevelStorageSource.LOGGER.debug("Deleting {}", file);
-                        Files.delete(file);
+                        Files.deleteIfExists(file);
                      }
 
                      return FileVisitResult.CONTINUE;
@@ -611,7 +613,7 @@ public class LevelStorageSource {
                            Files.deleteIfExists(lockPath);
                         }
 
-                        Files.delete(dir);
+                        Files.deleteIfExists(dir);
                         return FileVisitResult.CONTINUE;
                      }
                   }

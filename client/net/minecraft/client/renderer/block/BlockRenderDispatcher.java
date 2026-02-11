@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -27,17 +27,17 @@ import org.jspecify.annotations.Nullable;
 
 public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    private final BlockModelShaper blockModelShaper;
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final ModelBlockRenderer modelRenderer;
    private @Nullable LiquidBlockRenderer liquidBlockRenderer;
    private final RandomSource singleThreadRandom = RandomSource.create();
    private final List<BlockModelPart> singleThreadPartList = new ArrayList();
    private final BlockColors blockColors;
 
-   public BlockRenderDispatcher(final BlockModelShaper blockModelShaper, final MaterialSet materials, final BlockColors blockColors) {
+   public BlockRenderDispatcher(final BlockModelShaper blockModelShaper, final SpriteGetter sprites, final BlockColors blockColors) {
       super();
       this.blockModelShaper = blockModelShaper;
-      this.materials = materials;
+      this.sprites = sprites;
       this.blockColors = blockColors;
       this.modelRenderer = new ModelBlockRenderer(this.blockColors);
    }
@@ -46,19 +46,19 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
       return this.blockModelShaper;
    }
 
-   public void renderBreakingTexture(final BlockState state, final BlockPos pos, final BlockAndTintGetter level, final PoseStack poseStack, final VertexConsumer builder) {
+   public void renderBreakingTexture(final BlockState state, final BlockPos pos, final BlockAndTintGetter level, final PoseStack poseStack, final BakedQuadOutput output) {
       if (state.getRenderShape() == RenderShape.MODEL) {
          BlockStateModel model = this.blockModelShaper.getBlockModel(state);
          this.singleThreadRandom.setSeed(state.getSeed(pos));
          this.singleThreadPartList.clear();
          model.collectParts(this.singleThreadRandom, this.singleThreadPartList);
-         this.modelRenderer.tesselateBlock(level, this.singleThreadPartList, state, pos, poseStack, builder, true, OverlayTexture.NO_OVERLAY);
+         this.modelRenderer.tesselateBlock(level, this.singleThreadPartList, state, pos, poseStack, output, true, OverlayTexture.NO_OVERLAY);
       }
    }
 
-   public void renderBatched(final BlockState blockState, final BlockPos pos, final BlockAndTintGetter level, final PoseStack poseStack, final VertexConsumer builder, final boolean cull, final List<BlockModelPart> parts) {
+   public void renderBatched(final BlockState blockState, final BlockPos pos, final BlockAndTintGetter level, final PoseStack poseStack, final BakedQuadOutput output, final boolean cull, final List<BlockModelPart> parts) {
       try {
-         this.modelRenderer.tesselateBlock(level, parts, blockState, pos, poseStack, builder, cull, OverlayTexture.NO_OVERLAY);
+         this.modelRenderer.tesselateBlock(level, parts, blockState, pos, poseStack, output, cull, OverlayTexture.NO_OVERLAY);
       } catch (Throwable t) {
          CrashReport report = CrashReport.forThrowable(t, "Tesselating block in world");
          CrashReportCategory category = report.addCategory("Block being tesselated");
@@ -90,15 +90,19 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
       RenderShape shape = state.getRenderShape();
       if (shape != RenderShape.INVISIBLE) {
          BlockStateModel model = this.getBlockModel(state);
-         int col = this.blockColors.getColor(state, (BlockAndTintGetter)null, (BlockPos)null, 0);
-         float r = (float)(col >> 16 & 255) / 255.0F;
-         float g = (float)(col >> 8 & 255) / 255.0F;
-         float b = (float)(col & 255) / 255.0F;
-         ModelBlockRenderer.renderModel(poseStack.last(), bufferSource.getBuffer(ItemBlockRenderTypes.getRenderType(state)), model, r, g, b, lightCoords, overlayCoords);
+         int tintColor = this.blockColors.getColor(state, (BlockAndTintGetter)null, (BlockPos)null, 0);
+         ModelBlockRenderer.renderModel(poseStack.last(), createQuadOutput(bufferSource), model, tintColor, lightCoords, overlayCoords);
       }
    }
 
+   private static BakedQuadOutput createQuadOutput(final MultiBufferSource bufferSource) {
+      return (pose, quad, brightness, color, lightmapCoord, overlayCoords) -> {
+         VertexConsumer buffer = bufferSource.getBuffer(ItemBlockRenderTypes.getRenderType(quad.spriteInfo().layer()));
+         buffer.putBulkData(pose, quad, brightness, color, lightmapCoord, overlayCoords);
+      };
+   }
+
    public void onResourceManagerReload(final ResourceManager resourceManager) {
-      this.liquidBlockRenderer = new LiquidBlockRenderer(this.materials);
+      this.liquidBlockRenderer = new LiquidBlockRenderer(this.sprites);
    }
 }

@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.block.model;
 
 import java.util.List;
 import java.util.Map;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelDebugName;
 import net.minecraft.client.resources.model.ModelState;
@@ -58,8 +57,8 @@ public record SimpleUnbakedGeometry(List<BlockElement> elements) implements Unba
 
                boolean shouldDrawFace = var10000;
                if (shouldDrawFace) {
-                  TextureAtlasSprite icon = modelBaker.sprites().resolveSlot(textures, face.texture(), name);
-                  BakedQuad quad = FaceBakery.bakeQuad(modelBaker.parts(), from, to, face, icon, facing, modelState, element.rotation(), element.shade(), element.lightEmission());
+                  Material.Baked material = modelBaker.materials().resolveSlot(textures, face.texture(), name);
+                  BakedQuad quad = FaceBakery.bakeQuad(modelBaker, from, to, face, material, facing, modelState, element.rotation(), element.shade(), element.lightEmission());
                   if (face.cullForDirection() == null) {
                      builder.addUnculledFace(quad);
                   } else {

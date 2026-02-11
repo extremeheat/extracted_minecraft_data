@@ -1,13 +1,13 @@
 package net.minecraft.client.renderer.block.model;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.mojang.blaze3d.platform.Transparency;
 import com.mojang.math.MatrixUtil;
 import com.mojang.math.Quadrant;
 import com.mojang.math.Transformation;
 import java.util.Objects;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.FaceInfo;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.Direction;
@@ -40,19 +40,30 @@ public class FaceBakery {
       return var10000;
    }
 
-   public static BakedQuad bakeQuad(final ModelBaker.PartCache partCache, final Vector3fc from, final Vector3fc to, final BlockElementFace face, final TextureAtlasSprite icon, final Direction facing, final ModelState modelState, final @Nullable BlockElementRotation elementRotation, final boolean shade, final int lightEmission) {
+   private static Transparency computeMaterialTransparency(final Material.Baked material, final BlockElementFace.UVs uvs) {
+      return material.forceTranslucent() ? Transparency.TRANSLUCENT : material.sprite().contents().computeTransparency(Math.min(uvs.minU(), uvs.maxU()) / 16.0F, Math.min(uvs.minV(), uvs.maxV()) / 16.0F, Math.max(uvs.minU(), uvs.maxU()) / 16.0F, Math.max(uvs.minV(), uvs.maxV()) / 16.0F);
+   }
+
+   public static BakedQuad bakeQuad(final ModelBaker modelBaker, final Vector3fc from, final Vector3fc to, final BlockElementFace face, final Material.Baked material, final Direction facing, final ModelState modelState, final @Nullable BlockElementRotation elementRotation, final boolean shade, final int lightEmission) {
       BlockElementFace.UVs uvs = face.uvs();
       if (uvs == null) {
          uvs = defaultFaceUV(from, to, facing);
       }
 
+      Transparency transparency = computeMaterialTransparency(material, uvs);
+      ModelBaker.Interner interner = modelBaker.interner();
+      BakedQuad.SpriteInfo spriteInfo = interner.spriteInfo(BakedQuad.SpriteInfo.of(material, transparency));
+      return bakeQuad(interner, from, to, uvs, face.rotation(), face.tintIndex(), spriteInfo, facing, modelState, elementRotation, shade, lightEmission);
+   }
+
+   public static BakedQuad bakeQuad(final ModelBaker.Interner interner, final Vector3fc from, final Vector3fc to, final BlockElementFace.UVs uvs, final Quadrant uvRotation, final int tintIndex, final BakedQuad.SpriteInfo spriteInfo, final Direction facing, final ModelState modelState, final @Nullable BlockElementRotation elementRotation, final boolean shade, final int lightEmission) {
       Matrix4fc uvTransform = modelState.inverseFaceTransformation(facing);
       Vector3fc[] vertexPositions = new Vector3fc[4];
       long[] vertexPackedUvs = new long[4];
       FaceInfo faceInfo = FaceInfo.fromFacing(facing);
 
       for(int i = 0; i < 4; ++i) {
-         bakeVertex(i, faceInfo, uvs, face.rotation(), uvTransform, from, to, icon, modelState.transformation(), elementRotation, vertexPositions, vertexPackedUvs, partCache);
+         bakeVertex(i, faceInfo, uvs, uvRotation, uvTransform, from, to, spriteInfo, modelState.transformation(), elementRotation, vertexPositions, vertexPackedUvs, interner);
       }
 
       Direction finalDirection = calculateFacing(vertexPositions);
@@ -60,10 +71,10 @@ public class FaceBakery {
          recalculateWinding(vertexPositions, vertexPackedUvs, finalDirection);
       }
 
-      return new BakedQuad(vertexPositions[0], vertexPositions[1], vertexPositions[2], vertexPositions[3], vertexPackedUvs[0], vertexPackedUvs[1], vertexPackedUvs[2], vertexPackedUvs[3], face.tintIndex(), (Direction)Objects.requireNonNullElse(finalDirection, Direction.UP), icon, shade, lightEmission);
+      return new BakedQuad(vertexPositions[0], vertexPositions[1], vertexPositions[2], vertexPositions[3], vertexPackedUvs[0], vertexPackedUvs[1], vertexPackedUvs[2], vertexPackedUvs[3], tintIndex, (Direction)Objects.requireNonNullElse(finalDirection, Direction.UP), spriteInfo, shade, lightEmission);
    }
 
-   private static void bakeVertex(final int index, final FaceInfo faceInfo, final BlockElementFace.UVs uvs, final Quadrant uvRotation, final Matrix4fc uvTransform, final Vector3fc from, final Vector3fc to, final TextureAtlasSprite icon, final Transformation rotation, final @Nullable BlockElementRotation elementRotation, final Vector3fc[] positionOutput, final long[] uvOutput, final ModelBaker.PartCache partCache) {
+   private static void bakeVertex(final int index, final FaceInfo faceInfo, final BlockElementFace.UVs uvs, final Quadrant uvRotation, final Matrix4fc uvTransform, final Vector3fc from, final Vector3fc to, final BakedQuad.SpriteInfo spriteInfo, final Transformation rotation, final @Nullable BlockElementRotation elementRotation, final Vector3fc[] positionOutput, final long[] uvOutput, final ModelBaker.Interner interner) {
       FaceInfo.VertexInfo vertexInfo = faceInfo.getVertexInfo(index);
       Vector3f vertex = vertexInfo.select(from, to).div(16.0F);
       if (elementRotation != null) {
@@ -87,8 +98,8 @@ public class FaceBakery {
          transformedV = centerToCorner(transformedUV.y);
       }
 
-      positionOutput[index] = partCache.vector(vertex);
-      uvOutput[index] = UVPair.pack(icon.getU(transformedU), icon.getV(transformedV));
+      positionOutput[index] = interner.vector(vertex);
+      uvOutput[index] = UVPair.pack(spriteInfo.sprite().getU(transformedU), spriteInfo.sprite().getV(transformedV));
    }
 
    private static float cornerToCenter(final float value) {

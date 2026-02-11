@@ -82,12 +82,12 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       Component hideNarration = Component.translatable("gui.socialInteractions.narration.hide", playerName);
       Component showNarration = Component.translatable("gui.socialInteractions.narration.show", playerName);
       PlayerSocialManager socialManager = minecraft.getPlayerSocialManager();
-      boolean chatAllowed = minecraft.getChatStatus().isChatAllowed(minecraft.isLocalServer());
+      boolean chatDisabledOrBlocked = minecraft.player.chatAbilities().canReceivePlayerMessages() || socialManager.isBlocked(id);
       boolean notLocalPlayer = !minecraft.player.getUUID().equals(id);
-      if (!SharedConstants.DEBUG_SOCIAL_INTERACTIONS && (!notLocalPlayer || !chatAllowed || socialManager.isBlocked(id))) {
+      if (!SharedConstants.DEBUG_SOCIAL_INTERACTIONS && !notLocalPlayer) {
          this.children = ImmutableList.of();
       } else {
-         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (button) -> reportingContext.draftReportHandled(minecraft, socialInteractionsScreen, () -> minecraft.setScreen(new ReportPlayerScreen(socialInteractionsScreen, reportingContext, this)), false), Component.translatable("gui.socialInteractions.report")) {
+         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (button) -> reportingContext.draftReportHandled(minecraft, socialInteractionsScreen, () -> minecraft.setScreen(new ReportPlayerScreen(socialInteractionsScreen, reportingContext, this, chatDisabledOrBlocked)), false), Component.translatable("gui.socialInteractions.report")) {
             {
                Objects.requireNonNull(PlayerEntry.this);
             }
@@ -235,7 +235,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
 
    private void onHiddenOrShown(final boolean isHidden, final Component message) {
       this.updateHideAndShowButton(isHidden);
-      this.minecraft.gui.getChat().addMessage(message);
+      this.minecraft.gui.getChat().addClientSystemMessage(message);
       this.minecraft.getNarrator().saySystemNow(message);
    }
 

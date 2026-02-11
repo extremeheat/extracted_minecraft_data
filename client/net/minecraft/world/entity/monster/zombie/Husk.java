@@ -10,10 +10,12 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.animal.camel.CamelHusk;
 import net.minecraft.world.entity.monster.skeleton.Parched;
@@ -24,6 +26,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import org.jspecify.annotations.Nullable;
 
 public class Husk extends Zombie {
+   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.55F, 1.125F).withEyeHeight(0.825F);
+
    public Husk(final EntityType<? extends Husk> type, final Level level) {
       super(type, level);
    }
@@ -110,6 +114,10 @@ public class Husk extends Zombie {
       }
 
       return groupData;
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    public static class HuskGroupData extends Zombie.ZombieGroupData {

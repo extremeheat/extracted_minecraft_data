@@ -99,7 +99,15 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
    }
 
    private LayoutElement createWorldOptionsButtonOrDifficultyButton() {
-      return (LayoutElement)(this.minecraft.player != null && this.minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER) ? Button.builder(Component.translatable("options.worldOptions.button"), (button) -> this.minecraft.setScreen(new WorldOptionsScreen(this))).build() : DifficultyButtons.create(this.minecraft, this));
+      return (LayoutElement)(!this.canShowWorldOptions() ? DifficultyButtons.create(this.minecraft, this) : Button.builder(Component.translatable("options.worldOptions.button"), (button) -> this.minecraft.setScreen(new WorldOptionsScreen(this))).build());
+   }
+
+   private boolean canShowWorldOptions() {
+      if (this.minecraft.player == null) {
+         return false;
+      } else {
+         return this.minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER) || this.minecraft.player.chatAbilities().hasAnyRestrictions();
+      }
    }
 
    public void removed() {

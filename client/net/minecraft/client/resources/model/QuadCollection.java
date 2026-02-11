@@ -78,6 +78,17 @@ public class QuadCollection {
          return this;
       }
 
+      public Builder addAll(final QuadCollection quadCollection) {
+         this.culledFaces.putAll(Direction.UP, quadCollection.up);
+         this.culledFaces.putAll(Direction.DOWN, quadCollection.down);
+         this.culledFaces.putAll(Direction.NORTH, quadCollection.north);
+         this.culledFaces.putAll(Direction.SOUTH, quadCollection.south);
+         this.culledFaces.putAll(Direction.EAST, quadCollection.east);
+         this.culledFaces.putAll(Direction.WEST, quadCollection.west);
+         this.unculledFaces.addAll(quadCollection.unculled);
+         return this;
+      }
+
       private static QuadCollection createFromSublists(final List<BakedQuad> all, final int unculledCount, final int northCount, final int southCount, final int eastCount, final int westCount, final int upCount, final int downCount) {
          int index = 0;
          int var16;

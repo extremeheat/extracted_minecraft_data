@@ -26,6 +26,7 @@ import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.BackupConfirmScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.DatapackLoadFailureScreen;
+import net.minecraft.client.gui.screens.FileFixerAbortedScreen;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.NoticeWithLinkScreen;
 import net.minecraft.client.gui.screens.RecoverWorldDataScreen;
@@ -56,6 +57,9 @@ import net.minecraft.util.MemoryReserve;
 import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.filefix.AbortedFileFixException;
+import net.minecraft.util.filefix.FailedCleanupFileFixException;
+import net.minecraft.util.filefix.FileFixException;
 import net.minecraft.util.filefix.virtualfilesystem.exception.CowFSSymlinkException;
 import net.minecraft.util.worldupdate.UpgradeProgress;
 import net.minecraft.world.level.LevelSettings;
@@ -296,43 +300,65 @@ public class WorldOpenFlows {
       UpgradeProgress upgradeProgress = new UpgradeProgress();
       FileFixerProgressScreen progressScreen = new FileFixerProgressScreen(upgradeProgress);
       this.minecraft.setScreenAndShow(progressScreen);
+      Runnable cleanup = () -> {
+         worldAccess.safeClose();
+         onCancel.run();
+      };
+      int dataVersion = NbtUtils.getDataVersion(levelDataTag);
+      boolean requiresFileFixing = DataFixers.getFileFixer().requiresFileFixing(dataVersion);
       Util.backgroundExecutor().execute(() -> {
-         int dataVersion = NbtUtils.getDataVersion(levelDataTag);
-         boolean requiresFileFixing = DataFixers.getFileFixer().requiresFileFixing(dataVersion);
+         Dynamic<?> levelDataTagFixed = this.tryFileFixAndReportErrors(worldAccess, levelDataTag, upgradeProgress, cleanup);
+         if (levelDataTagFixed != null) {
+            this.minecraft.execute(() -> {
+               if (requiresFileFixing) {
+                  ConfirmScreen loadConfirmScreen = new ConfirmScreen((result) -> {
+                     if (result) {
+                        this.openWorldLoadLevelStem(worldAccess, levelDataTagFixed, false, onCancel);
+                     } else {
+                        cleanup.run();
+                     }
 
-         Dynamic<?> levelDataTagFixed;
-         try {
-            levelDataTagFixed = DataFixers.getFileFixer().fix(worldAccess, levelDataTag, upgradeProgress);
-         } catch (CowFSSymlinkException var10) {
-            this.minecraft.execute(() -> this.minecraft.setScreenAndShow(new AlertScreen(() -> {
-                  worldAccess.safeClose();
-                  onCancel.run();
-               }, Component.translatable("upgradeWorld.symlink.title"), Component.translatable("upgradeWorld.symlink.message"))));
-            return;
-         } catch (IOException e) {
-            LOGGER.error("Failed to upgrade the file structure of the world.", e);
-            CrashReport report = CrashReport.forThrowable(e, "Failed to update file structure");
-            throw new ReportedException(report);
+                  }, Component.translatable("upgradeWorld.done"), Component.translatable("upgradeWorld.joinNow"));
+                  this.minecraft.setScreenAndShow(loadConfirmScreen);
+               } else {
+                  this.openWorldLoadLevelStem(worldAccess, levelDataTagFixed, false, onCancel);
+               }
+
+            });
          }
+      });
+   }
 
+   private @Nullable Dynamic<?> tryFileFixAndReportErrors(final LevelStorageSource.LevelStorageAccess worldAccess, final Dynamic<?> levelDataTag, final UpgradeProgress upgradeProgress, final Runnable cleanup) {
+      try {
+         Dynamic<?> levelDataTagFixed = DataFixers.getFileFixer().fix(worldAccess, levelDataTag, upgradeProgress);
+         return levelDataTagFixed;
+      } catch (AbortedFileFixException e) {
          this.minecraft.execute(() -> {
-            if (requiresFileFixing) {
-               ConfirmScreen loadConfirmScreen = new ConfirmScreen((result) -> {
-                  if (result) {
-                     this.openWorldLoadLevelStem(worldAccess, levelDataTagFixed, false, onCancel);
-                  } else {
-                     worldAccess.safeClose();
-                     onCancel.run();
-                  }
-
-               }, Component.translatable("upgradeWorld.done"), Component.translatable("upgradeWorld.joinNow"));
-               this.minecraft.setScreenAndShow(loadConfirmScreen);
+            if (e.getCause() instanceof CowFSSymlinkException) {
+               this.minecraft.setScreenAndShow(new AlertScreen(cleanup, Component.translatable("upgradeWorld.symlink.title"), Component.translatable("upgradeWorld.symlink.message")));
             } else {
-               this.openWorldLoadLevelStem(worldAccess, levelDataTagFixed, false, onCancel);
+               this.minecraft.setScreenAndShow(new FileFixerAbortedScreen(cleanup, Component.translatable("upgradeWorld.aborted.message")));
             }
 
+            throw e.makeReportedException();
          });
-      });
+         return null;
+      } catch (FailedCleanupFileFixException e) {
+         this.minecraft.execute(() -> {
+            this.minecraft.setScreenAndShow(new AlertScreen(cleanup, Component.translatable("upgradeWorld.failed_cleanup.title"), Component.translatable("upgradeWorld.failed_cleanup.message", Component.literal(e.newWorldFolderName()).withColor(-8355712))));
+            throw e.makeReportedException();
+         });
+         return null;
+      } catch (FileFixException e) {
+         this.minecraft.delayCrash(e.makeReportedException().getReport());
+         return null;
+      } catch (Exception e) {
+         LOGGER.error("Failed to upgrade the file structure of the world.", e);
+         CrashReport report = CrashReport.forThrowable(e, "Failed to update file structure");
+         this.minecraft.delayCrash(report);
+         return null;
+      }
    }
 
    private void openWorldLoadLevelStem(final LevelStorageSource.LevelStorageAccess worldAccess, final Dynamic<?> levelDataTag, final boolean safeMode, final Runnable onCancel) {

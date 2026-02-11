@@ -9,10 +9,9 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
-import net.minecraft.client.GuiMessage;
-import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
@@ -20,6 +19,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.chat.ChatAbilities;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
+import net.minecraft.client.multiplayer.chat.GuiMessageSource;
+import net.minecraft.client.multiplayer.chat.GuiMessageTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -32,7 +35,6 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.player.ChatVisiblity;
 import org.joml.Matrix3x2f;
 import org.joml.Vector2f;
 import org.jspecify.annotations.Nullable;
@@ -49,6 +51,8 @@ public class ChatComponent {
    public static final int MESSAGE_BOTTOM_TO_MESSAGE_TOP = 8;
    public static final Identifier QUEUE_EXPAND_ID;
    private static final Style QUEUE_EXPAND_TEXT_STYLE;
+   public static final Identifier GO_TO_RESTRICTIONS_SCREEN;
+   private static final Component RESTRICTED_CHAT_MESSAGE;
    private final Minecraft minecraft;
    private final ArrayListDeque<String> recentChat = new ArrayListDeque<String>(100);
    private final List<GuiMessage> allMessages = Lists.newArrayList();
@@ -58,6 +62,7 @@ public class ChatComponent {
    private @Nullable Draft latestDraft;
    private @Nullable ChatScreen preservedScreen;
    private final List<DelayedMessageDeletion> messageDeletionQueue = new ArrayList();
+   private Predicate<GuiMessage> visibleMessageFilter = (var0) -> true;
 
    public ChatComponent(final Minecraft minecraft) {
       super();
@@ -70,6 +75,11 @@ public class ChatComponent {
          this.processMessageDeletionQueue();
       }
 
+   }
+
+   public void setVisibleMessageFilter(final Predicate<GuiMessage> visibleMessageFilter) {
+      this.visibleMessageFilter = visibleMessageFilter;
+      this.refreshTrimmedMessages();
    }
 
    private int forEachLine(final AlphaCalculator alphaCalculator, final LineConsumer lineConsumer) {
@@ -89,108 +99,113 @@ public class ChatComponent {
       return count;
    }
 
-   public void render(final GuiGraphics graphics, final Font font, final int ticks, final int mouseX, final int mouseY, final boolean isChatting, final boolean changeCursorOnInsertions) {
+   public void render(final GuiGraphics graphics, final Font font, final int ticks, final int mouseX, final int mouseY, final DisplayMode displayMode, final boolean changeCursorOnInsertions) {
       graphics.pose().pushMatrix();
-      this.render((ChatGraphicsAccess)(isChatting ? new DrawingFocusedGraphicsAccess(graphics, font, mouseX, mouseY, changeCursorOnInsertions) : new DrawingBackgroundGraphicsAccess(graphics)), graphics.guiHeight(), ticks, isChatting);
+      this.render((ChatGraphicsAccess)(displayMode.foreground ? new DrawingFocusedGraphicsAccess(graphics, font, mouseX, mouseY, changeCursorOnInsertions) : new DrawingBackgroundGraphicsAccess(graphics)), graphics.guiHeight(), ticks, displayMode);
       graphics.pose().popMatrix();
    }
 
-   public void captureClickableText(final ActiveTextCollector activeTextCollector, final int screenHeight, final int ticks, final boolean isChatting) {
-      this.render(new ClickableTextOnlyGraphicsAccess(activeTextCollector), screenHeight, ticks, isChatting);
+   public void captureClickableText(final ActiveTextCollector activeTextCollector, final int screenHeight, final int ticks, final DisplayMode displayMode) {
+      this.render(new ClickableTextOnlyGraphicsAccess(activeTextCollector), screenHeight, ticks, displayMode);
    }
 
-   private void render(final ChatGraphicsAccess graphics, final int screenHeight, final int ticks, final boolean isChatting) {
-      if (!this.isChatHidden()) {
-         int total = this.trimmedMessages.size();
-         if (total > 0) {
-            ProfilerFiller profiler = Profiler.get();
-            profiler.push("chat");
-            float scale = (float)this.getScale();
-            int maxWidth = Mth.ceil((float)this.getWidth() / scale);
-            final int chatBottom = Mth.floor((float)(screenHeight - 40) / scale);
-            final float textOpacity = ((Double)this.minecraft.options.chatOpacity().get()).floatValue() * 0.9F + 0.1F;
-            float backgroundOpacity = ((Double)this.minecraft.options.textBackgroundOpacity().get()).floatValue();
-            Objects.requireNonNull(this.minecraft.font);
-            final int messageHeight = 9;
-            int messageBottomToMessageTop = 8;
-            double chatLineSpacing = (Double)this.minecraft.options.chatLineSpacing().get();
-            final int entryHeight = (int)((double)messageHeight * (chatLineSpacing + 1.0));
-            final int entryBottomToMessageY = (int)Math.round(8.0 * (chatLineSpacing + 1.0) - 4.0 * chatLineSpacing);
-            long queueSize = this.minecraft.getChatListener().queueSize();
-            AlphaCalculator alphaCalculator = isChatting ? ChatComponent.AlphaCalculator.FULLY_VISIBLE : ChatComponent.AlphaCalculator.timeBased(ticks);
-            graphics.updatePose((pose) -> {
-               pose.scale(scale, scale);
-               pose.translate(4.0F, 0.0F);
-            });
-            this.forEachLine(alphaCalculator, (line, lineIndex, alphax) -> {
+   private void render(final ChatGraphicsAccess graphics, final int screenHeight, final int ticks, final DisplayMode displayMode) {
+      boolean isForeground = displayMode.foreground;
+      boolean isRestricted = displayMode.showRestrictedPrompt;
+      int total = this.trimmedMessages.size();
+      if (total > 0 || isRestricted) {
+         ProfilerFiller profiler = Profiler.get();
+         profiler.push("chat");
+         float scale = (float)this.getScale();
+         int maxWidth = Mth.ceil((float)this.getWidth() / scale);
+         final int chatBottom = Mth.floor((float)(screenHeight - 40) / scale);
+         final float textOpacity = ((Double)this.minecraft.options.chatOpacity().get()).floatValue() * 0.9F + 0.1F;
+         float backgroundOpacity = ((Double)this.minecraft.options.textBackgroundOpacity().get()).floatValue();
+         Objects.requireNonNull(this.minecraft.font);
+         final int messageHeight = 9;
+         int messageBottomToMessageTop = 8;
+         double chatLineSpacing = (Double)this.minecraft.options.chatLineSpacing().get();
+         final int entryHeight = (int)((double)messageHeight * (chatLineSpacing + 1.0));
+         final int entryBottomToMessageY = (int)Math.round(8.0 * (chatLineSpacing + 1.0) - 4.0 * chatLineSpacing);
+         long queueSize = this.minecraft.getChatListener().queueSize();
+         AlphaCalculator alphaCalculator = isForeground ? ChatComponent.AlphaCalculator.FULLY_VISIBLE : ChatComponent.AlphaCalculator.timeBased(ticks);
+         graphics.updatePose((pose) -> {
+            pose.scale(scale, scale);
+            pose.translate(4.0F, 0.0F);
+         });
+         int count = this.forEachLine(alphaCalculator, (var5, lineIndex, alphax) -> {
+            int entryBottom = chatBottom - lineIndex * entryHeight;
+            int entryTop = entryBottom - entryHeight;
+            graphics.fill(-4, entryTop, maxWidth + 4 + 4, entryBottom, ARGB.black(alphax * backgroundOpacity));
+         });
+         int lineAboveMessagesY = chatBottom - (count + 1) * entryHeight;
+         if (queueSize > 0L) {
+            graphics.fill(-2, chatBottom, maxWidth + 4, chatBottom + messageHeight, ARGB.black(backgroundOpacity));
+         }
+
+         if (isRestricted) {
+            graphics.fill(-2, lineAboveMessagesY, maxWidth + 4 + 4, lineAboveMessagesY + messageHeight, ARGB.black(backgroundOpacity));
+         }
+
+         this.forEachLine(alphaCalculator, new LineConsumer() {
+            boolean hoveredOverCurrentMessage;
+
+            {
+               Objects.requireNonNull(ChatComponent.this);
+            }
+
+            public void accept(final GuiMessage.Line line, final int lineIndex, final float alpha) {
                int entryBottom = chatBottom - lineIndex * entryHeight;
                int entryTop = entryBottom - entryHeight;
-               graphics.fill(-4, entryTop, maxWidth + 4 + 4, entryBottom, ARGB.black(alphax * backgroundOpacity));
-            });
-            if (queueSize > 0L) {
-               graphics.fill(-2, chatBottom, maxWidth + 4, chatBottom + messageHeight, ARGB.black(backgroundOpacity));
-            }
-
-            int count = this.forEachLine(alphaCalculator, new LineConsumer() {
-               boolean hoveredOverCurrentMessage;
-
-               {
-                  Objects.requireNonNull(ChatComponent.this);
+               int textTop = entryBottom - entryBottomToMessageY;
+               boolean hoveredOverCurrentLine = graphics.handleMessage(textTop, alpha * textOpacity, line.content());
+               this.hoveredOverCurrentMessage |= hoveredOverCurrentLine;
+               boolean forceIconRendering;
+               if (line.endOfEntry()) {
+                  forceIconRendering = this.hoveredOverCurrentMessage;
+                  this.hoveredOverCurrentMessage = false;
+               } else {
+                  forceIconRendering = false;
                }
 
-               public void accept(final GuiMessage.Line line, final int lineIndex, final float alpha) {
-                  int entryBottom = chatBottom - lineIndex * entryHeight;
-                  int entryTop = entryBottom - entryHeight;
-                  int textTop = entryBottom - entryBottomToMessageY;
-                  boolean hoveredOverCurrentLine = graphics.handleMessage(textTop, alpha * textOpacity, line.content());
-                  this.hoveredOverCurrentMessage |= hoveredOverCurrentLine;
-                  boolean forceIconRendering;
-                  if (line.endOfEntry()) {
-                     forceIconRendering = this.hoveredOverCurrentMessage;
-                     this.hoveredOverCurrentMessage = false;
-                  } else {
-                     forceIconRendering = false;
+               GuiMessageTag tag = line.tag();
+               if (tag != null) {
+                  graphics.handleTag(-4, entryTop, -2, entryBottom, alpha * textOpacity, tag);
+                  if (tag.icon() != null) {
+                     int iconLeft = line.getTagIconLeft(ChatComponent.this.minecraft.font);
+                     int textBottom = textTop + messageHeight;
+                     graphics.handleTagIcon(iconLeft, textBottom, forceIconRendering, tag, tag.icon());
                   }
-
-                  GuiMessageTag tag = line.tag();
-                  if (tag != null) {
-                     graphics.handleTag(-4, entryTop, -2, entryBottom, alpha * textOpacity, tag);
-                     if (tag.icon() != null) {
-                        int iconLeft = line.getTagIconLeft(ChatComponent.this.minecraft.font);
-                        int textBottom = textTop + messageHeight;
-                        graphics.handleTagIcon(iconLeft, textBottom, forceIconRendering, tag, tag.icon());
-                     }
-                  }
-
                }
-            });
-            if (queueSize > 0L) {
-               int queueLineBottom = chatBottom + messageHeight;
-               Component queueMessage = Component.translatable("chat.queue", queueSize).setStyle(QUEUE_EXPAND_TEXT_STYLE);
-               graphics.handleMessage(queueLineBottom - 8, 0.5F * textOpacity, queueMessage.getVisualOrderText());
-            }
 
-            if (isChatting) {
-               int virtualHeight = total * entryHeight;
-               int chatHeight = count * entryHeight;
-               int y = this.chatScrollbarPos * chatHeight / total - chatBottom;
-               int height = chatHeight * chatHeight / virtualHeight;
-               if (virtualHeight != chatHeight) {
-                  int alpha = y > 0 ? 170 : 96;
-                  int color = this.newMessageSinceScroll ? 13382451 : 3355562;
-                  int scrollBarStartX = maxWidth + 4;
-                  graphics.fill(scrollBarStartX, -y, scrollBarStartX + 2, -y - height, ARGB.color(alpha, color));
-                  graphics.fill(scrollBarStartX + 2, -y, scrollBarStartX + 1, -y - height, ARGB.color(alpha, 13421772));
-               }
             }
-
-            profiler.pop();
+         });
+         if (queueSize > 0L) {
+            int queueLineBottom = chatBottom + messageHeight;
+            Component queueMessage = Component.translatable("chat.queue", queueSize).setStyle(QUEUE_EXPAND_TEXT_STYLE);
+            graphics.handleMessage(queueLineBottom - 8, 0.5F * textOpacity, queueMessage.getVisualOrderText());
          }
-      }
-   }
 
-   private boolean isChatHidden() {
-      return this.minecraft.options.chatVisibility().get() == ChatVisiblity.HIDDEN;
+         if (isRestricted) {
+            graphics.handleMessage(lineAboveMessagesY, textOpacity, RESTRICTED_CHAT_MESSAGE.getVisualOrderText());
+         }
+
+         if (total > 0 && isForeground) {
+            int chatHeight = count * entryHeight;
+            int virtualHeight = total * entryHeight;
+            int y = this.chatScrollbarPos * chatHeight / total - chatBottom;
+            int height = chatHeight * chatHeight / virtualHeight;
+            if (virtualHeight != chatHeight) {
+               int alpha = y > 0 ? 170 : 96;
+               int color = this.newMessageSinceScroll ? 13382451 : 3355562;
+               int scrollBarStartX = maxWidth + 4;
+               graphics.fill(scrollBarStartX, -y, scrollBarStartX + 2, -y - height, ARGB.color(alpha, color));
+               graphics.fill(scrollBarStartX + 2, -y, scrollBarStartX + 1, -y - height, ARGB.color(alpha, 13421772));
+            }
+         }
+
+         profiler.pop();
+      }
    }
 
    public void clearMessages(final boolean history) {
@@ -205,15 +220,26 @@ public class ChatComponent {
 
    }
 
-   public void addMessage(final Component message) {
-      this.addMessage(message, (MessageSignature)null, this.minecraft.isSingleplayer() ? GuiMessageTag.systemSinglePlayer() : GuiMessageTag.system());
+   public void addClientSystemMessage(final Component message) {
+      this.addMessage(message, (MessageSignature)null, GuiMessageSource.SYSTEM_CLIENT, GuiMessageTag.systemSinglePlayer());
    }
 
-   public void addMessage(final Component contents, final @Nullable MessageSignature signature, final @Nullable GuiMessageTag tag) {
-      GuiMessage message = new GuiMessage(this.minecraft.gui.getGuiTicks(), contents, signature, tag);
-      this.logChatMessage(message);
-      this.addMessageToDisplayQueue(message);
-      this.addMessageToQueue(message);
+   public void addServerSystemMessage(final Component message) {
+      this.addMessage(message, (MessageSignature)null, GuiMessageSource.SYSTEM_SERVER, GuiMessageTag.systemSinglePlayer());
+   }
+
+   public void addPlayerMessage(final Component message, final @Nullable MessageSignature signature, final @Nullable GuiMessageTag tag) {
+      this.addMessage(message, signature, GuiMessageSource.PLAYER, tag);
+   }
+
+   private void addMessage(final Component contents, final @Nullable MessageSignature signature, final GuiMessageSource source, final @Nullable GuiMessageTag tag) {
+      GuiMessage message = new GuiMessage(this.minecraft.gui.getGuiTicks(), contents, signature, source, tag);
+      if (this.visibleMessageFilter.test(message)) {
+         this.logChatMessage(message);
+         this.addMessageToDisplayQueue(message);
+         this.addMessageToQueue(message);
+      }
+
    }
 
    private void logChatMessage(final GuiMessage message) {
@@ -240,7 +266,7 @@ public class ChatComponent {
          }
 
          boolean endOfEntry = i == lines.size() - 1;
-         this.trimmedMessages.addFirst(new GuiMessage.Line(message.addedTime(), line, message.tag(), endOfEntry));
+         this.trimmedMessages.addFirst(new GuiMessage.Line(message, line, endOfEntry));
       }
 
       while(this.trimmedMessages.size() > 100) {
@@ -286,7 +312,7 @@ public class ChatComponent {
          if (signature.equals(message.signature())) {
             int deletableAfter = message.addedTime() + 60;
             if (time >= deletableAfter) {
-               iterator.set(this.createDeletedMarker(message));
+               iterator.set(createDeletedMarker(message));
                this.refreshTrimmedMessages();
                return null;
             }
@@ -298,8 +324,8 @@ public class ChatComponent {
       return null;
    }
 
-   private GuiMessage createDeletedMarker(final GuiMessage message) {
-      return new GuiMessage(message.addedTime(), DELETED_CHAT_MESSAGE, (MessageSignature)null, GuiMessageTag.system());
+   private static GuiMessage createDeletedMarker(final GuiMessage message) {
+      return new GuiMessage(message.addedTime(), DELETED_CHAT_MESSAGE, (MessageSignature)null, GuiMessageSource.SYSTEM_SERVER, GuiMessageTag.system());
    }
 
    public void rescaleChat() {
@@ -311,7 +337,9 @@ public class ChatComponent {
       this.trimmedMessages.clear();
 
       for(GuiMessage message : Lists.reverse(this.allMessages)) {
-         this.addMessageToDisplayQueue(message);
+         if (this.visibleMessageFilter.test(message)) {
+            this.addMessageToDisplayQueue(message);
+         }
       }
 
    }
@@ -406,12 +434,12 @@ public class ChatComponent {
       this.latestDraft = null;
    }
 
-   public <T extends ChatScreen> T createScreen(final ChatMethod chatMethod, final ChatScreen.ChatConstructor<T> chat) {
-      return (T)(this.latestDraft != null && chatMethod.isDraftRestorable(this.latestDraft) ? chat.create(this.latestDraft.text(), true) : chat.create(chatMethod.prefix(), false));
+   public <T extends ChatScreen> T createScreen(final ChatMethod chatMethod, final ChatAbilities chatAbilities, final ChatScreen.ChatConstructor<T> chat) {
+      return (T)(this.latestDraft != null && chatMethod.isDraftRestorable(this.latestDraft) ? chat.create(this.latestDraft.text(), true, chatAbilities) : chat.create(chatMethod.prefix(), false, chatAbilities));
    }
 
-   public void openScreen(final ChatMethod chatMethod, final ChatScreen.ChatConstructor<?> chat) {
-      this.minecraft.setScreen(this.createScreen(chatMethod, chat));
+   public void openScreen(final ChatMethod chatMethod, final ChatAbilities chatAbilities, final ChatScreen.ChatConstructor<?> chat) {
+      this.minecraft.setScreen(this.createScreen(chatMethod, chatAbilities, chat));
    }
 
    public void preserveCurrentChatScreen() {
@@ -446,6 +474,8 @@ public class ChatComponent {
       DELETED_CHAT_MESSAGE = Component.translatable("chat.deleted_marker").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
       QUEUE_EXPAND_ID = Identifier.withDefaultNamespace("internal/expand_chat_queue");
       QUEUE_EXPAND_TEXT_STYLE = Style.EMPTY.withClickEvent(new ClickEvent.Custom(QUEUE_EXPAND_ID, Optional.empty())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.queue.tooltip")));
+      GO_TO_RESTRICTIONS_SCREEN = Identifier.withDefaultNamespace("internal/go_to_restrictions_screen");
+      RESTRICTED_CHAT_MESSAGE = Component.translatable("chat_screen.restricted").withStyle(Style.EMPTY.withColor(ChatFormatting.RED).withUnderlined(true).withClickEvent(new ClickEvent.Custom(GO_TO_RESTRICTIONS_SCREEN, Optional.empty())));
    }
 
    private static record DelayedMessageDeletion(MessageSignature signature, int deletableAfter) {
@@ -505,7 +535,7 @@ public class ChatComponent {
 
    @FunctionalInterface
    private interface AlphaCalculator {
-      AlphaCalculator FULLY_VISIBLE = (message) -> 1.0F;
+      AlphaCalculator FULLY_VISIBLE = (var0) -> 1.0F;
 
       static AlphaCalculator timeBased(final int currentTickTime) {
          return (message) -> {
@@ -670,6 +700,25 @@ public class ChatComponent {
       }
 
       public void handleTagIcon(final int left, final int bottom, final boolean forceVisible, final GuiMessageTag tag, final GuiMessageTag.Icon icon) {
+      }
+   }
+
+   public static enum DisplayMode {
+      BACKGROUND(false, false),
+      FOREGROUND(true, false),
+      FOREGROUND_RESTRICTED(true, true);
+
+      public final boolean foreground;
+      public final boolean showRestrictedPrompt;
+
+      private DisplayMode(final boolean foreground, final boolean showRestrictedPrompt) {
+         this.foreground = foreground;
+         this.showRestrictedPrompt = showRestrictedPrompt;
+      }
+
+      // $FF: synthetic method
+      private static DisplayMode[] $values() {
+         return new DisplayMode[]{BACKGROUND, FOREGROUND, FOREGROUND_RESTRICTED};
       }
    }
 

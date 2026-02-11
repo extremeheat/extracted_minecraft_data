@@ -10,15 +10,15 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.SpriteId;
 
 public class GuiSignRenderer extends PictureInPictureRenderer<GuiSignRenderState> {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
 
-   public GuiSignRenderer(final MultiBufferSource.BufferSource bufferSource, final MaterialSet materials) {
+   public GuiSignRenderer(final MultiBufferSource.BufferSource bufferSource, final SpriteGetter sprites) {
       super(bufferSource);
-      this.materials = materials;
+      this.sprites = sprites;
    }
 
    public Class<GuiSignRenderState> getRenderStateClass() {
@@ -28,12 +28,12 @@ public class GuiSignRenderer extends PictureInPictureRenderer<GuiSignRenderState
    protected void renderToTexture(final GuiSignRenderState renderState, final PoseStack poseStack) {
       Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_FLAT);
       poseStack.translate(0.0F, -0.75F, 0.0F);
-      Material material = Sheets.getSignMaterial(renderState.woodType());
+      SpriteId sprite = Sheets.getSignSprite(renderState.woodType());
       Model.Simple model = renderState.signModel();
-      MaterialSet var10001 = this.materials;
+      SpriteGetter var10001 = this.sprites;
       MultiBufferSource.BufferSource var10002 = this.bufferSource;
       Objects.requireNonNull(model);
-      VertexConsumer buffer = material.buffer(var10001, var10002, model::renderType);
+      VertexConsumer buffer = sprite.buffer(var10001, var10002, model::renderType);
       model.renderToBuffer(poseStack, buffer, 15728880, OverlayTexture.NO_OVERLAY);
    }
 

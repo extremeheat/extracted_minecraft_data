@@ -607,29 +607,35 @@ public class Panda extends Animal {
          if (this.canAgeUp()) {
             this.usePlayerItem(player, hand, interactionItemStack);
             this.ageUp((int)((float)(-this.getAge() / 20) * 0.1F), true);
-         } else if (!this.level().isClientSide() && this.getAge() == 0 && this.canFallInLove()) {
-            this.usePlayerItem(player, hand, interactionItemStack);
-            this.setInLove(player);
          } else {
-            Level var5 = this.level();
-            if (!(var5 instanceof ServerLevel)) {
+            if (this.isBaby()) {
                return InteractionResult.PASS;
             }
 
-            ServerLevel level = (ServerLevel)var5;
-            if (this.isSitting() || this.isInWater()) {
-               return InteractionResult.PASS;
-            }
+            if (!this.level().isClientSide() && this.getAge() == 0 && this.canFallInLove()) {
+               this.usePlayerItem(player, hand, interactionItemStack);
+               this.setInLove(player);
+            } else {
+               Level var5 = this.level();
+               if (!(var5 instanceof ServerLevel)) {
+                  return InteractionResult.PASS;
+               }
 
-            this.tryToSit();
-            this.eat(true);
-            ItemStack pandasCurrentItem = this.getItemBySlot(EquipmentSlot.MAINHAND);
-            if (!pandasCurrentItem.isEmpty() && !player.hasInfiniteMaterials()) {
-               this.spawnAtLocation(level, pandasCurrentItem);
-            }
+               ServerLevel level = (ServerLevel)var5;
+               if (this.isSitting() || this.isInWater()) {
+                  return InteractionResult.PASS;
+               }
 
-            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(interactionItemStack.getItem(), 1));
-            this.usePlayerItem(player, hand, interactionItemStack);
+               this.tryToSit();
+               this.eat(true);
+               ItemStack pandasCurrentItem = this.getItemBySlot(EquipmentSlot.MAINHAND);
+               if (!pandasCurrentItem.isEmpty() && !player.hasInfiniteMaterials()) {
+                  this.spawnAtLocation(level, pandasCurrentItem);
+               }
+
+               this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(interactionItemStack.getItem(), 1));
+               this.usePlayerItem(player, hand, interactionItemStack);
+            }
          }
 
          return InteractionResult.SUCCESS_SERVER;

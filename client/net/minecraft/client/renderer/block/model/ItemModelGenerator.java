@@ -1,14 +1,11 @@
 package net.minecraft.client.renderer.block.model;
 
 import com.mojang.math.Quadrant;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.renderer.texture.SpriteContents;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelDebugName;
 import net.minecraft.client.resources.model.ModelState;
@@ -47,7 +44,8 @@ public class ItemModelGenerator implements UnbakedModel {
    }
 
    private static QuadCollection bake(final TextureSlots textureSlots, final ModelBaker modelBaker, final ModelState modelState, final ModelDebugName name) {
-      List<BlockElement> elements = new ArrayList();
+      QuadCollection singleResult = null;
+      QuadCollection.Builder builder = null;
 
       for(int layerIndex = 0; layerIndex < LAYERS.size(); ++layerIndex) {
          String textureReference = (String)LAYERS.get(layerIndex);
@@ -56,25 +54,41 @@ public class ItemModelGenerator implements UnbakedModel {
             break;
          }
 
-         SpriteContents sprite = modelBaker.sprites().get(material, name).contents();
-         elements.addAll(processFrames(layerIndex, textureReference, sprite));
+         Material.Baked bakedMaterial = modelBaker.materials().get(material, name);
+         QuadCollection bakedLayer = (QuadCollection)modelBaker.compute(new ItemLayerKey(bakedMaterial, modelState, layerIndex));
+         if (builder != null) {
+            builder.addAll(bakedLayer);
+         } else if (singleResult != null) {
+            builder = new QuadCollection.Builder();
+            builder.addAll(singleResult);
+            builder.addAll(bakedLayer);
+            singleResult = null;
+         } else {
+            singleResult = bakedLayer;
+         }
       }
 
-      return SimpleUnbakedGeometry.bake(elements, textureSlots, modelBaker, modelState, name);
+      if (builder != null) {
+         return builder.build();
+      } else {
+         return singleResult != null ? singleResult : QuadCollection.EMPTY;
+      }
    }
 
-   private static List<BlockElement> processFrames(final int tintIndex, final String textureName, final SpriteContents sprite) {
-      Map<Direction, BlockElementFace> frontAndBackFaces = Map.of(Direction.SOUTH, new BlockElementFace((Direction)null, tintIndex, textureName, SOUTH_FACE_UVS, Quadrant.R0), Direction.NORTH, new BlockElementFace((Direction)null, tintIndex, textureName, NORTH_FACE_UVS, Quadrant.R0));
-      List<BlockElement> elements = new ArrayList();
-      elements.add(new BlockElement(new Vector3f(0.0F, 0.0F, 7.5F), new Vector3f(16.0F, 16.0F, 8.5F), frontAndBackFaces));
-      elements.addAll(createSideElements(sprite, textureName, tintIndex));
-      return elements;
+   private static void bakeExtrudedSprite(final QuadCollection.Builder builder, final ModelBaker.Interner interner, final ModelState modelState, final int tintIndex, final BakedQuad.SpriteInfo spriteInfo) {
+      Vector3f from = new Vector3f(0.0F, 0.0F, 7.5F);
+      Vector3f to = new Vector3f(16.0F, 16.0F, 8.5F);
+      builder.addUnculledFace(FaceBakery.bakeQuad(interner, from, to, SOUTH_FACE_UVS, Quadrant.R0, tintIndex, spriteInfo, Direction.SOUTH, modelState, (BlockElementRotation)null, true, 0));
+      builder.addUnculledFace(FaceBakery.bakeQuad(interner, from, to, NORTH_FACE_UVS, Quadrant.R0, tintIndex, spriteInfo, Direction.NORTH, modelState, (BlockElementRotation)null, true, 0));
+      bakeSideFaces(builder, interner, modelState, spriteInfo, tintIndex);
    }
 
-   private static List<BlockElement> createSideElements(final SpriteContents sprite, final String textureName, final int tintIndex) {
+   private static void bakeSideFaces(final QuadCollection.Builder builder, final ModelBaker.Interner interner, final ModelState modelState, final BakedQuad.SpriteInfo spriteInfo, final int tintIndex) {
+      SpriteContents sprite = spriteInfo.sprite().contents();
       float xScale = 16.0F / (float)sprite.width();
       float yScale = 16.0F / (float)sprite.height();
-      List<BlockElement> result = new ArrayList();
+      Vector3f from = new Vector3f();
+      Vector3f to = new Vector3f();
 
       for(SideFace sideFace : getSideFaces(sprite)) {
          float x = (float)sideFace.x();
@@ -120,23 +134,31 @@ public class ItemModelGenerator implements UnbakedModel {
          endY *= yScale;
          startY = 16.0F - startY;
          endY = 16.0F - endY;
-         Map<Direction, BlockElementFace> faces = Map.of(sideDirection.getDirection(), new BlockElementFace((Direction)null, tintIndex, textureName, new BlockElementFace.UVs(u0 * xScale, v0 * xScale, u1 * yScale, v1 * yScale), Quadrant.R0));
          switch (sideDirection.ordinal()) {
             case 0:
-               result.add(new BlockElement(new Vector3f(startX, startY, 7.5F), new Vector3f(endX, startY, 8.5F), faces));
+               from.set(startX, startY, 7.5F);
+               to.set(endX, startY, 8.5F);
                break;
             case 1:
-               result.add(new BlockElement(new Vector3f(startX, endY, 7.5F), new Vector3f(endX, endY, 8.5F), faces));
+               from.set(startX, endY, 7.5F);
+               to.set(endX, endY, 8.5F);
                break;
             case 2:
-               result.add(new BlockElement(new Vector3f(startX, startY, 7.5F), new Vector3f(startX, endY, 8.5F), faces));
+               from.set(startX, startY, 7.5F);
+               to.set(startX, endY, 8.5F);
                break;
             case 3:
-               result.add(new BlockElement(new Vector3f(endX, startY, 7.5F), new Vector3f(endX, endY, 8.5F), faces));
+               from.set(endX, startY, 7.5F);
+               to.set(endX, endY, 8.5F);
+               break;
+            default:
+               throw new UnsupportedOperationException();
          }
+
+         BlockElementFace.UVs uvs = new BlockElementFace.UVs(u0 * xScale, v0 * yScale, u1 * xScale, v1 * yScale);
+         builder.addUnculledFace(FaceBakery.bakeQuad(interner, from, to, uvs, Quadrant.R0, tintIndex, spriteInfo, sideDirection.getDirection(), modelState, (BlockElementRotation)null, true, 0));
       }
 
-      return result;
    }
 
    private static Collection<SideFace> getSideFaces(final SpriteContents sprite) {
@@ -200,6 +222,19 @@ public class ItemModelGenerator implements UnbakedModel {
    private static record SideFace(SideDirection facing, int x, int y) {
       private SideFace {
          super();
+      }
+   }
+
+   private static record ItemLayerKey(Material.Baked material, ModelState modelState, int layerIndex) implements ModelBaker.SharedOperationKey<QuadCollection> {
+      private ItemLayerKey {
+         super();
+      }
+
+      public QuadCollection compute(final ModelBaker modelBakery) {
+         QuadCollection.Builder builder = new QuadCollection.Builder();
+         BakedQuad.SpriteInfo spriteInfo = modelBakery.interner().spriteInfo(BakedQuad.SpriteInfo.of(this.material, this.material.sprite().transparency()));
+         ItemModelGenerator.bakeExtrudedSprite(builder, modelBakery.interner(), this.modelState, this.layerIndex, spriteInfo);
+         return builder.build();
       }
    }
 }

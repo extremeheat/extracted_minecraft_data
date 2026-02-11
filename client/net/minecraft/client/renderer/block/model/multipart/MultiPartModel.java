@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.util.RandomSource;
@@ -29,8 +29,12 @@ public class MultiPartModel implements BlockStateModel {
       this.blockState = blockState;
    }
 
-   public TextureAtlasSprite particleIcon() {
-      return this.shared.particleIcon;
+   public Material.Baked particleMaterial() {
+      return this.shared.particleMaterial;
+   }
+
+   public boolean hasTranslucency() {
+      return this.shared.hasTranslucency;
    }
 
    public void collectParts(final RandomSource random, final List<BlockModelPart> output) {
@@ -59,7 +63,8 @@ public class MultiPartModel implements BlockStateModel {
 
    private static final class SharedBakedState {
       private final List<Selector<BlockStateModel>> selectors;
-      private final TextureAtlasSprite particleIcon;
+      private final Material.Baked particleMaterial;
+      private final boolean hasTranslucency;
       private final Map<BitSet, List<BlockStateModel>> subsets = new ConcurrentHashMap();
 
       private static BlockStateModel getFirstModel(final List<Selector<BlockStateModel>> selectors) {
@@ -70,11 +75,22 @@ public class MultiPartModel implements BlockStateModel {
          }
       }
 
+      private static boolean hasTranslucency(final List<Selector<BlockStateModel>> selectors) {
+         for(Selector<BlockStateModel> selector : selectors) {
+            if (((BlockStateModel)selector.model).hasTranslucency()) {
+               return true;
+            }
+         }
+
+         return false;
+      }
+
       public SharedBakedState(final List<Selector<BlockStateModel>> selectors) {
          super();
          this.selectors = selectors;
          BlockStateModel firstModel = getFirstModel(selectors);
-         this.particleIcon = firstModel.particleIcon();
+         this.particleMaterial = firstModel.particleMaterial();
+         this.hasTranslucency = hasTranslucency(selectors);
       }
 
       public List<BlockStateModel> selectModels(final BlockState state) {

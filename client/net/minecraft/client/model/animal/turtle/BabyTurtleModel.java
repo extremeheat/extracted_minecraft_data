@@ -6,10 +6,11 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 
 public class BabyTurtleModel extends TurtleModel {
    public BabyTurtleModel(final ModelPart root) {
-      super(root);
+      super(root, RenderTypes::entityCutoutCull);
    }
 
    public static LayerDefinition createBodyLayer() {

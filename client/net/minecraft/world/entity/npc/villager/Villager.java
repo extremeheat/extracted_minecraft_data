@@ -46,12 +46,14 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ReputationEventHandler;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.ActivityData;
@@ -112,6 +114,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
    private static final int DEFAULT_LAST_GOSSIP_DECAY = 0;
    private static final int DEFAULT_RESTOCKS_TODAY = 0;
    private static final boolean DEFAULT_ASSIGN_PROFESSION_WHEN_SPAWNED = false;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private int updateMerchantTimer;
    private boolean increaseProfessionLevelOnUpdate;
    private @Nullable Player lastTradedPlayer;
@@ -311,6 +314,10 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
          }
 
       }
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    public boolean canRestock() {
@@ -847,6 +854,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       DATA_VILLAGER_DATA = SynchedEntityData.<VillagerData>defineId(Villager.class, EntityDataSerializers.VILLAGER_DATA);
       DATA_VILLAGER_DATA_FINALIZED = SynchedEntityData.<Boolean>defineId(Villager.class, EntityDataSerializers.BOOLEAN);
       FOOD_POINTS = ImmutableMap.of(Items.BREAD, 4, Items.POTATO, 1, Items.CARROT, 1, Items.BEETROOT, 1);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.5F, 0.93F).withEyeHeight(0.63F);
       BRAIN_PROVIDER = Brain.<Villager>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.NEAREST_BED, SensorType.HURT_BY, SensorType.VILLAGER_HOSTILES, SensorType.VILLAGER_BABIES, SensorType.SECONDARY_POIS, SensorType.GOLEM_DETECTED), (body) -> {
          Holder<VillagerProfession> profession = body.getVillagerData().profession();
          List<ActivityData<Villager>> activities = new ArrayList();

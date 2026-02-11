@@ -7,20 +7,42 @@ import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.ByteBuffer;
 import org.joml.Matrix4f;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryStack;
 
-public class PerspectiveProjectionMatrixBuffer implements AutoCloseable {
-   private final GpuBuffer buffer;
-   private final GpuBufferSlice bufferSlice;
+public class ProjectionMatrixBuffer implements AutoCloseable {
+   GpuBuffer buffer;
+   GpuBufferSlice bufferSlice;
+   private @Nullable Projection lastUploadedProjection = null;
+   private long projectionMatrixVersion = -1L;
+   private final Matrix4f tempMatrix = new Matrix4f();
 
-   public PerspectiveProjectionMatrixBuffer(final String name) {
+   public ProjectionMatrixBuffer(final String name) {
       super();
       GpuDevice device = RenderSystem.getDevice();
-      this.buffer = device.createBuffer(() -> "Projection matrix UBO " + name, 136, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
+      this.buffer = device.createBuffer(() -> "Camera projection matrix UBO " + name, 136, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
       this.bufferSlice = this.buffer.slice(0L, (long)RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
    }
 
+   public GpuBufferSlice getBuffer(final Projection projection) {
+      assert projection.getMatrixVersion() != -1L;
+
+      if (this.lastUploadedProjection == projection && projection.getMatrixVersion() == this.projectionMatrixVersion) {
+         return this.bufferSlice;
+      } else {
+         this.lastUploadedProjection = projection;
+         this.projectionMatrixVersion = projection.getMatrixVersion();
+         return this.writeBuffer(projection.getMatrix(this.tempMatrix));
+      }
+   }
+
    public GpuBufferSlice getBuffer(final Matrix4f projectionMatrix) {
+      this.lastUploadedProjection = null;
+      this.projectionMatrixVersion = -1L;
+      return this.writeBuffer(projectionMatrix);
+   }
+
+   private GpuBufferSlice writeBuffer(final Matrix4f projectionMatrix) {
       MemoryStack stack = MemoryStack.stackPush();
 
       try {

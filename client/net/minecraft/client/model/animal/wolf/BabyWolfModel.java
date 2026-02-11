@@ -2,6 +2,7 @@ package net.minecraft.client.model.animal.wolf;
 
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
@@ -16,7 +17,7 @@ public class BabyWolfModel extends WolfModel {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition mesh = new MeshDefinition();
       PartDefinition root = mesh.getRoot();
-      PartDefinition head = root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 12).addBox(-3.0F, -3.25F, -3.0F, 6.0F, 5.0F, 5.0F).texOffs(17, 12).addBox(-1.5F, -0.25F, -5.0F, 3.0F, 2.0F, 2.0F), PartPose.offset(0.0F, 18.25F, -4.0F));
+      PartDefinition head = root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 12).addBox(-3.01F, -3.25F, -3.0F, 6.02F, 5.0F, 5.0F, new CubeDeformation(0.025F)).texOffs(17, 12).addBox(-1.5F, -0.24F, -5.0F, 3.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 18.25F, -4.0F));
       head.addOrReplaceChild("right_ear", CubeListBuilder.create().texOffs(0, 5).addBox(-1.0F, -1.0F, -0.5F, 2.0F, 2.0F, 1.0F), PartPose.offset(-2.0F, -4.25F, -0.5F));
       head.addOrReplaceChild("left_ear", CubeListBuilder.create().texOffs(20, 5).addBox(-1.0F, -1.0F, -0.5F, 2.0F, 2.0F, 1.0F), PartPose.offset(2.0F, -4.25F, -0.5F));
       root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -2.0F, -4.0F, 6.0F, 4.0F, 8.0F), PartPose.offset(0.0F, 19.0F, 0.0F));
@@ -36,6 +37,6 @@ public class BabyWolfModel extends WolfModel {
 
    protected void setSittingPose(final WolfRenderState state) {
       super.setSittingPose(state);
-      ++this.body.xRot;
+      --this.body.xRot;
    }
 }

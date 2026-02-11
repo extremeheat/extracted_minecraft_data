@@ -50,7 +50,7 @@ public class ShareToLanScreen extends Screen {
             message = Component.translatable("commands.publish.failed");
          }
 
-         this.minecraft.gui.getChat().addMessage(message);
+         this.minecraft.gui.getChat().addClientSystemMessage(message);
          this.minecraft.getNarrator().saySystemQueued(message);
          this.minecraft.updateTitle();
       }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build();

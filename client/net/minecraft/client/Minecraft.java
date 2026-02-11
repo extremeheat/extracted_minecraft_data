@@ -90,7 +90,6 @@ import net.minecraft.client.gui.font.providers.FreeTypeUtil;
 import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
 import net.minecraft.client.gui.screens.BanNoticeScreens;
 import net.minecraft.client.gui.screens.ChatScreen;
-import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.InBedChatScreen;
@@ -121,7 +120,9 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.multiplayer.ProfileKeyPairManager;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.TransferState;
+import net.minecraft.client.multiplayer.chat.ChatAbilities;
 import net.minecraft.client.multiplayer.chat.ChatListener;
+import net.minecraft.client.multiplayer.chat.ChatRestriction;
 import net.minecraft.client.multiplayer.chat.report.ReportEnvironment;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.client.particle.ParticleEngine;
@@ -135,7 +136,6 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MapRenderer;
-import net.minecraft.client.renderer.PanoramicScreenshotParameters;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.ShaderManager;
@@ -183,7 +183,6 @@ import net.minecraft.gizmos.SimpleGizmoCollector;
 import net.minecraft.network.Connection;
 import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.KeybindResolver;
@@ -261,7 +260,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.apache.commons.io.FileUtils;
-import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
@@ -352,7 +350,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private @Nullable IntegratedServer singleplayerServer;
    private @Nullable Connection pendingConnection;
    private boolean isLocalServer;
-   private @Nullable Entity cameraEntity;
    public @Nullable Entity crosshairPickEntity;
    public @Nullable HitResult hitResult;
    private int rightClickDelay;
@@ -367,7 +364,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private boolean clientLevelTeardownInProgress;
    private Thread gameThread;
    private volatile boolean running;
-   private @Nullable Supplier<CrashReport> delayedCrash;
    private static int fps;
    private long frameTimeNs;
    private final FramerateLimitTracker framerateLimitTracker;
@@ -396,7 +392,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private List<SimpleGizmoCollector.GizmoInstance> drainedLatestTickGizmos;
 
    public Minecraft(final GameConfig gameConfig) {
-      super("Client");
+      super("Client", true);
       this.lastInputType = InputType.NONE;
       this.regionalCompliancies = new PeriodicNotificationManager(REGIONAL_COMPLIANCIES, Minecraft::countryEqualsISO3);
       this.lastNanoTime = Util.getNanos();
@@ -858,8 +854,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          boolean oomRecovery = false;
 
          while(this.running) {
-            this.handleDelayedCrash();
-
             try {
                SingleTickProfiler tickProfiler = SingleTickProfiler.createTickProfiler("Renderer");
                boolean shouldCollectFrameProfile = this.getDebugOverlay().showProfilerChart();
@@ -918,50 +912,58 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public void delayCrash(final CrashReport crash) {
-      this.delayedCrash = () -> this.fillReport(crash);
-   }
-
-   public void delayCrashRaw(final CrashReport crash) {
-      this.delayedCrash = () -> crash;
-   }
-
-   private void handleDelayedCrash() {
-      if (this.delayedCrash != null) {
-         crash(this, this.gameDirectory, (CrashReport)this.delayedCrash.get());
-      }
-
+      super.delayCrash(this.fillReport(crash));
    }
 
    public void emergencySaveAndCrash(final CrashReport partialReport) {
       MemoryReserve.release();
       CrashReport finalReport = this.fillReport(partialReport);
+      int exitCode = saveReportAndShutdownSoundManager(this, this.gameDirectory, finalReport);
       this.emergencySave();
-      crash(this, this.gameDirectory, finalReport);
+      System.exit(exitCode);
    }
 
    public static int saveReport(final File gameDirectory, final CrashReport crash) {
       Path crashDir = gameDirectory.toPath().resolve("crash-reports");
       Path crashFile = crashDir.resolve("crash-" + Util.getFilenameFormattedDateTime() + "-client.txt");
       Bootstrap.realStdoutPrintln(crash.getFriendlyReport(ReportType.CRASH));
-      if (crash.getSaveFile() != null) {
+      LOGGER.debug("Disabling console - remaining logs will be available only in log file");
+
+      byte var4;
+      try {
+         if (crash.getSaveFile() == null) {
+            if (crash.saveToFile(crashFile, ReportType.CRASH)) {
+               Bootstrap.realStdoutPrintln("#@!@# Game crashed! Crash report saved to: #@!@# " + String.valueOf(crashFile.toAbsolutePath()));
+               var4 = -1;
+               return var4;
+            }
+
+            Bootstrap.realStdoutPrintln("#@?@# Game crashed! Crash report could not be saved. #@?@#");
+            var4 = -2;
+            return var4;
+         }
+
          Bootstrap.realStdoutPrintln("#@!@# Game crashed! Crash report saved to: #@!@# " + String.valueOf(crash.getSaveFile().toAbsolutePath()));
-         return -1;
-      } else if (crash.saveToFile(crashFile, ReportType.CRASH)) {
-         Bootstrap.realStdoutPrintln("#@!@# Game crashed! Crash report saved to: #@!@# " + String.valueOf(crashFile.toAbsolutePath()));
-         return -1;
-      } else {
-         Bootstrap.realStdoutPrintln("#@?@# Game crashed! Crash report could not be saved. #@?@#");
-         return -2;
+         var4 = -1;
+      } finally {
+         Bootstrap.shutdownStdout();
       }
+
+      return var4;
    }
 
    public static void crash(final @Nullable Minecraft minecraft, final File gameDirectory, final CrashReport crash) {
+      int exitCode = saveReportAndShutdownSoundManager(minecraft, gameDirectory, crash);
+      System.exit(exitCode);
+   }
+
+   private static int saveReportAndShutdownSoundManager(final @Nullable Minecraft minecraft, final File gameDirectory, final CrashReport crash) {
       int exitCode = saveReport(gameDirectory, crash);
       if (minecraft != null) {
          minecraft.soundManager.emergencyShutdown();
       }
 
-      System.exit(exitCode);
+      return exitCode;
    }
 
    public boolean isEnforceUnicode() {
@@ -1027,14 +1029,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       }
 
-      TextureAtlasSprite missingIcon = missingModel.particleIcon();
+      TextureAtlasSprite missingIcon = missingModel.particleMaterial().sprite();
 
       for(Block block : BuiltInRegistries.BLOCK) {
          UnmodifiableIterator var15 = block.getStateDefinition().getPossibleStates().iterator();
 
          while(var15.hasNext()) {
             BlockState state = (BlockState)var15.next();
-            TextureAtlasSprite particleIcon = blockModelShaper.getParticleIcon(state);
+            TextureAtlasSprite particleIcon = blockModelShaper.getParticleMaterial(state).sprite();
             if (!state.isAir() && particleIcon == missingIcon) {
                LOGGER.debug("Missing particle icon for: {}", state);
             }
@@ -1062,25 +1064,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public void openChatScreen(final ChatComponent.ChatMethod chatMethod) {
-      ChatStatus chatStatus = this.getChatStatus();
-      if (!chatStatus.isChatAllowed(this.isLocalServer())) {
-         if (this.gui.isShowingChatDisabledByPlayer()) {
-            this.gui.setChatDisabledByPlayerShown(false);
-            this.setScreen(new ConfirmLinkScreen((result) -> {
-               if (result) {
-                  Util.getPlatform().openUri(CommonLinks.ACCOUNT_SETTINGS);
-               }
-
-               this.setScreen((Screen)null);
-            }, Minecraft.ChatStatus.INFO_DISABLED_BY_PROFILE, CommonLinks.ACCOUNT_SETTINGS, true));
-         } else {
-            Component message = chatStatus.getMessage();
-            this.gui.setOverlayMessage(message, false);
-            this.narrator.saySystemNow(message);
-            this.gui.setChatDisabledByPlayerShown(chatStatus == Minecraft.ChatStatus.DISABLED_BY_PROFILE);
-         }
-      } else {
-         this.gui.getChat().openScreen(chatMethod, ChatScreen::new);
+      if (this.player != null) {
+         this.gui.getChat().openScreen(chatMethod, this.player.chatAbilities(), ChatScreen::new);
       }
 
    }
@@ -1165,7 +1150,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.close();
       } finally {
          Util.timeSource = System::nanoTime;
-         if (this.delayedCrash == null) {
+         if (!this.hasDelayedCrash()) {
             System.exit(0);
          }
 
@@ -1765,7 +1750,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          if (this.player.isDeadOrDying() && !(this.screen instanceof DeathScreen)) {
             this.setScreen((Screen)null);
          } else if (this.player.isSleeping() && this.level != null) {
-            this.gui.getChat().openScreen(ChatComponent.ChatMethod.MESSAGE, InBedChatScreen::new);
+            this.gui.getChat().openScreen(ChatComponent.ChatMethod.MESSAGE, this.player.chatAbilities(), InBedChatScreen::new);
          }
       } else {
          Screen var3 = this.screen;
@@ -1912,7 +1897,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       while(this.options.keySocialInteractions.consumeClick()) {
          if (!this.isMultiplayerServer() && !SharedConstants.DEBUG_SOCIAL_INTERACTIONS) {
-            this.player.displayClientMessage(SOCIAL_INTERACTIONS_NOT_AVAILABLE, true);
+            this.chatListener.handleOverlay(SOCIAL_INTERACTIONS_NOT_AVAILABLE);
             this.narrator.saySystemNow(SOCIAL_INTERACTIONS_NOT_AVAILABLE);
          } else {
             if (this.socialInteractionsToast != null) {
@@ -2067,7 +2052,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.renderFrame(false, false);
          this.runAllTasks();
          this.managedBlock(() -> Util.getNanos() > finishTime);
-         this.handleDelayedCrash();
       }
 
       profiler.pop();
@@ -2153,6 +2137,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
 
          if (server != null) {
+            server.halt(false);
             this.setScreen(new GenericMessageScreen(SAVING_LEVEL));
             ProfilerFiller profiler = Profiler.get();
             profiler.push("waitForServer");
@@ -2266,21 +2251,37 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public boolean isBlocked(final UUID uuid) {
-      if (this.getChatStatus().isChatAllowed(false)) {
-         return this.playerSocialManager.shouldHideMessageFrom(uuid);
+      return !this.isLocalOrUnknownPlayer(uuid) && this.playerSocialManager.shouldHideMessageFrom(uuid);
+   }
+
+   private boolean isLocalOrUnknownPlayer(final UUID uuid) {
+      if (uuid.equals(Util.NIL_UUID)) {
+         return true;
       } else {
-         return (this.player == null || !uuid.equals(this.player.getUUID())) && !uuid.equals(Util.NIL_UUID);
+         return this.player != null && uuid.equals(this.player.getUUID());
       }
    }
 
-   public ChatStatus getChatStatus() {
-      if (this.options.chatVisibility().get() == ChatVisiblity.HIDDEN) {
-         return Minecraft.ChatStatus.DISABLED_BY_OPTIONS;
-      } else if (!this.allowsChat) {
-         return Minecraft.ChatStatus.DISABLED_BY_LAUNCHER;
-      } else {
-         return !this.userProperties().flag(UserFlag.CHAT_ALLOWED) ? Minecraft.ChatStatus.DISABLED_BY_PROFILE : Minecraft.ChatStatus.ENABLED;
+   public ChatAbilities computeChatAbilities() {
+      ChatAbilities.Builder builder = new ChatAbilities.Builder();
+      ChatVisiblity visiblityOption = (ChatVisiblity)this.options.chatVisibility().get();
+      if (visiblityOption == ChatVisiblity.HIDDEN) {
+         builder.addRestriction(ChatRestriction.CHAT_AND_COMMANDS_DISABLED_BY_OPTIONS);
+      } else if (visiblityOption == ChatVisiblity.SYSTEM) {
+         builder.addRestriction(ChatRestriction.CHAT_DISABLED_BY_OPTIONS);
       }
+
+      if (this.isMultiplayerServer()) {
+         if (!this.allowsChat) {
+            builder.addRestriction(ChatRestriction.DISABLED_BY_LAUNCHER);
+         }
+
+         if (SharedConstants.DEBUG_CHAT_DISABLED || !this.userProperties().flag(UserFlag.CHAT_ALLOWED)) {
+            builder.addRestriction(ChatRestriction.DISABLED_BY_PROFILE);
+         }
+      }
+
+      return builder.build();
    }
 
    public final boolean isDemo() {
@@ -2300,7 +2301,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public static boolean useShaderTransparency() {
-      return !instance.gameRenderer.isPanoramicMode() && (Boolean)instance.options.improvedTransparency().get();
+      return !instance.gameRenderer.getLevelRenderState().cameraRenderState.isPanoramicMode && (Boolean)instance.options.improvedTransparency().get();
    }
 
    public static boolean useAmbientOcclusion() {
@@ -2556,11 +2557,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public @Nullable Entity getCameraEntity() {
-      return this.cameraEntity;
+      return this.gameRenderer.getMainCamera().entity();
    }
 
    public void setCameraEntity(final @Nullable Entity cameraEntity) {
-      this.cameraEntity = cameraEntity;
+      this.gameRenderer.getMainCamera().setEntity(cameraEntity);
       this.gameRenderer.checkEntityPostEffect(cameraEntity);
    }
 
@@ -2664,10 +2665,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       float xRotO = this.player.xRotO;
       float yRotO = this.player.yRotO;
       this.gameRenderer.setRenderBlockOutline(false);
+      Camera camera = this.gameRenderer.getMainCamera();
 
-      MutableComponent var13;
+      MutableComponent var14;
       try {
-         this.gameRenderer.setPanoramicScreenshotParameters(new PanoramicScreenshotParameters(new Vector3f(this.gameRenderer.getMainCamera().forwardVector())));
+         camera.enablePanoramicMode();
          this.window.setWidth(4096);
          this.window.setHeight(4096);
          target.resize(4096, 4096);
@@ -2702,12 +2704,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
             this.player.yRotO = this.player.getYRot();
             this.player.xRotO = this.player.getXRot();
-            this.gameRenderer.updateCamera(DeltaTracker.ONE);
+            camera.update(DeltaTracker.ONE);
+            this.levelRenderer.update(camera);
             this.gameRenderer.renderLevel(DeltaTracker.ONE);
 
             try {
                Thread.sleep(10L);
-            } catch (InterruptedException var18) {
+            } catch (InterruptedException var19) {
             }
 
             Screenshot.grab(folder, "panorama_" + i + ".png", target, 4, (result) -> {
@@ -2715,11 +2718,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
 
          Component name = Component.literal(folder.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.OpenFile(folder.getAbsoluteFile()))));
-         var13 = Component.translatable("screenshot.success", name);
-         return var13;
+         var14 = Component.translatable("screenshot.success", name);
+         return var14;
       } catch (Exception e) {
          LOGGER.error("Couldn't save image", e);
-         var13 = Component.translatable("screenshot.failure", e.getMessage());
+         var14 = Component.translatable("screenshot.failure", e.getMessage());
       } finally {
          this.player.setXRot(xRot);
          this.player.setYRot(yRot);
@@ -2729,10 +2732,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.window.setWidth(ow);
          this.window.setHeight(oh);
          target.resize(ow, oh);
-         this.gameRenderer.setPanoramicScreenshotParameters((PanoramicScreenshotParameters)null);
+         camera.disablePanoramicMode();
       }
 
-      return var13;
+      return var14;
    }
 
    public SplashManager getSplashManager() {
@@ -2859,47 +2862,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       RESOURCE_RELOAD_INITIAL_TASK = CompletableFuture.completedFuture(Unit.INSTANCE);
       SOCIAL_INTERACTIONS_NOT_AVAILABLE = Component.translatable("multiplayer.socialInteractions.not_available");
       SAVING_LEVEL = Component.translatable("menu.savingLevel");
-   }
-
-   public static enum ChatStatus {
-      ENABLED(CommonComponents.EMPTY) {
-         public boolean isChatAllowed(final boolean isLocalServer) {
-            return true;
-         }
-      },
-      DISABLED_BY_OPTIONS(Component.translatable("chat.disabled.options").withStyle(ChatFormatting.RED)) {
-         public boolean isChatAllowed(final boolean isLocalServer) {
-            return false;
-         }
-      },
-      DISABLED_BY_LAUNCHER(Component.translatable("chat.disabled.launcher").withStyle(ChatFormatting.RED)) {
-         public boolean isChatAllowed(final boolean isLocalServer) {
-            return isLocalServer;
-         }
-      },
-      DISABLED_BY_PROFILE(Component.translatable("chat.disabled.profile", Component.keybind(Minecraft.instance.options.keyChat.getName())).withStyle(ChatFormatting.RED)) {
-         public boolean isChatAllowed(final boolean isLocalServer) {
-            return isLocalServer;
-         }
-      };
-
-      private static final Component INFO_DISABLED_BY_PROFILE = Component.translatable("chat.disabled.profile.moreInfo");
-      private final Component message;
-
-      private ChatStatus(final Component message) {
-         this.message = message;
-      }
-
-      public Component getMessage() {
-         return this.message;
-      }
-
-      public abstract boolean isChatAllowed(final boolean isLocalServer);
-
-      // $FF: synthetic method
-      private static ChatStatus[] $values() {
-         return new ChatStatus[]{ENABLED, DISABLED_BY_OPTIONS, DISABLED_BY_LAUNCHER, DISABLED_BY_PROFILE};
-      }
    }
 
    private static record GameLoadCookie(RealmsClient realmsClient, GameConfig.QuickPlayData quickPlayData) {

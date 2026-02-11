@@ -1198,7 +1198,7 @@ public class ServerPlayer extends Player {
                   CriteriaTriggers.SLEPT_IN_BED.trigger(this);
                });
                if (!this.level().canSleepThroughNights()) {
-                  this.displayClientMessage(Component.translatable("sleep.not_possible"), true);
+                  this.sendOverlayMessage(Component.translatable("sleep.not_possible"));
                }
 
                this.level().updateSleepingPlayerList();
@@ -1301,7 +1301,7 @@ public class ServerPlayer extends Player {
          AbstractContainerMenu menu = provider.createMenu(this.containerCounter, this.getInventory(), this);
          if (menu == null) {
             if (this.isSpectator()) {
-               this.displayClientMessage(Component.translatable("container.spectatorCantOpen").withStyle(ChatFormatting.RED), true);
+               this.sendOverlayMessage(Component.translatable("container.spectatorCantOpen").withStyle(ChatFormatting.RED));
             }
 
             return OptionalInt.empty();
@@ -1516,10 +1516,6 @@ public class ServerPlayer extends Player {
       this.lastSentHealth = -1.0E8F;
    }
 
-   public void displayClientMessage(final Component component, final boolean overlayMessage) {
-      this.sendSystemMessage(component, overlayMessage);
-   }
-
    protected void completeUsingItem() {
       if (!this.useItem.isEmpty() && this.isUsingItem()) {
          this.connection.send(new ClientboundEntityEventPacket(this, (byte)9));
@@ -1706,6 +1702,10 @@ public class ServerPlayer extends Player {
 
    public void sendSystemMessage(final Component message) {
       this.sendSystemMessage(message, false);
+   }
+
+   public void sendOverlayMessage(final Component message) {
+      this.sendSystemMessage(message, true);
    }
 
    public void sendSystemMessage(final Component message, final boolean overlay) {

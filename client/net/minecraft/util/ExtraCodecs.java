@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -62,6 +63,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.joml.AxisAngle4f;
@@ -125,6 +127,8 @@ public class ExtraCodecs {
    public static final Codec<String> RESOURCE_PATH_CODEC;
    public static final Codec<URI> UNTRUSTED_URI;
    public static final Codec<String> CHAT_STRING;
+   public static final Codec<Path> PATH_CODEC;
+   public static final Codec<Path> RELATIVE_NORMALIZED_SUB_PATH_CODEC;
 
    public ExtraCodecs() {
       super();
@@ -480,6 +484,14 @@ public class ExtraCodecs {
       }, Enum::toString);
    }
 
+   public static Codec<Path> guardedPathCodec(final Path baseFolder) {
+      Codec var10000 = RELATIVE_NORMALIZED_SUB_PATH_CODEC;
+      Objects.requireNonNull(baseFolder);
+      Function var10001 = baseFolder::resolve;
+      Objects.requireNonNull(baseFolder);
+      return var10000.xmap(var10001, baseFolder::relativize);
+   }
+
    static {
       JSON = converter(JsonOps.INSTANCE);
       JAVA = converter(JavaOps.INSTANCE);
@@ -581,6 +593,14 @@ public class ExtraCodecs {
          }
 
          return DataResult.success(string);
+      });
+      PATH_CODEC = Codec.STRING.xmap((x$0) -> Path.of(x$0), (path) -> FilenameUtils.separatorsToUnix(path.toString()));
+      RELATIVE_NORMALIZED_SUB_PATH_CODEC = PATH_CODEC.xmap(Path::normalize, Path::normalize).validate((path) -> {
+         if (path.isAbsolute()) {
+            return DataResult.error(() -> "Illegal absolute path: " + String.valueOf(path));
+         } else {
+            return !path.startsWith("..") && !path.startsWith(".") ? DataResult.success(path) : DataResult.error(() -> "Illegal path traversal: " + String.valueOf(path));
+         }
       });
    }
 

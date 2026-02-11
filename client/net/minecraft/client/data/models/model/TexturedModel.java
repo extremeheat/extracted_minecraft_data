@@ -3,6 +3,7 @@ package net.minecraft.client.data.models.model;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
@@ -72,8 +73,8 @@ public class TexturedModel {
       return (block) -> new TexturedModel((TextureMapping)mapping.apply(block), template);
    }
 
-   public static TexturedModel createAllSame(final Identifier id) {
-      return new TexturedModel(TextureMapping.cube(id), ModelTemplates.CUBE_ALL);
+   public static TexturedModel createAllSame(final Material material) {
+      return new TexturedModel(TextureMapping.cube(material), ModelTemplates.CUBE_ALL);
    }
 
    static {

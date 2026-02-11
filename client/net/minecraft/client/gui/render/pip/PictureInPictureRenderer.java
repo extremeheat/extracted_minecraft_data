@@ -14,8 +14,9 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
-import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.Projection;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
 import org.jspecify.annotations.Nullable;
 
@@ -25,7 +26,8 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
    private @Nullable GpuTextureView textureView;
    private @Nullable GpuTexture depthTexture;
    private @Nullable GpuTextureView depthTextureView;
-   private final CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("PIP - " + this.getClass().getSimpleName(), -1000.0F, 1000.0F, true);
+   private final Projection projection = new Projection();
+   private final ProjectionMatrixBuffer projectionMatrixBuffer = new ProjectionMatrixBuffer("PIP - " + this.getClass().getSimpleName());
 
    protected PictureInPictureRenderer(final MultiBufferSource.BufferSource bufferSource) {
       super();
@@ -79,7 +81,8 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
       }
 
       device.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 1.0);
-      RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer((float)width, (float)height), ProjectionType.ORTHOGRAPHIC);
+      this.projection.setupOrtho(-1000.0F, 1000.0F, (float)width, (float)height, true);
+      RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(this.projection), ProjectionType.ORTHOGRAPHIC);
    }
 
    protected boolean textureIsReadyToBlit(final T renderState) {

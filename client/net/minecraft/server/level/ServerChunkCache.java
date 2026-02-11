@@ -21,7 +21,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.FileUtil;
 import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
@@ -553,11 +552,7 @@ public class ServerChunkCache extends ChunkSource {
    private final class MainThreadExecutor extends BlockableEventLoop<Runnable> {
       private MainThreadExecutor(final Level level) {
          Objects.requireNonNull(ServerChunkCache.this);
-         super("Chunk source main thread executor for " + String.valueOf(level.dimension().identifier()));
-      }
-
-      public void managedBlock(final BooleanSupplier condition) {
-         super.managedBlock(() -> MinecraftServer.throwIfFatalException() && condition.getAsBoolean());
+         super("Chunk source main thread executor for " + String.valueOf(level.dimension().identifier()), false);
       }
 
       public Runnable wrapRunnable(final Runnable runnable) {

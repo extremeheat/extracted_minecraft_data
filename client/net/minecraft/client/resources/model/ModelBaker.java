@@ -1,8 +1,8 @@
 package net.minecraft.client.resources.model;
 
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.resources.Identifier;
-import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 public interface ModelBaker {
@@ -10,18 +10,16 @@ public interface ModelBaker {
 
    BlockModelPart missingBlockModelPart();
 
-   SpriteGetter sprites();
+   MaterialBaker materials();
 
-   PartCache parts();
+   Interner interner();
 
    <T> T compute(SharedOperationKey<T> key);
 
-   public interface PartCache {
-      default Vector3fc vector(final float x, final float y, final float z) {
-         return this.vector(new Vector3f(x, y, z));
-      }
-
+   public interface Interner {
       Vector3fc vector(Vector3fc vector);
+
+      BakedQuad.SpriteInfo spriteInfo(BakedQuad.SpriteInfo sprite);
    }
 
    @FunctionalInterface

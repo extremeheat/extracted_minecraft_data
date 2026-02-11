@@ -54,7 +54,10 @@ public class BabyAxolotlModel extends EntityModel<AxolotlRenderState> {
 
    public void setupAnim(final AxolotlRenderState state) {
       super.setupAnim(state);
-      this.walkAnimation.applyWalk(state.walkAnimationPos, state.walkAnimationSpeed, 15.0F, 30.0F);
+      if (state.walkAnimationState.isStarted()) {
+         this.walkAnimation.applyWalk(state.walkAnimationPos, state.walkAnimationSpeed, 15.0F, 30.0F);
+      }
+
       this.swimAnimation.apply(state.swimAnimation, state.ageInTicks);
       this.walkUnderwaterAnimation.apply(state.walkAnimationState, state.ageInTicks);
       this.idleOnGroundAnimation.apply(state.idleOnGroundAnimationState, state.ageInTicks);

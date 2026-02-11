@@ -72,12 +72,12 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitMovingBlock(poseStack, movingBlockRenderState);
    }
 
-   public void submitBlockModel(final PoseStack poseStack, final RenderType renderType, final BlockStateModel model, final float r, final float g, final float b, final int lightCoords, final int overlayCoords, final int outlineColor) {
-      this.order(0).submitBlockModel(poseStack, renderType, model, r, g, b, lightCoords, overlayCoords, outlineColor);
+   public void submitBlockModel(final PoseStack poseStack, final RenderType renderType, final BlockStateModel model, final int tintColor, final int lightCoords, final int overlayCoords, final int outlineColor) {
+      this.order(0).submitBlockModel(poseStack, renderType, model, tintColor, lightCoords, overlayCoords, outlineColor);
    }
 
-   public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final List<BakedQuad> quads, final RenderType renderType, final ItemStackRenderState.FoilType foilType) {
-      this.order(0).submitItem(poseStack, displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, renderType, foilType);
+   public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final List<BakedQuad> quads, final ItemStackRenderState.FoilType foilType) {
+      this.order(0).submitItem(poseStack, displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, foilType);
    }
 
    public void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
@@ -161,13 +161,13 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       }
    }
 
-   public static record BlockModelSubmit(PoseStack.Pose pose, RenderType renderType, BlockStateModel model, float r, float g, float b, int lightCoords, int overlayCoords, int outlineColor) {
+   public static record BlockModelSubmit(PoseStack.Pose pose, RenderType renderType, BlockStateModel model, int tintColor, int lightCoords, int overlayCoords, int outlineColor) {
       public BlockModelSubmit {
          super();
       }
    }
 
-   public static record ItemSubmit(PoseStack.Pose pose, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, RenderType renderType, ItemStackRenderState.FoilType foilType) {
+   public static record ItemSubmit(PoseStack.Pose pose, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType) {
       public ItemSubmit {
          super();
       }

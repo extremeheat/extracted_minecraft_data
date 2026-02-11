@@ -819,27 +819,27 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                String actualStructureName = structure.getStructureName();
                if (packet.getUpdateType() == StructureBlockEntity.UpdateType.SAVE_AREA) {
                   if (structure.saveStructure()) {
-                     this.player.displayClientMessage(Component.translatable("structure_block.save_success", actualStructureName), false);
+                     this.player.sendSystemMessage(Component.translatable("structure_block.save_success", actualStructureName));
                   } else {
-                     this.player.displayClientMessage(Component.translatable("structure_block.save_failure", actualStructureName), false);
+                     this.player.sendSystemMessage(Component.translatable("structure_block.save_failure", actualStructureName));
                   }
                } else if (packet.getUpdateType() == StructureBlockEntity.UpdateType.LOAD_AREA) {
                   if (!structure.isStructureLoadable()) {
-                     this.player.displayClientMessage(Component.translatable("structure_block.load_not_found", actualStructureName), false);
+                     this.player.sendSystemMessage(Component.translatable("structure_block.load_not_found", actualStructureName));
                   } else if (structure.placeStructureIfSameSize(this.player.level())) {
-                     this.player.displayClientMessage(Component.translatable("structure_block.load_success", actualStructureName), false);
+                     this.player.sendSystemMessage(Component.translatable("structure_block.load_success", actualStructureName));
                   } else {
-                     this.player.displayClientMessage(Component.translatable("structure_block.load_prepare", actualStructureName), false);
+                     this.player.sendSystemMessage(Component.translatable("structure_block.load_prepare", actualStructureName));
                   }
                } else if (packet.getUpdateType() == StructureBlockEntity.UpdateType.SCAN_AREA) {
                   if (structure.detectSize()) {
-                     this.player.displayClientMessage(Component.translatable("structure_block.size_success", actualStructureName), false);
+                     this.player.sendSystemMessage(Component.translatable("structure_block.size_success", actualStructureName));
                   } else {
-                     this.player.displayClientMessage(Component.translatable("structure_block.size_failure"), false);
+                     this.player.sendSystemMessage(Component.translatable("structure_block.size_failure"));
                   }
                }
             } else {
-               this.player.displayClientMessage(Component.translatable("structure_block.invalid_structure_name", packet.getName()), false);
+               this.player.sendSystemMessage(Component.translatable("structure_block.invalid_structure_name", packet.getName()));
             }
 
             structure.setChanged();
@@ -1340,8 +1340,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         }
 
                         if (direction == Direction.UP && !interactionResult.consumesAction() && pos.getY() >= maxY && wasBlockPlacementAttempt(this.player, itemStack)) {
-                           Component component = Component.translatable("build.tooHigh", maxY).withStyle(ChatFormatting.RED);
-                           this.player.sendSystemMessage(component, true);
+                           this.player.sendOverlayMessage(Component.translatable("build.tooHigh", maxY).withStyle(ChatFormatting.RED));
                         } else if (interactionResult instanceof InteractionResult.Success) {
                            InteractionResult.Success success = (InteractionResult.Success)interactionResult;
                            if (success.swingSource() == InteractionResult.SwingSource.SERVER) {
@@ -1350,8 +1349,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         }
                      }
                   } else {
-                     Component component = Component.translatable("build.tooHigh", maxY).withStyle(ChatFormatting.RED);
-                     this.player.sendSystemMessage(component, true);
+                     this.player.sendOverlayMessage(Component.translatable("build.tooHigh", maxY).withStyle(ChatFormatting.RED));
                   }
 
                   this.send(new ClientboundBlockUpdatePacket(level, pos));

@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -15,10 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelDebugName;
-import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.resources.Identifier;
+import net.minecraft.util.GsonHelper;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -48,22 +47,17 @@ public class TextureSlots {
       Data.Builder builder = new Data.Builder();
 
       for(Map.Entry<String, JsonElement> entry : texturesObject.entrySet()) {
-         parseEntry((String)entry.getKey(), ((JsonElement)entry.getValue()).getAsString(), builder);
+         parseEntry((String)entry.getKey(), (JsonElement)entry.getValue(), builder);
       }
 
       return builder.build();
    }
 
-   private static void parseEntry(final String slot, final String value, final Data.Builder output) {
-      if (isTextureReference(value)) {
-         output.addReference(slot, value.substring(1));
+   private static void parseEntry(final String slot, final JsonElement value, final Data.Builder output) {
+      if (GsonHelper.isStringValue(value) && isTextureReference(value.getAsString())) {
+         output.addReference(slot, value.getAsString().substring(1));
       } else {
-         Identifier location = Identifier.tryParse(value);
-         if (location == null) {
-            throw new JsonParseException(value + " is not valid resource location");
-         }
-
-         output.addTexture(slot, new Material(ModelManager.BLOCK_OR_ITEM, location));
+         output.addTexture(slot, (Material)Material.CODEC.parse(JsonOps.INSTANCE, value).getOrThrow(JsonParseException::new));
       }
 
    }

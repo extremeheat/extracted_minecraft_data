@@ -30,17 +30,19 @@ public class PostChain implements AutoCloseable {
    private final Map<Identifier, PostChainConfig.InternalTarget> internalTargets;
    private final Set<Identifier> externalTargets;
    private final Map<Identifier, RenderTarget> persistentTargets = new HashMap();
-   private final CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer;
+   private final Projection projection;
+   private final ProjectionMatrixBuffer projectionMatrixBuffer;
 
-   private PostChain(final List<PostPass> passes, final Map<Identifier, PostChainConfig.InternalTarget> internalTargets, final Set<Identifier> externalTargets, final CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer) {
+   private PostChain(final List<PostPass> passes, final Map<Identifier, PostChainConfig.InternalTarget> internalTargets, final Set<Identifier> externalTargets, final Projection projection, final ProjectionMatrixBuffer projectionMatrixBuffer) {
       super();
       this.passes = passes;
       this.internalTargets = internalTargets;
       this.externalTargets = externalTargets;
+      this.projection = projection;
       this.projectionMatrixBuffer = projectionMatrixBuffer;
    }
 
-   public static PostChain load(final PostChainConfig config, final TextureManager textureManager, final Set<Identifier> allowedExternalTargets, final Identifier id, final CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer) throws ShaderManager.CompilationException {
+   public static PostChain load(final PostChainConfig config, final TextureManager textureManager, final Set<Identifier> allowedExternalTargets, final Identifier id, final Projection projection, final ProjectionMatrixBuffer projectionMatrixBuffer) throws ShaderManager.CompilationException {
       Stream<Identifier> referencedTargets = config.passes().stream().flatMap(PostChainConfig.Pass::referencedTargets);
       Set<Identifier> referencedExternalTargets = (Set)referencedTargets.filter((targetId) -> !config.internalTargets().containsKey(targetId)).collect(Collectors.toSet());
       Set<Identifier> invalidExternalTargets = Sets.difference(referencedExternalTargets, allowedExternalTargets);
@@ -54,7 +56,7 @@ public class PostChain implements AutoCloseable {
             passes.add(createPass(textureManager, pass, id.withSuffix("/" + i)));
          }
 
-         return new PostChain(passes.build(), config.internalTargets(), referencedExternalTargets, projectionMatrixBuffer);
+         return new PostChain(passes.build(), config.internalTargets(), referencedExternalTargets, projection, projectionMatrixBuffer);
       }
    }
 
@@ -209,7 +211,8 @@ public class PostChain implements AutoCloseable {
    }
 
    public void addToFrame(final FrameGraphBuilder frame, final int screenWidth, final int screenHeight, final TargetBundle providedTargets) {
-      GpuBufferSlice projectionBuffer = this.projectionMatrixBuffer.getBuffer((float)screenWidth, (float)screenHeight);
+      this.projection.setSize((float)screenWidth, (float)screenHeight);
+      GpuBufferSlice projectionBuffer = this.projectionMatrixBuffer.getBuffer(this.projection);
       Map<Identifier, ResourceHandle<RenderTarget>> targets = new HashMap(this.internalTargets.size() + this.externalTargets.size());
 
       for(Identifier id : this.externalTargets) {

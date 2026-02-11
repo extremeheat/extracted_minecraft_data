@@ -61,6 +61,7 @@ public class PartNames {
    public static final String BODY = "body";
    public static final String UPPER_BODY = "upper_body";
    public static final String INNER_BODY = "inner_body";
+   public static final String WAIST = "waist";
    public static final String HAT_RIM = "hat_rim";
    public static final String GOGGLES = "goggles";
    public static final String JACKET = "jacket";

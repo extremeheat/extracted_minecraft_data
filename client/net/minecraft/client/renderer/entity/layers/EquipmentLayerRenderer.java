@@ -65,7 +65,7 @@ public class EquipmentLayerRenderer {
          }
 
          ArmorTrim trim = (ArmorTrim)itemStack.get(DataComponents.TRIM);
-         if (trim != null) {
+         if (trim != null && layerType != EquipmentClientInfo.LayerType.HUMANOID_BABY) {
             TextureAtlasSprite sprite = (TextureAtlasSprite)this.trimSpriteLookup.apply(new TrimSpriteKey(trim, layerType, equipmentAssetId));
             RenderType renderType = Sheets.armorTrimsSheet(((TrimPattern)trim.pattern().value()).decal());
             submitNodeCollector.order(nextOrder++).submitModel(model, state, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY, -1, sprite, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);

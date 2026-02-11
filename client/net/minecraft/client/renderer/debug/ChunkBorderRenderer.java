@@ -25,7 +25,7 @@ public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
-      Entity cameraEntity = this.minecraft.gameRenderer.getMainCamera().entity();
+      Entity cameraEntity = this.minecraft.getCameraEntity();
       float ymin = (float)this.minecraft.level.getMinY();
       float ymax = (float)(this.minecraft.level.getMaxY() + 1);
       SectionPos cameraPos = SectionPos.of(cameraEntity.blockPosition());

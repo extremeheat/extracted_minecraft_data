@@ -6,7 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SnowyDirtBlock;
+import net.minecraft.world.level.block.SnowyBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
@@ -37,8 +37,8 @@ public class SnowAndFreezeFeature extends Feature<NoneFeatureConfiguration> {
             if (biome.shouldSnow(level, topPos)) {
                level.setBlock(topPos, Blocks.SNOW.defaultBlockState(), 2);
                BlockState belowState = level.getBlockState(belowPos);
-               if (belowState.hasProperty(SnowyDirtBlock.SNOWY)) {
-                  level.setBlock(belowPos, (BlockState)belowState.setValue(SnowyDirtBlock.SNOWY, true), 2);
+               if (belowState.hasProperty(SnowyBlock.SNOWY)) {
+                  level.setBlock(belowPos, (BlockState)belowState.setValue(SnowyBlock.SNOWY, true), 2);
                }
             }
          }

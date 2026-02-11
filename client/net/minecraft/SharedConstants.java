@@ -17,7 +17,7 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4774;
+   public static final int WORLD_VERSION = 4775;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
@@ -26,13 +26,13 @@ public class SharedConstants {
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 775;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 292;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 293;
    public static final int SNBT_NAG_VERSION = 4763;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 80;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 81;
    /** @deprecated */
    @Deprecated
    public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
@@ -41,7 +41,7 @@ public class SharedConstants {
    public static final int DATA_PACK_FORMAT_MAJOR = 99;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MINOR = 0;
+   public static final int DATA_PACK_FORMAT_MINOR = 1;
    public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "2.0.0";
    /** @deprecated */
    @Deprecated
@@ -90,6 +90,7 @@ public class SharedConstants {
    public static final boolean DEBUG_SCULK_CATALYST = debugFlag("SCULK_CATALYST");
    public static final boolean DEBUG_BYPASS_REALMS_VERSION_CHECK = debugFlag("BYPASS_REALMS_VERSION_CHECK");
    public static final boolean DEBUG_SOCIAL_INTERACTIONS = debugFlag("SOCIAL_INTERACTIONS");
+   public static final boolean DEBUG_CHAT_DISABLED = debugFlag("CHAT_DISABLED");
    public static final boolean DEBUG_VALIDATE_RESOURCE_PATH_CASE = debugFlag("VALIDATE_RESOURCE_PATH_CASE");
    public static final boolean DEBUG_UNLOCK_ALL_TRADES = debugFlag("UNLOCK_ALL_TRADES");
    public static final boolean DEBUG_BREEZE_MOB = debugFlag("BREEZE_MOB");
@@ -219,7 +220,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742116;
+      return 1073742117;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {

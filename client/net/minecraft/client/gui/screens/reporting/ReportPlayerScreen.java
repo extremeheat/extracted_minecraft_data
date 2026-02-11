@@ -23,13 +23,15 @@ public class ReportPlayerScreen extends Screen {
    private final Screen lastScreen;
    private final ReportingContext context;
    private final PlayerEntry player;
+   private final boolean chatDisabledOrBlocked;
    private final LinearLayout layout = LinearLayout.vertical().spacing(6);
 
-   public ReportPlayerScreen(final Screen lastScreen, final ReportingContext context, final PlayerEntry player) {
+   public ReportPlayerScreen(final Screen lastScreen, final ReportingContext context, final PlayerEntry player, final boolean chatDisabledOrBlocked) {
       super(TITLE);
       this.lastScreen = lastScreen;
       this.context = context;
       this.player = player;
+      this.chatDisabledOrBlocked = chatDisabledOrBlocked;
    }
 
    public Component getNarrationMessage() {
@@ -41,7 +43,10 @@ public class ReportPlayerScreen extends Screen {
       this.layout.addChild(new StringWidget(this.title, this.font), this.layout.newCellSettings().paddingBottom(6));
       this.layout.addChild((new MultiLineTextWidget(MESSAGE, this.font)).setCentered(true), this.layout.newCellSettings().paddingBottom(6));
       Button chatButton = (Button)this.layout.addChild(Button.builder(REPORT_CHAT, (b) -> this.minecraft.setScreen(new ChatReportScreen(this.lastScreen, this.context, this.player.getPlayerId()))).build());
-      if (!this.player.isChatReportable()) {
+      if (this.chatDisabledOrBlocked) {
+         chatButton.active = false;
+         chatButton.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.chat_disabled_or_blocked")));
+      } else if (!this.player.isChatReportable()) {
          chatButton.active = false;
          chatButton.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.not_reportable")));
       } else if (!this.player.hasRecentMessages()) {

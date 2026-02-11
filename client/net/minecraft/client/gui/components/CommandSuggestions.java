@@ -15,8 +15,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -35,8 +37,10 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.commands.ArgumentVisitor;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -50,7 +54,12 @@ public class CommandSuggestions {
    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("(\\s+)");
    private static final Style UNPARSED_STYLE;
    private static final Style LITERAL_STYLE;
+   public static final Style USAGE_FORMAT;
    private static final List<Style> ARGUMENT_STYLES;
+   public static final int LINE_HEIGHT = 12;
+   public static final int USAGE_OFFSET_FROM_BOTTOM = 27;
+   private static final Component COMMANDS_NOT_ALLOWED_TEXT;
+   private static final Component MESSAGES_NOT_ALLOWED_TEXT;
    private final Minecraft minecraft;
    private final Screen screen;
    private final EditBox input;
@@ -67,9 +76,13 @@ public class CommandSuggestions {
    private @Nullable ParseResults<ClientSuggestionProvider> currentParse;
    private @Nullable CompletableFuture<Suggestions> pendingSuggestions;
    private @Nullable SuggestionsList suggestions;
+   private boolean currentParseIsCommand;
+   private boolean currentParseIsMessage;
    private boolean allowSuggestions;
    private boolean keepSuggestions;
    private boolean allowHiding = true;
+   private boolean messagesAllowed = true;
+   private boolean commandsAllowed = true;
 
    public CommandSuggestions(final Minecraft minecraft, final Screen screen, final EditBox input, final Font font, final boolean commandsOnly, final boolean onlyShowIfCursorPastError, final int lineStartOffset, final int suggestionLineLimit, final boolean anchorToBottom, final int fillColor) {
       super();
@@ -96,6 +109,11 @@ public class CommandSuggestions {
 
    public void setAllowHiding(final boolean allowHiding) {
       this.allowHiding = allowHiding;
+   }
+
+   public void setRestrictions(final boolean messagesAllowed, final boolean commandsAllowed) {
+      this.messagesAllowed = messagesAllowed;
+      this.commandsAllowed = commandsAllowed;
    }
 
    public boolean keyPressed(final KeyEvent event) {
@@ -175,6 +193,8 @@ public class CommandSuggestions {
       String command = this.input.getValue();
       if (this.currentParse != null && !this.currentParse.getReader().getString().equals(command)) {
          this.currentParse = null;
+         this.currentParseIsCommand = false;
+         this.currentParseIsMessage = false;
       }
 
       if (!this.keepSuggestions) {
@@ -195,24 +215,53 @@ public class CommandSuggestions {
          CommandDispatcher<ClientSuggestionProvider> commands = this.minecraft.player.connection.getCommands();
          if (this.currentParse == null) {
             this.currentParse = commands.parse(reader, this.minecraft.player.connection.getSuggestionsProvider());
+            this.currentParseIsCommand = true;
+            this.currentParseIsMessage = hasMessageArguments(this.currentParse);
          }
 
          int parseStart = this.onlyShowIfCursorPastError ? reader.getCursor() : 1;
          if (cursorPosition >= parseStart && (this.suggestions == null || !this.keepSuggestions)) {
             this.pendingSuggestions = commands.getCompletionSuggestions(this.currentParse, cursorPosition);
-            this.pendingSuggestions.thenRun(() -> {
+            this.pendingSuggestions.thenAccept((suggestionResult) -> {
                if (this.pendingSuggestions.isDone()) {
-                  this.updateUsageInfo();
+                  this.updateUsageInfo(this.currentParse, suggestionResult);
                }
             });
          }
-      } else {
+      } else if (!command.isBlank()) {
+         this.currentParseIsMessage = true;
          String partialCommand = command.substring(0, cursorPosition);
          int lastWord = getLastWordIndex(partialCommand);
-         Collection<String> nonCommandSuggestions = this.minecraft.player.connection.getSuggestionsProvider().getCustomTabSugggestions();
+         Collection<String> nonCommandSuggestions = this.minecraft.player.connection.getSuggestionsProvider().getCustomTabSuggestions();
          this.pendingSuggestions = SharedSuggestionProvider.suggest(nonCommandSuggestions, new SuggestionsBuilder(partialCommand, lastWord));
+         if (this.currentParseIsMessage && !this.messagesAllowed) {
+            this.commandUsage.add(MESSAGES_NOT_ALLOWED_TEXT.getVisualOrderText());
+         }
+
+         this.recomputeUsageBoxWidth();
+         this.commandUsagePosition = 0;
+      } else {
+         this.pendingSuggestions = null;
       }
 
+   }
+
+   private static boolean hasMessageArguments(final ParseResults<ClientSuggestionProvider> parseResults) {
+      class Visitor implements ArgumentVisitor.Output<ClientSuggestionProvider> {
+         boolean foundMessageArgument;
+
+         Visitor() {
+            super();
+         }
+
+         public <T> void accept(final CommandContextBuilder<ClientSuggestionProvider> context, final ArgumentCommandNode<ClientSuggestionProvider, T> argument, final @Nullable ParsedArgument<ClientSuggestionProvider, T> value) {
+            this.foundMessageArgument |= value != null && value.getResult() instanceof MessageArgument.Message;
+         }
+      }
+
+      Visitor visitor = new Visitor();
+      ArgumentVisitor.visitArguments(parseResults, visitor, false);
+      return visitor.foundMessageArgument;
    }
 
    private static int getLastWordIndex(final String text) {
@@ -234,13 +283,13 @@ public class CommandSuggestions {
       return context == null ? message.getVisualOrderText() : Component.translatable("command.context.parse_error", message, e.getCursor(), context).getVisualOrderText();
    }
 
-   private void updateUsageInfo() {
+   private void updateUsageInfo(final ParseResults<ClientSuggestionProvider> currentParse, final Suggestions suggestions) {
       boolean trailingCharacters = false;
       if (this.input.getCursorPosition() == this.input.getValue().length()) {
-         if (((Suggestions)this.pendingSuggestions.join()).isEmpty() && !this.currentParse.getExceptions().isEmpty()) {
+         if (suggestions.isEmpty() && !currentParse.getExceptions().isEmpty()) {
             int literals = 0;
 
-            for(Map.Entry<CommandNode<ClientSuggestionProvider>, CommandSyntaxException> entry : this.currentParse.getExceptions().entrySet()) {
+            for(Map.Entry<CommandNode<ClientSuggestionProvider>, CommandSyntaxException> entry : currentParse.getExceptions().entrySet()) {
                CommandSyntaxException exception = (CommandSyntaxException)entry.getValue();
                if (exception.getType() == CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect()) {
                   ++literals;
@@ -250,17 +299,36 @@ public class CommandSuggestions {
             }
 
             if (literals > 0) {
-               this.commandUsage.add(getExceptionMessage(CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().createWithContext(this.currentParse.getReader())));
+               this.commandUsage.add(getExceptionMessage(CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().createWithContext(currentParse.getReader())));
             }
-         } else if (this.currentParse.getReader().canRead()) {
+         } else if (currentParse.getReader().canRead()) {
             trailingCharacters = true;
          }
       }
 
-      this.commandUsagePosition = 0;
-      this.commandUsageWidth = this.screen.width;
-      if (this.commandUsage.isEmpty() && !this.fillNodeUsage(ChatFormatting.GRAY) && trailingCharacters) {
-         this.commandUsage.add(getExceptionMessage(Commands.getParseException(this.currentParse)));
+      SuggestionContext<ClientSuggestionProvider> suggestionContextAtCursor = currentParse.getContext().findSuggestionContext(this.input.getCursorPosition());
+      if (this.commandUsage.isEmpty()) {
+         List<FormattedCharSequence> usageEntries = this.fillNodeUsage(suggestionContextAtCursor, USAGE_FORMAT);
+         if (usageEntries.isEmpty() && trailingCharacters) {
+            this.commandUsage.add(getExceptionMessage(Commands.getParseException(currentParse)));
+         }
+
+         this.commandUsage.addAll(usageEntries);
+      }
+
+      if (this.currentParseIsCommand && !this.commandsAllowed) {
+         this.commandUsage.add(COMMANDS_NOT_ALLOWED_TEXT.getVisualOrderText());
+      }
+
+      if (this.currentParseIsMessage && !this.messagesAllowed) {
+         this.commandUsage.add(MESSAGES_NOT_ALLOWED_TEXT.getVisualOrderText());
+      }
+
+      this.recomputeUsageBoxWidth();
+      if (!this.commandUsage.isEmpty()) {
+         this.commandUsagePosition = Mth.clamp(this.input.getScreenX(suggestionContextAtCursor.startPos), 0, this.input.getScreenX(0) + this.input.getInnerWidth() - this.commandUsageWidth);
+      } else {
+         this.commandUsagePosition = 0;
       }
 
       this.suggestions = null;
@@ -270,29 +338,27 @@ public class CommandSuggestions {
 
    }
 
-   private boolean fillNodeUsage(final ChatFormatting color) {
-      CommandContextBuilder<ClientSuggestionProvider> rootContext = this.currentParse.getContext();
-      SuggestionContext<ClientSuggestionProvider> suggestionContext = rootContext.findSuggestionContext(this.input.getCursorPosition());
+   private List<FormattedCharSequence> fillNodeUsage(final SuggestionContext<ClientSuggestionProvider> suggestionContext, final Style usageFormat) {
       Map<CommandNode<ClientSuggestionProvider>, String> usage = this.minecraft.player.connection.getCommands().getSmartUsage(suggestionContext.parent, this.minecraft.player.connection.getSuggestionsProvider());
-      List<FormattedCharSequence> lines = Lists.newArrayList();
-      int longest = 0;
-      Style usageFormat = Style.EMPTY.withColor(color);
+      List<FormattedCharSequence> lines = new ArrayList();
 
       for(Map.Entry<CommandNode<ClientSuggestionProvider>, String> entry : usage.entrySet()) {
          if (!(entry.getKey() instanceof LiteralCommandNode)) {
             lines.add(FormattedCharSequence.forward((String)entry.getValue(), usageFormat));
-            longest = Math.max(longest, this.font.width((String)entry.getValue()));
          }
       }
 
-      if (!lines.isEmpty()) {
-         this.commandUsage.addAll(lines);
-         this.commandUsagePosition = Mth.clamp(this.input.getScreenX(suggestionContext.startPos), 0, this.input.getScreenX(0) + this.input.getInnerWidth() - longest);
-         this.commandUsageWidth = longest;
-         return true;
-      } else {
-         return false;
+      return lines;
+   }
+
+   private void recomputeUsageBoxWidth() {
+      int longest = 0;
+
+      for(FormattedCharSequence entry : this.commandUsage) {
+         longest = Math.max(longest, this.font.width(entry));
       }
+
+      this.commandUsageWidth = longest;
    }
 
    private @Nullable FormattedCharSequence formatChat(final String text, final int offset) {
@@ -362,7 +428,7 @@ public class CommandSuggestions {
       int y = 0;
 
       for(FormattedCharSequence line : this.commandUsage) {
-         int lineY = this.anchorToBottom ? this.screen.height - 14 - 13 - 12 * y : 72 + 12 * y;
+         int lineY = this.anchorToBottom ? this.screen.height - 27 - 12 * y : 72 + 12 * y;
          graphics.fill(this.commandUsagePosition - 1, lineY, this.commandUsagePosition + this.commandUsageWidth + 1, lineY + 12, this.fillColor);
          graphics.drawString(this.font, (FormattedCharSequence)line, this.commandUsagePosition, lineY + 2, -1);
          ++y;
@@ -374,13 +440,24 @@ public class CommandSuggestions {
       return (Component)(this.suggestions != null ? CommonComponents.NEW_LINE.copy().append(this.suggestions.getNarrationMessage()) : CommonComponents.EMPTY);
    }
 
+   public boolean hasAllowedInput() {
+      if (this.currentParseIsMessage && !this.messagesAllowed) {
+         return false;
+      } else {
+         return !this.currentParseIsCommand || this.commandsAllowed;
+      }
+   }
+
    static {
       UNPARSED_STYLE = Style.EMPTY.withColor(ChatFormatting.RED);
       LITERAL_STYLE = Style.EMPTY.withColor(ChatFormatting.GRAY);
+      USAGE_FORMAT = Style.EMPTY.withColor(ChatFormatting.GRAY);
       Stream var10000 = Stream.of(ChatFormatting.AQUA, ChatFormatting.YELLOW, ChatFormatting.GREEN, ChatFormatting.LIGHT_PURPLE, ChatFormatting.GOLD);
       Style var10001 = Style.EMPTY;
       Objects.requireNonNull(var10001);
       ARGUMENT_STYLES = (List)var10000.map(var10001::withColor).collect(ImmutableList.toImmutableList());
+      COMMANDS_NOT_ALLOWED_TEXT = Component.translatable("chat_screen.commands_not_allowed").withStyle(ChatFormatting.RED);
+      MESSAGES_NOT_ALLOWED_TEXT = Component.translatable("chat_screen.messages_not_allowed").withStyle(ChatFormatting.RED);
    }
 
    public class SuggestionsList {

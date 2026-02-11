@@ -151,7 +151,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                }
 
                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)buttonSprite, posX, posY, 14, 14);
-               TextureAtlasSprite bannerPatternSprite = graphics.getSprite(Sheets.getBannerMaterial(pattern));
+               TextureAtlasSprite bannerPatternSprite = graphics.getSprite(Sheets.getBannerSprite(pattern));
                this.renderBannerOnButton(graphics, posX, posY, bannerPatternSprite);
             }
          }

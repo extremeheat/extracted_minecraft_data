@@ -7,31 +7,31 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.MaterialMapper;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SpriteMapper;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import org.joml.Vector3fc;
 
 public class HangingSignSpecialRenderer implements NoDataSpecialModelRenderer {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final Model.Simple model;
-   private final Material material;
+   private final SpriteId sprite;
 
-   public HangingSignSpecialRenderer(final MaterialSet materials, final Model.Simple model, final Material material) {
+   public HangingSignSpecialRenderer(final SpriteGetter sprites, final Model.Simple model, final SpriteId sprite) {
       super();
-      this.materials = materials;
+      this.sprites = sprites;
       this.model = model;
-      this.material = material;
+      this.sprite = sprite;
    }
 
    public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
-      HangingSignRenderer.submitSpecial(this.materials, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.model, this.material);
+      HangingSignRenderer.submitSpecial(this.sprites, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.model, this.sprite);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {
@@ -59,10 +59,10 @@ public class HangingSignSpecialRenderer implements NoDataSpecialModelRenderer {
       public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
          Model.Simple model = HangingSignRenderer.createSignModel(context.entityModelSet(), this.woodType, HangingSignRenderer.AttachmentType.CEILING_MIDDLE);
          Optional var10000 = this.texture;
-         MaterialMapper var10001 = Sheets.HANGING_SIGN_MAPPER;
+         SpriteMapper var10001 = Sheets.HANGING_SIGN_MAPPER;
          Objects.requireNonNull(var10001);
-         Material material = (Material)var10000.map(var10001::apply).orElseGet(() -> Sheets.getHangingSignMaterial(this.woodType));
-         return new HangingSignSpecialRenderer(context.materials(), model, material);
+         SpriteId sprite = (SpriteId)var10000.map(var10001::apply).orElseGet(() -> Sheets.getHangingSignSprite(this.woodType));
+         return new HangingSignSpecialRenderer(context.sprites(), model, sprite);
       }
    }
 }

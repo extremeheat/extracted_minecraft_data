@@ -1,4 +1,4 @@
-package net.minecraft.client;
+package net.minecraft.client.multiplayer.chat;
 
 import java.util.List;
 import net.minecraft.client.gui.Font;
@@ -8,7 +8,7 @@ import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.util.FormattedCharSequence;
 import org.jspecify.annotations.Nullable;
 
-public record GuiMessage(int addedTime, Component content, @Nullable MessageSignature signature, @Nullable GuiMessageTag tag) {
+public record GuiMessage(int addedTime, Component content, @Nullable MessageSignature signature, GuiMessageSource source, @Nullable GuiMessageTag tag) {
    private static final int MESSAGE_TAG_MARGIN_LEFT = 4;
 
    public GuiMessage {
@@ -23,13 +23,21 @@ public record GuiMessage(int addedTime, Component content, @Nullable MessageSign
       return ComponentRenderUtils.wrapComponents(this.content, maxWidth, font);
    }
 
-   public static record Line(int addedTime, FormattedCharSequence content, @Nullable GuiMessageTag tag, boolean endOfEntry) {
+   public static record Line(GuiMessage parent, FormattedCharSequence content, boolean endOfEntry) {
       public Line {
          super();
       }
 
       public int getTagIconLeft(final Font font) {
          return font.width(this.content) + 4;
+      }
+
+      public @Nullable GuiMessageTag tag() {
+         return this.parent.tag;
+      }
+
+      public int addedTime() {
+         return this.parent.addedTime;
       }
    }
 }

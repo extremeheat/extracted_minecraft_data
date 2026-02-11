@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BedRenderer;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -15,16 +15,16 @@ import org.joml.Vector3fc;
 
 public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
    private final BedRenderer bedRenderer;
-   private final Material material;
+   private final SpriteId sprite;
 
-   public BedSpecialRenderer(final BedRenderer bedRenderer, final Material material) {
+   public BedSpecialRenderer(final BedRenderer bedRenderer, final SpriteId sprite) {
       super();
       this.bedRenderer = bedRenderer;
-      this.material = material;
+      this.sprite = sprite;
    }
 
    public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
-      this.bedRenderer.submitSpecial(poseStack, submitNodeCollector, lightCoords, overlayCoords, this.material, outlineColor);
+      this.bedRenderer.submitSpecial(poseStack, submitNodeCollector, lightCoords, overlayCoords, this.sprite, outlineColor);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {
@@ -35,7 +35,7 @@ public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
       public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture)).apply(i, Unbaked::new));
 
       public Unbaked(final DyeColor dyeColor) {
-         this(Sheets.colorToResourceMaterial(dyeColor));
+         this(Sheets.colorToResourceSprite(dyeColor));
       }
 
       public Unbaked {

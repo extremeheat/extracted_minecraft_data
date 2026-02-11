@@ -44,8 +44,8 @@ public class RealmsCreateWorldFlow {
          Path worldFolder;
          try {
             worldFolder = createTemporaryWorldFolder(worldDataAndGenSettings.data(), gameRules, tempDataPackDir);
-         } catch (IOException var15) {
-            LOGGER.warn("Failed to create temporary world folder.");
+         } catch (IOException e) {
+            LOGGER.warn("Failed to create temporary world folder", e);
             minecraft.setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), lastScreen));
             return true;
          }

@@ -5,6 +5,8 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.animal.cow.CowSoundVariant;
+import net.minecraft.world.entity.animal.cow.CowSoundVariants;
 import org.jspecify.annotations.Nullable;
 
 public final class SoundPreviewHandler {
@@ -24,7 +26,7 @@ public final class SoundPreviewHandler {
             case WEATHER -> var10000 = SoundEvents.LIGHTNING_BOLT_THUNDER;
             case BLOCKS -> var10000 = SoundEvents.GRASS_PLACE;
             case HOSTILE -> var10000 = SoundEvents.ZOMBIE_AMBIENT;
-            case NEUTRAL -> var10000 = SoundEvents.COW_AMBIENT;
+            case NEUTRAL -> var10000 = (SoundEvent)((CowSoundVariant)SoundEvents.COW_SOUNDS.get(CowSoundVariants.SoundSet.CLASSIC)).ambientSound().value();
             case PLAYERS -> var10000 = SoundEvents.GENERIC_EAT.value();
             case AMBIENT -> var10000 = SoundEvents.AMBIENT_CAVE.value();
             case UI -> var10000 = SoundEvents.UI_BUTTON_CLICK.value();

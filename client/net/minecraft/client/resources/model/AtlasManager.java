@@ -24,13 +24,13 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.slf4j.Logger;
 
-public class AtlasManager implements AutoCloseable, PreparableReloadListener, MaterialSet {
+public class AtlasManager implements AutoCloseable, PreparableReloadListener, SpriteGetter {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final List<AtlasConfig> KNOWN_ATLASES;
    public static final PreparableReloadListener.StateKey<PendingStitchResults> PENDING_STITCH;
    private final Map<Identifier, AtlasEntry> atlasByTexture = new HashMap();
    private final Map<Identifier, AtlasEntry> atlasById = new HashMap();
-   private Map<Material, TextureAtlasSprite> materialLookup = Map.of();
+   private Map<SpriteId, TextureAtlasSprite> spriteLookup = Map.of();
    private int maxMipmapLevels;
 
    public AtlasManager(final TextureManager textureManager, final int maxMipmapLevels) {
@@ -65,18 +65,18 @@ public class AtlasManager implements AutoCloseable, PreparableReloadListener, Ma
    }
 
    public void close() {
-      this.materialLookup = Map.of();
+      this.spriteLookup = Map.of();
       this.atlasById.values().forEach(AtlasEntry::close);
       this.atlasById.clear();
       this.atlasByTexture.clear();
    }
 
-   public TextureAtlasSprite get(final Material material) {
-      TextureAtlasSprite result = (TextureAtlasSprite)this.materialLookup.get(material);
+   public TextureAtlasSprite get(final SpriteId sprite) {
+      TextureAtlasSprite result = (TextureAtlasSprite)this.spriteLookup.get(sprite);
       if (result != null) {
          return result;
       } else {
-         Identifier atlasTextureId = material.atlasLocation();
+         Identifier atlasTextureId = sprite.atlasLocation();
          AtlasEntry atlasEntry = (AtlasEntry)this.atlasByTexture.get(atlasTextureId);
          if (atlasEntry == null) {
             throw new IllegalArgumentException("Invalid atlas texture id: " + String.valueOf(atlasTextureId));
@@ -118,13 +118,13 @@ public class AtlasManager implements AutoCloseable, PreparableReloadListener, Ma
    }
 
    private void updateSpriteMaps(final PendingStitchResults pendingStitches) {
-      this.materialLookup = pendingStitches.joinAndUpload();
+      this.spriteLookup = pendingStitches.joinAndUpload();
       Map<Identifier, TextureAtlasSprite> globalSpriteLookup = new HashMap();
-      this.materialLookup.forEach((material, sprite) -> {
-         if (!material.texture().equals(MissingTextureAtlasSprite.getLocation())) {
-            TextureAtlasSprite previous = (TextureAtlasSprite)globalSpriteLookup.putIfAbsent(material.texture(), sprite);
+      this.spriteLookup.forEach((id, sprite) -> {
+         if (!id.texture().equals(MissingTextureAtlasSprite.getLocation())) {
+            TextureAtlasSprite previous = (TextureAtlasSprite)globalSpriteLookup.putIfAbsent(id.texture(), sprite);
             if (previous != null) {
-               LOGGER.warn("Duplicate sprite {} from atlas {}, already defined in atlas {}. This will be rejected in a future version", new Object[]{material.texture(), material.atlasLocation(), previous.atlasLocation()});
+               LOGGER.warn("Duplicate sprite {} from atlas {}, already defined in atlas {}. This will be rejected in a future version", new Object[]{id.texture(), id.atlasLocation(), previous.atlasLocation()});
             }
          }
 
@@ -141,10 +141,10 @@ public class AtlasManager implements AutoCloseable, PreparableReloadListener, Ma
          super();
       }
 
-      public void joinAndUpload(final Map<Material, TextureAtlasSprite> result) {
+      public void joinAndUpload(final Map<SpriteId, TextureAtlasSprite> result) {
          SpriteLoader.Preparations preparations = (SpriteLoader.Preparations)this.preparations.join();
          this.entry.atlas.upload(preparations);
-         preparations.regions().forEach((spriteId, spriteContents) -> result.put(new Material(this.entry.config.textureId, spriteId), spriteContents));
+         preparations.regions().forEach((spriteId, spriteContents) -> result.put(new SpriteId(this.entry.config.textureId, spriteId), spriteContents));
       }
    }
 
@@ -184,8 +184,8 @@ public class AtlasManager implements AutoCloseable, PreparableReloadListener, Ma
          this.allReadyToUpload = allReadyToUpload;
       }
 
-      public Map<Material, TextureAtlasSprite> joinAndUpload() {
-         Map<Material, TextureAtlasSprite> result = new HashMap();
+      public Map<SpriteId, TextureAtlasSprite> joinAndUpload() {
+         Map<SpriteId, TextureAtlasSprite> result = new HashMap();
          this.pendingStitches.forEach((pendingStitch) -> pendingStitch.joinAndUpload(result));
          return result;
       }

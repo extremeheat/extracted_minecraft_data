@@ -10,7 +10,7 @@ public class SoundEngineExecutor extends BlockableEventLoop<Runnable> {
    private volatile boolean shutdown;
 
    public SoundEngineExecutor() {
-      super("Sound executor");
+      super("Sound executor", false);
    }
 
    private Thread createThread() {

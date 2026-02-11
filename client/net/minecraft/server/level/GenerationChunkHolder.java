@@ -9,10 +9,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import net.minecraft.CrashReport;
-import net.minecraft.ReportedException;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.StaticCache2D;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
@@ -71,7 +70,7 @@ public abstract class GenerationChunkHolder {
          return this.acquireStatusBump(step.targetStatus()) ? chunkMap.applyStep(this, step, cache).handle((chunk, exception) -> {
             if (exception != null) {
                CrashReport report = CrashReport.forThrowable(exception, "Exception chunk generation/loading");
-               MinecraftServer.setFatalException(new ReportedException(report));
+               BlockableEventLoop.relayDelayCrash(report);
             } else {
                this.completeFuture(step.targetStatus(), chunk);
             }

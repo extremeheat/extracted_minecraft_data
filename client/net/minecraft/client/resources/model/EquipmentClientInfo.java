@@ -89,7 +89,9 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
       }
 
       public Builder addMainHumanoidLayer(final Identifier textureId, final boolean dyeable) {
-         return this.addLayers(EquipmentClientInfo.LayerType.HUMANOID, EquipmentClientInfo.Layer.leatherDyeable(textureId, dyeable));
+         this.addLayers(EquipmentClientInfo.LayerType.HUMANOID, EquipmentClientInfo.Layer.leatherDyeable(textureId, dyeable));
+         this.addLayers(EquipmentClientInfo.LayerType.HUMANOID_BABY, EquipmentClientInfo.Layer.leatherDyeable(textureId, dyeable));
+         return this;
       }
 
       public Builder addLayers(final LayerType type, final Layer... layers) {
@@ -105,6 +107,7 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
    public static enum LayerType implements StringRepresentable {
       HUMANOID("humanoid"),
       HUMANOID_LEGGINGS("humanoid_leggings"),
+      HUMANOID_BABY("humanoid_baby"),
       WINGS("wings"),
       WOLF_BODY("wolf_body"),
       HORSE_BODY("horse_body"),
@@ -139,7 +142,7 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
 
       // $FF: synthetic method
       private static LayerType[] $values() {
-         return new LayerType[]{HUMANOID, HUMANOID_LEGGINGS, WINGS, WOLF_BODY, HORSE_BODY, LLAMA_BODY, PIG_SADDLE, STRIDER_SADDLE, CAMEL_SADDLE, CAMEL_HUSK_SADDLE, HORSE_SADDLE, DONKEY_SADDLE, MULE_SADDLE, ZOMBIE_HORSE_SADDLE, SKELETON_HORSE_SADDLE, HAPPY_GHAST_BODY, NAUTILUS_SADDLE, NAUTILUS_BODY};
+         return new LayerType[]{HUMANOID, HUMANOID_LEGGINGS, HUMANOID_BABY, WINGS, WOLF_BODY, HORSE_BODY, LLAMA_BODY, PIG_SADDLE, STRIDER_SADDLE, CAMEL_SADDLE, CAMEL_HUSK_SADDLE, HORSE_SADDLE, DONKEY_SADDLE, MULE_SADDLE, ZOMBIE_HORSE_SADDLE, SKELETON_HORSE_SADDLE, HAPPY_GHAST_BODY, NAUTILUS_SADDLE, NAUTILUS_BODY};
       }
    }
 }

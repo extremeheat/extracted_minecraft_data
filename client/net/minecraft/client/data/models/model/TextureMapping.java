@@ -4,8 +4,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
@@ -13,20 +15,20 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 public class TextureMapping {
-   private final Map<TextureSlot, Identifier> slots = Maps.newHashMap();
+   private final Map<TextureSlot, Material> slots = Maps.newHashMap();
    private final Set<TextureSlot> forcedSlots = Sets.newHashSet();
 
    public TextureMapping() {
       super();
    }
 
-   public TextureMapping put(final TextureSlot slot, final Identifier id) {
-      this.slots.put(slot, id);
+   public TextureMapping put(final TextureSlot slot, final Material material) {
+      this.slots.put(slot, material);
       return this;
    }
 
-   public TextureMapping putForced(final TextureSlot slot, final Identifier id) {
-      this.slots.put(slot, id);
+   public TextureMapping putForced(final TextureSlot slot, final Material material) {
+      this.slots.put(slot, material);
       this.forcedSlots.add(slot);
       return this;
    }
@@ -36,19 +38,16 @@ public class TextureMapping {
    }
 
    public TextureMapping copySlot(final TextureSlot from, final TextureSlot to) {
-      this.slots.put(to, (Identifier)this.slots.get(from));
-      return this;
+      return this.put(to, (Material)this.slots.get(from));
    }
 
    public TextureMapping copyForced(final TextureSlot from, final TextureSlot to) {
-      this.slots.put(to, (Identifier)this.slots.get(from));
-      this.forcedSlots.add(to);
-      return this;
+      return this.putForced(to, (Material)this.slots.get(from));
    }
 
-   public Identifier get(final TextureSlot slot) {
+   public Material get(final TextureSlot slot) {
       for(TextureSlot currentSlot = slot; currentSlot != null; currentSlot = currentSlot.getParent()) {
-         Identifier result = (Identifier)this.slots.get(currentSlot);
+         Material result = (Material)this.slots.get(currentSlot);
          if (result != null) {
             return result;
          }
@@ -57,29 +56,38 @@ public class TextureMapping {
       throw new IllegalStateException("Can't find texture for slot " + String.valueOf(slot));
    }
 
-   public TextureMapping copyAndUpdate(final TextureSlot slot, final Identifier id) {
+   public TextureMapping copyAndUpdate(final TextureSlot slot, final Material material) {
       TextureMapping result = new TextureMapping();
       result.slots.putAll(this.slots);
       result.forcedSlots.addAll(this.forcedSlots);
-      result.put(slot, id);
+      result.put(slot, material);
       return result;
    }
 
+   public TextureMapping updateSlots(final BiFunction<TextureSlot, Material, Material> mapper) {
+      this.slots.replaceAll(mapper);
+      return this;
+   }
+
+   public TextureMapping forceAllTranslucent() {
+      return this.updateSlots((var0, material) -> material.withForceTranslucent(true));
+   }
+
    public static TextureMapping cube(final Block block) {
-      Identifier texture = getBlockTexture(block);
+      Material texture = getBlockTexture(block);
       return cube(texture);
    }
 
    public static TextureMapping defaultTexture(final Block block) {
-      Identifier texture = getBlockTexture(block);
+      Material texture = getBlockTexture(block);
       return defaultTexture(texture);
    }
 
-   public static TextureMapping defaultTexture(final Identifier texture) {
+   public static TextureMapping defaultTexture(final Material texture) {
       return (new TextureMapping()).put(TextureSlot.TEXTURE, texture);
    }
 
-   public static TextureMapping cube(final Identifier all) {
+   public static TextureMapping cube(final Material all) {
       return (new TextureMapping()).put(TextureSlot.ALL, all);
    }
 
@@ -95,7 +103,7 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.CROSS, getBlockTexture(block)).put(TextureSlot.CROSS_EMISSIVE, getBlockTexture(block, "_emissive"));
    }
 
-   public static TextureMapping cross(final Identifier cross) {
+   public static TextureMapping cross(final Material cross) {
       return singleSlot(TextureSlot.CROSS, cross);
    }
 
@@ -107,7 +115,7 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.PLANT, getBlockTexture(block)).put(TextureSlot.CROSS_EMISSIVE, getBlockTexture(block, "_emissive"));
    }
 
-   public static TextureMapping plant(final Identifier plant) {
+   public static TextureMapping plant(final Material plant) {
       return singleSlot(TextureSlot.PLANT, plant);
    }
 
@@ -115,7 +123,7 @@ public class TextureMapping {
       return singleSlot(TextureSlot.RAIL, getBlockTexture(block));
    }
 
-   public static TextureMapping rail(final Identifier rail) {
+   public static TextureMapping rail(final Material rail) {
       return singleSlot(TextureSlot.RAIL, rail);
    }
 
@@ -127,7 +135,7 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.FLOWERBED, getBlockTexture(block)).put(TextureSlot.STEM, getBlockTexture(block, "_stem"));
    }
 
-   public static TextureMapping wool(final Identifier cross) {
+   public static TextureMapping wool(final Material cross) {
       return singleSlot(TextureSlot.WOOL, cross);
    }
 
@@ -147,7 +155,7 @@ public class TextureMapping {
       return singleSlot(TextureSlot.FAN, getBlockTexture(block));
    }
 
-   public static TextureMapping crop(final Identifier id) {
+   public static TextureMapping crop(final Material id) {
       return singleSlot(TextureSlot.CROP, id);
    }
 
@@ -155,7 +163,7 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.PANE, getBlockTexture(body)).put(TextureSlot.EDGE, getBlockTexture(edge, "_top"));
    }
 
-   public static TextureMapping singleSlot(final TextureSlot slot, final Identifier id) {
+   public static TextureMapping singleSlot(final TextureSlot slot, final Material id) {
       return (new TextureMapping()).put(slot, id);
    }
 
@@ -175,7 +183,7 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.SIDE, getBlockTexture(block)).put(TextureSlot.END, getBlockTexture(block, "_top")).put(TextureSlot.PARTICLE, getBlockTexture(block));
    }
 
-   public static TextureMapping column(final Identifier side, final Identifier end) {
+   public static TextureMapping column(final Material side, final Material end) {
       return (new TextureMapping()).put(TextureSlot.SIDE, side).put(TextureSlot.END, end);
    }
 
@@ -192,16 +200,16 @@ public class TextureMapping {
    }
 
    public static TextureMapping cubeBottomTopWithWall(final Block block) {
-      Identifier side = getBlockTexture(block);
+      Material side = getBlockTexture(block);
       return (new TextureMapping()).put(TextureSlot.WALL, side).put(TextureSlot.SIDE, side).put(TextureSlot.TOP, getBlockTexture(block, "_top")).put(TextureSlot.BOTTOM, getBlockTexture(block, "_bottom"));
    }
 
    public static TextureMapping columnWithWall(final Block block) {
-      Identifier side = getBlockTexture(block);
+      Material side = getBlockTexture(block);
       return (new TextureMapping()).put(TextureSlot.TEXTURE, side).put(TextureSlot.WALL, side).put(TextureSlot.SIDE, side).put(TextureSlot.END, getBlockTexture(block, "_top"));
    }
 
-   public static TextureMapping door(final Identifier top, final Identifier bottom) {
+   public static TextureMapping door(final Material top, final Material bottom) {
       return (new TextureMapping()).put(TextureSlot.TOP, top).put(TextureSlot.BOTTOM, bottom);
    }
 
@@ -213,7 +221,7 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(block));
    }
 
-   public static TextureMapping particle(final Identifier id) {
+   public static TextureMapping particle(final Material id) {
       return (new TextureMapping()).put(TextureSlot.PARTICLE, id);
    }
 
@@ -233,7 +241,7 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.TORCH, getBlockTexture(block));
    }
 
-   public static TextureMapping torch(final Identifier id) {
+   public static TextureMapping torch(final Material id) {
       return (new TextureMapping()).put(TextureSlot.TORCH, id);
    }
 
@@ -293,7 +301,7 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.CAKE, "_side")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.CAKE, "_bottom")).put(TextureSlot.TOP, getBlockTexture(Blocks.CAKE, "_top")).put(TextureSlot.SIDE, getBlockTexture(Blocks.CAKE, "_side")).put(TextureSlot.CANDLE, getBlockTexture(block, lit ? "_lit" : ""));
    }
 
-   public static TextureMapping cauldron(final Identifier contentTextureLoc) {
+   public static TextureMapping cauldron(final Material contentTextureLoc) {
       return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.CAULDRON, "_side")).put(TextureSlot.SIDE, getBlockTexture(Blocks.CAULDRON, "_side")).put(TextureSlot.TOP, getBlockTexture(Blocks.CAULDRON, "_top")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.CAULDRON, "_bottom")).put(TextureSlot.INSIDE, getBlockTexture(Blocks.CAULDRON, "_inner")).put(TextureSlot.CONTENT, contentTextureLoc);
    }
 
@@ -314,35 +322,35 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.LAYER0, getBlockTexture(block));
    }
 
-   public static TextureMapping layer0(final Identifier id) {
+   public static TextureMapping layer0(final Material id) {
       return (new TextureMapping()).put(TextureSlot.LAYER0, id);
    }
 
-   public static TextureMapping layered(final Identifier layer0, final Identifier layer1) {
+   public static TextureMapping layered(final Material layer0, final Material layer1) {
       return (new TextureMapping()).put(TextureSlot.LAYER0, layer0).put(TextureSlot.LAYER1, layer1);
    }
 
-   public static TextureMapping layered(final Identifier layer0, final Identifier layer1, final Identifier layer2) {
+   public static TextureMapping layered(final Material layer0, final Material layer1, final Material layer2) {
       return (new TextureMapping()).put(TextureSlot.LAYER0, layer0).put(TextureSlot.LAYER1, layer1).put(TextureSlot.LAYER2, layer2);
    }
 
-   public static Identifier getBlockTexture(final Block block) {
+   public static Material getBlockTexture(final Block block) {
       Identifier id = BuiltInRegistries.BLOCK.getKey(block);
-      return id.withPrefix("block/");
+      return new Material(id.withPrefix("block/"));
    }
 
-   public static Identifier getBlockTexture(final Block block, final String suffix) {
+   public static Material getBlockTexture(final Block block, final String suffix) {
       Identifier id = BuiltInRegistries.BLOCK.getKey(block);
-      return id.withPath((UnaryOperator)((path) -> "block/" + path + suffix));
+      return new Material(id.withPath((UnaryOperator)((path) -> "block/" + path + suffix)));
    }
 
-   public static Identifier getItemTexture(final Item block) {
+   public static Material getItemTexture(final Item block) {
       Identifier id = BuiltInRegistries.ITEM.getKey(block);
-      return id.withPrefix("item/");
+      return new Material(id.withPrefix("item/"));
    }
 
-   public static Identifier getItemTexture(final Item item, final String suffix) {
+   public static Material getItemTexture(final Item item, final String suffix) {
       Identifier id = BuiltInRegistries.ITEM.getKey(item);
-      return id.withPath((UnaryOperator)((path) -> "item/" + path + suffix));
+      return new Material(id.withPath((UnaryOperator)((path) -> "item/" + path + suffix)));
    }
 }

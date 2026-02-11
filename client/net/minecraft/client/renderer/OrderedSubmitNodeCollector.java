@@ -57,9 +57,9 @@ public interface OrderedSubmitNodeCollector {
 
    void submitMovingBlock(PoseStack poseStack, MovingBlockRenderState movingBlockRenderState);
 
-   void submitBlockModel(PoseStack poseStack, RenderType renderType, BlockStateModel model, float r, float g, float b, int lightCoords, int overlayCoords, int outlineColor);
+   void submitBlockModel(PoseStack poseStack, RenderType renderType, BlockStateModel model, int tintColor, int lightCoords, int overlayCoords, int outlineColor);
 
-   void submitItem(PoseStack poseStack, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, RenderType renderType, ItemStackRenderState.FoilType foilType);
+   void submitItem(PoseStack poseStack, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType);
 
    void submitCustomGeometry(PoseStack poseStack, RenderType renderType, SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer);
 

@@ -1,18 +1,18 @@
 package net.minecraft.client.gui.screens;
 
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.input.CharacterEvent;
-import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.chat.ChatAbilities;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 
 public class InBedChatScreen extends ChatScreen {
    private Button leaveBedButton;
+   private final ChatAbilities chatAbilities;
 
-   public InBedChatScreen(final String initial, final boolean isDraft) {
-      super(initial, isDraft);
+   public InBedChatScreen(final String initial, final boolean isDraft, final ChatAbilities chatAbilities) {
+      super(initial, isDraft, chatAbilities, false);
+      this.chatAbilities = chatAbilities;
    }
 
    protected void init() {
@@ -21,37 +21,8 @@ public class InBedChatScreen extends ChatScreen {
       this.addRenderableWidget(this.leaveBedButton);
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      if (!this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
-         this.leaveBedButton.render(graphics, mouseX, mouseY, a);
-      } else {
-         super.render(graphics, mouseX, mouseY, a);
-      }
-   }
-
    public void onClose() {
       this.sendWakeUp();
-   }
-
-   public boolean charTyped(final CharacterEvent event) {
-      return !this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer()) ? true : super.charTyped(event);
-   }
-
-   public boolean keyPressed(final KeyEvent event) {
-      if (event.isEscape()) {
-         this.sendWakeUp();
-      }
-
-      if (!this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
-         return true;
-      } else if (event.isConfirmation()) {
-         this.handleChatInput(this.input.getValue(), true);
-         this.input.setValue("");
-         this.minecraft.gui.getChat().resetChatScroll();
-         return true;
-      } else {
-         return super.keyPressed(event);
-      }
    }
 
    private void sendWakeUp() {
@@ -63,7 +34,7 @@ public class InBedChatScreen extends ChatScreen {
       String text = this.input.getValue();
       if (!this.isDraft && !text.isEmpty()) {
          this.exitReason = ChatScreen.ExitReason.DONE;
-         this.minecraft.setScreen(new ChatScreen(text, false));
+         this.minecraft.setScreen(new ChatScreen(text, false, this.chatAbilities));
       } else {
          this.exitReason = ChatScreen.ExitReason.INTERRUPTED;
          this.minecraft.setScreen((Screen)null);

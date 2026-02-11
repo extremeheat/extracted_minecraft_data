@@ -18,8 +18,8 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -42,8 +42,8 @@ public class SignRenderer extends AbstractSignRenderer {
       return blockState.getBlock() instanceof StandingSignBlock ? models.standing() : models.wall();
    }
 
-   protected Material getSignMaterial(final WoodType type) {
-      return Sheets.getSignMaterial(type);
+   protected SpriteId getSignSprite(final WoodType type) {
+      return Sheets.getSignSprite(type);
    }
 
    protected float getSignModelRenderScale() {
@@ -71,12 +71,12 @@ public class SignRenderer extends AbstractSignRenderer {
       return TEXT_OFFSET;
    }
 
-   public static void submitSpecial(final MaterialSet materials, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final Model.Simple model, final Material material) {
+   public static void submitSpecial(final SpriteGetter sprites, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final Model.Simple model, final SpriteId sprite) {
       poseStack.pushPose();
       applyInHandTransforms(poseStack);
       Unit var10002 = Unit.INSTANCE;
       Objects.requireNonNull(model);
-      submitNodeCollector.submitModel(model, var10002, poseStack, material.renderType(model::renderType), lightCoords, overlayCoords, -1, materials.get(material), 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(model, var10002, poseStack, sprite.renderType(model::renderType), lightCoords, overlayCoords, -1, sprites.get(sprite), 0, (ModelFeatureRenderer.CrumblingOverlay)null);
       poseStack.popPose();
    }
 

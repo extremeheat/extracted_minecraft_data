@@ -99,7 +99,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private long lastHeartbeat;
 
    public DedicatedServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess levelStorageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final DedicatedServerSettings settings, final DataFixer fixerUpper, final Services services) {
-      super(serverThread, levelStorageSource, packRepository, worldStem, gameRules, Proxy.NO_PROXY, fixerUpper, services, LoggingLevelLoadListener.forDedicatedServer());
+      super(serverThread, levelStorageSource, packRepository, worldStem, gameRules, Proxy.NO_PROXY, fixerUpper, services, LoggingLevelLoadListener.forDedicatedServer(), true);
       this.settings = settings;
       this.rconConsoleSource = new RconConsoleSource(this);
       this.serverTextFilter = ServerTextFilter.createFromConfig(settings.getProperties());

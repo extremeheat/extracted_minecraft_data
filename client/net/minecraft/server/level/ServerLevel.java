@@ -592,7 +592,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
             }
 
             for(ServerPlayer player : this.players) {
-               player.displayClientMessage(message, true);
+               player.sendOverlayMessage(message);
             }
 
          }

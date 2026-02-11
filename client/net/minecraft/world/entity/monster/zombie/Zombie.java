@@ -505,7 +505,7 @@ public class Zombie extends Monster {
       DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
       DATA_SPECIAL_TYPE_ID = SynchedEntityData.<Integer>defineId(Zombie.class, EntityDataSerializers.INT);
       DATA_DROWNED_CONVERSION_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
-      BABY_DIMENSIONS = EntityType.ZOMBIE.getDimensions().scale(0.5F).withEyeHeight(0.93F);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.5F, 1.07F).withEyeHeight(0.775F);
       DOOR_BREAKING_PREDICATE = (d) -> d == Difficulty.HARD;
    }
 

@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.platform.Transparency;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.nio.ByteBuffer;
@@ -57,6 +58,10 @@ public class TextureAtlasSprite implements AutoCloseable {
 
    public SpriteContents.@Nullable AnimationState createAnimationState(final GpuBufferSlice uboSlice, final int spriteUboSize) {
       return this.contents.createAnimationState(uboSlice, spriteUboSize);
+   }
+
+   public Transparency transparency() {
+      return this.contents.transparency();
    }
 
    public float getU(final float offset) {

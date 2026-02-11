@@ -33,7 +33,7 @@ public interface SharedSuggestionProvider extends PermissionSetSupplier {
 
    Collection<String> getOnlinePlayerNames();
 
-   default Collection<String> getCustomTabSugggestions() {
+   default Collection<String> getCustomTabSuggestions() {
       return this.getOnlinePlayerNames();
    }
 

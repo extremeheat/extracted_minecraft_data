@@ -2,8 +2,8 @@ package net.minecraft.client.resources.model;
 
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.client.renderer.block.model.TextureSlots;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.jspecify.annotations.Nullable;
 
@@ -85,12 +85,12 @@ public interface ResolvedModel extends ModelDebugName {
       return this.getTopGeometry().bake(textureSlots, baker, state, this);
    }
 
-   static TextureAtlasSprite resolveParticleSprite(final TextureSlots textureSlots, final ModelBaker baker, final ModelDebugName resolvedModel) {
-      return baker.sprites().resolveSlot(textureSlots, "particle", resolvedModel);
+   static Material.Baked resolveParticleMaterial(final TextureSlots textureSlots, final ModelBaker baker, final ModelDebugName resolvedModel) {
+      return baker.materials().resolveSlot(textureSlots, "particle", resolvedModel);
    }
 
-   default TextureAtlasSprite resolveParticleSprite(final TextureSlots textureSlots, final ModelBaker baker) {
-      return resolveParticleSprite(textureSlots, baker, this);
+   default Material.Baked resolveParticleMaterial(final TextureSlots textureSlots, final ModelBaker baker) {
+      return resolveParticleMaterial(textureSlots, baker, this);
    }
 
    static ItemTransform findTopTransform(ResolvedModel current, final ItemDisplayContext type) {

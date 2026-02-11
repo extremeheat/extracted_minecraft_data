@@ -1,6 +1,8 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadBrightness;
+import com.mojang.blaze3d.vertex.QuadLightmapCoords;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
@@ -8,14 +10,14 @@ import com.mojang.math.MatrixUtil;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemDisplayContext;
+import org.jspecify.annotations.Nullable;
 
 public class ItemRenderer {
    public static final Identifier ENCHANTED_GLINT_ARMOR = Identifier.withDefaultNamespace("textures/misc/enchanted_glint_armor.png");
@@ -29,75 +31,69 @@ public class ItemRenderer {
       super();
    }
 
-   public static void renderItem(final ItemDisplayContext type, final PoseStack poseStack, final MultiBufferSource bufferSource, final int lightCoords, final int overlayCoords, final int[] tintLayers, final List<BakedQuad> quads, final RenderType renderType, final ItemStackRenderState.FoilType foilType) {
-      VertexConsumer builder;
-      if (foilType == ItemStackRenderState.FoilType.SPECIAL) {
-         PoseStack.Pose cameraPose = poseStack.last().copy();
-         if (type == ItemDisplayContext.GUI) {
-            MatrixUtil.mulComponentWise(cameraPose.pose(), 0.5F);
-         } else if (type.firstPerson()) {
-            MatrixUtil.mulComponentWise(cameraPose.pose(), 0.75F);
+   public static void renderItem(final ItemDisplayContext type, final PoseStack poseStack, final MultiBufferSource bufferSource, final int lightCoords, final int overlayCoords, final int[] tintLayers, final List<BakedQuad> quads, final ItemStackRenderState.FoilType foilType) {
+      PoseStack.Pose pose = poseStack.last();
+      PoseStack.Pose foilDecalPose = foilType == ItemStackRenderState.FoilType.SPECIAL ? computeFoilDecalPose(type, pose) : null;
+      QuadLightmapCoords wrappedLightmapCoords = QuadLightmapCoords.create(lightCoords);
+
+      for(BakedQuad quad : quads) {
+         RenderType renderType = quad.spriteInfo().itemRenderType();
+         int tintColor = getLayerColorSafe(tintLayers, quad);
+         if (foilType != ItemStackRenderState.FoilType.NONE) {
+            VertexConsumer foilBuffer = getFoilBuffer(bufferSource, renderType, foilDecalPose);
+            foilBuffer.putBulkData(pose, quad, QuadBrightness.ALL_BRIGHT, tintColor, wrappedLightmapCoords, overlayCoords);
          }
 
-         builder = getSpecialFoilBuffer(bufferSource, renderType, cameraPose);
-      } else {
-         builder = getFoilBuffer(bufferSource, renderType, true, foilType != ItemStackRenderState.FoilType.NONE);
+         bufferSource.getBuffer(renderType).putBulkData(pose, quad, QuadBrightness.ALL_BRIGHT, tintColor, wrappedLightmapCoords, overlayCoords);
       }
 
-      renderQuadList(poseStack, builder, quads, tintLayers, lightCoords, overlayCoords);
    }
 
-   private static VertexConsumer getSpecialFoilBuffer(final MultiBufferSource bufferSource, final RenderType renderType, final PoseStack.Pose cameraPose) {
-      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(bufferSource.getBuffer(useTransparentGlint(renderType) ? RenderTypes.glintTranslucent() : RenderTypes.glint()), cameraPose, 0.0078125F), bufferSource.getBuffer(renderType));
+   private static VertexConsumer getFoilBuffer(final MultiBufferSource bufferSource, final RenderType renderType, final PoseStack.@Nullable Pose foilDecalPose) {
+      VertexConsumer foilBuffer = bufferSource.getBuffer(getFoilRenderType(renderType, true));
+      if (foilDecalPose != null) {
+         foilBuffer = new SheetedDecalTextureGenerator(foilBuffer, foilDecalPose, 0.0078125F);
+      }
+
+      return foilBuffer;
+   }
+
+   private static PoseStack.Pose computeFoilDecalPose(final ItemDisplayContext type, final PoseStack.Pose pose) {
+      PoseStack.Pose foilDecalPose = pose.copy();
+      if (type == ItemDisplayContext.GUI) {
+         MatrixUtil.mulComponentWise(foilDecalPose.pose(), 0.5F);
+      } else if (type.firstPerson()) {
+         MatrixUtil.mulComponentWise(foilDecalPose.pose(), 0.75F);
+      }
+
+      return foilDecalPose;
    }
 
    public static VertexConsumer getFoilBuffer(final MultiBufferSource bufferSource, final RenderType renderType, final boolean sheeted, final boolean hasFoil) {
-      if (hasFoil) {
-         return useTransparentGlint(renderType) ? VertexMultiConsumer.create(bufferSource.getBuffer(RenderTypes.glintTranslucent()), bufferSource.getBuffer(renderType)) : VertexMultiConsumer.create(bufferSource.getBuffer(sheeted ? RenderTypes.glint() : RenderTypes.entityGlint()), bufferSource.getBuffer(renderType));
+      return hasFoil ? VertexMultiConsumer.create(bufferSource.getBuffer(getFoilRenderType(renderType, sheeted)), bufferSource.getBuffer(renderType)) : bufferSource.getBuffer(renderType);
+   }
+
+   private static RenderType getFoilRenderType(final RenderType baseRenderType, final boolean sheeted) {
+      if (useTransparentGlint(baseRenderType)) {
+         return RenderTypes.glintTranslucent();
       } else {
-         return bufferSource.getBuffer(renderType);
+         return sheeted ? RenderTypes.glint() : RenderTypes.entityGlint();
       }
    }
 
    public static List<RenderType> getFoilRenderTypes(final RenderType baseRenderType, final boolean sheeted, final boolean hasFoil) {
-      if (hasFoil) {
-         return useTransparentGlint(baseRenderType) ? List.of(baseRenderType, RenderTypes.glintTranslucent()) : List.of(baseRenderType, sheeted ? RenderTypes.glint() : RenderTypes.entityGlint());
-      } else {
-         return List.of(baseRenderType);
-      }
+      return hasFoil ? List.of(baseRenderType, getFoilRenderType(baseRenderType, sheeted)) : List.of(baseRenderType);
    }
 
    private static boolean useTransparentGlint(final RenderType renderType) {
-      return Minecraft.useShaderTransparency() && (renderType == Sheets.translucentItemSheet() || renderType == Sheets.translucentBlockItemSheet());
+      return Minecraft.useShaderTransparency() && renderType.outputTarget() == OutputTarget.ITEM_ENTITY_TARGET;
    }
 
    private static int getLayerColorSafe(final int[] layers, final int layer) {
       return layer >= 0 && layer < layers.length ? layers[layer] : -1;
    }
 
-   private static void renderQuadList(final PoseStack poseStack, final VertexConsumer builder, final List<BakedQuad> quads, final int[] tintLayers, final int lightCoords, final int overlayCoords) {
-      PoseStack.Pose pose = poseStack.last();
-
-      for(BakedQuad quad : quads) {
-         float alpha;
-         float red;
-         float green;
-         float blue;
-         if (quad.isTinted()) {
-            int color = getLayerColorSafe(tintLayers, quad.tintIndex());
-            alpha = (float)ARGB.alpha(color) / 255.0F;
-            red = (float)ARGB.red(color) / 255.0F;
-            green = (float)ARGB.green(color) / 255.0F;
-            blue = (float)ARGB.blue(color) / 255.0F;
-         } else {
-            alpha = 1.0F;
-            red = 1.0F;
-            green = 1.0F;
-            blue = 1.0F;
-         }
-
-         builder.putBulkData(pose, quad, red, green, blue, alpha, lightCoords, overlayCoords);
-      }
-
+   private static int getLayerColorSafe(final int[] tintLayers, final BakedQuad quad) {
+      return quad.isTinted() ? getLayerColorSafe(tintLayers, quad.tintIndex()) : -1;
    }
 }

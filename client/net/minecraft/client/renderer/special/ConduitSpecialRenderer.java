@@ -9,24 +9,24 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Vector3fc;
 
 public class ConduitSpecialRenderer implements NoDataSpecialModelRenderer {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final ModelPart model;
 
-   public ConduitSpecialRenderer(final MaterialSet materials, final ModelPart model) {
+   public ConduitSpecialRenderer(final SpriteGetter sprites, final ModelPart model) {
       super();
-      this.materials = materials;
+      this.sprites = sprites;
       this.model = model;
    }
 
    public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
       poseStack.pushPose();
       poseStack.translate(0.5F, 0.5F, 0.5F);
-      submitNodeCollector.submitModelPart(this.model, poseStack, ConduitRenderer.SHELL_TEXTURE.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.materials.get(ConduitRenderer.SHELL_TEXTURE), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      submitNodeCollector.submitModelPart(this.model, poseStack, ConduitRenderer.SHELL_TEXTURE.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(ConduitRenderer.SHELL_TEXTURE), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
       poseStack.popPose();
    }
 
@@ -48,7 +48,7 @@ public class ConduitSpecialRenderer implements NoDataSpecialModelRenderer {
       }
 
       public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
-         return new ConduitSpecialRenderer(context.materials(), context.entityModelSet().bakeLayer(ModelLayers.CONDUIT_SHELL));
+         return new ConduitSpecialRenderer(context.sprites(), context.entityModelSet().bakeLayer(ModelLayers.CONDUIT_SHELL));
       }
    }
 }

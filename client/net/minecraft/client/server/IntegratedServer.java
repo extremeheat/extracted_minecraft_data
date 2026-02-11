@@ -42,6 +42,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
@@ -67,7 +68,7 @@ public class IntegratedServer extends MinecraftServer {
    private final SimpleGizmoCollector gizmoCollector = new SimpleGizmoCollector();
 
    public IntegratedServer(final Thread serverThread, final Minecraft minecraft, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Services services, final LevelLoadListener levelLoadListener) {
-      super(serverThread, levelStorageAccess, packRepository, worldStem, gameRules, minecraft.getProxy(), minecraft.getFixerUpper(), services, levelLoadListener);
+      super(serverThread, levelStorageAccess, packRepository, worldStem, gameRules, minecraft.getProxy(), minecraft.getFixerUpper(), services, levelLoadListener, false);
       this.setSingleplayerProfile(minecraft.getGameProfile());
       this.setDemo(minecraft.isDemo());
       this.setPlayerList(new IntegratedPlayerList(this, this.registries(), this.playerDataStorage));
@@ -177,7 +178,7 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    protected void onServerCrash(final CrashReport report) {
-      this.minecraft.delayCrashRaw(report);
+      BlockableEventLoop.relayDelayCrash(report);
    }
 
    public SystemReport fillServerSystemReport(final SystemReport systemReport) {
@@ -206,6 +207,7 @@ public class IntegratedServer extends MinecraftServer {
          this.getPlayerList().setAllowCommandsForAllPlayers(allowCommands);
          PermissionSet newProfilePermissions = this.getProfilePermissions(this.minecraft.player.nameAndId());
          this.minecraft.player.setPermissions(newProfilePermissions);
+         this.minecraft.player.refreshChatAbilities();
 
          for(ServerPlayer player : this.getPlayerList().getPlayers()) {
             this.getCommands().sendCommands(player);

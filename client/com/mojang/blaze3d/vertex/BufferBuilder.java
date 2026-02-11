@@ -265,9 +265,12 @@ public class BufferBuilder implements VertexConsumer {
          }
 
          putPackedUv(lightStart + 0L, lightCoords);
-         MemoryUtil.memPutByte(lightStart + 4L, normalIntValue(nx));
-         MemoryUtil.memPutByte(lightStart + 5L, normalIntValue(ny));
-         MemoryUtil.memPutByte(lightStart + 6L, normalIntValue(nz));
+         if (this.fullFormat) {
+            MemoryUtil.memPutByte(lightStart + 4L, normalIntValue(nx));
+            MemoryUtil.memPutByte(lightStart + 5L, normalIntValue(ny));
+            MemoryUtil.memPutByte(lightStart + 6L, normalIntValue(nz));
+         }
+
       } else {
          VertexConsumer.super.addVertex(x, y, z, color, u, v, overlayCoords, lightCoords, nx, ny, nz);
       }

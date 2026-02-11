@@ -208,7 +208,7 @@ public class BlockTypes {
       Registry.register(registry, (String)"smoker", SmokerBlock.CODEC);
       Registry.register(registry, (String)"sniffer_egg", SnifferEggBlock.CODEC);
       Registry.register(registry, (String)"snow_layer", SnowLayerBlock.CODEC);
-      Registry.register(registry, (String)"snowy_dirt", SnowyDirtBlock.CODEC);
+      Registry.register(registry, (String)"snowy_dirt", SnowyBlock.CODEC);
       Registry.register(registry, (String)"soul_fire", SoulFireBlock.CODEC);
       Registry.register(registry, (String)"soul_sand", SoulSandBlock.CODEC);
       Registry.register(registry, (String)"spawner", SpawnerBlock.CODEC);

@@ -20,8 +20,8 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.block.BedBlock;
@@ -36,21 +36,21 @@ import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRenderState> {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final Model.Simple headModel;
    private final Model.Simple footModel;
 
    public BedRenderer(final BlockEntityRendererProvider.Context context) {
-      this(context.materials(), context.entityModelSet());
+      this(context.sprites(), context.entityModelSet());
    }
 
    public BedRenderer(final SpecialModelRenderer.BakingContext context) {
-      this(context.materials(), context.entityModelSet());
+      this(context.sprites(), context.entityModelSet());
    }
 
-   public BedRenderer(final MaterialSet materials, final EntityModelSet entityModelSet) {
+   public BedRenderer(final SpriteGetter sprites, final EntityModelSet entityModelSet) {
       super();
-      this.materials = materials;
+      this.sprites = sprites;
       this.headModel = new Model.Simple(entityModelSet.bakeLayer(ModelLayers.BED_HEAD), RenderTypes::entitySolid);
       this.footModel = new Model.Simple(entityModelSet.bakeLayer(ModelLayers.BED_FOOT), RenderTypes::entitySolid);
    }
@@ -90,19 +90,19 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRende
    }
 
    public void submit(final BedRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
-      Material material = Sheets.getBedMaterial(state.color);
-      this.submitPiece(poseStack, submitNodeCollector, state.isHead ? this.headModel : this.footModel, state.facing, material, state.lightCoords, OverlayTexture.NO_OVERLAY, false, state.breakProgress, 0);
+      SpriteId sprite = Sheets.getBedSprite(state.color);
+      this.submitPiece(poseStack, submitNodeCollector, state.isHead ? this.headModel : this.footModel, state.facing, sprite, state.lightCoords, OverlayTexture.NO_OVERLAY, false, state.breakProgress, 0);
    }
 
-   public void submitSpecial(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final Material material, final int outlineColor) {
-      this.submitPiece(poseStack, submitNodeCollector, this.headModel, Direction.SOUTH, material, lightCoords, overlayCoords, false, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
-      this.submitPiece(poseStack, submitNodeCollector, this.footModel, Direction.SOUTH, material, lightCoords, overlayCoords, true, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+   public void submitSpecial(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final SpriteId sprite, final int outlineColor) {
+      this.submitPiece(poseStack, submitNodeCollector, this.headModel, Direction.SOUTH, sprite, lightCoords, overlayCoords, false, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      this.submitPiece(poseStack, submitNodeCollector, this.footModel, Direction.SOUTH, sprite, lightCoords, overlayCoords, true, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
    }
 
-   private void submitPiece(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final Model.Simple model, final Direction direction, final Material material, final int lightCoords, final int overlayCoords, final boolean translateZ, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress, final int outlineColor) {
+   private void submitPiece(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final Model.Simple model, final Direction direction, final SpriteId sprite, final int lightCoords, final int overlayCoords, final boolean translateZ, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress, final int outlineColor) {
       poseStack.pushPose();
       preparePose(poseStack, translateZ, direction);
-      submitNodeCollector.submitModel(model, Unit.INSTANCE, poseStack, material.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, -1, this.materials.get(material), outlineColor, breakProgress);
+      submitNodeCollector.submitModel(model, Unit.INSTANCE, poseStack, sprite.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, -1, this.sprites.get(sprite), outlineColor, breakProgress);
       poseStack.popPose();
    }
 

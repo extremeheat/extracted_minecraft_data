@@ -24,8 +24,8 @@ import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
@@ -38,7 +38,7 @@ import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity, DecoratedPotRenderState> {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private static final String NECK = "neck";
    private static final String FRONT = "front";
    private static final String BACK = "back";
@@ -56,16 +56,16 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    private static final float WOBBLE_AMPLITUDE = 0.125F;
 
    public DecoratedPotRenderer(final BlockEntityRendererProvider.Context context) {
-      this(context.entityModelSet(), context.materials());
+      this(context.entityModelSet(), context.sprites());
    }
 
    public DecoratedPotRenderer(final SpecialModelRenderer.BakingContext context) {
-      this(context.entityModelSet(), context.materials());
+      this(context.entityModelSet(), context.sprites());
    }
 
-   public DecoratedPotRenderer(final EntityModelSet entityModelSet, final MaterialSet materials) {
+   public DecoratedPotRenderer(final EntityModelSet entityModelSet, final SpriteGetter sprites) {
       super();
-      this.materials = materials;
+      this.sprites = sprites;
       ModelPart baseRoot = entityModelSet.bakeLayer(ModelLayers.DECORATED_POT_BASE);
       this.neck = baseRoot.getChild("neck");
       this.top = baseRoot.getChild("top");
@@ -100,9 +100,9 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       return LayerDefinition.create(mesh, 16, 16);
    }
 
-   private static Material getSideMaterial(final Optional<Item> item) {
+   private static SpriteId getSideSprite(final Optional<Item> item) {
       if (item.isPresent()) {
-         Material result = Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.getPatternFromItem((Item)item.get()));
+         SpriteId result = Sheets.getDecoratedPotSprite(DecoratedPotPatterns.getPatternFromItem((Item)item.get()));
          if (result != null) {
             return result;
          }
@@ -155,18 +155,18 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final PotDecorations decorations, final int outlineColor) {
       RenderType renderType = Sheets.DECORATED_POT_BASE.renderType(RenderTypes::entitySolid);
-      TextureAtlasSprite sprite = this.materials.get(Sheets.DECORATED_POT_BASE);
+      TextureAtlasSprite sprite = this.sprites.get(Sheets.DECORATED_POT_BASE);
       submitNodeCollector.submitModelPart(this.neck, poseStack, renderType, lightCoords, overlayCoords, sprite, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
       submitNodeCollector.submitModelPart(this.top, poseStack, renderType, lightCoords, overlayCoords, sprite, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
       submitNodeCollector.submitModelPart(this.bottom, poseStack, renderType, lightCoords, overlayCoords, sprite, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
-      Material frontMaterial = getSideMaterial(decorations.front());
-      submitNodeCollector.submitModelPart(this.frontSide, poseStack, frontMaterial.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.materials.get(frontMaterial), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
-      Material backMaterial = getSideMaterial(decorations.back());
-      submitNodeCollector.submitModelPart(this.backSide, poseStack, backMaterial.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.materials.get(backMaterial), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
-      Material leftMaterial = getSideMaterial(decorations.left());
-      submitNodeCollector.submitModelPart(this.leftSide, poseStack, leftMaterial.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.materials.get(leftMaterial), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
-      Material rightMaterial = getSideMaterial(decorations.right());
-      submitNodeCollector.submitModelPart(this.rightSide, poseStack, rightMaterial.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.materials.get(rightMaterial), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      SpriteId frontSprite = getSideSprite(decorations.front());
+      submitNodeCollector.submitModelPart(this.frontSide, poseStack, frontSprite.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(frontSprite), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      SpriteId backSprite = getSideSprite(decorations.back());
+      submitNodeCollector.submitModelPart(this.backSide, poseStack, backSprite.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(backSprite), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      SpriteId leftSprite = getSideSprite(decorations.left());
+      submitNodeCollector.submitModelPart(this.leftSide, poseStack, leftSprite.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(leftSprite), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      SpriteId rightSprite = getSideSprite(decorations.right());
+      submitNodeCollector.submitModelPart(this.rightSide, poseStack, rightSprite.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(rightSprite), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {

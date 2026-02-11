@@ -24,6 +24,7 @@ import net.minecraft.client.gui.screens.inventory.TestInstanceBlockEditScreen;
 import net.minecraft.client.gui.screens.options.HasGamemasterPermissionReaction;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.chat.ChatAbilities;
 import net.minecraft.client.resources.sounds.AmbientSoundHandler;
 import net.minecraft.client.resources.sounds.BiomeAmbientSoundsHandler;
 import net.minecraft.client.resources.sounds.BubbleColumnAmbientSoundHandler;
@@ -119,6 +120,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private final TickThrottler dropSpamThrottler = new TickThrottler(20, 1280);
    private final List<AmbientSoundHandler> ambientSoundHandlers = Lists.newArrayList();
    private PermissionSet permissions;
+   private ChatAbilities chatAbilities;
    private double xLast;
    private double yLast;
    private double zLast;
@@ -155,7 +157,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean showDeathScreen;
    private boolean doLimitedCrafting;
 
-   public LocalPlayer(final Minecraft minecraft, final ClientLevel level, final ClientPacketListener connection, final StatsCounter stats, final ClientRecipeBook recipeBook, final Input lastSentInput, final boolean wasSprinting) {
+   public LocalPlayer(final Minecraft minecraft, final ClientLevel level, final ClientPacketListener connection, final StatsCounter stats, final ClientRecipeBook recipeBook, final Input lastSentInput, final boolean wasSprinting, final ChatAbilities chatAbilities) {
       super(level, connection.getLocalGameProfile());
       this.permissions = PermissionSet.NO_PERMISSIONS;
       this.input = new ClientInput();
@@ -172,6 +174,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.ambientSoundHandlers.add(new UnderwaterAmbientSoundHandler(this, minecraft.getSoundManager()));
       this.ambientSoundHandlers.add(new BubbleColumnAmbientSoundHandler(this));
       this.ambientSoundHandlers.add(new BiomeAmbientSoundsHandler(this, minecraft.getSoundManager()));
+      this.chatAbilities = chatAbilities;
    }
 
    public void heal(final float heal) {
@@ -409,8 +412,21 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   public void displayClientMessage(final Component component, final boolean overlayMessage) {
-      this.minecraft.getChatListener().handleSystemMessage(component, overlayMessage);
+   public ChatAbilities chatAbilities() {
+      return this.chatAbilities;
+   }
+
+   public void refreshChatAbilities() {
+      this.chatAbilities = this.minecraft.computeChatAbilities();
+      this.minecraft.gui.getChat().setVisibleMessageFilter(this.chatAbilities.visibleMessagesFilter());
+   }
+
+   public void sendSystemMessage(final Component message) {
+      this.minecraft.getChatListener().handleSystemMessage(message, true);
+   }
+
+   public void sendOverlayMessage(final Component message) {
+      this.minecraft.getChatListener().handleOverlay(message);
    }
 
    private void moveTowardsClosestSpace(final double x, final double z) {

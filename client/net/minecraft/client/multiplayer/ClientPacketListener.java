@@ -932,7 +932,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleSystemChat(final ClientboundSystemChatPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.getChatListener().handleSystemMessage(packet.content(), packet.overlay());
+      if (packet.overlay()) {
+         this.minecraft.getChatListener().handleOverlay(packet.content());
+      } else {
+         this.minecraft.getChatListener().handleSystemMessage(packet.content(), true);
+      }
+
    }
 
    public void handlePlayerChat(final ClientboundPlayerChatPacket packet) {
@@ -1398,12 +1403,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleGameEvent(final ClientboundGameEventPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      Player player = this.minecraft.player;
+      LocalPlayer player = (LocalPlayer)Objects.requireNonNull(this.minecraft.player);
       ClientboundGameEventPacket.Type event = packet.getEvent();
       float paramFloat = packet.getParam();
       int param = Mth.floor(paramFloat + 0.5F);
       if (event == ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE) {
-         player.displayClientMessage(Component.translatable("block.minecraft.spawn.not_valid"), false);
+         player.sendSystemMessage(Component.translatable("block.minecraft.spawn.not_valid"));
       } else if (event == ClientboundGameEventPacket.START_RAINING) {
          this.level.setRainLevel(0.0F);
       } else if (event == ClientboundGameEventPacket.STOP_RAINING) {
@@ -1412,7 +1417,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.minecraft.gameMode.setLocalMode(GameType.byId(param));
       } else if (event == ClientboundGameEventPacket.WIN_GAME) {
          this.minecraft.setScreen(new WinScreen(true, () -> {
-            this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
+            player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
             this.minecraft.setScreen((Screen)null);
          }));
       } else if (event == ClientboundGameEventPacket.DEMO_EVENT) {
@@ -1431,7 +1436,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          }
 
          if (message != null) {
-            this.minecraft.gui.getChat().addMessage(message);
+            this.minecraft.gui.getChat().addClientSystemMessage(message);
             this.minecraft.getNarrator().saySystemQueued(message);
          }
       } else if (event == ClientboundGameEventPacket.PLAY_ARROW_HIT_SOUND) {
@@ -1448,9 +1453,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             this.level.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ELDER_GUARDIAN_CURSE, SoundSource.HOSTILE, 1.0F, 1.0F);
          }
       } else if (event == ClientboundGameEventPacket.IMMEDIATE_RESPAWN) {
-         this.minecraft.player.setShowDeathScreen(paramFloat == 0.0F);
+         player.setShowDeathScreen(paramFloat == 0.0F);
       } else if (event == ClientboundGameEventPacket.LIMITED_CRAFTING) {
-         this.minecraft.player.setDoLimitedCrafting(paramFloat == 1.0F);
+         player.setDoLimitedCrafting(paramFloat == 1.0F);
       } else if (event == ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START && this.levelLoadTracker != null) {
          this.levelLoadTracker.loadingPacketsReceived();
       }
@@ -2479,21 +2484,23 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private void openSignedCommandSendConfirmationWindow(final String command, final String messageKey, final @Nullable Screen screenAfterCommand) {
-      boolean canOpenChatScreen = screenAfterCommand == null && this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer());
-      this.openSendConfirmationWindow(command, messageKey, canOpenChatScreen ? BUTTON_SUGGEST_COMMAND : CommonComponents.GUI_COPY_TO_CLIPBOARD, () -> {
-         if (canOpenChatScreen) {
+      boolean canOpenChatScreen = screenAfterCommand == null && this.minecraft.player != null && this.minecraft.player.chatAbilities().canSendCommands();
+      if (canOpenChatScreen) {
+         this.openSendConfirmationWindow(command, messageKey, BUTTON_SUGGEST_COMMAND, () -> {
             this.minecraft.openChatScreen(ChatComponent.ChatMethod.COMMAND);
             Screen patt0$temp = this.minecraft.screen;
-            if (patt0$temp instanceof ChatScreen) {
-               ChatScreen chatScreen = (ChatScreen)patt0$temp;
+            if (patt0$temp instanceof ChatScreen chatScreen) {
                chatScreen.insertText(command, false);
             }
-         } else {
+
+         });
+      } else {
+         this.openSendConfirmationWindow(command, messageKey, CommonComponents.GUI_COPY_TO_CLIPBOARD, () -> {
             this.minecraft.keyboardHandler.setClipboard("/" + command);
             this.minecraft.setScreen(screenAfterCommand);
-         }
+         });
+      }
 
-      });
    }
 
    public void broadcastClientInformation(final ClientInformation information) {

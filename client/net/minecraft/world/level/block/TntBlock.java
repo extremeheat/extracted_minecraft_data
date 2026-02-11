@@ -112,7 +112,7 @@ public class TntBlock extends Block {
          } else if (level instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)level;
             if (!(Boolean)serverLevel.getGameRules().get(GameRules.TNT_EXPLODES)) {
-               player.displayClientMessage(Component.translatable("block.minecraft.tnt.disabled"), true);
+               player.sendOverlayMessage(Component.translatable("block.minecraft.tnt.disabled"));
                return InteractionResult.PASS;
             }
          }

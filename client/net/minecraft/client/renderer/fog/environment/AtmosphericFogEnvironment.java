@@ -4,7 +4,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.PanoramicScreenshotParameters;
 import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
@@ -32,8 +31,7 @@ public class AtmosphericFogEnvironment extends FogEnvironment {
       if (renderDistance >= 4) {
          float sunAngle = (Float)camera.attributeProbe().getValue(EnvironmentAttributes.SUN_ANGLE, partialTicks) * 0.017453292F;
          float sunX = Mth.sin((double)sunAngle) > 0.0F ? -1.0F : 1.0F;
-         PanoramicScreenshotParameters panoramicScreenshot = Minecraft.getInstance().gameRenderer.getPanoramicScreenshotParameters();
-         Vector3fc forwardVector = panoramicScreenshot != null ? panoramicScreenshot.forwardVector() : camera.forwardVector();
+         Vector3fc forwardVector = camera.isPanoramicMode() ? camera.panoramicForwards() : camera.forwardVector();
          float lookingAtTheSunFactor = forwardVector.dot(sunX, 0.0F, 0.0F);
          if (lookingAtTheSunFactor > 0.0F) {
             int color = (Integer)camera.attributeProbe().getValue(EnvironmentAttributes.SUNRISE_SUNSET_COLOR, partialTicks);

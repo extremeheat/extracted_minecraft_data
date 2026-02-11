@@ -33,7 +33,7 @@ public class SupportBlockRenderer implements DebugRenderer.SimpleDebugRenderer {
       double time = (double)Util.getNanos();
       if (time - this.lastUpdateTime > 1.0E8) {
          this.lastUpdateTime = time;
-         Entity cameraEntity = this.minecraft.gameRenderer.getMainCamera().entity();
+         Entity cameraEntity = this.minecraft.getCameraEntity();
          this.surroundEntities = ImmutableList.copyOf(cameraEntity.level().getEntities(cameraEntity, cameraEntity.getBoundingBox().inflate(16.0)));
       }
 

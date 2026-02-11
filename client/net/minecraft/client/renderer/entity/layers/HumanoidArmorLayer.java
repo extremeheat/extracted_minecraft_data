@@ -49,7 +49,7 @@ public class HumanoidArmorLayer<S extends HumanoidRenderState, M extends Humanoi
       Equippable equippable = (Equippable)itemStack.get(DataComponents.EQUIPPABLE);
       if (equippable != null && shouldRender(equippable, slot)) {
          A model = this.getArmorModel(state, slot);
-         EquipmentClientInfo.LayerType layerType = this.usesInnerModel(slot) ? EquipmentClientInfo.LayerType.HUMANOID_LEGGINGS : EquipmentClientInfo.LayerType.HUMANOID;
+         EquipmentClientInfo.LayerType layerType = state.isBaby ? EquipmentClientInfo.LayerType.HUMANOID_BABY : (this.usesInnerModel(slot) ? EquipmentClientInfo.LayerType.HUMANOID_LEGGINGS : EquipmentClientInfo.LayerType.HUMANOID);
          this.equipmentRenderer.renderLayers(layerType, (ResourceKey)equippable.assetId().orElseThrow(), model, state, itemStack, poseStack, submitNodeCollector, lightCoords, state.outlineColor);
       }
    }

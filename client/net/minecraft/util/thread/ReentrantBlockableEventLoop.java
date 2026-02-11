@@ -3,8 +3,8 @@ package net.minecraft.util.thread;
 public abstract class ReentrantBlockableEventLoop<R extends Runnable> extends BlockableEventLoop<R> {
    private int reentrantCount;
 
-   public ReentrantBlockableEventLoop(final String name) {
-      super(name);
+   public ReentrantBlockableEventLoop(final String name, final boolean propagatesCrashes) {
+      super(name, propagatesCrashes);
    }
 
    protected boolean scheduleExecutables() {

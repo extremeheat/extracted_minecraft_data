@@ -79,15 +79,14 @@ import net.minecraft.CharPredicate;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.DefaultUncaughtExceptionHandler;
-import net.minecraft.ReportType;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.SuppressForbidden;
 import net.minecraft.TracingExecutor;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.Bootstrap;
 import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -241,12 +240,17 @@ public class Util {
          throwable = throwable.getCause();
       }
 
+      LOGGER.error("Caught exception in thread {}", thread, throwable);
+      CrashReport report;
       if (throwable instanceof ReportedException reportedException) {
-         Bootstrap.realStdoutPrintln(reportedException.getReport().getFriendlyReport(ReportType.CRASH));
-         System.exit(-1);
+         report = reportedException.getReport();
+      } else {
+         report = CrashReport.forThrowable(throwable, "Exception on worker thread");
       }
 
-      LOGGER.error("Caught exception in thread {}", thread, throwable);
+      CrashReportCategory threadInfo = report.addCategory("ThreadInfo");
+      threadInfo.setDetail("Name", thread.getName());
+      BlockableEventLoop.relayDelayCrash(report);
    }
 
    public static @Nullable Type<?> fetchChoiceType(final DSL.TypeReference reference, final String name) {

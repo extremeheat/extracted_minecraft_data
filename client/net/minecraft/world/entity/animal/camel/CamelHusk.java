@@ -63,6 +63,10 @@ public class CamelHusk extends Camel {
       return false;
    }
 
+   public boolean isBaby() {
+      return false;
+   }
+
    protected SoundEvent getDeathSound() {
       return SoundEvents.CAMEL_HUSK_DEATH;
    }

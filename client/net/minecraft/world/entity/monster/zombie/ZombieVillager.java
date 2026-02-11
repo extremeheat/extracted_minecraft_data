@@ -26,9 +26,11 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.gossip.GossipContainer;
@@ -68,6 +70,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    private @Nullable GossipContainer gossips;
    private @Nullable MerchantOffers tradeOffers;
    private int villagerXp = 0;
+   private static final EntityDimensions BABY_DIMENSIONS;
 
    public ZombieVillager(final EntityType<? extends ZombieVillager> type, final Level level) {
       super(type, level);
@@ -183,6 +186,10 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.removeEffect(MobEffects.WEAKNESS);
       this.addEffect(new MobEffectInstance(MobEffects.STRENGTH, time, Math.min(this.level().getDifficulty().getId() - 1, 0)));
       this.level().broadcastEntityEvent(this, (byte)16);
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    public void handleEntityEvent(final byte id) {
@@ -335,5 +342,6 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       DATA_CONVERTING_ID = SynchedEntityData.<Boolean>defineId(ZombieVillager.class, EntityDataSerializers.BOOLEAN);
       DATA_VILLAGER_DATA = SynchedEntityData.<VillagerData>defineId(ZombieVillager.class, EntityDataSerializers.VILLAGER_DATA);
       DATA_VILLAGER_DATA_FINALIZED = SynchedEntityData.<Boolean>defineId(ZombieVillager.class, EntityDataSerializers.BOOLEAN);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.5F, 1.0F).withEyeHeight(0.67F);
    }
 }

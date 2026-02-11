@@ -44,8 +44,8 @@ import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 public class ZombifiedPiglin extends Zombie implements NeutralMob {
-   private static final EntityDimensions BABY_DIMENSIONS;
-   private static final Identifier SPEED_MODIFIER_ATTACKING_ID;
+   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.55F, 0.95F).withEyeHeight(0.78F);
+   private static final Identifier SPEED_MODIFIER_ATTACKING_ID = Identifier.withDefaultNamespace("attacking");
    private static final AttributeModifier SPEED_MODIFIER_ATTACKING;
    private static final UniformInt FIRST_ANGER_SOUND_DELAY;
    private int playFirstAngerSoundIn;
@@ -210,8 +210,6 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    }
 
    static {
-      BABY_DIMENSIONS = EntityType.ZOMBIFIED_PIGLIN.getDimensions().scale(0.5F).withEyeHeight(0.97F);
-      SPEED_MODIFIER_ATTACKING_ID = Identifier.withDefaultNamespace("attacking");
       SPEED_MODIFIER_ATTACKING = new AttributeModifier(SPEED_MODIFIER_ATTACKING_ID, 0.05, AttributeModifier.Operation.ADD_VALUE);
       FIRST_ANGER_SOUND_DELAY = TimeUtil.rangeOfSeconds(0, 1);
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);

@@ -22,6 +22,10 @@ public class Frustum {
 
    public Frustum(final Frustum frustum) {
       super();
+      this.set(frustum);
+   }
+
+   public void set(final Frustum frustum) {
       this.intersection.set(frustum.matrix);
       this.matrix.set(frustum.matrix);
       this.camX = frustum.camX;

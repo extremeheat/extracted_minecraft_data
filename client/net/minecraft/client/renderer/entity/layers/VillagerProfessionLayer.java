@@ -58,7 +58,7 @@ public class VillagerProfessionLayer<S extends LivingEntityRenderState & Village
             VillagerMetadataSection.Hat typeHat = this.getHatData(this.typeHatCache, "type", type);
             VillagerMetadataSection.Hat professionHat = this.getHatData(this.professionHatCache, "profession", profession);
             M model = this.getParentModel();
-            Identifier typeTexture = this.getIdentifier("type", type);
+            Identifier typeTexture = this.getIdentifier(state.isBaby ? "baby" : "type", type);
             boolean typeHatVisible = professionHat == VillagerMetadataSection.Hat.NONE || professionHat == VillagerMetadataSection.Hat.PARTIAL && typeHat != VillagerMetadataSection.Hat.FULL;
             M noHatModel = state.isBaby ? this.noHatBabyModel : this.noHatModel;
             renderColoredCutoutModel(typeHatVisible ? model : noHatModel, typeTexture, poseStack, submitNodeCollector, lightCoords, state, -1, 1);

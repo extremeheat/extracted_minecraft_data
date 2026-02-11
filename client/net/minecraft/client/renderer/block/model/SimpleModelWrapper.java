@@ -15,7 +15,7 @@ import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusion, TextureAtlasSprite particleIcon) implements BlockModelPart {
+public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusion, Material.Baked particleMaterial, boolean hasTranslucency) implements BlockModelPart {
    private static final Logger LOGGER = LogUtils.getLogger();
 
    public SimpleModelWrapper {
@@ -26,12 +26,13 @@ public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusi
       ResolvedModel model = modelBakery.getModel(location);
       TextureSlots textureSlots = model.getTopTextureSlots();
       boolean hasAmbientOcclusion = model.getTopAmbientOcclusion();
-      TextureAtlasSprite particleSprite = model.resolveParticleSprite(textureSlots, modelBakery);
+      Material.Baked particleMaterial = model.resolveParticleMaterial(textureSlots, modelBakery);
       QuadCollection geometry = model.bakeTopGeometry(textureSlots, modelBakery, state);
+      boolean hasTranslucency = false;
       Multimap<Identifier, Identifier> forbiddenSprites = null;
 
       for(BakedQuad bakedQuad : geometry.getAll()) {
-         TextureAtlasSprite sprite = bakedQuad.sprite();
+         TextureAtlasSprite sprite = bakedQuad.spriteInfo().sprite();
          if (!sprite.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS)) {
             if (forbiddenSprites == null) {
                forbiddenSprites = HashMultimap.create();
@@ -39,13 +40,15 @@ public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusi
 
             forbiddenSprites.put(sprite.atlasLocation(), sprite.contents().name());
          }
+
+         hasTranslucency |= bakedQuad.spriteInfo().layer().translucent();
       }
 
       if (forbiddenSprites != null) {
          LOGGER.warn("Rejecting block model {}, since it contains sprites from outside of supported atlas: {}", location, forbiddenSprites);
          return modelBakery.missingBlockModelPart();
       } else {
-         return new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleSprite);
+         return new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleMaterial, hasTranslucency);
       }
    }
 

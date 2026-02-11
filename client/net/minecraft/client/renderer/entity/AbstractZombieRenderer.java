@@ -13,6 +13,7 @@ import net.minecraft.world.item.component.SwingAnimation;
 
 public abstract class AbstractZombieRenderer<T extends Zombie, S extends ZombieRenderState, M extends ZombieModel<S>> extends HumanoidMobRenderer<T, S, M> {
    private static final Identifier ZOMBIE_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie/zombie.png");
+   private static final Identifier BABY_ZOMBIE_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie/zombie_baby.png");
 
    protected AbstractZombieRenderer(final EntityRendererProvider.Context context, final M model, final M babyModel, final ArmorModelSet<M> armorSet, final ArmorModelSet<M> babyArmorSet) {
       super(context, model, babyModel, 0.5F);
@@ -20,7 +21,7 @@ public abstract class AbstractZombieRenderer<T extends Zombie, S extends ZombieR
    }
 
    public Identifier getTextureLocation(final S state) {
-      return ZOMBIE_LOCATION;
+      return state.isBaby ? BABY_ZOMBIE_LOCATION : ZOMBIE_LOCATION;
    }
 
    public void extractRenderState(final T entity, final S state, final float partialTicks) {

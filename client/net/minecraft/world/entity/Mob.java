@@ -1093,6 +1093,10 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       return groupData;
    }
 
+   public void setPersistenceRequired(final boolean persistenceRequired) {
+      this.persistenceRequired = persistenceRequired;
+   }
+
    public void setPersistenceRequired() {
       this.persistenceRequired = true;
    }

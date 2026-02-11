@@ -1,7 +1,10 @@
 package net.minecraft.world.entity.animal.pig;
 
+import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -9,6 +12,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -58,6 +62,7 @@ import org.jspecify.annotations.Nullable;
 public class Pig extends Animal implements ItemSteerable {
    private static final EntityDataAccessor<Integer> DATA_BOOST_TIME;
    private static final EntityDataAccessor<Holder<PigVariant>> DATA_VARIANT_ID;
+   private static final EntityDataAccessor<Holder<PigSoundVariant>> DATA_SOUND_VARIANT_ID;
    private final ItemBasedSteering steering;
 
    public Pig(final EntityType<? extends Pig> type, final Level level) {
@@ -105,34 +110,41 @@ public class Pig extends Animal implements ItemSteerable {
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
       super.defineSynchedData(entityData);
+      Registry<PigSoundVariant> pigSoundVariants = this.registryAccess().lookupOrThrow(Registries.PIG_SOUND_VARIANT);
       entityData.define(DATA_BOOST_TIME, 0);
       entityData.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), PigVariants.DEFAULT));
+      EntityDataAccessor var10001 = DATA_SOUND_VARIANT_ID;
+      Optional var10002 = pigSoundVariants.get(PigSoundVariants.CLASSIC);
+      Objects.requireNonNull(pigSoundVariants);
+      entityData.define(var10001, (Holder)var10002.or(pigSoundVariants::getAny).orElseThrow());
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
       super.addAdditionalSaveData(output);
       VariantUtils.writeVariant(output, this.getVariant());
+      this.getSoundVariant().unwrapKey().ifPresent((soundVariant) -> output.store("sound_variant", ResourceKey.codec(Registries.PIG_SOUND_VARIANT), soundVariant));
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
       super.readAdditionalSaveData(input);
       VariantUtils.readVariant(input, Registries.PIG_VARIANT).ifPresent(this::setVariant);
+      input.read("sound_variant", ResourceKey.codec(Registries.PIG_SOUND_VARIANT)).flatMap((soundVariant) -> this.registryAccess().lookupOrThrow(Registries.PIG_SOUND_VARIANT).get(soundVariant)).ifPresent(this::setSoundVariant);
    }
 
    protected SoundEvent getAmbientSound() {
-      return this.isBaby() ? SoundEvents.PIG_AMBIENT_BABY : SoundEvents.PIG_AMBIENT;
+      return (SoundEvent)this.getSoundSet().ambientSound().value();
    }
 
    protected SoundEvent getHurtSound(final DamageSource source) {
-      return this.isBaby() ? SoundEvents.PIG_HURT_BABY : SoundEvents.PIG_HURT;
+      return (SoundEvent)this.getSoundSet().hurtSound().value();
    }
 
    protected SoundEvent getDeathSound() {
-      return this.isBaby() ? SoundEvents.PIG_DEATH_BABY : SoundEvents.PIG_DEATH;
+      return (SoundEvent)this.getSoundSet().deathSound().value();
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      this.playSound(this.isBaby() ? SoundEvents.PIG_STEP_BABY : SoundEvents.PIG_STEP, 0.15F, 1.0F);
+      this.playSound((SoundEvent)this.getSoundSet().stepSound().value(), 0.15F, 1.0F);
    }
 
    public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
@@ -229,18 +241,38 @@ public class Pig extends Animal implements ItemSteerable {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
+   private Holder<PigSoundVariant> getSoundVariant() {
+      return (Holder)this.entityData.get(DATA_SOUND_VARIANT_ID);
+   }
+
+   private void setSoundVariant(final Holder<PigSoundVariant> soundVariant) {
+      this.entityData.set(DATA_SOUND_VARIANT_ID, soundVariant);
+   }
+
+   private PigSoundVariant.PigSoundSet getSoundSet() {
+      return this.isBaby() ? ((PigSoundVariant)this.getSoundVariant().value()).babySounds() : ((PigSoundVariant)this.getSoundVariant().value()).adultSounds();
+   }
+
    public <T> @Nullable T get(final DataComponentType<? extends T> type) {
-      return (T)(type == DataComponents.PIG_VARIANT ? castComponentValue(type, this.getVariant()) : super.get(type));
+      if (type == DataComponents.PIG_VARIANT) {
+         return (T)castComponentValue(type, this.getVariant());
+      } else {
+         return (T)(type == DataComponents.PIG_SOUND_VARIANT ? castComponentValue(type, this.getSoundVariant()) : super.get(type));
+      }
    }
 
    protected void applyImplicitComponents(final DataComponentGetter components) {
       this.applyImplicitComponentIfPresent(components, DataComponents.PIG_VARIANT);
+      this.applyImplicitComponentIfPresent(components, DataComponents.PIG_SOUND_VARIANT);
       super.applyImplicitComponents(components);
    }
 
    protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
       if (type == DataComponents.PIG_VARIANT) {
          this.setVariant((Holder)castComponentValue(DataComponents.PIG_VARIANT, value));
+         return true;
+      } else if (type == DataComponents.PIG_SOUND_VARIANT) {
+         this.setSoundVariant((Holder)castComponentValue(DataComponents.PIG_SOUND_VARIANT, value));
          return true;
       } else {
          return super.applyImplicitComponent(type, value);
@@ -249,11 +281,13 @@ public class Pig extends Animal implements ItemSteerable {
 
    public SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
       VariantUtils.selectVariantToSpawn(SpawnContext.create(level, this.blockPosition()), Registries.PIG_VARIANT).ifPresent(this::setVariant);
+      this.setSoundVariant(PigSoundVariants.pickRandomSoundVariant(this.registryAccess(), level.getRandom()));
       return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
    static {
       DATA_BOOST_TIME = SynchedEntityData.<Integer>defineId(Pig.class, EntityDataSerializers.INT);
       DATA_VARIANT_ID = SynchedEntityData.<Holder<PigVariant>>defineId(Pig.class, EntityDataSerializers.PIG_VARIANT);
+      DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<PigSoundVariant>>defineId(Pig.class, EntityDataSerializers.PIG_SOUND_VARIANT);
    }
 }

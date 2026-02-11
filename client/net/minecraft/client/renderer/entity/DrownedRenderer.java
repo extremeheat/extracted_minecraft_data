@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.zombie.BabyDrownedModel;
 import net.minecraft.client.model.monster.zombie.DrownedModel;
 import net.minecraft.client.renderer.entity.layers.DrownedOuterLayer;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
@@ -16,9 +17,10 @@ import net.minecraft.world.item.Items;
 
 public class DrownedRenderer extends AbstractZombieRenderer<Drowned, ZombieRenderState, DrownedModel> {
    private static final Identifier DROWNED_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie/drowned.png");
+   private static final Identifier BABY_DROWNED_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie/drowned_baby.png");
 
    public DrownedRenderer(final EntityRendererProvider.Context context) {
-      super(context, new DrownedModel(context.bakeLayer(ModelLayers.DROWNED)), new DrownedModel(context.bakeLayer(ModelLayers.DROWNED_BABY)), ArmorModelSet.bake(ModelLayers.DROWNED_ARMOR, context.getModelSet(), DrownedModel::new), ArmorModelSet.bake(ModelLayers.DROWNED_BABY_ARMOR, context.getModelSet(), DrownedModel::new));
+      super(context, new DrownedModel(context.bakeLayer(ModelLayers.DROWNED)), new BabyDrownedModel(context.bakeLayer(ModelLayers.DROWNED_BABY)), ArmorModelSet.bake(ModelLayers.DROWNED_ARMOR, context.getModelSet(), DrownedModel::new), ArmorModelSet.bake(ModelLayers.DROWNED_BABY_ARMOR, context.getModelSet(), BabyDrownedModel::new));
       this.addLayer(new DrownedOuterLayer(this, context.getModelSet()));
    }
 
@@ -27,7 +29,7 @@ public class DrownedRenderer extends AbstractZombieRenderer<Drowned, ZombieRende
    }
 
    public Identifier getTextureLocation(final ZombieRenderState state) {
-      return DROWNED_LOCATION;
+      return state.isBaby ? BABY_DROWNED_LOCATION : DROWNED_LOCATION;
    }
 
    protected void setupRotations(final ZombieRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {

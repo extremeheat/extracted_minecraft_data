@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -82,7 +82,7 @@ public interface EntityRendererProvider<T extends Entity> {
          return this.equipmentRenderer;
       }
 
-      public MaterialSet getMaterials() {
+      public SpriteGetter getSprites() {
          return this.atlasManager;
       }
 

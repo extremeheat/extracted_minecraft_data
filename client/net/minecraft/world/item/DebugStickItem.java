@@ -26,7 +26,7 @@ public class DebugStickItem extends Item {
    }
 
    public boolean canDestroyBlock(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final LivingEntity user) {
-      if (!level.isClientSide() && user instanceof Player player) {
+      if (user instanceof ServerPlayer player) {
          this.handleInteraction(player, state, level, pos, false, itemStack);
       }
 
@@ -36,9 +36,9 @@ public class DebugStickItem extends Item {
    public InteractionResult useOn(final UseOnContext context) {
       Player player = context.getPlayer();
       Level level = context.getLevel();
-      if (!level.isClientSide() && player != null) {
+      if (player instanceof ServerPlayer serverPlayer) {
          BlockPos pos = context.getClickedPos();
-         if (!this.handleInteraction(player, level.getBlockState(pos), level, pos, true, context.getItemInHand())) {
+         if (!this.handleInteraction(serverPlayer, level.getBlockState(pos), level, pos, true, context.getItemInHand())) {
             return InteractionResult.FAIL;
          }
       }
@@ -46,7 +46,7 @@ public class DebugStickItem extends Item {
       return InteractionResult.SUCCESS;
    }
 
-   private boolean handleInteraction(final Player player, final BlockState state, final LevelAccessor level, final BlockPos pos, final boolean cycle, final ItemStack itemStackInHand) {
+   private boolean handleInteraction(final ServerPlayer player, final BlockState state, final LevelAccessor level, final BlockPos pos, final boolean cycle, final ItemStack itemStackInHand) {
       if (!player.canUseGameMasterBlocks()) {
          return false;
       } else {
@@ -90,8 +90,8 @@ public class DebugStickItem extends Item {
       return (T)(backward ? Util.findPreviousInIterable(collection, current) : Util.findNextInIterable(collection, current));
    }
 
-   private static void message(final Player player, final Component message) {
-      ((ServerPlayer)player).sendSystemMessage(message, true);
+   private static void message(final ServerPlayer player, final Component message) {
+      player.sendOverlayMessage(message);
    }
 
    private static <T extends Comparable<T>> String getNameHelper(final BlockState state, final Property<T> property) {

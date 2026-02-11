@@ -4,19 +4,18 @@ import com.google.common.collect.Queues;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SectionBufferBuilderPool {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Queue<SectionBufferBuilderPack> freeBuffers;
-   private volatile int freeBufferCount;
+   private final ArrayBlockingQueue<SectionBufferBuilderPack> freeBuffers;
 
    private SectionBufferBuilderPool(final List<SectionBufferBuilderPack> buffers) {
       super();
-      this.freeBuffers = Queues.newArrayDeque(buffers);
-      this.freeBufferCount = this.freeBuffers.size();
+      this.freeBuffers = Queues.newArrayBlockingQueue(buffers.size());
+      this.freeBuffers.addAll(buffers);
    }
 
    public static SectionBufferBuilderPool allocate(final int maxWorkers) {
@@ -41,18 +40,11 @@ public class SectionBufferBuilderPool {
    }
 
    public @Nullable SectionBufferBuilderPack acquire() {
-      SectionBufferBuilderPack buffer = (SectionBufferBuilderPack)this.freeBuffers.poll();
-      if (buffer != null) {
-         this.freeBufferCount = this.freeBuffers.size();
-         return buffer;
-      } else {
-         return null;
-      }
+      return (SectionBufferBuilderPack)this.freeBuffers.poll();
    }
 
    public void release(final SectionBufferBuilderPack buffer) {
-      this.freeBuffers.add(buffer);
-      this.freeBufferCount = this.freeBuffers.size();
+      this.freeBuffers.offer(buffer);
    }
 
    public boolean isEmpty() {
@@ -60,6 +52,6 @@ public class SectionBufferBuilderPool {
    }
 
    public int getFreeBufferCount() {
-      return this.freeBufferCount;
+      return this.freeBuffers.size();
    }
 }

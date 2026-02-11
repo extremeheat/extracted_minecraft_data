@@ -145,7 +145,6 @@ public class Gui {
    private @Nullable Component overlayMessageString;
    private int overlayMessageTime;
    private boolean animateOverlayMessageColor;
-   private boolean chatDisabledByPlayerShown;
    public float vignetteBrightness = 1.0F;
    private int toolHighlightTimer;
    private ItemStack lastToolHighlight;
@@ -377,12 +376,12 @@ public class Gui {
    }
 
    private void renderChat(final GuiGraphics graphics, final DeltaTracker deltaTracker) {
-      if (!this.chat.isChatFocused()) {
+      if (this.minecraft.player != null && !this.chat.isChatFocused()) {
          Window window = this.minecraft.getWindow();
          int mouseX = Mth.floor(this.minecraft.mouseHandler.getScaledXPos(window));
          int mouseY = Mth.floor(this.minecraft.mouseHandler.getScaledYPos(window));
          graphics.nextStratum();
-         this.chat.render(graphics, this.getFont(), this.tickCount, mouseX, mouseY, false, false);
+         this.chat.render(graphics, this.getFont(), this.tickCount, mouseX, mouseY, ChatComponent.DisplayMode.BACKGROUND, false);
       }
 
    }
@@ -1038,13 +1037,14 @@ public class Gui {
          }
       }
 
+      float brightness = Mth.clamp(this.vignetteBrightness, 0.0F, 1.0F);
       int color;
       if (borderWarningStrength > 0.0F) {
          borderWarningStrength = Mth.clamp(borderWarningStrength, 0.0F, 1.0F);
-         color = ARGB.colorFromFloat(1.0F, 0.0F, borderWarningStrength, borderWarningStrength);
+         float red = brightness * (1.0F - borderWarningStrength);
+         float greenBlue = brightness + (1.0F - brightness) * borderWarningStrength;
+         color = ARGB.colorFromFloat(1.0F, red, greenBlue, greenBlue);
       } else {
-         float brightness = this.vignetteBrightness;
-         brightness = Mth.clamp(brightness, 0.0F, 1.0F);
          color = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
       }
 
@@ -1059,7 +1059,7 @@ public class Gui {
       }
 
       int color = ARGB.white(alpha);
-      TextureAtlasSprite slot = this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(Blocks.NETHER_PORTAL.defaultBlockState());
+      TextureAtlasSprite slot = this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleMaterial(Blocks.NETHER_PORTAL.defaultBlockState()).sprite();
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)slot, 0, 0, graphics.guiWidth(), graphics.guiHeight(), color);
    }
 
@@ -1157,18 +1157,9 @@ public class Gui {
    }
 
    public void setOverlayMessage(final Component string, final boolean animate) {
-      this.setChatDisabledByPlayerShown(false);
       this.overlayMessageString = string;
       this.overlayMessageTime = 60;
       this.animateOverlayMessageColor = animate;
-   }
-
-   public void setChatDisabledByPlayerShown(final boolean chatDisabledByPlayerShown) {
-      this.chatDisabledByPlayerShown = chatDisabledByPlayerShown;
-   }
-
-   public boolean isShowingChatDisabledByPlayer() {
-      return this.chatDisabledByPlayerShown && this.overlayMessageTime > 0;
    }
 
    public void setTimes(final int fadeInTime, final int stayTime, final int fadeOutTime) {

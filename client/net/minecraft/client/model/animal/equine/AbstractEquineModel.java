@@ -100,10 +100,12 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       this.body.xRot = standing * -0.7853982F + iStanding * this.body.xRot;
       float standAngle = 0.2617994F * standing;
       float bobValue = Mth.cos((double)(state.ageInTicks * 0.6F + 3.1415927F));
+      float standingLegYOffset = state.isBaby ? 4.0F : 12.0F;
+      float standingLegZOffset = state.isBaby ? 0.0F : 4.0F;
       var10000 = this.leftFrontLeg;
-      var10000.y -= 12.0F * ageScale * standing;
+      var10000.y -= standingLegYOffset * standing;
       var10000 = this.leftFrontLeg;
-      var10000.z += 4.0F * ageScale * standing;
+      var10000.z += standingLegZOffset * standing;
       this.rightFrontLeg.y = this.leftFrontLeg.y;
       this.rightFrontLeg.z = this.leftFrontLeg.z;
       float rlegRot = (-1.0471976F + bobValue) * standing + legXRotAnim * iStanding;

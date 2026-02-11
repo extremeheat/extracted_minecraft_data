@@ -10,8 +10,9 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.Projection;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -34,7 +35,8 @@ public class GuiItemAtlas implements AutoCloseable {
    private final GpuTextureView depthTextureView;
    private final DynamicAtlasAllocator<Object> allocator;
    private final PoseStack poseStack = new PoseStack();
-   private final CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("items", -1000.0F, 1000.0F, true);
+   private final Projection projection = new Projection();
+   private final ProjectionMatrixBuffer projectionMatrixBuffer = new ProjectionMatrixBuffer("items");
 
    public GuiItemAtlas(final SubmitNodeCollector submitNodeCollector, final FeatureRenderDispatcher featureRenderDispatcher, final MultiBufferSource.BufferSource bufferSource, final int textureSize, final int slotTextureSize) {
       super();
@@ -102,7 +104,8 @@ public class GuiItemAtlas implements AutoCloseable {
       this.poseStack.scale((float)this.slotTextureSize, (float)(-this.slotTextureSize), (float)this.slotTextureSize);
       RenderSystem.outputColorTextureOverride = this.textureView;
       RenderSystem.outputDepthTextureOverride = this.depthTextureView;
-      RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer((float)this.textureSize, (float)this.textureSize), ProjectionType.ORTHOGRAPHIC);
+      this.projection.setupOrtho(-1000.0F, 1000.0F, (float)this.textureSize, (float)this.textureSize, true);
+      RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(this.projection), ProjectionType.ORTHOGRAPHIC);
       RenderSystem.enableScissorForRenderTypeDraws(left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize);
       Lighting.Entry lighting = item.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT;
       Minecraft.getInstance().gameRenderer.getLighting().setupFor(lighting);

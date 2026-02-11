@@ -81,7 +81,9 @@ public abstract class AgeableMob extends PathfinderMob {
    public static void setAgeLocked(final Mob mob, final Supplier<Boolean> isAgedLocked, final Player player, final ItemStack itemInHand, final Consumer<Mob> setAgeLockData) {
       setAgeLockData.accept(mob);
       itemInHand.consume(1, player);
-      mob.level().playSound((Entity)null, (BlockPos)mob.blockPosition(), (Boolean)isAgedLocked.get() ? SoundEvents.GOLDEN_DANDELION_USE : SoundEvents.GOLDEN_DANDELION_UNUSE, SoundSource.PLAYERS, 1.0F, 1.0F);
+      boolean isAgeLocked = (Boolean)isAgedLocked.get();
+      mob.setPersistenceRequired(isAgeLocked);
+      mob.level().playSound((Entity)null, (BlockPos)mob.blockPosition(), isAgeLocked ? SoundEvents.GOLDEN_DANDELION_USE : SoundEvents.GOLDEN_DANDELION_UNUSE, SoundSource.PLAYERS, 1.0F, 1.0F);
    }
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
@@ -179,7 +181,7 @@ public abstract class AgeableMob extends PathfinderMob {
 
             --this.forcedAgeTimer;
          }
-      } else if (this.isAlive() && !this.isAgeLocked()) {
+      } else if (this.isAlive() && this.canAgeUp()) {
          int age = this.getAge();
          if (age < 0) {
             ++age;

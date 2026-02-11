@@ -117,9 +117,9 @@ public class RenderPass implements AutoCloseable {
 
    }
 
-   public static record Draw<T>(int slot, GpuBuffer vertexBuffer, @Nullable GpuBuffer indexBuffer, VertexFormat.@Nullable IndexType indexType, int firstIndex, int indexCount, @Nullable BiConsumer<T, UniformUploader> uniformUploaderConsumer) {
-      public Draw(final int slot, final GpuBuffer vertexBuffer, final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType, final int firstIndex, final int indexCount) {
-         this(slot, vertexBuffer, indexBuffer, indexType, firstIndex, indexCount, (BiConsumer)null);
+   public static record Draw<T>(int slot, GpuBuffer vertexBuffer, @Nullable GpuBuffer indexBuffer, VertexFormat.@Nullable IndexType indexType, int firstIndex, int indexCount, int baseVertex, @Nullable BiConsumer<T, UniformUploader> uniformUploaderConsumer) {
+      public Draw(final int slot, final GpuBuffer vertexBuffer, final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType, final int firstIndex, final int indexCount, final int baseVertex) {
+         this(slot, vertexBuffer, indexBuffer, indexType, firstIndex, indexCount, baseVertex, (BiConsumer)null);
       }
 
       public Draw {

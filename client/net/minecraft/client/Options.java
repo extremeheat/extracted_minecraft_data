@@ -45,6 +45,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.client.input.InputQuirks;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -844,7 +845,12 @@ public class Options {
       }, (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(PrioritizeChunkUpdates.values()), PrioritizeChunkUpdates.LEGACY_CODEC), PrioritizeChunkUpdates.NONE, (value) -> this.setGraphicsPresetToCustom());
       this.resourcePacks = Lists.newArrayList();
       this.incompatibleResourcePacks = Lists.newArrayList();
-      this.chatVisibility = new OptionInstance<ChatVisiblity>("options.chat.visibility", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(ChatVisiblity.values()), ChatVisiblity.LEGACY_CODEC), ChatVisiblity.FULL, (value) -> {
+      this.chatVisibility = new OptionInstance<ChatVisiblity>("options.chat.visibility", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(ChatVisiblity.values()), ChatVisiblity.LEGACY_CODEC), ChatVisiblity.FULL, (var0) -> {
+         LocalPlayer player = Minecraft.getInstance().player;
+         if (player != null) {
+            player.refreshChatAbilities();
+         }
+
       });
       this.chatOpacity = new OptionInstance<Double>("options.chat.opacity", OptionInstance.noTooltip(), (caption, value) -> percentValueLabel(caption, value * 0.9 + 0.1), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
       this.chatLineSpacing = new OptionInstance<Double>("options.chat.line_spacing", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.0, (value) -> {

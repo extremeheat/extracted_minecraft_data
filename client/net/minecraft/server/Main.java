@@ -152,12 +152,7 @@ public class Main {
                return;
             }
 
-            try {
-               levelDataTag = DataFixers.getFileFixer().fix(access, levelDataUnfixed, new UpgradeProgress());
-            } catch (IOException e) {
-               LOGGER.error("Failed to upgrade the file structure of the world.", e);
-               return;
-            }
+            levelDataTag = DataFixers.getFileFixer().fix(access, levelDataUnfixed, new UpgradeProgress());
          } else {
             levelDataTag = null;
          }

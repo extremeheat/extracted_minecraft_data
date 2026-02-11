@@ -16,8 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Function;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.client.renderer.block.model.TextureSlots;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -147,7 +147,7 @@ public class ModelDiscovery {
       private static final Slot<UnbakedGeometry> KEY_GEOMETRY = slot(2);
       private static final Slot<ItemTransforms> KEY_TRANSFORMS = slot(3);
       private static final Slot<TextureSlots> KEY_TEXTURE_SLOTS = slot(4);
-      private static final Slot<TextureAtlasSprite> KEY_PARTICLE_SPRITE = slot(5);
+      private static final Slot<Material.Baked> KEY_PARTICLE_SPRITE = slot(5);
       private static final Slot<QuadCollection> KEY_DEFAULT_GEOMETRY = slot(6);
       private static final int SLOT_COUNT = 7;
       private final Identifier id;
@@ -215,9 +215,9 @@ public class ModelDiscovery {
          return (TextureSlots)this.getSimpleProperty(KEY_TEXTURE_SLOTS, ResolvedModel::findTopTextureSlots);
       }
 
-      public TextureAtlasSprite resolveParticleSprite(final TextureSlots textureSlots, final ModelBaker baker) {
-         TextureAtlasSprite result = (TextureAtlasSprite)this.getSlot(KEY_PARTICLE_SPRITE);
-         return result != null ? result : (TextureAtlasSprite)this.updateSlot(KEY_PARTICLE_SPRITE, ResolvedModel.resolveParticleSprite(textureSlots, baker, this));
+      public Material.Baked resolveParticleMaterial(final TextureSlots textureSlots, final ModelBaker baker) {
+         Material.Baked result = (Material.Baked)this.getSlot(KEY_PARTICLE_SPRITE);
+         return result != null ? result : (Material.Baked)this.updateSlot(KEY_PARTICLE_SPRITE, ResolvedModel.resolveParticleMaterial(textureSlots, baker, this));
       }
 
       private QuadCollection bakeDefaultState(final TextureSlots textureSlots, final ModelBaker baker, final ModelState state) {

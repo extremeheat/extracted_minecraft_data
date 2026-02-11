@@ -3,7 +3,6 @@ package net.minecraft.client.multiplayer.chat;
 import com.mojang.serialization.Codec;
 import java.time.Instant;
 import java.util.Optional;
-import net.minecraft.client.GuiMessageTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.PlayerChatMessage;

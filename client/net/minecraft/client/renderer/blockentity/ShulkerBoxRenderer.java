@@ -15,8 +15,8 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
@@ -27,20 +27,20 @@ import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEntity, ShulkerBoxRenderState> {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final ShulkerBoxModel model;
 
    public ShulkerBoxRenderer(final BlockEntityRendererProvider.Context context) {
-      this(context.entityModelSet(), context.materials());
+      this(context.entityModelSet(), context.sprites());
    }
 
    public ShulkerBoxRenderer(final SpecialModelRenderer.BakingContext context) {
-      this(context.entityModelSet(), context.materials());
+      this(context.entityModelSet(), context.sprites());
    }
 
-   public ShulkerBoxRenderer(final EntityModelSet context, final MaterialSet materials) {
+   public ShulkerBoxRenderer(final EntityModelSet context, final SpriteGetter sprites) {
       super();
-      this.materials = materials;
+      this.sprites = sprites;
       this.model = new ShulkerBoxModel(context.bakeLayer(ModelLayers.SHULKER_BOX));
    }
 
@@ -57,24 +57,24 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
 
    public void submit(final ShulkerBoxRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       DyeColor color = state.color;
-      Material material;
+      SpriteId sprite;
       if (color == null) {
-         material = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
+         sprite = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
       } else {
-         material = Sheets.getShulkerBoxMaterial(color);
+         sprite = Sheets.getShulkerBoxSprite(color);
       }
 
-      this.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.direction, state.progress, state.breakProgress, material, 0);
+      this.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.direction, state.progress, state.breakProgress, sprite, 0);
    }
 
-   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final Direction direction, final float progress, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress, final Material material, final int outlineColor) {
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final Direction direction, final float progress, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress, final SpriteId sprite, final int outlineColor) {
       poseStack.pushPose();
       this.prepareModel(poseStack, direction, progress);
       ShulkerBoxModel var10001 = this.model;
       Float var10002 = progress;
       ShulkerBoxModel var10005 = this.model;
       Objects.requireNonNull(var10005);
-      submitNodeCollector.submitModel(var10001, var10002, poseStack, material.renderType(var10005::renderType), lightCoords, overlayCoords, -1, this.materials.get(material), outlineColor, breakProgress);
+      submitNodeCollector.submitModel(var10001, var10002, poseStack, sprite.renderType(var10005::renderType), lightCoords, overlayCoords, -1, this.sprites.get(sprite), outlineColor, breakProgress);
       poseStack.popPose();
    }
 

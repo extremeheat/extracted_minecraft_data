@@ -91,7 +91,7 @@ public class FogRenderer implements AutoCloseable {
       }
    }
 
-   private Vector4f computeFogColor(final Camera camera, final float partialTicks, final ClientLevel level, final int renderDistance, final float darkenWorldAmount) {
+   private void computeFogColor(final Camera camera, final float partialTicks, final ClientLevel level, final int renderDistance, final float darkenWorldAmount, final Vector4f dest) {
       FogType fogType = this.getFogType(camera);
       Entity entity = camera.entity();
       FogEnvironment colorSourceEnvironment = null;
@@ -164,7 +164,7 @@ public class FogRenderer implements AutoCloseable {
             fogBlue = Mth.lerp(brightenFactor, fogBlue, fogBlue * targetScale);
          }
 
-         return new Vector4f(fogRed, fogGreen, fogBlue, 1.0F);
+         dest.set(fogRed, fogGreen, fogBlue, 1.0F);
       }
    }
 
@@ -172,13 +172,13 @@ public class FogRenderer implements AutoCloseable {
       return fogEnabled = !fogEnabled;
    }
 
-   public Vector4f setupFog(final Camera camera, final int renderDistanceInChunks, final DeltaTracker deltaTracker, final float darkenWorldAmount, final ClientLevel level) {
+   public FogData setupFog(final Camera camera, final int renderDistanceInChunks, final DeltaTracker deltaTracker, final float darkenWorldAmount, final ClientLevel level) {
       float partialTickTime = deltaTracker.getGameTimeDeltaPartialTick(false);
-      Vector4f fogColor = this.computeFogColor(camera, partialTickTime, level, renderDistanceInChunks, darkenWorldAmount);
       float renderDistanceInBlocks = (float)(renderDistanceInChunks * 16);
       FogType fogType = this.getFogType(camera);
       Entity entity = camera.entity();
       FogData fog = new FogData();
+      this.computeFogColor(camera, partialTickTime, level, renderDistanceInChunks, darkenWorldAmount, fog.color);
 
       for(FogEnvironment fogEnvironment : FOG_ENVIRONMENTS) {
          if (fogEnvironment.isApplicable(fogType, entity)) {
@@ -190,12 +190,14 @@ public class FogRenderer implements AutoCloseable {
       float renderDistanceFogSpan = Mth.clamp(renderDistanceInBlocks / 10.0F, 4.0F, 64.0F);
       fog.renderDistanceStart = renderDistanceInBlocks - renderDistanceFogSpan;
       fog.renderDistanceEnd = renderDistanceInBlocks;
+      return fog;
+   }
 
+   public void updateBuffer(final FogData fog) {
       try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.regularBuffer.currentBuffer(), false, true)) {
-         this.updateBuffer(view.data(), 0, fogColor, fog.environmentalStart, fog.environmentalEnd, fog.renderDistanceStart, fog.renderDistanceEnd, fog.skyEnd, fog.cloudEnd);
+         this.updateBuffer(view.data(), 0, fog.color, fog.environmentalStart, fog.environmentalEnd, fog.renderDistanceStart, fog.renderDistanceEnd, fog.skyEnd, fog.cloudEnd);
       }
 
-      return fogColor;
    }
 
    private FogType getFogType(final Camera camera) {

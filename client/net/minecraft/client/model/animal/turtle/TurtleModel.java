@@ -1,14 +1,16 @@
 package net.minecraft.client.model.animal.turtle;
 
+import java.util.function.Function;
 import net.minecraft.client.model.QuadrupedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.TurtleRenderState;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 public abstract class TurtleModel extends QuadrupedModel<TurtleRenderState> {
-   public TurtleModel(final ModelPart root) {
-      super(root, RenderTypes::entityCutout);
+   public TurtleModel(final ModelPart root, final Function<Identifier, RenderType> renderType) {
+      super(root, renderType);
    }
 
    public void setupAnim(final TurtleRenderState state) {

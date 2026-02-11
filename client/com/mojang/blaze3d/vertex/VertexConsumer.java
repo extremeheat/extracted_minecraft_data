@@ -2,8 +2,6 @@ package com.mojang.blaze3d.vertex;
 
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.util.ARGB;
-import net.minecraft.util.LightCoordsUtil;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -49,11 +47,7 @@ public interface VertexConsumer {
       return this.setUv1(packedOverlayCoords & '\uffff', packedOverlayCoords >> 16 & '\uffff');
    }
 
-   default void putBulkData(final PoseStack.Pose pose, final BakedQuad quad, final float r, final float g, final float b, final float a, final int lightCoords, final int overlayCoords) {
-      this.putBulkData(pose, quad, new float[]{1.0F, 1.0F, 1.0F, 1.0F}, r, g, b, a, new int[]{lightCoords, lightCoords, lightCoords, lightCoords}, overlayCoords);
-   }
-
-   default void putBulkData(final PoseStack.Pose pose, final BakedQuad quad, final float[] brightness, final float r, final float g, final float b, final float a, final int[] lightmapCoord, final int overlayCoords) {
+   default void putBulkData(final PoseStack.Pose pose, final BakedQuad quad, final QuadBrightness brightness, final int color, final QuadLightmapCoords lightmapCoord, final int overlayCoords) {
       Vector3fc normalVec = quad.direction().getUnitVec3f();
       Matrix4f matrix = pose.pose();
       Vector3f normal = pose.transformNormal(normalVec, new Vector3f());
@@ -62,13 +56,12 @@ public interface VertexConsumer {
       for(int vertex = 0; vertex < 4; ++vertex) {
          Vector3fc position = quad.position(vertex);
          long packedUv = quad.packedUV(vertex);
-         float brightnessForVertex = brightness[vertex];
-         int color = ARGB.colorFromFloat(a, brightnessForVertex * r, brightnessForVertex * g, brightnessForVertex * b);
-         int light = LightCoordsUtil.lightCoordsWithEmission(lightmapCoord[vertex], lightEmission);
+         int vertexColor = brightness.scaleColor(vertex, color);
+         int light = lightmapCoord.composeWithEmission(vertex, lightEmission);
          Vector3f pos = matrix.transformPosition(position, new Vector3f());
          float u = UVPair.unpackU(packedUv);
          float v = UVPair.unpackV(packedUv);
-         this.addVertex(pos.x(), pos.y(), pos.z(), color, u, v, overlayCoords, light, normal.x(), normal.y(), normal.z());
+         this.addVertex(pos.x(), pos.y(), pos.z(), vertexColor, u, v, overlayCoords, light, normal.x(), normal.y(), normal.z());
       }
 
    }

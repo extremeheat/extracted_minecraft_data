@@ -56,14 +56,14 @@ public class AlterGroundDecorator extends TreeDecorator {
 
    private void placeBlockAt(final TreeDecorator.Context context, final BlockPos pos) {
       for(int dy = 2; dy >= -3; --dy) {
-         BlockPos blockPos = pos.above(dy);
-         BlockState replaceWith = this.provider.getState(context.level(), context.random(), pos);
+         BlockPos cursor = pos.above(dy);
+         BlockState replaceWith = this.provider.getState(context.level(), context.random(), cursor);
          if (replaceWith != null) {
-            context.setBlock(blockPos, replaceWith);
+            context.setBlock(cursor, replaceWith);
             break;
          }
 
-         if (!context.isAir(blockPos) && dy < 0) {
+         if (!context.isAir(cursor) && dy < 0) {
             break;
          }
       }

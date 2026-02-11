@@ -70,7 +70,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          BlockStateModel blockModel = this.blockRenderer.getBlockModel(fakeBlockState);
          poseStack.pushPose();
          poseStack.translate(-0.5F, -0.5F, -0.5F);
-         submitNodeCollector.submitBlockModel(poseStack, RenderTypes.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS), blockModel, 1.0F, 1.0F, 1.0F, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+         submitNodeCollector.submitBlockModel(poseStack, RenderTypes.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS), blockModel, -1, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
          poseStack.popPose();
       }
 

@@ -17,12 +17,14 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -63,6 +65,7 @@ import org.jspecify.annotations.Nullable;
 public class Drowned extends Zombie implements RangedAttackMob {
    public static final float NAUTILUS_SHELL_CHANCE = 0.03F;
    private static final float ZOMBIE_NAUTILUS_JOCKEY_CHANCE = 0.5F;
+   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.55F, 1.08F).withEyeHeight(0.775F);
    private boolean searchingForLand;
 
    public Drowned(final EntityType<? extends Drowned> type, final Level level) {
@@ -138,6 +141,10 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    private static boolean isDeepEnoughToSpawn(final LevelAccessor level, final BlockPos pos) {
       return pos.getY() < level.getSeaLevel() - 5;
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    protected SoundEvent getAmbientSound() {

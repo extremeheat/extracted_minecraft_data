@@ -71,7 +71,7 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       int invert = getHoldingArm(owner) == HumanoidArm.RIGHT ? 1 : -1;
       if (this.entityRenderDispatcher.options.getCameraType().isFirstPerson() && owner == Minecraft.getInstance().player) {
          double viewBobbingScale = 960.0 / (double)(Integer)this.entityRenderDispatcher.options.fov().get();
-         Vec3 viewVec = this.entityRenderDispatcher.camera.getNearPlane().getPointOnPlane((float)invert * 0.525F, -0.1F).scale(viewBobbingScale).yRot(swing * 0.5F).xRot(-swing * 0.7F);
+         Vec3 viewVec = this.entityRenderDispatcher.camera.getNearPlane((float)(Integer)this.entityRenderDispatcher.options.fov().get()).getPointOnPlane((float)invert * 0.525F, -0.1F).scale(viewBobbingScale).yRot(swing * 0.5F).xRot(-swing * 0.7F);
          return owner.getEyePosition(partialTicks).add(viewVec);
       } else {
          float ownerYRot = Mth.lerp(partialTicks, owner.yBodyRotO, owner.yBodyRot) * 0.017453292F;

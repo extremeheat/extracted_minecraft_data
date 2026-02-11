@@ -3,11 +3,10 @@ package net.minecraft.network.chat;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.context.ParsedArgument;
-import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.CommandNode;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.commands.ArgumentVisitor;
 import net.minecraft.commands.arguments.SignedArgument;
 import org.jspecify.annotations.Nullable;
 
@@ -21,36 +20,18 @@ public record SignableCommand<S>(List<Argument<S>> arguments) {
    }
 
    public static <S> SignableCommand<S> of(final ParseResults<S> command) {
-      String commandString = command.getReader().getString();
-      CommandContextBuilder<S> rootContext = command.getContext();
-      CommandContextBuilder<S> context = rootContext;
-
-      List<Argument<S>> arguments;
-      CommandContextBuilder<S> child;
-      for(arguments = collectArguments(commandString, rootContext); (child = context.getChild()) != null && child.getRootNode() != rootContext.getRootNode(); context = child) {
-         arguments.addAll(collectArguments(commandString, child));
-      }
-
-      return new SignableCommand<S>(arguments);
-   }
-
-   private static <S> List<Argument<S>> collectArguments(final String commandString, final CommandContextBuilder<S> context) {
-      List<Argument<S>> arguments = new ArrayList();
-
-      for(ParsedCommandNode<S> node : context.getNodes()) {
-         CommandNode var6 = node.getNode();
-         if (var6 instanceof ArgumentCommandNode<S, ?> argument) {
-            if (argument.getType() instanceof SignedArgument) {
-               ParsedArgument<S, ?> parsed = (ParsedArgument)context.getArguments().get(argument.getName());
-               if (parsed != null) {
-                  String value = parsed.getRange().get(commandString);
-                  arguments.add(new Argument(argument, value));
-               }
+      final String commandString = command.getReader().getString();
+      final List<Argument<S>> arguments = new ArrayList();
+      ArgumentVisitor.visitArguments(command, new ArgumentVisitor.Output<S>() {
+         public <T> void accept(final CommandContextBuilder<S> context, final ArgumentCommandNode<S, T> argument, final @Nullable ParsedArgument<S, T> value) {
+            if (value != null && argument.getType() instanceof SignedArgument) {
+               String stringValue = value.getRange().get(commandString);
+               arguments.add(new Argument(argument, stringValue));
             }
-         }
-      }
 
-      return arguments;
+         }
+      }, true);
+      return new SignableCommand<S>(arguments);
    }
 
    public @Nullable Argument<S> getArgument(final String name) {

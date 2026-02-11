@@ -73,7 +73,7 @@ public class ChunkCullingDebugRenderer implements DebugRenderer.SimpleDebugRende
          }
       }
 
-      Frustum capturedFrustum = levelRenderer.getCapturedFrustum();
+      Frustum capturedFrustum = this.minecraft.gameRenderer.getMainCamera().getCapturedFrustum();
       if (capturedFrustum != null) {
          Vec3 offset = new Vec3(capturedFrustum.getCamX(), capturedFrustum.getCamY(), capturedFrustum.getCamZ());
          Vector4f[] frustumPoints = capturedFrustum.getFrustumPoints();

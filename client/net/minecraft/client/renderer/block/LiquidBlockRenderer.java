@@ -3,12 +3,14 @@ package net.minecraft.client.renderer.block;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.SpriteGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -30,13 +32,13 @@ public class LiquidBlockRenderer {
    private final TextureAtlasSprite waterFlowing;
    private final TextureAtlasSprite waterOverlay;
 
-   public LiquidBlockRenderer(final MaterialSet materials) {
+   public LiquidBlockRenderer(final SpriteGetter sprites) {
       super();
-      this.lavaStill = materials.get(ModelBakery.LAVA_STILL);
-      this.lavaFlowing = materials.get(ModelBakery.LAVA_FLOW);
-      this.waterStill = materials.get(ModelBakery.WATER_STILL);
-      this.waterFlowing = materials.get(ModelBakery.WATER_FLOW);
-      this.waterOverlay = materials.get(ModelBakery.WATER_OVERLAY);
+      this.lavaStill = sprites.get(ModelBakery.LAVA_STILL);
+      this.lavaFlowing = sprites.get(ModelBakery.LAVA_FLOW);
+      this.waterStill = sprites.get(ModelBakery.WATER_STILL);
+      this.waterFlowing = sprites.get(ModelBakery.WATER_FLOW);
+      this.waterOverlay = sprites.get(ModelBakery.WATER_OVERLAY);
    }
 
    private static boolean isNeighborSameFluid(final FluidState fluidState, final FluidState neighborFluidState) {
@@ -65,17 +67,10 @@ public class LiquidBlockRenderer {
    }
 
    public static boolean shouldRenderFace(final FluidState fluidState, final BlockState blockState, final Direction direction, final FluidState neighborFluidState) {
-      return !isFaceOccludedBySelf(blockState, direction) && !isNeighborSameFluid(fluidState, neighborFluidState);
+      return !isNeighborSameFluid(fluidState, neighborFluidState) && !isFaceOccludedBySelf(blockState, direction);
    }
 
    public void tesselate(final BlockAndTintGetter level, final BlockPos pos, final VertexConsumer builder, final BlockState blockState, final FluidState fluidState) {
-      boolean isLava = fluidState.is(FluidTags.LAVA);
-      TextureAtlasSprite stillSprite = isLava ? this.lavaStill : this.waterStill;
-      TextureAtlasSprite flowingSprite = isLava ? this.lavaFlowing : this.waterFlowing;
-      int col = isLava ? 16777215 : BiomeColors.getAverageWaterColor(level, pos);
-      float r = (float)(col >> 16 & 255) / 255.0F;
-      float g = (float)(col >> 8 & 255) / 255.0F;
-      float b = (float)(col & 255) / 255.0F;
       BlockState blockStateDown = level.getBlockState(pos.relative(Direction.DOWN));
       FluidState fluidStateDown = blockStateDown.getFluidState();
       BlockState blockStateUp = level.getBlockState(pos.relative(Direction.UP));
@@ -95,10 +90,14 @@ public class LiquidBlockRenderer {
       boolean renderWest = shouldRenderFace(fluidState, blockState, Direction.WEST, fluidStateWest);
       boolean renderEast = shouldRenderFace(fluidState, blockState, Direction.EAST, fluidStateEast);
       if (renderUp || renderDown || renderEast || renderWest || renderNorth || renderSouth) {
-         float c10 = level.getShade(Direction.DOWN, true);
-         float c11 = level.getShade(Direction.UP, true);
-         float c2 = level.getShade(Direction.NORTH, true);
-         float c3 = level.getShade(Direction.WEST, true);
+         boolean isLava = fluidState.is(FluidTags.LAVA);
+         TextureAtlasSprite stillSprite = isLava ? this.lavaStill : this.waterStill;
+         TextureAtlasSprite flowingSprite = isLava ? this.lavaFlowing : this.waterFlowing;
+         int color = isLava ? -1 : BiomeColors.getAverageWaterColor(level, pos);
+         float shadeDown = level.getShade(Direction.DOWN, true);
+         float shadeUp = level.getShade(Direction.UP, true);
+         float shadeNorth = level.getShade(Direction.NORTH, true);
+         float shadeWest = level.getShade(Direction.WEST, true);
          Fluid type = fluidState.getType();
          float heightSelf = this.getHeight(level, type, pos, blockState, fluidState);
          float heightNorthEast;
@@ -165,18 +164,16 @@ public class LiquidBlockRenderer {
             }
 
             int topLightCoords = this.getLightCoords(level, pos);
-            float topRed = c11 * r;
-            float topGreen = c11 * g;
-            float topBlue = c11 * b;
-            this.vertex(builder, x + 0.0F, y + heightNorthWest, z + 0.0F, topRed, topGreen, topBlue, u00, v00, topLightCoords);
-            this.vertex(builder, x + 0.0F, y + heightSouthWest, z + 1.0F, topRed, topGreen, topBlue, u01, v01, topLightCoords);
-            this.vertex(builder, x + 1.0F, y + heightSouthEast, z + 1.0F, topRed, topGreen, topBlue, u10, v10, topLightCoords);
-            this.vertex(builder, x + 1.0F, y + heightNorthEast, z + 0.0F, topRed, topGreen, topBlue, u11, v11, topLightCoords);
+            int topColor = ARGB.scaleRGB(color, shadeUp);
+            this.vertex(builder, x + 0.0F, y + heightNorthWest, z + 0.0F, topColor, u00, v00, topLightCoords);
+            this.vertex(builder, x + 0.0F, y + heightSouthWest, z + 1.0F, topColor, u01, v01, topLightCoords);
+            this.vertex(builder, x + 1.0F, y + heightSouthEast, z + 1.0F, topColor, u10, v10, topLightCoords);
+            this.vertex(builder, x + 1.0F, y + heightNorthEast, z + 0.0F, topColor, u11, v11, topLightCoords);
             if (fluidState.shouldRenderBackwardUpFace(level, pos.above())) {
-               this.vertex(builder, x + 0.0F, y + heightNorthWest, z + 0.0F, topRed, topGreen, topBlue, u00, v00, topLightCoords);
-               this.vertex(builder, x + 1.0F, y + heightNorthEast, z + 0.0F, topRed, topGreen, topBlue, u11, v11, topLightCoords);
-               this.vertex(builder, x + 1.0F, y + heightSouthEast, z + 1.0F, topRed, topGreen, topBlue, u10, v10, topLightCoords);
-               this.vertex(builder, x + 0.0F, y + heightSouthWest, z + 1.0F, topRed, topGreen, topBlue, u01, v01, topLightCoords);
+               this.vertex(builder, x + 0.0F, y + heightNorthWest, z + 0.0F, topColor, u00, v00, topLightCoords);
+               this.vertex(builder, x + 1.0F, y + heightNorthEast, z + 0.0F, topColor, u11, v11, topLightCoords);
+               this.vertex(builder, x + 1.0F, y + heightSouthEast, z + 1.0F, topColor, u10, v10, topLightCoords);
+               this.vertex(builder, x + 0.0F, y + heightSouthWest, z + 1.0F, topColor, u01, v01, topLightCoords);
             }
          }
 
@@ -186,13 +183,11 @@ public class LiquidBlockRenderer {
             float v0 = stillSprite.getV0();
             float v1 = stillSprite.getV1();
             int belowLightCoords = this.getLightCoords(level, pos.below());
-            float belowRed = c10 * r;
-            float belowGreen = c10 * g;
-            float belowBlue = c10 * b;
-            this.vertex(builder, x, y + bottomOffs, z + 1.0F, belowRed, belowGreen, belowBlue, u0, v1, belowLightCoords);
-            this.vertex(builder, x, y + bottomOffs, z, belowRed, belowGreen, belowBlue, u0, v0, belowLightCoords);
-            this.vertex(builder, x + 1.0F, y + bottomOffs, z, belowRed, belowGreen, belowBlue, u1, v0, belowLightCoords);
-            this.vertex(builder, x + 1.0F, y + bottomOffs, z + 1.0F, belowRed, belowGreen, belowBlue, u1, v1, belowLightCoords);
+            int belowColor = ARGB.scaleRGB(color, shadeDown);
+            this.vertex(builder, x, y + bottomOffs, z + 1.0F, belowColor, u0, v1, belowLightCoords);
+            this.vertex(builder, x, y + bottomOffs, z, belowColor, u0, v0, belowLightCoords);
+            this.vertex(builder, x + 1.0F, y + bottomOffs, z, belowColor, u1, v0, belowLightCoords);
+            this.vertex(builder, x + 1.0F, y + bottomOffs, z + 1.0F, belowColor, u1, v1, belowLightCoords);
          }
 
          int sideLightCoords = this.getLightCoords(level, pos);
@@ -258,19 +253,17 @@ public class LiquidBlockRenderer {
                float v01 = sprite.getV((1.0F - hh0) * 0.5F);
                float v02 = sprite.getV((1.0F - hh1) * 0.5F);
                float v1 = sprite.getV(0.5F);
-               float br = faceDir.getAxis() == Direction.Axis.Z ? c2 : c3;
-               float red = c11 * br * r;
-               float green = c11 * br * g;
-               float blue = c11 * br * b;
-               this.vertex(builder, x0, y + hh0, z0, red, green, blue, u0, v01, sideLightCoords);
-               this.vertex(builder, x1, y + hh1, z1, red, green, blue, u1, v02, sideLightCoords);
-               this.vertex(builder, x1, y + bottomOffs, z1, red, green, blue, u1, v1, sideLightCoords);
-               this.vertex(builder, x0, y + bottomOffs, z0, red, green, blue, u0, v1, sideLightCoords);
+               float shadeSide = faceDir.getAxis() == Direction.Axis.Z ? shadeNorth : shadeWest;
+               int faceColor = ARGB.scaleRGB(color, shadeUp * shadeSide);
+               this.vertex(builder, x0, y + hh0, z0, faceColor, u0, v01, sideLightCoords);
+               this.vertex(builder, x1, y + hh1, z1, faceColor, u1, v02, sideLightCoords);
+               this.vertex(builder, x1, y + bottomOffs, z1, faceColor, u1, v1, sideLightCoords);
+               this.vertex(builder, x0, y + bottomOffs, z0, faceColor, u0, v1, sideLightCoords);
                if (sprite != this.waterOverlay) {
-                  this.vertex(builder, x0, y + bottomOffs, z0, red, green, blue, u0, v1, sideLightCoords);
-                  this.vertex(builder, x1, y + bottomOffs, z1, red, green, blue, u1, v1, sideLightCoords);
-                  this.vertex(builder, x1, y + hh1, z1, red, green, blue, u1, v02, sideLightCoords);
-                  this.vertex(builder, x0, y + hh0, z0, red, green, blue, u0, v01, sideLightCoords);
+                  this.vertex(builder, x0, y + bottomOffs, z0, faceColor, u0, v1, sideLightCoords);
+                  this.vertex(builder, x1, y + bottomOffs, z1, faceColor, u1, v1, sideLightCoords);
+                  this.vertex(builder, x1, y + hh1, z1, faceColor, u1, v02, sideLightCoords);
+                  this.vertex(builder, x0, y + hh0, z0, faceColor, u0, v01, sideLightCoords);
                }
             }
          }
@@ -324,8 +317,8 @@ public class LiquidBlockRenderer {
       }
    }
 
-   private void vertex(final VertexConsumer builder, final float x, final float y, final float z, final float red, final float green, final float blue, final float u, final float v, final int lightCoords) {
-      builder.addVertex(x, y, z).setColor(red, green, blue, 1.0F).setUv(u, v).setLight(lightCoords).setNormal(0.0F, 1.0F, 0.0F);
+   private void vertex(final VertexConsumer builder, final float x, final float y, final float z, final int color, final float u, final float v, final int lightCoords) {
+      builder.addVertex(x, y, z, color, u, v, OverlayTexture.NO_OVERLAY, lightCoords, 0.0F, 1.0F, 0.0F);
    }
 
    private int getLightCoords(final BlockAndTintGetter level, final BlockPos pos) {

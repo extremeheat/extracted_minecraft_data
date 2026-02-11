@@ -98,15 +98,6 @@ public class PlayerModel extends HumanoidModel<AvatarRenderState> {
       super.setupAnim(state);
    }
 
-   public void setAllVisible(final boolean visible) {
-      super.setAllVisible(visible);
-      this.leftSleeve.visible = visible;
-      this.rightSleeve.visible = visible;
-      this.leftPants.visible = visible;
-      this.rightPants.visible = visible;
-      this.jacket.visible = visible;
-   }
-
    public void translateToHand(final AvatarRenderState state, final HumanoidArm arm, final PoseStack poseStack) {
       this.root().translateAndRotate(poseStack);
       ModelPart part = this.getArm(arm);

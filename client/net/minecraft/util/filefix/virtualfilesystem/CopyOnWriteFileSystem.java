@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.nio.file.CopyOption;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.FileVisitResult;
@@ -25,37 +24,36 @@ import net.minecraft.util.Util;
 import net.minecraft.util.filefix.virtualfilesystem.exception.CowFSCreationException;
 import net.minecraft.util.filefix.virtualfilesystem.exception.CowFSSymlinkException;
 import org.apache.commons.io.file.PathUtils;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CopyOnWriteFileSystem extends FileSystem {
-   private static final String TMP_DIRECTORY_NAME = "file_fix_tmp";
    private static final Set<String> FILE_ATTRIBUTE_VIEWS = Set.of("basic");
    private static final Logger LOGGER = LogUtils.getLogger();
    private final CopyOnWriteFileStore store;
    private final CopyOnWriteFSProvider provider;
    private final Path baseDirectory;
+   private final PathMatcher skippedPaths;
    private final Path tmpDirectory;
    private final CopyOnWriteFSPath rootPath;
    private final AtomicInteger tmpFileIndex = new AtomicInteger();
    private DirectoryNode fileTree;
 
-   private CopyOnWriteFileSystem(final String name, final Path baseDirectory, final Path tmpDirectory) throws IOException {
+   private CopyOnWriteFileSystem(final String name, final Path baseDirectory, final Path tmpDirectory, final PathMatcher skippedPaths) throws IOException {
       super();
       this.baseDirectory = baseDirectory;
       this.tmpDirectory = tmpDirectory;
+      this.skippedPaths = skippedPaths;
       this.provider = new CopyOnWriteFSProvider(this);
       this.store = new CopyOnWriteFileStore(name, this);
       this.rootPath = this.getPath("/");
       this.fileTree = this.buildFileTreeFrom(baseDirectory);
    }
 
-   public static CopyOnWriteFileSystem create(final String name, final Path baseDirectory) throws IOException {
-      Path tmpDirectory = baseDirectory.resolve("file_fix_tmp");
+   public static CopyOnWriteFileSystem create(final String name, final Path baseDirectory, final Path tmpDirectory, final PathMatcher skippedPaths) throws IOException {
       if (Files.exists(tmpDirectory, new LinkOption[0])) {
          throw new CowFSCreationException("Temporary directory already exists: " + String.valueOf(tmpDirectory));
       } else {
-         CopyOnWriteFileSystem fileSystem = new CopyOnWriteFileSystem(name, baseDirectory, tmpDirectory);
+         CopyOnWriteFileSystem fileSystem = new CopyOnWriteFileSystem(name, baseDirectory, tmpDirectory, skippedPaths);
          Files.createDirectory(tmpDirectory);
          return fileSystem;
       }
@@ -70,15 +68,19 @@ public class CopyOnWriteFileSystem extends FileSystem {
 
          public FileVisitResult visitFile(final Path realPath, final BasicFileAttributes attrs) throws IOException {
             checkAttributes(realPath, attrs);
-            CopyOnWriteFSPath cowPath = this.toCowPath(realPath);
-            DirectoryNode parentNode = fileTree.directoryByPath((CopyOnWriteFSPath)Objects.requireNonNull(cowPath.getParent()));
-            parentNode.addChild(new FileNode(cowPath, realPath, false));
-            return FileVisitResult.CONTINUE;
+            if (CopyOnWriteFileSystem.this.skippedPaths.matches(realPath)) {
+               return FileVisitResult.CONTINUE;
+            } else {
+               CopyOnWriteFSPath cowPath = this.toCowPath(realPath);
+               DirectoryNode parentNode = fileTree.directoryByPath((CopyOnWriteFSPath)Objects.requireNonNull(cowPath.getParent()));
+               parentNode.addChild(new FileNode(cowPath, realPath, false));
+               return FileVisitResult.CONTINUE;
+            }
          }
 
          public FileVisitResult preVisitDirectory(final Path realPath, final BasicFileAttributes attrs) throws IOException {
             checkAttributes(realPath, attrs);
-            if (realPath.equals(CopyOnWriteFileSystem.this.tmpDirectory)) {
+            if (CopyOnWriteFileSystem.this.skippedPaths.matches(realPath)) {
                return FileVisitResult.SKIP_SUBTREE;
             } else if (realPath.equals(baseDirectory)) {
                return FileVisitResult.CONTINUE;
@@ -189,13 +191,13 @@ public class CopyOnWriteFileSystem extends FileSystem {
       return this.tmpDirectory.getFileSystem();
    }
 
-   private List<Move> collectMoveOperations(final Path outPath, final DirectoryNode folder) {
-      List<Move> result = new ArrayList();
-      this.collectMoveOperations(outPath, folder, result);
+   public Moves collectMoveOperations(final Path outPath) {
+      Moves result = new Moves(new ArrayList(), new ArrayList(), new ArrayList());
+      this.collectMoveOperations(outPath, this.fileTree, result);
       return result;
    }
 
-   private void collectMoveOperations(final Path outPath, final DirectoryNode folder, final List<Move> result) {
+   private void collectMoveOperations(final Path outPath, final DirectoryNode folder, final Moves result) {
       for(Node childNode : folder.children()) {
          Path target = outPath.resolve((String)Objects.requireNonNull(childNode.name()));
          Objects.requireNonNull(childNode);
@@ -206,11 +208,16 @@ public class CopyOnWriteFileSystem extends FileSystem {
          switch (childNode.typeSwitch<invokedynamic>(childNode, var8)) {
             case 0:
                FileNode fileNode = (FileNode)childNode;
-               result.add(new Move(fileNode.storagePath(), target));
+               FileMove move = new FileMove(fileNode.storagePath(), target);
+               if (fileNode.isCopy) {
+                  result.copiedFiles.add(move);
+               } else {
+                  result.preexistingFiles.add(move);
+               }
                break;
             case 1:
                DirectoryNode directoryNode = (DirectoryNode)childNode;
-               result.add(new Move((Path)null, target));
+               result.directories.add(target);
                this.collectMoveOperations(target, directoryNode, result);
                break;
             default:
@@ -220,62 +227,75 @@ public class CopyOnWriteFileSystem extends FileSystem {
 
    }
 
-   public void makeHardLinkCopy(final Path outPath) throws IOException {
-      for(Move move : this.collectMoveOperations(outPath, this.fileTree)) {
-         if (move.from == null) {
-            Files.createDirectory(move.to);
-         } else if (Files.isRegularFile(move.from, new LinkOption[0])) {
-            Files.createLink(move.to, move.from);
+   public static void createDirectories(final List<Path> directories) throws IOException {
+      for(Path directory : directories) {
+         Files.createDirectory(directory);
+      }
+
+   }
+
+   public static void hardLinkFiles(final List<FileMove> moves) throws IOException {
+      for(FileMove move : moves) {
+         if (!Files.isRegularFile(move.from(), new LinkOption[0])) {
+            throw new IllegalStateException("Not a regular file: " + String.valueOf(move.from()));
+         }
+
+         Files.createLink(move.to(), move.from());
+      }
+
+   }
+
+   public static void moveFiles(final List<FileMove> moves) throws IOException {
+      for(FileMove move : moves) {
+         Files.move(move.from(), move.to());
+      }
+
+   }
+
+   public static void moveFilesWithRetry(final List<FileMove> moves, final CopyOption... options) throws IOException {
+      for(FileMove move : moves) {
+         if (Files.exists(move.from(), new LinkOption[0]) || !Files.exists(move.to(), new LinkOption[0])) {
+            if (!Files.isRegularFile(move.from(), new LinkOption[0])) {
+               throw new IOException("Not a regular file: " + String.valueOf(move.from()));
+            }
+
+            Files.move(move.from(), move.to(), options);
          }
       }
 
    }
 
-   public void moveFilesToNewFolder(final Path outPath, final CopyOption... options) throws IOException {
-      List<Move> moves = this.collectMoveOperations(outPath, this.fileTree);
-      int i = 0;
+   public static List<FileMove> tryRevertMoves(final List<FileMove> moves, final CopyOption... options) {
+      List<FileMove> failedMoves = new ArrayList();
 
-      try {
-         for(; i < moves.size(); ++i) {
-            Move move = (Move)moves.get(i);
-            if (move.from == null) {
-               try {
-                  Files.createDirectory(move.to);
-               } catch (FileAlreadyExistsException var8) {
+      for(FileMove move : moves) {
+         if (Files.exists(move.to(), new LinkOption[0]) || !Files.exists(move.from(), new LinkOption[0])) {
+            if (Files.isRegularFile(move.to(), new LinkOption[0])) {
+               boolean success = Util.safeMoveFile(move.to(), move.from(), options);
+               if (success) {
+                  LOGGER.info("Reverted move from {} to {}", move.from(), move.to());
+               } else {
+                  LOGGER.error("Failed to revert move from {} to {}", move.from(), move.to());
+                  failedMoves.add(move);
                }
-            } else if (Files.isRegularFile(move.from, new LinkOption[0])) {
-               Files.move(move.from, move.to, options);
-            }
-         }
-
-      } catch (IOException e) {
-         LOGGER.error("Encountered error while trying to create new world folder:", e);
-
-         for(int j = 0; j < i; ++j) {
-            Move move = (Move)moves.get(j);
-            LOGGER.info("Already had moved {} to {}", move.from, move.to);
-         }
-
-         LOGGER.info("Trying to undo already run operations");
-         --i;
-
-         for(; i >= 0; --i) {
-            Move move = (Move)moves.get(i);
-            if (Files.isRegularFile(move.to, new LinkOption[0]) && move.from != null) {
-               Util.safeMoveFile(move.to, move.from, options);
-               LOGGER.info("Reverted move from {} to {}", move.from, move.to);
             } else {
-               LOGGER.info("Skipping reverting {} to {} as it's not a file", move.from, move.to);
+               LOGGER.error("Skipping reverting move from {} to {} as it's not a file", move.from(), move.to());
+               failedMoves.add(move);
             }
          }
-
-         LOGGER.info("Successfully reverted back to previous world state");
-         throw e;
       }
+
+      if (failedMoves.isEmpty()) {
+         LOGGER.info("Successfully reverted back to previous world state");
+      } else {
+         LOGGER.error("Completed reverting with errors");
+      }
+
+      return failedMoves;
    }
 
-   public static record Move(@Nullable Path from, Path to) {
-      public Move {
+   public static record Moves(List<Path> directories, List<FileMove> copiedFiles, List<FileMove> preexistingFiles) {
+      public Moves {
          super();
       }
    }

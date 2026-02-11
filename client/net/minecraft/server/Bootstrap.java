@@ -150,6 +150,10 @@ public class Bootstrap {
       STDOUT.println(string);
    }
 
+   public static void shutdownStdout() {
+      STDOUT.close();
+   }
+
    static {
       STDOUT = System.out;
       LOGGER = LogUtils.getLogger();

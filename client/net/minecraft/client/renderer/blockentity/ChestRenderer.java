@@ -15,8 +15,8 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.core.Direction;
 import net.minecraft.util.SpecialDates;
 import net.minecraft.world.level.block.Block;
@@ -36,7 +36,7 @@ import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements BlockEntityRenderer<T, ChestRenderState> {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final ChestModel singleModel;
    private final ChestModel doubleLeftModel;
    private final ChestModel doubleRightModel;
@@ -44,7 +44,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
 
    public ChestRenderer(final BlockEntityRendererProvider.Context context) {
       super();
-      this.materials = context.materials();
+      this.sprites = context.sprites();
       this.xmasTextures = xmasTextures();
       this.singleModel = new ChestModel(context.bakeLayer(ModelLayers.CHEST));
       this.doubleLeftModel = new ChestModel(context.bakeLayer(ModelLayers.DOUBLE_CHEST_LEFT));
@@ -95,9 +95,9 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       float open = state.open;
       open = 1.0F - open;
       open = 1.0F - open * open * open;
-      Material material = Sheets.chooseMaterial(state.material, state.type);
-      RenderType renderType = material.renderType(RenderTypes::entityCutoutCull);
-      TextureAtlasSprite sprite = this.materials.get(material);
+      SpriteId spriteId = Sheets.chooseSprite(state.material, state.type);
+      RenderType renderType = spriteId.renderType(RenderTypes::entityCutoutCull);
+      TextureAtlasSprite sprite = this.sprites.get(spriteId);
       if (state.type != ChestType.SINGLE) {
          if (state.type == ChestType.LEFT) {
             submitNodeCollector.submitModel(this.doubleLeftModel, open, poseStack, renderType, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, sprite, 0, state.breakProgress);

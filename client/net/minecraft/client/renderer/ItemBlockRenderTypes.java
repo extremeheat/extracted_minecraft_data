@@ -2,12 +2,11 @@ package net.minecraft.client.renderer;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Util;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
@@ -15,344 +14,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public class ItemBlockRenderTypes {
-   private static final Map<Block, ChunkSectionLayer> TYPE_BY_BLOCK = (Map)Util.make(Maps.newHashMap(), (map) -> {
-      ChunkSectionLayer cutout = ChunkSectionLayer.CUTOUT;
-      map.put(Blocks.GRASS_BLOCK, cutout);
-      map.put(Blocks.IRON_BARS, cutout);
-      Blocks.COPPER_BARS.forEach((block) -> map.put(block, cutout));
-      map.put(Blocks.TRIPWIRE_HOOK, cutout);
-      map.put(Blocks.HOPPER, cutout);
-      map.put(Blocks.IRON_CHAIN, cutout);
-      Blocks.COPPER_CHAIN.forEach((block) -> map.put(block, cutout));
-      map.put(Blocks.JUNGLE_LEAVES, cutout);
-      map.put(Blocks.OAK_LEAVES, cutout);
-      map.put(Blocks.SPRUCE_LEAVES, cutout);
-      map.put(Blocks.ACACIA_LEAVES, cutout);
-      map.put(Blocks.CHERRY_LEAVES, cutout);
-      map.put(Blocks.BIRCH_LEAVES, cutout);
-      map.put(Blocks.DARK_OAK_LEAVES, cutout);
-      map.put(Blocks.PALE_OAK_LEAVES, cutout);
-      map.put(Blocks.AZALEA_LEAVES, cutout);
-      map.put(Blocks.FLOWERING_AZALEA_LEAVES, cutout);
-      map.put(Blocks.MANGROVE_ROOTS, cutout);
-      map.put(Blocks.MANGROVE_LEAVES, cutout);
-      map.put(Blocks.OAK_SAPLING, cutout);
-      map.put(Blocks.SPRUCE_SAPLING, cutout);
-      map.put(Blocks.BIRCH_SAPLING, cutout);
-      map.put(Blocks.JUNGLE_SAPLING, cutout);
-      map.put(Blocks.ACACIA_SAPLING, cutout);
-      map.put(Blocks.CHERRY_SAPLING, cutout);
-      map.put(Blocks.DARK_OAK_SAPLING, cutout);
-      map.put(Blocks.PALE_OAK_SAPLING, cutout);
-      map.put(Blocks.WHITE_BED, cutout);
-      map.put(Blocks.ORANGE_BED, cutout);
-      map.put(Blocks.MAGENTA_BED, cutout);
-      map.put(Blocks.LIGHT_BLUE_BED, cutout);
-      map.put(Blocks.YELLOW_BED, cutout);
-      map.put(Blocks.LIME_BED, cutout);
-      map.put(Blocks.PINK_BED, cutout);
-      map.put(Blocks.GRAY_BED, cutout);
-      map.put(Blocks.LIGHT_GRAY_BED, cutout);
-      map.put(Blocks.CYAN_BED, cutout);
-      map.put(Blocks.PURPLE_BED, cutout);
-      map.put(Blocks.BLUE_BED, cutout);
-      map.put(Blocks.BROWN_BED, cutout);
-      map.put(Blocks.GREEN_BED, cutout);
-      map.put(Blocks.RED_BED, cutout);
-      map.put(Blocks.BLACK_BED, cutout);
-      map.put(Blocks.POWERED_RAIL, cutout);
-      map.put(Blocks.DETECTOR_RAIL, cutout);
-      map.put(Blocks.COBWEB, cutout);
-      map.put(Blocks.SHORT_GRASS, cutout);
-      map.put(Blocks.FERN, cutout);
-      map.put(Blocks.BUSH, cutout);
-      map.put(Blocks.DEAD_BUSH, cutout);
-      map.put(Blocks.SHORT_DRY_GRASS, cutout);
-      map.put(Blocks.TALL_DRY_GRASS, cutout);
-      map.put(Blocks.SEAGRASS, cutout);
-      map.put(Blocks.TALL_SEAGRASS, cutout);
-      map.put(Blocks.DANDELION, cutout);
-      map.put(Blocks.GOLDEN_DANDELION, cutout);
-      map.put(Blocks.OPEN_EYEBLOSSOM, cutout);
-      map.put(Blocks.CLOSED_EYEBLOSSOM, cutout);
-      map.put(Blocks.POPPY, cutout);
-      map.put(Blocks.BLUE_ORCHID, cutout);
-      map.put(Blocks.ALLIUM, cutout);
-      map.put(Blocks.AZURE_BLUET, cutout);
-      map.put(Blocks.RED_TULIP, cutout);
-      map.put(Blocks.ORANGE_TULIP, cutout);
-      map.put(Blocks.WHITE_TULIP, cutout);
-      map.put(Blocks.PINK_TULIP, cutout);
-      map.put(Blocks.OXEYE_DAISY, cutout);
-      map.put(Blocks.CORNFLOWER, cutout);
-      map.put(Blocks.WITHER_ROSE, cutout);
-      map.put(Blocks.LILY_OF_THE_VALLEY, cutout);
-      map.put(Blocks.BROWN_MUSHROOM, cutout);
-      map.put(Blocks.RED_MUSHROOM, cutout);
-      map.put(Blocks.TORCH, cutout);
-      map.put(Blocks.WALL_TORCH, cutout);
-      map.put(Blocks.SOUL_TORCH, cutout);
-      map.put(Blocks.SOUL_WALL_TORCH, cutout);
-      map.put(Blocks.COPPER_TORCH, cutout);
-      map.put(Blocks.COPPER_WALL_TORCH, cutout);
-      map.put(Blocks.FIRE, cutout);
-      map.put(Blocks.SOUL_FIRE, cutout);
-      map.put(Blocks.SPAWNER, cutout);
-      map.put(Blocks.TRIAL_SPAWNER, cutout);
-      map.put(Blocks.VAULT, cutout);
-      map.put(Blocks.WHEAT, cutout);
-      map.put(Blocks.OAK_DOOR, cutout);
-      map.put(Blocks.LADDER, cutout);
-      map.put(Blocks.RAIL, cutout);
-      map.put(Blocks.IRON_DOOR, cutout);
-      map.put(Blocks.REDSTONE_TORCH, cutout);
-      map.put(Blocks.REDSTONE_WALL_TORCH, cutout);
-      map.put(Blocks.CACTUS, cutout);
-      map.put(Blocks.SUGAR_CANE, cutout);
-      map.put(Blocks.REPEATER, cutout);
-      map.put(Blocks.OAK_TRAPDOOR, cutout);
-      map.put(Blocks.SPRUCE_TRAPDOOR, cutout);
-      map.put(Blocks.BIRCH_TRAPDOOR, cutout);
-      map.put(Blocks.JUNGLE_TRAPDOOR, cutout);
-      map.put(Blocks.ACACIA_TRAPDOOR, cutout);
-      map.put(Blocks.CHERRY_TRAPDOOR, cutout);
-      map.put(Blocks.DARK_OAK_TRAPDOOR, cutout);
-      map.put(Blocks.PALE_OAK_TRAPDOOR, cutout);
-      map.put(Blocks.CRIMSON_TRAPDOOR, cutout);
-      map.put(Blocks.WARPED_TRAPDOOR, cutout);
-      map.put(Blocks.MANGROVE_TRAPDOOR, cutout);
-      map.put(Blocks.BAMBOO_TRAPDOOR, cutout);
-      map.put(Blocks.COPPER_TRAPDOOR, cutout);
-      map.put(Blocks.EXPOSED_COPPER_TRAPDOOR, cutout);
-      map.put(Blocks.WEATHERED_COPPER_TRAPDOOR, cutout);
-      map.put(Blocks.OXIDIZED_COPPER_TRAPDOOR, cutout);
-      map.put(Blocks.WAXED_COPPER_TRAPDOOR, cutout);
-      map.put(Blocks.WAXED_EXPOSED_COPPER_TRAPDOOR, cutout);
-      map.put(Blocks.WAXED_WEATHERED_COPPER_TRAPDOOR, cutout);
-      map.put(Blocks.WAXED_OXIDIZED_COPPER_TRAPDOOR, cutout);
-      map.put(Blocks.ATTACHED_PUMPKIN_STEM, cutout);
-      map.put(Blocks.ATTACHED_MELON_STEM, cutout);
-      map.put(Blocks.PUMPKIN_STEM, cutout);
-      map.put(Blocks.MELON_STEM, cutout);
-      map.put(Blocks.VINE, cutout);
-      map.put(Blocks.PALE_MOSS_CARPET, cutout);
-      map.put(Blocks.PALE_HANGING_MOSS, cutout);
-      map.put(Blocks.GLOW_LICHEN, cutout);
-      map.put(Blocks.RESIN_CLUMP, cutout);
-      map.put(Blocks.LILY_PAD, cutout);
-      map.put(Blocks.NETHER_WART, cutout);
-      map.put(Blocks.BREWING_STAND, cutout);
-      map.put(Blocks.COCOA, cutout);
-      map.put(Blocks.FLOWER_POT, cutout);
-      map.put(Blocks.POTTED_OAK_SAPLING, cutout);
-      map.put(Blocks.POTTED_SPRUCE_SAPLING, cutout);
-      map.put(Blocks.POTTED_BIRCH_SAPLING, cutout);
-      map.put(Blocks.POTTED_JUNGLE_SAPLING, cutout);
-      map.put(Blocks.POTTED_ACACIA_SAPLING, cutout);
-      map.put(Blocks.POTTED_CHERRY_SAPLING, cutout);
-      map.put(Blocks.POTTED_DARK_OAK_SAPLING, cutout);
-      map.put(Blocks.POTTED_PALE_OAK_SAPLING, cutout);
-      map.put(Blocks.POTTED_MANGROVE_PROPAGULE, cutout);
-      map.put(Blocks.POTTED_FERN, cutout);
-      map.put(Blocks.POTTED_DANDELION, cutout);
-      map.put(Blocks.POTTED_GOLDEN_DANDELION, cutout);
-      map.put(Blocks.POTTED_POPPY, cutout);
-      map.put(Blocks.POTTED_OPEN_EYEBLOSSOM, cutout);
-      map.put(Blocks.POTTED_CLOSED_EYEBLOSSOM, cutout);
-      map.put(Blocks.POTTED_BLUE_ORCHID, cutout);
-      map.put(Blocks.POTTED_ALLIUM, cutout);
-      map.put(Blocks.POTTED_AZURE_BLUET, cutout);
-      map.put(Blocks.POTTED_RED_TULIP, cutout);
-      map.put(Blocks.POTTED_ORANGE_TULIP, cutout);
-      map.put(Blocks.POTTED_WHITE_TULIP, cutout);
-      map.put(Blocks.POTTED_PINK_TULIP, cutout);
-      map.put(Blocks.POTTED_OXEYE_DAISY, cutout);
-      map.put(Blocks.POTTED_CORNFLOWER, cutout);
-      map.put(Blocks.POTTED_LILY_OF_THE_VALLEY, cutout);
-      map.put(Blocks.POTTED_WITHER_ROSE, cutout);
-      map.put(Blocks.POTTED_RED_MUSHROOM, cutout);
-      map.put(Blocks.POTTED_BROWN_MUSHROOM, cutout);
-      map.put(Blocks.POTTED_DEAD_BUSH, cutout);
-      map.put(Blocks.POTTED_CACTUS, cutout);
-      map.put(Blocks.POTTED_AZALEA, cutout);
-      map.put(Blocks.POTTED_FLOWERING_AZALEA, cutout);
-      map.put(Blocks.POTTED_TORCHFLOWER, cutout);
-      map.put(Blocks.CARROTS, cutout);
-      map.put(Blocks.POTATOES, cutout);
-      map.put(Blocks.COMPARATOR, cutout);
-      map.put(Blocks.ACTIVATOR_RAIL, cutout);
-      map.put(Blocks.IRON_TRAPDOOR, cutout);
-      map.put(Blocks.SUNFLOWER, cutout);
-      map.put(Blocks.LILAC, cutout);
-      map.put(Blocks.ROSE_BUSH, cutout);
-      map.put(Blocks.PEONY, cutout);
-      map.put(Blocks.TALL_GRASS, cutout);
-      map.put(Blocks.LARGE_FERN, cutout);
-      map.put(Blocks.SPRUCE_DOOR, cutout);
-      map.put(Blocks.BIRCH_DOOR, cutout);
-      map.put(Blocks.JUNGLE_DOOR, cutout);
-      map.put(Blocks.ACACIA_DOOR, cutout);
-      map.put(Blocks.CHERRY_DOOR, cutout);
-      map.put(Blocks.DARK_OAK_DOOR, cutout);
-      map.put(Blocks.PALE_OAK_DOOR, cutout);
-      map.put(Blocks.MANGROVE_DOOR, cutout);
-      map.put(Blocks.BAMBOO_DOOR, cutout);
-      map.put(Blocks.COPPER_DOOR, cutout);
-      map.put(Blocks.EXPOSED_COPPER_DOOR, cutout);
-      map.put(Blocks.WEATHERED_COPPER_DOOR, cutout);
-      map.put(Blocks.OXIDIZED_COPPER_DOOR, cutout);
-      map.put(Blocks.WAXED_COPPER_DOOR, cutout);
-      map.put(Blocks.WAXED_EXPOSED_COPPER_DOOR, cutout);
-      map.put(Blocks.WAXED_WEATHERED_COPPER_DOOR, cutout);
-      map.put(Blocks.WAXED_OXIDIZED_COPPER_DOOR, cutout);
-      map.put(Blocks.END_ROD, cutout);
-      map.put(Blocks.CHORUS_PLANT, cutout);
-      map.put(Blocks.CHORUS_FLOWER, cutout);
-      map.put(Blocks.TORCHFLOWER, cutout);
-      map.put(Blocks.TORCHFLOWER_CROP, cutout);
-      map.put(Blocks.PITCHER_PLANT, cutout);
-      map.put(Blocks.PITCHER_CROP, cutout);
-      map.put(Blocks.BEETROOTS, cutout);
-      map.put(Blocks.KELP, cutout);
-      map.put(Blocks.KELP_PLANT, cutout);
-      map.put(Blocks.TURTLE_EGG, cutout);
-      map.put(Blocks.DEAD_TUBE_CORAL, cutout);
-      map.put(Blocks.DEAD_BRAIN_CORAL, cutout);
-      map.put(Blocks.DEAD_BUBBLE_CORAL, cutout);
-      map.put(Blocks.DEAD_FIRE_CORAL, cutout);
-      map.put(Blocks.DEAD_HORN_CORAL, cutout);
-      map.put(Blocks.TUBE_CORAL, cutout);
-      map.put(Blocks.BRAIN_CORAL, cutout);
-      map.put(Blocks.BUBBLE_CORAL, cutout);
-      map.put(Blocks.FIRE_CORAL, cutout);
-      map.put(Blocks.HORN_CORAL, cutout);
-      map.put(Blocks.DEAD_TUBE_CORAL_FAN, cutout);
-      map.put(Blocks.DEAD_BRAIN_CORAL_FAN, cutout);
-      map.put(Blocks.DEAD_BUBBLE_CORAL_FAN, cutout);
-      map.put(Blocks.DEAD_FIRE_CORAL_FAN, cutout);
-      map.put(Blocks.DEAD_HORN_CORAL_FAN, cutout);
-      map.put(Blocks.TUBE_CORAL_FAN, cutout);
-      map.put(Blocks.BRAIN_CORAL_FAN, cutout);
-      map.put(Blocks.BUBBLE_CORAL_FAN, cutout);
-      map.put(Blocks.FIRE_CORAL_FAN, cutout);
-      map.put(Blocks.HORN_CORAL_FAN, cutout);
-      map.put(Blocks.DEAD_TUBE_CORAL_WALL_FAN, cutout);
-      map.put(Blocks.DEAD_BRAIN_CORAL_WALL_FAN, cutout);
-      map.put(Blocks.DEAD_BUBBLE_CORAL_WALL_FAN, cutout);
-      map.put(Blocks.DEAD_FIRE_CORAL_WALL_FAN, cutout);
-      map.put(Blocks.DEAD_HORN_CORAL_WALL_FAN, cutout);
-      map.put(Blocks.TUBE_CORAL_WALL_FAN, cutout);
-      map.put(Blocks.BRAIN_CORAL_WALL_FAN, cutout);
-      map.put(Blocks.BUBBLE_CORAL_WALL_FAN, cutout);
-      map.put(Blocks.FIRE_CORAL_WALL_FAN, cutout);
-      map.put(Blocks.HORN_CORAL_WALL_FAN, cutout);
-      map.put(Blocks.SEA_PICKLE, cutout);
-      map.put(Blocks.CONDUIT, cutout);
-      map.put(Blocks.BAMBOO_SAPLING, cutout);
-      map.put(Blocks.BAMBOO, cutout);
-      map.put(Blocks.POTTED_BAMBOO, cutout);
-      map.put(Blocks.SCAFFOLDING, cutout);
-      map.put(Blocks.STONECUTTER, cutout);
-      map.put(Blocks.LANTERN, cutout);
-      map.put(Blocks.SOUL_LANTERN, cutout);
-      Blocks.COPPER_LANTERN.forEach((block) -> map.put(block, cutout));
-      map.put(Blocks.CAMPFIRE, cutout);
-      map.put(Blocks.SOUL_CAMPFIRE, cutout);
-      map.put(Blocks.SWEET_BERRY_BUSH, cutout);
-      map.put(Blocks.WEEPING_VINES, cutout);
-      map.put(Blocks.WEEPING_VINES_PLANT, cutout);
-      map.put(Blocks.TWISTING_VINES, cutout);
-      map.put(Blocks.TWISTING_VINES_PLANT, cutout);
-      map.put(Blocks.NETHER_SPROUTS, cutout);
-      map.put(Blocks.CRIMSON_FUNGUS, cutout);
-      map.put(Blocks.WARPED_FUNGUS, cutout);
-      map.put(Blocks.CRIMSON_ROOTS, cutout);
-      map.put(Blocks.WARPED_ROOTS, cutout);
-      map.put(Blocks.POTTED_CRIMSON_FUNGUS, cutout);
-      map.put(Blocks.POTTED_WARPED_FUNGUS, cutout);
-      map.put(Blocks.POTTED_CRIMSON_ROOTS, cutout);
-      map.put(Blocks.POTTED_WARPED_ROOTS, cutout);
-      map.put(Blocks.CRIMSON_DOOR, cutout);
-      map.put(Blocks.WARPED_DOOR, cutout);
-      map.put(Blocks.POINTED_DRIPSTONE, cutout);
-      map.put(Blocks.SMALL_AMETHYST_BUD, cutout);
-      map.put(Blocks.MEDIUM_AMETHYST_BUD, cutout);
-      map.put(Blocks.LARGE_AMETHYST_BUD, cutout);
-      map.put(Blocks.AMETHYST_CLUSTER, cutout);
-      map.put(Blocks.CAVE_VINES, cutout);
-      map.put(Blocks.CAVE_VINES_PLANT, cutout);
-      map.put(Blocks.SPORE_BLOSSOM, cutout);
-      map.put(Blocks.FLOWERING_AZALEA, cutout);
-      map.put(Blocks.AZALEA, cutout);
-      map.put(Blocks.PINK_PETALS, cutout);
-      map.put(Blocks.WILDFLOWERS, cutout);
-      map.put(Blocks.LEAF_LITTER, cutout);
-      map.put(Blocks.BIG_DRIPLEAF, cutout);
-      map.put(Blocks.BIG_DRIPLEAF_STEM, cutout);
-      map.put(Blocks.SMALL_DRIPLEAF, cutout);
-      map.put(Blocks.HANGING_ROOTS, cutout);
-      map.put(Blocks.SCULK_SENSOR, cutout);
-      map.put(Blocks.CALIBRATED_SCULK_SENSOR, cutout);
-      map.put(Blocks.SCULK_VEIN, cutout);
-      map.put(Blocks.SCULK_SHRIEKER, cutout);
-      map.put(Blocks.MANGROVE_PROPAGULE, cutout);
-      map.put(Blocks.FROGSPAWN, cutout);
-      map.put(Blocks.COPPER_GRATE, cutout);
-      map.put(Blocks.EXPOSED_COPPER_GRATE, cutout);
-      map.put(Blocks.WEATHERED_COPPER_GRATE, cutout);
-      map.put(Blocks.OXIDIZED_COPPER_GRATE, cutout);
-      map.put(Blocks.WAXED_COPPER_GRATE, cutout);
-      map.put(Blocks.WAXED_EXPOSED_COPPER_GRATE, cutout);
-      map.put(Blocks.WAXED_WEATHERED_COPPER_GRATE, cutout);
-      map.put(Blocks.WAXED_OXIDIZED_COPPER_GRATE, cutout);
-      map.put(Blocks.FIREFLY_BUSH, cutout);
-      map.put(Blocks.CACTUS_FLOWER, cutout);
-      map.put(Blocks.BEACON, cutout);
-      map.put(Blocks.TRIPWIRE, cutout);
-      ChunkSectionLayer translucent = ChunkSectionLayer.TRANSLUCENT;
-      map.put(Blocks.ICE, translucent);
-      map.put(Blocks.NETHER_PORTAL, translucent);
-      map.put(Blocks.GLASS, translucent);
-      map.put(Blocks.GLASS_PANE, translucent);
-      map.put(Blocks.WHITE_STAINED_GLASS, translucent);
-      map.put(Blocks.ORANGE_STAINED_GLASS, translucent);
-      map.put(Blocks.MAGENTA_STAINED_GLASS, translucent);
-      map.put(Blocks.LIGHT_BLUE_STAINED_GLASS, translucent);
-      map.put(Blocks.YELLOW_STAINED_GLASS, translucent);
-      map.put(Blocks.LIME_STAINED_GLASS, translucent);
-      map.put(Blocks.PINK_STAINED_GLASS, translucent);
-      map.put(Blocks.GRAY_STAINED_GLASS, translucent);
-      map.put(Blocks.LIGHT_GRAY_STAINED_GLASS, translucent);
-      map.put(Blocks.CYAN_STAINED_GLASS, translucent);
-      map.put(Blocks.PURPLE_STAINED_GLASS, translucent);
-      map.put(Blocks.BLUE_STAINED_GLASS, translucent);
-      map.put(Blocks.BROWN_STAINED_GLASS, translucent);
-      map.put(Blocks.GREEN_STAINED_GLASS, translucent);
-      map.put(Blocks.REDSTONE_WIRE, translucent);
-      map.put(Blocks.RED_STAINED_GLASS, translucent);
-      map.put(Blocks.BLACK_STAINED_GLASS, translucent);
-      map.put(Blocks.WHITE_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.ORANGE_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.MAGENTA_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.LIGHT_BLUE_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.YELLOW_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.LIME_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.PINK_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.GRAY_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.LIGHT_GRAY_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.CYAN_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.PURPLE_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.BLUE_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.BROWN_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.GREEN_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.RED_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.BLACK_STAINED_GLASS_PANE, translucent);
-      map.put(Blocks.SLIME_BLOCK, translucent);
-      map.put(Blocks.HONEY_BLOCK, translucent);
-      map.put(Blocks.FROSTED_ICE, translucent);
-      map.put(Blocks.BUBBLE_COLUMN, translucent);
-      map.put(Blocks.TINTED_GLASS, translucent);
-   });
    private static final Map<Fluid, ChunkSectionLayer> LAYER_BY_FLUID = (Map)Util.make(Maps.newHashMap(), (map) -> {
       map.put(Fluids.FLOWING_WATER, ChunkSectionLayer.TRANSLUCENT);
       map.put(Fluids.WATER, ChunkSectionLayer.TRANSLUCENT);
@@ -363,46 +24,46 @@ public class ItemBlockRenderTypes {
       super();
    }
 
-   public static ChunkSectionLayer getChunkRenderType(final BlockState state) {
-      Block block = state.getBlock();
-      if (block instanceof LeavesBlock) {
-         return cutoutLeaves ? ChunkSectionLayer.CUTOUT : ChunkSectionLayer.SOLID;
-      } else {
-         ChunkSectionLayer layer = (ChunkSectionLayer)TYPE_BY_BLOCK.get(block);
-         return layer != null ? layer : ChunkSectionLayer.SOLID;
+   public static RenderType getMovingBlockRenderType(final ChunkSectionLayer layer) {
+      RenderType var10000;
+      switch (layer) {
+         case SOLID -> var10000 = RenderTypes.solidMovingBlock();
+         case CUTOUT -> var10000 = RenderTypes.cutoutMovingBlock();
+         case TRANSLUCENT -> var10000 = RenderTypes.translucentMovingBlock();
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 
-   public static RenderType getMovingBlockRenderType(final BlockState state) {
-      Block block = state.getBlock();
-      if (block instanceof LeavesBlock) {
-         return cutoutLeaves ? RenderTypes.cutoutMovingBlock() : RenderTypes.solidMovingBlock();
-      } else {
-         ChunkSectionLayer layer = (ChunkSectionLayer)TYPE_BY_BLOCK.get(block);
-         if (layer != null) {
-            RenderType var10000;
-            switch (layer) {
-               case SOLID -> var10000 = RenderTypes.solidMovingBlock();
-               case CUTOUT -> var10000 = RenderTypes.cutoutMovingBlock();
-               case TRANSLUCENT -> var10000 = RenderTypes.translucentMovingBlock();
-               default -> throw new MatchException((String)null, (Throwable)null);
-            }
-
-            return var10000;
-         } else {
-            return RenderTypes.solidMovingBlock();
-         }
+   public static RenderType getRenderType(final ChunkSectionLayer layer) {
+      RenderType var10000;
+      switch (layer) {
+         case SOLID:
+         case CUTOUT:
+            var10000 = Sheets.cutoutBlockSheet();
+            break;
+         case TRANSLUCENT:
+            var10000 = Sheets.translucentBlockSheet();
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 
-   public static RenderType getRenderType(final BlockState state) {
-      ChunkSectionLayer renderType = getChunkRenderType(state);
-      return renderType == ChunkSectionLayer.TRANSLUCENT ? Sheets.translucentBlockSheet() : Sheets.cutoutBlockSheet();
+   public static RenderType getBlockModelRenderType(final BlockStateModel model) {
+      return model.hasTranslucency() ? Sheets.translucentBlockSheet() : Sheets.cutoutBlockSheet();
    }
 
    public static ChunkSectionLayer getRenderLayer(final FluidState state) {
       ChunkSectionLayer layer = (ChunkSectionLayer)LAYER_BY_FLUID.get(state.getType());
       return layer != null ? layer : ChunkSectionLayer.SOLID;
+   }
+
+   public static boolean forceOpaque(final BlockState blockState) {
+      return !cutoutLeaves && blockState.getBlock() instanceof LeavesBlock;
    }
 
    public static void setCutoutLeaves(final boolean cutoutLeaves) {

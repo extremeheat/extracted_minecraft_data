@@ -40,8 +40,11 @@ public class ScaffoldingBlockItem extends BlockItem {
             if (!level.isClientSide() && !level.isInWorldBounds(placementPos)) {
                Player player = context.getPlayer();
                int maxY = level.getMaxY();
-               if (player instanceof ServerPlayer && placementPos.getY() > maxY) {
-                  ((ServerPlayer)player).sendSystemMessage(Component.translatable("build.tooHigh", maxY).withStyle(ChatFormatting.RED), true);
+               if (player instanceof ServerPlayer) {
+                  ServerPlayer serverPlayer = (ServerPlayer)player;
+                  if (placementPos.getY() > maxY) {
+                     serverPlayer.sendOverlayMessage(Component.translatable("build.tooHigh", maxY).withStyle(ChatFormatting.RED));
+                  }
                }
                break;
             }

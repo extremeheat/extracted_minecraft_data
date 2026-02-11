@@ -14,15 +14,15 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
-public class SnowyDirtBlock extends Block {
-   public static final MapCodec<SnowyDirtBlock> CODEC = simpleCodec(SnowyDirtBlock::new);
+public class SnowyBlock extends Block {
+   public static final MapCodec<SnowyBlock> CODEC = simpleCodec(SnowyBlock::new);
    public static final BooleanProperty SNOWY;
 
-   protected MapCodec<? extends SnowyDirtBlock> codec() {
+   protected MapCodec<? extends SnowyBlock> codec() {
       return CODEC;
    }
 
-   protected SnowyDirtBlock(final BlockBehaviour.Properties properties) {
+   protected SnowyBlock(final BlockBehaviour.Properties properties) {
       super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(SNOWY, false));
    }

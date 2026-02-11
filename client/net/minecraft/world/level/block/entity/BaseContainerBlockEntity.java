@@ -68,7 +68,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
 
    public static void sendChestLockedNotifications(final Vec3 pos, final Player player, final Component displayName) {
       Level level = player.level();
-      player.displayClientMessage(Component.translatable("container.isLocked", displayName), true);
+      player.sendOverlayMessage(Component.translatable("container.isLocked", displayName));
       if (!level.isClientSide()) {
          level.playSound((Entity)null, pos.x(), pos.y(), pos.z(), SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1.0F, 1.0F);
       }

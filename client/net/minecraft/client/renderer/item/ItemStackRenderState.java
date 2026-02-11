@@ -10,9 +10,8 @@ import java.util.function.Supplier;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.AABB;
@@ -89,8 +88,8 @@ public class ItemStackRenderState {
       return this.firstLayer().usesBlockLight;
    }
 
-   public @Nullable TextureAtlasSprite pickParticleIcon(final RandomSource randomSource) {
-      return this.activeLayerCount == 0 ? null : this.layers[randomSource.nextInt(this.activeLayerCount)].particleIcon;
+   public Material.@Nullable Baked pickParticleMaterial(final RandomSource randomSource) {
+      return this.activeLayerCount == 0 ? null : this.layers[randomSource.nextInt(this.activeLayerCount)].particleMaterial;
    }
 
    public void visitExtents(final Consumer<Vector3fc> output) {
@@ -159,9 +158,8 @@ public class ItemStackRenderState {
       public static final Supplier<Vector3fc[]> NO_EXTENTS_SUPPLIER = () -> NO_EXTENTS;
       private final List<BakedQuad> quads;
       private boolean usesBlockLight;
-      private @Nullable TextureAtlasSprite particleIcon;
+      private Material.@Nullable Baked particleMaterial;
       private ItemTransform transform;
-      private @Nullable RenderType renderType;
       private FoilType foilType;
       private int[] tintLayers;
       private @Nullable SpecialModelRenderer<Object> specialRenderer;
@@ -180,23 +178,18 @@ public class ItemStackRenderState {
 
       public void clear() {
          this.quads.clear();
-         this.renderType = null;
          this.foilType = ItemStackRenderState.FoilType.NONE;
          this.specialRenderer = null;
          this.argumentForSpecialRendering = null;
          Arrays.fill(this.tintLayers, -1);
          this.usesBlockLight = false;
-         this.particleIcon = null;
+         this.particleMaterial = null;
          this.transform = ItemTransform.NO_TRANSFORM;
          this.extents = NO_EXTENTS_SUPPLIER;
       }
 
       public List<BakedQuad> prepareQuadList() {
          return this.quads;
-      }
-
-      public void setRenderType(final RenderType renderType) {
-         this.renderType = renderType;
       }
 
       public void setUsesBlockLight(final boolean usesBlockLight) {
@@ -207,8 +200,8 @@ public class ItemStackRenderState {
          this.extents = extents;
       }
 
-      public void setParticleIcon(final TextureAtlasSprite particleIcon) {
-         this.particleIcon = particleIcon;
+      public void setParticleMaterial(final Material.Baked particleMaterial) {
+         this.particleMaterial = particleMaterial;
       }
 
       public void setTransform(final ItemTransform transform) {
@@ -242,8 +235,8 @@ public class ItemStackRenderState {
          this.transform.apply(ItemStackRenderState.this.displayContext.leftHand(), poseStack.last());
          if (this.specialRenderer != null) {
             this.specialRenderer.submit(this.argumentForSpecialRendering, ItemStackRenderState.this.displayContext, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.foilType != ItemStackRenderState.FoilType.NONE, outlineColor);
-         } else if (this.renderType != null) {
-            submitNodeCollector.submitItem(poseStack, ItemStackRenderState.this.displayContext, lightCoords, overlayCoords, outlineColor, this.tintLayers, this.quads, this.renderType, this.foilType);
+         } else {
+            submitNodeCollector.submitItem(poseStack, ItemStackRenderState.this.displayContext, lightCoords, overlayCoords, outlineColor, this.tintLayers, this.quads, this.foilType);
          }
 
          poseStack.popPose();

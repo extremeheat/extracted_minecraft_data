@@ -1,7 +1,8 @@
 package net.minecraft.client.renderer.block;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.QuadBrightness;
+import com.mojang.blaze3d.vertex.QuadLightmapCoords;
 import it.unimi.dsi.fastutil.longs.Long2FloatLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 import java.util.List;
@@ -17,9 +18,7 @@ import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.LightCoordsUtil;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -38,16 +37,16 @@ public class ModelBlockRenderer {
       this.blockColors = blockColors;
    }
 
-   public void tesselateBlock(final BlockAndTintGetter level, final List<BlockModelPart> parts, final BlockState blockState, final BlockPos pos, final PoseStack poseStack, final VertexConsumer builder, final boolean cull, final int overlayCoords) {
+   public void tesselateBlock(final BlockAndTintGetter level, final List<BlockModelPart> parts, final BlockState blockState, final BlockPos pos, final PoseStack poseStack, final BakedQuadOutput output, final boolean cull, final int overlayCoords) {
       if (!parts.isEmpty()) {
          boolean useAO = Minecraft.useAmbientOcclusion() && blockState.getLightEmission() == 0 && ((BlockModelPart)parts.getFirst()).useAmbientOcclusion();
          poseStack.translate(blockState.getOffset(pos));
 
          try {
             if (useAO) {
-               this.tesselateWithAO(level, parts, blockState, pos, poseStack, builder, cull, overlayCoords);
+               this.tesselateWithAO(level, parts, blockState, pos, poseStack, output, cull, overlayCoords);
             } else {
-               this.tesselateWithoutAO(level, parts, blockState, pos, poseStack, builder, cull, overlayCoords);
+               this.tesselateWithoutAO(level, parts, blockState, pos, poseStack, output, cull, overlayCoords);
             }
 
          } catch (Throwable t) {
@@ -69,7 +68,7 @@ public class ModelBlockRenderer {
       }
    }
 
-   public void tesselateWithAO(final BlockAndTintGetter level, final List<BlockModelPart> parts, final BlockState state, final BlockPos pos, final PoseStack poseStack, final VertexConsumer builder, final boolean cull, final int overlayCoords) {
+   public void tesselateWithAO(final BlockAndTintGetter level, final List<BlockModelPart> parts, final BlockState state, final BlockPos pos, final PoseStack poseStack, final BakedQuadOutput output, final boolean cull, final int overlayCoords) {
       AmbientOcclusionRenderStorage scratch = new AmbientOcclusionRenderStorage();
       int cacheValid = 0;
       int shouldRenderFaceCache = 0;
@@ -91,7 +90,7 @@ public class ModelBlockRenderer {
                   }
 
                   if (shouldRenderFace) {
-                     this.renderModelFaceAO(level, state, pos, poseStack, builder, culledQuads, scratch, overlayCoords);
+                     this.renderModelFaceAO(level, state, pos, poseStack, output, culledQuads, scratch, overlayCoords);
                   }
                }
             }
@@ -99,13 +98,13 @@ public class ModelBlockRenderer {
 
          List<BakedQuad> unculledQuads = part.getQuads((Direction)null);
          if (!unculledQuads.isEmpty()) {
-            this.renderModelFaceAO(level, state, pos, poseStack, builder, unculledQuads, scratch, overlayCoords);
+            this.renderModelFaceAO(level, state, pos, poseStack, output, unculledQuads, scratch, overlayCoords);
          }
       }
 
    }
 
-   public void tesselateWithoutAO(final BlockAndTintGetter level, final List<BlockModelPart> parts, final BlockState state, final BlockPos pos, final PoseStack poseStack, final VertexConsumer builder, final boolean cull, final int overlayCoords) {
+   public void tesselateWithoutAO(final BlockAndTintGetter level, final List<BlockModelPart> parts, final BlockState state, final BlockPos pos, final PoseStack poseStack, final BakedQuadOutput output, final boolean cull, final int overlayCoords) {
       CommonRenderStorage scratch = new CommonRenderStorage();
       int cacheValid = 0;
       int shouldRenderFaceCache = 0;
@@ -129,7 +128,7 @@ public class ModelBlockRenderer {
 
                   if (shouldRenderFace) {
                      int lightCoords = scratch.cache.getLightCoords(state, level, relativePos);
-                     this.renderModelFaceFlat(level, state, pos, lightCoords, overlayCoords, false, poseStack, builder, culledQuads, scratch);
+                     this.renderModelFaceFlat(level, state, pos, lightCoords, overlayCoords, false, poseStack, output, culledQuads, scratch);
                   }
                }
             }
@@ -137,28 +136,25 @@ public class ModelBlockRenderer {
 
          List<BakedQuad> unculledQuads = part.getQuads((Direction)null);
          if (!unculledQuads.isEmpty()) {
-            this.renderModelFaceFlat(level, state, pos, -1, overlayCoords, true, poseStack, builder, unculledQuads, scratch);
+            this.renderModelFaceFlat(level, state, pos, -1, overlayCoords, true, poseStack, output, unculledQuads, scratch);
          }
       }
 
    }
 
-   private void renderModelFaceAO(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, final PoseStack poseStack, final VertexConsumer builder, final List<BakedQuad> quads, final AmbientOcclusionRenderStorage storage, final int overlayCoords) {
+   private void renderModelFaceAO(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, final PoseStack poseStack, final BakedQuadOutput output, final List<BakedQuad> quads, final AmbientOcclusionRenderStorage storage, final int overlayCoords) {
       for(BakedQuad quad : quads) {
          calculateShape(level, state, pos, quad, storage);
          storage.calculate(level, state, pos, quad.direction(), quad.shade());
-         this.putQuadData(level, state, pos, builder, poseStack.last(), quad, storage, overlayCoords);
+         this.putQuadData(level, state, pos, output, poseStack.last(), quad, storage, overlayCoords);
       }
 
    }
 
-   private void putQuadData(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, final VertexConsumer builder, final PoseStack.Pose pose, final BakedQuad quad, final CommonRenderStorage renderStorage, final int overlayCoords) {
+   private void putQuadData(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, final BakedQuadOutput output, final PoseStack.Pose pose, final BakedQuad quad, final CommonRenderStorage renderStorage, final int overlayCoords) {
       int tintIndex = quad.tintIndex();
-      float r;
-      float g;
-      float b;
+      int tintColor = -1;
       if (tintIndex != -1) {
-         int tintColor;
          if (renderStorage.tintCacheIndex == tintIndex) {
             tintColor = renderStorage.tintCacheValue;
          } else {
@@ -166,17 +162,9 @@ public class ModelBlockRenderer {
             renderStorage.tintCacheIndex = tintIndex;
             renderStorage.tintCacheValue = tintColor;
          }
-
-         r = ARGB.redFloat(tintColor);
-         g = ARGB.greenFloat(tintColor);
-         b = ARGB.blueFloat(tintColor);
-      } else {
-         r = 1.0F;
-         g = 1.0F;
-         b = 1.0F;
       }
 
-      builder.putBulkData(pose, quad, renderStorage.brightness, r, g, b, 1.0F, renderStorage.lightmap, overlayCoords);
+      output.put(pose, quad, renderStorage.brightness, tintColor, renderStorage.lightmap, overlayCoords);
    }
 
    private static void calculateShape(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, final BakedQuad quad, final CommonRenderStorage storage) {
@@ -249,7 +237,7 @@ public class ModelBlockRenderer {
       storage.faceCubic = var10001;
    }
 
-   private void renderModelFaceFlat(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, int lightCoords, final int overlayCoords, final boolean checkLight, final PoseStack poseStack, final VertexConsumer builder, final List<BakedQuad> quads, final CommonRenderStorage shapeState) {
+   private void renderModelFaceFlat(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, int lightCoords, final int overlayCoords, final boolean checkLight, final PoseStack poseStack, final BakedQuadOutput output, final List<BakedQuad> quads, final CommonRenderStorage shapeState) {
       for(BakedQuad quad : quads) {
          if (checkLight) {
             calculateShape(level, state, pos, quad, shapeState);
@@ -258,46 +246,30 @@ public class ModelBlockRenderer {
          }
 
          float directionalBrightness = level.getShade(quad.direction(), quad.shade());
-         shapeState.brightness[0] = directionalBrightness;
-         shapeState.brightness[1] = directionalBrightness;
-         shapeState.brightness[2] = directionalBrightness;
-         shapeState.brightness[3] = directionalBrightness;
-         shapeState.lightmap[0] = lightCoords;
-         shapeState.lightmap[1] = lightCoords;
-         shapeState.lightmap[2] = lightCoords;
-         shapeState.lightmap[3] = lightCoords;
-         this.putQuadData(level, state, pos, builder, poseStack.last(), quad, shapeState, overlayCoords);
+         shapeState.brightness.setAll(directionalBrightness);
+         shapeState.lightmap.setAll(lightCoords);
+         this.putQuadData(level, state, pos, output, poseStack.last(), quad, shapeState, overlayCoords);
       }
 
    }
 
-   public static void renderModel(final PoseStack.Pose pose, final VertexConsumer builder, final BlockStateModel model, final float r, final float g, final float b, final int lightCoords, final int overlayCoords) {
+   public static void renderModel(final PoseStack.Pose pose, final BakedQuadOutput output, final BlockStateModel model, final int tintColor, final int lightCoords, final int overlayCoords) {
+      QuadLightmapCoords wrappedLightmapCoords = QuadLightmapCoords.create(lightCoords);
+
       for(BlockModelPart part : model.collectParts(RandomSource.create(42L))) {
          for(Direction direction : DIRECTIONS) {
-            renderQuadList(pose, builder, r, g, b, part.getQuads(direction), lightCoords, overlayCoords);
+            renderQuadList(pose, output, tintColor, part.getQuads(direction), wrappedLightmapCoords, overlayCoords);
          }
 
-         renderQuadList(pose, builder, r, g, b, part.getQuads((Direction)null), lightCoords, overlayCoords);
+         renderQuadList(pose, output, tintColor, part.getQuads((Direction)null), wrappedLightmapCoords, overlayCoords);
       }
 
    }
 
-   private static void renderQuadList(final PoseStack.Pose pose, final VertexConsumer builder, final float r, final float g, final float b, final List<BakedQuad> quads, final int lightCoords, final int overlayCoords) {
+   private static void renderQuadList(final PoseStack.Pose pose, final BakedQuadOutput output, final int tintColor, final List<BakedQuad> quads, final QuadLightmapCoords lightCoords, final int overlayCoords) {
       for(BakedQuad quad : quads) {
-         float red;
-         float green;
-         float blue;
-         if (quad.isTinted()) {
-            red = Mth.clamp(r, 0.0F, 1.0F);
-            green = Mth.clamp(g, 0.0F, 1.0F);
-            blue = Mth.clamp(b, 0.0F, 1.0F);
-         } else {
-            red = 1.0F;
-            green = 1.0F;
-            blue = 1.0F;
-         }
-
-         builder.putBulkData(pose, quad, red, green, blue, 1.0F, lightCoords, overlayCoords);
+         int quadColor = quad.isTinted() ? tintColor : -1;
+         output.put(pose, quad, QuadBrightness.ALL_BRIGHT, quadColor, lightCoords, overlayCoords);
       }
 
    }
@@ -434,8 +406,8 @@ public class ModelBlockRenderer {
       public final BlockPos.MutableBlockPos scratchPos = new BlockPos.MutableBlockPos();
       public boolean faceCubic;
       public boolean facePartial;
-      public final float[] brightness = new float[4];
-      public final int[] lightmap = new int[4];
+      public final QuadBrightness.Mutable brightness = new QuadBrightness.Mutable();
+      public final QuadLightmapCoords.Mutable lightmap = new QuadLightmapCoords.Mutable();
       public int tintCacheIndex = -1;
       public int tintCacheValue;
       public final Cache cache;
@@ -560,40 +532,34 @@ public class ModelBlockRenderer {
             float vert3weight23 = this.faceShape[info.vert3Weights[2].index] * this.faceShape[info.vert3Weights[3].index];
             float vert3weight45 = this.faceShape[info.vert3Weights[4].index] * this.faceShape[info.vert3Weights[5].index];
             float vert3weight67 = this.faceShape[info.vert3Weights[6].index] * this.faceShape[info.vert3Weights[7].index];
-            this.brightness[remap.vert0] = Math.clamp(tempShade1 * vert0weight01 + tempShade2 * vert0weight23 + tempShade3 * vert0weight45 + tempShade4 * vert0weight67, 0.0F, 1.0F);
-            this.brightness[remap.vert1] = Math.clamp(tempShade1 * vert1weight01 + tempShade2 * vert1weight23 + tempShade3 * vert1weight45 + tempShade4 * vert1weight67, 0.0F, 1.0F);
-            this.brightness[remap.vert2] = Math.clamp(tempShade1 * vert2weight01 + tempShade2 * vert2weight23 + tempShade3 * vert2weight45 + tempShade4 * vert2weight67, 0.0F, 1.0F);
-            this.brightness[remap.vert3] = Math.clamp(tempShade1 * vert3weight01 + tempShade2 * vert3weight23 + tempShade3 * vert3weight45 + tempShade4 * vert3weight67, 0.0F, 1.0F);
+            this.brightness.set(remap.vert0, Math.clamp(tempShade1 * vert0weight01 + tempShade2 * vert0weight23 + tempShade3 * vert0weight45 + tempShade4 * vert0weight67, 0.0F, 1.0F));
+            this.brightness.set(remap.vert1, Math.clamp(tempShade1 * vert1weight01 + tempShade2 * vert1weight23 + tempShade3 * vert1weight45 + tempShade4 * vert1weight67, 0.0F, 1.0F));
+            this.brightness.set(remap.vert2, Math.clamp(tempShade1 * vert2weight01 + tempShade2 * vert2weight23 + tempShade3 * vert2weight45 + tempShade4 * vert2weight67, 0.0F, 1.0F));
+            this.brightness.set(remap.vert3, Math.clamp(tempShade1 * vert3weight01 + tempShade2 * vert3weight23 + tempShade3 * vert3weight45 + tempShade4 * vert3weight67, 0.0F, 1.0F));
             int _tc1 = LightCoordsUtil.smoothBlend(light3, light0, lightCorner03, lightCenter);
             int _tc2 = LightCoordsUtil.smoothBlend(light2, light0, lightCorner02, lightCenter);
             int _tc3 = LightCoordsUtil.smoothBlend(light2, light1, lightCorner12, lightCenter);
             int _tc4 = LightCoordsUtil.smoothBlend(light3, light1, lightCorner13, lightCenter);
-            this.lightmap[remap.vert0] = LightCoordsUtil.smoothWeightedBlend(_tc1, _tc2, _tc3, _tc4, vert0weight01, vert0weight23, vert0weight45, vert0weight67);
-            this.lightmap[remap.vert1] = LightCoordsUtil.smoothWeightedBlend(_tc1, _tc2, _tc3, _tc4, vert1weight01, vert1weight23, vert1weight45, vert1weight67);
-            this.lightmap[remap.vert2] = LightCoordsUtil.smoothWeightedBlend(_tc1, _tc2, _tc3, _tc4, vert2weight01, vert2weight23, vert2weight45, vert2weight67);
-            this.lightmap[remap.vert3] = LightCoordsUtil.smoothWeightedBlend(_tc1, _tc2, _tc3, _tc4, vert3weight01, vert3weight23, vert3weight45, vert3weight67);
+            this.lightmap.set(remap.vert0, LightCoordsUtil.smoothWeightedBlend(_tc1, _tc2, _tc3, _tc4, vert0weight01, vert0weight23, vert0weight45, vert0weight67));
+            this.lightmap.set(remap.vert1, LightCoordsUtil.smoothWeightedBlend(_tc1, _tc2, _tc3, _tc4, vert1weight01, vert1weight23, vert1weight45, vert1weight67));
+            this.lightmap.set(remap.vert2, LightCoordsUtil.smoothWeightedBlend(_tc1, _tc2, _tc3, _tc4, vert2weight01, vert2weight23, vert2weight45, vert2weight67));
+            this.lightmap.set(remap.vert3, LightCoordsUtil.smoothWeightedBlend(_tc1, _tc2, _tc3, _tc4, vert3weight01, vert3weight23, vert3weight45, vert3weight67));
          } else {
             float lightLevel1 = (shade3 + shade0 + shadeCorner03 + shadeCenter) * 0.25F;
             float lightLevel2 = (shade2 + shade0 + shadeCorner02 + shadeCenter) * 0.25F;
             float lightLevel3 = (shade2 + shade1 + shadeCorner12 + shadeCenter) * 0.25F;
             float lightLevel4 = (shade3 + shade1 + shadeCorner13 + shadeCenter) * 0.25F;
-            this.lightmap[remap.vert0] = LightCoordsUtil.smoothBlend(light3, light0, lightCorner03, lightCenter);
-            this.lightmap[remap.vert1] = LightCoordsUtil.smoothBlend(light2, light0, lightCorner02, lightCenter);
-            this.lightmap[remap.vert2] = LightCoordsUtil.smoothBlend(light2, light1, lightCorner12, lightCenter);
-            this.lightmap[remap.vert3] = LightCoordsUtil.smoothBlend(light3, light1, lightCorner13, lightCenter);
-            this.brightness[remap.vert0] = lightLevel1;
-            this.brightness[remap.vert1] = lightLevel2;
-            this.brightness[remap.vert2] = lightLevel3;
-            this.brightness[remap.vert3] = lightLevel4;
+            this.lightmap.set(remap.vert0, LightCoordsUtil.smoothBlend(light3, light0, lightCorner03, lightCenter));
+            this.lightmap.set(remap.vert1, LightCoordsUtil.smoothBlend(light2, light0, lightCorner02, lightCenter));
+            this.lightmap.set(remap.vert2, LightCoordsUtil.smoothBlend(light2, light1, lightCorner12, lightCenter));
+            this.lightmap.set(remap.vert3, LightCoordsUtil.smoothBlend(light3, light1, lightCorner13, lightCenter));
+            this.brightness.set(remap.vert0, lightLevel1);
+            this.brightness.set(remap.vert1, lightLevel2);
+            this.brightness.set(remap.vert2, lightLevel3);
+            this.brightness.set(remap.vert3, lightLevel4);
          }
 
-         float directionalBrightness = level.getShade(direction, shade);
-
-         for(int i = 0; i < this.brightness.length; ++i) {
-            float[] var10000 = this.brightness;
-            var10000[i] *= directionalBrightness;
-         }
-
+         this.brightness.multiplyAll(level.getShade(direction, shade));
       }
    }
 

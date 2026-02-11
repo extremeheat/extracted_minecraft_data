@@ -116,10 +116,10 @@ public class KeyboardHandler {
             return true;
          case 85:
             if (event.hasShiftDown()) {
-               this.minecraft.levelRenderer.killFrustum();
+               this.minecraft.gameRenderer.getMainCamera().killFrustum();
                this.debugFeedback("Killed frustum");
             } else {
-               this.minecraft.levelRenderer.captureFrustum();
+               this.minecraft.gameRenderer.getMainCamera().captureFrustum();
                this.debugFeedback("Captured frustum");
             }
 
@@ -144,7 +144,7 @@ public class KeyboardHandler {
    }
 
    private void showDebugChat(final Component message) {
-      this.minecraft.gui.getChat().addMessage(message);
+      this.minecraft.gui.getChat().addClientSystemMessage(message);
       this.minecraft.getNarrator().saySystemQueued(message);
    }
 

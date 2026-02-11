@@ -168,7 +168,7 @@ public class LevelLoadingScreen extends Screen {
       if (this.cachedNetherPortalSprite != null) {
          return this.cachedNetherPortalSprite;
       } else {
-         this.cachedNetherPortalSprite = this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(Blocks.NETHER_PORTAL.defaultBlockState());
+         this.cachedNetherPortalSprite = this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleMaterial(Blocks.NETHER_PORTAL.defaultBlockState()).sprite();
          return this.cachedNetherPortalSprite;
       }
    }

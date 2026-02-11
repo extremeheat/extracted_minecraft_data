@@ -35,6 +35,7 @@ import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.data.models.model.TexturedModel;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.client.renderer.block.model.Variant;
 import net.minecraft.client.renderer.block.model.VariantMutator;
 import net.minecraft.client.renderer.block.model.multipart.CombinedCondition;
@@ -223,8 +224,8 @@ public class BlockModelGenerators {
    }
 
    private Identifier createFlatItemModelWithBlockTextureAndOverlay(final Item item, final Block block, final String overlaySuffix) {
-      Identifier base = TextureMapping.getBlockTexture(block);
-      Identifier overlay = TextureMapping.getBlockTexture(block, overlaySuffix);
+      Material base = TextureMapping.getBlockTexture(block);
+      Material overlay = TextureMapping.getBlockTexture(block, overlaySuffix);
       return ModelTemplates.TWO_LAYERED_ITEM.create(ModelLocationUtils.getModelLocation(item), TextureMapping.layered(base, overlay), this.modelOutput);
    }
 
@@ -283,7 +284,7 @@ public class BlockModelGenerators {
    private void createBrushableBlock(final Block block) {
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(block).with(PropertyDispatch.initial(BlockStateProperties.DUSTED).generate((dustProgress) -> {
          String suffix = "_" + dustProgress;
-         Identifier texture = TextureMapping.getBlockTexture(block, suffix);
+         Material texture = TextureMapping.getBlockTexture(block, suffix);
          Identifier model = ModelTemplates.CUBE_ALL.createWithSuffix(block, suffix, (new TextureMapping()).put(TextureSlot.ALL, texture), this.modelOutput);
          return plainVariant(model);
       })));
@@ -383,7 +384,7 @@ public class BlockModelGenerators {
       return provider.updateTexture((t) -> t.put(TextureSlot.SIDE, TextureMapping.getBlockTexture(block, suffix)).put(TextureSlot.END, TextureMapping.getBlockTexture(block, "_top" + suffix))).createWithSuffix(block, suffix, this.modelOutput);
    }
 
-   private Identifier createSuffixedVariant(final Block block, final String suffix, final ModelTemplate template, final Function<Identifier, TextureMapping> textureMapping) {
+   private Identifier createSuffixedVariant(final Block block, final String suffix, final ModelTemplate template, final Function<Material, TextureMapping> textureMapping) {
       return template.createWithSuffix(block, suffix, (TextureMapping)textureMapping.apply(TextureMapping.getBlockTexture(block, suffix)), this.modelOutput);
    }
 
@@ -680,7 +681,7 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(createSimpleBlock(block, dummyModel));
    }
 
-   private void createAirLikeBlock(final Block block, final Identifier particle) {
+   private void createAirLikeBlock(final Block block, final Material particle) {
       MultiVariant dummyModel = plainVariant(ModelTemplates.PARTICLE_ONLY.create(block, TextureMapping.particle(particle), this.modelOutput));
       this.blockStateOutput.accept(createSimpleBlock(block, dummyModel));
    }
@@ -742,8 +743,8 @@ public class BlockModelGenerators {
    }
 
    private void createGlassBlocks(final Block block, final Block pane) {
-      this.createTrivialCube(block);
-      TextureMapping paneMapping = TextureMapping.pane(block, pane);
+      this.createTrivialBlock(block, TexturedModel.CUBE.updateTexture((mapping) -> mapping.forceAllTranslucent()));
+      TextureMapping paneMapping = TextureMapping.pane(block, pane).forceAllTranslucent();
       MultiVariant post = plainVariant(ModelTemplates.STAINED_GLASS_PANE_POST.create(pane, paneMapping, this.modelOutput));
       MultiVariant side = plainVariant(ModelTemplates.STAINED_GLASS_PANE_SIDE.create(pane, paneMapping, this.modelOutput));
       MultiVariant sideAlt = plainVariant(ModelTemplates.STAINED_GLASS_PANE_SIDE_ALT.create(pane, paneMapping, this.modelOutput));
@@ -776,7 +777,7 @@ public class BlockModelGenerators {
    }
 
    private void createBarrel() {
-      Identifier openTop = TextureMapping.getBlockTexture(Blocks.BARREL, "_top_open");
+      Material openTop = TextureMapping.getBlockTexture(Blocks.BARREL, "_top_open");
       MultiVariant closedModel = plainVariant(TexturedModel.CUBE_TOP_BOTTOM.create(Blocks.BARREL, this.modelOutput));
       MultiVariant openModel = plainVariant(TexturedModel.CUBE_TOP_BOTTOM.get(Blocks.BARREL).updateTextures((t) -> t.put(TextureSlot.TOP, openTop)).createWithSuffix(Blocks.BARREL, "_open", this.modelOutput));
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.BARREL).with(PropertyDispatch.initial(BlockStateProperties.OPEN).select(false, closedModel).select(true, openModel)).with(ROTATIONS_COLUMN_WITH_FACING));
@@ -826,7 +827,7 @@ public class BlockModelGenerators {
 
    private void createFurnace(final Block furnace, final TexturedModel.Provider provider) {
       MultiVariant normalModel = plainVariant(provider.create(furnace, this.modelOutput));
-      Identifier frontTexture = TextureMapping.getBlockTexture(furnace, "_front_on");
+      Material frontTexture = TextureMapping.getBlockTexture(furnace, "_front_on");
       MultiVariant litModel = plainVariant(provider.get(furnace).updateTextures((t) -> t.put(TextureSlot.FRONT, frontTexture)).createWithSuffix(furnace, "_on", this.modelOutput));
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(furnace).with(createBooleanModelDispatch(BlockStateProperties.LIT, litModel, normalModel)).with(ROTATION_HORIZONTAL_FACING));
    }
@@ -886,7 +887,7 @@ public class BlockModelGenerators {
 
    private void createBrewingStand() {
       this.registerSimpleFlatItemModel(Items.BREWING_STAND);
-      this.blockStateOutput.accept(MultiPartGenerator.multiPart(Blocks.BREWING_STAND).with(plainVariant(TextureMapping.getBlockTexture(Blocks.BREWING_STAND))).with(condition().term(BlockStateProperties.HAS_BOTTLE_0, true), plainVariant(TextureMapping.getBlockTexture(Blocks.BREWING_STAND, "_bottle0"))).with(condition().term(BlockStateProperties.HAS_BOTTLE_1, true), plainVariant(TextureMapping.getBlockTexture(Blocks.BREWING_STAND, "_bottle1"))).with(condition().term(BlockStateProperties.HAS_BOTTLE_2, true), plainVariant(TextureMapping.getBlockTexture(Blocks.BREWING_STAND, "_bottle2"))).with(condition().term(BlockStateProperties.HAS_BOTTLE_0, false), plainVariant(TextureMapping.getBlockTexture(Blocks.BREWING_STAND, "_empty0"))).with(condition().term(BlockStateProperties.HAS_BOTTLE_1, false), plainVariant(TextureMapping.getBlockTexture(Blocks.BREWING_STAND, "_empty1"))).with(condition().term(BlockStateProperties.HAS_BOTTLE_2, false), plainVariant(TextureMapping.getBlockTexture(Blocks.BREWING_STAND, "_empty2"))));
+      this.blockStateOutput.accept(MultiPartGenerator.multiPart(Blocks.BREWING_STAND).with(plainVariant(ModelLocationUtils.getModelLocation(Blocks.BREWING_STAND))).with(condition().term(BlockStateProperties.HAS_BOTTLE_0, true), plainVariant(ModelLocationUtils.getModelLocation(Blocks.BREWING_STAND, "_bottle0"))).with(condition().term(BlockStateProperties.HAS_BOTTLE_1, true), plainVariant(ModelLocationUtils.getModelLocation(Blocks.BREWING_STAND, "_bottle1"))).with(condition().term(BlockStateProperties.HAS_BOTTLE_2, true), plainVariant(ModelLocationUtils.getModelLocation(Blocks.BREWING_STAND, "_bottle2"))).with(condition().term(BlockStateProperties.HAS_BOTTLE_0, false), plainVariant(ModelLocationUtils.getModelLocation(Blocks.BREWING_STAND, "_empty0"))).with(condition().term(BlockStateProperties.HAS_BOTTLE_1, false), plainVariant(ModelLocationUtils.getModelLocation(Blocks.BREWING_STAND, "_empty1"))).with(condition().term(BlockStateProperties.HAS_BOTTLE_2, false), plainVariant(ModelLocationUtils.getModelLocation(Blocks.BREWING_STAND, "_empty2"))));
    }
 
    private void createMushroomBlock(final Block block) {
@@ -979,7 +980,7 @@ public class BlockModelGenerators {
    }
 
    private void createComposter() {
-      this.blockStateOutput.accept(MultiPartGenerator.multiPart(Blocks.COMPOSTER).with(plainVariant(TextureMapping.getBlockTexture(Blocks.COMPOSTER))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 1), plainVariant(TextureMapping.getBlockTexture(Blocks.COMPOSTER, "_contents1"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 2), plainVariant(TextureMapping.getBlockTexture(Blocks.COMPOSTER, "_contents2"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 3), plainVariant(TextureMapping.getBlockTexture(Blocks.COMPOSTER, "_contents3"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 4), plainVariant(TextureMapping.getBlockTexture(Blocks.COMPOSTER, "_contents4"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 5), plainVariant(TextureMapping.getBlockTexture(Blocks.COMPOSTER, "_contents5"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 6), plainVariant(TextureMapping.getBlockTexture(Blocks.COMPOSTER, "_contents6"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 7), plainVariant(TextureMapping.getBlockTexture(Blocks.COMPOSTER, "_contents7"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 8), plainVariant(TextureMapping.getBlockTexture(Blocks.COMPOSTER, "_contents_ready"))));
+      this.blockStateOutput.accept(MultiPartGenerator.multiPart(Blocks.COMPOSTER).with(plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPOSTER))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 1), plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPOSTER, "_contents1"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 2), plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPOSTER, "_contents2"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 3), plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPOSTER, "_contents3"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 4), plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPOSTER, "_contents4"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 5), plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPOSTER, "_contents5"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 6), plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPOSTER, "_contents6"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 7), plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPOSTER, "_contents7"))).with(condition().term(BlockStateProperties.LEVEL_COMPOSTER, 8), plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPOSTER, "_contents_ready"))));
    }
 
    private void createCopperBulb(final Block copperBulb) {
@@ -1048,7 +1049,7 @@ public class BlockModelGenerators {
    }
 
    private void createDaylightDetector() {
-      Identifier sideTexture = TextureMapping.getBlockTexture(Blocks.DAYLIGHT_DETECTOR, "_side");
+      Material sideTexture = TextureMapping.getBlockTexture(Blocks.DAYLIGHT_DETECTOR, "_side");
       TextureMapping normalTextures = (new TextureMapping()).put(TextureSlot.TOP, TextureMapping.getBlockTexture(Blocks.DAYLIGHT_DETECTOR, "_top")).put(TextureSlot.SIDE, sideTexture);
       TextureMapping invertedTextures = (new TextureMapping()).put(TextureSlot.TOP, TextureMapping.getBlockTexture(Blocks.DAYLIGHT_DETECTOR, "_inverted_top")).put(TextureSlot.SIDE, sideTexture);
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.DAYLIGHT_DETECTOR).with(PropertyDispatch.initial(BlockStateProperties.INVERTED).select(false, plainVariant(ModelTemplates.DAYLIGHT_DETECTOR.create(Blocks.DAYLIGHT_DETECTOR, normalTextures, this.modelOutput))).select(true, plainVariant(ModelTemplates.DAYLIGHT_DETECTOR.create(ModelLocationUtils.getModelLocation(Blocks.DAYLIGHT_DETECTOR, "_inverted"), invertedTextures, this.modelOutput)))));
@@ -1070,7 +1071,7 @@ public class BlockModelGenerators {
       TextureMapping dryTextures = (new TextureMapping()).put(TextureSlot.DIRT, TextureMapping.getBlockTexture(Blocks.DIRT)).put(TextureSlot.TOP, TextureMapping.getBlockTexture(Blocks.FARMLAND));
       TextureMapping moistTextures = (new TextureMapping()).put(TextureSlot.DIRT, TextureMapping.getBlockTexture(Blocks.DIRT)).put(TextureSlot.TOP, TextureMapping.getBlockTexture(Blocks.FARMLAND, "_moist"));
       MultiVariant dryModel = plainVariant(ModelTemplates.FARMLAND.create(Blocks.FARMLAND, dryTextures, this.modelOutput));
-      MultiVariant moistModel = plainVariant(ModelTemplates.FARMLAND.create(TextureMapping.getBlockTexture(Blocks.FARMLAND, "_moist"), moistTextures, this.modelOutput));
+      MultiVariant moistModel = plainVariant(ModelTemplates.FARMLAND.create(ModelLocationUtils.getModelLocation(Blocks.FARMLAND, "_moist"), moistTextures, this.modelOutput));
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.FARMLAND).with(createEmptyOrFullDispatch(BlockStateProperties.MOISTURE, 7, moistModel, dryModel)));
    }
 
@@ -1140,7 +1141,7 @@ public class BlockModelGenerators {
    }
 
    private void createGrassBlocks() {
-      Identifier bottomTexture = TextureMapping.getBlockTexture(Blocks.DIRT);
+      Material bottomTexture = TextureMapping.getBlockTexture(Blocks.DIRT);
       TextureMapping snowyMapping = (new TextureMapping()).put(TextureSlot.BOTTOM, bottomTexture).copyForced(TextureSlot.BOTTOM, TextureSlot.PARTICLE).put(TextureSlot.TOP, TextureMapping.getBlockTexture(Blocks.GRASS_BLOCK, "_top")).put(TextureSlot.SIDE, TextureMapping.getBlockTexture(Blocks.GRASS_BLOCK, "_snow"));
       MultiVariant snowyGrass = plainVariant(ModelTemplates.CUBE_BOTTOM_TOP.createWithSuffix(Blocks.GRASS_BLOCK, "_snow", snowyMapping, this.modelOutput));
       Identifier plainGrassModel = ModelLocationUtils.getModelLocation(Blocks.GRASS_BLOCK);
@@ -1256,8 +1257,8 @@ public class BlockModelGenerators {
 
    private void createPistons() {
       TextureMapping commonMapping = (new TextureMapping()).put(TextureSlot.BOTTOM, TextureMapping.getBlockTexture(Blocks.PISTON, "_bottom")).put(TextureSlot.SIDE, TextureMapping.getBlockTexture(Blocks.PISTON, "_side"));
-      Identifier topSticky = TextureMapping.getBlockTexture(Blocks.PISTON, "_top_sticky");
-      Identifier top = TextureMapping.getBlockTexture(Blocks.PISTON, "_top");
+      Material topSticky = TextureMapping.getBlockTexture(Blocks.PISTON, "_top_sticky");
+      Material top = TextureMapping.getBlockTexture(Blocks.PISTON, "_top");
       TextureMapping stickyTextures = commonMapping.copyAndUpdate(TextureSlot.PLATFORM, topSticky);
       TextureMapping normalTextures = commonMapping.copyAndUpdate(TextureSlot.PLATFORM, top);
       MultiVariant extendedPiston = plainVariant(ModelLocationUtils.getModelLocation(Blocks.PISTON, "_base"));
@@ -1433,7 +1434,7 @@ public class BlockModelGenerators {
             suffix.append("_locked");
          }
 
-         return plainVariant(TextureMapping.getBlockTexture(Blocks.REPEATER, suffix.toString()));
+         return plainVariant(ModelLocationUtils.getModelLocation(Blocks.REPEATER, suffix.toString()));
       })).with(ROTATION_HORIZONTAL_FACING_ALT));
    }
 
@@ -1629,7 +1630,7 @@ public class BlockModelGenerators {
    }
 
    private void createSculkCatalyst() {
-      Identifier bottom = TextureMapping.getBlockTexture(Blocks.SCULK_CATALYST, "_bottom");
+      Material bottom = TextureMapping.getBlockTexture(Blocks.SCULK_CATALYST, "_bottom");
       TextureMapping defaultTextureMap = (new TextureMapping()).put(TextureSlot.BOTTOM, bottom).put(TextureSlot.TOP, TextureMapping.getBlockTexture(Blocks.SCULK_CATALYST, "_top")).put(TextureSlot.SIDE, TextureMapping.getBlockTexture(Blocks.SCULK_CATALYST, "_side"));
       TextureMapping bloomTextureMap = (new TextureMapping()).put(TextureSlot.BOTTOM, bottom).put(TextureSlot.TOP, TextureMapping.getBlockTexture(Blocks.SCULK_CATALYST, "_top_bloom")).put(TextureSlot.SIDE, TextureMapping.getBlockTexture(Blocks.SCULK_CATALYST, "_side_bloom"));
       Identifier defaultModel = ModelTemplates.CUBE_BOTTOM_TOP.create(Blocks.SCULK_CATALYST, defaultTextureMap, this.modelOutput);
@@ -1707,7 +1708,8 @@ public class BlockModelGenerators {
    }
 
    private void createMagmaBlock() {
-      MultiVariant model = plainVariant(ModelTemplates.CUBE_ALL.create(Blocks.MAGMA_BLOCK, TextureMapping.cube(ModelLocationUtils.decorateBlockModelLocation("magma")), this.modelOutput));
+      Material texture = new Material(Identifier.withDefaultNamespace("block/magma"));
+      MultiVariant model = plainVariant(ModelTemplates.CUBE_ALL.create(Blocks.MAGMA_BLOCK, TextureMapping.cube(texture), this.modelOutput));
       this.blockStateOutput.accept(createSimpleBlock(Blocks.MAGMA_BLOCK, model));
    }
 
@@ -1748,9 +1750,9 @@ public class BlockModelGenerators {
    }
 
    private void createRespawnAnchor() {
-      Identifier bottom = TextureMapping.getBlockTexture(Blocks.RESPAWN_ANCHOR, "_bottom");
-      Identifier topOff = TextureMapping.getBlockTexture(Blocks.RESPAWN_ANCHOR, "_top_off");
-      Identifier topOn = TextureMapping.getBlockTexture(Blocks.RESPAWN_ANCHOR, "_top");
+      Material bottom = TextureMapping.getBlockTexture(Blocks.RESPAWN_ANCHOR, "_bottom");
+      Material topOff = TextureMapping.getBlockTexture(Blocks.RESPAWN_ANCHOR, "_top_off");
+      Material topOn = TextureMapping.getBlockTexture(Blocks.RESPAWN_ANCHOR, "_top");
       Identifier[] chargeLevelModels = new Identifier[5];
 
       for(int i = 0; i < 5; ++i) {
@@ -1784,10 +1786,10 @@ public class BlockModelGenerators {
    }
 
    private void createJigsaw() {
-      Identifier front = TextureMapping.getBlockTexture(Blocks.JIGSAW, "_top");
-      Identifier back = TextureMapping.getBlockTexture(Blocks.JIGSAW, "_bottom");
-      Identifier side = TextureMapping.getBlockTexture(Blocks.JIGSAW, "_side");
-      Identifier lock = TextureMapping.getBlockTexture(Blocks.JIGSAW, "_lock");
+      Material front = TextureMapping.getBlockTexture(Blocks.JIGSAW, "_top");
+      Material back = TextureMapping.getBlockTexture(Blocks.JIGSAW, "_bottom");
+      Material side = TextureMapping.getBlockTexture(Blocks.JIGSAW, "_side");
+      Material lock = TextureMapping.getBlockTexture(Blocks.JIGSAW, "_lock");
       TextureMapping mapping = (new TextureMapping()).put(TextureSlot.DOWN, side).put(TextureSlot.WEST, side).put(TextureSlot.EAST, side).put(TextureSlot.PARTICLE, front).put(TextureSlot.NORTH, front).put(TextureSlot.SOUTH, back).put(TextureSlot.UP, lock);
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.JIGSAW, plainVariant(ModelTemplates.CUBE_DIRECTIONAL.create(Blocks.JIGSAW, mapping, this.modelOutput))).with(PropertyDispatch.modify(BlockStateProperties.ORIENTATION).generate(BlockModelGenerators::applyRotation)));
    }
@@ -2498,7 +2500,7 @@ public class BlockModelGenerators {
 
       for(int i = 0; i <= 15; ++i) {
          String suffix = String.format(Locale.ROOT, "_%02d", i);
-         Identifier texture = TextureMapping.getItemTexture(Items.LIGHT, suffix);
+         Material texture = TextureMapping.getItemTexture(Items.LIGHT, suffix);
          light.select(i, plainVariant(ModelTemplates.PARTICLE_ONLY.createWithSuffix(Blocks.LIGHT, suffix, TextureMapping.particle(texture), this.modelOutput)));
          ItemModel.Unbaked overrideItem = ItemModelUtils.plainModel(ModelTemplates.FLAT_ITEM.create(ModelLocationUtils.getModelLocation(Items.LIGHT, suffix), TextureMapping.layer0(texture), this.modelOutput));
          overrides.put(i, overrideItem);

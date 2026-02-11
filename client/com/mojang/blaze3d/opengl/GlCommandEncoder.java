@@ -310,7 +310,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
                });
             }
 
-            this.drawFromBuffers(renderPass, 0, draw.firstIndex(), draw.indexCount(), indexType, renderPass.pipeline, 1);
+            this.drawFromBuffers(renderPass, draw.baseVertex(), draw.firstIndex(), draw.indexCount(), indexType, renderPass.pipeline, 1);
          }
 
       }

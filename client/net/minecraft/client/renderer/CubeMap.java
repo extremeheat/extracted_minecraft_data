@@ -27,19 +27,25 @@ import org.joml.Vector4f;
 
 public class CubeMap implements AutoCloseable {
    private static final int SIDES = 6;
+   private static final float PROJECTION_Z_NEAR = 0.05F;
+   private static final float PROJECTION_Z_FAR = 10.0F;
+   private static final float PROJECTION_FOV = 85.0F;
    private final GpuBuffer vertexBuffer;
-   private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixUbo;
+   private final Projection projection;
+   private final ProjectionMatrixBuffer projectionMatrixUbo;
    private final Identifier location;
 
    public CubeMap(final Identifier base) {
       super();
       this.location = base;
-      this.projectionMatrixUbo = new CachedPerspectiveProjectionMatrixBuffer("cubemap", 0.05F, 10.0F);
+      this.projection = new Projection();
+      this.projectionMatrixUbo = new ProjectionMatrixBuffer("cubemap");
       this.vertexBuffer = initializeVertices();
    }
 
    public void render(final Minecraft minecraft, final float rotXInDegrees, final float rotYInDegrees) {
-      RenderSystem.setProjectionMatrix(this.projectionMatrixUbo.getBuffer(minecraft.getWindow().getWidth(), minecraft.getWindow().getHeight(), 85.0F), ProjectionType.PERSPECTIVE);
+      this.projection.setupPerspective(0.05F, 10.0F, 85.0F, (float)minecraft.getWindow().getWidth(), (float)minecraft.getWindow().getHeight());
+      RenderSystem.setProjectionMatrix(this.projectionMatrixUbo.getBuffer(this.projection), ProjectionType.PERSPECTIVE);
       RenderPipeline renderPipeline = RenderPipelines.PANORAMA;
       RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
       GpuTextureView colorTexture = mainRenderTarget.getColorTextureView();

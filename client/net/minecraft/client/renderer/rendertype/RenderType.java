@@ -48,6 +48,10 @@ public class RenderType {
       return this.state.pipeline.getBlendFunction().isPresent();
    }
 
+   public OutputTarget outputTarget() {
+      return this.state.outputTarget;
+   }
+
    public void draw(final MeshData mesh) {
       Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
       Consumer<Matrix4fStack> modelViewModifier = this.state.layeringTransform.getModifier();

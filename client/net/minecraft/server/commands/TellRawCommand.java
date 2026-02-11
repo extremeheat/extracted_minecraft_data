@@ -19,7 +19,7 @@ public class TellRawCommand {
          int result = 0;
 
          for(ServerPlayer player : EntityArgument.getPlayers(c, "targets")) {
-            player.sendSystemMessage(ComponentArgument.getResolvedComponent(c, "message", player), false);
+            player.sendSystemMessage(ComponentArgument.getResolvedComponent(c, "message", player));
             ++result;
          }
 

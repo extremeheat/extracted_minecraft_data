@@ -55,7 +55,7 @@ public class BackupConfirmScreen extends Screen {
       Button skipAndJoinButton = Button.builder(SKIP_AND_JOIN, (button) -> this.onProceed.proceed(false, this.eraseCache.selected())).bounds(this.width / 2 - 155 + 160, 100 + textSize, 150, 20).build();
       if (this.forceBackup) {
          skipAndJoinButton.active = false;
-         skipAndJoinButton.setTooltip(Tooltip.create(Component.translatable("selecteWorld.backupRequiredTooltip")));
+         skipAndJoinButton.setTooltip(Tooltip.create(Component.translatable("selectWorld.backupRequiredTooltip")));
       }
 
       this.addRenderableWidget(skipAndJoinButton);

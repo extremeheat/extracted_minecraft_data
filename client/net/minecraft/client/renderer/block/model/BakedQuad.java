@@ -1,10 +1,15 @@
 package net.minecraft.client.renderer.block.model;
 
+import com.mojang.blaze3d.platform.Transparency;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import org.joml.Vector3fc;
 
-public record BakedQuad(Vector3fc position0, Vector3fc position1, Vector3fc position2, Vector3fc position3, long packedUV0, long packedUV1, long packedUV2, long packedUV3, int tintIndex, Direction direction, TextureAtlasSprite sprite, boolean shade, int lightEmission) {
+public record BakedQuad(Vector3fc position0, Vector3fc position1, Vector3fc position2, Vector3fc position3, long packedUV0, long packedUV1, long packedUV2, long packedUV3, int tintIndex, Direction direction, SpriteInfo spriteInfo, boolean shade, int lightEmission) {
    public static final int VERTEX_COUNT = 4;
 
    public BakedQuad {
@@ -39,5 +44,23 @@ public record BakedQuad(Vector3fc position0, Vector3fc position1, Vector3fc posi
       }
 
       return var10000;
+   }
+
+   public static record SpriteInfo(TextureAtlasSprite sprite, ChunkSectionLayer layer, RenderType itemRenderType) {
+      public SpriteInfo {
+         super();
+      }
+
+      public static SpriteInfo of(final Material.Baked material, final Transparency transparency) {
+         ChunkSectionLayer layer = ChunkSectionLayer.byTransparency(transparency);
+         RenderType itemRenderType;
+         if (material.sprite().atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS)) {
+            itemRenderType = transparency.hasTranslucent() ? Sheets.translucentBlockItemSheet() : Sheets.cutoutBlockItemSheet();
+         } else {
+            itemRenderType = transparency.hasTranslucent() ? Sheets.translucentItemSheet() : Sheets.cutoutItemSheet();
+         }
+
+         return new SpriteInfo(material.sprite(), layer, itemRenderType);
+      }
    }
 }

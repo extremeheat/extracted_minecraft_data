@@ -126,8 +126,10 @@ public abstract class SingleQuadParticle extends Particle {
    }
 
    public static record Layer(boolean translucent, Identifier textureAtlasLocation, RenderPipeline pipeline) {
-      public static final Layer TERRAIN;
-      public static final Layer ITEMS;
+      public static final Layer OPAQUE_TERRAIN;
+      public static final Layer TRANSLUCENT_TERRAIN;
+      public static final Layer OPAQUE_ITEMS;
+      public static final Layer TRANSLUCENT_ITEMS;
       public static final Layer OPAQUE;
       public static final Layer TRANSLUCENT;
 
@@ -135,9 +137,22 @@ public abstract class SingleQuadParticle extends Particle {
          super();
       }
 
+      public static Layer bySprite(final TextureAtlasSprite sprite) {
+         boolean translucent = sprite.transparency().hasTranslucent();
+         if (sprite.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS)) {
+            return translucent ? TRANSLUCENT_TERRAIN : OPAQUE_TERRAIN;
+         } else if (sprite.atlasLocation().equals(TextureAtlas.LOCATION_ITEMS)) {
+            return translucent ? TRANSLUCENT_ITEMS : OPAQUE_ITEMS;
+         } else {
+            return translucent ? TRANSLUCENT : OPAQUE;
+         }
+      }
+
       static {
-         TERRAIN = new Layer(true, TextureAtlas.LOCATION_BLOCKS, RenderPipelines.TRANSLUCENT_PARTICLE);
-         ITEMS = new Layer(true, TextureAtlas.LOCATION_ITEMS, RenderPipelines.TRANSLUCENT_PARTICLE);
+         OPAQUE_TERRAIN = new Layer(false, TextureAtlas.LOCATION_BLOCKS, RenderPipelines.OPAQUE_PARTICLE);
+         TRANSLUCENT_TERRAIN = new Layer(true, TextureAtlas.LOCATION_BLOCKS, RenderPipelines.TRANSLUCENT_PARTICLE);
+         OPAQUE_ITEMS = new Layer(false, TextureAtlas.LOCATION_ITEMS, RenderPipelines.OPAQUE_PARTICLE);
+         TRANSLUCENT_ITEMS = new Layer(true, TextureAtlas.LOCATION_ITEMS, RenderPipelines.TRANSLUCENT_PARTICLE);
          OPAQUE = new Layer(false, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.OPAQUE_PARTICLE);
          TRANSLUCENT = new Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_PARTICLE);
       }

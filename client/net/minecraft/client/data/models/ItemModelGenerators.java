@@ -15,6 +15,7 @@ import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.client.renderer.item.BundleSelectedItemSpecialRenderer;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
@@ -103,8 +104,8 @@ public class ItemModelGenerators {
    }
 
    private void generateItemWithTintedBaseLayer(final Item item, final int defaultColor) {
-      Identifier tintedLayer = TextureMapping.getItemTexture(item);
-      Identifier untintedLayer = TextureMapping.getItemTexture(item, "_overlay");
+      Material tintedLayer = TextureMapping.getItemTexture(item);
+      Material untintedLayer = TextureMapping.getItemTexture(item, "_overlay");
       Identifier model = ModelLocationUtils.getModelLocation(item);
       ModelTemplates.TWO_LAYERED_ITEM.create(model, TextureMapping.layered(tintedLayer, untintedLayer), this.modelOutput);
       this.itemModelOutput.accept(item, ItemModelUtils.tintedModel(model, new Dye(defaultColor)));
@@ -148,28 +149,28 @@ public class ItemModelGenerators {
       this.itemModelOutput.accept(clock, ItemModelUtils.inOverworld(ItemModelUtils.rangeSelect(new Time(true, Time.TimeSource.DAYTIME), 64.0F, overrides), ItemModelUtils.rangeSelect(new Time(true, Time.TimeSource.RANDOM), 64.0F, overrides)));
    }
 
-   private Identifier generateLayeredItem(final Item target, final Identifier layer0, final Identifier layer1) {
+   private Identifier generateLayeredItem(final Item target, final Material layer0, final Material layer1) {
       return ModelTemplates.TWO_LAYERED_ITEM.create(target, TextureMapping.layered(layer0, layer1), this.modelOutput);
    }
 
-   private Identifier generateLayeredItem(final Identifier target, final Identifier layer0, final Identifier layer1) {
+   private Identifier generateLayeredItem(final Identifier target, final Material layer0, final Material layer1) {
       return ModelTemplates.TWO_LAYERED_ITEM.create(target, TextureMapping.layered(layer0, layer1), this.modelOutput);
    }
 
-   private void generateLayeredItem(final Identifier target, final Identifier layer0, final Identifier layer1, final Identifier layer2) {
+   private void generateLayeredItem(final Identifier target, final Material layer0, final Material layer1, final Material layer2) {
       ModelTemplates.THREE_LAYERED_ITEM.create(target, TextureMapping.layered(layer0, layer1, layer2), this.modelOutput);
    }
 
    private void generateTrimmableItem(final Item armor, final ResourceKey<EquipmentAsset> equipmentAssetId, final Identifier slotTrimPrefix, final boolean hasDyedLayer) {
       Identifier modelLocation = ModelLocationUtils.getModelLocation(armor);
-      Identifier itemTexture = TextureMapping.getItemTexture(armor);
-      Identifier overlayTexture = TextureMapping.getItemTexture(armor, "_overlay");
+      Material itemTexture = TextureMapping.getItemTexture(armor);
+      Material overlayTexture = TextureMapping.getItemTexture(armor, "_overlay");
       List<SelectItemModel.SwitchCase<ResourceKey<TrimMaterial>>> cases = new ArrayList(TRIM_MATERIAL_MODELS.size());
 
       for(TrimMaterialData material : TRIM_MATERIAL_MODELS) {
          Identifier trimModelLocation = modelLocation.withSuffix("_" + material.assets().base().suffix() + "_trim");
-         String var10001 = material.assets().assetId(equipmentAssetId).suffix();
-         Identifier trimOverlayTexture = slotTrimPrefix.withSuffix("_" + var10001);
+         String var10003 = material.assets().assetId(equipmentAssetId).suffix();
+         Material trimOverlayTexture = new Material(slotTrimPrefix.withSuffix("_" + var10003));
          ItemModel.Unbaked trimModel;
          if (hasDyedLayer) {
             this.generateLayeredItem(trimModelLocation, itemTexture, overlayTexture, trimOverlayTexture);
@@ -204,7 +205,7 @@ public class ItemModelGenerators {
    }
 
    private Identifier generateBundleCoverModel(final Item item, final ModelTemplate template, final String suffix) {
-      Identifier texture = TextureMapping.getItemTexture(item, suffix);
+      Material texture = TextureMapping.getItemTexture(item, suffix);
       return template.create(item, TextureMapping.layer0(texture), this.modelOutput);
    }
 
@@ -291,12 +292,12 @@ public class ItemModelGenerators {
    }
 
    private void generatePotion(final Item item) {
-      Identifier model = this.generateLayeredItem(item, ModelLocationUtils.decorateItemModelLocation("potion_overlay"), ModelLocationUtils.getModelLocation(item));
+      Identifier model = this.generateLayeredItem(item, new Material(Identifier.withDefaultNamespace("item/potion_overlay")), TextureMapping.getItemTexture(item));
       this.addPotionTint(item, model);
    }
 
    private void generateTippedArrow(final Item item) {
-      Identifier model = this.generateLayeredItem(item, ModelLocationUtils.getModelLocation(item, "_head"), ModelLocationUtils.getModelLocation(item, "_base"));
+      Identifier model = this.generateLayeredItem(item, TextureMapping.getItemTexture(item, "_head"), TextureMapping.getItemTexture(item, "_base"));
       this.addPotionTint(item, model);
    }
 
@@ -306,8 +307,8 @@ public class ItemModelGenerators {
    }
 
    private void generateTwoLayerDyedItem(final Item item) {
-      Identifier baseLayer = TextureMapping.getItemTexture(item);
-      Identifier tintedLayer = TextureMapping.getItemTexture(item, "_overlay");
+      Material baseLayer = TextureMapping.getItemTexture(item);
+      Material tintedLayer = TextureMapping.getItemTexture(item, "_overlay");
       Identifier plainModel = ModelTemplates.FLAT_ITEM.create(item, TextureMapping.layer0(baseLayer), this.modelOutput);
       Identifier dyedModel = ModelLocationUtils.getModelLocation(item, "_dyed");
       ModelTemplates.TWO_LAYERED_ITEM.create(dyedModel, TextureMapping.layered(baseLayer, tintedLayer), this.modelOutput);

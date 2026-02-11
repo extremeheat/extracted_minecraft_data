@@ -6,12 +6,13 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.equipment.ShieldModel;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.SpriteId;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Unit;
@@ -23,12 +24,12 @@ import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponentMap> {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final ShieldModel model;
 
-   public ShieldSpecialRenderer(final MaterialSet materials, final ShieldModel model) {
+   public ShieldSpecialRenderer(final SpriteGetter sprites, final ShieldModel model) {
       super();
-      this.materials = materials;
+      this.sprites = sprites;
       this.model = model;
    }
 
@@ -42,12 +43,14 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
       boolean hasPatterns = !patterns.layers().isEmpty() || baseColor != null;
       poseStack.pushPose();
       poseStack.scale(1.0F, -1.0F, -1.0F);
-      Material base = hasPatterns ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
-      submitNodeCollector.submitModelPart(this.model.handle(), poseStack, this.model.renderType(base.atlasLocation()), lightCoords, overlayCoords, this.materials.get(base), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      SpriteId base = hasPatterns ? Sheets.SHIELD_BASE : Sheets.SHIELD_BASE_NO_PATTERN;
+      submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, this.model.renderType(base.atlasLocation()), lightCoords, overlayCoords, -1, this.sprites.get(base), outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       if (hasPatterns) {
-         BannerRenderer.submitPatterns(this.materials, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.model, Unit.INSTANCE, base, false, (DyeColor)Objects.requireNonNullElse(baseColor, DyeColor.WHITE), patterns, hasFoil, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
-      } else {
-         submitNodeCollector.submitModelPart(this.model.plate(), poseStack, this.model.renderType(base.atlasLocation()), lightCoords, overlayCoords, this.materials.get(base), false, hasFoil, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+         BannerRenderer.submitPatterns(this.sprites, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.model, Unit.INSTANCE, false, (DyeColor)Objects.requireNonNullElse(baseColor, DyeColor.WHITE), patterns, (ModelFeatureRenderer.CrumblingOverlay)null);
+      }
+
+      if (hasFoil) {
+         submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, RenderTypes.entityGlint(), lightCoords, overlayCoords, -1, this.sprites.get(base), 0, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
       poseStack.popPose();
@@ -72,7 +75,7 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
       }
 
       public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
-         return new ShieldSpecialRenderer(context.materials(), new ShieldModel(context.entityModelSet().bakeLayer(ModelLayers.SHIELD)));
+         return new ShieldSpecialRenderer(context.sprites(), new ShieldModel(context.entityModelSet().bakeLayer(ModelLayers.SHIELD)));
       }
 
       static {

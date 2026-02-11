@@ -1,8 +1,11 @@
 package net.minecraft.world.entity.animal.feline;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -13,7 +16,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
@@ -75,6 +77,7 @@ public class Cat extends TamableAnimal {
    private static final EntityDataAccessor<Boolean> IS_LYING;
    private static final EntityDataAccessor<Boolean> RELAX_STATE_ONE;
    private static final EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
+   private static final EntityDataAccessor<Holder<CatSoundVariant>> DATA_SOUND_VARIANT_ID;
    private static final ResourceKey<CatVariant> DEFAULT_VARIANT;
    private static final DyeColor DEFAULT_COLLAR_COLOR;
    private @Nullable CatAvoidEntityGoal<Player> avoidPlayersGoal;
@@ -119,9 +122,23 @@ public class Cat extends TamableAnimal {
       this.entityData.set(DATA_VARIANT_ID, variant);
    }
 
+   private Holder<CatSoundVariant> getSoundVariant() {
+      return (Holder)this.entityData.get(DATA_SOUND_VARIANT_ID);
+   }
+
+   private void setSoundVariant(final Holder<CatSoundVariant> soundVariant) {
+      this.entityData.set(DATA_SOUND_VARIANT_ID, soundVariant);
+   }
+
+   private CatSoundVariant.CatSoundSet getSoundSet() {
+      return this.isBaby() ? ((CatSoundVariant)this.getSoundVariant().value()).babySounds() : ((CatSoundVariant)this.getSoundVariant().value()).adultSounds();
+   }
+
    public <T> @Nullable T get(final DataComponentType<? extends T> type) {
       if (type == DataComponents.CAT_VARIANT) {
          return (T)castComponentValue(type, this.getVariant());
+      } else if (type == DataComponents.CAT_SOUND_VARIANT) {
+         return (T)castComponentValue(type, this.getSoundVariant());
       } else {
          return (T)(type == DataComponents.CAT_COLLAR ? castComponentValue(type, this.getCollarColor()) : super.get(type));
       }
@@ -129,6 +146,7 @@ public class Cat extends TamableAnimal {
 
    protected void applyImplicitComponents(final DataComponentGetter components) {
       this.applyImplicitComponentIfPresent(components, DataComponents.CAT_VARIANT);
+      this.applyImplicitComponentIfPresent(components, DataComponents.CAT_SOUND_VARIANT);
       this.applyImplicitComponentIfPresent(components, DataComponents.CAT_COLLAR);
       super.applyImplicitComponents(components);
    }
@@ -136,6 +154,9 @@ public class Cat extends TamableAnimal {
    protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
       if (type == DataComponents.CAT_VARIANT) {
          this.setVariant((Holder)castComponentValue(DataComponents.CAT_VARIANT, value));
+         return true;
+      } else if (type == DataComponents.CAT_SOUND_VARIANT) {
+         this.setSoundVariant((Holder)castComponentValue(DataComponents.CAT_SOUND_VARIANT, value));
          return true;
       } else if (type == DataComponents.CAT_COLLAR) {
          this.setCollarColor((DyeColor)castComponentValue(DataComponents.CAT_COLLAR, value));
@@ -171,7 +192,12 @@ public class Cat extends TamableAnimal {
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
       super.defineSynchedData(entityData);
+      Registry<CatSoundVariant> catSoundVariants = this.registryAccess().lookupOrThrow(Registries.CAT_SOUND_VARIANT);
       entityData.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), DEFAULT_VARIANT));
+      EntityDataAccessor var10001 = DATA_SOUND_VARIANT_ID;
+      Optional var10002 = catSoundVariants.get(CatSoundVariants.CLASSIC);
+      Objects.requireNonNull(catSoundVariants);
+      entityData.define(var10001, (Holder)var10002.or(catSoundVariants::getAny).orElseThrow());
       entityData.define(IS_LYING, false);
       entityData.define(RELAX_STATE_ONE, false);
       entityData.define(DATA_COLLAR_COLOR, DEFAULT_COLLAR_COLOR.getId());
@@ -180,12 +206,14 @@ public class Cat extends TamableAnimal {
    protected void addAdditionalSaveData(final ValueOutput output) {
       super.addAdditionalSaveData(output);
       VariantUtils.writeVariant(output, this.getVariant());
+      this.getSoundVariant().unwrapKey().ifPresent((soundVariant) -> output.store("sound_variant", ResourceKey.codec(Registries.CAT_SOUND_VARIANT), soundVariant));
       output.store("CollarColor", DyeColor.LEGACY_ID_CODEC, this.getCollarColor());
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
       super.readAdditionalSaveData(input);
       VariantUtils.readVariant(input, Registries.CAT_VARIANT).ifPresent(this::setVariant);
+      input.read("sound_variant", ResourceKey.codec(Registries.CAT_SOUND_VARIANT)).flatMap((soundVariant) -> this.registryAccess().lookupOrThrow(Registries.CAT_SOUND_VARIANT).get(soundVariant)).ifPresent(this::setSoundVariant);
       this.setCollarColor((DyeColor)input.read("CollarColor", DyeColor.LEGACY_ID_CODEC).orElse(DEFAULT_COLLAR_COLOR));
    }
 
@@ -212,14 +240,12 @@ public class Cat extends TamableAnimal {
    protected @Nullable SoundEvent getAmbientSound() {
       if (this.isTame()) {
          if (this.isInLove()) {
-            return this.isBaby() ? SoundEvents.CAT_PURR_BABY : SoundEvents.CAT_PURR;
-         } else if (this.random.nextInt(4) == 0) {
-            return this.isBaby() ? SoundEvents.CAT_PURREOW_BABY : SoundEvents.CAT_PURREOW;
+            return (SoundEvent)this.getSoundSet().purrSound().value();
          } else {
-            return this.isBaby() ? SoundEvents.CAT_AMBIENT_BABY : SoundEvents.CAT_AMBIENT;
+            return this.random.nextInt(4) == 0 ? (SoundEvent)this.getSoundSet().purreowSound().value() : (SoundEvent)this.getSoundSet().ambientSound().value();
          }
       } else {
-         return this.isBaby() ? SoundEvents.CAT_STRAY_AMBIENT_BABY : SoundEvents.CAT_STRAY_AMBIENT;
+         return (SoundEvent)this.getSoundSet().strayAmbientSound().value();
       }
    }
 
@@ -228,15 +254,15 @@ public class Cat extends TamableAnimal {
    }
 
    public void hiss() {
-      this.makeSound(this.isBaby() ? SoundEvents.CAT_HISS_BABY : SoundEvents.CAT_HISS);
+      this.makeSound((SoundEvent)this.getSoundSet().hissSound().value());
    }
 
    protected SoundEvent getHurtSound(final DamageSource source) {
-      return this.isBaby() ? SoundEvents.CAT_HURT_BABY : SoundEvents.CAT_HURT;
+      return (SoundEvent)this.getSoundSet().hurtSound().value();
    }
 
    protected SoundEvent getDeathSound() {
-      return this.isBaby() ? SoundEvents.CAT_DEATH_BABY : SoundEvents.CAT_DEATH;
+      return (SoundEvent)this.getSoundSet().deathSound().value();
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -244,13 +270,13 @@ public class Cat extends TamableAnimal {
    }
 
    protected void playEatingSound() {
-      this.playSound(this.isBaby() ? SoundEvents.CAT_EAT_BABY : SoundEvents.CAT_EAT, 1.0F, 1.0F);
+      this.playSound((SoundEvent)this.getSoundSet().eatSound().value(), 1.0F, 1.0F);
    }
 
    public void tick() {
       super.tick();
       if (this.temptGoal != null && this.temptGoal.isRunning() && !this.isTame() && this.tickCount % 100 == 0) {
-         this.playSound(this.isBaby() ? SoundEvents.CAT_BEG_FOR_FOOD_BABY : SoundEvents.CAT_BEG_FOR_FOOD, 1.0F, 1.0F);
+         this.playSound((SoundEvent)this.getSoundSet().begForFoodSound().value(), 1.0F, 1.0F);
       }
 
       this.handleLieDown();
@@ -258,7 +284,7 @@ public class Cat extends TamableAnimal {
 
    private void handleLieDown() {
       if ((this.isLying() || this.isRelaxStateOne()) && this.tickCount % 5 == 0) {
-         this.playSound(this.isBaby() ? SoundEvents.CAT_PURR_BABY : SoundEvents.CAT_PURR, 0.6F + 0.4F * (this.random.nextFloat() - this.random.nextFloat()), 1.0F);
+         this.playSound((SoundEvent)this.getSoundSet().purrSound().value(), 0.6F + 0.4F * (this.random.nextFloat() - this.random.nextFloat()), 1.0F);
       }
 
       this.updateLieDownAmount();
@@ -351,6 +377,7 @@ public class Cat extends TamableAnimal {
    public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
       groupData = super.finalizeSpawn(level, difficulty, spawnReason, groupData);
       VariantUtils.selectVariantToSpawn(SpawnContext.create(level, this.blockPosition()), Registries.CAT_VARIANT).ifPresent(this::setVariant);
+      this.setSoundVariant(CatSoundVariants.pickRandomSoundVariant(this.registryAccess(), level.getRandom()));
       return groupData;
    }
 
@@ -449,6 +476,7 @@ public class Cat extends TamableAnimal {
       IS_LYING = SynchedEntityData.<Boolean>defineId(Cat.class, EntityDataSerializers.BOOLEAN);
       RELAX_STATE_ONE = SynchedEntityData.<Boolean>defineId(Cat.class, EntityDataSerializers.BOOLEAN);
       DATA_COLLAR_COLOR = SynchedEntityData.<Integer>defineId(Cat.class, EntityDataSerializers.INT);
+      DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<CatSoundVariant>>defineId(Cat.class, EntityDataSerializers.CAT_SOUND_VARIANT);
       DEFAULT_VARIANT = CatVariants.BLACK;
       DEFAULT_COLLAR_COLOR = DyeColor.RED;
    }

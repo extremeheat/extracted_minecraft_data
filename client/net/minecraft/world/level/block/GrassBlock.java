@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.placement.VegetationPlacements;
+import net.minecraft.references.BlockIds;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomPatchConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
-public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableBlock {
+public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock {
    public static final MapCodec<GrassBlock> CODEC = simpleCodec(GrassBlock::new);
 
    public MapCodec<GrassBlock> codec() {
@@ -26,7 +27,7 @@ public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableB
    }
 
    public GrassBlock(final BlockBehaviour.Properties properties) {
-      super(properties);
+      super(properties, BlockIds.DIRT);
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {

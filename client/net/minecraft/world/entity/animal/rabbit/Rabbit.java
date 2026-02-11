@@ -89,6 +89,8 @@ public class Rabbit extends Animal {
    public static final double ATTACK_SPEED_MOD = 1.4;
    private static final double BABY_JUMP_HEIGHT = 0.5;
    private static final double ADULT_JUMP_HEIGHT = 1.5;
+   private static final int JUMP_DELAY_TICKS = 10;
+   private static final int PANIC_JUMP_DELAY_TICKS = 3;
    private static final int JUMP_DURATION_IN_TICKS = 15;
    private static final EntityDataAccessor<Integer> DATA_TYPE_ID;
    private static final int DEFAULT_MORE_CARROT_TICKS = 0;
@@ -265,12 +267,7 @@ public class Rabbit extends Animal {
    }
 
    private void setLandingDelay() {
-      if (this.moveControl.getSpeedModifier() < 2.2) {
-         this.jumpDelayTicks = 10;
-      } else {
-         this.jumpDelayTicks = 1;
-      }
-
+      this.jumpDelayTicks = this.moveControl.getSpeedModifier() < 2.2 ? 10 : 3;
    }
 
    private void checkLandingDelay() {

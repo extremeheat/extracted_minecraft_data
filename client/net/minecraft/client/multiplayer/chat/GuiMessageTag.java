@@ -1,4 +1,4 @@
-package net.minecraft.client;
+package net.minecraft.client.multiplayer.chat;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;

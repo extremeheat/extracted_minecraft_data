@@ -18,6 +18,8 @@ public class LevelRenderState {
    public final SkyRenderState skyRenderState = new SkyRenderState();
    public long gameTime;
    public int lastEntityRenderStateCount;
+   public int cloudColor;
+   public float cloudHeight;
 
    public LevelRenderState() {
       super();

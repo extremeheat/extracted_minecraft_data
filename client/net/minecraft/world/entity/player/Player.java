@@ -1261,7 +1261,10 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.sleepCounter;
    }
 
-   public void displayClientMessage(final Component component, final boolean overlayMessage) {
+   public void sendSystemMessage(final Component message) {
+   }
+
+   public void sendOverlayMessage(final Component message) {
    }
 
    public void awardStat(final Identifier location) {

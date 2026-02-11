@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.block.model;
 
 import java.util.List;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.core.Direction;
@@ -12,7 +11,9 @@ public interface BlockModelPart {
 
    boolean useAmbientOcclusion();
 
-   TextureAtlasSprite particleIcon();
+   Material.Baked particleMaterial();
+
+   boolean hasTranslucency();
 
    public interface Unbaked extends ResolvableModel {
       BlockModelPart bake(ModelBaker modelBakery);

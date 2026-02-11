@@ -9,6 +9,14 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.animal.chicken.ChickenSoundVariant;
+import net.minecraft.world.entity.animal.chicken.ChickenSoundVariants;
+import net.minecraft.world.entity.animal.cow.CowSoundVariant;
+import net.minecraft.world.entity.animal.cow.CowSoundVariants;
+import net.minecraft.world.entity.animal.feline.CatSoundVariant;
+import net.minecraft.world.entity.animal.feline.CatSoundVariants;
+import net.minecraft.world.entity.animal.pig.PigSoundVariant;
+import net.minecraft.world.entity.animal.pig.PigSoundVariants;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariants;
 
@@ -290,24 +298,16 @@ public class SoundEvents {
    public static final SoundEvent CANDLE_HIT = register("block.candle.hit");
    public static final SoundEvent CANDLE_PLACE = register("block.candle.place");
    public static final SoundEvent CANDLE_STEP = register("block.candle.step");
-   public static final SoundEvent CAT_AMBIENT = register("entity.cat.ambient");
-   public static final SoundEvent CAT_AMBIENT_BABY = register("entity.baby_cat.ambient");
-   public static final SoundEvent CAT_STRAY_AMBIENT = register("entity.cat.stray_ambient");
-   public static final SoundEvent CAT_STRAY_AMBIENT_BABY = register("entity.baby_cat.stray_ambient");
-   public static final SoundEvent CAT_DEATH = register("entity.cat.death");
-   public static final SoundEvent CAT_DEATH_BABY = register("entity.baby_cat.death");
-   public static final SoundEvent CAT_EAT = register("entity.cat.eat");
-   public static final SoundEvent CAT_EAT_BABY = register("entity.baby_cat.eat");
-   public static final SoundEvent CAT_HISS = register("entity.cat.hiss");
-   public static final SoundEvent CAT_HISS_BABY = register("entity.baby_cat.hiss");
-   public static final SoundEvent CAT_BEG_FOR_FOOD = register("entity.cat.beg_for_food");
-   public static final SoundEvent CAT_BEG_FOR_FOOD_BABY = register("entity.baby_cat.beg_for_food");
-   public static final SoundEvent CAT_HURT = register("entity.cat.hurt");
-   public static final SoundEvent CAT_HURT_BABY = register("entity.baby_cat.hurt");
-   public static final SoundEvent CAT_PURR = register("entity.cat.purr");
-   public static final SoundEvent CAT_PURR_BABY = register("entity.baby_cat.purr");
-   public static final SoundEvent CAT_PURREOW = register("entity.cat.purreow");
-   public static final SoundEvent CAT_PURREOW_BABY = register("entity.baby_cat.purreow");
+   public static final Holder.Reference<SoundEvent> CAT_AMBIENT_BABY = registerForHolder("entity.baby_cat.ambient");
+   public static final Holder.Reference<SoundEvent> CAT_STRAY_AMBIENT_BABY = registerForHolder("entity.baby_cat.stray_ambient");
+   public static final Holder.Reference<SoundEvent> CAT_DEATH_BABY = registerForHolder("entity.baby_cat.death");
+   public static final Holder.Reference<SoundEvent> CAT_EAT_BABY = registerForHolder("entity.baby_cat.eat");
+   public static final Holder.Reference<SoundEvent> CAT_HISS_BABY = registerForHolder("entity.baby_cat.hiss");
+   public static final Holder.Reference<SoundEvent> CAT_BEG_FOR_FOOD_BABY = registerForHolder("entity.baby_cat.beg_for_food");
+   public static final Holder.Reference<SoundEvent> CAT_HURT_BABY = registerForHolder("entity.baby_cat.hurt");
+   public static final Holder.Reference<SoundEvent> CAT_PURR_BABY = registerForHolder("entity.baby_cat.purr");
+   public static final Holder.Reference<SoundEvent> CAT_PURREOW_BABY = registerForHolder("entity.baby_cat.purreow");
+   public static final Map<CatSoundVariants.SoundSet, CatSoundVariant> CAT_SOUNDS = registerCatSoundVariants();
    public static final SoundEvent CAVE_VINES_BREAK = register("block.cave_vines.break");
    public static final SoundEvent CAVE_VINES_FALL = register("block.cave_vines.fall");
    public static final SoundEvent CAVE_VINES_HIT = register("block.cave_vines.hit");
@@ -352,15 +352,13 @@ public class SoundEvents {
    public static final SoundEvent CHEST_CLOSE = register("block.chest.close");
    public static final SoundEvent CHEST_LOCKED = register("block.chest.locked");
    public static final SoundEvent CHEST_OPEN = register("block.chest.open");
-   public static final SoundEvent CHICKEN_AMBIENT = register("entity.chicken.ambient");
-   public static final SoundEvent CHICKEN_AMBIENT_BABY = register("entity.baby_chicken.ambient");
-   public static final SoundEvent CHICKEN_DEATH = register("entity.chicken.death");
-   public static final SoundEvent CHICKEN_DEATH_BABY = register("entity.baby_chicken.death");
+   public static final Holder.Reference<SoundEvent> CHICKEN_AMBIENT_BABY = registerForHolder("entity.baby_chicken.ambient");
+   public static final Holder.Reference<SoundEvent> CHICKEN_DEATH_BABY = registerForHolder("entity.baby_chicken.death");
    public static final SoundEvent CHICKEN_EGG = register("entity.chicken.egg");
-   public static final SoundEvent CHICKEN_HURT = register("entity.chicken.hurt");
-   public static final SoundEvent CHICKEN_HURT_BABY = register("entity.baby_chicken.hurt");
-   public static final SoundEvent CHICKEN_STEP = register("entity.chicken.step");
-   public static final SoundEvent CHICKEN_STEP_BABY = register("entity.baby_chicken.step");
+   public static final Holder.Reference<SoundEvent> CHICKEN_HURT_BABY = registerForHolder("entity.baby_chicken.hurt");
+   public static final Holder.Reference<SoundEvent> CHICKEN_STEP = registerForHolder("entity.chicken.step");
+   public static final Holder.Reference<SoundEvent> CHICKEN_STEP_BABY = registerForHolder("entity.baby_chicken.step");
+   public static final Map<ChickenSoundVariants.SoundSet, ChickenSoundVariant> CHICKEN_SOUNDS = registerChickenSoundVariants();
    public static final SoundEvent CHISELED_BOOKSHELF_BREAK = register("block.chiseled_bookshelf.break");
    public static final SoundEvent CHISELED_BOOKSHELF_FALL = register("block.chiseled_bookshelf.fall");
    public static final SoundEvent CHISELED_BOOKSHELF_HIT = register("block.chiseled_bookshelf.hit");
@@ -448,11 +446,8 @@ public class SoundEvents {
    public static final SoundEvent CORAL_BLOCK_HIT = register("block.coral_block.hit");
    public static final SoundEvent CORAL_BLOCK_PLACE = register("block.coral_block.place");
    public static final SoundEvent CORAL_BLOCK_STEP = register("block.coral_block.step");
-   public static final SoundEvent COW_AMBIENT = register("entity.cow.ambient");
-   public static final SoundEvent COW_DEATH = register("entity.cow.death");
-   public static final SoundEvent COW_HURT = register("entity.cow.hurt");
    public static final SoundEvent COW_MILK = register("entity.cow.milk");
-   public static final SoundEvent COW_STEP = register("entity.cow.step");
+   public static final Map<CowSoundVariants.SoundSet, CowSoundVariant> COW_SOUNDS = registerCowSoundVariants();
    public static final SoundEvent CRAFTER_CRAFT = register("block.crafter.craft");
    public static final SoundEvent CRAFTER_FAIL = register("block.crafter.fail");
    public static final SoundEvent CREAKING_AMBIENT = register("entity.creaking.ambient");
@@ -1158,6 +1153,10 @@ public class SoundEvents {
    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_HAT = registerForHolder("block.note_block.hat");
    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_PLING = registerForHolder("block.note_block.pling");
    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_SNARE = registerForHolder("block.note_block.snare");
+   public static final Holder.Reference<SoundEvent> NOTE_BLOCK_TRUMPET = registerForHolder("block.note_block.trumpet");
+   public static final Holder.Reference<SoundEvent> NOTE_BLOCK_TRUMPET_EXPOSED = registerForHolder("block.note_block.trumpet_exposed");
+   public static final Holder.Reference<SoundEvent> NOTE_BLOCK_TRUMPET_OXIDIZED = registerForHolder("block.note_block.trumpet_oxidized");
+   public static final Holder.Reference<SoundEvent> NOTE_BLOCK_TRUMPET_WEATHERED = registerForHolder("block.note_block.trumpet_weathered");
    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_XYLOPHONE = registerForHolder("block.note_block.xylophone");
    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_IRON_XYLOPHONE = registerForHolder("block.note_block.iron_xylophone");
    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_COW_BELL = registerForHolder("block.note_block.cow_bell");
@@ -1244,15 +1243,13 @@ public class SoundEvents {
    public static final SoundEvent PHANTOM_FLAP = register("entity.phantom.flap");
    public static final SoundEvent PHANTOM_HURT = register("entity.phantom.hurt");
    public static final SoundEvent PHANTOM_SWOOP = register("entity.phantom.swoop");
-   public static final SoundEvent PIG_AMBIENT = register("entity.pig.ambient");
-   public static final SoundEvent PIG_AMBIENT_BABY = register("entity.baby_pig.ambient");
-   public static final SoundEvent PIG_DEATH = register("entity.pig.death");
-   public static final SoundEvent PIG_DEATH_BABY = register("entity.baby_pig.death");
-   public static final SoundEvent PIG_HURT = register("entity.pig.hurt");
-   public static final SoundEvent PIG_HURT_BABY = register("entity.baby_pig.hurt");
    public static final Holder.Reference<SoundEvent> PIG_SADDLE = registerForHolder("entity.pig.saddle");
-   public static final SoundEvent PIG_STEP = register("entity.pig.step");
-   public static final SoundEvent PIG_STEP_BABY = register("entity.baby_pig.step");
+   public static final Holder.Reference<SoundEvent> PIG_STEP = registerForHolder("entity.pig.step");
+   public static final Holder.Reference<SoundEvent> PIG_STEP_BABY = registerForHolder("entity.baby_pig.step");
+   public static final Holder.Reference<SoundEvent> PIG_AMBIENT_BABY = registerForHolder("entity.baby_pig.ambient");
+   public static final Holder.Reference<SoundEvent> PIG_HURT_BABY = registerForHolder("entity.baby_pig.hurt");
+   public static final Holder.Reference<SoundEvent> PIG_DEATH_BABY = registerForHolder("entity.baby_pig.death");
+   public static final Map<PigSoundVariants.SoundSet, PigSoundVariant> PIG_SOUNDS = registerPigSoundVariants();
    public static final SoundEvent PIGLIN_ADMIRING_ITEM = register("entity.piglin.admiring_item");
    public static final SoundEvent PIGLIN_AMBIENT = register("entity.piglin.ambient");
    public static final SoundEvent PIGLIN_ANGRY = register("entity.piglin.angry");
@@ -1881,6 +1878,40 @@ public class SoundEvents {
          WolfSoundVariant.WolfSoundSet adultSoundSet = new WolfSoundVariant.WolfSoundSet(registerForHolder("entity." + soundEventIdentifier + ".ambient"), registerForHolder("entity." + soundEventIdentifier + ".death"), registerForHolder("entity." + soundEventIdentifier + ".growl"), registerForHolder("entity." + soundEventIdentifier + ".hurt"), registerForHolder("entity." + soundEventIdentifier + ".pant"), registerForHolder("entity." + soundEventIdentifier + ".whine"), WOLF_STEP);
          WolfSoundVariant.WolfSoundSet babySoundSet = new WolfSoundVariant.WolfSoundSet(WOLF_AMBIENT_BABY, WOLF_DEATH_BABY, WOLF_GROWL_BABY, WOLF_HURT_BABY, WOLF_PANT_BABY, WOLF_WHINE_BABY, WOLF_STEP_BABY);
          return new WolfSoundVariant(adultSoundSet, babySoundSet);
+      }));
+   }
+
+   private static Map<ChickenSoundVariants.SoundSet, ChickenSoundVariant> registerChickenSoundVariants() {
+      return (Map)Stream.of(ChickenSoundVariants.SoundSet.values()).collect(Collectors.toMap((soundSet) -> soundSet, (soundSet) -> {
+         String soundEventIdentifier = soundSet.getSoundEventIdentifier();
+         ChickenSoundVariant.ChickenSoundSet adultSoundSet = new ChickenSoundVariant.ChickenSoundSet(registerForHolder("entity." + soundEventIdentifier + ".ambient"), registerForHolder("entity." + soundEventIdentifier + ".hurt"), registerForHolder("entity." + soundEventIdentifier + ".death"), CHICKEN_STEP);
+         ChickenSoundVariant.ChickenSoundSet babySoundSet = new ChickenSoundVariant.ChickenSoundSet(CHICKEN_AMBIENT_BABY, CHICKEN_HURT_BABY, CHICKEN_DEATH_BABY, CHICKEN_STEP_BABY);
+         return new ChickenSoundVariant(adultSoundSet, babySoundSet);
+      }));
+   }
+
+   private static Map<CowSoundVariants.SoundSet, CowSoundVariant> registerCowSoundVariants() {
+      return (Map)Stream.of(CowSoundVariants.SoundSet.values()).collect(Collectors.toMap((soundSet) -> soundSet, (soundSet) -> {
+         String soundEventIdentifier = soundSet.getSoundEventIdentifier();
+         return new CowSoundVariant(registerForHolder("entity." + soundEventIdentifier + ".ambient"), registerForHolder("entity." + soundEventIdentifier + ".hurt"), registerForHolder("entity." + soundEventIdentifier + ".death"), registerForHolder("entity." + soundEventIdentifier + ".step"));
+      }));
+   }
+
+   private static Map<PigSoundVariants.SoundSet, PigSoundVariant> registerPigSoundVariants() {
+      return (Map)Stream.of(PigSoundVariants.SoundSet.values()).collect(Collectors.toMap((soundSet) -> soundSet, (soundSet) -> {
+         String soundEventIdentifier = soundSet.getSoundEventIdentifier();
+         PigSoundVariant.PigSoundSet adultSoundSet = new PigSoundVariant.PigSoundSet(registerForHolder("entity." + soundEventIdentifier + ".ambient"), registerForHolder("entity." + soundEventIdentifier + ".hurt"), registerForHolder("entity." + soundEventIdentifier + ".death"), PIG_STEP);
+         PigSoundVariant.PigSoundSet babySoundSet = new PigSoundVariant.PigSoundSet(PIG_AMBIENT_BABY, PIG_HURT_BABY, PIG_DEATH_BABY, PIG_STEP_BABY);
+         return new PigSoundVariant(adultSoundSet, babySoundSet);
+      }));
+   }
+
+   private static Map<CatSoundVariants.SoundSet, CatSoundVariant> registerCatSoundVariants() {
+      return (Map)Stream.of(CatSoundVariants.SoundSet.values()).collect(Collectors.toMap((soundSet) -> soundSet, (soundSet) -> {
+         String soundEventIdentifier = soundSet.getSoundEventIdentifier();
+         CatSoundVariant.CatSoundSet adultSoundSet = new CatSoundVariant.CatSoundSet(registerForHolder("entity." + soundEventIdentifier + ".ambient"), registerForHolder("entity." + soundEventIdentifier + ".stray_ambient"), registerForHolder("entity." + soundEventIdentifier + ".hiss"), registerForHolder("entity." + soundEventIdentifier + ".hurt"), registerForHolder("entity." + soundEventIdentifier + ".death"), registerForHolder("entity." + soundEventIdentifier + ".eat"), registerForHolder("entity." + soundEventIdentifier + ".beg_for_food"), registerForHolder("entity." + soundEventIdentifier + ".purr"), registerForHolder("entity." + soundEventIdentifier + ".purreow"));
+         CatSoundVariant.CatSoundSet babySoundSet = new CatSoundVariant.CatSoundSet(CAT_AMBIENT_BABY, CAT_STRAY_AMBIENT_BABY, CAT_HISS_BABY, CAT_HURT_BABY, CAT_DEATH_BABY, CAT_EAT_BABY, CAT_BEG_FOR_FOOD_BABY, CAT_PURR_BABY, CAT_PURREOW_BABY);
+         return new CatSoundVariant(adultSoundSet, babySoundSet);
       }));
    }
 }

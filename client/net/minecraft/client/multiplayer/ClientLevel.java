@@ -759,14 +759,14 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          Cursor3D cursor = new Cursor3D(pos.getX() - dist, pos.getY(), pos.getZ() - dist, pos.getX() + dist, pos.getY(), pos.getZ() + dist);
 
          int color;
-         for(BlockPos.MutableBlockPos nextPos = new BlockPos.MutableBlockPos(); cursor.advance(); totalBlue += color & 255) {
+         for(BlockPos.MutableBlockPos nextPos = new BlockPos.MutableBlockPos(); cursor.advance(); totalBlue += ARGB.blue(color)) {
             nextPos.set(cursor.nextX(), cursor.nextY(), cursor.nextZ());
             color = colorResolver.getColor((Biome)this.getBiome(nextPos).value(), (double)nextPos.getX(), (double)nextPos.getZ());
-            totalRed += (color & 16711680) >> 16;
-            totalGreen += (color & '\uff00') >> 8;
+            totalRed += ARGB.red(color);
+            totalGreen += ARGB.green(color);
          }
 
-         return (totalRed / count & 255) << 16 | (totalGreen / count & 255) << 8 | totalBlue / count & 255;
+         return ARGB.color(totalRed / count, totalGreen / count, totalBlue / count);
       }
    }
 

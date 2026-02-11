@@ -9,7 +9,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.WeightedVariants;
@@ -28,7 +27,9 @@ public interface BlockStateModel {
       return parts;
    }
 
-   TextureAtlasSprite particleIcon();
+   Material.Baked particleMaterial();
+
+   boolean hasTranslucency();
 
    public interface Unbaked extends ResolvableModel {
       Codec<Weighted<Variant>> ELEMENT_CODEC = RecordCodecBuilder.create((i) -> i.group(Variant.MAP_CODEC.forGetter(Weighted::value), ExtraCodecs.POSITIVE_INT.optionalFieldOf("weight", 1).forGetter(Weighted::weight)).apply(i, Weighted::new));

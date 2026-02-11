@@ -625,9 +625,6 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
             category.setDetail("Location", String.format(Locale.ROOT, "%d,%d", pos.x(), pos.z()));
             category.setDetail("Position hash", ChunkPos.pack(pos.x(), pos.z()));
             category.setDetail("Generator", this.generator());
-            this.mainThreadExecutor.execute(() -> {
-               throw new ReportedException(report);
-            });
             throw new ReportedException(report);
          }
       }

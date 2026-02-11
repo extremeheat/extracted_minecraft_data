@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -85,7 +86,9 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
 
          BedRule bedRule = (BedRule)level.environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, pos);
          if (bedRule.explodes()) {
-            bedRule.errorMessage().ifPresent((message) -> player.displayClientMessage(message, true));
+            Optional var10000 = bedRule.errorMessage();
+            Objects.requireNonNull(player);
+            var10000.ifPresent(player::sendOverlayMessage);
             level.removeBlock(pos, false);
             BlockPos blockPos = pos.relative(((Direction)state.getValue(FACING)).getOpposite());
             if (level.getBlockState(blockPos).is(this)) {
@@ -97,14 +100,14 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
             return InteractionResult.SUCCESS_SERVER;
          } else if ((Boolean)state.getValue(OCCUPIED)) {
             if (!this.kickVillagerOutOfBed(level, pos)) {
-               player.displayClientMessage(Component.translatable("block.minecraft.bed.occupied"), true);
+               player.sendOverlayMessage(Component.translatable("block.minecraft.bed.occupied"));
             }
 
             return InteractionResult.SUCCESS_SERVER;
          } else {
             player.startSleepInBed(pos).ifLeft((problem) -> {
                if (problem.message() != null) {
-                  player.displayClientMessage(problem.message(), true);
+                  player.sendOverlayMessage(problem.message());
                }
 
             });

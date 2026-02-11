@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.block.model;
 
 import com.mojang.serialization.Codec;
 import java.util.List;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.util.RandomSource;
@@ -19,8 +18,12 @@ public class SingleVariant implements BlockStateModel {
       output.add(this.model);
    }
 
-   public TextureAtlasSprite particleIcon() {
-      return this.model.particleIcon();
+   public Material.Baked particleMaterial() {
+      return this.model.particleMaterial();
+   }
+
+   public boolean hasTranslucency() {
+      return this.model.hasTranslucency();
    }
 
    public static record Unbaked(Variant variant) implements BlockStateModel.Unbaked {

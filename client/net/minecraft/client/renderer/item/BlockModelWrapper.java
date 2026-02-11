@@ -7,17 +7,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.TextureSlots;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.ModelBaker;
@@ -26,8 +21,6 @@ import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.ItemOwner;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -35,36 +28,22 @@ import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class BlockModelWrapper implements ItemModel {
-   private static final Function<ItemStack, RenderType> ITEM_RENDER_TYPE_GETTER = (stack) -> Sheets.translucentItemSheet();
-   private static final Function<ItemStack, RenderType> BLOCK_RENDER_TYPE_GETTER = (stack) -> {
-      Item patt0$temp = stack.getItem();
-      if (patt0$temp instanceof BlockItem blockItem) {
-         ChunkSectionLayer blockLayer = ItemBlockRenderTypes.getChunkRenderType(blockItem.getBlock().defaultBlockState());
-         if (blockLayer != ChunkSectionLayer.TRANSLUCENT) {
-            return Sheets.cutoutBlockItemSheet();
-         }
-      }
-
-      return Sheets.translucentBlockItemSheet();
-   };
    private final List<ItemTintSource> tints;
    private final List<BakedQuad> quads;
    private final Supplier<Vector3fc[]> extents;
    private final ModelRenderProperties properties;
    private final boolean animated;
-   private final Function<ItemStack, RenderType> renderType;
 
-   private BlockModelWrapper(final List<ItemTintSource> tints, final List<BakedQuad> quads, final ModelRenderProperties properties, final Function<ItemStack, RenderType> renderType) {
+   private BlockModelWrapper(final List<ItemTintSource> tints, final List<BakedQuad> quads, final ModelRenderProperties properties) {
       super();
       this.tints = tints;
       this.quads = quads;
       this.properties = properties;
-      this.renderType = renderType;
       this.extents = Suppliers.memoize(() -> computeExtents(this.quads));
       boolean animated = false;
 
       for(BakedQuad quad : quads) {
-         if (quad.sprite().contents().isAnimated()) {
+         if (quad.spriteInfo().sprite().contents().isAnimated()) {
             animated = true;
             break;
          }
@@ -105,7 +84,6 @@ public class BlockModelWrapper implements ItemModel {
       }
 
       layer.setExtents(this.extents);
-      layer.setRenderType((RenderType)this.renderType.apply(item));
       this.properties.applyToLayer(layer, displayContext);
       layer.prepareQuadList().addAll(this.quads);
       if (this.animated) {
@@ -114,27 +92,21 @@ public class BlockModelWrapper implements ItemModel {
 
    }
 
-   private static Function<ItemStack, RenderType> detectRenderType(final List<BakedQuad> quads) {
+   private static void validateAtlasUsage(final List<BakedQuad> quads) {
       Iterator<BakedQuad> quadIterator = quads.iterator();
-      if (!quadIterator.hasNext()) {
-         return ITEM_RENDER_TYPE_GETTER;
-      } else {
-         Identifier expectedAtlas = ((BakedQuad)quadIterator.next()).sprite().atlasLocation();
+      if (quadIterator.hasNext()) {
+         Identifier expectedAtlas = ((BakedQuad)quadIterator.next()).spriteInfo().sprite().atlasLocation();
 
          while(quadIterator.hasNext()) {
             BakedQuad quad = (BakedQuad)quadIterator.next();
-            Identifier quadAtlas = quad.sprite().atlasLocation();
+            Identifier quadAtlas = quad.spriteInfo().sprite().atlasLocation();
             if (!quadAtlas.equals(expectedAtlas)) {
                String var10002 = String.valueOf(expectedAtlas);
                throw new IllegalStateException("Multiple atlases used in model, expected " + var10002 + ", but also got " + String.valueOf(quadAtlas));
             }
          }
 
-         if (expectedAtlas.equals(TextureAtlas.LOCATION_ITEMS)) {
-            return ITEM_RENDER_TYPE_GETTER;
-         } else if (expectedAtlas.equals(TextureAtlas.LOCATION_BLOCKS)) {
-            return BLOCK_RENDER_TYPE_GETTER;
-         } else {
+         if (!expectedAtlas.equals(TextureAtlas.LOCATION_ITEMS) && !expectedAtlas.equals(TextureAtlas.LOCATION_BLOCKS)) {
             throw new IllegalArgumentException("Atlas " + String.valueOf(expectedAtlas) + " can't be usef for item models");
          }
       }
@@ -161,8 +133,8 @@ public class BlockModelWrapper implements ItemModel {
          TextureSlots textureSlots = resolvedModel.getTopTextureSlots();
          List<BakedQuad> quads = resolvedModel.bakeTopGeometry(textureSlots, baker, BlockModelRotation.IDENTITY).getAll();
          ModelRenderProperties properties = ModelRenderProperties.fromResolvedModel(baker, resolvedModel, textureSlots);
-         Function<ItemStack, RenderType> renderTypeGetter = BlockModelWrapper.detectRenderType(quads);
-         return new BlockModelWrapper(this.tints, quads, properties, renderTypeGetter);
+         BlockModelWrapper.validateAtlasUsage(quads);
+         return new BlockModelWrapper(this.tints, quads, properties);
       }
 
       public MapCodec<Unbaked> type() {
