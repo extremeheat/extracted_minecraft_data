@@ -31,7 +31,7 @@ public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      return level.getBlockState(pos.above()).isAir();
+      return level.getBlockState(pos.above()).isAir() && level.isInsideBuildHeight(pos.above());
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
@@ -43,14 +43,14 @@ public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock
       BlockState grass = Blocks.SHORT_GRASS.defaultBlockState();
       Optional<Holder.Reference<PlacedFeature>> grassFeature = level.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE).get(VegetationPlacements.GRASS_BONEMEAL);
 
-      label51:
+      label54:
       for(int j = 0; j < 128; ++j) {
          BlockPos testPos = above;
 
          for(int i = 0; i < j / 16; ++i) {
             testPos = testPos.offset(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
             if (!level.getBlockState(testPos.below()).is(this) || level.getBlockState(testPos).isCollisionShapeFullBlock(level, testPos)) {
-               continue label51;
+               continue label54;
             }
          }
 
@@ -62,7 +62,7 @@ public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock
             }
          }
 
-         if (testState.isAir()) {
+         if (testState.isAir() && !level.isOutsideBuildHeight(testPos)) {
             Holder<PlacedFeature> placementFeature;
             if (random.nextInt(8) == 0) {
                List<ConfiguredFeature<?, ?>> features = ((Biome)level.getBiome(testPos).value()).getGenerationSettings().getFlowerFeatures();

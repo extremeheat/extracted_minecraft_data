@@ -88,9 +88,9 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       this.getNavigation().setCanOpenDoors(true);
       this.setPersistenceRequired();
       this.setState(CopperGolemState.IDLE);
-      this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
-      this.setPathfindingMalus(PathType.DANGER_OTHER, 16.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 16.0F);
+      this.setPathfindingMalus(PathType.DAMAGING_IN_NEIGHBOR, 16.0F);
+      this.setPathfindingMalus(PathType.FIRE, -1.0F);
       this.getBrain().setMemory(MemoryModuleType.TRANSPORT_ITEMS_COOLDOWN_TICKS, this.getRandom().nextInt(60, 100));
    }
 

@@ -60,8 +60,8 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
 
    public AbstractVillager(final EntityType<? extends AbstractVillager> type, final Level level) {
       super(type, level);
-      this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 16.0F);
+      this.setPathfindingMalus(PathType.FIRE, -1.0F);
    }
 
    public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {

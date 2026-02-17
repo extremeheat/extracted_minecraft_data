@@ -91,8 +91,8 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
    public Parrot(final EntityType<? extends Parrot> type, final Level level) {
       super(type, level);
       this.moveControl = new FlyingMoveControl(this, 10, false);
-      this.setPathfindingMalus(PathType.DANGER_FIRE, -1.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, -1.0F);
+      this.setPathfindingMalus(PathType.FIRE, -1.0F);
       this.setPathfindingMalus(PathType.COCOA, -1.0F);
    }
 

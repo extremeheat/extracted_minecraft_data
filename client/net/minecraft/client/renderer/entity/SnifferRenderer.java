@@ -9,13 +9,14 @@ import net.minecraft.world.phys.AABB;
 
 public class SnifferRenderer extends AgeableMobRenderer<Sniffer, SnifferRenderState, SnifferModel> {
    private static final Identifier SNIFFER_LOCATION = Identifier.withDefaultNamespace("textures/entity/sniffer/sniffer.png");
+   private static final Identifier SNIFFLET_LOCATION = Identifier.withDefaultNamespace("textures/entity/sniffer/snifflet.png");
 
    public SnifferRenderer(final EntityRendererProvider.Context context) {
       super(context, new SnifferModel(context.bakeLayer(ModelLayers.SNIFFER)), new SnifferModel(context.bakeLayer(ModelLayers.SNIFFER_BABY)), 1.1F);
    }
 
    public Identifier getTextureLocation(final SnifferRenderState state) {
-      return SNIFFER_LOCATION;
+      return state.isBaby ? SNIFFLET_LOCATION : SNIFFER_LOCATION;
    }
 
    public SnifferRenderState createRenderState() {

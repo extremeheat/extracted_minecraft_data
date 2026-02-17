@@ -13,6 +13,7 @@ import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.components.EditBox;
@@ -25,6 +26,7 @@ import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
@@ -611,7 +613,23 @@ public class KeyboardHandler {
                screen.fillCrashDetails(report);
                CrashReportCategory keyDetails = report.addCategory("Key");
                keyDetails.setDetail("Codepoint", event.codepoint());
-               keyDetails.setDetail("Mods", event.modifiers());
+               throw new ReportedException(report);
+            }
+         }
+      }
+   }
+
+   private void preeditCallback(final long handle, final @Nullable PreeditEvent event) {
+      if (handle == this.minecraft.getWindow().handle()) {
+         Screen screen = this.minecraft.screen;
+         if (screen != null && this.minecraft.getOverlay() == null) {
+            try {
+               screen.preeditUpdated(event);
+            } catch (Throwable t) {
+               CrashReport report = CrashReport.forThrowable(t, "IME pre-edit event handler");
+               screen.fillCrashDetails(report);
+               CrashReportCategory keyDetails = report.addCategory("Event");
+               keyDetails.setDetail("Contents", (CrashReportDetail)(() -> String.valueOf(event)));
                throw new ReportedException(report);
             }
          }
@@ -622,9 +640,12 @@ public class KeyboardHandler {
       InputConstants.setupKeyboardCallbacks(window, (window1, keysym, scancode, action, mods) -> {
          KeyEvent event = new KeyEvent(keysym, scancode, mods);
          this.minecraft.execute(() -> this.keyPress(window1, action, event));
-      }, (window1, codepoint, mods) -> {
-         CharacterEvent event = new CharacterEvent(codepoint, mods);
+      }, (window1, codepoint) -> {
+         CharacterEvent event = new CharacterEvent(codepoint);
          this.minecraft.execute(() -> this.charTyped(window1, event));
+      }, (window1, preeditSize, preeditPtr, blockCount, blockSizesPtr, focusedBlock, caret) -> {
+         PreeditEvent event = PreeditEvent.createFromCallback(preeditSize, preeditPtr, blockCount, blockSizesPtr, focusedBlock, caret);
+         this.minecraft.execute(() -> this.preeditCallback(window1, event));
       });
    }
 

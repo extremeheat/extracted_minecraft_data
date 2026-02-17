@@ -48,8 +48,8 @@ public abstract class Animal extends AgeableMob {
 
    protected Animal(final EntityType<? extends Animal> type, final Level level) {
       super(type, level);
-      this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 16.0F);
+      this.setPathfindingMalus(PathType.FIRE, -1.0F);
    }
 
    public static AttributeSupplier.Builder createAnimalAttributes() {

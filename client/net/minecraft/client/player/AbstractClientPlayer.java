@@ -7,9 +7,6 @@ import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.parrot.Parrot;
@@ -17,10 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.scores.DisplaySlot;
-import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.ReadOnlyScoreInfo;
-import net.minecraft.world.scores.Scoreboard;
 import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractClientPlayer extends Player implements ClientAvatarEntity {
@@ -56,18 +49,6 @@ public abstract class AbstractClientPlayer extends Player implements ClientAvata
 
    public ClientAvatarState avatarState() {
       return this.clientAvatarState;
-   }
-
-   public @Nullable Component belowNameDisplay() {
-      Scoreboard scoreboard = this.level().getScoreboard();
-      Objective objective = scoreboard.getDisplayObjective(DisplaySlot.BELOW_NAME);
-      if (objective != null) {
-         ReadOnlyScoreInfo score = scoreboard.getPlayerScoreInfo(this, objective);
-         Component formattedValue = ReadOnlyScoreInfo.safeFormatValue(score, objective.numberFormatOrDefault(StyledFormat.NO_STYLE));
-         return Component.empty().append(formattedValue).append(CommonComponents.SPACE).append(objective.getDisplayName());
-      } else {
-         return null;
-      }
    }
 
    public PlayerSkin getSkin() {

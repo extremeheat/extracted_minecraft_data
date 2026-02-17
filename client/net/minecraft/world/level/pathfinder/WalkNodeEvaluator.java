@@ -156,8 +156,12 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    protected boolean isDiagonalValid(final Node pos, final @Nullable Node ew, final @Nullable Node ns) {
       if (ns != null && ew != null && ns.y <= pos.y && ew.y <= pos.y) {
          if (ew.type != PathType.WALKABLE_DOOR && ns.type != PathType.WALKABLE_DOOR) {
-            boolean canPassBetweenPosts = ns.type == PathType.FENCE && ew.type == PathType.FENCE && (double)this.mob.getBbWidth() < 0.5;
-            return (ns.y < pos.y || ns.costMalus >= 0.0F || canPassBetweenPosts) && (ew.y < pos.y || ew.costMalus >= 0.0F || canPassBetweenPosts);
+            if (!(this.mob.getBbWidth() > 1.0F) || !(ew.costMalus > 0.0F) && !(ns.costMalus > 0.0F)) {
+               boolean canPassBetweenPosts = ns.type == PathType.FENCE && ew.type == PathType.FENCE && (double)this.mob.getBbWidth() < 0.5;
+               return (ns.y < pos.y || ns.costMalus >= 0.0F || canPassBetweenPosts) && (ew.y < pos.y || ew.costMalus >= 0.0F || canPassBetweenPosts);
+            } else {
+               return false;
+            }
          } else {
             return false;
          }
@@ -337,27 +341,36 @@ public class WalkNodeEvaluator extends NodeEvaluator {
 
    public PathType getPathTypeOfMob(final PathfindingContext context, final int x, final int y, final int z, final Mob mob) {
       Set<PathType> blockTypes = this.getPathTypeWithinMobBB(context, x, y, z);
-      if (blockTypes.contains(PathType.FENCE)) {
+      if (blockTypes.size() == 1) {
+         return (PathType)blockTypes.iterator().next();
+      } else if (blockTypes.contains(PathType.FENCE)) {
          return PathType.FENCE;
       } else if (blockTypes.contains(PathType.UNPASSABLE_RAIL)) {
          return PathType.UNPASSABLE_RAIL;
       } else {
-         PathType blockType = PathType.BLOCKED;
+         PathType highestMalusPathTypeWithinBB = PathType.BLOCKED;
+         float highestMalusWithinBB = mob.getPathfindingMalus(highestMalusPathTypeWithinBB);
 
-         for(PathType type : blockTypes) {
-            if (mob.getPathfindingMalus(type) < 0.0F) {
-               return type;
+         for(PathType pathType : blockTypes) {
+            float malusForPathType = mob.getPathfindingMalus(pathType);
+            if (malusForPathType < 0.0F) {
+               return pathType;
             }
 
-            if (mob.getPathfindingMalus(type) >= mob.getPathfindingMalus(blockType)) {
-               blockType = type;
+            if (malusForPathType >= highestMalusWithinBB) {
+               highestMalusWithinBB = malusForPathType;
+               highestMalusPathTypeWithinBB = pathType;
             }
          }
 
-         if (this.entityWidth <= 1 && blockType != PathType.OPEN && mob.getPathfindingMalus(blockType) == 0.0F && this.getPathType(context, x, y, z) == PathType.OPEN) {
-            return PathType.OPEN;
+         PathType currentNodePathType = this.getPathType(context, x, y, z);
+         boolean isLargeMob = this.entityWidth > 1;
+         if (isLargeMob) {
+            boolean isCurrentNodeCheaper = mob.getPathfindingMalus(currentNodePathType) < highestMalusWithinBB;
+            boolean capMalusDueToCheapNode = isCurrentNodeCheaper && mob.getPathfindingMalus(PathType.BIG_MOBS_CLOSE_TO_DANGER) < highestMalusWithinBB;
+            return capMalusDueToCheapNode ? PathType.BIG_MOBS_CLOSE_TO_DANGER : highestMalusPathTypeWithinBB;
          } else {
-            return blockType;
+            return currentNodePathType == PathType.OPEN && highestMalusPathTypeWithinBB != PathType.OPEN && highestMalusWithinBB == 0.0F ? PathType.OPEN : highestMalusPathTypeWithinBB;
          }
       }
    }
@@ -416,23 +429,23 @@ public class WalkNodeEvaluator extends NodeEvaluator {
             case WALKABLE:
                var10000 = PathType.OPEN;
                break;
-            case DAMAGE_FIRE:
-               var10000 = PathType.DAMAGE_FIRE;
+            case FIRE:
+               var10000 = PathType.FIRE;
                break;
-            case DAMAGE_OTHER:
-               var10000 = PathType.DAMAGE_OTHER;
+            case DAMAGING:
+               var10000 = PathType.DAMAGING;
                break;
             case STICKY_HONEY:
                var10000 = PathType.STICKY_HONEY;
                break;
             case POWDER_SNOW:
-               var10000 = PathType.DANGER_POWDER_SNOW;
+               var10000 = PathType.ON_TOP_OF_POWDER_SNOW;
                break;
             case DAMAGE_CAUTIOUS:
                var10000 = PathType.DAMAGE_CAUTIOUS;
                break;
             case TRAPDOOR:
-               var10000 = PathType.DANGER_TRAPDOOR;
+               var10000 = PathType.ON_TOP_OF_TRAPDOOR;
                break;
             default:
                var10000 = checkNeighbourBlocks(context, x, y, z, PathType.WALKABLE);
@@ -450,12 +463,12 @@ public class WalkNodeEvaluator extends NodeEvaluator {
             for(int dz = -1; dz <= 1; ++dz) {
                if (dx != 0 || dz != 0) {
                   PathType pathType = context.getPathTypeFromState(x + dx, y + dy, z + dz);
-                  if (pathType == PathType.DAMAGE_OTHER) {
-                     return PathType.DANGER_OTHER;
+                  if (pathType == PathType.DAMAGING) {
+                     return PathType.DAMAGING_IN_NEIGHBOR;
                   }
 
-                  if (pathType == PathType.DAMAGE_FIRE || pathType == PathType.LAVA) {
-                     return PathType.DANGER_FIRE;
+                  if (pathType == PathType.FIRE || pathType == PathType.LAVA) {
+                     return PathType.FIRE_IN_NEIGHBOR;
                   }
 
                   if (pathType == PathType.WATER) {
@@ -491,7 +504,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                if (fluidState.is(FluidTags.LAVA)) {
                   return PathType.LAVA;
                } else if (isBurningBlock(blockState)) {
-                  return PathType.DAMAGE_FIRE;
+                  return PathType.FIRE;
                } else if (block instanceof DoorBlock) {
                   DoorBlock door = (DoorBlock)block;
                   if ((Boolean)blockState.getValue(DoorBlock.OPEN)) {
@@ -516,7 +529,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                return PathType.DAMAGE_CAUTIOUS;
             }
          } else {
-            return PathType.DAMAGE_OTHER;
+            return PathType.DAMAGING;
          }
       } else {
          return PathType.TRAPDOOR;

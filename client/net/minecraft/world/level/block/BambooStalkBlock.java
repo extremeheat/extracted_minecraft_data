@@ -132,7 +132,8 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
       int heightAbove = this.getHeightAboveUpToMax(level, pos);
       int heightBelow = this.getHeightBelowUpToMax(level, pos);
-      return heightAbove + heightBelow + 1 < 16 && (Integer)level.getBlockState(pos.above(heightAbove)).getValue(STAGE) != 1;
+      BlockPos growthPos = pos.above(heightAbove + 1);
+      return heightAbove + heightBelow + 1 < 16 && (Integer)level.getBlockState(pos.above(heightAbove)).getValue(STAGE) != 1 && level.isInsideBuildHeight(growthPos) && level.isEmptyBlock(growthPos);
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
@@ -148,7 +149,8 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
       for(int i = 0; i < newBamboo; ++i) {
          BlockPos topPos = pos.above(heightAbove);
          BlockState topState = level.getBlockState(topPos);
-         if (totalHeight >= 16 || (Integer)topState.getValue(STAGE) == 1 || !level.isEmptyBlock(topPos.above())) {
+         BlockPos growthPos = topPos.above();
+         if (totalHeight >= 16 || (Integer)topState.getValue(STAGE) == 1 || !level.isEmptyBlock(growthPos) || level.isOutsideBuildHeight(growthPos)) {
             return;
          }
 

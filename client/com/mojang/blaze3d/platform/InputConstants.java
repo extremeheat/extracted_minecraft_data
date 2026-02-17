@@ -8,9 +8,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -20,18 +17,16 @@ import java.util.function.Supplier;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWCharModsCallbackI;
+import org.lwjgl.glfw.GLFWCharCallbackI;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWDropCallbackI;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
+import org.lwjgl.glfw.GLFWPreeditCallbackI;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
 
 public class InputConstants {
-   private static final @Nullable MethodHandle GLFW_RAW_MOUSE_MOTION_SUPPORTED;
-   private static final int GLFW_RAW_MOUSE_MOTION;
    public static final int KEY_0 = 48;
    public static final int KEY_1 = 49;
    public static final int KEY_2 = 50;
@@ -201,9 +196,10 @@ public class InputConstants {
       return GLFW.glfwGetKey(window.handle(), key) == 1;
    }
 
-   public static void setupKeyboardCallbacks(final Window window, final GLFWKeyCallbackI keyPressCallback, final GLFWCharModsCallbackI charTypedCallback) {
+   public static void setupKeyboardCallbacks(final Window window, final GLFWKeyCallbackI keyPressCallback, final GLFWCharCallbackI charTypedCallback, final GLFWPreeditCallbackI preeditCallback) {
       GLFW.glfwSetKeyCallback(window.handle(), keyPressCallback);
-      GLFW.glfwSetCharModsCallback(window.handle(), charTypedCallback);
+      GLFW.glfwSetCharCallback(window.handle(), charTypedCallback);
+      GLFW.glfwSetPreeditCallback(window.handle(), preeditCallback);
    }
 
    public static void setupMouseCallbacks(final Window window, final GLFWCursorPosCallbackI onMoveCallback, final GLFWMouseButtonCallbackI onPressCallback, final GLFWScrollCallbackI onScrollCallback, final GLFWDropCallbackI onDropCallback) {
@@ -219,37 +215,17 @@ public class InputConstants {
    }
 
    public static boolean isRawMouseInputSupported() {
-      try {
-         return GLFW_RAW_MOUSE_MOTION_SUPPORTED != null && GLFW_RAW_MOUSE_MOTION_SUPPORTED.invokeExact();
-      } catch (Throwable throwable) {
-         throw new RuntimeException(throwable);
-      }
+      return GLFW.glfwRawMouseMotionSupported();
    }
 
    public static void updateRawMouseInput(final Window window, final boolean value) {
       if (isRawMouseInputSupported()) {
-         GLFW.glfwSetInputMode(window.handle(), GLFW_RAW_MOUSE_MOTION, value ? 1 : 0);
+         GLFW.glfwSetInputMode(window.handle(), 208901, value ? 1 : 0);
       }
 
    }
 
    static {
-      MethodHandles.Lookup lookup = MethodHandles.lookup();
-      MethodType type = MethodType.methodType(Boolean.TYPE);
-      MethodHandle handle = null;
-      int rawInput = 0;
-
-      try {
-         handle = lookup.findStatic(GLFW.class, "glfwRawMouseMotionSupported", type);
-         MethodHandle field = lookup.findStaticGetter(GLFW.class, "GLFW_RAW_MOUSE_MOTION", Integer.TYPE);
-         rawInput = field.invokeExact();
-      } catch (NoSuchFieldException | NoSuchMethodException var5) {
-      } catch (Throwable e) {
-         throw new RuntimeException(e);
-      }
-
-      GLFW_RAW_MOUSE_MOTION_SUPPORTED = handle;
-      GLFW_RAW_MOUSE_MOTION = rawInput;
       UNKNOWN = InputConstants.Type.KEYSYM.getOrCreate(-1);
    }
 

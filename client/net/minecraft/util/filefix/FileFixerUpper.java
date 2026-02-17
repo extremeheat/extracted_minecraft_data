@@ -83,10 +83,17 @@ public class FileFixerUpper {
    public Dynamic<?> fix(final LevelStorageSource.LevelStorageAccess worldAccess, Dynamic<?> levelDataTag, final UpgradeProgress upgradeProgress, final int toVersion) throws FileFixException {
       int loadedVersion = NbtUtils.getDataVersion(levelDataTag);
       if (this.requiresFileFixing(loadedVersion)) {
+         LOGGER.info("Starting upgrade for world \"{}\"", worldAccess.getLevelId());
          Path worldFolder = worldAccess.getLevelDirectory().path();
          Path fileFixDirectory = worldFolder.resolve("filefix");
          Path tempWorld = fileFixDirectory.resolve("new_world");
-         List<FileMove> moves = this.startOrContinueFileFixing(upgradeProgress, toVersion, worldFolder, tempWorld, fileFixDirectory, loadedVersion);
+
+         List<FileMove> moves;
+         try {
+            moves = this.startOrContinueFileFixing(upgradeProgress, toVersion, worldFolder, tempWorld, fileFixDirectory, loadedVersion);
+         } catch (IOException e) {
+            throw new AbortedFileFixException(e);
+         }
 
          try {
             swapInFixedWorld(worldAccess, moves, fileFixDirectory, tempWorld);
@@ -111,24 +118,15 @@ public class FileFixerUpper {
       return addVersionsToLevelData(fixedLevelDataTag, toVersion);
    }
 
-   private List<FileMove> startOrContinueFileFixing(final UpgradeProgress upgradeProgress, final int toVersion, final Path worldFolder, final Path tempWorld, final Path fileFixDirectory, final int loadedVersion) {
+   private List<FileMove> startOrContinueFileFixing(final UpgradeProgress upgradeProgress, final int toVersion, final Path worldFolder, final Path tempWorld, final Path fileFixDirectory, final int loadedVersion) throws IOException {
       Path upgradeInProgressFile = fileFixDirectory.resolve("upgrade_in_progress.json");
       List<FileMove> moves;
       if (Files.exists(upgradeInProgressFile, new LinkOption[0])) {
          LOGGER.warn("Found previously interrupted world upgrade, attempting to continue it");
-
-         try {
-            moves = readMoves(worldFolder, tempWorld, upgradeInProgressFile);
-         } catch (IOException e) {
-            throw new AbortedFileFixException(e);
-         }
+         moves = readMoves(worldFolder, tempWorld, upgradeInProgressFile);
       } else {
          if (Files.exists(fileFixDirectory, new LinkOption[0])) {
-            try {
-               deleteDirectory(fileFixDirectory);
-            } catch (IOException e) {
-               throw new AbortedFileFixException(e);
-            }
+            deleteDirectory(fileFixDirectory);
          }
 
          try {
@@ -136,7 +134,7 @@ public class FileFixerUpper {
             moves = this.applyFileFixersOnCow(upgradeProgress, loadedVersion, toVersion, worldFolder, fileFixDirectory, tempWorld);
          } catch (Exception e) {
             cleanup(fileFixDirectory);
-            throw new AbortedFileFixException(e);
+            throw e;
          }
       }
 
@@ -389,7 +387,7 @@ public class FileFixerUpper {
             LOGGER.warn("Failed to clean up old world folder", e);
          }
 
-         LOGGER.info("Upgrade done for world {}", worldAccess.getLevelId());
+         LOGGER.info("Upgrade done for world \"{}\"", worldAccess.getLevelId());
       }
    }
 

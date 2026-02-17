@@ -115,7 +115,7 @@ public class Camera implements TrackedWaypoint.Camera {
             this.setEntity(player);
          }
 
-         float partialTicks = this.level.tickRateManager().isEntityFrozen(this.entity) ? 1.0F : deltaTracker.getGameTimeDeltaPartialTick(true);
+         float partialTicks = this.getCameraEntityPartialTicks(deltaTracker);
          this.alignWithEntity(partialTicks);
          this.fov = this.calculateFov(partialTicks);
          this.hudFov = this.calculateHudFov(partialTicks);
@@ -127,7 +127,11 @@ public class Camera implements TrackedWaypoint.Camera {
       }
    }
 
-   public void extractRenderState(final CameraRenderState cameraState, final float partialTicks) {
+   public float getCameraEntityPartialTicks(final DeltaTracker deltaTracker) {
+      return this.level.tickRateManager().isEntityFrozen(this.entity) ? 1.0F : deltaTracker.getGameTimeDeltaPartialTick(true);
+   }
+
+   public void extractRenderState(final CameraRenderState cameraState, final float cameraEntityPartialTicks) {
       cameraState.initialized = this.isInitialized();
       cameraState.isPanoramicMode = this.isPanoramicMode;
       cameraState.pos = this.position();
@@ -146,8 +150,8 @@ public class Camera implements TrackedWaypoint.Camera {
          cameraState.entityRenderState.doesMobEffectBlockSky = livingEntity.hasEffect(MobEffects.BLINDNESS) || livingEntity.hasEffect(MobEffects.DARKNESS);
          cameraState.entityRenderState.isDeadOrDying = livingEntity.isDeadOrDying();
          cameraState.entityRenderState.hurtDir = livingEntity.getHurtDir();
-         cameraState.entityRenderState.hurtTime = (float)livingEntity.hurtTime - partialTicks;
-         cameraState.entityRenderState.deathTime = (float)livingEntity.deathTime + partialTicks;
+         cameraState.entityRenderState.hurtTime = (float)livingEntity.hurtTime - cameraEntityPartialTicks;
+         cameraState.entityRenderState.deathTime = (float)livingEntity.deathTime + cameraEntityPartialTicks;
          cameraState.entityRenderState.hurtDuration = livingEntity.hurtDuration;
       } else {
          cameraState.entityRenderState.isLiving = false;
@@ -159,8 +163,8 @@ public class Camera implements TrackedWaypoint.Camera {
       if (var4 instanceof AbstractClientPlayer player) {
          cameraState.entityRenderState.isPlayer = true;
          ClientAvatarState avatarState = player.avatarState();
-         cameraState.entityRenderState.backwardsInterpolatedWalkDistance = avatarState.getBackwardsInterpolatedWalkDistance(partialTicks);
-         cameraState.entityRenderState.bob = avatarState.getInterpolatedBob(partialTicks);
+         cameraState.entityRenderState.backwardsInterpolatedWalkDistance = avatarState.getBackwardsInterpolatedWalkDistance(cameraEntityPartialTicks);
+         cameraState.entityRenderState.bob = avatarState.getInterpolatedBob(cameraEntityPartialTicks);
       } else {
          cameraState.entityRenderState.isPlayer = false;
       }

@@ -538,7 +538,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       worldData.setDifficultyLocked(true);
       ServerLevelData levelData = worldData.overworldData();
       this.getGameRules().set(GameRules.ADVANCE_WEATHER, false, this);
-      this.clockManager.skipToTimeMarker(this.registryAccess().getOrThrow(WorldClocks.OVERWORLD), ClockTimeMarkers.NOON);
+      this.clockManager.moveToTimeMarker(this.registryAccess().getOrThrow(WorldClocks.OVERWORLD), ClockTimeMarkers.NOON);
       levelData.setGameType(GameType.SPECTATOR);
    }
 

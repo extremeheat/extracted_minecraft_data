@@ -36,8 +36,8 @@ public class Blaze extends Monster {
       super(blaze, level);
       this.setPathfindingMalus(PathType.WATER, -1.0F);
       this.setPathfindingMalus(PathType.LAVA, 8.0F);
-      this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 0.0F);
+      this.setPathfindingMalus(PathType.FIRE, 0.0F);
       this.xpReward = 10;
    }
 

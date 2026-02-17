@@ -28,6 +28,7 @@ public class EntityRenderState {
    public int outlineColor = 0;
    public @Nullable Vec3 passengerOffset;
    public @Nullable Component nameTag;
+   public @Nullable Component scoreText;
    public @Nullable Vec3 nameTagAttachment;
    public @Nullable List<LeashState> leashStates;
    public float shadowRadius;

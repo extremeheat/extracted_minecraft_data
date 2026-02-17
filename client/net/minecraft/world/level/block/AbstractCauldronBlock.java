@@ -32,11 +32,11 @@ public abstract class AbstractCauldronBlock extends Block {
       int legThickness = 2;
       return Shapes.join(Shapes.block(), Shapes.or(Block.column(16.0, 8.0, 0.0, 3.0), Block.column(8.0, 16.0, 0.0, 3.0), Block.column(12.0, 0.0, 3.0), SHAPE_INSIDE), BooleanOp.ONLY_FIRST);
    });
-   protected final CauldronInteraction.InteractionMap interactions;
+   protected final CauldronInteraction.Dispatcher interactions;
 
    protected abstract MapCodec<? extends AbstractCauldronBlock> codec();
 
-   public AbstractCauldronBlock(final BlockBehaviour.Properties properties, final CauldronInteraction.InteractionMap interactions) {
+   public AbstractCauldronBlock(final BlockBehaviour.Properties properties, final CauldronInteraction.Dispatcher interactions) {
       super(properties);
       this.interactions = interactions;
    }
@@ -46,7 +46,7 @@ public abstract class AbstractCauldronBlock extends Block {
    }
 
    protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
-      CauldronInteraction behavior = (CauldronInteraction)this.interactions.map().get(itemStack.getItem());
+      CauldronInteraction behavior = this.interactions.get(itemStack);
       return behavior.interact(state, level, pos, player, hand, itemStack);
    }
 

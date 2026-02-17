@@ -310,7 +310,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       if (this.sleepStatus.areEnoughSleeping(percentage) && this.sleepStatus.areEnoughDeepSleeping(percentage, this.players)) {
          Optional<Holder<WorldClock>> defaultClock = this.dimensionType().defaultClock();
          if ((Boolean)this.getGameRules().get(GameRules.ADVANCE_TIME) && defaultClock.isPresent()) {
-            this.server.clockManager().skipToTimeMarker((Holder)defaultClock.get(), ClockTimeMarkers.WAKE_UP_FROM_SLEEP);
+            this.server.clockManager().moveToTimeMarker((Holder)defaultClock.get(), ClockTimeMarkers.WAKE_UP_FROM_SLEEP);
          }
 
          this.wakeUpAllPlayers();

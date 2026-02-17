@@ -3,8 +3,6 @@ package com.mojang.blaze3d.opengl;
 import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.platform.DebugMemoryUntracker;
-import com.mojang.blaze3d.platform.GLX;
 import com.mojang.logging.LogUtils;
 import java.util.HexFormat;
 import java.util.List;
@@ -17,9 +15,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.opengl.GLDebugMessageARBCallback;
-import org.lwjgl.opengl.GLDebugMessageARBCallbackI;
 import org.lwjgl.opengl.GLDebugMessageCallback;
-import org.lwjgl.opengl.GLDebugMessageCallbackI;
 import org.lwjgl.opengl.KHRDebug;
 import org.slf4j.Logger;
 
@@ -163,7 +159,7 @@ public class GlDebug {
             }
 
             Objects.requireNonNull(debug);
-            KHRDebug.glDebugMessageCallback((GLDebugMessageCallbackI)GLX.make(GLDebugMessageCallback.create(debug::printDebugLog), DebugMemoryUntracker::untrack), 0L);
+            KHRDebug.glDebugMessageCallback(GLDebugMessageCallback.create(debug::printDebugLog), 0L);
             return debug;
          } else if (caps.GL_ARB_debug_output && GlDevice.USE_GL_ARB_debug_output) {
             GlDebug debug = new GlDebug();
@@ -178,7 +174,7 @@ public class GlDebug {
             }
 
             Objects.requireNonNull(debug);
-            ARBDebugOutput.glDebugMessageCallbackARB((GLDebugMessageARBCallbackI)GLX.make(GLDebugMessageARBCallback.create(debug::printDebugLog), DebugMemoryUntracker::untrack), 0L);
+            ARBDebugOutput.glDebugMessageCallbackARB(GLDebugMessageARBCallback.create(debug::printDebugLog), 0L);
             return debug;
          } else {
             return null;

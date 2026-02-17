@@ -1,7 +1,5 @@
 package net.minecraft.client.model.monster.hoglin;
 
-import java.util.Set;
-import net.minecraft.client.model.BabyModelTransform;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -9,29 +7,23 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.HoglinRenderState;
 import net.minecraft.util.Mth;
 
 public class HoglinModel extends EntityModel<HoglinRenderState> {
-   public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 8.0F, 6.0F, 1.9F, 2.0F, 24.0F, Set.of("head"));
    private static final float DEFAULT_HEAD_X_ROT = 0.87266463F;
    private static final float ATTACK_HEAD_X_ROT_END = -0.34906584F;
-   private final ModelPart head;
+   protected final ModelPart head;
    private final ModelPart rightEar;
    private final ModelPart leftEar;
-   private final ModelPart body;
    private final ModelPart rightFrontLeg;
    private final ModelPart leftFrontLeg;
    private final ModelPart rightHindLeg;
    private final ModelPart leftHindLeg;
-   private final ModelPart mane;
 
    public HoglinModel(final ModelPart root) {
       super(root);
-      this.body = root.getChild("body");
-      this.mane = this.body.getChild("mane");
       this.head = root.getChild("head");
       this.rightEar = this.head.getChild("right_ear");
       this.leftEar = this.head.getChild("left_ear");
@@ -41,7 +33,7 @@ public class HoglinModel extends EntityModel<HoglinRenderState> {
       this.leftHindLeg = root.getChild("left_hind_leg");
    }
 
-   private static MeshDefinition createMesh() {
+   public static LayerDefinition createBodyLayer() {
       MeshDefinition mesh = new MeshDefinition();
       PartDefinition root = mesh.getRoot();
       PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(1, 1).addBox(-8.0F, -7.0F, -13.0F, 16.0F, 14.0F, 26.0F), PartPose.offset(0.0F, 7.0F, 0.0F));
@@ -57,19 +49,7 @@ public class HoglinModel extends EntityModel<HoglinRenderState> {
       root.addOrReplaceChild("left_front_leg", CubeListBuilder.create().texOffs(41, 42).addBox(-3.0F, 0.0F, -3.0F, 6.0F, 14.0F, 6.0F), PartPose.offset(4.0F, 10.0F, -8.5F));
       root.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().texOffs(21, 45).addBox(-2.5F, 0.0F, -2.5F, 5.0F, 11.0F, 5.0F), PartPose.offset(-5.0F, 13.0F, 10.0F));
       root.addOrReplaceChild("left_hind_leg", CubeListBuilder.create().texOffs(0, 45).addBox(-2.5F, 0.0F, -2.5F, 5.0F, 11.0F, 5.0F), PartPose.offset(5.0F, 13.0F, 10.0F));
-      return mesh;
-   }
-
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition mesh = createMesh();
       return LayerDefinition.create(mesh, 128, 64);
-   }
-
-   public static LayerDefinition createBabyLayer() {
-      MeshDefinition mesh = createMesh();
-      PartDefinition body = mesh.getRoot().getChild("body");
-      body.addOrReplaceChild("mane", CubeListBuilder.create().texOffs(90, 33).addBox(0.0F, 0.0F, -9.0F, 0.0F, 10.0F, 19.0F, new CubeDeformation(0.001F)), PartPose.offset(0.0F, -14.0F, -3.0F));
-      return LayerDefinition.create(mesh, 128, 64).apply(BABY_TRANSFORMER);
    }
 
    public void setupAnim(final HoglinRenderState state) {
@@ -80,16 +60,15 @@ public class HoglinModel extends EntityModel<HoglinRenderState> {
       this.leftEar.zRot = 0.6981317F + animationSpeed * Mth.sin((double)animationPos);
       this.head.yRot = state.yRot * 0.017453292F;
       float headbuttLerpFactor = 1.0F - (float)Mth.abs(10 - 2 * state.attackAnimationRemainingTicks) / 10.0F;
-      this.head.xRot = Mth.lerp(headbuttLerpFactor, 0.87266463F, -0.34906584F);
-      if (state.isBaby) {
-         ModelPart var10000 = this.head;
-         var10000.y += headbuttLerpFactor * 2.5F;
-      }
-
+      this.animateHeadbutt(headbuttLerpFactor);
       float amplitudeMultiplier = 1.2F;
       this.rightFrontLeg.xRot = Mth.cos((double)animationPos) * 1.2F * animationSpeed;
       this.leftFrontLeg.xRot = Mth.cos((double)(animationPos + 3.1415927F)) * 1.2F * animationSpeed;
       this.rightHindLeg.xRot = this.leftFrontLeg.xRot;
       this.leftHindLeg.xRot = this.rightFrontLeg.xRot;
+   }
+
+   protected void animateHeadbutt(final float headbuttLerpFactor) {
+      this.head.xRot = Mth.lerp(headbuttLerpFactor, 0.87266463F, -0.34906584F);
    }
 }

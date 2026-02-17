@@ -26,7 +26,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import org.jspecify.annotations.Nullable;
 
 public class Husk extends Zombie {
-   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.55F, 1.125F).withEyeHeight(0.825F);
+   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.825F);
 
    public Husk(final EntityType<? extends Husk> type, final Level level) {
       super(type, level);

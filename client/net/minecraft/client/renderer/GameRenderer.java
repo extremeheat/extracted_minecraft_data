@@ -650,20 +650,21 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
    }
 
    public void renderLevel(final DeltaTracker deltaTracker) {
-      float deltaPartialTick = deltaTracker.getGameTimeDeltaPartialTick(true);
+      float worldPartialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
+      float cameraEntityPartialTicks = this.mainCamera.getCameraEntityPartialTicks(deltaTracker);
       LocalPlayer player = this.minecraft.player;
       this.lightmapRenderStateExtractor.extract(this.lightmapRenderState, 1.0F);
       this.lightmap.update(this.lightmapRenderState);
-      this.pick(deltaPartialTick);
+      this.pick(worldPartialTicks);
       ProfilerFiller profiler = Profiler.get();
       boolean renderOutline = this.shouldRenderBlockOutline();
-      this.extractCamera(deltaTracker, deltaPartialTick);
+      this.extractCamera(deltaTracker, worldPartialTicks, cameraEntityPartialTicks);
       CameraRenderState cameraState = this.levelRenderState.cameraRenderState;
       Matrix4f modelViewMatrix = cameraState.viewRotationMatrix;
       profiler.push("perapareChunkDraws");
       ChunkSectionsToRender chunkSectionsToRender = this.minecraft.levelRenderer.prepareChunkRenders(modelViewMatrix);
       profiler.popPush("extractLevel");
-      this.minecraft.levelRenderer.extractLevel(deltaTracker, this.mainCamera, deltaPartialTick);
+      this.minecraft.levelRenderer.extractLevel(deltaTracker, this.mainCamera, worldPartialTicks);
       profiler.popPush("matrices");
       Matrix4f projectionMatrix = new Matrix4f(cameraState.projectionMatrix);
       PoseStack bobStack = new PoseStack();
@@ -674,14 +675,14 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
 
       projectionMatrix.mul(bobStack.last().pose());
       float screenEffectScale = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
-      float portalIntensity = Mth.lerp(deltaPartialTick, player.oPortalEffectIntensity, player.portalEffectIntensity);
-      float nauseaIntensity = player.getEffectBlendFactor(MobEffects.NAUSEA, deltaPartialTick);
+      float portalIntensity = Mth.lerp(worldPartialTicks, player.oPortalEffectIntensity, player.portalEffectIntensity);
+      float nauseaIntensity = player.getEffectBlendFactor(MobEffects.NAUSEA, worldPartialTicks);
       float spinningEffectIntensity = Math.max(portalIntensity, nauseaIntensity) * screenEffectScale * screenEffectScale;
       if (spinningEffectIntensity > 0.0F) {
          float skew = 5.0F / (spinningEffectIntensity * spinningEffectIntensity + 5.0F) - spinningEffectIntensity * 0.04F;
          skew *= skew;
          Vector3f axis = new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F);
-         float angle = (this.spinningEffectTime + deltaPartialTick * this.spinningEffectSpeed) * 0.017453292F;
+         float angle = (this.spinningEffectTime + worldPartialTicks * this.spinningEffectSpeed) * 0.017453292F;
          projectionMatrix.rotate(angle, axis);
          projectionMatrix.scale(1.0F / skew, 1.0F, 1.0F);
          projectionMatrix.rotate(-angle, axis);
@@ -699,10 +700,10 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       this.hudProjection.setupPerspective(0.05F, 100.0F, cameraState.hudFov, (float)this.minecraft.getWindow().getWidth(), (float)this.minecraft.getWindow().getHeight());
       RenderSystem.setProjectionMatrix(this.hud3dProjectionMatrixBuffer.getBuffer(this.hudProjection), ProjectionType.PERSPECTIVE);
       RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(this.minecraft.getMainRenderTarget().getDepthTexture(), 1.0);
-      this.renderItemInHand(cameraState, deltaPartialTick, modelViewMatrix);
+      this.renderItemInHand(cameraState, cameraEntityPartialTicks, modelViewMatrix);
       profiler.popPush("screenEffects");
       MultiBufferSource.BufferSource bufferSource = this.renderBuffers.bufferSource();
-      this.screenEffectRenderer.renderScreenEffect(isSleeping, deltaPartialTick, this.submitNodeStorage);
+      this.screenEffectRenderer.renderScreenEffect(isSleeping, worldPartialTicks, this.submitNodeStorage);
       this.featureRenderDispatcher.renderAllFeatures();
       bufferSource.endBatch();
       profiler.pop();
@@ -713,11 +714,11 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
 
    }
 
-   private void extractCamera(final DeltaTracker deltaTracker, final float partialTicks) {
+   private void extractCamera(final DeltaTracker deltaTracker, final float worldPartialTicks, final float cameraEntityPartialTicks) {
       CameraRenderState cameraState = this.levelRenderState.cameraRenderState;
-      this.mainCamera.extractRenderState(cameraState, partialTicks);
+      this.mainCamera.extractRenderState(cameraState, cameraEntityPartialTicks);
       cameraState.fogType = this.mainCamera.getFluidInCamera();
-      cameraState.fogData = this.fogRenderer.setupFog(this.mainCamera, this.minecraft.options.getEffectiveRenderDistance(), deltaTracker, this.getBossOverlayWorldDarkening(partialTicks), this.minecraft.level);
+      cameraState.fogData = this.fogRenderer.setupFog(this.mainCamera, this.minecraft.options.getEffectiveRenderDistance(), deltaTracker, this.getBossOverlayWorldDarkening(worldPartialTicks), this.minecraft.level);
    }
 
    public void resetData() {

@@ -67,7 +67,7 @@ public class Mannequin extends Avatar {
       entityData.define(DATA_DESCRIPTION, Optional.of(DEFAULT_DESCRIPTION));
    }
 
-   protected ResolvableProfile getProfile() {
+   public ResolvableProfile getProfile() {
       return (ResolvableProfile)this.entityData.get(DATA_PROFILE);
    }
 

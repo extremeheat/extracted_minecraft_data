@@ -225,7 +225,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       this.computeSpeed();
       this.handlePortal();
       this.behavior.tick();
-      this.updateInWaterStateAndDoFluidPushing();
+      this.updateFluidInteraction();
       if (this.isInLava()) {
          this.lavaIgnite();
          this.lavaHurt();
@@ -274,8 +274,8 @@ public abstract class AbstractMinecart extends VehicleEntity {
       super.reapplyPosition();
    }
 
-   public boolean updateInWaterStateAndDoFluidPushing() {
-      return super.updateInWaterStateAndDoFluidPushing();
+   public boolean updateFluidInteraction() {
+      return super.updateFluidInteraction();
    }
 
    public Vec3 getKnownMovement() {

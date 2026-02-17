@@ -214,7 +214,8 @@ public class CreateWorldScreen extends Screen {
       WorldDimensions worldDimensions = context.selectedDimensions();
       WorldDimensions.Complete finalDimensions = worldDimensions.bake(context.datapackDimensions());
       LayeredRegistryAccess<RegistryLayer> finalLayers = context.worldgenRegistries().replaceFrom(RegistryLayer.DIMENSIONS, finalDimensions.dimensionsRegistryAccess());
-      Lifecycle lifecycleFromFeatures = FeatureFlags.isExperimental(context.dataConfiguration().enabledFeatures()) ? Lifecycle.experimental() : Lifecycle.stable();
+      FeatureFlagSet enabledFeatures = context.dataConfiguration().enabledFeatures();
+      Lifecycle lifecycleFromFeatures = FeatureFlags.isExperimental(enabledFeatures) ? Lifecycle.experimental() : Lifecycle.stable();
       Lifecycle lifecycleFromRegistries = finalLayers.compositeAccess().allRegistriesLifecycle();
       Lifecycle lifecycle = lifecycleFromRegistries.add(lifecycleFromFeatures);
       boolean skipWarning = !this.recreated && lifecycleFromRegistries == Lifecycle.stable();
@@ -225,7 +226,7 @@ public class CreateWorldScreen extends Screen {
          gameRules = (GameRules)MinecraftServer.DEFAULT_GAME_RULES.get();
          gameRules.set(GameRules.ADVANCE_TIME, false, (MinecraftServer)null);
       } else {
-         gameRules = this.uiState.getGameRules();
+         gameRules = new GameRules(enabledFeatures, this.uiState.getGameRules().availableRules());
       }
 
       PrimaryLevelData worldData = new PrimaryLevelData(levelSettings, finalDimensions.specialWorldProperty(), lifecycle);

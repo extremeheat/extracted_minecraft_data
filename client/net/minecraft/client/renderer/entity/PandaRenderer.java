@@ -16,6 +16,7 @@ import org.joml.Quaternionfc;
 
 public class PandaRenderer extends AgeableMobRenderer<Panda, PandaRenderState, PandaModel> {
    private static final Map<Panda.Gene, Identifier> TEXTURES;
+   private static final Map<Panda.Gene, Identifier> BABY_TEXTURES;
 
    public PandaRenderer(final EntityRendererProvider.Context context) {
       super(context, new PandaModel(context.bakeLayer(ModelLayers.PANDA)), new PandaModel(context.bakeLayer(ModelLayers.PANDA_BABY)), 0.9F);
@@ -23,7 +24,8 @@ public class PandaRenderer extends AgeableMobRenderer<Panda, PandaRenderState, P
    }
 
    public Identifier getTextureLocation(final PandaRenderState state) {
-      return (Identifier)TEXTURES.getOrDefault(state.variant, (Identifier)TEXTURES.get(Panda.Gene.NORMAL));
+      Map<Panda.Gene, Identifier> textures = state.isBaby ? BABY_TEXTURES : TEXTURES;
+      return (Identifier)textures.getOrDefault(state.variant, (Identifier)textures.get(Panda.Gene.NORMAL));
    }
 
    public PandaRenderState createRenderState() {
@@ -113,5 +115,6 @@ public class PandaRenderer extends AgeableMobRenderer<Panda, PandaRenderState, P
 
    static {
       TEXTURES = Maps.newEnumMap(Map.of(Panda.Gene.NORMAL, Identifier.withDefaultNamespace("textures/entity/panda/panda.png"), Panda.Gene.LAZY, Identifier.withDefaultNamespace("textures/entity/panda/panda_lazy.png"), Panda.Gene.WORRIED, Identifier.withDefaultNamespace("textures/entity/panda/panda_worried.png"), Panda.Gene.PLAYFUL, Identifier.withDefaultNamespace("textures/entity/panda/panda_playful.png"), Panda.Gene.BROWN, Identifier.withDefaultNamespace("textures/entity/panda/panda_brown.png"), Panda.Gene.WEAK, Identifier.withDefaultNamespace("textures/entity/panda/panda_weak.png"), Panda.Gene.AGGRESSIVE, Identifier.withDefaultNamespace("textures/entity/panda/panda_aggressive.png")));
+      BABY_TEXTURES = Maps.newEnumMap(Map.of(Panda.Gene.NORMAL, Identifier.withDefaultNamespace("textures/entity/panda/panda_baby.png"), Panda.Gene.LAZY, Identifier.withDefaultNamespace("textures/entity/panda/lazy_panda_baby.png"), Panda.Gene.WORRIED, Identifier.withDefaultNamespace("textures/entity/panda/worried_panda_baby.png"), Panda.Gene.PLAYFUL, Identifier.withDefaultNamespace("textures/entity/panda/playful_panda_baby.png"), Panda.Gene.BROWN, Identifier.withDefaultNamespace("textures/entity/panda/brown_panda_baby.png"), Panda.Gene.WEAK, Identifier.withDefaultNamespace("textures/entity/panda/weak_panda_baby.png"), Panda.Gene.AGGRESSIVE, Identifier.withDefaultNamespace("textures/entity/panda/aggressive_panda_baby.png")));
    }
 }

@@ -10,7 +10,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import net.minecraft.commands.arguments.selector.SelectorPattern;
+import net.minecraft.commands.arguments.NbtPathArgument;
+import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.network.chat.contents.KeybindContents;
 import net.minecraft.network.chat.contents.NbtContents;
 import net.minecraft.network.chat.contents.ObjectContents;
@@ -21,6 +22,7 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.chat.contents.data.DataSource;
 import net.minecraft.network.chat.contents.objects.ObjectInfo;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.CompilableString;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
@@ -173,11 +175,11 @@ public interface Component extends Message, FormattedText {
       return MutableComponent.create(new KeybindContents(name));
    }
 
-   static MutableComponent nbt(final String nbtPath, final boolean interpreting, final Optional<Component> separator, final DataSource dataSource) {
-      return MutableComponent.create(new NbtContents(nbtPath, interpreting, separator, dataSource));
+   static MutableComponent nbt(final CompilableString<NbtPathArgument.NbtPath> nbtPath, final boolean interpreting, final boolean plain, final Optional<Component> separator, final DataSource dataSource) {
+      return MutableComponent.create(new NbtContents(nbtPath, interpreting, plain, separator, dataSource));
    }
 
-   static MutableComponent score(final SelectorPattern pattern, final String objective) {
+   static MutableComponent score(final CompilableString<EntitySelector> pattern, final String objective) {
       return MutableComponent.create(new ScoreContents(Either.left(pattern), objective));
    }
 
@@ -185,7 +187,7 @@ public interface Component extends Message, FormattedText {
       return MutableComponent.create(new ScoreContents(Either.right(name), objective));
    }
 
-   static MutableComponent selector(final SelectorPattern pattern, final Optional<Component> separator) {
+   static MutableComponent selector(final CompilableString<EntitySelector> pattern, final Optional<Component> separator) {
       return MutableComponent.create(new SelectorContents(pattern, separator));
    }
 

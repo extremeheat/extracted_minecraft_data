@@ -39,9 +39,9 @@ public class RestrictionsScreen extends Screen {
       this.layout.addToHeader(new StringWidget(TITLE, this.font), LayoutSettings::alignHorizontallyCenter);
       LinearLayout body = LinearLayout.vertical();
       body.defaultCellSetting().alignHorizontallyCenter();
-      int maxTextWidth = this.width / 3 * 2;
+      int textBoxWidth = 250;
       this.chatAbilities.restrictions().forEach((restriction) -> {
-         body.addChild(FocusableTextWidget.builder(ComponentUtils.mergeStyles(restriction.display(), Style.EMPTY.withBold(true).withColor(ChatFormatting.RED)), this.font).maxWidth(maxTextWidth).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build().setCentered(true));
+         body.addChild(FocusableTextWidget.builder(ComponentUtils.mergeStyles(restriction.display(), Style.EMPTY.withBold(true).withColor(ChatFormatting.RED)), this.font).maxWidth(250).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build().setCentered(true));
          restriction.action().ifPresent((action) -> body.addChild(Button.builder(action.title(), (var2) -> action.runnable().accept(this.minecraft, this.previousScreen)).width(200).build()));
       });
       if (this.chatAbilities.hasAnyRestrictions()) {
@@ -54,7 +54,7 @@ public class RestrictionsScreen extends Screen {
       permissionEntries.add(createPermissionStatus(this.chatAbilities, Permissions.CHAT_RECEIVE_SYSTEM_MESSAGES, "receive_system_messages"));
       permissionEntries.add(createPermissionStatus(this.chatAbilities, Permissions.CHAT_RECEIVE_PLAYER_MESSAGES, "receive_player_messages"));
       Component message = CommonComponents.joinLines((Collection)permissionEntries);
-      body.addChild(FocusableTextWidget.builder(message, this.font).maxWidth(maxTextWidth).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build().setCentered(true));
+      body.addChild(FocusableTextWidget.builder(message, this.font).maxWidth(250).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build().setCentered(true));
       this.bodyScroll = new ScrollableLayout(this.minecraft, body, this.layout.getContentHeight());
       this.layout.addToContents(this.bodyScroll);
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));

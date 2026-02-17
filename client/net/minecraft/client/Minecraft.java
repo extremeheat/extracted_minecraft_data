@@ -21,6 +21,7 @@ import com.mojang.blaze3d.platform.FramerateLimitTracker;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.IconSet;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.MessageBox;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.platform.WindowEventHandler;
 import com.mojang.blaze3d.shaders.GpuDebugOptions;
@@ -261,7 +262,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.apache.commons.io.FileUtils;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
 
 public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements WindowEventHandler {
@@ -548,7 +548,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          Tesselator.init();
          this.renderBuffers = new RenderBuffers(maxSectionBuilders);
       } catch (OutOfMemoryError e) {
-         TinyFileDialogs.tinyfd_messageBox("Minecraft", "Oh no! The game was unable to allocate memory off-heap while trying to start. You may try to free some memory by closing other applications on your computer, check that your system meets the minimum requirements, and try again. If the problem persists, please visit: " + String.valueOf(CommonLinks.GENERAL_HELP), "ok", "error", true);
+         MessageBox.error("Oh no! The game was unable to allocate memory off-heap while trying to start. You may try to free some memory by closing other applications on your computer, check that your system meets the minimum requirements, and try again. If the problem persists, please visit: " + String.valueOf(CommonLinks.GENERAL_HELP));
          throw new SilentInitException("Unable to allocate render buffers", e);
       }
 
@@ -602,7 +602,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
 
          this.window.setWindowed(this.mainRenderTarget.width, this.mainRenderTarget.height);
-         TinyFileDialogs.tinyfd_messageBox("Minecraft", message.toString(), "ok", "error", false);
+         MessageBox.error(message.toString());
       }
 
       this.window.updateVsync((Boolean)this.options.enableVsync().get());
@@ -1065,7 +1065,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public void openChatScreen(final ChatComponent.ChatMethod chatMethod) {
       if (this.player != null) {
-         this.gui.getChat().openScreen(chatMethod, this.player.chatAbilities(), ChatScreen::new);
+         this.gui.getChat().openScreen(chatMethod, ChatScreen::new);
       }
 
    }
@@ -1204,7 +1204,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.reloadResourcePacks().thenRun(() -> future.complete((Object)null));
       }
 
-      int ticksToDo = this.deltaTracker.advanceTime(Util.getMillis(), advanceGameTime);
+      int ticksToDo = advanceGameTime ? this.deltaTracker.advanceGameTime(Util.getMillis()) : 0;
       ProfilerFiller profiler = Profiler.get();
       if (advanceGameTime) {
          try (Gizmos.TemporaryCollection ignored = this.collectPerTickGizmos()) {
@@ -1239,7 +1239,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       this.window.setErrorSection("Render");
 
-      boolean recordGpuUtilization;
       try (Gizmos.TemporaryCollection ignored = this.levelRenderer.collectPerFrameGizmos()) {
          profiler.push("sound");
          this.soundManager.updateSource(this.gameRenderer.getMainCamera());
@@ -1248,24 +1247,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          profiler.popPush("mouse");
          this.mouseHandler.handleAccumulatedMovement();
          profiler.popPush("render");
-         if (!this.debugEntries.isCurrentlyEnabled(DebugScreenEntries.GPU_UTILIZATION) && !this.metricsRecorder.isRecording()) {
-            recordGpuUtilization = false;
-            this.gpuUtilization = 0.0;
-         } else {
-            recordGpuUtilization = (this.currentFrameProfile == null || this.currentFrameProfile.isDone()) && !TimerQuery.getInstance().isRecording();
-            if (recordGpuUtilization) {
-               TimerQuery.getInstance().beginProfile();
-            }
-         }
-
-         this.renderFrame(recordGpuUtilization, advanceGameTime);
+         this.renderFrame(advanceGameTime);
          profiler.popPush("yield");
          Thread.yield();
          profiler.pop();
       }
 
       this.window.setErrorSection("Post render");
-      ++this.frames;
       boolean previouslyPaused = this.pause;
       this.pause = this.hasSingleplayerServer() && (this.screen != null && this.screen.isPauseScreen() || this.overlay != null && this.overlay.isPauseScreen()) && !this.singleplayerServer.isPublished();
       if (!previouslyPaused && this.pause) {
@@ -1274,29 +1262,21 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       this.deltaTracker.updatePauseState(this.pause);
       this.deltaTracker.updateFrozenState(!this.isLevelRunningNormally());
-      long currentTime = Util.getNanos();
-      long frameDuration = currentTime - this.lastNanoTime;
-      if (recordGpuUtilization) {
-         this.savedCpuDuration = frameDuration;
-      }
-
-      this.getDebugOverlay().logFrameDuration(frameDuration);
-      this.lastNanoTime = currentTime;
-      profiler.push("fpsUpdate");
-      if (this.currentFrameProfile != null && this.currentFrameProfile.isDone()) {
-         this.gpuUtilization = (double)this.currentFrameProfile.get() * 100.0 / (double)this.savedCpuDuration;
-      }
-
-      while(Util.getMillis() >= this.lastTime + 1000L) {
-         fps = this.frames;
-         this.lastTime += 1000L;
-         this.frames = 0;
-      }
-
-      profiler.pop();
    }
 
-   private void renderFrame(final boolean recordGpuUtilization, final boolean renderLevel) {
+   private void renderFrame(final boolean renderLevel) {
+      this.deltaTracker.advanceRealTime(Util.getMillis());
+      boolean recordGpuUtilization;
+      if (!this.debugEntries.isCurrentlyEnabled(DebugScreenEntries.GPU_UTILIZATION) && !this.metricsRecorder.isRecording()) {
+         recordGpuUtilization = false;
+         this.gpuUtilization = 0.0;
+      } else {
+         recordGpuUtilization = (this.currentFrameProfile == null || this.currentFrameProfile.isDone()) && !TimerQuery.getInstance().isRecording();
+         if (recordGpuUtilization) {
+            TimerQuery.getInstance().beginProfile();
+         }
+      }
+
       long renderStartTimer = Util.getNanos();
       ProfilerFiller profiler = Profiler.get();
       profiler.push("gpuAsync");
@@ -1328,6 +1308,26 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       int framerateLimit = this.framerateLimitTracker.getFramerateLimit();
       if (framerateLimit < 260) {
          RenderSystem.limitDisplayFPS(framerateLimit);
+      }
+
+      profiler.popPush("fpsUpdate");
+      ++this.frames;
+      long currentTime = Util.getNanos();
+      long frameDuration = currentTime - this.lastNanoTime;
+      if (recordGpuUtilization) {
+         this.savedCpuDuration = frameDuration;
+      }
+
+      this.getDebugOverlay().logFrameDuration(frameDuration);
+      this.lastNanoTime = currentTime;
+      if (this.currentFrameProfile != null && this.currentFrameProfile.isDone()) {
+         this.gpuUtilization = (double)this.currentFrameProfile.get() * 100.0 / (double)this.savedCpuDuration;
+      }
+
+      while(Util.getMillis() >= this.lastTime + 1000L) {
+         fps = this.frames;
+         this.lastTime += 1000L;
+         this.frames = 0;
       }
 
       profiler.pop();
@@ -1750,7 +1750,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          if (this.player.isDeadOrDying() && !(this.screen instanceof DeathScreen)) {
             this.setScreen((Screen)null);
          } else if (this.player.isSleeping() && this.level != null) {
-            this.gui.getChat().openScreen(ChatComponent.ChatMethod.MESSAGE, this.player.chatAbilities(), InBedChatScreen::new);
+            this.gui.getChat().openScreen(ChatComponent.ChatMethod.MESSAGE, InBedChatScreen::new);
          }
       } else {
          Screen var3 = this.screen;
@@ -1970,7 +1970,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
 
          while(this.options.keyPickItem.consumeClick()) {
-            this.pickBlock();
+            this.pickBlockOrEntity();
          }
 
          if (this.player.isSpectator()) {
@@ -2049,7 +2049,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.overlay.tick();
          }
 
-         this.renderFrame(false, false);
+         this.renderFrame(false);
          this.runAllTasks();
          this.managedBlock(() -> Util.getNanos() > finishTime);
       }
@@ -2136,6 +2136,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.gui.onDisconnected();
          }
 
+         this.level = null;
          if (server != null) {
             server.halt(false);
             this.setScreen(new GenericMessageScreen(SAVING_LEVEL));
@@ -2143,7 +2144,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             profiler.push("waitForServer");
 
             while(!server.isShutdown()) {
-               this.renderFrame(false, false);
+               this.renderFrame(false);
             }
 
             profiler.pop();
@@ -2151,7 +2152,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
          this.setScreenAndShow(screen);
          this.isLocalServer = false;
-         this.level = null;
          this.updateLevelInEngines((ClientLevel)null, stopSound);
          this.player = null;
       } finally {
@@ -2195,7 +2195,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    public void setScreenAndShow(final Screen screen) {
       try (Zone ignored = Profiler.get().zone("forcedTick")) {
          this.setScreen(screen);
-         this.renderFrame(false, false);
+         this.renderFrame(false);
       }
 
    }
@@ -2308,7 +2308,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return (Boolean)instance.options.ambientOcclusion().get();
    }
 
-   private void pickBlock() {
+   private void pickBlockOrEntity() {
       if (this.hitResult != null && this.hitResult.getType() != HitResult.Type.MISS) {
          boolean includeData = this.hasControlDown();
          HitResult var10000 = this.hitResult;

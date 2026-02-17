@@ -15,7 +15,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.feature.AbstractHugeMushroomFeature;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -98,7 +101,26 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      return true;
+      if (level instanceof ServerLevel serverLevel) {
+         Optional<? extends Holder<ConfiguredFeature<?, ?>>> featureHolder = serverLevel.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(this.feature);
+         if (featureHolder.isPresent()) {
+            ConfiguredFeature<?, ?> configuredFeature = (ConfiguredFeature)((Holder)featureHolder.get()).value();
+            if (configuredFeature.feature() instanceof AbstractHugeMushroomFeature) {
+               FeatureConfiguration var8 = configuredFeature.config();
+               if (var8 instanceof HugeMushroomFeatureConfiguration) {
+                  HugeMushroomFeatureConfiguration config = (HugeMushroomFeatureConfiguration)var8;
+                  int minHeight = 4 + config.foliageRadius();
+                  return level.isInsideBuildHeight(pos.above(minHeight));
+               }
+            }
+
+            return false;
+         } else {
+            return false;
+         }
+      } else {
+         return false;
+      }
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {

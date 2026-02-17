@@ -65,7 +65,7 @@ import org.jspecify.annotations.Nullable;
 public class Drowned extends Zombie implements RangedAttackMob {
    public static final float NAUTILUS_SHELL_CHANCE = 0.03F;
    private static final float ZOMBIE_NAUTILUS_JOCKEY_CHANCE = 0.5F;
-   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.55F, 1.08F).withEyeHeight(0.775F);
+   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.775F);
    private boolean searchingForLand;
 
    public Drowned(final EntityType<? extends Drowned> type, final Level level) {

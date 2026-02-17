@@ -89,8 +89,8 @@ public class Strider extends Animal implements ItemSteerable {
       this.blocksBuilding = true;
       this.setPathfindingMalus(PathType.WATER, -1.0F);
       this.setPathfindingMalus(PathType.LAVA, 0.0F);
-      this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 0.0F);
+      this.setPathfindingMalus(PathType.FIRE, 0.0F);
    }
 
    public static boolean checkStriderSpawnRules(final EntityType<Strider> ignoredType, final LevelAccessor level, final EntitySpawnReason ignoredSpawnType, final BlockPos pos, final RandomSource ignoredRandom) {
@@ -453,7 +453,7 @@ public class Strider extends Animal implements ItemSteerable {
       }
 
       protected boolean hasValidPathType(final PathType pathType) {
-         return pathType != PathType.LAVA && pathType != PathType.DAMAGE_FIRE && pathType != PathType.DANGER_FIRE ? super.hasValidPathType(pathType) : true;
+         return pathType != PathType.LAVA && pathType != PathType.FIRE && pathType != PathType.FIRE_IN_NEIGHBOR ? super.hasValidPathType(pathType) : true;
       }
 
       public boolean isStableDestination(final BlockPos pos) {

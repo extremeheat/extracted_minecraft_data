@@ -2,7 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.cauldron.CauldronInteractions;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -22,7 +22,7 @@ public class CauldronBlock extends AbstractCauldronBlock {
    }
 
    public CauldronBlock(final BlockBehaviour.Properties properties) {
-      super(properties, CauldronInteraction.EMPTY);
+      super(properties, CauldronInteractions.EMPTY);
    }
 
    public boolean isFull(final BlockState state) {

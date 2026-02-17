@@ -16,7 +16,7 @@ public class InsideWorldBoundsPredicate implements BlockPredicate {
    }
 
    public boolean test(final WorldGenLevel worldGenLevel, final BlockPos blockPos) {
-      return !worldGenLevel.isOutsideBuildHeight(blockPos.offset(this.offset));
+      return worldGenLevel.isInsideBuildHeight(blockPos.offset(this.offset));
    }
 
    public BlockPredicateType<?> type() {

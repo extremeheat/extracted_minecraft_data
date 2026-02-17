@@ -34,7 +34,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
@@ -46,8 +45,6 @@ public class Horse extends AbstractHorse {
 
    public Horse(final EntityType<? extends Horse> type, final Level level) {
       super(type, level);
-      this.setPathfindingMalus(PathType.DANGER_OTHER, -1.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_OTHER, -1.0F);
    }
 
    protected void randomizeAttributes(final RandomSource random) {

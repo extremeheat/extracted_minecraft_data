@@ -2,7 +2,7 @@ package net.minecraft.client.input;
 
 import net.minecraft.util.StringUtil;
 
-public record CharacterEvent(int codepoint, @InputWithModifiers.Modifiers int modifiers) {
+public record CharacterEvent(int codepoint) {
    public CharacterEvent {
       super();
    }

@@ -34,7 +34,7 @@ public class TallDryGrassBlock extends DryVegetationBlock implements Bonemealabl
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      return BonemealableBlock.hasSpreadableNeighbourPos(level, pos, Blocks.SHORT_DRY_GRASS.defaultBlockState());
+      return BonemealableBlock.hasSpreadableNeighbourPos(level, pos, Blocks.SHORT_DRY_GRASS.defaultBlockState()) && level.getBlockState(pos.above()).isAir() && level.isInsideBuildHeight(pos.above());
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {

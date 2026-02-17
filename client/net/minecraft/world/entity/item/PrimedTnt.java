@@ -95,7 +95,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
             this.explode();
          }
       } else {
-         this.updateInWaterStateAndDoFluidPushing();
+         this.updateFluidInteraction();
          if (this.level().isClientSide()) {
             this.level().addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5, this.getZ(), 0.0, 0.0, 0.0);
          }

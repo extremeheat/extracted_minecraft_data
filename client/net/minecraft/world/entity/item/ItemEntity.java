@@ -62,14 +62,17 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    public ItemEntity(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
-      this(level, x, y, z, itemStack, level.getRandom().nextDouble() * 0.2 - 0.1, 0.2, level.getRandom().nextDouble() * 0.2 - 0.1);
+      this(EntityType.ITEM, level);
+      this.setPos(x, y, z);
+      this.setItem(itemStack);
+      this.setDeltaMovement(this.random.nextDouble() * 0.2 - 0.1, 0.2, this.random.nextDouble() * 0.2 - 0.1);
    }
 
    public ItemEntity(final Level level, final double x, final double y, final double z, final ItemStack itemStack, final double deltaX, final double deltaY, final double deltaZ) {
       this(EntityType.ITEM, level);
       this.setPos(x, y, z);
-      this.setDeltaMovement(deltaX, deltaY, deltaZ);
       this.setItem(itemStack);
+      this.setDeltaMovement(deltaX, deltaY, deltaZ);
    }
 
    public boolean dampensVibrations() {
@@ -157,7 +160,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
             ++this.age;
          }
 
-         this.needsSync |= this.updateInWaterStateAndDoFluidPushing();
+         this.needsSync |= this.updateFluidInteraction();
          if (!this.level().isClientSide()) {
             double value = this.getDeltaMovement().subtract(oldMovement).lengthSqr();
             if (value > 0.01) {

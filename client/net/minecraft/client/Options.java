@@ -88,7 +88,7 @@ public class Options {
    public static final int RENDER_DISTANCE_REALLY_FAR = 16;
    public static final int RENDER_DISTANCE_EXTREME = 32;
    private static final Splitter OPTION_SPLITTER = Splitter.on(':').limit(2);
-   public static final String DEFAULT_SOUND_DEVICE = "";
+   private static final String DEFAULT_SOUND_DEVICE = "";
    private static final Component ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND = Component.translatable("options.darkMojangStudiosBackgroundColor.tooltip");
    private final OptionInstance<Boolean> darkMojangStudiosBackground;
    private static final Component ACCESSIBILITY_TOOLTIP_HIDE_LIGHTNING_FLASHES = Component.translatable("options.hideLightningFlashes.tooltip");
@@ -306,6 +306,10 @@ public class Options {
    private final OptionInstance<MusicToastDisplayState> musicToast;
    public boolean syncWrites;
    public boolean startedCleanly;
+
+   public static boolean isSoundDeviceDefault(final String deviceName) {
+      return deviceName.equals("");
+   }
 
    private static void operateOnLevelRenderer(final Consumer<LevelRenderer> consumer) {
       LevelRenderer levelRenderer = Minecraft.getInstance().levelRenderer;
@@ -1113,7 +1117,7 @@ public class Options {
          } else {
             return value.startsWith("OpenAL Soft on ") ? Component.literal(value.substring(SoundEngine.OPEN_AL_SOFT_PREFIX_LENGTH)) : Component.literal(value);
          }
-      }, new OptionInstance.LazyEnum(() -> Stream.concat(Stream.of(""), Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().stream()).toList(), (device) -> Minecraft.getInstance().isRunning() && device != "" && !Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().contains(device) ? Optional.empty() : Optional.of(device), Codec.STRING), "", (value) -> {
+      }, new OptionInstance.LazyEnum(() -> Stream.concat(Stream.of(""), Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().stream()).toList(), (device) -> Minecraft.getInstance().isRunning() && !isSoundDeviceDefault(device) && !Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().contains(device) ? Optional.empty() : Optional.of(device), Codec.STRING), "", (value) -> {
          SoundManager soundManager = Minecraft.getInstance().getSoundManager();
          soundManager.reload();
          soundManager.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));

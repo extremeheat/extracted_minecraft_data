@@ -1,6 +1,8 @@
 package net.minecraft.commands.arguments.selector;
 
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +17,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
+import net.minecraft.util.CompilableString;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -37,6 +40,15 @@ public class EntitySelector {
          return Entity.class;
       }
    };
+   public static final Codec<CompilableString<EntitySelector>> COMPILABLE_CODEC = CompilableString.codec(new CompilableString.CommandParserHelper<EntitySelector>() {
+      protected EntitySelector parse(final StringReader reader) throws CommandSyntaxException {
+         return (new EntitySelectorParser(reader, true)).parse();
+      }
+
+      protected String errorMessage(final String original, final CommandSyntaxException exception) {
+         return "Invalid selector component: " + original + ": " + exception.getMessage();
+      }
+   });
    private final int maxResults;
    private final boolean includesEntities;
    private final boolean worldLimited;

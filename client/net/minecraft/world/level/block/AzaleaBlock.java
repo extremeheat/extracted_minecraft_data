@@ -37,7 +37,12 @@ public class AzaleaBlock extends VegetationBlock implements BonemealableBlock {
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      return level.getFluidState(pos.above()).isEmpty();
+      if (!(level instanceof ServerLevel serverLevel)) {
+         return false;
+      } else {
+         int minHeight = TreeGrower.AZALEA.getMinimumHeight(serverLevel).orElse(0);
+         return level.isInsideBuildHeight(pos.above(minHeight + 2)) && level.getFluidState(pos.above()).isEmpty();
+      }
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {

@@ -3,6 +3,7 @@ package net.minecraft.world.level.gamerules;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Objects;
@@ -16,8 +17,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
 
 public class GameRules {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final GameRule<Boolean> ADVANCE_TIME;
    public static final GameRule<Boolean> ADVANCE_WEATHER;
    public static final GameRule<Boolean> ALLOW_ENTERING_NETHER_USING_PORTALS;
@@ -83,6 +86,10 @@ public class GameRules {
       return GameRuleMap.CODEC.xmap((map) -> new GameRules(enabledFeatures, map), (gameRules) -> gameRules.rules);
    }
 
+   public GameRules(final FeatureFlagSet enabledFeatures, final Stream<GameRule<?>> rules) {
+      this(enabledFeatures, GameRuleMap.of(rules));
+   }
+
    public GameRules(final FeatureFlagSet enabledFeatures, final GameRuleMap map) {
       super();
       BuiltInRegistries.GAME_RULE.stream().forEach((gameRule) -> {
@@ -115,7 +122,7 @@ public class GameRules {
    public <T> T get(final GameRule<T> gameRule) {
       T value = (T)this.rules.get(gameRule);
       if (value == null) {
-         throw new IllegalArgumentException("Tried to access invalid game rule");
+         throw new IllegalArgumentException("Tried to access invalid game rule " + String.valueOf(gameRule.getIdentifierWithFallback()));
       } else {
          return value;
       }
@@ -123,7 +130,7 @@ public class GameRules {
 
    public <T> void set(final GameRule<T> gameRule, final T value, final @Nullable MinecraftServer server) {
       if (!this.rules.has(gameRule)) {
-         throw new IllegalArgumentException("Tried to set invalid game rule");
+         LOGGER.warn("Tried to set invalid game rule '{}' to value '{}'", gameRule.getIdentifierWithFallback(), value);
       } else {
          this.rules.set(gameRule, value);
          if (server != null) {

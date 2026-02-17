@@ -5,7 +5,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.system.Pointer;
 
 public class DebugMemoryUntracker {
    private static final @Nullable MethodHandle UNTRACK = (MethodHandle)GLX.make(() -> {
@@ -35,9 +34,5 @@ public class DebugMemoryUntracker {
             throw new RuntimeException(throwable);
          }
       }
-   }
-
-   public static void untrack(final Pointer ptr) {
-      untrack(ptr.address());
    }
 }

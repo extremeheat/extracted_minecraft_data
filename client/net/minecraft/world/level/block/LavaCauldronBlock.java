@@ -3,7 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.cauldron.CauldronInteractions;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.InsideBlockEffectType;
@@ -24,7 +24,7 @@ public class LavaCauldronBlock extends AbstractCauldronBlock {
    }
 
    public LavaCauldronBlock(final BlockBehaviour.Properties properties) {
-      super(properties, CauldronInteraction.LAVA);
+      super(properties, CauldronInteractions.LAVA);
    }
 
    protected double getContentHeight(final BlockState state) {

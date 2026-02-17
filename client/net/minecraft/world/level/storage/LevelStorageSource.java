@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -75,6 +76,7 @@ import net.minecraft.world.level.gamerules.GameRuleMap;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.validation.ContentValidationException;
@@ -165,7 +167,10 @@ public class LevelStorageSource {
          throw new IllegalStateException("Cannot get level data without file fixing first");
       } else {
          Dynamic<?> dataTag = RegistryOps.injectRegistryContext(levelDataTag, registryAccess);
-         WorldGenSettings worldGenSettings = (WorldGenSettings)readExistingSavedData(worldAccess, registryAccess, WorldGenSettings.TYPE).getOrThrow((errorMessage) -> new LevelStorageException(Component.translatable("selectWorld.world_gen_settings_access", errorMessage)));
+         WorldGenSettings worldGenSettings = (WorldGenSettings)readExistingSavedData(worldAccess, registryAccess, WorldGenSettings.TYPE).mapOrElse(Function.identity(), (error) -> {
+            LOGGER.error("Unable to read or access the world gen settings file! Falling back to the default settings with a random world seed. {}", error.message());
+            return new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), new WorldDimensions(datapackDimensions));
+         });
          LevelSettings settings = LevelSettings.parse(dataTag, dataConfiguration);
          WorldDimensions.Complete dimensions = worldGenSettings.dimensions().bake(datapackDimensions);
          Lifecycle lifecycle = dimensions.lifecycle().add(registryAccess.allRegistriesLifecycle());

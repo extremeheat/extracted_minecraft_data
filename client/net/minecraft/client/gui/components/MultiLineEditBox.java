@@ -10,24 +10,24 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class MultiLineEditBox extends AbstractTextAreaWidget {
-   private static final int CURSOR_INSERT_WIDTH = 1;
    private static final int CURSOR_COLOR = -3092272;
-   private static final String CURSOR_APPEND_CHARACTER = "_";
    private static final int PLACEHOLDER_TEXT_COLOR = ARGB.color(204, -2039584);
-   private static final int CURSOR_BLINK_INTERVAL_MS = 300;
    private final Font font;
    private final Component placeholder;
    private final MultilineTextField textField;
    private final int textColor;
    private final boolean textShadow;
    private final int cursorColor;
+   private @Nullable IMEPreeditOverlay preeditOverlay;
    private long focusedTime;
 
    private MultiLineEditBox(final Font font, final int x, final int y, final int width, final int height, final Component placeholder, final Component narration, final int textColor, final boolean textShadow, final int cursorColor, final boolean showBackground, final boolean showDecorations) {
@@ -100,47 +100,62 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       }
    }
 
+   public boolean preeditUpdated(final @Nullable PreeditEvent event) {
+      IMEPreeditOverlay var10001;
+      if (event != null) {
+         Font var10004 = this.font;
+         Objects.requireNonNull(this.font);
+         var10001 = new IMEPreeditOverlay(event, var10004, 9 + 1);
+      } else {
+         var10001 = null;
+      }
+
+      this.preeditOverlay = var10001;
+      return true;
+   }
+
    protected void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
       String value = this.textField.value();
       if (value.isEmpty() && !this.isFocused()) {
          graphics.drawWordWrap(this.font, this.placeholder, this.getInnerLeft(), this.getInnerTop(), this.width - this.totalInnerPadding(), PLACEHOLDER_TEXT_COLOR);
       } else {
          int cursor = this.textField.cursor();
-         boolean showCursor = this.isFocused() && (Util.getMillis() - this.focusedTime) / 300L % 2L == 0L;
+         boolean showCursor = this.isFocused() && TextCursorUtils.isCursorVisible(Util.getMillis() - this.focusedTime);
+         boolean needsValidCursorPos = this.preeditOverlay != null;
          boolean insertCursor = cursor < value.length();
          int cursorX = 0;
          int cursorY = 0;
          int drawTop = this.getInnerTop();
+         int innerLeft = this.getInnerLeft();
          boolean hasDrawnCursor = false;
 
          for(MultilineTextField.StringView lineView : this.textField.iterateLines()) {
             Objects.requireNonNull(this.font);
             boolean lineWithinVisibleBounds = this.withinContentAreaTopBottom(drawTop, drawTop + 9);
-            int innerLeft = this.getInnerLeft();
-            if (showCursor && insertCursor && cursor >= lineView.beginIndex() && cursor <= lineView.endIndex()) {
+            if (!hasDrawnCursor && (needsValidCursorPos || showCursor) && insertCursor && cursor >= lineView.beginIndex() && cursor <= lineView.endIndex()) {
                if (lineWithinVisibleBounds) {
-                  String substring = value.substring(lineView.beginIndex(), cursor);
-                  graphics.drawString(this.font, substring, innerLeft, drawTop, this.textColor, this.textShadow);
-                  cursorX = innerLeft + this.font.width(substring);
-                  if (!hasDrawnCursor) {
-                     int var10002 = drawTop - 1;
-                     int var10003 = cursorX + 1;
-                     int var10004 = drawTop + 1;
+                  String textBeforeCursor = value.substring(lineView.beginIndex(), cursor);
+                  int textBeforeCursorPosRight = innerLeft + this.font.width(textBeforeCursor);
+                  String textAfterCursor = value.substring(cursor, lineView.endIndex());
+                  graphics.drawString(this.font, textBeforeCursor, innerLeft, drawTop, this.textColor, this.textShadow);
+                  graphics.drawString(this.font, textAfterCursor, textBeforeCursorPosRight, drawTop, this.textColor, this.textShadow);
+                  cursorX = textBeforeCursorPosRight;
+                  cursorY = drawTop;
+                  if (showCursor) {
+                     int var10003 = this.cursorColor;
                      Objects.requireNonNull(this.font);
-                     graphics.fill(cursorX, var10002, var10003, var10004 + 9, this.cursorColor);
-                     hasDrawnCursor = true;
+                     TextCursorUtils.drawInsertCursor(graphics, textBeforeCursorPosRight, drawTop, var10003, 9 + 1);
                   }
 
-                  graphics.drawString(this.font, value.substring(cursor, lineView.endIndex()), cursorX, drawTop, this.textColor, this.textShadow);
+                  hasDrawnCursor = true;
                }
-            } else {
-               if (lineWithinVisibleBounds) {
-                  String substring = value.substring(lineView.beginIndex(), lineView.endIndex());
-                  graphics.drawString(this.font, substring, innerLeft, drawTop, this.textColor, this.textShadow);
-                  cursorX = innerLeft + this.font.width(substring) - 1;
+            } else if (lineWithinVisibleBounds) {
+               String substring = value.substring(lineView.beginIndex(), lineView.endIndex());
+               graphics.drawString(this.font, substring, innerLeft, drawTop, this.textColor, this.textShadow);
+               if ((needsValidCursorPos || showCursor) && !insertCursor) {
+                  cursorX = innerLeft + this.font.width(substring);
+                  cursorY = drawTop;
                }
-
-               cursorY = drawTop;
             }
 
             Objects.requireNonNull(this.font);
@@ -150,7 +165,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          if (showCursor && !insertCursor) {
             Objects.requireNonNull(this.font);
             if (this.withinContentAreaTopBottom(cursorY, cursorY + 9)) {
-               graphics.drawString(this.font, "_", cursorX + 1, cursorY, this.cursorColor, this.textShadow);
+               TextCursorUtils.drawAppendCursor(graphics, this.font, cursorX, cursorY, this.cursorColor, this.textShadow);
             }
          }
 
@@ -179,9 +194,9 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
                      }
 
                      int var10001 = drawX + drawBegin;
-                     int var26 = drawX + drawEnd;
+                     int var29 = drawX + drawEnd;
                      Objects.requireNonNull(this.font);
-                     graphics.textHighlight(var10001, drawTop, var26, drawTop + 9, true);
+                     graphics.textHighlight(var10001, drawTop, var29, drawTop + 9, true);
                   }
 
                   Objects.requireNonNull(this.font);
@@ -192,6 +207,11 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
 
          if (this.isHovered()) {
             graphics.requestCursor(CursorTypes.IBEAM);
+         }
+
+         if (this.preeditOverlay != null) {
+            this.preeditOverlay.updateInputPosition(cursorX, cursorY);
+            graphics.setPreeditOverlay(this.preeditOverlay);
          }
 
       }

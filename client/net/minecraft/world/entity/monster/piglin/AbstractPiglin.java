@@ -32,8 +32,8 @@ public abstract class AbstractPiglin extends Monster {
       super(type, level);
       this.setCanPickUpLoot(true);
       this.applyOpenDoorsAbility();
-      this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 16.0F);
+      this.setPathfindingMalus(PathType.FIRE, -1.0F);
    }
 
    private void applyOpenDoorsAbility() {

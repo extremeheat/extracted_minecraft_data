@@ -13,7 +13,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SuppressForbidden;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
-import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.cauldron.CauldronInteractions;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
@@ -59,7 +59,7 @@ public class Bootstrap {
             } else {
                EntitySelectorOptions.bootStrap();
                DispenseItemBehavior.bootStrap();
-               CauldronInteraction.bootStrap();
+               CauldronInteractions.bootStrap();
                BuiltInRegistries.bootStrap();
                CreativeModeTabs.validate();
                wrapStreams();

@@ -121,7 +121,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
          }
 
          return InteractionResult.SUCCESS;
-      } else if (this.getVariant() == MushroomCow.Variant.BROWN) {
+      } else if (this.getVariant() == MushroomCow.Variant.BROWN && !this.isBaby()) {
          Optional<SuspiciousStewEffects> effectsFromItemStack = this.getEffectsFromItemStack(itemStack);
          if (effectsFromItemStack.isEmpty()) {
             return super.mobInteract(player, hand);

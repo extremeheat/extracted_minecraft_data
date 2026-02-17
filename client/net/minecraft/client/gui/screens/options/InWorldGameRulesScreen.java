@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.options;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,12 +17,13 @@ import net.minecraft.network.protocol.game.ServerboundSetGameRulePacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRuleMap;
 import net.minecraft.world.level.gamerules.GameRules;
 import org.jspecify.annotations.Nullable;
 
 public class InWorldGameRulesScreen extends AbstractGameRulesScreen implements HasGamemasterPermissionReaction {
    private static final Component PENDING_TEXT = Component.translatable("editGamerule.inGame.downloadingGamerules");
-   private final Map<GameRule<?>, Object> initialValues = new HashMap();
+   private final GameRuleMap initialValues = GameRuleMap.of();
    private final List<GameRule<?>> serverProvidedRules = new ArrayList();
    private final ClientPacketListener connection;
    private final Screen lastScreen;
@@ -44,7 +44,7 @@ public class InWorldGameRulesScreen extends AbstractGameRulesScreen implements H
 
    protected void onDone() {
       List<ServerboundSetGameRulePacket.Entry> changedEntries = new ArrayList();
-      this.initialValues.forEach((rule, initialValue) -> this.collectChangedGameRuleWithCast(rule, initialValue, changedEntries));
+      this.initialValues.keySet().forEach((rule) -> this.collectChangedGameRule(rule, changedEntries));
       if (!changedEntries.isEmpty()) {
          this.connection.send(new ServerboundSetGameRulePacket(changedEntries));
       }
@@ -52,12 +52,8 @@ public class InWorldGameRulesScreen extends AbstractGameRulesScreen implements H
       this.closeAndApplyChanges();
    }
 
-   private <T> void collectChangedGameRuleWithCast(final GameRule<T> rule, final Object initialValue, final List<ServerboundSetGameRulePacket.Entry> entries) {
-      this.collectChangedGameRule(rule, initialValue, entries);
-   }
-
-   private <T> void collectChangedGameRule(final GameRule<T> rule, final T initialValue, final List<ServerboundSetGameRulePacket.Entry> entries) {
-      if (this.hasGameRuleChanged(rule, initialValue)) {
+   private <T> void collectChangedGameRule(final GameRule<T> rule, final List<ServerboundSetGameRulePacket.Entry> entries) {
+      if (this.hasGameRuleChanged(rule)) {
          T currentValue = (T)this.gameRules.get(rule);
          BuiltInRegistries.GAME_RULE.getResourceKey(rule).ifPresent((key) -> entries.add(new ServerboundSetGameRulePacket.Entry(key, rule.serialize(currentValue))));
       }
@@ -81,17 +77,11 @@ public class InWorldGameRulesScreen extends AbstractGameRulesScreen implements H
    }
 
    private boolean hasPendingChanges() {
-      for(Map.Entry<GameRule<?>, Object> entry : this.initialValues.entrySet()) {
-         if (this.hasGameRuleChanged((GameRule)entry.getKey(), entry.getValue())) {
-            return true;
-         }
-      }
-
-      return false;
+      return this.initialValues.keySet().stream().anyMatch(this::hasGameRuleChanged);
    }
 
-   private <T> boolean hasGameRuleChanged(final GameRule<T> rule, final Object initialValue) {
-      return !this.gameRules.get(rule).equals(initialValue);
+   private <T> boolean hasGameRuleChanged(final GameRule<T> rule) {
+      return !this.gameRules.get(rule).equals(this.initialValues.get(rule));
    }
 
    public void onGameRuleValuesUpdated(final Map<ResourceKey<GameRule<?>>, String> values) {
@@ -118,7 +108,7 @@ public class InWorldGameRulesScreen extends AbstractGameRulesScreen implements H
 
    private <T> void initializeGameRuleValue(final GameRule<T> rule, final String valueStr) {
       rule.deserialize(valueStr).result().ifPresent((value) -> {
-         this.initialValues.put(rule, value);
+         this.initialValues.set(rule, value);
          this.gameRules.set(rule, value, (MinecraftServer)null);
       });
    }

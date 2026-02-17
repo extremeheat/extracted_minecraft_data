@@ -58,6 +58,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.filefix.AbortedFileFixException;
+import net.minecraft.util.filefix.CanceledFileFixException;
 import net.minecraft.util.filefix.FailedCleanupFileFixException;
 import net.minecraft.util.filefix.FileFixException;
 import net.minecraft.util.filefix.virtualfilesystem.exception.CowFSSymlinkException;
@@ -297,15 +298,18 @@ public class WorldOpenFlows {
    }
 
    private void upgradeAndOpenWorld(final LevelStorageSource.LevelStorageAccess worldAccess, final Dynamic<?> levelDataTag, final Runnable onCancel) {
-      UpgradeProgress upgradeProgress = new UpgradeProgress();
-      FileFixerProgressScreen progressScreen = new FileFixerProgressScreen(upgradeProgress);
-      this.minecraft.setScreenAndShow(progressScreen);
       Runnable cleanup = () -> {
          worldAccess.safeClose();
          onCancel.run();
       };
       int dataVersion = NbtUtils.getDataVersion(levelDataTag);
       boolean requiresFileFixing = DataFixers.getFileFixer().requiresFileFixing(dataVersion);
+      UpgradeProgress upgradeProgress = new UpgradeProgress();
+      if (requiresFileFixing) {
+         FileFixerProgressScreen progressScreen = new FileFixerProgressScreen(upgradeProgress);
+         this.minecraft.setScreenAndShow(progressScreen);
+      }
+
       Util.backgroundExecutor().execute(() -> {
          Dynamic<?> levelDataTagFixed = this.tryFileFixAndReportErrors(worldAccess, levelDataTag, upgradeProgress, cleanup);
          if (levelDataTagFixed != null) {
@@ -333,6 +337,9 @@ public class WorldOpenFlows {
       try {
          Dynamic<?> levelDataTagFixed = DataFixers.getFileFixer().fix(worldAccess, levelDataTag, upgradeProgress);
          return levelDataTagFixed;
+      } catch (CanceledFileFixException var8) {
+         this.minecraft.execute(() -> this.minecraft.setScreenAndShow(new AlertScreen(cleanup, Component.translatable("upgradeWorld.canceled.title"), Component.translatable("upgradeWorld.canceled.message"), CommonComponents.GUI_OK, true)));
+         return null;
       } catch (AbortedFileFixException e) {
          this.minecraft.execute(() -> {
             if (e.getCause() instanceof CowFSSymlinkException) {

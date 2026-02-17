@@ -14,6 +14,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -30,12 +31,9 @@ public class EditBox extends AbstractWidget {
    private static final WidgetSprites SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/text_field"), Identifier.withDefaultNamespace("widget/text_field_highlighted"));
    public static final int BACKWARDS = -1;
    public static final int FORWARDS = 1;
-   private static final int CURSOR_INSERT_WIDTH = 1;
-   private static final String CURSOR_APPEND_CHARACTER = "_";
    public static final int DEFAULT_TEXT_COLOR = -2039584;
    public static final Style DEFAULT_HINT_STYLE;
    public static final Style SEARCH_HINT_STYLE;
-   private static final int CURSOR_BLINK_INTERVAL_MS = 300;
    private final Font font;
    private String value;
    private int maxLength;
@@ -54,6 +52,7 @@ public class EditBox extends AbstractWidget {
    private @Nullable Consumer<String> responder;
    private final List<TextFormatter> formatters;
    private @Nullable Component hint;
+   private @Nullable IMEPreeditOverlay preeditOverlay;
    private long focusedTime;
    private int textX;
    private int textY;
@@ -364,6 +363,20 @@ public class EditBox extends AbstractWidget {
       }
    }
 
+   public boolean preeditUpdated(final @Nullable PreeditEvent event) {
+      IMEPreeditOverlay var10001;
+      if (event != null) {
+         Font var10004 = this.font;
+         Objects.requireNonNull(this.font);
+         var10001 = new IMEPreeditOverlay(event, var10004, 9 + 1);
+      } else {
+         var10001 = null;
+      }
+
+      this.preeditOverlay = var10001;
+      return true;
+   }
+
    private int findClickedPositionInText(final MouseButtonEvent event) {
       int positionInText = Math.min(Mth.floor(event.x()) - this.textX, this.getInnerWidth());
       String displayed = this.value.substring(this.displayPos);
@@ -405,7 +418,7 @@ public class EditBox extends AbstractWidget {
          int relCursorPos = this.cursorPos - this.displayPos;
          String displayed = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
          boolean cursorOnScreen = relCursorPos >= 0 && relCursorPos <= displayed.length();
-         boolean showCursor = this.isFocused() && (Util.getMillis() - this.focusedTime) / 300L % 2L == 0L && cursorOnScreen;
+         boolean showCursor = this.isFocused() && TextCursorUtils.isCursorVisible(Util.getMillis() - this.focusedTime) && cursorOnScreen;
          int drawX = this.textX;
          int relHighlightPos = Mth.clamp(this.highlightPos - this.displayPos, 0, displayed.length());
          if (!displayed.isEmpty()) {
@@ -448,18 +461,21 @@ public class EditBox extends AbstractWidget {
 
          if (showCursor) {
             if (insert) {
-               int var18 = this.textY - 1;
-               int var19 = cursorX + 1;
-               int var20 = this.textY + 1;
+               int var18 = this.textY;
                Objects.requireNonNull(this.font);
-               graphics.fill(cursorX, var18, var19, var20 + 9, color);
+               TextCursorUtils.drawInsertCursor(graphics, cursorX, var18, color, 9 + 1);
             } else {
-               graphics.drawString(this.font, "_", cursorX, this.textY, color, this.textShadow);
+               TextCursorUtils.drawAppendCursor(graphics, this.font, cursorX, this.textY, color, this.textShadow);
             }
          }
 
          if (this.isHovered()) {
             graphics.requestCursor(this.isEditable() ? CursorTypes.IBEAM : CursorTypes.NOT_ALLOWED);
+         }
+
+         if (this.preeditOverlay != null) {
+            this.preeditOverlay.updateInputPosition(cursorX, this.textY);
+            graphics.setPreeditOverlay(this.preeditOverlay);
          }
 
       }

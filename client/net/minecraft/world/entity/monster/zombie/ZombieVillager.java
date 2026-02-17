@@ -342,6 +342,6 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       DATA_CONVERTING_ID = SynchedEntityData.<Boolean>defineId(ZombieVillager.class, EntityDataSerializers.BOOLEAN);
       DATA_VILLAGER_DATA = SynchedEntityData.<VillagerData>defineId(ZombieVillager.class, EntityDataSerializers.VILLAGER_DATA);
       DATA_VILLAGER_DATA_FINALIZED = SynchedEntityData.<Boolean>defineId(ZombieVillager.class, EntityDataSerializers.BOOLEAN);
-      BABY_DIMENSIONS = EntityDimensions.scalable(0.5F, 1.0F).withEyeHeight(0.67F);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.67F);
    }
 }

@@ -1,5 +1,6 @@
 package net.minecraft.client;
 
+import com.mojang.blaze3d.platform.MessageBox;
 import com.mojang.logging.LogUtils;
 import com.mojang.text2speech.Narrator;
 import net.minecraft.SharedConstants;
@@ -9,7 +10,6 @@ import net.minecraft.client.main.SilentInitException;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
 
 public class GameNarrator {
@@ -114,7 +114,7 @@ public class GameNarrator {
    }
 
    public void checkStatus(final boolean requiredActive) {
-      if (requiredActive && !this.isActive() && !TinyFileDialogs.tinyfd_messageBox("Minecraft", "Failed to initialize text-to-speech library. Do you want to continue?\nIf this problem persists, please report it at bugs.mojang.com", "yesno", "error", true)) {
+      if (requiredActive && !this.isActive() && !MessageBox.errorWithContinue("Failed to initialize text-to-speech library. Do you want to continue?\nIf this problem persists, please report it at bugs.mojang.com")) {
          throw new NarratorInitException("Narrator library is not active");
       }
    }

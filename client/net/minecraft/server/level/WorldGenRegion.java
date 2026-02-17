@@ -31,7 +31,6 @@ import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.WorldGenLevel;
@@ -183,16 +182,7 @@ public class WorldGenRegion implements WorldGenLevel {
 
    public boolean destroyBlock(final BlockPos pos, final boolean dropResources, final @Nullable Entity breaker, final int updateLimit) {
       BlockState blockState = this.getBlockState(pos);
-      if (blockState.isAir()) {
-         return false;
-      } else {
-         if (dropResources) {
-            BlockEntity blockEntity = blockState.hasBlockEntity() ? this.getBlockEntity(pos) : null;
-            Block.dropResources(blockState, this.level, pos, blockEntity, breaker, ItemStack.EMPTY);
-         }
-
-         return this.setBlock(pos, Blocks.AIR.defaultBlockState(), 3, updateLimit);
-      }
+      return blockState.isAir() ? false : this.setBlock(pos, Blocks.AIR.defaultBlockState(), 3, updateLimit);
    }
 
    public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {

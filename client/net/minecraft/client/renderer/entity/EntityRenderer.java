@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.Lightmap;
@@ -107,7 +108,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          }
       }
 
-      this.submitNameTag(state, poseStack, submitNodeCollector, camera);
+      this.submitNameDisplay(state, poseStack, submitNodeCollector, camera);
    }
 
    protected boolean shouldShowName(final T entity, final double distanceToCameraSq) {
@@ -118,9 +119,19 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       return this.font;
    }
 
-   protected void submitNameTag(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+   protected void submitNameDisplay(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      this.submitNameDisplay(state, poseStack, submitNodeCollector, camera, 0);
+   }
+
+   protected final <S extends EntityRenderState> void submitNameDisplay(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera, final int offset) {
+      if (state.scoreText != null) {
+         submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, offset, state.scoreText, !state.isDiscrete, state.lightCoords, state.distanceToCameraSq, camera);
+         Objects.requireNonNull(this.getFont());
+         poseStack.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
+      }
+
       if (state.nameTag != null) {
-         submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, 0, state.nameTag, !state.isDiscrete, state.lightCoords, state.distanceToCameraSq, camera);
+         submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, offset, state.nameTag, !state.isDiscrete, state.lightCoords, state.distanceToCameraSq, camera);
       }
 
    }
@@ -147,7 +158,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    }
 
    public void extractRenderState(final T entity, final S state, final float partialTicks) {
-      label86: {
+      label91: {
          state.entityType = ((Entity)entity).getType();
          state.x = Mth.lerp((double)partialTicks, entity.xOld, entity.getX());
          state.y = Mth.lerp((double)partialTicks, entity.yOld, entity.getY());
@@ -169,7 +180,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
                      double cartLerpY = Mth.lerp((double)partialTicks, minecart.yOld, minecart.getY());
                      double cartLerpZ = Mth.lerp((double)partialTicks, minecart.zOld, minecart.getZ());
                      state.passengerOffset = behavior.getCartLerpPosition(partialTicks).subtract(new Vec3(cartLerpX, cartLerpY, cartLerpZ));
-                     break label86;
+                     break label91;
                   }
                }
             }
@@ -187,9 +198,15 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          } else {
             state.nameTag = null;
          }
+
+         if (state.distanceToCameraSq < 100.0) {
+            state.scoreText = entity.belowNameDisplay();
+         } else {
+            state.scoreText = null;
+         }
       }
 
-      label72: {
+      label77: {
          state.isDiscrete = entity.isDiscrete();
          Level level = entity.level();
          if (entity instanceof Leashable leashable) {
@@ -222,7 +239,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
 
                   while(true) {
                      if (i >= leashCount) {
-                        break label72;
+                        break label77;
                      }
 
                      EntityRenderState.LeashState leashState = (EntityRenderState.LeashState)state.leashStates.get(i);
@@ -246,7 +263,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
                   leashState.endBlockLight = endBlockLight;
                   leashState.startSkyLight = startSkyLight;
                   leashState.endSkyLight = endSkyLight;
-                  break label72;
+                  break label77;
                }
             }
          }

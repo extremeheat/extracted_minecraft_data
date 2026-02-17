@@ -21,7 +21,7 @@ public class RootedDirtBlock extends Block implements BonemealableBlock {
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      return level.getBlockState(pos.below()).isAir();
+      return level.getBlockState(pos.below()).isAir() && level.isInsideBuildHeight(pos.below());
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {

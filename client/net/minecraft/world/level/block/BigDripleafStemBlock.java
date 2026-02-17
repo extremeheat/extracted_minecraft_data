@@ -86,13 +86,7 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
       Optional<BlockPos> headPos = BlockUtil.getTopConnectedBlock(level, pos, state.getBlock(), Direction.UP, Blocks.BIG_DRIPLEAF);
-      if (headPos.isEmpty()) {
-         return false;
-      } else {
-         BlockPos abovePos = ((BlockPos)headPos.get()).above();
-         BlockState aboveState = level.getBlockState(abovePos);
-         return BigDripleafBlock.canPlaceAt(level, abovePos, aboveState);
-      }
+      return headPos.filter((blockPos) -> BigDripleafBlock.canPlaceAt(level, blockPos.above())).isPresent();
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {

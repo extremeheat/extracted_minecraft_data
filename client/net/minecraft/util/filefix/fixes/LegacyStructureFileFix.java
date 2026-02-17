@@ -26,6 +26,7 @@ import net.minecraft.server.level.ChunkMap;
 import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.util.filefix.CanceledFileFixException;
 import net.minecraft.util.filefix.FileFix;
 import net.minecraft.util.filefix.access.ChunkNbt;
 import net.minecraft.util.filefix.access.CompressedNbt;
@@ -161,6 +162,10 @@ public class LegacyStructureFileFix extends FileFix {
 
    private static void storeLegacyStructureDataToChunks(final Long2ObjectMap<LegacyStructureData> structures, final ChunkNbt chunksAccess, final CompoundTag dataFixContext, final UpgradeProgress upgradeProgress) {
       for(Long2ObjectMap.Entry<LegacyStructureData> entry : structures.long2ObjectEntrySet().stream().sorted(Comparator.comparingLong((entryx) -> ChunkPos.pack(ChunkPos.getRegionX(entryx.getLongKey()), ChunkPos.getRegionZ(entryx.getLongKey())))).toList()) {
+         if (upgradeProgress.isCanceled()) {
+            throw new CanceledFileFixException();
+         }
+
          long pos = entry.getLongKey();
          LegacyStructureData legacyData = (LegacyStructureData)entry.getValue();
          chunksAccess.updateChunk(ChunkPos.unpack(pos), dataFixContext, (tag) -> {

@@ -85,7 +85,7 @@ public class Sniffer extends Animal {
       super(type, level);
       this.getNavigation().setCanFloat(true);
       this.setPathfindingMalus(PathType.WATER, -1.0F);
-      this.setPathfindingMalus(PathType.DANGER_POWDER_SNOW, -1.0F);
+      this.setPathfindingMalus(PathType.ON_TOP_OF_POWDER_SNOW, -1.0F);
       this.setPathfindingMalus(PathType.DAMAGE_CAUTIOUS, -1.0F);
    }
 

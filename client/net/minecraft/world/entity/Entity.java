@@ -13,8 +13,6 @@ import it.unimi.dsi.fastutil.floats.FloatArrays;
 import it.unimi.dsi.fastutil.floats.FloatSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -23,7 +21,6 @@ import java.lang.annotation.Target;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -58,10 +55,12 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -106,7 +105,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
-import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -155,8 +153,12 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.scores.DisplaySlot;
+import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreHolder;
+import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
@@ -242,10 +244,9 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    protected final RandomSource random;
    public int tickCount;
    private int remainingFireTicks;
+   private final EntityFluidInteraction fluidInteraction;
    protected boolean wasTouchingWater;
-   protected final Object2DoubleMap<TagKey<Fluid>> fluidHeight;
    protected boolean wasEyeInWater;
-   private final Set<TagKey<Fluid>> fluidOnEyes;
    public int invulnerableTime;
    protected boolean firstTick;
    protected final SynchedEntityData entityData;
@@ -304,8 +305,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       this.stuckSpeedMultiplier = Vec3.ZERO;
       this.nextStep = 1.0F;
       this.random = RandomSource.create();
-      this.fluidHeight = new Object2DoubleArrayMap(2);
-      this.fluidOnEyes = new HashSet();
+      this.fluidInteraction = new EntityFluidInteraction(Set.of(FluidTags.WATER, FluidTags.LAVA));
       this.firstTick = true;
       this.levelCallback = EntityInLevelCallback.NULL;
       this.packetPositionCodec = new VecDeltaCodec();
@@ -545,8 +545,8 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
       this.wasInPowderSnow = this.isInPowderSnow;
       this.isInPowderSnow = false;
-      this.updateInWaterStateAndDoFluidPushing();
-      this.updateFluidOnEyes();
+      this.wasEyeInWater = this.isEyeInFluid(FluidTags.WATER);
+      this.updateFluidInteraction();
       this.updateSwimming();
       Level var3 = this.level();
       if (var3 instanceof ServerLevel serverLevel) {
@@ -1565,57 +1565,30 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    }
 
-   protected boolean updateInWaterStateAndDoFluidPushing() {
-      this.fluidHeight.clear();
-      this.updateInWaterStateAndDoWaterCurrentPushing();
-      double lavaFlowScale = (Boolean)this.level.environmentAttributes().getDimensionValue(EnvironmentAttributes.FAST_LAVA) ? 0.007 : 0.0023333333333333335;
-      boolean isInLava = this.updateFluidHeightAndDoFluidPushing(FluidTags.LAVA, lavaFlowScale);
-      return this.isInWater() || isInLava;
-   }
-
-   void updateInWaterStateAndDoWaterCurrentPushing() {
-      Entity var2 = this.getVehicle();
-      if (var2 instanceof AbstractBoat boat) {
-         if (!boat.isUnderWater()) {
-            this.wasTouchingWater = false;
-            return;
-         }
-      }
-
-      if (this.updateFluidHeightAndDoFluidPushing(FluidTags.WATER, 0.014)) {
+   protected boolean updateFluidInteraction() {
+      this.fluidInteraction.update(this, !this.isPushedByFluid());
+      boolean inWater = this.fluidInteraction.isInFluid(FluidTags.WATER);
+      boolean inLava = this.fluidInteraction.isInFluid(FluidTags.LAVA);
+      if (inWater) {
+         this.resetFallDistance();
          if (!this.wasTouchingWater && !this.firstTick) {
             this.doWaterSplashEffect();
          }
-
-         this.resetFallDistance();
-         this.wasTouchingWater = true;
-      } else {
-         this.wasTouchingWater = false;
       }
 
-   }
+      this.wasTouchingWater = inWater;
+      if (this.isPushedByFluid()) {
+         if (inWater) {
+            this.fluidInteraction.applyCurrentTo(FluidTags.WATER, this, 0.014);
+         }
 
-   private void updateFluidOnEyes() {
-      this.wasEyeInWater = this.isEyeInFluid(FluidTags.WATER);
-      this.fluidOnEyes.clear();
-      double eyeY = this.getEyeY();
-      Entity vehicle = this.getVehicle();
-      if (vehicle instanceof AbstractBoat boat) {
-         if (!boat.isUnderWater() && boat.getBoundingBox().maxY >= eyeY && boat.getBoundingBox().minY <= eyeY) {
-            return;
+         if (inLava) {
+            double lavaFlowScale = (Boolean)this.level.environmentAttributes().getDimensionValue(EnvironmentAttributes.FAST_LAVA) ? 0.007 : 0.0023333333333333335;
+            this.fluidInteraction.applyCurrentTo(FluidTags.LAVA, this, lavaFlowScale);
          }
       }
 
-      BlockPos pos = BlockPos.containing(this.getX(), eyeY, this.getZ());
-      FluidState fluidState = this.level().getFluidState(pos);
-      double blockFluidHeight = (double)((float)pos.getY() + fluidState.getHeight(this.level(), pos));
-      if (blockFluidHeight > eyeY) {
-         Stream var10000 = fluidState.tags();
-         Set var10001 = this.fluidOnEyes;
-         Objects.requireNonNull(var10001);
-         var10000.forEach(var10001::add);
-      }
-
+      return inWater || inLava;
    }
 
    protected void doWaterSplashEffect() {
@@ -1682,11 +1655,11 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public boolean isEyeInFluid(final TagKey<Fluid> type) {
-      return this.fluidOnEyes.contains(type);
+      return this.fluidInteraction.isEyeInFluid(type);
    }
 
    public boolean isInLava() {
-      return !this.firstTick && this.fluidHeight.getDouble(FluidTags.LAVA) > 0.0;
+      return !this.firstTick && this.fluidInteraction.isInFluid(FluidTags.LAVA);
    }
 
    public void moveRelative(final float speed, final Vec3 input) {
@@ -3278,6 +3251,18 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return (Boolean)this.entityData.get(DATA_CUSTOM_NAME_VISIBLE);
    }
 
+   public @Nullable Component belowNameDisplay() {
+      Scoreboard scoreboard = this.level().getScoreboard();
+      Objective objective = scoreboard.getDisplayObjective(DisplaySlot.BELOW_NAME);
+      if (objective != null) {
+         ReadOnlyScoreInfo score = scoreboard.getPlayerScoreInfo(this, objective);
+         Component formattedValue = ReadOnlyScoreInfo.safeFormatValue(score, objective.numberFormatOrDefault(StyledFormat.NO_STYLE));
+         return Component.empty().append(formattedValue).append(CommonComponents.SPACE).append(objective.getDisplayName());
+      } else {
+         return null;
+      }
+   }
+
    public boolean teleportTo(final ServerLevel level, final double x, final double y, final double z, final Set<Relative> relatives, final float newYRot, final float newXRot, final boolean resetCamera) {
       Entity newEntity = this.teleport(new TeleportTransition(level, new Vec3(x, y, z), Vec3.ZERO, newYRot, newXRot, relatives, TeleportTransition.DO_NOTHING));
       return newEntity != null;
@@ -3603,73 +3588,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return Mth.lerp(partial, this.yRotO, this.yRot);
    }
 
-   public boolean updateFluidHeightAndDoFluidPushing(final TagKey<Fluid> type, final double flowScale) {
-      if (this.touchingUnloadedChunk()) {
-         return false;
-      } else {
-         AABB box = this.getBoundingBox().deflate(0.001);
-         int x0 = Mth.floor(box.minX);
-         int x1 = Mth.ceil(box.maxX);
-         int y0 = Mth.floor(box.minY);
-         int y1 = Mth.ceil(box.maxY);
-         int z0 = Mth.floor(box.minZ);
-         int z1 = Mth.ceil(box.maxZ);
-         double fluidHeight = 0.0;
-         boolean pushedByFluid = this.isPushedByFluid();
-         boolean inFluid = false;
-         Vec3 current = Vec3.ZERO;
-         int numberOfCurrents = 0;
-         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-
-         for(int x = x0; x < x1; ++x) {
-            for(int y = y0; y < y1; ++y) {
-               for(int z = z0; z < z1; ++z) {
-                  pos.set(x, y, z);
-                  FluidState fluidState = this.level().getFluidState(pos);
-                  if (fluidState.is(type)) {
-                     double blockFluidHeight = (double)((float)y + fluidState.getHeight(this.level(), pos));
-                     if (blockFluidHeight >= box.minY) {
-                        inFluid = true;
-                        fluidHeight = Math.max(blockFluidHeight - box.minY, fluidHeight);
-                        if (pushedByFluid) {
-                           Vec3 flow = fluidState.getFlow(this.level(), pos);
-                           if (fluidHeight < 0.4) {
-                              flow = flow.scale(fluidHeight);
-                           }
-
-                           current = current.add(flow);
-                           ++numberOfCurrents;
-                        }
-                     }
-                  }
-               }
-            }
-         }
-
-         if (current.length() > 0.0) {
-            if (numberOfCurrents > 0) {
-               current = current.scale(1.0 / (double)numberOfCurrents);
-            }
-
-            if (!(this instanceof Player)) {
-               current = current.normalize();
-            }
-
-            Vec3 oldMovement = this.getDeltaMovement();
-            current = current.scale(flowScale);
-            double min = 0.003;
-            if (Math.abs(oldMovement.x) < 0.003 && Math.abs(oldMovement.z) < 0.003 && current.length() < 0.0045000000000000005) {
-               current = current.normalize().scale(0.0045000000000000005);
-            }
-
-            this.setDeltaMovement(this.getDeltaMovement().add(current));
-         }
-
-         this.fluidHeight.put(type, fluidHeight);
-         return inFluid;
-      }
-   }
-
    public boolean touchingUnloadedChunk() {
       AABB box = this.getBoundingBox().inflate(1.0);
       int x0 = Mth.floor(box.minX);
@@ -3680,7 +3598,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public double getFluidHeight(final TagKey<Fluid> type) {
-      return this.fluidHeight.getDouble(type);
+      return this.fluidInteraction.getFluidHeight(type);
    }
 
    public double getFluidJumpThreshold() {
@@ -4094,6 +4012,21 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public void registerDebugValues(final ServerLevel level, final DebugValueSource.Registration registration) {
+   }
+
+   public @Nullable AABB getFluidInteractionBox() {
+      double margin = 0.001;
+      AABB box = this.getBoundingBox().deflate(0.001);
+      Entity vehicle = this.getVehicle();
+      if (vehicle != null) {
+         box = vehicle.modifyPassengerFluidInteractionBox(box);
+      }
+
+      return box;
+   }
+
+   protected @Nullable AABB modifyPassengerFluidInteractionBox(final AABB passengerBox) {
+      return passengerBox;
    }
 
    static {

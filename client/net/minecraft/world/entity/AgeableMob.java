@@ -181,7 +181,7 @@ public abstract class AgeableMob extends PathfinderMob {
 
             --this.forcedAgeTimer;
          }
-      } else if (this.isAlive() && this.canAgeUp()) {
+      } else if (this.isAlive() && !this.isAgeLocked()) {
          int age = this.getAge();
          if (age < 0) {
             ++age;

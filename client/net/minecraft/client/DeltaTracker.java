@@ -31,12 +31,7 @@ public interface DeltaTracker {
          this.targetMsptProvider = targetMsptProvider;
       }
 
-      public int advanceTime(final long currentMs, final boolean shouldAdvanceGameTime) {
-         this.advanceRealTime(currentMs);
-         return shouldAdvanceGameTime ? this.advanceGameTime(currentMs) : 0;
-      }
-
-      private int advanceGameTime(final long currentMs) {
+      public int advanceGameTime(final long currentMs) {
          this.deltaTicks = (float)(currentMs - this.lastMs) / this.targetMsptProvider.apply(this.msPerTick);
          this.lastMs = currentMs;
          this.deltaTickResidual += this.deltaTicks;
@@ -45,7 +40,7 @@ public interface DeltaTracker {
          return ticks;
       }
 
-      private void advanceRealTime(final long currentMs) {
+      public void advanceRealTime(final long currentMs) {
          this.realtimeDeltaTicks = (float)(currentMs - this.lastUiMs) / this.msPerTick;
          this.lastUiMs = currentMs;
       }

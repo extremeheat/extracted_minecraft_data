@@ -746,6 +746,20 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       return new ItemStack((ItemLike)this.dropItem.get());
    }
 
+   protected @Nullable AABB modifyPassengerFluidInteractionBox(final AABB passengerBox) {
+      if (this.isUnderWater()) {
+         return passengerBox;
+      } else {
+         AABB boatBox = this.getBoundingBox();
+         if (boatBox.maxY >= passengerBox.maxY) {
+            return null;
+         } else {
+            double minY = Math.max(passengerBox.minY, boatBox.maxY);
+            return new AABB(passengerBox.minX, minY, passengerBox.minZ, passengerBox.maxX, passengerBox.maxY, passengerBox.maxZ);
+         }
+      }
+   }
+
    static {
       DATA_ID_PADDLE_LEFT = SynchedEntityData.<Boolean>defineId(AbstractBoat.class, EntityDataSerializers.BOOLEAN);
       DATA_ID_PADDLE_RIGHT = SynchedEntityData.<Boolean>defineId(AbstractBoat.class, EntityDataSerializers.BOOLEAN);

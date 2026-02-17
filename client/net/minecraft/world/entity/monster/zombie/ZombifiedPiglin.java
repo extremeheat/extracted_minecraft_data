@@ -44,7 +44,7 @@ import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 public class ZombifiedPiglin extends Zombie implements NeutralMob {
-   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.55F, 0.95F).withEyeHeight(0.78F);
+   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.78F);
    private static final Identifier SPEED_MODIFIER_ATTACKING_ID = Identifier.withDefaultNamespace("attacking");
    private static final AttributeModifier SPEED_MODIFIER_ATTACKING;
    private static final UniformInt FIRST_ANGER_SOUND_DELAY;

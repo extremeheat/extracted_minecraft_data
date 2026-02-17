@@ -53,7 +53,7 @@ public class NetherFungusBlock extends VegetationBlock implements BonemealableBl
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
       BlockState belowState = level.getBlockState(pos.below());
-      return belowState.is(this.requiredBlock);
+      return belowState.is(this.requiredBlock) && level.isInsideBuildHeight(pos.above());
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {

@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.selector.SelectorPattern;
+import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.CompilableString;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
@@ -22,8 +23,8 @@ import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import org.jspecify.annotations.Nullable;
 
-public record ScoreContents(Either<SelectorPattern, String> name, String objective) implements ComponentContents {
-   public static final MapCodec<ScoreContents> INNER_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.either(SelectorPattern.CODEC, Codec.STRING).fieldOf("name").forGetter(ScoreContents::name), Codec.STRING.fieldOf("objective").forGetter(ScoreContents::objective)).apply(i, ScoreContents::new));
+public record ScoreContents(Either<CompilableString<EntitySelector>, String> name, String objective) implements ComponentContents {
+   public static final MapCodec<ScoreContents> INNER_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.either(EntitySelector.COMPILABLE_CODEC, Codec.STRING).fieldOf("name").forGetter(ScoreContents::name), Codec.STRING.fieldOf("objective").forGetter(ScoreContents::objective)).apply(i, ScoreContents::new));
    public static final MapCodec<ScoreContents> MAP_CODEC;
 
    public ScoreContents {
@@ -35,9 +36,9 @@ public record ScoreContents(Either<SelectorPattern, String> name, String objecti
    }
 
    private ScoreHolder findTargetName(final CommandSourceStack source) throws CommandSyntaxException {
-      Optional<SelectorPattern> selector = this.name.left();
+      Optional<CompilableString<EntitySelector>> selector = this.name.left();
       if (selector.isPresent()) {
-         List<? extends Entity> entities = ((SelectorPattern)selector.get()).resolved().findEntities(source);
+         List<? extends Entity> entities = ((EntitySelector)((CompilableString)selector.get()).compiled()).findEntities(source);
          if (!entities.isEmpty()) {
             if (entities.size() != 1) {
                throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.create();
@@ -45,7 +46,7 @@ public record ScoreContents(Either<SelectorPattern, String> name, String objecti
                return (ScoreHolder)entities.getFirst();
             }
          } else {
-            return ScoreHolder.forNameOnly(((SelectorPattern)selector.get()).pattern());
+            return ScoreHolder.forNameOnly(((CompilableString)selector.get()).source());
          }
       } else {
          return ScoreHolder.forNameOnly((String)this.name.right().orElseThrow());

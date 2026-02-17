@@ -1,9 +1,7 @@
 package net.minecraft.world.item;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -43,7 +41,7 @@ public class ScaffoldingBlockItem extends BlockItem {
                if (player instanceof ServerPlayer) {
                   ServerPlayer serverPlayer = (ServerPlayer)player;
                   if (placementPos.getY() > maxY) {
-                     serverPlayer.sendOverlayMessage(Component.translatable("build.tooHigh", maxY).withStyle(ChatFormatting.RED));
+                     serverPlayer.sendBuildLimitMessage(true, maxY);
                   }
                }
                break;

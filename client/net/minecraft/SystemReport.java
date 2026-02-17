@@ -3,6 +3,7 @@ package net.minecraft;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryUsage;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -50,10 +51,16 @@ public class SystemReport {
          long freeMb = free / 1048576L;
          return free + " bytes (" + freeMb + " MiB) / " + total + " bytes (" + totalMb + " MiB) up to " + max + " bytes (" + maxMb + " MiB)";
       }));
+      this.setDetail("Memory (heap)", (Supplier)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage())));
+      this.setDetail("Memory (non-head)", (Supplier)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage())));
       this.setDetail("CPUs", (Supplier)(() -> String.valueOf(Runtime.getRuntime().availableProcessors())));
       this.ignoreErrors("hardware", () -> this.putHardware(new SystemInfo()));
       this.setDetail("JVM Flags", (Supplier)(() -> printJvmFlags((arg) -> arg.startsWith("-X"))));
       this.setDetail("Debug Flags", (Supplier)(() -> printJvmFlags((arg) -> arg.startsWith("-DMC_DEBUG_"))));
+   }
+
+   private static String printMemoryUsage(final MemoryUsage memoryUsage) {
+      return String.format(Locale.ROOT, "init: %03dMiB, used: %03dMiB, committed: %03dMiB, max: %03dMiB", memoryUsage.getInit() / 1048576L, memoryUsage.getUsed() / 1048576L, memoryUsage.getCommitted() / 1048576L, memoryUsage.getMax() / 1048576L);
    }
 
    private static String printJvmFlags(final Predicate<String> selector) {

@@ -73,6 +73,7 @@ public class BlockFamily {
       WALL("wall"),
       WALL_SIGN("wall_sign"),
       BRICKS("bricks"),
+      COBBLED("cobbled"),
       TILES("tiles");
 
       private final String recipeGroup;
@@ -87,7 +88,7 @@ public class BlockFamily {
 
       // $FF: synthetic method
       private static Variant[] $values() {
-         return new Variant[]{BUTTON, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN, BRICKS, TILES};
+         return new Variant[]{BUTTON, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN, BRICKS, COBBLED, TILES};
       }
    }
 
@@ -191,6 +192,11 @@ public class BlockFamily {
 
       public Builder wall(final Block wall) {
          this.family.variants.put(BlockFamily.Variant.WALL, wall);
+         return this;
+      }
+
+      public Builder cobbled(final Block cobble) {
+         this.family.variants.put(BlockFamily.Variant.COBBLED, cobble);
          return this;
       }
 

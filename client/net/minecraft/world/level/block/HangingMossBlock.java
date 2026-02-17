@@ -83,7 +83,8 @@ public class HangingMossBlock extends Block implements BonemealableBlock {
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      return this.canGrowInto(level.getBlockState(this.getTip(level, pos).below()));
+      BlockPos growPos = this.getTip(level, pos).below();
+      return this.canGrowInto(level.getBlockState(growPos)) && level.isInsideBuildHeight(growPos);
    }
 
    private boolean canGrowInto(final BlockState state) {

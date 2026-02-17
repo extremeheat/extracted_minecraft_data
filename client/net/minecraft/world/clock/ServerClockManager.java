@@ -70,12 +70,12 @@ public class ServerClockManager extends SavedData implements ClockManager {
       this.modifyClock(clock, (instance) -> instance.totalTicks = totalTicks);
    }
 
-   public boolean skipToTimeMarker(final Holder<WorldClock> clock, final ResourceKey<ClockTimeMarker> timeMarkerId) {
+   public boolean moveToTimeMarker(final Holder<WorldClock> clock, final ResourceKey<ClockTimeMarker> timeMarkerId) {
       MutableBoolean set = new MutableBoolean();
       this.modifyClock(clock, (instance) -> {
          ClockTimeMarker timeMarker = (ClockTimeMarker)instance.timeMarkers.get(timeMarkerId);
          if (timeMarker != null) {
-            instance.totalTicks = timeMarker.getNextOccurenceAfter(instance.totalTicks);
+            instance.totalTicks = timeMarker.resolveTimeToMoveTo(instance.totalTicks);
             set.setTrue();
          }
       });

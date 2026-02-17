@@ -14,7 +14,7 @@ public class FileFixException extends RuntimeException {
    }
 
    protected CrashReport createCrashReport() {
-      CrashReport crashReport = CrashReport.forThrowable(this.getCause(), "Upgrading world failed with errors");
+      CrashReport crashReport = CrashReport.forThrowable(this, "Upgrading world failed with errors");
       CrashReportCategory fsCapabilities = crashReport.addCategory("File system capabilities");
       fsCapabilities.setDetail("Hard Links", this.fileSystemCapabilities == null ? "null" : this.fileSystemCapabilities.hardLinks());
       fsCapabilities.setDetail("Atomic Move", this.fileSystemCapabilities == null ? "null" : this.fileSystemCapabilities.atomicMove());

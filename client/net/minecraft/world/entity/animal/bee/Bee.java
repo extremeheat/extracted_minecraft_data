@@ -156,7 +156,7 @@ public class Bee extends Animal implements FlyingAnimal, NeutralMob {
       this.remainingCooldownBeforeLocatingNewFlower = Mth.nextInt(this.random, 20, 60);
       this.moveControl = new FlyingMoveControl(this, 20, true);
       this.lookControl = new BeeLookControl(this);
-      this.setPathfindingMalus(PathType.DANGER_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, -1.0F);
       this.setPathfindingMalus(PathType.WATER, -1.0F);
       this.setPathfindingMalus(PathType.WATER_BORDER, 16.0F);
       this.setPathfindingMalus(PathType.COCOA, -1.0F);

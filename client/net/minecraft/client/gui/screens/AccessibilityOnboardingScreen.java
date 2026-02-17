@@ -24,6 +24,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class AccessibilityOnboardingScreen extends Screen {
    private static final Component TITLE = Component.translatable("accessibility.onboarding.screen.title");
@@ -39,6 +40,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    private float timer;
    private final Runnable onClose;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, this.initTitleYPos(), 33);
+   private @Nullable FocusableTextWidget focusableTextWidget;
    private float fadeInStart;
    private boolean fadingIn = true;
    private float fadeOutStart;
@@ -54,7 +56,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    public void init() {
       LinearLayout content = (LinearLayout)this.layout.addToContents(LinearLayout.vertical());
       content.defaultCellSetting().alignHorizontallyCenter().padding(4);
-      content.addChild(FocusableTextWidget.builder(this.title, this.font).maxWidth(374).build(), (Consumer)((w) -> w.padding(8)));
+      this.focusableTextWidget = (FocusableTextWidget)content.addChild(FocusableTextWidget.builder(this.title, this.font).maxWidth(374).build(), (Consumer)((w) -> w.padding(8)));
       GridLayout grid = (GridLayout)content.addChild(new GridLayout());
       grid.defaultCellSetting().padding(4);
       GridLayout.RowHelper rowHelper = grid.createRowHelper(2);
@@ -74,6 +76,10 @@ public class AccessibilityOnboardingScreen extends Screen {
    }
 
    protected void repositionElements() {
+      if (this.focusableTextWidget != null) {
+         this.focusableTextWidget.updateHeight();
+      }
+
       this.layout.arrangeElements();
    }
 

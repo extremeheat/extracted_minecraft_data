@@ -21,9 +21,9 @@ public record ClockTimeMarker(Holder<WorldClock> clock, int ticks, Optional<Inte
       }
    }
 
-   public long getNextOccurenceAfter(final long totalTicks) {
+   public long resolveTimeToMoveTo(final long totalTicks) {
       if (this.periodTicks.isEmpty()) {
-         return Math.max((long)this.ticks, totalTicks);
+         return (long)this.ticks;
       } else {
          int periodTicks = (Integer)this.periodTicks.get();
          return totalTicks + durationToNext(periodTicks, totalTicks % (long)periodTicks, (long)this.ticks);

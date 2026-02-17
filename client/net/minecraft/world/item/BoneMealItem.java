@@ -41,9 +41,10 @@ public class BoneMealItem extends Item {
          if (!level.isClientSide()) {
             boneMealStack.causeUseVibration(context.getPlayer(), GameEvent.ITEM_INTERACT_FINISH);
             level.levelEvent(1505, pos, 15);
+            return InteractionResult.SUCCESS_SERVER;
+         } else {
+            return InteractionResult.PASS;
          }
-
-         return InteractionResult.SUCCESS;
       } else {
          BlockState clickedState = level.getBlockState(pos);
          boolean solidBlockFace = clickedState.isFaceSturdy(level, pos, context.getClickedFace());

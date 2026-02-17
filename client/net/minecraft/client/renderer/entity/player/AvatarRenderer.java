@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity.player;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import java.util.Objects;
 import net.minecraft.client.entity.ClientAvatarEntity;
 import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.model.HumanoidModel;
@@ -143,19 +142,10 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       poseStack.scale(0.9375F, 0.9375F, 0.9375F);
    }
 
-   protected void submitNameTag(final AvatarRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+   protected void submitNameDisplay(final AvatarRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
       int offset = state.showExtraEars ? -10 : 0;
-      if (state.scoreText != null) {
-         submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, offset, state.scoreText, !state.isDiscrete, state.lightCoords, state.distanceToCameraSq, camera);
-         Objects.requireNonNull(this.getFont());
-         poseStack.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
-      }
-
-      if (state.nameTag != null) {
-         submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, offset, state.nameTag, !state.isDiscrete, state.lightCoords, state.distanceToCameraSq, camera);
-      }
-
+      this.submitNameDisplay(state, poseStack, submitNodeCollector, camera, offset);
       poseStack.popPose();
    }
 
@@ -181,12 +171,6 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       state.showCape = entity.isModelPartShown(PlayerModelPart.CAPE);
       this.extractFlightData(entity, state, partialTicks);
       this.extractCapeState(entity, state, partialTicks);
-      if (state.distanceToCameraSq < 100.0) {
-         state.scoreText = ((ClientAvatarEntity)entity).belowNameDisplay();
-      } else {
-         state.scoreText = null;
-      }
-
       state.parrotOnLeftShoulder = ((ClientAvatarEntity)entity).getParrotVariantOnShoulder(true);
       state.parrotOnRightShoulder = ((ClientAvatarEntity)entity).getParrotVariantOnShoulder(false);
       state.id = entity.getId();

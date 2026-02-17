@@ -480,7 +480,7 @@ public final class NativeImage implements AutoCloseable {
          throw new UnsupportedOperationException("resizeSubRectTo only works for images of the same format.");
       } else {
          int components = this.format.components();
-         STBImageResize.nstbir_resize_uint8(this.pixels + (long)((sourceX + sourceY * this.getWidth()) * components), sizeX, sizeY, this.getWidth() * components, to.pixels, to.getWidth(), to.getHeight(), 0, components);
+         STBImageResize.nstbir_resize_uint8_linear(this.pixels + (long)((sourceX + sourceY * this.getWidth()) * components), sizeX, sizeY, this.getWidth() * components, to.pixels, to.getWidth(), to.getHeight(), 0, components);
       }
    }
 

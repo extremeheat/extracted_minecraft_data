@@ -40,6 +40,10 @@ public abstract class TrunkPlacer {
 
    public abstract List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config);
 
+   public int getBaseHeight() {
+      return this.baseHeight;
+   }
+
    public int getTreeHeight(final RandomSource random) {
       return this.baseHeight + random.nextInt(this.heightRandA + 1) + random.nextInt(this.heightRandB + 1);
    }

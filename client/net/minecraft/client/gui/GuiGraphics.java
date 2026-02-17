@@ -19,6 +19,7 @@ import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
@@ -99,6 +100,7 @@ public class GuiGraphics {
    private @Nullable Runnable deferredTooltip;
    private @Nullable Style hoveredTextStyle;
    private @Nullable Style clickableTextStyle;
+   private @Nullable Renderable preeditOverlay;
 
    private GuiGraphics(final Minecraft minecraft, final Matrix3x2fStack pose, final GuiRenderState guiRenderState, final int mouseX, final int mouseY) {
       super();
@@ -570,6 +572,10 @@ public class GuiGraphics {
       }
    }
 
+   public void setPreeditOverlay(final Renderable preeditOverlay) {
+      this.preeditOverlay = preeditOverlay;
+   }
+
    public void renderTooltip(final Font font, final List<ClientTooltipComponent> lines, final int xo, final int yo, final ClientTooltipPositioner positioner, final @Nullable Identifier style) {
       int textWidth = 0;
       int tempHeight = lines.size() == 1 ? -2 : 0;
@@ -609,13 +615,18 @@ public class GuiGraphics {
       this.pose.popMatrix();
    }
 
-   public void renderDeferredElements() {
+   public void renderDeferredElements(final int mouseX, final int mouseY, final float a) {
       if (this.hoveredTextStyle != null) {
-         this.renderComponentHoverEffect(this.minecraft.font, this.hoveredTextStyle, this.mouseX, this.mouseY);
+         this.renderComponentHoverEffect(this.minecraft.font, this.hoveredTextStyle, mouseX, mouseY);
       }
 
       if (this.clickableTextStyle != null && this.clickableTextStyle.getClickEvent() != null) {
          this.requestCursor(CursorTypes.POINTING_HAND);
+      }
+
+      if (this.preeditOverlay != null) {
+         this.nextStratum();
+         this.preeditOverlay.render(this, mouseX, mouseY, a);
       }
 
       if (this.deferredTooltip != null) {

@@ -147,6 +147,7 @@ import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.commands.FetchProfileCommand;
 import net.minecraft.server.commands.GameModeCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -163,6 +164,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -710,6 +712,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          ItemStack itemStack = entity.getPickResult();
          if (itemStack != null && !itemStack.isEmpty()) {
             this.tryPickItem(itemStack);
+         }
+
+         if (packet.includeData() && this.player.canUseGameMasterBlocks() && entity instanceof Avatar) {
+            Avatar avatar = (Avatar)entity;
+            FetchProfileCommand.printForAvatar(this.player.createCommandSourceStack(), avatar);
          }
 
       }
@@ -1331,8 +1338,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                if (Math.abs(distance.x()) < 1.0000001 && Math.abs(distance.y()) < 1.0000001 && Math.abs(distance.z()) < 1.0000001) {
                   Direction direction = blockHit.getDirection();
                   this.player.resetLastActionTime();
-                  int maxY = this.player.level().getMaxY();
-                  if (pos.getY() <= maxY) {
+                  int maxY = level.getMaxY();
+                  int minY = level.getMinY();
+                  if (pos.getY() > maxY) {
+                     this.player.sendBuildLimitMessage(true, maxY);
+                  } else if (pos.getY() < minY) {
+                     this.player.sendBuildLimitMessage(false, minY);
+                  } else {
                      if (this.awaitingPositionFromClient == null && level.mayInteract(this.player, pos)) {
                         InteractionResult interactionResult = this.player.gameMode.useItemOn(this.player, level, itemStack, hand, blockHit);
                         if (interactionResult.consumesAction()) {
@@ -1340,20 +1352,33 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         }
 
                         if (direction == Direction.UP && !interactionResult.consumesAction() && pos.getY() >= maxY && wasBlockPlacementAttempt(this.player, itemStack)) {
-                           this.player.sendOverlayMessage(Component.translatable("build.tooHigh", maxY).withStyle(ChatFormatting.RED));
+                           this.player.sendBuildLimitMessage(true, maxY);
                         } else if (interactionResult instanceof InteractionResult.Success) {
                            InteractionResult.Success success = (InteractionResult.Success)interactionResult;
                            if (success.swingSource() == InteractionResult.SwingSource.SERVER) {
                               this.player.swing(hand, true);
                            }
                         }
-                     }
-                  } else {
-                     this.player.sendOverlayMessage(Component.translatable("build.tooHigh", maxY).withStyle(ChatFormatting.RED));
-                  }
 
-                  this.send(new ClientboundBlockUpdatePacket(level, pos));
-                  this.send(new ClientboundBlockUpdatePacket(level, pos.relative(direction)));
+                        if (!interactionResult.consumesAction() && wasBlockPlacementAttempt(this.player, itemStack)) {
+                           if (direction == Direction.UP && pos.getY() >= maxY) {
+                              this.player.sendBuildLimitMessage(true, maxY);
+                           } else if (direction == Direction.DOWN && pos.getY() <= minY) {
+                              this.player.sendBuildLimitMessage(false, minY);
+                           }
+                        } else if (interactionResult instanceof InteractionResult.Success) {
+                           InteractionResult.Success success = (InteractionResult.Success)interactionResult;
+                           if (success.swingSource() == InteractionResult.SwingSource.SERVER) {
+                              this.player.swing(hand, true);
+                           }
+                        }
+                     } else {
+                        this.player.sendBuildLimitMessage(true, maxY);
+                     }
+
+                     this.send(new ClientboundBlockUpdatePacket(level, pos));
+                     this.send(new ClientboundBlockUpdatePacket(level, pos.relative(direction)));
+                  }
                } else {
                   LOGGER.warn("Rejecting UseItemOnPacket from {}: Location {} too far away from hit block {}.", new Object[]{this.player.getGameProfile().name(), location, pos});
                }

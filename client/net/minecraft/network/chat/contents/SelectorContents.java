@@ -5,7 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.selector.SelectorPattern;
+import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -13,11 +13,12 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.CompilableString;
 import net.minecraft.world.entity.Entity;
 import org.jspecify.annotations.Nullable;
 
-public record SelectorContents(SelectorPattern selector, Optional<Component> separator) implements ComponentContents {
-   public static final MapCodec<SelectorContents> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SelectorPattern.CODEC.fieldOf("selector").forGetter(SelectorContents::selector), ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(SelectorContents::separator)).apply(i, SelectorContents::new));
+public record SelectorContents(CompilableString<EntitySelector> selector, Optional<Component> separator) implements ComponentContents {
+   public static final MapCodec<SelectorContents> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(EntitySelector.COMPILABLE_CODEC.fieldOf("selector").forGetter(SelectorContents::selector), ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(SelectorContents::separator)).apply(i, SelectorContents::new));
 
    public SelectorContents {
       super();
@@ -32,16 +33,16 @@ public record SelectorContents(SelectorPattern selector, Optional<Component> sep
          return Component.empty();
       } else {
          Optional<? extends Component> resolvedSeparator = ComponentUtils.updateForEntity(source, this.separator, entity, recursionDepth);
-         return ComponentUtils.formatList(this.selector.resolved().findEntities(source), resolvedSeparator, Entity::getDisplayName);
+         return ComponentUtils.formatList((this.selector.compiled()).findEntities(source), resolvedSeparator, Entity::getDisplayName);
       }
    }
 
    public <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
-      return output.accept(currentStyle, this.selector.pattern());
+      return output.accept(currentStyle, this.selector.source());
    }
 
    public <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
-      return output.accept(this.selector.pattern());
+      return output.accept(this.selector.source());
    }
 
    public String toString() {

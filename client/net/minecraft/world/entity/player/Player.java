@@ -97,6 +97,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -1890,7 +1891,23 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public String debugInfo() {
-      return MoreObjects.toStringHelper(this).add("name", this.getPlainTextName()).add("id", this.getId()).add("pos", this.position()).add("mode", this.gameMode()).add("permission", this.permissions()).toString();
+      return MoreObjects.toStringHelper(this).add("name", this.getPlainTextName()).add("id", this.getId()).add("pos", this.position()).add("mode", this.gameMode()).add("permission", printPlayerPermissions(this.permissions())).toString();
+   }
+
+   private static String printPlayerPermissions(final PermissionSet permissions) {
+      if (permissions.hasPermission(Permissions.COMMANDS_OWNER)) {
+         return "owner";
+      } else if (permissions.hasPermission(Permissions.COMMANDS_ADMIN)) {
+         return "admin";
+      } else if (permissions.hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
+         return "gamemaster";
+      } else {
+         return permissions.hasPermission(Permissions.COMMANDS_MODERATOR) ? "moderator" : "none";
+      }
+   }
+
+   public ResolvableProfile getProfile() {
+      return ResolvableProfile.createResolved(this.gameProfile);
    }
 
    static {

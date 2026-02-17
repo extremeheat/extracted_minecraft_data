@@ -19,6 +19,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.PreeditEvent;
 import org.joml.Vector2i;
 import org.jspecify.annotations.Nullable;
 
@@ -85,6 +86,10 @@ public interface ContainerEventHandler extends GuiEventListener {
 
    default boolean charTyped(final CharacterEvent event) {
       return this.getFocused() != null && this.getFocused().charTyped(event);
+   }
+
+   default boolean preeditUpdated(final @Nullable PreeditEvent event) {
+      return this.getFocused() != null && this.getFocused().preeditUpdated(event);
    }
 
    default ScreenRectangle getBorderForArrowNavigation(final ScreenDirection opposite) {

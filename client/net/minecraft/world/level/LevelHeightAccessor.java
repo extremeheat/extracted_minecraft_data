@@ -24,6 +24,10 @@ public interface LevelHeightAccessor {
       return SectionPos.blockToSectionCoord(this.getMaxY());
    }
 
+   default boolean isInsideBuildHeight(final BlockPos pos) {
+      return this.isInsideBuildHeight(pos.getY());
+   }
+
    default boolean isInsideBuildHeight(final int blockY) {
       return blockY >= this.getMinY() && blockY <= this.getMaxY();
    }

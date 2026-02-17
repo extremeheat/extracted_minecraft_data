@@ -43,7 +43,7 @@ public class NyliumBlock extends Block implements BonemealableBlock {
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      return level.getBlockState(pos.above()).isAir();
+      return level.getBlockState(pos.above()).isAir() && level.isInsideBuildHeight(pos.above());
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
@@ -68,7 +68,10 @@ public class NyliumBlock extends Block implements BonemealableBlock {
    }
 
    private void place(final Registry<ConfiguredFeature<?, ?>> configuredFeatures, final ResourceKey<ConfiguredFeature<?, ?>> id, final ServerLevel level, final ChunkGenerator generator, final RandomSource random, final BlockPos pos) {
-      configuredFeatures.get(id).ifPresent((h) -> ((ConfiguredFeature)h.value()).place(level, generator, random, pos));
+      if (level.isInsideBuildHeight(pos)) {
+         configuredFeatures.get(id).ifPresent((h) -> ((ConfiguredFeature)h.value()).place(level, generator, random, pos));
+      }
+
    }
 
    public BonemealableBlock.Type getType() {

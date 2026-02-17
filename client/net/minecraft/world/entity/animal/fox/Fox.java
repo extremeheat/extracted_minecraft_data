@@ -141,8 +141,8 @@ public class Fox extends Animal {
       super(type, level);
       this.lookControl = new FoxLookControl();
       this.moveControl = new FoxMoveControl();
-      this.setPathfindingMalus(PathType.DANGER_OTHER, 0.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_OTHER, 0.0F);
+      this.setPathfindingMalus(PathType.DAMAGING_IN_NEIGHBOR, 0.0F);
+      this.setPathfindingMalus(PathType.DAMAGING, 0.0F);
       this.setCanPickUpLoot(true);
       this.getNavigation().setRequiredPathLength(32.0F);
    }

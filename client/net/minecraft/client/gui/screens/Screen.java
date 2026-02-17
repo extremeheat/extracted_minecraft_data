@@ -117,7 +117,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.renderBackground(graphics, mouseX, mouseY, a);
       graphics.nextStratum();
       this.render(graphics, mouseX, mouseY, a);
-      graphics.renderDeferredElements();
+      graphics.renderDeferredElements(mouseX, mouseY, a);
    }
 
    public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {

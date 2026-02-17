@@ -73,22 +73,22 @@ public class BabyFoxModel extends FoxModel {
       this.body.zRot = -1.5707964F;
       this.body.xRot = -0.17453292F;
       ++this.body.y;
-      ModelPart var10000 = this.body;
-      var10000.z += 2.5F;
-      var10000 = this.body;
-      var10000.x += 2.5F;
+      --this.body.z;
+      --this.body.x;
       this.tail.xRot = -2.6179938F;
       this.tail.xRot = -2.1816616F;
-      var10000 = this.tail;
+      ModelPart var10000 = this.tail;
       var10000.x -= 0.7F;
       var10000 = this.tail;
       var10000.z += 0.6F;
       var10000 = this.tail;
       var10000.y += 0.9F;
       var10000 = this.head;
-      var10000.x += 2.0F;
+      var10000.x -= 2.0F;
       var10000 = this.head;
       var10000.y += 2.8F;
+      var10000 = this.head;
+      var10000.z -= 4.0F;
       this.head.yRot = -2.0943952F;
       this.head.zRot = 0.0F;
    }

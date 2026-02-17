@@ -9,12 +9,10 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.SnifferRenderState;
 
 public class SnifferModel extends EntityModel<SnifferRenderState> {
-   public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
    private static final float WALK_ANIMATION_SPEED_MAX = 9.0F;
    private static final float WALK_ANIMATION_SCALE_FACTOR = 100.0F;
    private final ModelPart head;
@@ -25,7 +23,6 @@ public class SnifferModel extends EntityModel<SnifferRenderState> {
    private final KeyframeAnimation standUpAnimation;
    private final KeyframeAnimation happyAnimation;
    private final KeyframeAnimation sniffSniffAnimation;
-   private final KeyframeAnimation babyTransform;
 
    public SnifferModel(final ModelPart root) {
       super(root);
@@ -37,7 +34,6 @@ public class SnifferModel extends EntityModel<SnifferRenderState> {
       this.standUpAnimation = SnifferAnimation.SNIFFER_STAND_UP.bake(root);
       this.happyAnimation = SnifferAnimation.SNIFFER_HAPPY.bake(root);
       this.sniffSniffAnimation = SnifferAnimation.SNIFFER_SNIFFSNIFF.bake(root);
-      this.babyTransform = SnifferAnimation.BABY_TRANSFORM.bake(root);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -74,9 +70,5 @@ public class SnifferModel extends EntityModel<SnifferRenderState> {
       this.standUpAnimation.apply(state.risingAnimationState, state.ageInTicks);
       this.happyAnimation.apply(state.feelingHappyAnimationState, state.ageInTicks);
       this.sniffSniffAnimation.apply(state.scentingAnimationState, state.ageInTicks);
-      if (state.isBaby) {
-         this.babyTransform.applyStatic();
-      }
-
    }
 }

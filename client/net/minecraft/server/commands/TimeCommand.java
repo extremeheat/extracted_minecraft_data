@@ -111,7 +111,7 @@ public class TimeCommand {
 
    private static int setTimeToTimeMarker(final CommandSourceStack source, final Holder<WorldClock> clock, final ResourceKey<ClockTimeMarker> timeMarkerId) throws CommandSyntaxException {
       ServerClockManager clockManager = source.getServer().clockManager();
-      if (!clockManager.skipToTimeMarker(clock, timeMarkerId)) {
+      if (!clockManager.moveToTimeMarker(clock, timeMarkerId)) {
          throw ERROR_NO_TIME_MARKER_FOUND.create(clock.getRegisteredName(), timeMarkerId);
       } else {
          source.sendSuccess(() -> Component.translatable("commands.time.set.time_marker", clock.getRegisteredName(), timeMarkerId.identifier().toString()), true);

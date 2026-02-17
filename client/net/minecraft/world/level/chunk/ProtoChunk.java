@@ -234,7 +234,7 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    public void markPosForPostprocessing(final BlockPos blockPos) {
-      if (!this.isOutsideBuildHeight(blockPos)) {
+      if (this.isInsideBuildHeight(blockPos)) {
          ChunkAccess.getOrCreateOffsetList(this.postProcessing, this.getSectionIndex(blockPos.getY())).add(packOffsetCoordinates(blockPos));
       }
 

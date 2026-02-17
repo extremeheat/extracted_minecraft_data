@@ -118,11 +118,11 @@ public class Warden extends Monster implements VibrationSystem {
       this.xpReward = 5;
       this.getNavigation().setCanFloat(true);
       this.setPathfindingMalus(PathType.UNPASSABLE_RAIL, 0.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_OTHER, 8.0F);
+      this.setPathfindingMalus(PathType.DAMAGING, 8.0F);
       this.setPathfindingMalus(PathType.POWDER_SNOW, 8.0F);
       this.setPathfindingMalus(PathType.LAVA, 8.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
-      this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 0.0F);
    }
 
    public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {

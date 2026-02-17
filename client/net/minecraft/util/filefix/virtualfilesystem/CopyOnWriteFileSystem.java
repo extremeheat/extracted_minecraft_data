@@ -236,11 +236,13 @@ public class CopyOnWriteFileSystem extends FileSystem {
 
    public static void hardLinkFiles(final List<FileMove> moves) throws IOException {
       for(FileMove move : moves) {
-         if (!Files.isRegularFile(move.from(), new LinkOption[0])) {
-            throw new IllegalStateException("Not a regular file: " + String.valueOf(move.from()));
-         }
+         if (!Files.exists(move.to(), new LinkOption[0])) {
+            if (!Files.isRegularFile(move.from(), new LinkOption[0])) {
+               throw new IllegalStateException("Not a regular file: " + String.valueOf(move.from()));
+            }
 
-         Files.createLink(move.to(), move.from());
+            Files.createLink(move.to(), move.from());
+         }
       }
 
    }

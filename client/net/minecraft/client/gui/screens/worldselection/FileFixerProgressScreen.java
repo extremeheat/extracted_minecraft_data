@@ -3,7 +3,9 @@ package net.minecraft.client.gui.screens.worldselection;
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.worldupdate.UpgradeProgress;
@@ -15,10 +17,20 @@ public class FileFixerProgressScreen extends Screen {
    private static final int SECTION_SPACING = 30;
    private static final Component SCANNING = Component.translatable("upgradeWorld.info.scanning");
    private final UpgradeProgress upgradeProgress;
+   private Button cancelButton;
 
    public FileFixerProgressScreen(final UpgradeProgress upgradeProgress) {
       super(Component.translatable("upgradeWorld.title"));
       this.upgradeProgress = upgradeProgress;
+   }
+
+   protected void init() {
+      super.init();
+      this.cancelButton = Button.builder(CommonComponents.GUI_CANCEL, (button) -> {
+         this.upgradeProgress.setCanceled();
+         button.active = false;
+      }).bounds((this.width - 200) / 2, this.height / 2 + 100, 200, 20).build();
+      this.addRenderableWidget(this.cancelButton);
    }
 
    public boolean shouldCloseOnEsc() {

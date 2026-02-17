@@ -8,6 +8,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.PreeditEvent;
 import org.jspecify.annotations.Nullable;
 
 public interface GuiEventListener extends TabOrderedElement {
@@ -39,6 +40,10 @@ public interface GuiEventListener extends TabOrderedElement {
    }
 
    default boolean charTyped(final CharacterEvent event) {
+      return false;
+   }
+
+   default boolean preeditUpdated(final @Nullable PreeditEvent event) {
       return false;
    }
 

@@ -36,25 +36,23 @@ public class ChatScreen extends Screen {
    protected EditBox input;
    protected String initial;
    protected boolean isDraft;
-   private final ChatComponent.DisplayMode displayMode;
-   private final ChatAbilities chatAbilities;
+   private ChatComponent.DisplayMode displayMode;
    protected ExitReason exitReason;
    private CommandSuggestions commandSuggestions;
 
-   public ChatScreen(final String initial, final boolean isDraft, final ChatAbilities chatAbilities) {
-      this(initial, isDraft, chatAbilities, true);
+   public ChatScreen(final String initial, final boolean isDraft) {
+      this(initial, isDraft, true);
    }
 
-   public ChatScreen(final String initial, final boolean isDraft, final ChatAbilities chatAbilities, final boolean closeOnSubmit) {
+   public ChatScreen(final String initial, final boolean isDraft, final boolean closeOnSubmit) {
       super(Component.translatable("chat_screen.title"));
       this.historyBuffer = "";
       this.historyPos = -1;
+      this.displayMode = ChatComponent.DisplayMode.FOREGROUND;
       this.exitReason = ChatScreen.ExitReason.INTERRUPTED;
       this.closeOnSubmit = closeOnSubmit;
       this.initial = initial;
       this.isDraft = isDraft;
-      this.chatAbilities = chatAbilities;
-      this.displayMode = chatAbilities.hasAnyRestrictions() ? ChatComponent.DisplayMode.FOREGROUND_RESTRICTED : ChatComponent.DisplayMode.FOREGROUND;
    }
 
    protected void init() {
@@ -78,7 +76,9 @@ public class ChatScreen extends Screen {
       this.commandSuggestions = new CommandSuggestions(this.minecraft, this, this.input, this.font, false, false, 1, 10, true, -805306368);
       this.commandSuggestions.setAllowHiding(false);
       this.commandSuggestions.setAllowSuggestions(false);
-      this.commandSuggestions.setRestrictions(this.chatAbilities.canSendMessages(), this.chatAbilities.canSendCommands());
+      ChatAbilities chatAbilities = this.minecraft.player.chatAbilities();
+      this.displayMode = chatAbilities.hasAnyRestrictions() ? ChatComponent.DisplayMode.FOREGROUND_RESTRICTED : ChatComponent.DisplayMode.FOREGROUND;
+      this.commandSuggestions.setRestrictions(chatAbilities.canSendMessages(), chatAbilities.canSendCommands());
       this.commandSuggestions.updateCommandInfo();
    }
 
@@ -231,7 +231,7 @@ public class ChatScreen extends Screen {
                      break;
                   }
 
-                  this.minecraft.setScreen(new RestrictionsScreen(this, this.chatAbilities));
+                  this.minecraft.setScreen(new RestrictionsScreen(this, this.minecraft.player.chatAbilities()));
                   return true;
                default:
                   defaultHandleGameClickEvent(event, this.minecraft, this);
@@ -345,6 +345,6 @@ public class ChatScreen extends Screen {
 
    @FunctionalInterface
    public interface ChatConstructor<T extends ChatScreen> {
-      T create(String initial, boolean isDraft, ChatAbilities chatAbilities);
+      T create(String initial, boolean isDraft);
    }
 }

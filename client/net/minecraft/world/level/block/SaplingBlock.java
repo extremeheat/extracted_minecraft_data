@@ -54,7 +54,12 @@ public class SaplingBlock extends VegetationBlock implements BonemealableBlock {
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      return true;
+      if (level instanceof ServerLevel serverLevel) {
+         int heightOffset = this.treeGrower.getMinimumHeight(serverLevel).orElse(0);
+         return level.isInsideBuildHeight(pos.above(heightOffset));
+      } else {
+         return false;
+      }
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {

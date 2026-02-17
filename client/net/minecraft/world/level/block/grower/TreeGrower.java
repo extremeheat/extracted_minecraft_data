@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -21,6 +22,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import org.jspecify.annotations.Nullable;
 
 public final class TreeGrower {
@@ -147,6 +150,24 @@ public final class TreeGrower {
       }
 
       return false;
+   }
+
+   public OptionalInt getMinimumHeight(final ServerLevel level) {
+      ResourceKey<ConfiguredFeature<?, ?>> featureKey = (ResourceKey)this.tree.orElse((Object)null);
+      if (featureKey == null) {
+         return OptionalInt.empty();
+      } else {
+         Holder<ConfiguredFeature<?, ?>> featureHolder = (Holder)level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(featureKey).orElse((Object)null);
+         if (featureHolder != null) {
+            FeatureConfiguration var5 = ((ConfiguredFeature)featureHolder.value()).config();
+            if (var5 instanceof TreeConfiguration) {
+               TreeConfiguration treeConfig = (TreeConfiguration)var5;
+               return OptionalInt.of(treeConfig.trunkPlacer.getBaseHeight());
+            }
+         }
+
+         return OptionalInt.empty();
+      }
    }
 
    static {

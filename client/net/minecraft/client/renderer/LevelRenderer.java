@@ -234,7 +234,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    }
 
    protected boolean shouldShowEntityOutlines() {
-      return this.levelRenderState.cameraRenderState.isPanoramicMode && this.entityOutlineTarget != null && this.minecraft.player != null;
+      return !this.levelRenderState.cameraRenderState.isPanoramicMode && this.entityOutlineTarget != null && this.minecraft.player != null;
    }
 
    public void setLevel(final @Nullable ClientLevel level) {

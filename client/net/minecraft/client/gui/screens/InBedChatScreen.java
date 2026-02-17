@@ -2,17 +2,14 @@ package net.minecraft.client.gui.screens;
 
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.chat.ChatAbilities;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 
 public class InBedChatScreen extends ChatScreen {
    private Button leaveBedButton;
-   private final ChatAbilities chatAbilities;
 
-   public InBedChatScreen(final String initial, final boolean isDraft, final ChatAbilities chatAbilities) {
-      super(initial, isDraft, chatAbilities, false);
-      this.chatAbilities = chatAbilities;
+   public InBedChatScreen(final String initial, final boolean isDraft) {
+      super(initial, isDraft, false);
    }
 
    protected void init() {
@@ -34,7 +31,7 @@ public class InBedChatScreen extends ChatScreen {
       String text = this.input.getValue();
       if (!this.isDraft && !text.isEmpty()) {
          this.exitReason = ChatScreen.ExitReason.DONE;
-         this.minecraft.setScreen(new ChatScreen(text, false, this.chatAbilities));
+         this.minecraft.setScreen(new ChatScreen(text, false));
       } else {
          this.exitReason = ChatScreen.ExitReason.INTERRUPTED;
          this.minecraft.setScreen((Screen)null);

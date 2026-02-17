@@ -6,9 +6,9 @@ import com.mojang.blaze3d.GLFWErrorScope;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.util.Locale;
-import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
+import net.minecraft.SharedConstants;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFW;
@@ -49,12 +49,18 @@ public class GLX {
       GLFWErrorCapture collectedErrors = new GLFWErrorCapture();
 
       LongSupplier timeSource;
-      try (GLFWErrorScope ignored = new GLFWErrorScope(collectedErrors)) {
+      try (GLFWErrorScope var2 = new GLFWErrorScope(collectedErrors)) {
+         if (GLFW.glfwPlatformSupported(393219) && GLFW.glfwPlatformSupported(393220) && !SharedConstants.DEBUG_PREFER_WAYLAND) {
+            GLFW.glfwInitHint(327683, 393220);
+         }
+
          if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Failed to initialize GLFW, errors: " + Joiner.on(",").join(collectedErrors));
          }
 
          timeSource = () -> (long)(GLFW.glfwGetTime() * 1.0E9);
+         GLFW.glfwDefaultWindowHints();
+         GLFW.glfwWindowHint(131088, 1);
       }
 
       for(GLFWErrorCapture.Error error : collectedErrors) {
@@ -92,10 +98,5 @@ public class GLX {
 
    public static <T> T make(final Supplier<T> factory) {
       return (T)factory.get();
-   }
-
-   public static <T> T make(final T t, final Consumer<T> consumer) {
-      consumer.accept(t);
-      return t;
    }
 }

@@ -19,7 +19,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.multiplayer.chat.ChatAbilities;
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.multiplayer.chat.GuiMessageSource;
 import net.minecraft.client.multiplayer.chat.GuiMessageTag;
@@ -434,12 +433,12 @@ public class ChatComponent {
       this.latestDraft = null;
    }
 
-   public <T extends ChatScreen> T createScreen(final ChatMethod chatMethod, final ChatAbilities chatAbilities, final ChatScreen.ChatConstructor<T> chat) {
-      return (T)(this.latestDraft != null && chatMethod.isDraftRestorable(this.latestDraft) ? chat.create(this.latestDraft.text(), true, chatAbilities) : chat.create(chatMethod.prefix(), false, chatAbilities));
+   public <T extends ChatScreen> T createScreen(final ChatMethod chatMethod, final ChatScreen.ChatConstructor<T> chat) {
+      return (T)(this.latestDraft != null && chatMethod.isDraftRestorable(this.latestDraft) ? chat.create(this.latestDraft.text(), true) : chat.create(chatMethod.prefix(), false));
    }
 
-   public void openScreen(final ChatMethod chatMethod, final ChatAbilities chatAbilities, final ChatScreen.ChatConstructor<?> chat) {
-      this.minecraft.setScreen(this.createScreen(chatMethod, chatAbilities, chat));
+   public void openScreen(final ChatMethod chatMethod, final ChatScreen.ChatConstructor<?> chat) {
+      this.minecraft.setScreen(this.createScreen(chatMethod, chat));
    }
 
    public void preserveCurrentChatScreen() {

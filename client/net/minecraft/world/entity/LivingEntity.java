@@ -309,7 +309,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
       if (!this.isInWater()) {
-         this.updateInWaterStateAndDoWaterCurrentPushing();
+         this.updateFluidInteraction();
       }
 
       Level var7 = this.level();

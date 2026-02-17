@@ -161,7 +161,7 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
    }
 
    private boolean canGrow(final LevelReader level, final BlockPos lowerPos, final BlockState lowerState, final int newAge) {
-      return !this.isMaxAge(lowerState) && sufficientLight(level, lowerPos) && (!isDouble(newAge) || canGrowInto(level, lowerPos.above()));
+      return !this.isMaxAge(lowerState) && sufficientLight(level, lowerPos) && level.isInsideBuildHeight(lowerPos.above()) && (!isDouble(newAge) || canGrowInto(level, lowerPos.above()));
    }
 
    private boolean isMaxAge(final BlockState state) {

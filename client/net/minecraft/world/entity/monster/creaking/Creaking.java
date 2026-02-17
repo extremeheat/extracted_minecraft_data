@@ -94,11 +94,11 @@ public class Creaking extends Monster {
 
    public void setTransient(final BlockPos pos) {
       this.setHomePos(pos);
-      this.setPathfindingMalus(PathType.DAMAGE_OTHER, 8.0F);
+      this.setPathfindingMalus(PathType.DAMAGING, 8.0F);
       this.setPathfindingMalus(PathType.POWDER_SNOW, 8.0F);
       this.setPathfindingMalus(PathType.LAVA, 8.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
-      this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 0.0F);
    }
 
    public boolean isHeartBound() {

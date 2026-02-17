@@ -11,6 +11,7 @@ public class DebugScreenEntries {
    public static final Identifier FPS = register((String)"fps", new DebugEntryFps());
    public static final Identifier TPS = register((String)"tps", new DebugEntryTps());
    public static final Identifier MEMORY = register((String)"memory", new DebugEntryMemory());
+   public static final Identifier DETAILED_MEMORY = register((String)"detailed_memory", new DebugEntryDetailedMemory());
    public static final Identifier SYSTEM_SPECS = register((String)"system_specs", new DebugEntrySystemSpecs());
    public static final Identifier LOOKING_AT_BLOCK_STATE = register((String)"looking_at_block_state", new DebugEntryLookingAt.BlockStateInfo());
    public static final Identifier LOOKING_AT_BLOCK_TAGS = register((String)"looking_at_block_tags", new DebugEntryLookingAt.BlockTagInfo());

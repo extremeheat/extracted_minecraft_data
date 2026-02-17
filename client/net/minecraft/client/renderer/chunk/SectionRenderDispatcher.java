@@ -508,8 +508,10 @@ public class SectionRenderDispatcher {
                      results = SectionRenderDispatcher.this.sectionCompiler.compile(sectionPos, this.region, RenderSection.this.createVertexSorting(sectionPos, cameraPos), buffers);
                   }
 
+                  TranslucencyPointOfView translucencyPointOfView = TranslucencyPointOfView.of(cameraPos, sectionNode);
+                  CompiledSectionMesh compiledSectionMesh = new CompiledSectionMesh(translucencyPointOfView, results);
                   if (results.renderedLayers.isEmpty()) {
-                     SectionMesh oldMesh = RenderSection.this.setSectionMesh(CompiledSectionMesh.EMPTY);
+                     SectionMesh oldMesh = RenderSection.this.setSectionMesh(compiledSectionMesh);
                      SectionRenderDispatcher.this.copyLock.lock();
 
                      try {
@@ -520,9 +522,6 @@ public class SectionRenderDispatcher {
 
                      return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.SUCCESSFUL;
                   } else {
-                     TranslucencyPointOfView translucencyPointOfView = TranslucencyPointOfView.of(cameraPos, sectionNode);
-                     CompiledSectionMesh compiledSectionMesh = new CompiledSectionMesh(translucencyPointOfView, results);
-
                      for(Map.Entry<ChunkSectionLayer, MeshData> entry : results.renderedLayers.entrySet()) {
                         MeshData meshData = (MeshData)entry.getValue();
                         boolean success = false;

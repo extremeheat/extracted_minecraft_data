@@ -32,7 +32,6 @@ import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
 
 public final class Window implements AutoCloseable {
@@ -113,18 +112,19 @@ public final class Window implements AutoCloseable {
    }
 
    private WindowAndDevice initializeBackend(final GpuBackend[] backends, final int width, final int height, final String title, final long initialMonitor, final ShaderSource defaultShaderSource, final GpuDebugOptions debugOptions) {
-      StringBuilder error = new StringBuilder("No supported graphics backend was found.");
+      StringBuilder errorMsgBuilder = new StringBuilder("No supported graphics backend was found.");
 
       for(GpuBackend backend : backends) {
          try {
             return backend.createDeviceWithWindow(width, height, title, initialMonitor, defaultShaderSource, debugOptions);
          } catch (BackendCreationException exception) {
-            error.append("\n\n- Tried ").append(backend.getName()).append(": \n  ").append(exception.getMessage());
+            errorMsgBuilder.append("\n\n- Tried ").append(backend.getName()).append(": \n  ").append(exception.getMessage());
          }
       }
 
-      TinyFileDialogs.tinyfd_messageBox("Minecraft", error.toString(), "ok", "error", false);
-      throw new WindowInitFailed(error.toString());
+      String errorMsg = errorMsgBuilder.toString();
+      MessageBox.error(errorMsg);
+      throw new WindowInitFailed(errorMsg);
    }
 
    public static String getPlatform() {
@@ -264,7 +264,7 @@ public final class Window implements AutoCloseable {
 
    private static void bootCrash(final int error, final long description) {
       String message = "GLFW error " + error + ": " + MemoryUtil.memUTF8(description);
-      TinyFileDialogs.tinyfd_messageBox("Minecraft", message + ".\n\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).", "ok", "error", false);
+      MessageBox.error(message + ".\n\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
       throw new WindowInitFailed(message);
    }
 
@@ -572,6 +572,10 @@ public final class Window implements AutoCloseable {
 
    public float getAppropriateLineWidth() {
       return Math.max(2.5F, (float)this.getWidth() / 1920.0F * 2.5F);
+   }
+
+   public void setIMEPreeditArea(final int x0, final int y0, final int x1, final int y1) {
+      GLFW.glfwSetPreeditCursorRectangle(this.handle, x0 * this.guiScale, y0 * this.guiScale, (x1 - x0) * this.guiScale, (y1 - y0) * this.guiScale);
    }
 
    public static class WindowInitFailed extends SilentInitException {

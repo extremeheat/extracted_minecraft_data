@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.cauldron.CauldronInteractions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
@@ -25,7 +26,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LayeredCauldronBlock extends AbstractCauldronBlock {
-   public static final MapCodec<LayeredCauldronBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Biome.Precipitation.CODEC.fieldOf("precipitation").forGetter((b) -> b.precipitationType), CauldronInteraction.CODEC.fieldOf("interactions").forGetter((b) -> b.interactions), propertiesCodec()).apply(i, LayeredCauldronBlock::new));
+   public static final MapCodec<LayeredCauldronBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Biome.Precipitation.CODEC.fieldOf("precipitation").forGetter((b) -> b.precipitationType), CauldronInteractions.CODEC.fieldOf("interactions").forGetter((b) -> b.interactions), propertiesCodec()).apply(i, LayeredCauldronBlock::new));
    public static final int MIN_FILL_LEVEL = 1;
    public static final int MAX_FILL_LEVEL = 3;
    public static final IntegerProperty LEVEL;
@@ -38,7 +39,7 @@ public class LayeredCauldronBlock extends AbstractCauldronBlock {
       return CODEC;
    }
 
-   public LayeredCauldronBlock(final Biome.Precipitation precipitationType, final CauldronInteraction.InteractionMap interactionMap, final BlockBehaviour.Properties properties) {
+   public LayeredCauldronBlock(final Biome.Precipitation precipitationType, final CauldronInteraction.Dispatcher interactionMap, final BlockBehaviour.Properties properties) {
       super(properties, interactionMap);
       this.precipitationType = precipitationType;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(LEVEL, 1));

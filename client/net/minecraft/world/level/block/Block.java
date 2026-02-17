@@ -324,25 +324,25 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static void dropResources(final BlockState state, final Level level, final BlockPos pos) {
-      if (level instanceof ServerLevel) {
-         getDrops(state, (ServerLevel)level, pos, (BlockEntity)null).forEach((stack) -> popResource(level, pos, stack));
-         state.spawnAfterBreak((ServerLevel)level, pos, ItemStack.EMPTY, true);
+      if (level instanceof ServerLevel serverLevel) {
+         getDrops(state, serverLevel, pos, (BlockEntity)null).forEach((stack) -> popResource(level, pos, stack));
+         state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
       }
 
    }
 
    public static void dropResources(final BlockState state, final LevelAccessor level, final BlockPos pos, final @Nullable BlockEntity blockEntity) {
-      if (level instanceof ServerLevel) {
-         getDrops(state, (ServerLevel)level, pos, blockEntity).forEach((stack) -> popResource((ServerLevel)level, pos, stack));
-         state.spawnAfterBreak((ServerLevel)level, pos, ItemStack.EMPTY, true);
+      if (level instanceof ServerLevel serverLevel) {
+         getDrops(state, serverLevel, pos, blockEntity).forEach((stack) -> popResource(serverLevel, pos, stack));
+         state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
       }
 
    }
 
    public static void dropResources(final BlockState state, final Level level, final BlockPos pos, final @Nullable BlockEntity blockEntity, final @Nullable Entity breaker, final ItemStack tool) {
-      if (level instanceof ServerLevel) {
-         getDrops(state, (ServerLevel)level, pos, blockEntity, breaker, tool).forEach((stack) -> popResource(level, pos, stack));
-         state.spawnAfterBreak((ServerLevel)level, pos, tool, true);
+      if (level instanceof ServerLevel serverLevel) {
+         getDrops(state, serverLevel, pos, blockEntity, breaker, tool).forEach((stack) -> popResource(level, pos, stack));
+         state.spawnAfterBreak(serverLevel, pos, tool, true);
       }
 
    }

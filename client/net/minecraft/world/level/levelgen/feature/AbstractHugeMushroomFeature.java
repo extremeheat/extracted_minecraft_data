@@ -11,6 +11,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
 
 public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFeatureConfiguration> {
+   public static final int MIN_MUSHROOM_HEIGHT = 4;
+
    public AbstractHugeMushroomFeature(final Codec<HugeMushroomFeatureConfiguration> codec) {
       super(codec);
    }

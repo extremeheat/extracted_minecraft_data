@@ -1708,6 +1708,10 @@ public class ServerPlayer extends Player {
       this.sendSystemMessage(message, true);
    }
 
+   public void sendBuildLimitMessage(final boolean isTooHigh, final int limit) {
+      this.sendOverlayMessage(Component.translatable(isTooHigh ? "build.tooHigh" : "build.tooLow", limit).withStyle(ChatFormatting.RED));
+   }
+
    public void sendSystemMessage(final Component message, final boolean overlay) {
       if (this.acceptsSystemMessages(overlay)) {
          this.connection.send(new ClientboundSystemChatPacket(message, overlay), PacketSendListener.exceptionallySend(() -> {

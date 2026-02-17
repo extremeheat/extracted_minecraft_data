@@ -23,10 +23,10 @@ public class DebugEntryMemory implements DebugScreenEntry {
       long total = Runtime.getRuntime().totalMemory();
       long free = Runtime.getRuntime().freeMemory();
       long used = total - free;
-      displayer.addToGroup(GROUP, List.of(String.format(Locale.ROOT, "Mem: %2d%% %03d/%03dMB", used * 100L / max, bytesToMegabytes(used), bytesToMegabytes(max)), String.format(Locale.ROOT, "Allocation rate: %03dMB/s", bytesToMegabytes(this.allocationRateCalculator.bytesAllocatedPerSecond(used))), String.format(Locale.ROOT, "Allocated: %2d%% %03dMB", total * 100L / max, bytesToMegabytes(total))));
+      displayer.addToGroup(GROUP, List.of(String.format(Locale.ROOT, "Mem: %2d%% %03d/%03dMiB", used * 100L / max, bytesToMebibytes(used), bytesToMebibytes(max)), String.format(Locale.ROOT, "Allocation rate: %03dMiB/s", bytesToMebibytes(this.allocationRateCalculator.bytesAllocatedPerSecond(used))), String.format(Locale.ROOT, "Allocated: %2d%% %03dMiB", total * 100L / max, bytesToMebibytes(total))));
    }
 
-   private static long bytesToMegabytes(final long used) {
+   private static long bytesToMebibytes(final long used) {
       return used / 1024L / 1024L;
    }
 

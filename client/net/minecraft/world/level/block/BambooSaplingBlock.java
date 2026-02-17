@@ -58,7 +58,7 @@ public class BambooSaplingBlock extends Block implements BonemealableBlock {
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      return level.getBlockState(pos.above()).isAir();
+      return level.getBlockState(pos.above()).isAir() && level.isInsideBuildHeight(pos.above());
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {

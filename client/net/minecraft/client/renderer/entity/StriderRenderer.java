@@ -1,6 +1,9 @@
 package net.minecraft.client.renderer.entity;
 
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.strider.AdultStriderModel;
+import net.minecraft.client.model.monster.strider.BabyStriderModel;
 import net.minecraft.client.model.monster.strider.StriderModel;
 import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.StriderRenderState;
@@ -11,16 +14,22 @@ import net.minecraft.world.entity.monster.Strider;
 
 public class StriderRenderer extends AgeableMobRenderer<Strider, StriderRenderState, StriderModel> {
    private static final Identifier STRIDER_LOCATION = Identifier.withDefaultNamespace("textures/entity/strider/strider.png");
+   private static final Identifier STRIDER_BABY_LOCATION = Identifier.withDefaultNamespace("textures/entity/strider/strider_baby.png");
    private static final Identifier COLD_LOCATION = Identifier.withDefaultNamespace("textures/entity/strider/strider_cold.png");
+   private static final Identifier COLD_BABY_LOCATION = Identifier.withDefaultNamespace("textures/entity/strider/strider_cold_baby.png");
    private static final float SHADOW_RADIUS = 0.5F;
 
    public StriderRenderer(final EntityRendererProvider.Context context) {
-      super(context, new StriderModel(context.bakeLayer(ModelLayers.STRIDER)), new StriderModel(context.bakeLayer(ModelLayers.STRIDER_BABY)), 0.5F);
-      this.addLayer(new SimpleEquipmentLayer(this, context.getEquipmentRenderer(), EquipmentClientInfo.LayerType.STRIDER_SADDLE, (state) -> state.saddle, new StriderModel(context.bakeLayer(ModelLayers.STRIDER_SADDLE)), new StriderModel(context.bakeLayer(ModelLayers.STRIDER_BABY_SADDLE))));
+      super(context, new AdultStriderModel(context.bakeLayer(ModelLayers.STRIDER)), new BabyStriderModel(context.bakeLayer(ModelLayers.STRIDER_BABY)), 0.5F);
+      this.addLayer(new SimpleEquipmentLayer(this, context.getEquipmentRenderer(), EquipmentClientInfo.LayerType.STRIDER_SADDLE, (state) -> state.saddle, new AdultStriderModel(context.bakeLayer(ModelLayers.STRIDER_SADDLE)), (EntityModel)null));
    }
 
    public Identifier getTextureLocation(final StriderRenderState state) {
-      return state.isSuffocating ? COLD_LOCATION : STRIDER_LOCATION;
+      if (state.isSuffocating) {
+         return state.isBaby ? COLD_BABY_LOCATION : COLD_LOCATION;
+      } else {
+         return state.isBaby ? STRIDER_BABY_LOCATION : STRIDER_LOCATION;
+      }
    }
 
    protected float getShadowRadius(final StriderRenderState state) {

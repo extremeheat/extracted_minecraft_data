@@ -46,6 +46,10 @@ public abstract class FileFix {
 
    public void runFixOperations(final Path baseFolder, final UpgradeProgress upgradeProgress) throws IOException {
       for(FileFixOperation fileFixOperation : this.fileFixOperations) {
+         if (upgradeProgress.isCanceled()) {
+            throw new CanceledFileFixException();
+         }
+
          fileFixOperation.fix(baseFolder, upgradeProgress);
          upgradeProgress.incrementFinishedOperations();
       }

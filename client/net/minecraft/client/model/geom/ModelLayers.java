@@ -240,7 +240,6 @@ public class ModelLayers {
    public static final ModelLayerLocation STRIDER = register("strider");
    public static final ModelLayerLocation STRIDER_SADDLE = register("strider", "saddle");
    public static final ModelLayerLocation STRIDER_BABY = register("strider_baby");
-   public static final ModelLayerLocation STRIDER_BABY_SADDLE = register("strider_baby", "saddle");
    public static final ModelLayerLocation TADPOLE = register("tadpole");
    public static final ModelLayerLocation TNT_MINECART = register("tnt_minecart");
    public static final ModelLayerLocation TRADER_LLAMA = register("trader_llama");

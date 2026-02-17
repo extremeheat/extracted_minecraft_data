@@ -399,7 +399,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       DATA_IS_DANCING = SynchedEntityData.<Boolean>defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
       SPEED_MODIFIER_BABY_ID = Identifier.withDefaultNamespace("baby");
       SPEED_MODIFIER_BABY = new AttributeModifier(SPEED_MODIFIER_BABY_ID, 0.20000000298023224, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
-      BABY_DIMENSIONS = EntityDimensions.scalable(0.55F, 0.95F).withEyeHeight(0.78F);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.78F);
       BRAIN_PROVIDER = Brain.<Piglin>provider(List.of(MemoryModuleType.UNIVERSAL_ANGER, MemoryModuleType.ATE_RECENTLY, MemoryModuleType.SPEAR_FLEEING_TIME, MemoryModuleType.SPEAR_FLEEING_POSITION, MemoryModuleType.SPEAR_CHARGE_POSITION, MemoryModuleType.SPEAR_ENGAGE_TIME), List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.HURT_BY, SensorType.PIGLIN_SPECIFIC_SENSOR), PiglinAi::getActivities);
    }
 }
