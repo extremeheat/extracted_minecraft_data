@@ -107,9 +107,13 @@ public class EntityFluidInteraction {
                return false;
             }
 
+            LevelChunkSection[] sections = chunk.getSections();
+
             for(int sectionY = sectionY0; sectionY <= sectionY1; ++sectionY) {
-               LevelChunkSection section = chunk.getSection(chunk.getSectionIndexFromSectionY(sectionY));
-               hasFluid |= section.hasFluid();
+               int sectionIndex = chunk.getSectionIndexFromSectionY(sectionY);
+               if (sectionIndex >= 0 && sectionIndex < sections.length) {
+                  hasFluid |= sections[sectionIndex].hasFluid();
+               }
             }
          }
       }

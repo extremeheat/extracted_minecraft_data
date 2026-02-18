@@ -68,7 +68,7 @@ public record PreeditEvent(String fullText, int caretPosition, List<String> bloc
          MutableComponent result = Component.empty();
 
          for(int i = 0; i < blockCount; ++i) {
-            MutableComponent part = Component.literal((String)this.blocks.getFirst());
+            MutableComponent part = Component.literal((String)this.blocks.get(i));
             if (i == this.focusedBlock) {
                part.withStyle(focusedStyle);
             }

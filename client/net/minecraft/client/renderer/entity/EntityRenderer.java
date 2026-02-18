@@ -124,6 +124,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    }
 
    protected final <S extends EntityRenderState> void submitNameDisplay(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera, final int offset) {
+      poseStack.pushPose();
       if (state.scoreText != null) {
          submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, offset, state.scoreText, !state.isDiscrete, state.lightCoords, state.distanceToCameraSq, camera);
          Objects.requireNonNull(this.getFont());
@@ -134,6 +135,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, offset, state.nameTag, !state.isDiscrete, state.lightCoords, state.distanceToCameraSq, camera);
       }
 
+      poseStack.popPose();
    }
 
    protected @Nullable Component getNameTag(final T entity) {
